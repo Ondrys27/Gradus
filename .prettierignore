@@ -1,0 +1,6 @@
+node_modules
+.next
+bun.lock
+src/types/database.ts
+components.json
+CLAUDE.md
