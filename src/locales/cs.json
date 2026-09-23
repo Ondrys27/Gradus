@@ -8,7 +8,9 @@
       "previousMonth": "Předchozí měsíc",
       "nextMonth": "Další měsíc",
       "today": "Dnes",
-      "clear": "Vymazat"
+      "clear": "Vymazat",
+      "title": "Vyberte datum",
+      "close": "Zavřít"
     }
   },
   "designSystem": {
@@ -111,7 +113,7 @@
       "notesPlaceholder": "Na čem jste se domluvili?",
       "notifications": "Oznámení",
       "task": "Zavolat zítra ráno zpět",
-      "nativeFallback": "Nativní prvky (záložní styl)"
+      "nativeFallback": "Nativní výběr (záložní styl)"
     },
     "empty": {
       "title": "Zatím žádné kontakty",

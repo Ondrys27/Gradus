@@ -10,7 +10,7 @@ import { setSoundEnabled, useSoundEnabled } from "@/lib/sound-preference";
 import { cn } from "@/lib/utils";
 
 const itemClass =
-  "flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-lg px-3 text-[15px] text-ink-soft outline-none select-none md:min-h-9 data-highlighted:bg-surface-hover data-highlighted:text-ink";
+  "flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-lg px-3 text-[15px] text-ink-soft outline-none select-none mouse:min-h-9 data-highlighted:bg-surface-hover data-highlighted:text-ink";
 
 export function AccountMenu() {
   const t = useTranslations("topBar.account");

@@ -5,6 +5,12 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
+ * Compact control sizes are only for a mouse on a wide screen. Phones and touch tablets
+ * keep 44 px targets, so size shrinks go behind `mouse:`, never behind `md:`.
+ */
+@custom-variant mouse (@media (min-width: 48rem) and (pointer: fine));
+
+/*
  * Gradus design tokens. This is the only place where raw colour values live.
  * The default Tailwind palette is removed on purpose: components use these tokens only.
  */

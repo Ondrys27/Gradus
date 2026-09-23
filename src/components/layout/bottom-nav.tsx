@@ -3,10 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Dialog } from "@base-ui/react/dialog";
 import { motion, useReducedMotion } from "framer-motion";
-import { EllipsisIcon, XIcon, type LucideIcon } from "lucide-react";
+import { EllipsisIcon, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { cn } from "@/lib/utils";
 import { bottomNavKeys, isActivePath, navItems } from "./nav-items";
 
@@ -46,46 +46,37 @@ export function BottomNav() {
         />
       </nav>
 
-      <Dialog.Root open={moreOpen} onOpenChange={setMoreOpen}>
-        <Dialog.Portal>
-          <Dialog.Backdrop className="fixed inset-0 z-50 bg-canvas/70 backdrop-blur-sm transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0 md:hidden" />
-          <Dialog.Popup className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl border-t border-line-strong bg-surface px-4 pt-3 pb-[calc(20px+env(safe-area-inset-bottom))] shadow-popover outline-none transition-transform duration-250 ease-out data-ending-style:translate-y-full data-starting-style:translate-y-full md:hidden">
-            <div aria-hidden className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-line-strong" />
-            <div className="mb-3 flex items-center justify-between">
-              <Dialog.Title className="micro-label">{t("more")}</Dialog.Title>
-              <Dialog.Close
-                aria-label={t("close")}
-                className="-mr-2 grid size-11 place-items-center rounded-full text-ink-soft outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-ring/50"
-              >
-                <XIcon aria-hidden className="size-5" />
-              </Dialog.Close>
-            </div>
-            <ul className="grid grid-cols-2 gap-3">
-              {moreItems.map(({ key, href, icon: Icon }) => {
-                const active = isActivePath(pathname, href);
-                return (
-                  <li key={key}>
-                    <Link
-                      href={href}
-                      onClick={() => setMoreOpen(false)}
-                      aria-current={active ? "page" : undefined}
-                      className={cn(
-                        "flex min-h-20 flex-col justify-between gap-3 rounded-card border p-4 text-sm font-semibold outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-                        active
-                          ? "border-violet/60 bg-violet/20 text-ink shadow-glow-strong"
-                          : "border-line bg-canvas-deep/60 text-ink-soft",
-                      )}
-                    >
-                      <Icon aria-hidden className={cn("size-5", active && "text-violet")} />
-                      {t(key)}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </Dialog.Popup>
-        </Dialog.Portal>
-      </Dialog.Root>
+      <BottomSheet
+        open={moreOpen}
+        onOpenChange={setMoreOpen}
+        title={t("more")}
+        closeLabel={t("close")}
+        className="md:hidden"
+      >
+        <ul className="grid grid-cols-2 gap-3">
+          {moreItems.map(({ key, href, icon: Icon }) => {
+            const active = isActivePath(pathname, href);
+            return (
+              <li key={key}>
+                <Link
+                  href={href}
+                  onClick={() => setMoreOpen(false)}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "flex min-h-20 flex-col justify-between gap-3 rounded-card border p-4 text-sm font-semibold outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                    active
+                      ? "border-violet/60 bg-violet/20 text-ink shadow-glow-strong"
+                      : "border-line bg-canvas-deep/60 text-ink-soft",
+                  )}
+                >
+                  <Icon aria-hidden className={cn("size-5", active && "text-violet")} />
+                  {t(key)}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </BottomSheet>
     </>
   );
 }

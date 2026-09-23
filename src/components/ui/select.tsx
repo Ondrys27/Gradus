@@ -56,7 +56,7 @@ export function SelectItem({ className, children, ...props }: SelectPrimitive.It
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-lg px-3 text-[15px] text-ink-soft outline-none select-none md:min-h-9",
+        "flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-lg px-3 text-[15px] text-ink-soft outline-none select-none mouse:min-h-9",
         "data-highlighted:bg-surface-hover data-highlighted:text-ink data-selected:text-ink data-disabled:pointer-events-none data-disabled:opacity-50",
         className,
       )}

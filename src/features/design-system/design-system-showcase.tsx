@@ -262,16 +262,14 @@ export function DesignSystemShowcase() {
             </span>
           </label>
           <Field id="ds-native" label={t("controls.nativeFallback")} className="md:col-span-2">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <select id="ds-native" defaultValue="lead" aria-label={t("controls.stage")}>
-                {stages.map((s) => (
-                  <option key={s} value={s}>
-                    {t(`controls.stages.${s}`)}
-                  </option>
-                ))}
-              </select>
-              <input type="date" aria-label={t("controls.date")} />
-            </div>
+            {/* No native date input: it formats dates by browser locale, not user settings. */}
+            <select id="ds-native" defaultValue="lead">
+              {stages.map((s) => (
+                <option key={s} value={s}>
+                  {t(`controls.stages.${s}`)}
+                </option>
+              ))}
+            </select>
           </Field>
         </GlowCard>
       </Section>

@@ -8,7 +8,9 @@
       "previousMonth": "Previous month",
       "nextMonth": "Next month",
       "today": "Today",
-      "clear": "Clear"
+      "clear": "Clear",
+      "title": "Choose a date",
+      "close": "Close"
     }
   },
   "designSystem": {
@@ -111,7 +113,7 @@
       "notesPlaceholder": "What did you agree on?",
       "notifications": "Notifications",
       "task": "Call back tomorrow morning",
-      "nativeFallback": "Native elements (fallback styling)"
+      "nativeFallback": "Native select (fallback styling)"
     },
     "empty": {
       "title": "No contacts yet",
