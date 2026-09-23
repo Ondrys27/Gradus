@@ -7,6 +7,36 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       ai_usage: {
@@ -58,9 +88,10 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "ai_usage_conversation_id_fkey"
-            columns: ["conversation_id"]
+            columns: ["conversation_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "jarvis_conversations"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "user_id"]
           },
         ]
       }
@@ -155,21 +186,24 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "calendar_events_contact_id_fkey"
-            columns: ["contact_id"]
+            columns: ["contact_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "contacts"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "user_id"]
           },
           {
             foreignKeyName: "calendar_events_deal_id_fkey"
-            columns: ["deal_id"]
+            columns: ["deal_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "deals"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "user_id"]
           },
           {
             foreignKeyName: "calendar_events_task_id_fkey"
-            columns: ["task_id"]
+            columns: ["task_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "tasks"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "user_id"]
           },
         ]
       }
@@ -244,20 +278,22 @@ export type Database = {
           {
             foreignKeyName: "contact_activities_contact_id_user_id_fkey"
             columns: ["contact_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "contacts"
             referencedColumns: ["id", "user_id"]
           },
           {
             foreignKeyName: "contact_activities_deal_id_fkey"
-            columns: ["deal_id"]
+            columns: ["deal_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "deals"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "user_id"]
           },
         ]
       }
       contact_table_entries: {
         Row: {
-          answers: NonNullable<Json>
+          answers: Json
           contact_id: string
           created_at: string
           id: string
@@ -267,7 +303,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          answers?: NonNullable<Json>
+          answers?: Json
           contact_id: string
           created_at?: string
           id?: string
@@ -277,7 +313,7 @@ export type Database = {
           user_id: string
         }
         Update: {
-          answers?: NonNullable<Json>
+          answers?: Json
           contact_id?: string
           created_at?: string
           id?: string
@@ -290,12 +326,14 @@ export type Database = {
           {
             foreignKeyName: "contact_table_entries_contact_id_user_id_fkey"
             columns: ["contact_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "contacts"
             referencedColumns: ["id", "user_id"]
           },
           {
             foreignKeyName: "contact_table_entries_table_id_user_id_fkey"
             columns: ["table_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "contact_tables"
             referencedColumns: ["id", "user_id"]
           },
@@ -353,13 +391,15 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "contact_table_fields_depends_on_field_id_fkey"
-            columns: ["depends_on_field_id"]
+            columns: ["depends_on_field_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "contact_table_fields"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "user_id"]
           },
           {
             foreignKeyName: "contact_table_fields_table_id_user_id_fkey"
             columns: ["table_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "contact_tables"
             referencedColumns: ["id", "user_id"]
           },
@@ -367,7 +407,7 @@ export type Database = {
       }
       contact_table_moves: {
         Row: {
-          answers: NonNullable<Json>
+          answers: Json
           contact_id: string
           created_at: string
           from_table_id: string | null
@@ -376,7 +416,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          answers?: NonNullable<Json>
+          answers?: Json
           contact_id: string
           created_at?: string
           from_table_id?: string | null
@@ -385,7 +425,7 @@ export type Database = {
           user_id: string
         }
         Update: {
-          answers?: NonNullable<Json>
+          answers?: Json
           contact_id?: string
           created_at?: string
           from_table_id?: string | null
@@ -396,21 +436,24 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "contact_table_moves_contact_id_fkey"
-            columns: ["contact_id"]
+            columns: ["contact_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "contacts"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "user_id"]
           },
           {
             foreignKeyName: "contact_table_moves_from_table_id_fkey"
-            columns: ["from_table_id"]
+            columns: ["from_table_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "contact_tables"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "user_id"]
           },
           {
             foreignKeyName: "contact_table_moves_to_table_id_fkey"
-            columns: ["to_table_id"]
+            columns: ["to_table_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "contact_tables"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "user_id"]
           },
         ]
       }
@@ -571,13 +614,15 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "deals_contact_id_fkey"
-            columns: ["contact_id"]
+            columns: ["contact_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "contacts"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "user_id"]
           },
           {
             foreignKeyName: "deals_stage_id_user_id_fkey"
             columns: ["stage_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "pipeline_stages"
             referencedColumns: ["id", "user_id"]
           },
@@ -704,15 +749,17 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "invoices_contact_id_fkey"
-            columns: ["contact_id"]
+            columns: ["contact_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "contacts"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "user_id"]
           },
           {
             foreignKeyName: "invoices_deal_id_fkey"
-            columns: ["deal_id"]
+            columns: ["deal_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "deals"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "user_id"]
           },
         ]
       }
@@ -781,6 +828,7 @@ export type Database = {
           {
             foreignKeyName: "jarvis_messages_conversation_id_user_id_fkey"
             columns: ["conversation_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "jarvis_conversations"
             referencedColumns: ["id", "user_id"]
           },
@@ -788,7 +836,7 @@ export type Database = {
       }
       meeting_surveys: {
         Row: {
-          answers: NonNullable<Json>
+          answers: Json
           created_at: string
           deal_id: string
           id: string
@@ -797,7 +845,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          answers?: NonNullable<Json>
+          answers?: Json
           created_at?: string
           deal_id: string
           id?: string
@@ -806,7 +854,7 @@ export type Database = {
           user_id: string
         }
         Update: {
-          answers?: NonNullable<Json>
+          answers?: Json
           created_at?: string
           deal_id?: string
           id?: string
@@ -818,14 +866,16 @@ export type Database = {
           {
             foreignKeyName: "meeting_surveys_deal_id_user_id_fkey"
             columns: ["deal_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "deals"
             referencedColumns: ["id", "user_id"]
           },
           {
             foreignKeyName: "meeting_surveys_stage_id_fkey"
-            columns: ["stage_id"]
+            columns: ["stage_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "pipeline_stages"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "user_id"]
           },
         ]
       }
@@ -994,8 +1044,6 @@ export type Database = {
           started_at: string
           updated_at: string
           user_id: string
-          prospecting_effective_end: string | null
-          prospecting_last_activity_at: string | null
         }
         Insert: {
           created_at?: string
@@ -1075,7 +1123,7 @@ export type Database = {
           is_active: boolean
           name: string
           owner_id: string
-          rules: NonNullable<Json>
+          rules: Json
           updated_at: string
           worker_id: string | null
         }
@@ -1085,7 +1133,7 @@ export type Database = {
           is_active?: boolean
           name: string
           owner_id: string
-          rules?: NonNullable<Json>
+          rules?: Json
           updated_at?: string
           worker_id?: string | null
         }
@@ -1095,7 +1143,7 @@ export type Database = {
           is_active?: boolean
           name?: string
           owner_id?: string
-          rules?: NonNullable<Json>
+          rules?: Json
           updated_at?: string
           worker_id?: string | null
         }
@@ -1103,6 +1151,7 @@ export type Database = {
           {
             foreignKeyName: "reward_rules_worker_id_owner_id_fkey"
             columns: ["worker_id", "owner_id"]
+            isOneToOne: false
             referencedRelation: "workers"
             referencedColumns: ["id", "owner_id"]
           },
@@ -1167,6 +1216,7 @@ export type Database = {
           {
             foreignKeyName: "subscriptions_plan_key_fkey"
             columns: ["plan_key"]
+            isOneToOne: false
             referencedRelation: "plans"
             referencedColumns: ["key"]
           },
@@ -1219,14 +1269,16 @@ export type Database = {
           {
             foreignKeyName: "tasks_milestone_id_user_id_fkey"
             columns: ["milestone_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "milestones"
             referencedColumns: ["id", "user_id"]
           },
           {
             foreignKeyName: "tasks_parent_task_id_fkey"
-            columns: ["parent_task_id"]
+            columns: ["parent_task_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "tasks"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "user_id"]
           },
         ]
       }
@@ -1279,21 +1331,24 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "transactions_deal_id_fkey"
-            columns: ["deal_id"]
+            columns: ["deal_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "deals"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "user_id"]
           },
           {
             foreignKeyName: "transactions_invoice_id_fkey"
-            columns: ["invoice_id"]
+            columns: ["invoice_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "invoices"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "user_id"]
           },
           {
             foreignKeyName: "transactions_recurring_payment_id_fkey"
-            columns: ["recurring_payment_id"]
+            columns: ["recurring_payment_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "recurring_payments"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "user_id"]
           },
         ]
       }
@@ -1333,7 +1388,7 @@ export type Database = {
           event_type: string
           id: string
           message: string | null
-          metadata: NonNullable<Json>
+          metadata: Json
           quantity: number
           success: boolean
           user_id: string
@@ -1343,7 +1398,7 @@ export type Database = {
           event_type: string
           id?: string
           message?: string | null
-          metadata?: NonNullable<Json>
+          metadata?: Json
           quantity?: number
           success?: boolean
           user_id: string
@@ -1353,7 +1408,7 @@ export type Database = {
           event_type?: string
           id?: string
           message?: string | null
-          metadata?: NonNullable<Json>
+          metadata?: Json
           quantity?: number
           success?: boolean
           user_id?: string
@@ -1446,7 +1501,6 @@ export type Database = {
           started_at: string
           updated_at: string
           worker_id: string
-          work_session_effective_end: string | null
         }
         Insert: {
           created_at?: string
@@ -1474,6 +1528,7 @@ export type Database = {
           {
             foreignKeyName: "work_sessions_worker_id_owner_id_fkey"
             columns: ["worker_id", "owner_id"]
+            isOneToOne: false
             referencedRelation: "workers"
             referencedColumns: ["id", "owner_id"]
           },
@@ -1534,33 +1589,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "worker_earnings_payment_id_fkey"
-            columns: ["payment_id"]
+            columns: ["payment_id", "owner_id"]
+            isOneToOne: false
             referencedRelation: "worker_payments"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "owner_id"]
           },
           {
             foreignKeyName: "worker_earnings_reward_rule_id_fkey"
-            columns: ["reward_rule_id"]
+            columns: ["reward_rule_id", "owner_id"]
+            isOneToOne: false
             referencedRelation: "reward_rules"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "owner_id"]
           },
           {
             foreignKeyName: "worker_earnings_work_session_id_fkey"
-            columns: ["work_session_id"]
+            columns: ["work_session_id", "owner_id"]
+            isOneToOne: false
             referencedRelation: "work_sessions"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "owner_id"]
           },
           {
             foreignKeyName: "worker_earnings_worker_id_owner_id_fkey"
             columns: ["worker_id", "owner_id"]
+            isOneToOne: false
             referencedRelation: "workers"
             referencedColumns: ["id", "owner_id"]
           },
           {
             foreignKeyName: "worker_earnings_worker_task_id_fkey"
-            columns: ["worker_task_id"]
+            columns: ["worker_task_id", "owner_id"]
+            isOneToOne: false
             referencedRelation: "worker_tasks"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "owner_id"]
           },
         ]
       }
@@ -1605,6 +1665,7 @@ export type Database = {
           {
             foreignKeyName: "worker_invites_worker_id_owner_id_fkey"
             columns: ["worker_id", "owner_id"]
+            isOneToOne: false
             referencedRelation: "workers"
             referencedColumns: ["id", "owner_id"]
           },
@@ -1650,13 +1711,15 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "worker_payments_transaction_id_fkey"
-            columns: ["transaction_id"]
+            columns: ["transaction_id", "owner_id"]
+            isOneToOne: false
             referencedRelation: "transactions"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "user_id"]
           },
           {
             foreignKeyName: "worker_payments_worker_id_owner_id_fkey"
             columns: ["worker_id", "owner_id"]
+            isOneToOne: false
             referencedRelation: "workers"
             referencedColumns: ["id", "owner_id"]
           },
@@ -1697,6 +1760,7 @@ export type Database = {
           {
             foreignKeyName: "worker_permissions_worker_id_owner_id_fkey"
             columns: ["worker_id", "owner_id"]
+            isOneToOne: false
             referencedRelation: "workers"
             referencedColumns: ["id", "owner_id"]
           },
@@ -1746,6 +1810,7 @@ export type Database = {
           {
             foreignKeyName: "worker_tasks_worker_id_owner_id_fkey"
             columns: ["worker_id", "owner_id"]
+            isOneToOne: false
             referencedRelation: "workers"
             referencedColumns: ["id", "owner_id"]
           },
@@ -1803,10 +1868,11 @@ export type Database = {
         Args: { _locale?: string; _user_id: string }
         Returns: undefined
       }
+      is_client_request: { Args: never; Returns: boolean }
       move_contact: {
         Args: { _answers?: Json; _contact_id: string; _to_table_id: string }
         Returns: {
-          answers: NonNullable<Json>
+          answers: Json
           contact_id: string
           created_at: string
           id: string
@@ -1822,9 +1888,9 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      my_worker_ids: { Args: Record<PropertyKey, never>; Returns: string[] }
+      my_worker_ids: { Args: never; Returns: string[] }
       pause_prospecting: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_at: string
           end_reason: Database["public"]["Enums"]["session_end_reason"] | null
@@ -1837,6 +1903,26 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "prospecting_segments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      pause_work_session: {
+        Args: { _worker_id: string }
+        Returns: {
+          created_at: string
+          end_reason: Database["public"]["Enums"]["session_end_reason"] | null
+          ended_at: string | null
+          id: string
+          note: string | null
+          owner_id: string
+          started_at: string
+          updated_at: string
+          worker_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "work_sessions"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -1858,7 +1944,7 @@ export type Database = {
         Returns: number
       }
       start_prospecting: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_at: string
           end_reason: Database["public"]["Enums"]["session_end_reason"] | null
@@ -1875,7 +1961,27 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      timer_idle_interval: { Args: Record<PropertyKey, never>; Returns: string }
+      start_work_session: {
+        Args: { _worker_id: string }
+        Returns: {
+          created_at: string
+          end_reason: Database["public"]["Enums"]["session_end_reason"] | null
+          ended_at: string | null
+          id: string
+          note: string | null
+          owner_id: string
+          started_at: string
+          updated_at: string
+          worker_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "work_sessions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      timer_idle_interval: { Args: never; Returns: string }
       username_available: { Args: { _username: string }; Returns: boolean }
       work_seconds_for_day: {
         Args: { _day: string; _timezone: string; _worker_id: string }
@@ -2063,6 +2169,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["owner", "admin", "user"],
@@ -2124,4 +2233,3 @@ export const Constants = {
     },
   },
 } as const
-

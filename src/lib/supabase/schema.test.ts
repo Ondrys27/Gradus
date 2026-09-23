@@ -651,3 +651,125 @@ describe("security: an ordinary signed-in account", () => {
     await asServer();
   });
 });
+
+describe("security: server-owned rows and columns", () => {
+  let user: string;
+
+  beforeAll(async () => {
+    user = await createAuthUser();
+  });
+
+  it("leaves Jarvis output and unlocks to the server", async () => {
+    await asServer();
+    const conversation = (
+      await one<{ id: string }>(
+        `insert into jarvis_conversations (user_id) values ($1) returning id`,
+        [user],
+      )
+    ).id;
+    await db.query(`insert into unlocks (user_id, key) values ($1, 'first_deal')`, [user]);
+
+    await asUser(user);
+    await expect(
+      db.query(
+        `insert into jarvis_messages (user_id, conversation_id, role, content) values ($1, $2, 'assistant', 'fake')`,
+        [user, conversation],
+      ),
+    ).rejects.toThrow(/row-level security/);
+    await expect(
+      db.query(`insert into sales_analyses (user_id, content) values ($1, 'fake')`, [user]),
+    ).rejects.toThrow(/row-level security/);
+    await expect(
+      db.query(`insert into unlocks (user_id, key) values ($1, 'everything')`, [user]),
+    ).rejects.toThrow(/row-level security/);
+    await db.query(`update unlocks set seen_at = now()`);
+    await expect(db.query(`update unlocks set key = 'everything'`)).rejects.toThrow(
+      /unlocks_are_server_only/,
+    );
+
+    const milestone = await one<{ id: string; ai_feedback: string | null }>(
+      `insert into milestones (user_id, title, ai_feedback) values ($1, 'M', 'Perfect!') returning *`,
+      [user],
+    );
+    expect(milestone.ai_feedback).toBeNull();
+    await asServer();
+  });
+
+  it("stamps completion and stage times from the status, not from the client", async () => {
+    await asUser(user);
+    const milestone = (
+      await one<{ id: string }>(`insert into milestones (user_id, title) values ($1, 'M2') returning id`, [
+        user,
+      ])
+    ).id;
+    const task = await one<{ id: string; completed_at: string }>(
+      `insert into tasks (user_id, milestone_id, title, status, completed_at)
+       values ($1, $2, 't', 'done', '2020-01-01') returning *`,
+      [user, milestone],
+    );
+    expect(new Date(task.completed_at).getFullYear()).toBeGreaterThan(2020);
+    const after = await one<{ completed_at: string }>(
+      `update tasks set completed_at = '2020-01-01', title = 't2' where id = $1 returning *`,
+      [task.id],
+    );
+    expect(after.completed_at).toEqual(task.completed_at);
+
+    const completed = await one<{ completed_at: string | null }>(
+      `update milestones set status = 'completed', completed_at = '2020-01-01' where id = $1 returning *`,
+      [milestone],
+    );
+    expect(new Date(completed.completed_at!).getFullYear()).toBeGreaterThan(2020);
+
+    const lead = (await one<{ id: string }>(`select id from pipeline_stages where system_key = 'lead'`))
+      .id;
+    const deal = await one<{ id: string; won_at: string | null }>(
+      `insert into deals (user_id, stage_id, title, won_at) values ($1, $2, 'd', now()) returning *`,
+      [user, lead],
+    );
+    expect(deal.won_at).toBeNull();
+    const edited = await one<{ won_at: string | null; entered_stage_at: string }>(
+      `update deals set won_at = now(), entered_stage_at = '2020-01-01' where id = $1 returning *`,
+      [deal.id],
+    );
+    expect(edited.won_at).toBeNull();
+    expect(new Date(edited.entered_stage_at).getFullYear()).toBeGreaterThan(2020);
+    await asServer();
+  });
+
+  it("reopens a completed parent when an open subtask is added", async () => {
+    await asUser(user);
+    const milestone = (
+      await one<{ id: string }>(`insert into milestones (user_id, title) values ($1, 'M3') returning id`, [
+        user,
+      ])
+    ).id;
+    const parent = (
+      await one<{ id: string }>(
+        `insert into tasks (user_id, milestone_id, title, status) values ($1, $2, 'p', 'done') returning id`,
+        [user, milestone],
+      )
+    ).id;
+    await db.query(
+      `insert into tasks (user_id, milestone_id, parent_task_id, title) values ($1, $2, $3, 'c')`,
+      [user, milestone, parent],
+    );
+    const reopened = await one(`select status, completed_at from tasks where id = $1`, [parent]);
+    expect(reopened).toEqual({ status: "in_progress", completed_at: null });
+    await asServer();
+  });
+
+  it("deletes dependent questions together with their select field", async () => {
+    await asUser(user);
+    const reason = (
+      await one<{ id: string }>(
+        `select f.id from contact_table_fields f join contact_tables t on t.id = f.table_id
+         where t.system_key = 'failed' and f.system_key = 'reason'`,
+      )
+    ).id;
+    await db.query(`delete from contact_table_fields where id = $1`, [reason]);
+    expect(
+      await count(`select 1 from contact_table_fields where depends_on_field_id = $1`, [reason]),
+    ).toBe(0);
+    await asServer();
+  });
+});
