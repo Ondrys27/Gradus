@@ -189,11 +189,6 @@
       "emptyTitle": "Nothing here yet",
       "emptyDescription": "Once you add milestones, contacts and deals, your overview shows up here."
     },
-    "milestones": {
-      "description": "Big goals broken into tasks you can tick off.",
-      "emptyTitle": "No milestones yet",
-      "emptyDescription": "Set your first milestone and split it into tasks."
-    },
     "contacts": {
       "description": "Everyone you work with, sorted into your own tables.",
       "emptyTitle": "No contacts yet",
@@ -387,6 +382,148 @@
       "time": "Time",
       "dateTime": "Date and time",
       "week": "Week"
+    }
+  },
+  "milestones": {
+    "description": "Big goals broken into tasks you can tick off.",
+    "backToList": "All milestones",
+    "actions": {
+      "new": "New milestone",
+      "edit": "Edit",
+      "delete": "Delete",
+      "complete": "Complete milestone",
+      "reopen": "Reopen milestone"
+    },
+    "filter": {
+      "label": "Filter by category",
+      "all": "All",
+      "work": "Work",
+      "personal": "Personal"
+    },
+    "category": {
+      "work": "Work",
+      "personal": "Personal"
+    },
+    "card": {
+      "noTasks": "No tasks yet",
+      "tasksCount": "{done} of {total} tasks",
+      "due": "Due {date}",
+      "overdue": "Overdue since {date}",
+      "noDate": "No target date",
+      "completed": "Completed",
+      "progress": "Progress of {title}"
+    },
+    "empty": {
+      "title": "No milestones yet",
+      "description": "Set your first milestone and split it into tasks you can tick off one by one.",
+      "action": "Create your first milestone",
+      "filteredTitle": "Nothing in this category",
+      "filteredDescription": "You have no milestones here yet. Switch the filter or add a new one."
+    },
+    "loadFailed": "Could not load your milestones. Check your connection and try again.",
+    "retry": "Try again",
+    "notFound": {
+      "title": "Milestone not found",
+      "description": "It may have been deleted, or it is not yours.",
+      "action": "Back to milestones"
+    },
+    "form": {
+      "createTitle": "New milestone",
+      "editTitle": "Edit milestone",
+      "name": "Name",
+      "namePlaceholder": "Launch my first offer",
+      "description": "Description",
+      "descriptionPlaceholder": "What does done look like?",
+      "category": "Category",
+      "tag": "Label",
+      "tagHint": "Optional short label, e.g. Marketing.",
+      "targetDate": "Target date",
+      "targetDatePlaceholder": "No date",
+      "create": "Create milestone",
+      "save": "Save changes",
+      "cancel": "Cancel",
+      "close": "Close",
+      "saveFailed": "Could not save the milestone. Try again."
+    },
+    "errors": {
+      "titleRequired": "Give it a name.",
+      "titleTooLong": "The name is too long (120 characters at most).",
+      "descriptionTooLong": "The description is too long (2000 characters at most).",
+      "tagTooLong": "The label is too long (30 characters at most)."
+    },
+    "delete": {
+      "title": "Delete this milestone?",
+      "description": "“{title}” will be deleted together with {count, plural, =0 {its tasks} one {its task} other {all # of its tasks}}. This cannot be undone.",
+      "confirm": "Delete milestone",
+      "cancel": "Keep it",
+      "failed": "Could not delete the milestone. Try again."
+    },
+    "detail": {
+      "progress": "Milestone progress",
+      "tasksDone": "{done} of {total} tasks done",
+      "stats": {
+        "done": "Done",
+        "inProgress": "In progress",
+        "todo": "To do"
+      },
+      "noTasksYet": "no tasks yet",
+      "offerTitle": "Every task is done",
+      "offerDescription": "Nice work. Complete the milestone when you are happy with it.",
+      "completedTitle": "Milestone completed",
+      "completedDescription": "You can reopen it if something is still missing.",
+      "statusFailed": "Could not change the milestone. Try again."
+    },
+    "tasks": {
+      "heading": "Tasks",
+      "addLabel": "New task",
+      "addPlaceholder": "Add a task and press Enter",
+      "addButton": "Add task",
+      "emptyTitle": "No tasks yet",
+      "emptyDescription": "Break the milestone into small steps. Type a task below and press Enter.",
+      "emptyAction": "Add the first task",
+      "checkDone": "Mark “{title}” as done",
+      "checkReopen": "Reopen “{title}”",
+      "lockedLabel": "“{title}” is locked until its subtasks are done",
+      "lockedHint": "{count, plural, one {# subtask left before you can tick this} other {# subtasks left before you can tick this}}",
+      "actions": "Actions for “{title}”",
+      "addSubtask": "Add subtask",
+      "edit": "Edit",
+      "delete": {
+        "title": "Delete this task?",
+        "description": "“{title}” and {count, plural, one {its # subtask} other {its # subtasks}} will be deleted. This cannot be undone.",
+        "confirm": "Delete task",
+        "cancel": "Keep it"
+      },
+      "reorder": "Drag to reorder “{title}”",
+      "collapse": "Collapse subtasks",
+      "expand": "Expand subtasks",
+      "subtasks": "{count, plural, one {# subtask} other {# subtasks}}",
+      "due": "Due {date}",
+      "overdue": "Overdue {date}",
+      "status": {
+        "todo": "To do",
+        "in_progress": "In progress",
+        "done": "Done"
+      },
+      "form": {
+        "createTitle": "New task",
+        "createSubtaskTitle": "New subtask of “{parent}”",
+        "editTitle": "Edit task",
+        "name": "Name",
+        "description": "Description",
+        "status": "Status",
+        "statusLocked": "Finish the subtasks first to mark this as done.",
+        "dueDate": "Due date",
+        "dueDatePlaceholder": "No due date",
+        "create": "Add task",
+        "save": "Save changes",
+        "cancel": "Cancel",
+        "close": "Close"
+      },
+      "errors": {
+        "openSubtasks": "Finish all subtasks first, then you can tick this task.",
+        "saveFailed": "Could not save your change. It was undone, please try again."
+      }
     }
   }
 }

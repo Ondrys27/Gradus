@@ -1854,7 +1854,14 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      milestone_task_counts: {
+        Row: {
+          done: number | null
+          milestone_id: string | null
+          total: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {

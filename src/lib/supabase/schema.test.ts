@@ -273,6 +273,38 @@ describe("tasks", () => {
     expect(reopened.completed_at).toBeNull();
     await asServer();
   });
+
+  it("counts every task of a milestone, subtasks included, only for its owner", async () => {
+    await asUser(owner);
+    const milestone = (
+      await one<{ id: string }>(
+        `insert into milestones (user_id, title) values ('${owner}', 'Counted') returning id`,
+      )
+    ).id;
+    const parent = (
+      await one<{ id: string }>(
+        `insert into tasks (user_id, milestone_id, title) values ('${owner}', '${milestone}', 'a') returning id`,
+      )
+    ).id;
+    await db.exec(
+      `insert into tasks (user_id, milestone_id, parent_task_id, title, status)
+       values ('${owner}', '${milestone}', '${parent}', 'b', 'done')`,
+    );
+    await db.exec(
+      `insert into tasks (user_id, milestone_id, title) values ('${owner}', '${milestone}', 'c')`,
+    );
+    const counts = await one<{ total: number; done: number }>(
+      `select total, done from milestone_task_counts where milestone_id = $1`,
+      [milestone],
+    );
+    expect(counts).toEqual({ total: 3, done: 1 });
+
+    await asUser(second);
+    expect(
+      await count(`select 1 from milestone_task_counts where milestone_id = $1`, [milestone]),
+    ).toBe(0);
+    await asServer();
+  });
 });
 
 describe("prospecting timer", () => {

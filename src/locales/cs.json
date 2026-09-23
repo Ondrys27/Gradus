@@ -189,11 +189,6 @@
       "emptyTitle": "Zatím tu nic není",
       "emptyDescription": "Až přidáš milníky, kontakty a obchody, uvidíš tady přehled."
     },
-    "milestones": {
-      "description": "Velké cíle rozdělené na úkoly, které odškrtáváš.",
-      "emptyTitle": "Zatím žádné milníky",
-      "emptyDescription": "Nastav si první milník a rozděl ho na úkoly."
-    },
     "contacts": {
       "description": "Všichni, se kterými pracuješ, roztřídění do vlastních tabulek.",
       "emptyTitle": "Zatím žádné kontakty",
@@ -387,6 +382,148 @@
       "time": "Čas",
       "dateTime": "Datum a čas",
       "week": "Týden"
+    }
+  },
+  "milestones": {
+    "description": "Velké cíle rozdělené na úkoly, které můžeš odškrtávat.",
+    "backToList": "Všechny milníky",
+    "actions": {
+      "new": "Nový milník",
+      "edit": "Upravit",
+      "delete": "Smazat",
+      "complete": "Dokončit milník",
+      "reopen": "Znovu otevřít milník"
+    },
+    "filter": {
+      "label": "Filtr podle kategorie",
+      "all": "Vše",
+      "work": "Pracovní",
+      "personal": "Osobní"
+    },
+    "category": {
+      "work": "Pracovní",
+      "personal": "Osobní"
+    },
+    "card": {
+      "noTasks": "Zatím bez úkolů",
+      "tasksCount": "{done} z {total} úkolů",
+      "due": "Do {date}",
+      "overdue": "Po termínu od {date}",
+      "noDate": "Bez cílového data",
+      "completed": "Dokončeno",
+      "progress": "Postup milníku {title}"
+    },
+    "empty": {
+      "title": "Zatím žádné milníky",
+      "description": "Stanov si první milník a rozděl ho na úkoly, které budeš odškrtávat jeden po druhém.",
+      "action": "Vytvořit první milník",
+      "filteredTitle": "V této kategorii nic není",
+      "filteredDescription": "Tady zatím nemáš žádný milník. Přepni filtr nebo přidej nový."
+    },
+    "loadFailed": "Milníky se nepodařilo načíst. Zkontroluj připojení a zkus to znovu.",
+    "retry": "Zkusit znovu",
+    "notFound": {
+      "title": "Milník nenalezen",
+      "description": "Možná byl smazán, nebo není tvůj.",
+      "action": "Zpět na milníky"
+    },
+    "form": {
+      "createTitle": "Nový milník",
+      "editTitle": "Upravit milník",
+      "name": "Název",
+      "namePlaceholder": "Spustit první nabídku",
+      "description": "Popis",
+      "descriptionPlaceholder": "Jak poznáš, že je hotovo?",
+      "category": "Kategorie",
+      "tag": "Štítek",
+      "tagHint": "Volitelný krátký štítek, např. Marketing.",
+      "targetDate": "Cílové datum",
+      "targetDatePlaceholder": "Bez data",
+      "create": "Vytvořit milník",
+      "save": "Uložit změny",
+      "cancel": "Zrušit",
+      "close": "Zavřít",
+      "saveFailed": "Milník se nepodařilo uložit. Zkus to znovu."
+    },
+    "errors": {
+      "titleRequired": "Zadej název.",
+      "titleTooLong": "Název je příliš dlouhý (nejvýše 120 znaků).",
+      "descriptionTooLong": "Popis je příliš dlouhý (nejvýše 2000 znaků).",
+      "tagTooLong": "Štítek je příliš dlouhý (nejvýše 30 znaků)."
+    },
+    "delete": {
+      "title": "Smazat tento milník?",
+      "description": "Milník „{title}“ se smaže {count, plural, =0 {i s úkoly} one {i s jeho úkolem} few {i se všemi # úkoly} many {i se všemi # úkolu} other {i se všemi # úkoly}}. Nelze vrátit zpět.",
+      "confirm": "Smazat milník",
+      "cancel": "Ponechat",
+      "failed": "Milník se nepodařilo smazat. Zkus to znovu."
+    },
+    "detail": {
+      "progress": "Postup milníku",
+      "tasksDone": "{done} z {total} úkolů hotovo",
+      "stats": {
+        "done": "Hotovo",
+        "inProgress": "Rozpracováno",
+        "todo": "K udělání"
+      },
+      "noTasksYet": "zatím bez úkolů",
+      "offerTitle": "Všechny úkoly jsou hotové",
+      "offerDescription": "Dobrá práce. Milník dokonči, až budeš spokojený.",
+      "completedTitle": "Milník je dokončený",
+      "completedDescription": "Kdyby ještě něco chybělo, můžeš ho znovu otevřít.",
+      "statusFailed": "Milník se nepodařilo změnit. Zkus to znovu."
+    },
+    "tasks": {
+      "heading": "Úkoly",
+      "addLabel": "Nový úkol",
+      "addPlaceholder": "Přidej úkol a stiskni Enter",
+      "addButton": "Přidat úkol",
+      "emptyTitle": "Zatím žádné úkoly",
+      "emptyDescription": "Rozděl milník na malé kroky. Napiš úkol níže a stiskni Enter.",
+      "emptyAction": "Přidat první úkol",
+      "checkDone": "Označit „{title}“ jako hotový",
+      "checkReopen": "Znovu otevřít „{title}“",
+      "lockedLabel": "Úkol „{title}“ je zamčený, dokud nejsou hotové jeho podúkoly",
+      "lockedHint": "{count, plural, one {Zbývá # podúkol, pak půjde úkol odškrtnout} few {Zbývají # podúkoly, pak půjde úkol odškrtnout} many {Zbývá # podúkolu, pak půjde úkol odškrtnout} other {Zbývá # podúkolů, pak půjde úkol odškrtnout}}",
+      "actions": "Akce pro úkol „{title}“",
+      "addSubtask": "Přidat podúkol",
+      "edit": "Upravit",
+      "delete": {
+        "title": "Smazat tento úkol?",
+        "description": "Úkol „{title}“ se smaže {count, plural, one {i s # podúkolem} few {i se # podúkoly} many {i se # podúkolu} other {i se # podúkoly}}. Nelze vrátit zpět.",
+        "confirm": "Smazat úkol",
+        "cancel": "Ponechat"
+      },
+      "reorder": "Přetažením změníš pořadí úkolu „{title}“",
+      "collapse": "Sbalit podúkoly",
+      "expand": "Rozbalit podúkoly",
+      "subtasks": "{count, plural, one {# podúkol} few {# podúkoly} many {# podúkolu} other {# podúkolů}}",
+      "due": "Do {date}",
+      "overdue": "Po termínu {date}",
+      "status": {
+        "todo": "K udělání",
+        "in_progress": "Rozpracováno",
+        "done": "Hotovo"
+      },
+      "form": {
+        "createTitle": "Nový úkol",
+        "createSubtaskTitle": "Nový podúkol úkolu „{parent}“",
+        "editTitle": "Upravit úkol",
+        "name": "Název",
+        "description": "Popis",
+        "status": "Stav",
+        "statusLocked": "Nejdřív dokonči podúkoly, pak půjde označit jako hotový.",
+        "dueDate": "Lhůta",
+        "dueDatePlaceholder": "Bez lhůty",
+        "create": "Přidat úkol",
+        "save": "Uložit změny",
+        "cancel": "Zrušit",
+        "close": "Zavřít"
+      },
+      "errors": {
+        "openSubtasks": "Nejdřív dokonči všechny podúkoly, pak půjde úkol odškrtnout.",
+        "saveFailed": "Změnu se nepodařilo uložit. Vrátila se zpět, zkus to znovu."
+      }
     }
   }
 }
