@@ -24,7 +24,9 @@
       "buttons": "Tlačítka",
       "controls": "Formulářové prvky",
       "empty": "Prázdný stav",
-      "skeleton": "Načítání"
+      "skeleton": "Načítání",
+      "celebration": "Oslava",
+      "jarvis": "Jarvis"
     },
     "colors": {
       "canvas": "Pozadí",
@@ -114,6 +116,104 @@
       "title": "Zatím žádné kontakty",
       "description": "Přidej první kontakt nebo nech Jarvise najít firmy ve tvém okolí.",
       "action": "Přidat kontakt"
+    },
+    "celebration": {
+      "trigger": "Spustit oslavu",
+      "hint": "Dočasné vývojové tlačítko.",
+      "title": "Obchod vyhrán!",
+      "subtitle": "Pekárna na rohu podepsala smlouvu."
+    },
+    "jarvis": {
+      "idle": "V klidu",
+      "thinking": "Přemýšlí",
+      "happy": "Má radost"
+    }
+  },
+  "nav": {
+    "label": "Hlavní navigace",
+    "dashboard": "Přehled",
+    "milestones": "Milníky",
+    "contacts": "Kontakty",
+    "pipeline": "Pipeline",
+    "coldCalling": "Cold Calling",
+    "calendar": "Kalendář",
+    "finance": "Finance",
+    "workers": "Pracovníci",
+    "more": "Více",
+    "close": "Zavřít"
+  },
+  "topBar": {
+    "home": "Přejít na přehled",
+    "search": {
+      "label": "Hledat",
+      "placeholder": "Hledat kontakty, obchody, úkoly…",
+      "open": "Otevřít hledání",
+      "close": "Zavřít hledání"
+    },
+    "streak": {
+      "long": "{count, plural, one {Série # den} few {Série # dny} other {Série # dní}}"
+    },
+    "level": {
+      "long": "Úroveň {level}"
+    },
+    "account": {
+      "open": "Nabídka účtu",
+      "sound": "Zvuk",
+      "language": "Jazyk",
+      "languages": {
+        "en": "English",
+        "cs": "Čeština"
+      }
+    }
+  },
+  "jarvis": {
+    "open": "Otevřít Jarvise"
+  },
+  "celebration": {
+    "continue": "Pokračovat",
+    "xp": "+{xp} XP",
+    "progress": "Postup"
+  },
+  "sections": {
+    "dashboard": {
+      "description": "Tvůj den na jeden pohled: postup, další kroky a co si všiml Jarvis.",
+      "emptyTitle": "Zatím tu nic není",
+      "emptyDescription": "Až přidáš milníky, kontakty a obchody, uvidíš tady přehled."
+    },
+    "milestones": {
+      "description": "Velké cíle rozdělené na úkoly, které odškrtáváš.",
+      "emptyTitle": "Zatím žádné milníky",
+      "emptyDescription": "Nastav si první milník a rozděl ho na úkoly."
+    },
+    "contacts": {
+      "description": "Všichni, se kterými pracuješ, roztřídění do vlastních tabulek.",
+      "emptyTitle": "Zatím žádné kontakty",
+      "emptyDescription": "Přidej první kontakt nebo nech Jarvise najít firmy ve tvém okolí."
+    },
+    "pipeline": {
+      "description": "Všechny obchody a fáze, ve které jsou.",
+      "emptyTitle": "Zatím žádné obchody",
+      "emptyDescription": "Vytvoř obchod a posouvej ho fázemi až k výhře."
+    },
+    "coldCalling": {
+      "description": "Provolej svůj seznam a sleduj čas na telefonu.",
+      "emptyTitle": "Zatím není komu volat",
+      "emptyDescription": "Přidej kontakty do tabulky a spusť první volání."
+    },
+    "calendar": {
+      "description": "Schůzky, hovory a termíny na jednom místě.",
+      "emptyTitle": "Kalendář je prázdný",
+      "emptyDescription": "Naplánované schůzky a termíny se objeví tady."
+    },
+    "finance": {
+      "description": "Příjmy, výdaje a faktury.",
+      "emptyTitle": "Zatím žádné pohyby",
+      "emptyDescription": "Propoj Fakturoid nebo přidej první příjem či výdaj."
+    },
+    "workers": {
+      "description": "Lidé, kteří s tebou pracují, a jejich hodiny.",
+      "emptyTitle": "Zatím žádní pracovníci",
+      "emptyDescription": "Pozvi prvního pracovníka a sdílej s ním úkoly a čas."
     }
   }
 }

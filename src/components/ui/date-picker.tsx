@@ -2,14 +2,7 @@
 
 import { useState } from "react";
 import { Popover } from "@base-ui/react/popover";
-import {
-  addDays,
-  addMonths,
-  isSameDay,
-  isSameMonth,
-  startOfMonth,
-  startOfWeek,
-} from "date-fns";
+import { addDays, addMonths, isSameDay, isSameMonth, startOfMonth, startOfWeek } from "date-fns";
 import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import {

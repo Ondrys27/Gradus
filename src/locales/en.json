@@ -24,7 +24,9 @@
       "buttons": "Buttons",
       "controls": "Form controls",
       "empty": "Empty state",
-      "skeleton": "Loading skeleton"
+      "skeleton": "Loading skeleton",
+      "celebration": "Celebration",
+      "jarvis": "Jarvis"
     },
     "colors": {
       "canvas": "Background",
@@ -114,6 +116,104 @@
       "title": "No contacts yet",
       "description": "Add your first contact or let Jarvis find businesses near you.",
       "action": "Add contact"
+    },
+    "celebration": {
+      "trigger": "Play celebration",
+      "hint": "Temporary dev trigger.",
+      "title": "Deal won!",
+      "subtitle": "Bakery on the corner signed the contract."
+    },
+    "jarvis": {
+      "idle": "Idle",
+      "thinking": "Thinking",
+      "happy": "Happy"
+    }
+  },
+  "nav": {
+    "label": "Main navigation",
+    "dashboard": "Dashboard",
+    "milestones": "Milestones",
+    "contacts": "Contacts",
+    "pipeline": "Pipeline",
+    "coldCalling": "Cold Calling",
+    "calendar": "Calendar",
+    "finance": "Finance",
+    "workers": "Workers",
+    "more": "More",
+    "close": "Close"
+  },
+  "topBar": {
+    "home": "Go to dashboard",
+    "search": {
+      "label": "Search",
+      "placeholder": "Search contacts, deals, tasks…",
+      "open": "Open search",
+      "close": "Close search"
+    },
+    "streak": {
+      "long": "{count, plural, one {# day streak} other {# day streak}}"
+    },
+    "level": {
+      "long": "Level {level}"
+    },
+    "account": {
+      "open": "Account menu",
+      "sound": "Sound",
+      "language": "Language",
+      "languages": {
+        "en": "English",
+        "cs": "Čeština"
+      }
+    }
+  },
+  "jarvis": {
+    "open": "Open Jarvis"
+  },
+  "celebration": {
+    "continue": "Continue",
+    "xp": "+{xp} XP",
+    "progress": "Progress"
+  },
+  "sections": {
+    "dashboard": {
+      "description": "Your day at a glance: progress, next steps and what Jarvis noticed.",
+      "emptyTitle": "Nothing here yet",
+      "emptyDescription": "Once you add milestones, contacts and deals, your overview shows up here."
+    },
+    "milestones": {
+      "description": "Big goals broken into tasks you can tick off.",
+      "emptyTitle": "No milestones yet",
+      "emptyDescription": "Set your first milestone and split it into tasks."
+    },
+    "contacts": {
+      "description": "Everyone you work with, sorted into your own tables.",
+      "emptyTitle": "No contacts yet",
+      "emptyDescription": "Add your first contact or let Jarvis find businesses near you."
+    },
+    "pipeline": {
+      "description": "Every deal and the stage it is in.",
+      "emptyTitle": "No deals yet",
+      "emptyDescription": "Create a deal and move it through the stages until it is won."
+    },
+    "coldCalling": {
+      "description": "Call through your list and track your time on the phone.",
+      "emptyTitle": "No one to call yet",
+      "emptyDescription": "Add contacts to a table and start your first calling session."
+    },
+    "calendar": {
+      "description": "Meetings, calls and deadlines in one place.",
+      "emptyTitle": "Your calendar is empty",
+      "emptyDescription": "Meetings and deadlines you plan will appear here."
+    },
+    "finance": {
+      "description": "Income, expenses and invoices.",
+      "emptyTitle": "No transactions yet",
+      "emptyDescription": "Connect Fakturoid or add your first income or expense."
+    },
+    "workers": {
+      "description": "The people who work with you and their hours.",
+      "emptyTitle": "No workers yet",
+      "emptyDescription": "Invite your first worker to share tasks and track their time."
     }
   }
 }

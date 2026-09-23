@@ -10,6 +10,8 @@ import {
   TrophyIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useCelebration } from "@/components/celebration/celebration-provider";
+import { JarvisBot, type JarvisState } from "@/components/jarvis/jarvis-bot";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -19,7 +21,13 @@ import { Input, Label, Textarea } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { ProgressRing } from "@/components/ui/progress-ring";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatTile } from "@/components/ui/stat-tile";
 import { StatusPill } from "@/components/ui/status-pill";
@@ -46,6 +54,7 @@ const colorTokens = [
 ] as const;
 
 const stages = ["lead", "contacted", "meeting", "won"] as const;
+const jarvisStates: JarvisState[] = ["idle", "thinking", "happy"];
 
 export function DesignSystemShowcase() {
   const t = useTranslations("designSystem");
@@ -54,6 +63,7 @@ export function DesignSystemShowcase() {
   const [date, setDate] = useState<IsoDate | null>(null);
   const [notify, setNotify] = useState(true);
   const [done, setDone] = useState(false);
+  const { celebrate } = useCelebration();
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 py-8 md:px-8 md:py-12">
@@ -164,7 +174,13 @@ export function DesignSystemShowcase() {
             <ProgressRing label={t("progress.weeklyGoal")} value={72}>
               {formatNumber(0.72, { style: "percent" })}
             </ProgressRing>
-            <ProgressRing label={t("progress.level")} value={32} tone="gold" size={72} strokeWidth={6}>
+            <ProgressRing
+              label={t("progress.level")}
+              value={32}
+              tone="gold"
+              size={72}
+              strokeWidth={6}
+            >
               <span className="text-sm">{formatNumber(0.32, { style: "percent" })}</span>
             </ProgressRing>
           </div>
@@ -267,6 +283,39 @@ export function DesignSystemShowcase() {
           description={t("empty.description")}
           action={<Button>{t("empty.action")}</Button>}
         />
+      </Section>
+
+      <Section title={t("sections.jarvis")}>
+        <GlowCard interactive={false} className="flex flex-wrap items-end justify-around gap-8">
+          {jarvisStates.map((state) => (
+            <div key={state} className="flex flex-col items-center gap-3">
+              <div className="flex items-end gap-4">
+                <JarvisBot state={state} size={96} />
+                <JarvisBot state={state} size={40} />
+                <JarvisBot state={state} size={24} />
+              </div>
+              <span className="micro-label">{t(`jarvis.${state}`)}</span>
+            </div>
+          ))}
+        </GlowCard>
+      </Section>
+
+      <Section title={t("sections.celebration")}>
+        <GlowCard interactive={false} className="flex flex-wrap items-center justify-between gap-4">
+          <p className="text-sm text-ink-muted">{t("celebration.hint")}</p>
+          <Button
+            onClick={() =>
+              celebrate({
+                title: t("celebration.title"),
+                subtitle: t("celebration.subtitle"),
+                xp: 150,
+              })
+            }
+          >
+            <TrophyIcon data-icon="inline-start" />
+            {t("celebration.trigger")}
+          </Button>
+        </GlowCard>
       </Section>
 
       <Section title={t("sections.skeleton")}>

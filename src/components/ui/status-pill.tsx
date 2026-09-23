@@ -8,7 +8,13 @@ type StatusPillProps = ComponentProps<"span"> & {
   dot?: boolean;
 };
 
-export function StatusPill({ tone = "neutral", dot, className, children, ...props }: StatusPillProps) {
+export function StatusPill({
+  tone = "neutral",
+  dot,
+  className,
+  children,
+  ...props
+}: StatusPillProps) {
   return (
     <span
       className={cn(
