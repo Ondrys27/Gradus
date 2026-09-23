@@ -68,6 +68,9 @@ async function asUser(uid: string) {
     `select set_config('request.jwt.claim.sub', '${uid}', false); set role authenticated;`,
   );
 }
+async function asAnon() {
+  await db.exec(`select set_config('request.jwt.claim.sub', '', false); set role anon;`);
+}
 async function asServer() {
   await db.exec(`reset role; select set_config('request.jwt.claim.sub', '', false);`);
 }
@@ -340,13 +343,22 @@ describe("workers", () => {
         `insert into worker_earnings (owner_id, worker_id, amount) values ('${owner}', '${worker}', 100)`,
       ),
     ).rejects.toThrow(/row-level security/);
+    const session = await one<{ id: string }>(`select * from start_work_session($1)`, [worker]);
+    expect(session.id).toBeTruthy();
+    expect((await one<{ id: string }>(`select * from start_work_session($1)`, [worker])).id).toBe(
+      session.id,
+    );
     expect(
-      (
-        await one<{ id: string }>(
-          `insert into work_sessions (owner_id, worker_id) values ('${owner}', '${worker}') returning id`,
-        )
-      ).id,
-    ).toBeTruthy();
+      (await one<{ end_reason: string }>(`select * from pause_work_session($1)`, [worker]))
+        .end_reason,
+    ).toBe("pause");
+    await asServer();
+
+    await asUser(owner);
+    await expect(db.query(`select * from start_work_session($1)`, [worker])).rejects.toThrow(
+      /worker_not_found/,
+    );
+    expect(await count(`select 1 from work_sessions where worker_id = $1`, [worker])).toBe(1);
     await asServer();
   });
 });
@@ -427,5 +439,215 @@ describe("avatars storage", () => {
       `select public, file_size_limit from storage.buckets where id = 'avatars'`,
     );
     expect(bucket).toEqual({ public: true, file_size_limit: 2097152 });
+  });
+});
+
+describe("security: an ordinary signed-in account", () => {
+  let attacker: string;
+  let victim: string;
+  let victimContact: string;
+
+  beforeAll(async () => {
+    attacker = await createAuthUser();
+    victim = await createAuthUser();
+    victimContact = (
+      await one<{ id: string }>(
+        `insert into contacts (user_id, company_name) values ($1, 'Victim s.r.o.') returning id`,
+        [victim],
+      )
+    ).id;
+  });
+
+  it("has RLS on every table in public", async () => {
+    const open = await rows<{ relname: string }>(
+      `select c.relname from pg_class c join pg_namespace n on n.oid = c.relnamespace
+       where n.nspname = 'public' and c.relkind = 'r' and not c.relrowsecurity`,
+    );
+    expect(open).toEqual([]);
+  });
+
+  it("cannot grant itself a role; has_role is SECURITY DEFINER and closed to anon", async () => {
+    const writePolicies = await rows(
+      `select policyname from pg_policies where tablename = 'user_roles' and cmd <> 'SELECT'`,
+    );
+    expect(writePolicies).toEqual([]);
+    const fn = await one<{ prosecdef: boolean; config: string[] }>(
+      `select prosecdef, proconfig as config from pg_proc where proname = 'has_role'`,
+    );
+    expect(fn).toEqual({ prosecdef: true, config: ['search_path=""'] });
+
+    await asUser(attacker);
+    await expect(
+      db.query(`update user_roles set role = 'owner' where user_id = $1`, [attacker]),
+    ).resolves.toMatchObject({ affectedRows: 0 });
+    expect((await one(`select role from user_roles`)).role).toBe("user");
+    await asAnon();
+    await expect(db.query(`select has_role($1, 'owner')`, [owner])).rejects.toThrow(
+      /permission denied/,
+    );
+    await asServer();
+  });
+
+  it("cannot see or reference another user's rows", async () => {
+    await asUser(attacker);
+    expect(await count(`select 1 from contacts`)).toBe(0);
+    const lead = (await one<{ id: string }>(`select id from pipeline_stages where system_key = 'lead'`))
+      .id;
+    await expect(
+      db.query(
+        `insert into deals (user_id, contact_id, stage_id, title) values ($1, $2, $3, 'x')`,
+        [attacker, victimContact, lead],
+      ),
+    ).rejects.toThrow(/foreign key/);
+    await expect(
+      db.query(`insert into calendar_events (user_id, title, starts_at, contact_id) values ($1, 'x', now(), $2)`, [
+        attacker,
+        victimContact,
+      ]),
+    ).rejects.toThrow(/foreign key/);
+    await expect(
+      db.query(
+        `insert into attachments (user_id, entity_type, entity_id, storage_path, file_name, mime_type, size_bytes)
+         values ($1, 'contact', gen_random_uuid(), $2, 'a.pdf', 'application/pdf', 1)`,
+        [attacker, `${victim}/secret.pdf`],
+      ),
+    ).rejects.toThrow(/attachments_storage_path_owner/);
+    await asServer();
+  });
+
+  it("changes contact membership only through move_contact", async () => {
+    await asUser(attacker);
+    const contact = (
+      await one<{ id: string }>(
+        `insert into contacts (user_id, company_name) values ($1, 'Mine') returning id`,
+        [attacker],
+      )
+    ).id;
+    const tables = Object.fromEntries(
+      (await rows<{ system_key: string; id: string }>(`select system_key, id from contact_tables`)).map(
+        (r) => [r.system_key, r.id],
+      ),
+    );
+    await expect(
+      db.query(`insert into contact_table_entries (user_id, contact_id, table_id) values ($1, $2, $3)`, [
+        attacker,
+        contact,
+        tables.clients,
+      ]),
+    ).rejects.toThrow(/row-level security/);
+    await expect(
+      db.query(
+        `insert into contact_table_moves (user_id, contact_id, from_table_id, to_table_id) values ($1, $2, $3, $4)`,
+        [attacker, contact, tables.unreached, tables.meeting_scheduled],
+      ),
+    ).rejects.toThrow(/row-level security/);
+
+    await db.query(`select move_contact($1, $2)`, [contact, tables.unreached]);
+    expect((await db.query(`delete from contact_table_entries`)).affectedRows).toBe(0);
+
+    await expect(db.query(`delete from contact_tables where id = $1`, [tables.clients])).rejects.toThrow(
+      /system_table_readonly/,
+    );
+    await expect(
+      db.query(`update contact_tables set system_key = 'unreached' where id = $1`, [tables.no_answer]),
+    ).rejects.toThrow(/system_table_readonly/);
+    await asServer();
+  });
+
+  it("cannot write or reset the prospecting timer directly", async () => {
+    await asUser(attacker);
+    await expect(
+      db.query(
+        `insert into prospecting_segments (user_id, started_at, ended_at, end_reason)
+         values ($1, now() - interval '10 hours', now(), 'pause')`,
+        [attacker],
+      ),
+    ).rejects.toThrow(/row-level security/);
+    const segment = await one<{ id: string }>(`select * from start_prospecting()`);
+    expect(
+      (await db.query(`update prospecting_segments set started_at = now() - interval '9 hours'`))
+        .affectedRows,
+    ).toBe(0);
+    expect((await db.query(`delete from prospecting_segments`)).affectedRows).toBe(0);
+    await db.query(`select pause_prospecting()`);
+    expect(await count(`select 1 from prospecting_segments where id = $1`, [segment.id])).toBe(1);
+    await asServer();
+  });
+
+  it("as a worker, cannot log time, edit the task or create earnings", async () => {
+    const worker = (
+      await one<{ id: string }>(
+        `insert into workers (owner_id, user_id, name, status) values ($1, $2, 'Útočník', 'active') returning id`,
+        [victim, attacker],
+      )
+    ).id;
+    const task = (
+      await one<{ id: string }>(
+        `insert into worker_tasks (owner_id, worker_id, title) values ($1, $2, 'Call 20 leads') returning id`,
+        [victim, worker],
+      )
+    ).id;
+
+    await asUser(attacker);
+    await expect(
+      db.query(
+        `insert into work_sessions (owner_id, worker_id, started_at, ended_at, end_reason)
+         values ($1, $2, now() - interval '12 hours', now(), 'pause')`,
+        [victim, worker],
+      ),
+    ).rejects.toThrow(/row-level security/);
+    await expect(
+      db.query(`update worker_tasks set title = 'Nothing' where id = $1`, [task]),
+    ).rejects.toThrow(/worker_may_only_change_status/);
+    await db.query(`update worker_tasks set status = 'done' where id = $1`, [task]);
+    expect((await one(`select status from worker_tasks where id = $1`, [task])).status).toBe("done");
+    await asServer();
+  });
+
+  it("as an owner, cannot bind someone else's account or accept its own invite", async () => {
+    await asUser(attacker);
+    await expect(
+      db.query(`insert into workers (owner_id, user_id, name) values ($1, $2, 'x')`, [attacker, victim]),
+    ).rejects.toThrow(/worker_account_link_is_server_only/);
+    const worker = (
+      await one<{ id: string }>(`insert into workers (owner_id, name) values ($1, 'x') returning id`, [
+        attacker,
+      ])
+    ).id;
+    await expect(
+      db.query(`update workers set user_id = $1 where id = $2`, [victim, worker]),
+    ).rejects.toThrow(/worker_account_link_is_server_only/);
+    const invite = (
+      await one<{ id: string }>(
+        `insert into worker_invites (owner_id, worker_id) values ($1, $2) returning id`,
+        [attacker, worker],
+      )
+    ).id;
+    await expect(
+      db.query(`update worker_invites set accepted_at = now(), accepted_by = $1 where id = $2`, [
+        victim,
+        invite,
+      ]),
+    ).rejects.toThrow(/invite_acceptance_is_server_only/);
+    await asServer();
+  });
+
+  it("cannot resolve its own feature request", async () => {
+    await asUser(attacker);
+    const request = (
+      await one<{ id: string }>(
+        `insert into feature_requests (user_id, title) values ($1, 'Dark mode') returning id`,
+        [attacker],
+      )
+    ).id;
+    await db.query(`update feature_requests set title = 'Dark mode please' where id = $1`, [request]);
+    await expect(
+      db.query(`update feature_requests set status = 'done' where id = $1`, [request]),
+    ).rejects.toThrow(/feature_request_status_is_admin_only/);
+    await asServer();
+
+    await asUser(owner);
+    await db.query(`update feature_requests set status = 'planned' where id = $1`, [request]);
+    await asServer();
   });
 });

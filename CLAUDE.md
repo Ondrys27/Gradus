@@ -101,6 +101,7 @@ Veřejné v `.env`, tajné v `.env.local`. Vždy udržovat `.env.example`.
 | Proměnná | K čemu |
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Klient |
+| `NEXT_PUBLIC_SITE_URL` | Základ odkazů v e-mailech (reset hesla) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server, obchází RLS |
 | `INVITE_CODE` | Uzavřená registrace |
 | `GOOGLE_MAPS_API_KEY` | Generování kontaktů |

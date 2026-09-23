@@ -3,6 +3,7 @@
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
+import { isFreshRecoverySession } from "@/lib/auth/recovery";
 import { HOME_PATH, RESET_PASSWORD_PATH, safeNextPath } from "@/lib/auth/routes";
 import { locales, type Locale } from "@/i18n/locales";
 import {
@@ -46,7 +47,13 @@ async function syncLocaleFromSettings(userId: string) {
   if (data?.locale) await setLocaleCookie(data.locale);
 }
 
+/**
+ * Base URL for links in e-mails. The configured site URL wins, so a forged
+ * Origin or Host header can never point a reset link at another site.
+ */
 async function requestOrigin(): Promise<string> {
+  const configured = process.env.NEXT_PUBLIC_SITE_URL;
+  if (configured) return configured.replace(/\/+$/, "");
   const h = await headers();
   const origin = h.get("origin");
   if (origin) return origin;
@@ -168,7 +175,9 @@ export async function resetPassword(_prev: FormState, formData: FormData): Promi
 
   const supabase = await createClient();
   const { data: claims } = await supabase.auth.getClaims();
-  if (!claims?.claims?.sub) return { error: "linkExpired" };
+  if (!claims?.claims?.sub || !isFreshRecoverySession(claims.claims.amr)) {
+    return { error: "linkExpired" };
+  }
 
   const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
   if (error) {
