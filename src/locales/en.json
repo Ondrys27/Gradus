@@ -1,5 +1,119 @@
 {
   "meta": {
     "description": "{appName} — gamified app for new entrepreneurs."
+  },
+  "common": {
+    "datePicker": {
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "today": "Today",
+      "clear": "Clear"
+    }
+  },
+  "designSystem": {
+    "eyebrow": "Internal",
+    "title": "Design system",
+    "description": "Every shared element in one place. Use this page to check tokens and components.",
+    "sections": {
+      "colors": "Colours",
+      "typography": "Typography",
+      "cards": "Cards",
+      "stats": "Stat tiles",
+      "progress": "Progress",
+      "pills": "Status pills",
+      "buttons": "Buttons",
+      "controls": "Form controls",
+      "empty": "Empty state",
+      "skeleton": "Loading skeleton"
+    },
+    "colors": {
+      "canvas": "Background",
+      "canvasDeep": "Sidebar",
+      "surface": "Card",
+      "surfaceHover": "Card hover",
+      "grid": "Background grid",
+      "line": "Border",
+      "lineStrong": "Light border",
+      "violet": "Primary",
+      "teal": "Progress · success · Jarvis",
+      "gold": "Rewards · XP",
+      "green": "Won",
+      "pink": "Lost · errors",
+      "ink": "Text",
+      "inkSoft": "Body text",
+      "inkMuted": "Muted text"
+    },
+    "typography": {
+      "pageTitleSpec": "Page title · 34 px bold",
+      "pageTitle": "Your pipeline this week",
+      "statSpec": "Large number · 32–40 px bold",
+      "microSpec": "Micro label · 11 px caps · 0.15em",
+      "microLabel": "Deals in progress",
+      "body": "Body text is used for descriptions and longer content. It stays calm so numbers and actions stand out.",
+      "muted": "Muted text is for hints, secondary details and timestamps."
+    },
+    "cards": {
+      "interactiveTitle": "Interactive card",
+      "interactiveBody": "Hover it: the border lightens, the glow grows and the card lifts by 2 px.",
+      "staticTitle": "Static card",
+      "staticBody": "For content that is not clickable. Same surface, no hover."
+    },
+    "stats": {
+      "xp": "XP this week",
+      "xpHint": "Keep going — next level soon",
+      "won": "Deals won",
+      "conversion": "Conversion",
+      "revenue": "Revenue",
+      "replay": "Replay count-up"
+    },
+    "progress": {
+      "milestone": "Milestone progress",
+      "level": "Level progress",
+      "overBudget": "Budget used",
+      "weeklyGoal": "Weekly goal"
+    },
+    "pills": {
+      "draft": "Draft",
+      "active": "Active",
+      "live": "Live",
+      "reward": "+50 XP",
+      "won": "Won",
+      "lost": "Lost"
+    },
+    "buttons": {
+      "primary": "Primary action",
+      "secondary": "Secondary",
+      "ghost": "Ghost",
+      "destructive": "Delete",
+      "link": "Link",
+      "disabled": "Disabled"
+    },
+    "controls": {
+      "name": "Company name",
+      "namePlaceholder": "e.g. Bakery on the corner",
+      "invalid": "Email",
+      "invalidValue": "not-an-email",
+      "invalidHint": "Enter a valid email address.",
+      "stage": "Pipeline stage",
+      "stagePlaceholder": "Choose a stage",
+      "stages": {
+        "lead": "Lead",
+        "contacted": "Contacted",
+        "meeting": "Meeting booked",
+        "won": "Won"
+      },
+      "date": "Follow-up date",
+      "datePlaceholder": "Pick a date",
+      "notes": "Notes",
+      "notesPlaceholder": "What did you agree on?",
+      "notifications": "Notifications",
+      "task": "Call back tomorrow morning",
+      "nativeFallback": "Native elements (fallback styling)"
+    },
+    "empty": {
+      "title": "No contacts yet",
+      "description": "Add your first contact or let Jarvis find businesses near you.",
+      "action": "Add contact"
+    }
   }
 }

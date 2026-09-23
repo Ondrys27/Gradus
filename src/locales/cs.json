@@ -1,5 +1,119 @@
 {
   "meta": {
     "description": "{appName} — gamifikovaná aplikace pro začínající podnikatele."
+  },
+  "common": {
+    "datePicker": {
+      "previousMonth": "Předchozí měsíc",
+      "nextMonth": "Další měsíc",
+      "today": "Dnes",
+      "clear": "Vymazat"
+    }
+  },
+  "designSystem": {
+    "eyebrow": "Interní",
+    "title": "Design systém",
+    "description": "Všechny sdílené prvky na jednom místě. Stránka slouží ke kontrole tokenů a komponent.",
+    "sections": {
+      "colors": "Barvy",
+      "typography": "Typografie",
+      "cards": "Karty",
+      "stats": "Statistiky",
+      "progress": "Postup",
+      "pills": "Štítky stavu",
+      "buttons": "Tlačítka",
+      "controls": "Formulářové prvky",
+      "empty": "Prázdný stav",
+      "skeleton": "Načítání"
+    },
+    "colors": {
+      "canvas": "Pozadí",
+      "canvasDeep": "Postranní panel",
+      "surface": "Karta",
+      "surfaceHover": "Karta při najetí",
+      "grid": "Mřížka pozadí",
+      "line": "Okraj",
+      "lineStrong": "Světlý okraj",
+      "violet": "Primární",
+      "teal": "Postup · úspěch · Jarvis",
+      "gold": "Odměny · XP",
+      "green": "Vyhráno",
+      "pink": "Prohráno · chyby",
+      "ink": "Text",
+      "inkSoft": "Běžný text",
+      "inkMuted": "Tlumený text"
+    },
+    "typography": {
+      "pageTitleSpec": "Nadpis stránky · 34 px tučně",
+      "pageTitle": "Tvoje pipeline tento týden",
+      "statSpec": "Velké číslo · 32–40 px tučně",
+      "microSpec": "Mikro-popisek · 11 px verzálky · 0.15em",
+      "microLabel": "Rozpracované obchody",
+      "body": "Běžný text slouží pro popisy a delší obsah. Je klidný, aby vynikla čísla a akce.",
+      "muted": "Tlumený text je pro nápovědy, vedlejší údaje a časy."
+    },
+    "cards": {
+      "interactiveTitle": "Interaktivní karta",
+      "interactiveBody": "Najeď na ni: okraj zesvětlí, svit zesílí a karta se zvedne o 2 px.",
+      "staticTitle": "Statická karta",
+      "staticBody": "Pro obsah, na který se neklikne. Stejná plocha, bez reakce na najetí."
+    },
+    "stats": {
+      "xp": "XP tento týden",
+      "xpHint": "Jen tak dál — další úroveň je blízko",
+      "won": "Vyhrané obchody",
+      "conversion": "Konverze",
+      "revenue": "Tržby",
+      "replay": "Přehrát znovu"
+    },
+    "progress": {
+      "milestone": "Postup milníku",
+      "level": "Postup úrovně",
+      "overBudget": "Využitý rozpočet",
+      "weeklyGoal": "Týdenní cíl"
+    },
+    "pills": {
+      "draft": "Koncept",
+      "active": "Aktivní",
+      "live": "Živě",
+      "reward": "+50 XP",
+      "won": "Vyhráno",
+      "lost": "Prohráno"
+    },
+    "buttons": {
+      "primary": "Hlavní akce",
+      "secondary": "Vedlejší",
+      "ghost": "Nenápadné",
+      "destructive": "Smazat",
+      "link": "Odkaz",
+      "disabled": "Neaktivní"
+    },
+    "controls": {
+      "name": "Název firmy",
+      "namePlaceholder": "např. Pekárna na rohu",
+      "invalid": "E-mail",
+      "invalidValue": "neni-email",
+      "invalidHint": "Zadej platnou e-mailovou adresu.",
+      "stage": "Fáze obchodu",
+      "stagePlaceholder": "Vyber fázi",
+      "stages": {
+        "lead": "Nový kontakt",
+        "contacted": "Osloveno",
+        "meeting": "Domluvená schůzka",
+        "won": "Vyhráno"
+      },
+      "date": "Datum dalšího kontaktu",
+      "datePlaceholder": "Vyber datum",
+      "notes": "Poznámky",
+      "notesPlaceholder": "Na čem jste se domluvili?",
+      "notifications": "Oznámení",
+      "task": "Zavolat zítra ráno zpět",
+      "nativeFallback": "Nativní prvky (záložní styl)"
+    },
+    "empty": {
+      "title": "Zatím žádné kontakty",
+      "description": "Přidej první kontakt nebo nech Jarvise najít firmy ve tvém okolí.",
+      "action": "Přidat kontakt"
+    }
   }
 }

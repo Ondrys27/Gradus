@@ -4,22 +4,77 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Gradus design tokens. This is the only place where raw colour values live.
+ * The default Tailwind palette is removed on purpose: components use these tokens only.
+ */
 @theme {
-  --color-brand-violet: #7c5cff;
-  --color-brand-teal: #2fe3c8;
-  --color-brand-gold: #ffc64b;
-  --color-brand-green: #3ddc97;
-  --color-brand-pink: #ff6b8a;
-  --color-surface-base: #070b1f;
-  --color-surface-card: #0d1234;
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* Surfaces */
+  --color-canvas: #070b1f;
+  --color-canvas-deep: #05081a;
+  --color-surface: #0d1234;
+  --color-surface-hover: #121a3c;
+  --color-grid: #141a3c;
+  --color-line: #2a3468;
+  --color-line-strong: #3b4682;
+
+  /* Brand */
+  --color-violet: #7c5cff; /* primary */
+  --color-teal: #2fe3c8; /* progress, success, Jarvis */
+  --color-gold: #ffc64b; /* rewards, XP */
+  --color-green: #3ddc97; /* won */
+  --color-pink: #ff6b8a; /* lost, errors */
+
+  /* Text */
+  --color-ink: #ffffff;
+  --color-ink-soft: #aeb8de;
+  --color-ink-muted: #8892be;
+
+  --radius-card: 16px;
+
+  --shadow-glow:
+    0 0 0 1px color-mix(in oklab, var(--color-violet) 6%, transparent),
+    0 12px 40px -18px color-mix(in oklab, var(--color-violet) 55%, transparent);
+  --shadow-glow-strong:
+    0 0 0 1px color-mix(in oklab, var(--color-violet) 14%, transparent),
+    0 18px 56px -14px color-mix(in oklab, var(--color-violet) 70%, transparent),
+    0 0 28px -8px color-mix(in oklab, var(--color-violet) 45%, transparent);
+  --shadow-popover: 0 20px 48px -12px color-mix(in oklab, var(--color-black) 70%, transparent);
+
+  --animate-shimmer: shimmer 2.6s ease-in-out infinite;
+  --animate-skeleton: skeleton 1.6s ease-in-out infinite;
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    65%,
+    100% {
+      transform: translateX(300%);
+    }
+  }
+
+  @keyframes skeleton {
+    0%,
+    100% {
+      opacity: 0.55;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
 }
 
+/* shadcn/ui semantic names mapped onto the Gradus tokens. */
 @theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -58,83 +113,190 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* The app has a single dark theme. */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  color-scheme: dark;
+  --background: var(--color-canvas);
+  --foreground: var(--color-ink);
+  --card: var(--color-surface);
+  --card-foreground: var(--color-ink);
+  --popover: var(--color-surface);
+  --popover-foreground: var(--color-ink);
+  --primary: var(--color-violet);
+  --primary-foreground: var(--color-ink);
+  --secondary: var(--color-surface-hover);
+  --secondary-foreground: var(--color-ink);
+  --muted: var(--color-surface-hover);
+  --muted-foreground: var(--color-ink-muted);
+  --accent: var(--color-surface-hover);
+  --accent-foreground: var(--color-ink);
+  --destructive: var(--color-pink);
+  --border: var(--color-line);
+  --input: var(--color-line);
+  --ring: var(--color-violet);
+  --chart-1: var(--color-violet);
+  --chart-2: var(--color-teal);
+  --chart-3: var(--color-gold);
+  --chart-4: var(--color-green);
+  --chart-5: var(--color-pink);
+  --radius: 0.75rem;
+  --sidebar: var(--color-canvas-deep);
+  --sidebar-foreground: var(--color-ink-soft);
+  --sidebar-primary: var(--color-violet);
+  --sidebar-primary-foreground: var(--color-ink);
+  --sidebar-accent: var(--color-surface);
+  --sidebar-accent-foreground: var(--color-ink);
+  --sidebar-border: var(--color-line);
+  --sidebar-ring: var(--color-violet);
 }
 
-.dark {
-  --background: var(--color-surface-base);
-  --foreground: oklch(0.985 0 0);
-  --card: var(--color-surface-card);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: var(--color-surface-card);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: var(--color-brand-violet);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+/* Typography */
+@utility page-title {
+  font-size: 34px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+}
+
+@utility micro-label {
+  font-size: 11px;
+  line-height: 1.3;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--color-ink-muted);
+}
+
+@utility stat-number {
+  font-size: clamp(32px, 2rem + 0.5vw, 40px);
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Shared field look: inputs, select triggers, date triggers. */
+@utility field {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding-inline: 14px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-line);
+  background-color: color-mix(in oklab, var(--color-canvas-deep) 70%, transparent);
+  color: var(--color-ink);
+  font-size: 15px;
+  outline: none;
+  transition:
+    border-color 150ms,
+    box-shadow 150ms,
+    background-color 150ms;
+
+  &::placeholder {
+    color: var(--color-ink-muted);
+  }
+  @media (hover: hover) {
+    &:hover:not(:disabled, [data-disabled]) {
+      border-color: var(--color-line-strong);
+    }
+  }
+  &:focus-visible,
+  &[data-popup-open] {
+    border-color: var(--color-violet);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-violet) 25%, transparent);
+  }
+  &[aria-invalid="true"] {
+    border-color: var(--color-pink);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-pink) 18%, transparent);
+  }
+  &:disabled,
+  &[data-disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
-    @apply font-sans;
+    @apply bg-canvas font-sans;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply isolate min-h-dvh overflow-x-hidden text-ink-soft antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply text-ink;
+  }
+  ::selection {
+    background-color: color-mix(in oklab, var(--color-violet) 45%, transparent);
+    color: var(--color-ink);
+  }
+
+  /* Fallback styling so raw native controls never look like browser defaults. */
+  input:where(
+      [type="text"],
+      [type="email"],
+      [type="password"],
+      [type="search"],
+      [type="tel"],
+      [type="url"],
+      [type="number"],
+      [type="date"],
+      [type="time"],
+      [type="datetime-local"]
+    ),
+  textarea,
+  select {
+    @apply field;
+  }
+  textarea {
+    @apply py-3;
+  }
+  select {
+    appearance: none;
+    padding-right: 40px;
+    background-image: linear-gradient(45deg, transparent 50%, var(--color-ink-muted) 50%),
+      linear-gradient(135deg, var(--color-ink-muted) 50%, transparent 50%);
+    background-position:
+      calc(100% - 20px) 50%,
+      calc(100% - 15px) 50%;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+  }
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: var(--color-violet);
+  }
+  ::-webkit-calendar-picker-indicator {
+    filter: invert(0.7);
+    cursor: pointer;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    appearance: none;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line) transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
