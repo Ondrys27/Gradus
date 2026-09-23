@@ -1,5 +1,6 @@
 {
   "meta": {
+    "titleTemplate": "%s · {appName}",
     "description": "{appName} — gamifikovaná aplikace pro začínající podnikatele."
   },
   "common": {
@@ -78,7 +79,7 @@
       "draft": "Koncept",
       "active": "Aktivní",
       "live": "Živě",
-      "reward": "+50 XP",
+      "reward": "+{xp} XP",
       "won": "Vyhráno",
       "lost": "Prohráno"
     },
@@ -151,7 +152,7 @@
       "close": "Zavřít hledání"
     },
     "streak": {
-      "long": "{count, plural, one {Série # den} few {Série # dny} other {Série # dní}}"
+      "long": "{count, plural, one {Série {days} den} few {Série {days} dny} other {Série {days} dní}}"
     },
     "level": {
       "long": "Úroveň {level}"

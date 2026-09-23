@@ -8,6 +8,7 @@ import { useLocale, useTranslations } from "next-intl";
 import {
   DEFAULT_FORMAT_SETTINGS,
   formatCalendarDate,
+  formatDayOfMonth,
   formatMonthYear,
   formatWeekdayShort,
   isoDateToLocal,
@@ -71,10 +72,10 @@ export function DatePicker({
         <CalendarIcon className="size-4 shrink-0 text-ink-muted" />
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Positioner sideOffset={6} align="start" className="z-50">
+        <Popover.Positioner sideOffset={6} align="start" collisionPadding={16} className="z-50">
           <Popover.Popup
             className={cn(
-              "w-76 origin-(--transform-origin) rounded-2xl border border-line-strong bg-surface p-3 shadow-popover outline-none",
+              "w-86 origin-(--transform-origin) md:w-76 rounded-2xl border border-line-strong bg-surface p-3 shadow-popover outline-none",
               "transition-[opacity,scale] duration-150 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0",
             )}
           >
@@ -105,14 +106,14 @@ export function DatePicker({
                     aria-pressed={isSelected}
                     aria-label={formatCalendarDate(localToIsoDate(day), settings)}
                     className={cn(
-                      "grid h-10 place-items-center rounded-lg text-sm tabular-nums transition-colors outline-none focus-visible:ring-2 focus-visible:ring-violet/50",
+                      "grid h-11 place-items-center rounded-lg text-sm tabular-nums md:h-10 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-violet/50",
                       isSameMonth(day, month) ? "text-ink-soft" : "text-ink-muted/50",
                       "hover:bg-surface-hover hover:text-ink",
                       isSameDay(day, today) && "font-semibold text-teal",
                       isSelected && "bg-violet font-semibold text-white hover:bg-violet",
                     )}
                   >
-                    {day.getDate()}
+                    {formatDayOfMonth(day)}
                   </button>
                 );
               })}
@@ -151,7 +152,7 @@ function NavButton({
       type="button"
       aria-label={label}
       onClick={onClick}
-      className="grid size-10 place-items-center rounded-lg text-ink-soft transition-colors outline-none hover:bg-surface-hover hover:text-ink focus-visible:ring-2 focus-visible:ring-violet/50"
+      className="grid size-11 place-items-center rounded-lg text-ink-soft md:size-10 transition-colors outline-none hover:bg-surface-hover hover:text-ink focus-visible:ring-2 focus-visible:ring-violet/50"
     >
       {children}
     </button>
@@ -163,7 +164,7 @@ function FooterButton({ onClick, children }: { onClick: () => void; children: Re
     <button
       type="button"
       onClick={onClick}
-      className="h-10 rounded-lg px-3 text-sm font-medium text-violet transition-colors outline-none hover:bg-violet/10 focus-visible:ring-2 focus-visible:ring-violet/50"
+      className="h-11 rounded-lg px-3 text-sm font-medium text-violet md:h-10 transition-colors outline-none hover:bg-violet/10 focus-visible:ring-2 focus-visible:ring-violet/50"
     >
       {children}
     </button>

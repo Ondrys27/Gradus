@@ -26,7 +26,7 @@ export function StatTile({
   className,
 }: StatTileProps) {
   return (
-    <GlowCard className={cn("flex flex-col gap-3", className)}>
+    <GlowCard className={cn("@container flex flex-col gap-3", className)}>
       <div className="flex items-center justify-between gap-3">
         <span className="micro-label">{label}</span>
         {icon && (
@@ -40,7 +40,12 @@ export function StatTile({
           </span>
         )}
       </div>
-      <AnimatedNumber value={value} format={format} className="stat-number text-ink" />
+      {/* Shrinks with the tile so long amounts never overflow a narrow column. */}
+      <AnimatedNumber
+        value={value}
+        format={format}
+        className="stat-number text-[clamp(24px,17cqi,40px)] whitespace-nowrap text-ink"
+      />
       {hint && <div className="text-sm text-ink-muted">{hint}</div>}
     </GlowCard>
   );

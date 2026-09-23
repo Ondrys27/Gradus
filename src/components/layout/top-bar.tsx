@@ -20,11 +20,17 @@ export function TopBar({ streakDays, level }: TopBarProps) {
   const t = useTranslations("topBar");
   const [searchOpen, setSearchOpen] = useState(false);
   const reduceMotion = useReducedMotion();
+  const streakLabel = t("streak.long", { count: streakDays, days: formatNumber(streakDays) });
+  const levelLabel = t("level.long", { level: formatNumber(level) });
 
   return (
     <header className="sticky top-0 z-30 border-b border-line/50 bg-canvas/70 backdrop-blur-xl">
       <div className="relative flex h-18 items-center gap-2 px-4 md:gap-4 md:px-8">
-        <Link href="/dashboard" aria-label={t("home")} className="flex items-center md:hidden">
+        <Link
+          href="/dashboard"
+          aria-label={t("home")}
+          className="grid size-11 shrink-0 place-items-center rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50 md:hidden"
+        >
           <Logo />
         </Link>
 
@@ -43,29 +49,29 @@ export function TopBar({ streakDays, level }: TopBarProps) {
         <div className="flex shrink-0 items-center gap-2 md:ml-auto">
           <span
             className="inline-flex h-9 items-center gap-1.5 rounded-full border border-gold/40 bg-gold/10 px-3 text-sm font-semibold text-gold shadow-[0_0_18px_-6px_var(--color-gold)]"
-            title={t("streak.long", { count: streakDays })}
+            title={streakLabel}
           >
             <FlameIcon aria-hidden className="size-4" />
             <span className="tabular-nums">
               <span aria-hidden className="lg:hidden">
                 {formatNumber(streakDays)}
               </span>
-              <span className="hidden lg:inline">{t("streak.long", { count: streakDays })}</span>
+              <span className="hidden lg:inline">{streakLabel}</span>
             </span>
-            <span className="sr-only lg:hidden">{t("streak.long", { count: streakDays })}</span>
+            <span className="sr-only lg:hidden">{streakLabel}</span>
           </span>
           <span
             className="inline-flex h-9 items-center gap-1.5 rounded-full border border-teal/40 bg-teal/10 px-3 text-sm font-semibold text-teal shadow-[0_0_18px_-6px_var(--color-teal)]"
-            title={t("level.long", { level })}
+            title={levelLabel}
           >
             <SparklesIcon aria-hidden className="size-4" />
             <span className="tabular-nums">
               <span aria-hidden className="lg:hidden">
                 {formatNumber(level)}
               </span>
-              <span className="hidden lg:inline">{t("level.long", { level })}</span>
+              <span className="hidden lg:inline">{levelLabel}</span>
             </span>
-            <span className="sr-only lg:hidden">{t("level.long", { level })}</span>
+            <span className="sr-only lg:hidden">{levelLabel}</span>
           </span>
           <AccountMenu />
         </div>

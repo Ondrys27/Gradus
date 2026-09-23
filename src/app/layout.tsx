@@ -11,7 +11,10 @@ const inter = Inter({ variable: "--font-inter", subsets: ["latin", "latin-ext"] 
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("meta");
-  return { title: APP_NAME, description: t("description", { appName: APP_NAME }) };
+  return {
+    title: { default: APP_NAME, template: t("titleTemplate", { appName: APP_NAME }) },
+    description: t("description", { appName: APP_NAME }),
+  };
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

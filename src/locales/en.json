@@ -1,5 +1,6 @@
 {
   "meta": {
+    "titleTemplate": "%s · {appName}",
     "description": "{appName} — gamified app for new entrepreneurs."
   },
   "common": {
@@ -78,7 +79,7 @@
       "draft": "Draft",
       "active": "Active",
       "live": "Live",
-      "reward": "+50 XP",
+      "reward": "+{xp} XP",
       "won": "Won",
       "lost": "Lost"
     },
@@ -151,7 +152,7 @@
       "close": "Close search"
     },
     "streak": {
-      "long": "{count, plural, one {# day streak} other {# day streak}}"
+      "long": "{count, plural, one {{days} day streak} other {{days} day streak}}"
     },
     "level": {
       "long": "Level {level}"

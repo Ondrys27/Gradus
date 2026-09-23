@@ -11,6 +11,8 @@ export type FormatSettings = {
   /** date-fns pattern for calendar dates. */
   dateFormat: string;
   weekStartsOn: 0 | 1;
+  /** ISO 4217 code for money. Changes only how amounts are shown, never converts them. */
+  currency: string;
   /** IANA zone; day boundaries are always computed in the user's zone, never UTC. */
   timeZone: string;
 };
@@ -19,12 +21,13 @@ export const DEFAULT_FORMAT_SETTINGS: FormatSettings = {
   numberLocale: "cs-CZ",
   dateFormat: "d. M. yyyy",
   weekStartsOn: 1,
+  currency: "CZK",
   timeZone: "Europe/Prague",
 };
 
 export type NumberFormat = {
   style?: "decimal" | "percent" | "currency";
-  /** ISO 4217 code, required for `style: "currency"`. */
+  /** ISO 4217 code for `style: "currency"`; defaults to the user's currency. */
   currency?: string;
   decimals?: number;
 };
@@ -37,7 +40,7 @@ export function formatNumber(
   const { style = "decimal", currency, decimals = 0 } = options;
   return new Intl.NumberFormat(settings.numberLocale, {
     style,
-    currency: style === "currency" ? currency : undefined,
+    currency: style === "currency" ? (currency ?? settings.currency) : undefined,
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   }).format(value);
@@ -73,6 +76,14 @@ export function formatCalendarDate(
   settings: FormatSettings = DEFAULT_FORMAT_SETTINGS,
 ): string {
   return formatDateFns(isoDateToLocal(value), settings.dateFormat);
+}
+
+/** Day number inside a calendar grid. */
+export function formatDayOfMonth(
+  date: Date,
+  settings: FormatSettings = DEFAULT_FORMAT_SETTINGS,
+): string {
+  return formatNumber(date.getDate(), {}, settings);
 }
 
 /** Month and year heading in the UI language, e.g. "September 2026" / "září 2026". */

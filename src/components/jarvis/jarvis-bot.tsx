@@ -25,7 +25,9 @@ export function JarvisBot({ size = 40, state = "idle", className }: JarvisBotPro
   const blinking = useBlink(state === "idle" && !reduceMotion);
 
   const eyeScaleY = state === "thinking" ? 0.45 : blinking ? 0.1 : 1;
-  const eyeTransition: Transition = { duration: blinking ? 0.08 : 0.2, ease: "easeInOut" };
+  const eyeTransition: Transition = reduceMotion
+    ? { duration: 0 }
+    : { duration: blinking ? 0.08 : 0.2, ease: "easeInOut" };
 
   const smile = state === "happy" ? "M23 41 Q32 50 41 41" : "M27 41.5 Q32 45.5 37 41.5";
 
@@ -136,7 +138,9 @@ export function JarvisBot({ size = 40, state = "idle", className }: JarvisBotPro
         d={smile}
         initial={false}
         animate={{ d: smile }}
-        transition={{ type: "spring", stiffness: 300, damping: 18 }}
+        transition={
+          reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 18 }
+        }
         fill="none"
         stroke="var(--color-teal)"
         strokeWidth="2.5"

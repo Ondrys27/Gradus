@@ -24,6 +24,12 @@ describe("formatNumber", () => {
     const cz = formatNumber(184500, { style: "currency", currency: "CZK" });
     expect(cz.replace(/\s/g, " ")).toBe("184 500 Kč");
   });
+
+  it("takes the currency from the user's settings when none is given", () => {
+    expect(formatNumber(1200, { style: "currency" }, { ...settings, currency: "EUR" })).toBe(
+      "€1,200",
+    );
+  });
 });
 
 describe("calendar dates", () => {

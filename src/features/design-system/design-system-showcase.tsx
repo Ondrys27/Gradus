@@ -150,7 +150,7 @@ export function DesignSystemShowcase() {
           <StatTile
             label={t("stats.revenue")}
             value={184500}
-            format={{ style: "currency", currency: "CZK" }}
+            format={{ style: "currency" }}
             tone="violet"
             icon={<CoinsIcon />}
           />
@@ -196,7 +196,7 @@ export function DesignSystemShowcase() {
           </StatusPill>
           <StatusPill tone="gold">
             <SparklesIcon />
-            {t("pills.reward")}
+            {t("pills.reward", { xp: formatNumber(50) })}
           </StatusPill>
           <StatusPill tone="green">{t("pills.won")}</StatusPill>
           <StatusPill tone="pink">{t("pills.lost")}</StatusPill>
