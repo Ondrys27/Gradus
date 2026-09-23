@@ -4,14 +4,25 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
-import { EllipsisIcon, type LucideIcon } from "lucide-react";
+import {
+  EllipsisIcon,
+  LogOutIcon,
+  SettingsIcon,
+  UserRoundIcon,
+  type LucideIcon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
+import { useSignOut } from "@/features/account/queries";
 import { cn } from "@/lib/utils";
 import { bottomNavKeys, isActivePath, navItems } from "./nav-items";
 
 const primaryItems = navItems.filter((item) => bottomNavKeys.includes(item.key));
 const moreItems = navItems.filter((item) => !bottomNavKeys.includes(item.key));
+const accountItems = [
+  { key: "profile", href: "/profile", icon: UserRoundIcon },
+  { key: "settings", href: "/settings", icon: SettingsIcon },
+] as const;
 
 /**
  * Floating glass bar for phones. It stops short of the right edge:
@@ -21,7 +32,10 @@ export function BottomNav() {
   const t = useTranslations("nav");
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
-  const moreActive = moreItems.some((item) => isActivePath(pathname, item.href));
+  const signOut = useSignOut();
+  const moreActive = [...moreItems, ...accountItems].some((item) =>
+    isActivePath(pathname, item.href),
+  );
 
   return (
     <>
@@ -75,6 +89,38 @@ export function BottomNav() {
               </li>
             );
           })}
+        </ul>
+
+        <ul className="mt-4 flex flex-col gap-1 border-t border-line pt-3">
+          {accountItems.map(({ key, href, icon: Icon }) => {
+            const active = isActivePath(pathname, href);
+            return (
+              <li key={key}>
+                <Link
+                  href={href}
+                  onClick={() => setMoreOpen(false)}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "flex min-h-12 items-center gap-3 rounded-xl px-3 text-[15px] font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                    active ? "bg-violet/15 text-ink" : "text-ink-soft",
+                  )}
+                >
+                  <Icon aria-hidden className={cn("size-5", active && "text-violet")} />
+                  {t(key)}
+                </Link>
+              </li>
+            );
+          })}
+          <li>
+            <button
+              type="button"
+              onClick={signOut}
+              className="flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-xl px-3 text-[15px] font-medium text-pink outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <LogOutIcon aria-hidden className="size-5" />
+              {t("signOut")}
+            </button>
+          </li>
         </ul>
       </BottomSheet>
     </>

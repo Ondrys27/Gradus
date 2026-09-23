@@ -6,7 +6,6 @@ import { addDays, addMonths, isSameDay, isSameMonth, startOfMonth, startOfWeek }
 import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import {
-  DEFAULT_FORMAT_SETTINGS,
   formatCalendarDate,
   formatDayOfMonth,
   formatMonthYear,
@@ -17,6 +16,7 @@ import {
   type FormatSettings,
   type IsoDate,
 } from "@/lib/format";
+import { useFormatSettings } from "@/lib/use-format-settings";
 import { useIsPhone } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
 import { BottomSheet } from "./bottom-sheet";
@@ -25,6 +25,7 @@ type DatePickerProps = {
   value: IsoDate | null;
   onValueChange: (value: IsoDate | null) => void;
   placeholder?: string;
+  /** Defaults to the signed-in user's formats. */
   settings?: FormatSettings;
   disabled?: boolean;
   id?: string;
@@ -36,12 +37,14 @@ export function DatePicker({
   value,
   onValueChange,
   placeholder,
-  settings = DEFAULT_FORMAT_SETTINGS,
+  settings: settingsProp,
   disabled,
   id,
   className,
 }: DatePickerProps) {
   const t = useTranslations("common.datePicker");
+  const userSettings = useFormatSettings();
+  const settings = settingsProp ?? userSettings;
   const isPhone = useIsPhone();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const selected = value ? isoDateToLocal(value) : null;

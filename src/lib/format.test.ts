@@ -2,11 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_FORMAT_SETTINGS,
   formatCalendarDate,
+  formatDateTime,
   formatNumber,
+  formatTime,
   isoDateToLocal,
   localToIsoDate,
   todayIsoDate,
 } from "./format";
+import { toFormatSettings, type UserSettings } from "./user-settings";
 
 const settings = { ...DEFAULT_FORMAT_SETTINGS, numberLocale: "en-US" };
 
@@ -45,5 +48,59 @@ describe("calendar dates", () => {
     const lateUtc = new Date("2026-09-23T23:30:00Z");
     expect(todayIsoDate({ ...settings, timeZone: "Europe/Prague" }, lateUtc)).toBe("2026-09-24");
     expect(todayIsoDate({ ...settings, timeZone: "America/New_York" }, lateUtc)).toBe("2026-09-23");
+  });
+});
+
+describe("time zone aware formatting", () => {
+  // 2026-03-29 00:30 UTC is 01:30 in Prague (CET) and still the 28th in New York.
+  const instant = new Date(Date.UTC(2026, 2, 29, 0, 30));
+
+  it("formats the date and time in the user's zone, never UTC", () => {
+    expect(formatDateTime(instant, DEFAULT_FORMAT_SETTINGS)).toBe("29. 3. 2026 01:30");
+    expect(
+      formatDateTime(instant, {
+        ...DEFAULT_FORMAT_SETTINGS,
+        timeZone: "America/New_York",
+        dateFormat: "MM/dd/yyyy",
+        timeFormat: "h:mm a",
+      }),
+    ).toBe("03/28/2026 8:30 PM");
+  });
+
+  it("formats a clock time alone", () => {
+    expect(formatTime(instant, { ...DEFAULT_FORMAT_SETTINGS, timeZone: "Asia/Tokyo" })).toBe(
+      "09:30",
+    );
+  });
+});
+
+describe("user settings mapping", () => {
+  const row = {
+    number_format: "en",
+    date_format: "yyyy-MM-dd",
+    time_format: "h:mm a",
+    first_day_of_week: 0,
+    currency: "USD",
+    timezone: "America/Chicago",
+  } as UserSettings;
+
+  it("turns a user_settings row into format settings", () => {
+    expect(toFormatSettings(row)).toEqual({
+      numberLocale: "en-US",
+      dateFormat: "yyyy-MM-dd",
+      timeFormat: "h:mm a",
+      weekStartsOn: 0,
+      currency: "USD",
+      timeZone: "America/Chicago",
+    });
+  });
+
+  it("falls back to defaults for values it does not know", () => {
+    const broken = { ...row, number_format: "xx", date_format: "Q", timezone: "Nowhere/City" };
+    const result = toFormatSettings(broken as UserSettings);
+    expect(result.numberLocale).toBe(DEFAULT_FORMAT_SETTINGS.numberLocale);
+    expect(result.dateFormat).toBe(DEFAULT_FORMAT_SETTINGS.dateFormat);
+    expect(result.timeZone).toBe(DEFAULT_FORMAT_SETTINGS.timeZone);
+    expect(toFormatSettings(null)).toBe(DEFAULT_FORMAT_SETTINGS);
   });
 });

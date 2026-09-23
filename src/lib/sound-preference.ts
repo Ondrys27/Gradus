@@ -3,36 +3,25 @@
 import { useSyncExternalStore } from "react";
 
 /**
- * Sound on/off. Kept in the browser until `user_settings` exists;
- * then this module becomes the single place that reads it from there.
+ * Sound on/off, mirrored from `user_settings.sound_enabled` (the source of truth)
+ * so non-React code such as the celebration can ask synchronously.
+ * The session provider pushes the value in; sign-out resets it.
  */
-const STORAGE_KEY = "gradus.sound";
 const listeners = new Set<() => void>();
-let current: boolean | null = null;
-
-function read(): boolean {
-  if (current === null) {
-    try {
-      current = window.localStorage.getItem(STORAGE_KEY) !== "off";
-    } catch {
-      current = true;
-    }
-  }
-  return current;
-}
+let current = true;
 
 export function isSoundEnabled(): boolean {
-  return typeof window === "undefined" ? false : read();
+  return typeof window === "undefined" ? false : current;
 }
 
-export function setSoundEnabled(enabled: boolean) {
+export function applySoundEnabled(enabled: boolean) {
+  if (current === enabled) return;
   current = enabled;
-  try {
-    window.localStorage.setItem(STORAGE_KEY, enabled ? "on" : "off");
-  } catch {
-    // Storage blocked: the choice lasts until reload.
-  }
   listeners.forEach((listener) => listener());
+}
+
+export function resetSoundPreference() {
+  applySoundEnabled(true);
 }
 
 function subscribe(listener: () => void) {
@@ -43,5 +32,9 @@ function subscribe(listener: () => void) {
 }
 
 export function useSoundEnabled(): boolean {
-  return useSyncExternalStore(subscribe, read, () => true);
+  return useSyncExternalStore(
+    subscribe,
+    () => current,
+    () => true,
+  );
 }

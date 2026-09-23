@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { isSoundEnabled, setSoundEnabled } from "./sound-preference";
+import { applySoundEnabled, isSoundEnabled, resetSoundPreference } from "./sound-preference";
 
 describe("sound preference", () => {
-  it("is on by default and remembers being turned off", () => {
+  it("is on by default, follows the settings and resets on sign-out", () => {
     expect(isSoundEnabled()).toBe(true);
-    setSoundEnabled(false);
+    applySoundEnabled(false);
     expect(isSoundEnabled()).toBe(false);
-    expect(window.localStorage.getItem("gradus.sound")).toBe("off");
-    setSoundEnabled(true);
+    resetSoundPreference();
     expect(isSoundEnabled()).toBe(true);
   });
 });

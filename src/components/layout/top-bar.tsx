@@ -6,6 +6,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { FlameIcon, SearchIcon, SparklesIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatNumber } from "@/lib/format";
+import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { AccountMenu } from "./account-menu";
 import { Logo } from "./sidebar";
@@ -20,8 +21,12 @@ export function TopBar({ streakDays, level }: TopBarProps) {
   const t = useTranslations("topBar");
   const [searchOpen, setSearchOpen] = useState(false);
   const reduceMotion = useReducedMotion();
-  const streakLabel = t("streak.long", { count: streakDays, days: formatNumber(streakDays) });
-  const levelLabel = t("level.long", { level: formatNumber(level) });
+  const settings = useFormatSettings();
+  const streakLabel = t("streak.long", {
+    count: streakDays,
+    days: formatNumber(streakDays, {}, settings),
+  });
+  const levelLabel = t("level.long", { level: formatNumber(level, {}, settings) });
 
   return (
     <header className="sticky top-0 z-30 border-b border-line/50 bg-canvas/70 backdrop-blur-xl">
@@ -54,7 +59,7 @@ export function TopBar({ streakDays, level }: TopBarProps) {
             <FlameIcon aria-hidden className="size-4" />
             <span className="tabular-nums">
               <span aria-hidden className="lg:hidden">
-                {formatNumber(streakDays)}
+                {formatNumber(streakDays, {}, settings)}
               </span>
               <span className="hidden lg:inline">{streakLabel}</span>
             </span>
@@ -67,7 +72,7 @@ export function TopBar({ streakDays, level }: TopBarProps) {
             <SparklesIcon aria-hidden className="size-4" />
             <span className="tabular-nums">
               <span aria-hidden className="lg:hidden">
-                {formatNumber(level)}
+                {formatNumber(level, {}, settings)}
               </span>
               <span className="hidden lg:inline">{levelLabel}</span>
             </span>

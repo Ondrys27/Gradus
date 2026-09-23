@@ -143,7 +143,10 @@
     "finance": "Finance",
     "workers": "Pracovníci",
     "more": "Více",
-    "close": "Zavřít"
+    "close": "Zavřít",
+    "profile": "Profil",
+    "settings": "Nastavení",
+    "signOut": "Odhlásit se"
   },
   "topBar": {
     "home": "Přejít na přehled",
@@ -166,7 +169,10 @@
       "languages": {
         "en": "English",
         "cs": "Čeština"
-      }
+      },
+      "profile": "Profil",
+      "settings": "Nastavení",
+      "signOut": "Odhlásit se"
     }
   },
   "jarvis": {
@@ -217,6 +223,170 @@
       "description": "Lidé, kteří s tebou pracují, a jejich hodiny.",
       "emptyTitle": "Zatím žádní pracovníci",
       "emptyDescription": "Pozvi prvního pracovníka a sdílej s ním úkoly a čas."
+    }
+  },
+  "auth": {
+    "fields": {
+      "email": "E-mail",
+      "password": "Heslo",
+      "currentPassword": "Současné heslo",
+      "newPassword": "Nové heslo",
+      "confirmPassword": "Nové heslo znovu",
+      "passwordHint": "Alespoň {min} znaků.",
+      "showPassword": "Zobrazit heslo",
+      "hidePassword": "Skrýt heslo",
+      "displayName": "Vaše jméno (nepovinné)",
+      "inviteCode": "Pozvánkový kód"
+    },
+    "login": {
+      "title": "Vítejte zpět",
+      "description": "Přihlaste se a pokračujte v budování firmy v {appName}.",
+      "forgot": "Zapomenuté heslo?",
+      "submit": "Přihlásit se",
+      "noAccount": "Máte pozvánkový kód? <link>Vytvořit účet</link>"
+    },
+    "register": {
+      "title": "Vytvořte si účet",
+      "description": "{appName} je během bety jen na pozvánky.",
+      "inviteHint": "Dostali jste ho spolu s pozvánkou.",
+      "submit": "Vytvořit účet",
+      "haveAccount": "Už máte účet? <link>Přihlásit se</link>"
+    },
+    "forgot": {
+      "title": "Obnovení hesla",
+      "description": "Zadejte svůj e-mail a pošleme vám odkaz pro nastavení nového hesla.",
+      "submit": "Poslat odkaz",
+      "sent": "Pokud k adrese {email} existuje účet, odkaz pro obnovení hesla je na cestě. Podívejte se do schránky.",
+      "back": "Zpět na přihlášení"
+    },
+    "reset": {
+      "title": "Nastavte nové heslo",
+      "description": "Zvolte nové heslo ke svému účtu.",
+      "submit": "Uložit heslo a pokračovat"
+    },
+    "errors": {
+      "invalidEmail": "Zadejte platnou e-mailovou adresu.",
+      "passwordTooShort": "Heslo musí mít alespoň 8 znaků.",
+      "passwordTooLong": "Heslo může mít nejvýše 72 znaků.",
+      "passwordsDontMatch": "Hesla se neshodují.",
+      "displayNameTooLong": "Jméno může mít nejvýše 60 znaků.",
+      "inviteRequired": "Zadejte pozvánkový kód.",
+      "invalidInvite": "Tento pozvánkový kód neplatí.",
+      "registrationClosed": "Registrace je teď uzavřená.",
+      "invalidCredentials": "Špatný e-mail nebo heslo.",
+      "emailTaken": "Účet s tímto e-mailem už existuje.",
+      "weakPassword": "Heslo je příliš slabé. Zkuste delší.",
+      "samePassword": "Nové heslo se musí lišit od starého.",
+      "wrongCurrentPassword": "Současné heslo není správně.",
+      "rateLimited": "Příliš mnoho pokusů. Chvíli počkejte a zkuste to znovu.",
+      "linkExpired": "Platnost odkazu vypršela nebo už byl použit. Požádejte o nový.",
+      "generic": "Něco se pokazilo. Zkuste to prosím znovu."
+    }
+  },
+  "profile": {
+    "title": "Profil",
+    "description": "Jak se zobrazujete v aplikaci a jak se přihlašujete.",
+    "roles": {
+      "owner": "Vlastník"
+    },
+    "avatar": {
+      "title": "Profilová fotka",
+      "upload": "Nahrát fotku",
+      "change": "Změnit fotku",
+      "remove": "Odstranit",
+      "requirements": "JPG nebo PNG, nejvýše 2 MB. Potom ji oříznete na čtverec.",
+      "cropTitle": "Oříznutí fotky",
+      "cropArea": "Oblast oříznutí fotky",
+      "cropHint": "Tažením posunete, sevřením prstů nebo kolečkem přiblížíte.",
+      "zoom": "Přiblížení",
+      "zoomIn": "Přiblížit",
+      "zoomOut": "Oddálit",
+      "cancel": "Zrušit",
+      "save": "Uložit fotku",
+      "saving": "Ukládám…",
+      "errors": {
+        "tooLarge": "Fotka je větší než 2 MB.",
+        "wrongType": "Podporované jsou jen fotky JPG a PNG.",
+        "unreadable": "Tuto fotku se nepodařilo otevřít.",
+        "uploadFailed": "Fotku se nepodařilo uložit. Zkuste to prosím znovu."
+      }
+    },
+    "details": {
+      "title": "Údaje",
+      "displayName": "Zobrazované jméno",
+      "displayNameHint": "Zobrazuje se v aplikaci místo e-mailu.",
+      "username": {
+        "label": "Uživatelské jméno",
+        "hint": "3–20 znaků: malá písmena, číslice, tečka a podtržítko.",
+        "tooShort": "Alespoň 3 znaky.",
+        "tooLong": "Nejvýše 20 znaků.",
+        "invalidChars": "Jen malá písmena, číslice, tečka a podtržítko.",
+        "taken": "Toto uživatelské jméno už je obsazené.",
+        "available": "Volné.",
+        "checking": "Ověřuji dostupnost…",
+        "checkFailed": "Dostupnost se teď nepodařilo ověřit."
+      },
+      "email": "E-mail",
+      "emailHint": "E-mail, kterým se přihlašujete.",
+      "save": "Uložit změny",
+      "saving": "Ukládám…",
+      "saved": "Uloženo",
+      "saveFailed": "Změny se nepodařilo uložit. Zkuste to prosím znovu."
+    },
+    "password": {
+      "title": "Heslo",
+      "submit": "Změnit heslo",
+      "changed": "Heslo bylo změněno."
+    }
+  },
+  "settings": {
+    "title": "Nastavení",
+    "description": "Jazyk, region a podoba čísel, dat a časů.",
+    "status": {
+      "saving": "Ukládám…",
+      "saved": "Vše uloženo",
+      "failed": "Uložení se nezdařilo, změna byla vrácena",
+      "auto": "Změny se ukládají samy"
+    },
+    "language": {
+      "title": "Jazyk",
+      "description": "Jazyk aplikace.",
+      "options": {
+        "en": "English",
+        "cs": "Čeština"
+      }
+    },
+    "region": {
+      "title": "Region a formáty",
+      "description": "Formáty nezávisí na jazyce. Dny začínají a končí ve vašem časovém pásmu.",
+      "country": "Země",
+      "countryDetected": "Podle prohlížeče: {country}.",
+      "countryHint": "Používá se pro statistiky času volání.",
+      "useDetected": "Použít",
+      "timeZone": "Časové pásmo",
+      "timeZoneDetected": "Prohlížeč je v pásmu {zone}.",
+      "timeZoneHint": "Dny začínají a končí v tomto pásmu.",
+      "currency": "Měna",
+      "currencyHint": "Mění jen zobrazení částek. Nic se nepřepočítává.",
+      "dateFormat": "Formát data",
+      "timeFormat": "Formát času",
+      "numberFormat": "Formát čísel",
+      "firstDayOfWeek": "První den týdne"
+    },
+    "timeFormats": {
+      "h24": "24hodinový",
+      "h12": "12hodinový"
+    },
+    "preview": {
+      "title": "Živá ukázka",
+      "description": "Takhle bude aplikace zobrazovat vaše data.",
+      "number": "Číslo",
+      "amount": "Částka",
+      "percent": "Procenta",
+      "date": "Datum",
+      "time": "Čas",
+      "dateTime": "Datum a čas",
+      "week": "Týden"
     }
   }
 }

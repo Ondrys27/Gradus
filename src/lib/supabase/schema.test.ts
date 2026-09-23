@@ -42,6 +42,7 @@ begin
   return _parts[1:array_length(_parts, 1) - 1];
 end $$;
 alter table storage.objects enable row level security;
+grant all on storage.objects, storage.buckets to authenticated;
 grant usage on schema public, auth, storage to anon, authenticated, service_role, supabase_auth_admin;
 alter default privileges in schema public grant all on tables to authenticated, service_role;
 alter default privileges in schema public grant all on functions to authenticated, service_role;
@@ -347,5 +348,84 @@ describe("workers", () => {
       ).id,
     ).toBeTruthy();
     await asServer();
+  });
+});
+
+describe("profiles", () => {
+  it("accepts only lowercase usernames of 3–20 allowed characters", async () => {
+    await asUser(owner);
+    await db.query(`update profiles set username = 'ondra.otava_1' where id = $1`, [owner]);
+    for (const bad of ["ab", "Ondra", "a".repeat(21), "ondra-otava", "ondra otava"]) {
+      await expect(
+        db.query(`update profiles set username = $1 where id = $2`, [bad, owner]),
+      ).rejects.toThrow(/profiles_username_format/);
+    }
+    await asServer();
+  });
+
+  it("answers availability without exposing other profiles", async () => {
+    await asUser(second);
+    const available = async (name: string) =>
+      (await one<{ ok: boolean }>(`select username_available($1) as ok`, [name])).ok;
+    expect(await available("ondra.otava_1")).toBe(false);
+    expect(await available("someone_else")).toBe(true);
+    expect(await available("X")).toBe(false);
+    expect(await count(`select 1 from profiles where id = $1`, [owner])).toBe(0);
+    await expect(
+      db.query(`update profiles set username = 'ondra.otava_1' where id = $1`, [second]),
+    ).rejects.toThrow(/duplicate key/);
+    await asServer();
+
+    await asUser(owner);
+    expect(await available("ondra.otava_1")).toBe(true); // own name stays available to its owner
+    await asServer();
+  });
+});
+
+describe("user settings", () => {
+  it("rejects formats that format.ts does not understand", async () => {
+    await asUser(owner);
+    await db.query(
+      `update user_settings set date_format = 'MM/dd/yyyy', time_format = 'h:mm a', number_format = 'en', first_day_of_week = 0 where user_id = $1`,
+      [owner],
+    );
+    await expect(
+      db.query(`update user_settings set date_format = 'yyyy' where user_id = $1`, [owner]),
+    ).rejects.toThrow(/user_settings_date_format_check/);
+    await expect(
+      db.query(`update user_settings set first_day_of_week = 3 where user_id = $1`, [owner]),
+    ).rejects.toThrow(/user_settings_first_day_check/);
+    await expect(
+      db.query(`update user_settings set locale = 'de' where user_id = $1`, [owner]),
+    ).rejects.toThrow(/user_settings_locale_check/);
+    await asServer();
+  });
+});
+
+describe("avatars storage", () => {
+  it("lets a user write only inside their own folder", async () => {
+    await asUser(owner);
+    await db.query(`insert into storage.objects (bucket_id, name) values ('avatars', $1)`, [
+      `${owner}/avatar`,
+    ]);
+    await expect(
+      db.query(`insert into storage.objects (bucket_id, name) values ('avatars', $1)`, [
+        `${second}/avatar`,
+      ]),
+    ).rejects.toThrow(/row-level security/);
+    await asServer();
+
+    await asUser(second);
+    expect(await count(`select 1 from storage.objects where bucket_id = 'avatars'`)).toBe(0);
+    await db.query(`delete from storage.objects where name = $1`, [`${owner}/avatar`]);
+    await asServer();
+    expect(await count(`select 1 from storage.objects where name = $1`, [`${owner}/avatar`])).toBe(
+      1,
+    );
+
+    const bucket = await one<{ public: boolean; file_size_limit: number }>(
+      `select public, file_size_limit from storage.buckets where id = 'avatars'`,
+    );
+    expect(bucket).toEqual({ public: true, file_size_limit: 2097152 });
   });
 });

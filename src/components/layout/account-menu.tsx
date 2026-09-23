@@ -1,12 +1,18 @@
 "use client";
 
-import { useTransition } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Menu } from "@base-ui/react/menu";
-import { CheckIcon, UserRoundIcon } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
-import { locales, type Locale } from "@/i18n/locales";
-import { setSoundEnabled, useSoundEnabled } from "@/lib/sound-preference";
+import { CheckIcon, LogOutIcon, SettingsIcon, UserRoundIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Avatar } from "@/components/ui/avatar";
+import {
+  useProfile,
+  useSession,
+  useSignOut,
+  useUpdateSettings,
+  useUserSettings,
+} from "@/features/account/queries";
+import { locales } from "@/i18n/locales";
 import { cn } from "@/lib/utils";
 
 const itemClass =
@@ -14,15 +20,12 @@ const itemClass =
 
 export function AccountMenu() {
   const t = useTranslations("topBar.account");
-  const locale = useLocale();
-  const router = useRouter();
-  const [, startTransition] = useTransition();
-  const soundEnabled = useSoundEnabled();
-
-  function changeLocale(next: Locale) {
-    document.cookie = `locale=${next}; path=/; max-age=31536000; samesite=lax`;
-    startTransition(() => router.refresh());
-  }
+  const { user } = useSession();
+  const profile = useProfile();
+  const settings = useUserSettings();
+  const updateSettings = useUpdateSettings();
+  const signOut = useSignOut();
+  const name = profile.display_name || profile.username || user.email;
 
   return (
     <Menu.Root>
@@ -30,21 +33,46 @@ export function AccountMenu() {
         aria-label={t("open")}
         className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       >
-        <span className="grid size-9 place-items-center rounded-full border border-violet/50 bg-violet/15 text-violet transition-colors hover:bg-violet/25">
-          <UserRoundIcon aria-hidden className="size-4.5" />
-        </span>
+        <Avatar
+          src={profile.avatar_url}
+          name={name}
+          className="transition-colors hover:bg-violet/25"
+        />
       </Menu.Trigger>
       <Menu.Portal>
         <Menu.Positioner side="bottom" align="end" sideOffset={6} className="z-50">
           <Menu.Popup
             className={cn(
-              "w-60 origin-(--transform-origin) rounded-xl border border-line-strong bg-surface p-1.5 shadow-popover outline-none",
+              "w-64 origin-(--transform-origin) rounded-xl border border-line-strong bg-surface p-1.5 shadow-popover outline-none",
               "transition-[opacity,scale] duration-150 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0",
             )}
           >
+            <div className="flex items-center gap-3 px-3 py-2.5">
+              <Avatar src={profile.avatar_url} name={name} className="size-10" />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-ink">{name}</p>
+                {name !== user.email && (
+                  <p className="truncate text-xs text-ink-muted">{user.email}</p>
+                )}
+              </div>
+            </div>
+
+            <Menu.Separator className="my-1.5 h-px bg-line" />
+
+            <Menu.LinkItem closeOnClick render={<Link href="/profile" />} className={itemClass}>
+              {t("profile")}
+              <UserRoundIcon aria-hidden className="size-4 text-ink-muted" />
+            </Menu.LinkItem>
+            <Menu.LinkItem closeOnClick render={<Link href="/settings" />} className={itemClass}>
+              {t("settings")}
+              <SettingsIcon aria-hidden className="size-4 text-ink-muted" />
+            </Menu.LinkItem>
+
+            <Menu.Separator className="my-1.5 h-px bg-line" />
+
             <Menu.CheckboxItem
-              checked={soundEnabled}
-              onCheckedChange={setSoundEnabled}
+              checked={settings.sound_enabled}
+              onCheckedChange={(checked) => updateSettings.mutate({ sound_enabled: checked })}
               className={itemClass}
             >
               {t("sound")}
@@ -58,8 +86,8 @@ export function AccountMenu() {
             <Menu.Group>
               <Menu.GroupLabel className="micro-label px-3 py-1.5">{t("language")}</Menu.GroupLabel>
               <Menu.RadioGroup
-                value={locale}
-                onValueChange={(value) => changeLocale(value as Locale)}
+                value={settings.locale}
+                onValueChange={(value) => updateSettings.mutate({ locale: value as string })}
               >
                 {locales.map((code) => (
                   <Menu.RadioItem key={code} value={code} className={itemClass}>
@@ -71,6 +99,13 @@ export function AccountMenu() {
                 ))}
               </Menu.RadioGroup>
             </Menu.Group>
+
+            <Menu.Separator className="my-1.5 h-px bg-line" />
+
+            <Menu.Item onClick={signOut} className={cn(itemClass, "data-highlighted:text-pink")}>
+              {t("signOut")}
+              <LogOutIcon aria-hidden className="size-4" />
+            </Menu.Item>
           </Menu.Popup>
         </Menu.Positioner>
       </Menu.Portal>

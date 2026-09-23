@@ -1876,6 +1876,7 @@ export type Database = {
         }
       }
       timer_idle_interval: { Args: Record<PropertyKey, never>; Returns: string }
+      username_available: { Args: { _username: string }; Returns: boolean }
       work_seconds_for_day: {
         Args: { _day: string; _timezone: string; _worker_id: string }
         Returns: number

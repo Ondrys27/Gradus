@@ -8,6 +8,7 @@ import { TrophyIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatNumber } from "@/lib/format";
 import { isSoundEnabled } from "@/lib/sound-preference";
+import { useFormatSettings } from "@/lib/use-format-settings";
 import { playCelebrationSound } from "./celebration-sound";
 import type { CelebrationOptions } from "./celebration-provider";
 
@@ -19,6 +20,7 @@ const BEAT = { card: 0.05, trophy: 0.2, confetti: 0.3, text: 0.4, bar: 0.55, xp:
 export function CelebrationCard({ title, subtitle, xp, onContinue }: CelebrationCardProps) {
   const t = useTranslations("celebration");
   const reduceMotion = useReducedMotion() ?? false;
+  const formatSettings = useFormatSettings();
   const cardRef = useRef<HTMLDivElement>(null);
   const soundPlayed = useRef(false);
 
@@ -126,7 +128,7 @@ export function CelebrationCard({ title, subtitle, xp, onContinue }: Celebration
           transition={spring(BEAT.xp, 0.6)}
           className="inline-flex h-9 items-center rounded-full border border-gold/50 bg-gold/15 px-4 text-base font-bold text-gold tabular-nums shadow-[0_0_20px_-6px_var(--color-gold)]"
         >
-          {t("xp", { xp: formatNumber(xp) })}
+          {t("xp", { xp: formatNumber(xp, {}, formatSettings) })}
         </motion.span>
       ) : null}
 

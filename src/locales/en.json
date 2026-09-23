@@ -143,7 +143,10 @@
     "finance": "Finance",
     "workers": "Workers",
     "more": "More",
-    "close": "Close"
+    "close": "Close",
+    "profile": "Profile",
+    "settings": "Settings",
+    "signOut": "Sign out"
   },
   "topBar": {
     "home": "Go to dashboard",
@@ -166,7 +169,10 @@
       "languages": {
         "en": "English",
         "cs": "Čeština"
-      }
+      },
+      "profile": "Profile",
+      "settings": "Settings",
+      "signOut": "Sign out"
     }
   },
   "jarvis": {
@@ -217,6 +223,170 @@
       "description": "The people who work with you and their hours.",
       "emptyTitle": "No workers yet",
       "emptyDescription": "Invite your first worker to share tasks and track their time."
+    }
+  },
+  "auth": {
+    "fields": {
+      "email": "E-mail",
+      "password": "Password",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password",
+      "passwordHint": "At least {min} characters.",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "displayName": "Your name (optional)",
+      "inviteCode": "Invite code"
+    },
+    "login": {
+      "title": "Welcome back",
+      "description": "Sign in to continue building your business in {appName}.",
+      "forgot": "Forgot password?",
+      "submit": "Sign in",
+      "noAccount": "Have an invite code? <link>Create an account</link>"
+    },
+    "register": {
+      "title": "Create your account",
+      "description": "{appName} is invite-only during the beta.",
+      "inviteHint": "You got it together with your invitation.",
+      "submit": "Create account",
+      "haveAccount": "Already have an account? <link>Sign in</link>"
+    },
+    "forgot": {
+      "title": "Reset your password",
+      "description": "Enter your e-mail and we will send you a link to set a new password.",
+      "submit": "Send link",
+      "sent": "If an account exists for {email}, a link to reset the password is on its way. Check your inbox.",
+      "back": "Back to sign in"
+    },
+    "reset": {
+      "title": "Set a new password",
+      "description": "Choose a new password for your account.",
+      "submit": "Save password and continue"
+    },
+    "errors": {
+      "invalidEmail": "Enter a valid e-mail address.",
+      "passwordTooShort": "The password must be at least 8 characters.",
+      "passwordTooLong": "The password can be at most 72 characters.",
+      "passwordsDontMatch": "The passwords do not match.",
+      "displayNameTooLong": "The name can be at most 60 characters.",
+      "inviteRequired": "Enter your invite code.",
+      "invalidInvite": "This invite code is not valid.",
+      "registrationClosed": "Registration is closed right now.",
+      "invalidCredentials": "Wrong e-mail or password.",
+      "emailTaken": "An account with this e-mail already exists.",
+      "weakPassword": "This password is too weak. Try a longer one.",
+      "samePassword": "The new password must be different from the old one.",
+      "wrongCurrentPassword": "The current password is not correct.",
+      "rateLimited": "Too many attempts. Wait a moment and try again.",
+      "linkExpired": "The link has expired or was already used. Ask for a new one.",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "description": "How you appear in the app and how you sign in.",
+    "roles": {
+      "owner": "Owner"
+    },
+    "avatar": {
+      "title": "Profile photo",
+      "upload": "Upload photo",
+      "change": "Change photo",
+      "remove": "Remove",
+      "requirements": "JPG or PNG, up to 2 MB. You crop it to a square next.",
+      "cropTitle": "Crop your photo",
+      "cropArea": "Photo crop area",
+      "cropHint": "Drag to move, pinch or scroll to zoom.",
+      "zoom": "Zoom",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "cancel": "Cancel",
+      "save": "Save photo",
+      "saving": "Saving…",
+      "errors": {
+        "tooLarge": "The photo is larger than 2 MB.",
+        "wrongType": "Only JPG and PNG photos are supported.",
+        "unreadable": "This photo could not be opened.",
+        "uploadFailed": "The photo could not be saved. Please try again."
+      }
+    },
+    "details": {
+      "title": "Details",
+      "displayName": "Display name",
+      "displayNameHint": "Shown in the app instead of your e-mail.",
+      "username": {
+        "label": "Username",
+        "hint": "3–20 characters: lowercase letters, digits, dot and underscore.",
+        "tooShort": "At least 3 characters.",
+        "tooLong": "At most 20 characters.",
+        "invalidChars": "Only lowercase letters, digits, dot and underscore.",
+        "taken": "This username is already taken.",
+        "available": "Available.",
+        "checking": "Checking availability…",
+        "checkFailed": "Availability could not be checked right now."
+      },
+      "email": "E-mail",
+      "emailHint": "The e-mail you sign in with.",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "saveFailed": "Changes could not be saved. Please try again."
+    },
+    "password": {
+      "title": "Password",
+      "submit": "Change password",
+      "changed": "Your password has been changed."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Language, region and how numbers, dates and times look.",
+    "status": {
+      "saving": "Saving…",
+      "saved": "All changes saved",
+      "failed": "Could not save, the change was undone",
+      "auto": "Changes save automatically"
+    },
+    "language": {
+      "title": "Language",
+      "description": "The language of the app.",
+      "options": {
+        "en": "English",
+        "cs": "Čeština"
+      }
+    },
+    "region": {
+      "title": "Region and formats",
+      "description": "Formats are independent of the language. Days start and end in your time zone.",
+      "country": "Country",
+      "countryDetected": "Your browser suggests {country}.",
+      "countryHint": "Used for call-time statistics.",
+      "useDetected": "Use this",
+      "timeZone": "Time zone",
+      "timeZoneDetected": "Your browser is in {zone}.",
+      "timeZoneHint": "Days start and end in this zone.",
+      "currency": "Currency",
+      "currencyHint": "Changes only how amounts are shown. Nothing is converted.",
+      "dateFormat": "Date format",
+      "timeFormat": "Time format",
+      "numberFormat": "Number format",
+      "firstDayOfWeek": "First day of the week"
+    },
+    "timeFormats": {
+      "h24": "24-hour",
+      "h12": "12-hour"
+    },
+    "preview": {
+      "title": "Live preview",
+      "description": "This is how the app will show your data.",
+      "number": "Number",
+      "amount": "Amount",
+      "percent": "Percentage",
+      "date": "Date",
+      "time": "Time",
+      "dateTime": "Date and time",
+      "week": "Week"
     }
   }
 }
