@@ -11,26 +11,31 @@ import {
   type DragEndEvent,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { ListChecksIcon, PlusIcon } from "lucide-react";
+import { ListChecksIcon, ListTreeIcon, NetworkIcon, PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormAlert } from "@/components/ui/form-alert";
 import { GlowCard } from "@/components/ui/glow-card";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "./confirm-dialog";
 import { useCreateTask, useDeleteTask, useReorderTasks, useSetTaskStatus } from "./queries";
 import { TITLE_MAX } from "./schemas";
 import { TaskFormDialog, type TaskFormMode } from "./task-form-dialog";
+import { TaskMap } from "./task-map";
 import { TaskGroup, type TaskHandlers } from "./task-row";
 import { buildTree, openSubtasks, reorderSiblings } from "./task-tree";
-import type { Task } from "./types";
+import { useTaskView, type TaskView } from "./task-view-preference";
+import type { Milestone, Task } from "./types";
 
 type TaskFormState = { open: boolean; mode: TaskFormMode };
 
-/** The task list of one milestone: sortable tree, quick add, task dialogs. */
-export function TasksPanel({ milestoneId, tasks }: { milestoneId: string; tasks: Task[] }) {
+/** The tasks of one milestone as a sortable list or a map, with quick add and task dialogs. */
+export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: Task[] }) {
   const t = useTranslations("milestones.tasks");
+  const milestoneId = milestone.id;
+  const [view, setView] = useTaskView();
   const setStatus = useSetTaskStatus(milestoneId);
   const create = useCreateTask(milestoneId);
   const remove = useDeleteTask(milestoneId);
@@ -114,11 +119,22 @@ export function TasksPanel({ milestoneId, tasks }: { milestoneId: string; tasks:
 
   return (
     <GlowCard interactive={false} className="flex flex-col gap-4 p-4 sm:p-5">
-      <h2 className="micro-label">{t("heading")}</h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="micro-label">{t("heading")}</h2>
+        <ViewSwitch view={view} onChange={setView} />
+      </div>
 
       {error && <FormAlert>{error}</FormAlert>}
 
-      {tasks.length === 0 ? (
+      {view === "map" ? (
+        <TaskMap
+          milestone={milestone}
+          tasks={tasks}
+          onOpen={handlers.onEdit}
+          onToggleDone={handlers.onToggleDone}
+          onAddChild={(parent) => setForm({ open: true, mode: { kind: "create", parent } })}
+        />
+      ) : tasks.length === 0 ? (
         <EmptyState
           icon={<ListChecksIcon />}
           title={t("emptyTitle")}
@@ -177,5 +193,37 @@ export function TasksPanel({ milestoneId, tasks }: { milestoneId: string; tasks:
         />
       )}
     </GlowCard>
+  );
+}
+
+function ViewSwitch({ view, onChange }: { view: TaskView; onChange: (view: TaskView) => void }) {
+  const t = useTranslations("milestones.tasks.view");
+  const options = [
+    { value: "list", icon: ListTreeIcon },
+    { value: "map", icon: NetworkIcon },
+  ] as const;
+
+  return (
+    <div
+      role="group"
+      aria-label={t("label")}
+      className="flex rounded-xl border border-line bg-canvas-deep/40 p-0.5"
+    >
+      {options.map(({ value, icon: Icon }) => (
+        <button
+          key={value}
+          type="button"
+          aria-pressed={view === value}
+          onClick={() => onChange(value)}
+          className={cn(
+            "flex h-10 cursor-pointer items-center gap-1.5 rounded-[10px] px-3 text-sm font-medium text-ink-muted transition-colors outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40 mouse:h-8",
+            view === value && "bg-surface-hover text-ink shadow-glow",
+          )}
+        >
+          <Icon aria-hidden className="size-4" />
+          {t(value)}
+        </button>
+      ))}
+    </div>
   );
 }

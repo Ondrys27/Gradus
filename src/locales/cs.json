@@ -523,7 +523,27 @@
       "errors": {
         "openSubtasks": "Nejdřív dokonči všechny podúkoly, pak půjde úkol odškrtnout.",
         "saveFailed": "Změnu se nepodařilo uložit. Vrátila se zpět, zkus to znovu."
+      },
+      "view": {
+        "label": "Zobrazit úkoly jako",
+        "list": "Seznam",
+        "map": "Mapa"
       }
+    },
+    "map": {
+      "label": "Mapa úkolů",
+      "controls": "Ovládání mapy",
+      "zoomIn": "Přiblížit",
+      "zoomOut": "Oddálit",
+      "centre": "Vycentrovat mapu",
+      "fullscreen": "Celá obrazovka",
+      "exitFullscreen": "Zavřít celou obrazovku",
+      "open": "Otevřít „{title}“",
+      "addChild": "Přidat podúkol k „{title}“",
+      "addTask": "Přidat úkol",
+      "collapse": "Skrýt podúkoly",
+      "expand": "{count, plural, one {Ukázat # skrytý úkol} few {Ukázat # skryté úkoly} many {Ukázat # skrytého úkolu} other {Ukázat # skrytých úkolů}}",
+      "rootProgress": "{done} / {total}"
     }
   }
 }

@@ -232,7 +232,7 @@ export function MilestoneDetail({ id }: { id: string }) {
         </GlowCard>
       )}
 
-      <TasksPanel milestoneId={milestone.id} tasks={tasks} />
+      <TasksPanel milestone={milestone} tasks={tasks} />
 
       <MilestoneFormDialog open={editing} onOpenChange={setEditing} milestone={milestone} />
       <ConfirmDialog

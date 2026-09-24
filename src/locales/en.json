@@ -523,7 +523,27 @@
       "errors": {
         "openSubtasks": "Finish all subtasks first, then you can tick this task.",
         "saveFailed": "Could not save your change. It was undone, please try again."
+      },
+      "view": {
+        "label": "Show tasks as",
+        "list": "List",
+        "map": "Map"
       }
+    },
+    "map": {
+      "label": "Task map",
+      "controls": "Map controls",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "centre": "Centre the map",
+      "fullscreen": "Full screen",
+      "exitFullscreen": "Exit full screen",
+      "open": "Open “{title}”",
+      "addChild": "Add a subtask to “{title}”",
+      "addTask": "Add a task",
+      "collapse": "Hide subtasks",
+      "expand": "{count, plural, one {Show # hidden task} other {Show # hidden tasks}}",
+      "rootProgress": "{done} / {total}"
     }
   }
 }
