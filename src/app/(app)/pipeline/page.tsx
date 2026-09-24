@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { SectionPlaceholder } from "@/components/layout/section-placeholder";
+import { PipelineView } from "@/features/pipeline/pipeline-view";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("nav");
@@ -8,5 +8,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function PipelinePage() {
-  return <SectionPlaceholder section="pipeline" />;
+  return <PipelineView />;
 }

@@ -569,6 +569,7 @@ export type Database = {
           expected_close_date: string | null
           id: string
           lost_at: string | null
+          lost_reason: string | null
           position: number
           stage_id: string
           title: string
@@ -586,6 +587,7 @@ export type Database = {
           expected_close_date?: string | null
           id?: string
           lost_at?: string | null
+          lost_reason?: string | null
           position?: number
           stage_id: string
           title: string
@@ -603,6 +605,7 @@ export type Database = {
           expected_close_date?: string | null
           id?: string
           lost_at?: string | null
+          lost_reason?: string | null
           position?: number
           stage_id?: string
           title?: string
@@ -1949,6 +1952,10 @@ export type Database = {
       prospecting_seconds_for_day: {
         Args: { _day: string; _timezone: string }
         Returns: number
+      }
+      remove_stage: {
+        Args: { _move_to?: string; _stage_id: string }
+        Returns: undefined
       }
       start_prospecting: {
         Args: never

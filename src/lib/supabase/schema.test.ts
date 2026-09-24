@@ -237,6 +237,106 @@ describe("contact tables", () => {
   });
 });
 
+describe("pipeline", () => {
+  let stages: Record<string, string>;
+
+  async function newContact(name: string) {
+    return (
+      await one<{ id: string }>(
+        `insert into contacts (user_id, company_name) values ('${owner}', '${name}') returning id`,
+      )
+    ).id;
+  }
+  async function newDeal(stage: string, contact: string | null = null) {
+    return await one<{ id: string; won_at: string | null; lost_at: string | null }>(
+      `insert into deals (user_id, contact_id, stage_id, title)
+       values ('${owner}', ${contact ? `'${contact}'` : "null"}, '${stage}', 'Deal') returning *`,
+    );
+  }
+  async function clientsCount(contact: string) {
+    return count(
+      `select 1 from contact_table_entries e join contact_tables t on t.id = e.table_id
+       where e.contact_id = '${contact}' and t.system_key = 'clients'`,
+    );
+  }
+
+  beforeAll(async () => {
+    await asUser(owner);
+    stages = Object.fromEntries(
+      (
+        await rows<{ system_key: string; id: string }>(
+          `select system_key, id from pipeline_stages where user_id = '${owner}'`,
+        )
+      ).map((r) => [r.system_key, r.id]),
+    );
+  });
+
+  it("puts the contact of a won deal into clients, once, and keeps it there on return", async () => {
+    const contact = await newContact("Won Ltd");
+    const deal = await newDeal(stages.lead, contact);
+    expect(await clientsCount(contact)).toBe(0);
+    await db.query(`update deals set stage_id = '${stages.won}' where id = '${deal.id}'`);
+    expect(await clientsCount(contact)).toBe(1);
+    await db.query(`update deals set stage_id = '${stages.offer}' where id = '${deal.id}'`);
+    await db.query(`update deals set stage_id = '${stages.won}' where id = '${deal.id}'`);
+    expect(await clientsCount(contact)).toBe(1);
+    expect(await count(`select 1 from contact_table_entries where contact_id = '${contact}'`)).toBe(
+      1,
+    );
+  });
+
+  it("wins a deal without a contact without touching any table", async () => {
+    const deal = await newDeal(stages.lead);
+    const won = await one<{ won_at: string | null }>(
+      `update deals set stage_id = '${stages.won}' where id = '${deal.id}' returning *`,
+    );
+    expect(won.won_at).not.toBeNull();
+  });
+
+  it("stamps and clears won_at, lost_at and the lost reason with the stage", async () => {
+    const deal = await newDeal(stages.lead);
+    const lost = await one<{ lost_at: string | null; won_at: string | null; lost_reason: string }>(
+      `update deals set stage_id = '${stages.lost}', lost_reason = 'Too expensive'
+       where id = '${deal.id}' returning *`,
+    );
+    expect(lost.lost_at).not.toBeNull();
+    expect(lost.won_at).toBeNull();
+    expect(lost.lost_reason).toBe("Too expensive");
+    const back = await one<{ lost_at: string | null; lost_reason: string | null }>(
+      `update deals set stage_id = '${stages.meeting}' where id = '${deal.id}' returning *`,
+    );
+    expect(back.lost_at).toBeNull();
+    expect(back.lost_reason).toBeNull();
+  });
+
+  it("refuses to remove the last stage but removes others, moving their deals", async () => {
+    const extra = (
+      await one<{ id: string }>(
+        `insert into pipeline_stages (user_id, name, position) values ('${owner}', 'Extra', 9) returning id`,
+      )
+    ).id;
+    const deal = await newDeal(extra);
+    await expect(db.query(`select remove_stage('${extra}')`)).rejects.toThrow(
+      /target_stage_required/,
+    );
+    await db.query(`select remove_stage('${extra}', '${stages.meeting}')`);
+    expect(
+      (await one<{ stage_id: string }>(`select stage_id from deals where id = '${deal.id}'`))
+        .stage_id,
+    ).toBe(stages.meeting);
+
+    await asUser(second);
+    const others = await rows<{ id: string }>(`select id from pipeline_stages`);
+    for (const { id } of others.slice(0, -1)) {
+      await db.query(`select remove_stage('${id}')`);
+    }
+    await expect(db.query(`select remove_stage('${others.at(-1)!.id}')`)).rejects.toThrow(
+      /last_stage/,
+    );
+    await asUser(owner);
+  });
+});
+
 describe("tasks", () => {
   it("locks a parent until its subtasks are done and never completes it by itself", async () => {
     await asUser(owner);
@@ -523,8 +623,9 @@ describe("security: an ordinary signed-in account", () => {
   it("cannot see or reference another user's rows", async () => {
     await asUser(attacker);
     expect(await count(`select 1 from contacts`)).toBe(0);
-    const lead = (await one<{ id: string }>(`select id from pipeline_stages where system_key = 'lead'`))
-      .id;
+    const lead = (
+      await one<{ id: string }>(`select id from pipeline_stages where system_key = 'lead'`)
+    ).id;
     await expect(
       db.query(
         `insert into deals (user_id, contact_id, stage_id, title) values ($1, $2, $3, 'x')`,
@@ -532,10 +633,10 @@ describe("security: an ordinary signed-in account", () => {
       ),
     ).rejects.toThrow(/foreign key/);
     await expect(
-      db.query(`insert into calendar_events (user_id, title, starts_at, contact_id) values ($1, 'x', now(), $2)`, [
-        attacker,
-        victimContact,
-      ]),
+      db.query(
+        `insert into calendar_events (user_id, title, starts_at, contact_id) values ($1, 'x', now(), $2)`,
+        [attacker, victimContact],
+      ),
     ).rejects.toThrow(/foreign key/);
     await expect(
       db.query(
@@ -556,16 +657,15 @@ describe("security: an ordinary signed-in account", () => {
       )
     ).id;
     const tables = Object.fromEntries(
-      (await rows<{ system_key: string; id: string }>(`select system_key, id from contact_tables`)).map(
-        (r) => [r.system_key, r.id],
-      ),
+      (
+        await rows<{ system_key: string; id: string }>(`select system_key, id from contact_tables`)
+      ).map((r) => [r.system_key, r.id]),
     );
     await expect(
-      db.query(`insert into contact_table_entries (user_id, contact_id, table_id) values ($1, $2, $3)`, [
-        attacker,
-        contact,
-        tables.clients,
-      ]),
+      db.query(
+        `insert into contact_table_entries (user_id, contact_id, table_id) values ($1, $2, $3)`,
+        [attacker, contact, tables.clients],
+      ),
     ).rejects.toThrow(/row-level security/);
     await expect(
       db.query(
@@ -577,11 +677,13 @@ describe("security: an ordinary signed-in account", () => {
     await db.query(`select move_contact($1, $2)`, [contact, tables.unreached]);
     expect((await db.query(`delete from contact_table_entries`)).affectedRows).toBe(0);
 
-    await expect(db.query(`delete from contact_tables where id = $1`, [tables.clients])).rejects.toThrow(
-      /system_table_readonly/,
-    );
     await expect(
-      db.query(`update contact_tables set system_key = 'unreached' where id = $1`, [tables.no_answer]),
+      db.query(`delete from contact_tables where id = $1`, [tables.clients]),
+    ).rejects.toThrow(/system_table_readonly/);
+    await expect(
+      db.query(`update contact_tables set system_key = 'unreached' where id = $1`, [
+        tables.no_answer,
+      ]),
     ).rejects.toThrow(/system_table_readonly/);
     await asServer();
   });
@@ -632,19 +734,25 @@ describe("security: an ordinary signed-in account", () => {
       db.query(`update worker_tasks set title = 'Nothing' where id = $1`, [task]),
     ).rejects.toThrow(/worker_may_only_change_status/);
     await db.query(`update worker_tasks set status = 'done' where id = $1`, [task]);
-    expect((await one(`select status from worker_tasks where id = $1`, [task])).status).toBe("done");
+    expect((await one(`select status from worker_tasks where id = $1`, [task])).status).toBe(
+      "done",
+    );
     await asServer();
   });
 
   it("as an owner, cannot bind someone else's account or accept its own invite", async () => {
     await asUser(attacker);
     await expect(
-      db.query(`insert into workers (owner_id, user_id, name) values ($1, $2, 'x')`, [attacker, victim]),
+      db.query(`insert into workers (owner_id, user_id, name) values ($1, $2, 'x')`, [
+        attacker,
+        victim,
+      ]),
     ).rejects.toThrow(/worker_account_link_is_server_only/);
     const worker = (
-      await one<{ id: string }>(`insert into workers (owner_id, name) values ($1, 'x') returning id`, [
-        attacker,
-      ])
+      await one<{ id: string }>(
+        `insert into workers (owner_id, name) values ($1, 'x') returning id`,
+        [attacker],
+      )
     ).id;
     await expect(
       db.query(`update workers set user_id = $1 where id = $2`, [victim, worker]),
@@ -672,7 +780,9 @@ describe("security: an ordinary signed-in account", () => {
         [attacker],
       )
     ).id;
-    await db.query(`update feature_requests set title = 'Dark mode please' where id = $1`, [request]);
+    await db.query(`update feature_requests set title = 'Dark mode please' where id = $1`, [
+      request,
+    ]);
     await expect(
       db.query(`update feature_requests set status = 'done' where id = $1`, [request]),
     ).rejects.toThrow(/feature_request_status_is_admin_only/);
@@ -730,9 +840,10 @@ describe("security: server-owned rows and columns", () => {
   it("stamps completion and stage times from the status, not from the client", async () => {
     await asUser(user);
     const milestone = (
-      await one<{ id: string }>(`insert into milestones (user_id, title) values ($1, 'M2') returning id`, [
-        user,
-      ])
+      await one<{ id: string }>(
+        `insert into milestones (user_id, title) values ($1, 'M2') returning id`,
+        [user],
+      )
     ).id;
     const task = await one<{ id: string; completed_at: string }>(
       `insert into tasks (user_id, milestone_id, title, status, completed_at)
@@ -752,8 +863,9 @@ describe("security: server-owned rows and columns", () => {
     );
     expect(new Date(completed.completed_at!).getFullYear()).toBeGreaterThan(2020);
 
-    const lead = (await one<{ id: string }>(`select id from pipeline_stages where system_key = 'lead'`))
-      .id;
+    const lead = (
+      await one<{ id: string }>(`select id from pipeline_stages where system_key = 'lead'`)
+    ).id;
     const deal = await one<{ id: string; won_at: string | null }>(
       `insert into deals (user_id, stage_id, title, won_at) values ($1, $2, 'd', now()) returning *`,
       [user, lead],
@@ -771,9 +883,10 @@ describe("security: server-owned rows and columns", () => {
   it("reopens a completed parent when an open subtask is added", async () => {
     await asUser(user);
     const milestone = (
-      await one<{ id: string }>(`insert into milestones (user_id, title) values ($1, 'M3') returning id`, [
-        user,
-      ])
+      await one<{ id: string }>(
+        `insert into milestones (user_id, title) values ($1, 'M3') returning id`,
+        [user],
+      )
     ).id;
     const parent = (
       await one<{ id: string }>(

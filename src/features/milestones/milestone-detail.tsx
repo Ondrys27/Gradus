@@ -25,7 +25,7 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { formatCalendarDate, formatNumber, todayIsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
-import { ConfirmDialog } from "./confirm-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { MilestoneFormDialog } from "./milestone-form-dialog";
 import { useDeleteMilestone, useMilestone, useSetMilestoneStatus, useTasks } from "./queries";
 import { countTasks, progressOf } from "./task-tree";

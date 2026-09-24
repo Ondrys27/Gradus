@@ -19,7 +19,7 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { GlowCard } from "@/components/ui/glow-card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { ConfirmDialog } from "./confirm-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useCreateTask, useDeleteTask, useReorderTasks, useSetTaskStatus } from "./queries";
 import { TITLE_MAX } from "./schemas";
 import { TaskFormDialog, type TaskFormMode } from "./task-form-dialog";

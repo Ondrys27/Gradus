@@ -545,5 +545,150 @@
       "expand": "{count, plural, one {Show # hidden task} other {Show # hidden tasks}}",
       "rootProgress": "{done} / {total}"
     }
+  },
+  "pipeline": {
+    "description": "Every deal and the stage it is in. Drag a deal to move it on.",
+    "actions": {
+      "newDeal": "New deal",
+      "editStages": "Edit stages",
+      "doneEditing": "Done",
+      "addStage": "Add stage"
+    },
+    "filter": {
+      "label": "Filter deals",
+      "relaunch": "Could be approached again ({count})"
+    },
+    "notices": {
+      "moveFailed": "The deal could not be moved. Check your connection and try again.",
+      "renameFailed": "The stage could not be renamed. Try again."
+    },
+    "column": {
+      "addDeal": "Add a deal to {name}",
+      "empty": "No deals"
+    },
+    "card": {
+      "open": "Open deal {title}",
+      "noContact": "No contact",
+      "relaunch": "Could be approached again"
+    },
+    "stage": {
+      "rename": "Stage name (currently {name})",
+      "drag": "Move stage {name}",
+      "remove": "Remove stage {name}",
+      "lastStage": "This is your last stage, so it cannot be removed."
+    },
+    "form": {
+      "createTitle": "New deal",
+      "name": "Deal name",
+      "namePlaceholder": "e.g. Website for Acme",
+      "contact": "Contact",
+      "contactPlaceholder": "Search or type a new name…",
+      "contactResults": "Matching contacts",
+      "contactCreate": "Create contact “{name}”",
+      "contactClear": "Remove contact",
+      "contactCreateFailed": "The contact could not be created. Try again.",
+      "amount": "Amount",
+      "currency": "Currency",
+      "closeDate": "Expected close",
+      "closeDatePlaceholder": "Pick a date",
+      "stage": "Stage",
+      "create": "Create deal",
+      "cancel": "Cancel",
+      "close": "Close",
+      "saveFailed": "The deal could not be saved. Check your connection and try again."
+    },
+    "detail": {
+      "title": "Deal",
+      "stage": "Stage",
+      "since": "In this stage since {date}",
+      "wonOn": "Won on {date}",
+      "lostOn": "Lost on {date}",
+      "notes": "Note",
+      "notesPlaceholder": "Anything worth remembering about this deal",
+      "lostReason": "Why it was lost",
+      "save": "Save changes",
+      "saved": "Saved",
+      "saveFailed": "The changes could not be saved. Try again.",
+      "history": "Communication history",
+      "historyEmpty": "Calls, e-mails and meetings with this contact will show up here.",
+      "delete": "Delete deal",
+      "deleteTitle": "Delete this deal?",
+      "deleteDescription": "“{title}” will be deleted for good. The contact stays.",
+      "deleteFailed": "The deal could not be deleted. Try again.",
+      "cancel": "Cancel",
+      "close": "Close"
+    },
+    "lost": {
+      "title": "Mark as lost",
+      "description": "What happened with “{title}”?",
+      "reason": "Reason",
+      "hint": "Optional, but it helps you learn from it.",
+      "placeholder": "e.g. Chose a cheaper competitor",
+      "confirm": "Mark as lost",
+      "cancel": "Cancel",
+      "close": "Close"
+    },
+    "stageDialog": {
+      "addTitle": "Add stage",
+      "name": "Stage name",
+      "color": "Colour",
+      "colors": {
+        "violet": "Violet",
+        "teal": "Teal",
+        "gold": "Gold",
+        "green": "Green",
+        "pink": "Pink",
+        "neutral": "Grey"
+      },
+      "kind": "Kind",
+      "kinds": {
+        "open": "Ordinary stage",
+        "won": "Won",
+        "lost": "Lost"
+      },
+      "kindHint": {
+        "open": "A deal on its way to being won.",
+        "won": "Deals here count as won and their contacts become clients.",
+        "lost": "Deals here count as lost, and you are asked why."
+      },
+      "add": "Add stage",
+      "cancel": "Cancel",
+      "close": "Close",
+      "saveFailed": "The stage could not be added. Try again.",
+      "removeTitle": "Remove stage",
+      "removeEmpty": "Remove the stage “{name}”?",
+      "removeWithDeals": "{count, plural, one {# deal is} other {# deals are}} in “{name}”. Choose where to move {count, plural, one {it} other {them}}.",
+      "moveTo": "Move deals to",
+      "remove": "Remove stage",
+      "lastStage": "This is your last stage, so it cannot be removed.",
+      "removeFailed": "The stage could not be removed. Try again."
+    },
+    "celebration": {
+      "title": "Deal won!"
+    },
+    "empty": {
+      "title": "No deals yet",
+      "description": "Create a deal and move it through the stages until it is won.",
+      "action": "Create your first deal"
+    },
+    "loadFailed": "Could not load your pipeline. Check your connection and try again.",
+    "retry": "Try again",
+    "errors": {
+      "titleRequired": "Give the deal a name.",
+      "titleTooLong": "The name is too long.",
+      "valueInvalid": "Enter an amount like 12500 or 1250,50.",
+      "descriptionTooLong": "The note is too long.",
+      "reasonTooLong": "The reason is too long.",
+      "stageRequired": "Choose a stage.",
+      "nameRequired": "Give the stage a name.",
+      "nameTooLong": "The name is too long."
+    },
+    "a11y": {
+      "instructions": "Press space to pick up, the arrow keys to move, space to drop and escape to cancel.",
+      "pickedUp": "Picked up {name}.",
+      "over": "{name} is over {target}.",
+      "dropped": "{name} was dropped on {target}.",
+      "cancelled": "Move cancelled."
+    }
   }
 }

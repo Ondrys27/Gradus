@@ -106,6 +106,16 @@ export function formatNumber(
   }).format(value);
 }
 
+/** Money in the user's number format. Never converts: `currency` only picks the symbol. */
+export function formatCurrency(
+  value: number,
+  currency?: string,
+  settings: FormatSettings = DEFAULT_FORMAT_SETTINGS,
+  decimals = 0,
+): string {
+  return formatNumber(value, { style: "currency", currency, decimals }, settings);
+}
+
 /** Calendar date (no time, no time zone) as `yyyy-MM-dd`. */
 export type IsoDate = string;
 

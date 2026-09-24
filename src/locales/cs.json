@@ -545,5 +545,150 @@
       "expand": "{count, plural, one {Ukázat # skrytý úkol} few {Ukázat # skryté úkoly} many {Ukázat # skrytého úkolu} other {Ukázat # skrytých úkolů}}",
       "rootProgress": "{done} / {total}"
     }
+  },
+  "pipeline": {
+    "description": "Každý obchod a fáze, ve které je. Tažením ho posuneš dál.",
+    "actions": {
+      "newDeal": "Nový obchod",
+      "editStages": "Upravit fáze",
+      "doneEditing": "Hotovo",
+      "addStage": "Přidat fázi"
+    },
+    "filter": {
+      "label": "Filtr obchodů",
+      "relaunch": "Možné znovu oslovit ({count})"
+    },
+    "notices": {
+      "moveFailed": "Obchod se nepodařilo přesunout. Zkontroluj připojení a zkus to znovu.",
+      "renameFailed": "Fázi se nepodařilo přejmenovat. Zkus to znovu."
+    },
+    "column": {
+      "addDeal": "Přidat obchod do fáze {name}",
+      "empty": "Žádné obchody"
+    },
+    "card": {
+      "open": "Otevřít obchod {title}",
+      "noContact": "Bez kontaktu",
+      "relaunch": "Možné znovu oslovit"
+    },
+    "stage": {
+      "rename": "Název fáze (nyní {name})",
+      "drag": "Přesunout fázi {name}",
+      "remove": "Odebrat fázi {name}",
+      "lastStage": "Toto je tvoje poslední fáze, nejde odebrat."
+    },
+    "form": {
+      "createTitle": "Nový obchod",
+      "name": "Název obchodu",
+      "namePlaceholder": "např. Web pro firmu Acme",
+      "contact": "Kontakt",
+      "contactPlaceholder": "Hledej nebo napiš nové jméno…",
+      "contactResults": "Odpovídající kontakty",
+      "contactCreate": "Založit kontakt „{name}“",
+      "contactClear": "Odebrat kontakt",
+      "contactCreateFailed": "Kontakt se nepodařilo založit. Zkus to znovu.",
+      "amount": "Částka",
+      "currency": "Měna",
+      "closeDate": "Očekávané uzavření",
+      "closeDatePlaceholder": "Vyber datum",
+      "stage": "Fáze",
+      "create": "Vytvořit obchod",
+      "cancel": "Zrušit",
+      "close": "Zavřít",
+      "saveFailed": "Obchod se nepodařilo uložit. Zkontroluj připojení a zkus to znovu."
+    },
+    "detail": {
+      "title": "Obchod",
+      "stage": "Fáze",
+      "since": "V této fázi od {date}",
+      "wonOn": "Vyhráno {date}",
+      "lostOn": "Ztraceno {date}",
+      "notes": "Poznámka",
+      "notesPlaceholder": "Cokoliv, co stojí za zapamatování",
+      "lostReason": "Proč se obchod nepovedl",
+      "save": "Uložit změny",
+      "saved": "Uloženo",
+      "saveFailed": "Změny se nepodařilo uložit. Zkus to znovu.",
+      "history": "Historie komunikace",
+      "historyEmpty": "Tady se objeví hovory, e-maily a schůzky s tímto kontaktem.",
+      "delete": "Smazat obchod",
+      "deleteTitle": "Smazat tento obchod?",
+      "deleteDescription": "Obchod „{title}“ se nenávratně smaže. Kontakt zůstane.",
+      "deleteFailed": "Obchod se nepodařilo smazat. Zkus to znovu.",
+      "cancel": "Zrušit",
+      "close": "Zavřít"
+    },
+    "lost": {
+      "title": "Označit jako ztracený",
+      "description": "Co se stalo s obchodem „{title}“?",
+      "reason": "Důvod",
+      "hint": "Nepovinné, ale pomůže ti poučit se.",
+      "placeholder": "např. Vybrali levnější konkurenci",
+      "confirm": "Označit jako ztracený",
+      "cancel": "Zrušit",
+      "close": "Zavřít"
+    },
+    "stageDialog": {
+      "addTitle": "Přidat fázi",
+      "name": "Název fáze",
+      "color": "Barva",
+      "colors": {
+        "violet": "Fialová",
+        "teal": "Tyrkysová",
+        "gold": "Zlatá",
+        "green": "Zelená",
+        "pink": "Růžová",
+        "neutral": "Šedá"
+      },
+      "kind": "Druh",
+      "kinds": {
+        "open": "Běžná fáze",
+        "won": "Vyhráno",
+        "lost": "Ztraceno"
+      },
+      "kindHint": {
+        "open": "Obchod na cestě k výhře.",
+        "won": "Obchody tady se počítají jako vyhrané a jejich kontakty se stanou klienty.",
+        "lost": "Obchody tady se počítají jako ztracené a zeptáme se proč."
+      },
+      "add": "Přidat fázi",
+      "cancel": "Zrušit",
+      "close": "Zavřít",
+      "saveFailed": "Fázi se nepodařilo přidat. Zkus to znovu.",
+      "removeTitle": "Odebrat fázi",
+      "removeEmpty": "Odebrat fázi „{name}“?",
+      "removeWithDeals": "Ve fázi „{name}“ {count, plural, one {je # obchod} few {jsou # obchody} many {je # obchodu} other {je # obchodů}}. Vyber, kam se přesunou.",
+      "moveTo": "Přesunout obchody do",
+      "remove": "Odebrat fázi",
+      "lastStage": "Toto je tvoje poslední fáze, nejde odebrat.",
+      "removeFailed": "Fázi se nepodařilo odebrat. Zkus to znovu."
+    },
+    "celebration": {
+      "title": "Obchod vyhrán!"
+    },
+    "empty": {
+      "title": "Zatím žádné obchody",
+      "description": "Vytvoř obchod a posouvej ho fázemi, dokud ho nevyhraješ.",
+      "action": "Vytvořit první obchod"
+    },
+    "loadFailed": "Pipeline se nepodařilo načíst. Zkontroluj připojení a zkus to znovu.",
+    "retry": "Zkusit znovu",
+    "errors": {
+      "titleRequired": "Pojmenuj obchod.",
+      "titleTooLong": "Název je příliš dlouhý.",
+      "valueInvalid": "Zadej částku jako 12500 nebo 1250,50.",
+      "descriptionTooLong": "Poznámka je příliš dlouhá.",
+      "reasonTooLong": "Důvod je příliš dlouhý.",
+      "stageRequired": "Vyber fázi.",
+      "nameRequired": "Pojmenuj fázi.",
+      "nameTooLong": "Název je příliš dlouhý."
+    },
+    "a11y": {
+      "instructions": "Mezerníkem zvedni, šipkami přesuň, mezerníkem pusť a klávesou Escape zruš.",
+      "pickedUp": "Zvednuto: {name}.",
+      "over": "{name} je nad {target}.",
+      "dropped": "{name} bylo puštěno na {target}.",
+      "cancelled": "Přesun zrušen."
+    }
   }
 }

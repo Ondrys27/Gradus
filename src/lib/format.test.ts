@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_FORMAT_SETTINGS,
   formatCalendarDate,
+  formatCurrency,
   formatDateTime,
   formatNumber,
   formatTime,
@@ -32,6 +33,17 @@ describe("formatNumber", () => {
     expect(formatNumber(1200, { style: "currency" }, { ...settings, currency: "EUR" })).toBe(
       "€1,200",
     );
+  });
+});
+
+describe("formatCurrency", () => {
+  it("uses the user's number format and the given currency", () => {
+    expect(formatCurrency(184500, "CZK").replace(/\s/g, " ")).toBe("184 500 Kč");
+    expect(formatCurrency(1200, "EUR", settings)).toBe("€1,200");
+  });
+
+  it("falls back to the currency in settings and supports decimals", () => {
+    expect(formatCurrency(12.5, undefined, { ...settings, currency: "USD" }, 2)).toBe("$12.50");
   });
 });
 
