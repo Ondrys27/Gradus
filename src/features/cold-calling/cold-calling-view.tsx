@@ -16,6 +16,7 @@ import { TableSwitcher } from "@/features/contacts/table-switcher";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { CallContactPanel } from "./call-contact-panel";
 import { CallList } from "./call-list";
+import { BestIndustriesCard } from "./best-industries-card";
 import { BestTimeCard } from "./best-time-card";
 import { TimerCard } from "./timer-card";
 
@@ -133,6 +134,7 @@ export function ColdCallingView() {
           <TimerCard />
           <StatsCard />
           <BestTimeCard />
+          <BestIndustriesCard />
         </aside>
       </div>
 

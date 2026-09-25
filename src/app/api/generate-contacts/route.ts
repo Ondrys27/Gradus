@@ -143,6 +143,8 @@ export async function POST(request: Request) {
               _places: result.places,
               _limit: count - created,
               _country: ctx.country ?? undefined,
+              // Kept on the contact for the "best industries" statistics.
+              _industry: industry,
             })
             .single();
           const pageCreated = data?.created ?? 0;

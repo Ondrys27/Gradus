@@ -1073,6 +1073,20 @@
       "less": "Fewer meetings",
       "more": "More",
       "fewData": "Not enough data yet (under {min} calls)"
+    },
+    "industries": {
+      "title": "Best industries",
+      "locked": "Unlocks after {needed} booked meetings: then you will see which industries from contact generation turn into meetings most often.",
+      "progressLabel": "Meetings towards unlocking",
+      "progress": "{meetings} of {needed} meetings",
+      "unlockedTitle": "Best industries unlocked!",
+      "unlockedSubtitle": "Ten meetings booked. See which industries work best for you.",
+      "noGenerated": "No generated contacts yet. Generate some in Contacts and this card will compare their industries.",
+      "explain": "Share of called contacts that ended in a meeting, by the industry you generated them for.",
+      "few": "Too few calls",
+      "shareLabel": "Meeting share for {industry}",
+      "counts": "Meetings {meetings} · called {called} · generated {contacts}",
+      "loadFailed": "This card could not be loaded."
     }
   }
 }

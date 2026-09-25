@@ -1561,3 +1561,80 @@ describe("call time statistics", () => {
     await asServer();
   });
 });
+
+describe("industry insights", () => {
+  it("unlocks itself at 10 meetings and then shares meetings by industry", async () => {
+    const user = await createAuthUser();
+    await asUser(user);
+    await db.query(`select * from import_generated_contacts($1, 10, 'CZ', 'Kadeřnictví')`, [
+      JSON.stringify(
+        Array.from({ length: 6 }, (_, i) => ({
+          id: `h${i}`,
+          name: `Salon ${i}`,
+          address: `A ${i}`,
+        })),
+      ),
+    ]);
+    await db.query(`select * from import_generated_contacts($1, 10, 'CZ', 'kadeřnictví ')`, [
+      JSON.stringify([{ id: "h9", name: "Salon 9", address: "A 9" }]),
+    ]);
+    await db.query(`select * from import_generated_contacts($1, 10, 'CZ', 'Zubař')`, [
+      JSON.stringify(
+        Array.from({ length: 5 }, (_, i) => ({
+          id: `z${i}`,
+          name: `Zubař ${i}`,
+          address: `Z ${i}`,
+        })),
+      ),
+    ]);
+    const tables = Object.fromEntries(
+      (
+        await rows<{ system_key: string; id: string }>(`select system_key, id from contact_tables`)
+      ).map((r) => [r.system_key, r.id]),
+    );
+    const meetingAt = (
+      await one<{ id: string }>(
+        `select id from contact_table_fields where table_id = $1 and system_key = 'meeting_at'`,
+        [tables.meeting_scheduled],
+      )
+    ).id;
+    const contacts = await rows<{ id: string; name: string }>(
+      `select id, company_name as name from contacts order by company_name`,
+    );
+    const moveTo = (id: string, table: string, answers = {}) =>
+      db.query(`select move_contact($1, $2, $3)`, [id, table, JSON.stringify(answers)]);
+    const meeting = { [meetingAt]: "2026-10-01T08:00:00Z" };
+
+    // Salons: 4 called, 3 meetings. Dentists: 5 called, 1 meeting.
+    for (const c of contacts.filter((c) => c.name.startsWith("Salon")).slice(0, 4)) {
+      await moveTo(c.id, tables.no_answer);
+    }
+    const salons = contacts.filter((c) => c.name.startsWith("Salon"));
+    for (const c of salons.slice(0, 3)) await moveTo(c.id, tables.meeting_scheduled, meeting);
+    const dentists = contacts.filter((c) => c.name.startsWith("Zubař"));
+    for (const c of dentists) await moveTo(c.id, tables.no_answer);
+    await moveTo(dentists[0].id, tables.meeting_scheduled, meeting);
+
+    const locked = await one<{ i: Record<string, unknown> }>(`select industry_insights() as i`);
+    expect(locked.i).toMatchObject({ meetings: 4, needed: 10, unlocked_at: null, industries: [] });
+    await expect(
+      db.query(`insert into unlocks (user_id, key) values ($1, 'best_industries')`, [user]),
+    ).rejects.toThrow(/row-level security/);
+
+    // Six more meetings (moving back and forth counts each booking).
+    for (let i = 0; i < 6; i++) {
+      await moveTo(dentists[1].id, tables.no_answer);
+      await moveTo(dentists[1].id, tables.meeting_scheduled, meeting);
+    }
+    const open = await one<{ i: { unlocked_at: string | null; industries: unknown[] } }>(
+      `select industry_insights() as i`,
+    );
+    expect(open.i.unlocked_at).not.toBeNull();
+    expect(open.i.industries).toEqual([
+      { industry: "Kadeřnictví", contacts: 7, called: 4, meetings: 3 },
+      { industry: "Zubař", contacts: 5, called: 5, meetings: 2 },
+    ]);
+    expect(await count(`select 1 from unlocks where key = 'best_industries'`)).toBe(1);
+    await asServer();
+  });
+});

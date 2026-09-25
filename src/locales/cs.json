@@ -1073,6 +1073,20 @@
       "less": "Méně schůzek",
       "more": "Více",
       "fewData": "Zatím málo dat (pod {min} hovorů)"
+    },
+    "industries": {
+      "title": "Nejlepší obory",
+      "locked": "Odemkne se po {needed} domluvených schůzkách: pak uvidíš, které obory z generování kontaktů nejčastěji končí schůzkou.",
+      "progressLabel": "Schůzky do odemčení",
+      "progress": "{meetings} z {needed} schůzek",
+      "unlockedTitle": "Nejlepší obory odemčeny!",
+      "unlockedSubtitle": "Deset domluvených schůzek. Podívej se, které obory ti jdou nejlépe.",
+      "noGenerated": "Zatím nemáš žádné vygenerované kontakty. Vygeneruj je v Kontaktech a tahle karta porovná jejich obory.",
+      "explain": "Podíl provolaných kontaktů, které skončily schůzkou, podle oboru, pro který jsi je generoval.",
+      "few": "Málo hovorů",
+      "shareLabel": "Podíl schůzek: {industry}",
+      "counts": "Schůzky {meetings} · provoláno {called} · vygenerováno {contacts}",
+      "loadFailed": "Kartu se nepodařilo načíst."
     }
   }
 }

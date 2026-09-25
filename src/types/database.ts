@@ -503,6 +503,7 @@ export type Database = {
           email: string | null
           external_place_id: string | null
           first_name: string | null
+          generated_industry: string | null
           id: string
           last_name: string | null
           notes: string | null
@@ -524,6 +525,7 @@ export type Database = {
           email?: string | null
           external_place_id?: string | null
           first_name?: string | null
+          generated_industry?: string | null
           id?: string
           last_name?: string | null
           notes?: string | null
@@ -545,6 +547,7 @@ export type Database = {
           email?: string | null
           external_place_id?: string | null
           first_name?: string | null
+          generated_industry?: string | null
           id?: string
           last_name?: string | null
           notes?: string | null
@@ -1901,12 +1904,18 @@ export type Database = {
         Returns: boolean
       }
       import_generated_contacts: {
-        Args: { _country?: string; _limit: number; _places: Json }
+        Args: {
+          _country?: string
+          _industry?: string
+          _limit: number
+          _places: Json
+        }
         Returns: {
           created: number
           duplicates: number
         }[]
       }
+      industry_insights: { Args: never; Returns: Json }
       initialize_user: {
         Args: { _locale?: string; _user_id: string }
         Returns: undefined
