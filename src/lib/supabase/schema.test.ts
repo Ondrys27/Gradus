@@ -918,3 +918,86 @@ describe("security: server-owned rows and columns", () => {
     await asServer();
   });
 });
+
+describe("contacts", () => {
+  let user: string;
+  let other: string;
+
+  beforeAll(async () => {
+    user = await createAuthUser();
+    other = await createAuthUser();
+  });
+
+  it("normalises the phone itself, whatever the client sends", async () => {
+    await asUser(user);
+    const contact = await one<{ id: string; phone_normalized: string }>(
+      `insert into contacts (user_id, company_name, phone, phone_normalized)
+       values ($1, 'Phone s.r.o.', '+420 777-123 456', 'forged') returning id, phone_normalized`,
+      [user],
+    );
+    expect(contact.phone_normalized).toBe("420777123456");
+    const updated = await one<{ phone_normalized: string | null }>(
+      `update contacts set phone = '00421 905 111 222' where id = $1 returning phone_normalized`,
+      [contact.id],
+    );
+    expect(updated.phone_normalized).toBe("421905111222");
+    const cleared = await one<{ phone_normalized: string | null }>(
+      `update contacts set phone = null where id = $1 returning phone_normalized`,
+      [contact.id],
+    );
+    expect(cleared.phone_normalized).toBeNull();
+    await asServer();
+  });
+
+  it("puts every new contact into unreached", async () => {
+    await asUser(user);
+    const contact = (
+      await one<{ id: string }>(
+        `insert into contacts (user_id, company_name) values ($1, 'New s.r.o.') returning id`,
+        [user],
+      )
+    ).id;
+    const entry = await one<{ system_key: string }>(
+      `select t.system_key from contact_table_entries e join contact_tables t on t.id = e.table_id
+       where e.contact_id = $1`,
+      [contact],
+    );
+    expect(entry.system_key).toBe("unreached");
+    await asServer();
+  });
+
+  it("lists contacts with their table and the latest past activity, only one's own", async () => {
+    await asUser(user);
+    const contact = (
+      await one<{ id: string }>(
+        `insert into contacts (user_id, first_name, last_name) values ($1, 'Jan', 'Novák') returning id`,
+        [user],
+      )
+    ).id;
+    const before = await one<{ last_contact_at: string | null; search_name: string }>(
+      `select last_contact_at, search_name from contact_list where id = $1`,
+      [contact],
+    );
+    expect(before).toEqual({ last_contact_at: null, search_name: "Jan Novák" });
+
+    await db.query(
+      `insert into contact_activities (user_id, contact_id, type, occurred_at) values
+         ($1, $2, 'call', '2026-01-01T10:00:00Z'),
+         ($1, $2, 'email', '2026-02-01T10:00:00Z'),
+         ($1, $2, 'meeting', now() + interval '1 day')`,
+      [user, contact],
+    );
+    const after = await one<{ last_contact_at: Date; table_id: string | null }>(
+      `select last_contact_at, table_id from contact_list where id = $1`,
+      [contact],
+    );
+    expect(after.last_contact_at.toISOString()).toBe("2026-02-01T10:00:00.000Z");
+    expect(after.table_id).not.toBeNull();
+
+    await asUser(other);
+    expect(await count(`select 1 from contact_list`)).toBe(0);
+    await asAnon();
+    await expect(db.query(`select 1 from contact_list`)).rejects.toThrow(/permission denied/);
+    await asServer();
+  });
+});

@@ -9,6 +9,9 @@ import {
   isoDateToLocal,
   localToIsoDate,
   todayIsoDate,
+  formatIsoTime,
+  instantToZonedParts,
+  zonedWallClockToInstant,
 } from "./format";
 import { toFormatSettings, type UserSettings } from "./user-settings";
 
@@ -114,5 +117,31 @@ describe("user settings mapping", () => {
     expect(result.dateFormat).toBe(DEFAULT_FORMAT_SETTINGS.dateFormat);
     expect(result.timeZone).toBe(DEFAULT_FORMAT_SETTINGS.timeZone);
     expect(toFormatSettings(null)).toBe(DEFAULT_FORMAT_SETTINGS);
+  });
+});
+
+describe("wall clock in the user's zone", () => {
+  it("turns a local date and time into the stored instant", () => {
+    expect(zonedWallClockToInstant("2026-09-24", "14:30", "Europe/Prague").toISOString()).toBe(
+      "2026-09-24T12:30:00.000Z",
+    );
+    expect(zonedWallClockToInstant("2026-01-15", "09:00", "Europe/Prague").toISOString()).toBe(
+      "2026-01-15T08:00:00.000Z",
+    );
+    expect(zonedWallClockToInstant("2026-09-24", "23:30", "America/New_York").toISOString()).toBe(
+      "2026-09-25T03:30:00.000Z",
+    );
+  });
+
+  it("round-trips through the parts shown for editing", () => {
+    const instant = new Date("2026-03-29T00:30:00Z"); // night of the Prague DST change
+    const parts = instantToZonedParts(instant, "Europe/Prague");
+    expect(parts).toEqual({ date: "2026-03-29", time: "01:30" });
+    expect(zonedWallClockToInstant(parts.date, parts.time, "Europe/Prague")).toEqual(instant);
+  });
+
+  it("formats a bare clock time with the user's time format", () => {
+    expect(formatIsoTime("14:05", settings)).toBe("14:05");
+    expect(formatIsoTime("14:05", { ...settings, timeFormat: "h:mm a" })).toBe("2:05 PM");
   });
 });

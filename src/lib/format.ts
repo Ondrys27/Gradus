@@ -193,6 +193,52 @@ export function toZonedWallClock(instant: Date, timeZone: string): Date {
   );
 }
 
+/** Clock time without a date or zone, `HH:mm` (24 h). */
+export type IsoTime = string;
+
+/**
+ * The instant at which the wall clock in `timeZone` shows `date` `time`.
+ * The inverse of `toZonedWallClock`; this is what gets stored (UTC).
+ * A time skipped by a DST jump resolves to the moment just after it.
+ */
+export function zonedWallClockToInstant(date: IsoDate, time: IsoTime, timeZone: string): Date {
+  const [y, m, d] = date.split("-").map(Number);
+  const [hh, mm] = time.split(":").map(Number);
+  const wanted = Date.UTC(y, m - 1, d, hh, mm);
+  let guess = wanted;
+  // Two passes settle the offset, including right next to a DST change.
+  for (let pass = 0; pass < 2; pass++) {
+    const shown = toZonedWallClock(new Date(guess), timeZone);
+    const shownUtc = Date.UTC(
+      shown.getFullYear(),
+      shown.getMonth(),
+      shown.getDate(),
+      shown.getHours(),
+      shown.getMinutes(),
+    );
+    guess += wanted - shownUtc;
+  }
+  return new Date(guess);
+}
+
+/** Date and `HH:mm` of an instant in the user's zone, for editing it. */
+export function instantToZonedParts(
+  instant: Date,
+  timeZone: string,
+): { date: IsoDate; time: IsoTime } {
+  const wall = toZonedWallClock(instant, timeZone);
+  return { date: formatDateFns(wall, "yyyy-MM-dd"), time: formatDateFns(wall, "HH:mm") };
+}
+
+/** A clock time like "14:30" in the user's time format, e.g. "2:30 PM". */
+export function formatIsoTime(
+  time: IsoTime,
+  settings: FormatSettings = DEFAULT_FORMAT_SETTINGS,
+): string {
+  const [hh, mm] = time.split(":").map(Number);
+  return formatDateFns(new Date(2000, 0, 1, hh, mm), settings.timeFormat);
+}
+
 /** Date of an instant (timestamptz) in the user's zone. */
 export function formatDate(
   instant: Date,

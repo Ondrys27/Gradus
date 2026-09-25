@@ -690,5 +690,121 @@
       "dropped": "{name} bylo puštěno na {target}.",
       "cancelled": "Přesun zrušen."
     }
+  },
+  "contacts": {
+    "description": "Všichni, se kterými pracuješ, roztřídění do vlastních tabulek.",
+    "loadFailed": "Kontakty se nepodařilo načíst. Zkontroluj připojení a zkus to znovu.",
+    "retry": "Zkusit znovu",
+    "actions": {
+      "newContact": "Nový kontakt"
+    },
+    "search": {
+      "label": "Hledat v kontaktech",
+      "placeholder": "Hledej podle jména, firmy nebo telefonu",
+      "emptyTitle": "Nic jsme nenašli",
+      "emptyDescription": "Hledání „{term}“ neodpovídá žádný kontakt."
+    },
+    "empty": {
+      "title": "Zatím žádné kontakty",
+      "description": "Přidej první kontakt, třeba toho, komu chceš zavolat jako prvnímu."
+    },
+    "list": {
+      "name": "Jméno",
+      "phone": "Telefon",
+      "email": "E-mail",
+      "table": "Tabulka",
+      "lastContact": "Poslední kontakt",
+      "lastContactShort": "Poslední kontakt:",
+      "never": "Zatím ne",
+      "callName": "Zavolat: {name}",
+      "emailName": "Napsat: {name}",
+      "loadMore": "Zobrazit další",
+      "loadingMore": "Načítám…"
+    },
+    "fields": {
+      "company_name": "Firma",
+      "first_name": "Jméno",
+      "last_name": "Příjmení",
+      "phone": "Telefon",
+      "email": "E-mail",
+      "website": "Web",
+      "address": "Adresa",
+      "city": "Město"
+    },
+    "errors": {
+      "nameRequired": "Vyplň firmu nebo jméno člověka.",
+      "tooLong": "Tohle je moc dlouhé.",
+      "emailInvalid": "Tohle nevypadá jako e-mailová adresa.",
+      "phoneInvalid": "Použij číslice, mezery, pomlčky a případně + na začátku.",
+      "websiteInvalid": "Tohle nevypadá jako webová adresa.",
+      "occurredAtRequired": "Vyber, kdy se to stalo.",
+      "occurredInFuture": "Nemohlo se to stát v budoucnu."
+    },
+    "form": {
+      "createTitle": "Nový kontakt",
+      "editTitle": "Upravit kontakt",
+      "nameHint": "Stačí firma nebo jméno člověka, zbytek je nepovinný.",
+      "duplicateTitle": "{count, plural, one {Kontakt s tímto telefonem nebo e-mailem už máš} few {Už máš # kontakty s tímto telefonem nebo e-mailem} other {Už máš # kontaktů s tímto telefonem nebo e-mailem}}",
+      "duplicateHint": "Uložit ho můžeš i tak, nic se nespojí.",
+      "create": "Založit kontakt",
+      "save": "Uložit změny",
+      "cancel": "Zrušit",
+      "close": "Zavřít",
+      "saveFailed": "Kontakt se nepodařilo uložit. Zkontroluj připojení a zkus to znovu."
+    },
+    "detail": {
+      "back": "Všechny kontakty",
+      "notFound": "Tento kontakt neexistuje nebo byl smazán.",
+      "generated": "Vygenerovaný",
+      "edit": "Upravit",
+      "info": "Údaje",
+      "noInfo": "Zatím bez telefonu, e-mailu i adresy.",
+      "call": "Volat",
+      "write": "Napsat",
+      "inTableSince": "V této tabulce od {date}",
+      "delete": "Smazat kontakt",
+      "deleteTitle": "Smazat tento kontakt?",
+      "deleteDescription": "„{name}“ se nenávratně smaže i s celou historií. Obchody zůstanou, jen bez kontaktu.",
+      "deleteFailed": "Kontakt se nepodařilo smazat. Zkus to znovu.",
+      "cancel": "Zrušit",
+      "close": "Zavřít"
+    },
+    "notes": {
+      "title": "Poznámka",
+      "placeholder": "Cokoliv, co stojí za zapamatování",
+      "save": "Uložit poznámku",
+      "saved": "Uloženo",
+      "saveFailed": "Poznámku se nepodařilo uložit. Zkus to znovu."
+    },
+    "deals": {
+      "title": "Obchody",
+      "openPipeline": "Pipeline",
+      "empty": "S tímto kontaktem zatím nemáš žádný obchod.",
+      "loadFailed": "Obchody se nepodařilo načíst."
+    },
+    "activity": {
+      "title": "Historie aktivit",
+      "add": "Zapsat aktivitu",
+      "empty": "Tady se objeví hovory, e-maily a schůzky s tímto kontaktem.",
+      "loadFailed": "Historii se nepodařilo načíst.",
+      "delete": "Smazat aktivitu",
+      "deleteFailed": "Aktivitu se nepodařilo smazat. Zkus to znovu.",
+      "type": "Co proběhlo",
+      "types": {
+        "call": "Hovor",
+        "email": "E-mail",
+        "meeting": "Schůzka",
+        "sms": "SMS",
+        "note": "Poznámka",
+        "move": "Přesun"
+      },
+      "when": "Kdy",
+      "time": "Čas",
+      "content": "Podrobnosti",
+      "contentPlaceholder": "O čem jste mluvili, co bude dál",
+      "save": "Uložit",
+      "cancel": "Zrušit",
+      "saveFailed": "Aktivitu se nepodařilo uložit. Zkus to znovu."
+    }
   }
 }

@@ -690,5 +690,121 @@
       "dropped": "{name} was dropped on {target}.",
       "cancelled": "Move cancelled."
     }
+  },
+  "contacts": {
+    "description": "Everyone you work with, sorted into your own tables.",
+    "loadFailed": "Contacts could not be loaded. Check your connection and try again.",
+    "retry": "Try again",
+    "actions": {
+      "newContact": "New contact"
+    },
+    "search": {
+      "label": "Search contacts",
+      "placeholder": "Search by name, company or phone",
+      "emptyTitle": "Nothing found",
+      "emptyDescription": "No contact matches “{term}”."
+    },
+    "empty": {
+      "title": "No contacts yet",
+      "description": "Add your first contact, the one you want to call first."
+    },
+    "list": {
+      "name": "Name",
+      "phone": "Phone",
+      "email": "E-mail",
+      "table": "Table",
+      "lastContact": "Last contact",
+      "lastContactShort": "Last contact:",
+      "never": "Not yet",
+      "callName": "Call {name}",
+      "emailName": "Write to {name}",
+      "loadMore": "Show more",
+      "loadingMore": "Loading…"
+    },
+    "fields": {
+      "company_name": "Company",
+      "first_name": "First name",
+      "last_name": "Last name",
+      "phone": "Phone",
+      "email": "E-mail",
+      "website": "Website",
+      "address": "Address",
+      "city": "City"
+    },
+    "errors": {
+      "nameRequired": "Fill in the company or the person's name.",
+      "tooLong": "This is too long.",
+      "emailInvalid": "This does not look like an e-mail address.",
+      "phoneInvalid": "Use digits, spaces, dashes and an optional + at the start.",
+      "websiteInvalid": "This does not look like a web address.",
+      "occurredAtRequired": "Pick when it happened.",
+      "occurredInFuture": "It cannot have happened in the future."
+    },
+    "form": {
+      "createTitle": "New contact",
+      "editTitle": "Edit contact",
+      "nameHint": "A company or a person's name is enough, the rest is optional.",
+      "duplicateTitle": "{count, plural, one {A contact with this phone or e-mail already exists} other {# contacts with this phone or e-mail already exist}}",
+      "duplicateHint": "You can still save it; nothing gets merged.",
+      "create": "Create contact",
+      "save": "Save changes",
+      "cancel": "Cancel",
+      "close": "Close",
+      "saveFailed": "The contact could not be saved. Check your connection and try again."
+    },
+    "detail": {
+      "back": "All contacts",
+      "notFound": "This contact does not exist or was deleted.",
+      "generated": "Generated",
+      "edit": "Edit",
+      "info": "Details",
+      "noInfo": "No phone, e-mail or address yet.",
+      "call": "Call",
+      "write": "Write",
+      "inTableSince": "In this table since {date}",
+      "delete": "Delete contact",
+      "deleteTitle": "Delete this contact?",
+      "deleteDescription": "“{name}” and its whole history will be deleted for good. Deals stay, without a contact.",
+      "deleteFailed": "The contact could not be deleted. Try again.",
+      "cancel": "Cancel",
+      "close": "Close"
+    },
+    "notes": {
+      "title": "Note",
+      "placeholder": "Anything worth remembering about them",
+      "save": "Save note",
+      "saved": "Saved",
+      "saveFailed": "The note could not be saved. Try again."
+    },
+    "deals": {
+      "title": "Deals",
+      "openPipeline": "Pipeline",
+      "empty": "No deals with this contact yet.",
+      "loadFailed": "Deals could not be loaded."
+    },
+    "activity": {
+      "title": "Activity history",
+      "add": "Log activity",
+      "empty": "Calls, e-mails and meetings with this contact will show up here.",
+      "loadFailed": "The history could not be loaded.",
+      "delete": "Delete activity",
+      "deleteFailed": "The activity could not be deleted. Try again.",
+      "type": "What happened",
+      "types": {
+        "call": "Call",
+        "email": "E-mail",
+        "meeting": "Meeting",
+        "sms": "Text message",
+        "note": "Note",
+        "move": "Moved"
+      },
+      "when": "When",
+      "time": "Time",
+      "content": "Details",
+      "contentPlaceholder": "What you talked about, what comes next",
+      "save": "Save",
+      "cancel": "Cancel",
+      "saveFailed": "The activity could not be saved. Try again."
+    }
   }
 }

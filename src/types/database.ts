@@ -1857,6 +1857,24 @@ export type Database = {
       }
     }
     Views: {
+      contact_list: {
+        Row: {
+          city: string | null
+          company_name: string | null
+          created_at: string | null
+          email: string | null
+          first_name: string | null
+          id: string | null
+          last_contact_at: string | null
+          last_name: string | null
+          phone: string | null
+          phone_normalized: string | null
+          search_name: string | null
+          source: Database["public"]["Enums"]["contact_source"] | null
+          table_id: string | null
+        }
+        Relationships: []
+      }
       milestone_task_counts: {
         Row: {
           done: number | null
@@ -1899,6 +1917,7 @@ export type Database = {
         }
       }
       my_worker_ids: { Args: never; Returns: string[] }
+      normalize_phone: { Args: { _phone: string }; Returns: string }
       pause_prospecting: {
         Args: never
         Returns: {

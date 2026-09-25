@@ -1,0 +1,361 @@
+"use client";
+
+import { useState, type ReactNode } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  ArrowLeftIcon,
+  GlobeIcon,
+  MailIcon,
+  MapPinIcon,
+  PencilIcon,
+  PhoneIcon,
+  Trash2Icon,
+  UsersIcon,
+} from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Avatar } from "@/components/ui/avatar";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { EmptyState } from "@/components/ui/empty-state";
+import { FormAlert } from "@/components/ui/form-alert";
+import { GlowCard } from "@/components/ui/glow-card";
+import { Textarea } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { StatusPill } from "@/components/ui/status-pill";
+import { formatCurrency, formatDate } from "@/lib/format";
+import { useFormatSettings } from "@/lib/use-format-settings";
+import { cn } from "@/lib/utils";
+import { stageTone } from "@/features/pipeline/types";
+import { ActivityPanel } from "./activity-panel";
+import { ContactFormDialog } from "./contact-form-dialog";
+import { telHref } from "./contact-search";
+import {
+  useContact,
+  useContactDeals,
+  useContactEntry,
+  useContactTables,
+  useDeleteContact,
+  useUpdateContact,
+} from "./queries";
+import { NOTES_MAX, notesSchema, websiteHref } from "./schemas";
+import { contactName, contactPerson, tableTone, type Contact } from "./types";
+
+export function ContactDetail({ id }: { id: string }) {
+  const t = useTranslations("contacts");
+  const contactQuery = useContact(id);
+
+  const backLink = (
+    <Link
+      href="/contacts"
+      className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "self-start")}
+    >
+      <ArrowLeftIcon aria-hidden data-icon="inline-start" />
+      {t("detail.back")}
+    </Link>
+  );
+
+  if (contactQuery.isPending) {
+    return (
+      <div className="flex flex-col gap-6">
+        <Skeleton className="h-9 w-40" />
+        <Skeleton className="h-12 w-2/3" />
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Skeleton className="h-64 rounded-card" />
+          <Skeleton className="h-64 rounded-card" />
+        </div>
+      </div>
+    );
+  }
+
+  if (contactQuery.isError || !contactQuery.data) {
+    return (
+      <div className="flex flex-col gap-6">
+        {backLink}
+        <EmptyState
+          icon={<UsersIcon />}
+          title={contactQuery.isError ? t("loadFailed") : t("detail.notFound")}
+          action={
+            contactQuery.isError && (
+              <Button variant="outline" onClick={() => void contactQuery.refetch()}>
+                {t("retry")}
+              </Button>
+            )
+          }
+        />
+      </div>
+    );
+  }
+
+  return <DetailBody contact={contactQuery.data} backLink={backLink} />;
+}
+
+function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNode }) {
+  const t = useTranslations("contacts");
+  const router = useRouter();
+  const [editing, setEditing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const remove = useDeleteContact(contact.id);
+  const name = contactName(contact);
+  const person = contactPerson(contact);
+
+  async function confirmDelete() {
+    try {
+      await remove.mutateAsync();
+      router.replace("/contacts");
+    } catch {
+      /* the dialog shows the error */
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      {backLink}
+      <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div className="flex min-w-0 items-center gap-4">
+          <Avatar name={name} className="size-14 text-lg" />
+          <div className="flex min-w-0 flex-col gap-1">
+            <h1 className="page-title truncate">{name}</h1>
+            <div className="flex flex-wrap items-center gap-2 text-sm text-ink-soft">
+              {person && <span>{person}</span>}
+              <CurrentTable contactId={contact.id} />
+              {contact.source === "generated" && (
+                <StatusPill tone="violet">{t("detail.generated")}</StatusPill>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={() => setEditing(true)}>
+            <PencilIcon aria-hidden data-icon="inline-start" />
+            {t("detail.edit")}
+          </Button>
+        </div>
+      </header>
+
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+        <div className="flex flex-col gap-6">
+          <ContactInfo contact={contact} />
+          <NotesCard contact={contact} />
+          <DealsCard contactId={contact.id} />
+          <Button variant="destructive" className="self-start" onClick={() => setDeleting(true)}>
+            <Trash2Icon aria-hidden data-icon="inline-start" />
+            {t("detail.delete")}
+          </Button>
+        </div>
+        <GlowCard interactive={false}>
+          <ActivityPanel contactId={contact.id} />
+        </GlowCard>
+      </div>
+
+      <ContactFormDialog open={editing} onOpenChange={setEditing} contact={contact} />
+      <ConfirmDialog
+        open={deleting}
+        onOpenChange={setDeleting}
+        title={t("detail.deleteTitle")}
+        description={t("detail.deleteDescription", { name })}
+        confirmLabel={t("detail.delete")}
+        cancelLabel={t("detail.cancel")}
+        closeLabel={t("detail.close")}
+        pending={remove.isPending}
+        error={remove.isError ? t("detail.deleteFailed") : null}
+        onConfirm={() => void confirmDelete()}
+      />
+    </div>
+  );
+}
+
+function CurrentTable({ contactId }: { contactId: string }) {
+  const t = useTranslations("contacts.detail");
+  const settings = useFormatSettings();
+  const entry = useContactEntry(contactId).data;
+  const table = useContactTables().data?.find((item) => item.id === entry?.table_id);
+  if (!entry || !table) return null;
+  return (
+    <StatusPill
+      tone={tableTone(table.color)}
+      dot
+      title={t("inTableSince", { date: formatDate(new Date(entry.moved_at), settings) })}
+    >
+      {table.name}
+    </StatusPill>
+  );
+}
+
+function ContactInfo({ contact }: { contact: Contact }) {
+  const t = useTranslations("contacts");
+  const address = [contact.address, contact.postal_code, contact.city].filter(Boolean).join(", ");
+  const name = contactName(contact);
+  const hasAny = contact.phone || contact.email || contact.website || address;
+
+  return (
+    <GlowCard interactive={false} className="flex flex-col gap-4">
+      <h2 className="micro-label">{t("detail.info")}</h2>
+      {!hasAny && <p className="text-sm text-ink-muted">{t("detail.noInfo")}</p>}
+      {contact.phone && (
+        <InfoRow icon={<PhoneIcon />} label={t("fields.phone")} value={contact.phone}>
+          <a
+            href={telHref(contact.phone)}
+            aria-label={t("list.callName", { name })}
+            className={buttonVariants({ size: "sm" })}
+          >
+            <PhoneIcon aria-hidden data-icon="inline-start" />
+            {t("detail.call")}
+          </a>
+        </InfoRow>
+      )}
+      {contact.email && (
+        <InfoRow icon={<MailIcon />} label={t("fields.email")} value={contact.email}>
+          <a
+            href={`mailto:${contact.email}`}
+            aria-label={t("list.emailName", { name })}
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            <MailIcon aria-hidden data-icon="inline-start" />
+            {t("detail.write")}
+          </a>
+        </InfoRow>
+      )}
+      {contact.website && (
+        <InfoRow
+          icon={<GlobeIcon />}
+          label={t("fields.website")}
+          value={
+            <a
+              href={websiteHref(contact.website)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-violet underline-offset-4 hover:underline"
+            >
+              {contact.website}
+            </a>
+          }
+        />
+      )}
+      {address && <InfoRow icon={<MapPinIcon />} label={t("fields.address")} value={address} />}
+    </GlowCard>
+  );
+}
+
+function InfoRow({
+  icon,
+  label,
+  value,
+  children,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: ReactNode;
+  children?: ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="grid size-9 shrink-0 place-items-center rounded-full border border-line text-ink-soft [&_svg]:size-4">
+        {icon}
+      </span>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className="text-xs text-ink-muted">{label}</span>
+        <span className="text-sm break-words text-ink">{value}</span>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function NotesCard({ contact }: { contact: Contact }) {
+  const t = useTranslations("contacts.notes");
+  const update = useUpdateContact(contact.id);
+  const [value, setValue] = useState(contact.notes ?? "");
+  const [status, setStatus] = useState<"idle" | "saved" | "failed">("idle");
+  const dirty = value !== (contact.notes ?? "");
+
+  async function save() {
+    setStatus("idle");
+    const parsed = notesSchema.safeParse(value);
+    if (!parsed.success) {
+      setStatus("failed");
+      return;
+    }
+    try {
+      await update.mutateAsync({ notes: parsed.data });
+      setStatus("saved");
+    } catch {
+      setStatus("failed");
+    }
+  }
+
+  return (
+    <GlowCard interactive={false} className="flex flex-col gap-3">
+      <label htmlFor="contact-notes" className="micro-label">
+        {t("title")}
+      </label>
+      <Textarea
+        id="contact-notes"
+        value={value}
+        maxLength={NOTES_MAX}
+        placeholder={t("placeholder")}
+        onChange={(event) => {
+          setStatus("idle");
+          setValue(event.target.value);
+        }}
+      />
+      {status === "failed" && <FormAlert>{t("saveFailed")}</FormAlert>}
+      <div className="flex items-center justify-between gap-3">
+        <p role="status" className="text-sm text-green">
+          {status === "saved" && !dirty ? t("saved") : ""}
+        </p>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={!dirty || update.isPending}
+          onClick={() => void save()}
+        >
+          {t("save")}
+        </Button>
+      </div>
+    </GlowCard>
+  );
+}
+
+function DealsCard({ contactId }: { contactId: string }) {
+  const t = useTranslations("contacts.deals");
+  const settings = useFormatSettings();
+  const deals = useContactDeals(contactId);
+
+  return (
+    <GlowCard interactive={false} className="flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="micro-label">{t("title")}</h2>
+        <Link href="/pipeline" className={buttonVariants({ variant: "ghost", size: "sm" })}>
+          {t("openPipeline")}
+        </Link>
+      </div>
+      {deals.isPending ? (
+        <Skeleton className="h-12 rounded-xl" />
+      ) : deals.isError ? (
+        <FormAlert>{t("loadFailed")}</FormAlert>
+      ) : deals.data.length === 0 ? (
+        <p className="text-sm text-ink-muted">{t("empty")}</p>
+      ) : (
+        <ul className="flex flex-col">
+          {deals.data.map((deal) => (
+            <li
+              key={deal.id}
+              className="flex items-center gap-3 border-b border-line/60 py-2.5 last:border-b-0"
+            >
+              <span className="min-w-0 flex-1 truncate text-sm text-ink">{deal.title}</span>
+              {deal.value !== null && (
+                <span className="text-sm text-ink-soft tabular-nums">
+                  {formatCurrency(Number(deal.value), deal.currency, settings)}
+                </span>
+              )}
+              {deal.stage && (
+                <StatusPill tone={stageTone(deal.stage.color)}>{deal.stage.name}</StatusPill>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </GlowCard>
+  );
+}
