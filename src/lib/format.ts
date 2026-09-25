@@ -239,6 +239,19 @@ export function formatIsoTime(
   return formatDateFns(new Date(2000, 0, 1, hh, mm), settings.timeFormat);
 }
 
+/** A duration as a stopwatch, `HH:MM:SS`; the same in every language. */
+export function formatStopwatch(totalSeconds: number): string {
+  const seconds = Math.max(0, Math.floor(totalSeconds));
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${pad(Math.floor(seconds / 3600))}:${pad(Math.floor((seconds % 3600) / 60))}:${pad(seconds % 60)}`;
+}
+
+/** Whole hours and the minutes left over, for totals written with translated units. */
+export function splitDuration(totalSeconds: number): { hours: number; minutes: number } {
+  const minutes = Math.max(0, Math.round(totalSeconds / 60));
+  return { hours: Math.floor(minutes / 60), minutes: minutes % 60 };
+}
+
 /** Date of an instant (timestamptz) in the user's zone. */
 export function formatDate(
   instant: Date,

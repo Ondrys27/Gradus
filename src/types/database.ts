@@ -1987,6 +1987,17 @@ export type Database = {
         Args: { _day: string; _timezone: string }
         Returns: number
       }
+      prospecting_status: {
+        Args: { _timezone: string }
+        Returns: {
+          idle_closed_at: string
+          idle_deadline: string
+          running: boolean
+          segment_started_at: string
+          server_now: string
+          today_seconds: number
+        }[]
+      }
       remove_contact_table: {
         Args: { _move_to?: string; _table_id: string }
         Returns: undefined

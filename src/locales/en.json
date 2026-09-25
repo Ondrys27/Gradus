@@ -1021,6 +1021,19 @@
       "move": "Move to",
       "notes": "Note",
       "openDetail": "Open full detail"
+    },
+    "timer": {
+      "title": "Time on the phone today",
+      "running": "Running",
+      "paused": "Paused",
+      "todayLabel": "Today {time}",
+      "start": "Start",
+      "pause": "Pause",
+      "idleHint": "Stops by itself after 15 minutes without moving anyone out of Unreached. A new day starts at zero.",
+      "idleStopped": "The timer stopped: 15 minutes passed without moving anyone out of Unreached. Time counts until {time}.",
+      "dismiss": "Dismiss",
+      "loadFailed": "The timer could not be loaded. Check your connection.",
+      "actionFailed": "That did not go through. Try again."
     }
   }
 }

@@ -340,6 +340,8 @@ export function useMoveContact() {
         queryClient.invalidateQueries({ queryKey: contactKeys.all(user.id) }),
         // A meeting question may have booked a calendar event.
         queryClient.invalidateQueries({ queryKey: ["calendar", user.id] }),
+        // A move out of Unreached pushes the timer's idle deadline and feeds the statistics.
+        queryClient.invalidateQueries({ queryKey: ["cold-calling", user.id] }),
       ]),
   });
 }

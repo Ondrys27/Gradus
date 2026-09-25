@@ -1021,6 +1021,19 @@
       "move": "Přesunout do",
       "notes": "Poznámka",
       "openDetail": "Otevřít celý detail"
+    },
+    "timer": {
+      "title": "Dnes na telefonu",
+      "running": "Běží",
+      "paused": "Pozastaveno",
+      "todayLabel": "Dnes {time}",
+      "start": "Spustit",
+      "pause": "Pozastavit",
+      "idleHint": "Sám se zastaví po 15 minutách, kdy nikoho nepřesuneš z Neoslovených. Nový den začíná od nuly.",
+      "idleStopped": "Časovač se zastavil: 15 minut jsi nikoho nepřesunul z Neoslovených. Čas se počítá do {time}.",
+      "dismiss": "Zavřít upozornění",
+      "loadFailed": "Časovač se nepodařilo načíst. Zkontroluj připojení.",
+      "actionFailed": "Nepovedlo se to. Zkus to znovu."
     }
   }
 }

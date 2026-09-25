@@ -1382,3 +1382,47 @@ describe("generated contacts", () => {
     await asServer();
   });
 });
+
+describe("prospecting status", () => {
+  it("closes an idle segment when read, reports it once and never counts past the idle end", async () => {
+    const user = await createAuthUser();
+    await asUser(user);
+    const segment = await one<{ id: string }>(`select * from start_prospecting()`);
+    const running = await one<{ running: boolean; idle_deadline: Date; idle_closed_at: Date | null }>(
+      `select * from prospecting_status('Europe/Prague')`,
+    );
+    expect(running.running).toBe(true);
+    expect(running.idle_closed_at).toBeNull();
+
+    await asServer();
+    await db.query(
+      `update prospecting_segments set started_at = now() - interval '40 minutes' where id = $1`,
+      [segment.id],
+    );
+    await asUser(user);
+    const read = await one<{
+      running: boolean;
+      idle_closed_at: Date | null;
+      today_seconds: number;
+      segment_started_at: Date | null;
+    }>(`select * from prospecting_status('UTC')`);
+    expect(read.running).toBe(false);
+    expect(read.segment_started_at).toBeNull();
+    expect(read.idle_closed_at).not.toBeNull();
+    expect(read.today_seconds).toBeLessThanOrEqual(15 * 60 + 1);
+
+    const stored = await one<{ end_reason: string; minutes: number }>(
+      `select end_reason, extract(epoch from ended_at - started_at) / 60 as minutes
+       from prospecting_segments where id = $1`,
+      [segment.id],
+    );
+    expect(stored.end_reason).toBe("idle");
+    expect(Math.round(Number(stored.minutes))).toBe(15);
+
+    const again = await one<{ idle_closed_at: Date | null }>(
+      `select * from prospecting_status('UTC')`,
+    );
+    expect(again.idle_closed_at).toBeNull();
+    await asServer();
+  });
+});
