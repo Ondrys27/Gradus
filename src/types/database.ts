@@ -1875,6 +1875,13 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_table_counts: {
+        Row: {
+          contacts: number | null
+          table_id: string | null
+        }
+        Relationships: []
+      }
       milestone_task_counts: {
         Row: {
           done: number | null

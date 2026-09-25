@@ -1001,3 +1001,95 @@ describe("contacts", () => {
     await asServer();
   });
 });
+
+describe("clients follow won deals", () => {
+  let user: string;
+  let tables: Record<string, string>;
+  let stages: Record<string, string>;
+
+  async function tableOf(contact: string) {
+    const row = await one<{ system_key: string } | undefined>(
+      `select t.system_key from contact_table_entries e join contact_tables t on t.id = e.table_id
+       where e.contact_id = $1`,
+      [contact],
+    );
+    return row?.system_key;
+  }
+  async function newContact(name: string) {
+    return (
+      await one<{ id: string }>(
+        `insert into contacts (user_id, company_name) values ($1, $2) returning id`,
+        [user, name],
+      )
+    ).id;
+  }
+  async function newDeal(contact: string, stage: string) {
+    return (
+      await one<{ id: string }>(
+        `insert into deals (user_id, contact_id, stage_id, title) values ($1, $2, $3, 'Deal') returning id`,
+        [user, contact, stage],
+      )
+    ).id;
+  }
+
+  beforeAll(async () => {
+    user = await createAuthUser();
+    await asUser(user);
+    tables = Object.fromEntries(
+      (await rows<{ system_key: string; id: string }>(`select system_key, id from contact_tables`)).map(
+        (r) => [r.system_key, r.id],
+      ),
+    );
+    stages = Object.fromEntries(
+      (await rows<{ system_key: string; id: string }>(`select system_key, id from pipeline_stages`)).map(
+        (r) => [r.system_key, r.id],
+      ),
+    );
+    await asServer();
+  });
+
+  it("counts contacts per table, only one's own", async () => {
+    await asUser(user);
+    await newContact("Count A");
+    await newContact("Count B");
+    const counts = await rows<{ table_id: string; contacts: number }>(
+      `select table_id, contacts from contact_table_counts`,
+    );
+    expect(counts).toEqual([{ table_id: tables.unreached, contacts: 2 }]);
+    await asServer();
+  });
+
+  it("returns a contact to its previous table when its only won deal is un-won or deleted", async () => {
+    await asUser(user);
+    const contact = await newContact("Back s.r.o.");
+    await db.query(`select move_contact($1, $2)`, [contact, tables.follow_up]);
+    const deal = await newDeal(contact, stages.won);
+    expect(await tableOf(contact)).toBe("clients");
+
+    await db.query(`update deals set stage_id = $1 where id = $2`, [stages.offer, deal]);
+    expect(await tableOf(contact)).toBe("follow_up");
+
+    await db.query(`update deals set stage_id = $1 where id = $2`, [stages.won, deal]);
+    const second = await newDeal(contact, stages.won);
+    await db.query(`delete from deals where id = $1`, [deal]);
+    expect(await tableOf(contact)).toBe("clients");
+    await db.query(`delete from deals where id = $1`, [second]);
+    expect(await tableOf(contact)).toBe("follow_up");
+    await asServer();
+  });
+
+  it("moves a won deal's client status with its contact, and deleting a client works", async () => {
+    await asUser(user);
+    const first = await newContact("First");
+    const next = await newContact("Next");
+    const deal = await newDeal(first, stages.won);
+    await db.query(`update deals set contact_id = $1 where id = $2`, [next, deal]);
+    expect(await tableOf(first)).toBe("unreached");
+    expect(await tableOf(next)).toBe("clients");
+
+    await db.query(`delete from contacts where id = $1`, [next]);
+    expect(await tableOf(next)).toBeUndefined();
+    expect((await one(`select contact_id from deals where id = $1`, [deal])).contact_id).toBeNull();
+    await asServer();
+  });
+});

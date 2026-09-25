@@ -12,6 +12,14 @@ const DEAL_LIMIT = 500;
 const STAGE_LIMIT = 50;
 const CONTACT_SUGGESTIONS = 8;
 
+/**
+ * A deal won or un-won moves its contact in or out of Clients, and deals show in
+ * the contact detail; the contact screens read again when next shown.
+ */
+function invalidateContacts(queryClient: ReturnType<typeof useQueryClient>, userId: string) {
+  return queryClient.invalidateQueries({ queryKey: ["contacts", userId] });
+}
+
 export const pipelineKeys = {
   stages: (userId: string) => ["pipeline", userId, "stages"] as const,
   deals: (userId: string) => ["pipeline", userId, "deals"] as const,
@@ -85,6 +93,7 @@ export function useCreateDeal() {
       queryClient.setQueryData<Deal[]>(pipelineKeys.deals(user.id), (deals) =>
         deals ? [row, ...deals] : deals,
       );
+      void invalidateContacts(queryClient, user.id);
     },
   });
 }
@@ -108,6 +117,7 @@ export function useUpdateDeal(id: string) {
       queryClient.setQueryData<Deal[]>(pipelineKeys.deals(user.id), (deals) =>
         deals?.map((deal) => (deal.id === row.id ? row : deal)),
       );
+      void invalidateContacts(queryClient, user.id);
     },
   });
 }
@@ -125,6 +135,7 @@ export function useDeleteDeal() {
       queryClient.setQueryData<Deal[]>(pipelineKeys.deals(user.id), (deals) =>
         deals?.filter((deal) => deal.id !== id),
       );
+      void invalidateContacts(queryClient, user.id);
     },
   });
 }
@@ -174,6 +185,7 @@ export function useMoveDeal() {
     onSettled: () => {
       if (queryClient.isMutating({ mutationKey: ["pipeline", "move"] }) > 1) return;
       void queryClient.invalidateQueries({ queryKey: key });
+      void invalidateContacts(queryClient, user.id);
     },
     mutationKey: ["pipeline", "move"],
   });
@@ -275,6 +287,7 @@ export function useRemoveStage() {
       Promise.all([
         queryClient.invalidateQueries({ queryKey: pipelineKeys.stages(user.id) }),
         queryClient.invalidateQueries({ queryKey: pipelineKeys.deals(user.id) }),
+        invalidateContacts(queryClient, user.id),
       ]),
   });
 }

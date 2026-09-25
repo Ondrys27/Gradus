@@ -805,6 +805,16 @@
       "save": "Save",
       "cancel": "Cancel",
       "saveFailed": "The activity could not be saved. Try again."
+    },
+    "tables": {
+      "label": "Contact tables",
+      "all": "All",
+      "clientsHint": "Clients fill themselves: a contact lands here when you win a deal with them.",
+      "clientsEmpty": "Win your first deal in the pipeline and its contact appears here.",
+      "emptyTitle": "Nobody in “{name}” yet",
+      "emptyDescription": "Move a contact here from its detail.",
+      "wonDeals": "Won deals",
+      "dealCount": "{count, plural, one {# deal} other {# deals}}"
     }
   }
 }

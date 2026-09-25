@@ -21,7 +21,7 @@ export function groupDealsByStage(stages: Stage[], deals: Deal[]): Map<string, D
 export type CurrencyTotal = { currency: string; total: number };
 
 /** Amounts add up per currency; different currencies are never converted into one another. */
-export function sumByCurrency(deals: Deal[]): CurrencyTotal[] {
+export function sumByCurrency(deals: Pick<Deal, "value" | "currency">[]): CurrencyTotal[] {
   const totals = new Map<string, number>();
   for (const deal of deals) {
     if (deal.value === null) continue;

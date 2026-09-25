@@ -24,6 +24,8 @@ const TABLE_LIMIT = 50;
 const ACTIVITY_LIMIT = 200;
 const DEAL_LIMIT = 50;
 const DUPLICATE_LIMIT = 5;
+/** Won deals for one page of clients. */
+const WON_DEAL_LIMIT = 2000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export type ListFilter = { term: string; tableId: string | null };
@@ -33,6 +35,8 @@ export const contactKeys = {
   lists: (userId: string) => ["contacts", userId, "list"] as const,
   list: (userId: string, filter: ListFilter) => ["contacts", userId, "list", filter] as const,
   tables: (userId: string) => ["contacts", userId, "tables"] as const,
+  counts: (userId: string) => ["contacts", userId, "counts"] as const,
+  wonDeals: (userId: string, ids: string[]) => ["contacts", userId, "won-deals", ids] as const,
   detail: (userId: string, id: string) => ["contacts", userId, "detail", id] as const,
   entry: (userId: string, id: string) => ["contacts", userId, "entry", id] as const,
   activities: (userId: string, id: string) => ["contacts", userId, "activities", id] as const,
@@ -53,6 +57,47 @@ export function useContactTables() {
         .limit(TABLE_LIMIT);
       if (error) throw error;
       return data;
+    },
+  });
+}
+
+/** Contacts per table; the "All" count is their sum. */
+export function useTableCounts() {
+  const { user } = useSession();
+  return useQuery({
+    queryKey: contactKeys.counts(user.id),
+    queryFn: async (): Promise<Map<string, number>> => {
+      const { data, error } = await createClient()
+        .from("contact_table_counts")
+        .select("table_id, contacts")
+        .limit(TABLE_LIMIT);
+      if (error) throw error;
+      return new Map(
+        data.flatMap((row) => (row.table_id ? [[row.table_id, row.contacts ?? 0] as const] : [])),
+      );
+    },
+  });
+}
+
+export type WonDeal = Pick<ContactDeal, "id" | "value" | "currency"> & { contact_id: string };
+
+/** Won deals of the contacts on screen, for the count and total in Clients. */
+export function useWonDeals(contactIds: string[]) {
+  const { user } = useSession();
+  return useQuery({
+    queryKey: contactKeys.wonDeals(user.id, contactIds),
+    enabled: contactIds.length > 0,
+    queryFn: async (): Promise<WonDeal[]> => {
+      const { data, error } = await createClient()
+        .from("deals")
+        .select("id, contact_id, value, currency")
+        .in("contact_id", contactIds)
+        .not("won_at", "is", null)
+        .limit(WON_DEAL_LIMIT);
+      if (error) throw error;
+      return data.flatMap((deal) =>
+        deal.contact_id ? [{ ...deal, contact_id: deal.contact_id }] : [],
+      );
     },
   });
 }
@@ -232,7 +277,7 @@ export function useDeleteContact(id: string) {
     },
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: contactKeys.detail(user.id, id) });
-      void queryClient.invalidateQueries({ queryKey: contactKeys.lists(user.id) });
+      void queryClient.invalidateQueries({ queryKey: contactKeys.all(user.id) });
       // Deals keep their row but lose the contact.
       void queryClient.invalidateQueries({ queryKey: ["pipeline", user.id, "deals"] });
     },

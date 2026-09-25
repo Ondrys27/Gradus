@@ -805,6 +805,16 @@
       "save": "Uložit",
       "cancel": "Zrušit",
       "saveFailed": "Aktivitu se nepodařilo uložit. Zkus to znovu."
+    },
+    "tables": {
+      "label": "Tabulky kontaktů",
+      "all": "Vše",
+      "clientsHint": "Klienti se plní sami: kontakt sem přibude, když s ním vyhraješ obchod.",
+      "clientsEmpty": "Vyhraj první obchod v pipeline a jeho kontakt se objeví tady.",
+      "emptyTitle": "V tabulce „{name}“ zatím nikdo není",
+      "emptyDescription": "Kontakt sem přesuneš z jeho detailu.",
+      "wonDeals": "Vyhrané obchody",
+      "dealCount": "{count, plural, one {# obchod} few {# obchody} other {# obchodů}}"
     }
   }
 }
