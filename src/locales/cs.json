@@ -696,7 +696,8 @@
     "loadFailed": "Kontakty se nepodařilo načíst. Zkontroluj připojení a zkus to znovu.",
     "retry": "Zkusit znovu",
     "actions": {
-      "newContact": "Nový kontakt"
+      "newContact": "Nový kontakt",
+      "editTables": "Upravit tabulky"
     },
     "search": {
       "label": "Hledat v kontaktech",
@@ -738,7 +739,13 @@
       "phoneInvalid": "Použij číslice, mezery, pomlčky a případně + na začátku.",
       "websiteInvalid": "Tohle nevypadá jako webová adresa.",
       "occurredAtRequired": "Vyber, kdy se to stalo.",
-      "occurredInFuture": "Nemohlo se to stát v budoucnu."
+      "occurredInFuture": "Nemohlo se to stát v budoucnu.",
+      "tableNameRequired": "Pojmenuj tabulku.",
+      "labelRequired": "Napiš otázku.",
+      "optionsRequired": "Přidej aspoň jednu odpověď.",
+      "optionLabelRequired": "Každá odpověď potřebuje text.",
+      "optionsDuplicate": "Dvě odpovědi jsou stejné.",
+      "dependencyValueRequired": "Vyber odpověď, na které otázka závisí."
     },
     "form": {
       "createTitle": "Nový kontakt",
@@ -815,6 +822,95 @@
       "emptyDescription": "Kontakt sem přesuneš z jeho detailu.",
       "wonDeals": "Vyhrané obchody",
       "dealCount": "{count, plural, one {# obchod} few {# obchody} other {# obchodů}}"
+    },
+    "a11y": {
+      "instructions": "Mezerníkem zvedni, šipkami přesuň, mezerníkem pusť a klávesou Escape zruš.",
+      "drag": "Přesunout: {name}",
+      "pickedUp": "Zvednuto: {name}.",
+      "over": "{name} je nad {target}.",
+      "dropped": "{name} bylo puštěno na {target}.",
+      "cancelled": "Přesun zrušen."
+    },
+    "fieldTypes": {
+      "text": "Text",
+      "long_text": "Dlouhý text",
+      "date": "Datum",
+      "datetime": "Datum a čas",
+      "select": "Výběr",
+      "boolean": "Ano / ne"
+    },
+    "fieldForm": {
+      "addTitle": "Nová otázka",
+      "editTitle": "Upravit otázku",
+      "label": "Otázka",
+      "labelPlaceholder": "např. Proč nemají zájem?",
+      "type": "Druh odpovědi",
+      "options": "Odpovědi na výběr",
+      "optionLabel": "Odpověď {number}",
+      "removeOption": "Odebrat odpověď {number}",
+      "addOption": "Přidat odpověď",
+      "required": "Povinná",
+      "meeting": "Založit schůzku v kalendáři",
+      "meetingHint": "Přesun kontaktu sem vytvoří událost v kalendáři na tento čas.",
+      "showWhen": "Zobrazit",
+      "always": "Vždy",
+      "isAnswered": "Jen když je odpověď",
+      "pickAnswer": "Vyber odpověď",
+      "dependantsWarning": "Otázky navázané na odebranou odpověď se smažou.",
+      "add": "Přidat otázku",
+      "save": "Uložit otázku",
+      "cancel": "Zrušit",
+      "close": "Zavřít",
+      "saveFailed": "Otázku se nepodařilo uložit. Zkus to znovu."
+    },
+    "tableEditor": {
+      "title": "Upravit tabulky",
+      "description": "Tvoje tabulky a otázky, které se položí při přesunu kontaktu do nich.",
+      "back": "Kontakty",
+      "addTable": "Přidat tabulku",
+      "addTitle": "Nová tabulka",
+      "name": "Název tabulky",
+      "color": "Barva",
+      "colors": {
+        "violet": "Fialová",
+        "teal": "Tyrkysová",
+        "gold": "Zlatá",
+        "green": "Zelená",
+        "pink": "Růžová",
+        "neutral": "Šedá"
+      },
+      "rename": "Název tabulky (nyní {name})",
+      "contactCount": "{count, plural, one {# kontakt} few {# kontakty} other {# kontaktů}}",
+      "questionCount": "{count, plural, =0 {Bez otázek} one {# otázka} few {# otázky} other {# otázek}}",
+      "settings": "Nastavení",
+      "systemTable": "Systémová tabulka, nejde smazat",
+      "clientsNoQuestions": "Klienti se plní sami z vyhraných obchodů, proto se na nic neptají.",
+      "questions": "Otázky",
+      "addQuestion": "Přidat otázku",
+      "noQuestions": "Bez otázek: kontakt se sem přesune, aniž by se na cokoliv ptal.",
+      "required": "Povinná",
+      "meeting": "Zakládá schůzku",
+      "dependsOn": "Jen když „{question}“ je „{answer}“",
+      "editQuestion": "Upravit otázku {name}",
+      "deleteQuestion": "Smazat otázku {name}",
+      "deleteQuestionTitle": "Smazat tuto otázku?",
+      "deleteQuestionDescription": "Otázka „{name}“ se smaže{count, plural, =0 {.} one { i s # navázanou otázkou.} few { i s # navázanými otázkami.} other { i s # navázanými otázkami.}} Už zadané odpovědi zůstanou v historii.",
+      "deleteQuestionFailed": "Otázku se nepodařilo smazat. Zkus to znovu.",
+      "removeNamed": "Smazat tabulku {name}",
+      "removeTitle": "Smazat tabulku",
+      "removeEmpty": "Tabulka „{name}“ je prázdná a smaže se.",
+      "removeWithContacts": "V tabulce „{name}“ {count, plural, one {je # kontakt} few {jsou # kontakty} other {je # kontaktů}}. Kam je přesunout?",
+      "moveTo": "Přesunout kontakty do",
+      "remove": "Smazat tabulku",
+      "removeFailed": "Tabulku se nepodařilo smazat. Zkus to znovu.",
+      "delete": "Smazat",
+      "add": "Přidat tabulku",
+      "cancel": "Zrušit",
+      "close": "Zavřít",
+      "saveFailed": "Změnu se nepodařilo uložit. Zkus to znovu.",
+      "reorderFailed": "Nové pořadí se nepodařilo uložit. Zkus to znovu.",
+      "loadFailed": "Tabulky se nepodařilo načíst. Zkontroluj připojení a zkus to znovu.",
+      "retry": "Zkusit znovu"
     }
   }
 }

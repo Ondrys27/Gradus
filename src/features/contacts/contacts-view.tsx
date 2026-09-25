@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { InfoIcon, PlusIcon, SearchIcon, UsersIcon } from "lucide-react";
+import { InfoIcon, PencilIcon, PlusIcon, SearchIcon, UsersIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
@@ -70,10 +71,16 @@ export function ContactsView() {
         title={tNav("contacts")}
         description={t("description")}
         actions={
-          <Button onClick={() => setCreating(true)}>
-            <PlusIcon aria-hidden data-icon="inline-start" />
-            {t("actions.newContact")}
-          </Button>
+          <>
+            <Link href="/contacts/tables" className={buttonVariants({ variant: "outline" })}>
+              <PencilIcon aria-hidden data-icon="inline-start" />
+              {t("actions.editTables")}
+            </Link>
+            <Button onClick={() => setCreating(true)}>
+              <PlusIcon aria-hidden data-icon="inline-start" />
+              {t("actions.newContact")}
+            </Button>
+          </>
         }
       />
 

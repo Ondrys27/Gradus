@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { MANUAL_ACTIVITY_TYPES } from "./types";
+import { FIELD_TYPES, MANUAL_ACTIVITY_TYPES, TABLE_TONES } from "./types";
 
 export const NAME_MAX = 120;
 export const EMAIL_MAX = 254;
@@ -10,6 +10,10 @@ export const CITY_MAX = 120;
 /** Same limit as the database checks. */
 export const NOTES_MAX = 5000;
 export const ACTIVITY_MAX = 5000;
+/** Same limits as the database checks. */
+export const TABLE_NAME_MAX = 40;
+export const FIELD_LABEL_MAX = 120;
+export const OPTION_LABEL_MAX = 80;
 
 /** Translation keys under `contacts.errors`. */
 export type ContactErrorKey =
@@ -19,7 +23,13 @@ export type ContactErrorKey =
   | "phoneInvalid"
   | "websiteInvalid"
   | "occurredAtRequired"
-  | "occurredInFuture";
+  | "occurredInFuture"
+  | "tableNameRequired"
+  | "labelRequired"
+  | "optionsRequired"
+  | "optionLabelRequired"
+  | "optionsDuplicate"
+  | "dependencyValueRequired";
 
 const optionalText = (max: number) =>
   z
@@ -79,6 +89,47 @@ export const activitySchema = z.object({
     .refine((value) => new Date(value).getTime() <= Date.now() + 60_000, "occurredInFuture"),
 });
 export type ActivityInput = z.output<typeof activitySchema>;
+
+export const tableSchema = z.object({
+  name: z.string().trim().min(1, "tableNameRequired").max(TABLE_NAME_MAX, "tooLong"),
+  color: z.enum(TABLE_TONES),
+});
+export type TableInput = z.output<typeof tableSchema>;
+
+export const fieldSchema = z
+  .object({
+    label: z.string().trim().min(1, "labelRequired").max(FIELD_LABEL_MAX, "tooLong"),
+    type: z.enum(FIELD_TYPES),
+    required: z.boolean(),
+    options: z.array(
+      z.object({
+        key: z.string().min(1),
+        label: z.string().trim().min(1, "optionLabelRequired").max(OPTION_LABEL_MAX, "tooLong"),
+      }),
+    ),
+    depends_on_field_id: z.string().nullable(),
+    depends_on_value: z.string().nullable(),
+    meeting: z.boolean(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.type === "select") {
+      if (value.options.length === 0) {
+        ctx.addIssue({ code: "custom", message: "optionsRequired", path: ["options"] });
+      }
+      const labels = value.options.map((option) => option.label.trim().toLowerCase());
+      if (new Set(labels).size !== labels.length) {
+        ctx.addIssue({ code: "custom", message: "optionsDuplicate", path: ["options"] });
+      }
+    }
+    if (value.depends_on_field_id && !value.depends_on_value) {
+      ctx.addIssue({
+        code: "custom",
+        message: "dependencyValueRequired",
+        path: ["depends_on_value"],
+      });
+    }
+  });
+export type FieldInput = z.output<typeof fieldSchema>;
 
 /** First error per field, as a translation key. */
 export function fieldErrors(error: z.ZodError): Partial<Record<string, ContactErrorKey>> {

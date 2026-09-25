@@ -9,6 +9,8 @@ export const LIST_COLUMNS =
 export const CONTACT_COLUMNS =
   "id, company_name, first_name, last_name, email, phone, website, address, city, postal_code, country_code, source, notes, created_at";
 export const TABLE_COLUMNS = "id, name, color, position, is_system, system_key";
+export const FIELD_COLUMNS =
+  "id, table_id, label, type, required, options, default_value, depends_on_field_id, depends_on_value, position, system_key";
 export const ACTIVITY_COLUMNS = "id, contact_id, deal_id, type, content, occurred_at, created_at";
 export const CONTACT_DEAL_COLUMNS =
   "id, title, value, currency, won_at, lost_at, stage:pipeline_stages(id, name, color)";
@@ -51,6 +53,26 @@ export type ContactTable = Pick<
   Tables["contact_tables"]["Row"],
   "id" | "name" | "color" | "position" | "is_system" | "system_key"
 >;
+
+export type ContactField = Pick<
+  Tables["contact_table_fields"]["Row"],
+  | "id"
+  | "table_id"
+  | "label"
+  | "type"
+  | "required"
+  | "options"
+  | "default_value"
+  | "depends_on_field_id"
+  | "depends_on_value"
+  | "position"
+  | "system_key"
+>;
+export type FieldType = ContactField["type"];
+export const FIELD_TYPES = ["text", "long_text", "date", "datetime", "select", "boolean"] as const;
+export type FieldOption = { key: string; label: string };
+/** A date-and-time question with this key books a meeting in the calendar. */
+export const MEETING_FIELD_KEY = "meeting_at";
 
 export type Activity = Pick<
   Tables["contact_activities"]["Row"],

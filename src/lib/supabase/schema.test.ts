@@ -1093,3 +1093,114 @@ describe("clients follow won deals", () => {
     await asServer();
   });
 });
+
+describe("contact table editor", () => {
+  let user: string;
+  let tables: Record<string, string>;
+
+  beforeAll(async () => {
+    user = await createAuthUser();
+    await asUser(user);
+    tables = Object.fromEntries(
+      (await rows<{ system_key: string; id: string }>(`select system_key, id from contact_tables`)).map(
+        (r) => [r.system_key, r.id],
+      ),
+    );
+    await asServer();
+  });
+
+  it("removes a table, moving its contacts and recording the moves", async () => {
+    await asUser(user);
+    const table = (
+      await one<{ id: string }>(
+        `insert into contact_tables (user_id, name, position) values ($1, 'Temp', 9) returning id`,
+        [user],
+      )
+    ).id;
+    const contact = (
+      await one<{ id: string }>(
+        `insert into contacts (user_id, company_name) values ($1, 'Moved') returning id`,
+        [user],
+      )
+    ).id;
+    await db.query(`select move_contact($1, $2)`, [contact, table]);
+
+    await expect(db.query(`select remove_contact_table($1)`, [table])).rejects.toThrow(
+      /target_table_required/,
+    );
+    await expect(
+      db.query(`select remove_contact_table($1, $2)`, [table, tables.clients]),
+    ).rejects.toThrow(/cannot_move_into_system_table/);
+    await expect(
+      db.query(`select remove_contact_table($1, $2)`, [tables.unreached, tables.follow_up]),
+    ).rejects.toThrow(/system_table_readonly/);
+
+    await db.query(`select remove_contact_table($1, $2)`, [table, tables.follow_up]);
+    expect(await count(`select 1 from contact_tables where id = $1`, [table])).toBe(0);
+    expect(
+      (await one(`select table_id from contact_table_entries where contact_id = $1`, [contact]))
+        .table_id,
+    ).toBe(tables.follow_up);
+    expect(
+      await count(`select 1 from contact_table_moves where contact_id = $1 and to_table_id = $2`, [
+        contact,
+        tables.follow_up,
+      ]),
+    ).toBe(1);
+    await asServer();
+  });
+
+  it("gives Clients no questions and checks dependencies", async () => {
+    await asUser(user);
+    await expect(
+      db.query(
+        `insert into contact_table_fields (user_id, table_id, label, type) values ($1, $2, 'Q', 'text')`,
+        [user, tables.clients],
+      ),
+    ).rejects.toThrow(/clients_table_has_no_questions/);
+    await expect(
+      db.query(
+        `insert into contact_table_fields (user_id, table_id, label, type, options) values ($1, $2, 'Q', 'select', '[]')`,
+        [user, tables.no_answer],
+      ),
+    ).rejects.toThrow(/select_needs_options/);
+
+    const parent = (
+      await one<{ id: string }>(
+        `insert into contact_table_fields (user_id, table_id, label, type, options)
+         values ($1, $2, 'Why', 'select', '[{"key":"a","label":"A"},{"key":"b","label":"B"}]') returning id`,
+        [user, tables.no_answer],
+      )
+    ).id;
+    await expect(
+      db.query(
+        `insert into contact_table_fields (user_id, table_id, label, type, depends_on_field_id, depends_on_value)
+         values ($1, $2, 'Other table', 'text', $3, 'a')`,
+        [user, tables.follow_up, parent],
+      ),
+    ).rejects.toThrow(/invalid_dependency/);
+    await expect(
+      db.query(
+        `insert into contact_table_fields (user_id, table_id, label, type, depends_on_field_id, depends_on_value)
+         values ($1, $2, 'Missing option', 'text', $3, 'zzz')`,
+        [user, tables.no_answer, parent],
+      ),
+    ).rejects.toThrow(/invalid_dependency/);
+    await db.query(
+      `insert into contact_table_fields (user_id, table_id, label, type, depends_on_field_id, depends_on_value)
+       values ($1, $2, 'On A', 'text', $3, 'a'), ($1, $2, 'On B', 'text', $3, 'b')`,
+      [user, tables.no_answer, parent],
+    );
+
+    await db.query(
+      `update contact_table_fields set options = '[{"key":"a","label":"A"}]' where id = $1`,
+      [parent],
+    );
+    const left = await rows<{ label: string }>(
+      `select label from contact_table_fields where depends_on_field_id = $1`,
+      [parent],
+    );
+    expect(left).toEqual([{ label: "On A" }]);
+    await asServer();
+  });
+});

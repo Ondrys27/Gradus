@@ -696,7 +696,8 @@
     "loadFailed": "Contacts could not be loaded. Check your connection and try again.",
     "retry": "Try again",
     "actions": {
-      "newContact": "New contact"
+      "newContact": "New contact",
+      "editTables": "Edit tables"
     },
     "search": {
       "label": "Search contacts",
@@ -738,7 +739,13 @@
       "phoneInvalid": "Use digits, spaces, dashes and an optional + at the start.",
       "websiteInvalid": "This does not look like a web address.",
       "occurredAtRequired": "Pick when it happened.",
-      "occurredInFuture": "It cannot have happened in the future."
+      "occurredInFuture": "It cannot have happened in the future.",
+      "tableNameRequired": "Give the table a name.",
+      "labelRequired": "Write the question.",
+      "optionsRequired": "Add at least one answer.",
+      "optionLabelRequired": "Every answer needs a text.",
+      "optionsDuplicate": "Two answers are the same.",
+      "dependencyValueRequired": "Pick the answer this question depends on."
     },
     "form": {
       "createTitle": "New contact",
@@ -815,6 +822,95 @@
       "emptyDescription": "Move a contact here from its detail.",
       "wonDeals": "Won deals",
       "dealCount": "{count, plural, one {# deal} other {# deals}}"
+    },
+    "a11y": {
+      "instructions": "Press Space to pick up, arrow keys to move, Space to drop and Escape to cancel.",
+      "drag": "Move {name}",
+      "pickedUp": "Picked up {name}.",
+      "over": "{name} is over {target}.",
+      "dropped": "{name} was dropped on {target}.",
+      "cancelled": "Move cancelled."
+    },
+    "fieldTypes": {
+      "text": "Text",
+      "long_text": "Long text",
+      "date": "Date",
+      "datetime": "Date and time",
+      "select": "Choice",
+      "boolean": "Yes / no"
+    },
+    "fieldForm": {
+      "addTitle": "New question",
+      "editTitle": "Edit question",
+      "label": "Question",
+      "labelPlaceholder": "e.g. Why are they not interested?",
+      "type": "Type of answer",
+      "options": "Answers to choose from",
+      "optionLabel": "Answer {number}",
+      "removeOption": "Remove answer {number}",
+      "addOption": "Add answer",
+      "required": "Required",
+      "meeting": "Book a meeting in the calendar",
+      "meetingHint": "Moving a contact here creates a calendar event at this time.",
+      "showWhen": "Show",
+      "always": "Always",
+      "isAnswered": "Only when the answer is",
+      "pickAnswer": "Pick an answer",
+      "dependantsWarning": "Questions that depend on a removed answer will be deleted.",
+      "add": "Add question",
+      "save": "Save question",
+      "cancel": "Cancel",
+      "close": "Close",
+      "saveFailed": "The question could not be saved. Try again."
+    },
+    "tableEditor": {
+      "title": "Edit tables",
+      "description": "Your tables and the questions asked when a contact moves into them.",
+      "back": "Contacts",
+      "addTable": "Add table",
+      "addTitle": "New table",
+      "name": "Table name",
+      "color": "Colour",
+      "colors": {
+        "violet": "Violet",
+        "teal": "Teal",
+        "gold": "Gold",
+        "green": "Green",
+        "pink": "Pink",
+        "neutral": "Grey"
+      },
+      "rename": "Table name (now {name})",
+      "contactCount": "{count, plural, one {# contact} other {# contacts}}",
+      "questionCount": "{count, plural, =0 {No questions} one {# question} other {# questions}}",
+      "settings": "Settings",
+      "systemTable": "System table, cannot be deleted",
+      "clientsNoQuestions": "Clients fill themselves from won deals, so they ask no questions.",
+      "questions": "Questions",
+      "addQuestion": "Add question",
+      "noQuestions": "No questions: a contact moves here without asking anything.",
+      "required": "Required",
+      "meeting": "Books a meeting",
+      "dependsOn": "Only when “{question}” is “{answer}”",
+      "editQuestion": "Edit question {name}",
+      "deleteQuestion": "Delete question {name}",
+      "deleteQuestionTitle": "Delete this question?",
+      "deleteQuestionDescription": "“{name}” will be deleted{count, plural, =0 {.} one { together with # question that depends on it.} other { together with # questions that depend on it.}} Answers already given stay in the history.",
+      "deleteQuestionFailed": "The question could not be deleted. Try again.",
+      "removeNamed": "Delete table {name}",
+      "removeTitle": "Delete table",
+      "removeEmpty": "The table “{name}” is empty and will be deleted.",
+      "removeWithContacts": "{count, plural, one {# contact is} other {# contacts are}} in “{name}”. Where should they go?",
+      "moveTo": "Move contacts to",
+      "remove": "Delete table",
+      "removeFailed": "The table could not be deleted. Try again.",
+      "delete": "Delete",
+      "add": "Add table",
+      "cancel": "Cancel",
+      "close": "Close",
+      "saveFailed": "The change could not be saved. Try again.",
+      "reorderFailed": "The new order could not be saved. Try again.",
+      "loadFailed": "Tables could not be loaded. Check your connection and try again.",
+      "retry": "Try again"
     }
   }
 }

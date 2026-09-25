@@ -1979,6 +1979,10 @@ export type Database = {
         Args: { _day: string; _timezone: string }
         Returns: number
       }
+      remove_contact_table: {
+        Args: { _move_to?: string; _table_id: string }
+        Returns: undefined
+      }
       remove_stage: {
         Args: { _move_to?: string; _stage_id: string }
         Returns: undefined
