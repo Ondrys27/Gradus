@@ -774,7 +774,8 @@
       "deleteDescription": "“{name}” and its whole history will be deleted for good. Deals stay, without a contact.",
       "deleteFailed": "The contact could not be deleted. Try again.",
       "cancel": "Cancel",
-      "close": "Close"
+      "close": "Close",
+      "currentTable": "Current table"
     },
     "notes": {
       "title": "Note",
@@ -911,6 +912,30 @@
       "reorderFailed": "The new order could not be saved. Try again.",
       "loadFailed": "Tables could not be loaded. Check your connection and try again.",
       "retry": "Try again"
+    },
+    "move": {
+      "open": "Move to",
+      "title": "Move contact",
+      "pickTable": "Which table does the contact go to?",
+      "changeTable": "Another table",
+      "movingTo": "Moving to “{name}”",
+      "noQuestions": "This table asks nothing, just confirm the move.",
+      "confirm": "Move to {name}",
+      "cancel": "Cancel",
+      "close": "Close",
+      "today": "Today",
+      "pickDate": "Pick a date",
+      "time": "Time",
+      "yes": "Yes",
+      "no": "No",
+      "errors": {
+        "required": "This answer is required.",
+        "invalid": "This answer does not fit the question."
+      },
+      "moveFailed": "The contact could not be moved. Check your connection and try again.",
+      "loadFailed": "The questions could not be loaded. Try again.",
+      "moved": "Moved to “{name}”.",
+      "movedWithMeeting": "Moved to “{name}” and the meeting is in your calendar."
     }
   }
 }

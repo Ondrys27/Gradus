@@ -774,7 +774,8 @@
       "deleteDescription": "„{name}“ se nenávratně smaže i s celou historií. Obchody zůstanou, jen bez kontaktu.",
       "deleteFailed": "Kontakt se nepodařilo smazat. Zkus to znovu.",
       "cancel": "Zrušit",
-      "close": "Zavřít"
+      "close": "Zavřít",
+      "currentTable": "Aktuální tabulka"
     },
     "notes": {
       "title": "Poznámka",
@@ -911,6 +912,30 @@
       "reorderFailed": "Nové pořadí se nepodařilo uložit. Zkus to znovu.",
       "loadFailed": "Tabulky se nepodařilo načíst. Zkontroluj připojení a zkus to znovu.",
       "retry": "Zkusit znovu"
+    },
+    "move": {
+      "open": "Přesunout do",
+      "title": "Přesunout kontakt",
+      "pickTable": "Do které tabulky kontakt patří?",
+      "changeTable": "Jiná tabulka",
+      "movingTo": "Přesun do „{name}“",
+      "noQuestions": "Tahle tabulka se na nic neptá, stačí přesun potvrdit.",
+      "confirm": "Přesunout do {name}",
+      "cancel": "Zrušit",
+      "close": "Zavřít",
+      "today": "Dnes",
+      "pickDate": "Vyber datum",
+      "time": "Čas",
+      "yes": "Ano",
+      "no": "Ne",
+      "errors": {
+        "required": "Tahle odpověď je povinná.",
+        "invalid": "Tahle odpověď k otázce nesedí."
+      },
+      "moveFailed": "Kontakt se nepodařilo přesunout. Zkontroluj připojení a zkus to znovu.",
+      "loadFailed": "Otázky se nepodařilo načíst. Zkus to znovu.",
+      "moved": "Přesunuto do „{name}“.",
+      "movedWithMeeting": "Přesunuto do „{name}“ a schůzka je v kalendáři."
     }
   }
 }

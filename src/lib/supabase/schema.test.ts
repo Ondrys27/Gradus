@@ -196,10 +196,16 @@ describe("contact tables", () => {
 
   it("keeps a contact in exactly one table and records every move", async () => {
     await db.query(`select move_contact($1, $2, '{}')`, [contact, tables.unreached]);
+    const reason = (
+      await one<{ id: string }>(
+        `select id from contact_table_fields where table_id = $1 and system_key = 'reason'`,
+        [tables.failed],
+      )
+    ).id;
     const entry = await one<{ table_id: string }>(`select * from move_contact($1, $2, $3)`, [
       contact,
       tables.failed,
-      JSON.stringify({ reason: "other" }),
+      JSON.stringify({ [reason]: "other" }),
     ]);
     expect(entry.table_id).toBe(tables.failed);
     expect(
@@ -1062,19 +1068,19 @@ describe("clients follow won deals", () => {
   it("returns a contact to its previous table when its only won deal is un-won or deleted", async () => {
     await asUser(user);
     const contact = await newContact("Back s.r.o.");
-    await db.query(`select move_contact($1, $2)`, [contact, tables.follow_up]);
+    await db.query(`select move_contact($1, $2)`, [contact, tables.no_answer]);
     const deal = await newDeal(contact, stages.won);
     expect(await tableOf(contact)).toBe("clients");
 
     await db.query(`update deals set stage_id = $1 where id = $2`, [stages.offer, deal]);
-    expect(await tableOf(contact)).toBe("follow_up");
+    expect(await tableOf(contact)).toBe("no_answer");
 
     await db.query(`update deals set stage_id = $1 where id = $2`, [stages.won, deal]);
     const second = await newDeal(contact, stages.won);
     await db.query(`delete from deals where id = $1`, [deal]);
     expect(await tableOf(contact)).toBe("clients");
     await db.query(`delete from deals where id = $1`, [second]);
-    expect(await tableOf(contact)).toBe("follow_up");
+    expect(await tableOf(contact)).toBe("no_answer");
     await asServer();
   });
 
@@ -1201,6 +1207,129 @@ describe("contact table editor", () => {
       [parent],
     );
     expect(left).toEqual([{ label: "On A" }]);
+    await asServer();
+  });
+});
+
+describe("moving a contact", () => {
+  let user: string;
+  let tables: Record<string, string>;
+  let fields: Record<string, string>;
+
+  async function newContact(name: string) {
+    return (
+      await one<{ id: string }>(
+        `insert into contacts (user_id, company_name) values ($1, $2) returning id`,
+        [user, name],
+      )
+    ).id;
+  }
+
+  beforeAll(async () => {
+    user = await createAuthUser("cs");
+    await asUser(user);
+    tables = Object.fromEntries(
+      (await rows<{ system_key: string; id: string }>(`select system_key, id from contact_tables`)).map(
+        (r) => [r.system_key, r.id],
+      ),
+    );
+    const list = await rows<{ id: string; key: string }>(
+      `select f.id, coalesce(f.system_key, t.system_key || ':' || coalesce(f.depends_on_value, f.label)) as key
+       from contact_table_fields f join contact_tables t on t.id = f.table_id`,
+    );
+    fields = Object.fromEntries(list.map((r) => [r.key, r.id]));
+    await asServer();
+  });
+
+  it("requires shown required answers and keeps only answers of shown questions", async () => {
+    await asUser(user);
+    const contact = await newContact("Answers s.r.o.");
+    await expect(
+      db.query(`select move_contact($1, $2, '{}')`, [contact, tables.failed]),
+    ).rejects.toThrow(/answer_required/);
+    await expect(
+      db.query(`select move_contact($1, $2, $3)`, [
+        contact,
+        tables.failed,
+        JSON.stringify({ [fields.reason]: "made_up" }),
+      ]),
+    ).rejects.toThrow(/invalid_answer/);
+
+    const entry = await one<{ answers: Record<string, unknown> }>(
+      `select * from move_contact($1, $2, $3)`,
+      [
+        contact,
+        tables.failed,
+        JSON.stringify({
+          [fields.reason]: "not_interested",
+          [fields["failed:not_interested"]]: "Too expensive",
+          // hidden: depends on "other"
+          [fields["failed:other"]]: "should be dropped",
+          "not-a-field": "dropped too",
+        }),
+      ],
+    );
+    expect(entry.answers).toEqual({
+      [fields.reason]: "not_interested",
+      [fields["failed:not_interested"]]: "Too expensive",
+    });
+    await asServer();
+  });
+
+  it("checks answer types", async () => {
+    await asUser(user);
+    const contact = await newContact("Types s.r.o.");
+    await expect(
+      db.query(`select move_contact($1, $2, $3)`, [
+        contact,
+        tables.email_sent,
+        JSON.stringify({ [fields.sent_on]: "2026-02-31" }),
+      ]),
+    ).rejects.toThrow(/invalid_answer/);
+    await expect(
+      db.query(`select move_contact($1, $2, $3)`, [
+        contact,
+        tables.follow_up,
+        JSON.stringify({ [fields.follow_up_at]: "tomorrow" }),
+      ]),
+    ).rejects.toThrow(/invalid_answer/);
+    await db.query(`select move_contact($1, $2, $3)`, [
+      contact,
+      tables.email_sent,
+      JSON.stringify({ [fields.sent_on]: "2026-09-24" }),
+    ]);
+    await asServer();
+  });
+
+  it("logs the move as an activity and books the meeting in the calendar", async () => {
+    await asUser(user);
+    const contact = await newContact("Meeting s.r.o.");
+    await db.query(`select move_contact($1, $2, $3)`, [
+      contact,
+      tables.meeting_scheduled,
+      JSON.stringify({ [fields.meeting_at]: "2026-10-01T08:30:00.000Z" }),
+    ]);
+    const activity = await one<{ type: string; content: string }>(
+      `select type, content from contact_activities where contact_id = $1`,
+      [contact],
+    );
+    expect(activity).toEqual({ type: "move", content: "Domluvená schůzka" });
+    expect(
+      (await one<{ last_contact_at: Date | null }>(`select last_contact_at from contact_list where id = $1`, [contact]))
+        .last_contact_at,
+    ).not.toBeNull();
+
+    const event = await one<{ title: string; kind: string; starts_at: Date; contact_id: string }>(
+      `select title, kind, starts_at, contact_id from calendar_events where contact_id = $1`,
+      [contact],
+    );
+    expect(event.title).toBe("Meeting s.r.o.");
+    expect(event.kind).toBe("meeting");
+    expect(event.starts_at.toISOString()).toBe("2026-10-01T08:30:00.000Z");
+
+    // A table without a meeting question books nothing.
+    await db.query(`select move_contact($1, $2)`, [contact, tables.no_answer]);
+    expect(await count(`select 1 from calendar_events where contact_id = $1`, [contact])).toBe(1);
     await asServer();
   });
 });

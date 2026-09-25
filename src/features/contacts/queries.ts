@@ -4,6 +4,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tansta
 import { useSession } from "@/features/account/queries";
 import { createClient } from "@/lib/supabase/client";
 import { duplicateEmailKey, duplicatePhoneKey, searchFilter } from "./contact-search";
+import { moveContact, type MoveContactInput } from "./move-contact";
 import type { ActivityInput, ContactInput } from "./schemas";
 import {
   ACTIVITY_COLUMNS,
@@ -325,5 +326,20 @@ export function useDeleteActivity(contactId: string) {
       );
       return queryClient.invalidateQueries({ queryKey: contactKeys.lists(user.id) });
     },
+  });
+}
+
+/** Moves the contact through moveContact(); lists, counts, history and the table read again. */
+export function useMoveContact() {
+  const { user } = useSession();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: MoveContactInput) => moveContact(createClient(), input),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: contactKeys.all(user.id) }),
+        // A meeting question may have booked a calendar event.
+        queryClient.invalidateQueries({ queryKey: ["calendar", user.id] }),
+      ]),
   });
 }

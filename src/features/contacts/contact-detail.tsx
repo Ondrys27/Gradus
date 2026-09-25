@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeftIcon,
+  ArrowRightLeftIcon,
   GlobeIcon,
   MailIcon,
   MapPinIcon,
@@ -23,13 +24,15 @@ import { GlowCard } from "@/components/ui/glow-card";
 import { Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusPill } from "@/components/ui/status-pill";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { formatCalendarDate, formatCurrency, formatDate, formatDateTime } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { stageTone } from "@/features/pipeline/types";
 import { ActivityPanel } from "./activity-panel";
 import { ContactFormDialog } from "./contact-form-dialog";
 import { telHref } from "./contact-search";
+import { byPosition, fieldOptions } from "./field-logic";
+import { MoveContactDialog, type MoveResult } from "./move-contact-dialog";
 import {
   useContact,
   useContactDeals,
@@ -39,7 +42,8 @@ import {
   useUpdateContact,
 } from "./queries";
 import { NOTES_MAX, notesSchema, websiteHref } from "./schemas";
-import { contactName, contactPerson, tableTone, type Contact } from "./types";
+import { useFields } from "./table-queries";
+import { contactName, contactPerson, tableTone, type Contact, type ContactField } from "./types";
 
 export function ContactDetail({ id }: { id: string }) {
   const t = useTranslations("contacts");
@@ -95,7 +99,11 @@ function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNo
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [moving, setMoving] = useState(false);
+  const [moved, setMoved] = useState<MoveResult | null>(null);
   const remove = useDeleteContact(contact.id);
+  const entry = useContactEntry(contact.id).data;
+  const tables = useContactTables().data ?? [];
   const name = contactName(contact);
   const person = contactPerson(contact);
 
@@ -130,12 +138,25 @@ function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNo
             <PencilIcon aria-hidden data-icon="inline-start" />
             {t("detail.edit")}
           </Button>
+          <Button disabled={tables.length === 0} onClick={() => setMoving(true)}>
+            <ArrowRightLeftIcon aria-hidden data-icon="inline-start" />
+            {t("move.open")}
+          </Button>
         </div>
       </header>
+
+      {moved && (
+        <FormAlert tone="success">
+          {moved.meetingBooked
+            ? t("move.movedWithMeeting", { name: moved.table.name })
+            : t("move.moved", { name: moved.table.name })}
+        </FormAlert>
+      )}
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
         <div className="flex flex-col gap-6">
           <ContactInfo contact={contact} />
+          <CurrentTableCard contactId={contact.id} />
           <NotesCard contact={contact} />
           <DealsCard contactId={contact.id} />
           <Button variant="destructive" className="self-start" onClick={() => setDeleting(true)}>
@@ -149,6 +170,14 @@ function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNo
       </div>
 
       <ContactFormDialog open={editing} onOpenChange={setEditing} contact={contact} />
+      <MoveContactDialog
+        open={moving}
+        onOpenChange={setMoving}
+        contactId={contact.id}
+        currentTableId={entry?.table_id ?? null}
+        tables={tables}
+        onMoved={setMoved}
+      />
       <ConfirmDialog
         open={deleting}
         onOpenChange={setDeleting}
@@ -179,6 +208,58 @@ function CurrentTable({ contactId }: { contactId: string }) {
     >
       {table.name}
     </StatusPill>
+  );
+}
+
+/** The answers given when the contact came into its table. */
+function CurrentTableCard({ contactId }: { contactId: string }) {
+  const t = useTranslations("contacts");
+  const settings = useFormatSettings();
+  const entry = useContactEntry(contactId).data;
+  const table = useContactTables().data?.find((item) => item.id === entry?.table_id);
+  const fields = useFields().data;
+  if (!entry || !table || !fields) return null;
+
+  const answers = (entry.answers ?? {}) as Record<string, unknown>;
+  const answered = byPosition(fields.filter((field) => field.table_id === table.id)).filter(
+    (field) => answers[field.id] !== undefined && answers[field.id] !== null,
+  );
+
+  function show(field: ContactField, value: unknown): string {
+    if (field.type === "boolean") return value ? t("move.yes") : t("move.no");
+    const text = String(value);
+    if (field.type === "date") return formatCalendarDate(text, settings);
+    if (field.type === "datetime") return formatDateTime(new Date(text), settings);
+    if (field.type === "select") {
+      return fieldOptions(field.options).find((option) => option.key === text)?.label ?? text;
+    }
+    return text;
+  }
+
+  return (
+    <GlowCard interactive={false} className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="micro-label">{t("detail.currentTable")}</h2>
+        <StatusPill tone={tableTone(table.color)} dot>
+          {table.name}
+        </StatusPill>
+      </div>
+      <p className="text-xs text-ink-muted">
+        {t("detail.inTableSince", { date: formatDate(new Date(entry.moved_at), settings) })}
+      </p>
+      {answered.length > 0 && (
+        <dl className="flex flex-col gap-2.5">
+          {answered.map((field) => (
+            <div key={field.id} className="flex flex-col">
+              <dt className="text-xs text-ink-muted">{field.label}</dt>
+              <dd className="text-sm whitespace-pre-line text-ink">
+                {show(field, answers[field.id])}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
+    </GlowCard>
   );
 }
 
