@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
+import { invalidateFinance } from "@/features/finance/queries";
 import { createClient } from "@/lib/supabase/client";
 import { applyMove, nextDealPosition, reorderStages, sortStages } from "./board-logic";
 import type { DealInput, StageInput } from "./schemas";
@@ -94,6 +95,8 @@ export function useCreateDeal() {
         deals ? [row, ...deals] : deals,
       );
       void invalidateContacts(queryClient, user.id);
+      // A deal created straight into a deposit or won stage books income.
+      void invalidateFinance(queryClient, user.id);
     },
   });
 }
@@ -186,6 +189,8 @@ export function useMoveDeal() {
       if (queryClient.isMutating({ mutationKey: ["pipeline", "move"] }) > 1) return;
       void queryClient.invalidateQueries({ queryKey: key });
       void invalidateContacts(queryClient, user.id);
+      // The database books a deposit or the rest of the deal, or flags what it booked.
+      void invalidateFinance(queryClient, user.id);
     },
     mutationKey: ["pipeline", "move"],
   });
@@ -234,6 +239,26 @@ export function useRenameStage() {
         stages?.map((stage) => (stage.id === id ? { ...stage, name } : stage)),
       );
     },
+  });
+}
+
+/**
+ * Marks the stage whose deals book a deposit (or, with null, none), and what share
+ * of the deal value it is. Only one stage carries the mark; the database moves it.
+ */
+export function useSetDepositStage() {
+  const { user } = useSession();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ stageId, percent }: { stageId: string | null; percent: number }) => {
+      const { error } = await createClient().rpc("set_deposit_stage", {
+        // The function takes null to clear the mark; the generated type knows only the uuid.
+        _stage_id: stageId as string,
+        _percent: percent,
+      });
+      if (error) throw error;
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: pipelineKeys.stages(user.id) }),
   });
 }
 

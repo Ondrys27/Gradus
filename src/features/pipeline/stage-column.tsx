@@ -6,12 +6,14 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVerticalIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { toneFill } from "@/components/ui/tone";
 import { formatCurrency } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { isRelaunchable, sumByCurrency } from "./board-logic";
 import { DealCard } from "./deal-card";
+import { useSetDepositStage } from "./queries";
 import { STAGE_NAME_MAX } from "./schemas";
 import { stageTone, type Deal, type Stage } from "./types";
 
@@ -109,6 +111,7 @@ export function StageColumn({
           {totals.map((sum) => formatCurrency(sum.total, sum.currency, settings)).join(" · ")}
         </p>
         {editing && isLastStage && <p className="text-xs text-ink-muted">{t("stage.lastStage")}</p>}
+        {editing && !stage.is_won && !stage.is_lost && <DepositControl stage={stage} />}
       </header>
 
       <div className="flex min-h-16 flex-col gap-2">
@@ -167,5 +170,61 @@ function StageNameInput({
         }
       }}
     />
+  );
+}
+
+const DEPOSIT_KEY = "deposit_paid";
+
+/** Marks this stage as the one that means "deposit paid", with the deposit's share of the value. */
+function DepositControl({ stage }: { stage: Stage }) {
+  const t = useTranslations("pipeline.stage");
+  const set = useSetDepositStage();
+  const isDeposit = stage.system_key === DEPOSIT_KEY;
+  const [percent, setPercent] = useState(String(stage.deposit_percent));
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setPercent(String(stage.deposit_percent)), [stage.deposit_percent]);
+
+  function save(stageId: string | null, value: number) {
+    setFailed(false);
+    set.mutate({ stageId, percent: value }, { onError: () => setFailed(true) });
+  }
+
+  function commitPercent() {
+    const value = Number(percent);
+    if (!Number.isInteger(value) || value < 1 || value > 100) setPercent(String(stage.deposit_percent));
+    else if (value !== stage.deposit_percent) save(stage.id, value);
+  }
+
+  return (
+    <div className="flex flex-col gap-2 rounded-xl border border-line px-3 py-1">
+      <div className="flex min-h-11 items-center justify-between gap-3">
+        <span className="text-xs text-ink-soft">{t("depositLabel")}</span>
+        <Switch
+          checked={isDeposit}
+          disabled={set.isPending}
+          aria-label={t("depositLabel")}
+          onCheckedChange={(checked) => save(checked ? stage.id : null, stage.deposit_percent)}
+        />
+      </div>
+      {isDeposit && (
+        <div className="flex items-center justify-between gap-3 pb-1">
+          <label htmlFor={`deposit-${stage.id}`} className="text-xs text-ink-soft">
+            {t("depositPercent")}
+          </label>
+          <Input
+            id={`deposit-${stage.id}`}
+            value={percent}
+            inputMode="numeric"
+            className="h-11 w-20 px-2 text-right text-sm mouse:h-8"
+            onChange={(event) => setPercent(event.target.value)}
+            onBlur={commitPercent}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") event.currentTarget.blur();
+            }}
+          />
+        </div>
+      )}
+      <p className="pb-1 text-xs text-ink-muted">{failed ? t("depositFailed") : t("depositHint")}</p>
+    </div>
   );
 }

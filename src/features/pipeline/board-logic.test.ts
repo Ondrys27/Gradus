@@ -20,6 +20,7 @@ const stage = (id: string, position: number, extra: Partial<Stage> = {}): Stage 
   is_won: false,
   is_lost: false,
   system_key: null,
+  deposit_percent: 30,
   ...extra,
 });
 

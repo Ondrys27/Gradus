@@ -209,11 +209,6 @@
       "emptyTitle": "Kalendář je prázdný",
       "emptyDescription": "Naplánované schůzky a termíny se objeví tady."
     },
-    "finance": {
-      "description": "Příjmy, výdaje a faktury.",
-      "emptyTitle": "Zatím žádné pohyby",
-      "emptyDescription": "Propoj Fakturoid nebo přidej první příjem či výdaj."
-    },
     "workers": {
       "description": "Lidé, kteří s tebou pracují, a jejich hodiny.",
       "emptyTitle": "Zatím žádní pracovníci",
@@ -575,7 +570,11 @@
       "rename": "Název fáze (nyní {name})",
       "drag": "Přesunout fázi {name}",
       "remove": "Odebrat fázi {name}",
-      "lastStage": "Toto je tvoje poslední fáze, nejde odebrat."
+      "lastStage": "Toto je tvoje poslední fáze, nejde odebrat.",
+      "depositLabel": "Fáze zálohy",
+      "depositHint": "Obchod přesunutý sem zaúčtuje zálohu jako příjem.",
+      "depositPercent": "Podíl zálohy (%)",
+      "depositFailed": "Nastavení zálohy se nepodařilo uložit."
     },
     "form": {
       "createTitle": "Nový obchod",
@@ -616,7 +615,12 @@
       "deleteDescription": "Obchod „{title}“ se nenávratně smaže. Kontakt zůstane.",
       "deleteFailed": "Obchod se nepodařilo smazat. Zkus to znovu.",
       "cancel": "Zrušit",
-      "close": "Zavřít"
+      "close": "Zavřít",
+      "createInvoice": "Vytvořit fakturu",
+      "invoiceCreated": "Faktura {number} je hotová.",
+      "openInvoices": "Otevřít faktury",
+      "invoiceFailed": "Fakturu se nepodařilo vytvořit.",
+      "invoiceNeedsValue": "Doplň k obchodu hodnotu, ať jde vyfakturovat."
     },
     "lost": {
       "title": "Označit jako ztracený",
@@ -1176,6 +1180,153 @@
       "endRequired": "Vyber konec.",
       "endBeforeStart": "Konec musí být po začátku.",
       "descriptionTooLong": "Popis je příliš dlouhý."
+    }
+  },
+  "finance": {
+    "title": "Finance",
+    "description": "Příjmy, výdaje a faktury na jednom místě.",
+    "period": {
+      "label": "Období",
+      "thisMonth": "Tento měsíc",
+      "lastMonth": "Minulý měsíc",
+      "last3Months": "Poslední 3 měsíce",
+      "thisYear": "Tento rok",
+      "last12Months": "Posledních 12 měsíců"
+    },
+    "summary": {
+      "income": "Příjmy",
+      "expense": "Výdaje",
+      "balance": "Zůstatek",
+      "loadFailed": "Souhrn se nepodařilo načíst."
+    },
+    "chart": {
+      "title": "Posledních 12 měsíců",
+      "income": "Příjmy",
+      "expense": "Výdaje",
+      "month": "Měsíc",
+      "empty": "V těchto měsících zatím nic není zaúčtováno.",
+      "loadFailed": "Graf se nepodařilo načíst."
+    },
+    "tabs": {
+      "label": "Části financí",
+      "transactions": "Transakce",
+      "recurring": "Automatické platby",
+      "invoices": "Faktury"
+    },
+    "actions": {
+      "newTransaction": "Nová transakce",
+      "newRecurring": "Nová automatická platba"
+    },
+    "type": {
+      "income": "Příjem",
+      "expense": "Výdaj"
+    },
+    "categories": {
+      "sales": "Prodej",
+      "services": "Služby",
+      "otherIncome": "Ostatní příjmy",
+      "rent": "Nájem",
+      "software": "Software",
+      "marketing": "Marketing",
+      "travel": "Cestování",
+      "taxes": "Daně",
+      "salaries": "Mzdy",
+      "otherExpense": "Ostatní výdaje"
+    },
+    "transactions": {
+      "category": "Kategorie",
+      "allCategories": "Všechny kategorie",
+      "emptyTitle": "Žádné transakce",
+      "emptyDescription": "V tomto období není nic zaúčtováno. Přidej příjem nebo výdaj.",
+      "loadFailed": "Transakce se nepodařilo načíst.",
+      "review": "Zkontrolovat",
+      "confirm": "Sedí",
+      "source": {
+        "manual": "Přidáno ručně",
+        "recurring": "Automatická platba",
+        "deal_deposit": "Záloha z obchodu",
+        "deal_invoice": "Vyhraný obchod",
+        "invoice": "Zaplacená faktura"
+      }
+    },
+    "recurring": {
+      "emptyTitle": "Žádné automatické platby",
+      "emptyDescription": "Nájem, software, paušál: zadej jednou a zaúčtuje se pokaždé, když je splatné.",
+      "new": "Nová automatická platba",
+      "loadFailed": "Automatické platby se nepodařilo načíst.",
+      "frequencyLabel": "Opakuje se",
+      "frequency": {
+        "weekly": "Týdně",
+        "monthly": "Měsíčně",
+        "quarterly": "Čtvrtletně",
+        "yearly": "Ročně"
+      },
+      "nextDue": "Další platba",
+      "dayHint": "Den v měsíci se vezme z tohoto data.",
+      "endsOn": "Končí (nepovinné)",
+      "onDay": "{frequency}, {day}. v měsíci",
+      "next": "další {date}",
+      "ended": "Skončila",
+      "active": "Účtovat „{name}“ automaticky"
+    },
+    "invoices": {
+      "emptyTitle": "Zatím žádné faktury",
+      "emptyDescription": "Otevři obchod a vytvoř z něj fakturu jedním klepnutím.",
+      "loadFailed": "Faktury se nepodařilo načíst.",
+      "noClient": "Bez klienta",
+      "paidOn": "Zaplaceno {date}",
+      "dueOn": "Splatnost {date}",
+      "noDueDate": "Bez splatnosti",
+      "markPaid": "Označit jako zaplacené",
+      "status": {
+        "paid": "Zaplaceno",
+        "pending": "Čeká",
+        "overdue": "Po splatnosti",
+        "draft": "Koncept",
+        "closed": "Uzavřeno"
+      },
+      "delete": "Smazat",
+      "deleteLabel": "Smazat fakturu {number}",
+      "deleteTitle": "Smazat fakturu",
+      "deleteDescription": "Smazat fakturu {number}? Příjem, který už je k ní zaúčtovaný, zůstane.",
+      "deleteFailed": "Fakturu se nepodařilo smazat.",
+      "cancel": "Zrušit",
+      "close": "Zavřít"
+    },
+    "form": {
+      "newTransaction": "Nová transakce",
+      "editTransaction": "Upravit transakci",
+      "newRecurring": "Nová automatická platba",
+      "editRecurring": "Upravit automatickou platbu",
+      "type": "Typ",
+      "amount": "Částka",
+      "category": "Kategorie",
+      "description": "Popis",
+      "descriptionOptional": "Popis (nepovinný)",
+      "date": "Datum",
+      "save": "Uložit",
+      "cancel": "Zrušit",
+      "delete": "Smazat",
+      "close": "Zavřít",
+      "saveFailed": "Nepodařilo se uložit. Zkus to znovu.",
+      "deleteFailed": "Nepodařilo se smazat. Zkus to znovu.",
+      "deleteTransactionTitle": "Smazat transakci",
+      "deleteTransactionDescription": "Transakce zmizí z tvých součtů.",
+      "deleteRecurringTitle": "Smazat automatickou platbu",
+      "deleteRecurringDescription": "Další platby se už nezaúčtují. Ty, které už jsou zaúčtované, zůstanou."
+    },
+    "errors": {
+      "amountInvalid": "Zadej částku větší než nula, např. 1 250,50.",
+      "descriptionRequired": "Zadej popis.",
+      "descriptionTooLong": "Popis může mít nejvýš 200 znaků.",
+      "dateRequired": "Vyber datum.",
+      "endBeforeStart": "Konec nemůže být před další platbou."
+    },
+    "pager": {
+      "label": "Stránky",
+      "previous": "Předchozí stránka",
+      "next": "Další stránka",
+      "position": "Strana {page} z {pages}"
     }
   }
 }

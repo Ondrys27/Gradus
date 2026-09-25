@@ -209,11 +209,6 @@
       "emptyTitle": "Your calendar is empty",
       "emptyDescription": "Meetings and deadlines you plan will appear here."
     },
-    "finance": {
-      "description": "Income, expenses and invoices.",
-      "emptyTitle": "No transactions yet",
-      "emptyDescription": "Connect Fakturoid or add your first income or expense."
-    },
     "workers": {
       "description": "The people who work with you and their hours.",
       "emptyTitle": "No workers yet",
@@ -575,7 +570,11 @@
       "rename": "Stage name (currently {name})",
       "drag": "Move stage {name}",
       "remove": "Remove stage {name}",
-      "lastStage": "This is your last stage, so it cannot be removed."
+      "lastStage": "This is your last stage, so it cannot be removed.",
+      "depositLabel": "Deposit stage",
+      "depositHint": "Deals moved here book a deposit as income.",
+      "depositPercent": "Deposit share (%)",
+      "depositFailed": "The deposit setting could not be saved."
     },
     "form": {
       "createTitle": "New deal",
@@ -616,7 +615,12 @@
       "deleteDescription": "“{title}” will be deleted for good. The contact stays.",
       "deleteFailed": "The deal could not be deleted. Try again.",
       "cancel": "Cancel",
-      "close": "Close"
+      "close": "Close",
+      "createInvoice": "Create invoice",
+      "invoiceCreated": "Invoice {number} is ready.",
+      "openInvoices": "Open invoices",
+      "invoiceFailed": "The invoice could not be created.",
+      "invoiceNeedsValue": "Add a value to the deal to invoice it."
     },
     "lost": {
       "title": "Mark as lost",
@@ -1176,6 +1180,153 @@
       "endRequired": "Pick an end.",
       "endBeforeStart": "The end must be after the start.",
       "descriptionTooLong": "The description is too long."
+    }
+  },
+  "finance": {
+    "title": "Finance",
+    "description": "Income, expenses and invoices in one place.",
+    "period": {
+      "label": "Period",
+      "thisMonth": "This month",
+      "lastMonth": "Last month",
+      "last3Months": "Last 3 months",
+      "thisYear": "This year",
+      "last12Months": "Last 12 months"
+    },
+    "summary": {
+      "income": "Income",
+      "expense": "Expenses",
+      "balance": "Balance",
+      "loadFailed": "The summary could not be loaded."
+    },
+    "chart": {
+      "title": "Last 12 months",
+      "income": "Income",
+      "expense": "Expenses",
+      "month": "Month",
+      "empty": "Nothing booked in these months yet.",
+      "loadFailed": "The chart could not be loaded."
+    },
+    "tabs": {
+      "label": "Finance sections",
+      "transactions": "Transactions",
+      "recurring": "Recurring",
+      "invoices": "Invoices"
+    },
+    "actions": {
+      "newTransaction": "New transaction",
+      "newRecurring": "New recurring payment"
+    },
+    "type": {
+      "income": "Income",
+      "expense": "Expense"
+    },
+    "categories": {
+      "sales": "Sales",
+      "services": "Services",
+      "otherIncome": "Other income",
+      "rent": "Rent",
+      "software": "Software",
+      "marketing": "Marketing",
+      "travel": "Travel",
+      "taxes": "Taxes",
+      "salaries": "Salaries",
+      "otherExpense": "Other expense"
+    },
+    "transactions": {
+      "category": "Category",
+      "allCategories": "All categories",
+      "emptyTitle": "No transactions here",
+      "emptyDescription": "Nothing is booked in this period. Add an income or an expense.",
+      "loadFailed": "Transactions could not be loaded.",
+      "review": "Check",
+      "confirm": "Looks right",
+      "source": {
+        "manual": "Added by you",
+        "recurring": "Recurring payment",
+        "deal_deposit": "Deposit from a deal",
+        "deal_invoice": "Won deal",
+        "invoice": "Paid invoice"
+      }
+    },
+    "recurring": {
+      "emptyTitle": "No recurring payments",
+      "emptyDescription": "Rent, software, a retainer: add it once and it is booked every time it is due.",
+      "new": "New recurring payment",
+      "loadFailed": "Recurring payments could not be loaded.",
+      "frequencyLabel": "Repeats",
+      "frequency": {
+        "weekly": "Weekly",
+        "monthly": "Monthly",
+        "quarterly": "Quarterly",
+        "yearly": "Yearly"
+      },
+      "nextDue": "Next payment",
+      "dayHint": "The day of the month is taken from this date.",
+      "endsOn": "Ends on (optional)",
+      "onDay": "{frequency} on day {day}",
+      "next": "next {date}",
+      "ended": "Ended",
+      "active": "Book “{name}” automatically"
+    },
+    "invoices": {
+      "emptyTitle": "No invoices yet",
+      "emptyDescription": "Open a deal and create an invoice from it with one tap.",
+      "loadFailed": "Invoices could not be loaded.",
+      "noClient": "No client",
+      "paidOn": "Paid {date}",
+      "dueOn": "Due {date}",
+      "noDueDate": "No due date",
+      "markPaid": "Mark as paid",
+      "status": {
+        "paid": "Paid",
+        "pending": "Waiting",
+        "overdue": "Overdue",
+        "draft": "Draft",
+        "closed": "Closed"
+      },
+      "delete": "Delete",
+      "deleteLabel": "Delete invoice {number}",
+      "deleteTitle": "Delete invoice",
+      "deleteDescription": "Delete invoice {number}? Income already booked for it stays.",
+      "deleteFailed": "The invoice could not be deleted.",
+      "cancel": "Cancel",
+      "close": "Close"
+    },
+    "form": {
+      "newTransaction": "New transaction",
+      "editTransaction": "Edit transaction",
+      "newRecurring": "New recurring payment",
+      "editRecurring": "Edit recurring payment",
+      "type": "Type",
+      "amount": "Amount",
+      "category": "Category",
+      "description": "Description",
+      "descriptionOptional": "Description (optional)",
+      "date": "Date",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "close": "Close",
+      "saveFailed": "It could not be saved. Try again.",
+      "deleteFailed": "It could not be deleted. Try again.",
+      "deleteTransactionTitle": "Delete transaction",
+      "deleteTransactionDescription": "This transaction will be removed from your totals.",
+      "deleteRecurringTitle": "Delete recurring payment",
+      "deleteRecurringDescription": "No more payments will be booked. Ones already booked stay."
+    },
+    "errors": {
+      "amountInvalid": "Enter an amount above zero, e.g. 1 250,50.",
+      "descriptionRequired": "Enter a description.",
+      "descriptionTooLong": "Keep the description under 200 characters.",
+      "dateRequired": "Choose a date.",
+      "endBeforeStart": "The end cannot be before the next payment."
+    },
+    "pager": {
+      "label": "Pages",
+      "previous": "Previous page",
+      "next": "Next page",
+      "position": "Page {page} of {pages}"
     }
   }
 }

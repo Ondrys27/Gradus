@@ -943,6 +943,7 @@ export type Database = {
         Row: {
           color: string
           created_at: string
+          deposit_percent: number
           id: string
           is_lost: boolean
           is_won: boolean
@@ -955,6 +956,7 @@ export type Database = {
         Insert: {
           color?: string
           created_at?: string
+          deposit_percent?: number
           id?: string
           is_lost?: boolean
           is_won?: boolean
@@ -967,6 +969,7 @@ export type Database = {
         Update: {
           color?: string
           created_at?: string
+          deposit_percent?: number
           id?: string
           is_lost?: boolean
           is_won?: boolean
@@ -1081,6 +1084,7 @@ export type Database = {
           created_at: string
           currency: string
           description: string
+          due_day: number | null
           ends_on: string | null
           frequency: Database["public"]["Enums"]["recurring_frequency"]
           id: string
@@ -1097,6 +1101,7 @@ export type Database = {
           created_at?: string
           currency?: string
           description: string
+          due_day?: number | null
           ends_on?: string | null
           frequency: Database["public"]["Enums"]["recurring_frequency"]
           id?: string
@@ -1113,6 +1118,7 @@ export type Database = {
           created_at?: string
           currency?: string
           description?: string
+          due_day?: number | null
           ends_on?: string | null
           frequency?: Database["public"]["Enums"]["recurring_frequency"]
           id?: string
@@ -1301,8 +1307,10 @@ export type Database = {
           description: string | null
           id: string
           invoice_id: string | null
+          needs_review: boolean
           occurred_on: string
           recurring_payment_id: string | null
+          source: Database["public"]["Enums"]["transaction_source"]
           type: Database["public"]["Enums"]["transaction_type"]
           updated_at: string
           user_id: string
@@ -1316,8 +1324,10 @@ export type Database = {
           description?: string | null
           id?: string
           invoice_id?: string | null
+          needs_review?: boolean
           occurred_on: string
           recurring_payment_id?: string | null
+          source?: Database["public"]["Enums"]["transaction_source"]
           type: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string
           user_id: string
@@ -1331,8 +1341,10 @@ export type Database = {
           description?: string | null
           id?: string
           invoice_id?: string | null
+          needs_review?: boolean
           occurred_on?: string
           recurring_payment_id?: string | null
+          source?: Database["public"]["Enums"]["transaction_source"]
           type?: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string
           user_id?: string
@@ -1899,6 +1911,47 @@ export type Database = {
       }
     }
     Functions: {
+      create_invoice_from_deal: {
+        Args: { _deal_id: string }
+        Returns: {
+          amount: number
+          contact_id: string | null
+          created_at: string
+          currency: string
+          customer_name: string | null
+          deal_id: string | null
+          due_on: string | null
+          fakturoid_id: number | null
+          id: string
+          issued_on: string | null
+          number: string
+          paid_on: string | null
+          status: Database["public"]["Enums"]["invoice_status"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "invoices"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      finance_monthly_totals: {
+        Args: { _from: string; _to: string }
+        Returns: {
+          expense: number
+          income: number
+          month: string
+        }[]
+      }
+      finance_totals: {
+        Args: { _category?: string; _from: string; _to: string }
+        Returns: {
+          expense: number
+          income: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1924,6 +1977,32 @@ export type Database = {
         Returns: undefined
       }
       is_client_request: { Args: never; Returns: boolean }
+      mark_invoice_paid: {
+        Args: { _invoice_id: string }
+        Returns: {
+          amount: number
+          contact_id: string | null
+          created_at: string
+          currency: string
+          customer_name: string | null
+          deal_id: string | null
+          due_on: string | null
+          fakturoid_id: number | null
+          id: string
+          issued_on: string | null
+          number: string
+          paid_on: string | null
+          status: Database["public"]["Enums"]["invoice_status"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "invoices"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       meetings_daily: {
         Args: { _from: string; _timezone: string; _to: string }
         Returns: {
@@ -1990,6 +2069,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      post_due_recurring_payments: { Args: never; Returns: number }
       prospecting_daily_seconds: {
         Args: { _from: string; _timezone: string; _to: string }
         Returns: {
@@ -2024,6 +2104,14 @@ export type Database = {
           today_seconds: number
         }[]
       }
+      recurring_next_due: {
+        Args: {
+          _due_day?: number
+          _frequency: Database["public"]["Enums"]["recurring_frequency"]
+          _from: string
+        }
+        Returns: string
+      }
       refresh_call_time_stats: { Args: never; Returns: number }
       remove_contact_table: {
         Args: { _move_to?: string; _table_id: string }
@@ -2031,6 +2119,10 @@ export type Database = {
       }
       remove_stage: {
         Args: { _move_to?: string; _stage_id: string }
+        Returns: undefined
+      }
+      set_deposit_stage: {
+        Args: { _percent?: number; _stage_id: string }
         Returns: undefined
       }
       start_prospecting: {
@@ -2072,6 +2164,7 @@ export type Database = {
         }
       }
       timer_idle_interval: { Args: never; Returns: string }
+      user_today: { Args: { _user_id: string }; Returns: string }
       username_available: { Args: { _username: string }; Returns: boolean }
       work_seconds_for_day: {
         Args: { _day: string; _timezone: string; _worker_id: string }
@@ -2094,7 +2187,13 @@ export type Database = {
         | "finance"
         | "workers"
         | "jarvis"
-      calendar_event_kind: "meeting" | "call" | "reminder" | "other" | "task" | "deadline"
+      calendar_event_kind:
+        | "meeting"
+        | "call"
+        | "reminder"
+        | "other"
+        | "task"
+        | "deadline"
       contact_activity_type:
         | "call"
         | "email"
@@ -2132,6 +2231,12 @@ export type Database = {
       session_end_reason: "pause" | "idle"
       subscription_status: "trialing" | "active" | "past_due" | "cancelled"
       task_status: "todo" | "in_progress" | "done"
+      transaction_source:
+        | "manual"
+        | "recurring"
+        | "deal_deposit"
+        | "deal_invoice"
+        | "invoice"
       transaction_type: "income" | "expense"
       worker_status: "invited" | "active" | "inactive"
     }
@@ -2276,7 +2381,14 @@ export const Constants = {
         "workers",
         "jarvis",
       ],
-      calendar_event_kind: ["meeting", "call", "reminder", "other", "task", "deadline"],
+      calendar_event_kind: [
+        "meeting",
+        "call",
+        "reminder",
+        "other",
+        "task",
+        "deadline",
+      ],
       contact_activity_type: [
         "call",
         "email",
@@ -2318,6 +2430,13 @@ export const Constants = {
       session_end_reason: ["pause", "idle"],
       subscription_status: ["trialing", "active", "past_due", "cancelled"],
       task_status: ["todo", "in_progress", "done"],
+      transaction_source: [
+        "manual",
+        "recurring",
+        "deal_deposit",
+        "deal_invoice",
+        "invoice",
+      ],
       transaction_type: ["income", "expense"],
       worker_status: ["invited", "active", "inactive"],
     },

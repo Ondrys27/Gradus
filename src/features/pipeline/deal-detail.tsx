@@ -2,7 +2,8 @@
 
 import { useMemo, useState, type FormEvent } from "react";
 import { Dialog } from "@base-ui/react/dialog";
-import { HistoryIcon, Trash2Icon, XIcon } from "lucide-react";
+import { FileTextIcon, HistoryIcon, Trash2Icon, XIcon } from "lucide-react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useCreateInvoiceFromDeal } from "@/features/finance/queries";
 import { formatDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { useIsPhone } from "@/lib/use-media-query";
@@ -105,6 +107,7 @@ function DetailBody({
   const settings = useFormatSettings();
   const update = useUpdateDeal(deal.id);
   const remove = useDeleteDeal();
+  const invoice = useCreateInvoiceFromDeal();
   const [draft, setDraft] = useState<DealDraft>(() => draftFromDeal(deal));
   const [errors, setErrors] = useState<Partial<Record<string, PipelineErrorKey>>>({});
   const [status, setStatus] = useState<"idle" | "saved" | "failed">("idle");
@@ -202,6 +205,8 @@ function DetailBody({
         </div>
       </form>
 
+      <InvoiceSection deal={deal} invoice={invoice} />
+
       <section
         aria-labelledby="deal-history"
         className="flex flex-col gap-2 border-t border-line pt-5"
@@ -233,5 +238,40 @@ function DetailBody({
         onConfirm={() => void confirmDelete()}
       />
     </div>
+  );
+}
+
+/** One tap makes an open invoice from the deal's value; a second tap returns the same one. */
+function InvoiceSection({
+  deal,
+  invoice,
+}: {
+  deal: Deal;
+  invoice: ReturnType<typeof useCreateInvoiceFromDeal>;
+}) {
+  const t = useTranslations("pipeline.detail");
+  const hasValue = deal.value !== null && deal.value > 0;
+  return (
+    <section className="flex flex-col gap-2 border-t border-line pt-5">
+      <Button
+        type="button"
+        variant="secondary"
+        disabled={!hasValue || invoice.isPending}
+        onClick={() => invoice.mutate(deal.id)}
+      >
+        <FileTextIcon aria-hidden data-icon="inline-start" />
+        {t("createInvoice")}
+      </Button>
+      {!hasValue && <p className="text-xs text-ink-muted">{t("invoiceNeedsValue")}</p>}
+      {invoice.isError && <FormAlert>{t("invoiceFailed")}</FormAlert>}
+      {invoice.isSuccess && (
+        <p role="status" className="flex flex-wrap items-center gap-x-3 text-sm text-green">
+          {t("invoiceCreated", { number: invoice.data.number })}
+          <Link href="/finance?tab=invoices" className="text-violet underline-offset-4 hover:underline">
+            {t("openInvoices")}
+          </Link>
+        </p>
+      )}
+    </section>
   );
 }

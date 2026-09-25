@@ -1692,3 +1692,172 @@ describe("industry insights", () => {
     await asServer();
   });
 });
+
+describe("finance", () => {
+  let user: string;
+  let stages: Record<string, string>;
+
+  const income = (deal: string) =>
+    rows<{ source: string; amount: string; needs_review: boolean }>(
+      `select source, amount::text, needs_review from transactions
+       where deal_id = '${deal}' order by source`,
+    );
+  async function newDeal(stage: string, value: number | null = 10000) {
+    return (
+      await one<{ id: string }>(
+        `insert into deals (user_id, stage_id, title, value) values ('${user}', '${stage}', 'Web', ${value ?? "null"}) returning id`,
+      )
+    ).id;
+  }
+
+  beforeAll(async () => {
+    user = await createAuthUser();
+    await asUser(user);
+    stages = Object.fromEntries(
+      (
+        await rows<{ system_key: string; id: string }>(
+          `select system_key, id from pipeline_stages where user_id = '${user}'`,
+        )
+      ).map((r) => [r.system_key, r.id]),
+    );
+  });
+  afterAll(asServer);
+
+  it("books a deposit share on entering the deposit stage, then only the rest on winning", async () => {
+    const deal = await newDeal(stages.lead);
+    await db.query(`update deals set stage_id = '${stages.deposit_paid}' where id = '${deal}'`);
+    expect(await income(deal)).toEqual([
+      { source: "deal_deposit", amount: "3000.00", needs_review: false },
+    ]);
+    await db.query(`update deals set stage_id = '${stages.won}' where id = '${deal}'`);
+    expect((await income(deal)).map((r) => [r.source, r.amount])).toEqual([
+      ["deal_deposit", "3000.00"],
+      ["deal_invoice", "7000.00"],
+    ]);
+  });
+
+  it("marks income for review when a deal moves back, never deletes or doubles it", async () => {
+    const deal = await newDeal(stages.lead);
+    await db.query(`update deals set stage_id = '${stages.won}' where id = '${deal}'`);
+    await db.query(`update deals set stage_id = '${stages.offer}' where id = '${deal}'`);
+    expect(await income(deal)).toEqual([
+      { source: "deal_invoice", amount: "10000.00", needs_review: true },
+    ]);
+    await db.query(`update deals set stage_id = '${stages.won}' where id = '${deal}'`);
+    expect(await income(deal)).toHaveLength(1);
+  });
+
+  it("books nothing for a deal without a value", async () => {
+    const deal = await newDeal(stages.lead, null);
+    await db.query(`update deals set stage_id = '${stages.won}' where id = '${deal}'`);
+    expect(await income(deal)).toEqual([]);
+  });
+
+  it("keeps the source to the server and lets the owner only clear the review mark", async () => {
+    const created = await one<{ id: string; source: string; needs_review: boolean }>(
+      `insert into transactions (user_id, type, amount, occurred_on, source, needs_review)
+       values ('${user}', 'expense', 50, '2026-09-01', 'deal_invoice', true)
+       returning id, source, needs_review`,
+    );
+    expect(created).toMatchObject({ source: "manual", needs_review: false });
+    const deal = await newDeal(stages.won);
+    const flagged = (await income(deal))[0];
+    expect(flagged.needs_review).toBe(false);
+    await db.query(
+      `update transactions set needs_review = true where deal_id = '${deal}'`,
+    );
+    expect((await income(deal))[0].needs_review).toBe(false);
+  });
+
+  it("moves the deposit marker to one stage and recomputes from its percent", async () => {
+    await db.query(`select set_deposit_stage('${stages.offer}', 50::smallint)`);
+    expect(
+      await count(`select 1 from pipeline_stages where system_key = 'deposit_paid'`),
+    ).toBe(1);
+    const deal = await newDeal(stages.lead);
+    await db.query(`update deals set stage_id = '${stages.offer}' where id = '${deal}'`);
+    expect((await income(deal))[0].amount).toBe("5000.00");
+    await expect(
+      db.query(`select set_deposit_stage('${stages.won}')`),
+    ).rejects.toThrow(/stage_not_found/);
+    await db.query(`select set_deposit_stage(null)`);
+    expect(await count(`select 1 from pipeline_stages where system_key = 'deposit_paid'`)).toBe(0);
+  });
+
+  it("books recurring payments once per due day, catching up and stopping at the end", async () => {
+    await db.query(
+      `insert into recurring_payments (user_id, type, amount, description, frequency, next_due_on, due_day, ends_on)
+       values ('${user}', 'expense', 500, 'Hosting', 'monthly', current_date - 65, 31,
+               current_date - 5)`,
+    );
+    await asServer();
+    const first = (await one<{ n: number }>(`select post_due_recurring_payments() as n`)).n;
+    expect(first).toBeGreaterThanOrEqual(2);
+    expect((await one<{ n: number }>(`select post_due_recurring_payments() as n`)).n).toBe(0);
+    const payment = await one<{ is_active: boolean; next_due_on: string }>(
+      `select is_active, next_due_on::text from recurring_payments where user_id = '${user}'`,
+    );
+    expect(payment.is_active).toBe(false);
+    expect(
+      await count(`select 1 from transactions where user_id = '${user}' and source = 'recurring'`),
+    ).toBe(first);
+    await asUser(user);
+  });
+
+  it("clamps monthly due days to the end of shorter months without drifting", async () => {
+    const next = async (from: string, freq: string, day: number | null) =>
+      (
+        await one<{ d: string }>(
+          `select recurring_next_due('${from}', '${freq}', ${day ?? "null"}::smallint)::text as d`,
+        )
+      ).d;
+    expect(await next("2026-01-31", "monthly", 31)).toBe("2026-02-28");
+    expect(await next("2026-02-28", "monthly", 31)).toBe("2026-03-31");
+    expect(await next("2026-11-30", "quarterly", null)).toBe("2027-02-28");
+    expect(await next("2026-09-25", "weekly", null)).toBe("2026-10-02");
+    expect(await next("2026-09-25", "yearly", null)).toBe("2027-09-25");
+  });
+
+  it("creates one numbered invoice per deal in a tap and books its payment once", async () => {
+    const deal = await newDeal(stages.lead, 2500);
+    const invoice = await one<{ id: string; number: string; amount: string; status: string }>(
+      `select * from create_invoice_from_deal('${deal}')`,
+    );
+    expect(invoice).toMatchObject({ amount: "2500.00", status: "open" });
+    expect(invoice.number).toMatch(/^\d{4}-\d{3}$/);
+    const again = await one<{ id: string }>(`select * from create_invoice_from_deal('${deal}')`);
+    expect(again.id).toBe(invoice.id);
+    await db.query(`select mark_invoice_paid('${invoice.id}')`);
+    await db.query(`select mark_invoice_paid('${invoice.id}')`);
+    expect(await income(deal)).toEqual([
+      { source: "invoice", amount: "2500.00", needs_review: false },
+    ]);
+    await db.query(`update deals set stage_id = '${stages.won}' where id = '${deal}'`);
+    expect(await income(deal)).toHaveLength(1);
+    const noValue = await newDeal(stages.lead, null);
+    await expect(db.query(`select create_invoice_from_deal('${noValue}')`)).rejects.toThrow(
+      /deal_value_required/,
+    );
+  });
+
+  it("does not run the recurring job for clients and totals only the caller's rows", async () => {
+    await expect(db.query(`select post_due_recurring_payments()`)).rejects.toThrow(
+      /permission denied/,
+    );
+    const totals = await one<{ income: string; expense: string }>(
+      `select * from finance_totals(current_date - 400, current_date + 1)`,
+    );
+    expect(Number(totals.income)).toBeGreaterThan(0);
+    await asServer();
+    const other = await createAuthUser();
+    await asUser(other);
+    const none = await one<{ income: string; expense: string }>(
+      `select * from finance_totals(current_date - 400, current_date + 1)`,
+    );
+    expect(none).toEqual({ income: "0", expense: "0" });
+    expect(
+      await count(`select 1 from finance_monthly_totals(current_date - 330, current_date)`),
+    ).toBe(12);
+    await asUser(user);
+  });
+});
