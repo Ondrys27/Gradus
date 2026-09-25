@@ -1872,6 +1872,7 @@ export type Database = {
           search_name: string | null
           source: Database["public"]["Enums"]["contact_source"] | null
           table_id: string | null
+          website: string | null
         }
         Relationships: []
       }

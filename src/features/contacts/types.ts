@@ -5,7 +5,7 @@ type Tables = Database["public"]["Tables"];
 type Views = Database["public"]["Views"];
 
 export const LIST_COLUMNS =
-  "id, company_name, first_name, last_name, email, phone, city, source, created_at, table_id, last_contact_at";
+  "id, company_name, first_name, last_name, email, phone, website, city, source, created_at, table_id, last_contact_at";
 export const CONTACT_COLUMNS =
   "id, company_name, first_name, last_name, email, phone, website, address, city, postal_code, country_code, source, notes, created_at";
 export const TABLE_COLUMNS = "id, name, color, position, is_system, system_key";
@@ -25,6 +25,7 @@ export type ContactListItem = Pick<
   | "last_name"
   | "email"
   | "phone"
+  | "website"
   | "city"
   | "source"
   | "table_id"

@@ -993,5 +993,34 @@
         "unknown": "Something went wrong while generating. Try again."
       }
     }
+  },
+  "coldCalling": {
+    "description": "Call your list and watch your time on the phone.",
+    "aside": "Timer and statistics",
+    "list": {
+      "label": "Contacts to call",
+      "search": "Search contacts",
+      "searchPlaceholder": "Search by name or phone",
+      "call": "Call {name}",
+      "website": "Website of {name}",
+      "moved": "Moved to “{name}”. Next one is open.",
+      "movedWithMeeting": "Moved to “{name}”, the meeting is in your calendar.",
+      "loadFailed": "The list could not be loaded. Check your connection and try again.",
+      "noMatch": "Nobody matches this search",
+      "emptyTitle": "Nobody left to call here",
+      "emptyDescription": "Add contacts or generate new ones in Contacts; they land in Unreached.",
+      "loadMore": "Show more",
+      "loadingMore": "Loading…"
+    },
+    "panel": {
+      "title": "Contact",
+      "close": "Close",
+      "notFound": "This contact no longer exists.",
+      "call": "Call {phone}",
+      "noPhone": "No phone number.",
+      "move": "Move to",
+      "notes": "Note",
+      "openDetail": "Open full detail"
+    }
   }
 }

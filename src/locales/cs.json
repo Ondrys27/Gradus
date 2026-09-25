@@ -993,5 +993,34 @@
         "unknown": "Při generování se něco pokazilo. Zkus to znovu."
       }
     }
+  },
+  "coldCalling": {
+    "description": "Provolej svůj seznam a sleduj čas na telefonu.",
+    "aside": "Časovač a statistiky",
+    "list": {
+      "label": "Kontakty k obvolání",
+      "search": "Hledat v kontaktech",
+      "searchPlaceholder": "Hledej podle jména nebo telefonu",
+      "call": "Zavolat: {name}",
+      "website": "Web: {name}",
+      "moved": "Přesunuto do „{name}“. Další je otevřený.",
+      "movedWithMeeting": "Přesunuto do „{name}“, schůzka je v kalendáři.",
+      "loadFailed": "Seznam se nepodařilo načíst. Zkontroluj připojení a zkus to znovu.",
+      "noMatch": "Hledání neodpovídá nikdo",
+      "emptyTitle": "Tady už není komu volat",
+      "emptyDescription": "Přidej nebo vygeneruj kontakty v sekci Kontakty, padají do Neoslovených.",
+      "loadMore": "Zobrazit další",
+      "loadingMore": "Načítám…"
+    },
+    "panel": {
+      "title": "Kontakt",
+      "close": "Zavřít",
+      "notFound": "Tento kontakt už neexistuje.",
+      "call": "Volat {phone}",
+      "noPhone": "Bez telefonu.",
+      "move": "Přesunout do",
+      "notes": "Poznámka",
+      "openDetail": "Otevřít celý detail"
+    }
   }
 }

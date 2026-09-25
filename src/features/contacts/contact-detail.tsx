@@ -212,7 +212,7 @@ function CurrentTable({ contactId }: { contactId: string }) {
 }
 
 /** The answers given when the contact came into its table. */
-function CurrentTableCard({ contactId }: { contactId: string }) {
+export function CurrentTableCard({ contactId }: { contactId: string }) {
   const t = useTranslations("contacts");
   const settings = useFormatSettings();
   const entry = useContactEntry(contactId).data;

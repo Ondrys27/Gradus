@@ -13,13 +13,15 @@ type Props = {
   /** null = All */
   value: string | null;
   onChange: (tableId: string | null) => void;
+  /** "All" as the first chip; off where one table is always picked. */
+  showAll?: boolean;
 };
 
 /**
  * One chip per table with its count, "All" first. On phones the row scrolls
  * sideways inside itself, bleeding to the screen edge; the page never does.
  */
-export function TableSwitcher({ tables, counts, value, onChange }: Props) {
+export function TableSwitcher({ tables, counts, value, onChange, showAll = true }: Props) {
   const t = useTranslations("contacts.tables");
   const settings = useFormatSettings();
   const total = counts ? [...counts.values()].reduce((sum, count) => sum + count, 0) : undefined;
@@ -62,7 +64,7 @@ export function TableSwitcher({ tables, counts, value, onChange }: Props) {
       aria-label={t("label")}
       className="-mx-4 flex gap-2 overflow-x-auto overscroll-x-contain px-4 pb-1 [scrollbar-width:none] md:mx-0 md:flex-wrap md:overflow-visible md:px-0"
     >
-      {chip(null, t("all"), total, "violet")}
+      {showAll && chip(null, t("all"), total, "violet")}
       {tables.map((table) =>
         chip(table.id, table.name, counts ? (counts.get(table.id) ?? 0) : undefined, table.color),
       )}
