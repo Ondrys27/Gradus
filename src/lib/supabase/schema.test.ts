@@ -1330,10 +1330,64 @@ describe("moving a contact", () => {
     expect(event.title).toBe("Meeting s.r.o.");
     expect(event.kind).toBe("meeting");
     expect(event.starts_at.toISOString()).toBe("2026-10-01T08:30:00.000Z");
+    expect(
+      (
+        await one<{ source: string }>(`select source from calendar_events where contact_id = $1`, [
+          contact,
+        ])
+      ).source,
+    ).toBe("contact_move");
+
+    // Deleting the booked meeting leaves the contact where it is.
+    const tableBefore = (
+      await one<{ table_id: string }>(
+        `select table_id from contact_table_entries where contact_id = $1`,
+        [contact],
+      )
+    ).table_id;
+    await db.query(`delete from calendar_events where contact_id = $1`, [contact]);
+    expect(
+      (
+        await one<{ table_id: string }>(
+          `select table_id from contact_table_entries where contact_id = $1`,
+          [contact],
+        )
+      ).table_id,
+    ).toBe(tableBefore);
+    await db.query(`select move_contact($1, $2, $3)`, [
+      contact,
+      tables.meeting_scheduled,
+      JSON.stringify({ [fields.meeting_at]: "2026-10-01T08:30:00.000Z" }),
+    ]);
 
     // A table without a meeting question books nothing.
     await db.query(`select move_contact($1, $2)`, [contact, tables.no_answer]);
     expect(await count(`select 1 from calendar_events where contact_id = $1`, [contact])).toBe(1);
+    await asServer();
+  });
+});
+
+describe("calendar events", () => {
+  it("takes the new types, and only the server sets the contact-move mark", async () => {
+    const user = await createAuthUser();
+    await asUser(user);
+    const created = await one<{ id: string; source: string; kind: string }>(
+      `insert into calendar_events (user_id, title, kind, starts_at, source)
+       values ($1, 'Offer due', 'deadline', now(), 'contact_move') returning id, source, kind`,
+      [user],
+    );
+    expect(created.kind).toBe("deadline");
+    expect(created.source).toBe("manual");
+    await db.query(
+      `update calendar_events set source = 'contact_move', kind = 'task' where id = $1`,
+      [created.id],
+    );
+    expect(
+      await one<{ source: string; kind: string }>(
+        `select source, kind from calendar_events where id = $1`,
+        [created.id],
+      ),
+    ).toEqual({ source: "manual", kind: "task" });
     await asServer();
   });
 });

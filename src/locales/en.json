@@ -1088,5 +1088,94 @@
       "counts": "Meetings {meetings} · called {called} · generated {contacts}",
       "loadFailed": "This card could not be loaded."
     }
+  },
+  "calendar": {
+    "description": "Meetings, tasks and deadlines in one place.",
+    "actions": {
+      "add": "Add event"
+    },
+    "nav": {
+      "today": "Today",
+      "previous": {
+        "day": "Previous day",
+        "week": "Previous week",
+        "month": "Previous month"
+      },
+      "next": {
+        "day": "Next day",
+        "week": "Next week",
+        "month": "Next month"
+      }
+    },
+    "views": {
+      "label": "Calendar view",
+      "day": "Day",
+      "week": "Week",
+      "month": "Month"
+    },
+    "kind": {
+      "meeting": "Meeting",
+      "task": "Task",
+      "deadline": "Deadline"
+    },
+    "mirrors": {
+      "label": "Show from other sections",
+      "tasks": "Milestone tasks",
+      "deals": "Expected deal closings"
+    },
+    "more": "+{count} more",
+    "allDayShort": "All day",
+    "nothingPlanned": "Nothing planned",
+    "emptyDay": "Nothing planned. Tap the timeline to add an event.",
+    "notices": {
+      "loadFailed": "The calendar could not be loaded. Try again in a moment.",
+      "changeFailed": "The change could not be saved, so the event is back where it was."
+    },
+    "form": {
+      "createTitle": "New event",
+      "editTitle": "Edit event",
+      "close": "Close",
+      "title": "Title",
+      "titlePlaceholder": "What is planned?",
+      "type": "Type",
+      "allDay": "All day",
+      "start": "Start",
+      "end": "End",
+      "startTime": "Start time",
+      "endTime": "End time",
+      "datePlaceholder": "Pick a date",
+      "contact": "Contact",
+      "deal": "Deal",
+      "noDeal": "No deal",
+      "description": "Description",
+      "cancel": "Cancel",
+      "create": "Add event",
+      "save": "Save",
+      "saveFailed": "The event could not be saved. Try again."
+    },
+    "detail": {
+      "title": "Event",
+      "close": "Close",
+      "allDay": "All day",
+      "fromMove": "Booked by moving a contact",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "delete": {
+      "title": "Delete this event?",
+      "description": "“{title}” will be removed from your calendar.",
+      "descriptionMove": "“{title}” will be removed from your calendar. The contact stays where it is.",
+      "confirm": "Delete",
+      "cancel": "Keep it",
+      "failed": "The event could not be deleted. Try again."
+    },
+    "errors": {
+      "titleRequired": "Give the event a title.",
+      "titleTooLong": "The title is too long.",
+      "startRequired": "Pick a start.",
+      "endRequired": "Pick an end.",
+      "endBeforeStart": "The end must be after the start.",
+      "descriptionTooLong": "The description is too long."
+    }
   }
 }

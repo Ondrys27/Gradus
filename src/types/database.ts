@@ -145,6 +145,7 @@ export type Database = {
           id: string
           kind: Database["public"]["Enums"]["calendar_event_kind"]
           location: string | null
+          source: string
           starts_at: string
           task_id: string | null
           title: string
@@ -161,6 +162,7 @@ export type Database = {
           id?: string
           kind?: Database["public"]["Enums"]["calendar_event_kind"]
           location?: string | null
+          source?: string
           starts_at: string
           task_id?: string | null
           title: string
@@ -177,6 +179,7 @@ export type Database = {
           id?: string
           kind?: Database["public"]["Enums"]["calendar_event_kind"]
           location?: string | null
+          source?: string
           starts_at?: string
           task_id?: string | null
           title?: string
@@ -2091,7 +2094,7 @@ export type Database = {
         | "finance"
         | "workers"
         | "jarvis"
-      calendar_event_kind: "meeting" | "call" | "reminder" | "other"
+      calendar_event_kind: "meeting" | "call" | "reminder" | "other" | "task" | "deadline"
       contact_activity_type:
         | "call"
         | "email"
@@ -2273,7 +2276,7 @@ export const Constants = {
         "workers",
         "jarvis",
       ],
-      calendar_event_kind: ["meeting", "call", "reminder", "other"],
+      calendar_event_kind: ["meeting", "call", "reminder", "other", "task", "deadline"],
       contact_activity_type: [
         "call",
         "email",

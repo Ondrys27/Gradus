@@ -1088,5 +1088,94 @@
       "counts": "Schůzky {meetings} · provoláno {called} · vygenerováno {contacts}",
       "loadFailed": "Kartu se nepodařilo načíst."
     }
+  },
+  "calendar": {
+    "description": "Schůzky, úkoly a termíny na jednom místě.",
+    "actions": {
+      "add": "Přidat událost"
+    },
+    "nav": {
+      "today": "Dnes",
+      "previous": {
+        "day": "Předchozí den",
+        "week": "Předchozí týden",
+        "month": "Předchozí měsíc"
+      },
+      "next": {
+        "day": "Další den",
+        "week": "Další týden",
+        "month": "Další měsíc"
+      }
+    },
+    "views": {
+      "label": "Pohled kalendáře",
+      "day": "Den",
+      "week": "Týden",
+      "month": "Měsíc"
+    },
+    "kind": {
+      "meeting": "Schůzka",
+      "task": "Úkol",
+      "deadline": "Termín"
+    },
+    "mirrors": {
+      "label": "Zobrazit z jiných sekcí",
+      "tasks": "Úkoly z milníků",
+      "deals": "Očekávaná uzavření obchodů"
+    },
+    "more": "+{count} dalších",
+    "allDayShort": "Celý den",
+    "nothingPlanned": "Nic není naplánováno",
+    "emptyDay": "Nic není naplánováno. Klepnutím do osy přidáš událost.",
+    "notices": {
+      "loadFailed": "Kalendář se nepodařilo načíst. Zkus to za chvíli znovu.",
+      "changeFailed": "Změnu se nepodařilo uložit, událost je zpátky na původním místě."
+    },
+    "form": {
+      "createTitle": "Nová událost",
+      "editTitle": "Upravit událost",
+      "close": "Zavřít",
+      "title": "Název",
+      "titlePlaceholder": "Co je v plánu?",
+      "type": "Typ",
+      "allDay": "Celý den",
+      "start": "Začátek",
+      "end": "Konec",
+      "startTime": "Čas začátku",
+      "endTime": "Čas konce",
+      "datePlaceholder": "Vyber datum",
+      "contact": "Kontakt",
+      "deal": "Obchod",
+      "noDeal": "Bez obchodu",
+      "description": "Popis",
+      "cancel": "Zrušit",
+      "create": "Přidat událost",
+      "save": "Uložit",
+      "saveFailed": "Událost se nepodařilo uložit. Zkus to znovu."
+    },
+    "detail": {
+      "title": "Událost",
+      "close": "Zavřít",
+      "allDay": "Celý den",
+      "fromMove": "Vznikla přesunem kontaktu",
+      "edit": "Upravit",
+      "delete": "Smazat"
+    },
+    "delete": {
+      "title": "Smazat tuto událost?",
+      "description": "„{title}“ zmizí z tvého kalendáře.",
+      "descriptionMove": "„{title}“ zmizí z tvého kalendáře. Kontakt zůstane, kde je.",
+      "confirm": "Smazat",
+      "cancel": "Ponechat",
+      "failed": "Událost se nepodařilo smazat. Zkus to znovu."
+    },
+    "errors": {
+      "titleRequired": "Dej události název.",
+      "titleTooLong": "Název je příliš dlouhý.",
+      "startRequired": "Vyber začátek.",
+      "endRequired": "Vyber konec.",
+      "endBeforeStart": "Konec musí být po začátku.",
+      "descriptionTooLong": "Popis je příliš dlouhý."
+    }
   }
 }

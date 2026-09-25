@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { CheckIcon, KanbanIcon, PencilIcon, PlusIcon, RotateCcwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,11 @@ export function PipelineView() {
   const [creating, setCreating] = useState<{ stageId: string | null } | null>(null);
   const [addingStage, setAddingStage] = useState(false);
   const [removing, setRemoving] = useState<Stage | null>(null);
-  const [openId, setOpenId] = useState<string | null>(null);
+  const router = useRouter();
+  const pathname = usePathname();
+  // The calendar links to a deal as /pipeline?deal=<id>; the panel opens on it.
+  const requestedDeal = useSearchParams().get("deal");
+  const [openId, setOpenId] = useState<string | null>(requestedDeal);
   const [askingLost, setAskingLost] = useState<Deal | null>(null);
   const [lostStage, setLostStage] = useState<Stage | null>(null);
   const [notice, setNotice] = useState<"moveFailed" | "renameFailed" | null>(null);
@@ -217,7 +222,10 @@ export function PipelineView() {
       <DealDetail
         deal={openDeal}
         stages={stages}
-        onClose={() => setOpenId(null)}
+        onClose={() => {
+          setOpenId(null);
+          if (requestedDeal) router.replace(pathname, { scroll: false });
+        }}
         onRequestMove={requestMove}
       />
       <LostReasonDialog
