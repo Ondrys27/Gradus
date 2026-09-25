@@ -1034,6 +1034,31 @@
       "dismiss": "Zavřít upozornění",
       "loadFailed": "Časovač se nepodařilo načíst. Zkontroluj připojení.",
       "actionFailed": "Nepovedlo se to. Zkus to znovu."
+    },
+    "stats": {
+      "title": "Statistiky",
+      "period": "Období",
+      "kinds": {
+        "week": "Týden",
+        "month": "Měsíc",
+        "year": "Rok"
+      },
+      "previous": "Předchozí období",
+      "next": "Další období",
+      "range": "{from} – {to}",
+      "timeTitle": "Čas na telefonu",
+      "meetingsTitle": "Domluvené schůzky",
+      "axisMinutes": "minuty",
+      "total": "Celkem",
+      "average": "Průměr za den",
+      "best": "Nejlepší den",
+      "none": "Zatím nic",
+      "today": "Dnes",
+      "thisMonth": "Teď",
+      "hoursMinutes": "{hours} h {minutes} min",
+      "minutes": "{minutes} min",
+      "meetingCount": "{count, plural, one {{formatted} schůzka} few {{formatted} schůzky} other {{formatted} schůzek}}",
+      "loadFailed": "Statistiky se nepodařilo načíst."
     }
   }
 }

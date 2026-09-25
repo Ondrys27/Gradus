@@ -161,6 +161,11 @@ export function formatMonthYear(date: Date, uiLocale: string): string {
   return new Intl.DateTimeFormat(uiLocale, { month: "long", year: "numeric" }).format(date);
 }
 
+/** Short month name in the UI language, e.g. "Sep" / "zář". */
+export function formatMonthShort(date: Date, uiLocale: string): string {
+  return new Intl.DateTimeFormat(uiLocale, { month: "short" }).format(date);
+}
+
 /** Two-letter weekday label in the UI language. */
 export function formatWeekdayShort(date: Date, uiLocale: string): string {
   return new Intl.DateTimeFormat(uiLocale, { weekday: "short" }).format(date);

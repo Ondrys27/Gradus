@@ -56,6 +56,7 @@ export function useTimerAction() {
       const segment = data as { end_reason: string | null; ended_at: string | null } | null;
       return { idleAt: segment?.end_reason === "idle" ? segment.ended_at : null };
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: coldCallingKeys.timer(user.id) }),
+    // The timer and today's bar in the statistics.
+    onSettled: () => queryClient.invalidateQueries({ queryKey: coldCallingKeys.all(user.id) }),
   });
 }

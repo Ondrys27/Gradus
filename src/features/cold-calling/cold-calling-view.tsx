@@ -15,6 +15,7 @@ import { TableSwitcher } from "@/features/contacts/table-switcher";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { CallContactPanel } from "./call-contact-panel";
 import { CallList } from "./call-list";
+import { StatsCard } from "./stats-card";
 import { TimerCard } from "./timer-card";
 
 export function ColdCallingView() {
@@ -123,6 +124,7 @@ export function ColdCallingView() {
 
         <aside aria-label={t("aside")} className="order-first flex flex-col gap-6 lg:order-none">
           <TimerCard />
+          <StatsCard />
         </aside>
       </div>
 

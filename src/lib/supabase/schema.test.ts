@@ -1426,3 +1426,60 @@ describe("prospecting status", () => {
     await asServer();
   });
 });
+
+describe("cold calling statistics", () => {
+  it("splits time across days in the user's zone and counts meetings per day", async () => {
+    const user = await createAuthUser();
+    await asServer();
+    // 23:30–00:30 Prague time on the night of 10 to 11 September 2026 (UTC+2).
+    await db.query(
+      `insert into prospecting_segments (user_id, started_at, ended_at, end_reason)
+       values ($1, '2026-09-10T21:30:00Z', '2026-09-10T22:30:00Z', 'pause')`,
+      [user],
+    );
+    const tables = Object.fromEntries(
+      (
+        await rows<{ system_key: string; id: string }>(
+          `select system_key, id from contact_tables where user_id = $1`,
+          [user],
+        )
+      ).map((r) => [r.system_key, r.id]),
+    );
+    const contact = (
+      await one<{ id: string }>(
+        `insert into contacts (user_id, company_name) values ($1, 'Stats') returning id`,
+        [user],
+      )
+    ).id;
+    await db.query(
+      `insert into contact_table_moves (user_id, contact_id, from_table_id, to_table_id, created_at) values
+         ($1, $2, $3, $4, '2026-09-10T21:45:00Z'),
+         ($1, $2, $3, $4, '2026-09-10T22:15:00Z'),
+         ($1, $2, $3, $5, '2026-09-10T22:20:00Z')`,
+      [user, contact, tables.unreached, tables.meeting_scheduled, tables.no_answer],
+    );
+
+    await asUser(user);
+    const seconds = await rows<{ day: Date; seconds: number }>(
+      `select day::text as day, seconds from prospecting_daily_seconds('2026-09-09', '2026-09-11', 'Europe/Prague')`,
+    );
+    expect(seconds).toEqual([
+      { day: "2026-09-09", seconds: 0 },
+      { day: "2026-09-10", seconds: 1800 },
+      { day: "2026-09-11", seconds: 1800 },
+    ]);
+    const meetings = await rows<{ day: string; meetings: number }>(
+      `select day::text as day, meetings from meetings_daily('2026-09-01', '2026-09-30', 'Europe/Prague')`,
+    );
+    expect(meetings).toEqual([
+      { day: "2026-09-10", meetings: 1 },
+      { day: "2026-09-11", meetings: 1 },
+    ]);
+
+    await asUser(second);
+    expect(
+      await count(`select 1 from meetings_daily('2026-09-01', '2026-09-30', 'Europe/Prague')`),
+    ).toBe(0);
+    await asServer();
+  });
+});

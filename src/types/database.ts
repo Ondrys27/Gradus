@@ -1912,6 +1912,13 @@ export type Database = {
         Returns: undefined
       }
       is_client_request: { Args: never; Returns: boolean }
+      meetings_daily: {
+        Args: { _from: string; _timezone: string; _to: string }
+        Returns: {
+          day: string
+          meetings: number
+        }[]
+      }
       move_contact: {
         Args: { _answers?: Json; _contact_id: string; _to_table_id: string }
         Returns: {
@@ -1970,6 +1977,13 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      prospecting_daily_seconds: {
+        Args: { _from: string; _timezone: string; _to: string }
+        Returns: {
+          day: string
+          seconds: number
+        }[]
       }
       prospecting_effective_end: {
         Args: {

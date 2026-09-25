@@ -1034,6 +1034,31 @@
       "dismiss": "Dismiss",
       "loadFailed": "The timer could not be loaded. Check your connection.",
       "actionFailed": "That did not go through. Try again."
+    },
+    "stats": {
+      "title": "Statistics",
+      "period": "Period",
+      "kinds": {
+        "week": "Week",
+        "month": "Month",
+        "year": "Year"
+      },
+      "previous": "Previous period",
+      "next": "Next period",
+      "range": "{from} – {to}",
+      "timeTitle": "Time on the phone",
+      "meetingsTitle": "Meetings booked",
+      "axisMinutes": "minutes",
+      "total": "Total",
+      "average": "Average a day",
+      "best": "Best day",
+      "none": "None yet",
+      "today": "Today",
+      "thisMonth": "Now",
+      "hoursMinutes": "{hours} h {minutes} min",
+      "minutes": "{minutes} min",
+      "meetingCount": "{count, plural, one {{formatted} meeting} other {{formatted} meetings}}",
+      "loadFailed": "The statistics could not be loaded."
     }
   }
 }
