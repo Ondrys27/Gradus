@@ -697,7 +697,8 @@
     "retry": "Zkusit znovu",
     "actions": {
       "newContact": "Nový kontakt",
-      "editTables": "Upravit tabulky"
+      "editTables": "Upravit tabulky",
+      "generate": "Generovat kontakty"
     },
     "search": {
       "label": "Hledat v kontaktech",
@@ -936,6 +937,61 @@
       "loadFailed": "Otázky se nepodařilo načíst. Zkus to znovu.",
       "moved": "Přesunuto do „{name}“.",
       "movedWithMeeting": "Přesunuto do „{name}“ a schůzka je v kalendáři."
+    },
+    "generate": {
+      "title": "Generovat kontakty",
+      "industry": "Obor",
+      "industryPlaceholder": "např. kadeřnictví, zubní ordinace, kavárna",
+      "location": "Lokalita",
+      "locationPlaceholder": "např. Brno, Praha 7, Olomoucký kraj",
+      "count": "Kolik nových kontaktů",
+      "countHint": "Teď si můžeš říct nejvýš o {max}.",
+      "less": "Méně",
+      "more": "Více",
+      "limit": {
+        "perRequest": "Jedno hledání najde nejvýš {max} firem.",
+        "daily": "Na dnešek ti zbývá {left} kontaktů.",
+        "monthly": "Na tento měsíc ti zbývá {left} kontaktů."
+      },
+      "usage": "Dnes {dailyUsed} z {dailyLimit} · Tento měsíc {monthlyUsed} z {monthlyLimit}",
+      "usageFailed": "Limity se nepodařilo načíst. Zkus to za chvíli znovu.",
+      "submit": "Generovat",
+      "again": "Generovat další",
+      "cancel": "Zrušit",
+      "close": "Zavřít",
+      "phase": {
+        "starting": "Začínám…",
+        "searching": "Hledám na Google Mapách, strana {page}…",
+        "saving": "Vyřazuji duplicity a ukládám…",
+        "count": "{created} z {target}"
+      },
+      "done": {
+        "created": "{count, plural, one {Přibyl # nový kontakt} few {Přibyly # nové kontakty} other {Přibylo # nových kontaktů}} v Neoslovených.",
+        "nothingNew": "Nic nového: všechny firmy z tohoto hledání už máš.",
+        "duplicates": "{count, plural, one {# duplicita přeskočena.} few {# duplicity přeskočeny.} other {# duplicit přeskočeno.}}",
+        "exhausted": "Google pro toto hledání víc firem nemá, zkus širší lokalitu nebo jiný obor.",
+        "show": "Zobrazit v Neoslovených"
+      },
+      "partial": "Než se to zastavilo, {count, plural, one {přibyl # kontakt} few {přibyly # kontakty} other {přibylo # kontaktů}}.",
+      "googleSays": "Google píše: {message}",
+      "googleSaysStatus": "Google píše (HTTP {status}): {message}",
+      "errors": {
+        "industryRequired": "Napiš, jaké firmy hledat.",
+        "locationRequired": "Napiš, kde hledat.",
+        "tooLong": "Tohle je moc dlouhé.",
+        "notConfigured": "Generování není nastavené: server nemá klíč Google Maps API (GOOGLE_MAPS_API_KEY).",
+        "apiDisabled": "Places API (New) není pro projekt klíče v Google Cloud zapnuté. Zapni ho v Google Cloud Console → APIs & Services → Library → „Places API (New)“.",
+        "billing": "Projekt v Google Cloud nemá zapnutou fakturaci. Places API potřebuje aktivní fakturační účet, nastavíš ho v Google Cloud Console → Billing.",
+        "keyInvalid": "Google API klíč nepřijímá. Zkontroluj, že je GOOGLE_MAPS_API_KEY zkopírovaný celý a klíč pořád existuje.",
+        "keyRestricted": "API klíč je omezený a tenhle server blokuje. V Google Cloud Console → Credentials povol server (bez omezení na HTTP referrer; omezení na IP ho musí obsahovat) a mezi API klíče povol Places API (New).",
+        "quota": "Kvóta Google pro Places API je teď vyčerpaná. Zkus to později nebo kvótu navyš v Google Cloud Console → Quotas.",
+        "badRequest": "Google hledání odmítl. Zkus obor nebo lokalitu napsat jinak.",
+        "googleUnavailable": "Google Mapy teď neodpovídají. Zkus to za pár minut.",
+        "network": "Spojení se přerušilo. Zkontroluj internet a zkus to znovu.",
+        "limitReached": "Tím bys přesáhl limit svého plánu.",
+        "saveFailed": "Firmy se našly, ale nepodařilo se je uložit. Zkus to znovu.",
+        "unknown": "Při generování se něco pokazilo. Zkus to znovu."
+      }
     }
   }
 }

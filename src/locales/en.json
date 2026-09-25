@@ -697,7 +697,8 @@
     "retry": "Try again",
     "actions": {
       "newContact": "New contact",
-      "editTables": "Edit tables"
+      "editTables": "Edit tables",
+      "generate": "Generate contacts"
     },
     "search": {
       "label": "Search contacts",
@@ -936,6 +937,61 @@
       "loadFailed": "The questions could not be loaded. Try again.",
       "moved": "Moved to “{name}”.",
       "movedWithMeeting": "Moved to “{name}” and the meeting is in your calendar."
+    },
+    "generate": {
+      "title": "Generate contacts",
+      "industry": "Industry",
+      "industryPlaceholder": "e.g. hair salon, dental clinic, café",
+      "location": "Location",
+      "locationPlaceholder": "e.g. Brno, Prague 7, Olomouc region",
+      "count": "How many new contacts",
+      "countHint": "You can ask for up to {max} now.",
+      "less": "Fewer",
+      "more": "More",
+      "limit": {
+        "perRequest": "One search finds at most {max} businesses.",
+        "daily": "You have {left} contacts left for today.",
+        "monthly": "You have {left} contacts left this month."
+      },
+      "usage": "Today {dailyUsed} of {dailyLimit} · This month {monthlyUsed} of {monthlyLimit}",
+      "usageFailed": "Your limits could not be loaded. Try again in a moment.",
+      "submit": "Generate",
+      "again": "Generate more",
+      "cancel": "Cancel",
+      "close": "Close",
+      "phase": {
+        "starting": "Starting…",
+        "searching": "Searching Google Maps, page {page}…",
+        "saving": "Skipping duplicates and saving…",
+        "count": "{created} of {target}"
+      },
+      "done": {
+        "created": "{count, plural, one {# new contact was added} other {# new contacts were added}} to Unreached.",
+        "nothingNew": "Nothing new: you already have every business this search found.",
+        "duplicates": "{count, plural, one {# duplicate was skipped.} other {# duplicates were skipped.}}",
+        "exhausted": "Google has no more businesses for this search; try a wider location or another industry.",
+        "show": "Show them in Unreached"
+      },
+      "partial": "{count, plural, one {# contact had been added} other {# contacts had been added}} before it stopped.",
+      "googleSays": "Google says: {message}",
+      "googleSaysStatus": "Google says (HTTP {status}): {message}",
+      "errors": {
+        "industryRequired": "Write what kind of businesses to look for.",
+        "locationRequired": "Write where to look.",
+        "tooLong": "This is too long.",
+        "notConfigured": "Generating is not set up: the server has no Google Maps API key (GOOGLE_MAPS_API_KEY).",
+        "apiDisabled": "Places API (New) is not enabled for the key's Google Cloud project. Enable it in Google Cloud Console → APIs & Services → Library → “Places API (New)”.",
+        "billing": "Billing is not enabled for the Google Cloud project. Places API needs an active billing account, set it up in Google Cloud Console → Billing.",
+        "keyInvalid": "Google does not accept the API key. Check that GOOGLE_MAPS_API_KEY is copied whole and the key still exists.",
+        "keyRestricted": "The API key is restricted and blocks this server. In Google Cloud Console → Credentials, allow the server (no HTTP referrer restriction; IP restriction must include it) and allow Places API (New) among the key's APIs.",
+        "quota": "Google's quota for Places API is used up for now. Try again later or raise the quota in Google Cloud Console → Quotas.",
+        "badRequest": "Google refused the search. Try different wording of the industry or location.",
+        "googleUnavailable": "Google Maps is not answering right now. Try again in a few minutes.",
+        "network": "The connection dropped. Check your internet and try again.",
+        "limitReached": "This would go over your plan's limit.",
+        "saveFailed": "The businesses were found but could not be saved. Try again.",
+        "unknown": "Something went wrong while generating. Try again."
+      }
     }
   }
 }

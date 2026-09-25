@@ -53,6 +53,8 @@
 
   --animate-shimmer: shimmer 2.6s ease-in-out infinite;
   --animate-skeleton: skeleton 1.6s ease-in-out infinite;
+  /* A refused value: the control shakes once. Only behind motion-safe. */
+  --animate-shake: shake 0.4s ease-in-out;
   /* Needs --edge-period (dash + gap) on the element, see the task map. */
   --animate-edge-shine: edge-shine 4.2s linear infinite;
 
@@ -72,6 +74,21 @@
     }
     to {
       stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    20%,
+    60% {
+      transform: translateX(-6px);
+    }
+    40%,
+    80% {
+      transform: translateX(6px);
     }
   }
 

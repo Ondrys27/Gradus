@@ -1899,6 +1899,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      import_generated_contacts: {
+        Args: { _country?: string; _limit: number; _places: Json }
+        Returns: {
+          created: number
+          duplicates: number
+        }[]
+      }
       initialize_user: {
         Args: { _locale?: string; _user_id: string }
         Returns: undefined

@@ -1333,3 +1333,52 @@ describe("moving a contact", () => {
     await asServer();
   });
 });
+
+describe("generated contacts", () => {
+  it("skips duplicates by place id, phone and name with address, and lands in unreached", async () => {
+    const user = await createAuthUser();
+    await asUser(user);
+    await db.query(
+      `insert into contacts (user_id, company_name, phone, address)
+       values ($1, 'Existing Phone', '777 123 456', 'Somewhere 1'),
+              ($1, 'Kavárna U Mostu', null, 'Mostní 5, Praha')`,
+      [user],
+    );
+    const places = [
+      { id: "p1", name: "New Bakery", phone: "+420 602 000 111", address: "Pekařská 1" },
+      { id: "p2", name: "Same Phone", phone: "+420 777 123 456", address: "Elsewhere 2" },
+      { id: "p3", name: "kavárna u mostu", phone: null, address: "MOSTNÍ 5, PRAHA" },
+      { id: "p1", name: "New Bakery again", phone: null, address: "Pekařská 1" },
+      { id: "p4", name: "Second New", phone: null, address: "Nová 4", website: "https://new.cz" },
+      { id: "p5", name: "Over the limit", phone: null, address: "Limit 5" },
+    ];
+    const result = await one<{ created: number; duplicates: number }>(
+      `select * from import_generated_contacts($1, 2, 'CZ')`,
+      [JSON.stringify(places)],
+    );
+    expect(result).toEqual({ created: 2, duplicates: 3 });
+
+    const saved = await rows<{
+      company_name: string;
+      source: string;
+      email: string | null;
+      country_code: string;
+      system_key: string;
+    }>(
+      `select c.company_name, c.source, c.email, c.country_code, t.system_key
+       from contacts c
+       join contact_table_entries e on e.contact_id = c.id
+       join contact_tables t on t.id = e.table_id
+       where c.source = 'generated' order by c.company_name`,
+    );
+    expect(saved).toEqual([
+      { company_name: "New Bakery", source: "generated", email: null, country_code: "CZ", system_key: "unreached" },
+      { company_name: "Second New", source: "generated", email: null, country_code: "CZ", system_key: "unreached" },
+    ]);
+    await asAnon();
+    await expect(
+      db.query(`select * from import_generated_contacts('[]', 1)`),
+    ).rejects.toThrow(/permission denied/);
+    await asServer();
+  });
+});

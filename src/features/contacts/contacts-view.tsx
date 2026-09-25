@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { InfoIcon, PencilIcon, PlusIcon, SearchIcon, UsersIcon } from "lucide-react";
+import { InfoIcon, PencilIcon, PlusIcon, SearchIcon, SparklesIcon, UsersIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -16,6 +16,7 @@ import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { ContactFormDialog } from "./contact-form-dialog";
 import { ContactList } from "./contact-list";
+import { GenerateContactsDialog } from "./generate-contacts-dialog";
 import {
   useContactList,
   useContactTables,
@@ -37,6 +38,7 @@ export function ContactsView() {
   const searchParams = useSearchParams();
   const [term, setTerm] = useState("");
   const [creating, setCreating] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const debounced = useDebouncedValue(term.trim(), 250);
 
   const tablesQuery = useContactTables();
@@ -76,6 +78,10 @@ export function ContactsView() {
               <PencilIcon aria-hidden data-icon="inline-start" />
               {t("actions.editTables")}
             </Link>
+            <Button variant="outline" onClick={() => setGenerating(true)}>
+              <SparklesIcon aria-hidden data-icon="inline-start" />
+              {t("actions.generate")}
+            </Button>
             <Button onClick={() => setCreating(true)}>
               <PlusIcon aria-hidden data-icon="inline-start" />
               {t("actions.newContact")}
@@ -182,6 +188,15 @@ export function ContactsView() {
         </>
       )}
 
+      <GenerateContactsDialog
+        open={generating}
+        onOpenChange={setGenerating}
+        onShowNew={() => {
+          const unreached = tableList.find((table) => table.system_key === "unreached");
+          setTerm("");
+          selectTable(unreached?.id ?? null);
+        }}
+      />
       <ContactFormDialog
         open={creating}
         onOpenChange={setCreating}
