@@ -1059,6 +1059,20 @@
       "minutes": "{minutes} min",
       "meetingCount": "{count, plural, one {{formatted} schůzka} few {{formatted} schůzky} other {{formatted} schůzek}}",
       "loadFailed": "Statistiky se nepodařilo načíst."
+    },
+    "bestTime": {
+      "title": "Nejlepší čas pro volání",
+      "source": "Z {attempts} hovorů všech uživatelů v zemi {country}, přepočítáno každou noc.",
+      "noCountry": "Nastav si zemi v <link>Nastavení</link> a uvidíš, kdy se tam volá nejlépe.",
+      "notEnough": "V zemi {country} je zatím jen {attempts} zaznamenaných hovorů. Graf se ukáže od {needed}, aby ukazoval skutečné vzorce, ne náhodu.",
+      "loadFailed": "Graf se nepodařilo načíst.",
+      "hint": "Najeď nebo klepni na políčko pro podrobnosti. Sytější barva = víc hovorů končí schůzkou.",
+      "when": "{day} v {time}",
+      "cell": "{when}: {share} z {attempts} hovorů skončilo schůzkou.",
+      "cellFew": "{when}: zatím málo dat ({attempts} hovorů).",
+      "less": "Méně schůzek",
+      "more": "Více",
+      "fewData": "Zatím málo dat (pod {min} hovorů)"
     }
   }
 }

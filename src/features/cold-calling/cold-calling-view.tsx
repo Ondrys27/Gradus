@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { PhoneOffIcon, SearchIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -15,8 +16,14 @@ import { TableSwitcher } from "@/features/contacts/table-switcher";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { CallContactPanel } from "./call-contact-panel";
 import { CallList } from "./call-list";
-import { StatsCard } from "./stats-card";
+import { BestTimeCard } from "./best-time-card";
 import { TimerCard } from "./timer-card";
+
+// The charts library is large; the list and the timer never wait for it.
+const StatsCard = dynamic(() => import("./stats-card").then((module) => module.StatsCard), {
+  ssr: false,
+  loading: () => <Skeleton className="h-[34rem] rounded-card" />,
+});
 
 export function ColdCallingView() {
   const t = useTranslations("coldCalling");
@@ -125,6 +132,7 @@ export function ColdCallingView() {
         <aside aria-label={t("aside")} className="order-first flex flex-col gap-6 lg:order-none">
           <TimerCard />
           <StatsCard />
+          <BestTimeCard />
         </aside>
       </div>
 

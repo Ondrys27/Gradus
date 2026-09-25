@@ -1042,14 +1042,14 @@ describe("clients follow won deals", () => {
     user = await createAuthUser();
     await asUser(user);
     tables = Object.fromEntries(
-      (await rows<{ system_key: string; id: string }>(`select system_key, id from contact_tables`)).map(
-        (r) => [r.system_key, r.id],
-      ),
+      (
+        await rows<{ system_key: string; id: string }>(`select system_key, id from contact_tables`)
+      ).map((r) => [r.system_key, r.id]),
     );
     stages = Object.fromEntries(
-      (await rows<{ system_key: string; id: string }>(`select system_key, id from pipeline_stages`)).map(
-        (r) => [r.system_key, r.id],
-      ),
+      (
+        await rows<{ system_key: string; id: string }>(`select system_key, id from pipeline_stages`)
+      ).map((r) => [r.system_key, r.id]),
     );
     await asServer();
   });
@@ -1108,9 +1108,9 @@ describe("contact table editor", () => {
     user = await createAuthUser();
     await asUser(user);
     tables = Object.fromEntries(
-      (await rows<{ system_key: string; id: string }>(`select system_key, id from contact_tables`)).map(
-        (r) => [r.system_key, r.id],
-      ),
+      (
+        await rows<{ system_key: string; id: string }>(`select system_key, id from contact_tables`)
+      ).map((r) => [r.system_key, r.id]),
     );
     await asServer();
   });
@@ -1229,9 +1229,9 @@ describe("moving a contact", () => {
     user = await createAuthUser("cs");
     await asUser(user);
     tables = Object.fromEntries(
-      (await rows<{ system_key: string; id: string }>(`select system_key, id from contact_tables`)).map(
-        (r) => [r.system_key, r.id],
-      ),
+      (
+        await rows<{ system_key: string; id: string }>(`select system_key, id from contact_tables`)
+      ).map((r) => [r.system_key, r.id]),
     );
     const list = await rows<{ id: string; key: string }>(
       `select f.id, coalesce(f.system_key, t.system_key || ':' || coalesce(f.depends_on_value, f.label)) as key
@@ -1315,8 +1315,12 @@ describe("moving a contact", () => {
     );
     expect(activity).toEqual({ type: "move", content: "Domluvená schůzka" });
     expect(
-      (await one<{ last_contact_at: Date | null }>(`select last_contact_at from contact_list where id = $1`, [contact]))
-        .last_contact_at,
+      (
+        await one<{ last_contact_at: Date | null }>(
+          `select last_contact_at from contact_list where id = $1`,
+          [contact],
+        )
+      ).last_contact_at,
     ).not.toBeNull();
 
     const event = await one<{ title: string; kind: string; starts_at: Date; contact_id: string }>(
@@ -1372,13 +1376,25 @@ describe("generated contacts", () => {
        where c.source = 'generated' order by c.company_name`,
     );
     expect(saved).toEqual([
-      { company_name: "New Bakery", source: "generated", email: null, country_code: "CZ", system_key: "unreached" },
-      { company_name: "Second New", source: "generated", email: null, country_code: "CZ", system_key: "unreached" },
+      {
+        company_name: "New Bakery",
+        source: "generated",
+        email: null,
+        country_code: "CZ",
+        system_key: "unreached",
+      },
+      {
+        company_name: "Second New",
+        source: "generated",
+        email: null,
+        country_code: "CZ",
+        system_key: "unreached",
+      },
     ]);
     await asAnon();
-    await expect(
-      db.query(`select * from import_generated_contacts('[]', 1)`),
-    ).rejects.toThrow(/permission denied/);
+    await expect(db.query(`select * from import_generated_contacts('[]', 1)`)).rejects.toThrow(
+      /permission denied/,
+    );
     await asServer();
   });
 });
@@ -1388,9 +1404,11 @@ describe("prospecting status", () => {
     const user = await createAuthUser();
     await asUser(user);
     const segment = await one<{ id: string }>(`select * from start_prospecting()`);
-    const running = await one<{ running: boolean; idle_deadline: Date; idle_closed_at: Date | null }>(
-      `select * from prospecting_status('Europe/Prague')`,
-    );
+    const running = await one<{
+      running: boolean;
+      idle_deadline: Date;
+      idle_closed_at: Date | null;
+    }>(`select * from prospecting_status('Europe/Prague')`);
     expect(running.running).toBe(true);
     expect(running.idle_closed_at).toBeNull();
 
@@ -1480,6 +1498,66 @@ describe("cold calling statistics", () => {
     expect(
       await count(`select 1 from meetings_daily('2026-09-01', '2026-09-30', 'Europe/Prague')`),
     ).toBe(0);
+    await asServer();
+  });
+});
+
+describe("call time statistics", () => {
+  it("rebuilds from every account's moves, caps one account at 30 an hour, keeps no user", async () => {
+    await asServer();
+    const caller = await createAuthUser();
+    await db.query(
+      `update user_settings set timezone = 'Europe/Prague', country_code = 'SK' where user_id = $1`,
+      [caller],
+    );
+    const tables = Object.fromEntries(
+      (
+        await rows<{ system_key: string; id: string }>(
+          `select system_key, id from contact_tables where user_id = $1`,
+          [caller],
+        )
+      ).map((r) => [r.system_key, r.id]),
+    );
+    const contact = (
+      await one<{ id: string }>(
+        `insert into contacts (user_id, company_name) values ($1, 'Call') returning id`,
+        [caller],
+      )
+    ).id;
+    // Tuesday 22 September 2026, 08:xx UTC = 10:xx in Prague: 40 attempts, 3 meetings.
+    await db.query(
+      `insert into contact_table_moves (user_id, contact_id, from_table_id, to_table_id, created_at)
+       select $1, $2, $3, case when g <= 3 then $4::uuid else $5::uuid end,
+              '2026-09-22T08:00:00Z'::timestamptz + g * interval '1 minute'
+       from generate_series(1, 40) g`,
+      [caller, contact, tables.unreached, tables.meeting_scheduled, tables.no_answer],
+    );
+    // A move that is not a call (between other tables) does not count.
+    await db.query(
+      `insert into contact_table_moves (user_id, contact_id, from_table_id, to_table_id, created_at)
+       values ($1, $2, $3, $4, '2026-09-22T09:00:00Z')`,
+      [caller, contact, tables.follow_up, tables.meeting_scheduled],
+    );
+
+    await asUser(caller);
+    await expect(db.query(`select refresh_call_time_stats()`)).rejects.toThrow(/permission denied/);
+    await asServer();
+    await db.query(`select refresh_call_time_stats()`);
+
+    const stats = await rows(
+      `select country_code, day_of_week, hour, attempts, meetings from call_time_stats where country_code = 'SK'`,
+    );
+    expect(stats).toEqual([
+      { country_code: "SK", day_of_week: 2, hour: 10, attempts: 30, meetings: 3 },
+    ]);
+    const columns = await rows<{ column_name: string }>(
+      `select column_name from information_schema.columns
+       where table_schema = 'public' and table_name = 'call_time_stats' and column_name like '%user%'`,
+    );
+    expect(columns).toEqual([]);
+
+    await asUser(second);
+    expect(await count(`select 1 from call_time_stats where country_code = 'SK'`)).toBe(1);
     await asServer();
   });
 });

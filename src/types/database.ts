@@ -2012,6 +2012,7 @@ export type Database = {
           today_seconds: number
         }[]
       }
+      refresh_call_time_stats: { Args: never; Returns: number }
       remove_contact_table: {
         Args: { _move_to?: string; _table_id: string }
         Returns: undefined

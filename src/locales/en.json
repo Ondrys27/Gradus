@@ -1059,6 +1059,20 @@
       "minutes": "{minutes} min",
       "meetingCount": "{count, plural, one {{formatted} meeting} other {{formatted} meetings}}",
       "loadFailed": "The statistics could not be loaded."
+    },
+    "bestTime": {
+      "title": "Best time to call",
+      "source": "From {attempts} calls by all users in {country}, rebuilt every night.",
+      "noCountry": "Set your country in <link>Settings</link> to see when calls there work best.",
+      "notEnough": "{country} has only {attempts} recorded calls so far. The chart appears at {needed}, so it shows real patterns, not chance.",
+      "loadFailed": "The chart could not be loaded.",
+      "hint": "Point at or tap a cell for details. Stronger colour = more calls end in a meeting.",
+      "when": "{day} at {time}",
+      "cell": "{when}: {share} of {attempts} calls ended in a meeting.",
+      "cellFew": "{when}: not enough data yet ({attempts} calls).",
+      "less": "Fewer meetings",
+      "more": "More",
+      "fewData": "Not enough data yet (under {min} calls)"
     }
   }
 }

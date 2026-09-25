@@ -285,6 +285,11 @@ export function formatWeekdayLong(date: Date, uiLocale: string): string {
   return new Intl.DateTimeFormat(uiLocale, { weekday: "long" }).format(date);
 }
 
+/** Short weekday name for a day number (0 = Sunday) in the UI language, e.g. "Mon" / "po". */
+export function weekdayShortName(day: number, uiLocale: string): string {
+  return formatWeekdayShort(new Date(2023, 0, 1 + day), uiLocale);
+}
+
 /** Weekday name for a day number (0 = Sunday) in the UI language. */
 export function weekdayName(day: number, uiLocale: string): string {
   // 2023-01-01 was a Sunday.
