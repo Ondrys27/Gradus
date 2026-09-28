@@ -7,7 +7,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 0.1 až 3.7 | ručně | hotovo před zavedením automatizace
 - [x] 3.8 | builder | 2026-09-28 Dashboard se šesti dlaždicemi, kartou Co dnes udělat a dotazníkem o schůzkách.
 - [x] K3 | reviewer | 2026-09-28 Audit fáze 3: opraveno stránkování Klientů, načítání obchodů v Pipeline a Zavolat zpět, doplněny testy.
-- [ ] STOP | Konec fáze 3. Proklikej všech osm sekcí na počítači i telefonu: milníky s podúkoly a mapou, pipeline, kontakty s tabulkami a přesuny, cold calling s časovačem, kalendář, finance, dashboard. Co nesedí, napiš Claude Code rovnou, pak znovu /pokracuj.
+- [x] STOP | Konec fáze 3. Proklikej všech osm sekcí na počítači i telefonu: milníky s podúkoly a mapou, pipeline, kontakty s tabulkami a přesuny, cold calling s časovačem, kalendář, finance, dashboard. Co nesedí, napiš Claude Code rovnou, pak znovu /pokracuj.
 - [ ] 4.1 | architect | env: ANTHROPIC_API_KEY
 - [ ] 4.2 | architect | env: RESEND_API_KEY
 - [ ] STOP | Konec fáze 4. Vyzkoušej Jarvise: rozhovor, nahrání PDF a obrázku, návrhy v panelu, hodnocení nového milníku, nápad na novou funkci (musí přijít e-mail). Podívej se do Supabase do tabulky ai_usage, jestli se zapisuje spotřeba.
