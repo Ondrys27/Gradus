@@ -13,6 +13,14 @@
       "close": "Zavřít"
     }
   },
+  "treeMap": {
+    "controls": "Ovládání mapy",
+    "zoomIn": "Přiblížit",
+    "zoomOut": "Oddálit",
+    "centre": "Vycentrovat mapu",
+    "fullscreen": "Celá obrazovka",
+    "exitFullscreen": "Zavřít celou obrazovku"
+  },
   "designSystem": {
     "eyebrow": "Interní",
     "title": "Design systém",
@@ -607,12 +615,6 @@
     },
     "map": {
       "label": "Mapa úkolů",
-      "controls": "Ovládání mapy",
-      "zoomIn": "Přiblížit",
-      "zoomOut": "Oddálit",
-      "centre": "Vycentrovat mapu",
-      "fullscreen": "Celá obrazovka",
-      "exitFullscreen": "Zavřít celou obrazovku",
       "open": "Otevřít „{title}“",
       "addChild": "Přidat podúkol k „{title}“",
       "addTask": "Přidat úkol",

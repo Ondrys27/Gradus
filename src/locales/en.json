@@ -13,6 +13,14 @@
       "close": "Close"
     }
   },
+  "treeMap": {
+    "controls": "Map controls",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "centre": "Centre the map",
+    "fullscreen": "Full screen",
+    "exitFullscreen": "Exit full screen"
+  },
   "designSystem": {
     "eyebrow": "Internal",
     "title": "Design system",
@@ -607,12 +615,6 @@
     },
     "map": {
       "label": "Task map",
-      "controls": "Map controls",
-      "zoomIn": "Zoom in",
-      "zoomOut": "Zoom out",
-      "centre": "Centre the map",
-      "fullscreen": "Full screen",
-      "exitFullscreen": "Exit full screen",
       "open": "Open “{title}”",
       "addChild": "Add a subtask to “{title}”",
       "addTask": "Add a task",
