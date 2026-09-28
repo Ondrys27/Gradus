@@ -21,7 +21,7 @@ export const TRANSACTION_COLUMNS =
 export const RECURRING_COLUMNS =
   "id, type, amount, currency, category, description, frequency, next_due_on, due_day, last_generated_on, ends_on, is_active";
 export const INVOICE_COLUMNS =
-  "id, number, amount, currency, status, issued_on, due_on, paid_on, customer_name, contact_id, deal_id";
+  "id, number, amount, currency, status, issued_on, due_on, paid_on, customer_name, contact_id, deal_id, fakturoid_id";
 
 export type Transaction = Pick<
   Tables["transactions"]["Row"],
@@ -66,6 +66,7 @@ export type Invoice = Pick<
   | "customer_name"
   | "contact_id"
   | "deal_id"
+  | "fakturoid_id"
 >;
 
 export type TransactionType = Tables["transactions"]["Row"]["type"];
@@ -97,7 +98,13 @@ export function categoryIcon(category: string | null): LucideIcon {
   return (category && CATEGORY_ICONS[category]) || CircleEllipsisIcon;
 }
 
-export const PERIOD_KINDS = ["thisMonth", "lastMonth", "last3Months", "thisYear", "last12Months"] as const;
+export const PERIOD_KINDS = [
+  "thisMonth",
+  "lastMonth",
+  "last3Months",
+  "thisYear",
+  "last12Months",
+] as const;
 export type PeriodKind = (typeof PERIOD_KINDS)[number];
 
 /** What the invoice list shows; "overdue" is worked out from the due day, never stored. */

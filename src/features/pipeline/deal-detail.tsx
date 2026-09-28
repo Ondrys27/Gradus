@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useInvoiceErrorText } from "@/features/finance/fakturoid/use-invoice-error";
 import { useCreateInvoiceFromDeal } from "@/features/finance/queries";
 import { formatDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
@@ -241,7 +242,10 @@ function DetailBody({
   );
 }
 
-/** One tap makes an open invoice from the deal's value; a second tap returns the same one. */
+/**
+ * One tap makes an open invoice from the deal's value (in Fakturoid when it is
+ * connected); a second tap returns the same one.
+ */
 function InvoiceSection({
   deal,
   invoice,
@@ -250,6 +254,7 @@ function InvoiceSection({
   invoice: ReturnType<typeof useCreateInvoiceFromDeal>;
 }) {
   const t = useTranslations("pipeline.detail");
+  const errorText = useInvoiceErrorText();
   const hasValue = deal.value !== null && deal.value > 0;
   return (
     <section className="flex flex-col gap-2 border-t border-line pt-5">
@@ -263,11 +268,20 @@ function InvoiceSection({
         {t("createInvoice")}
       </Button>
       {!hasValue && <p className="text-xs text-ink-muted">{t("invoiceNeedsValue")}</p>}
-      {invoice.isError && <FormAlert>{t("invoiceFailed")}</FormAlert>}
+      {invoice.isError && (
+        <FormAlert>
+          {t("invoiceFailed")} {errorText(invoice.error)}
+        </FormAlert>
+      )}
       {invoice.isSuccess && (
         <p role="status" className="flex flex-wrap items-center gap-x-3 text-sm text-green">
-          {t("invoiceCreated", { number: invoice.data.number })}
-          <Link href="/finance?tab=invoices" className="text-violet underline-offset-4 hover:underline">
+          {t(invoice.data.external ? "invoiceCreatedFakturoid" : "invoiceCreated", {
+            number: invoice.data.invoice.number,
+          })}
+          <Link
+            href="/finance?tab=invoices"
+            className="text-violet underline-offset-4 hover:underline"
+          >
             {t("openInvoices")}
           </Link>
         </p>

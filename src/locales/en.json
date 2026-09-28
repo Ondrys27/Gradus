@@ -469,6 +469,46 @@
       "time": "Time",
       "dateTime": "Date and time",
       "week": "Week"
+    },
+    "integrations": {
+      "title": "Integrations",
+      "description": "Connect the services you already use.",
+      "fakturoid": {
+        "name": "Fakturoid",
+        "description": "Issue invoices from deals straight in your Fakturoid account and get their payments back automatically.",
+        "notConnected": "Without Fakturoid, invoices are kept only in {appName}.",
+        "help": "In Fakturoid, open Settings → User account, and under API v3 copy the Client ID and Client Secret. The account slug is the part of the address after app.fakturoid.cz/.",
+        "clientId": "Client ID",
+        "clientSecret": "Client Secret",
+        "slug": "Account slug",
+        "slugPlaceholder": "mycompany",
+        "secretHint": "Stored encrypted on the server and never shown again.",
+        "showSecret": "Show secret",
+        "hideSecret": "Hide secret",
+        "connect": "Connect Fakturoid",
+        "connecting": "Checking with Fakturoid…",
+        "connected": "Connected to account {slug}",
+        "connectedSince": "Connected {date}",
+        "lastSynced": "Last synced {date}",
+        "neverSynced": "Not synced yet; this happens once a day",
+        "lastError": "The last sync failed: {message}",
+        "moveDeal": "A paid invoice wins its deal",
+        "moveDealHint": "When Fakturoid reports an invoice from a deal as paid, the deal moves to the won stage.",
+        "sync": "Sync now",
+        "syncing": "Syncing…",
+        "disconnect": "Disconnect",
+        "disconnectTitle": "Disconnect Fakturoid?",
+        "disconnectDescription": "Invoices already issued stay in Fakturoid and in {appName}, but their payments will no longer come back here. New invoices will be kept only in {appName}.",
+        "disconnectFailed": "Fakturoid could not be disconnected. Try again.",
+        "saveFailed": "The setting could not be saved.",
+        "cancel": "Cancel",
+        "close": "Close",
+        "errors": {
+          "required": "Fill this in.",
+          "tooLong": "This is too long.",
+          "invalidSlug": "Use only the slug, e.g. mycompany."
+        }
+      }
     }
   },
   "milestones": {
@@ -708,7 +748,8 @@
       "invoiceCreated": "Invoice {number} is ready.",
       "openInvoices": "Open invoices",
       "invoiceFailed": "The invoice could not be created.",
-      "invoiceNeedsValue": "Add a value to the deal to invoice it."
+      "invoiceNeedsValue": "Add a value to the deal to invoice it.",
+      "invoiceCreatedFakturoid": "Invoice {number} was issued in Fakturoid."
     },
     "lost": {
       "title": "Mark as lost",
@@ -1379,7 +1420,17 @@
       "deleteDescription": "Delete invoice {number}? Income already booked for it stays.",
       "deleteFailed": "The invoice could not be deleted.",
       "cancel": "Cancel",
-      "close": "Close"
+      "close": "Close",
+      "fakturoid": "Fakturoid",
+      "openInFakturoid": "Open invoice {number} in Fakturoid",
+      "markPaidFailed": "The invoice could not be marked as paid.",
+      "deleteDescriptionFakturoid": "Remove invoice {number} from {appName}? It stays in Fakturoid, and income already booked for it stays.",
+      "sync": "Sync with Fakturoid",
+      "syncFailed": "The sync with Fakturoid failed.",
+      "syncDone": "{paid, plural, =0 {Synced, no new payments.} one {Synced, # invoice was paid.} other {Synced, # invoices were paid.}}",
+      "lastSynced": "Fakturoid last synced {date}",
+      "neverSynced": "Fakturoid has not been synced yet",
+      "dealWon": "Invoice paid, deal won!"
     },
     "form": {
       "newTransaction": "New transaction",
@@ -1415,6 +1466,25 @@
       "previous": "Previous page",
       "next": "Next page",
       "position": "Page {page} of {pages}"
+    },
+    "fakturoid": {
+      "errors": {
+        "notConnected": "Fakturoid is not connected. Connect it in Settings → Integrations.",
+        "encryptionKeyMissing": "The server has no encryption key set up for integrations, so Fakturoid cannot be connected yet.",
+        "invalidCredentials": "Fakturoid did not accept the Client ID and Client Secret. Check them, or connect again in Settings.",
+        "accountNotFound": "Fakturoid does not know this account slug. Check the part after app.fakturoid.cz/ in the address.",
+        "forbidden": "Fakturoid refused the request. Check that the account is active and the user may issue invoices.",
+        "validation": "Fakturoid rejected the invoice.",
+        "rateLimited": "Fakturoid is receiving too many requests right now. Try again in a minute.",
+        "unavailable": "Fakturoid is not responding right now. Nothing was changed; try again later.",
+        "contactRequired": "Fakturoid needs a customer: add a contact with a name or company to the deal.",
+        "dealNotFound": "The deal was not found.",
+        "dealValueRequired": "Add a value to the deal to invoice it.",
+        "invoiceNotFound": "The invoice was not found.",
+        "saveFailed": "The invoice could not be saved here, so it was withdrawn in Fakturoid too. Try again.",
+        "unknown": "Something went wrong. Try again."
+      },
+      "detail": "Fakturoid says: {detail}"
     }
   },
   "dashboard": {

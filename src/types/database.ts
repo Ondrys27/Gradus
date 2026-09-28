@@ -650,7 +650,9 @@ export type Database = {
           created_at: string
           encrypted_credentials: string
           id: string
+          last_sync_error: string | null
           last_synced_at: string | null
+          move_deal_on_paid: boolean
           updated_at: string
           user_id: string
         }
@@ -660,7 +662,9 @@ export type Database = {
           created_at?: string
           encrypted_credentials: string
           id?: string
+          last_sync_error?: string | null
           last_synced_at?: string | null
+          move_deal_on_paid?: boolean
           updated_at?: string
           user_id: string
         }
@@ -670,7 +674,9 @@ export type Database = {
           created_at?: string
           encrypted_credentials?: string
           id?: string
+          last_sync_error?: string | null
           last_synced_at?: string | null
+          move_deal_on_paid?: boolean
           updated_at?: string
           user_id?: string
         }
@@ -2017,6 +2023,13 @@ export type Database = {
         Args: { _code: string; _user_id: string }
         Returns: string
       }
+      book_invoice_income: {
+        Args: {
+          _invoice: Database["public"]["Tables"]["invoices"]["Row"]
+          _paid_on: string
+        }
+        Returns: undefined
+      }
       create_invoice_from_deal: {
         Args: { _deal_id: string }
         Returns: {
@@ -2042,6 +2055,19 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      fakturoid_apply_invoice: {
+        Args: {
+          _amount: number
+          _due_on: string
+          _fakturoid_id: number
+          _move_deal: boolean
+          _number: string
+          _paid_on: string
+          _status: Database["public"]["Enums"]["invoice_status"]
+          _user_id: string
+        }
+        Returns: Json
       }
       finance_monthly_totals: {
         Args: { _from: string; _to: string }

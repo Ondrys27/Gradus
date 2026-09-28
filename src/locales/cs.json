@@ -469,6 +469,46 @@
       "time": "Čas",
       "dateTime": "Datum a čas",
       "week": "Týden"
+    },
+    "integrations": {
+      "title": "Integrace",
+      "description": "Propoj služby, které už používáš.",
+      "fakturoid": {
+        "name": "Fakturoid",
+        "description": "Vystavuj faktury z obchodů rovnou ve svém účtu Fakturoid a platby se sem vrátí samy.",
+        "notConnected": "Bez Fakturoidu se faktury vedou jen v {appName}.",
+        "help": "Ve Fakturoidu otevři Nastavení → Uživatelský účet a v části API v3 zkopíruj Client ID a Client Secret. Název účtu je část adresy za app.fakturoid.cz/.",
+        "clientId": "Client ID",
+        "clientSecret": "Client Secret",
+        "slug": "Název účtu (slug)",
+        "slugPlaceholder": "mojefirma",
+        "secretHint": "Uloží se šifrovaně na serveru a už se nikdy nezobrazí.",
+        "showSecret": "Zobrazit klíč",
+        "hideSecret": "Skrýt klíč",
+        "connect": "Připojit Fakturoid",
+        "connecting": "Ověřuji u Fakturoidu…",
+        "connected": "Připojeno k účtu {slug}",
+        "connectedSince": "Připojeno {date}",
+        "lastSynced": "Naposledy synchronizováno {date}",
+        "neverSynced": "Zatím nesynchronizováno, probíhá jednou denně",
+        "lastError": "Poslední synchronizace selhala: {message}",
+        "moveDeal": "Zaplacená faktura vyhraje obchod",
+        "moveDealHint": "Když Fakturoid nahlásí fakturu z obchodu jako zaplacenou, obchod se přesune do vyhrané fáze.",
+        "sync": "Synchronizovat teď",
+        "syncing": "Synchronizuji…",
+        "disconnect": "Odpojit",
+        "disconnectTitle": "Odpojit Fakturoid?",
+        "disconnectDescription": "Už vystavené faktury zůstanou ve Fakturoidu i v {appName}, jen se sem přestanou vracet jejich platby. Nové faktury se budou vést jen v {appName}.",
+        "disconnectFailed": "Fakturoid se nepodařilo odpojit. Zkus to znovu.",
+        "saveFailed": "Nastavení se nepodařilo uložit.",
+        "cancel": "Zrušit",
+        "close": "Zavřít",
+        "errors": {
+          "required": "Vyplň to prosím.",
+          "tooLong": "Tohle je moc dlouhé.",
+          "invalidSlug": "Zadej jen název účtu, např. mojefirma."
+        }
+      }
     }
   },
   "milestones": {
@@ -708,7 +748,8 @@
       "invoiceCreated": "Faktura {number} je hotová.",
       "openInvoices": "Otevřít faktury",
       "invoiceFailed": "Fakturu se nepodařilo vytvořit.",
-      "invoiceNeedsValue": "Doplň k obchodu hodnotu, ať jde vyfakturovat."
+      "invoiceNeedsValue": "Doplň k obchodu hodnotu, ať jde vyfakturovat.",
+      "invoiceCreatedFakturoid": "Faktura {number} je vystavená ve Fakturoidu."
     },
     "lost": {
       "title": "Označit jako ztracený",
@@ -1379,7 +1420,17 @@
       "deleteDescription": "Smazat fakturu {number}? Příjem, který už je k ní zaúčtovaný, zůstane.",
       "deleteFailed": "Fakturu se nepodařilo smazat.",
       "cancel": "Zrušit",
-      "close": "Zavřít"
+      "close": "Zavřít",
+      "fakturoid": "Fakturoid",
+      "openInFakturoid": "Otevřít fakturu {number} ve Fakturoidu",
+      "markPaidFailed": "Fakturu se nepodařilo označit jako zaplacenou.",
+      "deleteDescriptionFakturoid": "Odebrat fakturu {number} z {appName}? Ve Fakturoidu zůstane a příjem, který už se k ní zapsal, taky.",
+      "sync": "Synchronizovat s Fakturoidem",
+      "syncFailed": "Synchronizace s Fakturoidem se nepovedla.",
+      "syncDone": "{paid, plural, =0 {Synchronizováno, žádné nové platby.} one {Synchronizováno, # faktura je zaplacená.} few {Synchronizováno, # faktury jsou zaplacené.} other {Synchronizováno, # faktur je zaplacených.}}",
+      "lastSynced": "Naposledy synchronizováno s Fakturoidem {date}",
+      "neverSynced": "S Fakturoidem se zatím nesynchronizovalo",
+      "dealWon": "Faktura zaplacena, obchod vyhraný!"
     },
     "form": {
       "newTransaction": "Nová transakce",
@@ -1415,6 +1466,25 @@
       "previous": "Předchozí stránka",
       "next": "Další stránka",
       "position": "Strana {page} z {pages}"
+    },
+    "fakturoid": {
+      "errors": {
+        "notConnected": "Fakturoid není připojený. Připoj ho v Nastavení → Integrace.",
+        "encryptionKeyMissing": "Server nemá nastavený šifrovací klíč pro integrace, takže Fakturoid zatím nejde připojit.",
+        "invalidCredentials": "Fakturoid nepřijal Client ID a Client Secret. Zkontroluj je, případně Fakturoid v Nastavení připoj znovu.",
+        "accountNotFound": "Fakturoid tenhle název účtu nezná. Zkontroluj část adresy za app.fakturoid.cz/.",
+        "forbidden": "Fakturoid požadavek odmítl. Ověř, že je účet aktivní a uživatel smí vystavovat faktury.",
+        "validation": "Fakturoid fakturu odmítl.",
+        "rateLimited": "Fakturoid teď dostává příliš mnoho požadavků. Zkus to za minutu.",
+        "unavailable": "Fakturoid teď neodpovídá. Nic se nezměnilo, zkus to později.",
+        "contactRequired": "Fakturoid potřebuje odběratele: přidej k obchodu kontakt se jménem nebo firmou.",
+        "dealNotFound": "Obchod se nenašel.",
+        "dealValueRequired": "Aby šel obchod vyfakturovat, doplň mu hodnotu.",
+        "invoiceNotFound": "Faktura se nenašla.",
+        "saveFailed": "Fakturu se nepodařilo uložit tady, proto byla stažena i ve Fakturoidu. Zkus to znovu.",
+        "unknown": "Něco se pokazilo. Zkus to znovu."
+      },
+      "detail": "Fakturoid píše: {detail}"
     }
   },
   "dashboard": {

@@ -35,6 +35,7 @@ import { browserTimeZone, COUNTRY_CODES, countryFromTimeZone, listTimeZones } fr
 import { useFormatSettings } from "@/lib/use-format-settings";
 import type { UserSettingsPatch } from "@/lib/user-settings";
 import { cn } from "@/lib/utils";
+import { FakturoidIntegration } from "./fakturoid-integration";
 import { FormatPreview, useNow } from "./format-preview";
 
 type Option = { value: string; label: string; detail?: string };
@@ -253,6 +254,12 @@ export function SettingsView() {
 
       <StaggerItem>
         <FormatPreview now={now} />
+      </StaggerItem>
+
+      <StaggerItem>
+        <Section title={t("integrations.title")} description={t("integrations.description")}>
+          <FakturoidIntegration />
+        </Section>
       </StaggerItem>
     </Stagger>
   );
