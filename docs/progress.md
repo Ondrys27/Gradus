@@ -5,7 +5,7 @@ Příkaz `/pokracuj` bere první nezaškrtnutou položku. Nic tu nemaž, jen za�
 Formát: `- [ ] ID | agent | požadavek`
 
 - [x] 0.1 až 3.7 | ručně | hotovo před zavedením automatizace
-- [ ] 3.8 | builder |
+- [x] 3.8 | builder | 2026-09-28 Dashboard se šesti dlaždicemi, kartou Co dnes udělat a dotazníkem o schůzkách.
 - [ ] K3 | reviewer |
 - [ ] STOP | Konec fáze 3. Proklikej všech osm sekcí na počítači i telefonu: milníky s podúkoly a mapou, pipeline, kontakty s tabulkami a přesuny, cold calling s časovačem, kalendář, finance, dashboard. Co nesedí, napiš Claude Code rovnou, pak znovu /pokracuj.
 - [ ] 4.1 | architect | env: ANTHROPIC_API_KEY
