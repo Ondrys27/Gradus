@@ -365,6 +365,8 @@ export function useMoveContact() {
         queryClient.invalidateQueries({ queryKey: ["calendar", user.id] }),
         // A move out of Unreached pushes the timer's idle deadline and feeds the statistics.
         queryClient.invalidateQueries({ queryKey: ["cold-calling", user.id] }),
+        // A follow-up set for today is one of Jarvis's instant triggers.
+        queryClient.invalidateQueries({ queryKey: ["jarvis", user.id, "suggestions"] }),
       ]),
   });
 }

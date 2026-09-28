@@ -208,7 +208,52 @@
       "notFound": "This conversation no longer exists. Your next message starts a new one.",
       "network": "The connection dropped. Check your internet and try again.",
       "unknown": "Something went wrong. Try again.",
-      "dismiss": "Dismiss"
+      "dismiss": "Dismiss",
+      "fileType": "Jarvis can read PDF, Word (DOCX), Excel (XLSX), text, CSV, PNG and JPG files. This file is none of them.",
+      "fileTooLarge": "A file can have at most {max} MB.",
+      "fileUnreadable": "The file couldn't be read. It may be damaged or password-protected.",
+      "fileMissing": "The file didn't arrive. Attach it again.",
+      "fileLimit": "You've attached all {limit} files for this month. They renew on the 1st.",
+      "fileUpload": "The file couldn't be uploaded. Check your connection and try again.",
+      "tooManyFiles": "You can attach at most {max} files to one message."
+    },
+    "files": {
+      "attach": "Attach files",
+      "hint": "Up to {max} files of {size} MB each: PDF, Word, Excel, text, CSV or image",
+      "selected": "Files to send",
+      "remove": "Remove {name}"
+    },
+    "suggestion": {
+      "heading": "Jarvis noticed",
+      "do": "Do it",
+      "undo": "Undo",
+      "keep": "Keep it",
+      "dismiss": "Dismiss",
+      "closeNotice": "Close",
+      "more": "{count, plural, one {and {formatted} more} other {and {formatted} more}}",
+      "undoFailed": "The task couldn't be reopened. Try again.",
+      "unseen": "{count, plural, one {One new suggestion} other {{formatted} new suggestions}}",
+      "dealWon": {
+        "text": "You won “{deal}”! Thank {contact} and ask for a referral while it's fresh.",
+        "noContact": "You won “{deal}”! Say thank you and ask for a referral while it's fresh.",
+        "prompt": "I just won the deal “{deal}”. Write me a short thank-you message that also asks for a referral."
+      },
+      "followUps": {
+        "text": "{count, plural, one {Follow up with {name} today.} other {{countFormatted} contacts are waiting for a follow-up today, starting with {name}.}}"
+      },
+      "stalledDeal": {
+        "text": "“{deal}” has been in {stage} for {days, plural, one {{daysFormatted} day} other {{daysFormatted} days}}.",
+        "prompt": "The deal “{deal}” has been stuck in the stage {stage} for {days} days. What should I do to move it forward? Suggest a short message I can send."
+      },
+      "overdueTask": {
+        "text": "“{task}” is {days, plural, one {{daysFormatted} day} other {{daysFormatted} days}} past its deadline."
+      },
+      "milestoneReady": {
+        "text": "All tasks of “{milestone}” are done. Finish the milestone when you're ready."
+      },
+      "taskCompleted": {
+        "text": "I marked “{task}” as done."
+      }
     }
   },
   "celebration": {
@@ -499,7 +544,9 @@
       "offerDescription": "Nice work. Complete the milestone when you are happy with it.",
       "completedTitle": "Milestone completed",
       "completedDescription": "You can reopen it if something is still missing.",
-      "statusFailed": "Could not change the milestone. Try again."
+      "statusFailed": "Could not change the milestone. Try again.",
+      "jarvisFeedback": "Jarvis's view",
+      "jarvisReviewing": "Jarvis is looking at your milestone…"
     },
     "tasks": {
       "heading": "Tasks",
@@ -1463,8 +1510,17 @@
         "noSurveys": "No surveys yet. After a deal moves on from the meeting stage you are asked a few short questions about how it went.",
         "deletedDeal": "Deleted deal",
         "aiAnalysis": "AI analysis",
-        "aiSoon": "Coming with Jarvis",
-        "open": "Open pipeline"
+        "open": "Open pipeline",
+        "aiAgain": "New AI analysis",
+        "aiRunning": "Jarvis is analysing your meetings. It can take a minute.",
+        "aiLocked": "{count, plural, one {Unlocks after {needed} more survey.} other {Unlocks after {needed} more surveys.}}",
+        "aiLatest": "Analysis of {date}",
+        "aiError": {
+          "limitReached": "You've used all Jarvis calls for this month.",
+          "notConfigured": "Jarvis isn't connected yet. Try again later.",
+          "busy": "Jarvis has too much going on right now. Try again in a minute.",
+          "unavailable": "The analysis couldn't be made right now. Try again in a while."
+        }
       },
       "activeDeals": {
         "open": "Open pipeline"
@@ -1590,6 +1646,17 @@
           "placeholder": "Notes"
         }
       }
+    }
+  },
+  "email": {
+    "featureRequest": {
+      "subject": "{appName}: new idea – {title}",
+      "intro": "A user of {appName} told Jarvis what they miss in the app.",
+      "title": "Idea",
+      "description": "In short",
+      "from": "From",
+      "message": "Their message",
+      "unknownUser": "unknown user"
     }
   }
 }

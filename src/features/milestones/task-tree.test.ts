@@ -39,6 +39,7 @@ function milestone(id: string, patch: Partial<MilestoneWithCounts> = {}): Milest
     position: 0,
     completed_at: null,
     created_at: "2026-01-01T00:00:00Z",
+    ai_feedback: null,
     total: 0,
     done: 0,
     ...patch,

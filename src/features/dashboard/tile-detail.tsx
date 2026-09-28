@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { useIsMutating } from "@tanstack/react-query";
 import Link from "next/link";
 import { ChevronDownIcon, CircleCheckIcon, SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -15,6 +16,8 @@ import { contactName } from "@/features/contacts/types";
 import { periodRange as monthRange } from "@/features/finance/finance-logic";
 import { useTotals } from "@/features/finance/queries";
 import { categoryIcon } from "@/features/finance/types";
+import { SALES_ANALYSIS_MIN_SURVEYS } from "@/features/jarvis/protocol";
+import { JarvisJobError, useRunSalesAnalysis, useSalesAnalysis } from "@/features/jarvis/queries";
 import { useStages } from "@/features/pipeline/queries";
 import { sortStages } from "@/features/pipeline/board-logic";
 import { stageTone } from "@/features/pipeline/types";
@@ -320,23 +323,75 @@ function WinRateDetail() {
         )}
       </div>
 
-      <div className="flex flex-col gap-2 rounded-xl border border-dashed border-line p-3">
+      <SalesAnalysisSection />
+      <OpenLink href="/pipeline">{t("open")}</OpenLink>
+    </Body>
+  );
+}
+
+/** Opus looks at all surveys and deal results; unlocked after a few surveys. */
+function SalesAnalysisSection() {
+  const t = useTranslations("dashboard.detail.winRate");
+  const settings = useFormatSettings();
+  const state = useSalesAnalysis(true);
+  const run = useRunSalesAnalysis();
+  const running = useIsMutating({ mutationKey: ["jarvis", "sales-analysis"] }) > 0;
+
+  if (state.isError) return <Failed />;
+  if (!state.data) return <Skeleton className="h-20 w-full" />;
+  const { surveys, latest } = state.data;
+  const locked = surveys < SALES_ANALYSIS_MIN_SURVEYS;
+  const failure =
+    run.error instanceof JarvisJobError ? run.error.code : run.error ? "unknown" : null;
+
+  return (
+    <div className="flex flex-col gap-3 rounded-xl border border-line p-3">
+      <div className="flex flex-wrap items-center gap-3">
         <Button
           type="button"
-          variant="outline"
-          disabled
+          variant={latest ? "outline" : "default"}
+          disabled={locked || running}
           aria-describedby="ai-analysis-note"
+          onClick={() => run.mutate()}
           className="self-start"
         >
           <SparklesIcon aria-hidden data-icon="inline-start" />
-          {t("aiAnalysis")}
+          {latest ? t("aiAgain") : t("aiAnalysis")}
         </Button>
-        <p id="ai-analysis-note" className="text-xs text-ink-muted">
-          {t("aiSoon")}
+        <p id="ai-analysis-note" className="text-xs text-ink-muted" aria-live="polite">
+          {running
+            ? t("aiRunning")
+            : locked
+              ? t("aiLocked", {
+                  count: SALES_ANALYSIS_MIN_SURVEYS - surveys,
+                  needed: formatNumber(SALES_ANALYSIS_MIN_SURVEYS - surveys, {}, settings),
+                })
+              : null}
         </p>
       </div>
-      <OpenLink href="/pipeline">{t("open")}</OpenLink>
-    </Body>
+      {failure && (
+        <FormAlert>
+          {failure === "limitReached" || failure === "notConfigured" || failure === "busy"
+            ? t(`aiError.${failure}`)
+            : failure === "locked"
+              ? t("aiLocked", {
+                  count: SALES_ANALYSIS_MIN_SURVEYS - surveys,
+                  needed: formatNumber(SALES_ANALYSIS_MIN_SURVEYS - surveys, {}, settings),
+                })
+              : t("aiError.unavailable")}
+        </FormAlert>
+      )}
+      {latest && (
+        <article className="flex flex-col gap-1">
+          <h4 className="micro-label">
+            {t("aiLatest", { date: formatDate(new Date(latest.created_at), settings) })}
+          </h4>
+          <p className="text-sm leading-relaxed break-words whitespace-pre-wrap text-ink-soft">
+            {latest.content}
+          </p>
+        </article>
+      )}
+    </div>
   );
 }
 

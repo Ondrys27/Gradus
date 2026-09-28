@@ -210,6 +210,8 @@ export function useMoveDeal() {
       void invalidateContacts(queryClient, user.id);
       // The database books a deposit or the rest of the deal, or flags what it booked.
       void invalidateFinance(queryClient, user.id);
+      // A won deal is one of Jarvis's instant triggers.
+      void queryClient.invalidateQueries({ queryKey: ["jarvis", user.id, "suggestions"] });
     },
     mutationKey: ["pipeline", "move"],
   });

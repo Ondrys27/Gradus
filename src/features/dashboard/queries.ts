@@ -507,6 +507,11 @@ export function useSaveMeetingSurvey() {
       });
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: dashboardKeys.surveys(user.id) }),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: dashboardKeys.surveys(user.id) }),
+        // The survey count unlocks the AI analysis.
+        queryClient.invalidateQueries({ queryKey: ["jarvis", user.id, "sales-analysis"] }),
+      ]),
   });
 }

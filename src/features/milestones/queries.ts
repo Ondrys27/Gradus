@@ -1,7 +1,14 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useMutationState,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
+import { JarvisJobError, postJarvisJob } from "@/features/jarvis/queries";
 import { createClient } from "@/lib/supabase/client";
 import type { MilestoneInput, TaskInput } from "./schemas";
 import {
@@ -116,9 +123,48 @@ function toTaskRow(input: TaskInput) {
   };
 }
 
+const REVIEW_MUTATION = ["milestones", "review"] as const;
+
+/**
+ * Jarvis reviews a new milestone (through /api/jarvis). The result lands in
+ * the cache even when the dialog that created the milestone is gone.
+ */
+export function useReviewMilestone() {
+  const { user } = useSession();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: REVIEW_MUTATION,
+    mutationFn: async (id: string) => {
+      const result = await postJarvisJob<{ feedback: string }>({
+        kind: "milestoneReview",
+        milestoneId: id,
+      });
+      if (!result.ok) throw new JarvisJobError(result.code);
+      return { id, feedback: result.feedback };
+    },
+    onSuccess: ({ id, feedback }) => {
+      queryClient.setQueryData<Milestone | null>(milestoneKeys.detail(user.id, id), (row) =>
+        row ? { ...row, ai_feedback: feedback } : row,
+      );
+      queryClient.setQueryData<MilestoneWithCounts[]>(milestoneKeys.list(user.id), (list) =>
+        list?.map((item) => (item.id === id ? { ...item, ai_feedback: feedback } : item)),
+      );
+    },
+  });
+}
+
+/** Whether Jarvis is reviewing this milestone right now. */
+export function useMilestoneReviewPending(id: string) {
+  return useMutationState({
+    filters: { mutationKey: REVIEW_MUTATION, status: "pending" },
+    select: (mutation) => mutation.state.variables,
+  }).includes(id);
+}
+
 export function useCreateMilestone() {
   const { user } = useSession();
   const queryClient = useQueryClient();
+  const review = useReviewMilestone();
   return useMutation({
     mutationFn: async (input: MilestoneInput) => {
       const list = queryClient.getQueryData<MilestoneWithCounts[]>(milestoneKeys.list(user.id));
@@ -133,6 +179,8 @@ export function useCreateMilestone() {
     },
     onSuccess: (row) => {
       queryClient.setQueryData(milestoneKeys.detail(user.id, row.id), row);
+      // Jarvis looks at every new milestone once; a failure only means no feedback.
+      review.mutate(row.id);
       return queryClient.invalidateQueries({ queryKey: milestoneKeys.list(user.id) });
     },
   });

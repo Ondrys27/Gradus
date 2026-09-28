@@ -27,7 +27,14 @@ import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { MilestoneFormDialog } from "./milestone-form-dialog";
-import { useDeleteMilestone, useMilestone, useSetMilestoneStatus, useTasks } from "./queries";
+import { JarvisBot } from "@/components/jarvis/jarvis-bot";
+import {
+  useDeleteMilestone,
+  useMilestone,
+  useMilestoneReviewPending,
+  useSetMilestoneStatus,
+  useTasks,
+} from "./queries";
 import { countTasks, progressOf } from "./task-tree";
 import { TasksPanel } from "./tasks-panel";
 
@@ -41,6 +48,7 @@ export function MilestoneDetail({ id }: { id: string }) {
   const tasksQuery = useTasks(id);
   const setStatus = useSetMilestoneStatus(id);
   const remove = useDeleteMilestone(id);
+  const reviewing = useMilestoneReviewPending(id);
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -208,6 +216,21 @@ export function MilestoneDetail({ id }: { id: string }) {
           </dl>
         </div>
       </GlowCard>
+
+      {(milestone.ai_feedback || reviewing) && (
+        <GlowCard interactive={false} className="flex items-start gap-3 border-teal/40">
+          <JarvisBot size={36} state={reviewing ? "thinking" : "idle"} />
+          <div className="min-w-0 flex-1">
+            <p className="micro-label">{t("detail.jarvisFeedback")}</p>
+            <p
+              aria-live="polite"
+              className="mt-1 text-sm leading-relaxed whitespace-pre-wrap text-ink-soft"
+            >
+              {milestone.ai_feedback ?? t("detail.jarvisReviewing")}
+            </p>
+          </div>
+        </GlowCard>
+      )}
 
       {allDone && (
         <GlowCard

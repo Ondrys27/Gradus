@@ -208,7 +208,52 @@
       "notFound": "Tenhle rozhovor už neexistuje. Další zpráva začne nový.",
       "network": "Spojení se přerušilo. Zkontroluj internet a zkus to znovu.",
       "unknown": "Něco se pokazilo. Zkus to znovu.",
-      "dismiss": "Zavřít"
+      "dismiss": "Zavřít",
+      "fileType": "Jarvis umí číst PDF, Word (DOCX), Excel (XLSX), text, CSV, PNG a JPG. Tenhle soubor nic z toho není.",
+      "fileTooLarge": "Soubor může mít nejvýš {max} MB.",
+      "fileUnreadable": "Soubor se nepodařilo přečíst. Může být poškozený nebo chráněný heslem.",
+      "fileMissing": "Soubor nedorazil. Přilož ho znovu.",
+      "fileLimit": "Tento měsíc jsi přiložil všech {limit} souborů. Obnoví se 1. dne v měsíci.",
+      "fileUpload": "Soubor se nepodařilo nahrát. Zkontroluj připojení a zkus to znovu.",
+      "tooManyFiles": "K jedné zprávě jdou přiložit nejvýš {max} soubory."
+    },
+    "files": {
+      "attach": "Přiložit soubory",
+      "hint": "Až {max} soubory po {size} MB: PDF, Word, Excel, text, CSV nebo obrázek",
+      "selected": "Soubory k odeslání",
+      "remove": "Odebrat {name}"
+    },
+    "suggestion": {
+      "heading": "Jarvis si všiml",
+      "do": "Udělat",
+      "undo": "Vrátit",
+      "keep": "Nechat",
+      "dismiss": "Skrýt",
+      "closeNotice": "Zavřít",
+      "more": "{count, plural, one {a ještě {formatted}} few {a ještě {formatted}} other {a ještě {formatted}}}",
+      "undoFailed": "Úkol se nepodařilo vrátit. Zkus to znovu.",
+      "unseen": "{count, plural, one {Jeden nový návrh} few {{formatted} nové návrhy} other {{formatted} nových návrhů}}",
+      "dealWon": {
+        "text": "Obchod „{deal}“ je vyhraný! Poděkuj – {contact} – a požádej o doporučení, dokud je to čerstvé.",
+        "noContact": "Obchod „{deal}“ je vyhraný! Poděkuj a požádej o doporučení, dokud je to čerstvé.",
+        "prompt": "Právě jsem vyhrál obchod „{deal}“. Napiš mi krátkou děkovnou zprávu, která zároveň požádá o doporučení."
+      },
+      "followUps": {
+        "text": "{count, plural, one {Dnes se ozvi: {name}.} few {Dnes se máš ozvat {countFormatted} kontaktům, začni u: {name}.} other {Dnes se máš ozvat {countFormatted} kontaktům, začni u: {name}.}}"
+      },
+      "stalledDeal": {
+        "text": "„{deal}“ stojí ve fázi {stage} už {days, plural, one {{daysFormatted} den} few {{daysFormatted} dny} other {{daysFormatted} dní}}.",
+        "prompt": "Obchod „{deal}“ stojí ve fázi {stage} už {days} dní. Co mám udělat, aby se pohnul? Navrhni krátkou zprávu, kterou můžu poslat."
+      },
+      "overdueTask": {
+        "text": "„{task}“ je {days, plural, one {{daysFormatted} den} few {{daysFormatted} dny} other {{daysFormatted} dní}} po termínu."
+      },
+      "milestoneReady": {
+        "text": "Všechny úkoly milníku „{milestone}“ jsou hotové. Dokonči ho, až budeš chtít."
+      },
+      "taskCompleted": {
+        "text": "Označil jsem „{task}“ jako hotové."
+      }
     }
   },
   "celebration": {
@@ -499,7 +544,9 @@
       "offerDescription": "Dobrá práce. Milník dokonči, až budeš spokojený.",
       "completedTitle": "Milník je dokončený",
       "completedDescription": "Kdyby ještě něco chybělo, můžeš ho znovu otevřít.",
-      "statusFailed": "Milník se nepodařilo změnit. Zkus to znovu."
+      "statusFailed": "Milník se nepodařilo změnit. Zkus to znovu.",
+      "jarvisFeedback": "Jarvisův pohled",
+      "jarvisReviewing": "Jarvis si prohlíží tvůj milník…"
     },
     "tasks": {
       "heading": "Úkoly",
@@ -1463,8 +1510,17 @@
         "noSurveys": "Zatím žádné dotazníky. Když obchod projde z fáze schůzky dál, zeptáme se tě na pár krátkých otázek, jak schůzka dopadla.",
         "deletedDeal": "Smazaný obchod",
         "aiAnalysis": "AI rozbor",
-        "aiSoon": "Přijde s Jarvisem",
-        "open": "Otevřít pipeline"
+        "open": "Otevřít pipeline",
+        "aiAgain": "Nový AI rozbor",
+        "aiRunning": "Jarvis rozebírá tvoje schůzky. Může to chvíli trvat.",
+        "aiLocked": "{count, plural, one {Odemkne se po {needed} dalším dotazníku.} few {Odemkne se po {needed} dalších dotaznících.} other {Odemkne se po {needed} dalších dotaznících.}}",
+        "aiLatest": "Rozbor z {date}",
+        "aiError": {
+          "limitReached": "Tento měsíc jsi vyčerpal všechna volání Jarvise.",
+          "notConfigured": "Jarvis ještě není připojený. Zkus to později.",
+          "busy": "Jarvis má teď moc práce. Zkus to za minutu.",
+          "unavailable": "Rozbor teď nejde udělat. Zkus to za chvíli."
+        }
       },
       "activeDeals": {
         "open": "Otevřít pipeline"
@@ -1590,6 +1646,17 @@
           "placeholder": "Poznámky"
         }
       }
+    }
+  },
+  "email": {
+    "featureRequest": {
+      "subject": "{appName}: nový nápad – {title}",
+      "intro": "Uživatel aplikace {appName} napsal Jarvisovi, co mu v aplikaci chybí.",
+      "title": "Nápad",
+      "description": "Stručně",
+      "from": "Od",
+      "message": "Jeho zpráva",
+      "unknownUser": "neznámý uživatel"
     }
   }
 }

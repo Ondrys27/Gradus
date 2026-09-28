@@ -1,23 +1,63 @@
 import { z } from "zod";
+import { MAX_FILES_PER_MESSAGE, type FileKind } from "./files";
 
 /** Longest message a user can send; the panel stops typing there too. */
 export const MAX_MESSAGE_LENGTH = 4000;
 
-export const chatRequestSchema = z.object({
-  conversationId: z.uuid().nullish(),
-  message: z.string().trim().min(1).max(MAX_MESSAGE_LENGTH),
+/** A file the panel uploaded to the user's folder; the server checks it before use. */
+export const attachmentRefSchema = z.object({
+  path: z.string().max(200),
+  name: z.string().trim().min(1).max(255),
 });
-export type ChatRequest = z.infer<typeof chatRequestSchema>;
+export type AttachmentRef = z.infer<typeof attachmentRefSchema>;
+
+export const chatRequestSchema = z
+  .object({
+    conversationId: z.uuid().nullish(),
+    message: z.string().trim().max(MAX_MESSAGE_LENGTH),
+    attachments: z.array(attachmentRefSchema).max(MAX_FILES_PER_MESSAGE).default([]),
+  })
+  .refine((request) => request.message.length > 0 || request.attachments.length > 0, {
+    message: "empty",
+    path: ["message"],
+  });
+export type ChatRequest = z.input<typeof chatRequestSchema>;
+
+/** Other jobs of /api/jarvis besides the chat (POST with a `kind`). */
+export const milestoneReviewRequestSchema = z.object({
+  kind: z.literal("milestoneReview"),
+  milestoneId: z.uuid(),
+});
+export const salesAnalysisRequestSchema = z.object({ kind: z.literal("salesAnalysis") });
+
+/** A file shown on a message. */
+export type ChatAttachment = { id: string; name: string; kind: FileKind };
 
 export type AiCallUsage = { used: number; limit: number };
 
 /** Why a reply did not come; each has its own text in `jarvis.error.*`. */
 export type ChatErrorCode =
-  "limitReached" | "notConfigured" | "busy" | "unavailable" | "notFound" | "network" | "unknown";
+  | "limitReached"
+  | "notConfigured"
+  | "busy"
+  | "unavailable"
+  | "notFound"
+  | "network"
+  | "unknown"
+  | FileErrorCode;
+
+/** Why attached files were refused; nothing of the message is saved then. */
+export type FileErrorCode =
+  "fileType" | "fileTooLarge" | "fileUnreadable" | "fileMissing" | "fileLimit";
 
 /** Lines of the NDJSON stream from POST /api/jarvis. */
 export type ChatEvent =
-  | { type: "start"; conversationId: string; userMessageId: string }
+  | {
+      type: "start";
+      conversationId: string;
+      userMessageId: string;
+      attachments: ChatAttachment[];
+    }
   | { type: "delta"; text: string }
   | { type: "done"; messageId: string; usage: AiCallUsage }
   | { type: "error"; code: ChatErrorCode; usage?: AiCallUsage };
@@ -37,4 +77,16 @@ export const SUGGESTION_KEYS = [
 export type SuggestionKey = (typeof SUGGESTION_KEYS)[number];
 
 /** GET /api/jarvis */
-export type JarvisOverview = { usage: AiCallUsage; suggestions: SuggestionKey[] };
+export type JarvisOverview = {
+  usage: AiCallUsage;
+  /** Files attached this month and the plan's monthly number. */
+  files: { used: number; limit: number };
+  suggestions: SuggestionKey[];
+};
+
+/** POST /api/jarvis { kind: "milestoneReview" } and { kind: "salesAnalysis" } */
+export type JobResult<T> =
+  ({ ok: true } & T) | { ok: false; code: ChatErrorCode | "locked" | "alreadyReviewed" };
+
+/** Sales analysis unlocks after this many meeting surveys. */
+export const SALES_ANALYSIS_MIN_SURVEYS = 5;

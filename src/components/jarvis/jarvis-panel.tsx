@@ -5,16 +5,39 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  type ChangeEvent,
   type FormEvent,
   type KeyboardEvent,
 } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { ArrowUpIcon, SquarePenIcon, XIcon } from "lucide-react";
+import {
+  ArrowUpIcon,
+  FileSpreadsheetIcon,
+  FileTextIcon,
+  ImageIcon,
+  PaperclipIcon,
+  SquarePenIcon,
+  XIcon,
+  type LucideIcon,
+} from "lucide-react";
 import { JarvisBot } from "@/components/jarvis/jarvis-bot";
+import { SuggestionCard, useSuggestionActions } from "@/components/jarvis/suggestion-card";
+import {
+  ACCEPTED_EXTENSIONS,
+  MAX_FILE_BYTES,
+  MAX_FILES_PER_MESSAGE,
+  uploadContentType,
+  type FileKind,
+} from "@/features/jarvis/files";
 import { MAX_MESSAGE_LENGTH, type SuggestionKey } from "@/features/jarvis/protocol";
-import { useJarvisConversation, useJarvisOverview } from "@/features/jarvis/queries";
-import type { useJarvisChat } from "@/features/jarvis/use-jarvis-chat";
+import {
+  useJarvisConversation,
+  useJarvisOverview,
+  useJarvisSuggestions,
+  useMarkSuggestionsSeen,
+} from "@/features/jarvis/queries";
+import type { ChatError, useJarvisChat } from "@/features/jarvis/use-jarvis-chat";
 import { formatNumber } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { useIsPhone } from "@/lib/use-media-query";
@@ -36,15 +59,35 @@ export function JarvisPanel({ chat, onClose }: JarvisPanelProps) {
   const isPhone = useIsPhone();
   const conversation = useJarvisConversation(true);
   const overview = useJarvisOverview(true);
+  const noticed = useJarvisSuggestions();
+  const markSeen = useMarkSuggestionsSeen();
   const [draft, setDraft] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
   const { pending, error } = chat;
   const messages = conversation.data?.messages ?? [];
   const usage = overview.data?.usage;
+  const fileUsage = overview.data?.files;
   const suggestions = overview.data?.suggestions ?? [];
+  const cards = noticed.data ?? [];
   const busy = pending !== null;
+  const actions = useSuggestionActions({
+    ask: (prompt) => void chat.send(prompt),
+    onNavigate: () => {
+      if (isPhone) onClose();
+    },
+  });
+
+  // Opening the panel shows what Jarvis noticed; the ring on the button stops.
+  const unseen = cards.filter((card) => !card.seen).map((card) => card.id);
+  const unseenKey = unseen.join(",");
+  useEffect(() => {
+    if (unseenKey) markSeen.mutate(unseenKey.split(","));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only when the unseen set changes
+  }, [unseenKey]);
 
   // Escape closes; focus goes to the input on larger screens (on phones it would pop the keyboard).
   useEffect(() => {
@@ -73,36 +116,78 @@ export function JarvisPanel({ chat, onClose }: JarvisPanelProps) {
     input.style.height = `${Math.min(input.scrollHeight, 132)}px`;
   }, [draft]);
 
-  const submit = async (text: string) => {
-    if (busy || !text.trim()) return;
+  async function submit(text: string, attached: File[]) {
+    if (busy || (!text.trim() && !attached.length)) return;
     setDraft("");
-    const accepted = await chat.send(text);
-    // Refused before it was saved (limit, connection): the text comes back to the input.
-    if (!accepted) setDraft((current) => current || text);
-  };
+    setFiles([]);
+    const result = await chat.send(text, attached);
+    if (result === "accepted") return;
+    // Refused before it was saved (limit, connection): the text comes back to the input,
+    // and the files too unless they were the reason.
+    setDraft((current) => current || text);
+    if (result === "refused") setFiles((current) => (current.length ? current : attached));
+  }
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
-    void submit(draft);
+    void submit(draft, files);
   };
 
   const onInputKey = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
       event.preventDefault();
-      void submit(draft);
+      void submit(draft, files);
     }
   };
 
-  const errorText = error
-    ? error.code === "limitReached"
-      ? t("error.limitReached", {
-          limit: formatNumber(error.usage?.limit ?? usage?.limit ?? 0, {}, settings),
-        })
-      : t(`error.${error.code}`)
-    : null;
+  /** Checks picked files by name and size here; the server checks the content. */
+  const onPickFiles = (event: ChangeEvent<HTMLInputElement>) => {
+    const picked = Array.from(event.target.files ?? []);
+    event.target.value = "";
+    if (!picked.length) return;
+    let problem: ChatError["code"] | null = null;
+    const accepted: File[] = [];
+    for (const file of picked) {
+      if (!uploadContentType(file.name)) problem = "fileType";
+      else if (file.size > MAX_FILE_BYTES) problem = "fileTooLarge";
+      else if (file.size > 0) accepted.push(file);
+    }
+    const next = [...files, ...accepted];
+    if (next.length > MAX_FILES_PER_MESSAGE) problem = "tooManyFiles";
+    const kept = next.slice(0, MAX_FILES_PER_MESSAGE);
+    if (fileUsage && fileUsage.used + kept.length > fileUsage.limit) {
+      chat.showError({ code: "fileLimit" });
+      return;
+    }
+    setFiles(kept);
+    if (problem) chat.showError({ code: problem });
+    else chat.dismissError();
+  };
+
+  const errorText = error ? errorMessage(error) : null;
+
+  function errorMessage(value: ChatError): string {
+    switch (value.code) {
+      case "limitReached":
+        return t("error.limitReached", {
+          limit: formatNumber(value.usage?.limit ?? usage?.limit ?? 0, {}, settings),
+        });
+      case "fileLimit":
+        return t("error.fileLimit", { limit: formatNumber(fileUsage?.limit ?? 0, {}, settings) });
+      case "fileTooLarge":
+        return t("error.fileTooLarge", {
+          max: formatNumber(MAX_FILE_BYTES / 1024 / 1024, {}, settings),
+        });
+      case "tooManyFiles":
+        return t("error.tooManyFiles", { max: formatNumber(MAX_FILES_PER_MESSAGE, {}, settings) });
+      default:
+        return t(`error.${value.code}`);
+    }
+  }
 
   const showTyping = pending !== null && !pending.answer;
-  const showChips = !busy && suggestions.length > 0;
+  const showChips = !busy && suggestions.length > 0 && files.length === 0;
+  const canSend = !busy && (draft.trim().length > 0 || files.length > 0);
 
   return (
     <motion.section
@@ -155,6 +240,28 @@ export function JarvisPanel({ chat, onClose }: JarvisPanelProps) {
         </button>
       </header>
 
+      {cards.length > 0 && (
+        <section
+          aria-label={t("suggestion.heading")}
+          className="max-h-[40%] shrink-0 overflow-y-auto overscroll-contain border-b border-line px-4 py-3"
+        >
+          <h3 className="micro-label mb-2">{t("suggestion.heading")}</h3>
+          <ul className="flex flex-col gap-2">
+            {cards.map((card) => (
+              <SuggestionCard
+                key={card.id}
+                suggestion={card}
+                busy={busy || actions.undoPending}
+                onRun={(value) =>
+                  void actions.run(value).catch(() => chat.showError({ code: "unknown" }))
+                }
+                onDismiss={actions.dismiss}
+              />
+            ))}
+          </ul>
+        </section>
+      )}
+
       <div
         ref={listRef}
         aria-live="polite"
@@ -167,12 +274,21 @@ export function JarvisPanel({ chat, onClose }: JarvisPanelProps) {
         )}
         {messages.map((message) =>
           message.role === "user" ? (
-            <UserBubble key={message.id} text={message.content} />
+            <UserBubble
+              key={message.id}
+              text={message.content}
+              files={message.attachments?.map((file) => ({ name: file.name, kind: file.kind }))}
+            />
           ) : (
             <AssistantBubble key={message.id} text={message.content} />
           ),
         )}
-        {pending?.userText && <UserBubble text={pending.userText} />}
+        {pending && (pending.userText || pending.fileNames.length > 0) && (
+          <UserBubble
+            text={pending.userText ?? ""}
+            files={pending.fileNames.map((name) => ({ name, kind: null }))}
+          />
+        )}
         {pending?.answer && <AssistantBubble text={pending.answer} />}
         {showTyping && <TypingDots label={t("typing")} />}
         {errorText && (
@@ -199,7 +315,7 @@ export function JarvisPanel({ chat, onClose }: JarvisPanelProps) {
             <button
               key={key}
               type="button"
-              onClick={() => void submit(t(`chip.${key}`))}
+              onClick={() => void submit(t(`chip.${key}`), [])}
               className="min-h-11 rounded-full border border-teal/40 bg-teal/10 px-3.5 text-left text-sm text-ink outline-none transition-colors hover:bg-teal/20 focus-visible:ring-3 focus-visible:ring-teal/50 mouse:min-h-9"
             >
               {t(`chip.${key}`)}
@@ -208,7 +324,51 @@ export function JarvisPanel({ chat, onClose }: JarvisPanelProps) {
         </div>
       )}
 
+      {files.length > 0 && (
+        <ul aria-label={t("files.selected")} className="flex flex-wrap gap-2 px-3 pt-3">
+          {files.map((file, index) => (
+            <li
+              key={`${file.name}-${index}`}
+              className="flex max-w-full items-center gap-1.5 rounded-full border border-line bg-canvas py-1 pr-1 pl-3 text-xs text-ink"
+            >
+              <span className="max-w-48 truncate">{file.name}</span>
+              <button
+                type="button"
+                onClick={() => setFiles((current) => current.filter((_, i) => i !== index))}
+                aria-label={t("files.remove", { name: file.name })}
+                className="grid size-11 place-items-center rounded-full text-ink-muted outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-teal/50 mouse:size-7"
+              >
+                <XIcon aria-hidden className="size-3.5" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
       <form onSubmit={onSubmit} className="flex items-end gap-2 border-t border-line px-3 py-3">
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept={ACCEPTED_EXTENSIONS.join(",")}
+          onChange={onPickFiles}
+          className="sr-only"
+          tabIndex={-1}
+          aria-hidden
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={busy || files.length >= MAX_FILES_PER_MESSAGE}
+          aria-label={t("files.attach")}
+          title={t("files.hint", {
+            max: formatNumber(MAX_FILES_PER_MESSAGE, {}, settings),
+            size: formatNumber(MAX_FILE_BYTES / 1024 / 1024, {}, settings),
+          })}
+          className="grid size-11 shrink-0 place-items-center rounded-full text-ink-soft outline-none transition-colors hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-teal/50 disabled:opacity-40"
+        >
+          <PaperclipIcon aria-hidden className="size-5" />
+        </button>
         <textarea
           ref={inputRef}
           value={draft}
@@ -222,7 +382,7 @@ export function JarvisPanel({ chat, onClose }: JarvisPanelProps) {
         />
         <button
           type="submit"
-          disabled={busy || !draft.trim()}
+          disabled={!canSend}
           aria-label={t("send")}
           className="grid size-11 shrink-0 place-items-center rounded-full bg-violet text-white outline-none transition-opacity focus-visible:ring-3 focus-visible:ring-violet/50 disabled:opacity-40"
         >
@@ -242,11 +402,47 @@ function AssistantBubble({ text }: { text: string }) {
   );
 }
 
-/** The user's messages sit on the right in violet. */
-function UserBubble({ text }: { text: string }) {
+const FILE_ICONS: Record<FileKind, LucideIcon> = {
+  pdf: FileTextIcon,
+  docx: FileTextIcon,
+  txt: FileTextIcon,
+  csv: FileSpreadsheetIcon,
+  xlsx: FileSpreadsheetIcon,
+  png: ImageIcon,
+  jpeg: ImageIcon,
+};
+
+/** The user's messages sit on the right in violet, their files above the text. */
+function UserBubble({
+  text,
+  files,
+}: {
+  text: string;
+  files?: { name: string; kind: FileKind | null }[];
+}) {
   return (
-    <div className="max-w-[85%] self-end rounded-2xl rounded-br-md bg-violet px-3.5 py-2.5 text-sm leading-relaxed break-words whitespace-pre-wrap text-white">
-      {text}
+    <div className="flex max-w-[85%] flex-col items-end gap-1.5 self-end">
+      {files && files.length > 0 && (
+        <ul className="flex flex-wrap justify-end gap-1.5">
+          {files.map((file, index) => {
+            const Icon = file.kind ? FILE_ICONS[file.kind] : PaperclipIcon;
+            return (
+              <li
+                key={`${file.name}-${index}`}
+                className="flex max-w-full items-center gap-1.5 rounded-full border border-violet/50 bg-violet/15 px-2.5 py-1 text-xs text-ink"
+              >
+                <Icon aria-hidden className="size-3.5 shrink-0 text-violet" />
+                <span className="max-w-44 truncate">{file.name}</span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {text && (
+        <div className="rounded-2xl rounded-br-md bg-violet px-3.5 py-2.5 text-sm leading-relaxed break-words whitespace-pre-wrap text-white">
+          {text}
+        </div>
+      )}
     </div>
   );
 }

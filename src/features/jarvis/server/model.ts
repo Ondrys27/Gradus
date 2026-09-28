@@ -28,7 +28,12 @@ export type ModelClient = Pick<Anthropic, "messages">;
 export type ModelCall = {
   client: ModelClient;
   feature: JarvisFeature;
-  /** Per-call context placed after the cached persona. */
+  /**
+   * The fixed part of the system prompt, cached. Jarvis's persona by default;
+   * routine jobs (classification, the opportunity watch) pass their own short one.
+   */
+  instructions?: string;
+  /** Per-call context placed after the cached instructions. */
   context: string;
   messages: Anthropic.MessageParam[];
   onText?: (text: string) => void;
@@ -55,8 +60,12 @@ export async function streamModel(call: ModelCall): Promise<ModelResult> {
     model,
     max_tokens: maxTokensFor(call.feature),
     system: [
-      { type: "text", text: JARVIS_PERSONA, cache_control: { type: "ephemeral" } },
-      { type: "text", text: call.context },
+      {
+        type: "text",
+        text: call.instructions ?? JARVIS_PERSONA,
+        cache_control: { type: "ephemeral" },
+      },
+      ...(call.context ? [{ type: "text" as const, text: call.context }] : []),
     ],
     messages: call.messages,
     // Haiku takes no effort setting; conversation stays quick on the others.

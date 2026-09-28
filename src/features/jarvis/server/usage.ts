@@ -7,19 +7,31 @@ import type { AiCallUsage } from "../protocol";
 
 type Client = SupabaseClient<Database>;
 
-/** The plan's monthly number of AI calls (the default plan without a subscription). */
-async function loadLimit(supabase: Client, userId: string): Promise<number> {
+type PlanLimits = { aiCalls: number; fileUploads: number };
+
+/** The plan's monthly numbers (the default plan without a subscription). */
+async function loadLimits(supabase: Client, userId: string): Promise<PlanLimits> {
   const { data: subscription } = await supabase
     .from("subscriptions")
     .select("plan_key")
     .eq("user_id", userId)
     .maybeSingle();
-  const query = supabase.from("plans").select("ai_calls_limit");
+  const query = supabase.from("plans").select("ai_calls_limit, file_uploads_limit");
   const { data: plan, error } = await (
     subscription ? query.eq("key", subscription.plan_key) : query.eq("is_default", true)
   ).maybeSingle();
   if (error) throw error;
-  return plan?.ai_calls_limit ?? 0;
+  return { aiCalls: plan?.ai_calls_limit ?? 0, fileUploads: plan?.file_uploads_limit ?? 0 };
+}
+
+/** Start of the user's calendar month as an instant. */
+function monthStart(settings: FormatSettings, now: Date): string {
+  const today = todayIsoDate(settings, now);
+  return zonedWallClockToInstant(
+    `${today.slice(0, 8)}01`,
+    "00:00",
+    settings.timeZone,
+  ).toISOString();
 }
 
 /**
@@ -34,19 +46,44 @@ export async function loadAiUsage(
   settings: FormatSettings,
   now: Date = new Date(),
 ): Promise<AiCallUsage> {
-  const today = todayIsoDate(settings, now);
-  const monthStart = zonedWallClockToInstant(`${today.slice(0, 8)}01`, "00:00", settings.timeZone);
-  const [limit, used] = await Promise.all([
-    loadLimit(supabase, userId),
+  const [limits, used] = await Promise.all([
+    loadLimits(supabase, userId),
     admin
       .from("ai_usage")
       .select("id", { count: "exact", head: true })
       .eq("user_id", userId)
       .eq("success", true)
-      .gte("created_at", monthStart.toISOString()),
+      .gte("created_at", monthStart(settings, now)),
   ]);
   if (used.error) throw used.error;
-  return { used: used.count ?? 0, limit };
+  return { used: used.count ?? 0, limit: limits.aiCalls };
+}
+
+export const FILE_UPLOAD_EVENT = "file_upload";
+
+/**
+ * Files attached to Jarvis this month and the plan's number. usage_events is
+ * server-only, read with the admin client filtered by the session's user id.
+ */
+export async function loadFileUsage(
+  supabase: Client,
+  admin: Client,
+  userId: string,
+  settings: FormatSettings,
+  now: Date = new Date(),
+): Promise<{ used: number; limit: number }> {
+  const [limits, used] = await Promise.all([
+    loadLimits(supabase, userId),
+    admin
+      .from("usage_events")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("event_type", FILE_UPLOAD_EVENT)
+      .eq("success", true)
+      .gte("created_at", monthStart(settings, now)),
+  ]);
+  if (used.error) throw used.error;
+  return { used: used.count ?? 0, limit: limits.fileUploads };
 }
 
 export function limitReached(usage: AiCallUsage): boolean {
