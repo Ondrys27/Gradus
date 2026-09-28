@@ -2163,3 +2163,82 @@ describe("audit: moveContact, milestone progress and daily timer totals", () => 
     await asServer();
   });
 });
+
+describe("jarvis", () => {
+  it("keeps conversations to their owner and messages and usage to the server", async () => {
+    const user = await createAuthUser();
+    const other = await createAuthUser();
+
+    await asUser(user);
+    const conversation = await one<{ id: string }>(
+      `insert into jarvis_conversations (user_id, title) values ('${user}', 'Plan') returning id`,
+    );
+    // Messages and usage are written only by /api/jarvis through the admin client.
+    await expect(
+      db.query(
+        `insert into jarvis_messages (user_id, conversation_id, role, content)
+         values ('${user}', '${conversation.id}', 'assistant', 'forged')`,
+      ),
+    ).rejects.toThrow(/row-level security/);
+    await expect(
+      db.query(
+        `insert into ai_usage (user_id, purpose, model) values ('${user}', 'chat', 'claude-sonnet-5')`,
+      ),
+    ).rejects.toThrow(/row-level security/);
+
+    await asServer();
+    await db.query(
+      `insert into jarvis_messages (user_id, conversation_id, role, content, model)
+       values ('${user}', '${conversation.id}', 'user', 'hi', null),
+              ('${user}', '${conversation.id}', 'assistant', 'hello', 'claude-sonnet-5')`,
+    );
+    await db.query(
+      `insert into ai_usage (user_id, conversation_id, purpose, model, input_tokens, output_tokens, cost_usd)
+       values ('${user}', '${conversation.id}', 'chat', 'claude-sonnet-5', 1000, 100, 0.003)`,
+    );
+    // The usage row points at the owner's conversation only.
+    await expect(
+      db.query(
+        `insert into ai_usage (user_id, conversation_id, purpose, model)
+         values ('${other}', '${conversation.id}', 'chat', 'claude-sonnet-5')`,
+      ),
+    ).rejects.toThrow(/foreign key/);
+    await expect(
+      db.query(
+        `insert into ai_usage (user_id, purpose, model, cost_usd) values ('${user}', 'chat', 'x', -1)`,
+      ),
+    ).rejects.toThrow(/check/);
+
+    await asUser(user);
+    expect(await count(`select 1 from jarvis_messages`)).toBe(2);
+    expect(await count(`select 1 from ai_usage`)).toBe(0);
+    // Reading and deleting own history is allowed; editing an answer is not.
+    await db.query(`update jarvis_messages set content = 'edited' where role = 'assistant'`);
+    expect(
+      (
+        await one<{ content: string }>(
+          `select content from jarvis_messages where role = 'assistant'`,
+        )
+      ).content,
+    ).toBe("hello");
+
+    await asUser(other);
+    expect(await count(`select 1 from jarvis_conversations`)).toBe(0);
+    expect(await count(`select 1 from jarvis_messages`)).toBe(0);
+    await expect(
+      db.query(`insert into jarvis_conversations (user_id, title) values ('${user}', 'Not mine')`),
+    ).rejects.toThrow(/row-level security/);
+
+    await asUser(user);
+    await db.query(`delete from jarvis_conversations where id = '${conversation.id}'`);
+    await asServer();
+    expect(await count(`select 1 from jarvis_messages where user_id = $1`, [user])).toBe(0);
+    // Usage outlives the conversation, detached from it.
+    expect(
+      (await one(
+        `select conversation_id, cost_usd::float as cost from ai_usage where user_id = $1`,
+        [user],
+      )) as Row,
+    ).toEqual({ conversation_id: null, cost: 0.003 });
+  });
+});

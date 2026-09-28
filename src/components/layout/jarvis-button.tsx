@@ -6,6 +6,8 @@ import { JarvisBot, type JarvisState } from "@/components/jarvis/jarvis-bot";
 
 type JarvisButtonProps = {
   state?: JarvisState;
+  /** Whether the panel is open; the same button closes it. */
+  expanded?: boolean;
   onClick?: () => void;
 };
 
@@ -13,7 +15,7 @@ type JarvisButtonProps = {
  * The bottom-right corner belongs to Jarvis alone. On phones the button sits
  * level with the bottom bar, which stops short of it.
  */
-export function JarvisButton({ state = "idle", onClick }: JarvisButtonProps) {
+export function JarvisButton({ state = "idle", expanded = false, onClick }: JarvisButtonProps) {
   const t = useTranslations("jarvis");
   const reduceMotion = useReducedMotion();
 
@@ -26,7 +28,8 @@ export function JarvisButton({ state = "idle", onClick }: JarvisButtonProps) {
       <button
         type="button"
         onClick={onClick}
-        aria-label={t("open")}
+        aria-label={expanded ? t("close") : t("open")}
+        aria-expanded={expanded}
         className="group relative grid size-16 cursor-pointer place-items-center rounded-full outline-none focus-visible:ring-3 focus-visible:ring-teal/60"
       >
         {/* Radial glow */}

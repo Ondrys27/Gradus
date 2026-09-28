@@ -176,7 +176,40 @@
     }
   },
   "jarvis": {
-    "open": "Otevřít Jarvise"
+    "open": "Otevřít Jarvise",
+    "close": "Zavřít Jarvise",
+    "title": "Jarvis",
+    "subtitle": "Tvůj průvodce podnikáním",
+    "newChat": "Nový rozhovor",
+    "greeting": "Ahoj, já jsem Jarvis. Vidím tvoje milníky, obchody, kontakty i kalendář. Co dnes posuneme dál?",
+    "inputLabel": "Zpráva pro Jarvise",
+    "placeholder": "Zeptej se Jarvise…",
+    "send": "Odeslat",
+    "typing": "Jarvis píše",
+    "usage": "{used} z {limit} zpráv tento měsíc",
+    "suggestions": "Návrhy",
+    "loadFailed": "Rozhovor se nepodařilo načíst.",
+    "chip": {
+      "planDay": "Naplánuj mi den",
+      "followUps": "Komu se mám dnes ozvat?",
+      "stalledDeals": "Které obchody stojí a co s nimi?",
+      "overdueTasks": "Pomoz mi dohnat úkoly po termínu",
+      "nextMilestoneStep": "Jaký je další krok u mého milníku?",
+      "firstMilestone": "Pomoz mi nastavit první milník",
+      "firstDeal": "Jak získat první obchod?",
+      "monthFinance": "Jak jsem na tom tento měsíc s penězi?",
+      "startCalling": "Dej mi krátký scénář hovoru"
+    },
+    "error": {
+      "limitReached": "Všech {limit} zpráv pro Jarvise je na tento měsíc vyčerpáno. Obnoví se prvního dne dalšího měsíce.",
+      "notConfigured": "Jarvis ještě není připojený. Zkus to později.",
+      "busy": "Jarvis má teď moc práce. Zkus to za minutu.",
+      "unavailable": "Jarvis teď nemůže odpovědět. Zkus to za chvíli.",
+      "notFound": "Tenhle rozhovor už neexistuje. Další zpráva začne nový.",
+      "network": "Spojení se přerušilo. Zkontroluj internet a zkus to znovu.",
+      "unknown": "Něco se pokazilo. Zkus to znovu.",
+      "dismiss": "Zavřít"
+    }
   },
   "celebration": {
     "continue": "Pokračovat",

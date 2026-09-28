@@ -44,6 +44,7 @@ export type Database = {
           cache_read_tokens: number
           cache_write_tokens: number
           conversation_id: string | null
+          cost_usd: number
           created_at: string
           duration_ms: number | null
           error: string | null
@@ -59,6 +60,7 @@ export type Database = {
           cache_read_tokens?: number
           cache_write_tokens?: number
           conversation_id?: string | null
+          cost_usd?: number
           created_at?: string
           duration_ms?: number | null
           error?: string | null
@@ -74,6 +76,7 @@ export type Database = {
           cache_read_tokens?: number
           cache_write_tokens?: number
           conversation_id?: string | null
+          cost_usd?: number
           created_at?: string
           duration_ms?: number | null
           error?: string | null

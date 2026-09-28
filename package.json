@@ -14,6 +14,7 @@
     "db:types": "supabase gen types typescript --linked > src/types/database.ts.tmp && mv src/types/database.ts.tmp src/types/database.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.128.0",
     "@base-ui/react": "^1.8.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",

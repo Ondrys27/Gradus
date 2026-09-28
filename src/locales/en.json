@@ -176,7 +176,40 @@
     }
   },
   "jarvis": {
-    "open": "Open Jarvis"
+    "open": "Open Jarvis",
+    "close": "Close Jarvis",
+    "title": "Jarvis",
+    "subtitle": "Your business guide",
+    "newChat": "New conversation",
+    "greeting": "Hi, I'm Jarvis. I can see your milestones, deals, contacts and calendar. What shall we move forward today?",
+    "inputLabel": "Message to Jarvis",
+    "placeholder": "Ask Jarvis…",
+    "send": "Send",
+    "typing": "Jarvis is typing",
+    "usage": "{used} of {limit} messages this month",
+    "suggestions": "Suggestions",
+    "loadFailed": "The conversation couldn't be loaded.",
+    "chip": {
+      "planDay": "Plan my day",
+      "followUps": "Who should I follow up with today?",
+      "stalledDeals": "Which deals are stuck and what should I do?",
+      "overdueTasks": "Help me catch up on overdue tasks",
+      "nextMilestoneStep": "What's the next step on my milestone?",
+      "firstMilestone": "Help me set my first milestone",
+      "firstDeal": "How do I land my first deal?",
+      "monthFinance": "How am I doing financially this month?",
+      "startCalling": "Give me a short call script"
+    },
+    "error": {
+      "limitReached": "You've used all {limit} Jarvis messages for this month. They renew on the 1st.",
+      "notConfigured": "Jarvis isn't connected yet. Try again later.",
+      "busy": "Jarvis has too much going on right now. Try again in a minute.",
+      "unavailable": "Jarvis can't answer right now. Try again in a while.",
+      "notFound": "This conversation no longer exists. Your next message starts a new one.",
+      "network": "The connection dropped. Check your internet and try again.",
+      "unknown": "Something went wrong. Try again.",
+      "dismiss": "Dismiss"
+    }
   },
   "celebration": {
     "continue": "Continue",

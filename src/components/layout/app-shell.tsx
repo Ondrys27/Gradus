@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
+import { JarvisDock } from "@/components/jarvis/jarvis-dock";
 import { BottomNav } from "./bottom-nav";
-import { JarvisButton } from "./jarvis-button";
 import { Sidebar } from "./sidebar";
 import { TopBar } from "./top-bar";
 
@@ -16,7 +16,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </main>
       </div>
       <BottomNav />
-      <JarvisButton />
+      <JarvisDock />
     </div>
   );
 }
