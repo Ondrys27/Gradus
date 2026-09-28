@@ -154,7 +154,9 @@
     "close": "Zavřít",
     "profile": "Profil",
     "settings": "Nastavení",
-    "signOut": "Odhlásit se"
+    "signOut": "Odhlásit se",
+    "myTasks": "Úkoly",
+    "myRewards": "Odměny"
   },
   "topBar": {
     "home": "Přejít na přehled",
@@ -326,7 +328,10 @@
       "description": "{appName} je během bety jen na pozvánky.",
       "inviteHint": "Dostali jste ho spolu s pozvánkou.",
       "submit": "Vytvořit účet",
-      "haveAccount": "Už máte účet? <link>Přihlásit se</link>"
+      "haveAccount": "Už máte účet? <link>Přihlásit se</link>",
+      "workerInvite": "Přidáváš se k týmu: {owner}. Zaregistruj se e-mailem, na který tě pozval.",
+      "workerInviteNoOwner": "Přidáváš se k týmu. Zaregistruj se e-mailem, na který jsi dostal pozvánku.",
+      "workerInviteInvalid": "Pozvánka vypršela nebo už byla použita. Požádej o nový odkaz."
     },
     "forgot": {
       "title": "Obnovení hesla",
@@ -356,7 +361,8 @@
       "wrongCurrentPassword": "Současné heslo není správně.",
       "rateLimited": "Příliš mnoho pokusů. Chvíli počkejte a zkuste to znovu.",
       "linkExpired": "Platnost odkazu vypršela nebo už byl použit. Požádejte o nový.",
-      "generic": "Něco se pokazilo. Zkuste to prosím znovu."
+      "generic": "Něco se pokazilo. Zkuste to prosím znovu.",
+      "inviteEmailMismatch": "Použij e-mail, na který přišla pozvánka."
     }
   },
   "profile": {
@@ -1659,6 +1665,331 @@
       "from": "Od",
       "message": "Jeho zpráva",
       "unknownUser": "neznámý uživatel"
+    }
+  },
+  "workers": {
+    "add": "Přidat pracovníka",
+    "rewardSystem": "Systém odměn",
+    "loadFailed": "Pracovníky se nepodařilo načíst. Zkus to znovu.",
+    "statsFailed": "Čísla za tento měsíc se nepodařilo načíst.",
+    "back": "Pracovníci",
+    "card": {
+      "noJobTitle": "Bez role",
+      "invited": "Čeká na registraci",
+      "inactive": "Neaktivní",
+      "pending": "{count, plural, one {{shown} ke schválení} few {{shown} ke schválení} many {{shown} ke schválení} other {{shown} ke schválení}}",
+      "pendingAmount": "{amount} čeká na tvoje schválení",
+      "tasksThisMonth": "Úkoly tento měsíc",
+      "tasksDone": "{done} / {total}",
+      "hours": "Odpracováno",
+      "earned": "Vyděláno",
+      "duration": "{hours} h {minutes} min"
+    },
+    "form": {
+      "newTitle": "Přidat pracovníka",
+      "editTitle": "Upravit pracovníka",
+      "inviteReady": "Pozvánka je připravená",
+      "name": "Jméno",
+      "email": "E-mail",
+      "emailHint": "S touhle adresou se zaregistruje.",
+      "jobTitle": "Role",
+      "jobTitlePlaceholder": "např. Obchodník",
+      "create": "Vytvořit pozvánku",
+      "save": "Uložit",
+      "cancel": "Zrušit",
+      "close": "Zavřít",
+      "done": "Hotovo",
+      "saveFailed": "Uložení se nepovedlo. Zkus to znovu."
+    },
+    "permissions": {
+      "title": "Co může otevřít",
+      "hint": "Přehled, úkoly, odměny a kalendář má vždy. Sekce níže pracují s jeho vlastními daty.",
+      "level": {
+        "none": "Nic",
+        "view": "Vidět",
+        "edit": "Upravovat"
+      }
+    },
+    "invite": {
+      "title": "Pozvánka pro {name}",
+      "howTo": "Pošli pracovníkovi tenhle odkaz. Zaregistruje se a uvidí jen to, co mu povolíš.",
+      "link": "Odkaz",
+      "code": "Kód",
+      "copy": "Zkopírovat {what}",
+      "copied": "Zkopírováno",
+      "validUntil": "Platí do {date}.",
+      "expired": "Pozvánka vypršela. Vytvoř nový odkaz a pošli ho znovu.",
+      "renew": "Nový odkaz",
+      "renewFailed": "Nový odkaz se nepodařilo vytvořit. Zkus to znovu."
+    },
+    "detail": {
+      "loadFailed": "Pracovníka se nepodařilo načíst. Zkus to znovu.",
+      "notFoundTitle": "Pracovník nenalezen",
+      "notFoundDescription": "Možná byl odebrán, nebo je odkaz špatně.",
+      "edit": "Upravit",
+      "balanceFailed": "Zůstatek se nepodařilo načíst.",
+      "owed": "Ještě dlužím",
+      "paidOut": "Vyplaceno",
+      "pending": "Ke schválení",
+      "workedThisMonth": "Odpracováno tento měsíc",
+      "sections": "Části pracovníka",
+      "tab": {
+        "tasks": "Úkoly",
+        "earnings": "Výdělky",
+        "payments": "Platby",
+        "time": "Čas"
+      }
+    },
+    "tasks": {
+      "new": "Nový úkol",
+      "loadFailed": "Úkoly se nepodařilo načíst. Zkus to znovu.",
+      "toggleFailed": "Úkol se nepodařilo změnit. Zkus to znovu.",
+      "emptyTitle": "Zatím žádné úkoly",
+      "emptyDescription": "Zadej pracovníkovi první úkol, případně i s termínem.",
+      "emptyWorkerTitle": "Zatím žádné úkoly",
+      "emptyWorkerDescription": "Úkoly od vedoucího se objeví tady.",
+      "open": "K udělání",
+      "done": "Hotové",
+      "allDone": "Všechno je hotové.",
+      "due": "Termín {date}",
+      "overdue": "Po termínu od {date}",
+      "completedOn": "Hotovo {date}",
+      "complete": "Označit „{title}“ jako hotové",
+      "reopen": "Označit „{title}“ jako nehotové",
+      "status": {
+        "todo": "K udělání",
+        "in_progress": "Rozpracováno",
+        "done": "Hotovo"
+      }
+    },
+    "taskForm": {
+      "newTitle": "Nový úkol",
+      "editTitle": "Upravit úkol",
+      "title": "Úkol",
+      "description": "Podrobnosti",
+      "dueDate": "Termín",
+      "create": "Zadat",
+      "save": "Uložit",
+      "cancel": "Zrušit",
+      "close": "Zavřít",
+      "delete": "Smazat",
+      "deleteTitle": "Smazat úkol?",
+      "deleteDescription": "Úkol zmizí i pracovníkovi. Výdělky, které už z něj vznikly, zůstanou.",
+      "deleteFailed": "Úkol se nepodařilo smazat.",
+      "saveFailed": "Uložení se nepovedlo. Zkus to znovu."
+    },
+    "earnings": {
+      "filter": "Filtr výdělků",
+      "all": "Vše",
+      "status": {
+        "pending": "Ke schválení",
+        "approved": "Schváleno",
+        "paid": "Vyplaceno"
+      },
+      "approve": "Schválit",
+      "approveAll": "{count, plural, one {Schválit #} few {Schválit všechny #} many {Schválit všech #} other {Schválit všech #}}",
+      "approveFailed": "Schválení se nepovedlo. Zkus to znovu.",
+      "loadFailed": "Výdělky se nepodařilo načíst. Zkus to znovu.",
+      "emptyTitle": "Tady nic není",
+      "emptyOwner": "Výdělky vznikají samy ze systému odměn, jakmile pracovník něco udělá.",
+      "emptyWorker": "Co vyděláš, se tu objeví samo — nejdřív čeká na schválení.",
+      "source": {
+        "task_completed": "Splněný úkol",
+        "meeting_booked": "Domluvená schůzka",
+        "deal_won": "Vyhraný obchod",
+        "hour_worked": "Odpracovaný čas",
+        "manual": "Odměna"
+      },
+      "hoursDetail": "{hours} h",
+      "dealDetail": "{name} · {value}"
+    },
+    "payments": {
+      "record": "Zaznamenat platbu",
+      "recordTitle": "Zaznamenat platbu",
+      "owedNow": "Za schválené výdělky teď dlužíš {amount}.",
+      "amount": "Vyplacená částka",
+      "date": "Datum výplaty",
+      "note": "Poznámka (nepovinné)",
+      "settleHint": "Schválené výdělky se označí jako vyplacené od nejstarších, kam až platby stačí.",
+      "cancel": "Zrušit",
+      "close": "Zavřít",
+      "saveFailed": "Platbu se nepodařilo zaznamenat. Zkus to znovu.",
+      "loadFailed": "Platby se nepodařilo načíst. Zkus to znovu.",
+      "emptyTitle": "Zatím žádné platby",
+      "emptyDescription": "Zaznamenej každou výplatu, ať víš, kolik ještě dlužíš."
+    },
+    "time": {
+      "loadFailed": "Odpracovaný čas se nepodařilo načíst. Zkus to znovu.",
+      "emptyTitle": "Zatím žádný čas",
+      "emptyDescription": "Pracovník si svůj časovač spouští a pozastavuje na svém přehledu.",
+      "recent": "Poslední úseky",
+      "range": "{from} – {to}",
+      "running": "Běží",
+      "idle": "Zastaveno nečinností",
+      "duration": "{hours} h {minutes} min"
+    },
+    "timer": {
+      "title": "Časovač práce",
+      "running": "Běží",
+      "paused": "Pozastaveno",
+      "loadFailed": "Časovač se nepodařilo načíst.",
+      "todayLabel": "Dnes {time}",
+      "month": "Tento měsíc {hours} h {minutes} min",
+      "idleStopped": "Časovač se zastavil v {time} po 15 minutách bez práce na úkolech.",
+      "dismiss": "Zavřít",
+      "start": "Spustit",
+      "pause": "Pozastavit",
+      "actionFailed": "Nepovedlo se. Zkus to znovu.",
+      "idleHint": "Po 15 minutách bez práce na úkolech se zastaví sám."
+    },
+    "home": {
+      "title": "Ahoj, {name}",
+      "description": "Tvůj měsíc na jeden pohled.",
+      "loadFailed": "Čísla za tento měsíc se nepodařilo načíst.",
+      "earnedThisMonth": "Vyděláno tento měsíc",
+      "pendingHint": "+ {amount} čeká na schválení",
+      "workedThisMonth": "Odpracováno tento měsíc",
+      "duration": "{hours} h {minutes} min",
+      "tasksTitle": "Tvoje úkoly",
+      "openTasks": "{count, plural, =0 {Teď nic nečeká} one {úkol k udělání} few {úkoly k udělání} many {úkolu k udělání} other {úkolů k udělání}}",
+      "toTasks": "Otevřít úkoly"
+    },
+    "myTasks": {
+      "title": "Úkoly",
+      "description": "Co ti zadal vedoucí. Odškrtni, co je hotové."
+    },
+    "myRewards": {
+      "title": "Odměny",
+      "description": "Všechno, co jsi vydělal: ke schválení, schválené, vyplacené.",
+      "loadFailed": "Zůstatek se nepodařilo načíst.",
+      "toBePaid": "K výplatě",
+      "paidOut": "Vyplaceno",
+      "pending": "Čeká na schválení"
+    },
+    "rewards": {
+      "title": "Systém odměn",
+      "description": "Spouštěče jsou to, co pracovníci dělají, pravidla kolik za to dostanou. Jarvis z toho udělá pravidla a vysvětlí je; nic neběží, dokud nepotvrdíš.",
+      "back": "Pracovníci",
+      "askAi": "Nechat AI nastavit",
+      "aiWorking": "Jarvis čte…",
+      "withoutAi": "Nastavit bez AI",
+      "mapLabel": "Strom odměn",
+      "root": "Odměny",
+      "ruleCount": "{count, plural, =0 {Zatím žádné pravidlo} one {{shown} pravidlo} few {{shown} pravidla} many {{shown} pravidla} other {{shown} pravidel}}",
+      "addTrigger": "Přidat spouštěč",
+      "addRule": "Přidat pravidlo pro „{trigger}“",
+      "editTrigger": "Upravit spouštěč „{trigger}“",
+      "editRule": "Upravit pravidlo {amount}",
+      "collapse": "Skrýt pravidla",
+      "expand": "{count, plural, one {Ukázat # skryté pravidlo} few {Ukázat # skrytá pravidla} many {Ukázat # skrytého pravidla} other {Ukázat # skrytých pravidel}}",
+      "startHint": "Začni plusem u „Odměny“: vyber, co pracovníci dělají, a pak přidej, kolik za to dostanou.",
+      "loadFailed": "Systém odměn se nepodařilo načíst. Zkus to znovu.",
+      "saveFailed": "Poslední změna se neuložila. Zkus to znovu.",
+      "confirmed": "Pravidla platí. Nové výdělky čekají na tvoje schválení.",
+      "activeTitle": "Platná pravidla",
+      "noActiveTitle": "Žádná platná pravidla",
+      "noActiveDescription": "Dokud pravidla nepotvrdíš, žádné výdělky nevznikají.",
+      "perHour": "{amount}/h",
+      "trigger": {
+        "task_completed": "Splněný úkol",
+        "meeting_booked": "Domluvená schůzka",
+        "deal_won": "Vyhraný obchod",
+        "hour_worked": "Odpracovaná hodina"
+      },
+      "triggerHint": {
+        "task_completed": "Pracovník odškrtne úkol, který jsi mu zadal.",
+        "meeting_booked": "Pracovník přesune kontakt do „Domluvená schůzka“.",
+        "deal_won": "Pracovník přesune obchod do vyhrané fáze.",
+        "hour_worked": "Čas na vlastním časovači pracovníka."
+      },
+      "kind": {
+        "fixed": "Pevná částka",
+        "percent": "Procento z obchodu",
+        "hourly": "Za hodinu"
+      },
+      "kindLabel": "Jak se platí",
+      "amountLabel": {
+        "fixed": "Částka",
+        "percent": "Podíl v %",
+        "hourly": "Částka za hodinu"
+      },
+      "amountInvalid": "Zadej částku větší než nula.",
+      "percentInvalid": "Zadej podíl mezi 0 a 100.",
+      "noteLabel": "Podmínky (nepovinné)",
+      "noteHint": {
+        "task_completed": "Normálními slovy, např. „jen když to stihne do termínu, nejvýš 10 za měsíc“.",
+        "meeting_booked": "Normálními slovy, např. „nejvýš 20 za měsíc“.",
+        "deal_won": "Normálními slovy, např. „jen obchody nad 10 000“.",
+        "hour_worked": "Normálními slovy, např. „nejvýš 160 hodin za měsíc“."
+      },
+      "triggerLabel": "Spouštěč",
+      "scopeLabel": "Pro koho",
+      "scope": {
+        "all": "Všichni pracovníci",
+        "removed": "Odebraný pracovník"
+      },
+      "kindChangeHint": "Pravidla, která tenhle spouštěč neumí platit, se přepnou na způsob, který umí.",
+      "newTriggerTitle": "Nový spouštěč",
+      "editTriggerTitle": "Upravit spouštěč",
+      "newRuleTitle": "Nové pravidlo pro „{trigger}“",
+      "editRuleTitle": "Upravit pravidlo",
+      "deleteTrigger": "Smazat spouštěč",
+      "deleteRule": "Smazat pravidlo",
+      "save": "Uložit",
+      "cancel": "Zrušit",
+      "close": "Zavřít",
+      "sentence": {
+        "task_completed": {
+          "fixed": "{amount} za každý splněný úkol"
+        },
+        "meeting_booked": {
+          "fixed": "{amount} za každou domluvenou schůzku"
+        },
+        "deal_won": {
+          "fixed": "{amount} za každý vyhraný obchod",
+          "percent": "{amount} z hodnoty každého vyhraného obchodu"
+        },
+        "hour_worked": {
+          "hourly": "{amount} za každou odpracovanou hodinu"
+        }
+      },
+      "condition": {
+        "minDealValue": "obchody od {value}",
+        "onlyBeforeDue": "jen když je hotovo do termínu",
+        "maxPerMonth": "{count, plural, one {nejvýš jednou za měsíc} other {nejvýš {shown}× za měsíc}}"
+      },
+      "aiError": {
+        "notConfigured": "Jarvis ještě není připojený, takže pravidla teď nenastaví. Můžeš je nastavit bez AI; podmínky z poznámek se ale nepoužijí.",
+        "busy": "Jarvis má teď moc práce. Zkus to za minutu, nebo nastav bez AI.",
+        "unavailable": "Jarvis teď nemůže odpovědět. Zkus to později, nebo nastav bez AI.",
+        "limitReached": "Volání Jarvise na tento měsíc došla. Můžeš nastavit bez AI.",
+        "network": "Spojení se přerušilo. Zkontroluj internet a zkus to znovu.",
+        "empty": "Nejdřív přidej aspoň jedno pravidlo.",
+        "unknown": "Něco se pokazilo. Zkus to znovu, nebo nastav bez AI."
+      },
+      "proposal": {
+        "title": "Jak to bude fungovat",
+        "withoutAi": "Nastaveno bez Jarvise: pravidla přesně podle stromu.",
+        "ignored": "Tohle Jarvis nastavit neumí:",
+        "notesDropped": "Bez AI se tyhle podmínky nepoužijí:",
+        "approvalNote": "Každý výdělek čeká na tvoje schválení, než se započítá. Potvrzením nahradíš platná pravidla.",
+        "confirm": "Potvrdit a spustit",
+        "back": "Zpět k úpravám",
+        "close": "Zavřít",
+        "saveFailed": "Pravidla se nepodařilo uložit. Zkus to znovu."
+      }
+    },
+    "errors": {
+      "nameRequired": "Zadej jméno.",
+      "nameTooLong": "Jméno je moc dlouhé.",
+      "emailInvalid": "Zadej platný e-mail.",
+      "jobTitleTooLong": "Role je moc dlouhá.",
+      "titleRequired": "Zadej úkol.",
+      "titleTooLong": "Úkol je moc dlouhý.",
+      "descriptionTooLong": "Podrobnosti jsou moc dlouhé.",
+      "amountInvalid": "Zadej částku větší než nula.",
+      "noteTooLong": "Poznámka je moc dlouhá.",
+      "dateRequired": "Vyber datum."
     }
   }
 }

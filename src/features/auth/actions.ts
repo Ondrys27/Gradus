@@ -14,7 +14,8 @@ import {
 } from "@/lib/region";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { isValidInviteCode } from "./invite-code";
+import { inviteEmailMatches, isValidInviteCode } from "./invite-code";
+import { findOpenWorkerInvite, type OpenWorkerInvite } from "./worker-invite";
 import {
   authErrorKey,
   fieldErrorsFrom,
@@ -89,10 +90,22 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
   };
   if (!parsed.success) return { fieldErrors: fieldErrorsFrom(parsed.error), values };
 
+  // Either the closed-beta code, or a worker invite from an owner.
   const expected = process.env.INVITE_CODE;
-  if (!expected) return { error: "registrationClosed", values };
+  let workerInvite: OpenWorkerInvite | null = null;
   if (!isValidInviteCode(parsed.data.inviteCode, expected)) {
-    return { fieldErrors: { inviteCode: "invalidInvite" }, values };
+    workerInvite = await findOpenWorkerInvite(parsed.data.inviteCode).catch((error) => {
+      console.error("[auth] worker invite lookup failed", error);
+      return null;
+    });
+    if (!workerInvite) {
+      return expected
+        ? { fieldErrors: { inviteCode: "invalidInvite" }, values }
+        : { error: "registrationClosed", values };
+    }
+    if (!inviteEmailMatches(workerInvite.email, parsed.data.email)) {
+      return { fieldErrors: { email: "inviteEmailMismatch" }, values };
+    }
   }
 
   const locale = await getLocale();
@@ -113,6 +126,20 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
 
   // The database trigger has created profile, settings and role. Fill in what the browser told us.
   const userId = created.user.id;
+
+  // A worker's account is bound to the owner's worker record, or not created at all.
+  if (workerInvite) {
+    const { error: acceptError } = await admin.rpc("accept_worker_invite", {
+      _code: parsed.data.inviteCode.trim(),
+      _user_id: userId,
+    });
+    if (acceptError) {
+      console.error("[auth] accept_worker_invite failed", acceptError);
+      const { error: deleteError } = await admin.auth.admin.deleteUser(userId);
+      if (deleteError) console.error("[auth] rollback of worker account failed", deleteError);
+      return { fieldErrors: { inviteCode: "invalidInvite" }, values };
+    }
+  }
   const timeZone = isValidTimeZone(parsed.data.timeZone) ? parsed.data.timeZone : DEFAULT_TIME_ZONE;
   const country = countryFromTimeZone(timeZone);
   const formats = regionFormats(country);

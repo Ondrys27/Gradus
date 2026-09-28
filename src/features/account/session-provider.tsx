@@ -57,8 +57,8 @@ export function SessionProvider({
   }, [queryClient, userId]);
 
   const session = useMemo(
-    () => ({ user: initial.user, roles: initial.roles }),
-    [initial.user, initial.roles],
+    () => ({ user: initial.user, roles: initial.roles, worker: initial.worker }),
+    [initial.user, initial.roles, initial.worker],
   );
 
   return (

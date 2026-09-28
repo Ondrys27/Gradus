@@ -14,6 +14,7 @@ export type AuthErrorKey =
   | "displayNameTooLong"
   | "inviteRequired"
   | "invalidInvite"
+  | "inviteEmailMismatch"
   | "registrationClosed"
   | "invalidCredentials"
   | "emailTaken"

@@ -154,7 +154,9 @@
     "close": "Close",
     "profile": "Profile",
     "settings": "Settings",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "myTasks": "Tasks",
+    "myRewards": "Rewards"
   },
   "topBar": {
     "home": "Go to dashboard",
@@ -326,7 +328,10 @@
       "description": "{appName} is invite-only during the beta.",
       "inviteHint": "You got it together with your invitation.",
       "submit": "Create account",
-      "haveAccount": "Already have an account? <link>Sign in</link>"
+      "haveAccount": "Already have an account? <link>Sign in</link>",
+      "workerInvite": "You are joining {owner}'s team. Sign up with the e-mail they invited.",
+      "workerInviteNoOwner": "You are joining a team. Sign up with the e-mail you were invited with.",
+      "workerInviteInvalid": "This invite has expired or was already used. Ask for a new link."
     },
     "forgot": {
       "title": "Reset your password",
@@ -356,7 +361,8 @@
       "wrongCurrentPassword": "The current password is not correct.",
       "rateLimited": "Too many attempts. Wait a moment and try again.",
       "linkExpired": "The link has expired or was already used. Ask for a new one.",
-      "generic": "Something went wrong. Please try again."
+      "generic": "Something went wrong. Please try again.",
+      "inviteEmailMismatch": "Use the e-mail address the invite was sent for."
     }
   },
   "profile": {
@@ -1659,6 +1665,331 @@
       "from": "From",
       "message": "Their message",
       "unknownUser": "unknown user"
+    }
+  },
+  "workers": {
+    "add": "Add worker",
+    "rewardSystem": "Reward system",
+    "loadFailed": "Workers could not be loaded. Try again.",
+    "statsFailed": "This month's numbers could not be loaded.",
+    "back": "Workers",
+    "card": {
+      "noJobTitle": "No role set",
+      "invited": "Waiting to sign up",
+      "inactive": "Inactive",
+      "pending": "{count, plural, one {{shown} to approve} other {{shown} to approve}}",
+      "pendingAmount": "{amount} waiting for your approval",
+      "tasksThisMonth": "Tasks this month",
+      "tasksDone": "{done} / {total}",
+      "hours": "Worked",
+      "earned": "Earned",
+      "duration": "{hours} h {minutes} min"
+    },
+    "form": {
+      "newTitle": "Add worker",
+      "editTitle": "Edit worker",
+      "inviteReady": "Invite ready",
+      "name": "Name",
+      "email": "E-mail",
+      "emailHint": "They sign up with this address.",
+      "jobTitle": "Role",
+      "jobTitlePlaceholder": "e.g. Sales rep",
+      "create": "Create invite",
+      "save": "Save",
+      "cancel": "Cancel",
+      "close": "Close",
+      "done": "Done",
+      "saveFailed": "Saving failed. Try again."
+    },
+    "permissions": {
+      "title": "What they can open",
+      "hint": "Dashboard, tasks, rewards and calendar are always theirs. Sections below work with their own data.",
+      "level": {
+        "none": "Nothing",
+        "view": "View",
+        "edit": "Edit"
+      }
+    },
+    "invite": {
+      "title": "Invite for {name}",
+      "howTo": "Send this link to your worker. They sign up and see only what you allow.",
+      "link": "Link",
+      "code": "Code",
+      "copy": "Copy {what}",
+      "copied": "Copied",
+      "validUntil": "Valid until {date}.",
+      "expired": "This invite has expired. Create a new link and send it again.",
+      "renew": "New link",
+      "renewFailed": "A new link could not be created. Try again."
+    },
+    "detail": {
+      "loadFailed": "This worker could not be loaded. Try again.",
+      "notFoundTitle": "Worker not found",
+      "notFoundDescription": "They may have been removed, or the link is wrong.",
+      "edit": "Edit",
+      "balanceFailed": "The balance could not be loaded.",
+      "owed": "I still owe",
+      "paidOut": "Paid out",
+      "pending": "To approve",
+      "workedThisMonth": "Worked this month",
+      "sections": "Worker sections",
+      "tab": {
+        "tasks": "Tasks",
+        "earnings": "Earnings",
+        "payments": "Payments",
+        "time": "Time"
+      }
+    },
+    "tasks": {
+      "new": "New task",
+      "loadFailed": "Tasks could not be loaded. Try again.",
+      "toggleFailed": "The task could not be changed. Try again.",
+      "emptyTitle": "No tasks yet",
+      "emptyDescription": "Give this worker their first task, with a deadline if it has one.",
+      "emptyWorkerTitle": "No tasks yet",
+      "emptyWorkerDescription": "Tasks from your team lead will show up here.",
+      "open": "To do",
+      "done": "Done",
+      "allDone": "Everything is done.",
+      "due": "Due {date}",
+      "overdue": "Overdue since {date}",
+      "completedOn": "Done {date}",
+      "complete": "Mark “{title}” as done",
+      "reopen": "Mark “{title}” as not done",
+      "status": {
+        "todo": "To do",
+        "in_progress": "In progress",
+        "done": "Done"
+      }
+    },
+    "taskForm": {
+      "newTitle": "New task",
+      "editTitle": "Edit task",
+      "title": "Task",
+      "description": "Details",
+      "dueDate": "Deadline",
+      "create": "Assign",
+      "save": "Save",
+      "cancel": "Cancel",
+      "close": "Close",
+      "delete": "Delete",
+      "deleteTitle": "Delete this task?",
+      "deleteDescription": "The task disappears for the worker too. Earnings it already produced stay.",
+      "deleteFailed": "The task could not be deleted.",
+      "saveFailed": "Saving failed. Try again."
+    },
+    "earnings": {
+      "filter": "Filter earnings",
+      "all": "All",
+      "status": {
+        "pending": "To approve",
+        "approved": "Approved",
+        "paid": "Paid"
+      },
+      "approve": "Approve",
+      "approveAll": "{count, plural, one {Approve #} other {Approve all #}}",
+      "approveFailed": "Approving failed. Try again.",
+      "loadFailed": "Earnings could not be loaded. Try again.",
+      "emptyTitle": "No earnings here",
+      "emptyOwner": "Earnings appear by themselves from the reward system once the worker gets things done.",
+      "emptyWorker": "What you earn appears here by itself, first waiting for approval.",
+      "source": {
+        "task_completed": "Task done",
+        "meeting_booked": "Meeting booked",
+        "deal_won": "Deal won",
+        "hour_worked": "Hours worked",
+        "manual": "Reward"
+      },
+      "hoursDetail": "{hours} h",
+      "dealDetail": "{name} · {value}"
+    },
+    "payments": {
+      "record": "Record payment",
+      "recordTitle": "Record a payment",
+      "owedNow": "You owe {amount} for approved earnings right now.",
+      "amount": "Amount paid",
+      "date": "Paid on",
+      "note": "Note (optional)",
+      "settleHint": "Approved earnings are marked paid from the oldest, as far as the payments cover them.",
+      "cancel": "Cancel",
+      "close": "Close",
+      "saveFailed": "The payment could not be recorded. Try again.",
+      "loadFailed": "Payments could not be loaded. Try again.",
+      "emptyTitle": "No payments yet",
+      "emptyDescription": "Record every payment to see what you still owe."
+    },
+    "time": {
+      "loadFailed": "Work time could not be loaded. Try again.",
+      "emptyTitle": "No time logged yet",
+      "emptyDescription": "The worker starts and pauses their own timer on their dashboard.",
+      "recent": "Latest sessions",
+      "range": "{from} – {to}",
+      "running": "Running",
+      "idle": "Stopped when idle",
+      "duration": "{hours} h {minutes} min"
+    },
+    "timer": {
+      "title": "Work timer",
+      "running": "Running",
+      "paused": "Paused",
+      "loadFailed": "The timer could not be loaded.",
+      "todayLabel": "Today {time}",
+      "month": "This month {hours} h {minutes} min",
+      "idleStopped": "The timer stopped at {time} after 15 minutes without touching a task.",
+      "dismiss": "Dismiss",
+      "start": "Start",
+      "pause": "Pause",
+      "actionFailed": "That did not work. Try again.",
+      "idleHint": "It stops by itself after 15 minutes without touching a task."
+    },
+    "home": {
+      "title": "Hi, {name}",
+      "description": "Your month at a glance.",
+      "loadFailed": "This month's numbers could not be loaded.",
+      "earnedThisMonth": "Earned this month",
+      "pendingHint": "+ {amount} waiting for approval",
+      "workedThisMonth": "Worked this month",
+      "duration": "{hours} h {minutes} min",
+      "tasksTitle": "Your tasks",
+      "openTasks": "{count, plural, =0 {Nothing to do right now} one {task to do} other {tasks to do}}",
+      "toTasks": "Open tasks"
+    },
+    "myTasks": {
+      "title": "Tasks",
+      "description": "What your team lead gave you. Tick off what is done."
+    },
+    "myRewards": {
+      "title": "Rewards",
+      "description": "Everything you earned: waiting for approval, approved, paid.",
+      "loadFailed": "Your balance could not be loaded.",
+      "toBePaid": "To be paid",
+      "paidOut": "Paid out",
+      "pending": "Waiting for approval"
+    },
+    "rewards": {
+      "title": "Reward system",
+      "description": "Triggers are what your workers do, rules how much it pays. Jarvis turns it into rules and explains them; nothing runs until you confirm.",
+      "back": "Workers",
+      "askAi": "Let AI set it up",
+      "aiWorking": "Jarvis is reading…",
+      "withoutAi": "Set up without AI",
+      "mapLabel": "Reward tree",
+      "root": "Rewards",
+      "ruleCount": "{count, plural, =0 {No rules yet} one {{shown} rule} other {{shown} rules}}",
+      "addTrigger": "Add a trigger",
+      "addRule": "Add a rule to “{trigger}”",
+      "editTrigger": "Edit trigger “{trigger}”",
+      "editRule": "Edit rule {amount}",
+      "collapse": "Hide rules",
+      "expand": "{count, plural, one {Show # hidden rule} other {Show # hidden rules}}",
+      "startHint": "Start with the + on “Rewards”: pick what your workers do, then add how much it pays.",
+      "loadFailed": "The reward system could not be loaded. Try again.",
+      "saveFailed": "The last change was not saved. Try again.",
+      "confirmed": "The rules are running. New earnings wait for your approval.",
+      "activeTitle": "Rules in force",
+      "noActiveTitle": "No rules in force",
+      "noActiveDescription": "Until you confirm rules, no earnings are created.",
+      "perHour": "{amount}/h",
+      "trigger": {
+        "task_completed": "Task done",
+        "meeting_booked": "Meeting booked",
+        "deal_won": "Deal won",
+        "hour_worked": "Hour worked"
+      },
+      "triggerHint": {
+        "task_completed": "A task you gave the worker is ticked off.",
+        "meeting_booked": "The worker moves a contact into “Meeting scheduled”.",
+        "deal_won": "The worker moves a deal into a won stage.",
+        "hour_worked": "Time on the worker's own timer."
+      },
+      "kind": {
+        "fixed": "Fixed amount",
+        "percent": "Share of the deal",
+        "hourly": "Per hour"
+      },
+      "kindLabel": "How it pays",
+      "amountLabel": {
+        "fixed": "Amount",
+        "percent": "Share in %",
+        "hourly": "Amount per hour"
+      },
+      "amountInvalid": "Enter an amount above zero.",
+      "percentInvalid": "Enter a share between 0 and 100.",
+      "noteLabel": "Conditions (optional)",
+      "noteHint": {
+        "task_completed": "In plain words, e.g. “only when done by the deadline, at most 10 a month”.",
+        "meeting_booked": "In plain words, e.g. “at most 20 a month”.",
+        "deal_won": "In plain words, e.g. “only deals over 10 000”.",
+        "hour_worked": "In plain words, e.g. “at most 160 hours a month”."
+      },
+      "triggerLabel": "Trigger",
+      "scopeLabel": "For",
+      "scope": {
+        "all": "All workers",
+        "removed": "Removed worker"
+      },
+      "kindChangeHint": "Rules this trigger cannot pay switch to a kind it can.",
+      "newTriggerTitle": "New trigger",
+      "editTriggerTitle": "Edit trigger",
+      "newRuleTitle": "New rule for “{trigger}”",
+      "editRuleTitle": "Edit rule",
+      "deleteTrigger": "Delete trigger",
+      "deleteRule": "Delete rule",
+      "save": "Save",
+      "cancel": "Cancel",
+      "close": "Close",
+      "sentence": {
+        "task_completed": {
+          "fixed": "{amount} for every task done"
+        },
+        "meeting_booked": {
+          "fixed": "{amount} for every meeting booked"
+        },
+        "deal_won": {
+          "fixed": "{amount} for every deal won",
+          "percent": "{amount} of every won deal's value"
+        },
+        "hour_worked": {
+          "hourly": "{amount} for every hour worked"
+        }
+      },
+      "condition": {
+        "minDealValue": "deals from {value}",
+        "onlyBeforeDue": "only when done by the deadline",
+        "maxPerMonth": "{count, plural, one {at most once a month} other {at most {shown}× a month}}"
+      },
+      "aiError": {
+        "notConfigured": "Jarvis is not connected yet, so it cannot set up the rules now. You can set them up without AI; conditions in notes will not be applied.",
+        "busy": "Jarvis is busy right now. Try again in a minute, or set up without AI.",
+        "unavailable": "Jarvis could not answer right now. Try again later, or set up without AI.",
+        "limitReached": "This month's Jarvis calls are used up. You can set up without AI.",
+        "network": "The connection dropped. Check your internet and try again.",
+        "empty": "Add at least one rule first.",
+        "unknown": "Something went wrong. Try again, or set up without AI."
+      },
+      "proposal": {
+        "title": "How it will work",
+        "withoutAi": "Set up without Jarvis: the rules exactly as in the tree.",
+        "ignored": "Jarvis could not set this up:",
+        "notesDropped": "Without AI these conditions are not applied:",
+        "approvalNote": "Every earning waits for your approval before it counts. Confirming replaces the rules in force.",
+        "confirm": "Confirm and start",
+        "back": "Back to editing",
+        "close": "Close",
+        "saveFailed": "The rules could not be saved. Try again."
+      }
+    },
+    "errors": {
+      "nameRequired": "Enter a name.",
+      "nameTooLong": "The name is too long.",
+      "emailInvalid": "Enter a valid e-mail.",
+      "jobTitleTooLong": "The role is too long.",
+      "titleRequired": "Enter the task.",
+      "titleTooLong": "The task is too long.",
+      "descriptionTooLong": "The details are too long.",
+      "amountInvalid": "Enter an amount above zero.",
+      "noteTooLong": "The note is too long.",
+      "dateRequired": "Pick a date."
     }
   }
 }

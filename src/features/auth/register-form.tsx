@@ -11,7 +11,15 @@ import { signUp } from "./actions";
 import { PASSWORD_MIN, type FormState } from "./schemas";
 import { SubmitButton } from "./submit-button";
 
-export function RegisterForm() {
+/** A worker invite opened from the owner's link: prefilled, and says whose team it is. */
+export type RegisterInvite = {
+  code: string;
+  workerName: string;
+  email: string | null;
+  ownerName: string | null;
+};
+
+export function RegisterForm({ invite }: { invite?: RegisterInvite | null }) {
   const t = useTranslations("auth");
   const [state, action] = useActionState<FormState, FormData>(signUp, {});
   const err = (field: string) =>
@@ -23,6 +31,13 @@ export function RegisterForm() {
   return (
     <form action={action} className="flex flex-col gap-4" noValidate>
       <input type="hidden" name="timeZone" value={timeZone} />
+      {invite && (
+        <p className="rounded-xl border border-teal/30 bg-teal/10 p-3 text-sm text-teal">
+          {invite.ownerName
+            ? t("register.workerInvite", { owner: invite.ownerName })
+            : t("register.workerInviteNoOwner")}
+        </p>
+      )}
       <FormField
         id="register-invite"
         label={t("fields.inviteCode")}
@@ -37,7 +52,7 @@ export function RegisterForm() {
           spellCheck={false}
           required
           autoFocus
-          defaultValue={state.values?.inviteCode}
+          defaultValue={state.values?.inviteCode ?? invite?.code}
           key={`i-${state.values?.inviteCode}`}
         />
       </FormField>
@@ -47,7 +62,7 @@ export function RegisterForm() {
           name="displayName"
           autoComplete="name"
           maxLength={60}
-          defaultValue={state.values?.displayName}
+          defaultValue={state.values?.displayName ?? invite?.workerName}
           key={`n-${state.values?.displayName}`}
         />
       </FormField>
@@ -59,7 +74,7 @@ export function RegisterForm() {
           autoComplete="email"
           inputMode="email"
           required
-          defaultValue={state.values?.email}
+          defaultValue={state.values?.email ?? invite?.email ?? undefined}
           key={`e-${state.values?.email}`}
         />
       </FormField>

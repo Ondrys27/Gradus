@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
-import { isValidInviteCode } from "./invite-code";
+import { inviteEmailMatches, isValidInviteCode, looksLikeWorkerInvite } from "./invite-code";
 import { authErrorKey, fieldErrorsFrom, newPasswordSchema, signUpSchema } from "./schemas";
 
 describe("isValidInviteCode", () => {
@@ -56,5 +56,21 @@ describe("authErrorKey", () => {
     expect(authErrorKey({ code: "email_exists" })).toBe("emailTaken");
     expect(authErrorKey({ status: 429 })).toBe("rateLimited");
     expect(authErrorKey({ code: "something_new" })).toBe("generic");
+  });
+});
+
+describe("worker invites", () => {
+  it("recognises codes the database makes and nothing else", () => {
+    expect(looksLikeWorkerInvite("0f3a9c1b2d4e5f60718a")).toBe(true);
+    expect(looksLikeWorkerInvite(" 0f3a9c1b2d4e ")).toBe(true);
+    expect(looksLikeWorkerInvite("beta-2026")).toBe(false);
+    expect(looksLikeWorkerInvite("0F3A9C1B2D4E5F60718A")).toBe(false);
+    expect(looksLikeWorkerInvite("0f3a9c1b2d4e' or 1=1")).toBe(false);
+  });
+
+  it("requires the invited e-mail when the owner gave one", () => {
+    expect(inviteEmailMatches(null, "anyone@example.com")).toBe(true);
+    expect(inviteEmailMatches("Jana@Example.com", " jana@example.com")).toBe(true);
+    expect(inviteEmailMatches("jana@example.com", "pepa@example.com")).toBe(false);
   });
 });

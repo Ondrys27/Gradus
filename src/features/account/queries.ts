@@ -12,14 +12,25 @@ import {
   type UserSettingsPatch,
 } from "@/lib/user-settings";
 import { signOutEverywhereInTab } from "./client-state";
-import { PROFILE_COLUMNS, type AppRole, type Profile, type SessionUser } from "./types";
+import {
+  PROFILE_COLUMNS,
+  type AppRole,
+  type Profile,
+  type SessionUser,
+  type WorkerAccount,
+} from "./types";
 
 export const accountKeys = {
   profile: (userId: string) => ["account", userId, "profile"] as const,
   settings: (userId: string) => ["account", userId, "settings"] as const,
 };
 
-export const SessionContext = createContext<{ user: SessionUser; roles: AppRole[] } | null>(null);
+export const SessionContext = createContext<{
+  user: SessionUser;
+  roles: AppRole[];
+  /** Set when the account works for an owner; it then gets the worker environment. */
+  worker: WorkerAccount | null;
+} | null>(null);
 
 export function useSession() {
   const session = useContext(SessionContext);
