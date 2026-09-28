@@ -13,7 +13,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] STOP | Konec fáze 4. Vyzkoušej Jarvise: rozhovor, nahrání PDF a obrázku, návrhy v panelu, hodnocení nového milníku, nápad na novou funkci (musí přijít e-mail). Podívej se do Supabase do tabulky ai_usage, jestli se zapisuje spotřeba.
 - [x] 5.1 | architect | 2026-09-28 Sekce Pracovníci: karty, pozvánky, systém odměn se stromovým editorem a vlastní prostředí pracovníka.
 - [x] 5.2 | architect | 2026-09-28 Napojení Financí na Fakturoid: OAuth připojení, vystavení faktury, denní synchronizace stavu.
-- [ ] 5.3 | builder | env: RESEND_API_KEY
+- [x] 5.3 | builder | env: RESEND_API_KEY | 2026-09-28 Odesílání e-mailů z kontaktu a obchodu přes Resend, přesun do Odeslán e-mail a AI návrh odpovědi.
 - [ ] STOP | Konec fáze 5. Založ testovacího pracovníka přes pozvánku ve druhém prohlížeči, zadej mu úkol a ověř, že vidí jen svoje. Připoj Fakturoid a vystav testovací fakturu. Pošli si e-mail z detailu kontaktu.
 - [ ] 6.1 | builder |
 - [ ] 6.2 | builder |
