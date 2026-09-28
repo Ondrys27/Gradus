@@ -650,7 +650,7 @@ describe("security: an ordinary signed-in account", () => {
          values ($1, 'contact', gen_random_uuid(), $2, 'a.pdf', 'application/pdf', 1)`,
         [attacker, `${victim}/secret.pdf`],
       ),
-    ).rejects.toThrow(/attachments_storage_path_owner/);
+    ).rejects.toThrow(/row-level security/);
     await asServer();
   });
 
@@ -2240,5 +2240,135 @@ describe("jarvis", () => {
         [user],
       )) as Row,
     ).toEqual({ conversation_id: null, cost: 0.003 });
+  });
+});
+
+describe("jarvis extensions", () => {
+  it("lets the client only mark its own suggestions seen or dismissed", async () => {
+    const user = await createAuthUser();
+    const other = await createAuthUser();
+
+    await asUser(user);
+    await expect(
+      db.query(
+        `insert into jarvis_suggestions (user_id, type, text) values ('${user}', 'insight', 'forged')`,
+      ),
+    ).rejects.toThrow(/row-level security/);
+
+    await asServer();
+    const suggestion = await one<{ id: string }>(
+      `insert into jarvis_suggestions (user_id, type, text, action, dedupe_key)
+       values ($1, 'stalledDeal', 'Deal stuck', '{"kind":"open","href":"/pipeline"}', 'stalledDeal:x')
+       returning id`,
+      [user],
+    );
+    // One suggestion per event.
+    await expect(
+      db.query(
+        `insert into jarvis_suggestions (user_id, type, text, dedupe_key) values ($1, 'stalledDeal', 'again', 'stalledDeal:x')`,
+        [user],
+      ),
+    ).rejects.toThrow(/duplicate key/);
+    await expect(
+      db.query(
+        `insert into jarvis_suggestions (user_id, type, text) values ($1, 'nonsense', 'x')`,
+        [user],
+      ),
+    ).rejects.toThrow(/check/);
+
+    await asUser(user);
+    await db.query(`update jarvis_suggestions set seen_at = now(), dismissed_at = now()`);
+    await expect(
+      db.query(`update jarvis_suggestions set action = '{"kind":"open","href":"https://evil"}'`),
+    ).rejects.toThrow(/jarvis_suggestions_are_server_only/);
+    await expect(db.query(`update jarvis_suggestions set text = 'edited'`)).rejects.toThrow(
+      /jarvis_suggestions_are_server_only/,
+    );
+    await db.query(`delete from jarvis_suggestions`);
+    await asServer();
+    const row = await one<{ seen: boolean; dismissed: boolean }>(
+      `select seen_at is not null as seen, dismissed_at is not null as dismissed from jarvis_suggestions where id = $1`,
+      [suggestion.id],
+    );
+    expect(row).toEqual({ seen: true, dismissed: true });
+
+    await asUser(other);
+    expect(await count(`select 1 from jarvis_suggestions`)).toBe(0);
+    await db.query(`update jarvis_suggestions set dismissed_at = null`);
+    await asServer();
+    expect(
+      await count(`select 1 from jarvis_suggestions where id = $1 and dismissed_at is not null`, [
+        suggestion.id,
+      ]),
+    ).toBe(1);
+  });
+
+  it("keeps the watch state and its candidate list on the server", async () => {
+    const user = await createAuthUser();
+    await asServer();
+    await one(`insert into milestones (user_id, title) values ($1, 'Fresh') returning id`, [user]);
+
+    await asUser(user);
+    await expect(
+      db.query(`insert into jarvis_watch_state (user_id, last_run_at) values ('${user}', now())`),
+    ).rejects.toThrow(/row-level security/);
+    await expect(
+      db.query(`select * from jarvis_watch_candidates(now() - interval '1 day', 10)`),
+    ).rejects.toThrow(/permission denied/);
+
+    await asServer();
+    const before = await rows<{ user_id: string }>(
+      `select user_id from jarvis_watch_candidates(now() - interval '1 day', 1000)`,
+    );
+    expect(before.map((r) => r.user_id)).toContain(user);
+    // A user scanned just now goes to the back of the queue.
+    await db.query(`insert into jarvis_watch_state (user_id, last_run_at) values ($1, now())`, [
+      user,
+    ]);
+    const after = await rows<{ user_id: string }>(
+      `select user_id from jarvis_watch_candidates(now() - interval '1 day', 1000)`,
+    );
+    expect(after.at(-1)?.user_id).toBe(user);
+    expect(
+      await count(`select 1 from jarvis_watch_candidates(now() + interval '1 day', 1000)`),
+    ).toBe(0);
+  });
+
+  it("records attachments only from the server, inside the owner's folder", async () => {
+    const user = await createAuthUser();
+    const other = await createAuthUser();
+    const values = (owner: string, path: string) => [owner, path];
+    const insert = `insert into attachments (user_id, entity_type, entity_id, storage_path, file_name, mime_type, size_bytes, extracted_text)
+       values ($1, 'jarvis_message', gen_random_uuid(), $2, 'a.pdf', 'application/pdf', 10, 'Hello')`;
+
+    await asUser(user);
+    await expect(db.query(insert, values(user, `${user}/jarvis/a`))).rejects.toThrow(
+      /row-level security/,
+    );
+
+    await asServer();
+    await db.query(insert, values(user, `${user}/jarvis/a`));
+    await expect(db.query(insert, values(user, `${other}/jarvis/b`))).rejects.toThrow(
+      /attachments_storage_path_owner/,
+    );
+
+    await asUser(user);
+    expect(await count(`select 1 from attachments`)).toBe(1);
+    await db.query(`update attachments set mime_type = 'image/png'`);
+    await asServer();
+    expect(
+      (
+        await one<{ mime_type: string }>(`select mime_type from attachments where user_id = $1`, [
+          user,
+        ])
+      ).mime_type,
+    ).toBe("application/pdf");
+
+    await asUser(other);
+    expect(await count(`select 1 from attachments`)).toBe(0);
+    await asUser(user);
+    await db.query(`delete from attachments`);
+    expect(await count(`select 1 from attachments`)).toBe(0);
+    await asServer();
   });
 });

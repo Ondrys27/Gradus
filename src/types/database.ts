@@ -103,6 +103,7 @@ export type Database = {
           created_at: string
           entity_id: string
           entity_type: string
+          extracted_text: string | null
           file_name: string
           id: string
           mime_type: string
@@ -115,6 +116,7 @@ export type Database = {
           created_at?: string
           entity_id: string
           entity_type: string
+          extracted_text?: string | null
           file_name: string
           id?: string
           mime_type: string
@@ -127,6 +129,7 @@ export type Database = {
           created_at?: string
           entity_id?: string
           entity_type?: string
+          extracted_text?: string | null
           file_name?: string
           id?: string
           mime_type?: string
@@ -845,6 +848,66 @@ export type Database = {
             referencedColumns: ["id", "user_id"]
           },
         ]
+      }
+      jarvis_suggestions: {
+        Row: {
+          action: Json
+          created_at: string
+          dedupe_key: string | null
+          dismissed_at: string | null
+          id: string
+          seen_at: string | null
+          text: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action?: Json
+          created_at?: string
+          dedupe_key?: string | null
+          dismissed_at?: string | null
+          id?: string
+          seen_at?: string | null
+          text: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action?: Json
+          created_at?: string
+          dedupe_key?: string | null
+          dismissed_at?: string | null
+          id?: string
+          seen_at?: string | null
+          text?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      jarvis_watch_state: {
+        Row: {
+          created_at: string
+          last_run_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          last_run_at: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          last_run_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       meeting_surveys: {
         Row: {
@@ -1980,6 +2043,13 @@ export type Database = {
         Returns: undefined
       }
       is_client_request: { Args: never; Returns: boolean }
+      jarvis_watch_candidates: {
+        Args: { _active_since: string; _limit: number }
+        Returns: {
+          last_run_at: string
+          user_id: string
+        }[]
+      }
       mark_invoice_paid: {
         Args: { _invoice_id: string }
         Returns: {
