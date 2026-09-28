@@ -1328,5 +1328,235 @@
       "next": "Next page",
       "position": "Page {page} of {pages}"
     }
+  },
+  "dashboard": {
+    "greeting": {
+      "morning": "Good morning{hasName, select, yes {, {name}} other {}}",
+      "afternoon": "Good afternoon{hasName, select, yes {, {name}} other {}}",
+      "evening": "Good evening{hasName, select, yes {, {name}} other {}}",
+      "night": "Hello{hasName, select, yes {, {name}} other {}}"
+    },
+    "summary": {
+      "lead": "Today you have {list}.",
+      "empty": "Nothing is waiting for you today. A good moment to reach out to a few new contacts.",
+      "tasks": "{count, plural, one {{formatted} task to finish} other {{formatted} tasks to finish}}",
+      "events": "{count, plural, one {{formatted} event on the calendar} other {{formatted} events on the calendar}}",
+      "followUps": "{count, plural, one {{formatted} contact to follow up with} other {{formatted} contacts to follow up with}}",
+      "deals": "{count, plural, one {{formatted} deal to push forward} other {{formatted} deals to push forward}}"
+    },
+    "tiles": {
+      "open": "Open details: {label}",
+      "close": "Close",
+      "loadFailed": "This could not be loaded.",
+      "income": {
+        "label": "Income this month",
+        "up": "{amount} more than last month",
+        "down": "{amount} less than last month",
+        "same": "Same as last month"
+      },
+      "tasks": {
+        "label": "Tasks done today",
+        "ring": "{done} of {total} tasks done today",
+        "none": "Nothing is due today.",
+        "allDone": "All done. Nice work.",
+        "left": "{count, plural, one {{formatted} task left to do} other {{formatted} tasks left to do}}"
+      },
+      "winRate": {
+        "label": "Win rate",
+        "hint": "{won} won out of {closed} closed in {days} days",
+        "empty": "No deal has closed in the last {days} days yet.",
+        "noData": "No data yet",
+        "trend": "Win rate over the last {days} days"
+      },
+      "activeDeals": {
+        "label": "Active deals",
+        "hint": "In your pipeline",
+        "stalled": "{count, plural, one {{formatted} has been standing still for a while} other {{formatted} have been standing still for a while}}"
+      },
+      "newContacts": {
+        "label": "New contacts",
+        "hint": "Added this month"
+      },
+      "prospecting": {
+        "label": "Time finding clients",
+        "hint": "This week",
+        "hoursUnit": "h",
+        "minutesUnit": "min"
+      }
+    },
+    "today": {
+      "title": "What to do today",
+      "tasks": "Tasks",
+      "events": "Events",
+      "followUps": "Contacts to call back",
+      "stalledDeals": "Deals standing still",
+      "overdue": "Overdue",
+      "allDay": "All day",
+      "unnamedContact": "Unnamed contact",
+      "moreTasks": "{count, plural, one {{formatted} more task} other {{formatted} more tasks}}",
+      "daysInStage": "{count, plural, one {{formatted} day in this stage} other {{formatted} days in this stage}}",
+      "emptyTitle": "All clear for today",
+      "emptyDescription": "No tasks, events or calls waiting. Use the time to find new clients.",
+      "saveFailed": "The task could not be saved. Try again.",
+      "loadFailed": "Some of today's items could not be loaded."
+    },
+    "detail": {
+      "income": {
+        "thisMonth": "This month",
+        "lastMonth": "Last month",
+        "up": "{amount} more than last month",
+        "down": "{amount} less than last month",
+        "same": "Same as last month",
+        "recent": "Latest income",
+        "noIncome": "No income booked this month yet.",
+        "untitled": "Income",
+        "open": "Open finance"
+      },
+      "tasks": {
+        "summary": "{done} of {total} tasks done today.",
+        "stillToDo": "Still to do",
+        "nothingLeft": "Nothing left that is due today or overdue.",
+        "doneToday": "Done today",
+        "nothingDone": "Nothing finished yet today.",
+        "open": "Open milestones"
+      },
+      "winRate": {
+        "empty": "No deal has closed in the last {days} days yet, so there is no rate to show.",
+        "counts": "{won} won and {lost} lost in the last {days} days.",
+        "trend": "Win rate over the last {days} days",
+        "daysAgo": "{days} days ago",
+        "now": "Now",
+        "surveys": "Meeting surveys",
+        "noSurveys": "No surveys yet. After a deal moves on from the meeting stage you are asked a few short questions about how it went.",
+        "deletedDeal": "Deleted deal",
+        "aiAnalysis": "AI analysis",
+        "aiSoon": "Coming with Jarvis",
+        "open": "Open pipeline"
+      },
+      "activeDeals": {
+        "open": "Open pipeline"
+      },
+      "newContacts": {
+        "none": "No contacts were added this month yet.",
+        "latest": "Latest contacts",
+        "unnamed": "Unnamed contact",
+        "open": "Open contacts"
+      },
+      "prospecting": {
+        "total": "This week",
+        "average": "Average a day",
+        "hoursMinutes": "{hours} h {minutes} min",
+        "minutes": "{minutes} min",
+        "axisMinutes": "Minutes a day.",
+        "open": "Open cold calling"
+      }
+    },
+    "survey": {
+      "title": "How did the meeting go?",
+      "close": "Close",
+      "description": "A few quick questions about the meeting for “{deal}”. Skip whatever you like.",
+      "skip": "Skip",
+      "save": "Save answers",
+      "saving": "Saving…",
+      "saveFailed": "The answers could not be saved. Check your connection and try again.",
+      "questions": {
+        "duration": {
+          "label": "How long did the meeting last?",
+          "options": {
+            "under15": "Under 15 min",
+            "from15to30": "15–30 min",
+            "from30to60": "30–60 min",
+            "from60to90": "1 to 1.5 hours",
+            "over90": "Over 1.5 hours"
+          }
+        },
+        "format": {
+          "label": "How did you meet?",
+          "options": {
+            "inPerson": "In person",
+            "video": "Video call",
+            "phone": "Phone"
+          }
+        },
+        "attendees": {
+          "label": "Who was there from their side?",
+          "options": {
+            "decisionMaker": "Decision maker",
+            "owner": "Owner",
+            "teamMember": "Team member",
+            "finance": "Finance",
+            "technical": "Technical person",
+            "gatekeeper": "Assistant or gatekeeper"
+          }
+        },
+        "mood": {
+          "label": "What was the mood?",
+          "low": "Tense",
+          "high": "Great"
+        },
+        "interest": {
+          "label": "How interested were they?",
+          "low": "Hardly",
+          "high": "Very"
+        },
+        "objections": {
+          "label": "What objections came up?",
+          "options": {
+            "price": "Price",
+            "timing": "Timing",
+            "competitor": "Already have a provider",
+            "trust": "Trust or references",
+            "approval": "Needs someone else’s approval",
+            "noNeed": "Don’t see the need",
+            "none": "No objections"
+          }
+        },
+        "whatWorked": {
+          "label": "What worked well?",
+          "options": {
+            "demo": "Demo or samples",
+            "references": "References",
+            "story": "A story or example",
+            "listening": "Asking and listening",
+            "preparation": "Preparation",
+            "offer": "The offer itself"
+          }
+        },
+        "whatDidntWork": {
+          "label": "What didn’t work?",
+          "placeholder": "Anything you would do differently next time"
+        },
+        "decisionProcess": {
+          "label": "How will they decide?",
+          "options": {
+            "onTheSpot": "Decided on the spot",
+            "needsApproval": "Needs approval",
+            "comparing": "Comparing options",
+            "later": "Will decide later",
+            "unknown": "Not clear"
+          }
+        },
+        "nextStep": {
+          "label": "What is the next step?",
+          "options": {
+            "sendOffer": "Send an offer",
+            "secondMeeting": "Second meeting",
+            "demo": "Demo or trial",
+            "waitForThem": "Wait for them",
+            "followUp": "Follow up later",
+            "noNextStep": "No next step"
+          }
+        },
+        "confidence": {
+          "label": "How likely is the deal to close?",
+          "low": "Unlikely",
+          "high": "Certain"
+        },
+        "notes": {
+          "label": "Anything else worth remembering?",
+          "placeholder": "Notes"
+        }
+      }
+    }
   }
 }

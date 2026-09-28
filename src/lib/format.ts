@@ -326,3 +326,8 @@ export function timeZoneOffsetLabel(timeZone: string, at: Date = new Date()): st
     return "";
   }
 }
+
+/** A list in the UI language, e.g. "a, b and c" / "a, b a c". */
+export function formatList(items: string[], uiLocale: string): string {
+  return new Intl.ListFormat(uiLocale, { style: "long", type: "conjunction" }).format(items);
+}

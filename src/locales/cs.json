@@ -1328,5 +1328,235 @@
       "next": "Další stránka",
       "position": "Strana {page} z {pages}"
     }
+  },
+  "dashboard": {
+    "greeting": {
+      "morning": "Dobré ráno{hasName, select, yes {, {name}} other {}}",
+      "afternoon": "Dobré odpoledne{hasName, select, yes {, {name}} other {}}",
+      "evening": "Dobrý večer{hasName, select, yes {, {name}} other {}}",
+      "night": "Ahoj{hasName, select, yes {, {name}} other {}}"
+    },
+    "summary": {
+      "lead": "Dnes máš {list}.",
+      "empty": "Dnes na tebe nic nečeká. Dobrá chvíle oslovit pár nových kontaktů.",
+      "tasks": "{count, plural, one {{formatted} úkol k dokončení} few {{formatted} úkoly k dokončení} many {{formatted} úkolu k dokončení} other {{formatted} úkolů k dokončení}}",
+      "events": "{count, plural, one {{formatted} událost v kalendáři} few {{formatted} události v kalendáři} many {{formatted} události v kalendáři} other {{formatted} událostí v kalendáři}}",
+      "followUps": "{count, plural, one {{formatted} kontakt k ozvání} few {{formatted} kontakty k ozvání} many {{formatted} kontaktu k ozvání} other {{formatted} kontaktů k ozvání}}",
+      "deals": "{count, plural, one {{formatted} obchod k dotažení} few {{formatted} obchody k dotažení} many {{formatted} obchodu k dotažení} other {{formatted} obchodů k dotažení}}"
+    },
+    "tiles": {
+      "open": "Otevřít detail: {label}",
+      "close": "Zavřít",
+      "loadFailed": "Tohle se nepodařilo načíst.",
+      "income": {
+        "label": "Příjem tento měsíc",
+        "up": "O {amount} víc než minulý měsíc",
+        "down": "O {amount} míň než minulý měsíc",
+        "same": "Stejně jako minulý měsíc"
+      },
+      "tasks": {
+        "label": "Splněné úkoly dnes",
+        "ring": "Dnes splněno {done} z {total} úkolů",
+        "none": "Na dnes nic nevychází.",
+        "allDone": "Všechno hotovo. Dobrá práce.",
+        "left": "{count, plural, one {Zbývá {formatted} úkol} few {Zbývají {formatted} úkoly} many {Zbývá {formatted} úkolu} other {Zbývá {formatted} úkolů}}"
+      },
+      "winRate": {
+        "label": "Úspěšnost obchodů",
+        "hint": "{won} vyhraných z {closed} uzavřených za {days} dní",
+        "empty": "Za posledních {days} dní se zatím neuzavřel žádný obchod.",
+        "noData": "Zatím bez dat",
+        "trend": "Úspěšnost obchodů za posledních {days} dní"
+      },
+      "activeDeals": {
+        "label": "Aktivní obchody",
+        "hint": "Ve tvé pipeline",
+        "stalled": "{count, plural, one {{formatted} obchod už chvíli stojí} few {{formatted} obchody už chvíli stojí} many {{formatted} obchodu už chvíli stojí} other {{formatted} obchodů už chvíli stojí}}"
+      },
+      "newContacts": {
+        "label": "Nové kontakty",
+        "hint": "Přidané tento měsíc"
+      },
+      "prospecting": {
+        "label": "Čas strávený sháněním klientů",
+        "hint": "Tento týden",
+        "hoursUnit": "h",
+        "minutesUnit": "min"
+      }
+    },
+    "today": {
+      "title": "Co dnes udělat",
+      "tasks": "Úkoly",
+      "events": "Události",
+      "followUps": "Kontakty k ozvání",
+      "stalledDeals": "Obchody, které stojí",
+      "overdue": "Po lhůtě",
+      "allDay": "Celý den",
+      "unnamedContact": "Kontakt bez jména",
+      "moreTasks": "{count, plural, one {Ještě {formatted} úkol} few {Ještě {formatted} úkoly} many {Ještě {formatted} úkolu} other {Ještě {formatted} úkolů}}",
+      "daysInStage": "{count, plural, one {{formatted} den v této fázi} few {{formatted} dny v této fázi} many {{formatted} dne v této fázi} other {{formatted} dní v této fázi}}",
+      "emptyTitle": "Na dnes je čisto",
+      "emptyDescription": "Nečekají žádné úkoly, události ani hovory. Využij čas k hledání nových klientů.",
+      "saveFailed": "Úkol se nepodařilo uložit. Zkus to znovu.",
+      "loadFailed": "Některé dnešní položky se nepodařilo načíst."
+    },
+    "detail": {
+      "income": {
+        "thisMonth": "Tento měsíc",
+        "lastMonth": "Minulý měsíc",
+        "up": "O {amount} víc než minulý měsíc",
+        "down": "O {amount} míň než minulý měsíc",
+        "same": "Stejně jako minulý měsíc",
+        "recent": "Poslední příjmy",
+        "noIncome": "Tento měsíc zatím není zaúčtovaný žádný příjem.",
+        "untitled": "Příjem",
+        "open": "Otevřít finance"
+      },
+      "tasks": {
+        "summary": "Dnes splněno {done} z {total} úkolů.",
+        "stillToDo": "Zbývá udělat",
+        "nothingLeft": "Nic, co by dnes bylo na řadě nebo po lhůtě.",
+        "doneToday": "Hotovo dnes",
+        "nothingDone": "Dnes ještě nic nedokončeno.",
+        "open": "Otevřít milníky"
+      },
+      "winRate": {
+        "empty": "Za posledních {days} dní se zatím neuzavřel žádný obchod, takže není co ukázat.",
+        "counts": "Za posledních {days} dní {won} vyhraných a {lost} ztracených.",
+        "trend": "Úspěšnost obchodů za posledních {days} dní",
+        "daysAgo": "Před {days} dny",
+        "now": "Teď",
+        "surveys": "Dotazníky o schůzkách",
+        "noSurveys": "Zatím žádné dotazníky. Když obchod projde z fáze schůzky dál, zeptáme se tě na pár krátkých otázek, jak schůzka dopadla.",
+        "deletedDeal": "Smazaný obchod",
+        "aiAnalysis": "AI rozbor",
+        "aiSoon": "Přijde s Jarvisem",
+        "open": "Otevřít pipeline"
+      },
+      "activeDeals": {
+        "open": "Otevřít pipeline"
+      },
+      "newContacts": {
+        "none": "Tento měsíc zatím nepřibyl žádný kontakt.",
+        "latest": "Poslední kontakty",
+        "unnamed": "Kontakt bez jména",
+        "open": "Otevřít kontakty"
+      },
+      "prospecting": {
+        "total": "Tento týden",
+        "average": "Průměr za den",
+        "hoursMinutes": "{hours} h {minutes} min",
+        "minutes": "{minutes} min",
+        "axisMinutes": "Minuty za den.",
+        "open": "Otevřít cold calling"
+      }
+    },
+    "survey": {
+      "title": "Jak schůzka dopadla?",
+      "close": "Zavřít",
+      "description": "Pár rychlých otázek ke schůzce u obchodu „{deal}“. Cokoliv můžeš přeskočit.",
+      "skip": "Přeskočit",
+      "save": "Uložit odpovědi",
+      "saving": "Ukládám…",
+      "saveFailed": "Odpovědi se nepodařilo uložit. Zkontroluj připojení a zkus to znovu.",
+      "questions": {
+        "duration": {
+          "label": "Jak dlouho schůzka trvala?",
+          "options": {
+            "under15": "Do 15 min",
+            "from15to30": "15–30 min",
+            "from30to60": "30–60 min",
+            "from60to90": "1 až 1,5 hodiny",
+            "over90": "Přes 1,5 hodiny"
+          }
+        },
+        "format": {
+          "label": "Jak jste se sešli?",
+          "options": {
+            "inPerson": "Osobně",
+            "video": "Videohovor",
+            "phone": "Telefon"
+          }
+        },
+        "attendees": {
+          "label": "Kdo byl přítomen za jejich stranu?",
+          "options": {
+            "decisionMaker": "Rozhodující osoba",
+            "owner": "Majitel",
+            "teamMember": "Člen týmu",
+            "finance": "Finance",
+            "technical": "Technická osoba",
+            "gatekeeper": "Asistent nebo recepce"
+          }
+        },
+        "mood": {
+          "label": "Jaká byla nálada?",
+          "low": "Napjatá",
+          "high": "Skvělá"
+        },
+        "interest": {
+          "label": "Jak velký zájem projevili?",
+          "low": "Skoro žádný",
+          "high": "Velký"
+        },
+        "objections": {
+          "label": "Jaké se objevily námitky?",
+          "options": {
+            "price": "Cena",
+            "timing": "Načasování",
+            "competitor": "Už mají dodavatele",
+            "trust": "Důvěra nebo reference",
+            "approval": "Potřebují souhlas někoho dalšího",
+            "noNeed": "Nevidí potřebu",
+            "none": "Žádné námitky"
+          }
+        },
+        "whatWorked": {
+          "label": "Co zafungovalo?",
+          "options": {
+            "demo": "Ukázka nebo vzorky",
+            "references": "Reference",
+            "story": "Příběh nebo příklad",
+            "listening": "Ptaní se a naslouchání",
+            "preparation": "Příprava",
+            "offer": "Samotná nabídka"
+          }
+        },
+        "whatDidntWork": {
+          "label": "Co nezafungovalo?",
+          "placeholder": "Cokoliv, co bys příště udělal jinak"
+        },
+        "decisionProcess": {
+          "label": "Jak se budou rozhodovat?",
+          "options": {
+            "onTheSpot": "Rozhodli se hned",
+            "needsApproval": "Potřebují schválení",
+            "comparing": "Porovnávají možnosti",
+            "later": "Rozhodnou se později",
+            "unknown": "Není jasné"
+          }
+        },
+        "nextStep": {
+          "label": "Jaký je další krok?",
+          "options": {
+            "sendOffer": "Poslat nabídku",
+            "secondMeeting": "Druhá schůzka",
+            "demo": "Ukázka nebo zkouška",
+            "waitForThem": "Čekat na ně",
+            "followUp": "Ozvat se později",
+            "noNextStep": "Žádný další krok"
+          }
+        },
+        "confidence": {
+          "label": "Jak moc věříš, že obchod vyjde?",
+          "low": "Nevěřím",
+          "high": "Jistě"
+        },
+        "notes": {
+          "label": "Ještě něco, co stojí za zapamatování?",
+          "placeholder": "Poznámky"
+        }
+      }
+    }
   }
 }

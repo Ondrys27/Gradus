@@ -10,6 +10,7 @@ import {
   localToIsoDate,
   todayIsoDate,
   formatIsoTime,
+  formatList,
   instantToZonedParts,
   zonedWallClockToInstant,
 } from "./format";
@@ -143,5 +144,14 @@ describe("wall clock in the user's zone", () => {
   it("formats a bare clock time with the user's time format", () => {
     expect(formatIsoTime("14:05", settings)).toBe("14:05");
     expect(formatIsoTime("14:05", { ...settings, timeFormat: "h:mm a" })).toBe("2:05 PM");
+  });
+});
+
+describe("formatList", () => {
+  it("joins with the conjunction of the UI language", () => {
+    expect(formatList(["a", "b", "c"], "en")).toBe("a, b, and c");
+    // Czech keeps the "a" glued to the next word with a no-break space.
+    expect(formatList(["a", "b", "c"], "cs").replace(/\u00a0/g, " ")).toBe("a, b a c");
+    expect(formatList(["a"], "cs")).toBe("a");
   });
 });

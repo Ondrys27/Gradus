@@ -10,6 +10,8 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCelebration } from "@/components/celebration/celebration-provider";
+import { MeetingSurveyDialog, type SurveyTarget } from "@/features/dashboard/meeting-survey-dialog";
+import { offersMeetingSurvey } from "@/features/dashboard/survey-trigger";
 import { cn } from "@/lib/utils";
 import { Board } from "./board";
 import {
@@ -49,6 +51,7 @@ export function PipelineView() {
   const [openId, setOpenId] = useState<string | null>(requestedDeal);
   const [askingLost, setAskingLost] = useState<Deal | null>(null);
   const [lostStage, setLostStage] = useState<Stage | null>(null);
+  const [survey, setSurvey] = useState<SurveyTarget | null>(null);
   const [notice, setNotice] = useState<"moveFailed" | "renameFailed" | null>(null);
 
   const stages = useMemo(() => sortStages(stagesQuery.data ?? []), [stagesQuery.data]);
@@ -68,11 +71,16 @@ export function PipelineView() {
 
   function runMove(deal: Deal, stage: Stage, lostReason?: string) {
     setNotice(null);
+    const from = stages.find((item) => item.id === deal.stage_id);
     move.mutate(
       { deal, stage, lostReason },
       {
         onSuccess: () => {
           if (stage.is_won) celebrate({ title: t("celebration.title"), subtitle: deal.title });
+          // A deal that moves on from the meeting stage has had its meeting: ask how it went.
+          if (from && offersMeetingSurvey(from, stage)) {
+            setSurvey({ dealId: deal.id, dealTitle: deal.title, stageId: from.id });
+          }
         },
         onError: () => setNotice("moveFailed"),
       },
@@ -236,6 +244,7 @@ export function PipelineView() {
           stopAskingLost();
         }}
       />
+      <MeetingSurveyDialog target={survey} onClose={() => setSurvey(null)} />
       <AddStageDialog open={addingStage} onOpenChange={setAddingStage} />
       <RemoveStageDialog
         stage={removing}

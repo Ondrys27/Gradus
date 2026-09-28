@@ -1763,23 +1763,19 @@ describe("finance", () => {
     const deal = await newDeal(stages.won);
     const flagged = (await income(deal))[0];
     expect(flagged.needs_review).toBe(false);
-    await db.query(
-      `update transactions set needs_review = true where deal_id = '${deal}'`,
-    );
+    await db.query(`update transactions set needs_review = true where deal_id = '${deal}'`);
     expect((await income(deal))[0].needs_review).toBe(false);
   });
 
   it("moves the deposit marker to one stage and recomputes from its percent", async () => {
     await db.query(`select set_deposit_stage('${stages.offer}', 50::smallint)`);
-    expect(
-      await count(`select 1 from pipeline_stages where system_key = 'deposit_paid'`),
-    ).toBe(1);
+    expect(await count(`select 1 from pipeline_stages where system_key = 'deposit_paid'`)).toBe(1);
     const deal = await newDeal(stages.lead);
     await db.query(`update deals set stage_id = '${stages.offer}' where id = '${deal}'`);
     expect((await income(deal))[0].amount).toBe("5000.00");
-    await expect(
-      db.query(`select set_deposit_stage('${stages.won}')`),
-    ).rejects.toThrow(/stage_not_found/);
+    await expect(db.query(`select set_deposit_stage('${stages.won}')`)).rejects.toThrow(
+      /stage_not_found/,
+    );
     await db.query(`select set_deposit_stage(null)`);
     expect(await count(`select 1 from pipeline_stages where system_key = 'deposit_paid'`)).toBe(0);
   });
@@ -1856,8 +1852,57 @@ describe("finance", () => {
     );
     expect(none).toEqual({ income: "0", expense: "0" });
     expect(
-      await count(`select 1 from finance_monthly_totals(current_date - 330, current_date)`),
+      await count(
+        `select 1 from finance_monthly_totals((date_trunc('month', current_date) - interval '11 months')::date, current_date)`,
+      ),
     ).toBe(12);
     await asUser(user);
+  });
+});
+
+describe("meeting surveys", () => {
+  it("keeps to their owner, holds a small answers object and only for the owner's deals", async () => {
+    const owner = await createAuthUser();
+    const other = await createAuthUser();
+    await asUser(owner);
+    const stage = await one<{ id: string }>(
+      `select id from pipeline_stages where user_id = '${owner}' and system_key = 'meeting'`,
+    );
+    const deal = await one<{ id: string }>(
+      `insert into deals (user_id, stage_id, title) values ('${owner}', '${stage.id}', 'Web') returning id`,
+    );
+    await db.query(
+      `insert into meeting_surveys (user_id, deal_id, stage_id, answers)
+       values ('${owner}', '${deal.id}', '${stage.id}', '{"mood": 4, "nextStep": "sendOffer"}')`,
+    );
+    expect(await count(`select 1 from meeting_surveys`)).toBe(1);
+
+    // An answers value that is not an object, or is far bigger than any survey, is refused.
+    await expect(
+      db.query(
+        `insert into meeting_surveys (user_id, deal_id, answers) values ('${owner}', '${deal.id}', '[1]')`,
+      ),
+    ).rejects.toThrow(/meeting_surveys_answers_shape/);
+    await expect(
+      db.query(
+        `insert into meeting_surveys (user_id, deal_id, answers)
+         values ('${owner}', '${deal.id}', jsonb_build_object('notes', repeat('x', 20000)))`,
+      ),
+    ).rejects.toThrow(/meeting_surveys_answers_shape/);
+
+    await asUser(other);
+    expect(await count(`select 1 from meeting_surveys`)).toBe(0);
+    // Not for somebody else's deal, and not as somebody else.
+    await expect(
+      db.query(
+        `insert into meeting_surveys (user_id, deal_id, answers) values ('${other}', '${deal.id}', '{}')`,
+      ),
+    ).rejects.toThrow();
+    await expect(
+      db.query(
+        `insert into meeting_surveys (user_id, deal_id, answers) values ('${owner}', '${deal.id}', '{}')`,
+      ),
+    ).rejects.toThrow(/row-level security/);
+    await asServer();
   });
 });
