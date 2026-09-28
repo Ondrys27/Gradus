@@ -254,11 +254,15 @@ export function useFollowUpsDue() {
     enabled: ready,
     queryFn: async (): Promise<FollowUp[]> => {
       if (!tableId || !fieldId) return [];
+      // The date is filtered in the database, so a long table never hides an overdue call.
+      // Answers are UTC ISO strings, which compare in time order as text.
+      const dueAt = `answers->>${fieldId}`;
       const { data, error } = await createClient()
         .from("contact_table_entries")
         .select("id, contact_id, answers, contact:contacts(company_name, first_name, last_name)")
         .eq("table_id", tableId)
-        .order("moved_at", { ascending: false })
+        .lt(dueAt, to)
+        .order(dueAt)
         .limit(FOLLOW_UP_LIMIT);
       if (error) throw error;
       return dueFollowUps(data, fieldId, new Date(to)).map((entry) => ({

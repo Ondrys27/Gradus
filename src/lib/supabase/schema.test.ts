@@ -8,7 +8,7 @@
 import { PGlite } from "@electric-sql/pglite";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 const MIGRATIONS_DIR = path.resolve(__dirname, "../../../supabase/migrations");
 
@@ -1903,6 +1903,263 @@ describe("meeting surveys", () => {
         `insert into meeting_surveys (user_id, deal_id, answers) values ('${owner}', '${deal.id}', '{}')`,
       ),
     ).rejects.toThrow(/row-level security/);
+    await asServer();
+  });
+});
+
+describe("audit: moveContact, milestone progress and daily timer totals", () => {
+  beforeEach(async () => {
+    await asServer();
+  });
+
+  async function systemTables(user: string) {
+    return Object.fromEntries(
+      (
+        await rows<{ system_key: string; id: string }>(
+          `select system_key, id from contact_tables where user_id = $1`,
+          [user],
+        )
+      ).map((r) => [r.system_key, r.id]),
+    );
+  }
+
+  it("moves a contact back and forth, one entry at a time, only within one's own data", async () => {
+    const user = await createAuthUser();
+    const tables = await systemTables(user);
+    await asUser(user);
+    const contact = (
+      await one<{ id: string }>(
+        `insert into contacts (user_id, company_name) values ($1, 'Chain s.r.o.') returning id`,
+        [user],
+      )
+    ).id;
+    for (const table of [tables.no_answer, tables.unreached, tables.no_answer]) {
+      await db.query(`select move_contact($1, $2)`, [contact, table]);
+      expect(
+        await count(`select 1 from contact_table_entries where contact_id = $1`, [contact]),
+      ).toBe(1);
+    }
+    const moves = await rows<{ from_table_id: string | null; to_table_id: string }>(
+      `select from_table_id, to_table_id from contact_table_moves
+       where contact_id = $1 and from_table_id is not null order by created_at, id`,
+      [contact],
+    );
+    expect(moves).toEqual([
+      { from_table_id: tables.unreached, to_table_id: tables.no_answer },
+      { from_table_id: tables.no_answer, to_table_id: tables.unreached },
+      { from_table_id: tables.unreached, to_table_id: tables.no_answer },
+    ]);
+    expect(
+      (
+        await one<{ table_id: string }>(
+          `select table_id from contact_table_entries where contact_id = $1`,
+          [contact],
+        )
+      ).table_id,
+    ).toBe(tables.no_answer);
+
+    // Someone else can neither move this contact nor move their own into this user's table.
+    await asServer();
+    const stranger = await createAuthUser();
+    await asUser(stranger);
+    const theirs = (
+      await one<{ id: string }>(
+        `insert into contacts (user_id, company_name) values ($1, 'Theirs') returning id`,
+        [stranger],
+      )
+    ).id;
+    const strangerTables = await systemTables(stranger);
+    await expect(
+      db.query(`select move_contact($1, $2)`, [contact, strangerTables.no_answer]),
+    ).rejects.toThrow(/contact_not_found/);
+    await expect(
+      db.query(`select move_contact($1, $2)`, [theirs, tables.no_answer]),
+    ).rejects.toThrow(/contact_table_not_found/);
+    await asServer();
+  });
+
+  it("computes milestone progress from every task at any depth, following reopening", async () => {
+    const user = await createAuthUser();
+    await asUser(user);
+    const milestone = (
+      await one<{ id: string }>(
+        `insert into milestones (user_id, title) values ($1, 'Deep') returning id`,
+        [user],
+      )
+    ).id;
+    const insert = async (title: string, parent: string | null) =>
+      (
+        await one<{ id: string }>(
+          `insert into tasks (user_id, milestone_id, parent_task_id, title)
+           values ($1, $2, $3, $4) returning id`,
+          [user, milestone, parent, title],
+        )
+      ).id;
+    const root = await insert("root", null);
+    const mid = await insert("mid", root);
+    const leaf = await insert("leaf", mid);
+    const progress = () =>
+      one<{ total: number; done: number }>(
+        `select total, done from milestone_task_counts where milestone_id = $1`,
+        [milestone],
+      );
+
+    expect(await progress()).toEqual({ total: 3, done: 0 });
+    await db.query(`update tasks set status = 'done' where id = $1`, [leaf]);
+    // The unlocked parents stay open until ticked by hand.
+    expect(await progress()).toEqual({ total: 3, done: 1 });
+    await db.query(`update tasks set status = 'done' where id = $1`, [mid]);
+    await db.query(`update tasks set status = 'done' where id = $1`, [root]);
+    expect(await progress()).toEqual({ total: 3, done: 3 });
+    expect(
+      (await one<{ status: string }>(`select status from milestones where id = $1`, [milestone]))
+        .status,
+    ).toBe("active");
+
+    await db.query(`update tasks set status = 'todo' where id = $1`, [leaf]);
+    expect(await progress()).toEqual({ total: 3, done: 0 });
+    await asServer();
+  });
+
+  /**
+   * A whole-hour zone whose midnight is the start of an hour 20–80 minutes ago, so a
+   * segment can be placed across midnight independently of when the test runs.
+   */
+  async function zoneWithRecentMidnight() {
+    const { boundary, hour } = await one<{ boundary: Date; hour: number }>(
+      `select b as boundary, extract(hour from b at time zone 'UTC')::int as hour
+       from (
+         select date_trunc('hour', now(), 'UTC')
+           - case when now() - date_trunc('hour', now(), 'UTC') < interval '20 minutes'
+               then interval '1 hour' else interval '0' end as b
+       ) q`,
+    );
+    let offset = (24 - hour) % 24;
+    if (offset > 14) offset -= 24;
+    // Etc/GMT names carry the inverted sign: Etc/GMT-2 is UTC+2.
+    const zone = offset === 0 ? "Etc/GMT" : `Etc/GMT${offset > 0 ? "-" : "+"}${Math.abs(offset)}`;
+    const { today, yesterday } = await one<{ today: string; yesterday: string }>(
+      `select (($1::timestamptz) at time zone $2)::date::text as today,
+              ((($1::timestamptz) at time zone $2)::date - 1)::text as yesterday`,
+      [boundary.toISOString(), zone],
+    );
+    return { boundary, zone, today, yesterday };
+  }
+
+  it("splits an open segment at midnight in the user's zone and stops it 15 idle minutes on", async () => {
+    const user = await createAuthUser();
+    const tables = await systemTables(user);
+    const { boundary, zone, today, yesterday } = await zoneWithRecentMidnight();
+    const midnight = boundary.toISOString();
+
+    await asServer();
+    const contact = (
+      await one<{ id: string }>(
+        `insert into contacts (user_id, company_name) values ($1, 'Night') returning id`,
+        [user],
+      )
+    ).id;
+    // Started 20 minutes before midnight, still open; the last move out of Unreached
+    // was 10 minutes before midnight, so the segment really ended 5 minutes after it.
+    const segment = (
+      await one<{ id: string }>(
+        `insert into prospecting_segments (user_id, started_at)
+         values ($1, $2::timestamptz - interval '20 minutes') returning id`,
+        [user, midnight],
+      )
+    ).id;
+    await db.query(
+      `insert into contact_table_moves (user_id, contact_id, from_table_id, to_table_id, created_at)
+       values ($1, $2, $3, $4, $5::timestamptz - interval '10 minutes')`,
+      [user, contact, tables.unreached, tables.no_answer, midnight],
+    );
+
+    await asUser(user);
+    const day = async (date: string) =>
+      (await one<{ s: number }>(`select prospecting_seconds_for_day($1, $2) as s`, [date, zone])).s;
+    expect(await day(yesterday)).toBe(20 * 60);
+    // The new day starts at zero by itself; only the 5 minutes after midnight count.
+    expect(await day(today)).toBe(5 * 60);
+    expect(
+      await rows(`select day::text as day, seconds from prospecting_daily_seconds($1, $2, $3)`, [
+        yesterday,
+        today,
+        zone,
+      ]),
+    ).toEqual([
+      { day: yesterday, seconds: 20 * 60 },
+      { day: today, seconds: 5 * 60 },
+    ]);
+
+    // Reading closes it at the idle end; nothing changes in the totals.
+    const status = await one<{ running: boolean; today_seconds: number; idle_closed_at: Date }>(
+      `select * from prospecting_status($1)`,
+      [zone],
+    );
+    expect(status.running).toBe(false);
+    expect(status.today_seconds).toBe(5 * 60);
+    expect(status.idle_closed_at.getTime()).toBe(boundary.getTime() + 5 * 60_000);
+    await asServer();
+    expect(
+      (
+        await one<{ end_reason: string }>(
+          `select end_reason from prospecting_segments where id = $1`,
+          [segment],
+        )
+      ).end_reason,
+    ).toBe("idle");
+  });
+
+  it("keeps running while contacts leave Unreached, and only those moves count as activity", async () => {
+    const user = await createAuthUser();
+    const tables = await systemTables(user);
+    await asServer();
+    const [first, second] = await rows<{ id: string }>(
+      `insert into contacts (user_id, company_name) values ($1, 'One'), ($1, 'Two') returning id`,
+      [user],
+    );
+    await db.query(
+      `insert into prospecting_segments (user_id, started_at) values ($1, now() - interval '40 minutes')`,
+      [user],
+    );
+    await db.query(
+      `insert into contact_table_moves (user_id, contact_id, from_table_id, to_table_id, created_at)
+       values ($1, $2, $3, $4, now() - interval '30 minutes')`,
+      [user, first.id, tables.unreached, tables.no_answer],
+    );
+    // A move between two other tables is not prospecting activity.
+    await db.query(
+      `insert into contact_table_moves (user_id, contact_id, from_table_id, to_table_id, created_at)
+       values ($1, $2, $3, $4, now() - interval '5 minutes')`,
+      [user, first.id, tables.no_answer, tables.unreached],
+    );
+
+    await asUser(user);
+    // 30 minutes since the last real activity: the segment is already over.
+    const idle = await one<{ idle_deadline: Date | null; running: boolean }>(
+      `select * from prospecting_status('UTC')`,
+    );
+    expect(idle.running).toBe(false);
+
+    // A fresh start, and a move out of Unreached through move_contact pushes the deadline.
+    await db.query(`select * from start_prospecting()`);
+    await db.query(`select move_contact($1, $2)`, [second.id, tables.no_answer]);
+    const running = await one<{ running: boolean; idle_deadline: Date; server_now: Date }>(
+      `select * from prospecting_status('UTC')`,
+    );
+    expect(running.running).toBe(true);
+    const ahead = running.idle_deadline.getTime() - running.server_now.getTime();
+    expect(Math.abs(ahead - 15 * 60_000)).toBeLessThan(5_000);
+
+    // The idle segment counted 15 minutes after its last activity, i.e. 25 in total.
+    const total = (
+      await one<{ s: number }>(
+        `select sum(seconds)::int as s
+         from prospecting_daily_seconds(current_date - 1, current_date + 1, 'UTC')`,
+      )
+    ).s;
+    expect(Math.abs(total - 25 * 60)).toBeLessThan(5);
+    await db.query(`select * from pause_prospecting()`);
     await asServer();
   });
 });

@@ -24,6 +24,8 @@ import {
 
 /** A person has a handful of milestones; this only bounds the query. */
 const MILESTONE_LIMIT = 200;
+/** Tasks of one milestone, subtasks included; this only bounds the query. */
+const TASK_LIMIT = 2000;
 
 export const milestoneKeys = {
   all: (userId: string) => ["milestones", userId] as const,
@@ -87,7 +89,8 @@ export function useTasks(milestoneId: string) {
         .select(TASK_COLUMNS)
         .eq("milestone_id", milestoneId)
         .order("position")
-        .order("created_at");
+        .order("created_at")
+        .limit(TASK_LIMIT);
       if (error) throw error;
       return data;
     },

@@ -8,8 +8,12 @@ import { applyMove, nextDealPosition, reorderStages, sortStages } from "./board-
 import type { DealInput, StageInput } from "./schemas";
 import { DEAL_COLUMNS, STAGE_COLUMNS, type Deal, type DealContact, type Stage } from "./types";
 
-/** Bounds the query; a board with more open deals than this needs a period filter. */
-const DEAL_LIMIT = 500;
+/**
+ * Open deals are all loaded (this only bounds the query); closed ones pile up over the
+ * years, so only the latest of them fill the won and lost columns.
+ */
+const OPEN_DEAL_LIMIT = 1000;
+const CLOSED_DEAL_LIMIT = 500;
 const STAGE_LIMIT = 50;
 const CONTACT_SUGGESTIONS = 8;
 
@@ -48,13 +52,28 @@ export function useDeals() {
   return useQuery({
     queryKey: pipelineKeys.deals(user.id),
     queryFn: async (): Promise<Deal[]> => {
-      const { data, error } = await createClient()
-        .from("deals")
-        .select(DEAL_COLUMNS)
-        .order("created_at", { ascending: false })
-        .limit(DEAL_LIMIT);
-      if (error) throw error;
-      return data;
+      const supabase = createClient();
+      // Separate reads, so old won and lost deals never push an open one off the board.
+      const [open, closed] = await Promise.all([
+        supabase
+          .from("deals")
+          .select(DEAL_COLUMNS)
+          .is("won_at", null)
+          .is("lost_at", null)
+          .order("created_at", { ascending: false })
+          .limit(OPEN_DEAL_LIMIT),
+        supabase
+          .from("deals")
+          .select(DEAL_COLUMNS)
+          .or("won_at.not.is.null,lost_at.not.is.null")
+          .order("created_at", { ascending: false })
+          .limit(CLOSED_DEAL_LIMIT),
+      ]);
+      if (open.error) throw open.error;
+      if (closed.error) throw closed.error;
+      return [...open.data, ...closed.data].sort((a, b) =>
+        b.created_at.localeCompare(a.created_at),
+      );
     },
   });
 }

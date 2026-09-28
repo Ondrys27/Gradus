@@ -58,6 +58,65 @@ describe("progress", () => {
     expect(progressOf(counts)).toBe(0.5);
     expect(progressOf({ total: 0, done: 0 })).toBe(0);
   });
+
+  it("counts in-progress tasks as not done", () => {
+    const counts = countTasks([
+      task("a", { status: "in_progress" }),
+      task("b", { status: "done" }),
+    ]);
+    expect(counts).toEqual({ total: 2, done: 1, inProgress: 1 });
+    expect(progressOf(counts)).toBe(0.5);
+  });
+
+  it("follows ticks through a deep tree and never reaches 100 % by itself", () => {
+    // root > mid > leaf, plus a separate task
+    let tasks = [
+      task("root"),
+      task("mid", { parent_task_id: "root" }),
+      task("leaf", { parent_task_id: "mid" }),
+      task("solo"),
+    ];
+    const progress = () => progressOf(countTasks(tasks));
+    const tick = (id: string, status: Task["status"] = "done") => {
+      const result = applyStatusChange(tasks, id, status);
+      tasks = result.tasks;
+      return result.error;
+    };
+
+    expect(progress()).toBe(0);
+    expect(tick("root")).toBe("openSubtasks");
+    expect(tick("mid")).toBe("openSubtasks");
+    expect(progress()).toBe(0);
+
+    expect(tick("leaf")).toBeUndefined();
+    expect(progress()).toBe(0.25);
+    // The unlocked parent stays open until the user ticks it.
+    expect(tasks.find((t) => t.id === "mid")?.status).toBe("todo");
+
+    tick("mid");
+    tick("root");
+    tick("solo");
+    expect(progress()).toBe(1);
+
+    // Reopening the leaf sends both completed ancestors back to in progress.
+    tick("leaf", "todo");
+    expect(tasks.map((t) => [t.id, t.status])).toEqual([
+      ["root", "in_progress"],
+      ["mid", "in_progress"],
+      ["leaf", "todo"],
+      ["solo", "done"],
+    ]);
+    expect(progress()).toBe(0.25);
+  });
+
+  it("drops with a new open subtask under a finished task", () => {
+    const tasks = reopenAncestors(
+      [task("a", { status: "done" }), task("b", { parent_task_id: "a" })],
+      "b",
+    );
+    expect(tasks[0].status).toBe("in_progress");
+    expect(progressOf(countTasks(tasks))).toBe(0);
+  });
 });
 
 describe("buildTree", () => {

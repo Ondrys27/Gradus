@@ -22,7 +22,7 @@ import {
   useContactTables,
   useTableCounts,
   useWonDeals,
-  type WonDeal,
+  type WonDealsByContact,
 } from "./queries";
 import { TableSwitcher } from "./table-switcher";
 import type { ContactListItem } from "./types";
@@ -53,7 +53,14 @@ export function ContactsView() {
 
   const listQuery = useContactList({ term: debounced, tableId });
   const contacts = useMemo(() => listQuery.data?.pages.flat() ?? [], [listQuery.data]);
-  const wonDeals = useWonDeals(isClients ? contacts.map((contact) => contact.id) : []).data;
+  const wonDealPages = useMemo(
+    () =>
+      isClients
+        ? (listQuery.data?.pages ?? []).map((page) => page.map((contact) => contact.id))
+        : [],
+    [isClients, listQuery.data],
+  );
+  const wonDeals = useWonDeals(wonDealPages);
   const searching = debounced !== "";
 
   function selectTable(id: string | null) {
@@ -207,17 +214,11 @@ export function ContactsView() {
 }
 
 /** "2 deals · 45 000 Kč"; currencies are added up separately, never converted. */
-function ClientDeals({
-  contact,
-  deals,
-}: {
-  contact: ContactListItem;
-  deals: WonDeal[] | undefined;
-}) {
+function ClientDeals({ contact, deals }: { contact: ContactListItem; deals: WonDealsByContact }) {
   const t = useTranslations("contacts.tables");
   const settings = useFormatSettings();
-  if (!deals) return <Skeleton className="h-4 w-20" />;
-  const own = deals.filter((deal) => deal.contact_id === contact.id);
+  const own = deals[contact.id];
+  if (!own) return <Skeleton className="h-4 w-20" />;
   const totals = sumByCurrency(own)
     .map(({ currency, total }) => formatCurrency(total, currency, settings))
     .join(" + ");

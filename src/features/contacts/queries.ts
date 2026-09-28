@@ -1,6 +1,13 @@
 "use client";
 
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+  type UseQueryResult,
+} from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
 import { createClient } from "@/lib/supabase/client";
 import { duplicateEmailKey, duplicatePhoneKey, searchFilter } from "./contact-search";
@@ -81,25 +88,41 @@ export function useTableCounts() {
 }
 
 export type WonDeal = Pick<ContactDeal, "id" | "value" | "currency"> & { contact_id: string };
+/** Won deals by contact id; a contact whose page is still loading has no key yet. */
+export type WonDealsByContact = Record<string, WonDeal[]>;
 
-/** Won deals of the contacts on screen, for the count and total in Clients. */
-export function useWonDeals(contactIds: string[]) {
+async function fetchWonDeals(contactIds: string[]): Promise<WonDealsByContact> {
+  const { data, error } = await createClient()
+    .from("deals")
+    .select("id, contact_id, value, currency")
+    .in("contact_id", contactIds)
+    .not("won_at", "is", null)
+    .limit(WON_DEAL_LIMIT);
+  if (error) throw error;
+  const byContact: WonDealsByContact = Object.fromEntries(contactIds.map((id) => [id, []]));
+  for (const deal of data) {
+    if (deal.contact_id) byContact[deal.contact_id]?.push({ ...deal, contact_id: deal.contact_id });
+  }
+  return byContact;
+}
+
+function mergeWonDeals(results: UseQueryResult<WonDealsByContact>[]): WonDealsByContact {
+  return Object.assign({}, ...results.map((result) => result.data ?? {}));
+}
+
+/**
+ * Won deals of the contacts on screen, for the count and total in Clients. One query per
+ * page of the list, so loading the next page never reads the earlier ones again.
+ */
+export function useWonDeals(pages: string[][]): WonDealsByContact {
   const { user } = useSession();
-  return useQuery({
-    queryKey: contactKeys.wonDeals(user.id, contactIds),
-    enabled: contactIds.length > 0,
-    queryFn: async (): Promise<WonDeal[]> => {
-      const { data, error } = await createClient()
-        .from("deals")
-        .select("id, contact_id, value, currency")
-        .in("contact_id", contactIds)
-        .not("won_at", "is", null)
-        .limit(WON_DEAL_LIMIT);
-      if (error) throw error;
-      return data.flatMap((deal) =>
-        deal.contact_id ? [{ ...deal, contact_id: deal.contact_id }] : [],
-      );
-    },
+  return useQueries({
+    queries: pages.map((ids) => ({
+      queryKey: contactKeys.wonDeals(user.id, ids),
+      enabled: ids.length > 0,
+      queryFn: () => fetchWonDeals(ids),
+    })),
+    combine: mergeWonDeals,
   });
 }
 
