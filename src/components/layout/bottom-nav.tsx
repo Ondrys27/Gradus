@@ -15,10 +15,8 @@ import { useTranslations } from "next-intl";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { useSignOut } from "@/features/account/queries";
 import { cn } from "@/lib/utils";
-import { bottomNavKeys, isActivePath, navItems } from "./nav-items";
-
-const primaryItems = navItems.filter((item) => bottomNavKeys.includes(item.key));
-const moreItems = navItems.filter((item) => !bottomNavKeys.includes(item.key));
+import { isActivePath } from "./nav-items";
+import { useNavItems } from "./use-nav";
 const accountItems = [
   { key: "profile", href: "/profile", icon: UserRoundIcon },
   { key: "settings", href: "/settings", icon: SettingsIcon },
@@ -33,6 +31,7 @@ export function BottomNav() {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
   const signOut = useSignOut();
+  const { primary: primaryItems, more: moreItems } = useNavItems();
   const moreActive = [...moreItems, ...accountItems].some((item) =>
     isActivePath(pathname, item.href),
   );

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { JarvisDock } from "@/components/jarvis/jarvis-dock";
 import { BottomNav } from "./bottom-nav";
+import { SectionGuard } from "./section-guard";
 import { Sidebar } from "./sidebar";
 import { TopBar } from "./top-bar";
 
@@ -12,7 +13,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {/* Streak and level are placeholders until progress data exists. */}
         <TopBar streakDays={0} level={1} />
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-6 pb-[calc(12px+64px+32px+env(safe-area-inset-bottom))] md:px-8 md:pt-8 md:pb-28">
-          {children}
+          <SectionGuard>{children}</SectionGuard>
         </main>
       </div>
       <BottomNav />

@@ -6,13 +6,15 @@ import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { APP_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import { isActivePath, navItems } from "./nav-items";
+import { isActivePath } from "./nav-items";
+import { useNavItems } from "./use-nav";
 
 /** 240 px with labels from 1024 px, icon rail from 768 px, hidden on phones. */
 export function Sidebar() {
   const t = useTranslations("nav");
   const pathname = usePathname();
   const reduceMotion = useReducedMotion();
+  const { items } = useNavItems();
 
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-19 flex-col border-r border-line/70 bg-sidebar/85 backdrop-blur-xl md:flex lg:w-60">
@@ -27,7 +29,7 @@ export function Sidebar() {
       </Link>
 
       <nav aria-label={t("label")} className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-2">
-        {navItems.map(({ key, href, icon: Icon }) => {
+        {items.map(({ key, href, icon: Icon }) => {
           const active = isActivePath(pathname, href);
           return (
             <Link
