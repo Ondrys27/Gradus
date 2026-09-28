@@ -166,7 +166,7 @@ export async function sendChat(
   return readChatStream(response, onEvent);
 }
 
-export type JobError = ChatErrorCode | "locked" | "alreadyReviewed";
+export type JobError = ChatErrorCode | "locked" | "alreadyReviewed" | "empty";
 
 /** One of the other jobs of /api/jarvis (milestone review, sales analysis). */
 export async function postJarvisJob<T>(

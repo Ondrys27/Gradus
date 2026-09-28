@@ -5,6 +5,7 @@ import { featureRequestNote, situationBlock } from "@/features/jarvis/prompt";
 import {
   chatRequestSchema,
   milestoneReviewRequestSchema,
+  rewardSetupRequestSchema,
   salesAnalysisRequestSchema,
   type ChatErrorCode,
   type ChatEvent,
@@ -23,7 +24,9 @@ import { handleFeatureRequest } from "@/features/jarvis/server/feature-requests"
 import { loadSituation } from "@/features/jarvis/server/load-situation";
 import { reviewMilestone } from "@/features/jarvis/server/milestone-review";
 import { createAnthropic, streamModel } from "@/features/jarvis/server/model";
+import { runRewardSetup } from "@/features/jarvis/server/reward-setup";
 import { runSalesAnalysis } from "@/features/jarvis/server/sales-analysis";
+import { leafCount, rewardTreeSchema } from "@/features/workers/rewards/reward-tree";
 import { refreshSuggestions } from "@/features/jarvis/server/suggestions";
 import {
   limitReached,
@@ -161,10 +164,14 @@ export async function POST(request: Request) {
   const kind = (body as { kind?: unknown } | null)?.kind;
   if (kind === "milestoneReview") return milestoneReview(ctx, body);
   if (kind === "salesAnalysis") return salesAnalysis(ctx, body);
+  if (kind === "rewardSetup") return rewardSetup(ctx, body);
   return chat(ctx, body);
 }
 
-function jobError(code: ChatErrorCode | "locked" | "alreadyReviewed", status: number) {
+function jobError(
+  code: ChatErrorCode | "locked" | "alreadyReviewed" | "empty",
+  status: number,
+) {
   return NextResponse.json({ ok: false, code }, { status });
 }
 
@@ -229,6 +236,45 @@ async function salesAnalysis(ctx: Context, body: unknown) {
   });
   if (!result.ok) return jobError(result.code, result.code === "locked" ? 403 : 502);
   return NextResponse.json({ ok: true, analysis: result.analysis });
+}
+
+/**
+ * Sonnet turns the owner's reward tree into rules and explains them. Nothing is
+ * saved: the proposal goes back to the editor, where the owner confirms it.
+ */
+async function rewardSetup(ctx: Context, body: unknown) {
+  const request = rewardSetupRequestSchema.safeParse(body);
+  const tree = request.success ? rewardTreeSchema.safeParse(request.data.tree) : null;
+  if (!tree?.success) return jobError("unknown", 400);
+  if (leafCount(tree.data) === 0) return jobError("empty", 400);
+  const { supabase, admin, userId, settings, locale } = ctx;
+
+  const usage = await loadAiUsage(supabase, admin, userId, settings);
+  if (limitReached(usage)) return jobError("limitReached", 429);
+  const client = createAnthropic();
+  if (!client) {
+    await logNotConfigured(ctx, "reward_setup");
+    return jobError("notConfigured", 503);
+  }
+
+  // Names only, read with the owner's own client: RLS keeps it to their workers.
+  const { data: workers, error } = await supabase
+    .from("workers")
+    .select("id, name")
+    .eq("owner_id", userId)
+    .limit(200);
+  if (error) throw error;
+
+  const result = await runRewardSetup({
+    client,
+    tree: tree.data,
+    workers,
+    currency: settings.currency,
+    locale,
+    log: (entry) => logAiUsage(admin, { ...entry, userId, conversationId: null }),
+  });
+  if (!result.ok) return jobError(result.code, 502);
+  return NextResponse.json({ ok: true, proposal: result.proposal });
 }
 
 /**

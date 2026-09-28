@@ -29,6 +29,11 @@ export const milestoneReviewRequestSchema = z.object({
   milestoneId: z.uuid(),
 });
 export const salesAnalysisRequestSchema = z.object({ kind: z.literal("salesAnalysis") });
+/** The reward tree travels as-is; the route checks it against the tree schema. */
+export const rewardSetupRequestSchema = z.object({
+  kind: z.literal("rewardSetup"),
+  tree: z.unknown(),
+});
 
 /** A file shown on a message. */
 export type ChatAttachment = { id: string; name: string; kind: FileKind };
@@ -86,7 +91,8 @@ export type JarvisOverview = {
 
 /** POST /api/jarvis { kind: "milestoneReview" } and { kind: "salesAnalysis" } */
 export type JobResult<T> =
-  ({ ok: true } & T) | { ok: false; code: ChatErrorCode | "locked" | "alreadyReviewed" };
+  | ({ ok: true } & T)
+  | { ok: false; code: ChatErrorCode | "locked" | "alreadyReviewed" | "empty" };
 
 /** Sales analysis unlocks after this many meeting surveys. */
 export const SALES_ANALYSIS_MIN_SURVEYS = 5;

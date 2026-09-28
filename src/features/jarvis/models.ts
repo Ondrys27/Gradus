@@ -24,6 +24,7 @@ export const JARVIS_FEATURES = [
   "summary",
   "opportunity_scan",
   "analysis",
+  "reward_setup",
 ] as const;
 export type JarvisFeature = (typeof JARVIS_FEATURES)[number];
 
@@ -34,6 +35,8 @@ const ROUTES: Record<JarvisFeature, JarvisModel> = {
   opportunity_scan: JARVIS_MODELS.haiku,
   chat: JARVIS_MODELS.sonnet,
   milestone_review: JARVIS_MODELS.sonnet,
+  // Money rules for other people: read carefully, explained plainly.
+  reward_setup: JARVIS_MODELS.sonnet,
   analysis: JARVIS_MODELS.opus,
 };
 
