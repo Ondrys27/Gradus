@@ -1197,6 +1197,30 @@ export type Database = {
         }
         Relationships: []
       }
+      reward_drafts: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          tree: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          tree?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          tree?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       reward_rules: {
         Row: {
           created_at: string
@@ -1625,6 +1649,7 @@ export type Database = {
         Row: {
           amount: number
           approved_at: string | null
+          basis: number | null
           created_at: string
           currency: string
           description: string | null
@@ -1633,6 +1658,8 @@ export type Database = {
           paid_at: string | null
           payment_id: string | null
           reward_rule_id: string | null
+          source: Database["public"]["Enums"]["reward_trigger"] | null
+          source_ref: string | null
           status: Database["public"]["Enums"]["earning_status"]
           updated_at: string
           work_session_id: string | null
@@ -1642,6 +1669,7 @@ export type Database = {
         Insert: {
           amount: number
           approved_at?: string | null
+          basis?: number | null
           created_at?: string
           currency?: string
           description?: string | null
@@ -1650,6 +1678,8 @@ export type Database = {
           paid_at?: string | null
           payment_id?: string | null
           reward_rule_id?: string | null
+          source?: Database["public"]["Enums"]["reward_trigger"] | null
+          source_ref?: string | null
           status?: Database["public"]["Enums"]["earning_status"]
           updated_at?: string
           work_session_id?: string | null
@@ -1659,6 +1689,7 @@ export type Database = {
         Update: {
           amount?: number
           approved_at?: string | null
+          basis?: number | null
           created_at?: string
           currency?: string
           description?: string | null
@@ -1667,6 +1698,8 @@ export type Database = {
           paid_at?: string | null
           payment_id?: string | null
           reward_rule_id?: string | null
+          source?: Database["public"]["Enums"]["reward_trigger"] | null
+          source_ref?: string | null
           status?: Database["public"]["Enums"]["earning_status"]
           updated_at?: string
           work_session_id?: string | null
@@ -1908,6 +1941,7 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          job_title: string | null
           name: string
           owner_id: string
           phone: string | null
@@ -1919,6 +1953,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          job_title?: string | null
           name: string
           owner_id: string
           phone?: string | null
@@ -1930,6 +1965,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          job_title?: string | null
           name?: string
           owner_id?: string
           phone?: string | null
@@ -1977,6 +2013,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_worker_invite: {
+        Args: { _code: string; _user_id: string }
+        Returns: string
+      }
       create_invoice_from_deal: {
         Args: { _deal_id: string }
         Returns: {
@@ -2017,6 +2057,19 @@ export type Database = {
           expense: number
           income: number
         }[]
+      }
+      grant_worker_rewards: {
+        Args: {
+          _basis: number
+          _description: string
+          _on_time: boolean
+          _session_id: string
+          _source_ref: string
+          _task_id: string
+          _trigger: Database["public"]["Enums"]["reward_trigger"]
+          _worker_id: string
+        }
+        Returns: number
       }
       has_role: {
         Args: {
@@ -2103,6 +2156,7 @@ export type Database = {
         }
       }
       my_worker_ids: { Args: never; Returns: string[] }
+      new_invite_code: { Args: never; Returns: string }
       normalize_phone: { Args: { _phone: string }; Returns: string }
       pause_prospecting: {
         Args: never
@@ -2177,6 +2231,32 @@ export type Database = {
           today_seconds: number
         }[]
       }
+      record_worker_payment: {
+        Args: {
+          _amount: number
+          _note: string
+          _paid_at: string
+          _worker_id: string
+        }
+        Returns: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          note: string | null
+          owner_id: string
+          paid_at: string
+          transaction_id: string | null
+          updated_at: string
+          worker_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "worker_payments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       recurring_next_due: {
         Args: {
           _due_day?: number
@@ -2194,10 +2274,20 @@ export type Database = {
         Args: { _move_to?: string; _stage_id: string }
         Returns: undefined
       }
+      replace_reward_rules: { Args: { _rules: Json }; Returns: number }
+      revoke_pending_rewards: {
+        Args: {
+          _source_ref: string
+          _trigger: Database["public"]["Enums"]["reward_trigger"]
+        }
+        Returns: undefined
+      }
+      reward_rule_is_valid: { Args: { _rule: Json }; Returns: boolean }
       set_deposit_stage: {
         Args: { _percent?: number; _stage_id: string }
         Returns: undefined
       }
+      settle_idle_work_sessions: { Args: never; Returns: number }
       start_prospecting: {
         Args: never
         Returns: {
@@ -2239,6 +2329,10 @@ export type Database = {
       timer_idle_interval: { Args: never; Returns: string }
       user_today: { Args: { _user_id: string }; Returns: string }
       username_available: { Args: { _username: string }; Returns: boolean }
+      work_seconds_between: {
+        Args: { _from: string; _to: string; _worker_id: string }
+        Returns: number
+      }
       work_seconds_for_day: {
         Args: { _day: string; _timezone: string; _worker_id: string }
         Returns: number
@@ -2246,6 +2340,54 @@ export type Database = {
       work_session_effective_end: {
         Args: { _session: Database["public"]["Tables"]["work_sessions"]["Row"] }
         Returns: string
+      }
+      work_session_last_activity_at: {
+        Args: { _session: Database["public"]["Tables"]["work_sessions"]["Row"] }
+        Returns: string
+      }
+      work_status: {
+        Args: { _timezone: string }
+        Returns: {
+          idle_closed_at: string
+          idle_deadline: string
+          month_seconds: number
+          running: boolean
+          server_now: string
+          session_started_at: string
+          today_seconds: number
+          worker_id: string
+        }[]
+      }
+      worker_balance: {
+        Args: { _worker_id: string }
+        Returns: {
+          earned: number
+          owed: number
+          paid_out: number
+          pending: number
+        }[]
+      }
+      worker_month_stats: {
+        Args: { _month_start: string; _timezone: string }
+        Returns: {
+          earned: number
+          pending_amount: number
+          pending_count: number
+          tasks_done: number
+          tasks_total: number
+          work_seconds: number
+          worker_id: string
+        }[]
+      }
+      worker_sessions: {
+        Args: { _before: string; _limit: number; _worker_id: string }
+        Returns: {
+          effective_end: string
+          end_reason: Database["public"]["Enums"]["session_end_reason"]
+          id: string
+          running: boolean
+          started_at: string
+        }[]
       }
     }
     Enums: {
@@ -2301,6 +2443,11 @@ export type Database = {
       milestone_category: "work" | "personal"
       milestone_status: "active" | "completed" | "archived"
       recurring_frequency: "weekly" | "monthly" | "quarterly" | "yearly"
+      reward_trigger:
+        | "task_completed"
+        | "meeting_booked"
+        | "deal_won"
+        | "hour_worked"
       session_end_reason: "pause" | "idle"
       subscription_status: "trialing" | "active" | "past_due" | "cancelled"
       task_status: "todo" | "in_progress" | "done"
@@ -2500,6 +2647,12 @@ export const Constants = {
       milestone_category: ["work", "personal"],
       milestone_status: ["active", "completed", "archived"],
       recurring_frequency: ["weekly", "monthly", "quarterly", "yearly"],
+      reward_trigger: [
+        "task_completed",
+        "meeting_booked",
+        "deal_won",
+        "hour_worked",
+      ],
       session_end_reason: ["pause", "idle"],
       subscription_status: ["trialing", "active", "past_due", "cancelled"],
       task_status: ["todo", "in_progress", "done"],
