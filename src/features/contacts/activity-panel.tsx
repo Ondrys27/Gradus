@@ -26,14 +26,17 @@ import { useActivities, useAddActivity, useDeleteActivity } from "./queries";
 import { ACTIVITY_MAX, activitySchema, fieldErrors, type ContactErrorKey } from "./schemas";
 import { MANUAL_ACTIVITY_TYPES, type ActivityType } from "./types";
 
-const ICONS: Record<ActivityType, LucideIcon> = {
+/** One icon per activity type; shared with the deal's read-only timeline. */
+export const ACTIVITY_ICONS: Record<ActivityType, LucideIcon> = {
   call: PhoneIcon,
   email: MailIcon,
+  email_sent: MailIcon,
   meeting: CalendarCheckIcon,
   sms: MessageSquareIcon,
   note: StickyNoteIcon,
   move: ArrowRightLeftIcon,
 };
+const ICONS = ACTIVITY_ICONS;
 
 export function ActivityPanel({ contactId }: { contactId: string }) {
   const t = useTranslations("contacts.activity");

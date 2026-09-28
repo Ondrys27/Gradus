@@ -6,7 +6,15 @@ import { invalidateFinance } from "@/features/finance/queries";
 import { createClient } from "@/lib/supabase/client";
 import { applyMove, nextDealPosition, reorderStages, sortStages } from "./board-logic";
 import type { DealInput, StageInput } from "./schemas";
-import { DEAL_COLUMNS, STAGE_COLUMNS, type Deal, type DealContact, type Stage } from "./types";
+import {
+  DEAL_ACTIVITY_COLUMNS,
+  DEAL_COLUMNS,
+  STAGE_COLUMNS,
+  type Deal,
+  type DealActivity,
+  type DealContact,
+  type Stage,
+} from "./types";
 
 /**
  * Open deals are all loaded (this only bounds the query); closed ones pile up over the
@@ -16,6 +24,7 @@ const OPEN_DEAL_LIMIT = 1000;
 const CLOSED_DEAL_LIMIT = 500;
 const STAGE_LIMIT = 50;
 const CONTACT_SUGGESTIONS = 8;
+const DEAL_ACTIVITY_LIMIT = 200;
 
 /**
  * A deal won or un-won moves its contact in or out of Clients, and deals show in
@@ -29,6 +38,8 @@ export const pipelineKeys = {
   stages: (userId: string) => ["pipeline", userId, "stages"] as const,
   deals: (userId: string) => ["pipeline", userId, "deals"] as const,
   contacts: (userId: string, term: string) => ["pipeline", userId, "contacts", term] as const,
+  dealActivities: (userId: string, dealId: string) =>
+    ["pipeline", userId, "deal-activities", dealId] as const,
 };
 
 export function useStages() {
@@ -74,6 +85,24 @@ export function useDeals() {
       return [...open.data, ...closed.data].sort((a, b) =>
         b.created_at.localeCompare(a.created_at),
       );
+    },
+  });
+}
+
+/** A deal's own communication history (e.g. e-mails sent from its detail), newest first. */
+export function useDealActivities(dealId: string) {
+  const { user } = useSession();
+  return useQuery({
+    queryKey: pipelineKeys.dealActivities(user.id, dealId),
+    queryFn: async (): Promise<DealActivity[]> => {
+      const { data, error } = await createClient()
+        .from("contact_activities")
+        .select(DEAL_ACTIVITY_COLUMNS)
+        .eq("deal_id", dealId)
+        .order("occurred_at", { ascending: false })
+        .limit(DEAL_ACTIVITY_LIMIT);
+      if (error) throw error;
+      return data;
     },
   });
 }

@@ -34,6 +34,14 @@ export const rewardSetupRequestSchema = z.object({
   kind: z.literal("rewardSetup"),
   tree: z.unknown(),
 });
+/** Longest received e-mail Jarvis reads to draft a reply. */
+export const RECEIVED_EMAIL_MAX = 8000;
+export const emailReplyRequestSchema = z.object({
+  kind: z.literal("emailReply"),
+  contactId: z.uuid(),
+  dealId: z.uuid().nullish(),
+  receivedEmail: z.string().trim().min(1).max(RECEIVED_EMAIL_MAX),
+});
 
 /** A file shown on a message. */
 export type ChatAttachment = { id: string; name: string; kind: FileKind };
@@ -91,8 +99,7 @@ export type JarvisOverview = {
 
 /** POST /api/jarvis { kind: "milestoneReview" } and { kind: "salesAnalysis" } */
 export type JobResult<T> =
-  | ({ ok: true } & T)
-  | { ok: false; code: ChatErrorCode | "locked" | "alreadyReviewed" | "empty" };
+  ({ ok: true } & T) | { ok: false; code: ChatErrorCode | "locked" | "alreadyReviewed" | "empty" };
 
 /** Sales analysis unlocks after this many meeting surveys. */
 export const SALES_ANALYSIS_MIN_SURVEYS = 5;

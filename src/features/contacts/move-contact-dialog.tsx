@@ -38,6 +38,10 @@ type Props = {
   currentTableId: string | null;
   tables: ContactTable[];
   onMoved: (result: MoveResult) => void;
+  /** Skip the table picker and open straight to this table's questions (by system_key). */
+  targetSystemKey?: string;
+  /** Answers to prefill by the question's system_key, e.g. the e-mail just sent. */
+  prefillBySystemKey?: Record<string, string>;
 };
 
 export function MoveContactDialog({
@@ -47,6 +51,8 @@ export function MoveContactDialog({
   currentTableId,
   tables,
   onMoved,
+  targetSystemKey,
+  prefillBySystemKey,
 }: Props) {
   const t = useTranslations("contacts.move");
   const generation = useFreshOnOpen(open);
@@ -65,6 +71,8 @@ export function MoveContactDialog({
         targets={byPosition(tables).filter(
           (table) => table.id !== currentTableId && table.system_key !== "clients",
         )}
+        targetSystemKey={targetSystemKey}
+        prefillBySystemKey={prefillBySystemKey}
         onDone={() => onOpenChange(false)}
         onMoved={onMoved}
       />
@@ -75,17 +83,23 @@ export function MoveContactDialog({
 function MoveSteps({
   contactId,
   targets,
+  targetSystemKey,
+  prefillBySystemKey,
   onDone,
   onMoved,
 }: {
   contactId: string;
   targets: ContactTable[];
+  targetSystemKey?: string;
+  prefillBySystemKey?: Record<string, string>;
   onDone: () => void;
   onMoved: (result: MoveResult) => void;
 }) {
   const t = useTranslations("contacts.move");
   const fieldsQuery = useFields();
-  const [target, setTarget] = useState<ContactTable | null>(null);
+  const [target, setTarget] = useState<ContactTable | null>(
+    () => targets.find((table) => table.system_key === targetSystemKey) ?? null,
+  );
 
   if (target && fieldsQuery.data) {
     const fields = fieldsQuery.data.filter((field) => field.table_id === target.id);
@@ -95,6 +109,7 @@ function MoveSteps({
         contactId={contactId}
         table={target}
         fields={fields}
+        prefillBySystemKey={prefillBySystemKey}
         onBack={() => setTarget(null)}
         onDone={onDone}
         onMoved={onMoved}
@@ -135,6 +150,7 @@ function AnswerForm({
   contactId,
   table,
   fields,
+  prefillBySystemKey,
   onBack,
   onDone,
   onMoved,
@@ -142,6 +158,7 @@ function AnswerForm({
   contactId: string;
   table: ContactTable;
   fields: ContactField[];
+  prefillBySystemKey?: Record<string, string>;
   onBack: () => void;
   onDone: () => void;
   onMoved: (result: MoveResult) => void;
@@ -149,7 +166,9 @@ function AnswerForm({
   const t = useTranslations("contacts.move");
   const settings = useFormatSettings();
   const move = useMoveContact();
-  const [answers, setAnswers] = useState<Answers>(() => initialAnswers(fields, settings));
+  const [answers, setAnswers] = useState<Answers>(() =>
+    initialAnswers(fields, settings, new Date(), prefillBySystemKey),
+  );
   const [errors, setErrors] = useState<Record<string, AnswerError>>({});
   const [failed, setFailed] = useState(false);
   const shown = useMemo(() => shownFields(fields, answers), [fields, answers]);

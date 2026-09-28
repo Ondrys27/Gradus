@@ -14,12 +14,16 @@ export function senderAddress(): string {
 
 export type EmailResult = { ok: true; id: string | null } | { ok: false; error: string };
 
+/** One file attached to an outgoing e-mail; `content` is base64, no attachments have Resend limits by size. */
+export type EmailAttachment = { filename: string; content: string };
+
 /** Sends one e-mail. Never throws: a failed e-mail must not undo what caused it. */
 export async function sendEmail(message: {
   to: string;
   subject: string;
   text: string;
   html: string;
+  attachments?: EmailAttachment[];
 }): Promise<EmailResult> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return { ok: false, error: "RESEND_API_KEY is not set" };
@@ -33,8 +37,10 @@ export async function sendEmail(message: {
         subject: message.subject,
         text: message.text,
         html: message.html,
+        ...(message.attachments?.length ? { attachments: message.attachments } : {}),
       }),
-      signal: AbortSignal.timeout(10_000),
+      // Attachments make the request slower than a plain notification e-mail.
+      signal: AbortSignal.timeout(20_000),
     });
     const body = (await response.json().catch(() => null)) as {
       id?: string;

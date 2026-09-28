@@ -28,6 +28,8 @@ import { formatCalendarDate, formatCurrency, formatDate, formatDateTime } from "
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { stageTone } from "@/features/pipeline/types";
+import { ComposeEmailDialog } from "@/features/email/compose-email-dialog";
+import { emailSummary } from "@/features/email/types";
 import { ActivityPanel } from "./activity-panel";
 import { ContactFormDialog } from "./contact-form-dialog";
 import { telHref } from "./contact-search";
@@ -101,6 +103,12 @@ function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNo
   const [deleting, setDeleting] = useState(false);
   const [moving, setMoving] = useState(false);
   const [moved, setMoved] = useState<MoveResult | null>(null);
+  const [composing, setComposing] = useState(false);
+  const [justSent, setJustSent] = useState<{ subject: string; body: string } | null>(null);
+  const [moveEmailPrefill, setMoveEmailPrefill] = useState<{
+    subject: string;
+    body: string;
+  } | null>(null);
   const remove = useDeleteContact(contact.id);
   const entry = useContactEntry(contact.id).data;
   const tables = useContactTables().data ?? [];
@@ -138,7 +146,13 @@ function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNo
             <PencilIcon aria-hidden data-icon="inline-start" />
             {t("detail.edit")}
           </Button>
-          <Button disabled={tables.length === 0} onClick={() => setMoving(true)}>
+          <Button
+            disabled={tables.length === 0}
+            onClick={() => {
+              setMoveEmailPrefill(null);
+              setMoving(true);
+            }}
+          >
             <ArrowRightLeftIcon aria-hidden data-icon="inline-start" />
             {t("move.open")}
           </Button>
@@ -153,9 +167,30 @@ function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNo
         </FormAlert>
       )}
 
+      {justSent && (
+        <FormAlert tone="success" className="flex flex-wrap items-center justify-between gap-3">
+          <span>{t("detail.emailSent")}</span>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setMoveEmailPrefill(justSent);
+                setMoving(true);
+              }}
+            >
+              {t("detail.moveToEmailSent")}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setJustSent(null)}>
+              {t("detail.dismissEmailSent")}
+            </Button>
+          </div>
+        </FormAlert>
+      )}
+
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
         <div className="flex flex-col gap-6">
-          <ContactInfo contact={contact} />
+          <ContactInfo contact={contact} onWriteEmail={() => setComposing(true)} />
           <CurrentTableCard contactId={contact.id} />
           <NotesCard contact={contact} />
           <DealsCard contactId={contact.id} />
@@ -170,13 +205,33 @@ function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNo
       </div>
 
       <ContactFormDialog open={editing} onOpenChange={setEditing} contact={contact} />
+      <ComposeEmailDialog
+        open={composing}
+        onOpenChange={setComposing}
+        contactId={contact.id}
+        contactEmail={contact.email}
+        onSent={setJustSent}
+      />
       <MoveContactDialog
         open={moving}
-        onOpenChange={setMoving}
+        onOpenChange={(next) => {
+          setMoving(next);
+          if (!next) setMoveEmailPrefill(null);
+        }}
         contactId={contact.id}
         currentTableId={entry?.table_id ?? null}
         tables={tables}
-        onMoved={setMoved}
+        targetSystemKey={moveEmailPrefill ? "email_sent" : undefined}
+        prefillBySystemKey={
+          moveEmailPrefill
+            ? { email_body: emailSummary(moveEmailPrefill.subject, moveEmailPrefill.body) }
+            : undefined
+        }
+        onMoved={(result) => {
+          setMoved(result);
+          setJustSent(null);
+          setMoveEmailPrefill(null);
+        }}
       />
       <ConfirmDialog
         open={deleting}
@@ -263,7 +318,7 @@ export function CurrentTableCard({ contactId }: { contactId: string }) {
   );
 }
 
-function ContactInfo({ contact }: { contact: Contact }) {
+function ContactInfo({ contact, onWriteEmail }: { contact: Contact; onWriteEmail: () => void }) {
   const t = useTranslations("contacts");
   const address = [contact.address, contact.postal_code, contact.city].filter(Boolean).join(", ");
   const name = contactName(contact);
@@ -287,14 +342,15 @@ function ContactInfo({ contact }: { contact: Contact }) {
       )}
       {contact.email && (
         <InfoRow icon={<MailIcon />} label={t("fields.email")} value={contact.email}>
-          <a
-            href={`mailto:${contact.email}`}
+          <Button
+            variant="outline"
+            size="sm"
             aria-label={t("list.emailName", { name })}
-            className={buttonVariants({ variant: "outline", size: "sm" })}
+            onClick={onWriteEmail}
           >
             <MailIcon aria-hidden data-icon="inline-start" />
             {t("detail.write")}
-          </a>
+          </Button>
         </InfoRow>
       )}
       {contact.website && (

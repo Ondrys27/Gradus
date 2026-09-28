@@ -35,11 +35,16 @@ export function shownFields(fields: ContactField[], answers: Answers): ContactFi
   return byPosition(fields).filter((field) => shown(field));
 }
 
-/** Prefilled answers: "today" for date questions and "now" for date-and-time ones that ask for it. */
+/**
+ * Prefilled answers: "today" for date questions and "now" for date-and-time
+ * ones that ask for it, then a caller's own text by the question's system_key
+ * (e.g. the e-mail just sent), which wins over a default.
+ */
 export function initialAnswers(
   fields: ContactField[],
   settings: FormatSettings,
   now: Date = new Date(),
+  bySystemKey?: Record<string, string>,
 ): Answers {
   const answers: Answers = {};
   for (const field of fields) {
@@ -47,6 +52,13 @@ export function initialAnswers(
       answers[field.id] = todayIsoDate(settings, now);
     } else if (field.type === "datetime" && field.default_value === "now") {
       answers[field.id] = now.toISOString();
+    }
+  }
+  if (bySystemKey) {
+    for (const field of fields) {
+      if (field.system_key && bySystemKey[field.system_key] !== undefined) {
+        answers[field.id] = bySystemKey[field.system_key];
+      }
     }
   }
   return answers;

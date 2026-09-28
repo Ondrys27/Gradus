@@ -2,7 +2,7 @@
 
 import { useMemo, useState, type FormEvent } from "react";
 import { Dialog } from "@base-ui/react/dialog";
-import { FileTextIcon, HistoryIcon, Trash2Icon, XIcon } from "lucide-react";
+import { FileTextIcon, MailIcon, Trash2Icon, XIcon } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
@@ -17,16 +17,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ComposeEmailDialog } from "@/features/email/compose-email-dialog";
+import { emailSummary } from "@/features/email/types";
 import { useInvoiceErrorText } from "@/features/finance/fakturoid/use-invoice-error";
 import { useCreateInvoiceFromDeal } from "@/features/finance/queries";
+import { MoveContactDialog } from "@/features/contacts/move-contact-dialog";
+import { useContact, useContactEntry, useContactTables } from "@/features/contacts/queries";
 import { formatDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { useIsPhone } from "@/lib/use-media-query";
+import { DealActivityTimeline } from "./deal-activity-timeline";
 import { draftFromDeal, validateDraft, type DealDraft } from "./deal-draft";
 import { DealFormFields } from "./deal-form-fields";
 import { useDeleteDeal, useUpdateDeal } from "./queries";
 import type { PipelineErrorKey } from "./schemas";
 import type { Deal, Stage } from "./types";
+
+/** Never a real contact; keeps a uuid column happy when the deal has none. */
+const NIL_CONTACT_ID = "00000000-0000-0000-0000-000000000000";
 
 type Props = {
   deal: Deal | null;
@@ -113,6 +121,14 @@ function DetailBody({
   const [errors, setErrors] = useState<Partial<Record<string, PipelineErrorKey>>>({});
   const [status, setStatus] = useState<"idle" | "saved" | "failed">("idle");
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [composing, setComposing] = useState(false);
+  const [justSent, setJustSent] = useState<{ subject: string; body: string } | null>(null);
+  const [moving, setMoving] = useState(false);
+  const tables = useContactTables().data ?? [];
+  // Neither hook is skipped when the deal has no contact (rules of hooks); a nil
+  // id keeps the query well-formed while matching nothing.
+  const contactEntry = useContactEntry(deal.contact?.id ?? NIL_CONTACT_ID).data;
+  const contactEmail = useContact(deal.contact?.id ?? NIL_CONTACT_ID).data?.email ?? null;
 
   const stage = stages.find((item) => item.id === deal.stage_id);
   const stageItems = useMemo(
@@ -208,6 +224,22 @@ function DetailBody({
 
       <InvoiceSection deal={deal} invoice={invoice} />
 
+      <EmailSection deal={deal} contactEmail={contactEmail} onCompose={() => setComposing(true)} />
+
+      {justSent && (
+        <FormAlert tone="success" className="flex flex-wrap items-center justify-between gap-3">
+          <span>{t("emailSent")}</span>
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" onClick={() => setMoving(true)}>
+              {t("moveToEmailSent")}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setJustSent(null)}>
+              {t("dismissEmailSent")}
+            </Button>
+          </div>
+        </FormAlert>
+      )}
+
       <section
         aria-labelledby="deal-history"
         className="flex flex-col gap-2 border-t border-line pt-5"
@@ -215,10 +247,7 @@ function DetailBody({
         <h3 id="deal-history" className="micro-label">
           {t("history")}
         </h3>
-        <p className="flex items-center gap-2 rounded-xl border border-dashed border-line px-3 py-4 text-sm text-ink-muted">
-          <HistoryIcon aria-hidden className="size-4 shrink-0" />
-          {t("historyEmpty")}
-        </p>
+        <DealActivityTimeline dealId={deal.id} />
       </section>
 
       <Button type="button" variant="destructive" onClick={() => setConfirmingDelete(true)}>
@@ -238,7 +267,66 @@ function DetailBody({
         error={remove.isError ? t("deleteFailed") : null}
         onConfirm={() => void confirmDelete()}
       />
+
+      {deal.contact && (
+        <>
+          <ComposeEmailDialog
+            open={composing}
+            onOpenChange={setComposing}
+            contactId={deal.contact.id}
+            contactEmail={contactEmail}
+            dealId={deal.id}
+            defaultSubject={deal.title}
+            onSent={setJustSent}
+          />
+          <MoveContactDialog
+            open={moving}
+            onOpenChange={(next) => {
+              setMoving(next);
+              if (!next) setJustSent(null);
+            }}
+            contactId={deal.contact.id}
+            currentTableId={contactEntry?.table_id ?? null}
+            tables={tables}
+            targetSystemKey="email_sent"
+            prefillBySystemKey={
+              justSent ? { email_body: emailSummary(justSent.subject, justSent.body) } : undefined
+            }
+            onMoved={() => {
+              setMoving(false);
+              setJustSent(null);
+            }}
+          />
+        </>
+      )}
     </div>
+  );
+}
+
+/** "Napsat e-mail" needs a contact; without one (or without its address) it explains why. */
+function EmailSection({
+  deal,
+  contactEmail,
+  onCompose,
+}: {
+  deal: Deal;
+  contactEmail: string | null;
+  onCompose: () => void;
+}) {
+  const t = useTranslations("pipeline.detail");
+  const canWrite = Boolean(contactEmail);
+  return (
+    <section className="flex flex-col gap-2 border-t border-line pt-5">
+      <Button type="button" variant="secondary" disabled={!canWrite} onClick={onCompose}>
+        <MailIcon aria-hidden data-icon="inline-start" />
+        {t("writeEmail")}
+      </Button>
+      {!canWrite && (
+        <p className="text-xs text-ink-muted">
+          {deal.contact ? t("emailNeedsAddress") : t("emailNeedsContact")}
+        </p>
+      )}
+    </section>
   );
 }
 

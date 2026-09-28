@@ -749,7 +749,13 @@
       "openInvoices": "Otevřít faktury",
       "invoiceFailed": "Fakturu se nepodařilo vytvořit.",
       "invoiceNeedsValue": "Doplň k obchodu hodnotu, ať jde vyfakturovat.",
-      "invoiceCreatedFakturoid": "Faktura {number} je vystavená ve Fakturoidu."
+      "invoiceCreatedFakturoid": "Faktura {number} je vystavená ve Fakturoidu.",
+      "writeEmail": "Napsat e-mail",
+      "emailNeedsContact": "Přidej k obchodu kontakt, aby se mu dalo napsat.",
+      "emailNeedsAddress": "Kontakt u tohoto obchodu nemá e-mailovou adresu.",
+      "emailSent": "E-mail byl odeslán.",
+      "moveToEmailSent": "Přesunout do „Odeslán e-mail“",
+      "dismissEmailSent": "Teď ne"
     },
     "lost": {
       "title": "Označit jako ztracený",
@@ -909,7 +915,10 @@
       "deleteFailed": "Kontakt se nepodařilo smazat. Zkus to znovu.",
       "cancel": "Zrušit",
       "close": "Zavřít",
-      "currentTable": "Aktuální tabulka"
+      "currentTable": "Aktuální tabulka",
+      "emailSent": "E-mail byl odeslán.",
+      "moveToEmailSent": "Přesunout do „Odeslán e-mail“",
+      "dismissEmailSent": "Teď ne"
     },
     "notes": {
       "title": "Poznámka",
@@ -935,6 +944,7 @@
       "types": {
         "call": "Hovor",
         "email": "E-mail",
+        "email_sent": "E-mail odeslán",
         "meeting": "Schůzka",
         "sms": "SMS",
         "note": "Poznámka",
@@ -1735,6 +1745,46 @@
       "from": "Od",
       "message": "Jeho zpráva",
       "unknownUser": "neznámý uživatel"
+    },
+    "compose": {
+      "title": "Napsat e-mail",
+      "close": "Zavřít",
+      "to": "Komu: {email}",
+      "noAddress": "Tento kontakt nemá e-mailovou adresu.",
+      "subject": "Předmět",
+      "subjectPlaceholder": "O čem to je?",
+      "body": "Text",
+      "bodyPlaceholder": "Napiš zprávu…",
+      "aiToggle": "Navrhnout odpověď pomocí AI",
+      "aiReceivedLabel": "Vlož přijatý e-mail",
+      "aiReceivedPlaceholder": "Vlož zprávu, na kterou odpovídáš…",
+      "aiSuggest": "Navrhnout odpověď",
+      "aiWorking": "Jarvis přemýšlí…",
+      "aiError": {
+        "notConfigured": "Jarvis ještě není připojený, takže odpověď nenavrhne. Napiš ji sám.",
+        "busy": "Jarvis má teď moc práce. Zkus to za minutu.",
+        "unavailable": "Jarvis teď nemůže odpovědět. Zkus to později.",
+        "limitReached": "Volání Jarvise na tento měsíc došla.",
+        "network": "Spojení se přerušilo. Zkontroluj internet a zkus to znovu.",
+        "unknown": "Něco se pokazilo. Zkus to znovu, nebo napiš odpověď sám."
+      },
+      "attach": "Přiložit soubory (max {max}, každý do {size} MB)",
+      "filesSelected": "Přiložené soubory",
+      "removeFile": "Odebrat {name}",
+      "errors": {
+        "contactNotFound": "Tento kontakt se nepodařilo najít.",
+        "noAddress": "Tento kontakt nemá e-mailovou adresu.",
+        "fileType": "Tento typ souboru není podporovaný.",
+        "fileTooLarge": "Tento soubor je větší než {size} MB.",
+        "fileMissing": "Jednu z příloh se nepodařilo načíst. Zkus ji přiložit znovu.",
+        "tooManyFiles": "Najednou nejvýše {max} souborů.",
+        "sendFailed": "E-mail se nepodařilo odeslat.",
+        "unknown": "Něco se pokazilo. Zkus to znovu."
+      },
+      "detail": "({detail})",
+      "cancel": "Zrušit",
+      "sending": "Odesílá se…",
+      "send": "Odeslat"
     }
   },
   "workers": {

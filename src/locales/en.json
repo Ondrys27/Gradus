@@ -749,7 +749,13 @@
       "openInvoices": "Open invoices",
       "invoiceFailed": "The invoice could not be created.",
       "invoiceNeedsValue": "Add a value to the deal to invoice it.",
-      "invoiceCreatedFakturoid": "Invoice {number} was issued in Fakturoid."
+      "invoiceCreatedFakturoid": "Invoice {number} was issued in Fakturoid.",
+      "writeEmail": "Write an e-mail",
+      "emailNeedsContact": "Add a contact to this deal to e-mail them.",
+      "emailNeedsAddress": "This deal's contact has no e-mail address.",
+      "emailSent": "The e-mail was sent.",
+      "moveToEmailSent": "Move to “Email sent”",
+      "dismissEmailSent": "Not now"
     },
     "lost": {
       "title": "Mark as lost",
@@ -909,7 +915,10 @@
       "deleteFailed": "The contact could not be deleted. Try again.",
       "cancel": "Cancel",
       "close": "Close",
-      "currentTable": "Current table"
+      "currentTable": "Current table",
+      "emailSent": "The e-mail was sent.",
+      "moveToEmailSent": "Move to “Email sent”",
+      "dismissEmailSent": "Not now"
     },
     "notes": {
       "title": "Note",
@@ -935,6 +944,7 @@
       "types": {
         "call": "Call",
         "email": "E-mail",
+        "email_sent": "E-mail sent",
         "meeting": "Meeting",
         "sms": "Text message",
         "note": "Note",
@@ -1735,6 +1745,46 @@
       "from": "From",
       "message": "Their message",
       "unknownUser": "unknown user"
+    },
+    "compose": {
+      "title": "Write an e-mail",
+      "close": "Close",
+      "to": "To {email}",
+      "noAddress": "This contact has no e-mail address.",
+      "subject": "Subject",
+      "subjectPlaceholder": "What is this about?",
+      "body": "Text",
+      "bodyPlaceholder": "Write your message…",
+      "aiToggle": "Draft a reply with AI",
+      "aiReceivedLabel": "Paste the e-mail you received",
+      "aiReceivedPlaceholder": "Paste the message you're replying to…",
+      "aiSuggest": "Suggest a reply",
+      "aiWorking": "Jarvis is thinking…",
+      "aiError": {
+        "notConfigured": "Jarvis isn't connected yet, so it can't draft a reply. Write it yourself.",
+        "busy": "Jarvis is busy right now. Try again in a minute.",
+        "unavailable": "Jarvis can't answer right now. Try again later.",
+        "limitReached": "Jarvis's calls for this month are used up.",
+        "network": "The connection dropped. Check the internet and try again.",
+        "unknown": "Something went wrong. Try again, or write the reply yourself."
+      },
+      "attach": "Attach files (up to {max}, {size} MB each)",
+      "filesSelected": "Attached files",
+      "removeFile": "Remove {name}",
+      "errors": {
+        "contactNotFound": "This contact could not be found.",
+        "noAddress": "This contact has no e-mail address.",
+        "fileType": "That file type isn't supported.",
+        "fileTooLarge": "That file is larger than {size} MB.",
+        "fileMissing": "One of the attachments could not be read. Try attaching it again.",
+        "tooManyFiles": "At most {max} files at a time.",
+        "sendFailed": "The e-mail could not be sent.",
+        "unknown": "Something went wrong. Try again."
+      },
+      "detail": "({detail})",
+      "cancel": "Cancel",
+      "sending": "Sending…",
+      "send": "Send"
     }
   },
   "workers": {

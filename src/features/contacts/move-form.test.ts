@@ -97,4 +97,16 @@ describe("answers", () => {
     const late = new Date("2026-09-24T23:30:00Z");
     expect(initialAnswers([sentOn], DEFAULT_FORMAT_SETTINGS, late)).toEqual({ sent: "2026-09-25" });
   });
+
+  it("prefills a question by its system_key, on top of a default, and never a stranger's field", () => {
+    const body = field("body", { type: "long_text", system_key: "email_body" });
+    const sentOn = field("sent", { type: "date", default_value: "today", system_key: "sent_on" });
+    const now = new Date("2026-09-25T10:00:00Z");
+    expect(
+      initialAnswers([body, sentOn], DEFAULT_FORMAT_SETTINGS, now, {
+        email_body: "Subject\n\nHello there",
+        unrelated_key: "ignored",
+      }),
+    ).toEqual({ body: "Subject\n\nHello there", sent: "2026-09-25" });
+  });
 });

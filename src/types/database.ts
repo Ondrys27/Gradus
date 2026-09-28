@@ -2442,6 +2442,7 @@ export type Database = {
         | "note"
         | "move"
         | "sms"
+        | "email_sent"
       contact_field_type:
         | "text"
         | "long_text"
@@ -2642,6 +2643,7 @@ export const Constants = {
         "note",
         "move",
         "sms",
+        "email_sent",
       ],
       contact_field_type: [
         "text",

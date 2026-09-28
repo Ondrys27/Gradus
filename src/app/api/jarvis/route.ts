@@ -4,6 +4,7 @@ import { EMPTY_USAGE, JARVIS_MODELS, modelFor, type JarvisFeature } from "@/feat
 import { featureRequestNote, situationBlock } from "@/features/jarvis/prompt";
 import {
   chatRequestSchema,
+  emailReplyRequestSchema,
   milestoneReviewRequestSchema,
   rewardSetupRequestSchema,
   salesAnalysisRequestSchema,
@@ -20,6 +21,7 @@ import {
   prepareAttachments,
   recordAttachments,
 } from "@/features/jarvis/server/attachments";
+import { suggestEmailReply } from "@/features/jarvis/server/email-reply";
 import { handleFeatureRequest } from "@/features/jarvis/server/feature-requests";
 import { loadSituation } from "@/features/jarvis/server/load-situation";
 import { reviewMilestone } from "@/features/jarvis/server/milestone-review";
@@ -165,13 +167,11 @@ export async function POST(request: Request) {
   if (kind === "milestoneReview") return milestoneReview(ctx, body);
   if (kind === "salesAnalysis") return salesAnalysis(ctx, body);
   if (kind === "rewardSetup") return rewardSetup(ctx, body);
+  if (kind === "emailReply") return emailReply(ctx, body);
   return chat(ctx, body);
 }
 
-function jobError(
-  code: ChatErrorCode | "locked" | "alreadyReviewed" | "empty",
-  status: number,
-) {
+function jobError(code: ChatErrorCode | "locked" | "alreadyReviewed" | "empty", status: number) {
   return NextResponse.json({ ok: false, code }, { status });
 }
 
@@ -275,6 +275,69 @@ async function rewardSetup(ctx: Context, body: unknown) {
   });
   if (!result.ok) return jobError(result.code, 502);
   return NextResponse.json({ ok: true, proposal: result.proposal });
+}
+
+/**
+ * Sonnet drafts a reply to an e-mail the user pasted in, with the contact and
+ * (when composing from a deal) its context. Nothing is saved: the user reads
+ * the draft over, edits it and sends it themselves.
+ */
+async function emailReply(ctx: Context, body: unknown) {
+  const parsed = emailReplyRequestSchema.safeParse(body);
+  if (!parsed.success) return jobError("unknown", 400);
+  const { supabase, admin, userId, settings, locale } = ctx;
+
+  // Read with the user's own client: RLS keeps it to their contact and deal.
+  const { data: contact, error: contactError } = await supabase
+    .from("contacts")
+    .select("company_name, first_name, last_name")
+    .eq("id", parsed.data.contactId)
+    .maybeSingle();
+  if (contactError) throw contactError;
+  if (!contact) return jobError("notFound", 404);
+
+  let deal: { title: string; value: number | null; currency: string; stageName: string } | null =
+    null;
+  if (parsed.data.dealId) {
+    const { data, error } = await supabase
+      .from("deals")
+      .select("title, value, currency, stage:pipeline_stages(name)")
+      .eq("id", parsed.data.dealId)
+      .maybeSingle();
+    if (error) throw error;
+    if (data) {
+      deal = {
+        title: data.title,
+        value: data.value,
+        currency: data.currency,
+        stageName: data.stage?.name ?? "",
+      };
+    }
+  }
+
+  const usage = await loadAiUsage(supabase, admin, userId, settings);
+  if (limitReached(usage)) return jobError("limitReached", 429);
+  const client = createAnthropic();
+  if (!client) {
+    await logNotConfigured(ctx, "email_reply");
+    return jobError("notConfigured", 503);
+  }
+
+  const contactName =
+    contact.company_name ||
+    [contact.first_name, contact.last_name].filter(Boolean).join(" ") ||
+    "the contact";
+
+  const result = await suggestEmailReply({
+    client,
+    contact: { name: contactName },
+    deal,
+    locale,
+    receivedEmail: parsed.data.receivedEmail,
+    log: (entry) => logAiUsage(admin, { ...entry, userId, conversationId: null }),
+  });
+  if (!result.ok) return jobError(result.code, 502);
+  return NextResponse.json({ ok: true, reply: result.reply });
 }
 
 /**
