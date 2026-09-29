@@ -21,6 +21,8 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusPill } from "@/components/ui/status-pill";
 import { toneFill } from "@/components/ui/tone";
+import { formatNumber } from "@/lib/format";
+import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { FieldFormDialog } from "./field-form-dialog";
 import { byPosition, fieldOptions, reorder } from "./field-logic";
@@ -164,6 +166,8 @@ function TableCard({
   const [open, setOpen] = useState(false);
   const isClients = table.system_key === "clients";
   const panelId = `table-${table.id}-panel`;
+  const settings = useFormatSettings();
+  const toggleLabel = isClients ? t("settings") : t("questionCount", { count: fields.length });
 
   return (
     <div className="rounded-card border border-line bg-surface">
@@ -187,9 +191,18 @@ function TableCard({
           aria-expanded={open}
           aria-controls={panelId}
           onClick={() => setOpen((value) => !value)}
-          className="inline-flex h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3 text-sm text-ink-soft outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40 mouse:h-8"
+          aria-label={toggleLabel}
+          className="inline-flex h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-full px-2 text-sm text-ink-soft outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40 sm:px-3 mouse:h-8"
         >
-          {isClients ? t("settings") : t("questionCount", { count: fields.length })}
+          {/* On a phone the label would squeeze the table name; the count alone is enough. */}
+          <span aria-hidden className="hidden sm:inline">
+            {toggleLabel}
+          </span>
+          {!isClients && (
+            <span aria-hidden className="tabular-nums sm:hidden">
+              {formatNumber(fields.length, {}, settings)}
+            </span>
+          )}
           <ChevronDownIcon
             aria-hidden
             className={cn(

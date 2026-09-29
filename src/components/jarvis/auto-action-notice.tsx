@@ -38,7 +38,7 @@ export function AutoActionNotice({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
       transition={{ duration: reduceMotion ? 0 : 0.2 }}
-      className="fixed right-4 bottom-[calc(12px+64px+16px+env(safe-area-inset-bottom))] z-40 w-[min(340px,calc(100vw-32px))] rounded-2xl border border-green/40 bg-surface p-3 shadow-popover md:right-6 md:bottom-[calc(24px+64px+16px)]"
+      className="fixed right-[max(16px,env(safe-area-inset-right))] bottom-[calc(12px+64px+16px+env(safe-area-inset-bottom))] z-40 w-[min(340px,calc(100vw-32px))] rounded-2xl border border-green/40 bg-surface p-3 shadow-popover md:right-[max(24px,env(safe-area-inset-right))] md:bottom-[calc(max(24px,env(safe-area-inset-bottom))+64px+16px)]"
     >
       <div className="flex items-start gap-2.5">
         <CircleCheckIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-green" />

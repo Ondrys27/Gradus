@@ -1,12 +1,20 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
+import dynamic from "next/dynamic";
 import { JarvisButton } from "@/components/layout/jarvis-button";
 import { useJarvisSuggestions } from "@/features/jarvis/queries";
 import { useJarvisChat } from "@/features/jarvis/use-jarvis-chat";
+import { whenIdle } from "@/lib/idle";
 import { AutoActionNotice } from "./auto-action-notice";
-import { JarvisPanel } from "./jarvis-panel";
+
+const loadPanel = () => import("./jarvis-panel");
+
+/** The chat panel is not part of the first load; it is fetched when idle. */
+const JarvisPanel = dynamic(() => loadPanel().then((module) => module.JarvisPanel), {
+  ssr: false,
+});
 
 /**
  * Jarvis in the bottom-right corner: the button and its panel. The chat lives
@@ -19,6 +27,9 @@ export function JarvisDock() {
   const chat = useJarvisChat();
   const suggestions = useJarvisSuggestions();
   const close = useCallback(() => setOpen(false), []);
+
+  // Fetched once the browser is idle, so the first tap on Jarvis opens at once.
+  useEffect(() => whenIdle(loadPanel), []);
 
   const list = suggestions.data ?? [];
   const unseen = list.filter((item) => !item.seen).length;

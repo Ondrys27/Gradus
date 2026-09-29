@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -16,6 +16,17 @@ export async function generateMetadata(): Promise<Metadata> {
     description: t("description", { appName: APP_NAME }),
   };
 }
+
+/**
+ * `viewport-fit=cover` lets the page run under the notch and the home indicator,
+ * which is what makes `env(safe-area-inset-*)` non-zero on iOS; every fixed bar
+ * pads itself by those insets.
+ */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();

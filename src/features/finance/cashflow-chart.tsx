@@ -127,8 +127,9 @@ export function CashflowChart({ today }: { today: IsoDate }) {
               </ComposedChart>
             </ResponsiveContainer>
             {empty && (
-              <p className="pointer-events-none absolute inset-0 grid place-items-center text-sm text-ink-muted">
-                {t("empty")}
+              <p className="pointer-events-none absolute inset-0 grid place-items-center px-4 text-center text-sm text-ink-muted">
+                {/* A backing so the message never runs over the axis ticks on a narrow screen. */}
+                <span className="rounded-xl bg-surface px-3 py-1">{t("empty")}</span>
               </p>
             )}
           </div>

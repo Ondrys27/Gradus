@@ -19,7 +19,7 @@ export function Sidebar() {
   const { items } = useNavItems();
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden w-19 flex-col border-r border-line/70 bg-sidebar/85 backdrop-blur-xl md:flex lg:w-60">
+    <aside className="fixed inset-y-0 left-0 z-40 hidden w-[calc(--spacing(19)+env(safe-area-inset-left))] flex-col border-r border-line/70 bg-sidebar/85 pl-[env(safe-area-inset-left)] backdrop-blur-xl md:flex lg:w-[calc(--spacing(60)+env(safe-area-inset-left))]">
       <Link
         href="/dashboard"
         className="flex h-18 shrink-0 items-center justify-center gap-3 px-5 lg:justify-start"

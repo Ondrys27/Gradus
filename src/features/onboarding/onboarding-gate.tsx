@@ -1,7 +1,17 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useProfile, useSession } from "@/features/account/queries";
-import { OnboardingFlow } from "./onboarding-flow";
+
+/** Only a brand-new account ever sees the wizard, so it is not in the app bundle. */
+const OnboardingFlow = dynamic(
+  () => import("./onboarding-flow").then((module) => module.OnboardingFlow),
+  {
+    ssr: false,
+    // Covers the app the same way the wizard will, so nothing flashes behind it.
+    loading: () => <div aria-hidden className="fixed inset-0 z-60 bg-canvas/90 backdrop-blur-md" />,
+  },
+);
 
 /**
  * Mounted once for the whole app. Shows the first-login wizard until the

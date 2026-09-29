@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import { useIsMutating } from "@tanstack/react-query";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { ChevronDownIcon, CircleCheckIcon, SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -11,7 +12,6 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { SidePanel } from "@/components/ui/side-panel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { summarize, toBars } from "@/features/cold-calling/stats-logic";
-import { DailyBarChart } from "@/features/cold-calling/daily-bar-chart";
 import { contactName } from "@/features/contacts/types";
 import { periodRange as monthRange } from "@/features/finance/finance-logic";
 import { useTotals } from "@/features/finance/queries";
@@ -48,6 +48,12 @@ import {
 import { Sparkline } from "./sparkline";
 import { SurveyAnswerList } from "./survey-answers";
 import { useWeekProspecting, type TileKey } from "./tiles";
+
+// The charts library loads only when this detail is opened.
+const DailyBarChart = dynamic(
+  () => import("@/features/cold-calling/daily-bar-chart").then((module) => module.DailyBarChart),
+  { ssr: false, loading: () => <Skeleton className="h-52 rounded-xl" /> },
+);
 
 type Props = { tile: TileKey | null; onClose: () => void };
 

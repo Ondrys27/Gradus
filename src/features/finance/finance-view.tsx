@@ -2,9 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { PlusIcon } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -15,7 +17,6 @@ import {
 import { MarkSeenOnVisit } from "@/features/gamification/mark-seen-on-visit";
 import { todayIsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
-import { CashflowChart } from "./cashflow-chart";
 import { periodRange } from "./finance-logic";
 import { InvoicesPanel } from "./invoices-panel";
 import { RecurringFormDialog } from "./recurring-form-dialog";
@@ -32,6 +33,15 @@ import {
   type RecurringPayment,
   type Transaction,
 } from "./types";
+
+// The charts library is large; the totals and the transaction list never wait for it.
+const CashflowChart = dynamic(
+  () => import("./cashflow-chart").then((module) => module.CashflowChart),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="h-80 rounded-card" />,
+  },
+);
 
 /** `undefined` closed, `null` a new one, otherwise the one being edited. */
 type Editing<T> = T | null | undefined;

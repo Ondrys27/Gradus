@@ -42,7 +42,7 @@ export function BottomNav() {
     <>
       <nav
         aria-label={t("label")}
-        className="fixed bottom-[calc(12px+env(safe-area-inset-bottom))] left-4 z-40 flex h-16 right-[calc(16px+64px+8px)] items-stretch justify-around rounded-2xl border border-line/70 bg-surface/60 px-0.5 shadow-popover backdrop-blur-xl md:hidden"
+        className="fixed right-[calc(max(16px,env(safe-area-inset-right))+64px+8px)] bottom-[calc(12px+env(safe-area-inset-bottom))] left-[max(16px,env(safe-area-inset-left))] z-40 flex h-16 items-stretch justify-around rounded-2xl border border-line/70 bg-surface/60 px-0.5 shadow-popover backdrop-blur-xl md:hidden"
       >
         {primaryItems.map((item) =>
           item.locked ? (

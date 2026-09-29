@@ -47,8 +47,8 @@ export function TopBar() {
   }, [pulse]);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line/50 bg-canvas/70 backdrop-blur-xl">
-      <div className="relative flex h-18 items-center gap-2 px-4 md:gap-4 md:px-8">
+    <header className="sticky top-0 z-30 border-b border-line/50 bg-canvas/70 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
+      <div className="relative flex h-18 items-center gap-2 pr-[max(--spacing(4),env(safe-area-inset-right))] pl-[max(--spacing(4),env(safe-area-inset-left))] md:gap-4 md:pr-[max(--spacing(8),env(safe-area-inset-right))] md:pl-8">
         <Link
           href="/dashboard"
           aria-label={t("home")}

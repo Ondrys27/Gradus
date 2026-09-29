@@ -1,8 +1,24 @@
 "use client";
 
-import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { Dialog } from "@base-ui/react/dialog";
-import { CelebrationCard } from "./celebration-card";
+import dynamic from "next/dynamic";
+import { whenIdle } from "@/lib/idle";
+
+const loadCard = () => import("./celebration-card");
+
+/** The card and canvas-confetti stay out of the first load; fetched when idle. */
+const CelebrationCard = dynamic(() => loadCard().then((module) => module.CelebrationCard), {
+  ssr: false,
+});
 
 export type CelebrationOptions = {
   title: string;
@@ -39,6 +55,8 @@ export function CelebrationProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const dismiss = useCallback(() => setQueue((q) => q.slice(1)), []);
+
+  useEffect(() => whenIdle(loadCard), []);
 
   return (
     <CelebrationContext.Provider value={celebrate}>

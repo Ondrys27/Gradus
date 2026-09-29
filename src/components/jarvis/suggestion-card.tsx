@@ -16,7 +16,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useDismissSuggestion, useUndoTaskCompletion } from "@/features/jarvis/queries";
-import { isRuleType, type Suggestion, type SuggestionType } from "@/features/jarvis/suggestions";
+import type { Suggestion } from "@/features/jarvis/suggestions";
+import { isRuleType, type SuggestionType } from "@/features/jarvis/suggestion-types";
 import { formatNumber, type FormatSettings } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";

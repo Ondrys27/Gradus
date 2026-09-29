@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { RuleType, SuggestionType } from "./suggestion-types";
 
 /**
  * What Jarvis noticed, shared by the server (which writes jarvis_suggestions)
@@ -7,19 +8,7 @@ import { z } from "zod";
  * interface language; insights and automatic actions carry Jarvis's own text.
  */
 
-export const RULE_TYPES = [
-  "dealWon",
-  "followUps",
-  "stalledDeal",
-  "overdueTask",
-  "milestoneReady",
-] as const;
-export type RuleType = (typeof RULE_TYPES)[number];
-export type SuggestionType = RuleType | "taskCompleted" | "insight";
-
-export function isRuleType(type: string): type is RuleType {
-  return (RULE_TYPES as readonly string[]).includes(type);
-}
+export { RULE_TYPES, isRuleType, type RuleType, type SuggestionType } from "./suggestion-types";
 
 /** Won deals are celebrated for a week, then the suggestion goes. */
 export const WON_RECENT_DAYS = 7;

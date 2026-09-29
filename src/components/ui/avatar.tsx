@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { UserRoundIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +13,9 @@ export function initialsOf(name: string | null | undefined): string {
     .join("")
     .toLocaleUpperCase();
 }
+
+/** The largest avatar (size-24); next/image adds the 2× variant to the srcset. */
+const AVATAR_SOURCE_PX = 96;
 
 export function Avatar({
   src,
@@ -32,8 +36,15 @@ export function Avatar({
       )}
     >
       {src ? (
-        // eslint-disable-next-line @next/next/no-img-element -- small user upload served by Supabase
-        <img src={src} alt="" className="size-full object-cover" draggable={false} />
+        // Resized and re-encoded by next/image: an upload can be 2 MB, the largest avatar is 96 px.
+        <Image
+          src={src}
+          alt=""
+          width={AVATAR_SOURCE_PX}
+          height={AVATAR_SOURCE_PX}
+          className="size-full object-cover"
+          draggable={false}
+        />
       ) : initials ? (
         <span aria-hidden>{initials}</span>
       ) : (

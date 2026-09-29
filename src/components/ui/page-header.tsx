@@ -14,11 +14,12 @@ export function PageHeader({ title, eyebrow, description, actions, className }: 
   return (
     <header
       className={cn(
-        "flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-6",
+        // Actions drop under the text when both no longer fit on one line (tablets).
+        "flex flex-col gap-4 md:flex-row md:flex-wrap md:items-end md:justify-between md:gap-x-6",
         className,
       )}
     >
-      <div className="flex min-w-0 flex-col gap-2">
+      <div className="flex min-w-0 flex-col gap-2 md:min-w-[min(100%,24rem)] md:flex-1">
         {eyebrow && <span className="micro-label">{eyebrow}</span>}
         <h1 className="page-title text-balance">{title}</h1>
         {description && <p className="max-w-2xl text-base text-ink-soft">{description}</p>}

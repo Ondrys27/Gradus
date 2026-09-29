@@ -33,7 +33,7 @@ export function JarvisButton({
 
   return (
     <motion.div
-      className="fixed right-4 bottom-[calc(12px+env(safe-area-inset-bottom))] z-40 md:right-6 md:bottom-6"
+      className="fixed right-[max(16px,env(safe-area-inset-right))] bottom-[calc(12px+env(safe-area-inset-bottom))] z-40 md:right-[max(24px,env(safe-area-inset-right))] md:bottom-[max(24px,env(safe-area-inset-bottom))]"
       animate={reduceMotion ? undefined : { y: [0, -6, 0] }}
       transition={{ duration: 3, ease: "easeInOut", repeat: Infinity }}
     >
