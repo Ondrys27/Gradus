@@ -2142,7 +2142,104 @@
       "tenthMeeting": {
         "title": "10 meetings booked!",
         "subtitle": "Cold calling is turning into real conversations."
+      },
+      "onboardingCompleted": {
+        "title": "Account is set up!",
+        "subtitle": "Welcome to the game. Good luck out there!"
       }
+    }
+  },
+  "onboarding": {
+    "title": "Account setup",
+    "progress": "Onboarding progress",
+    "actions": {
+      "start": "Let's go",
+      "next": "Continue",
+      "skip": "Skip",
+      "saving": "Saving…",
+      "addContact": "Add contact",
+      "finish": "Finish"
+    },
+    "welcome": {
+      "title": "Welcome to {appName}!",
+      "description": "{appName} turns building a business into a game — milestones, XP and things to unlock. Let's set up your account in a few short steps."
+    },
+    "industry": {
+      "title": "What do you do?",
+      "description": "We'll use it to suggest your first milestone and its tasks.",
+      "industries": {
+        "realEstate": {
+          "label": "Real estate",
+          "milestoneTitle": "Land my first 3 listings",
+          "task1": "List my services on 2 real estate portals",
+          "task2": "Call 20 owners selling without an agent",
+          "task3": "Photograph and price my first property"
+        },
+        "coaching": {
+          "label": "Coaching & consulting",
+          "milestoneTitle": "Sign my first 3 clients",
+          "task1": "Write down my offer in one clear sentence",
+          "task2": "Book 10 discovery calls",
+          "task3": "Publish one post about my expertise"
+        },
+        "ecommerce": {
+          "label": "Online store",
+          "milestoneTitle": "Ship my first 10 orders",
+          "task1": "Photograph and describe my first 10 products",
+          "task2": "Set up payments and shipping",
+          "task3": "Tell 20 people the shop is live"
+        },
+        "trades": {
+          "label": "Trade & services",
+          "milestoneTitle": "Book my first 5 jobs",
+          "task1": "Take photos of my best past work",
+          "task2": "Ask 10 past customers for a referral",
+          "task3": "Set my price list for common jobs"
+        },
+        "freelanceIt": {
+          "label": "Freelance IT",
+          "milestoneTitle": "Land my first 3 contracts",
+          "task1": "Put a case study of my best project online",
+          "task2": "Message 15 people in my network",
+          "task3": "Set my day rate and a simple contract template"
+        },
+        "agency": {
+          "label": "Marketing agency",
+          "milestoneTitle": "Sign my first 3 accounts",
+          "task1": "Build one showcase campaign for free",
+          "task2": "Reach out to 20 local businesses",
+          "task3": "Write a one-page service offer"
+        },
+        "other": {
+          "label": "Something else",
+          "milestoneTitle": "Get my first 3 customers",
+          "task1": "Write down exactly what I'm selling",
+          "task2": "Tell 20 people about it",
+          "task3": "Ask for my first piece of feedback"
+        }
+      }
+    },
+    "region": {
+      "title": "Confirm your country and currency",
+      "description": "We picked these from your browser; change them if they're wrong.",
+      "country": "Country",
+      "currency": "Currency"
+    },
+    "milestone": {
+      "title": "Your first milestone",
+      "description": "Based on what you do, here's a milestone with three tasks to start. Edit them or keep them as they are.",
+      "milestoneLabel": "Milestone",
+      "tasksLabel": "Tasks",
+      "taskLabel": "Task {number}",
+      "saveFailed": "The milestone could not be created. Try again."
+    },
+    "contact": {
+      "title": "Add your first contact",
+      "description": "A person or company you might do business with. You can always add more later, or skip this for now."
+    },
+    "closing": {
+      "title": "I'm Jarvis",
+      "description": "You'll find me in the bottom right corner of every screen. Ask me anything, and I'll check in on your progress a few times a day."
     }
   }
 }

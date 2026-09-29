@@ -118,7 +118,9 @@ export function useUpdateSettings() {
   });
 }
 
-export type ProfilePatch = Partial<Pick<Profile, "username" | "display_name" | "avatar_url">>;
+export type ProfilePatch = Partial<
+  Pick<Profile, "username" | "display_name" | "avatar_url" | "industry" | "onboarding_completed_at">
+>;
 
 export function useUpdateProfile() {
   const { user } = useSession();

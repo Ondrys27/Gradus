@@ -8,7 +8,8 @@ export type XpKind =
   | "contacts_generated_first"
   | "meeting_tenth"
   | "task_completed"
-  | "contact_moved";
+  | "contact_moved"
+  | "onboarding_completed";
 
 export type XpSummary = { totalXp: number; streak: number };
 

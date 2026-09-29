@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { JarvisDock } from "@/components/jarvis/jarvis-dock";
 import { SectionUnlockWatcher } from "@/features/gamification/unlock-watcher";
+import { OnboardingGate } from "@/features/onboarding/onboarding-gate";
 import { BottomNav } from "./bottom-nav";
 import { SectionGuard } from "./section-guard";
 import { Sidebar } from "./sidebar";
@@ -19,6 +20,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <BottomNav />
       <JarvisDock />
       <SectionUnlockWatcher />
+      <OnboardingGate />
     </div>
   );
 }

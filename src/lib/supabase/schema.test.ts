@@ -532,6 +532,49 @@ describe("profiles", () => {
   });
 });
 
+describe("onboarding", () => {
+  it("starts unset and the owner can save their branch and completion", async () => {
+    expect(
+      (await one(`select industry, onboarding_completed_at from profiles where id = $1`, [owner]))
+        .onboarding_completed_at,
+    ).toBeNull();
+
+    await asUser(owner);
+    await db.query(
+      `update profiles set industry = 'coaching', onboarding_completed_at = now() where id = $1`,
+      [owner],
+    );
+    await asServer();
+
+    const row = await one<{ industry: string; onboarding_completed_at: string }>(
+      `select industry, onboarding_completed_at from profiles where id = $1`,
+      [owner],
+    );
+    expect(row.industry).toBe("coaching");
+    expect(row.onboarding_completed_at).not.toBeNull();
+  });
+
+  it("awards onboarding XP once, idempotently, alongside the existing kinds", async () => {
+    await asUser(owner);
+    const first = await one<{ awarded: boolean; xp: number }>(
+      `select * from award_xp('onboarding_completed', 'onboarding', 'UTC')`,
+    );
+    expect(first.awarded).toBe(true);
+    expect(first.xp).toBe(40);
+
+    const second = await one<{ awarded: boolean; xp: number }>(
+      `select * from award_xp('onboarding_completed', 'onboarding', 'UTC')`,
+    );
+    expect(second.awarded).toBe(false);
+    expect(second.xp).toBe(0);
+
+    await expect(db.query(`select * from award_xp('not_a_real_kind', 'x', 'UTC')`)).rejects.toThrow(
+      /unknown_xp_kind/,
+    );
+    await asServer();
+  });
+});
+
 describe("user settings", () => {
   it("rejects formats that format.ts does not understand", async () => {
     await asUser(owner);

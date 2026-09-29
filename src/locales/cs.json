@@ -2142,7 +2142,104 @@
       "tenthMeeting": {
         "title": "10 domluvených schůzek!",
         "subtitle": "Cold calling se mění ve skutečné rozhovory."
+      },
+      "onboardingCompleted": {
+        "title": "Účet je nastavený!",
+        "subtitle": "Vítej ve hře. Ať se daří!"
       }
+    }
+  },
+  "onboarding": {
+    "title": "Nastavení účtu",
+    "progress": "Průběh úvodního nastavení",
+    "actions": {
+      "start": "Pojďme na to",
+      "next": "Pokračovat",
+      "skip": "Přeskočit",
+      "saving": "Ukládám…",
+      "addContact": "Přidat kontakt",
+      "finish": "Dokončit"
+    },
+    "welcome": {
+      "title": "Vítej v {appName}!",
+      "description": "{appName} mění budování byznysu ve hru — milníky, XP a odemykání. Pojďme za pár kroků nastavit tvůj účet."
+    },
+    "industry": {
+      "title": "Čím se zabýváš?",
+      "description": "Podle toho ti navrhneme první milník a jeho úkoly.",
+      "industries": {
+        "realEstate": {
+          "label": "Realitní makléř",
+          "milestoneTitle": "Získat první 3 zakázky",
+          "task1": "Zveřejnit nabídku na 2 realitních portálech",
+          "task2": "Obvolat 20 majitelů prodávajících bez makléře",
+          "task3": "Vyfotit a ocenit první nemovitost"
+        },
+        "coaching": {
+          "label": "Koučink a poradenství",
+          "milestoneTitle": "Získat první 3 klienty",
+          "task1": "Zformulovat nabídku do jedné jasné věty",
+          "task2": "Domluvit 10 úvodních hovorů",
+          "task3": "Zveřejnit jeden příspěvek o svém oboru"
+        },
+        "ecommerce": {
+          "label": "E-shop",
+          "milestoneTitle": "Odbavit prvních 10 objednávek",
+          "task1": "Vyfotit a popsat prvních 10 produktů",
+          "task2": "Nastavit platby a dopravu",
+          "task3": "Říct o obchodě 20 lidem"
+        },
+        "trades": {
+          "label": "Řemeslo a služby",
+          "milestoneTitle": "Domluvit prvních 5 zakázek",
+          "task1": "Vyfotit nejlepší předchozí práce",
+          "task2": "Požádat 10 dřívějších zákazníků o doporučení",
+          "task3": "Sestavit ceník běžných zakázek"
+        },
+        "freelanceIt": {
+          "label": "IT na volné noze",
+          "milestoneTitle": "Získat první 3 zakázky",
+          "task1": "Zveřejnit případovou studii nejlepšího projektu",
+          "task2": "Napsat 15 lidem ze svého okolí",
+          "task3": "Nastavit denní sazbu a jednoduchou smlouvu"
+        },
+        "agency": {
+          "label": "Marketingová agentura",
+          "milestoneTitle": "Získat první 3 klienty",
+          "task1": "Vytvořit jednu ukázkovou kampaň zdarma",
+          "task2": "Oslovit 20 místních firem",
+          "task3": "Sepsat nabídku služeb na jednu stránku"
+        },
+        "other": {
+          "label": "Něco jiného",
+          "milestoneTitle": "Získat první 3 zákazníky",
+          "task1": "Napsat přesně, co nabízím",
+          "task2": "Říct o tom 20 lidem",
+          "task3": "Požádat o první zpětnou vazbu"
+        }
+      }
+    },
+    "region": {
+      "title": "Potvrď zemi a měnu",
+      "description": "Vybrali jsme je podle prohlížeče; klidně je uprav, pokud neodpovídají.",
+      "country": "Země",
+      "currency": "Měna"
+    },
+    "milestone": {
+      "title": "Tvůj první milník",
+      "description": "Podle tvého oboru navrhujeme milník se třemi úkoly na začátek. Uprav je, nebo je nech tak, jak jsou.",
+      "milestoneLabel": "Milník",
+      "tasksLabel": "Úkoly",
+      "taskLabel": "Úkol {number}",
+      "saveFailed": "Milník se nepodařilo založit. Zkus to znovu."
+    },
+    "contact": {
+      "title": "Přidej první kontakt",
+      "description": "Osoba nebo firma, se kterou bys mohl obchodovat. Další můžeš přidat kdykoliv později, tenhle krok jde i přeskočit."
+    },
+    "closing": {
+      "title": "Já jsem Jarvis",
+      "description": "Najdeš mě vpravo dole na každé obrazovce. Zeptej se mě na cokoliv a párkrát denně se ti sám ozvu s postřehem."
     }
   }
 }
