@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { MinusIcon, PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
+import { useCelebration } from "@/components/celebration/celebration-provider";
 import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { fieldA11y, FormField } from "@/components/ui/form-field";
@@ -11,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/features/account/queries";
+import { useAwardXp } from "@/features/gamification/queries";
 import { useFreshOnOpen } from "@/features/milestones/use-fresh-on-open";
 import { formatNumber } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
@@ -75,10 +77,13 @@ function GenerateForm({
   onShowNew: () => void;
 }) {
   const t = useTranslations("contacts.generate");
+  const tCelebration = useTranslations("gamification.celebration.firstContacts");
+  const { celebrate } = useCelebration();
   const settings = useFormatSettings();
   const { user } = useSession();
   const queryClient = useQueryClient();
   const usageQuery = useGenerationUsage(true);
+  const awardXp = useAwardXp();
   const [industry, setIndustry] = useState("");
   const [location, setLocation] = useState("");
   const [count, setCount] = useState(DEFAULT_COUNT);
@@ -140,6 +145,22 @@ function GenerateForm({
     setBusy(false);
     setProgress(null);
     if (last.type !== "phase") setOutcome(last);
+    if (last.type === "done" && last.created > 0) {
+      awardXp.mutate(
+        { kind: "contacts_generated_first", idempotencyKey: "first" },
+        {
+          onSuccess: ({ awarded, xp }) => {
+            if (awarded) {
+              celebrate({
+                title: tCelebration("title"),
+                subtitle: tCelebration("subtitle", { count: last.created }),
+                xp,
+              });
+            }
+          },
+        },
+      );
+    }
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: contactKeys.all(user.id) }),
       usageQuery.refetch(),

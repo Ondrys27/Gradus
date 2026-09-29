@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCelebration } from "@/components/celebration/celebration-provider";
 import { MeetingSurveyDialog, type SurveyTarget } from "@/features/dashboard/meeting-survey-dialog";
 import { offersMeetingSurvey } from "@/features/dashboard/survey-trigger";
+import { useAwardXp } from "@/features/gamification/queries";
 import { cn } from "@/lib/utils";
 import { Board } from "./board";
 import {
@@ -33,6 +34,7 @@ export function PipelineView() {
   const t = useTranslations("pipeline");
   const tNav = useTranslations("nav");
   const { celebrate } = useCelebration();
+  const awardXp = useAwardXp();
   const stagesQuery = useStages();
   const dealsQuery = useDeals();
   const move = useMoveDeal();
@@ -69,6 +71,16 @@ export function PipelineView() {
 
   const openDeal = deals.find((deal) => deal.id === openId) ?? null;
 
+  function celebrateWon(deal: Deal) {
+    awardXp.mutate(
+      { kind: "deal_won", idempotencyKey: deal.id },
+      {
+        onSuccess: ({ awarded, xp }) =>
+          celebrate({ title: t("celebration.title"), subtitle: deal.title, xp: awarded ? xp : undefined }),
+      },
+    );
+  }
+
   function runMove(deal: Deal, stage: Stage, lostReason?: string) {
     setNotice(null);
     const from = stages.find((item) => item.id === deal.stage_id);
@@ -76,7 +88,7 @@ export function PipelineView() {
       { deal, stage, lostReason },
       {
         onSuccess: () => {
-          if (stage.is_won) celebrate({ title: t("celebration.title"), subtitle: deal.title });
+          if (stage.is_won) celebrateWon(deal);
           // A deal that moves on from the meeting stage has had its meeting: ask how it went.
           if (from && offersMeetingSurvey(from, stage)) {
             setSurvey({ dealId: deal.id, dealTitle: deal.title, stageId: from.id });
@@ -224,7 +236,7 @@ export function PipelineView() {
         stages={stages}
         stageId={creating?.stageId ?? null}
         onCreated={(deal, stage) => {
-          if (stage.is_won) celebrate({ title: t("celebration.title"), subtitle: deal.title });
+          if (stage.is_won) celebrateWon(deal);
         }}
       />
       <DealDetail

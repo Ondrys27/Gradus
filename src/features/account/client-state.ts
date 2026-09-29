@@ -1,6 +1,7 @@
 "use client";
 
 import type { QueryClient } from "@tanstack/react-query";
+import { resetAnimationsPreference } from "@/lib/animation-preference";
 import { resetSoundPreference } from "@/lib/sound-preference";
 import { createClient } from "@/lib/supabase/client";
 
@@ -9,6 +10,7 @@ export function clearClientState(queryClient: QueryClient) {
   queryClient.cancelQueries();
   queryClient.clear();
   resetSoundPreference();
+  resetAnimationsPreference();
   try {
     window.sessionStorage.clear();
     for (const key of Object.keys(window.localStorage)) {

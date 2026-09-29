@@ -13,6 +13,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { PageHeader } from "@/components/ui/page-header";
+import { MarkSeenOnVisit } from "@/features/gamification/mark-seen-on-visit";
 import {
   formatCalendarDate,
   formatMonthYear,
@@ -164,6 +165,7 @@ export function CalendarView() {
 
   return (
     <div className="flex flex-col gap-5">
+      <MarkSeenOnVisit section="calendar" />
       <PageHeader
         title={tNav("calendar")}
         description={t("description")}

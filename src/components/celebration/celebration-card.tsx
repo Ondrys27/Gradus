@@ -6,6 +6,7 @@ import confetti from "canvas-confetti";
 import { motion, useReducedMotion, type Transition } from "framer-motion";
 import { TrophyIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { isAnimationsEnabled } from "@/lib/animation-preference";
 import { formatNumber } from "@/lib/format";
 import { isSoundEnabled } from "@/lib/sound-preference";
 import { useFormatSettings } from "@/lib/use-format-settings";
@@ -19,7 +20,8 @@ const BEAT = { card: 0.05, trophy: 0.2, confetti: 0.3, text: 0.4, bar: 0.55, xp:
 
 export function CelebrationCard({ title, subtitle, xp, onContinue }: CelebrationCardProps) {
   const t = useTranslations("celebration");
-  const reduceMotion = useReducedMotion() ?? false;
+  // Either the OS says to reduce motion or the user turned animations off in Settings.
+  const reduceMotion = (useReducedMotion() ?? false) || !isAnimationsEnabled();
   const formatSettings = useFormatSettings();
   const cardRef = useRef<HTMLDivElement>(null);
   const soundPlayed = useRef(false);

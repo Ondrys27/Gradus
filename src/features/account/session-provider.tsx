@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { writeLocaleCookie } from "@/i18n/locale-cookie";
 import type { Locale } from "@/i18n/locales";
 import { loginUrlFor } from "@/lib/auth/routes";
+import { applyAnimationsEnabled } from "@/lib/animation-preference";
 import { applySoundEnabled } from "@/lib/sound-preference";
 import { createClient } from "@/lib/supabase/client";
 import { CelebrationProvider } from "@/components/celebration/celebration-provider";
@@ -76,6 +77,10 @@ function SettingsBridge({ children }: { children: ReactNode }) {
   const formatSettings = useMemo(() => toFormatSettings(settings), [settings]);
 
   useEffect(() => applySoundEnabled(settings.sound_enabled), [settings.sound_enabled]);
+  useEffect(
+    () => applyAnimationsEnabled(settings.animations_enabled),
+    [settings.animations_enabled],
+  );
 
   // The language saved in the account wins over a stale cookie (e.g. changed on another device).
   const localeChecked = useRef(false);

@@ -10,7 +10,6 @@ import {
   TrophyIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCelebration } from "@/components/celebration/celebration-provider";
 import { JarvisBot, type JarvisState } from "@/components/jarvis/jarvis-bot";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -63,7 +62,6 @@ export function DesignSystemShowcase() {
   const [date, setDate] = useState<IsoDate | null>(null);
   const [notify, setNotify] = useState(true);
   const [done, setDone] = useState(false);
-  const { celebrate } = useCelebration();
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 py-8 md:px-8 md:py-12">
@@ -295,24 +293,6 @@ export function DesignSystemShowcase() {
               <span className="micro-label">{t(`jarvis.${state}`)}</span>
             </div>
           ))}
-        </GlowCard>
-      </Section>
-
-      <Section title={t("sections.celebration")}>
-        <GlowCard interactive={false} className="flex flex-wrap items-center justify-between gap-4">
-          <p className="text-sm text-ink-muted">{t("celebration.hint")}</p>
-          <Button
-            onClick={() =>
-              celebrate({
-                title: t("celebration.title"),
-                subtitle: t("celebration.subtitle"),
-                xp: 150,
-              })
-            }
-          >
-            <TrophyIcon data-icon="inline-start" />
-            {t("celebration.trigger")}
-          </Button>
         </GlowCard>
       </Section>
 

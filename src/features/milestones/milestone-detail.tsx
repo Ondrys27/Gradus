@@ -28,6 +28,8 @@ import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { MilestoneFormDialog } from "./milestone-form-dialog";
 import { JarvisBot } from "@/components/jarvis/jarvis-bot";
+import { useCelebration } from "@/components/celebration/celebration-provider";
+import { useAwardXp } from "@/features/gamification/queries";
 import {
   useDeleteMilestone,
   useMilestone,
@@ -49,8 +51,24 @@ export function MilestoneDetail({ id }: { id: string }) {
   const setStatus = useSetMilestoneStatus(id);
   const remove = useDeleteMilestone(id);
   const reviewing = useMilestoneReviewPending(id);
+  const { celebrate } = useCelebration();
+  const awardXp = useAwardXp();
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  function complete() {
+    setStatus.mutate("completed", {
+      onSuccess: (row) => {
+        awardXp.mutate(
+          { kind: "milestone_completed", idempotencyKey: row.id },
+          {
+            onSuccess: ({ awarded, xp }) =>
+              celebrate({ title: t("celebration.title"), subtitle: row.title, xp: awarded ? xp : undefined }),
+          },
+        );
+      },
+    });
+  }
 
   const backLink = (
     <Link href="/milestones" className={buttonVariants({ variant: "ghost", size: "sm" })}>
@@ -140,7 +158,7 @@ export function MilestoneDetail({ id }: { id: string }) {
               <Button
                 variant={allDone ? "default" : "outline"}
                 disabled={setStatus.isPending}
-                onClick={() => setStatus.mutate("completed")}
+                onClick={complete}
               >
                 <CheckCircle2Icon aria-hidden data-icon="inline-start" />
                 {t("actions.complete")}
@@ -241,7 +259,7 @@ export function MilestoneDetail({ id }: { id: string }) {
             <p className="font-semibold text-ink">{t("detail.offerTitle")}</p>
             <p className="text-sm text-ink-soft">{t("detail.offerDescription")}</p>
           </div>
-          <Button disabled={setStatus.isPending} onClick={() => setStatus.mutate("completed")}>
+          <Button disabled={setStatus.isPending} onClick={complete}>
             <CheckCircle2Icon aria-hidden data-icon="inline-start" />
             {t("actions.complete")}
           </Button>

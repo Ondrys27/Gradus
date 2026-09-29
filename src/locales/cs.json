@@ -36,7 +36,6 @@
       "controls": "Formulářové prvky",
       "empty": "Prázdný stav",
       "skeleton": "Načítání",
-      "celebration": "Oslava",
       "jarvis": "Jarvis"
     },
     "colors": {
@@ -128,12 +127,6 @@
       "description": "Přidej první kontakt nebo nech Jarvise najít firmy ve tvém okolí.",
       "action": "Přidat kontakt"
     },
-    "celebration": {
-      "trigger": "Spustit oslavu",
-      "hint": "Dočasné vývojové tlačítko.",
-      "title": "Obchod vyhrán!",
-      "subtitle": "Pekárna na rohu podepsala smlouvu."
-    },
     "jarvis": {
       "idle": "V klidu",
       "thinking": "Přemýšlí",
@@ -156,7 +149,14 @@
     "settings": "Nastavení",
     "signOut": "Odhlásit se",
     "myTasks": "Úkoly",
-    "myRewards": "Odměny"
+    "myRewards": "Odměny",
+    "locked": {
+      "coldCalling": "{remaining, plural, one {ještě # kontakt} few {ještě # kontakty} other {ještě # kontaktů}} k odemčení",
+      "calendar": "Domluvte první schůzku a odemknete to",
+      "finance": "Vyhrajte první obchod a odemknete to",
+      "workers": "{remaining, plural, one {ještě # vyhraný obchod} few {ještě # vyhrané obchody} other {ještě # vyhraných obchodů}} k odemčení"
+    },
+    "justUnlocked": "Nově odemčeno"
   },
   "topBar": {
     "home": "Přejít na přehled",
@@ -509,6 +509,14 @@
           "invalidSlug": "Zadej jen název účtu, např. mojefirma."
         }
       }
+    },
+    "gameplay": {
+      "title": "Hratelnost",
+      "description": "Oslavy, zvuky a pilulka XP v horní liště.",
+      "sound": "Zvuk",
+      "soundHint": "Krátký tón u oslav jako vyhraný obchod nebo dokončený milník.",
+      "animations": "Animace",
+      "animationsHint": "Konfety a animace karet u velkých okamžiků. I vypnuté nechají zaškrtnutí a průběhy animované."
     }
   },
   "milestones": {
@@ -538,7 +546,8 @@
       "overdue": "Po termínu od {date}",
       "noDate": "Bez cílového data",
       "completed": "Dokončeno",
-      "progress": "Postup milníku {title}"
+      "progress": "Postup milníku {title}",
+      "almostThere": "{remaining, plural, one {ještě # úkol} few {ještě # úkoly} other {ještě # úkolů}} — už to skoro máte!"
     },
     "empty": {
       "title": "Zatím žádné milníky",
@@ -657,7 +666,8 @@
         "label": "Zobrazit úkoly jako",
         "list": "Seznam",
         "map": "Mapa"
-      }
+      },
+      "wayOverdue": "{days, plural, one {Po termínu už # den} few {Po termínu už # dny} other {Po termínu už # dní}} — pojďme na to"
     },
     "map": {
       "label": "Mapa úkolů",
@@ -667,6 +677,9 @@
       "collapse": "Skrýt podúkoly",
       "expand": "{count, plural, one {Ukázat # skrytý úkol} few {Ukázat # skryté úkoly} many {Ukázat # skrytého úkolu} other {Ukázat # skrytých úkolů}}",
       "rootProgress": "{done} / {total}"
+    },
+    "celebration": {
+      "title": "Milník splněn!"
     }
   },
   "pipeline": {
@@ -2110,6 +2123,26 @@
       "amountInvalid": "Zadej částku větší než nula.",
       "noteTooLong": "Poznámka je moc dlouhá.",
       "dateRequired": "Vyber datum."
+    }
+  },
+  "gamification": {
+    "celebration": {
+      "sectionUnlocked": {
+        "title": "Nová sekce odemčena!",
+        "subtitle": "{section} je teď dostupná v menu."
+      },
+      "prospectingRecord": {
+        "title": "Nový osobní rekord!",
+        "subtitle": "{minutes, plural, one {# minuta} few {# minuty} other {# minut}} na telefonu dnes — váš zatím nejlepší den."
+      },
+      "firstContacts": {
+        "title": "První kontakty vygenerovány!",
+        "subtitle": "{count, plural, one {# nový kontakt čeká} few {# nové kontakty čekají} other {# nových kontaktů čeká}} v Neoslovených."
+      },
+      "tenthMeeting": {
+        "title": "10 domluvených schůzek!",
+        "subtitle": "Cold calling se mění ve skutečné rozhovory."
+      }
     }
   }
 }

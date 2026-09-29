@@ -19,6 +19,9 @@ export function MilestoneCard({ milestone }: { milestone: MilestoneWithCounts })
   const ratio = progressOf(milestone);
   const overdue =
     !completed && !!milestone.target_date && milestone.target_date < todayIsoDate(settings);
+  const remaining = milestone.total - milestone.done;
+  // A nudge once most of the tasks are done, so the last stretch feels close, not far.
+  const almostThere = !completed && milestone.total >= 4 && ratio >= 0.8 && remaining > 0;
 
   return (
     <Link
@@ -47,6 +50,10 @@ export function MilestoneCard({ milestone }: { milestone: MilestoneWithCounts })
             {formatNumber(ratio, { style: "percent" }, settings)}
           </span>
         </div>
+
+        {almostThere && (
+          <p className="text-sm font-medium text-teal">{t("card.almostThere", { remaining })}</p>
+        )}
 
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-sm text-ink-muted">
           <span>

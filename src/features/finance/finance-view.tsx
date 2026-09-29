@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { MarkSeenOnVisit } from "@/features/gamification/mark-seen-on-visit";
 import { todayIsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { CashflowChart } from "./cashflow-chart";
@@ -50,6 +51,7 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
 
   return (
     <div className="flex flex-col gap-6">
+      <MarkSeenOnVisit section="finance" />
       <PageHeader
         title={t("title")}
         description={t("description")}

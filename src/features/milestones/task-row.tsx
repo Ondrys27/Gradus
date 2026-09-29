@@ -11,9 +11,10 @@ import {
   PlusIcon,
   Trash2Icon,
 } from "lucide-react";
+import { differenceInCalendarDays } from "date-fns";
 import { useTranslations } from "next-intl";
 import { StatusPill } from "@/components/ui/status-pill";
-import { formatCalendarDate, todayIsoDate } from "@/lib/format";
+import { formatCalendarDate, isoDateToLocal, todayIsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { TaskCheckbox } from "./task-checkbox";
@@ -62,7 +63,12 @@ function TaskRow({ node, handlers }: { node: TaskNode; handlers: TaskHandlers })
 
   const done = task.status === "done";
   const expanded = !handlers.collapsed.has(task.id);
-  const overdue = !done && !!task.due_date && task.due_date < todayIsoDate(settings);
+  const today = todayIsoDate(settings);
+  const overdue = !done && !!task.due_date && task.due_date < today;
+  const daysOverdue = overdue
+    ? differenceInCalendarDays(isoDateToLocal(today), isoDateToLocal(task.due_date!))
+    : 0;
+  const wayOverdue = overdue && daysOverdue > 3;
 
   return (
     <li
@@ -113,6 +119,11 @@ function TaskRow({ node, handlers }: { node: TaskNode; handlers: TaskHandlers })
                 </span>
               )}
               {children.length > 0 && <span>{t("subtasks", { count: children.length })}</span>}
+            </span>
+          )}
+          {wayOverdue && (
+            <span className="text-xs font-medium text-pink">
+              {t("wayOverdue", { days: daysOverdue })}
             </span>
           )}
         </div>

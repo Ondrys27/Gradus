@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Stagger, StaggerItem } from "@/components/ui/stagger";
+import { Switch } from "@/components/ui/switch";
 import { useUpdateSettings, useUserSettings } from "@/features/account/queries";
 import { locales } from "@/i18n/locales";
 import {
@@ -246,6 +247,31 @@ export function SettingsView() {
                 value={String(settings.first_day_of_week)}
                 options={weekOptions}
                 onChange={(value) => save({ first_day_of_week: Number(value) })}
+              />
+            </SettingRow>
+          </div>
+        </Section>
+      </StaggerItem>
+
+      <StaggerItem>
+        <Section title={t("gameplay.title")} description={t("gameplay.description")}>
+          <div className="flex flex-col divide-y divide-line/60">
+            <SettingRow id="settings-sound" label={t("gameplay.sound")} hint={t("gameplay.soundHint")}>
+              <Switch
+                id="settings-sound"
+                checked={settings.sound_enabled}
+                onCheckedChange={(checked) => save({ sound_enabled: checked })}
+              />
+            </SettingRow>
+            <SettingRow
+              id="settings-animations"
+              label={t("gameplay.animations")}
+              hint={t("gameplay.animationsHint")}
+            >
+              <Switch
+                id="settings-animations"
+                checked={settings.animations_enabled}
+                onCheckedChange={(checked) => save({ animations_enabled: checked })}
               />
             </SettingRow>
           </div>

@@ -3,10 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { PauseIcon, PlayIcon, TimerOffIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useCelebration } from "@/components/celebration/celebration-provider";
 import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { GlowCard } from "@/components/ui/glow-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useProspectingRecord } from "@/features/gamification/queries";
 import { formatStopwatch, formatTime, todayIsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
@@ -23,9 +25,12 @@ const PAUSED_TICK_MS = 30_000;
  */
 export function TimerCard() {
   const t = useTranslations("coldCalling.timer");
+  const tCelebration = useTranslations("gamification.celebration.prospectingRecord");
+  const { celebrate } = useCelebration();
   const settings = useFormatSettings();
   const reading = useTimerReading();
   const action = useTimerAction();
+  const record = useProspectingRecord();
   const [now, setNow] = useState(() => Date.now());
   const [idleNotice, setIdleNotice] = useState<string | null>(null);
 
@@ -63,6 +68,19 @@ export function TimerCard() {
       onSuccess: ({ idleAt }) => {
         if (idleAt) setIdleNotice(idleAt);
         else if (kind === "start") setIdleNotice(null);
+        // A pause is when today's total settles, so this is when a record shows.
+        if (kind === "pause") {
+          record.mutate(undefined, {
+            onSuccess: ({ awarded, seconds, xp }) => {
+              if (!awarded) return;
+              celebrate({
+                title: tCelebration("title"),
+                subtitle: tCelebration("subtitle", { minutes: Math.round(seconds / 60) }),
+                xp,
+              });
+            },
+          });
+        }
       },
     });
   }

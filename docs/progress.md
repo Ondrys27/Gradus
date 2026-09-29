@@ -15,7 +15,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 5.2 | architect | 2026-09-28 Napojení Financí na Fakturoid: OAuth připojení, vystavení faktury, denní synchronizace stavu.
 - [x] 5.3 | builder | env: RESEND_API_KEY | 2026-09-28 Odesílání e-mailů z kontaktu a obchodu přes Resend, přesun do Odeslán e-mail a AI návrh odpovědi.
 - [x] STOP | Konec fáze 5. Založ testovacího pracovníka přes pozvánku ve druhém prohlížeči, zadej mu úkol a ověř, že vidí jen svoje. Připoj Fakturoid a vystav testovací fakturu. Pošli si e-mail z detailu kontaktu.
-- [ ] 6.1 | builder |
+- [x] 6.1 | builder | 2026-09-30 Dopamin na skutečných událostech (milník, obchod, odemčení, rekord, první kontakty, desátá schůzka), XP a úroveň s pulzující pilulkou, série, odemykání sekcí s motivačními texty, přepínače animací a zvuku.
 - [ ] 6.2 | builder |
 - [ ] 6.3 | architect |
 - [ ] STOP | Konec fáze 6. Založ úplně nový účet a projdi aplikaci jako nový uživatel od onboardingu, v obou jazycích, na telefonu.

@@ -1558,6 +1558,7 @@ export type Database = {
       }
       user_settings: {
         Row: {
+          animations_enabled: boolean
           country_code: string
           created_at: string
           currency: string
@@ -1574,6 +1575,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          animations_enabled?: boolean
           country_code?: string
           created_at?: string
           currency?: string
@@ -1590,6 +1592,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          animations_enabled?: boolean
           country_code?: string
           created_at?: string
           currency?: string
@@ -1981,6 +1984,36 @@ export type Database = {
         }
         Relationships: []
       }
+      xp_events: {
+        Row: {
+          created_at: string
+          id: string
+          idempotency_key: string
+          kind: string
+          metadata: Json
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          idempotency_key: string
+          kind: string
+          metadata?: Json
+          user_id: string
+          xp: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          idempotency_key?: string
+          kind?: string
+          metadata?: Json
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       contact_list: {
@@ -2022,6 +2055,28 @@ export type Database = {
       accept_worker_invite: {
         Args: { _code: string; _user_id: string }
         Returns: string
+      }
+      award_meeting_tenth: {
+        Args: never
+        Returns: {
+          awarded: boolean
+          meetings: number
+          xp: number
+        }[]
+      }
+      award_xp: {
+        Args: {
+          _idempotency_key: string
+          _kind: string
+          _metadata?: Json
+          _timezone?: string
+        }
+        Returns: {
+          awarded: boolean
+          streak: number
+          total_xp: number
+          xp: number
+        }[]
       }
       book_invoice_income: {
         Args: {
@@ -2242,6 +2297,15 @@ export type Database = {
         }
         Returns: string
       }
+      prospecting_record: {
+        Args: { _timezone: string }
+        Returns: {
+          awarded: boolean
+          previous_best: number
+          seconds: number
+          xp: number
+        }[]
+      }
       prospecting_seconds_for_day: {
         Args: { _day: string; _timezone: string }
         Returns: number
@@ -2309,6 +2373,17 @@ export type Database = {
         Returns: undefined
       }
       reward_rule_is_valid: { Args: { _rule: Json }; Returns: boolean }
+      section_unlocks: {
+        Args: never
+        Returns: {
+          key: string
+          needed: number
+          progress: number
+          seen_at: string
+          unlocked: boolean
+          unlocked_at: string
+        }[]
+      }
       set_deposit_stage: {
         Args: { _percent?: number; _stage_id: string }
         Returns: undefined
@@ -2413,6 +2488,14 @@ export type Database = {
           id: string
           running: boolean
           started_at: string
+        }[]
+      }
+      xp_streak: { Args: { _timezone: string }; Returns: number }
+      xp_summary: {
+        Args: { _timezone: string }
+        Returns: {
+          streak: number
+          total_xp: number
         }[]
       }
     }

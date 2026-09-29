@@ -10,6 +10,7 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Stagger, StaggerItem } from "@/components/ui/stagger";
+import { MarkSeenOnVisit } from "@/features/gamification/mark-seen-on-visit";
 import { todayIsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { monthStartOf } from "./logic";
@@ -25,12 +26,15 @@ export function WorkersView() {
   const settings = useFormatSettings();
   const workers = useWorkers();
   const stats = useWorkerMonthStats(monthStartOf(todayIsoDate(settings)));
-  const accountIds = (workers.data ?? []).flatMap((worker) => (worker.user_id ? [worker.user_id] : []));
+  const accountIds = (workers.data ?? []).flatMap((worker) =>
+    worker.user_id ? [worker.user_id] : [],
+  );
   const profiles = useWorkerProfiles(accountIds);
   const [adding, setAdding] = useState(false);
 
   return (
     <Stagger className="flex flex-col gap-8">
+      <MarkSeenOnVisit section="workers" />
       <StaggerItem>
         <PageHeader
           title={tNav("workers")}

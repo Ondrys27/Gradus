@@ -36,7 +36,6 @@
       "controls": "Form controls",
       "empty": "Empty state",
       "skeleton": "Loading skeleton",
-      "celebration": "Celebration",
       "jarvis": "Jarvis"
     },
     "colors": {
@@ -128,12 +127,6 @@
       "description": "Add your first contact or let Jarvis find businesses near you.",
       "action": "Add contact"
     },
-    "celebration": {
-      "trigger": "Play celebration",
-      "hint": "Temporary dev trigger.",
-      "title": "Deal won!",
-      "subtitle": "Bakery on the corner signed the contract."
-    },
     "jarvis": {
       "idle": "Idle",
       "thinking": "Thinking",
@@ -156,7 +149,14 @@
     "settings": "Settings",
     "signOut": "Sign out",
     "myTasks": "Tasks",
-    "myRewards": "Rewards"
+    "myRewards": "Rewards",
+    "locked": {
+      "coldCalling": "{remaining, plural, one {# more contact} other {# more contacts}} to unlock",
+      "calendar": "Book your first meeting to unlock",
+      "finance": "Win your first deal to unlock",
+      "workers": "{remaining, plural, one {# more won deal} other {# more won deals}} to unlock"
+    },
+    "justUnlocked": "Just unlocked"
   },
   "topBar": {
     "home": "Go to dashboard",
@@ -509,6 +509,14 @@
           "invalidSlug": "Use only the slug, e.g. mycompany."
         }
       }
+    },
+    "gameplay": {
+      "title": "Gamification",
+      "description": "Celebrations, sounds and the XP pill in the top bar.",
+      "sound": "Sound",
+      "soundHint": "A short chime for celebrations like a won deal or a finished milestone.",
+      "animations": "Animations",
+      "animationsHint": "Confetti and card animations for big moments. Turned off, checkmarks and progress bars still animate."
     }
   },
   "milestones": {
@@ -538,7 +546,8 @@
       "overdue": "Overdue since {date}",
       "noDate": "No target date",
       "completed": "Completed",
-      "progress": "Progress of {title}"
+      "progress": "Progress of {title}",
+      "almostThere": "{remaining, plural, one {# task left} other {# tasks left}} — almost there!"
     },
     "empty": {
       "title": "No milestones yet",
@@ -657,7 +666,8 @@
         "label": "Show tasks as",
         "list": "List",
         "map": "Map"
-      }
+      },
+      "wayOverdue": "{days, plural, one {Overdue by # day} other {Overdue by # days}} — let's tackle it"
     },
     "map": {
       "label": "Task map",
@@ -667,6 +677,9 @@
       "collapse": "Hide subtasks",
       "expand": "{count, plural, one {Show # hidden task} other {Show # hidden tasks}}",
       "rootProgress": "{done} / {total}"
+    },
+    "celebration": {
+      "title": "Milestone completed!"
     }
   },
   "pipeline": {
@@ -2110,6 +2123,26 @@
       "amountInvalid": "Enter an amount above zero.",
       "noteTooLong": "The note is too long.",
       "dateRequired": "Pick a date."
+    }
+  },
+  "gamification": {
+    "celebration": {
+      "sectionUnlocked": {
+        "title": "New section unlocked!",
+        "subtitle": "{section} is now open in the menu."
+      },
+      "prospectingRecord": {
+        "title": "New personal record!",
+        "subtitle": "{minutes, plural, one {# minute} other {# minutes}} on the phone today — your best day yet."
+      },
+      "firstContacts": {
+        "title": "First contacts generated!",
+        "subtitle": "{count, plural, one {# new contact is} other {# new contacts are}} waiting in Unreached."
+      },
+      "tenthMeeting": {
+        "title": "10 meetings booked!",
+        "subtitle": "Cold calling is turning into real conversations."
+      }
     }
   }
 }

@@ -1,32 +1,50 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { FlameIcon, SearchIcon, SparklesIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useXpSummary } from "@/features/gamification/queries";
+import { useAnimationsEnabled } from "@/lib/animation-preference";
 import { formatNumber } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
+import { levelForXp } from "@/lib/xp";
 import { AccountMenu } from "./account-menu";
 import { Logo } from "./sidebar";
 
-type TopBarProps = {
-  streakDays: number;
-  level: number;
-};
-
 /** 72 px bar above the content column. On phones search collapses behind a magnifier. */
-export function TopBar({ streakDays, level }: TopBarProps) {
+export function TopBar() {
   const t = useTranslations("topBar");
   const [searchOpen, setSearchOpen] = useState(false);
-  const reduceMotion = useReducedMotion();
+  const osReducedMotion = useReducedMotion();
+  const animationsEnabled = useAnimationsEnabled();
+  const reduceMotion = osReducedMotion || !animationsEnabled;
   const settings = useFormatSettings();
+  const summary = useXpSummary();
+  const streakDays = summary.data?.streak ?? 0;
+  const level = levelForXp(summary.data?.totalXp ?? 0);
   const streakLabel = t("streak.long", {
     count: streakDays,
     days: formatNumber(streakDays, {}, settings),
   });
   const levelLabel = t("level.long", { level: formatNumber(level, {}, settings) });
+
+  // A short pulse whenever XP moves the pills, so a gain is felt even when unwatched.
+  const [pulse, setPulse] = useState<"streak" | "level" | null>(null);
+  const previous = useRef({ streak: streakDays, level });
+  useEffect(() => {
+    if (!summary.data) return;
+    if (level !== previous.current.level) setPulse("level");
+    else if (streakDays !== previous.current.streak) setPulse("streak");
+    previous.current = { streak: streakDays, level };
+  }, [summary.data, streakDays, level]);
+  useEffect(() => {
+    if (!pulse) return;
+    const timer = setTimeout(() => setPulse(null), 700);
+    return () => clearTimeout(timer);
+  }, [pulse]);
 
   return (
     <header className="sticky top-0 z-30 border-b border-line/50 bg-canvas/70 backdrop-blur-xl">
@@ -52,7 +70,9 @@ export function TopBar({ streakDays, level }: TopBarProps) {
         </button>
 
         <div className="flex shrink-0 items-center gap-2 md:ml-auto">
-          <span
+          <motion.span
+            animate={{ scale: !reduceMotion && pulse === "streak" ? [1, 1.18, 1] : 1 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
             className="inline-flex h-9 items-center gap-1.5 rounded-full border border-gold/40 bg-gold/10 px-3 text-sm font-semibold text-gold shadow-[0_0_18px_-6px_var(--color-gold)]"
             title={streakLabel}
           >
@@ -64,8 +84,10 @@ export function TopBar({ streakDays, level }: TopBarProps) {
               <span className="hidden lg:inline">{streakLabel}</span>
             </span>
             <span className="sr-only lg:hidden">{streakLabel}</span>
-          </span>
-          <span
+          </motion.span>
+          <motion.span
+            animate={{ scale: !reduceMotion && pulse === "level" ? [1, 1.18, 1] : 1 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
             className="inline-flex h-9 items-center gap-1.5 rounded-full border border-teal/40 bg-teal/10 px-3 text-sm font-semibold text-teal shadow-[0_0_18px_-6px_var(--color-teal)]"
             title={levelLabel}
           >
@@ -77,7 +99,7 @@ export function TopBar({ streakDays, level }: TopBarProps) {
               <span className="hidden lg:inline">{levelLabel}</span>
             </span>
             <span className="sr-only lg:hidden">{levelLabel}</span>
-          </span>
+          </motion.span>
           <AccountMenu />
         </div>
 

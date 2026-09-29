@@ -20,6 +20,7 @@ import { GlowCard } from "@/components/ui/glow-card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useAwardXp } from "@/features/gamification/queries";
 import { useCreateTask, useDeleteTask, useReorderTasks, useSetTaskStatus } from "./queries";
 import { TITLE_MAX } from "./schemas";
 import { TaskFormDialog, type TaskFormMode } from "./task-form-dialog";
@@ -40,6 +41,7 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
   const create = useCreateTask(milestoneId);
   const remove = useDeleteTask(milestoneId);
   const reorder = useReorderTasks(milestoneId);
+  const awardXp = useAwardXp();
 
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
@@ -80,7 +82,18 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
       const status = task.status === "done" ? "todo" : "done";
       if (status === "done" && openSubtasks(tasks, task.id) > 0) return;
       setError(null);
-      setStatus.mutate({ id: task.id, status }, { onError: report });
+      setStatus.mutate(
+        { id: task.id, status },
+        {
+          onError: report,
+          // A quiet, small reward: no confetti, just a bit of XP.
+          onSuccess: () => {
+            if (status === "done") {
+              awardXp.mutate({ kind: "task_completed", idempotencyKey: task.id });
+            }
+          },
+        },
+      );
     },
     onAddSubtask: (task) => setForm({ open: true, mode: { kind: "create", parent: task } }),
     onEdit: (task) => setForm({ open: true, mode: { kind: "edit", task } }),
