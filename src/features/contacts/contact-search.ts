@@ -49,6 +49,9 @@ export function phoneSearchDigits(term: string): string[] {
     for (let cut = 1; cut <= MAX_PREFIX_DIGITS; cut++) {
       if (digits.length - cut >= MIN_PART_DIGITS) patterns.push(digits.slice(cut));
     }
+  } else if (digits.startsWith("0") && digits.length - 1 >= MIN_PART_DIGITS) {
+    // A national number typed with its trunk "0" ("0170 123…"); E.164 drops it.
+    patterns.push(digits.slice(1));
   }
   return patterns;
 }

@@ -31,6 +31,11 @@ describe("phoneSearchDigits", () => {
     expect(phoneSearchDigits("+1 5551")).toEqual(["15551"]);
   });
 
+  it("also tries a partial national number without its trunk zero", () => {
+    expect(phoneSearchDigits("0170 123")).toEqual(["0170123", "170123"]);
+    expect(phoneSearchDigits("0170")).toEqual(["0170"]);
+  });
+
   it("is not used for names or very short numbers", () => {
     expect(phoneSearchDigits("Acme 24")).toEqual([]);
     expect(phoneSearchDigits("12")).toEqual([]);

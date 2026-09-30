@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
+import { useReducedMotion } from "framer-motion";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVerticalIcon, PlusIcon, RotateCcwIcon, Trash2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -52,6 +53,7 @@ export function StageColumn({
 }: Props) {
   const t = useTranslations("pipeline");
   const settings = useFormatSettings();
+  const reduceMotion = useReducedMotion();
   const {
     setNodeRef,
     setActivatorNodeRef,
@@ -65,7 +67,8 @@ export function StageColumn({
     id: stage.id,
     disabled: { draggable: !editing },
     data: { type: "stage" },
-    transition: STAGE_TRANSITION,
+    // The overshoot is only for those who have not asked for less motion.
+    transition: reduceMotion ? undefined : STAGE_TRANSITION,
   });
   const now = new Date();
   const [relaunchOnly, setRelaunchOnly] = useState(false);

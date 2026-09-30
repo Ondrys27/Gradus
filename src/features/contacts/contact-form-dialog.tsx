@@ -12,7 +12,7 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { useUserSettings } from "@/features/account/queries";
 import { useFreshOnOpen } from "@/features/milestones/use-fresh-on-open";
-import { formatPhone } from "@/lib/phone";
+import { formatPhone, toE164 } from "@/lib/phone";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { useCreateContact, useDuplicates, useUpdateContact } from "./queries";
 import {
@@ -100,10 +100,12 @@ function ContactFields({
   const country = useUserSettings().country_code;
   const create = useCreateContact();
   const update = useUpdateContact(contact?.id ?? "");
-  const [draft, setDraft] = useState<ContactDraft>(() => ({
-    ...draftOf(contact),
-    ...(contact ? {} : initial),
-  }));
+  const [draft, setDraft] = useState<ContactDraft>(() => {
+    if (contact || !initial) return draftOf(contact);
+    // A number typed into the search is saved like any other: E.164.
+    const phone = initial.phone === undefined ? {} : { phone: toE164(initial.phone, country) ?? "" };
+    return { ...draftOf(), ...initial, ...phone };
+  });
   const [errors, setErrors] = useState<Partial<Record<string, ContactErrorKey>>>({});
   const [failed, setFailed] = useState(false);
 

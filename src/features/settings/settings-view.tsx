@@ -44,6 +44,8 @@ import { TimeZonePicker } from "./time-zone-picker";
 type Option = { value: string; label: string; detail?: string };
 
 const REENGAGE_PRESETS = [1, 3, 6, 12];
+/** Ten years; anything longer would overflow the integer column long before it made sense. */
+const REENGAGE_MAX = 120;
 
 export function SettingsView() {
   const t = useTranslations("settings");
@@ -455,8 +457,11 @@ function ReengageMonthsControl({
 
   function commitCustom() {
     const parsed = Number(text);
-    if (Number.isInteger(parsed) && parsed >= 1) onChange(parsed);
-    else setText(String(value));
+    if (Number.isInteger(parsed) && parsed >= 1 && parsed <= REENGAGE_MAX) {
+      if (parsed !== value) onChange(parsed);
+    } else {
+      setText(String(value));
+    }
   }
 
   return (
