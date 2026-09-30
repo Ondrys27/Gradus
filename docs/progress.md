@@ -23,7 +23,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 8.2 | architect | 2026-09-30 Telefony přes libphonenumber-js (PhoneInput, formatPhone, ukládání v E.164, migrace na E.164) a živý výběr časového pásma s aktuálním časem a posunem od UTC v nastavení.
 - [x] 8.3 | architect | 2026-09-30 Globální vyhledávání přepsáno jako Spotlight (⌘K), prohledává kontakty, obchody, milníky, úkoly, kalendář, finance, pracovníky, sekce i rychlé akce přes unaccent/pg_trgm s RLS.
 - [x] 8.4 | builder | 2026-09-30 Detail dlaždice na dashboardu se otevírá jako velké okno se sdílenou animací z dlaždice a dlaždice Splněné úkoly dnes ukazuje procento a zlomek v kruhu.
-- [ ] 8.5 | architect |
+- [x] 8.5 | architect | 2026-09-30 Barevné stavy úkolů v mapě i seznamu se sbalitelnou legendou, zamčené tlačítko Dokončit milník až po všech úkolech, volitelná odměna za milník v oslavě, klidnější a plynulejší přibližování mapy.
 - [ ] 8.6 | builder |
 - [ ] K8 | reviewer |
 - [ ] STOP | Konec opravného kola 1. Ověř opravené věci: v konzoli žádné chyby, nabídky v onboardingu se otevírají, telefony se formátují, časová pásma ukazují čas, vyhledávání ⌘K najde kontakt bez diakritiky i podle části čísla, dlaždice se otevírají jako velké okno s procenty v kruhu, mapa úkolů má barevné stavy a klidné přibližování, milník jde dokončit až po všech úkolech a ukáže odměnu, filtr znovu oslovit filtruje jen svůj sloupec a fáze se přesouvají za myší. Pak pokračuj v testování od Kontaktů dál a poznámky pošli do chatu s Claude.
