@@ -4,10 +4,12 @@ import { useRef, useState, type MouseEvent, type PointerEvent } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ChevronLeftIcon, FlagIcon, PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { formatNumber } from "@/lib/format";
+import { formatNumber, todayIsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { TaskCheckbox } from "./task-checkbox";
+import { overdueDays, taskCardClass, taskVisualState } from "./task-status";
+import { OverdueBadge } from "./task-status-ui";
 import type { Task } from "./types";
 
 /** Shared by the visible node and its hidden twin in the measuring layer. */
@@ -52,6 +54,8 @@ export function TaskMapNode({
   const reduceMotion = useReducedMotion();
   const done = task.status === "done";
   const locked = remaining > 0;
+  const state = taskVisualState(task, remaining);
+  const late = overdueDays(task, todayIsoDate(settings));
   const pressedAt = useRef<{ x: number; y: number } | null>(null);
 
   // When the last subtask gets done the node unlocks with a pulse and waits for a manual tick.
@@ -71,21 +75,17 @@ export function TaskMapNode({
 
   return (
     <div
-      data-state={done ? "done" : locked ? "locked" : "open"}
+      data-state={state}
       title={locked ? t("tasks.lockedHint", { count: remaining }) : undefined}
       onPointerDown={(event) => (pressedAt.current = { x: event.clientX, y: event.clientY })}
       onClick={open}
       className={cn(
         cardBase,
         "group cursor-pointer transition-[border-color,background-color,opacity,box-shadow] duration-300",
-        done &&
-          "border-teal/70 bg-[color-mix(in_oklab,var(--color-teal)_12%,var(--color-surface))]",
-        !done &&
-          !locked &&
-          "border-violet/80 bg-surface shadow-[0_0_22px_-10px_var(--color-violet)] hover:border-violet",
-        locked && "border-line bg-surface/70 opacity-65 hover:opacity-90",
+        taskCardClass[state],
       )}
     >
+      {late > 0 && <OverdueBadge days={late} className="absolute -top-2.5 right-3 z-10" />}
       {unlocks > 0 && !reduceMotion && (
         <motion.span
           key={unlocks}
@@ -101,6 +101,7 @@ export function TaskMapNode({
         <TaskCheckbox
           title={task.title}
           done={done}
+          inProgress={state === "in_progress"}
           remaining={remaining}
           onToggle={onToggleDone}
         />
@@ -116,6 +117,7 @@ export function TaskMapNode({
         className={cn(
           "min-w-0 flex-1 cursor-pointer self-stretch rounded-md text-left text-sm leading-snug [overflow-wrap:anywhere] text-ink outline-none focus-visible:ring-3 focus-visible:ring-violet/40",
           done && "text-ink-soft",
+          locked && "text-ink-muted",
         )}
       >
         {task.title}

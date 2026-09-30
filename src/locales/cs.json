@@ -705,7 +705,11 @@
       "edit": "Upravit",
       "delete": "Smazat",
       "complete": "Dokončit milník",
-      "reopen": "Znovu otevřít milník"
+      "reopen": "Znovu otevřít milník",
+      "completeLocked": "{count, plural, one {Zbývá # úkol} few {Zbývají # úkoly} many {Zbývá # úkolu} other {Zbývá # úkolů}}",
+      "completeEmpty": "Přidej první úkol",
+      "completeLockedHint": "Milník půjde dokončit, až budou hotové všechny úkoly.",
+      "completeEmptyHint": "Milník potřebuje aspoň jeden úkol, než ho půjde dokončit."
     },
     "filter": {
       "label": "Filtr podle kategorie",
@@ -725,7 +729,8 @@
       "noDate": "Bez cílového data",
       "completed": "Dokončeno",
       "progress": "Postup milníku {title}",
-      "almostThere": "{remaining, plural, one {ještě # úkol} few {ještě # úkoly} other {ještě # úkolů}} — už to skoro máte!"
+      "almostThere": "{remaining, plural, one {ještě # úkol} few {ještě # úkoly} other {ještě # úkolů}} — už to skoro máte!",
+      "reward": "Odměna: {reward}"
     },
     "empty": {
       "title": "Zatím žádné milníky",
@@ -757,13 +762,17 @@
       "save": "Uložit změny",
       "cancel": "Zrušit",
       "close": "Zavřít",
-      "saveFailed": "Milník se nepodařilo uložit. Zkus to znovu."
+      "saveFailed": "Milník se nepodařilo uložit. Zkus to znovu.",
+      "reward": "Odměna",
+      "rewardPlaceholder": "Víkend na horách",
+      "rewardHint": "Volitelné. Čím se odměníš, až milník splníš, třeba víkend na horách."
     },
     "errors": {
       "titleRequired": "Zadej název.",
       "titleTooLong": "Název je příliš dlouhý (nejvýše 120 znaků).",
       "descriptionTooLong": "Popis je příliš dlouhý (nejvýše 2000 znaků).",
-      "tagTooLong": "Štítek je příliš dlouhý (nejvýše 30 znaků)."
+      "tagTooLong": "Štítek je příliš dlouhý (nejvýše 30 znaků).",
+      "rewardTooLong": "Odměna je příliš dlouhá (nejvýše 120 znaků)."
     },
     "delete": {
       "title": "Smazat tento milník?",
@@ -781,8 +790,6 @@
         "todo": "K udělání"
       },
       "noTasksYet": "zatím bez úkolů",
-      "offerTitle": "Všechny úkoly jsou hotové",
-      "offerDescription": "Dobrá práce. Milník dokonči, až budeš spokojený.",
       "completedTitle": "Milník je dokončený",
       "completedDescription": "Kdyby ještě něco chybělo, můžeš ho znovu otevřít.",
       "statusFailed": "Milník se nepodařilo změnit. Zkus to znovu.",
@@ -835,7 +842,8 @@
         "create": "Přidat úkol",
         "save": "Uložit změny",
         "cancel": "Zrušit",
-        "close": "Zavřít"
+        "close": "Zavřít",
+        "statusGroup": "Stav úkolu"
       },
       "errors": {
         "openSubtasks": "Nejdřív dokonči všechny podúkoly, pak půjde úkol odškrtnout.",
@@ -846,7 +854,16 @@
         "list": "Seznam",
         "map": "Mapa"
       },
-      "wayOverdue": "{days, plural, one {Po termínu už # den} few {Po termínu už # dny} other {Po termínu už # dní}} — pojďme na to"
+      "wayOverdue": "{days, plural, one {Po termínu už # den} few {Po termínu už # dny} other {Po termínu už # dní}} — pojďme na to",
+      "state": {
+        "todo": "Nezačatý",
+        "in_progress": "Rozpracovaný",
+        "done": "Hotový",
+        "locked": "Zamčený",
+        "overdue": "Po lhůtě"
+      },
+      "overdueBadge": "{days} d",
+      "overdueDays": "{days, plural, one {# den po lhůtě} few {# dny po lhůtě} many {# dne po lhůtě} other {# dní po lhůtě}}"
     },
     "map": {
       "label": "Mapa úkolů",
@@ -855,10 +872,14 @@
       "addTask": "Přidat úkol",
       "collapse": "Skrýt podúkoly",
       "expand": "{count, plural, one {Ukázat # skrytý úkol} few {Ukázat # skryté úkoly} many {Ukázat # skrytého úkolu} other {Ukázat # skrytých úkolů}}",
-      "rootProgress": "{done} / {total}"
+      "rootProgress": "{done} / {total}",
+      "legend": "Legenda",
+      "legendShow": "Zobrazit legendu",
+      "legendHide": "Skrýt legendu"
     },
     "celebration": {
-      "title": "Milník splněn!"
+      "title": "Milník splněn!",
+      "reward": "Tvoje odměna: {reward}"
     }
   },
   "pipeline": {

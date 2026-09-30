@@ -33,6 +33,7 @@
   --color-teal: #2fe3c8; /* progress, success, Jarvis */
   --color-gold: #ffc64b; /* rewards, XP */
   --color-green: #3ddc97; /* won */
+  --color-orange: #ff9f43; /* in progress */
   --color-pink: #ff6b8a; /* lost, errors */
 
   /* Text */
@@ -57,6 +58,8 @@
   --animate-shake: shake 0.4s ease-in-out;
   /* Needs --edge-period (dash + gap) on the element, see the task map. */
   --animate-edge-shine: edge-shine 4.2s linear infinite;
+  /* The live ring of an in-progress task: one slow turn of --ring-angle. */
+  --animate-ring-spin: ring-spin 3.6s linear infinite;
 
   @keyframes shimmer {
     0% {
@@ -74,6 +77,12 @@
     }
     to {
       stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes ring-spin {
+    to {
+      --ring-angle: 360deg;
     }
   }
 
@@ -203,6 +212,48 @@
 }
 @utility z-celebration {
   z-index: 80; /* celebration, above everything */
+}
+
+/*
+ * Live ring: a conic orange border that slowly travels around the element, with
+ * a soft glow set by the caller. The element needs a border radius and position.
+ * With reduced motion the ring stands still (the animation is skipped).
+ */
+@property --ring-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+@utility live-ring {
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    padding: 1.5px;
+    border-radius: inherit;
+    pointer-events: none;
+    background: conic-gradient(
+      from var(--ring-angle),
+      color-mix(in oklab, var(--color-orange) 18%, transparent) 0deg,
+      var(--color-orange) 70deg,
+      color-mix(in oklab, var(--color-orange) 45%, transparent) 150deg,
+      color-mix(in oklab, var(--color-orange) 18%, transparent) 220deg,
+      color-mix(in oklab, var(--color-orange) 18%, transparent) 360deg
+    );
+    -webkit-mask:
+      linear-gradient(black 0 0) content-box,
+      linear-gradient(black 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(black 0 0) content-box exclude,
+      linear-gradient(black 0 0);
+    animation: var(--animate-ring-spin);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    &::before {
+      animation: none;
+    }
+  }
 }
 
 /* Typography */

@@ -3,10 +3,12 @@ import { z } from "zod";
 export const TITLE_MAX = 120;
 export const DESCRIPTION_MAX = 2000;
 export const TAG_MAX = 30;
+/** Matches the milestones_reward_length check in the database. */
+export const REWARD_MAX = 120;
 
 /** Translation keys under `milestones.errors`. */
 export type MilestoneErrorKey =
-  "titleRequired" | "titleTooLong" | "descriptionTooLong" | "tagTooLong";
+  "titleRequired" | "titleTooLong" | "descriptionTooLong" | "tagTooLong" | "rewardTooLong";
 
 const title = z.string().trim().min(1, "titleRequired").max(TITLE_MAX, "titleTooLong");
 const description = z.string().trim().max(DESCRIPTION_MAX, "descriptionTooLong");
@@ -18,6 +20,7 @@ export const milestoneSchema = z.object({
   category: z.enum(["work", "personal"]),
   tag: z.string().trim().max(TAG_MAX, "tagTooLong"),
   target_date: isoDate.nullable(),
+  reward: z.string().trim().max(REWARD_MAX, "rewardTooLong"),
 });
 export type MilestoneInput = z.infer<typeof milestoneSchema>;
 

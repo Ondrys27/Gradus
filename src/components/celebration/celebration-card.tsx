@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import confetti from "canvas-confetti";
 import { motion, useReducedMotion, type Transition } from "framer-motion";
-import { TrophyIcon } from "lucide-react";
+import { GiftIcon, TrophyIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { isAnimationsEnabled } from "@/lib/animation-preference";
 import { formatNumber } from "@/lib/format";
@@ -18,7 +18,7 @@ type CelebrationCardProps = CelebrationOptions & { onContinue: () => void };
 /** Seconds after mount at which each beat of the sequence starts. */
 const BEAT = { card: 0.05, trophy: 0.2, confetti: 0.3, text: 0.4, bar: 0.55, xp: 1.1 } as const;
 
-export function CelebrationCard({ title, subtitle, xp, onContinue }: CelebrationCardProps) {
+export function CelebrationCard({ title, subtitle, reward, xp, onContinue }: CelebrationCardProps) {
   const t = useTranslations("celebration");
   // Either the OS says to reduce motion or the user turned animations off in Settings.
   const reduceMotion = (useReducedMotion() ?? false) || !isAnimationsEnabled();
@@ -104,6 +104,18 @@ export function CelebrationCard({ title, subtitle, xp, onContinue }: Celebration
           >
             {subtitle}
           </Dialog.Description>
+        )}
+        {reward && (
+          <motion.p
+            {...fadeUp(BEAT.text + 0.16)}
+            className="inline-flex items-center justify-center gap-2 text-base font-semibold text-gold text-balance"
+          >
+            <GiftIcon
+              aria-hidden
+              className="size-5 shrink-0 drop-shadow-[0_0_8px_var(--color-gold)]"
+            />
+            {reward}
+          </motion.p>
         )}
       </div>
 

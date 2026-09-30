@@ -23,6 +23,8 @@ const CelebrationCard = dynamic(() => loadCard().then((module) => module.Celebra
 export type CelebrationOptions = {
   title: string;
   subtitle?: string;
+  /** A reward the user promised themselves, already worded ("Your reward: …"). */
+  reward?: string;
   /** XP awarded; the +XP badge is hidden when missing or zero. */
   xp?: number;
 };

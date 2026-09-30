@@ -6,10 +6,9 @@ import { useRouter } from "next/navigation";
 import {
   ArrowLeftIcon,
   CalendarIcon,
-  CheckCircle2Icon,
   FlagIcon,
+  GiftIcon,
   PencilIcon,
-  RotateCcwIcon,
   Trash2Icon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -37,7 +36,8 @@ import {
   useSetMilestoneStatus,
   useTasks,
 } from "./queries";
-import { countTasks, progressOf } from "./task-tree";
+import { CompleteMilestoneButton } from "./complete-milestone-button";
+import { countTasks, milestoneCompletion, progressOf } from "./task-tree";
 import { TasksPanel } from "./tasks-panel";
 
 const RING_SIZE = 220;
@@ -63,7 +63,13 @@ export function MilestoneDetail({ id }: { id: string }) {
           { kind: "milestone_completed", idempotencyKey: row.id },
           {
             onSuccess: ({ awarded, xp }) =>
-              celebrate({ title: t("celebration.title"), subtitle: row.title, xp: awarded ? xp : undefined }),
+              celebrate({
+                title: t("celebration.title"),
+                subtitle: row.title,
+                reward: row.reward ? t("celebration.reward", { reward: row.reward }) : undefined,
+                // XP only the first time; completing it again after reopening awards nothing.
+                xp: awarded ? xp : undefined,
+              }),
           },
         );
       },
@@ -128,7 +134,7 @@ export function MilestoneDetail({ id }: { id: string }) {
   const counts = countTasks(tasks);
   const ratio = progressOf(counts);
   const completed = milestone.status === "completed";
-  const allDone = !completed && counts.total > 0 && counts.done === counts.total;
+  const completion = milestoneCompletion(milestone.status, counts);
   const overdue =
     !completed && !!milestone.target_date && milestone.target_date < todayIsoDate(settings);
 
@@ -149,21 +155,12 @@ export function MilestoneDetail({ id }: { id: string }) {
               <Trash2Icon aria-hidden data-icon="inline-start" />
               {t("actions.delete")}
             </Button>
-            {completed ? (
-              <Button disabled={setStatus.isPending} onClick={() => setStatus.mutate("active")}>
-                <RotateCcwIcon aria-hidden data-icon="inline-start" />
-                {t("actions.reopen")}
-              </Button>
-            ) : (
-              <Button
-                variant={allDone ? "default" : "outline"}
-                disabled={setStatus.isPending}
-                onClick={complete}
-              >
-                <CheckCircle2Icon aria-hidden data-icon="inline-start" />
-                {t("actions.complete")}
-              </Button>
-            )}
+            <CompleteMilestoneButton
+              completion={completion}
+              pending={setStatus.isPending}
+              onComplete={complete}
+              onReopen={() => setStatus.mutate("active")}
+            />
           </>
         }
       />
@@ -210,6 +207,18 @@ export function MilestoneDetail({ id }: { id: string }) {
             )}
           </div>
 
+          {milestone.reward && (
+            <p className="flex min-w-0 items-center gap-2 text-sm font-medium text-gold">
+              <GiftIcon
+                aria-hidden
+                className="size-4 shrink-0 drop-shadow-[0_0_6px_var(--color-gold)]"
+              />
+              <span className="min-w-0 break-words">
+                {t("card.reward", { reward: milestone.reward })}
+              </span>
+            </p>
+          )}
+
           <p className="text-sm text-ink-soft">
             {counts.total > 0
               ? t("detail.tasksDone", { done: counts.done, total: counts.total })
@@ -220,7 +229,7 @@ export function MilestoneDetail({ id }: { id: string }) {
             {(
               [
                 ["done", counts.done, "text-green"],
-                ["inProgress", counts.inProgress, "text-gold"],
+                ["inProgress", counts.inProgress, "text-orange"],
                 ["todo", counts.total - counts.done - counts.inProgress, "text-ink"],
               ] as const
             ).map(([key, value, color]) => (
@@ -247,22 +256,6 @@ export function MilestoneDetail({ id }: { id: string }) {
               {milestone.ai_feedback ?? t("detail.jarvisReviewing")}
             </p>
           </div>
-        </GlowCard>
-      )}
-
-      {allDone && (
-        <GlowCard
-          interactive={false}
-          className="flex flex-col gap-3 border-gold/40 sm:flex-row sm:items-center sm:justify-between"
-        >
-          <div>
-            <p className="font-semibold text-ink">{t("detail.offerTitle")}</p>
-            <p className="text-sm text-ink-soft">{t("detail.offerDescription")}</p>
-          </div>
-          <Button disabled={setStatus.isPending} onClick={complete}>
-            <CheckCircle2Icon aria-hidden data-icon="inline-start" />
-            {t("actions.complete")}
-          </Button>
         </GlowCard>
       )}
 

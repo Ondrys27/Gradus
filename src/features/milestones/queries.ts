@@ -15,6 +15,7 @@ import {
   applyStatusChange,
   nextPosition,
   reopenAncestors,
+  reopenedMilestone,
   reorderSiblings,
   subtreeIds,
   type PositionChange,
@@ -111,6 +112,7 @@ function toMilestoneRow(input: MilestoneInput) {
     category: input.category,
     tag: input.tag || null,
     target_date: input.target_date,
+    reward: input.reward || null,
   };
 }
 
@@ -211,7 +213,10 @@ export function useUpdateMilestone(id: string) {
   });
 }
 
-/** Finishing (and reopening) a milestone is always the user's own act. */
+/**
+ * Finishing (and reopening) a milestone is always the user's own act. The database
+ * refuses to finish one without tasks or with open ones (milestones_guard).
+ */
 export function useSetMilestoneStatus(id: string) {
   const { user } = useSession();
   const queryClient = useQueryClient();
@@ -266,6 +271,7 @@ function useTaskMutation<V, R = unknown>(
   const queryClient = useQueryClient();
   const key = milestoneKeys.tasks(user.id, milestoneId);
   const listKey = milestoneKeys.list(user.id);
+  const detailKey = milestoneKeys.detail(user.id, milestoneId);
 
   return useMutation({
     mutationKey: milestoneKeys.taskMutation(milestoneId),
@@ -273,13 +279,23 @@ function useTaskMutation<V, R = unknown>(
     onMutate: async (variables: V) => {
       await queryClient.cancelQueries({ queryKey: key });
       const previous = queryClient.getQueryData<Task[]>(key);
+      const previousMilestone = queryClient.getQueryData<Milestone | null>(detailKey);
       if (previous && options.apply) {
-        queryClient.setQueryData<Task[]>(key, options.apply(previous, variables));
+        const next = options.apply(previous, variables);
+        queryClient.setQueryData<Task[]>(key, next);
+        // An unticked task sends a completed milestone back to active, as the database does.
+        if (previousMilestone) {
+          const reopened = reopenedMilestone(previousMilestone, next);
+          if (reopened !== previousMilestone) syncMilestone(queryClient, user.id, reopened);
+        }
       }
-      return { previous };
+      return { previous, previousMilestone };
     },
     onError: (_error, _variables, context) => {
       if (context?.previous) queryClient.setQueryData(key, context.previous);
+      if (context?.previousMilestone) {
+        syncMilestone(queryClient, user.id, context.previousMilestone);
+      }
     },
     onSuccess: (result, variables) => {
       const { onSuccess } = options;
@@ -295,6 +311,7 @@ function useTaskMutation<V, R = unknown>(
       }
       void queryClient.invalidateQueries({ queryKey: key });
       void queryClient.invalidateQueries({ queryKey: listKey });
+      void queryClient.invalidateQueries({ queryKey: detailKey });
     },
   });
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -8,13 +8,6 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { fieldA11y, FormField } from "@/components/ui/form-field";
 import { Input, Textarea } from "@/components/ui/input";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useCreateTask, useUpdateTask } from "./queries";
 import {
   DESCRIPTION_MAX,
@@ -23,13 +16,12 @@ import {
   TITLE_MAX,
   type MilestoneErrorKey,
 } from "./schemas";
+import { TaskStatusSwitch } from "./task-status-ui";
 import { openSubtasks } from "./task-tree";
 import type { Task, TaskStatus } from "./types";
 import { useFreshOnOpen } from "./use-fresh-on-open";
 
 export type TaskFormMode = { kind: "create"; parent: Task | null } | { kind: "edit"; task: Task };
-
-const STATUSES: TaskStatus[] = ["todo", "in_progress", "done"];
 
 type Props = {
   open: boolean;
@@ -86,11 +78,6 @@ function TaskFields({
   const pending = create.isPending || update.isPending;
   const locked = editing ? openSubtasks(tasks, editing.id) > 0 : false;
 
-  const statuses = useMemo(
-    () => STATUSES.map((value) => ({ value, label: t(`tasks.status.${value}`) })),
-    [t],
-  );
-
   async function submit(event: FormEvent) {
     event.preventDefault();
     setFailed(false);
@@ -137,44 +124,21 @@ function TaskFields({
           onChange={(event) => setDescription(event.target.value)}
         />
       </FormField>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <FormField
-          id="task-status"
-          label={t("tasks.form.status")}
-          hint={locked ? t("tasks.form.statusLocked") : undefined}
-        >
-          <Select
-            value={status}
-            items={statuses}
-            onValueChange={(next) => {
-              if (next === "todo" || next === "in_progress" || next === "done") setStatus(next);
-            }}
-          >
-            <SelectTrigger id="task-status">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {statuses.map((option) => (
-                <SelectItem
-                  key={option.value}
-                  value={option.value}
-                  disabled={locked && option.value === "done"}
-                >
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </FormField>
-        <FormField id="task-due" label={t("tasks.form.dueDate")}>
-          <DatePicker
-            id="task-due"
-            value={dueDate}
-            onValueChange={setDueDate}
-            placeholder={t("tasks.form.dueDatePlaceholder")}
-          />
-        </FormField>
-      </div>
+      <FormField
+        id="task-status"
+        label={t("tasks.form.status")}
+        hint={locked ? t("tasks.form.statusLocked") : undefined}
+      >
+        <TaskStatusSwitch id="task-status" value={status} locked={locked} onChange={setStatus} />
+      </FormField>
+      <FormField id="task-due" label={t("tasks.form.dueDate")}>
+        <DatePicker
+          id="task-due"
+          value={dueDate}
+          onValueChange={setDueDate}
+          placeholder={t("tasks.form.dueDatePlaceholder")}
+        />
+      </FormField>
       {failed && <FormAlert>{t("tasks.errors.saveFailed")}</FormAlert>}
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button type="button" variant="ghost" onClick={onDone}>

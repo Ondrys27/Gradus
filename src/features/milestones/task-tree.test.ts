@@ -3,9 +3,11 @@ import {
   applyStatusChange,
   buildTree,
   countTasks,
+  milestoneCompletion,
   openSubtasks,
   progressOf,
   reopenAncestors,
+  reopenedMilestone,
   reorderSiblings,
   sortMilestones,
   subtreeIds,
@@ -40,6 +42,7 @@ function milestone(id: string, patch: Partial<MilestoneWithCounts> = {}): Milest
     completed_at: null,
     created_at: "2026-01-01T00:00:00Z",
     ai_feedback: null,
+    reward: null,
     total: 0,
     done: 0,
     ...patch,
@@ -236,5 +239,33 @@ describe("sortMilestones", () => {
       milestone("soon", { target_date: "2026-10-01" }),
     ]);
     expect(sorted.map((m) => m.id)).toEqual(["soon", "late", "undated", "done"]);
+  });
+});
+
+describe("milestone completion", () => {
+  it("is locked with the number of open tasks until every task is done", () => {
+    expect(milestoneCompletion("active", { total: 5, done: 2 })).toEqual({
+      kind: "locked",
+      remaining: 3,
+    });
+    expect(milestoneCompletion("active", { total: 5, done: 5 })).toEqual({ kind: "ready" });
+  });
+
+  it("asks for a first task when there is none and knows a completed one", () => {
+    expect(milestoneCompletion("active", { total: 0, done: 0 })).toEqual({ kind: "empty" });
+    expect(milestoneCompletion("completed", { total: 3, done: 3 })).toEqual({ kind: "completed" });
+  });
+
+  it("reopens a completed milestone as soon as a task is not done", () => {
+    const done = milestone("m", { status: "completed", completed_at: "2026-09-01T00:00:00Z" });
+    expect(reopenedMilestone(done, [task("a", { status: "done" })])).toBe(done);
+    expect(
+      reopenedMilestone(done, [
+        task("a", { status: "done" }),
+        task("b", { status: "in_progress" }),
+      ]),
+    ).toMatchObject({ status: "active", completed_at: null });
+    const active = milestone("n");
+    expect(reopenedMilestone(active, [task("a")])).toBe(active);
   });
 });

@@ -12,10 +12,12 @@ type TaskCheckboxProps = {
   done: boolean;
   /** Open direct subtasks. While there are any, the task cannot be ticked. */
   remaining: number;
+  /** In progress: the box takes the orange of that state. */
+  inProgress?: boolean;
   onToggle: () => void;
 };
 
-export function TaskCheckbox({ title, done, remaining, onToggle }: TaskCheckboxProps) {
+export function TaskCheckbox({ title, done, remaining, inProgress, onToggle }: TaskCheckboxProps) {
   const t = useTranslations("milestones.tasks");
   const locked = remaining > 0;
 
@@ -68,6 +70,7 @@ export function TaskCheckbox({ title, done, remaining, onToggle }: TaskCheckboxP
       )}
       <Checkbox
         checked={done}
+        className={inProgress && !done ? "border-orange bg-orange/10" : undefined}
         onCheckedChange={onToggle}
         aria-label={done ? t("checkReopen", { title }) : t("checkDone", { title })}
       />

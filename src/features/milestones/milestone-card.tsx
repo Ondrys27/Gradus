@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarIcon, CheckCircle2Icon } from "lucide-react";
+import { CalendarIcon, CheckCircle2Icon, GiftIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { GlowCard } from "@/components/ui/glow-card";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -50,6 +50,22 @@ export function MilestoneCard({ milestone }: { milestone: MilestoneWithCounts })
             {formatNumber(ratio, { style: "percent" }, settings)}
           </span>
         </div>
+
+        {milestone.reward && (
+          <p
+            title={t("card.reward", { reward: milestone.reward })}
+            className="flex min-w-0 items-center gap-2 text-sm font-medium text-gold"
+          >
+            <GiftIcon
+              aria-hidden
+              className="size-4 shrink-0 drop-shadow-[0_0_6px_var(--color-gold)]"
+            />
+            <span className="sr-only">{t("card.reward", { reward: milestone.reward })}</span>
+            <span aria-hidden className="min-w-0 truncate">
+              {milestone.reward}
+            </span>
+          </p>
+        )}
 
         {almostThere && (
           <p className="text-sm font-medium text-teal">{t("card.almostThere", { remaining })}</p>

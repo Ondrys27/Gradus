@@ -33,6 +33,17 @@ import {
   type MapLayout,
   type Size,
 } from "./tree-map-layout";
+import {
+  BUTTON_FACTOR,
+  clampScale,
+  MAX_SCALE,
+  MIN_SCALE,
+  wheelZoomFactor,
+  ZOOM_TIME,
+  zoomFrame,
+  type Anchor,
+  type Transform,
+} from "./tree-map-zoom";
 
 /** Room around the tree inside the pannable canvas. */
 const CANVAS_PAD = 48;
@@ -61,6 +72,8 @@ type Props = {
   /** Changes whenever a node's content (and so its size) may have changed. */
   contentKey: unknown;
   renderNode: (id: string, state: TreeMapNodeState) => ReactNode;
+  /** Drawn in the top-left corner over the map, e.g. a legend. */
+  overlay?: ReactNode;
 };
 
 const noop = () => {};
@@ -77,7 +90,7 @@ function shift(box: Box): Box {
  * overlay on the same instance, not the Fullscreen API, which iOS lacks.
  * Used by the task map and the reward editor.
  */
-export function TreeMap({ tree, label, contentKey, renderNode }: Props) {
+export function TreeMap({ tree, label, contentKey, renderNode, overlay }: Props) {
   const t = useTranslations("treeMap");
   const instanceId = useId();
   const reduceMotion = useReducedMotion() ?? false;
@@ -164,19 +177,103 @@ export function TreeMap({ tree, label, contentKey, renderNode }: Props) {
     return () => observer.disconnect();
   }, [readViewport]);
 
+  /**
+   * Smooth zoom: every wheel event or button press retargets one ease-out
+   * animation (ZOOM_TIME), starting from wherever the map is at that moment and
+   * keeping the point under the anchor in place. The library's own wheel zoom
+   * is off; its jumps per event were what made the map twitchy.
+   */
+  const zoom = useRef<{ frame: number | null; target: number }>({ frame: null, target: 1 });
+
+  const stopZoom = useCallback(() => {
+    if (zoom.current.frame !== null) cancelAnimationFrame(zoom.current.frame);
+    zoom.current.frame = null;
+  }, []);
+
+  const zoomTo = useCallback(
+    (scale: number, anchor: Anchor) => {
+      const api = transformRef.current;
+      if (!api) return;
+      const { positionX, positionY, scale: currentScale } = api.instance.state;
+      const from: Transform = { x: positionX, y: positionY, scale: currentScale };
+      const target = clampScale(scale);
+      stopZoom();
+      zoom.current.target = target;
+      if (reduceMotion) {
+        const view = zoomFrame(from, target, anchor, 1);
+        api.setTransform(view.x, view.y, view.scale, 0);
+        return;
+      }
+      const start = performance.now();
+      const step = (now: number) => {
+        const progress = (now - start) / ZOOM_TIME;
+        const view = zoomFrame(from, target, anchor, progress);
+        transformRef.current?.setTransform(view.x, view.y, view.scale, 0);
+        zoom.current.frame = progress < 1 ? requestAnimationFrame(step) : null;
+      };
+      zoom.current.frame = requestAnimationFrame(step);
+    },
+    [reduceMotion, stopZoom],
+  );
+
+  /** Zoom by a factor around the middle of the viewport (the buttons). */
+  const zoomBy = useCallback(
+    (factor: number) => {
+      const api = transformRef.current;
+      const wrapper = api?.instance.wrapperComponent;
+      if (!api || !wrapper) return;
+      const base = zoom.current.frame !== null ? zoom.current.target : api.instance.state.scale;
+      zoomTo(base * factor, { x: wrapper.clientWidth / 2, y: wrapper.clientHeight / 2 });
+    },
+    [zoomTo],
+  );
+
+  // Wheel and trackpad pinch: native listener, because React's wheel handler is passive.
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element) return;
+    const onWheel = (event: WheelEvent) => {
+      const api = transformRef.current;
+      const wrapper = api?.instance.wrapperComponent;
+      if (!api || !wrapper || event.deltaY === 0) return;
+      event.preventDefault();
+      const rect = wrapper.getBoundingClientRect();
+      const base = zoom.current.frame !== null ? zoom.current.target : api.instance.state.scale;
+      zoomTo(base * wheelZoomFactor(event, rect.height), {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      });
+    };
+    element.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      element.removeEventListener("wheel", onWheel);
+      stopZoom();
+    };
+  }, [zoomTo, stopZoom]);
+
   const centre = useCallback(
-    (animationTime = 300) => {
+    (animationTime = 300, fitAll = false) => {
       const api = transformRef.current;
       const root = current?.boxes.get(tree.id);
       if (!api || !current || !viewport || !root) return;
+      stopZoom();
       const view = fitView(
         { width: current.width + CANVAS_PAD * 2, height: current.height + CANVAS_PAD * 2 },
         viewport,
         root.y + CANVAS_PAD + root.height / 2,
+        // The whole tree, however small it gets; otherwise small but still readable.
+        fitAll ? { minScale: MIN_SCALE } : undefined,
       );
-      void api.setTransform(view.x, view.y, view.scale, reduceMotion ? 0 : animationTime);
+      zoom.current.target = view.scale;
+      void api.setTransform(
+        view.x,
+        view.y,
+        view.scale,
+        reduceMotion ? 0 : animationTime,
+        "easeOutCubic",
+      );
     },
-    [current, viewport, tree.id, reduceMotion],
+    [current, viewport, tree.id, reduceMotion, stopZoom],
   );
 
   // First view, and again after switching full screen.
@@ -275,7 +372,6 @@ export function TreeMap({ tree, label, contentKey, renderNode }: Props) {
     onToggleCollapsed: noop,
   };
 
-  const zoomTime = reduceMotion ? 0 : 200;
   // Unique per instance and edge: the geometry is defined once and drawn twice through <use>.
   const edgePrefix = `tree-map-edge-${instanceId.replace(/[^a-zA-Z0-9_-]/g, "")}`;
 
@@ -284,6 +380,11 @@ export function TreeMap({ tree, label, contentKey, renderNode }: Props) {
       ref={containerRef}
       role="region"
       aria-label={label}
+      // Double click on empty space shows the whole tree.
+      onDoubleClick={(event) => {
+        if ((event.target as Element).closest("[data-map-node], [data-map-ui]")) return;
+        centre(300, true);
+      }}
       className={cn(
         "overflow-hidden [background-image:radial-gradient(color-mix(in_oklab,var(--color-line)_55%,transparent)_1px,transparent_1.5px)] [background-size:22px_22px]",
         fullscreen
@@ -293,11 +394,26 @@ export function TreeMap({ tree, label, contentKey, renderNode }: Props) {
     >
       <TransformWrapper
         ref={transformRef}
-        minScale={0.3}
-        maxScale={2.5}
+        minScale={MIN_SCALE}
+        maxScale={MAX_SCALE}
         limitToBounds={false}
         doubleClick={{ disabled: true }}
-        wheel={{ step: 0.08 }}
+        wheel={{ disabled: true }}
+        // Finger pinch on touch screens stays with the library, within the same range.
+        pinch={{ step: 5 }}
+        zoomAnimation={{ size: 0, animationType: "easeOutQuad" }}
+        // A pan glides to a stop instead of halting (the library uses the zoom
+        // animation's curve for it).
+        velocityAnimation={{
+          disabled: reduceMotion,
+          sensitivityMouse: 1,
+          sensitivityTouch: 1.2,
+          inertia: 1,
+          animationTime: 450,
+          maxAnimationTime: 900,
+        }}
+        onPanningStart={stopZoom}
+        onPinchStart={stopZoom}
       >
         <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
           {current && (
@@ -392,6 +508,7 @@ export function TreeMap({ tree, label, contentKey, renderNode }: Props) {
                   return (
                     <motion.div
                       key={id}
+                      data-map-node
                       className="absolute top-0 left-0"
                       initial={initial}
                       animate={{ x: box.x, y: box.y, opacity: 1, scale: 1 }}
@@ -431,8 +548,21 @@ export function TreeMap({ tree, label, contentKey, renderNode }: Props) {
         ))}
       </div>
 
+      {overlay && (
+        <div
+          data-map-ui
+          className={cn(
+            "absolute left-3 z-10 w-max max-w-[calc(100%-24px)]",
+            fullscreen ? "top-[calc(12px+env(safe-area-inset-top))]" : "top-3",
+          )}
+        >
+          {overlay}
+        </div>
+      )}
+
       {/* Bottom left: the bottom-right corner belongs to Jarvis. */}
       <div
+        data-map-ui
         role="toolbar"
         aria-label={t("controls")}
         className={cn(
@@ -444,7 +574,7 @@ export function TreeMap({ tree, label, contentKey, renderNode }: Props) {
           variant="ghost"
           size="icon"
           aria-label={t("zoomIn")}
-          onClick={() => void transformRef.current?.zoomIn(0.3, zoomTime)}
+          onClick={() => zoomBy(BUTTON_FACTOR)}
         >
           <ZoomInIcon aria-hidden />
         </Button>
@@ -452,7 +582,7 @@ export function TreeMap({ tree, label, contentKey, renderNode }: Props) {
           variant="ghost"
           size="icon"
           aria-label={t("zoomOut")}
-          onClick={() => void transformRef.current?.zoomOut(0.3, zoomTime)}
+          onClick={() => zoomBy(1 / BUTTON_FACTOR)}
         >
           <ZoomOutIcon aria-hidden />
         </Button>

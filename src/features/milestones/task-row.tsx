@@ -13,11 +13,12 @@ import {
 } from "lucide-react";
 import { differenceInCalendarDays } from "date-fns";
 import { useTranslations } from "next-intl";
-import { StatusPill } from "@/components/ui/status-pill";
 import { formatCalendarDate, isoDateToLocal, todayIsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { TaskCheckbox } from "./task-checkbox";
+import { taskVisualState } from "./task-status";
+import { TaskStatePill } from "./task-status-ui";
 import { openSubtasks, type TaskNode } from "./task-tree";
 import type { Task } from "./types";
 
@@ -62,6 +63,8 @@ function TaskRow({ node, handlers }: { node: TaskNode; handlers: TaskHandlers })
   } = useSortable({ id: task.id, data: { parentId: task.parent_task_id } });
 
   const done = task.status === "done";
+  const remaining = openSubtasks(handlers.tasks, task.id);
+  const inProgress = taskVisualState(task, remaining) === "in_progress";
   const expanded = !handlers.collapsed.has(task.id);
   const today = todayIsoDate(settings);
   const overdue = !done && !!task.due_date && task.due_date < today;
@@ -91,7 +94,8 @@ function TaskRow({ node, handlers }: { node: TaskNode; handlers: TaskHandlers })
         <TaskCheckbox
           title={task.title}
           done={done}
-          remaining={openSubtasks(handlers.tasks, task.id)}
+          inProgress={inProgress}
+          remaining={remaining}
           onToggle={() => handlers.onToggleDone(task)}
         />
 
@@ -104,13 +108,9 @@ function TaskRow({ node, handlers }: { node: TaskNode; handlers: TaskHandlers })
           >
             {task.title}
           </span>
-          {(task.status === "in_progress" || task.due_date || children.length > 0) && (
+          {(inProgress || task.due_date || children.length > 0) && (
             <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-muted">
-              {task.status === "in_progress" && (
-                <StatusPill tone="gold" dot>
-                  {t("status.in_progress")}
-                </StatusPill>
-              )}
+              {inProgress && <TaskStatePill state="in_progress" />}
               {task.due_date && (
                 <span className={cn(overdue && "text-pink")}>
                   {t(overdue ? "overdue" : "due", {

@@ -705,7 +705,11 @@
       "edit": "Edit",
       "delete": "Delete",
       "complete": "Complete milestone",
-      "reopen": "Reopen milestone"
+      "reopen": "Reopen milestone",
+      "completeLocked": "{count, plural, one {# task left} other {# tasks left}}",
+      "completeEmpty": "Add the first task",
+      "completeLockedHint": "The milestone can be completed once every task is done.",
+      "completeEmptyHint": "A milestone needs at least one task before it can be completed."
     },
     "filter": {
       "label": "Filter by category",
@@ -725,7 +729,8 @@
       "noDate": "No target date",
       "completed": "Completed",
       "progress": "Progress of {title}",
-      "almostThere": "{remaining, plural, one {# task left} other {# tasks left}} — almost there!"
+      "almostThere": "{remaining, plural, one {# task left} other {# tasks left}} — almost there!",
+      "reward": "Reward: {reward}"
     },
     "empty": {
       "title": "No milestones yet",
@@ -757,13 +762,17 @@
       "save": "Save changes",
       "cancel": "Cancel",
       "close": "Close",
-      "saveFailed": "Could not save the milestone. Try again."
+      "saveFailed": "Could not save the milestone. Try again.",
+      "reward": "Reward",
+      "rewardPlaceholder": "A weekend in the mountains",
+      "rewardHint": "Optional. What you will treat yourself to once it is done, e.g. a weekend in the mountains."
     },
     "errors": {
       "titleRequired": "Give it a name.",
       "titleTooLong": "The name is too long (120 characters at most).",
       "descriptionTooLong": "The description is too long (2000 characters at most).",
-      "tagTooLong": "The label is too long (30 characters at most)."
+      "tagTooLong": "The label is too long (30 characters at most).",
+      "rewardTooLong": "The reward is too long (120 characters at most)."
     },
     "delete": {
       "title": "Delete this milestone?",
@@ -781,8 +790,6 @@
         "todo": "To do"
       },
       "noTasksYet": "no tasks yet",
-      "offerTitle": "Every task is done",
-      "offerDescription": "Nice work. Complete the milestone when you are happy with it.",
       "completedTitle": "Milestone completed",
       "completedDescription": "You can reopen it if something is still missing.",
       "statusFailed": "Could not change the milestone. Try again.",
@@ -835,7 +842,8 @@
         "create": "Add task",
         "save": "Save changes",
         "cancel": "Cancel",
-        "close": "Close"
+        "close": "Close",
+        "statusGroup": "Task status"
       },
       "errors": {
         "openSubtasks": "Finish all subtasks first, then you can tick this task.",
@@ -846,7 +854,16 @@
         "list": "List",
         "map": "Map"
       },
-      "wayOverdue": "{days, plural, one {Overdue by # day} other {Overdue by # days}} — let's tackle it"
+      "wayOverdue": "{days, plural, one {Overdue by # day} other {Overdue by # days}} — let's tackle it",
+      "state": {
+        "todo": "Not started",
+        "in_progress": "In progress",
+        "done": "Done",
+        "locked": "Locked",
+        "overdue": "Overdue"
+      },
+      "overdueBadge": "{days}d",
+      "overdueDays": "{days, plural, one {# day overdue} other {# days overdue}}"
     },
     "map": {
       "label": "Task map",
@@ -855,10 +872,14 @@
       "addTask": "Add a task",
       "collapse": "Hide subtasks",
       "expand": "{count, plural, one {Show # hidden task} other {Show # hidden tasks}}",
-      "rootProgress": "{done} / {total}"
+      "rootProgress": "{done} / {total}",
+      "legend": "Legend",
+      "legendShow": "Show the legend",
+      "legendHide": "Hide the legend"
     },
     "celebration": {
-      "title": "Milestone completed!"
+      "title": "Milestone completed!",
+      "reward": "Your reward: {reward}"
     }
   },
   "pipeline": {

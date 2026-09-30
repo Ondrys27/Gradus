@@ -970,6 +970,7 @@ export type Database = {
           description: string | null
           id: string
           position: number
+          reward: string | null
           status: Database["public"]["Enums"]["milestone_status"]
           tag: string | null
           target_date: string | null
@@ -986,6 +987,7 @@ export type Database = {
           description?: string | null
           id?: string
           position?: number
+          reward?: string | null
           status?: Database["public"]["Enums"]["milestone_status"]
           tag?: string | null
           target_date?: string | null
@@ -1002,6 +1004,7 @@ export type Database = {
           description?: string | null
           id?: string
           position?: number
+          reward?: string | null
           status?: Database["public"]["Enums"]["milestone_status"]
           tag?: string | null
           target_date?: string | null

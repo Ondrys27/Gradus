@@ -414,6 +414,120 @@ describe("tasks", () => {
   });
 });
 
+describe("milestone completion", () => {
+  const statusOf = async (id: string) =>
+    one<{ status: string; completed_at: string | null }>(
+      `select status, completed_at from milestones where id = $1`,
+      [id],
+    );
+
+  it("completes only with at least one task, all done, and reopens on an unticked task", async () => {
+    const user = await createAuthUser();
+    await asUser(user);
+    const milestone = (
+      await one<{ id: string }>(
+        `insert into milestones (user_id, title) values ($1, 'Launch') returning id`,
+        [user],
+      )
+    ).id;
+
+    await expect(
+      db.query(`update milestones set status = 'completed' where id = $1`, [milestone]),
+    ).rejects.toThrow(/milestone_has_no_tasks/);
+
+    const parent = (
+      await one<{ id: string }>(
+        `insert into tasks (user_id, milestone_id, title) values ($1, $2, 'p') returning id`,
+        [user, milestone],
+      )
+    ).id;
+    const child = (
+      await one<{ id: string }>(
+        `insert into tasks (user_id, milestone_id, parent_task_id, title) values ($1, $2, $3, 'c') returning id`,
+        [user, milestone, parent],
+      )
+    ).id;
+    await db.query(`update tasks set status = 'done' where id = $1`, [child]);
+    await expect(
+      db.query(`update milestones set status = 'completed' where id = $1`, [milestone]),
+    ).rejects.toThrow(/milestone_has_open_tasks/);
+    // Everything done is not enough on its own: the milestone waits for the user.
+    await db.query(`update tasks set status = 'done' where id = $1`, [parent]);
+    expect((await statusOf(milestone)).status).toBe("active");
+
+    await db.query(`update milestones set status = 'completed' where id = $1`, [milestone]);
+    expect((await statusOf(milestone)).completed_at).not.toBeNull();
+
+    // Unticking a subtask reopens its parent and the milestone.
+    await db.query(`update tasks set status = 'todo' where id = $1`, [child]);
+    expect(await statusOf(milestone)).toEqual({ status: "active", completed_at: null });
+
+    await db.query(`update tasks set status = 'done' where id = $1`, [child]);
+    await db.query(`update tasks set status = 'done' where id = $1`, [parent]);
+    await db.query(`update milestones set status = 'completed' where id = $1`, [milestone]);
+    // A new open task reopens it too.
+    await db.query(`insert into tasks (user_id, milestone_id, title) values ($1, $2, 'more')`, [
+      user,
+      milestone,
+    ]);
+    expect((await statusOf(milestone)).status).toBe("active");
+    await asServer();
+  });
+
+  it("refuses a milestone created as completed and bounds the reward", async () => {
+    const user = await createAuthUser();
+    await asUser(user);
+    await expect(
+      db.query(`insert into milestones (user_id, title, status) values ($1, 'x', 'completed')`, [
+        user,
+      ]),
+    ).rejects.toThrow(/milestone_has_no_tasks/);
+
+    const row = await one<{ reward: string | null }>(
+      `insert into milestones (user_id, title, reward) values ($1, 'y', 'Weekend in the mountains') returning reward`,
+      [user],
+    );
+    expect(row.reward).toBe("Weekend in the mountains");
+    await expect(
+      db.query(`insert into milestones (user_id, title, reward) values ($1, 'z', $2)`, [
+        user,
+        "x".repeat(121),
+      ]),
+    ).rejects.toThrow(/milestones_reward_length/);
+    await expect(
+      db.query(`insert into milestones (user_id, title, reward) values ($1, 'z', '')`, [user]),
+    ).rejects.toThrow(/milestones_reward_length/);
+    await asServer();
+  });
+
+  it("does not let one user reopen another user's milestone through a task", async () => {
+    const owner = await createAuthUser();
+    const other = await createAuthUser();
+    await asUser(owner);
+    const milestone = (
+      await one<{ id: string }>(
+        `insert into milestones (user_id, title) values ($1, 'Mine') returning id`,
+        [owner],
+      )
+    ).id;
+    await db.query(
+      `insert into tasks (user_id, milestone_id, title, status) values ($1, $2, 't', 'done')`,
+      [owner, milestone],
+    );
+    await db.query(`update milestones set status = 'completed' where id = $1`, [milestone]);
+
+    await asUser(other);
+    await expect(
+      db.query(`insert into tasks (user_id, milestone_id, title) values ($1, $2, 'sneak')`, [
+        other,
+        milestone,
+      ]),
+    ).rejects.toThrow();
+    await asServer();
+    expect((await statusOf(milestone)).status).toBe("completed");
+  });
+});
+
 describe("prospecting timer", () => {
   it("cuts an idle segment 15 minutes after the last move out of unreached", async () => {
     await asUser(owner);

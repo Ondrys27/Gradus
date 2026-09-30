@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, type FormEvent } from "react";
+import { GiftIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -20,6 +21,7 @@ import {
   DESCRIPTION_MAX,
   fieldErrors,
   milestoneSchema,
+  REWARD_MAX,
   TAG_MAX,
   TITLE_MAX,
   type MilestoneErrorKey,
@@ -73,6 +75,7 @@ function MilestoneFields({
   const [category, setCategory] = useState<MilestoneCategory>(milestone?.category ?? "work");
   const [tag, setTag] = useState(milestone?.tag ?? "");
   const [targetDate, setTargetDate] = useState<string | null>(milestone?.target_date ?? null);
+  const [reward, setReward] = useState(milestone?.reward ?? "");
   const [errors, setErrors] = useState<Partial<Record<string, MilestoneErrorKey>>>({});
   const [failed, setFailed] = useState(false);
   const pending = create.isPending || update.isPending;
@@ -94,6 +97,7 @@ function MilestoneFields({
       category,
       tag,
       target_date: targetDate,
+      reward,
     });
     if (!parsed.success) {
       setErrors(fieldErrors(parsed.error));
@@ -115,6 +119,7 @@ function MilestoneFields({
   const titleError = errors.title && t(`errors.${errors.title}`);
   const descriptionError = errors.description && t(`errors.${errors.description}`);
   const tagError = errors.tag && t(`errors.${errors.tag}`);
+  const rewardError = errors.reward && t(`errors.${errors.reward}`);
 
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-4">
@@ -173,6 +178,25 @@ function MilestoneFields({
           value={tag}
           maxLength={TAG_MAX + 10}
           onChange={(event) => setTag(event.target.value)}
+        />
+      </FormField>
+      <FormField
+        id="milestone-reward"
+        label={
+          <span className="inline-flex items-center gap-1.5">
+            <GiftIcon aria-hidden className="size-4 text-gold" />
+            {t("form.reward")}
+          </span>
+        }
+        error={rewardError}
+        hint={t("form.rewardHint")}
+      >
+        <Input
+          {...fieldA11y("milestone-reward", rewardError, true)}
+          value={reward}
+          maxLength={REWARD_MAX + 10}
+          placeholder={t("form.rewardPlaceholder")}
+          onChange={(event) => setReward(event.target.value)}
         />
       </FormField>
       {failed && <FormAlert>{t("form.saveFailed")}</FormAlert>}

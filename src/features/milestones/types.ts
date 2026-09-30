@@ -7,7 +7,7 @@ export type MilestoneStatus = Database["public"]["Enums"]["milestone_status"];
 export type TaskStatus = Database["public"]["Enums"]["task_status"];
 
 export const MILESTONE_COLUMNS =
-  "id, title, description, category, tag, target_date, status, position, completed_at, created_at, ai_feedback";
+  "id, title, description, category, tag, target_date, status, position, completed_at, created_at, ai_feedback, reward";
 export const TASK_COLUMNS =
   "id, milestone_id, parent_task_id, title, description, status, position, due_date, completed_at";
 
@@ -24,6 +24,7 @@ export type Milestone = Pick<
   | "completed_at"
   | "created_at"
   | "ai_feedback"
+  | "reward"
 >;
 
 /** A milestone with its task counts, which the database computes at read time. */

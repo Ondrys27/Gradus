@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { TreeMap } from "@/components/tree-map/tree-map";
 import { toBranch } from "./task-map-layout";
 import { TaskMapNode, TaskMapRoot } from "./task-map-node";
+import { TaskStateLegend } from "./task-status-ui";
 import { buildTree } from "./task-tree";
 import type { Milestone, Task } from "./types";
 
@@ -40,6 +41,7 @@ export function TaskMap({ milestone, tasks, onOpen, onToggleDone, onAddChild }: 
       tree={tree}
       label={t("label")}
       contentKey={`${milestone.title}|${milestone.status}`}
+      overlay={<TaskStateLegend />}
       renderNode={(id, node) => {
         const task = taskById.get(id);
         if (!task) {

@@ -1,4 +1,4 @@
-import type { MilestoneWithCounts, Task, TaskStatus } from "./types";
+import type { Milestone, MilestoneWithCounts, Task, TaskStatus } from "./types";
 
 export type TaskNode = { task: Task; children: TaskNode[] };
 
@@ -24,6 +24,37 @@ export function countTasks(tasks: Task[]) {
     done: tasks.filter((task) => task.status === "done").length,
     inProgress: tasks.filter((task) => task.status === "in_progress").length,
   };
+}
+
+export type MilestoneCompletion =
+  | { kind: "completed" }
+  | { kind: "empty" }
+  | { kind: "locked"; remaining: number }
+  | { kind: "ready" };
+
+/**
+ * Whether the milestone can be completed. Mirrors milestones_guard: at least one
+ * task and every task done. Even then it waits for the user; nothing completes it.
+ */
+export function milestoneCompletion(
+  status: Milestone["status"],
+  counts: { total: number; done: number },
+): MilestoneCompletion {
+  if (status === "completed") return { kind: "completed" };
+  if (counts.total === 0) return { kind: "empty" };
+  if (counts.done < counts.total) return { kind: "locked", remaining: counts.total - counts.done };
+  return { kind: "ready" };
+}
+
+/** A task that is not done sends a completed milestone back to active (tasks_reopen_milestone). */
+export function reopenedMilestone<M extends Pick<Milestone, "status" | "completed_at">>(
+  milestone: M,
+  tasks: Pick<Task, "status">[],
+): M {
+  if (milestone.status !== "completed" || tasks.every((task) => task.status === "done")) {
+    return milestone;
+  }
+  return { ...milestone, status: "active", completed_at: null };
 }
 
 /** How many direct subtasks are still open. While it is above zero the task cannot be ticked. */
