@@ -13,6 +13,9 @@
       "close": "Close"
     }
   },
+  "phone": {
+    "invalid": "This doesn't look like a valid number. You can still save it."
+  },
   "treeMap": {
     "controls": "Map controls",
     "zoomIn": "Zoom in",
@@ -443,11 +446,26 @@
       "description": "Formats are independent of the language. Days start and end in your time zone.",
       "country": "Country",
       "countryDetected": "Your browser suggests {country}.",
-      "countryHint": "Used for call-time statistics.",
+      "countryHint": "Used for phone numbers and call-time statistics.",
       "useDetected": "Use this",
       "timeZone": "Time zone",
       "timeZoneDetected": "Your browser is in {zone}.",
       "timeZoneHint": "Days start and end in this zone.",
+      "timeZoneSearch": "Search time zones",
+      "timeZoneEmpty": "No time zone matches.",
+      "continents": {
+        "Africa": "Africa",
+        "America": "America",
+        "Antarctica": "Antarctica",
+        "Arctic": "Arctic",
+        "Asia": "Asia",
+        "Atlantic": "Atlantic",
+        "Australia": "Australia",
+        "Europe": "Europe",
+        "Indian": "Indian Ocean",
+        "Pacific": "Pacific",
+        "Other": "Other"
+      },
       "currency": "Currency",
       "currencyHint": "Changes only how amounts are shown. Nothing is converted.",
       "dateFormat": "Date format",
@@ -890,7 +908,6 @@
       "nameRequired": "Fill in the company or the person's name.",
       "tooLong": "This is too long.",
       "emailInvalid": "This does not look like an e-mail address.",
-      "phoneInvalid": "Use digits, spaces, dashes and an optional + at the start.",
       "websiteInvalid": "This does not look like a web address.",
       "occurredAtRequired": "Pick when it happened.",
       "occurredInFuture": "It cannot have happened in the future.",

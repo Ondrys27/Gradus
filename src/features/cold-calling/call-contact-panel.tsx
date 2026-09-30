@@ -15,11 +15,12 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { SidePanel } from "@/components/ui/side-panel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CurrentTableCard } from "@/features/contacts/contact-detail";
-import { telHref } from "@/features/contacts/contact-search";
+import { useUserSettings } from "@/features/account/queries";
 import { MoveContactDialog, type MoveResult } from "@/features/contacts/move-contact-dialog";
 import { useContact, useContactEntry } from "@/features/contacts/queries";
 import { websiteHref } from "@/features/contacts/schemas";
 import { contactName, contactPerson, type ContactTable } from "@/features/contacts/types";
+import { formatPhone, telHref } from "@/lib/phone";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -61,6 +62,7 @@ function PanelBody({
   onMoved: (contactId: string, result: MoveResult) => void;
 }) {
   const t = useTranslations("coldCalling.panel");
+  const country = useUserSettings().country_code;
   const contact = useContact(contactId);
   const entry = useContactEntry(contactId).data;
   const [moving, setMoving] = useState(false);
@@ -90,9 +92,12 @@ function PanelBody({
 
       <div className="flex flex-col gap-2 sm:flex-row">
         {data.phone ? (
-          <a href={telHref(data.phone)} className={cn(buttonVariants({ size: "lg" }), "flex-1")}>
+          <a
+            href={telHref(data.phone, country)}
+            className={cn(buttonVariants({ size: "lg" }), "flex-1")}
+          >
             <PhoneIcon aria-hidden data-icon="inline-start" />
-            {t("call", { phone: data.phone })}
+            {t("call", { phone: formatPhone(data.phone, country) })}
           </a>
         ) : (
           <p className="flex-1 text-sm text-ink-muted">{t("noPhone")}</p>

@@ -3,9 +3,10 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { GlobeIcon, PhoneIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { telHref } from "@/features/contacts/contact-search";
+import { useUserSettings } from "@/features/account/queries";
 import { websiteHref } from "@/features/contacts/schemas";
 import { contactName, contactPerson, type ContactListItem } from "@/features/contacts/types";
+import { formatPhone, telHref } from "@/lib/phone";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -17,6 +18,7 @@ type Props = {
 /** Company, a phone that dials on tap and the website. A contact moved away slides out. */
 export function CallList({ contacts, openId, onOpen }: Props) {
   const t = useTranslations("coldCalling.list");
+  const country = useUserSettings().country_code;
   return (
     <ul className="flex flex-col gap-2">
       <AnimatePresence initial={false}>
@@ -44,12 +46,12 @@ export function CallList({ contacts, openId, onOpen }: Props) {
               {/* Above the row button so a tap dials instead of opening the panel. */}
               {contact.phone && (
                 <a
-                  href={telHref(contact.phone)}
+                  href={telHref(contact.phone, country)}
                   aria-label={t("call", { name })}
                   className="relative inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-teal/30 px-3 text-sm text-teal tabular-nums outline-none hover:bg-teal/10 focus-visible:ring-3 focus-visible:ring-teal/40"
                 >
                   <PhoneIcon aria-hidden className="size-4" />
-                  <span className="hidden sm:inline">{contact.phone}</span>
+                  <span className="hidden sm:inline">{formatPhone(contact.phone, country)}</span>
                 </a>
               )}
               {contact.website && (

@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { fieldA11y, FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
+import { useUserSettings } from "@/features/account/queries";
 import { useCreateContact } from "@/features/contacts/queries";
 import {
   contactSchema,
   EMAIL_MAX,
   fieldErrors,
   NAME_MAX,
-  PHONE_MAX,
   type ContactDraft,
   type ContactErrorKey,
 } from "@/features/contacts/schemas";
@@ -31,6 +32,7 @@ export function ContactStep({ onNext }: { onNext: () => void }) {
   const t = useTranslations("onboarding.contact");
   const tContacts = useTranslations("contacts");
   const tActions = useTranslations("onboarding.actions");
+  const country = useUserSettings().country_code;
   const create = useCreateContact();
   const [draft, setDraft] = useState<ContactDraft>(EMPTY_DRAFT);
   const [errors, setErrors] = useState<Partial<Record<string, ContactErrorKey>>>({});
@@ -113,14 +115,11 @@ export function ContactStep({ onNext }: { onNext: () => void }) {
           label={tContacts("fields.phone")}
           error={errors.phone && tContacts(`errors.${errors.phone}`)}
         >
-          <Input
+          <PhoneInput
             {...fieldA11y("onboarding-contact-phone", errors.phone)}
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            maxLength={PHONE_MAX + 10}
+            country={country}
             value={draft.phone}
-            onChange={(event) => setDraft((d) => ({ ...d, phone: event.target.value }))}
+            onChange={(phone) => setDraft((d) => ({ ...d, phone }))}
           />
         </FormField>
         <FormField

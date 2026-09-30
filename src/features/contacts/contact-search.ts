@@ -64,11 +64,14 @@ export function searchFilter(term: string): string | null {
   return parts.join(",");
 }
 
-/** Phone key for duplicate checks: only numbers long enough to be a real phone. */
+/**
+ * Phone key for duplicate checks: the whole E.164 number as digits, the way the
+ * database keeps it in `phone_normalized`. Only numbers long enough to be a real phone.
+ */
 export function duplicatePhoneKey(phone: string | null | undefined): string | null {
   const digits = normalizePhone(phone);
   if (!digits || digits.length < 6) return null;
-  return nationalPart(digits);
+  return digits;
 }
 
 /**
@@ -80,10 +83,4 @@ export function duplicateEmailKey(email: string | null | undefined): string | nu
   const clean = (email ?? "").trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean) || /[%,()*\\"]/.test(clean)) return null;
   return clean;
-}
-
-/** Value for a `tel:` link: keeps a leading plus and the digits. */
-export function telHref(phone: string): string {
-  const trimmed = phone.trim();
-  return `tel:${trimmed.startsWith("+") ? "+" : ""}${trimmed.replace(/\D/g, "")}`;
 }

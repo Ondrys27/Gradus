@@ -114,7 +114,7 @@ describe("toFoundPlaces", () => {
       {
         id: "a",
         name: "Bakery",
-        phone: "+420 602 000 111",
+        phone: "+420602000111",
         website: "https://bakery.cz",
         address: "Pekařská 1, Praha",
       },

@@ -1441,7 +1441,7 @@ describe("generated contacts", () => {
     await asUser(user);
     await db.query(
       `insert into contacts (user_id, company_name, phone, address)
-       values ($1, 'Existing Phone', '777 123 456', 'Somewhere 1'),
+       values ($1, 'Existing Phone', '+420777123456', 'Somewhere 1'),
               ($1, 'Kavárna U Mostu', null, 'Mostní 5, Praha')`,
       [user],
     );
@@ -2412,6 +2412,96 @@ describe("jarvis extensions", () => {
     await asUser(user);
     await db.query(`delete from attachments`);
     expect(await count(`select 1 from attachments`)).toBe(0);
+    await asServer();
+  });
+});
+
+describe("phones in E.164", () => {
+  const MIGRATION = readdirSync(MIGRATIONS_DIR).find((f) => f.endsWith("_phones_e164.sql"))!;
+
+  it("reads stored numbers in the contact's or the owner's country", async () => {
+    const cases: [string, string | null, string | null][] = [
+      ["777 123 456", "CZ", "+420777123456"],
+      ["+420 777-123 456", "CZ", "+420777123456"],
+      ["00421 905 111 222", "CZ", "+421905111222"],
+      ["0905 111 222", "SK", "+421905111222"],
+      ["06 1234 5678", "IT", "+390612345678"],
+      ["1 (213) 373-4253", "US", "+12133734253"],
+      ["777123456", null, "+420777123456"],
+      ["call me", "CZ", null],
+      ["777 123 456 ext. 12", "CZ", null],
+      ["12 34", "CZ", null],
+      ["+0 123 456 789", "CZ", null],
+    ];
+    for (const [phone, country, expected] of cases) {
+      const { e164 } = await one<{ e164: string | null }>(`select phone_to_e164($1, $2) as e164`, [
+        phone,
+        country,
+      ]);
+      expect(e164, `${phone} in ${country}`).toBe(expected);
+    }
+  });
+
+  it("converts saved phones and leaves the unrecognised ones as they were", async () => {
+    const user = await createAuthUser();
+    await asServer();
+    await db.query(`update user_settings set country_code = 'SK' where user_id = $1`, [user]);
+    const inserted = await rows<{ id: string; company_name: string }>(
+      `insert into contacts (user_id, company_name, phone, country_code)
+       values ($1, 'National', '0905 111 222', null),
+              ($1, 'Czech', '777 123 456', 'CZ'),
+              ($1, 'Junk', 'ask reception', null),
+              ($1, 'Done', '+420602000111', null)
+       returning id, company_name`,
+      [user],
+    );
+    const { id: worker } = await one<{ id: string }>(
+      `insert into workers (owner_id, name, phone) values ($1, 'Eva', '0905 222 333') returning id`,
+      [user],
+    );
+
+    await db.exec(readFileSync(path.join(MIGRATIONS_DIR, MIGRATION), "utf8"));
+
+    const saved = await rows<{ company_name: string; phone: string; phone_normalized: string }>(
+      `select company_name, phone, phone_normalized from contacts where id = any($1) order by company_name`,
+      [inserted.map((c) => c.id)],
+    );
+    expect(saved).toEqual([
+      { company_name: "Czech", phone: "+420777123456", phone_normalized: "420777123456" },
+      { company_name: "Done", phone: "+420602000111", phone_normalized: "420602000111" },
+      { company_name: "Junk", phone: "ask reception", phone_normalized: null },
+      { company_name: "National", phone: "+421905111222", phone_normalized: "421905111222" },
+    ]);
+    expect((await one(`select phone from workers where id = $1`, [worker])).phone).toBe(
+      "+421905222333",
+    );
+  });
+
+  it("matches generated duplicates on the whole number", async () => {
+    const user = await createAuthUser();
+    await asUser(user);
+    await db.query(
+      `insert into contacts (user_id, company_name, phone) values ($1, 'Czech', '+420777123456')`,
+      [user],
+    );
+    const result = await one<{ created: number; duplicates: number }>(
+      `select * from import_generated_contacts($1, 5, 'CZ')`,
+      [
+        JSON.stringify([
+          { id: "e1", name: "Same", phone: "+420777123456", address: "A 1" },
+          { id: "e2", name: "Slovak", phone: "+421777123456", address: "B 2" },
+        ]),
+      ],
+    );
+    expect(result).toEqual({ created: 1, duplicates: 1 });
+    await asServer();
+  });
+
+  it("keeps the conversion to the server", async () => {
+    await asUser(owner);
+    await expect(db.query(`select phone_to_e164('777123456', 'CZ')`)).rejects.toThrow(
+      /permission denied/,
+    );
     await asServer();
   });
 });

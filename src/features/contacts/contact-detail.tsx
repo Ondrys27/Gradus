@@ -25,14 +25,15 @@ import { Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusPill } from "@/components/ui/status-pill";
 import { formatCalendarDate, formatCurrency, formatDate, formatDateTime } from "@/lib/format";
+import { formatPhone, telHref } from "@/lib/phone";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
+import { useUserSettings } from "@/features/account/queries";
 import { stageTone } from "@/features/pipeline/types";
 import { ComposeEmailDialog } from "@/features/email/compose-email-dialog";
 import { emailSummary } from "@/features/email/types";
 import { ActivityPanel } from "./activity-panel";
 import { ContactFormDialog } from "./contact-form-dialog";
-import { telHref } from "./contact-search";
 import { byPosition, fieldOptions } from "./field-logic";
 import { MoveContactDialog, type MoveResult } from "./move-contact-dialog";
 import {
@@ -320,6 +321,7 @@ export function CurrentTableCard({ contactId }: { contactId: string }) {
 
 function ContactInfo({ contact, onWriteEmail }: { contact: Contact; onWriteEmail: () => void }) {
   const t = useTranslations("contacts");
+  const country = useUserSettings().country_code;
   const address = [contact.address, contact.postal_code, contact.city].filter(Boolean).join(", ");
   const name = contactName(contact);
   const hasAny = contact.phone || contact.email || contact.website || address;
@@ -329,9 +331,13 @@ function ContactInfo({ contact, onWriteEmail }: { contact: Contact; onWriteEmail
       <h2 className="micro-label">{t("detail.info")}</h2>
       {!hasAny && <p className="text-sm text-ink-muted">{t("detail.noInfo")}</p>}
       {contact.phone && (
-        <InfoRow icon={<PhoneIcon />} label={t("fields.phone")} value={contact.phone}>
+        <InfoRow
+          icon={<PhoneIcon />}
+          label={t("fields.phone")}
+          value={formatPhone(contact.phone, country)}
+        >
           <a
-            href={telHref(contact.phone)}
+            href={telHref(contact.phone, country)}
             aria-label={t("list.callName", { name })}
             className={buttonVariants({ size: "sm" })}
           >

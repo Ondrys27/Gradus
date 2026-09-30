@@ -224,7 +224,7 @@ export type Duplicate = Pick<
   "id" | "company_name" | "first_name" | "last_name" | "phone" | "email"
 >;
 
-/** Contacts with the same phone (prefix ignored) or e-mail. A warning, never a block. */
+/** Contacts with the same E.164 phone or e-mail. A warning, never a block. */
 export function useDuplicates(phone: string, email: string, excludeId?: string) {
   const { user } = useSession();
   const phoneKey = duplicatePhoneKey(phone);
@@ -234,7 +234,7 @@ export function useDuplicates(phone: string, email: string, excludeId?: string) 
     enabled: phoneKey !== null || emailKey !== null,
     queryFn: async (): Promise<Duplicate[]> => {
       const filters = [
-        phoneKey && `phone_normalized.like."%${phoneKey}"`,
+        phoneKey && `phone_normalized.eq.${phoneKey}`,
         emailKey && `email.ilike."${emailKey}"`,
       ].filter(Boolean);
       let query = createClient()

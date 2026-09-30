@@ -13,6 +13,9 @@
       "close": "Zavřít"
     }
   },
+  "phone": {
+    "invalid": "Tohle nevypadá jako platné číslo. Uložit ho ale můžeš."
+  },
   "treeMap": {
     "controls": "Ovládání mapy",
     "zoomIn": "Přiblížit",
@@ -443,11 +446,26 @@
       "description": "Formáty nezávisí na jazyce. Dny začínají a končí ve vašem časovém pásmu.",
       "country": "Země",
       "countryDetected": "Podle prohlížeče: {country}.",
-      "countryHint": "Používá se pro statistiky času volání.",
+      "countryHint": "Používá se pro telefonní čísla a statistiky času volání.",
       "useDetected": "Použít",
       "timeZone": "Časové pásmo",
       "timeZoneDetected": "Prohlížeč je v pásmu {zone}.",
       "timeZoneHint": "Dny začínají a končí v tomto pásmu.",
+      "timeZoneSearch": "Hledat časové pásmo",
+      "timeZoneEmpty": "Žádné pásmo neodpovídá.",
+      "continents": {
+        "Africa": "Afrika",
+        "America": "Amerika",
+        "Antarctica": "Antarktida",
+        "Arctic": "Arktida",
+        "Asia": "Asie",
+        "Atlantic": "Atlantik",
+        "Australia": "Austrálie",
+        "Europe": "Evropa",
+        "Indian": "Indický oceán",
+        "Pacific": "Pacifik",
+        "Other": "Ostatní"
+      },
       "currency": "Měna",
       "currencyHint": "Mění jen zobrazení částek. Nic se nepřepočítává.",
       "dateFormat": "Formát data",
@@ -890,7 +908,6 @@
       "nameRequired": "Vyplň firmu nebo jméno člověka.",
       "tooLong": "Tohle je moc dlouhé.",
       "emailInvalid": "Tohle nevypadá jako e-mailová adresa.",
-      "phoneInvalid": "Použij číslice, mezery, pomlčky a případně + na začátku.",
       "websiteInvalid": "Tohle nevypadá jako webová adresa.",
       "occurredAtRequired": "Vyber, kdy se to stalo.",
       "occurredInFuture": "Nemohlo se to stát v budoucnu.",

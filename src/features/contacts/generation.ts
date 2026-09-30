@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { toE164 } from "@/lib/phone";
 
 /**
  * Shared by the generate-contacts route and the form: request, limits, progress
@@ -152,7 +153,7 @@ type GooglePlace = {
   formattedAddress?: string;
 };
 
-/** Places with an id and a name; Google never returns e-mails. */
+/** Places with an id and a name, phones in E.164; Google never returns e-mails. */
 export function toFoundPlaces(places: unknown): FoundPlace[] {
   if (!Array.isArray(places)) return [];
   return (places as GooglePlace[]).flatMap((place) => {
@@ -162,7 +163,8 @@ export function toFoundPlaces(places: unknown): FoundPlace[] {
       {
         id: place.id,
         name,
-        phone: place.internationalPhoneNumber ?? null,
+        // Google sends the international form, so no country is needed to read it.
+        phone: toE164(place.internationalPhoneNumber, null),
         website: place.websiteUri ?? null,
         address: place.formattedAddress ?? null,
       },

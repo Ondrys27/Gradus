@@ -8,8 +8,11 @@ import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { fieldA11y, FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
+import { useUserSettings } from "@/features/account/queries";
 import { useFreshOnOpen } from "@/features/milestones/use-fresh-on-open";
+import { formatPhone } from "@/lib/phone";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { useCreateContact, useDuplicates, useUpdateContact } from "./queries";
 import {
@@ -89,6 +92,7 @@ function ContactFields({
   onCreated?: (contact: Contact) => void;
 }) {
   const t = useTranslations("contacts");
+  const country = useUserSettings().country_code;
   const create = useCreateContact();
   const update = useUpdateContact(contact?.id ?? "");
   const [draft, setDraft] = useState<ContactDraft>(() => draftOf(contact));
@@ -138,18 +142,26 @@ function ContactFields({
               error={error}
               className={field.name === "company_name" ? "sm:col-span-2" : undefined}
             >
-              <Input
-                {...fieldA11y(id, error)}
-                type={field.type}
-                inputMode={field.name === "phone" ? "tel" : undefined}
-                autoComplete={field.autoComplete}
-                autoFocus={field.name === "company_name"}
-                value={draft[field.name]}
-                maxLength={field.max + 10}
-                onChange={(event) =>
-                  setDraft((current) => ({ ...current, [field.name]: event.target.value }))
-                }
-              />
+              {field.name === "phone" ? (
+                <PhoneInput
+                  {...fieldA11y(id, error)}
+                  country={country}
+                  value={draft.phone}
+                  onChange={(phone) => setDraft((current) => ({ ...current, phone }))}
+                />
+              ) : (
+                <Input
+                  {...fieldA11y(id, error)}
+                  type={field.type}
+                  autoComplete={field.autoComplete}
+                  autoFocus={field.name === "company_name"}
+                  value={draft[field.name]}
+                  maxLength={field.max + 10}
+                  onChange={(event) =>
+                    setDraft((current) => ({ ...current, [field.name]: event.target.value }))
+                  }
+                />
+              )}
             </FormField>
           );
         })}
@@ -173,7 +185,9 @@ function ContactFields({
                 >
                   {contactName(duplicate)}
                   <span className="text-ink-muted">
-                    {[duplicate.phone, duplicate.email].filter(Boolean).join(" · ")}
+                    {[duplicate.phone && formatPhone(duplicate.phone, country), duplicate.email]
+                      .filter(Boolean)
+                      .join(" · ")}
                   </span>
                 </Link>
               </li>

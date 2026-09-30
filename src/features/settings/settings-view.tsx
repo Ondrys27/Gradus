@@ -26,18 +26,18 @@ import {
   formatNumber,
   formatTime,
   NUMBER_FORMATS,
-  timeZoneOffsetLabel,
   TIME_FORMATS,
   WEEK_STARTS,
   weekdayName,
   type NumberFormatKey,
 } from "@/lib/format";
-import { browserTimeZone, COUNTRY_CODES, countryFromTimeZone, listTimeZones } from "@/lib/region";
+import { browserTimeZone, COUNTRY_CODES, countryFromTimeZone } from "@/lib/region";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import type { UserSettingsPatch } from "@/lib/user-settings";
 import { cn } from "@/lib/utils";
 import { FakturoidIntegration } from "./fakturoid-integration";
 import { FormatPreview, useNow } from "./format-preview";
+import { TimeZonePicker } from "./time-zone-picker";
 
 type Option = { value: string; label: string; detail?: string };
 
@@ -62,16 +62,6 @@ export function SettingsView() {
       ),
     [uiLocale],
   );
-
-  const zoneOptions = useMemo<Option[]>(() => {
-    const zones = listTimeZones();
-    if (!zones.includes(settings.timezone)) zones.push(settings.timezone);
-    return zones.map((zone) => ({
-      value: zone,
-      label: zone.replaceAll("_", " "),
-      detail: timeZoneOffsetLabel(zone),
-    }));
-  }, [settings.timezone]);
 
   const currencyOptions = useMemo<Option[]>(() => {
     const codes: string[] = [...CURRENCIES];
@@ -193,10 +183,9 @@ export function SettingsView() {
                 ) : null
               }
             >
-              <OptionSelect
+              <TimeZonePicker
                 id="settings-timezone"
                 value={settings.timezone}
-                options={zoneOptions}
                 onChange={(value) => save(zonePatch(value))}
               />
             </SettingRow>
@@ -256,7 +245,11 @@ export function SettingsView() {
       <StaggerItem>
         <Section title={t("gameplay.title")} description={t("gameplay.description")}>
           <div className="flex flex-col divide-y divide-line/60">
-            <SettingRow id="settings-sound" label={t("gameplay.sound")} hint={t("gameplay.soundHint")}>
+            <SettingRow
+              id="settings-sound"
+              label={t("gameplay.sound")}
+              hint={t("gameplay.soundHint")}
+            >
               <Switch
                 id="settings-sound"
                 checked={settings.sound_enabled}

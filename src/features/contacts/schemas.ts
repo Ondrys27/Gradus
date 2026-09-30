@@ -20,7 +20,6 @@ export type ContactErrorKey =
   | "nameRequired"
   | "tooLong"
   | "emailInvalid"
-  | "phoneInvalid"
   | "websiteInvalid"
   | "occurredAtRequired"
   | "occurredInFuture"
@@ -49,12 +48,8 @@ export const contactSchema = z
       .max(EMAIL_MAX, "tooLong")
       .refine((value) => value === "" || z.email().safeParse(value).success, "emailInvalid")
       .transform((value) => value || null),
-    phone: z
-      .string()
-      .trim()
-      .max(PHONE_MAX, "tooLong")
-      .refine((value) => value === "" || /^\+?[\d\s()./-]{3,}$/.test(value), "phoneInvalid")
-      .transform((value) => value || null),
+    // PhoneInput hands over E.164; a number it cannot read is kept, never refused.
+    phone: optionalText(PHONE_MAX),
     website: z
       .string()
       .trim()

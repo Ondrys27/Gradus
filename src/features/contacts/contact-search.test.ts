@@ -6,7 +6,6 @@ import {
   normalizePhone,
   phoneSearchDigits,
   searchFilter,
-  telHref,
 } from "./contact-search";
 
 describe("normalizePhone", () => {
@@ -53,8 +52,9 @@ describe("searchFilter", () => {
 });
 
 describe("duplicate keys", () => {
-  it("matches the same number with and without the prefix", () => {
-    expect(duplicatePhoneKey("+420 777 123 456")).toBe(duplicatePhoneKey("777123456"));
+  it("compares the whole E.164 number, as the database keeps it", () => {
+    expect(duplicatePhoneKey("+420777123456")).toBe("420777123456");
+    expect(duplicatePhoneKey("+421777123456")).not.toBe(duplicatePhoneKey("+420777123456"));
     expect(duplicatePhoneKey("123")).toBeNull();
   });
 
@@ -62,12 +62,5 @@ describe("duplicate keys", () => {
     expect(duplicateEmailKey(" Jan.Novak@Example.cz ")).toBe("jan.novak@example.cz");
     expect(duplicateEmailKey("a%b@x.cz")).toBeNull();
     expect(duplicateEmailKey("not an email")).toBeNull();
-  });
-});
-
-describe("telHref", () => {
-  it("keeps the plus and the digits", () => {
-    expect(telHref("+420 777 123 456")).toBe("tel:+420777123456");
-    expect(telHref("777-123-456")).toBe("tel:777123456");
   });
 });

@@ -171,21 +171,32 @@ export function formatWeekdayShort(date: Date, uiLocale: string): string {
   return new Intl.DateTimeFormat(uiLocale, { weekday: "short" }).format(date);
 }
 
+/** One formatter per zone: building them is the slow part, and lists show hundreds. */
+const wallClockFormatters = new Map<string, Intl.DateTimeFormat>();
+function wallClockFormatter(timeZone: string): Intl.DateTimeFormat {
+  let formatter = wallClockFormatters.get(timeZone);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      hourCycle: "h23",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+    wallClockFormatters.set(timeZone, formatter);
+  }
+  return formatter;
+}
+
 /**
  * Wall-clock reading of an instant in the user's zone, as a local `Date` that
  * date-fns can format. Only for display; never send it back to the database.
  */
 export function toZonedWallClock(instant: Date, timeZone: string): Date {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    hourCycle: "h23",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  }).formatToParts(instant);
+  const parts = wallClockFormatter(timeZone).formatToParts(instant);
   const get = (type: Intl.DateTimeFormatPartTypes) =>
     Number(parts.find((part) => part.type === type)?.value);
   return new Date(
@@ -314,17 +325,28 @@ export function currencyName(code: string, uiLocale: string): string {
   }
 }
 
-/** Offset label for a time zone at a given moment, e.g. "GMT+2". */
-export function timeZoneOffsetLabel(timeZone: string, at: Date = new Date()): string {
-  try {
-    const parts = new Intl.DateTimeFormat("en-US", {
-      timeZone,
-      timeZoneName: "shortOffset",
-    }).formatToParts(at);
-    return parts.find((part) => part.type === "timeZoneName")?.value ?? "";
-  } catch {
-    return "";
-  }
+/** Minutes a time zone is ahead of UTC at a given moment (negative when behind). */
+export function utcOffsetMinutes(timeZone: string, at: Date = new Date()): number {
+  const wall = toZonedWallClock(at, timeZone);
+  const wallAsUtc = Date.UTC(
+    wall.getFullYear(),
+    wall.getMonth(),
+    wall.getDate(),
+    wall.getHours(),
+    wall.getMinutes(),
+  );
+  const instant = Math.floor(at.getTime() / 60_000) * 60_000;
+  return Math.round((wallAsUtc - instant) / 60_000);
+}
+
+/** Offset from UTC, the same in every language: "UTC", "UTC+2", "UTC-3:30", "UTC+5:45". */
+export function formatUtcOffset(timeZone: string, at: Date = new Date()): string {
+  const minutes = utcOffsetMinutes(timeZone, at);
+  if (minutes === 0) return "UTC";
+  const sign = minutes > 0 ? "+" : "-";
+  const hours = Math.floor(Math.abs(minutes) / 60);
+  const rest = Math.abs(minutes) % 60;
+  return `UTC${sign}${hours}${rest ? `:${String(rest).padStart(2, "0")}` : ""}`;
 }
 
 /** A list in the UI language, e.g. "a, b and c" / "a, b a c". */

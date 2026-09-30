@@ -8,8 +8,9 @@ import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
 import { StatusPill } from "@/components/ui/status-pill";
 import { formatDate } from "@/lib/format";
+import { useUserSettings } from "@/features/account/queries";
+import { formatPhone, telHref } from "@/lib/phone";
 import { useFormatSettings } from "@/lib/use-format-settings";
-import { telHref } from "./contact-search";
 import {
   contactName,
   contactPerson,
@@ -63,6 +64,7 @@ export function ContactList(props: Props) {
 
 function ContactTableView({ contacts, tables, renderExtra, extraLabel }: Props) {
   const t = useTranslations("contacts.list");
+  const country = useUserSettings().country_code;
   const router = useRouter();
   return (
     <div className="overflow-hidden rounded-card border border-line bg-surface">
@@ -119,8 +121,11 @@ function ContactTableView({ contacts, tables, renderExtra, extraLabel }: Props) 
                 </td>
                 <td className="truncate px-4 py-3 text-ink-soft">
                   {contact.phone && (
-                    <a href={telHref(contact.phone)} className="hover:text-ink hover:underline">
-                      {contact.phone}
+                    <a
+                      href={telHref(contact.phone, country)}
+                      className="hover:text-ink hover:underline"
+                    >
+                      {formatPhone(contact.phone, country)}
                     </a>
                   )}
                 </td>
@@ -154,6 +159,7 @@ function ContactTableView({ contacts, tables, renderExtra, extraLabel }: Props) 
 
 function ContactCard({ contact, tables, renderExtra }: Props & { contact: ContactListItem }) {
   const t = useTranslations("contacts.list");
+  const country = useUserSettings().country_code;
   const name = contactName(contact);
   const person = contactPerson(contact);
   return (
@@ -182,7 +188,7 @@ function ContactCard({ contact, tables, renderExtra }: Props & { contact: Contac
       <div className="relative flex shrink-0 gap-1">
         {contact.phone && (
           <a
-            href={telHref(contact.phone)}
+            href={telHref(contact.phone, country)}
             aria-label={t("callName", { name })}
             className="grid size-11 place-items-center rounded-full border border-line text-teal outline-none focus-visible:ring-3 focus-visible:ring-teal/40"
           >
