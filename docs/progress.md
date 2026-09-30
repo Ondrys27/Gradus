@@ -22,7 +22,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 8.1 | architect | 2026-09-30 Opraveny tři chyby: klíč milestones.tasks.delete jako objekt i text, Skeleton div v p v generování kontaktů, vrstvy z-index bránící otevření nabídek v onboardingu; přidány automatické kontroly (testy klíčů, vnoření HTML, vrstev).
 - [x] 8.2 | architect | 2026-09-30 Telefony přes libphonenumber-js (PhoneInput, formatPhone, ukládání v E.164, migrace na E.164) a živý výběr časového pásma s aktuálním časem a posunem od UTC v nastavení.
 - [x] 8.3 | architect | 2026-09-30 Globální vyhledávání přepsáno jako Spotlight (⌘K), prohledává kontakty, obchody, milníky, úkoly, kalendář, finance, pracovníky, sekce i rychlé akce přes unaccent/pg_trgm s RLS.
-- [ ] 8.4 | builder |
+- [x] 8.4 | builder | 2026-09-30 Detail dlaždice na dashboardu se otevírá jako velké okno se sdílenou animací z dlaždice a dlaždice Splněné úkoly dnes ukazuje procento a zlomek v kruhu.
 - [ ] 8.5 | architect |
 - [ ] 8.6 | builder |
 - [ ] K8 | reviewer |
