@@ -1716,6 +1716,7 @@
       "tasks": {
         "label": "Tasks done today",
         "ring": "{done} of {total} tasks done today",
+        "todayNone": "Nothing today",
         "none": "Nothing is due today.",
         "allDone": "All done. Nice work.",
         "left": "{count, plural, one {{formatted} task left to do} other {{formatted} tasks left to do}}"

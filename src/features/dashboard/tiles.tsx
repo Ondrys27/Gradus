@@ -19,7 +19,13 @@ import { periodRange as monthRange } from "@/features/finance/finance-logic";
 import { useTotals } from "@/features/finance/queries";
 import { formatNumber, splitDuration } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
-import { compareToPrevious, winRate, winRateSeries, WIN_RATE_DAYS } from "./dashboard-logic";
+import {
+  compareToPrevious,
+  taskCompletionRate,
+  winRate,
+  winRateSeries,
+  WIN_RATE_DAYS,
+} from "./dashboard-logic";
 import { DashboardTile, TileNumber, Trend } from "./dashboard-tile";
 import {
   useActiveDealCount,
@@ -40,6 +46,11 @@ export const TILE_KEYS = [
   "prospecting",
 ] as const;
 export type TileKey = (typeof TILE_KEYS)[number];
+
+/** The `layoutId` shared between a tile card and its opened detail window. */
+export function tileLayoutId(key: TileKey): string {
+  return `dashboard-tile-${key}`;
+}
 
 type TileProps = { onOpen: () => void };
 
@@ -80,6 +91,7 @@ export function IncomeTile({ onOpen }: TileProps) {
       label={t("label")}
       icon={<BanknoteIcon aria-hidden />}
       tone="green"
+      layoutId={tileLayoutId("income")}
       onOpen={onOpen}
     >
       {failed ? (
@@ -118,6 +130,7 @@ function TaskRing({ done, total }: { done: number; total: number }) {
   const t = useTranslations("dashboard.tiles.tasks");
   const settings = useFormatSettings();
   const appeared = useAppeared();
+  const rate = taskCompletionRate(done, total);
   return (
     <div className="flex items-center gap-4">
       <ProgressRing
@@ -130,10 +143,28 @@ function TaskRing({ done, total }: { done: number; total: number }) {
         size={84}
         tone="teal"
       >
-        <span className="text-base tabular-nums">
-          <AnimatedNumber value={done} />
-          <span className="text-ink-muted"> / </span>
-          <AnimatedNumber value={total} />
+        <span className="flex flex-col items-center gap-0.5 leading-none">
+          {rate === null ? (
+            <>
+              <span aria-hidden className="text-xl font-bold text-ink-muted">
+                –
+              </span>
+              <span className="text-[10px] font-medium tracking-wide text-ink-muted uppercase">
+                {t("todayNone")}
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="text-lg font-bold tabular-nums text-ink">
+                <AnimatedNumber value={rate} format={{ style: "percent" }} />
+              </span>
+              <span className="text-[11px] font-medium tabular-nums text-ink-soft">
+                <AnimatedNumber value={done} />
+                <span className="text-ink-muted"> / </span>
+                <AnimatedNumber value={total} />
+              </span>
+            </>
+          )}
         </span>
       </ProgressRing>
       <p className="min-w-0 text-sm text-ink-soft">
@@ -159,6 +190,7 @@ export function TasksTile({ onOpen }: TileProps) {
       label={t("label")}
       icon={<ListChecksIcon aria-hidden />}
       tone="teal"
+      layoutId={tileLayoutId("tasks")}
       onOpen={onOpen}
     >
       {tasks.isError ? (
@@ -188,7 +220,13 @@ export function WinRateTile({ onOpen }: TileProps) {
   const drawn = series.filter((value) => value !== null).length;
 
   return (
-    <DashboardTile label={t("label")} icon={<TargetIcon aria-hidden />} tone="gold" onOpen={onOpen}>
+    <DashboardTile
+      label={t("label")}
+      icon={<TargetIcon aria-hidden />}
+      tone="gold"
+      layoutId={tileLayoutId("winRate")}
+      onOpen={onOpen}
+    >
       {closed.isError ? (
         <TileError />
       ) : result ? (
@@ -244,6 +282,7 @@ export function ActiveDealsTile({ onOpen }: TileProps) {
       label={t("label")}
       icon={<HandshakeIcon aria-hidden />}
       tone="violet"
+      layoutId={tileLayoutId("activeDeals")}
       onOpen={onOpen}
     >
       {count.isError ? (
@@ -281,6 +320,7 @@ export function NewContactsTile({ onOpen }: TileProps) {
       label={t("label")}
       icon={<UserPlusIcon aria-hidden />}
       tone="teal"
+      layoutId={tileLayoutId("newContacts")}
       onOpen={onOpen}
     >
       {count.isError ? (
@@ -322,6 +362,7 @@ export function ProspectingTile({ onOpen }: TileProps) {
       label={t("label")}
       icon={<TimerIcon aria-hidden />}
       tone="violet"
+      layoutId={tileLayoutId("prospecting")}
       onOpen={onOpen}
     >
       {query.isError ? (

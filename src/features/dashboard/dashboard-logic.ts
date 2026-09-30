@@ -34,6 +34,11 @@ export function stalledCutoff(now: Date, days = STALLED_AFTER_DAYS): string {
   return subDays(now, days).toISOString();
 }
 
+/** Share of today's tasks done, null while nothing is due today (so 0 % never reads as "none"). */
+export function taskCompletionRate(done: number, total: number): number | null {
+  return total > 0 ? done / total : null;
+}
+
 export type Direction = "up" | "down" | "same";
 
 /** This period against the one before, in the same unit; cents do not count as a change. */

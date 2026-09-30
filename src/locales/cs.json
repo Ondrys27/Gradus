@@ -1716,6 +1716,7 @@
       "tasks": {
         "label": "Splněné úkoly dnes",
         "ring": "Dnes splněno {done} z {total} úkolů",
+        "todayNone": "Dnes nic",
         "none": "Na dnes nic nevychází.",
         "allDone": "Všechno hotovo. Dobrá práce.",
         "left": "{count, plural, one {Zbývá {formatted} úkol} few {Zbývají {formatted} úkoly} many {Zbývá {formatted} úkolu} other {Zbývá {formatted} úkolů}}"

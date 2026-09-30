@@ -5,6 +5,7 @@ import {
   daySummaryParts,
   greetingPart,
   stalledCutoff,
+  taskCompletionRate,
   winRate,
   winRateSeries,
 } from "./dashboard-logic";
@@ -90,6 +91,15 @@ describe("dueFollowUps", () => {
 
   it("finds nothing when the table has no date question", () => {
     expect(dueFollowUps(entries, null, end)).toEqual([]);
+  });
+});
+
+describe("taskCompletionRate", () => {
+  it("is done out of total, and null while nothing is due today", () => {
+    expect(taskCompletionRate(0, 0)).toBeNull();
+    expect(taskCompletionRate(3, 8)).toBe(0.375);
+    expect(taskCompletionRate(8, 8)).toBe(1);
+    expect(taskCompletionRate(0, 5)).toBe(0);
   });
 });
 

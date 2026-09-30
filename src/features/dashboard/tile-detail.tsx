@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { useIsMutating } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ChevronDownIcon, CircleCheckIcon, SparklesIcon } from "lucide-react";
+import { motion } from "framer-motion";
+import { ChevronDownIcon, CircleCheckIcon, SparklesIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { AnimatedNumber } from "@/components/ui/animated-number";
 import { buttonVariants, Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
-import { SidePanel } from "@/components/ui/side-panel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { summarize, toBars } from "@/features/cold-calling/stats-logic";
 import { contactName } from "@/features/contacts/types";
@@ -47,7 +48,7 @@ import {
 } from "./queries";
 import { Sparkline } from "./sparkline";
 import { SurveyAnswerList } from "./survey-answers";
-import { useWeekProspecting, type TileKey } from "./tiles";
+import { tileLayoutId, useWeekProspecting, type TileKey } from "./tiles";
 
 // The charts library loads only when this detail is opened.
 const DailyBarChart = dynamic(
@@ -55,32 +56,74 @@ const DailyBarChart = dynamic(
   { ssr: false, loading: () => <Skeleton className="h-52 rounded-xl" /> },
 );
 
-type Props = { tile: TileKey | null; onClose: () => void };
+type Props = { tile: TileKey; onClose: () => void };
 
-/** The detail of a tile: a side panel on larger screens, a bottom sheet on phones. */
+/**
+ * The detail of a tile: a large window that grows straight out of the tapped
+ * card through a shared `layoutId` and shrinks back into it on close. Esc and a
+ * tap outside close it; on a phone it fills the whole screen.
+ */
 export function TileDetail({ tile, onClose }: Props) {
   const t = useTranslations("dashboard.tiles");
-  // Keep the last tile on screen while the panel slides out.
-  const [shown, setShown] = useState<TileKey | null>(tile);
-  if (tile && tile !== shown) setShown(tile);
-  const current = tile ?? shown;
+  const panelRef = useRef<HTMLDivElement>(null);
 
-  return (
-    <SidePanel
-      open={tile !== null}
-      onOpenChange={(open) => {
-        if (!open) onClose();
-      }}
-      title={current ? t(`${current}.label`) : ""}
-      closeLabel={t("close")}
-    >
-      {current === "income" && <IncomeDetail />}
-      {current === "tasks" && <TasksDetail />}
-      {current === "winRate" && <WinRateDetail />}
-      {current === "activeDeals" && <ActiveDealsDetail />}
-      {current === "newContacts" && <NewContactsDetail />}
-      {current === "prospecting" && <ProspectingDetail />}
-    </SidePanel>
+  useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    panelRef.current?.focus();
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previouslyFocused?.focus?.();
+    };
+  }, [onClose]);
+
+  return createPortal(
+    <div className="fixed inset-0 z-overlay flex items-center justify-center md:p-6">
+      <motion.div
+        aria-hidden
+        onClick={onClose}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="absolute inset-0 bg-canvas/70 backdrop-blur-sm"
+      />
+      <motion.div
+        layoutId={tileLayoutId(tile)}
+        transition={{ layout: { duration: 0.35, ease: [0.32, 0.72, 0, 1] } }}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t(`${tile}.label`)}
+        ref={panelRef}
+        tabIndex={-1}
+        className="relative z-10 flex h-[100dvh] max-h-[100dvh] w-full flex-col overflow-y-auto overscroll-contain rounded-none border-0 bg-surface p-6 pt-[calc(env(safe-area-inset-top)+24px)] pb-[calc(env(safe-area-inset-bottom)+24px)] shadow-none outline-none md:h-auto md:max-h-[85dvh] md:w-[min(100%,960px)] md:rounded-3xl md:border md:border-line-strong md:p-6 md:pt-6 md:pb-6 md:shadow-popover"
+      >
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="min-w-0 truncate text-lg font-semibold text-ink">{t(`${tile}.label`)}</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t("close")}
+            className="-mr-2 grid size-10 shrink-0 cursor-pointer place-items-center rounded-full text-ink-soft outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            <XIcon aria-hidden className="size-5" />
+          </button>
+        </div>
+        {tile === "income" && <IncomeDetail />}
+        {tile === "tasks" && <TasksDetail />}
+        {tile === "winRate" && <WinRateDetail />}
+        {tile === "activeDeals" && <ActiveDealsDetail />}
+        {tile === "newContacts" && <NewContactsDetail />}
+        {tile === "prospecting" && <ProspectingDetail />}
+      </motion.div>
+    </div>,
+    document.body,
   );
 }
 

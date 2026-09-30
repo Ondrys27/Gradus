@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Stagger, StaggerItem } from "@/components/ui/stagger";
@@ -83,7 +84,11 @@ export function DashboardView() {
         </div>
       </Stagger>
 
-      <TileDetail tile={openTile} onClose={() => setOpenTile(null)} />
+      <AnimatePresence>
+        {openTile && (
+          <TileDetail key={openTile} tile={openTile} onClose={() => setOpenTile(null)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
