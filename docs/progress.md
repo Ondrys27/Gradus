@@ -19,7 +19,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 6.2 | builder | 2026-09-29 Onboarding při prvním přihlášení: obor, země a měna, první milník s úkoly, první kontakt, představení Jarvise.
 - [x] 6.3 | architect | 2026-09-29 Kompletní průchod v obou jazycích, opravy rozbitých míst, bezpečná zóna a spodní panely na telefonu, výkonové úpravy (lazy loading, next/image).
 - [x] STOP | Konec fáze 6. Založ úplně nový účet a projdi aplikaci jako nový uživatel od onboardingu, v obou jazycích, na telefonu.
-- [ ] 8.1 | architect |
+- [x] 8.1 | architect | 2026-09-30 Opraveny tři chyby: klíč milestones.tasks.delete jako objekt i text, Skeleton div v p v generování kontaktů, vrstvy z-index bránící otevření nabídek v onboardingu; přidány automatické kontroly (testy klíčů, vnoření HTML, vrstev).
 - [ ] 8.2 | architect |
 - [ ] 8.3 | architect |
 - [ ] 8.4 | builder |
