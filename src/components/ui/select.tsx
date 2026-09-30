@@ -34,7 +34,7 @@ export function SelectValue({ className, ...props }: SelectPrimitive.Value.Props
 export function SelectContent({ className, children, ...props }: SelectPrimitive.Popup.Props) {
   return (
     <SelectPrimitive.Portal>
-      <SelectPrimitive.Positioner sideOffset={6} alignItemWithTrigger={false} className="z-50">
+      <SelectPrimitive.Positioner sideOffset={6} alignItemWithTrigger={false} className="z-popover">
         <SelectPrimitive.Popup
           data-slot="select-content"
           className={cn(

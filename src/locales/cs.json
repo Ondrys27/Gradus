@@ -626,7 +626,8 @@
       "actions": "Akce pro úkol „{title}“",
       "addSubtask": "Přidat podúkol",
       "edit": "Upravit",
-      "delete": {
+      "delete": "Smazat",
+      "deleteDialog": {
         "title": "Smazat tento úkol?",
         "description": "Úkol „{title}“ se smaže {count, plural, one {i s # podúkolem} few {i se # podúkoly} many {i se # podúkolu} other {i se # podúkoly}}. Nelze vrátit zpět.",
         "confirm": "Smazat úkol",

@@ -172,7 +172,7 @@ function TaskMenu({ task, handlers }: { task: Task; handlers: TaskHandlers }) {
         <EllipsisIcon aria-hidden className="size-4" />
       </Menu.Trigger>
       <Menu.Portal>
-        <Menu.Positioner sideOffset={6} align="end" className="z-50">
+        <Menu.Positioner sideOffset={6} align="end" className="z-popover">
           <Menu.Popup className="min-w-48 rounded-xl border border-line-strong bg-surface p-1.5 shadow-popover outline-none">
             <Menu.Item className={itemClass} onClick={() => handlers.onAddSubtask(task)}>
               <PlusIcon aria-hidden />

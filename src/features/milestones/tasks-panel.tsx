@@ -190,13 +190,13 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
         <ConfirmDialog
           open={deleting.open}
           onOpenChange={(open) => setDeleting((current) => current && { ...current, open })}
-          title={t("delete.title")}
-          description={t("delete.description", {
+          title={t("deleteDialog.title")}
+          description={t("deleteDialog.description", {
             title: deleting.task.title,
             count: tasks.filter((task) => task.parent_task_id === deleting.task.id).length,
           })}
-          confirmLabel={t("delete.confirm")}
-          cancelLabel={t("delete.cancel")}
+          confirmLabel={t("deleteDialog.confirm")}
+          cancelLabel={t("deleteDialog.cancel")}
           closeLabel={t("form.close")}
           onConfirm={() => {
             setError(null);

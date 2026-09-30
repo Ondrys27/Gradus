@@ -96,7 +96,7 @@ export function DatePicker({
             // 16 px page gutter at the sides; vertically the calendar may come closer to the edge
             // so it still fits below or above the field before falling back to its side.
             collisionPadding={{ top: 8, bottom: 8, left: 16, right: 16 }}
-            className="z-50"
+            className="z-popover"
           >
             <Popover.Popup
               aria-label={t("title")}

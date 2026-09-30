@@ -9,7 +9,9 @@ const OnboardingFlow = dynamic(
   {
     ssr: false,
     // Covers the app the same way the wizard will, so nothing flashes behind it.
-    loading: () => <div aria-hidden className="fixed inset-0 z-60 bg-canvas/90 backdrop-blur-md" />,
+    loading: () => (
+      <div aria-hidden className="fixed inset-0 z-takeover bg-canvas/90 backdrop-blur-md" />
+    ),
   },
 );
 

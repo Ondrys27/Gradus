@@ -47,10 +47,10 @@ export function OnboardingFlow() {
   return (
     <Dialog.Root open disablePointerDismissal>
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-60 bg-canvas/90 backdrop-blur-md" />
+        <Dialog.Backdrop className="fixed inset-0 z-takeover bg-canvas/90 backdrop-blur-md" />
         <Dialog.Popup
           initialFocus={false}
-          className="fixed inset-0 z-60 flex flex-col overflow-y-auto pt-[calc(env(safe-area-inset-top)+16px)] pb-[calc(env(safe-area-inset-bottom)+16px)] outline-none"
+          className="fixed inset-0 z-takeover flex flex-col overflow-y-auto pt-[calc(env(safe-area-inset-top)+16px)] pb-[calc(env(safe-area-inset-bottom)+16px)] outline-none"
         >
           <header className="flex shrink-0 items-center justify-between gap-3 px-4 sm:px-8">
             <ol className="flex items-center gap-1.5" aria-label={t("progress")}>

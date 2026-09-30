@@ -39,7 +39,7 @@ export function TaskCheckbox({ title, done, remaining, onToggle }: TaskCheckboxP
           <LockIcon aria-hidden className="size-3" />
         </Popover.Trigger>
         <Popover.Portal>
-          <Popover.Positioner sideOffset={8} className="z-50">
+          <Popover.Positioner sideOffset={8} className="z-popover">
             <Popover.Popup className="max-w-64 rounded-xl border border-line-strong bg-surface px-3 py-2 text-sm text-ink-soft shadow-popover outline-none">
               {t("lockedHint", { count: remaining })}
             </Popover.Popup>

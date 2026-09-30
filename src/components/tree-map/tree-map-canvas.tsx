@@ -287,7 +287,7 @@ export function TreeMap({ tree, label, contentKey, renderNode }: Props) {
       className={cn(
         "overflow-hidden [background-image:radial-gradient(color-mix(in_oklab,var(--color-line)_55%,transparent)_1px,transparent_1.5px)] [background-size:22px_22px]",
         fullscreen
-          ? "fixed inset-0 z-50 h-dvh bg-canvas"
+          ? "fixed inset-0 z-overlay h-dvh bg-canvas"
           : "relative h-[min(68dvh,640px)] min-h-96 rounded-2xl border border-line/70 bg-canvas-deep/50",
       )}
     >

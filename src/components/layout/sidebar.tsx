@@ -19,7 +19,7 @@ export function Sidebar() {
   const { items } = useNavItems();
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden w-[calc(--spacing(19)+env(safe-area-inset-left))] flex-col border-r border-line/70 bg-sidebar/85 pl-[env(safe-area-inset-left)] backdrop-blur-xl md:flex lg:w-[calc(--spacing(60)+env(safe-area-inset-left))]">
+    <aside className="fixed inset-y-0 left-0 z-nav hidden w-[calc(--spacing(19)+env(safe-area-inset-left))] flex-col border-r border-line/70 bg-sidebar/85 pl-[env(safe-area-inset-left)] backdrop-blur-xl md:flex lg:w-[calc(--spacing(60)+env(safe-area-inset-left))]">
       <Link
         href="/dashboard"
         className="flex h-18 shrink-0 items-center justify-center gap-3 px-5 lg:justify-start"
@@ -95,7 +95,7 @@ function LockedNavItem({ item }: { item: NavItemState }) {
         <span className="relative hidden truncate lg:inline">{t(item.key)}</span>
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Positioner side="right" sideOffset={8} className="z-50">
+        <Popover.Positioner side="right" sideOffset={8} className="z-popover">
           <Popover.Popup className="max-w-64 rounded-xl border border-line-strong bg-surface px-3 py-2 text-sm text-ink-soft shadow-popover outline-none">
             {t(`locked.${item.key}`, { remaining })}
           </Popover.Popup>

@@ -200,7 +200,7 @@ export function JarvisPanel({ chat, onClose }: JarvisPanelProps) {
       transition={{ duration: reduceMotion ? 0 : 0.18, ease: "easeOut" }}
       style={{ transformOrigin: "bottom right" }}
       className={cn(
-        "fixed z-50 flex flex-col overflow-hidden bg-surface",
+        "fixed z-overlay flex flex-col overflow-hidden bg-surface",
         // Phone: the whole screen, clear of the notch and the home indicator.
         "inset-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]",
         // Larger screens: 420 × 620 above the button, never taller than the window.

@@ -40,7 +40,7 @@ export function AccountMenu() {
         />
       </Menu.Trigger>
       <Menu.Portal>
-        <Menu.Positioner side="bottom" align="end" sideOffset={6} className="z-50">
+        <Menu.Positioner side="bottom" align="end" sideOffset={6} className="z-popover">
           <Menu.Popup
             className={cn(
               "w-64 origin-(--transform-origin) rounded-xl border border-line-strong bg-surface p-1.5 shadow-popover outline-none",

@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { getRequestConfig } from "next-intl/server";
+import { getIntlMessageFallback, onIntlError } from "./error-handling";
 import { defaultLocale, locales, type Locale } from "./locales";
 
 export default getRequestConfig(async () => {
@@ -11,5 +12,7 @@ export default getRequestConfig(async () => {
   return {
     locale,
     messages: (await import(`../locales/${locale}.json`)).default,
+    onError: onIntlError,
+    getMessageFallback: getIntlMessageFallback,
   };
 });

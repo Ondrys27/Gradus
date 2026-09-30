@@ -277,7 +277,7 @@ function GenerateForm({
             monthlyLimit: n(usage.monthly.limit),
           })
         ) : (
-          <Skeleton className="h-4 w-56" />
+          <Skeleton inline className="h-4 w-56" />
         )}
       </p>
     </form>

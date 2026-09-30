@@ -184,6 +184,27 @@
   --sidebar-ring: var(--color-violet);
 }
 
+/*
+ * Stacking layers. Every fixed or portalled surface uses one of these, never a
+ * raw number, so the order holds everywhere: floating menus, selects and date
+ * pickers sit above every dialog, sheet and the onboarding takeover.
+ */
+@utility z-nav {
+  z-index: 40; /* sidebar, bottom bar, Jarvis button, notices */
+}
+@utility z-overlay {
+  z-index: 50; /* dialogs, bottom sheets, side panels, Jarvis panel, full-screen map */
+}
+@utility z-takeover {
+  z-index: 60; /* onboarding */
+}
+@utility z-popover {
+  z-index: 70; /* selects, menus, popovers, date pickers */
+}
+@utility z-celebration {
+  z-index: 80; /* celebration, above everything */
+}
+
 /* Typography */
 @utility page-title {
   font-size: 34px;

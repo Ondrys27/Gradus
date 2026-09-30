@@ -83,8 +83,8 @@ export function DealDetail({ deal, stages, onClose, onRequestMove }: Props) {
   return (
     <Dialog.Root open={deal !== null} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-50 bg-canvas/60 backdrop-blur-sm transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
-        <Dialog.Popup className="fixed inset-y-0 right-0 z-50 flex w-[min(100vw,440px)] flex-col overflow-y-auto border-l border-line-strong bg-surface p-6 shadow-popover outline-none transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:translate-x-full data-starting-style:translate-x-full motion-reduce:transition-none">
+        <Dialog.Backdrop className="fixed inset-0 z-overlay bg-canvas/60 backdrop-blur-sm transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
+        <Dialog.Popup className="fixed inset-y-0 right-0 z-overlay flex w-[min(100vw,440px)] flex-col overflow-y-auto border-l border-line-strong bg-surface p-6 shadow-popover outline-none transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:translate-x-full data-starting-style:translate-x-full motion-reduce:transition-none">
           <div className="mb-4 flex items-center justify-between">
             <Dialog.Title className="text-lg font-semibold text-ink">{t("title")}</Dialog.Title>
             <Dialog.Close

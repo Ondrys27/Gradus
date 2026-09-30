@@ -626,7 +626,8 @@
       "actions": "Actions for “{title}”",
       "addSubtask": "Add subtask",
       "edit": "Edit",
-      "delete": {
+      "delete": "Delete",
+      "deleteDialog": {
         "title": "Delete this task?",
         "description": "“{title}” and {count, plural, one {its # subtask} other {its # subtasks}} will be deleted. This cannot be undone.",
         "confirm": "Delete task",

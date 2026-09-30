@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getLocale, getMessages, getTimeZone, getTranslations } from "next-intl/server";
+import { IntlProvider } from "@/components/intl-provider";
 import { Background } from "@/components/layout/background";
 import { Providers } from "@/components/providers";
 import { APP_NAME } from "@/lib/constants";
@@ -29,15 +29,19 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const locale = await getLocale();
+  const [locale, messages, timeZone] = await Promise.all([
+    getLocale(),
+    getMessages(),
+    getTimeZone(),
+  ]);
 
   return (
     <html lang={locale} className={`dark ${inter.variable}`}>
       <body>
         <Background />
-        <NextIntlClientProvider>
+        <IntlProvider locale={locale} messages={messages} timeZone={timeZone}>
           <Providers>{children}</Providers>
-        </NextIntlClientProvider>
+        </IntlProvider>
       </body>
     </html>
   );

@@ -42,7 +42,7 @@ export function BottomNav() {
     <>
       <nav
         aria-label={t("label")}
-        className="fixed right-[calc(max(16px,env(safe-area-inset-right))+64px+8px)] bottom-[calc(12px+env(safe-area-inset-bottom))] left-[max(16px,env(safe-area-inset-left))] z-40 flex h-16 items-stretch justify-around rounded-2xl border border-line/70 bg-surface/60 px-0.5 shadow-popover backdrop-blur-xl md:hidden"
+        className="fixed right-[calc(max(16px,env(safe-area-inset-right))+64px+8px)] bottom-[calc(12px+env(safe-area-inset-bottom))] left-[max(16px,env(safe-area-inset-left))] z-nav flex h-16 items-stretch justify-around rounded-2xl border border-line/70 bg-surface/60 px-0.5 shadow-popover backdrop-blur-xl md:hidden"
       >
         {primaryItems.map((item) =>
           item.locked ? (
@@ -86,7 +86,7 @@ export function BottomNav() {
                       {t(item.key)}
                     </Popover.Trigger>
                     <Popover.Portal>
-                      <Popover.Positioner side="top" sideOffset={8} className="z-50">
+                      <Popover.Positioner side="top" sideOffset={8} className="z-popover">
                         <Popover.Popup className="max-w-64 rounded-xl border border-line-strong bg-surface px-3 py-2 text-sm text-ink-soft shadow-popover outline-none">
                           {t(`locked.${item.key}`, { remaining })}
                         </Popover.Popup>
@@ -209,7 +209,7 @@ function LockedBottomNavItem({ item }: { item: NavItemState }) {
         </span>
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Positioner side="top" sideOffset={8} className="z-50">
+        <Popover.Positioner side="top" sideOffset={8} className="z-popover">
           <Popover.Popup className="max-w-64 rounded-xl border border-line-strong bg-surface px-3 py-2 text-sm text-ink-soft shadow-popover outline-none">
             {t(`locked.${item.key}`, { remaining })}
           </Popover.Popup>
