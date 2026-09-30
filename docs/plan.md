@@ -1,6 +1,6 @@
 # Gradus — plán přestavby v Claude Code
 
-*23. 9. 2026*
+_23. 9. 2026_
 
 Kompletní přestavba webové aplikace podle aktualizované myšlenkové mapy. Stejný vzhled jako v Lovable, čistý kód, vlastní infrastruktura od prvního dne.
 
@@ -8,15 +8,15 @@ Kompletní přestavba webové aplikace podle aktualizované myšlenkové mapy. S
 
 ## Souhrn
 
-| | |
-|---|---|
-| **Stack** | Next.js 15 (App Router) · TypeScript · Tailwind v4 · shadcn/ui · Framer Motion · Supabase · Vercel |
-| **Fází** | 8 |
-| **Promptů** | 26 (včetně tří kontrol) |
-| **Odhad** | 5–6 týdnů při 2–3 hodinách denně |
-| **Jádro hotové** | ≈ 10. října — start uzavřené bety |
-| **Celý rozsah hotový** | ≈ 31. října |
-| **Spuštění** | 1. prosince — beze změny |
+|                        |                                                                                                    |
+| ---------------------- | -------------------------------------------------------------------------------------------------- |
+| **Stack**              | Next.js 15 (App Router) · TypeScript · Tailwind v4 · shadcn/ui · Framer Motion · Supabase · Vercel |
+| **Fází**               | 8                                                                                                  |
+| **Promptů**            | 26 (včetně tří kontrol)                                                                            |
+| **Odhad**              | 5–6 týdnů při 2–3 hodinách denně                                                                   |
+| **Jádro hotové**       | ≈ 10. října — start uzavřené bety                                                                  |
+| **Celý rozsah hotový** | ≈ 31. října                                                                                        |
+| **Spuštění**           | 1. prosince — beze změny                                                                           |
 
 **Proč Next.js a ne TanStack Start jako v Lovable:** když se stejně staví od nuly, vyplatí se vzít framework, na kterém Claude Code dělá nejméně chyb a který má nejvíc dokumentace. Next.js je na Vercelu doma, má vestavěné streamování pro Jarvise a nejširší ekosystém. TanStack Start je dobrý, ale Claude Code na něm častěji sáhne po neexistujícím API.
 
@@ -32,13 +32,13 @@ Starý kód z Lovable se nepoužívá. Design je proto v promptech popsaný do d
 
 Claude Max ti dává přístup k celé řadě. Rozdíl mezi nimi je v tom, jak moc přemýšlí a jak rychle vyčerpáš limit.
 
-| Fáze | Model | Proč |
-|---|---|---|
-| Architektura, databáze, zabezpečení, Jarvis | **Nejsilnější dostupný** — Fable 5.1, případně Opus 5.5 | Rozhodnutí, která se špatně mění zpětně |
-| Stavba obrazovek a sekcí | **Sonnet 5** | Rychlý, šetří limit, na UI podle přesného zadání stačí |
-| Integrace (Fakturoid, e-mail, Google) | **Opus 5.5** | Cizí API, kde se vyplatí přemýšlet |
-| Kontrola kódu po každé fázi | **Nejsilnější dostupný** | Najde, co Sonnet přehlédl |
-| Opravy, překlady, kosmetika | **Sonnet 5** | Levné a rychlé |
+| Fáze                                        | Model                                                   | Proč                                                   |
+| ------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------ |
+| Architektura, databáze, zabezpečení, Jarvis | **Nejsilnější dostupný** — Fable 5.1, případně Opus 5.5 | Rozhodnutí, která se špatně mění zpětně                |
+| Stavba obrazovek a sekcí                    | **Sonnet 5**                                            | Rychlý, šetří limit, na UI podle přesného zadání stačí |
+| Integrace (Fakturoid, e-mail, Google)       | **Opus 5.5**                                            | Cizí API, kde se vyplatí přemýšlet                     |
+| Kontrola kódu po každé fázi                 | **Nejsilnější dostupný**                                | Najde, co Sonnet přehlédl                              |
+| Opravy, překlady, kosmetika                 | **Sonnet 5**                                            | Levné a rychlé                                         |
 
 Model přepínáš příkazem `/model`. Pravidlo palce: **Sonnet staví, silný model navrhuje a kontroluje.** Když pojedeš celou dobu na nejsilnějším modelu, limit vyčerpáš za pár hodin a zbytek dne stojíš.
 
@@ -52,7 +52,7 @@ Pět návyků, které rozhodují o tom, jestli to bude fungovat:
 
 **1. Plánovací režim před každým větším promptem.** Přepneš ho klávesou Shift+Tab. Claude Code nejdřív napíše, co udělá, a čeká na schválení. U každého promptu níž je napsané, jestli ho použít.
 
-**2. Commit po každém promptu.** Když něco pokazí další krok, vrátíš se. Prompt na konci: *„Udělej commit s popisem toho, co jsi změnil."*
+**2. Commit po každém promptu.** Když něco pokazí další krok, vrátíš se. Prompt na konci: _„Udělej commit s popisem toho, co jsi změnil."_
 
 **3. Testuj sám, nevěř „mělo by to fungovat".** Po každém promptu spusť `bun run dev` a proklikej to. Claude Code umí spustit testy, ale neumí kliknout myší.
 
@@ -64,7 +64,7 @@ Pět návyků, které rozhodují o tom, jestli to bude fungovat:
 
 # FÁZE 0 — Založení projektu
 
-*1 večer · nejsilnější model · plánovací režim ANO*
+_1 večer · nejsilnější model · plánovací režim ANO_
 
 ## Než spustíš Claude Code
 
@@ -97,7 +97,7 @@ Ověř, že bun run dev nastartuje a zobrazí prázdnou stránku. Pak commit.
 
 # FÁZE 1 — Design systém a kostra aplikace
 
-*2–3 večery · Sonnet staví, silný model zkontroluje · plánovací režim u 1.1*
+_2–3 večery · Sonnet staví, silný model zkontroluje · plánovací režim u 1.1_
 
 ## Prompt 1.1 — Design systém · **Opus 5.5**
 
@@ -222,7 +222,7 @@ Pak otevři /design-system při 390, 768 a 1440 px a popiš, co nesedí.
 
 # FÁZE 2 — Databáze a přihlášení
 
-*2 večery · nejsilnější model · plánovací režim ANO u obou*
+_2 večery · nejsilnější model · plánovací režim ANO u obou_
 
 ## Prompt 2.1 — Datový model · **Fable 5.1**
 
@@ -328,7 +328,7 @@ Vypiš nálezy a oprav je.
 
 # FÁZE 3 — Jádro na skutečných datech
 
-*8–10 večerů · Sonnet staví, silný model kontroluje · plánovací režim u 3.3 a 3.4*
+_8–10 večerů · Sonnet staví, silný model kontroluje · plánovací režim u 3.3 a 3.4_
 
 Po každém promptu proklikej sekci na počítači **i na telefonu**.
 
@@ -605,7 +605,7 @@ postupu milníku a denní součty časovače včetně půlnoci a nečinnosti.
 
 # FÁZE 4 — Jarvis a měření
 
-*3–4 večery · nejsilnější model · plánovací režim ANO*
+_3–4 večery · nejsilnější model · plánovací režim ANO_
 
 ## Než začneš
 
@@ -681,7 +681,7 @@ Všechno přes /api/jarvis, všechno měřené. Commit po částech.
 
 # FÁZE 5 — Pracovníci, Fakturoid, e-mail
 
-*4–5 večerů · Opus 5.5 · plánovací režim ANO u 5.1*
+_4–5 večerů · Opus 5.5 · plánovací režim ANO u 5.1_
 
 ## Prompt 5.1 — Pracovníci · **Opus 5.5**
 
@@ -743,7 +743,7 @@ integrovaná schránka se teď nedělá. Commit.
 
 # FÁZE 6 — Hra, onboarding, dokončení
 
-*3–4 večery · Sonnet staví, silný model kontroluje*
+_3–4 večery · Sonnet staví, silný model kontroluje_
 
 ## Prompt 6.1 — Dopamin systém a odemykání · **Sonnet 5**
 
@@ -794,7 +794,7 @@ požadavky při startu, kostry místo prázdna. Commit.
 
 # FÁZE 7 — Nasazení
 
-*1 večer · Sonnet*
+_1 večer · Sonnet_
 
 ## Prompt 7.1 · **Sonnet 5**
 
@@ -812,14 +812,14 @@ kontrolní seznam toho, co jsem musel nastavit ručně.
 
 ## Harmonogram
 
-| Týden | Dny | Fáze | Výstup |
-|---|---|---|---|
-| 1 | 23.–29. 9. | 0, 1, 2 | Kostra, design, databáze, přihlášení |
-| 2 | 30. 9.–6. 10. | 3 (3.1–3.5) | Milníky, pipeline, kontakty, cold calling |
-| 3 | 7.–13. 10. | 3 (3.6–3.8), 4 | Kalendář, finance, dashboard, Jarvis · **beta start ~10. 10.** |
-| 4 | 14.–20. 10. | 5 | Pracovníci, Fakturoid, e-mail |
-| 5 | 21.–31. 10. | 6, 7 | Hra, onboarding, průchod, nasazení · **hotovo ~31. 10.** |
-| listopad | | | Prodejní web, veřejná registrace, platby, opravy z bety — beze změny |
+| Týden    | Dny           | Fáze           | Výstup                                                               |
+| -------- | ------------- | -------------- | -------------------------------------------------------------------- |
+| 1        | 23.–29. 9.    | 0, 1, 2        | Kostra, design, databáze, přihlášení                                 |
+| 2        | 30. 9.–6. 10. | 3 (3.1–3.5)    | Milníky, pipeline, kontakty, cold calling                            |
+| 3        | 7.–13. 10.    | 3 (3.6–3.8), 4 | Kalendář, finance, dashboard, Jarvis · **beta start ~10. 10.**       |
+| 4        | 14.–20. 10.   | 5              | Pracovníci, Fakturoid, e-mail                                        |
+| 5        | 21.–31. 10.   | 6, 7           | Hra, onboarding, průchod, nasazení · **hotovo ~31. 10.**             |
+| listopad |               |                | Prodejní web, veřejná registrace, platby, opravy z bety — beze změny |
 
 Při 2–3 hodinách denně. Když bude dní s půl hodinou víc, posune se to o týden a pořád drží 1. prosinec.
 
@@ -833,3 +833,265 @@ Při 2–3 hodinách denně. Když bude dní s půl hodinou víc, posune se to o
 - [ ] Účet Fakturoid s API přístupem (do fáze 5)
 - [ ] Doména gradus.* a účet Resend pro odesílání e-mailů (do fáze 5)
 - [ ] Rozhodnutí o limitech tarifů — kolik generování denně na jaký plán (do fáze 3, jinak dám výchozí)
+
+---
+
+# FÁZE 8 — Opravy z testování, kolo 1
+
+*Z testování na počítači. Jarvis je odložený na další kolo.*
+
+## Prompt 8.1 — Chyby v konzoli a nefunkční nabídky · **Opus 5.5**
+
+```
+Oprav tři chyby. U každé najdi skutečnou příčinu, ne jen příznak, a pak
+projdi celou aplikaci, jestli se stejná chyba nevyskytuje jinde.
+
+1. PŘEKLAD JAKO OBJEKT. V detailu milníku padá next-intl:
+   INSUFFICIENT_PATH: Message at `milestones.tasks.delete` resolved to
+   `object`, but only strings are supported.
+   Místo: src/features/milestones/task-row.tsx:190, volání t("delete")
+   v komponentě TaskMenu. Klíč milestones.tasks.delete je v překladech
+   objekt (nejspíš s podklíči pro potvrzovací dialog) a zároveň se volá
+   jako text. Přejmenuj klíče tak, aby se nekřížily, v en.json i cs.json.
+
+   Pak přidej automatickou kontrolu, která tuhle třídu chyb odhalí dřív,
+   než ji uvidí uživatel: Vitest test nebo skript spouštěný v bun run test,
+   který ověří, že en.json a cs.json mají totožnou sadu klíčů, a že žádné
+   volání t() v kódu nevede na objekt. Nastav next-intl ve vývoji tak,
+   aby chybějící nebo špatný klíč byl vidět hned, a v produkci aby
+   místo pádu zobrazil záložní text.
+
+2. DIV UVNITŘ P. V dialogu generování kontaktů je <Skeleton>, který
+   vykresluje <div>, uvnitř <p>. To rozbíjí hydrataci.
+   Místo: src/features/contacts/generate-contacts-dialog.tsx:271–282.
+   Oprav to a pak prohledej celou aplikaci: Skeleton a jiné blokové prvky
+   uvnitř <p>, <span>, <label> nebo <button>, a tlačítka uvnitř tlačítek.
+   Dej komponentě Skeleton variantu, která vykresluje <span>, pro použití
+   uvnitř textu.
+
+3. NEOTEVÍRAJÍCÍ SE NABÍDKY V ONBOARDINGU. Na uvítací obrazovce se při
+   výběru země a měny rolovací seznamy vůbec neotevřou. Najdi proč —
+   typicky vyskakovací vrstva nabídky pod překryvem onboardingu (z-index,
+   portál mimo kontejner, pointer-events) nebo zachycení fokusu dialogem.
+   Oprav to systémově: všechny rolovací nabídky, výběry data a vyskakovací
+   menu musí fungovat uvnitř dialogů, spodních panelů i onboardingu.
+   Projdi každý dialog v aplikaci a ověř, že se v něm nabídky otevírají.
+
+Po opravě otevři milníky, detail milníku, dialog generování kontaktů
+a onboarding a ověř, že v konzoli prohlížeče není žádná chyba ani
+varování. Commit.
+```
+
+## Prompt 8.2 — Telefonní čísla a časová pásma · **Opus 5.5**
+
+```
+Dvě úpravy formátování.
+
+1. TELEFONNÍ ČÍSLA. Kdekoliv v aplikaci uživatel píše nebo vidí telefonní
+   číslo, musí být hezky rozdělené, česká čísla po třech: +420 777 123 456.
+
+   Použij knihovnu libphonenumber-js. Vytvoř sdílenou komponentu PhoneInput
+   a funkci formatPhone v src/lib/phone.ts:
+   - PhoneInput formátuje číslo už během psaní, výchozí předvolba podle
+     země z nastavení uživatele, kurzor nesmí při formátování skákat,
+     vložení čísla ze schránky v libovolném tvaru se správně přeformátuje
+   - ukládá se vždy ve formátu E.164 (+420777123456)
+   - formatPhone zobrazí číslo národně, když je ze stejné země jako
+     uživatel, jinak mezinárodně
+   - neplatné číslo: jemné upozornění pod polem, ale uložení neblokuj
+
+   Nahraď všechna pole a zobrazení telefonu v aplikaci: kontakty, rychlé
+   založení kontaktu z obchodu, cold calling, vygenerované kontakty,
+   pracovníci, profil. Odkazy na vytočení (tel:) ať používají E.164.
+
+   Napiš migraci, která existující telefony v databázi převede na E.164.
+   Čísla, která nejdou rozpoznat, nech beze změny a vypiš jejich počet.
+   Uprav kontrolu duplicit při generování a zakládání kontaktů, aby
+   porovnávala E.164. Doplň Vitest testy na formatPhone a převod.
+
+2. ČASOVÁ PÁSMA. U výběru časového pásma v nastavení zobraz u každé
+   položky, kolik je v tom pásmu právě hodin, a posun od UTC:
+   „Evropa/Praha · 17:42 · UTC+2". Čas se živě aktualizuje každou minutu.
+   Seznam jde prohledávat psaním a je seskupený podle kontinentu. Aktuálně
+   zvolené pásmo ukazuje svůj čas i v zavřeném stavu. Časy formátuj přes
+   format.ts podle nastavení uživatele (12/24 h).
+
+Přidej nový pravidlo do CLAUDE.md, sekce Texty a formáty: telefony vždy
+přes PhoneInput a formatPhone, ukládat v E.164. Commit.
+```
+
+## Prompt 8.3 — Globální vyhledávání jako Spotlight · **Opus 5.5**
+
+```
+Vyhledávání v horní liště teď nefunguje. Postav ho znovu jako Spotlight
+v macOS: rychlé, chytré, ovladatelné klávesnicí, prohledá celou aplikaci
+přihlášeného uživatele.
+
+UMÍSTĚNÍ A OTEVŘENÍ
+Pole v horní liště přesuň doprostřed, šířka kolem 480 px, s nápovědou
+zkratky „⌘K" (na Windows „Ctrl K"). Klepnutí do pole nebo zkratka ⌘K /
+Ctrl+K kdekoliv v aplikaci otevře vyhledávací okno: vycentrované v horní
+třetině obrazovky, šířka kolem 640 px, rozostřené pozadí, najede s pružinou.
+Esc nebo klepnutí mimo zavře. Na telefonu přes celou obrazovku.
+
+CO PROHLEDÁVÁ
+- kontakty: jméno, firma, e-mail, telefon (podle číslic, i části čísla)
+- obchody: název, kontakt, částka
+- milníky a úkoly: název, popis
+- události v kalendáři: název, popis
+- transakce a faktury: popis, číslo faktury, odběratel
+- pracovníci: jméno, role
+- sekce aplikace a stránky nastavení (navigace — „nastavení měny" otevře
+  přesně to místo)
+- rychlé akce: Nový kontakt, Nový obchod, Nový milník, Nová událost,
+  Spustit časovač, Generovat kontakty
+
+JAK HLEDÁ
+- bez ohledu na diakritiku a velikost písmen: „novak" najde „Nováka"
+- toleruje překlepy a části slov
+- výsledky seskupené podle typu s ikonou, max 5 na skupinu, u skupiny
+  odkaz „Zobrazit všechny"; nejlepší shody nahoře
+- shodný text ve výsledku zvýrazněný
+- ke každému výsledku jeden řádek kontextu (u kontaktu firma a tabulka,
+  u obchodu fáze a částka, u úkolu milník)
+
+Technicky: jedna serverová funkce, dotazy přes klienta přihlášeného
+uživatele, aby platila ochrana řádků — nikdy admin klient. V Postgresu
+rozšíření unaccent a pg_trgm, GIN trigramové indexy na prohledávaná pole
+v migraci. Hledání spouštěj s prodlevou 150 ms, zruš rozpracovaný
+požadavek, když uživatel píše dál. Odezva do 200 ms při tisících záznamů.
+
+OVLÁDÁNÍ KLÁVESNICÍ
+Šipky nahoru a dolů posouvají výběr napříč skupinami, Enter otevře,
+⌘Enter otevře na pozadí, Tab přeskočí na další skupinu. Výběr je vidět
+fialovým podbarvením a sjede do viditelné části.
+
+PRÁZDNÝ STAV
+Než uživatel začne psát: naposledy otevřené položky a nedávná hledání
+(uložené v nastavení uživatele, max 8) a rychlé akce. Když se nic
+nenajde: srozumitelný text a nabídka „Vytvořit kontakt …" s napsaným
+textem.
+
+Všechny texty do překladů. Vitest testy na hledání bez diakritiky
+a podle části telefonu. Commit.
+```
+
+## Prompt 8.4 — Dashboard · **Sonnet 5**
+
+```
+Dvě úpravy dashboardu.
+
+1. DETAIL DLAŽDICE JAKO VELKÉ OKNO. Klepnutí na dlaždici teď vysune detail
+   zprava. Místo toho otevři velké vycentrované okno: šířka až 960 px,
+   výška až 85 % obrazovky, rozostřené a ztmavené pozadí. Okno ať plynule
+   vyroste přímo z klepnuté dlaždice (sdílená animace přes layoutId ve
+   Framer Motion) a při zavření se do ní zase smrskne. Esc a klepnutí
+   mimo zavře. Obsah detailu zůstává stejný, jen dostane víc místa —
+   grafy roztáhni na šířku okna. Na telefonu se okno otevře přes celou
+   obrazovku.
+
+2. PROCENTA V KRUHU. Dlaždice Splněné úkoly dnes: doprostřed kruhového
+   ukazatele dej procento splnění velkým písmem (dopočítává se z nuly),
+   pod něj menším písmem „3 / 8". Když dnes nejsou žádné úkoly, ukaž
+   v kruhu pomlčku a pod ním „Dnes nic". Formátování přes format.ts.
+
+Commit.
+```
+
+## Prompt 8.5 — Milníky a mapa úkolů · **Opus 5.5**
+
+```
+Čtyři úpravy milníků. Pravidla z bodů 2 a 3 zapiš i do CLAUDE.md.
+
+1. STAVY ÚKOLŮ V MAPĚ. Každý stav musí být na první pohled poznat,
+   moderně a vkusně:
+   - Nezačatý: tlumený obrys, neutrální
+   - Rozpracovaný: oranžový „živý" rámeček — kónický přechod, který
+     pomalu obíhá kolem uzlu, a jemný oranžový svit. Přidej do design
+     systému token pro oranžovou (#FF9F43) a používej ho, ne hex v komponentě.
+   - Hotový: tyrkysová výplň s fajfkou
+   - Zamčený (má nehotové podúkoly): šedý se zámkem
+   - Po lhůtě: malá růžová tečka nebo štítek s počtem dnů
+   Při prefers-reduced-motion je rámeček statický. Stejné barvy stavů
+   použij i v seznamovém pohledu, ať jsou oba pohledy konzistentní.
+   Do levého horního rohu mapy dej malou legendu stavů, která jde sbalit.
+   V detailu úkolu ať jde stav přepnout.
+
+2. DOKONČENÍ MILNÍKU. Odeber tlačítko Dokončit milník v dosavadní podobě.
+   Nahraď ho tlačítkem, které je zamčené — ztlumené, se zámkem a textem
+   „Zbývá 3 úkoly" — dokud nejsou hotové všechny úkoly milníku. Ve chvíli,
+   kdy se dokončí poslední úkol, se tlačítko s animací odemkne a rozsvítí.
+   Milník se ale nedokončí sám — uživatel klepne. Milník bez úkolů nejde
+   dokončit, tlačítko řekne „Přidej první úkol". Když uživatel po dokončení
+   milníku některý úkol zase odškrtne, milník se vrátí do rozpracovaného
+   stavu. XP za dokončení milníku se připíše jen poprvé.
+
+3. ODMĚNA ZA SPLNĚNÍ. K milníku jde volitelně přidat odměnu, kterou si
+   uživatel dá, až ho splní — krátký text, třeba „Víkend na horách".
+   Migrace: sloupec reward (text, nepovinný) v milestones. Pole ve
+   formuláři milníku s ikonou dárku a příkladem v nápovědě. Na kartě
+   milníku zlatá ikonka dárku s textem odměny. Při dokončení milníku ji
+   oslavná sekvence ukáže jako podtitulek: „Tvoje odměna: Víkend na horách".
+
+4. PŘIBLIŽOVÁNÍ MAPY. Je příliš citlivé a trhané. Uprav nastavení
+   react-zoom-pan-pinch:
+   - menší krok kolečka a plynulé přiblížení s animací kolem 200 ms
+     a náběhem ease-out
+   - trackpad na Macu posílá při gestu roztažení prstů desítky událostí
+     kolečka s ctrlKey za sekundu — to je hlavní příčina citlivosti.
+     Normalizuj deltaY a omez maximální změnu měřítka na jednu událost,
+     ať je gesto na trackpadu stejně klidné jako na myši
+   - setrvačnost po posunu, ne tvrdé zastavení
+   - rozsah přiblížení 0,3 až 2
+   - tlačítka přiblížení mění měřítko o 20 % s animací
+   - dvojklik na prázdné místo přizpůsobí zobrazení celému stromu
+   Otestuj na trackpadu i myši.
+
+Commit.
+```
+
+## Prompt 8.6 — Pipeline · **Sonnet 5**
+
+```
+Tři úpravy pipeline.
+
+1. ZNOVU OSLOVIT. Filtr „Možné znovu oslovit" teď skryje nebo odkryje
+   všechny obchody v celé pipeline. Oprav ho: filtr je přepínač v záhlaví
+   sloupce s příznakem prohry a filtruje JEN obchody v tom sloupci —
+   ukáže pouze ty, které je možné znovu oslovit. Ostatní sloupce se
+   nemění. Aktivní filtr je vidět zvýrazněním přepínače a počtem.
+
+   Doba, po které se obchod v prohře označí k novému oslovení, se nově
+   nastavuje v Nastavení v sekci Pipeline: „Nabídnout nové oslovení po"
+   s volbami 1, 3, 6, 12 měsíců a vlastní počet měsíců. Výchozí 6.
+   Migrace: sloupec reengage_after_months v user_settings. Pravidlo
+   i odznak na kartách berou hodnotu odsud. Uprav i CLAUDE.md.
+
+2. PŘESOUVÁNÍ FÁZÍ. V režimu úprav se musí fáze přesouvat jako ikony na
+   ploše telefonu: chytnutá fáze se zvedne (mírně zvětší, stín, jemné
+   naklonění), drží se kurzoru volně v obou osách, ostatní fáze plynule
+   s pružinou uhýbají a ukazují, kam dopadne, a po puštění fáze s animací
+   zapadne na místo. Použij dnd-kit se sortable a DragOverlay. Funguje
+   i klávesnicí a na dotyk. Pořadí se uloží.
+
+3. PŘIDAT FÁZI. Tlačítko je nevýrazné. Na konec řady fází v režimu úprav
+   přidej kartu v plné výšce sloupce s přerušovaným fialovým okrajem,
+   velkou ikonou plus a textem „Přidat fázi"; při najetí zesvětlá
+   a rozsvítí se fialovým svitem. Klepnutí rovnou otevře formulář nové
+   fáze. Mimo režim úprav přidej malé tlačítko se stejnou funkcí vedle
+   tlačítka Upravit pipeline.
+
+Commit.
+```
+
+## Kontrola fáze 8 · **Opus 5.5**
+
+```
+Zkontroluj všechny změny z promptů 8.1 až 8.6. Hledej hlavně regrese:
+co se úpravami rozbilo jinde. Konkrétně ověř: že po převodu telefonů na
+E.164 funguje hledání, kontrola duplicit a vytáčení; že vyhledávání nikde
+nepoužívá admin klienta a nevrací cizí data; že nové migrace mají ochranu
+řádků; že všechny nové texty jsou v en.json i cs.json a test na překlady
+prochází; že v konzoli prohlížeče nejsou chyby na žádné stránce. Oprav
+nálezy, pusť lint, test a build.
+```

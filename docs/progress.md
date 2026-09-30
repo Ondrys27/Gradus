@@ -19,4 +19,18 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 6.2 | builder | 2026-09-29 Onboarding při prvním přihlášení: obor, země a měna, první milník s úkoly, první kontakt, představení Jarvise.
 - [x] 6.3 | architect | 2026-09-29 Kompletní průchod v obou jazycích, opravy rozbitých míst, bezpečná zóna a spodní panely na telefonu, výkonové úpravy (lazy loading, next/image).
 - [x] STOP | Konec fáze 6. Založ úplně nový účet a projdi aplikaci jako nový uživatel od onboardingu, v obou jazycích, na telefonu.
+- [ ] 8.1 | architect |
+- [ ] 8.2 | architect |
+- [ ] 8.3 | architect |
+- [ ] 8.4 | builder |
+- [ ] 8.5 | architect |
+- [ ] 8.6 | builder |
+- [ ] K8 | reviewer |
+- [ ] STOP | Konec opravného kola 1. Ověř opravené věci: v konzoli žádné chyby, nabídky v onboardingu se otevírají, telefony se formátují, časová pásma ukazují čas, vyhledávání ⌘K najde kontakt bez diakritiky i podle části čísla, dlaždice se otevírají jako velké okno s procenty v kruhu, mapa úkolů má barevné stavy a klidné přibližování, milník jde dokončit až po všech úkolech a ukáže odměnu, filtr znovu oslovit filtruje jen svůj sloupec a fáze se přesouvají za myší. Pak pokračuj v testování od Kontaktů dál a poznámky pošli do chatu s Claude.
 - [ ] 7.1 | RUČNĚ | Nasazení vyžaduje tvoje přihlášení do Vercelu a nastavení v jeho administraci. Spusť ho interaktivně: přepni /model na Sonnet a vlož prompt 7.1 z docs/plan.md.
+
+## Odloženo
+
+Tyto věci `/pokracuj` neprovádí, čekají na další kolo.
+
+- Jarvis nefunguje — při dalším kole přiložit výstup z terminálu s `bun run dev` a z konzole prohlížeče při odeslání zprávy.

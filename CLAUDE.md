@@ -56,6 +56,7 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - **`APP_NAME` není v překladech**, dosazuje se `{{appName}}`.
 - **Formátování jen přes `format.ts`.** Žádné `toLocaleString`, žádné ruční „Kč". Formáty jsou nezávislé na jazyce, z `user_settings`. Měna mění jen zobrazení.
 - Ukládat UTC, zobrazovat a počítat hranice dnů v **pásmu uživatele**. Nikdy UTC.
+- **Telefony** vždy přes PhoneInput a formatPhone (src/lib/phone.ts, libphonenumber-js). Ukládat v E.164, zobrazovat národně pro stejnou zemi, jinak mezinárodně.
 
 ### Data
 - **RLS na všech tabulkách.** Uživatel vidí jen svoje. Výjimky: `call_time_stats` (souhrny, čte každý přihlášený), tabulky pracovníků (pracovník vidí své záznamy).
@@ -67,7 +68,8 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 
 ### Konkrétní části
 - **Úkoly:** `parent_task_id` pro podúkoly do libovolné hloubky. Úkol s podúkoly **nejde odškrtnout, dokud nejsou všechny podúkoly hotové** (zamčené zaškrtávátko se zámkem). Jakmile jsou, odemkne se, ale **nedokončí se sám**, uživatel ho odškrtne ručně. Odškrtnutí podúkolu u hotového nadřazeného ho vrátí do rozpracovaného. Postup milníku = splněné / všechny úkoly.
-- **Pipeline:** změna fáze přepisuje `entered_stage_at`. Odebrání fáze s obchody se ptá, kam je přesunout. is_won → oslava, kontakt do Klientů. is_lost > 6 měsíců → odznak „znovu oslovit".
+- **Milníky:** dokončit jde jen ručně a jen když jsou hotové všechny úkoly (a je aspoň jeden); tlačítko je do té doby zamčené. Odškrtnutí úkolu u hotového milníku ho vrátí do rozpracovaného. XP za milník jen poprvé. Volitelná odměna v milestones.reward se ukáže v oslavě.
+- **Pipeline:** změna fáze přepisuje `entered_stage_at`. Odebrání fáze s obchody se ptá, kam je přesunout. is_won → oslava, kontakt do Klientů. is_lost déle než user_settings.reengage_after_months (výchozí 6) → odznak „znovu oslovit"; filtr v záhlaví filtruje jen sloupec prohry.
 - **Tabulky kontaktů** jsou uživatelsky definované (`contact_tables`, `contact_table_fields`, `contact_table_entries`, `contact_table_moves`). Kontakt je **vždy v přesně jedné** (unique user_id + contact_id). Přesun jen přes `moveContact`. Otázky při přesunu se generují z polí tabulky, včetně závislých polí. Klienti je systémová, plní se sama z vyhraných obchodů. Cold Calling používá tytéž tabulky, nic zvlášť.
 - **Časovač:** úseky v `prospecting_segments`. Denní součet = úseky oříznuté na den, počítáno DB funkcí; o půlnoci nula bez jakékoliv úlohy. Nečinnost **15 minut** bez přesunu z Neoslovených: efektivní konec = min(teď, poslední aktivita + 15 min), platí i při čtení. Jen spustit / pozastavit, **žádné vynulování**. Prohlížeč do DB průběžně nezapisuje. Totéž pro `work_sessions` pracovníků.
 - **Generování kontaktů:** Places API (New) jen ze serveru, klíč nikdy do prohlížeče, minimální maska polí. Limity denně a měsíčně podle `plans`. Duplicity: `external_place_id`, telefon bez formátování, název + adresa. Google nevrací e-maily. Každé volání do `usage_events` včetně neúspěchů se zprávou od Googlu.
@@ -84,7 +86,8 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - Soubory: PDF, PNG, JPG, TXT, CSV, DOCX, XLSX; 10 MB; 3 na zprávu; typ podle obsahu.
 
 ### Rozhraní
-- Tokeny v `@theme`, **žádné hexy v komponentách.** Fialová `#7C5CFF`, tyrkysová `#2FE3C8`, zlatá `#FFC64B`, zelená `#3DDC97`, růžová `#FF6B8A`, pozadí `#070B1F`, karta `#0D1234`.
+- Tokeny v `@theme`, **žádné hexy v komponentách.** Fialová `#7C5CFF`, tyrkysová `#2FE3C8`, zlatá `#FFC64B`, zelená `#3DDC97`, oranžová `#FF9F43` (rozpracované), růžová `#FF6B8A`, pozadí `#070B1F`, karta `#0D1234`.
+- **Vyhledávání** (⌘K) prohledává přes klienta přihlášeného uživatele, nikdy admin; bez diakritiky přes unaccent a pg_trgm.
 - **Pravý dolní roh patří Jarvisovi.** Plovoucí ovládání vlevo dolů, hlavní akce nahoru k nadpisu.
 - Oslava (konfety, zvuk) jen pro velké okamžiky; drobnosti mají malou animaci.
 - Telefon < 768 px: spodní lišta, dialogy jako spodní panely, plochy ≥ 44 px, nic jen na hover, žádný vodorovný posun stránky.
