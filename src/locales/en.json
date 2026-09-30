@@ -695,6 +695,15 @@
       "soundHint": "A short chime for celebrations like a won deal or a finished milestone.",
       "animations": "Animations",
       "animationsHint": "Confetti and card animations for big moments. Turned off, checkmarks and progress bars still animate."
+    },
+    "pipeline": {
+      "title": "Pipeline",
+      "description": "When a lost deal is offered for a second try.",
+      "reengage": "Offer to approach again after",
+      "reengageHint": "Deals lost for longer than this get a \"could be approached again\" badge in their lost column.",
+      "reengageMonths": "{count, plural, one {# month} other {# months}}",
+      "reengageCustom": "Custom number of months",
+      "reengageCustomLabel": "Number of months"
     }
   },
   "milestones": {
@@ -890,17 +899,15 @@
       "doneEditing": "Done",
       "addStage": "Add stage"
     },
-    "filter": {
-      "label": "Filter deals",
-      "relaunch": "Could be approached again ({count})"
-    },
     "notices": {
       "moveFailed": "The deal could not be moved. Check your connection and try again.",
       "renameFailed": "The stage could not be renamed. Try again."
     },
     "column": {
       "addDeal": "Add a deal to {name}",
-      "empty": "No deals"
+      "empty": "No deals",
+      "addStage": "Add stage",
+      "more": "+{count} more"
     },
     "card": {
       "open": "Open deal {title}",
@@ -915,7 +922,8 @@
       "depositLabel": "Deposit stage",
       "depositHint": "Deals moved here book a deposit as income.",
       "depositPercent": "Deposit share (%)",
-      "depositFailed": "The deposit setting could not be saved."
+      "depositFailed": "The deposit setting could not be saved.",
+      "relaunchFilter": "Could be approached again ({count})"
     },
     "form": {
       "createTitle": "New deal",

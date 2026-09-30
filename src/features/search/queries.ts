@@ -35,8 +35,16 @@ export function useGlobalSearch(query: string, kinds: readonly DbKind[] | null) 
   return useQuery({
     queryKey: searchKeys.results(user.id, query, kinds),
     queryFn: async ({ signal }) => {
+      const params = searchParams(query, kinds ?? undefined);
       const { data, error } = await createClient()
-        .rpc("global_search", searchParams(query, kinds ?? undefined))
+        .rpc("global_search", {
+          _query: params._query,
+          _phone_patterns: params._phone_patterns,
+          _limit: params._limit,
+          // The generated type misses that these two are nullable.
+          _amount: params._amount as unknown as number,
+          _kinds: params._kinds as unknown as string[],
+        })
         .abortSignal(signal);
       if (error) throw error;
       return (data ?? []) as SearchHit[];

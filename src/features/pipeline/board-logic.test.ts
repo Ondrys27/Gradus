@@ -75,8 +75,8 @@ describe("sumByCurrency", () => {
   });
 });
 
-describe("six-month rule", () => {
-  it("flags a deal lost for more than six months, not before", () => {
+describe("re-engage rule", () => {
+  it("flags a deal lost for more than the default six months, not before", () => {
     const old = deal("a", "lost", { entered_stage_at: "2026-03-01T00:00:00Z" });
     const recent = deal("b", "lost", { entered_stage_at: "2026-04-01T00:00:00Z" });
     expect(isRelaunchable(old, lost, now)).toBe(true);
@@ -89,13 +89,18 @@ describe("six-month rule", () => {
     expect(isRelaunchable(old, won, now)).toBe(false);
   });
 
-  it("counts flagged deals", () => {
+  it("counts flagged deals within one stage", () => {
     const deals = [
       deal("a", "lost", { entered_stage_at: "2026-01-01T00:00:00Z" }),
       deal("b", "lost", { entered_stage_at: "2026-09-01T00:00:00Z" }),
-      deal("c", "lead", { entered_stage_at: "2026-01-01T00:00:00Z" }),
     ];
-    expect(countRelaunchable([lead, won, lost], deals, now)).toBe(1);
+    expect(countRelaunchable(deals, lost, now)).toBe(1);
+  });
+
+  it("takes the re-engage window from the setting, not a fixed six months", () => {
+    const recent = deal("a", "lost", { entered_stage_at: "2026-08-01T00:00:00Z" });
+    expect(isRelaunchable(recent, lost, now, 6)).toBe(false);
+    expect(isRelaunchable(recent, lost, now, 1)).toBe(true);
   });
 });
 

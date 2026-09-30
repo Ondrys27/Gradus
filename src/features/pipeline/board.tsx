@@ -22,20 +22,23 @@ import { useIsPhone } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
 import { DealCardBody } from "./deal-card";
 import { isRelaunchable } from "./board-logic";
-import { StageColumn } from "./stage-column";
+import { AddStageCard, StageColumn, StageDragPreview } from "./stage-column";
 import type { Deal, Stage } from "./types";
 
 type Props = {
   stages: Stage[];
-  /** Deals per stage after the filter. */
+  /** Every deal per stage; a lost stage's own filter (in its column) may hide some. */
   dealsByStage: Map<string, Deal[]>;
   editing: boolean;
+  /** From Settings → Pipeline; a lost deal older than this may be approached again. */
+  reengageAfterMonths: number;
   onAddDeal: (stage: Stage) => void;
   onOpenDeal: (deal: Deal) => void;
   onMoveDeal: (deal: Deal, stage: Stage) => void;
   onReorderStages: (activeId: string, overId: string) => void;
   onRenameStage: (stage: Stage, name: string) => void;
   onRemoveStage: (stage: Stage) => void;
+  onAddStage: () => void;
 };
 
 /** Pointer position decides the column; a card hovering between columns falls back to overlap. */
@@ -48,16 +51,19 @@ export function Board({
   stages,
   dealsByStage,
   editing,
+  reengageAfterMonths,
   onAddDeal,
   onOpenDeal,
   onMoveDeal,
   onReorderStages,
   onRenameStage,
   onRemoveStage,
+  onAddStage,
 }: Props) {
   const t = useTranslations("pipeline.a11y");
   const isPhone = useIsPhone();
   const [activeDeal, setActiveDeal] = useState<Deal | null>(null);
+  const [activeStage, setActiveStage] = useState<Stage | null>(null);
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
@@ -89,10 +95,17 @@ export function Board({
 
   function handleDragStart({ active }: DragStartEvent) {
     if (active.data.current?.type === "deal") setActiveDeal(active.data.current.deal as Deal);
+    if (active.data.current?.type === "stage")
+      setActiveStage(stageById.get(String(active.id)) ?? null);
+  }
+
+  function resetDrag() {
+    setActiveDeal(null);
+    setActiveStage(null);
   }
 
   function handleDragEnd({ active, over }: DragEndEvent) {
-    setActiveDeal(null);
+    resetDrag();
     if (!over) return;
     if (active.data.current?.type === "stage") {
       if (active.id !== over.id) onReorderStages(String(active.id), String(over.id));
@@ -114,7 +127,7 @@ export function Board({
         screenReaderInstructions: { draggable: t("instructions") },
       }}
       onDragStart={handleDragStart}
-      onDragCancel={() => setActiveDeal(null)}
+      onDragCancel={resetDrag}
       onDragEnd={handleDragEnd}
     >
       <SortableContext
@@ -134,22 +147,32 @@ export function Board({
               editing={editing}
               dragDealsEnabled={!isPhone}
               isLastStage={stages.length === 1}
+              reengageAfterMonths={reengageAfterMonths}
               onAddDeal={onAddDeal}
               onOpenDeal={onOpenDeal}
               onRename={onRenameStage}
               onRemove={onRemoveStage}
             />
           ))}
+          {editing && <AddStageCard onClick={onAddStage} />}
         </div>
       </SortableContext>
-      <DragOverlay dropAnimation={null}>
+      <DragOverlay dropAnimation={activeStage ? undefined : null}>
         {activeDeal && (
           <DealCardBody
             deal={activeDeal}
             muted={stageById.get(activeDeal.stage_id)?.is_lost ?? false}
-            relaunchable={isRelaunchable(activeDeal, stageById.get(activeDeal.stage_id), now)}
+            relaunchable={isRelaunchable(
+              activeDeal,
+              stageById.get(activeDeal.stage_id),
+              now,
+              reengageAfterMonths,
+            )}
             className="cursor-grabbing border-violet/60 shadow-glow-strong motion-safe:rotate-3 motion-safe:scale-105"
           />
+        )}
+        {activeStage && (
+          <StageDragPreview stage={activeStage} deals={dealsByStage.get(activeStage.id) ?? []} />
         )}
       </DragOverlay>
     </DndContext>

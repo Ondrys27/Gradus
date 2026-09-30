@@ -5,6 +5,7 @@ import { AlertCircleIcon, CheckIcon, LoaderCircleIcon, LocateFixedIcon } from "l
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { GlowCard } from "@/components/ui/glow-card";
+import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
 import {
   Select,
@@ -41,6 +42,8 @@ import { FormatPreview, useNow } from "./format-preview";
 import { TimeZonePicker } from "./time-zone-picker";
 
 type Option = { value: string; label: string; detail?: string };
+
+const REENGAGE_PRESETS = [1, 3, 6, 12];
 
 export function SettingsView() {
   const t = useTranslations("settings");
@@ -284,6 +287,22 @@ export function SettingsView() {
       </StaggerItem>
 
       <StaggerItem>
+        <Section title={t("pipeline.title")} description={t("pipeline.description")}>
+          <SettingRow
+            id="settings-reengage"
+            label={t("pipeline.reengage")}
+            hint={t("pipeline.reengageHint")}
+          >
+            <ReengageMonthsControl
+              id="settings-reengage"
+              value={settings.reengage_after_months}
+              onChange={(months) => save({ reengage_after_months: months })}
+            />
+          </SettingRow>
+        </Section>
+      </StaggerItem>
+
+      <StaggerItem>
         <FormatPreview now={now} />
       </StaggerItem>
 
@@ -400,6 +419,84 @@ function OptionSelect({
         ))}
       </SelectContent>
     </Select>
+  );
+}
+
+const CUSTOM = "custom";
+
+/**
+ * Presets of 1/3/6/12 months, plus a custom number. Picking "custom" only switches the
+ * UI; the setting itself changes once a valid number is confirmed.
+ */
+function ReengageMonthsControl({
+  id,
+  value,
+  onChange,
+}: {
+  id: string;
+  value: number;
+  onChange: (months: number) => void;
+}) {
+  const t = useTranslations("settings.pipeline");
+  const [custom, setCustom] = useState(() => !REENGAGE_PRESETS.includes(value));
+  const [text, setText] = useState(String(value));
+  useEffect(() => setText(String(value)), [value]);
+
+  const items = useMemo(
+    () => [
+      ...REENGAGE_PRESETS.map((months) => ({
+        value: String(months),
+        label: t("reengageMonths", { count: months }),
+      })),
+      { value: CUSTOM, label: t("reengageCustom") },
+    ],
+    [t],
+  );
+
+  function commitCustom() {
+    const parsed = Number(text);
+    if (Number.isInteger(parsed) && parsed >= 1) onChange(parsed);
+    else setText(String(value));
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <Select
+        value={custom ? CUSTOM : String(value)}
+        items={items}
+        onValueChange={(next) => {
+          if (next === CUSTOM) setCustom(true);
+          else if (typeof next === "string") {
+            setCustom(false);
+            onChange(Number(next));
+          }
+        }}
+      >
+        <SelectTrigger id={id}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {items.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {custom && (
+        <Input
+          value={text}
+          inputMode="numeric"
+          aria-label={t("reengageCustomLabel")}
+          className="h-11 w-24 mouse:h-9"
+          onChange={(event) => setText(event.target.value)}
+          onBlur={commitCustom}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") event.currentTarget.blur();
+          }}
+        />
+      )}
+    </div>
   );
 }
 

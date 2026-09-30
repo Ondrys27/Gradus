@@ -1579,6 +1579,7 @@ export type Database = {
           number_format: string
           recent_search_items: Json
           recent_searches: string[]
+          reengage_after_months: number
           sound_enabled: boolean
           time_format: string
           timezone: string
@@ -1598,6 +1599,7 @@ export type Database = {
           number_format?: string
           recent_search_items?: Json
           recent_searches?: string[]
+          reengage_after_months?: number
           sound_enabled?: boolean
           time_format?: string
           timezone?: string
@@ -1617,6 +1619,7 @@ export type Database = {
           number_format?: string
           recent_search_items?: Json
           recent_searches?: string[]
+          reengage_after_months?: number
           sound_enabled?: boolean
           time_format?: string
           timezone?: string
@@ -2154,6 +2157,22 @@ export type Database = {
           income: number
         }[]
       }
+      global_search: {
+        Args: {
+          _amount?: number
+          _kinds?: string[]
+          _limit?: number
+          _phone_patterns?: string[]
+          _query: string
+        }
+        Returns: {
+          data: Json
+          id: string
+          kind: string
+          rank: number
+          title: string
+        }[]
+      }
       grant_worker_rewards: {
         Args: {
           _basis: number
@@ -2166,22 +2185,6 @@ export type Database = {
           _worker_id: string
         }
         Returns: number
-      }
-      global_search: {
-        Args: {
-          _amount?: number | null
-          _kinds?: string[] | null
-          _limit?: number
-          _phone_patterns?: string[]
-          _query: string
-        }
-        Returns: {
-          data: Json
-          id: string
-          kind: string
-          rank: number
-          title: string
-        }[]
       }
       has_role: {
         Args: {
@@ -2308,6 +2311,11 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      phone_calling_code: { Args: { _country: string }; Returns: string }
+      phone_to_e164: {
+        Args: { _country: string; _phone: string }
+        Returns: string
+      }
       post_due_recurring_payments: { Args: never; Returns: number }
       prospecting_daily_seconds: {
         Args: { _from: string; _timezone: string; _to: string }
@@ -2404,6 +2412,25 @@ export type Database = {
         Returns: undefined
       }
       reward_rule_is_valid: { Args: { _rule: Json }; Returns: boolean }
+      search_doc: { Args: { _parts: string[] }; Returns: string }
+      search_matches: {
+        Args: {
+          _amount_digits: string
+          _kind: string
+          _limit: number
+          _phones: string[]
+          _q: string
+        }
+        Returns: {
+          id: string
+          rank: number
+        }[]
+      }
+      search_norm: { Args: { _value: string }; Returns: string }
+      search_rank: {
+        Args: { _doc: string; _q: string; _title: string }
+        Returns: number
+      }
       section_unlocks: {
         Args: never
         Returns: {

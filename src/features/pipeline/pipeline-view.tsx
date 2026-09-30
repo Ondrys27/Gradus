@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { CheckIcon, KanbanIcon, PencilIcon, PlusIcon, RotateCcwIcon } from "lucide-react";
+import { CheckIcon, KanbanIcon, PencilIcon, PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -10,20 +10,13 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCelebration } from "@/components/celebration/celebration-provider";
+import { useUserSettings } from "@/features/account/queries";
 import { MeetingSurveyDialog, type SurveyTarget } from "@/features/dashboard/meeting-survey-dialog";
 import { offersMeetingSurvey } from "@/features/dashboard/survey-trigger";
 import { useAwardXp } from "@/features/gamification/queries";
 import { useUrlIntent } from "@/lib/use-url-intent";
-import { cn } from "@/lib/utils";
 import { Board } from "./board";
-import {
-  countRelaunchable,
-  groupDealsByStage,
-  isRelaunchable,
-  moveKind,
-  reorderStages,
-  sortStages,
-} from "./board-logic";
+import { groupDealsByStage, moveKind, reorderStages, sortStages } from "./board-logic";
 import { DealDetail } from "./deal-detail";
 import { DealFormDialog } from "./deal-form-dialog";
 import { LostReasonDialog } from "./lost-reason-dialog";
@@ -36,6 +29,7 @@ export function PipelineView() {
   const tNav = useTranslations("nav");
   const { celebrate } = useCelebration();
   const awardXp = useAwardXp();
+  const settings = useUserSettings();
   const stagesQuery = useStages();
   const dealsQuery = useDeals();
   const move = useMoveDeal();
@@ -43,7 +37,6 @@ export function PipelineView() {
   const reorder = useReorderStages();
 
   const [editing, setEditing] = useState(false);
-  const [relaunchOnly, setRelaunchOnly] = useState(false);
   const [creating, setCreating] = useState<{ stageId: string | null } | null>(null);
   const [addingStage, setAddingStage] = useState(false);
   const [removing, setRemoving] = useState<Stage | null>(null);
@@ -70,16 +63,9 @@ export function PipelineView() {
 
   const stages = useMemo(() => sortStages(stagesQuery.data ?? []), [stagesQuery.data]);
   const deals = useMemo(() => dealsQuery.data ?? [], [dealsQuery.data]);
-  const now = new Date();
 
-  const relaunchCount = countRelaunchable(stages, deals, now);
-  const dealsByStage = useMemo(() => {
-    const byId = new Map(stages.map((stage) => [stage.id, stage]));
-    const shown = relaunchOnly
-      ? deals.filter((deal) => isRelaunchable(deal, byId.get(deal.stage_id)))
-      : deals;
-    return groupDealsByStage(stages, shown);
-  }, [stages, deals, relaunchOnly]);
+  // Each lost stage's column filters its own deals; every column always gets the full list.
+  const dealsByStage = useMemo(() => groupDealsByStage(stages, deals), [stages, deals]);
 
   const openDeal = deals.find((deal) => deal.id === openId) ?? null;
 
@@ -133,21 +119,24 @@ export function PipelineView() {
   }
 
   const headerActions = editing ? (
-    <>
-      <Button variant="outline" onClick={() => setAddingStage(true)}>
-        <PlusIcon aria-hidden data-icon="inline-start" />
-        {t("actions.addStage")}
-      </Button>
-      <Button onClick={() => setEditing(false)}>
-        <CheckIcon aria-hidden data-icon="inline-start" />
-        {t("actions.doneEditing")}
-      </Button>
-    </>
+    <Button onClick={() => setEditing(false)}>
+      <CheckIcon aria-hidden data-icon="inline-start" />
+      {t("actions.doneEditing")}
+    </Button>
   ) : (
     <>
       <Button variant="outline" disabled={stages.length === 0} onClick={() => setEditing(true)}>
         <PencilIcon aria-hidden data-icon="inline-start" />
         {t("actions.editStages")}
+      </Button>
+      <Button
+        variant="outline"
+        size="icon"
+        aria-label={t("actions.addStage")}
+        title={t("actions.addStage")}
+        onClick={() => setAddingStage(true)}
+      >
+        <PlusIcon aria-hidden />
       </Button>
       <Button disabled={stages.length === 0} onClick={() => setCreating({ stageId: null })}>
         <PlusIcon aria-hidden data-icon="inline-start" />
@@ -162,25 +151,6 @@ export function PipelineView() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title={tNav("pipeline")} description={t("description")} actions={headerActions} />
-
-      {(relaunchCount > 0 || relaunchOnly) && (
-        <div role="group" aria-label={t("filter.label")} className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            aria-pressed={relaunchOnly}
-            onClick={() => setRelaunchOnly((value) => !value)}
-            className={cn(
-              "inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border px-4 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-gold/40 mouse:h-9",
-              relaunchOnly
-                ? "border-gold/60 bg-gold/15 text-ink"
-                : "border-gold/30 text-gold hover:border-gold/60",
-            )}
-          >
-            <RotateCcwIcon aria-hidden className="size-4" />
-            {t("filter.relaunch", { count: relaunchCount })}
-          </button>
-        </div>
-      )}
 
       {notice && <FormAlert>{t(`notices.${notice}`)}</FormAlert>}
 
@@ -225,6 +195,8 @@ export function PipelineView() {
             stages={stages}
             dealsByStage={dealsByStage}
             editing={editing}
+            reengageAfterMonths={settings.reengage_after_months}
+            onAddStage={() => setAddingStage(true)}
             onAddDeal={(stage) => setCreating({ stageId: stage.id })}
             onOpenDeal={(deal) => setOpenId(deal.id)}
             onMoveDeal={requestMove}

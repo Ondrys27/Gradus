@@ -1,8 +1,11 @@
 import { subMonths } from "date-fns";
 import type { Deal, DealContact, Stage } from "./types";
 
-/** A lost deal older than this (in its lost stage) may be approached again. */
-export const RELAUNCH_AFTER_MONTHS = 6;
+/**
+ * Fallback while user_settings has not loaded yet; the real value lives in
+ * user_settings.reengage_after_months (Settings → Pipeline).
+ */
+export const DEFAULT_REENGAGE_AFTER_MONTHS = 6;
 
 export function sortStages(stages: Stage[]): Stage[] {
   return [...stages].sort((a, b) => a.position - b.position);
@@ -32,15 +35,25 @@ export function sumByCurrency(deals: Pick<Deal, "value" | "currency">[]): Curren
     .sort((a, b) => a.currency.localeCompare(b.currency));
 }
 
-/** Lost for more than six months since the deal entered its lost stage. */
-export function isRelaunchable(deal: Deal, stage: Stage | undefined, now: Date = new Date()) {
+/** Lost for longer than `reengageAfterMonths` (Settings → Pipeline) since it entered its lost stage. */
+export function isRelaunchable(
+  deal: Deal,
+  stage: Stage | undefined,
+  now: Date = new Date(),
+  reengageAfterMonths: number = DEFAULT_REENGAGE_AFTER_MONTHS,
+) {
   if (!stage?.is_lost) return false;
-  return new Date(deal.entered_stage_at) < subMonths(now, RELAUNCH_AFTER_MONTHS);
+  return new Date(deal.entered_stage_at) < subMonths(now, reengageAfterMonths);
 }
 
-export function countRelaunchable(stages: Stage[], deals: Deal[], now: Date = new Date()) {
-  const byId = new Map(stages.map((stage) => [stage.id, stage]));
-  return deals.filter((deal) => isRelaunchable(deal, byId.get(deal.stage_id), now)).length;
+/** How many of a stage's own deals are relaunchable; used for the column's filter badge. */
+export function countRelaunchable(
+  deals: Deal[],
+  stage: Stage,
+  now: Date = new Date(),
+  reengageAfterMonths: number = DEFAULT_REENGAGE_AFTER_MONTHS,
+) {
+  return deals.filter((deal) => isRelaunchable(deal, stage, now, reengageAfterMonths)).length;
 }
 
 /** A deal dropped into a stage goes to the end of it. */

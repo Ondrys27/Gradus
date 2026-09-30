@@ -695,6 +695,15 @@
       "soundHint": "Krátký tón u oslav jako vyhraný obchod nebo dokončený milník.",
       "animations": "Animace",
       "animationsHint": "Konfety a animace karet u velkých okamžiků. I vypnuté nechají zaškrtnutí a průběhy animované."
+    },
+    "pipeline": {
+      "title": "Pipeline",
+      "description": "Kdy se ztracený obchod nabídne ke druhé šanci.",
+      "reengage": "Nabídnout nové oslovení po",
+      "reengageHint": "Obchody ztracené déle než tohle dostanou ve sloupci prohry odznak „možné znovu oslovit“.",
+      "reengageMonths": "{count, plural, one {# měsíci} few {# měsících} other {# měsících}}",
+      "reengageCustom": "Vlastní počet měsíců",
+      "reengageCustomLabel": "Počet měsíců"
     }
   },
   "milestones": {
@@ -890,17 +899,15 @@
       "doneEditing": "Hotovo",
       "addStage": "Přidat fázi"
     },
-    "filter": {
-      "label": "Filtr obchodů",
-      "relaunch": "Možné znovu oslovit ({count})"
-    },
     "notices": {
       "moveFailed": "Obchod se nepodařilo přesunout. Zkontroluj připojení a zkus to znovu.",
       "renameFailed": "Fázi se nepodařilo přejmenovat. Zkus to znovu."
     },
     "column": {
       "addDeal": "Přidat obchod do fáze {name}",
-      "empty": "Žádné obchody"
+      "empty": "Žádné obchody",
+      "addStage": "Přidat fázi",
+      "more": "+{count} další"
     },
     "card": {
       "open": "Otevřít obchod {title}",
@@ -915,7 +922,8 @@
       "depositLabel": "Fáze zálohy",
       "depositHint": "Obchod přesunutý sem zaúčtuje zálohu jako příjem.",
       "depositPercent": "Podíl zálohy (%)",
-      "depositFailed": "Nastavení zálohy se nepodařilo uložit."
+      "depositFailed": "Nastavení zálohy se nepodařilo uložit.",
+      "relaunchFilter": "Možné znovu oslovit ({count})"
     },
     "form": {
       "createTitle": "Nový obchod",
