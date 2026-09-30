@@ -1574,6 +1574,8 @@ export type Database = {
           id: string
           locale: string
           number_format: string
+          recent_search_items: Json
+          recent_searches: string[]
           sound_enabled: boolean
           time_format: string
           timezone: string
@@ -1591,6 +1593,8 @@ export type Database = {
           id?: string
           locale?: string
           number_format?: string
+          recent_search_items?: Json
+          recent_searches?: string[]
           sound_enabled?: boolean
           time_format?: string
           timezone?: string
@@ -1608,6 +1612,8 @@ export type Database = {
           id?: string
           locale?: string
           number_format?: string
+          recent_search_items?: Json
+          recent_searches?: string[]
           sound_enabled?: boolean
           time_format?: string
           timezone?: string
@@ -2157,6 +2163,22 @@ export type Database = {
           _worker_id: string
         }
         Returns: number
+      }
+      global_search: {
+        Args: {
+          _amount?: number | null
+          _kinds?: string[] | null
+          _limit?: number
+          _phone_patterns?: string[]
+          _query: string
+        }
+        Returns: {
+          data: Json
+          id: string
+          kind: string
+          rank: number
+          title: string
+        }[]
       }
       has_role: {
         Args: {

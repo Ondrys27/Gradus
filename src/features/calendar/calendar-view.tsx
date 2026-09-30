@@ -24,6 +24,7 @@ import {
 } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { useIsPhone } from "@/lib/use-media-query";
+import { useUrlIntent } from "@/lib/use-url-intent";
 import { cn } from "@/lib/utils";
 import {
   addDaysIso,
@@ -100,6 +101,20 @@ export function CalendarView() {
   } | null>(null);
   const [openEventId, setOpenEventId] = useState<string | null>(null);
   const [changeFailed, setChangeFailed] = useState(false);
+
+  // The search opens a found event on its day, or a new event.
+  useUrlIntent(
+    "event",
+    (id, params) => {
+      const date = params.get("date");
+      if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) setCursor(date);
+      setOpenEventId(id);
+    },
+    ["date"],
+  );
+  useUrlIntent("new", (value) => {
+    if (value === "event") setForm({ event: null, start: null });
+  });
 
   const days = useMemo(
     () => viewDays(view, cursor, settings.weekStartsOn),

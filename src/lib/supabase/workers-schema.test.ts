@@ -5,6 +5,7 @@
 // migration in PGlite with the same Supabase stubs as schema.test.ts.
 
 import { PGlite } from "@electric-sql/pglite";
+import { PGLITE_EXTENSIONS } from "./pglite-extensions";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -42,7 +43,7 @@ begin
 end $$;
 alter table storage.objects enable row level security;
 grant all on storage.objects, storage.buckets to authenticated;
-grant usage on schema public, auth, storage to anon, authenticated, service_role, supabase_auth_admin;
+grant usage on schema public, auth, storage, extensions to anon, authenticated, service_role, supabase_auth_admin;
 alter default privileges in schema public grant all on tables to authenticated, service_role;
 alter default privileges in schema public grant all on functions to authenticated, service_role;
 alter default privileges in schema public grant all on sequences to authenticated, service_role;
@@ -109,7 +110,7 @@ let owner: string;
 let stranger: string;
 
 beforeAll(async () => {
-  db = new PGlite();
+  db = new PGlite({ extensions: PGLITE_EXTENSIONS });
   await db.exec(SUPABASE_STUBS);
   for (const file of readdirSync(MIGRATIONS_DIR)
     .filter((f) => f.endsWith(".sql"))
@@ -158,9 +159,9 @@ describe("worker invites", () => {
     await asServer();
     const second = await createAuthUser();
     await asServiceRole();
-    await expect(db.query(`select accept_worker_invite($1, $2)`, [invite.code, second])).rejects.toThrow(
-      /invite_invalid/,
-    );
+    await expect(
+      db.query(`select accept_worker_invite($1, $2)`, [invite.code, second]),
+    ).rejects.toThrow(/invite_invalid/);
     await asServer();
 
     const bound = await one<{ user_id: string; status: string }>(
@@ -180,9 +181,10 @@ describe("worker invites", () => {
   it("refuses an expired invite and a second employer for one account", async () => {
     await asUser(owner);
     const worker = (
-      await one<{ id: string }>(`insert into workers (owner_id, name) values ($1, 'Late') returning id`, [
-        owner,
-      ])
+      await one<{ id: string }>(
+        `insert into workers (owner_id, name) values ($1, 'Late') returning id`,
+        [owner],
+      )
     ).id;
     const code = (
       await one<{ code: string }>(
@@ -191,9 +193,10 @@ describe("worker invites", () => {
       )
     ).code;
     await asServer();
-    await db.query(`update worker_invites set expires_at = now() - interval '1 minute' where code = $1`, [
-      code,
-    ]);
+    await db.query(
+      `update worker_invites set expires_at = now() - interval '1 minute' where code = $1`,
+      [code],
+    );
     const late = await createAuthUser();
     await asServiceRole();
     await expect(db.query(`select accept_worker_invite($1, $2)`, [code, late])).rejects.toThrow(
@@ -205,9 +208,10 @@ describe("worker invites", () => {
     await hire(owner, account, "First job");
     await asUser(stranger);
     const other = (
-      await one<{ id: string }>(`insert into workers (owner_id, name) values ($1, 'Second job') returning id`, [
-        stranger,
-      ])
+      await one<{ id: string }>(
+        `insert into workers (owner_id, name) values ($1, 'Second job') returning id`,
+        [stranger],
+      )
     ).id;
     const otherCode = (
       await one<{ code: string }>(
@@ -216,9 +220,9 @@ describe("worker invites", () => {
       )
     ).code;
     await asServiceRole();
-    await expect(db.query(`select accept_worker_invite($1, $2)`, [otherCode, account])).rejects.toThrow(
-      /already_worker/,
-    );
+    await expect(
+      db.query(`select accept_worker_invite($1, $2)`, [otherCode, account]),
+    ).rejects.toThrow(/already_worker/);
     await asServer();
   });
 });
@@ -227,7 +231,10 @@ describe("reward rules", () => {
   it("accepts only the known shape and keeps replaced rules inactive", async () => {
     await expect(
       setRules(owner, [
-        { name: "Hourly on a task", rule: { trigger: "task_completed", kind: "hourly", amount: 100 } },
+        {
+          name: "Hourly on a task",
+          rule: { trigger: "task_completed", kind: "hourly", amount: 100 },
+        },
       ]),
     ).rejects.toThrow(/reward_rules_shape/);
     await asServer();
@@ -247,8 +254,12 @@ describe("reward rules", () => {
     ).rejects.toThrow(/reward_rules_shape/);
     await asServer();
 
-    await setRules(owner, [{ name: "A", rule: { trigger: "meeting_booked", kind: "fixed", amount: 1 } }]);
-    await setRules(owner, [{ name: "B", rule: { trigger: "meeting_booked", kind: "fixed", amount: 2 } }]);
+    await setRules(owner, [
+      { name: "A", rule: { trigger: "meeting_booked", kind: "fixed", amount: 1 } },
+    ]);
+    await setRules(owner, [
+      { name: "B", rule: { trigger: "meeting_booked", kind: "fixed", amount: 2 } },
+    ]);
     const active = await rows<{ name: string }>(
       `select name from reward_rules where owner_id = $1 and is_active`,
       [owner],
@@ -260,7 +271,11 @@ describe("reward rules", () => {
     const worker = await hire(owner, await createAuthUser());
     await expect(
       setRules(stranger, [
-        { name: "X", workerId: worker, rule: { trigger: "meeting_booked", kind: "fixed", amount: 1 } },
+        {
+          name: "X",
+          workerId: worker,
+          rule: { trigger: "meeting_booked", kind: "fixed", amount: 1 },
+        },
       ]),
     ).rejects.toThrow(/foreign key/);
     await asServer();
@@ -290,7 +305,12 @@ describe("earnings from triggers", () => {
       { name: "Meeting", rule: { trigger: "meeting_booked", kind: "fixed", amount: 150 } },
       {
         name: "Deal",
-        rule: { trigger: "deal_won", kind: "percent", amount: 10, conditions: { minDealValue: 1000 } },
+        rule: {
+          trigger: "deal_won",
+          kind: "percent",
+          amount: 10,
+          conditions: { minDealValue: 1000 },
+        },
       },
     ]);
   });
@@ -360,9 +380,10 @@ describe("earnings from triggers", () => {
       `update work_sessions set started_at = now() - interval '90 minutes' where id = $1`,
       [session.id],
     );
-    await db.query(`update worker_tasks set updated_at = now() - interval '1 minute' where worker_id = $1`, [
-      worker,
-    ]);
+    await db.query(
+      `update worker_tasks set updated_at = now() - interval '1 minute' where worker_id = $1`,
+      [worker],
+    );
     await asUser(account);
     await db.query(`select * from pause_work_session($1)`, [worker]);
     await asServer();
@@ -465,9 +486,9 @@ describe("earnings from triggers", () => {
       [worker],
     );
     expect(changed.affectedRows ?? 0).toBe(0);
-    await expect(db.query(`select * from record_worker_payment($1, 100, now(), null)`, [worker])).rejects.toThrow(
-      /worker_not_found/,
-    );
+    await expect(
+      db.query(`select * from record_worker_payment($1, 100, now(), null)`, [worker]),
+    ).rejects.toThrow(/worker_not_found/);
     await asUser(stranger);
     expect(await earnings(worker)).toEqual([]);
     await asServer();
@@ -517,11 +538,17 @@ describe("approval and payments", () => {
       `select earned::text, pending::text, paid_out::text, owed::text from worker_balance($1)`,
       [worker],
     );
-    expect(balance).toEqual({ earned: "300.00", pending: "300.00", paid_out: "150.00", owed: "150.00" });
+    expect(balance).toEqual({
+      earned: "300.00",
+      pending: "300.00",
+      paid_out: "150.00",
+      owed: "150.00",
+    });
     expect(
-      await rows(`select amount::text, status from worker_earnings where worker_id = $1 order by worker_earnings.amount`, [
-        worker,
-      ]),
+      await rows(
+        `select amount::text, status from worker_earnings where worker_id = $1 order by worker_earnings.amount`,
+        [worker],
+      ),
     ).toEqual([
       { amount: "100.00", status: "paid" },
       { amount: "200.00", status: "approved" },
@@ -532,19 +559,23 @@ describe("approval and payments", () => {
     balance = await one<Row>(`select owed::text from worker_balance($1)`, [worker]);
     expect(balance).toEqual({ owed: "0.00" });
     expect(
-      await count(`select 1 from worker_earnings where worker_id = $1 and status = 'paid'`, [worker]),
+      await count(`select 1 from worker_earnings where worker_id = $1 and status = 'paid'`, [
+        worker,
+      ]),
     ).toBe(2);
     await expect(
-      db.query(`update worker_earnings set amount = 1 where worker_id = $1 and status = 'paid'`, [worker]),
+      db.query(`update worker_earnings set amount = 1 where worker_id = $1 and status = 'paid'`, [
+        worker,
+      ]),
     ).rejects.toThrow(/earning_paid_is_final/);
-    await expect(db.query(`select * from record_worker_payment($1, 0, now(), null)`, [worker])).rejects.toThrow(
-      /amount_invalid/,
-    );
+    await expect(
+      db.query(`select * from record_worker_payment($1, 0, now(), null)`, [worker]),
+    ).rejects.toThrow(/amount_invalid/);
 
     await asUser(stranger);
-    await expect(db.query(`select * from record_worker_payment($1, 10, now(), null)`, [worker])).rejects.toThrow(
-      /worker_not_found/,
-    );
+    await expect(
+      db.query(`select * from record_worker_payment($1, 10, now(), null)`, [worker]),
+    ).rejects.toThrow(/worker_not_found/);
     expect(await one(`select owed::text from worker_balance($1)`, [worker])).toEqual({ owed: "0" });
     await asServer();
   });
@@ -609,7 +640,9 @@ describe("work time", () => {
 describe("reward drafts", () => {
   it("belong to their owner only", async () => {
     await asUser(owner);
-    await db.query(`insert into reward_drafts (owner_id, tree) values ($1, '{"branches": []}')`, [owner]);
+    await db.query(`insert into reward_drafts (owner_id, tree) values ($1, '{"branches": []}')`, [
+      owner,
+    ]);
     await asUser(stranger);
     expect(await count(`select 1 from reward_drafts`)).toBe(0);
     await expect(

@@ -13,6 +13,7 @@ import { useCelebration } from "@/components/celebration/celebration-provider";
 import { MeetingSurveyDialog, type SurveyTarget } from "@/features/dashboard/meeting-survey-dialog";
 import { offersMeetingSurvey } from "@/features/dashboard/survey-trigger";
 import { useAwardXp } from "@/features/gamification/queries";
+import { useUrlIntent } from "@/lib/use-url-intent";
 import { cn } from "@/lib/utils";
 import { Board } from "./board";
 import {
@@ -51,6 +52,17 @@ export function PipelineView() {
   // The calendar links to a deal as /pipeline?deal=<id>; the panel opens on it.
   const requestedDeal = useSearchParams().get("deal");
   const [openId, setOpenId] = useState<string | null>(requestedDeal);
+  // The search can ask for another deal while the board is already open.
+  const [seenRequest, setSeenRequest] = useState(requestedDeal);
+  if (requestedDeal !== seenRequest) {
+    setSeenRequest(requestedDeal);
+    if (requestedDeal) setOpenId(requestedDeal);
+  }
+  useUrlIntent("new", (value) => {
+    if (value !== "deal") return;
+    if (stagesQuery.isPending) return false;
+    if (stagesQuery.data?.length) setCreating({ stageId: null });
+  });
   const [askingLost, setAskingLost] = useState<Deal | null>(null);
   const [lostStage, setLostStage] = useState<Stage | null>(null);
   const [survey, setSurvey] = useState<SurveyTarget | null>(null);
@@ -76,7 +88,11 @@ export function PipelineView() {
       { kind: "deal_won", idempotencyKey: deal.id },
       {
         onSuccess: ({ awarded, xp }) =>
-          celebrate({ title: t("celebration.title"), subtitle: deal.title, xp: awarded ? xp : undefined }),
+          celebrate({
+            title: t("celebration.title"),
+            subtitle: deal.title,
+            xp: awarded ? xp : undefined,
+          }),
       },
     );
   }

@@ -35,9 +35,11 @@ type Props = {
   /** Editing this contact; creating a new one when absent. */
   contact?: Contact;
   onCreated?: (contact: Contact) => void;
+  /** Values a new contact starts with, e.g. what was typed into the search. */
+  initial?: Partial<ContactDraft>;
 };
 
-export function ContactFormDialog({ open, onOpenChange, contact, onCreated }: Props) {
+export function ContactFormDialog({ open, onOpenChange, contact, onCreated, initial }: Props) {
   const t = useTranslations("contacts.form");
   const generation = useFreshOnOpen(open);
   return (
@@ -51,6 +53,7 @@ export function ContactFormDialog({ open, onOpenChange, contact, onCreated }: Pr
       <ContactFields
         key={generation}
         contact={contact}
+        initial={initial}
         onDone={() => onOpenChange(false)}
         onCreated={onCreated}
       />
@@ -84,10 +87,12 @@ const FIELDS: { name: keyof ContactDraft; max: number; type?: string; autoComple
 
 function ContactFields({
   contact,
+  initial,
   onDone,
   onCreated,
 }: {
   contact?: Contact;
+  initial?: Partial<ContactDraft>;
   onDone: () => void;
   onCreated?: (contact: Contact) => void;
 }) {
@@ -95,7 +100,10 @@ function ContactFields({
   const country = useUserSettings().country_code;
   const create = useCreateContact();
   const update = useUpdateContact(contact?.id ?? "");
-  const [draft, setDraft] = useState<ContactDraft>(() => draftOf(contact));
+  const [draft, setDraft] = useState<ContactDraft>(() => ({
+    ...draftOf(contact),
+    ...(contact ? {} : initial),
+  }));
   const [errors, setErrors] = useState<Partial<Record<string, ContactErrorKey>>>({});
   const [failed, setFailed] = useState(false);
 

@@ -163,12 +163,6 @@
   },
   "topBar": {
     "home": "Go to dashboard",
-    "search": {
-      "label": "Search",
-      "placeholder": "Search contacts, deals, tasks…",
-      "open": "Open search",
-      "close": "Close search"
-    },
     "streak": {
       "long": "{count, plural, one {{days} day streak} other {{days} day streak}}"
     },
@@ -186,6 +180,172 @@
       "profile": "Profile",
       "settings": "Settings",
       "signOut": "Sign out"
+    }
+  },
+  "search": {
+    "trigger": {
+      "label": "Search",
+      "placeholder": "Search contacts, deals, tasks…",
+      "open": "Open search",
+      "shortcutMac": "⌘K",
+      "shortcutOther": "Ctrl K"
+    },
+    "dialog": {
+      "title": "Search",
+      "placeholder": "Search or type a command…",
+      "close": "Close search",
+      "clear": "Clear",
+      "results": "Results",
+      "loading": "Searching…",
+      "failed": "Search failed. Check your connection and try again.",
+      "retry": "Try again",
+      "showAll": "Show all",
+      "back": "Back to all results",
+      "moreThan": "{count}+"
+    },
+    "groups": {
+      "recentItems": "Recently opened",
+      "recentSearches": "Recent searches",
+      "action": "Quick actions",
+      "section": "Sections",
+      "setting": "Settings",
+      "contact": "Contacts",
+      "deal": "Deals",
+      "milestone": "Milestones",
+      "task": "Tasks",
+      "event": "Calendar",
+      "transaction": "Transactions",
+      "invoice": "Invoices",
+      "worker": "Workers"
+    },
+    "empty": {
+      "title": "Nothing matches “{query}”",
+      "hint": "Try fewer letters, part of a name or a few digits of the phone number.",
+      "createContact": "Create contact “{query}”",
+      "start": "Type to search contacts, deals, milestones, events, finance and settings."
+    },
+    "hints": {
+      "move": "Move",
+      "open": "Open",
+      "background": "Open in background",
+      "nextGroup": "Next group",
+      "close": "Close"
+    },
+    "actions": {
+      "newContact": "New contact",
+      "newDeal": "New deal",
+      "newMilestone": "New milestone",
+      "newEvent": "New event",
+      "startTimer": "Start timer",
+      "generateContacts": "Generate contacts"
+    },
+    "keywords": {
+      "newContact": "add create person company lead client",
+      "newDeal": "add create opportunity pipeline sale",
+      "newMilestone": "add create goal plan",
+      "newEvent": "add create meeting appointment calendar call",
+      "startTimer": "cold calling prospecting stopwatch time",
+      "generateContacts": "find leads google places import"
+    },
+    "sections": {
+      "dashboard": "home overview today",
+      "milestones": "goals tasks plan",
+      "contacts": "people companies leads clients tables",
+      "pipeline": "deals sales board kanban",
+      "coldCalling": "calls prospecting timer phone",
+      "calendar": "events meetings schedule",
+      "finance": "money income expenses invoices transactions",
+      "workers": "team employees staff rewards",
+      "myTasks": "tasks to do",
+      "myRewards": "earnings payments"
+    },
+    "settingsItems": {
+      "language": {
+        "label": "Language",
+        "keywords": "settings locale english czech"
+      },
+      "country": {
+        "label": "Country",
+        "keywords": "settings region phone prefix"
+      },
+      "timeZone": {
+        "label": "Time zone",
+        "keywords": "settings timezone clock hours"
+      },
+      "currency": {
+        "label": "Currency",
+        "keywords": "settings money currency symbol"
+      },
+      "dateFormat": {
+        "label": "Date format",
+        "keywords": "settings dates"
+      },
+      "timeFormat": {
+        "label": "Time format",
+        "keywords": "settings 24-hour 12-hour clock"
+      },
+      "numberFormat": {
+        "label": "Number format",
+        "keywords": "settings decimals separators"
+      },
+      "firstDayOfWeek": {
+        "label": "First day of the week",
+        "keywords": "settings monday sunday week start"
+      },
+      "sound": {
+        "label": "Sound",
+        "keywords": "settings audio mute celebrations"
+      },
+      "animations": {
+        "label": "Animations",
+        "keywords": "settings confetti motion"
+      },
+      "integrations": {
+        "label": "Fakturoid integration",
+        "keywords": "settings integrations invoices connect"
+      },
+      "profile": {
+        "label": "Profile",
+        "keywords": "account name photo avatar industry"
+      },
+      "contactTables": {
+        "label": "Edit contact tables",
+        "keywords": "contacts tables fields questions columns"
+      }
+    },
+    "context": {
+      "settings": "Settings",
+      "account": "Account",
+      "table": "In {table}",
+      "inMilestone": "In {milestone}",
+      "due": "Due {date}",
+      "allDay": "{date}, all day",
+      "income": "Income",
+      "expense": "Expense",
+      "milestoneStatus": {
+        "active": "In progress",
+        "completed": "Completed",
+        "archived": "Archived"
+      },
+      "taskStatus": {
+        "todo": "To do",
+        "in_progress": "In progress",
+        "done": "Done"
+      },
+      "invoiceStatus": {
+        "draft": "Draft",
+        "open": "Open",
+        "sent": "Sent",
+        "overdue": "Overdue",
+        "paid": "Paid",
+        "cancelled": "Cancelled",
+        "uncollectible": "Uncollectible"
+      },
+      "workerStatus": {
+        "invited": "Invited",
+        "active": "Active",
+        "inactive": "Inactive"
+      }
     }
   },
   "jarvis": {

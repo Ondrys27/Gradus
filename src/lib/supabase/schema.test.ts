@@ -6,6 +6,7 @@
 // task locking and the idle rule of the prospecting timer.
 
 import { PGlite } from "@electric-sql/pglite";
+import { PGLITE_EXTENSIONS } from "./pglite-extensions";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
@@ -43,7 +44,7 @@ begin
 end $$;
 alter table storage.objects enable row level security;
 grant all on storage.objects, storage.buckets to authenticated;
-grant usage on schema public, auth, storage to anon, authenticated, service_role, supabase_auth_admin;
+grant usage on schema public, auth, storage, extensions to anon, authenticated, service_role, supabase_auth_admin;
 alter default privileges in schema public grant all on tables to authenticated, service_role;
 alter default privileges in schema public grant all on functions to authenticated, service_role;
 alter default privileges in schema public grant all on sequences to authenticated, service_role;
@@ -86,7 +87,7 @@ let owner: string;
 let second: string;
 
 beforeAll(async () => {
-  db = new PGlite();
+  db = new PGlite({ extensions: PGLITE_EXTENSIONS });
   await db.exec(SUPABASE_STUBS);
   for (const file of readdirSync(MIGRATIONS_DIR)
     .filter((f) => f.endsWith(".sql"))
@@ -1978,6 +1979,8 @@ describe("audit: moveContact, milestone progress and daily timer totals", () => 
     ).id;
     for (const table of [tables.no_answer, tables.unreached, tables.no_answer]) {
       await db.query(`select move_contact($1, $2)`, [contact, table]);
+      // Moves are ordered by created_at; keep two of them from sharing a microsecond.
+      await db.query(`select pg_sleep(0.002)`);
       expect(
         await count(`select 1 from contact_table_entries where contact_id = $1`, [contact]),
       ).toBe(1);

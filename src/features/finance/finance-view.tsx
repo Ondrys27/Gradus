@@ -17,8 +17,10 @@ import {
 import { MarkSeenOnVisit } from "@/features/gamification/mark-seen-on-visit";
 import { todayIsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
+import { useUrlIntent } from "@/lib/use-url-intent";
 import { periodRange } from "./finance-logic";
 import { InvoicesPanel } from "./invoices-panel";
+import { fetchTransaction } from "./queries";
 import { RecurringFormDialog } from "./recurring-form-dialog";
 import { RecurringPanel } from "./recurring-panel";
 import { Segmented } from "./segmented";
@@ -55,6 +57,22 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
   const [transaction, setTransaction] = useState<Editing<Transaction>>(undefined);
   const [payment, setPayment] = useState<Editing<RecurringPayment>>(undefined);
   const range = useMemo(() => periodRange(period, today), [period, today]);
+
+  // A link to another tab while Finance is open (e.g. from the search) switches to it.
+  const [seenTab, setSeenTab] = useState(initialTab);
+  if (initialTab !== seenTab) {
+    setSeenTab(initialTab);
+    setTab(initialTab);
+  }
+  // The search opens a found transaction for editing, whatever period it is in.
+  useUrlIntent("transaction", (id) => {
+    setTab("transactions");
+    fetchTransaction(id)
+      .then((found) => {
+        if (found) setTransaction(found);
+      })
+      .catch(() => {});
+  });
 
   const periodItems = PERIOD_KINDS.map((value) => ({ value, label: t(`period.${value}`) }));
   const tabs = FINANCE_TABS.map((value) => ({ value, label: t(`tabs.${value}`) }));

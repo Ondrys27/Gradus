@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUrlIntent } from "@/lib/use-url-intent";
 import { cn } from "@/lib/utils";
 import { MilestoneCard } from "./milestone-card";
 import { MilestoneFormDialog } from "./milestone-form-dialog";
@@ -25,6 +26,9 @@ export function MilestonesView() {
   const { data, isPending, isError, refetch } = useMilestones();
   const [filter, setFilter] = useState<Filter>("all");
   const [creating, setCreating] = useState(false);
+  useUrlIntent("new", (value) => {
+    if (value === "milestone") setCreating(true);
+  });
 
   const visible = useMemo(
     () => sortMilestones(data ?? []).filter((m) => filter === "all" || m.category === filter),

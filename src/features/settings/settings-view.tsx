@@ -34,6 +34,7 @@ import {
 import { browserTimeZone, COUNTRY_CODES, countryFromTimeZone } from "@/lib/region";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import type { UserSettingsPatch } from "@/lib/user-settings";
+import { useUrlIntent } from "@/lib/use-url-intent";
 import { cn } from "@/lib/utils";
 import { FakturoidIntegration } from "./fakturoid-integration";
 import { FormatPreview, useNow } from "./format-preview";
@@ -96,6 +97,15 @@ export function SettingsView() {
     label: weekdayName(day, uiLocale),
   }));
 
+  // The search lands on one setting: bring its control into view and focus it.
+  useUrlIntent("focus", (id) => {
+    if (!/^settings-[a-z-]+$/.test(id)) return;
+    const target = document.getElementById(id);
+    if (!target) return;
+    target.scrollIntoView({ block: "center" });
+    target.focus({ preventScroll: true });
+  });
+
   return (
     <Stagger className="flex flex-col gap-6">
       <StaggerItem>
@@ -109,9 +119,11 @@ export function SettingsView() {
       <StaggerItem>
         <Section title={t("language.title")} description={t("language.description")}>
           <div
+            id="settings-language"
+            tabIndex={-1}
             role="radiogroup"
             aria-label={t("language.title")}
-            className="grid gap-3 sm:grid-cols-2"
+            className="grid gap-3 rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:grid-cols-2"
           >
             {locales.map((code) => {
               const checked = settings.locale === code;
@@ -276,9 +288,15 @@ export function SettingsView() {
       </StaggerItem>
 
       <StaggerItem>
-        <Section title={t("integrations.title")} description={t("integrations.description")}>
-          <FakturoidIntegration />
-        </Section>
+        <div
+          id="settings-integrations"
+          tabIndex={-1}
+          className="rounded-card outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        >
+          <Section title={t("integrations.title")} description={t("integrations.description")}>
+            <FakturoidIntegration />
+          </Section>
+        </div>
       </StaggerItem>
     </Stagger>
   );

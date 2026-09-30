@@ -6,6 +6,7 @@
 // migration in PGlite with the same Supabase stubs as schema.test.ts.
 
 import { PGlite } from "@electric-sql/pglite";
+import { PGLITE_EXTENSIONS } from "./pglite-extensions";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -43,7 +44,7 @@ begin
 end $$;
 alter table storage.objects enable row level security;
 grant all on storage.objects, storage.buckets to authenticated;
-grant usage on schema public, auth, storage to anon, authenticated, service_role, supabase_auth_admin;
+grant usage on schema public, auth, storage, extensions to anon, authenticated, service_role, supabase_auth_admin;
 alter default privileges in schema public grant all on tables to authenticated, service_role;
 alter default privileges in schema public grant all on functions to authenticated, service_role;
 alter default privileges in schema public grant all on sequences to authenticated, service_role;
@@ -136,7 +137,7 @@ const income = (deal: string) =>
   );
 
 beforeAll(async () => {
-  db = new PGlite();
+  db = new PGlite({ extensions: PGLITE_EXTENSIONS });
   await db.exec(SUPABASE_STUBS);
   for (const file of readdirSync(MIGRATIONS_DIR)
     .filter((f) => f.endsWith(".sql"))

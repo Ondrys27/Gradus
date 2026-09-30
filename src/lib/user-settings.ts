@@ -11,7 +11,11 @@ import {
 } from "./format";
 import { isValidTimeZone } from "./region";
 
-export type UserSettings = Database["public"]["Tables"]["user_settings"]["Row"];
+/** The settings the app loads at start; the search history is read on its own (see features/search). */
+export type UserSettings = Omit<
+  Database["public"]["Tables"]["user_settings"]["Row"],
+  "recent_searches" | "recent_search_items"
+>;
 export type UserSettingsPatch = Partial<
   Pick<
     UserSettings,

@@ -163,12 +163,6 @@
   },
   "topBar": {
     "home": "Přejít na přehled",
-    "search": {
-      "label": "Hledat",
-      "placeholder": "Hledat kontakty, obchody, úkoly…",
-      "open": "Otevřít hledání",
-      "close": "Zavřít hledání"
-    },
     "streak": {
       "long": "{count, plural, one {Série {days} den} few {Série {days} dny} other {Série {days} dní}}"
     },
@@ -186,6 +180,172 @@
       "profile": "Profil",
       "settings": "Nastavení",
       "signOut": "Odhlásit se"
+    }
+  },
+  "search": {
+    "trigger": {
+      "label": "Hledat",
+      "placeholder": "Hledat kontakty, obchody, úkoly…",
+      "open": "Otevřít hledání",
+      "shortcutMac": "⌘K",
+      "shortcutOther": "Ctrl K"
+    },
+    "dialog": {
+      "title": "Hledání",
+      "placeholder": "Hledejte nebo napište příkaz…",
+      "close": "Zavřít hledání",
+      "clear": "Vymazat",
+      "results": "Výsledky",
+      "loading": "Hledám…",
+      "failed": "Hledání se nepovedlo. Zkontrolujte připojení a zkuste to znovu.",
+      "retry": "Zkusit znovu",
+      "showAll": "Zobrazit všechny",
+      "back": "Zpět na všechny výsledky",
+      "moreThan": "{count}+"
+    },
+    "groups": {
+      "recentItems": "Naposledy otevřené",
+      "recentSearches": "Nedávná hledání",
+      "action": "Rychlé akce",
+      "section": "Sekce",
+      "setting": "Nastavení",
+      "contact": "Kontakty",
+      "deal": "Obchody",
+      "milestone": "Milníky",
+      "task": "Úkoly",
+      "event": "Kalendář",
+      "transaction": "Transakce",
+      "invoice": "Faktury",
+      "worker": "Pracovníci"
+    },
+    "empty": {
+      "title": "Pro „{query}“ nic nemáme",
+      "hint": "Zkuste méně písmen, část jména nebo pár číslic z telefonu.",
+      "createContact": "Vytvořit kontakt „{query}“",
+      "start": "Pište a hledejte v kontaktech, obchodech, milnících, událostech, financích i nastavení."
+    },
+    "hints": {
+      "move": "Posun",
+      "open": "Otevřít",
+      "background": "Otevřít na pozadí",
+      "nextGroup": "Další skupina",
+      "close": "Zavřít"
+    },
+    "actions": {
+      "newContact": "Nový kontakt",
+      "newDeal": "Nový obchod",
+      "newMilestone": "Nový milník",
+      "newEvent": "Nová událost",
+      "startTimer": "Spustit časovač",
+      "generateContacts": "Generovat kontakty"
+    },
+    "keywords": {
+      "newContact": "přidat vytvořit založit osoba firma klient",
+      "newDeal": "přidat vytvořit založit příležitost pipeline prodej zakázka",
+      "newMilestone": "přidat vytvořit založit cíl plán",
+      "newEvent": "přidat vytvořit naplánovat schůzka termín kalendář hovor",
+      "startTimer": "cold calling volání stopky čas prospecting",
+      "generateContacts": "najít vyhledat google firmy import"
+    },
+    "sections": {
+      "dashboard": "domů přehled dnes",
+      "milestones": "cíle úkoly plán",
+      "contacts": "lidé firmy klienti tabulky",
+      "pipeline": "obchody prodej nástěnka zakázky",
+      "coldCalling": "volání hovory telefon časovač",
+      "calendar": "události schůzky termíny",
+      "finance": "peníze příjmy výdaje faktury transakce",
+      "workers": "tým zaměstnanci brigádníci odměny",
+      "myTasks": "úkoly",
+      "myRewards": "výdělky platby odměny"
+    },
+    "settingsItems": {
+      "language": {
+        "label": "Jazyk",
+        "keywords": "nastavení jazyk čeština angličtina"
+      },
+      "country": {
+        "label": "Země",
+        "keywords": "nastavení region stát předvolba"
+      },
+      "timeZone": {
+        "label": "Časové pásmo",
+        "keywords": "nastavení pásmo čas hodiny"
+      },
+      "currency": {
+        "label": "Měna",
+        "keywords": "nastavení peníze koruny měny"
+      },
+      "dateFormat": {
+        "label": "Formát data",
+        "keywords": "nastavení datum"
+      },
+      "timeFormat": {
+        "label": "Formát času",
+        "keywords": "nastavení čas 24hodinový 12hodinový"
+      },
+      "numberFormat": {
+        "label": "Formát čísel",
+        "keywords": "nastavení desetinná čárka oddělovač"
+      },
+      "firstDayOfWeek": {
+        "label": "První den týdne",
+        "keywords": "nastavení pondělí neděle týden"
+      },
+      "sound": {
+        "label": "Zvuk",
+        "keywords": "nastavení zvuky ztlumit oslavy"
+      },
+      "animations": {
+        "label": "Animace",
+        "keywords": "nastavení konfety pohyb"
+      },
+      "integrations": {
+        "label": "Propojení s Fakturoidem",
+        "keywords": "nastavení integrace faktury připojit"
+      },
+      "profile": {
+        "label": "Profil",
+        "keywords": "účet jméno fotka obor"
+      },
+      "contactTables": {
+        "label": "Upravit tabulky kontaktů",
+        "keywords": "kontakty tabulky pole otázky sloupce"
+      }
+    },
+    "context": {
+      "settings": "Nastavení",
+      "account": "Účet",
+      "table": "V tabulce {table}",
+      "inMilestone": "Milník {milestone}",
+      "due": "Termín {date}",
+      "allDay": "{date}, celý den",
+      "income": "Příjem",
+      "expense": "Výdaj",
+      "milestoneStatus": {
+        "active": "Rozpracovaný",
+        "completed": "Dokončený",
+        "archived": "Archivovaný"
+      },
+      "taskStatus": {
+        "todo": "K udělání",
+        "in_progress": "Rozpracovaný",
+        "done": "Hotový"
+      },
+      "invoiceStatus": {
+        "draft": "Koncept",
+        "open": "Otevřená",
+        "sent": "Odeslaná",
+        "overdue": "Po splatnosti",
+        "paid": "Zaplacená",
+        "cancelled": "Stornovaná",
+        "uncollectible": "Nevymahatelná"
+      },
+      "workerStatus": {
+        "invited": "Pozvaný",
+        "active": "Aktivní",
+        "inactive": "Neaktivní"
+      }
     }
   },
   "jarvis": {

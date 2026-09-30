@@ -11,9 +11,11 @@ import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { sumByCurrency } from "@/features/pipeline/board-logic";
+import { contactDraftFromText } from "@/features/search/search-logic";
 import { formatCurrency } from "@/lib/format";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { useFormatSettings } from "@/lib/use-format-settings";
+import { useUrlIntent } from "@/lib/use-url-intent";
 import { ContactFormDialog } from "./contact-form-dialog";
 import { ContactList } from "./contact-list";
 import { GenerateContactsDialog } from "./generate-contacts-dialog";
@@ -25,6 +27,7 @@ import {
   type WonDealsByContact,
 } from "./queries";
 import { TableSwitcher } from "./table-switcher";
+import type { ContactDraft } from "./schemas";
 import type { ContactListItem } from "./types";
 
 /** The selected table lives in the address, so Back from a contact returns to it. */
@@ -38,7 +41,22 @@ export function ContactsView() {
   const searchParams = useSearchParams();
   const [term, setTerm] = useState("");
   const [creating, setCreating] = useState(false);
+  const [prefill, setPrefill] = useState<Partial<ContactDraft> | undefined>(undefined);
   const [generating, setGenerating] = useState(false);
+
+  // The search opens a new contact (with what was typed) or contact generation here.
+  useUrlIntent(
+    "new",
+    (value, params) => {
+      if (value === "contact") {
+        setPrefill(contactDraftFromText(params.get("name") ?? ""));
+        setCreating(true);
+      } else if (value === "generate") {
+        setGenerating(true);
+      }
+    },
+    ["name"],
+  );
   const debounced = useDebouncedValue(term.trim(), 250);
 
   const tablesQuery = useContactTables();
@@ -89,7 +107,12 @@ export function ContactsView() {
               <SparklesIcon aria-hidden data-icon="inline-start" />
               {t("actions.generate")}
             </Button>
-            <Button onClick={() => setCreating(true)}>
+            <Button
+              onClick={() => {
+                setPrefill(undefined);
+                setCreating(true);
+              }}
+            >
               <PlusIcon aria-hidden data-icon="inline-start" />
               {t("actions.newContact")}
             </Button>
@@ -163,7 +186,12 @@ export function ContactsView() {
             title={t("empty.title")}
             description={t("empty.description")}
             action={
-              <Button onClick={() => setCreating(true)}>
+              <Button
+                onClick={() => {
+                  setPrefill(undefined);
+                  setCreating(true);
+                }}
+              >
                 <PlusIcon aria-hidden data-icon="inline-start" />
                 {t("actions.newContact")}
               </Button>
@@ -207,6 +235,7 @@ export function ContactsView() {
       <ContactFormDialog
         open={creating}
         onOpenChange={setCreating}
+        initial={prefill}
         onCreated={(contact) => router.push(`/contacts/${contact.id}`)}
       />
     </div>

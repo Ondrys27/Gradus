@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useProspectingRecord } from "@/features/gamification/queries";
 import { formatStopwatch, formatTime, todayIsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
+import { useUrlIntent } from "@/lib/use-url-intent";
 import { cn } from "@/lib/utils";
 import { pastDeadline, shownSeconds } from "./timer-logic";
 import { useTimerAction, useTimerReading } from "./timer-queries";
@@ -62,6 +63,13 @@ export function TimerCard() {
   }, [needsRead, data, refetch]);
 
   const seconds = data ? (day === readingDay ? shownSeconds(data, now) : 0) : 0;
+
+  // "Start timer" from the search: starts once the current state is known.
+  useUrlIntent("timer", (value) => {
+    if (value !== "start") return;
+    if (!data) return false;
+    if (!running && !action.isPending) run("start");
+  });
 
   function run(kind: "start" | "pause") {
     action.mutate(kind, {

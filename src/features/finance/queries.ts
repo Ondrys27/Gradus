@@ -124,6 +124,17 @@ function useFinanceMutation<Variables, Result = void>(
   });
 }
 
+/** One transaction by id, e.g. opened from the search outside the shown period. */
+export async function fetchTransaction(id: string): Promise<Transaction | null> {
+  const { data, error } = await createClient()
+    .from("transactions")
+    .select(TRANSACTION_COLUMNS)
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
 export function useSaveTransaction() {
   return useFinanceMutation(
     async ({ id, input }: { id?: string; input: TransactionInput }, userId) => {
