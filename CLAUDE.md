@@ -109,9 +109,13 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - Pracovník nikdy nevidí finance bez výslovného práva, nastavení a pracovníky nikdy. Ověření přes RLS s dvěma účty: `bun run verify:workspace`.
 
 ### Hra
-- Dva režimy: game a tool. Tool nic nezamyká a nezobrazuje XP.
-- XP jen přes award_xp na serveru. Milník a odznak jen poprvé, opakovatelné zdroje mají denní stropy.
-- Odemykání sekcí v game režimu jen přes milníky cesty a úrovně. Úroveň se počítá z celkového XP, neukládá se.
+- Dva režimy: `profiles.mode` game a tool. Volí se v onboardingu, mění v Nastavení → Hra. Tool nic nezamyká a nezobrazuje XP, oslavy jen tiché; XP a postup zůstávají v DB a při návratu do game se obnoví. Přepnutí do game: sekce, které účet už používá (má v nich řádky), zůstanou odemčené (`grant_used_sections`).
+- **Cesty podle oboru** (`paths`, `path_milestones`, `path_tasks`): při výběru se šablony zkopírují do `milestones`/`tasks` uživatele s `template_id`. Vlastní milníky bez šablony nic neodemykají, jen dávají XP. Změna cesty v nastavení: nedotčené milníky staré cesty (nehotové, bez hotového úkolu) se smažou, hotové a rozjeté zůstanou; kroky, co uživatel už má (stejný klíč, z libovolné cesty), se nekopírují znovu.
+- **XP jen přes `award_xp(reason, ref_id)` na serveru**, z klienta do `xp_events` nejde zapsat. Hodnoty: úkol 10, podúkol 5, milník ze šablony 100–400, vlastní milník 100 (jen poprvé), vyhraný obchod 150 + 1 XP/1000 Kč (strop bonusu 150), domluvená schůzka 40, přesun kontaktu 5, vygenerovaný kontakt 1, 30 minut volání v jednom dni 30 (jednou denně), událost v kalendáři 5, transakce 5, denní přihlášení 10 × násobek série (max ×3). Denní stropy (`DAILY_CAPS` v `src/features/game/rules.ts`): úkoly 200, vlastní milníky 300, obchody 900, schůzky 200, přesuny kontaktů 50, vygenerované kontakty 30, kalendářní události 25, transakce 25.
+- **Úrovně:** 30 úrovní, XP na úroveň n = `round(120 · n^1.6)`, počítá se z celkového XP a nikdy se neukládá. Tituly po pěticích (Učeň, Živnostník, Obchodník, Podnikatel, Stratég, Legenda). `level_rewards`: témata na 3/7/12/18/25, Pracovníci na 10, Jarvisovy dovednosti na 5/15/20.
+- **Odznaky** (`achievements`, `user_achievements`) se vyhodnocují serverově po každé relevantní akci (`evaluate_achievements`), jen poprvé.
+- **Série:** den se počítá, když uživatel udělá aspoň jednu akci dávající XP (denní přihlášení se nepočítá). Jedna záchrana za týden (pondělí–neděle) — vynechaný den sérii nepřeruší, záchrana se spotřebuje jen když opravdu přemostí k dřívějšímu aktivnímu dni.
+- Odemykání sekcí v game režimu jen přes milníky cesty (`unlock_key`) a úrovně, nikdy přes počty akcí. Zamčená sekce v menu ukazuje, který milník ji odemkne.
 - Jarvis se sám ozývá nejvýš jednou za relaci a ne dřív než po 4 hodinách, nikdy při běžícím časovači nebo otevřeném dialogu. Nic nevytváří bez potvrzení.
 
 ---
