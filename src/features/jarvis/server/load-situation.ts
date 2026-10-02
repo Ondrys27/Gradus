@@ -32,7 +32,9 @@ function list<T>(result: { data: T[] | null; error: unknown }): T[] {
 
 /**
  * Reads the user's situation with their own client, so RLS keeps every query
- * to their rows. Days and the month are the user's, in their time zone.
+ * to what they may see, filtered to their workspace (a worker's is the
+ * owner's, within the sections they were given). Days and the month are the
+ * user's, in their time zone.
  */
 export async function loadSituation(
   supabase: Client,
@@ -43,18 +45,23 @@ export async function loadSituation(
   const { timeZone } = settings;
   const day = dayRangeToInstants(today, today, timeZone);
   const month = periodRange("thisMonth", today);
+  const { data: workspaceId, error: workspaceError } = await supabase.rpc("current_workspace_id");
+  if (workspaceError) throw workspaceError;
+  const ws = workspaceId ?? "";
 
   const [milestones, overdue, stages, openDeals, followUpTable, events, prospecting, finance] =
     await Promise.all([
       supabase
         .from("milestones")
         .select("id, title, target_date", { count: "exact" })
+        .eq("user_id", ws)
         .eq("status", "active")
         .order("position")
         .limit(MILESTONE_LIMIT),
       supabase
         .from("tasks")
         .select("title, due_date, milestones!inner(status)", { count: "exact" })
+        .eq("user_id", ws)
         .neq("status", "done")
         .lte("due_date", today)
         .eq("milestones.status", "active")
@@ -63,22 +70,26 @@ export async function loadSituation(
       supabase
         .from("pipeline_stages")
         .select("id, name, is_won, is_lost")
+        .eq("user_id", ws)
         .order("position")
         .limit(STAGE_LIMIT),
       supabase
         .from("deals")
         .select("stage_id, value, entered_stage_at")
+        .eq("user_id", ws)
         .is("won_at", null)
         .is("lost_at", null)
         .limit(OPEN_DEAL_LIMIT),
       supabase
         .from("contact_tables")
         .select("id, contact_table_fields(id, system_key)")
+        .eq("user_id", ws)
         .eq("system_key", FOLLOW_UP_TABLE)
         .maybeSingle(),
       supabase
         .from("calendar_events")
         .select("title, starts_at, all_day")
+        .eq("user_id", ws)
         .gte("starts_at", day.from)
         .lt("starts_at", day.to)
         .order("starts_at")
@@ -94,6 +105,7 @@ export async function loadSituation(
       await supabase
         .from("milestone_task_counts")
         .select("milestone_id, done, total")
+        .eq("user_id", ws)
         .in(
           "milestone_id",
           milestoneRows.map((m) => m.id),
@@ -127,6 +139,7 @@ export async function loadSituation(
     const { data, error, count } = await supabase
       .from("contact_table_entries")
       .select("answers, contact:contacts(company_name, first_name, last_name)", { count: "exact" })
+      .eq("user_id", ws)
       .eq("table_id", table.id)
       .lt(dueAt, day.to)
       .order(dueAt)

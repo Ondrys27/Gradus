@@ -552,8 +552,8 @@ describe("prospecting timer", () => {
       `update contact_table_moves set created_at = now() - interval '50 minutes' where user_id = '${owner}'`,
     );
     await db.exec(
-      `insert into contact_table_moves (user_id, contact_id, from_table_id, to_table_id, created_at)
-       values ('${owner}', '${contact}', '${unreached}', '${meeting}', now() - interval '20 minutes')`,
+      `insert into contact_table_moves (user_id, actor_id, contact_id, from_table_id, to_table_id, created_at)
+       values ('${owner}', '${owner}', '${contact}', '${unreached}', '${meeting}', now() - interval '20 minutes')`,
     );
 
     await asUser(owner);
@@ -2223,14 +2223,14 @@ describe("audit: moveContact, milestone progress and daily timer totals", () => 
     // was 10 minutes before midnight, so the segment really ended 5 minutes after it.
     const segment = (
       await one<{ id: string }>(
-        `insert into prospecting_segments (user_id, started_at)
-         values ($1, $2::timestamptz - interval '20 minutes') returning id`,
+        `insert into prospecting_segments (user_id, actor_id, started_at)
+         values ($1, $1, $2::timestamptz - interval '20 minutes') returning id`,
         [user, midnight],
       )
     ).id;
     await db.query(
-      `insert into contact_table_moves (user_id, contact_id, from_table_id, to_table_id, created_at)
-       values ($1, $2, $3, $4, $5::timestamptz - interval '10 minutes')`,
+      `insert into contact_table_moves (user_id, actor_id, contact_id, from_table_id, to_table_id, created_at)
+       values ($1, $1, $2, $3, $4, $5::timestamptz - interval '10 minutes')`,
       [user, contact, tables.unreached, tables.no_answer, midnight],
     );
 

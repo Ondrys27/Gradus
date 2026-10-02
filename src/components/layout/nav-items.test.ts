@@ -37,15 +37,21 @@ describe("worker navigation", () => {
     },
   };
 
-  it("gives a worker their four sections plus the ones they may see", () => {
+  it("gives a worker their own three sections plus the ones they may see", () => {
     expect(navItemsFor(worker).map((item) => item.key)).toEqual([
       "dashboard",
       "myTasks",
       "myRewards",
-      "calendar",
       "pipeline",
     ]);
-    expect(bottomNavKeysFor(worker)).toEqual(["dashboard", "myTasks", "myRewards", "calendar"]);
+    expect(bottomNavKeysFor(worker)).toEqual(["dashboard", "myTasks", "myRewards"]);
+  });
+
+  it("opens the calendar only with the right to see it", () => {
+    expect(isPathAllowed("/calendar", worker)).toBe(false);
+    const withCalendar = { permissions: { calendar: { view: true, edit: false } } };
+    expect(navItemsFor(withCalendar).map((item) => item.key)).toContain("calendar");
+    expect(isPathAllowed("/calendar", withCalendar)).toBe(true);
   });
 
   it("keeps the owner's sidebar as it was", () => {

@@ -16,6 +16,7 @@ import { formatCurrency } from "@/lib/format";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { useUrlIntent } from "@/lib/use-url-intent";
+import { useCan } from "@/features/account/workspace-queries";
 import { ContactFormDialog } from "./contact-form-dialog";
 import { ContactList } from "./contact-list";
 import { GenerateContactsDialog } from "./generate-contacts-dialog";
@@ -43,11 +44,14 @@ export function ContactsView() {
   const [creating, setCreating] = useState(false);
   const [prefill, setPrefill] = useState<Partial<ContactDraft> | undefined>(undefined);
   const [generating, setGenerating] = useState(false);
+  // Without the right to edit, adding and changing is hidden; RLS refuses it anyway.
+  const canEdit = useCan("contacts", "edit");
 
   // The search opens a new contact (with what was typed) or contact generation here.
   useUrlIntent(
     "new",
     (value, params) => {
+      if (!canEdit) return;
       if (value === "contact") {
         setPrefill(contactDraftFromText(params.get("name") ?? ""));
         setCreating(true);
@@ -98,25 +102,27 @@ export function ContactsView() {
         title={tNav("contacts")}
         description={t("description")}
         actions={
-          <>
-            <Link href="/contacts/tables" className={buttonVariants({ variant: "outline" })}>
-              <PencilIcon aria-hidden data-icon="inline-start" />
-              {t("actions.editTables")}
-            </Link>
-            <Button variant="outline" onClick={() => setGenerating(true)}>
-              <SparklesIcon aria-hidden data-icon="inline-start" />
-              {t("actions.generate")}
-            </Button>
-            <Button
-              onClick={() => {
-                setPrefill(undefined);
-                setCreating(true);
-              }}
-            >
-              <PlusIcon aria-hidden data-icon="inline-start" />
-              {t("actions.newContact")}
-            </Button>
-          </>
+          canEdit && (
+            <>
+              <Link href="/contacts/tables" className={buttonVariants({ variant: "outline" })}>
+                <PencilIcon aria-hidden data-icon="inline-start" />
+                {t("actions.editTables")}
+              </Link>
+              <Button variant="outline" onClick={() => setGenerating(true)}>
+                <SparklesIcon aria-hidden data-icon="inline-start" />
+                {t("actions.generate")}
+              </Button>
+              <Button
+                onClick={() => {
+                  setPrefill(undefined);
+                  setCreating(true);
+                }}
+              >
+                <PlusIcon aria-hidden data-icon="inline-start" />
+                {t("actions.newContact")}
+              </Button>
+            </>
+          )
         }
       />
 
@@ -186,15 +192,17 @@ export function ContactsView() {
             title={t("empty.title")}
             description={t("empty.description")}
             action={
-              <Button
-                onClick={() => {
-                  setPrefill(undefined);
-                  setCreating(true);
-                }}
-              >
-                <PlusIcon aria-hidden data-icon="inline-start" />
-                {t("actions.newContact")}
-              </Button>
+              canEdit && (
+                <Button
+                  onClick={() => {
+                    setPrefill(undefined);
+                    setCreating(true);
+                  }}
+                >
+                  <PlusIcon aria-hidden data-icon="inline-start" />
+                  {t("actions.newContact")}
+                </Button>
+              )
             }
           />
         )

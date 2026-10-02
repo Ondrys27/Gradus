@@ -16,6 +16,7 @@ import { toFormatSettings } from "@/lib/user-settings";
 import { clearClientState } from "./client-state";
 import { accountKeys, SessionContext, useUserSettings } from "./queries";
 import type { AccountSnapshot } from "./types";
+import { WorkspaceSync } from "./workspace-queries";
 
 /**
  * Holds the account for the whole app. The server verified the session once
@@ -64,6 +65,7 @@ export function SessionProvider({
 
   return (
     <SessionContext.Provider value={session}>
+      <WorkspaceSync />
       <SettingsBridge>{children}</SettingsBridge>
     </SessionContext.Provider>
   );

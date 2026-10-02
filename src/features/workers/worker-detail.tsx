@@ -16,6 +16,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormAlert } from "@/components/ui/form-alert";
+import { GlowCard } from "@/components/ui/glow-card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Stagger, StaggerItem } from "@/components/ui/stagger";
@@ -29,8 +30,10 @@ import { EarningsPanel } from "./earnings-panel";
 import { InviteCard } from "./invite-card";
 import { monthStartOf, permissionsFromRows } from "./logic";
 import { PaymentDialog, PaymentsPanel } from "./payments";
+import { PermissionsEditor } from "./permissions-editor";
 import {
   useRenewInvite,
+  useSaveWorkerPermissions,
   useWorker,
   useWorkerBalance,
   useWorkerInvite,
@@ -56,7 +59,6 @@ export function WorkerDetail({ workerId }: { workerId: string }) {
   const worker = useWorker(workerId);
   const balance = useWorkerBalance(workerId);
   const stats = useWorkerMonthStats(monthStartOf(todayIsoDate(settings)));
-  const permissions = useWorkerPermissions(workerId);
   const invited = worker.data?.status === "invited";
   const invite = useWorkerInvite(workerId, invited);
   const renew = useRenewInvite(workerId);
@@ -97,7 +99,10 @@ export function WorkerDetail({ workerId }: { workerId: string }) {
     return (
       <div className="flex flex-col gap-6">
         {back}
-        <EmptyState title={t("detail.notFoundTitle")} description={t("detail.notFoundDescription")} />
+        <EmptyState
+          title={t("detail.notFoundTitle")}
+          description={t("detail.notFoundDescription")}
+        />
       </div>
     );
   }
@@ -124,7 +129,7 @@ export function WorkerDetail({ workerId }: { workerId: string }) {
           }
           actions={
             <>
-              <Button variant="outline" onClick={() => setEditing(true)} disabled={!permissions.data}>
+              <Button variant="outline" onClick={() => setEditing(true)}>
                 <PencilIcon aria-hidden data-icon="inline-start" />
                 {t("detail.edit")}
               </Button>
@@ -186,6 +191,10 @@ export function WorkerDetail({ workerId }: { workerId: string }) {
         )}
       </StaggerItem>
 
+      <StaggerItem>
+        <PermissionsCard workerId={workerId} />
+      </StaggerItem>
+
       <StaggerItem className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Segmented
@@ -216,12 +225,7 @@ export function WorkerDetail({ workerId }: { workerId: string }) {
         </div>
       </StaggerItem>
 
-      <WorkerFormDialog
-        open={editing}
-        onOpenChange={setEditing}
-        worker={data}
-        permissions={permissions.data ? permissionsFromRows(permissions.data) : undefined}
-      />
+      <WorkerFormDialog open={editing} onOpenChange={setEditing} worker={data} />
       <PaymentDialog open={paying} onOpenChange={setPaying} workerId={workerId} owed={owed} />
       <WorkerTaskDialog
         open={taskDialog.open}
@@ -230,6 +234,33 @@ export function WorkerDetail({ workerId }: { workerId: string }) {
         task={taskDialog.task}
       />
     </Stagger>
+  );
+}
+
+/**
+ * The rights matrix of one worker. Every switch saves at once; the worker's
+ * app follows without signing out and the database enforces it immediately.
+ */
+function PermissionsCard({ workerId }: { workerId: string }) {
+  const t = useTranslations("workers.permissions");
+  const permissions = useWorkerPermissions(workerId);
+  const save = useSaveWorkerPermissions(workerId);
+
+  return (
+    <GlowCard interactive={false} className="flex flex-col gap-3">
+      {permissions.isError ? (
+        <FormAlert>{t("loadFailed")}</FormAlert>
+      ) : !permissions.data ? (
+        <Skeleton className="h-72 rounded-xl" />
+      ) : (
+        <PermissionsEditor
+          value={permissionsFromRows(permissions.data)}
+          onChange={(draft) => save.mutate(draft)}
+          hint={t("liveHint")}
+        />
+      )}
+      {save.isError && <FormAlert>{t("saveFailed")}</FormAlert>}
+    </GlowCard>
   );
 }
 

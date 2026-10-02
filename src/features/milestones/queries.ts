@@ -8,6 +8,7 @@ import {
   type QueryClient,
 } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
+import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { JarvisJobError, postJarvisJob } from "@/features/jarvis/queries";
 import { createClient } from "@/lib/supabase/client";
 import type { MilestoneInput, TaskInput } from "./schemas";
@@ -43,16 +44,21 @@ export const milestoneKeys = {
   taskMutation: (id: string) => ["milestones", "task-mutation", id] as const,
 };
 
-async function fetchMilestoneList(): Promise<MilestoneWithCounts[]> {
+async function fetchMilestoneList(workspaceId: string): Promise<MilestoneWithCounts[]> {
   const supabase = createClient();
   const [milestones, counts] = await Promise.all([
     supabase
       .from("milestones")
       .select(MILESTONE_COLUMNS)
+      .eq("user_id", workspaceId)
       .in("status", ["active", "completed"])
       .order("position")
       .limit(MILESTONE_LIMIT),
-    supabase.from("milestone_task_counts").select("milestone_id, total, done").limit(1000),
+    supabase
+      .from("milestone_task_counts")
+      .select("milestone_id, total, done")
+      .eq("user_id", workspaceId)
+      .limit(1000),
   ]);
   if (milestones.error) throw milestones.error;
   if (counts.error) throw counts.error;
@@ -66,18 +72,24 @@ async function fetchMilestoneList(): Promise<MilestoneWithCounts[]> {
 
 export function useMilestones() {
   const { user } = useSession();
-  return useQuery({ queryKey: milestoneKeys.list(user.id), queryFn: fetchMilestoneList });
+  const workspaceId = useWorkspaceId();
+  return useQuery({
+    queryKey: milestoneKeys.list(user.id),
+    queryFn: () => fetchMilestoneList(workspaceId),
+  });
 }
 
 /** `null` when the milestone does not exist or is not the user's. */
 export function useMilestone(id: string) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useQuery({
     queryKey: milestoneKeys.detail(user.id, id),
     queryFn: async (): Promise<Milestone | null> => {
       const { data, error } = await createClient()
         .from("milestones")
         .select(MILESTONE_COLUMNS)
+        .eq("user_id", workspaceId)
         .eq("id", id)
         .maybeSingle();
       // A malformed id (22P02) is just a milestone that does not exist.
@@ -89,12 +101,14 @@ export function useMilestone(id: string) {
 
 export function useTasks(milestoneId: string) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useQuery({
     queryKey: milestoneKeys.tasks(user.id, milestoneId),
     queryFn: async (): Promise<Task[]> => {
       const { data, error } = await createClient()
         .from("tasks")
         .select(TASK_COLUMNS)
+        .eq("user_id", workspaceId)
         .eq("milestone_id", milestoneId)
         .order("position")
         .order("created_at")
@@ -165,6 +179,7 @@ export function useMilestoneReviewPending(id: string) {
 
 export function useCreateMilestone() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   const review = useReviewMilestone();
   return useMutation({
@@ -173,7 +188,7 @@ export function useCreateMilestone() {
       const position = list?.length ? Math.max(...list.map((m) => m.position)) + 1 : 0;
       const { data, error } = await createClient()
         .from("milestones")
-        .insert({ ...toMilestoneRow(input), user_id: user.id, position })
+        .insert({ ...toMilestoneRow(input), user_id: workspaceId, position })
         .select(MILESTONE_COLUMNS)
         .single();
       if (error) throw error;
@@ -318,6 +333,7 @@ function useTaskMutation<V, R = unknown>(
 
 export function useCreateTask(milestoneId: string) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   return useTaskMutation<{ parentId: string | null; input: TaskInput }, Task>(milestoneId, {
     mutationFn: async ({ parentId, input }) => {
@@ -327,7 +343,7 @@ export function useCreateTask(milestoneId: string) {
         .from("tasks")
         .insert({
           ...toTaskRow(input),
-          user_id: user.id,
+          user_id: workspaceId,
           milestone_id: milestoneId,
           parent_task_id: parentId,
           position: nextPosition(tasks, parentId),

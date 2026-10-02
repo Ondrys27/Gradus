@@ -9,14 +9,18 @@ type Client = SupabaseClient<Database>;
 /** A month of usage events is a few hundred rows; this only bounds the query. */
 const EVENT_LIMIT = 5000;
 
-/** Daily and monthly limits of the user's plan (the default plan without a subscription). */
-async function loadLimits(supabase: Client, userId: string) {
-  const { data: subscription } = await supabase
+/**
+ * Daily and monthly limits of the workspace owner's plan (the default plan
+ * without a subscription). Read with the admin client: a worker cannot see the
+ * owner's subscription, and the id comes from the database, not the request.
+ */
+async function loadLimits(admin: Client, workspaceId: string) {
+  const { data: subscription } = await admin
     .from("subscriptions")
     .select("plan_key")
-    .eq("user_id", userId)
+    .eq("user_id", workspaceId)
     .maybeSingle();
-  const query = supabase.from("plans").select("daily_generation_limit, monthly_generation_limit");
+  const query = admin.from("plans").select("daily_generation_limit, monthly_generation_limit");
   const { data: plan, error } = await (
     subscription ? query.eq("key", subscription.plan_key) : query.eq("is_default", true)
   ).maybeSingle();
@@ -28,14 +32,13 @@ async function loadLimits(supabase: Client, userId: string) {
 }
 
 /**
- * Contacts generated today and this month, days and months counted in the
- * user's zone. usage_events is server-only, so the admin client reads it,
- * filtered by the user id from the session.
+ * Contacts generated in the workspace today and this month, days and months
+ * counted in the user's zone. usage_events is server-only, so the admin client
+ * reads it, filtered by the workspace id the database gave for the session.
  */
 export async function loadGenerationUsage(
-  supabase: Client,
   admin: Client,
-  userId: string,
+  workspaceId: string,
   settings: FormatSettings,
   now: Date = new Date(),
 ): Promise<GenerationUsage> {
@@ -44,11 +47,11 @@ export async function loadGenerationUsage(
   const monthStart = zonedWallClockToInstant(`${today.slice(0, 8)}01`, "00:00", settings.timeZone);
 
   const [limits, events] = await Promise.all([
-    loadLimits(supabase, userId),
+    loadLimits(admin, workspaceId),
     admin
       .from("usage_events")
       .select("quantity, created_at")
-      .eq("user_id", userId)
+      .eq("user_id", workspaceId)
       .eq("event_type", USAGE_EVENT)
       .gte("created_at", monthStart.toISOString())
       .limit(EVENT_LIMIT),
@@ -70,11 +73,11 @@ export async function loadGenerationUsage(
 /** Every call to Google is logged, failures too, with the HTTP status and Google's message. */
 export async function logGenerationCall(
   admin: Client,
-  userId: string,
+  workspaceId: string,
   entry: { success: boolean; quantity: number; message?: string | null; metadata: Json },
 ) {
   const { error } = await admin.from("usage_events").insert({
-    user_id: userId,
+    user_id: workspaceId,
     event_type: USAGE_EVENT,
     success: entry.success,
     quantity: entry.quantity,

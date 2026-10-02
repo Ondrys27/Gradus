@@ -16,6 +16,7 @@ import { SidePanel } from "@/components/ui/side-panel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CurrentTableCard } from "@/features/contacts/contact-detail";
 import { useUserSettings } from "@/features/account/queries";
+import { useCan } from "@/features/account/workspace-queries";
 import { MoveContactDialog, type MoveResult } from "@/features/contacts/move-contact-dialog";
 import { useContact, useContactEntry } from "@/features/contacts/queries";
 import { websiteHref } from "@/features/contacts/schemas";
@@ -66,6 +67,9 @@ function PanelBody({
   const contact = useContact(contactId);
   const entry = useContactEntry(contactId).data;
   const [moving, setMoving] = useState(false);
+  const canMove = useCan("cold_calling", "edit");
+  // The full detail lives under Contacts, which is a section of its own.
+  const canOpenDetail = useCan("contacts", "view");
 
   if (contact.isPending) {
     return (
@@ -102,16 +106,18 @@ function PanelBody({
         ) : (
           <p className="flex-1 text-sm text-ink-muted">{t("noPhone")}</p>
         )}
-        <Button
-          size="lg"
-          variant="outline"
-          className="flex-1"
-          disabled={tables.length === 0}
-          onClick={() => setMoving(true)}
-        >
-          <ArrowRightLeftIcon aria-hidden data-icon="inline-start" />
-          {t("move")}
-        </Button>
+        {canMove && (
+          <Button
+            size="lg"
+            variant="outline"
+            className="flex-1"
+            disabled={tables.length === 0}
+            onClick={() => setMoving(true)}
+          >
+            <ArrowRightLeftIcon aria-hidden data-icon="inline-start" />
+            {t("move")}
+          </Button>
+        )}
       </div>
 
       <div className="flex flex-col gap-3">
@@ -153,13 +159,15 @@ function PanelBody({
 
       <CurrentTableCard contactId={contactId} />
 
-      <Link
-        href={`/contacts/${contactId}`}
-        className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "self-start")}
-      >
-        <ExternalLinkIcon aria-hidden data-icon="inline-start" />
-        {t("openDetail")}
-      </Link>
+      {canOpenDetail && (
+        <Link
+          href={`/contacts/${contactId}`}
+          className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "self-start")}
+        >
+          <ExternalLinkIcon aria-hidden data-icon="inline-start" />
+          {t("openDetail")}
+        </Link>
+      )}
 
       <MoveContactDialog
         open={moving}

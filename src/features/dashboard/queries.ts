@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
+import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { dayRangeToInstants } from "@/features/calendar/calendar-logic";
 import { useContactTables } from "@/features/contacts/queries";
 import { contactName } from "@/features/contacts/types";
@@ -107,6 +108,7 @@ export type TodayTasks = {
 /** Tasks due today or overdue, and the ones finished today, in the user's zone. */
 export function useTodayTasks() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const { today, timeZone, from, to } = useToday();
   return useQuery({
     ...FRESH,
@@ -117,6 +119,7 @@ export function useTodayTasks() {
         supabase
           .from("tasks")
           .select(`${TASK_COLUMNS}, milestones!inner(title, status)`, { count: "exact" })
+          .eq("user_id", workspaceId)
           .neq("status", "done")
           .lte("due_date", today)
           .eq("milestones.status", "active")
@@ -126,6 +129,7 @@ export function useTodayTasks() {
         supabase
           .from("tasks")
           .select(`${TASK_COLUMNS}, milestones(title)`)
+          .eq("user_id", workspaceId)
           .eq("status", "done")
           .gte("completed_at", from)
           .lt("completed_at", to)
@@ -140,6 +144,7 @@ export function useTodayTasks() {
         const { data, error } = await supabase
           .from("tasks")
           .select("parent_task_id")
+          .eq("user_id", workspaceId)
           .in(
             "parent_task_id",
             open.data.map((task) => task.id),
@@ -174,6 +179,7 @@ export function useTodayTasks() {
 /** Ticks or unticks a task from the dashboard. The list changes at once and is read again after. */
 export function useToggleDashTask() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const { today, timeZone } = useToday();
   const queryClient = useQueryClient();
   const key = dashboardKeys.tasks(user.id, today, timeZone);
@@ -182,6 +188,7 @@ export function useToggleDashTask() {
       const { error } = await createClient()
         .from("tasks")
         .update({ status: done ? "done" : "todo" })
+        .eq("user_id", workspaceId)
         .eq("id", task.id);
       if (error) throw error;
     },
@@ -239,6 +246,7 @@ export type FollowUp = {
 /** Contacts in the "Follow up" table whose date has come, overdue ones too. */
 export function useFollowUpsDue() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const { to } = useToday();
   const tables = useContactTables();
   const fields = useFields();
@@ -260,6 +268,7 @@ export function useFollowUpsDue() {
       const { data, error } = await createClient()
         .from("contact_table_entries")
         .select("id, contact_id, answers, contact:contacts(company_name, first_name, last_name)")
+        .eq("user_id", workspaceId)
         .eq("table_id", tableId)
         .lt(dueAt, to)
         .order(dueAt)
@@ -289,6 +298,7 @@ export type StalledDeal = {
 /** Open deals standing in one stage longer than the limit, the longest first. */
 export function useStalledDeals() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const { today } = useToday();
   return useQuery({
     ...FRESH,
@@ -297,6 +307,7 @@ export function useStalledDeals() {
       const { data, error, count } = await createClient()
         .from("deals")
         .select("id, title, stage_id, entered_stage_at", { count: "exact" })
+        .eq("user_id", workspaceId)
         .is("won_at", null)
         .is("lost_at", null)
         .lt("entered_stage_at", stalledCutoff(new Date()))
@@ -311,6 +322,7 @@ export function useStalledDeals() {
 /** Deals closed (won or lost) in the last 90 days: only the two dates that decide the rate. */
 export function useClosedDeals() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const { today } = useToday();
   return useQuery({
     ...FRESH,
@@ -320,6 +332,7 @@ export function useClosedDeals() {
       const { data, error } = await createClient()
         .from("deals")
         .select("won_at, lost_at")
+        .eq("user_id", workspaceId)
         .or(`won_at.gte.${since},lost_at.gte.${since}`)
         .limit(CLOSED_DEAL_LIMIT);
       if (error) throw error;
@@ -330,6 +343,7 @@ export function useClosedDeals() {
 
 export function useActiveDealCount() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useQuery({
     ...FRESH,
     queryKey: dashboardKeys.activeCount(user.id),
@@ -337,6 +351,7 @@ export function useActiveDealCount() {
       const { count, error } = await createClient()
         .from("deals")
         .select("id", { count: "exact", head: true })
+        .eq("user_id", workspaceId)
         .is("won_at", null)
         .is("lost_at", null);
       if (error) throw error;
@@ -348,6 +363,7 @@ export function useActiveDealCount() {
 /** Open deals per stage, for the detail of the tile. */
 export function useActiveDealsByStage(enabled: boolean) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useQuery({
     ...FRESH,
     enabled,
@@ -356,6 +372,7 @@ export function useActiveDealsByStage(enabled: boolean) {
       const { data, error } = await createClient()
         .from("deals")
         .select("stage_id")
+        .eq("user_id", workspaceId)
         .is("won_at", null)
         .is("lost_at", null)
         .limit(OPEN_DEAL_LIMIT);
@@ -373,6 +390,7 @@ export function useActiveDealsByStage(enabled: boolean) {
 
 export function useNewContactCount() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const { month, from, to } = useMonthBounds();
   const { timeZone } = useToday();
   return useQuery({
@@ -382,6 +400,7 @@ export function useNewContactCount() {
       const { count, error } = await createClient()
         .from("contacts")
         .select("id", { count: "exact", head: true })
+        .eq("user_id", workspaceId)
         .gte("created_at", from)
         .lt("created_at", to);
       if (error) throw error;
@@ -400,6 +419,7 @@ export type NewContact = {
 
 export function useNewContacts(enabled: boolean) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const { month, from, to } = useMonthBounds();
   const { timeZone } = useToday();
   return useQuery({
@@ -410,6 +430,7 @@ export function useNewContacts(enabled: boolean) {
       const { data, error } = await createClient()
         .from("contacts")
         .select("id, company_name, first_name, last_name, created_at")
+        .eq("user_id", workspaceId)
         .gte("created_at", from)
         .lt("created_at", to)
         .order("created_at", { ascending: false })
@@ -432,6 +453,7 @@ export type IncomeRow = {
 /** The latest income of the month, for the detail of the tile. */
 export function useRecentIncome(enabled: boolean) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const { month, range } = useMonthBounds();
   return useQuery({
     enabled,
@@ -440,6 +462,7 @@ export function useRecentIncome(enabled: boolean) {
       const { data, error } = await createClient()
         .from("transactions")
         .select("id, amount, currency, description, category, occurred_on")
+        .eq("user_id", workspaceId)
         .eq("type", "income")
         .gte("occurred_on", range.from)
         .lte("occurred_on", range.to)
@@ -467,6 +490,7 @@ export type MeetingSurvey = {
 
 export function useMeetingSurveys(enabled: boolean) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useQuery({
     ...FRESH,
     enabled,
@@ -475,6 +499,7 @@ export function useMeetingSurveys(enabled: boolean) {
       const { data, error } = await createClient()
         .from("meeting_surveys")
         .select("id, deal_id, created_at, answers, deal:deals(title), stage:pipeline_stages(name)")
+        .eq("user_id", workspaceId)
         .order("created_at", { ascending: false })
         .limit(SURVEY_LIMIT);
       if (error) throw error;
@@ -492,6 +517,7 @@ export function useMeetingSurveys(enabled: boolean) {
 
 export function useSaveMeetingSurvey() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: {
@@ -500,7 +526,7 @@ export function useSaveMeetingSurvey() {
       answers: SurveyAnswers;
     }) => {
       const { error } = await createClient().from("meeting_surveys").insert({
-        user_id: user.id,
+        user_id: workspaceId,
         deal_id: input.dealId,
         stage_id: input.stageId,
         answers: input.answers,

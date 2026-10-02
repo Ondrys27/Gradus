@@ -109,7 +109,8 @@ function Fields({
     setErrors({});
     try {
       if (worker) {
-        await update.mutateAsync({ worker: result.data, permissions });
+        // Rights of an existing worker are switched live on their page, not here.
+        await update.mutateAsync({ worker: result.data });
         onSaved();
       } else {
         const { worker: saved, invite } = await create.mutateAsync({
@@ -160,7 +161,7 @@ function Fields({
           onChange={(event) => setJobTitle(event.target.value)}
         />
       </FormField>
-      <PermissionsEditor value={permissions} onChange={setPermissions} />
+      {!worker && <PermissionsEditor value={permissions} onChange={setPermissions} />}
       {failed && <FormAlert>{t("saveFailed")}</FormAlert>}
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button type="button" variant="ghost" onClick={onCancel}>

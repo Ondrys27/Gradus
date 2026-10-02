@@ -16,8 +16,9 @@ import { useRecurringPayments, useToggleRecurring } from "./queries";
 import { categoryIcon, type RecurringPayment } from "./types";
 
 type Props = {
-  onEdit: (payment: RecurringPayment) => void;
-  onCreate: () => void;
+  /** Absent without the right to edit finance: the list is read-only. */
+  onEdit?: (payment: RecurringPayment) => void;
+  onCreate?: () => void;
 };
 
 /** Each payment has a switch; a daily job books the ones that are due. */
@@ -41,10 +42,12 @@ export function RecurringPanel({ onEdit, onCreate }: Props) {
         title={t("emptyTitle")}
         description={t("emptyDescription")}
         action={
-          <Button onClick={onCreate}>
-            <PlusIcon aria-hidden data-icon="inline-start" />
-            {t("new")}
-          </Button>
+          onCreate && (
+            <Button onClick={onCreate}>
+              <PlusIcon aria-hidden data-icon="inline-start" />
+              {t("new")}
+            </Button>
+          )
         }
       />
     );
@@ -65,7 +68,7 @@ function RecurringRow({
   onEdit,
 }: {
   payment: RecurringPayment;
-  onEdit: (payment: RecurringPayment) => void;
+  onEdit?: (payment: RecurringPayment) => void;
 }) {
   const t = useTranslations("finance");
   const settings = useFormatSettings();
@@ -90,8 +93,9 @@ function RecurringRow({
     >
       <button
         type="button"
-        onClick={() => onEdit(payment)}
-        className="flex min-h-16 min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-2xl p-3 text-left outline-none hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-violet/40"
+        disabled={!onEdit}
+        onClick={() => onEdit?.(payment)}
+        className="flex min-h-16 min-w-0 flex-1 cursor-pointer disabled:cursor-default disabled:hover:bg-transparent items-center gap-3 rounded-2xl p-3 text-left outline-none hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-violet/40"
       >
         <span
           aria-hidden
@@ -127,7 +131,7 @@ function RecurringRow({
       </button>
       <Switch
         checked={payment.is_active}
-        disabled={ended || toggle.isPending}
+        disabled={ended || toggle.isPending || !onEdit}
         aria-label={t("recurring.active", { name: payment.description })}
         onCheckedChange={(active) => toggle.mutate({ id: payment.id, active })}
       />

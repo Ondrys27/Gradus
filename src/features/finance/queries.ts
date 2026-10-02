@@ -8,6 +8,7 @@ import {
   type QueryClient,
 } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
+import { useWorkspaceId } from "@/features/account/workspace-queries";
 import type { DateRange, MonthlyRow } from "./finance-logic";
 import { PAGE_SIZE } from "./finance-logic";
 import {
@@ -56,6 +57,7 @@ export function invalidateFinance(queryClient: QueryClient, userId: string) {
 
 export function useTransactions(range: DateRange, category: string | null, page: number) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useQuery({
     queryKey: financeKeys.transactions(user.id, range, category, page),
     placeholderData: keepPreviousData,
@@ -63,6 +65,7 @@ export function useTransactions(range: DateRange, category: string | null, page:
       let query = createClient()
         .from("transactions")
         .select(TRANSACTION_COLUMNS, { count: "exact" })
+        .eq("user_id", workspaceId)
         .gte("occurred_on", range.from)
         .lte("occurred_on", range.to)
         .order("occurred_on", { ascending: false })
@@ -113,13 +116,15 @@ export function useMonthlyTotals(range: DateRange) {
   });
 }
 
+/** `workspaceId` is whose books: the owner's, also for a worker with the finance right. */
 function useFinanceMutation<Variables, Result = void>(
-  mutationFn: (variables: Variables, userId: string) => Promise<Result>,
+  mutationFn: (variables: Variables, workspaceId: string) => Promise<Result>,
 ) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (variables: Variables) => mutationFn(variables, user.id),
+    mutationFn: (variables: Variables) => mutationFn(variables, workspaceId),
     onSettled: () => invalidateFinance(queryClient, user.id),
   });
 }
@@ -137,12 +142,12 @@ export async function fetchTransaction(id: string): Promise<Transaction | null> 
 
 export function useSaveTransaction() {
   return useFinanceMutation(
-    async ({ id, input }: { id?: string; input: TransactionInput }, userId) => {
+    async ({ id, input }: { id?: string; input: TransactionInput }, workspaceId) => {
       const row = { ...input, description: input.description || null };
       const supabase = createClient();
       const { error } = id
-        ? await supabase.from("transactions").update(row).eq("id", id)
-        : await supabase.from("transactions").insert({ ...row, user_id: userId });
+        ? await supabase.from("transactions").update(row).eq("user_id", workspaceId).eq("id", id)
+        : await supabase.from("transactions").insert({ ...row, user_id: workspaceId });
       if (error) throw error;
     },
   );
@@ -168,12 +173,14 @@ export function useConfirmTransaction() {
 
 export function useRecurringPayments() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useQuery({
     queryKey: financeKeys.recurring(user.id),
     queryFn: async (): Promise<RecurringPayment[]> => {
       const { data, error } = await createClient()
         .from("recurring_payments")
         .select(RECURRING_COLUMNS)
+        .eq("user_id", workspaceId)
         .order("next_due_on")
         .limit(RECURRING_LIMIT);
       if (error) throw error;
@@ -189,12 +196,16 @@ function dueDay(input: RecurringInput): number | null {
 
 export function useSaveRecurring() {
   return useFinanceMutation(
-    async ({ id, input }: { id?: string; input: RecurringInput }, userId) => {
+    async ({ id, input }: { id?: string; input: RecurringInput }, workspaceId) => {
       const row = { ...input, due_day: dueDay(input) };
       const supabase = createClient();
       const { error } = id
-        ? await supabase.from("recurring_payments").update(row).eq("id", id)
-        : await supabase.from("recurring_payments").insert({ ...row, user_id: userId });
+        ? await supabase
+            .from("recurring_payments")
+            .update(row)
+            .eq("user_id", workspaceId)
+            .eq("id", id)
+        : await supabase.from("recurring_payments").insert({ ...row, user_id: workspaceId });
       if (error) throw error;
     },
   );
@@ -219,6 +230,7 @@ export function useDeleteRecurring() {
 
 export function useInvoices(page: number) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useQuery({
     queryKey: financeKeys.invoices(user.id, page),
     placeholderData: keepPreviousData,
@@ -226,6 +238,7 @@ export function useInvoices(page: number) {
       const { data, error, count } = await createClient()
         .from("invoices")
         .select(INVOICE_COLUMNS, { count: "exact" })
+        .eq("user_id", workspaceId)
         .order("issued_on", { ascending: false, nullsFirst: false })
         .order("number", { ascending: false })
         .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);

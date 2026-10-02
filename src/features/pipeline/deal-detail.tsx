@@ -29,6 +29,7 @@ import { useIsPhone } from "@/lib/use-media-query";
 import { DealActivityTimeline } from "./deal-activity-timeline";
 import { draftFromDeal, validateDraft, type DealDraft } from "./deal-draft";
 import { DealFormFields } from "./deal-form-fields";
+import { useCan, useCanContacts } from "@/features/account/workspace-queries";
 import { useDeleteDeal, useUpdateDeal } from "./queries";
 import type { PipelineErrorKey } from "./schemas";
 import type { Deal, Stage } from "./types";
@@ -117,6 +118,10 @@ function DetailBody({
   const update = useUpdateDeal(deal.id);
   const remove = useDeleteDeal();
   const invoice = useCreateInvoiceFromDeal();
+  // Read-only without the right to edit; invoices need finance, e-mails contacts (history).
+  const canEdit = useCan("pipeline", "edit");
+  const canInvoice = useCan("finance", "edit");
+  const canEmail = useCanContacts("edit") && canEdit;
   const [draft, setDraft] = useState<DealDraft>(() => draftFromDeal(deal));
   const [errors, setErrors] = useState<Partial<Record<string, PipelineErrorKey>>>({});
   const [status, setStatus] = useState<"idle" | "saved" | "failed">("idle");
@@ -171,6 +176,7 @@ function DetailBody({
         <Select
           value={deal.stage_id}
           items={stageItems}
+          disabled={!canEdit}
           onValueChange={(next) => {
             const target = stages.find((item) => item.id === next);
             if (target) onRequestMove(deal, target);
@@ -201,30 +207,40 @@ function DetailBody({
       )}
 
       <form onSubmit={submit} noValidate className="flex flex-col gap-4">
-        <DealFormFields
-          idPrefix="deal"
-          draft={draft}
-          errors={errors}
-          showLostReason={stage?.is_lost === true}
-          onChange={(patch) => {
-            setStatus("idle");
-            setDraft((current) => ({ ...current, ...patch }));
-          }}
-        />
+        <fieldset disabled={!canEdit} className="contents">
+          <DealFormFields
+            idPrefix="deal"
+            draft={draft}
+            errors={errors}
+            showLostReason={stage?.is_lost === true}
+            onChange={(patch) => {
+              setStatus("idle");
+              setDraft((current) => ({ ...current, ...patch }));
+            }}
+          />
+        </fieldset>
         {status === "failed" && <FormAlert>{t("saveFailed")}</FormAlert>}
-        <div className="flex items-center justify-between gap-3">
-          <p role="status" className="text-sm text-green">
-            {status === "saved" ? t("saved") : ""}
-          </p>
-          <Button type="submit" disabled={update.isPending}>
-            {t("save")}
-          </Button>
-        </div>
+        {canEdit && (
+          <div className="flex items-center justify-between gap-3">
+            <p role="status" className="text-sm text-green">
+              {status === "saved" ? t("saved") : ""}
+            </p>
+            <Button type="submit" disabled={update.isPending}>
+              {t("save")}
+            </Button>
+          </div>
+        )}
       </form>
 
-      <InvoiceSection deal={deal} invoice={invoice} />
+      {canInvoice && <InvoiceSection deal={deal} invoice={invoice} />}
 
-      <EmailSection deal={deal} contactEmail={contactEmail} onCompose={() => setComposing(true)} />
+      {canEmail && (
+        <EmailSection
+          deal={deal}
+          contactEmail={contactEmail}
+          onCompose={() => setComposing(true)}
+        />
+      )}
 
       {justSent && (
         <FormAlert tone="success" className="flex flex-wrap items-center justify-between gap-3">
@@ -250,10 +266,12 @@ function DetailBody({
         <DealActivityTimeline dealId={deal.id} />
       </section>
 
-      <Button type="button" variant="destructive" onClick={() => setConfirmingDelete(true)}>
-        <Trash2Icon aria-hidden data-icon="inline-start" />
-        {t("delete")}
-      </Button>
+      {canEdit && (
+        <Button type="button" variant="destructive" onClick={() => setConfirmingDelete(true)}>
+          <Trash2Icon aria-hidden data-icon="inline-start" />
+          {t("delete")}
+        </Button>
+      )}
 
       <ConfirmDialog
         open={confirmingDelete}

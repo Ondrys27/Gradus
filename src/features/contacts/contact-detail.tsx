@@ -35,6 +35,7 @@ import { emailSummary } from "@/features/email/types";
 import { ActivityPanel } from "./activity-panel";
 import { ContactFormDialog } from "./contact-form-dialog";
 import { byPosition, fieldOptions } from "./field-logic";
+import { useCan } from "@/features/account/workspace-queries";
 import { MoveContactDialog, type MoveResult } from "./move-contact-dialog";
 import {
   useContact,
@@ -111,6 +112,7 @@ function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNo
     body: string;
   } | null>(null);
   const remove = useDeleteContact(contact.id);
+  const canEdit = useCan("contacts", "edit");
   const entry = useContactEntry(contact.id).data;
   const tables = useContactTables().data ?? [];
   const name = contactName(contact);
@@ -142,22 +144,24 @@ function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNo
             </div>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => setEditing(true)}>
-            <PencilIcon aria-hidden data-icon="inline-start" />
-            {t("detail.edit")}
-          </Button>
-          <Button
-            disabled={tables.length === 0}
-            onClick={() => {
-              setMoveEmailPrefill(null);
-              setMoving(true);
-            }}
-          >
-            <ArrowRightLeftIcon aria-hidden data-icon="inline-start" />
-            {t("move.open")}
-          </Button>
-        </div>
+        {canEdit && (
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={() => setEditing(true)}>
+              <PencilIcon aria-hidden data-icon="inline-start" />
+              {t("detail.edit")}
+            </Button>
+            <Button
+              disabled={tables.length === 0}
+              onClick={() => {
+                setMoveEmailPrefill(null);
+                setMoving(true);
+              }}
+            >
+              <ArrowRightLeftIcon aria-hidden data-icon="inline-start" />
+              {t("move.open")}
+            </Button>
+          </div>
+        )}
       </header>
 
       {moved && (
@@ -191,14 +195,19 @@ function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNo
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
         <div className="flex flex-col gap-6">
-          <ContactInfo contact={contact} onWriteEmail={() => setComposing(true)} />
+          <ContactInfo
+            contact={contact}
+            onWriteEmail={canEdit ? () => setComposing(true) : undefined}
+          />
           <CurrentTableCard contactId={contact.id} />
-          <NotesCard contact={contact} />
+          <NotesCard contact={contact} readOnly={!canEdit} />
           <DealsCard contactId={contact.id} />
-          <Button variant="destructive" className="self-start" onClick={() => setDeleting(true)}>
-            <Trash2Icon aria-hidden data-icon="inline-start" />
-            {t("detail.delete")}
-          </Button>
+          {canEdit && (
+            <Button variant="destructive" className="self-start" onClick={() => setDeleting(true)}>
+              <Trash2Icon aria-hidden data-icon="inline-start" />
+              {t("detail.delete")}
+            </Button>
+          )}
         </div>
         <GlowCard interactive={false}>
           <ActivityPanel contactId={contact.id} />
@@ -319,7 +328,14 @@ export function CurrentTableCard({ contactId }: { contactId: string }) {
   );
 }
 
-function ContactInfo({ contact, onWriteEmail }: { contact: Contact; onWriteEmail: () => void }) {
+function ContactInfo({
+  contact,
+  onWriteEmail,
+}: {
+  contact: Contact;
+  /** Absent without the right to edit: sending writes to the contact's history. */
+  onWriteEmail?: () => void;
+}) {
   const t = useTranslations("contacts");
   const country = useUserSettings().country_code;
   const address = [contact.address, contact.postal_code, contact.city].filter(Boolean).join(", ");
@@ -348,15 +364,17 @@ function ContactInfo({ contact, onWriteEmail }: { contact: Contact; onWriteEmail
       )}
       {contact.email && (
         <InfoRow icon={<MailIcon />} label={t("fields.email")} value={contact.email}>
-          <Button
-            variant="outline"
-            size="sm"
-            aria-label={t("list.emailName", { name })}
-            onClick={onWriteEmail}
-          >
-            <MailIcon aria-hidden data-icon="inline-start" />
-            {t("detail.write")}
-          </Button>
+          {onWriteEmail && (
+            <Button
+              variant="outline"
+              size="sm"
+              aria-label={t("list.emailName", { name })}
+              onClick={onWriteEmail}
+            >
+              <MailIcon aria-hidden data-icon="inline-start" />
+              {t("detail.write")}
+            </Button>
+          )}
         </InfoRow>
       )}
       {contact.website && (
@@ -405,7 +423,7 @@ function InfoRow({
   );
 }
 
-function NotesCard({ contact }: { contact: Contact }) {
+function NotesCard({ contact, readOnly }: { contact: Contact; readOnly: boolean }) {
   const t = useTranslations("contacts.notes");
   const update = useUpdateContact(contact.id);
   const [value, setValue] = useState(contact.notes ?? "");
@@ -437,25 +455,28 @@ function NotesCard({ contact }: { contact: Contact }) {
         value={value}
         maxLength={NOTES_MAX}
         placeholder={t("placeholder")}
+        readOnly={readOnly}
         onChange={(event) => {
           setStatus("idle");
           setValue(event.target.value);
         }}
       />
       {status === "failed" && <FormAlert>{t("saveFailed")}</FormAlert>}
-      <div className="flex items-center justify-between gap-3">
-        <p role="status" className="text-sm text-green">
-          {status === "saved" && !dirty ? t("saved") : ""}
-        </p>
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={!dirty || update.isPending}
-          onClick={() => void save()}
-        >
-          {t("save")}
-        </Button>
-      </div>
+      {!readOnly && (
+        <div className="flex items-center justify-between gap-3">
+          <p role="status" className="text-sm text-green">
+            {status === "saved" && !dirty ? t("saved") : ""}
+          </p>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!dirty || update.isPending}
+            onClick={() => void save()}
+          >
+            {t("save")}
+          </Button>
+        </div>
+      )}
     </GlowCard>
   );
 }

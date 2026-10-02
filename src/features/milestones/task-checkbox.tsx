@@ -14,10 +14,19 @@ type TaskCheckboxProps = {
   remaining: number;
   /** In progress: the box takes the orange of that state. */
   inProgress?: boolean;
+  /** Read-only: without the right to edit milestones the box only shows the state. */
+  disabled?: boolean;
   onToggle: () => void;
 };
 
-export function TaskCheckbox({ title, done, remaining, inProgress, onToggle }: TaskCheckboxProps) {
+export function TaskCheckbox({
+  title,
+  done,
+  remaining,
+  inProgress,
+  disabled,
+  onToggle,
+}: TaskCheckboxProps) {
   const t = useTranslations("milestones.tasks");
   const locked = remaining > 0;
 
@@ -70,6 +79,7 @@ export function TaskCheckbox({ title, done, remaining, inProgress, onToggle }: T
       )}
       <Checkbox
         checked={done}
+        disabled={disabled}
         className={inProgress && !done ? "border-orange bg-orange/10" : undefined}
         onCheckedChange={onToggle}
         aria-label={done ? t("checkReopen", { title }) : t("checkDone", { title })}

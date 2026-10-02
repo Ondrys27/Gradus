@@ -20,33 +20,64 @@ export const runtime = "nodejs";
 /** Three Google pages and three database calls fit easily. */
 export const maxDuration = 60;
 
-/** The signed-in user, their settings and both clients. The admin client is filtered by this id. */
+/**
+ * The signed-in user, their settings, their workspace and both clients. Contacts,
+ * limits and usage belong to the workspace (the owner's account, whose plan
+ * pays); the admin client is filtered by that id, which the database gives.
+ */
 async function context() {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const userId = data?.claims?.sub;
   if (!userId) return null;
-  const { data: row, error } = await supabase
-    .from("user_settings")
-    .select(USER_SETTINGS_COLUMNS)
-    .eq("user_id", userId)
-    .maybeSingle();
+  const [{ data: row, error }, { data: workspaceId, error: workspaceError }] = await Promise.all([
+    supabase
+      .from("user_settings")
+      .select(USER_SETTINGS_COLUMNS)
+      .eq("user_id", userId)
+      .maybeSingle(),
+    supabase.rpc("current_workspace_id"),
+  ]);
   if (error) throw error;
+  if (workspaceError) throw workspaceError;
+  if (!workspaceId) return null;
   return {
     supabase,
     admin: createAdminClient(),
     userId,
+    workspaceId,
     settings: toFormatSettings(row),
     locale: row?.locale ?? "en",
     country: row?.country_code ?? null,
   };
 }
 
+/** The owner always may; a worker needs contacts or cold calling at this level. */
+async function mayUseContacts(
+  ctx: NonNullable<Awaited<ReturnType<typeof context>>>,
+  level: "view" | "edit",
+) {
+  if (ctx.workspaceId === ctx.userId) return true;
+  const checks = await Promise.all(
+    (["contacts", "cold_calling"] as const).map((section) =>
+      ctx.supabase.rpc("has_section_access", {
+        _owner: ctx.workspaceId,
+        _section: section,
+        _level: level,
+      }),
+    ),
+  );
+  return checks.some((check) => check.data === true);
+}
+
 /** How much of the plan is left, for the form. */
 export async function GET() {
   const ctx = await context();
   if (!ctx) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  const usage = await loadGenerationUsage(ctx.supabase, ctx.admin, ctx.userId, ctx.settings);
+  if (!(await mayUseContacts(ctx, "view"))) {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
+  const usage = await loadGenerationUsage(ctx.admin, ctx.workspaceId, ctx.settings);
   return NextResponse.json({ usage, max: maxRequestable(usage) });
 }
 
@@ -58,16 +89,25 @@ export async function GET() {
 export async function POST(request: Request) {
   const ctx = await context();
   if (!ctx) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!(await mayUseContacts(ctx, "edit"))) {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
 
   const parsed = generateSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: "invalid", issues: parsed.error.issues }, { status: 400 });
   }
   const { industry, location, count } = parsed.data;
-  const { supabase, admin, userId, settings } = ctx;
+  const { supabase, admin, userId, workspaceId, settings } = ctx;
   const textQuery = `${industry} ${location}`;
+  // Usage is counted for the workspace; who pressed the button goes with it.
+  const log = (entry: Parameters<typeof logGenerationCall>[2]) =>
+    logGenerationCall(admin, workspaceId, {
+      ...entry,
+      metadata: { ...(entry.metadata as Record<string, unknown>), actor_id: userId },
+    });
 
-  const usage = await loadGenerationUsage(supabase, admin, userId, settings);
+  const usage = await loadGenerationUsage(admin, workspaceId, settings);
   if (count > maxRequestable(usage)) {
     const event: GenerationEvent = { type: "error", code: "limitReached", created: 0, usage };
     return NextResponse.json(event, { status: 429 });
@@ -75,7 +115,7 @@ export async function POST(request: Request) {
 
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
   if (!apiKey) {
-    await logGenerationCall(admin, userId, {
+    await log({
       success: false,
       quantity: 0,
       message: "GOOGLE_MAPS_API_KEY is not set",
@@ -91,7 +131,7 @@ export async function POST(request: Request) {
       const send = (event: GenerationEvent) =>
         controller.enqueue(encoder.encode(`${JSON.stringify(event)}\n`));
       const freshUsage = (): Promise<GenerationUsage | undefined> =>
-        loadGenerationUsage(supabase, admin, userId, settings).catch(() => undefined);
+        loadGenerationUsage(admin, workspaceId, settings).catch(() => undefined);
 
       let created = 0;
       let duplicates = 0;
@@ -113,7 +153,7 @@ export async function POST(request: Request) {
 
           if (!result.ok) {
             const { failure } = result;
-            await logGenerationCall(admin, userId, {
+            await log({
               success: false,
               quantity: 0,
               message: failure.googleMessage || failure.code,
@@ -151,7 +191,7 @@ export async function POST(request: Request) {
           created += pageCreated;
           duplicates += data?.duplicates ?? 0;
 
-          await logGenerationCall(admin, userId, {
+          await log({
             success: true,
             quantity: pageCreated,
             metadata: {

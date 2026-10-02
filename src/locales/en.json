@@ -1434,7 +1434,12 @@
       "hoursMinutes": "{hours} h {minutes} min",
       "minutes": "{minutes} min",
       "meetingCount": "{count, plural, one {{formatted} meeting} other {{formatted} meetings}}",
-      "loadFailed": "The statistics could not be loaded."
+      "loadFailed": "The statistics could not be loaded.",
+      "people": {
+        "label": "Whose numbers",
+        "everyone": "Everyone",
+        "me": "Me"
+      }
     },
     "bestTime": {
       "title": "Best time to call",
@@ -2056,13 +2061,24 @@
       "saveFailed": "Saving failed. Try again."
     },
     "permissions": {
-      "title": "What they can open",
-      "hint": "Dashboard, tasks, rewards and calendar are always theirs. Sections below work with their own data.",
-      "level": {
-        "none": "Nothing",
-        "view": "View",
-        "edit": "Edit"
-      }
+      "title": "What they can do",
+      "hint": "Their own dashboard, tasks and rewards are always there. Your settings and workers never are.",
+      "liveHint": "Every switch applies at once — they see the change without signing out.",
+      "presets": {
+        "label": "Role",
+        "caller": "Caller",
+        "sales": "Sales",
+        "assistant": "Assistant",
+        "custom": "Custom"
+      },
+      "section": "Section",
+      "view": "Sees",
+      "edit": "Edits",
+      "viewSection": "{section}: sees",
+      "editSection": "{section}: edits",
+      "financeHint": "Off unless you turn it on.",
+      "loadFailed": "Could not load their rights. Try again in a moment.",
+      "saveFailed": "The change was not saved. Try again."
     },
     "invite": {
       "title": "Invite for {name}",
@@ -2462,5 +2478,8 @@
       "title": "I'm Jarvis",
       "description": "You'll find me in the bottom right corner of every screen. Ask me anything, and I'll check in on your progress a few times a day."
     }
+  },
+  "workspace": {
+    "doneBy": "Done by {name}"
   }
 }

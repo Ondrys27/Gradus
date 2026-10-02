@@ -34,8 +34,10 @@ export type TaskMapNodeProps = {
   collapsed: boolean;
   onOpen: () => void;
   onToggleDone: () => void;
-  onAddChild: () => void;
+  /** Absent when the account may not add tasks. */
+  onAddChild?: () => void;
   onToggleCollapsed: () => void;
+  readOnly?: boolean;
 };
 
 export function TaskMapNode({
@@ -48,6 +50,7 @@ export function TaskMapNode({
   onToggleDone,
   onAddChild,
   onToggleCollapsed,
+  readOnly = false,
 }: TaskMapNodeProps) {
   const t = useTranslations("milestones");
   const settings = useFormatSettings();
@@ -103,6 +106,7 @@ export function TaskMapNode({
           done={done}
           inProgress={state === "in_progress"}
           remaining={remaining}
+          disabled={readOnly}
           onToggle={onToggleDone}
         />
       </span>
@@ -123,20 +127,22 @@ export function TaskMapNode({
         {task.title}
       </button>
 
-      <button
-        type="button"
-        onClick={(event) => {
-          event.stopPropagation();
-          onAddChild();
-        }}
-        aria-label={t("map.addChild", { title: task.title })}
-        className={cn(
-          miniButton,
-          "-my-1 -mr-1.5 mouse:opacity-0 mouse:group-focus-within:opacity-100 mouse:group-hover:opacity-100",
-        )}
-      >
-        <PlusIcon aria-hidden className="size-4" />
-      </button>
+      {onAddChild && (
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            onAddChild();
+          }}
+          aria-label={t("map.addChild", { title: task.title })}
+          className={cn(
+            miniButton,
+            "-my-1 -mr-1.5 mouse:opacity-0 mouse:group-focus-within:opacity-100 mouse:group-hover:opacity-100",
+          )}
+        >
+          <PlusIcon aria-hidden className="size-4" />
+        </button>
+      )}
 
       {childCount > 0 && (
         <button
@@ -169,7 +175,7 @@ type RootProps = {
   done: number;
   total: number;
   completed: boolean;
-  onAddChild: () => void;
+  onAddChild?: () => void;
 };
 
 /** The milestone itself, at the root of the tree. */
@@ -194,14 +200,16 @@ export function TaskMapRoot({ title, done, total, completed, onAddChild }: RootP
         <span className="min-w-0 flex-1 text-[15px] leading-snug font-semibold [overflow-wrap:anywhere] text-ink">
           {title}
         </span>
-        <button
-          type="button"
-          onClick={onAddChild}
-          aria-label={t("map.addTask")}
-          className={cn(miniButton, "-my-1 -mr-1.5")}
-        >
-          <PlusIcon aria-hidden className="size-4" />
-        </button>
+        {onAddChild && (
+          <button
+            type="button"
+            onClick={onAddChild}
+            aria-label={t("map.addTask")}
+            className={cn(miniButton, "-my-1 -mr-1.5")}
+          >
+            <PlusIcon aria-hidden className="size-4" />
+          </button>
+        )}
       </div>
       <div className="flex w-full items-center gap-2">
         <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-line/60">

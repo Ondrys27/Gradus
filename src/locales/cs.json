@@ -1434,7 +1434,12 @@
       "hoursMinutes": "{hours} h {minutes} min",
       "minutes": "{minutes} min",
       "meetingCount": "{count, plural, one {{formatted} schůzka} few {{formatted} schůzky} other {{formatted} schůzek}}",
-      "loadFailed": "Statistiky se nepodařilo načíst."
+      "loadFailed": "Statistiky se nepodařilo načíst.",
+      "people": {
+        "label": "Čí čísla",
+        "everyone": "Všichni",
+        "me": "Já"
+      }
     },
     "bestTime": {
       "title": "Nejlepší čas pro volání",
@@ -2056,13 +2061,24 @@
       "saveFailed": "Uložení se nepovedlo. Zkus to znovu."
     },
     "permissions": {
-      "title": "Co může otevřít",
-      "hint": "Přehled, úkoly, odměny a kalendář má vždy. Sekce níže pracují s jeho vlastními daty.",
-      "level": {
-        "none": "Nic",
-        "view": "Vidět",
-        "edit": "Upravovat"
-      }
+      "title": "Co může dělat",
+      "hint": "Vlastní přehled, úkoly a odměny má vždy. Tvoje nastavení a pracovníky nikdy.",
+      "liveHint": "Každý přepínač platí hned — pracovník změnu uvidí bez odhlášení.",
+      "presets": {
+        "label": "Role",
+        "caller": "Caller",
+        "sales": "Obchodník",
+        "assistant": "Asistent",
+        "custom": "Vlastní"
+      },
+      "section": "Sekce",
+      "view": "Vidí",
+      "edit": "Upravuje",
+      "viewSection": "{section}: vidí",
+      "editSection": "{section}: upravuje",
+      "financeHint": "Vypnuté, dokud je nezapneš.",
+      "loadFailed": "Práva se nepodařilo načíst. Zkus to za chvíli.",
+      "saveFailed": "Změna se neuložila. Zkus to znovu."
     },
     "invite": {
       "title": "Pozvánka pro {name}",
@@ -2462,5 +2478,8 @@
       "title": "Já jsem Jarvis",
       "description": "Najdeš mě vpravo dole na každé obrazovce. Zeptej se mě na cokoliv a párkrát denně se ti sám ozvu s postřehem."
     }
+  },
+  "workspace": {
+    "doneBy": "Udělal(a) {name}"
   }
 }

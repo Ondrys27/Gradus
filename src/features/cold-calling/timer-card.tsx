@@ -14,6 +14,7 @@ import { useFormatSettings } from "@/lib/use-format-settings";
 import { useUrlIntent } from "@/lib/use-url-intent";
 import { cn } from "@/lib/utils";
 import { pastDeadline, shownSeconds } from "./timer-logic";
+import { useCan } from "@/features/account/workspace-queries";
 import { useTimerAction, useTimerReading } from "./timer-queries";
 
 /** How often a paused timer looks at the clock, to start the new day at zero. */
@@ -31,6 +32,8 @@ export function TimerCard() {
   const settings = useFormatSettings();
   const reading = useTimerReading();
   const action = useTimerAction();
+  // Only someone who may work the list runs a timer; the database checks it too.
+  const canRun = useCan("cold_calling", "edit");
   const record = useProspectingRecord();
   const [now, setNow] = useState(() => Date.now());
   const [idleNotice, setIdleNotice] = useState<string | null>(null);
@@ -147,25 +150,27 @@ export function TimerCard() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-2">
-        <Button
-          size="lg"
-          disabled={!data || running || action.isPending}
-          onClick={() => run("start")}
-        >
-          <PlayIcon aria-hidden data-icon="inline-start" />
-          {t("start")}
-        </Button>
-        <Button
-          size="lg"
-          variant="outline"
-          disabled={!data || !running || action.isPending}
-          onClick={() => run("pause")}
-        >
-          <PauseIcon aria-hidden data-icon="inline-start" />
-          {t("pause")}
-        </Button>
-      </div>
+      {canRun && (
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            size="lg"
+            disabled={!data || running || action.isPending}
+            onClick={() => run("start")}
+          >
+            <PlayIcon aria-hidden data-icon="inline-start" />
+            {t("start")}
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            disabled={!data || !running || action.isPending}
+            onClick={() => run("pause")}
+          >
+            <PauseIcon aria-hidden data-icon="inline-start" />
+            {t("pause")}
+          </Button>
+        </div>
+      )}
       {action.isError && <FormAlert>{t("actionFailed")}</FormAlert>}
       <p className="text-xs text-ink-muted">{t("idleHint")}</p>
     </GlowCard>

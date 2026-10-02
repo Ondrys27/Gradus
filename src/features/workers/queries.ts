@@ -216,6 +216,34 @@ async function savePermissions(ownerId: string, workerId: string, draft: Permiss
   if (error) throw error;
 }
 
+/**
+ * Saves the matrix as it is switched. The screen shows the change at once and
+ * goes back if the save fails; the worker's app hears it live (Realtime) and
+ * the database applies it to their very next query.
+ */
+export function useSaveWorkerPermissions(workerId: string) {
+  const { user } = useSession();
+  const queryClient = useQueryClient();
+  const key = workerKeys.permissions(user.id, workerId);
+  return useMutation({
+    mutationKey: ["workers", "permissions", workerId],
+    mutationFn: (draft: PermissionDraft) => savePermissions(user.id, workerId, draft),
+    onMutate: async (draft) => {
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<WorkerPermission[]>(key);
+      queryClient.setQueryData<WorkerPermission[]>(key, permissionRows(draft));
+      return { previous };
+    },
+    onError: (_error, _draft, context) => {
+      if (context?.previous) queryClient.setQueryData(key, context.previous);
+    },
+    onSettled: () => {
+      if (queryClient.isMutating({ mutationKey: ["workers", "permissions", workerId] }) > 1) return;
+      void queryClient.invalidateQueries({ queryKey: key });
+    },
+  });
+}
+
 /** Worker, permissions and invite in one go; the database picks the invite code. */
 export function useCreateWorker() {
   const { user } = useSession();
@@ -246,14 +274,14 @@ export function useUpdateWorker(workerId: string) {
   const { user } = useSession();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { worker: WorkerInput; permissions: PermissionDraft }) => {
+    mutationFn: async (input: { worker: WorkerInput; permissions?: PermissionDraft }) => {
       const { error } = await createClient()
         .from("workers")
         .update(input.worker)
         .eq("id", workerId)
         .eq("owner_id", user.id);
       if (error) throw error;
-      await savePermissions(user.id, workerId, input.permissions);
+      if (input.permissions) await savePermissions(user.id, workerId, input.permissions);
     },
     onSettled: () => invalidateAll(queryClient, user.id),
   });
@@ -280,8 +308,7 @@ export function useRenewInvite(workerId: string) {
       if (error) throw error;
       return data;
     },
-    onSuccess: (invite) =>
-      queryClient.setQueryData(workerKeys.invite(user.id, workerId), invite),
+    onSuccess: (invite) => queryClient.setQueryData(workerKeys.invite(user.id, workerId), invite),
   });
 }
 

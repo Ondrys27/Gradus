@@ -9,6 +9,7 @@ import {
   type UseQueryResult,
 } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
+import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { createClient } from "@/lib/supabase/client";
 import { duplicateEmailKey, duplicatePhoneKey, searchFilter } from "./contact-search";
 import { moveContact, type MoveContactInput } from "./move-contact";
@@ -55,12 +56,14 @@ export const contactKeys = {
 
 export function useContactTables() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useQuery({
     queryKey: contactKeys.tables(user.id),
     queryFn: async (): Promise<ContactTable[]> => {
       const { data, error } = await createClient()
         .from("contact_tables")
         .select(TABLE_COLUMNS)
+        .eq("user_id", workspaceId)
         .order("position")
         .limit(TABLE_LIMIT);
       if (error) throw error;
@@ -72,12 +75,14 @@ export function useContactTables() {
 /** Contacts per table; the "All" count is their sum. */
 export function useTableCounts() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useQuery({
     queryKey: contactKeys.counts(user.id),
     queryFn: async (): Promise<Map<string, number>> => {
       const { data, error } = await createClient()
         .from("contact_table_counts")
         .select("table_id, contacts")
+        .eq("user_id", workspaceId)
         .limit(TABLE_LIMIT);
       if (error) throw error;
       return new Map(
@@ -91,10 +96,14 @@ export type WonDeal = Pick<ContactDeal, "id" | "value" | "currency"> & { contact
 /** Won deals by contact id; a contact whose page is still loading has no key yet. */
 export type WonDealsByContact = Record<string, WonDeal[]>;
 
-async function fetchWonDeals(contactIds: string[]): Promise<WonDealsByContact> {
+async function fetchWonDeals(
+  workspaceId: string,
+  contactIds: string[],
+): Promise<WonDealsByContact> {
   const { data, error } = await createClient()
     .from("deals")
     .select("id, contact_id, value, currency")
+    .eq("user_id", workspaceId)
     .in("contact_id", contactIds)
     .not("won_at", "is", null)
     .limit(WON_DEAL_LIMIT);
@@ -116,11 +125,12 @@ function mergeWonDeals(results: UseQueryResult<WonDealsByContact>[]): WonDealsBy
  */
 export function useWonDeals(pages: string[][]): WonDealsByContact {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useQueries({
     queries: pages.map((ids) => ({
       queryKey: contactKeys.wonDeals(user.id, ids),
       enabled: ids.length > 0,
-      queryFn: () => fetchWonDeals(ids),
+      queryFn: () => fetchWonDeals(workspaceId, ids),
     })),
     combine: mergeWonDeals,
   });
@@ -129,11 +139,15 @@ export function useWonDeals(pages: string[][]): WonDealsByContact {
 /** Most recently contacted first, never-contacted at the end; one page at a time. */
 export function useContactList(filter: ListFilter) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useInfiniteQuery({
     queryKey: contactKeys.list(user.id, filter),
     initialPageParam: 0,
     queryFn: async ({ pageParam }): Promise<ContactListItem[]> => {
-      let query = createClient().from("contact_list").select(LIST_COLUMNS);
+      let query = createClient()
+        .from("contact_list")
+        .select(LIST_COLUMNS)
+        .eq("user_id", workspaceId);
       const search = searchFilter(filter.term);
       if (search) query = query.or(search);
       if (filter.tableId) query = query.eq("table_id", filter.tableId);
@@ -152,6 +166,7 @@ export function useContactList(filter: ListFilter) {
 
 export function useContact(id: string) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useQuery({
     queryKey: contactKeys.detail(user.id, id),
     queryFn: async (): Promise<Contact | null> => {
@@ -160,6 +175,7 @@ export function useContact(id: string) {
       const { data, error } = await createClient()
         .from("contacts")
         .select(CONTACT_COLUMNS)
+        .eq("user_id", workspaceId)
         .eq("id", id)
         .maybeSingle();
       if (error) throw error;
@@ -171,12 +187,14 @@ export function useContact(id: string) {
 /** The table the contact is in right now, with the answers given on the way in. */
 export function useContactEntry(id: string) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useQuery({
     queryKey: contactKeys.entry(user.id, id),
     queryFn: async () => {
       const { data, error } = await createClient()
         .from("contact_table_entries")
         .select("table_id, answers, moved_at")
+        .eq("user_id", workspaceId)
         .eq("contact_id", id)
         .maybeSingle();
       if (error) throw error;
@@ -187,12 +205,14 @@ export function useContactEntry(id: string) {
 
 export function useActivities(id: string) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useQuery({
     queryKey: contactKeys.activities(user.id, id),
     queryFn: async (): Promise<Activity[]> => {
       const { data, error } = await createClient()
         .from("contact_activities")
         .select(ACTIVITY_COLUMNS)
+        .eq("user_id", workspaceId)
         .eq("contact_id", id)
         .order("occurred_at", { ascending: false })
         .limit(ACTIVITY_LIMIT);
@@ -204,12 +224,14 @@ export function useActivities(id: string) {
 
 export function useContactDeals(id: string) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useQuery({
     queryKey: contactKeys.deals(user.id, id),
     queryFn: async (): Promise<ContactDeal[]> => {
       const { data, error } = await createClient()
         .from("deals")
         .select(CONTACT_DEAL_COLUMNS)
+        .eq("user_id", workspaceId)
         .eq("contact_id", id)
         .order("created_at", { ascending: false })
         .limit(DEAL_LIMIT);
@@ -227,6 +249,7 @@ export type Duplicate = Pick<
 /** Contacts with the same E.164 phone or e-mail. A warning, never a block. */
 export function useDuplicates(phone: string, email: string, excludeId?: string) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const phoneKey = duplicatePhoneKey(phone);
   const emailKey = duplicateEmailKey(email);
   return useQuery({
@@ -240,6 +263,7 @@ export function useDuplicates(phone: string, email: string, excludeId?: string) 
       let query = createClient()
         .from("contacts")
         .select("id, company_name, first_name, last_name, phone, email")
+        .eq("user_id", workspaceId)
         .or(filters.join(","));
       if (excludeId) query = query.neq("id", excludeId);
       const { data, error } = await query.limit(DUPLICATE_LIMIT);
@@ -252,12 +276,13 @@ export function useDuplicates(phone: string, email: string, excludeId?: string) 
 /** The database fills phone_normalized and puts the contact into Unreached. */
 export function useCreateContact() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: ContactInput): Promise<Contact> => {
       const { data, error } = await createClient()
         .from("contacts")
-        .insert({ ...input, user_id: user.id })
+        .insert({ ...input, user_id: workspaceId })
         .select(CONTACT_COLUMNS)
         .single();
       if (error) throw error;
@@ -272,12 +297,14 @@ export function useCreateContact() {
 
 export function useUpdateContact(id: string) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (patch: Partial<ContactInput> & { notes?: string | null }) => {
       const { data, error } = await createClient()
         .from("contacts")
         .update(patch)
+        .eq("user_id", workspaceId)
         .eq("id", id)
         .select(CONTACT_COLUMNS)
         .single();
@@ -293,10 +320,15 @@ export function useUpdateContact(id: string) {
 
 export function useDeleteContact(id: string) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
-      const { error } = await createClient().from("contacts").delete().eq("id", id);
+      const { error } = await createClient()
+        .from("contacts")
+        .delete()
+        .eq("user_id", workspaceId)
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -311,12 +343,13 @@ export function useDeleteContact(id: string) {
 /** Every activity moves the contact's last contact; the list reads it again. */
 export function useAddActivity(contactId: string) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: ActivityInput): Promise<Activity> => {
       const { data, error } = await createClient()
         .from("contact_activities")
-        .insert({ ...input, contact_id: contactId, user_id: user.id })
+        .insert({ ...input, contact_id: contactId, user_id: workspaceId })
         .select(ACTIVITY_COLUMNS)
         .single();
       if (error) throw error;
@@ -333,12 +366,14 @@ export function useAddActivity(contactId: string) {
 
 export function useDeleteActivity(contactId: string) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (activityId: string) => {
       const { error } = await createClient()
         .from("contact_activities")
         .delete()
+        .eq("user_id", workspaceId)
         .eq("id", activityId);
       if (error) throw error;
       return activityId;

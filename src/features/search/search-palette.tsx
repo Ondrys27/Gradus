@@ -17,6 +17,7 @@ import { useAnimationsEnabled } from "@/lib/animation-preference";
 import { useIsMac } from "@/lib/use-is-mac";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { cn } from "@/lib/utils";
+import { useCan } from "@/features/account/workspace-queries";
 import { useGlobalSearch, useSaveSearchHistory, useSearchHistory } from "./queries";
 import {
   highlight,
@@ -86,9 +87,11 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
     expanded,
   });
 
+  // Offering a new contact makes sense only to someone who may add one.
+  const canCreateContact = useCan("contacts", "edit");
   const createRow: Row | null = useMemo(() => {
     const tidy = tidyQuery(query);
-    if (!tidy || expanded) return null;
+    if (!tidy || expanded || !canCreateContact) return null;
     return {
       key: "create",
       kind: "create",
@@ -99,7 +102,7 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
       icon: KIND_ICONS.create,
       rank: 0,
     };
-  }, [query, expanded, t]);
+  }, [query, expanded, t, canCreateContact]);
 
   const settled = tidyQuery(query) === debounced && (!searching || !results.isFetching);
   const nothingFound =

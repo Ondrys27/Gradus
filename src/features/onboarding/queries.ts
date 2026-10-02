@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { accountKeys, useSession } from "@/features/account/queries";
+import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { PROFILE_COLUMNS } from "@/features/account/types";
 import { useAwardXp } from "@/features/gamification/queries";
 import { milestoneKeys } from "@/features/milestones/queries";
@@ -12,6 +13,7 @@ import { industryKeyOf, type IndustryKey } from "./industries";
 /** The milestone plus its three suggested tasks, created together on step 4. */
 export function useCreateFirstMilestone() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
@@ -24,7 +26,7 @@ export function useCreateFirstMilestone() {
       const supabase = createClient();
       const { data: milestone, error: milestoneError } = await supabase
         .from("milestones")
-        .insert({ title, category: "work", user_id: user.id, position: 0 })
+        .insert({ title, category: "work", user_id: workspaceId, position: 0 })
         .select(MILESTONE_COLUMNS)
         .single();
       if (milestoneError) throw milestoneError;
@@ -36,7 +38,7 @@ export function useCreateFirstMilestone() {
           title: taskTitle,
           status: "todo" as const,
           milestone_id: milestone.id,
-          user_id: user.id,
+          user_id: workspaceId,
           position: index,
         }));
       if (taskRows.length > 0) {

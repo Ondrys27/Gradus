@@ -32,7 +32,7 @@ import { INVOICE_TONE, type Invoice } from "./types";
  * Fakturoid connected, its invoices carry a badge and a link, and their state
  * can be pulled in now instead of waiting for the daily sync.
  */
-export function InvoicesPanel() {
+export function InvoicesPanel({ readOnly = false }: { readOnly?: boolean }) {
   const t = useTranslations("finance.invoices");
   const [page, setPage] = useState(0);
   const [deleting, setDeleting] = useState<Invoice | null>(null);
@@ -58,11 +58,15 @@ export function InvoicesPanel() {
 
   return (
     <div className="flex flex-col gap-4">
-      {status.data?.connected && <SyncBar lastSyncedAt={status.data.lastSyncedAt} />}
+      {status.data?.connected && !readOnly && <SyncBar lastSyncedAt={status.data.lastSyncedAt} />}
       <ul className="flex flex-col gap-2">
         {query.data.rows.map((invoice) => (
           <li key={invoice.id}>
-            <InvoiceRow invoice={invoice} slug={slug} onDelete={setDeleting} />
+            <InvoiceRow
+              invoice={invoice}
+              slug={slug}
+              onDelete={readOnly ? undefined : setDeleting}
+            />
           </li>
         ))}
       </ul>
@@ -139,7 +143,8 @@ function InvoiceRow({
 }: {
   invoice: Invoice;
   slug: string | null;
-  onDelete: (invoice: Invoice) => void;
+  /** Absent without the right to edit finance: no paying or deleting. */
+  onDelete?: (invoice: Invoice) => void;
 }) {
   const t = useTranslations("finance.invoices");
   const settings = useFormatSettings();
@@ -147,7 +152,7 @@ function InvoiceRow({
   const errorText = useInvoiceErrorText();
   const { celebrate } = useCelebration();
   const status = displayInvoiceStatus(invoice, todayIsoDate(settings));
-  const payable = status === "pending" || status === "overdue";
+  const payable = (status === "pending" || status === "overdue") && Boolean(onDelete);
 
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-3">
@@ -213,15 +218,17 @@ function InvoiceRow({
                 <ExternalLinkIcon aria-hidden />
               </a>
             )}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label={t("deleteLabel", { number: invoice.number })}
-              onClick={() => onDelete(invoice)}
-            >
-              <Trash2Icon aria-hidden />
-            </Button>
+            {onDelete && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label={t("deleteLabel", { number: invoice.number })}
+                onClick={() => onDelete(invoice)}
+              >
+                <Trash2Icon aria-hidden />
+              </Button>
+            )}
           </div>
         </div>
       </div>

@@ -28,6 +28,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { MilestoneFormDialog } from "./milestone-form-dialog";
 import { JarvisBot } from "@/components/jarvis/jarvis-bot";
 import { useCelebration } from "@/components/celebration/celebration-provider";
+import { useCan } from "@/features/account/workspace-queries";
 import { useAwardXp } from "@/features/gamification/queries";
 import {
   useDeleteMilestone,
@@ -55,6 +56,8 @@ export function MilestoneDetail({ id }: { id: string }) {
   const awardXp = useAwardXp();
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  // Completing, editing and deleting need the right to edit milestones.
+  const canEdit = useCan("milestones", "edit");
 
   function complete() {
     setStatus.mutate("completed", {
@@ -146,22 +149,24 @@ export function MilestoneDetail({ id }: { id: string }) {
         title={milestone.title}
         description={milestone.description ?? undefined}
         actions={
-          <>
-            <Button variant="outline" onClick={() => setEditing(true)}>
-              <PencilIcon aria-hidden data-icon="inline-start" />
-              {t("actions.edit")}
-            </Button>
-            <Button variant="outline" onClick={() => setDeleting(true)}>
-              <Trash2Icon aria-hidden data-icon="inline-start" />
-              {t("actions.delete")}
-            </Button>
-            <CompleteMilestoneButton
-              completion={completion}
-              pending={setStatus.isPending}
-              onComplete={complete}
-              onReopen={() => setStatus.mutate("active")}
-            />
-          </>
+          canEdit && (
+            <>
+              <Button variant="outline" onClick={() => setEditing(true)}>
+                <PencilIcon aria-hidden data-icon="inline-start" />
+                {t("actions.edit")}
+              </Button>
+              <Button variant="outline" onClick={() => setDeleting(true)}>
+                <Trash2Icon aria-hidden data-icon="inline-start" />
+                {t("actions.delete")}
+              </Button>
+              <CompleteMilestoneButton
+                completion={completion}
+                pending={setStatus.isPending}
+                onComplete={complete}
+                onReopen={() => setStatus.mutate("active")}
+              />
+            </>
+          )
         }
       />
 

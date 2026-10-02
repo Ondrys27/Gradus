@@ -142,6 +142,7 @@ export type Database = {
       }
       calendar_events: {
         Row: {
+          actor_id: string | null
           all_day: boolean
           contact_id: string | null
           created_at: string
@@ -159,6 +160,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          actor_id?: string | null
           all_day?: boolean
           contact_id?: string | null
           created_at?: string
@@ -176,6 +178,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          actor_id?: string | null
           all_day?: boolean
           contact_id?: string | null
           created_at?: string
@@ -251,6 +254,7 @@ export type Database = {
       }
       contact_activities: {
         Row: {
+          actor_id: string | null
           contact_id: string
           content: string | null
           created_at: string
@@ -262,6 +266,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          actor_id?: string | null
           contact_id: string
           content?: string | null
           created_at?: string
@@ -273,6 +278,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          actor_id?: string | null
           contact_id?: string
           content?: string | null
           created_at?: string
@@ -416,6 +422,7 @@ export type Database = {
       }
       contact_table_moves: {
         Row: {
+          actor_id: string | null
           answers: Json
           contact_id: string
           created_at: string
@@ -425,6 +432,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          actor_id?: string | null
           answers?: Json
           contact_id: string
           created_at?: string
@@ -434,6 +442,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          actor_id?: string | null
           answers?: Json
           contact_id?: string
           created_at?: string
@@ -575,6 +584,7 @@ export type Database = {
         Row: {
           contact_id: string | null
           created_at: string
+          created_by: string | null
           currency: string
           description: string | null
           entered_stage_at: string
@@ -593,6 +603,7 @@ export type Database = {
         Insert: {
           contact_id?: string | null
           created_at?: string
+          created_by?: string | null
           currency?: string
           description?: string | null
           entered_stage_at?: string
@@ -611,6 +622,7 @@ export type Database = {
         Update: {
           contact_id?: string | null
           created_at?: string
+          created_by?: string | null
           currency?: string
           description?: string | null
           entered_stage_at?: string
@@ -1130,6 +1142,7 @@ export type Database = {
       }
       prospecting_segments: {
         Row: {
+          actor_id: string | null
           created_at: string
           end_reason: Database["public"]["Enums"]["session_end_reason"] | null
           ended_at: string | null
@@ -1139,6 +1152,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          actor_id?: string | null
           created_at?: string
           end_reason?: Database["public"]["Enums"]["session_end_reason"] | null
           ended_at?: string | null
@@ -1148,6 +1162,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          actor_id?: string | null
           created_at?: string
           end_reason?: Database["public"]["Enums"]["session_end_reason"] | null
           ended_at?: string | null
@@ -1345,6 +1360,7 @@ export type Database = {
       tasks: {
         Row: {
           completed_at: string | null
+          completed_by: string | null
           created_at: string
           description: string | null
           due_date: string | null
@@ -1359,6 +1375,7 @@ export type Database = {
         }
         Insert: {
           completed_at?: string | null
+          completed_by?: string | null
           created_at?: string
           description?: string | null
           due_date?: string | null
@@ -1373,6 +1390,7 @@ export type Database = {
         }
         Update: {
           completed_at?: string | null
+          completed_by?: string | null
           created_at?: string
           description?: string | null
           due_date?: string | null
@@ -2049,6 +2067,7 @@ export type Database = {
           search_name: string | null
           source: Database["public"]["Enums"]["contact_source"] | null
           table_id: string | null
+          user_id: string | null
           website: string | null
         }
         Relationships: []
@@ -2057,6 +2076,7 @@ export type Database = {
         Row: {
           contacts: number | null
           table_id: string | null
+          user_id: string | null
         }
         Relationships: []
       }
@@ -2065,6 +2085,7 @@ export type Database = {
           done: number | null
           milestone_id: string | null
           total: number | null
+          user_id: string | null
         }
         Relationships: []
       }
@@ -2103,6 +2124,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      current_workspace_id: { Args: never; Returns: string }
       create_invoice_from_deal: {
         Args: { _deal_id: string }
         Returns: {
@@ -2186,6 +2208,10 @@ export type Database = {
         }
         Returns: number
       }
+      has_section_access: {
+        Args: { _level: string; _owner: string; _section: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2245,7 +2271,7 @@ export type Database = {
         }
       }
       meetings_daily: {
-        Args: { _from: string; _timezone: string; _to: string }
+        Args: { _actor?: string; _from: string; _timezone: string; _to: string }
         Returns: {
           day: string
           meetings: number
@@ -2318,7 +2344,7 @@ export type Database = {
       }
       post_due_recurring_payments: { Args: never; Returns: number }
       prospecting_daily_seconds: {
-        Args: { _from: string; _timezone: string; _to: string }
+        Args: { _actor?: string; _from: string; _timezone: string; _to: string }
         Returns: {
           day: string
           seconds: number

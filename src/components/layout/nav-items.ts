@@ -52,6 +52,7 @@ export const PERMISSION_SECTIONS = [
   { key: "contacts", section: "contacts" },
   { key: "pipeline", section: "pipeline" },
   { key: "coldCalling", section: "cold_calling" },
+  { key: "calendar", section: "calendar" },
   { key: "finance", section: "finance" },
 ] as const satisfies readonly { key: NavKey; section: string }[];
 
@@ -62,19 +63,19 @@ export type WorkerNavAccess = {
   permissions: Partial<Record<string, { view: boolean; edit: boolean }>>;
 } | null;
 
-const WORKER_BASE: NavKey[] = ["dashboard", "myTasks", "myRewards", "calendar"];
+const WORKER_BASE: NavKey[] = ["dashboard", "myTasks", "myRewards"];
 
 /**
  * The sidebar of an account. An owner gets the eight sections; a worker gets
- * Dashboard, Tasks, Rewards and Calendar, then every section the owner lets
- * them see.
+ * their own Dashboard, Tasks and Rewards, then every section the owner lets
+ * them see. Workers and settings of the owner are never among them.
  */
 export function navItemsFor(access: WorkerNavAccess): NavItem[] {
   if (!access) return navItems;
   const byKey = new Map([...navItems, ...workerOnlyItems].map((item) => [item.key, item]));
-  const allowed = PERMISSION_SECTIONS.filter(({ section }) => access.permissions[section]?.view).map(
-    ({ key }) => key,
-  );
+  const allowed = PERMISSION_SECTIONS.filter(
+    ({ section }) => access.permissions[section]?.view,
+  ).map(({ key }) => key);
   return [...WORKER_BASE, ...allowed].map((key) => byKey.get(key)!);
 }
 

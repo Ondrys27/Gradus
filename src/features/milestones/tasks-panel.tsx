@@ -20,6 +20,7 @@ import { GlowCard } from "@/components/ui/glow-card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useCan } from "@/features/account/workspace-queries";
 import { useAwardXp } from "@/features/gamification/queries";
 import { useCreateTask, useDeleteTask, useReorderTasks, useSetTaskStatus } from "./queries";
 import { TITLE_MAX } from "./schemas";
@@ -42,6 +43,7 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
   const remove = useDeleteTask(milestoneId);
   const reorder = useReorderTasks(milestoneId);
   const awardXp = useAwardXp();
+  const canEdit = useCan("milestones", "edit");
 
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
@@ -97,6 +99,7 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
     },
     onAddSubtask: (task) => setForm({ open: true, mode: { kind: "create", parent: task } }),
     onEdit: (task) => setForm({ open: true, mode: { kind: "edit", task } }),
+    readOnly: !canEdit,
     onDelete: (task) => {
       if (tasks.some((other) => other.parent_task_id === task.id)) {
         setDeleting({ task, open: true });
@@ -146,6 +149,7 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
           onOpen={handlers.onEdit}
           onToggleDone={handlers.onToggleDone}
           onAddChild={(parent) => setForm({ open: true, mode: { kind: "create", parent } })}
+          readOnly={!canEdit}
         />
       ) : tasks.length === 0 ? (
         <EmptyState
@@ -153,30 +157,38 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
           title={t("emptyTitle")}
           description={t("emptyDescription")}
           action={
-            <Button variant="outline" onClick={() => quickRef.current?.focus()}>
-              {t("emptyAction")}
-            </Button>
+            canEdit && (
+              <Button variant="outline" onClick={() => quickRef.current?.focus()}>
+                {t("emptyAction")}
+              </Button>
+            )
           }
         />
       ) : (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={canEdit ? onDragEnd : undefined}
+        >
           <TaskGroup nodes={tree} handlers={handlers} />
         </DndContext>
       )}
 
-      <form onSubmit={quickAdd} className="flex items-center gap-2">
-        <Input
-          ref={quickRef}
-          value={quickTitle}
-          maxLength={TITLE_MAX}
-          aria-label={t("addLabel")}
-          placeholder={t("addPlaceholder")}
-          onChange={(event) => setQuickTitle(event.target.value)}
-        />
-        <Button type="submit" size="icon" variant="outline" aria-label={t("addButton")}>
-          <PlusIcon aria-hidden />
-        </Button>
-      </form>
+      {canEdit && (
+        <form onSubmit={quickAdd} className="flex items-center gap-2">
+          <Input
+            ref={quickRef}
+            value={quickTitle}
+            maxLength={TITLE_MAX}
+            aria-label={t("addLabel")}
+            placeholder={t("addPlaceholder")}
+            onChange={(event) => setQuickTitle(event.target.value)}
+          />
+          <Button type="submit" size="icon" variant="outline" aria-label={t("addButton")}>
+            <PlusIcon aria-hidden />
+          </Button>
+        </form>
+      )}
 
       <TaskFormDialog
         open={form.open}

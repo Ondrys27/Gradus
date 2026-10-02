@@ -19,6 +19,8 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { FormField } from "@/components/ui/form-field";
 import { Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ActorAvatar } from "@/features/account/members";
+import { useCanContacts } from "@/features/account/workspace-queries";
 import { formatDateTime } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
@@ -43,6 +45,7 @@ export function ActivityPanel({ contactId }: { contactId: string }) {
   const settings = useFormatSettings();
   const activities = useActivities(contactId);
   const remove = useDeleteActivity(contactId);
+  const canEdit = useCanContacts("edit");
   const [adding, setAdding] = useState(false);
 
   return (
@@ -51,7 +54,7 @@ export function ActivityPanel({ contactId }: { contactId: string }) {
         <h2 id="contact-activity" className="micro-label">
           {t("title")}
         </h2>
-        {!adding && (
+        {!adding && canEdit && (
           <Button variant="outline" size="sm" onClick={() => setAdding(true)}>
             {t("add")}
           </Button>
@@ -82,8 +85,9 @@ export function ActivityPanel({ contactId }: { contactId: string }) {
                   <Icon aria-hidden className="size-4" />
                 </span>
                 <div className="flex min-w-0 flex-1 flex-col gap-1">
-                  <p className="flex flex-wrap items-baseline gap-x-2 text-sm">
+                  <p className="flex flex-wrap items-center gap-x-2 text-sm">
                     <span className="font-medium text-ink">{t(`types.${activity.type}`)}</span>
+                    <ActorAvatar actorId={activity.actor_id} className="size-5" />
                     <time dateTime={activity.occurred_at} className="text-xs text-ink-muted">
                       {formatDateTime(new Date(activity.occurred_at), settings)}
                     </time>
@@ -92,7 +96,7 @@ export function ActivityPanel({ contactId }: { contactId: string }) {
                     <p className="text-sm whitespace-pre-line text-ink-soft">{activity.content}</p>
                   )}
                 </div>
-                {activity.type !== "move" && (
+                {activity.type !== "move" && canEdit && (
                   <button
                     type="button"
                     aria-label={t("delete")}

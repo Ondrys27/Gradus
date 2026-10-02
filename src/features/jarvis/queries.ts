@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
+import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { createClient } from "@/lib/supabase/client";
 import { readChatStream } from "./chat-stream";
 import { uploadContentType, type FileKind, MIME_BY_KIND } from "./files";
@@ -283,12 +284,14 @@ export function useDismissSuggestion() {
 /** Takes back a task Jarvis marked done: the user's own change, through RLS. */
 export function useUndoTaskCompletion() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: { taskId: string; previousStatus: "todo" | "in_progress" }) => {
       const { error } = await createClient()
         .from("tasks")
         .update({ status: input.previousStatus })
+        .eq("user_id", workspaceId)
         .eq("id", input.taskId);
       if (error) throw error;
     },
@@ -311,13 +314,17 @@ export type SalesAnalysisState = { surveys: number; latest: SalesAnalysis | null
 /** How many surveys there are and the latest analysis. */
 export function useSalesAnalysis(enabled: boolean) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useQuery({
     queryKey: jarvisKeys.salesAnalysis(user.id),
     enabled,
     queryFn: async (): Promise<SalesAnalysisState> => {
       const supabase = createClient();
       const [surveys, latest] = await Promise.all([
-        supabase.from("meeting_surveys").select("id", { count: "exact", head: true }),
+        supabase
+          .from("meeting_surveys")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", workspaceId),
         supabase
           .from("sales_analyses")
           .select("id, content, created_at")

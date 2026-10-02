@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { useSession } from "@/features/account/queries";
+import { useWorkspace } from "@/features/account/workspace-queries";
 import { SECTION_UNLOCK_KEYS, type LockableSection } from "@/features/gamification/types";
 import { useSectionUnlocks } from "@/features/gamification/queries";
 import { bottomNavKeysFor, navItemsFor, type NavItem, type WorkerNavAccess } from "./nav-items";
@@ -19,10 +20,13 @@ function isLockable(key: string): key is LockableSection {
   return key in SECTION_UNLOCK_KEYS;
 }
 
-/** What the signed-in account may open, from the snapshot loaded when the app started. */
+/** What the signed-in account may open; a worker's rights are live, so a change shows at once. */
 export function useNavAccess(): WorkerNavAccess {
-  const { worker } = useSession();
-  return useMemo(() => (worker ? { permissions: worker.permissions } : null), [worker]);
+  const workspace = useWorkspace();
+  return useMemo(
+    () => (workspace.role === "worker" ? { permissions: workspace.permissions } : null),
+    [workspace],
+  );
 }
 
 /**

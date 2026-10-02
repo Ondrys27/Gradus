@@ -20,6 +20,7 @@ import { useFormatSettings } from "@/lib/use-format-settings";
 import { useUrlIntent } from "@/lib/use-url-intent";
 import { periodRange } from "./finance-logic";
 import { InvoicesPanel } from "./invoices-panel";
+import { useCan } from "@/features/account/workspace-queries";
 import { fetchTransaction } from "./queries";
 import { RecurringFormDialog } from "./recurring-form-dialog";
 import { RecurringPanel } from "./recurring-panel";
@@ -57,6 +58,8 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
   const [transaction, setTransaction] = useState<Editing<Transaction>>(undefined);
   const [payment, setPayment] = useState<Editing<RecurringPayment>>(undefined);
   const range = useMemo(() => periodRange(period, today), [period, today]);
+  // A worker with finance only to look at gets no add, edit or delete.
+  const canEdit = useCan("finance", "edit");
 
   // A link to another tab while Finance is open (e.g. from the search) switches to it.
   const [seenTab, setSeenTab] = useState(initialTab);
@@ -69,7 +72,7 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
     setTab("transactions");
     fetchTransaction(id)
       .then((found) => {
-        if (found) setTransaction(found);
+        if (found && canEdit) setTransaction(found);
       })
       .catch(() => {});
   });
@@ -84,7 +87,7 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
         title={t("title")}
         description={t("description")}
         actions={
-          tab === "invoices" ? null : (
+          tab === "invoices" || !canEdit ? null : (
             <Button onClick={() => (tab === "recurring" ? setPayment(null) : setTransaction(null))}>
               <PlusIcon aria-hidden data-icon="inline-start" />
               {tab === "recurring" ? t("actions.newRecurring") : t("actions.newTransaction")}
@@ -133,14 +136,17 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
           <TransactionsPanel
             key={`${range.from}:${range.to}`}
             range={range}
-            onEdit={setTransaction}
-            onCreate={() => setTransaction(null)}
+            onEdit={canEdit ? setTransaction : undefined}
+            onCreate={canEdit ? () => setTransaction(null) : undefined}
           />
         )}
         {tab === "recurring" && (
-          <RecurringPanel onEdit={setPayment} onCreate={() => setPayment(null)} />
+          <RecurringPanel
+            onEdit={canEdit ? setPayment : undefined}
+            onCreate={canEdit ? () => setPayment(null) : undefined}
+          />
         )}
-        {tab === "invoices" && <InvoicesPanel />}
+        {tab === "invoices" && <InvoicesPanel readOnly={!canEdit} />}
       </div>
 
       <TransactionFormDialog

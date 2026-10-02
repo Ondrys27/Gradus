@@ -57,8 +57,6 @@ export function inviteState(
 export type AccessLevel = "none" | "view" | "edit";
 export type PermissionDraft = Record<PermissionSection, AccessLevel>;
 
-export const ACCESS_LEVELS: AccessLevel[] = ["none", "view", "edit"];
-
 export function emptyPermissions(): PermissionDraft {
   return Object.fromEntries(
     PERMISSION_SECTIONS.map(({ section }) => [section, "none"]),
@@ -69,9 +67,59 @@ export function permissionsFromRows(rows: WorkerPermission[]): PermissionDraft {
   const draft = emptyPermissions();
   for (const row of rows) {
     if (!(row.section in draft)) continue;
-    draft[row.section as PermissionSection] = row.can_edit ? "edit" : row.can_view ? "view" : "none";
+    draft[row.section as PermissionSection] = row.can_edit
+      ? "edit"
+      : row.can_view
+        ? "view"
+        : "none";
   }
   return draft;
+}
+
+/** Ready-made roles that fill the matrix; any change after that makes it "custom". */
+export const PERMISSION_PRESETS = ["caller", "sales", "assistant"] as const;
+export type PermissionPreset = (typeof PERMISSION_PRESETS)[number];
+
+const PRESET_ACCESS: Record<PermissionPreset, Partial<PermissionDraft>> = {
+  // Calls the leads: contacts and cold calling, both to work with.
+  caller: { contacts: "edit", cold_calling: "edit" },
+  // Also carries deals through the pipeline and books meetings.
+  sales: { contacts: "edit", cold_calling: "edit", pipeline: "edit", calendar: "edit" },
+  // Keeps milestones and the calendar, looks contacts up.
+  assistant: { milestones: "edit", calendar: "edit", contacts: "view" },
+};
+
+/** The matrix of a role. Finance stays closed in every one of them. */
+export function presetPermissions(preset: PermissionPreset): PermissionDraft {
+  return { ...emptyPermissions(), ...PRESET_ACCESS[preset] };
+}
+
+/** Which role the matrix matches exactly, or "custom". */
+export function presetOf(draft: PermissionDraft): PermissionPreset | "custom" {
+  const sections = PERMISSION_SECTIONS.map(({ section }) => section);
+  return (
+    PERMISSION_PRESETS.find((preset) => {
+      const expected = presetPermissions(preset);
+      return sections.every((section) => expected[section] === draft[section]);
+    }) ?? "custom"
+  );
+}
+
+/**
+ * One switch of the matrix. Editing includes seeing: turning edit on turns
+ * view on, turning view off turns edit off.
+ */
+export function toggleAccess(
+  draft: PermissionDraft,
+  section: PermissionSection,
+  column: "view" | "edit",
+  on: boolean,
+): PermissionDraft {
+  const current = draft[section];
+  let next: AccessLevel;
+  if (column === "view") next = on ? (current === "none" ? "view" : current) : "none";
+  else next = on ? "edit" : current === "none" ? "none" : "view";
+  return { ...draft, [section]: next };
 }
 
 /** One row per section, so a section taken away is stored as closed, not left behind. */
@@ -124,8 +172,7 @@ export const paymentSchema = z.object({
 export type PaymentInput = z.infer<typeof paymentSchema>;
 
 export type Validated<T> =
-  | { ok: true; data: T }
-  | { ok: false; errors: Partial<Record<string, WorkerErrorKey>> };
+  { ok: true; data: T } | { ok: false; errors: Partial<Record<string, WorkerErrorKey>> };
 
 export function validate<T extends z.ZodType>(schema: T, input: unknown): Validated<z.infer<T>> {
   const parsed = schema.safeParse(input);

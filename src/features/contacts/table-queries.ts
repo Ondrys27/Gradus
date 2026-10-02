@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
+import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { createClient } from "@/lib/supabase/client";
 import { byPosition, nextPosition, reorder, type PositionChange } from "./field-logic";
 import { contactKeys } from "./queries";
@@ -23,12 +24,14 @@ export const fieldKeys = {
 
 export function useFields() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useQuery({
     queryKey: fieldKeys.all(user.id),
     queryFn: async (): Promise<ContactField[]> => {
       const { data, error } = await createClient()
         .from("contact_table_fields")
         .select(FIELD_COLUMNS)
+        .eq("user_id", workspaceId)
         .order("position")
         .limit(FIELD_LIMIT);
       if (error) throw error;
@@ -39,13 +42,14 @@ export function useFields() {
 
 export function useCreateTable() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: TableInput): Promise<ContactTable> => {
       const tables = queryClient.getQueryData<ContactTable[]>(contactKeys.tables(user.id)) ?? [];
       const { data, error } = await createClient()
         .from("contact_tables")
-        .insert({ ...input, user_id: user.id, position: nextPosition(tables) })
+        .insert({ ...input, user_id: workspaceId, position: nextPosition(tables) })
         .select(TABLE_COLUMNS)
         .single();
       if (error) throw error;
@@ -138,6 +142,7 @@ function systemKeyFor(input: FieldInput, previous: string | null): string | null
 
 export function useSaveField() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   const key = fieldKeys.all(user.id);
   return useMutation({
@@ -172,9 +177,12 @@ export function useSaveField() {
       const siblings = (queryClient.getQueryData<ContactField[]>(key) ?? []).filter(
         (item) => item.table_id === tableId,
       );
-      const { error } = await supabase
-        .from("contact_table_fields")
-        .insert({ ...row, user_id: user.id, table_id: tableId, position: nextPosition(siblings) });
+      const { error } = await supabase.from("contact_table_fields").insert({
+        ...row,
+        user_id: workspaceId,
+        table_id: tableId,
+        position: nextPosition(siblings),
+      });
       if (error) throw error;
     },
     // Changing a select's options may remove the questions that hung on them.

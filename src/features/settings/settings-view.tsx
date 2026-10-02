@@ -37,6 +37,7 @@ import { useFormatSettings } from "@/lib/use-format-settings";
 import type { UserSettingsPatch } from "@/lib/user-settings";
 import { useUrlIntent } from "@/lib/use-url-intent";
 import { cn } from "@/lib/utils";
+import { useWorkspace } from "@/features/account/workspace-queries";
 import { FakturoidIntegration } from "./fakturoid-integration";
 import { FormatPreview, useNow } from "./format-preview";
 import { JarvisTest } from "./jarvis-test";
@@ -50,6 +51,8 @@ const REENGAGE_MAX = 120;
 
 export function SettingsView() {
   const t = useTranslations("settings");
+  // A worker sets only their own formats; the business settings stay the owner's.
+  const isOwner = useWorkspace().role === "owner";
   const uiLocale = useLocale();
   const settings = useUserSettings();
   const format = useFormatSettings();
@@ -289,21 +292,23 @@ export function SettingsView() {
         </Section>
       </StaggerItem>
 
-      <StaggerItem>
-        <Section title={t("pipeline.title")} description={t("pipeline.description")}>
-          <SettingRow
-            id="settings-reengage"
-            label={t("pipeline.reengage")}
-            hint={t("pipeline.reengageHint")}
-          >
-            <ReengageMonthsControl
+      {isOwner && (
+        <StaggerItem>
+          <Section title={t("pipeline.title")} description={t("pipeline.description")}>
+            <SettingRow
               id="settings-reengage"
-              value={settings.reengage_after_months}
-              onChange={(months) => save({ reengage_after_months: months })}
-            />
-          </SettingRow>
-        </Section>
-      </StaggerItem>
+              label={t("pipeline.reengage")}
+              hint={t("pipeline.reengageHint")}
+            >
+              <ReengageMonthsControl
+                id="settings-reengage"
+                value={settings.reengage_after_months}
+                onChange={(months) => save({ reengage_after_months: months })}
+              />
+            </SettingRow>
+          </Section>
+        </StaggerItem>
+      )}
 
       <StaggerItem>
         <FormatPreview now={now} />
@@ -316,7 +321,7 @@ export function SettingsView() {
           className="rounded-card outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           <Section title={t("integrations.title")} description={t("integrations.description")}>
-            <FakturoidIntegration />
+            {isOwner && <FakturoidIntegration />}
             <JarvisTest />
           </Section>
         </div>

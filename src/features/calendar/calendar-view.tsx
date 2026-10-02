@@ -39,6 +39,7 @@ import {
 import { EventDetail } from "./event-detail";
 import { EventFormDialog, type NewEventStart } from "./event-form-dialog";
 import { MonthView } from "./month-view";
+import { useCan } from "@/features/account/workspace-queries";
 import { useCalendarEvents, useMirrors, useUpdateEvent } from "./queries";
 import { TimeGrid } from "./time-grid";
 import {
@@ -83,6 +84,8 @@ export function CalendarView() {
   const now = useNow(30_000);
   const today = todayIsoDate(settings, now);
   const update = useUpdateEvent();
+  // Without the right to edit, the calendar is to look at; RLS refuses changes anyway.
+  const canEdit = useCan("calendar", "edit");
 
   const [view, setView] = useState<CalendarView>("month");
   const [mirrors, setMirrors] = useState<MirrorPrefs>(DEFAULT_MIRRORS);
@@ -113,7 +116,7 @@ export function CalendarView() {
     ["date"],
   );
   useUrlIntent("new", (value) => {
-    if (value === "event") setForm({ event: null, start: null });
+    if (value === "event" && canEdit) setForm({ event: null, start: null });
   });
 
   const days = useMemo(
@@ -185,10 +188,12 @@ export function CalendarView() {
         title={tNav("calendar")}
         description={t("description")}
         actions={
-          <Button onClick={() => setForm({ event: null, start: { day: defaultDay() } })}>
-            <PlusIcon aria-hidden data-icon="inline-start" />
-            {t("actions.add")}
-          </Button>
+          canEdit && (
+            <Button onClick={() => setForm({ event: null, start: { day: defaultDay() } })}>
+              <PlusIcon aria-hidden data-icon="inline-start" />
+              {t("actions.add")}
+            </Button>
+          )
         }
       />
 
@@ -296,14 +301,15 @@ export function CalendarView() {
           items={items}
           onPickDay={view === "week" ? pickDay : undefined}
           onOpenItem={openItem}
-          onCreate={(day, range) => setForm({ event: null, start: { day, range } })}
-          onChangeEvent={changeEvent}
+          onCreate={(day, range) => canEdit && setForm({ event: null, start: { day, range } })}
+          onChangeEvent={canEdit ? changeEvent : () => {}}
         />
       )}
 
       <EventDetail
         event={openEvent}
         onClose={() => setOpenEventId(null)}
+        readOnly={!canEdit}
         onEdit={(event) => {
           setOpenEventId(null);
           setForm({ event, start: null });

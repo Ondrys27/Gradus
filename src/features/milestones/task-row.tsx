@@ -30,6 +30,8 @@ export type TaskHandlers = {
   onAddSubtask: (task: Task) => void;
   onEdit: (task: Task) => void;
   onDelete: (task: Task) => void;
+  /** Without the right to edit milestones: no ticking, reordering or menu. */
+  readOnly?: boolean;
 };
 
 /** One level of siblings; every level is its own sortable list. */
@@ -80,22 +82,27 @@ function TaskRow({ node, handlers }: { node: TaskNode; handlers: TaskHandlers })
       className={cn("relative", isDragging && "z-10 opacity-70")}
     >
       <div className="flex min-h-11 items-center gap-1 rounded-xl pr-1 hover:bg-surface-hover">
-        <button
-          type="button"
-          ref={setActivatorNodeRef}
-          aria-label={t("reorder", { title: task.title })}
-          className="grid size-11 shrink-0 cursor-grab touch-none place-items-center rounded-lg text-ink-muted outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40 active:cursor-grabbing mouse:size-8"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVerticalIcon aria-hidden className="size-4" />
-        </button>
+        {handlers.readOnly ? (
+          <span aria-hidden className="size-3 shrink-0" />
+        ) : (
+          <button
+            type="button"
+            ref={setActivatorNodeRef}
+            aria-label={t("reorder", { title: task.title })}
+            className="grid size-11 shrink-0 cursor-grab touch-none place-items-center rounded-lg text-ink-muted outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40 active:cursor-grabbing mouse:size-8"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVerticalIcon aria-hidden className="size-4" />
+          </button>
+        )}
 
         <TaskCheckbox
           title={task.title}
           done={done}
           inProgress={inProgress}
           remaining={remaining}
+          disabled={handlers.readOnly}
           onToggle={() => handlers.onToggleDone(task)}
         />
 
@@ -146,7 +153,7 @@ function TaskRow({ node, handlers }: { node: TaskNode; handlers: TaskHandlers })
           </button>
         )}
 
-        <TaskMenu task={task} handlers={handlers} />
+        {!handlers.readOnly && <TaskMenu task={task} handlers={handlers} />}
       </div>
 
       {children.length > 0 && expanded && (

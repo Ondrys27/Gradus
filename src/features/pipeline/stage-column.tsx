@@ -33,7 +33,8 @@ type Props = {
   isLastStage: boolean;
   /** From Settings → Pipeline; a lost deal older than this may be approached again. */
   reengageAfterMonths: number;
-  onAddDeal: (stage: Stage) => void;
+  /** Absent when the account may not add deals. */
+  onAddDeal?: (stage: Stage) => void;
   onOpenDeal: (deal: Deal) => void;
   onRename: (stage: Stage, name: string) => void;
   onRemove: (stage: Stage) => void;
@@ -127,7 +128,7 @@ export function StageColumn({
             >
               <Trash2Icon aria-hidden className="size-4" />
             </button>
-          ) : (
+          ) : onAddDeal ? (
             <button
               type="button"
               aria-label={t("column.addDeal", { name: stage.name })}
@@ -136,7 +137,7 @@ export function StageColumn({
             >
               <PlusIcon aria-hidden className="size-4" />
             </button>
-          )}
+          ) : null}
         </div>
         <p className="min-h-4 truncate text-xs text-ink-muted tabular-nums">
           {totals.map((sum) => formatCurrency(sum.total, sum.currency, settings)).join(" · ")}

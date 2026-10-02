@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUrlIntent } from "@/lib/use-url-intent";
 import { cn } from "@/lib/utils";
+import { useCan } from "@/features/account/workspace-queries";
 import { MilestoneCard } from "./milestone-card";
 import { MilestoneFormDialog } from "./milestone-form-dialog";
 import { useMilestones } from "./queries";
@@ -26,8 +27,9 @@ export function MilestonesView() {
   const { data, isPending, isError, refetch } = useMilestones();
   const [filter, setFilter] = useState<Filter>("all");
   const [creating, setCreating] = useState(false);
+  const canEdit = useCan("milestones", "edit");
   useUrlIntent("new", (value) => {
-    if (value === "milestone") setCreating(true);
+    if (value === "milestone" && canEdit) setCreating(true);
   });
 
   const visible = useMemo(
@@ -35,7 +37,7 @@ export function MilestonesView() {
     [data, filter],
   );
 
-  const newButton = (
+  const newButton = canEdit && (
     <Button onClick={() => setCreating(true)}>
       <PlusIcon aria-hidden data-icon="inline-start" />
       {t("actions.new")}
@@ -88,10 +90,12 @@ export function MilestonesView() {
             title={t("empty.title")}
             description={t("empty.description")}
             action={
-              <Button onClick={() => setCreating(true)}>
-                <PlusIcon aria-hidden data-icon="inline-start" />
-                {t("empty.action")}
-              </Button>
+              canEdit && (
+                <Button onClick={() => setCreating(true)}>
+                  <PlusIcon aria-hidden data-icon="inline-start" />
+                  {t("empty.action")}
+                </Button>
+              )
             }
           />
         ) : (

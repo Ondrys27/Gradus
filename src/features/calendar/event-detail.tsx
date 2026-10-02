@@ -19,9 +19,11 @@ type Props = {
   event: CalendarEvent | null;
   onClose: () => void;
   onEdit: (event: CalendarEvent) => void;
+  /** Without the right to edit the calendar: no edit or delete. */
+  readOnly?: boolean;
 };
 
-export function EventDetail({ event, onClose, onEdit }: Props) {
+export function EventDetail({ event, onClose, onEdit, readOnly = false }: Props) {
   const t = useTranslations("calendar");
   const settings = useFormatSettings();
   const remove = useDeleteEvent();
@@ -116,16 +118,18 @@ export function EventDetail({ event, onClose, onEdit }: Props) {
               )}
             </ul>
           )}
-          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
-            <Button type="button" variant="destructive" onClick={() => setConfirming(true)}>
-              <Trash2Icon aria-hidden data-icon="inline-start" />
-              {t("detail.delete")}
-            </Button>
-            <Button type="button" onClick={() => onEdit(current)}>
-              <PencilIcon aria-hidden data-icon="inline-start" />
-              {t("detail.edit")}
-            </Button>
-          </div>
+          {!readOnly && (
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
+              <Button type="button" variant="destructive" onClick={() => setConfirming(true)}>
+                <Trash2Icon aria-hidden data-icon="inline-start" />
+                {t("detail.delete")}
+              </Button>
+              <Button type="button" onClick={() => onEdit(current)}>
+                <PencilIcon aria-hidden data-icon="inline-start" />
+                {t("detail.edit")}
+              </Button>
+            </div>
+          )}
         </div>
       </ResponsiveDialog>
       <ConfirmDialog

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeftIcon,
   ChevronDownIcon,
@@ -24,6 +25,7 @@ import { toneFill } from "@/components/ui/tone";
 import { formatNumber } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
+import { useCan } from "@/features/account/workspace-queries";
 import { FieldFormDialog } from "./field-form-dialog";
 import { byPosition, fieldOptions, reorder } from "./field-logic";
 import { useContactTables, useTableCounts } from "./queries";
@@ -39,7 +41,17 @@ import {
 } from "./table-queries";
 import { MEETING_FIELD_KEY, tableTone, type ContactField, type ContactTable } from "./types";
 
+/** Editing the tables needs the right to edit contacts; without it the page sends you back. */
 export function TablesEditor() {
+  const canEdit = useCan("contacts", "edit");
+  const router = useRouter();
+  useEffect(() => {
+    if (!canEdit) router.replace("/contacts");
+  }, [canEdit, router]);
+  return canEdit ? <Editor /> : null;
+}
+
+function Editor() {
   const t = useTranslations("contacts.tableEditor");
   const tablesQuery = useContactTables();
   const fieldsQuery = useFields();

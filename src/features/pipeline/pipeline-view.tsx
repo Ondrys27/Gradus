@@ -22,6 +22,7 @@ import { DealFormDialog } from "./deal-form-dialog";
 import { LostReasonDialog } from "./lost-reason-dialog";
 import { useDeals, useMoveDeal, useRenameStage, useReorderStages, useStages } from "./queries";
 import { AddStageDialog, RemoveStageDialog } from "./stage-dialogs";
+import { useCan } from "@/features/account/workspace-queries";
 import type { Deal, Stage } from "./types";
 
 export function PipelineView() {
@@ -35,6 +36,8 @@ export function PipelineView() {
   const move = useMoveDeal();
   const rename = useRenameStage();
   const reorder = useReorderStages();
+  // Without the right to edit, adding, moving and stage changes are hidden; RLS refuses them anyway.
+  const canEdit = useCan("pipeline", "edit");
 
   const [editing, setEditing] = useState(false);
   const [creating, setCreating] = useState<{ stageId: string | null } | null>(null);
@@ -52,7 +55,7 @@ export function PipelineView() {
     if (requestedDeal) setOpenId(requestedDeal);
   }
   useUrlIntent("new", (value) => {
-    if (value !== "deal") return;
+    if (value !== "deal" || !canEdit) return;
     if (stagesQuery.isPending) return false;
     if (stagesQuery.data?.length) setCreating({ stageId: null });
   });
@@ -118,7 +121,7 @@ export function PipelineView() {
     setLostStage(null);
   }
 
-  const headerActions = editing ? (
+  const headerActions = !canEdit ? null : editing ? (
     <Button onClick={() => setEditing(false)}>
       <CheckIcon aria-hidden data-icon="inline-start" />
       {t("actions.doneEditing")}
@@ -184,17 +187,20 @@ export function PipelineView() {
               title={t("empty.title")}
               description={t("empty.description")}
               action={
-                <Button onClick={() => setCreating({ stageId: null })}>
-                  <PlusIcon aria-hidden data-icon="inline-start" />
-                  {t("empty.action")}
-                </Button>
+                canEdit && (
+                  <Button onClick={() => setCreating({ stageId: null })}>
+                    <PlusIcon aria-hidden data-icon="inline-start" />
+                    {t("empty.action")}
+                  </Button>
+                )
               }
             />
           )}
           <Board
             stages={stages}
             dealsByStage={dealsByStage}
-            editing={editing}
+            editing={editing && canEdit}
+            readOnly={!canEdit}
             reengageAfterMonths={settings.reengage_after_months}
             onAddStage={() => setAddingStage(true)}
             onAddDeal={(stage) => setCreating({ stageId: stage.id })}

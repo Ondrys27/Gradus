@@ -5,7 +5,10 @@ import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { FormAlert } from "@/components/ui/form-alert";
 import { GlowCard } from "@/components/ui/glow-card";
+import { Avatar } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useWorkspaceMembers, type WorkspaceMember } from "@/features/account/members";
+import { useSession } from "@/features/account/queries";
 import {
   formatCalendarDate,
   formatMonthYear,
@@ -37,13 +40,16 @@ export function StatsCard() {
   const locale = useLocale();
   const settings = useFormatSettings();
   const [period, setPeriod] = useState<Period>({ kind: "week", offset: 0 });
+  // The owner sees the whole space or one person; a worker only ever themself.
+  const [actor, setActor] = useState<string | null>(null);
+  const members = useWorkspaceMembers();
   const today = todayIsoDate(settings);
   const range = useMemo(
     () => periodRange(period, today, settings.weekStartsOn),
     [period, today, settings.weekStartsOn],
   );
-  const seconds = useDailySeconds(range);
-  const meetings = useDailyMeetings(range);
+  const seconds = useDailySeconds(range, actor);
+  const meetings = useDailyMeetings(range, actor);
   const n = (value: number, decimals = 0) => formatNumber(value, { decimals }, settings);
 
   function duration(total: number) {
@@ -104,6 +110,9 @@ export function StatsCard() {
         <p className="text-sm text-ink-soft" aria-live="polite">
           {rangeLabel(period.kind, range, locale, settings)}
         </p>
+        {members.data && members.data.size > 0 && (
+          <PersonPicker members={[...members.data.values()]} value={actor} onChange={setActor} />
+        )}
       </div>
 
       <ChartBlock
@@ -156,6 +165,52 @@ export function StatsCard() {
       to: formatCalendarDate(value.to, format),
     });
   }
+}
+
+/** Whose numbers: the whole space, the owner, or one worker (avatar and name). */
+function PersonPicker({
+  members,
+  value,
+  onChange,
+}: {
+  members: WorkspaceMember[];
+  value: string | null;
+  onChange: (value: string | null) => void;
+}) {
+  const t = useTranslations("coldCalling.stats");
+  const { user } = useSession();
+  const options: { id: string | null; label: string; member?: WorkspaceMember }[] = [
+    { id: null, label: t("people.everyone") },
+    { id: user.id, label: t("people.me") },
+    ...members.map((member) => ({ id: member.userId, label: member.name, member })),
+  ];
+  return (
+    <div role="group" aria-label={t("people.label")} className="flex flex-wrap gap-1.5">
+      {options.map((option) => (
+        <button
+          key={option.id ?? "all"}
+          type="button"
+          aria-pressed={value === option.id}
+          onClick={() => onChange(option.id)}
+          className={cn(
+            "flex h-11 max-w-48 cursor-pointer items-center gap-2 rounded-full border px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:h-8",
+            value === option.id
+              ? "border-violet/50 bg-violet/20 text-ink"
+              : "border-line text-ink-soft hover:text-ink",
+          )}
+        >
+          {option.member && (
+            <Avatar
+              src={option.member.avatarUrl}
+              name={option.member.name}
+              className="size-6 text-[10px]"
+            />
+          )}
+          <span className="truncate">{option.label}</span>
+        </button>
+      ))}
+    </div>
+  );
 }
 
 function ChartBlock({

@@ -394,22 +394,28 @@ describe("earnings from triggers", () => {
     expect(Number(hourly.basis)).toBeCloseTo(1.5, 1);
     expect(Number(hourly.amount)).toBeCloseTo(450, -1);
 
-    // The worker's own contact moved into "Meeting scheduled", twice.
+    // The worker moved a contact of the owner's space into "Meeting scheduled", twice.
+    await db.query(
+      `insert into worker_permissions (owner_id, worker_id, section, can_view, can_edit) values
+         ($1, $2, 'contacts', true, true), ($1, $2, 'pipeline', true, true)`,
+      [owner, worker],
+    );
     const contact = (
       await one<{ id: string }>(
         `insert into contacts (user_id, company_name) values ($1, 'Pekárna Novák') returning id`,
-        [account],
+        [owner],
       )
     ).id;
     const { unreached, meeting } = await one<{ unreached: string; meeting: string }>(
       `select (select id from contact_tables where user_id = $1 and system_key = 'unreached') as unreached,
               (select id from contact_tables where user_id = $1 and system_key = 'meeting_scheduled') as meeting`,
-      [account],
+      [owner],
     );
     for (let i = 0; i < 2; i++) {
       await db.query(
-        `insert into contact_table_moves (user_id, contact_id, from_table_id, to_table_id) values ($1, $2, $3, $4)`,
-        [account, contact, unreached, meeting],
+        `insert into contact_table_moves (user_id, actor_id, contact_id, from_table_id, to_table_id)
+         values ($1, $2, $3, $4, $5)`,
+        [owner, account, contact, unreached, meeting],
       );
     }
     expect(
@@ -419,12 +425,13 @@ describe("earnings from triggers", () => {
       ),
     ).toEqual([{ amount: "150.00", description: "Pekárna Novák" }]);
 
-    // Deals: 10 % of a won deal worth at least 1000; un-winning takes the pending share back.
+    // Deals the worker created in the owner's space: 10 % of a won deal worth at least
+    // 1000; un-winning takes the pending share back.
     const stages = Object.fromEntries(
       (
         await rows<{ system_key: string; id: string }>(
           `select system_key, id from pipeline_stages where user_id = $1`,
-          [account],
+          [owner],
         )
       ).map((r) => [r.system_key, r.id]),
     );
@@ -432,13 +439,15 @@ describe("earnings from triggers", () => {
     const big = (
       await one<{ id: string }>(
         `insert into deals (user_id, stage_id, title, value) values ($1, $2, 'Big', 25000) returning id`,
-        [account, stages.lead],
+        [owner, stages.lead],
       )
     ).id;
     await db.query(
       `insert into deals (user_id, stage_id, title, value) values ($1, $2, 'Small', 500)`,
-      [account, stages.won],
+      [owner, stages.won],
     );
+    // The owner wins it; the worker who created it still earns.
+    await asUser(owner);
     await db.query(`update deals set stage_id = $1 where id = $2`, [stages.won, big]);
     await asServer();
     expect(
@@ -455,6 +464,7 @@ describe("earnings from triggers", () => {
         worker,
       ]),
     ).toBe(0);
+    await db.query(`delete from worker_permissions where worker_id = $1`, [worker]);
   });
 
   it("gives nothing to an account that is not a worker", async () => {

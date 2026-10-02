@@ -60,7 +60,7 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - **Telefony** vždy přes PhoneInput a formatPhone (src/lib/phone.ts, libphonenumber-js). Ukládat v E.164, zobrazovat národně pro stejnou zemi, jinak mezinárodně.
 
 ### Data
-- **RLS na všech tabulkách.** Uživatel vidí jen svoje. Výjimky: `call_time_stats` (souhrny, čte každý přihlášený), tabulky pracovníků (pracovník vidí své záznamy).
+- **RLS na všech tabulkách.** Uživatel vidí jen svoje. Výjimky: `call_time_stats` (souhrny, čte každý přihlášený), tabulky pracovníků (pracovník vidí své záznamy), sdílený pracovní prostor (pracovník vidí sekce majitele podle práv, viz Pracovní prostor).
 - **Role v `user_roles`**, ne v `profiles`. Bez klientského zápisu. `has_role()` je `SECURITY DEFINER`.
 - **`usage_events`, `ai_usage`, `call_time_stats` zapisuje jen server** přes admin klienta. Bez klientských INSERT/UPDATE/DELETE pravidel.
 - Admin klient obchází RLS — jen v serverovém kódu, vždy filtrovat podle `userId` ze session.
@@ -97,9 +97,16 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - `prefers-reduced-motion` všude.
 
 ### Pracovní prostor
-- Prostor = účet majitele. Dotazy filtrují podle current_workspace_id(), nikdy podle auth.uid(). Ochrana řádků přes has_section_access(owner, sekce, úroveň).
-- Tam, kde záleží, kdo akci udělal, je actor_id vedle user_id.
-- Pracovník nikdy nevidí finance bez výslovného práva, nastavení a pracovníky nikdy.
+- Prostor = účet majitele. Majitel pracuje ve svém, pracovník v prostoru majitele, který ho pozval (zatím právě jeden). Dotazy filtrují podle current_workspace_id(), nikdy podle auth.uid(). Ochrana řádků přes has_section_access(owner, sekce, úroveň).
+- `current_workspace_id()` a `has_section_access(_owner, _section, _level)` jsou SECURITY DEFINER. Majitel má ve svém prostoru vše; pracovník jen podle `worker_permissions` (`view` / `edit`, úprava zahrnuje čtení) a jen když je aktivní.
+- Sekce pro práva: milestones, contacts, pipeline, cold_calling, calendar, finance. Kontakty a Cold Calling sdílejí tytéž tabulky, otevírá je kterékoli z obou práv. Sekce workers a settings pracovník nikdy nevidí.
+- Ochrana řádků na sdílených tabulkách: čtení `user_id = auth.uid()` nebo `has_section_access(user_id, sekce, 'view')`, vložení, úprava i mazání totéž s `'edit'`. Pracovník zakládá řádky s `user_id` = majitel. Funkce SECURITY DEFINER (move_contact, start_prospecting, mark_invoice_paid…) si právo ověřují samy.
+- V aplikaci `useWorkspace()` (id prostoru, role owner / worker, práva) a `useCan(sekce, úroveň)`. Každý dotaz sdílené tabulky má `.eq("user_id", workspaceId)` a vkládá `user_id: workspaceId` (účet pracovníka má vlastní založené tabulky a fáze). Bez práva úprav jsou akce přidat, upravit, smazat a přesunout schované; ochrana řádků to vynucuje i tak.
+- Práva jsou živá: změna se pracovníkovi projeví hned bez odhlášení (Realtime na `worker_permissions` a `workers`, záloha čtením každých 30 s). Deaktivovaný pracovník je vrácen do vlastního účtu.
+- Tam, kde záleží, kdo akci udělal, je actor_id vedle user_id: `contact_activities`, `contact_table_moves`, `prospecting_segments`, `calendar_events` (actor_id), `deals.created_by`, `tasks.completed_by`. Výchozí actor = auth.uid(); klient jiného aktéra nezapíše. Majitel u aktivit a přesunů vidí avatar pracovníka.
+- Časovač je po lidech: jeden běžící úsek na (prostor, aktér). Statistiky majitel vidí celkem i po lidech, pracovník jen svoje. Odměny pracovníka (schůzka, vyhraný obchod) se řídí aktérem, ne prostorem.
+- Soukromé zůstává: profily, nastavení, XP, odemčení, Jarvisovy konverzace, nápady. Fakturoid připojuje jen majitel.
+- Pracovník nikdy nevidí finance bez výslovného práva, nastavení a pracovníky nikdy. Ověření přes RLS s dvěma účty: `bun run verify:workspace`.
 
 ### Hra
 - Dva režimy: game a tool. Tool nic nezamyká a nezobrazuje XP.

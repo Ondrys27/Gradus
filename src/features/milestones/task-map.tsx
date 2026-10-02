@@ -15,12 +15,21 @@ type Props = {
   onOpen: (task: Task) => void;
   onToggleDone: (task: Task) => void;
   onAddChild: (parent: Task | null) => void;
+  /** Without the right to edit milestones: look only. */
+  readOnly?: boolean;
 };
 
 const noop = () => {};
 
 /** Tasks as a horizontal tree: the milestone is the root, tasks the branches, subtasks the leaves. */
-export function TaskMap({ milestone, tasks, onOpen, onToggleDone, onAddChild }: Props) {
+export function TaskMap({
+  milestone,
+  tasks,
+  onOpen,
+  onToggleDone,
+  onAddChild,
+  readOnly = false,
+}: Props) {
   const t = useTranslations("milestones.map");
   const tree = useMemo(() => toBranch(milestone.id, buildTree(tasks)), [milestone.id, tasks]);
 
@@ -51,7 +60,7 @@ export function TaskMap({ milestone, tasks, onOpen, onToggleDone, onAddChild }: 
               done={doneCount}
               total={tasks.length}
               completed={milestone.status === "completed"}
-              onAddChild={node.measuring ? noop : () => onAddChild(null)}
+              onAddChild={readOnly ? undefined : node.measuring ? noop : () => onAddChild(null)}
             />
           );
         }
@@ -62,9 +71,10 @@ export function TaskMap({ milestone, tasks, onOpen, onToggleDone, onAddChild }: 
             childCount={node.childCount}
             hiddenCount={node.hiddenCount}
             collapsed={node.collapsed}
-            onOpen={node.measuring ? noop : () => onOpen(task)}
-            onToggleDone={node.measuring ? noop : () => onToggleDone(task)}
-            onAddChild={node.measuring ? noop : () => onAddChild(task)}
+            onOpen={node.measuring || readOnly ? noop : () => onOpen(task)}
+            onToggleDone={node.measuring || readOnly ? noop : () => onToggleDone(task)}
+            onAddChild={readOnly ? undefined : node.measuring ? noop : () => onAddChild(task)}
+            readOnly={readOnly}
             onToggleCollapsed={node.onToggleCollapsed}
           />
         );

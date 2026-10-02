@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
+import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { invalidateFinance } from "@/features/finance/queries";
 import { createClient } from "@/lib/supabase/client";
 import { applyMove, nextDealPosition, reorderStages, sortStages } from "./board-logic";
@@ -44,12 +45,14 @@ export const pipelineKeys = {
 
 export function useStages() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useQuery({
     queryKey: pipelineKeys.stages(user.id),
     queryFn: async (): Promise<Stage[]> => {
       const { data, error } = await createClient()
         .from("pipeline_stages")
         .select(STAGE_COLUMNS)
+        .eq("user_id", workspaceId)
         .order("position")
         .limit(STAGE_LIMIT);
       if (error) throw error;
@@ -60,6 +63,7 @@ export function useStages() {
 
 export function useDeals() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useQuery({
     queryKey: pipelineKeys.deals(user.id),
     queryFn: async (): Promise<Deal[]> => {
@@ -69,6 +73,7 @@ export function useDeals() {
         supabase
           .from("deals")
           .select(DEAL_COLUMNS)
+          .eq("user_id", workspaceId)
           .is("won_at", null)
           .is("lost_at", null)
           .order("created_at", { ascending: false })
@@ -76,6 +81,7 @@ export function useDeals() {
         supabase
           .from("deals")
           .select(DEAL_COLUMNS)
+          .eq("user_id", workspaceId)
           .or("won_at.not.is.null,lost_at.not.is.null")
           .order("created_at", { ascending: false })
           .limit(CLOSED_DEAL_LIMIT),
@@ -92,12 +98,14 @@ export function useDeals() {
 /** A deal's own communication history (e.g. e-mails sent from its detail), newest first. */
 export function useDealActivities(dealId: string) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useQuery({
     queryKey: pipelineKeys.dealActivities(user.id, dealId),
     queryFn: async (): Promise<DealActivity[]> => {
       const { data, error } = await createClient()
         .from("contact_activities")
         .select(DEAL_ACTIVITY_COLUMNS)
+        .eq("user_id", workspaceId)
         .eq("deal_id", dealId)
         .order("occurred_at", { ascending: false })
         .limit(DEAL_ACTIVITY_LIMIT);
@@ -121,6 +129,7 @@ function toDealRow(input: DealInput) {
 /** New deals start last in their stage. The database stamps entered_stage_at and won_at. */
 export function useCreateDeal() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: DealInput) => {
@@ -129,7 +138,7 @@ export function useCreateDeal() {
         .from("deals")
         .insert({
           ...toDealRow(input),
-          user_id: user.id,
+          user_id: workspaceId,
           stage_id: input.stage_id,
           position: nextDealPosition(deals, input.stage_id),
         })
@@ -248,6 +257,7 @@ export function useMoveDeal() {
 
 export function useCreateStage() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: StageInput) => {
@@ -256,7 +266,7 @@ export function useCreateStage() {
       const { data, error } = await createClient()
         .from("pipeline_stages")
         .insert({
-          user_id: user.id,
+          user_id: workspaceId,
           name: input.name,
           color: input.color,
           is_won: input.kind === "won",
@@ -374,6 +384,7 @@ function cleanTerm(term: string) {
 
 export function useContactSearch(term: string) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const clean = cleanTerm(term);
   return useQuery({
     queryKey: pipelineKeys.contacts(user.id, clean),
@@ -383,6 +394,7 @@ export function useContactSearch(term: string) {
       const { data, error } = await createClient()
         .from("contacts")
         .select("id, company_name, first_name, last_name")
+        .eq("user_id", workspaceId)
         .or(`company_name.ilike.${pattern},first_name.ilike.${pattern},last_name.ilike.${pattern}`)
         .order("company_name")
         .limit(CONTACT_SUGGESTIONS);
@@ -394,12 +406,12 @@ export function useContactSearch(term: string) {
 
 /** Quick creation from the deal form: a company name, nothing else. */
 export function useCreateContact() {
-  const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useMutation({
     mutationFn: async (name: string): Promise<DealContact> => {
       const { data, error } = await createClient()
         .from("contacts")
-        .insert({ user_id: user.id, company_name: name.trim() })
+        .insert({ user_id: workspaceId, company_name: name.trim() })
         .select("id, company_name, first_name, last_name")
         .single();
       if (error) throw error;

@@ -2,6 +2,7 @@
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
+import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { createClient } from "@/lib/supabase/client";
 import type { IsoDate } from "@/lib/format";
 import { dayRangeToInstants } from "./calendar-logic";
@@ -28,6 +29,7 @@ export function useCalendarEvents(
   enabled: boolean,
 ) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const { from, to } = dayRangeToInstants(firstDay, lastDay, timeZone);
   return useQuery({
     queryKey: calendarKeys.events(user.id, from, to),
@@ -40,6 +42,7 @@ export function useCalendarEvents(
       const { data, error } = await createClient()
         .from("calendar_events")
         .select(EVENT_COLUMNS)
+        .eq("user_id", workspaceId)
         .lt("starts_at", to)
         .or(`ends_at.gte.${from},starts_at.gte.${from}`)
         .order("starts_at")
@@ -58,6 +61,7 @@ export function useMirrors(
   enabled: boolean,
 ) {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   return useQuery({
     queryKey: [...calendarKeys.mirrors(user.id, firstDay, lastDay), wanted.tasks, wanted.deals],
     enabled,
@@ -69,6 +73,7 @@ export function useMirrors(
           ? supabase
               .from("tasks")
               .select("id, title, due_date, milestone_id")
+              .eq("user_id", workspaceId)
               .neq("status", "done")
               .gte("due_date", firstDay)
               .lte("due_date", lastDay)
@@ -79,6 +84,7 @@ export function useMirrors(
           ? supabase
               .from("deals")
               .select("id, title, expected_close_date")
+              .eq("user_id", workspaceId)
               .is("won_at", null)
               .is("lost_at", null)
               .gte("expected_close_date", firstDay)
@@ -124,12 +130,13 @@ function toRow(input: EventInput) {
 
 export function useCreateEvent() {
   const { user } = useSession();
+  const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: EventInput) => {
       const { error } = await createClient()
         .from("calendar_events")
-        .insert({ ...toRow(input), user_id: user.id });
+        .insert({ ...toRow(input), user_id: workspaceId });
       if (error) throw error;
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: calendarKeys.all(user.id) }),

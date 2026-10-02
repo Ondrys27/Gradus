@@ -28,8 +28,9 @@ const ALL = "__all";
 
 type Props = {
   range: DateRange;
-  onEdit: (transaction: Transaction) => void;
-  onCreate: () => void;
+  /** Absent without the right to edit finance: the list is read-only. */
+  onEdit?: (transaction: Transaction) => void;
+  onCreate?: () => void;
 };
 
 /** Filtered by the shared period and a category; twenty a page. */
@@ -80,10 +81,12 @@ export function TransactionsPanel({ range, onEdit, onCreate }: Props) {
           title={t("transactions.emptyTitle")}
           description={t("transactions.emptyDescription")}
           action={
-            <Button onClick={onCreate}>
-              <PlusIcon aria-hidden data-icon="inline-start" />
-              {t("actions.newTransaction")}
-            </Button>
+            onCreate && (
+              <Button onClick={onCreate}>
+                <PlusIcon aria-hidden data-icon="inline-start" />
+                {t("actions.newTransaction")}
+              </Button>
+            )
           }
         />
       ) : (
@@ -95,11 +98,7 @@ export function TransactionsPanel({ range, onEdit, onCreate }: Props) {
               </li>
             ))}
           </ul>
-          <Pager
-            page={page}
-            pages={pageCount(query.data.total, PAGE_SIZE)}
-            onPage={setPage}
-          />
+          <Pager page={page} pages={pageCount(query.data.total, PAGE_SIZE)} onPage={setPage} />
         </>
       )}
     </div>
@@ -111,7 +110,7 @@ function TransactionRow({
   onEdit,
 }: {
   transaction: Transaction;
-  onEdit: (transaction: Transaction) => void;
+  onEdit?: (transaction: Transaction) => void;
 }) {
   const t = useTranslations("finance");
   const settings = useFormatSettings();
@@ -120,7 +119,9 @@ function TransactionRow({
   const income = transaction.type === "income";
   const title =
     transaction.description ||
-    (transaction.category ? t(`categories.${transaction.category}`) : t(`type.${transaction.type}`));
+    (transaction.category
+      ? t(`categories.${transaction.category}`)
+      : t(`type.${transaction.type}`));
   const amount = formatCurrency(
     transaction.amount,
     transaction.currency,
@@ -137,8 +138,9 @@ function TransactionRow({
     >
       <button
         type="button"
-        onClick={() => onEdit(transaction)}
-        className="flex min-h-16 min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-2xl p-3 text-left outline-none hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-violet/40"
+        disabled={!onEdit}
+        onClick={() => onEdit?.(transaction)}
+        className="flex min-h-16 min-w-0 flex-1 cursor-pointer disabled:cursor-default disabled:hover:bg-transparent items-center gap-3 rounded-2xl p-3 text-left outline-none hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-violet/40"
       >
         <span
           aria-hidden
@@ -171,7 +173,7 @@ function TransactionRow({
           {amount}
         </span>
       </button>
-      {transaction.needs_review && (
+      {transaction.needs_review && onEdit && (
         <Button
           type="button"
           variant="ghost"

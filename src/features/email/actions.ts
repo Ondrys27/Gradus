@@ -9,7 +9,8 @@ import { EMAIL_BODY_MAX, EMAIL_SUBJECT_MAX, emailSummary } from "./types";
 
 /**
  * Sending an e-mail from a contact or a deal, called from the compose dialog.
- * The user id always comes from the session; failures come back as codes,
+ * The user id always comes from the session, the workspace from the database
+ * (uploads stay in the sender's own folder); failures come back as codes,
  * never thrown (Next.js hides a thrown message in production).
  */
 
@@ -31,7 +32,24 @@ async function session() {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const userId = data?.claims?.sub;
-  return typeof userId === "string" && userId ? { supabase, userId } : null;
+  if (typeof userId !== "string" || !userId) return null;
+  // The contact and its history belong to the workspace (the owner's account).
+  const { data: workspaceId, error } = await supabase.rpc("current_workspace_id");
+  if (error || !workspaceId) return null;
+  if (workspaceId !== userId) {
+    // A worker writes to the contact's history only with edit rights to contacts or cold calling.
+    const checks = await Promise.all(
+      (["contacts", "cold_calling"] as const).map((section) =>
+        supabase.rpc("has_section_access", {
+          _owner: workspaceId,
+          _section: section,
+          _level: "edit",
+        }),
+      ),
+    );
+    if (!checks.some((check) => check.data === true)) return null;
+  }
+  return { supabase, userId, workspaceId };
 }
 
 export async function sendEmailAction(
@@ -42,7 +60,10 @@ export async function sendEmailAction(
   try {
     const ctx = await session();
     if (!ctx) return { ok: false, error: "unknown" };
-    return { ok: true, data: await sendContactEmail(ctx.supabase, ctx.userId, parsed.data) };
+    return {
+      ok: true,
+      data: await sendContactEmail(ctx.supabase, ctx.userId, ctx.workspaceId, parsed.data),
+    };
   } catch (error) {
     const failure = toFailure(error);
     if (failure.error === "unknown") console.error("send email action failed", error);
@@ -53,12 +74,14 @@ export async function sendEmailAction(
 async function sendContactEmail(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
+  workspaceId: string,
   input: z.output<typeof sendEmailInputSchema>,
 ): Promise<{ activityLogged: boolean }> {
   // Read with the user's own client: RLS keeps it to their own contact.
   const { data: contact, error: contactError } = await supabase
     .from("contacts")
     .select("id, email")
+    .eq("user_id", workspaceId)
     .eq("id", input.contactId)
     .maybeSingle();
   if (contactError) throw contactError;
@@ -71,6 +94,7 @@ async function sendContactEmail(
     const { data: deal, error: dealError } = await supabase
       .from("deals")
       .select("id")
+      .eq("user_id", workspaceId)
       .eq("id", input.dealId)
       .maybeSingle();
     if (dealError) throw dealError;
@@ -102,7 +126,7 @@ async function sendContactEmail(
     if (!sent.ok) throw new EmailError("sendFailed", sent.error);
 
     const { error: activityError } = await supabase.from("contact_activities").insert({
-      user_id: userId,
+      user_id: workspaceId,
       contact_id: input.contactId,
       deal_id: dealId,
       type: "email_sent",
