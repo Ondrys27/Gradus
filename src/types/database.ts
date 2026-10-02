@@ -200,6 +200,13 @@ export type Database = {
             foreignKeyName: "calendar_events_contact_id_fkey"
             columns: ["contact_id", "user_id"]
             isOneToOne: false
+            referencedRelation: "contact_list"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "calendar_events_contact_id_fkey"
+            columns: ["contact_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "contacts"
             referencedColumns: ["id", "user_id"]
           },
@@ -294,6 +301,13 @@ export type Database = {
             foreignKeyName: "contact_activities_contact_id_user_id_fkey"
             columns: ["contact_id", "user_id"]
             isOneToOne: false
+            referencedRelation: "contact_list"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "contact_activities_contact_id_user_id_fkey"
+            columns: ["contact_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "contacts"
             referencedColumns: ["id", "user_id"]
           },
@@ -338,6 +352,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "contact_table_entries_contact_id_user_id_fkey"
+            columns: ["contact_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "contact_list"
+            referencedColumns: ["id", "user_id"]
+          },
           {
             foreignKeyName: "contact_table_entries_contact_id_user_id_fkey"
             columns: ["contact_id", "user_id"]
@@ -452,6 +473,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "contact_table_moves_contact_id_fkey"
+            columns: ["contact_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "contact_list"
+            referencedColumns: ["id", "user_id"]
+          },
           {
             foreignKeyName: "contact_table_moves_contact_id_fkey"
             columns: ["contact_id", "user_id"]
@@ -643,6 +671,13 @@ export type Database = {
             foreignKeyName: "deals_contact_id_fkey"
             columns: ["contact_id", "user_id"]
             isOneToOne: false
+            referencedRelation: "contact_list"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "deals_contact_id_fkey"
+            columns: ["contact_id", "user_id"]
+            isOneToOne: false
             referencedRelation: "contacts"
             referencedColumns: ["id", "user_id"]
           },
@@ -780,6 +815,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "invoices_contact_id_fkey"
+            columns: ["contact_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "contact_list"
+            referencedColumns: ["id", "user_id"]
+          },
           {
             foreignKeyName: "invoices_contact_id_fkey"
             columns: ["contact_id", "user_id"]
@@ -2078,7 +2120,15 @@ export type Database = {
           table_id: string | null
           user_id: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "contact_table_entries_table_id_user_id_fkey"
+            columns: ["table_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "contact_tables"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
       }
       milestone_task_counts: {
         Row: {
@@ -2087,7 +2137,15 @@ export type Database = {
           total: number | null
           user_id: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tasks_milestone_id_user_id_fkey"
+            columns: ["milestone_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
       }
     }
     Functions: {
@@ -2124,7 +2182,6 @@ export type Database = {
         }
         Returns: undefined
       }
-      current_workspace_id: { Args: never; Returns: string }
       create_invoice_from_deal: {
         Args: { _deal_id: string }
         Returns: {
@@ -2151,6 +2208,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      current_workspace_id: { Args: never; Returns: string }
       fakturoid_apply_invoice: {
         Args: {
           _amount: number
@@ -2163,6 +2221,14 @@ export type Database = {
           _user_id: string
         }
         Returns: Json
+      }
+      finance_daily_totals: {
+        Args: { _from: string; _to: string }
+        Returns: {
+          day: string
+          expense: number
+          income: number
+        }[]
       }
       finance_monthly_totals: {
         Args: { _from: string; _to: string }
@@ -2208,15 +2274,15 @@ export type Database = {
         }
         Returns: number
       }
-      has_section_access: {
-        Args: { _level: string; _owner: string; _section: string }
-        Returns: boolean
-      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      has_section_access: {
+        Args: { _level: string; _owner: string; _section: string }
         Returns: boolean
       }
       import_generated_contacts: {
@@ -2302,6 +2368,7 @@ export type Database = {
       pause_prospecting: {
         Args: never
         Returns: {
+          actor_id: string | null
           created_at: string
           end_reason: Database["public"]["Enums"]["session_end_reason"] | null
           ended_at: string | null
@@ -2476,6 +2543,7 @@ export type Database = {
       start_prospecting: {
         Args: never
         Returns: {
+          actor_id: string | null
           created_at: string
           end_reason: Database["public"]["Enums"]["session_end_reason"] | null
           ended_at: string | null

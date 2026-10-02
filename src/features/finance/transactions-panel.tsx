@@ -105,7 +105,8 @@ export function TransactionsPanel({ range, onEdit, onCreate }: Props) {
   );
 }
 
-function TransactionRow({
+/** A single row; also used under the income chart for its zoomed-in range. */
+export function TransactionRow({
   transaction,
   onEdit,
 }: {

@@ -5,6 +5,7 @@ import { PlusIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { GlowCard } from "@/components/ui/glow-card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -38,13 +39,10 @@ import {
 } from "./types";
 
 // The charts library is large; the totals and the transaction list never wait for it.
-const CashflowChart = dynamic(
-  () => import("./cashflow-chart").then((module) => module.CashflowChart),
-  {
-    ssr: false,
-    loading: () => <Skeleton className="h-80 rounded-card" />,
-  },
-);
+const IncomeChart = dynamic(() => import("./income-chart").then((module) => module.IncomeChart), {
+  ssr: false,
+  loading: () => <Skeleton className="h-96 rounded-card" />,
+});
 
 /** `undefined` closed, `null` a new one, otherwise the one being edited. */
 type Editing<T> = T | null | undefined;
@@ -121,7 +119,9 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
       </div>
 
       <SummaryTiles range={range} />
-      <CashflowChart today={today} />
+      <GlowCard interactive={false}>
+        <IncomeChart today={today} />
+      </GlowCard>
 
       <Segmented
         label={t("tabs.label")}

@@ -9,7 +9,7 @@ import {
 } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
 import { useWorkspaceId } from "@/features/account/workspace-queries";
-import type { DateRange, MonthlyRow } from "./finance-logic";
+import type { DailyRow, DateRange, MonthlyRow } from "./finance-logic";
 import { PAGE_SIZE } from "./finance-logic";
 import {
   connectFakturoidAction,
@@ -42,6 +42,7 @@ export const financeKeys = {
   totals: (userId: string, range: DateRange, category: string | null) =>
     ["finance", userId, "totals", range, category] as const,
   monthly: (userId: string, range: DateRange) => ["finance", userId, "monthly", range] as const,
+  daily: (userId: string, range: DateRange) => ["finance", userId, "daily", range] as const,
   recurring: (userId: string) => ["finance", userId, "recurring"] as const,
   invoices: (userId: string, page: number) => ["finance", userId, "invoices", page] as const,
   fakturoid: (userId: string) => ["finance", userId, "fakturoid"] as const,
@@ -109,6 +110,26 @@ export function useMonthlyTotals(range: DateRange) {
       if (error) throw error;
       return data.map((row) => ({
         month: row.month,
+        income: Number(row.income),
+        expense: Number(row.expense),
+      }));
+    },
+  });
+}
+
+/** One row per day in the range, for the Month view of the income chart. */
+export function useDailyTotals(range: DateRange) {
+  const { user } = useSession();
+  return useQuery({
+    queryKey: financeKeys.daily(user.id, range),
+    queryFn: async (): Promise<DailyRow[]> => {
+      const { data, error } = await createClient().rpc("finance_daily_totals", {
+        _from: range.from,
+        _to: range.to,
+      });
+      if (error) throw error;
+      return data.map((row) => ({
+        day: row.day,
         income: Number(row.income),
         expense: Number(row.expense),
       }));

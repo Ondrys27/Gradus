@@ -16,7 +16,6 @@ import { summarize, toBars } from "@/features/cold-calling/stats-logic";
 import { contactName } from "@/features/contacts/types";
 import { periodRange as monthRange } from "@/features/finance/finance-logic";
 import { useTotals } from "@/features/finance/queries";
-import { categoryIcon } from "@/features/finance/types";
 import { SALES_ANALYSIS_MIN_SURVEYS } from "@/features/jarvis/protocol";
 import { JarvisJobError, useRunSalesAnalysis, useSalesAnalysis } from "@/features/jarvis/queries";
 import { useStages } from "@/features/pipeline/queries";
@@ -41,7 +40,6 @@ import {
   useMeetingSurveys,
   useNewContactCount,
   useNewContacts,
-  useRecentIncome,
   useToday,
   useTodayTasks,
   type MeetingSurvey,
@@ -54,6 +52,10 @@ import { tileLayoutId, useWeekProspecting, type TileKey } from "./tiles";
 const DailyBarChart = dynamic(
   () => import("@/features/cold-calling/daily-bar-chart").then((module) => module.DailyBarChart),
   { ssr: false, loading: () => <Skeleton className="h-52 rounded-xl" /> },
+);
+const IncomeChart = dynamic(
+  () => import("@/features/finance/income-chart").then((module) => module.IncomeChart),
+  { ssr: false, loading: () => <Skeleton className="h-64 rounded-xl" /> },
 );
 
 type Props = { tile: TileKey; onClose: () => void };
@@ -161,12 +163,10 @@ function Failed() {
 
 function IncomeDetail() {
   const t = useTranslations("dashboard.detail.income");
-  const tCategory = useTranslations("finance.categories");
   const settings = useFormatSettings();
   const { today } = useToday();
   const current = useTotals(monthRange("thisMonth", today), null);
   const previous = useTotals(monthRange("lastMonth", today), null);
-  const recent = useRecentIncome(true);
   const money = (value: number) =>
     formatCurrency(value, undefined, settings, Number.isInteger(value) ? 0 : 2);
 
@@ -192,43 +192,8 @@ function IncomeDetail() {
           : t(change.direction, { amount: money(change.difference) })}
       </Trend>
 
-      <div className="flex flex-col gap-2">
-        <Heading>{t("recent")}</Heading>
-        {recent.isError ? (
-          <Failed />
-        ) : !recent.data ? (
-          <Skeleton className="h-24 w-full" />
-        ) : recent.data.length === 0 ? (
-          <p className="text-sm text-ink-muted">{t("noIncome")}</p>
-        ) : (
-          <ul className="flex flex-col divide-y divide-line">
-            {recent.data.map((row) => {
-              const Icon = categoryIcon(row.category);
-              return (
-                <li key={row.id} className="flex min-h-11 items-center gap-3 py-2">
-                  <Icon aria-hidden className="size-4 shrink-0 text-ink-muted" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm text-ink">
-                      {row.description || (row.category ? tCategory(row.category) : t("untitled"))}
-                    </p>
-                    <p className="text-xs text-ink-muted">
-                      {formatCalendarDate(row.occurred_on, settings)}
-                    </p>
-                  </div>
-                  <span className="shrink-0 text-sm font-semibold text-green tabular-nums">
-                    {formatCurrency(
-                      row.amount,
-                      row.currency,
-                      settings,
-                      Number.isInteger(row.amount) ? 0 : 2,
-                    )}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
+      <IncomeChart today={today} />
+
       <OpenLink href="/finance">{t("open")}</OpenLink>
     </Body>
   );

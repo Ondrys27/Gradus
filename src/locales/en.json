@@ -1577,12 +1577,23 @@
       "loadFailed": "The summary could not be loaded."
     },
     "chart": {
-      "title": "Last 12 months",
+      "view": {
+        "label": "Chart view",
+        "month": "Month",
+        "year": "Year"
+      },
       "income": "Income",
       "expense": "Expenses",
-      "month": "Month",
-      "empty": "Nothing booked in these months yet.",
-      "loadFailed": "The chart could not be loaded."
+      "balance": "Balance",
+      "cumulativeIncome": "Cumulative income",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "resetZoom": "Reset view",
+      "transactions": "Transactions in the selected range",
+      "noTransactions": "No transactions in this range.",
+      "empty": "Nothing booked in this period yet.",
+      "loadFailed": "The chart could not be loaded.",
+      "srTitle": "Income and expense chart"
     },
     "tabs": {
       "label": "Finance sections",
@@ -1814,9 +1825,6 @@
         "up": "{amount} more than last month",
         "down": "{amount} less than last month",
         "same": "Same as last month",
-        "recent": "Latest income",
-        "noIncome": "No income booked this month yet.",
-        "untitled": "Income",
         "open": "Open finance"
       },
       "tasks": {

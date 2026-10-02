@@ -1577,12 +1577,23 @@
       "loadFailed": "Souhrn se nepodařilo načíst."
     },
     "chart": {
-      "title": "Posledních 12 měsíců",
+      "view": {
+        "label": "Zobrazení grafu",
+        "month": "Měsíc",
+        "year": "Rok"
+      },
       "income": "Příjmy",
       "expense": "Výdaje",
-      "month": "Měsíc",
-      "empty": "V těchto měsících zatím nic není zaúčtováno.",
-      "loadFailed": "Graf se nepodařilo načíst."
+      "balance": "Bilance",
+      "cumulativeIncome": "Kumulativní příjmy",
+      "zoomIn": "Přiblížit",
+      "zoomOut": "Oddálit",
+      "resetZoom": "Výchozí zobrazení",
+      "transactions": "Transakce ve vybraném úseku",
+      "noTransactions": "V tomto úseku nejsou žádné transakce.",
+      "empty": "V tomto období zatím nic není zaúčtováno.",
+      "loadFailed": "Graf se nepodařilo načíst.",
+      "srTitle": "Graf příjmů a výdajů"
     },
     "tabs": {
       "label": "Části financí",
@@ -1814,9 +1825,6 @@
         "up": "O {amount} víc než minulý měsíc",
         "down": "O {amount} míň než minulý měsíc",
         "same": "Stejně jako minulý měsíc",
-        "recent": "Poslední příjmy",
-        "noIncome": "Tento měsíc zatím není zaúčtovaný žádný příjem.",
-        "untitled": "Příjem",
         "open": "Otevřít finance"
       },
       "tasks": {

@@ -29,7 +29,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] STOP | Konec opravného kola 1. Ověř opravené věci: v konzoli žádné chyby, nabídky v onboardingu se otevírají, telefony se formátují, časová pásma ukazují čas, vyhledávání ⌘K najde kontakt bez diakritiky i podle části čísla, dlaždice se otevírají jako velké okno s procenty v kruhu, mapa úkolů má barevné stavy a klidné přibližování, milník jde dokončit až po všech úkolech a ukáže odměnu, filtr znovu oslovit filtruje jen svůj sloupec a fáze se přesouvají za myší. Pak pokračuj v testování od Kontaktů dál a poznámky pošli do chatu s Claude.
 - [x] 9.0 | architect | 2026-10-02 Jarvisovi došel kredit na Anthropic účtu; přidáno srozumitelné hlášení noCredit, logování chyb modelu a tlačítko Otestovat Jarvise v Nastavení.
 - [x] 9.1 | architect | 2026-10-02 Sdílený pracovní prostor: current_workspace_id/has_section_access, RLS na sdílených tabulkách, useWorkspace, matice práv Vidí/Upravuje s rolemi; migraci je nutné pustit ručně přes bun run db:migrate (blokoval ji permission classifier).
-- [ ] 9.2 | builder |
+- [x] 9.2 | builder | 2026-10-02 Zoomovatelný graf příjmu a výdajů (Měsíc po dnech / Rok po měsících, kumulativní linka, kolečko/tažení/pinch, Brush, tlačítka přiblížení, souhrn a seznam transakcí přepočítané na vybraný úsek) nahradil starý graf na dashboardu i ve Financích; nová DB funkce finance_daily_totals.
 - [ ] 9.3 | architect |
 - [ ] 9.4 | architect |
 - [ ] 9.5 | builder |

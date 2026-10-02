@@ -28,7 +28,6 @@ const CLOSED_DEAL_LIMIT = 1000;
 const OPEN_DEAL_LIMIT = 2000;
 const NEW_CONTACT_LIMIT = 8;
 const SURVEY_LIMIT = 50;
-const INCOME_LIMIT = 5;
 
 export const dashboardKeys = {
   all: (userId: string) => ["dashboard", userId] as const,
@@ -44,7 +43,6 @@ export const dashboardKeys = {
     ["dashboard", userId, "new-contacts", "count", month, timeZone] as const,
   newContacts: (userId: string, month: IsoDate, timeZone: string) =>
     ["dashboard", userId, "new-contacts", "list", month, timeZone] as const,
-  income: (userId: string, month: IsoDate) => ["dashboard", userId, "income", month] as const,
   surveys: (userId: string) => ["dashboard", userId, "surveys"] as const,
 };
 
@@ -437,40 +435,6 @@ export function useNewContacts(enabled: boolean) {
         .limit(NEW_CONTACT_LIMIT);
       if (error) throw error;
       return data;
-    },
-  });
-}
-
-export type IncomeRow = {
-  id: string;
-  amount: number;
-  currency: string;
-  description: string | null;
-  category: string | null;
-  occurred_on: string;
-};
-
-/** The latest income of the month, for the detail of the tile. */
-export function useRecentIncome(enabled: boolean) {
-  const { user } = useSession();
-  const workspaceId = useWorkspaceId();
-  const { month, range } = useMonthBounds();
-  return useQuery({
-    enabled,
-    queryKey: dashboardKeys.income(user.id, month),
-    queryFn: async (): Promise<IncomeRow[]> => {
-      const { data, error } = await createClient()
-        .from("transactions")
-        .select("id, amount, currency, description, category, occurred_on")
-        .eq("user_id", workspaceId)
-        .eq("type", "income")
-        .gte("occurred_on", range.from)
-        .lte("occurred_on", range.to)
-        .order("occurred_on", { ascending: false })
-        .order("created_at", { ascending: false })
-        .limit(INCOME_LIMIT);
-      if (error) throw error;
-      return data.map((row) => ({ ...row, amount: Number(row.amount) }));
     },
   });
 }
