@@ -2,7 +2,6 @@
 
 import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
-import { useCelebration } from "@/components/celebration/celebration-provider";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
@@ -19,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toneFill, toneSoft } from "@/components/ui/tone";
-import { useMeetingTenth } from "@/features/gamification/queries";
+import { useAwardXp } from "@/features/game/queries";
 import { useFreshOnOpen } from "@/features/milestones/use-fresh-on-open";
 import { ContactPicker } from "@/features/pipeline/contact-picker";
 import { useDeals } from "@/features/pipeline/queries";
@@ -78,12 +77,10 @@ function Fields({
   onDone: () => void;
 }) {
   const t = useTranslations("calendar");
-  const tCelebration = useTranslations("gamification.celebration.tenthMeeting");
-  const { celebrate } = useCelebration();
   const { timeZone } = useFormatSettings();
   const create = useCreateEvent();
   const update = useUpdateEvent();
-  const meetingTenth = useMeetingTenth();
+  const awardXp = useAwardXp();
   const dealsQuery = useDeals();
   const [draft, setDraft] = useState<EventDraft>(() =>
     event
@@ -119,14 +116,15 @@ function Fields({
     }
     setErrors({});
     try {
-      if (event) await update.mutateAsync({ id: event.id, patch: eventToRow(result.data) });
-      else await create.mutateAsync(result.data);
-      onDone();
-      if (result.data.kind === "meeting") {
-        meetingTenth.mutate(undefined, {
-          onSuccess: ({ awarded, xp }) => {
-            if (awarded) celebrate({ title: tCelebration("title"), subtitle: tCelebration("subtitle"), xp });
-          },
+      if (event) {
+        await update.mutateAsync({ id: event.id, patch: eventToRow(result.data) });
+        onDone();
+      } else {
+        await create.mutateAsync(result.data);
+        onDone();
+        // A small reward for a new event; the server finds the one it has not paid for yet.
+        awardXp.mutate({
+          reason: result.data.kind === "meeting" ? "meeting_booked" : "calendar_event",
         });
       }
     } catch {

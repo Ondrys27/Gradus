@@ -8,17 +8,16 @@ import { StepShell } from "../step-shell";
 export function ClosingStep({ industry }: { industry: IndustryKey }) {
   const t = useTranslations("onboarding.closing");
   const tActions = useTranslations("onboarding.actions");
-  const tCelebration = useTranslations("gamification.celebration.onboardingCompleted");
+  const tCelebration = useTranslations("game.celebration.onboardingCompleted");
   const finish = useFinishOnboarding();
   const { celebrate } = useCelebration();
 
   function done() {
     finish.mutate(industry, {
-      onSuccess: ({ awarded, xp }) =>
+      onSuccess: () =>
         celebrate({
           title: tCelebration("title"),
           subtitle: tCelebration("subtitle"),
-          xp: awarded ? xp : undefined,
         }),
     });
   }

@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MarkSeenOnVisit } from "@/features/gamification/mark-seen-on-visit";
+import { MarkSeenOnVisit } from "@/features/game/mark-seen-on-visit";
 import { todayIsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { useUrlIntent } from "@/lib/use-url-intent";

@@ -29,7 +29,7 @@ import { MilestoneFormDialog } from "./milestone-form-dialog";
 import { JarvisBot } from "@/components/jarvis/jarvis-bot";
 import { useCelebration } from "@/components/celebration/celebration-provider";
 import { useCan } from "@/features/account/workspace-queries";
-import { useAwardXp } from "@/features/gamification/queries";
+import { useAwardXp } from "@/features/game/queries";
 import {
   useDeleteMilestone,
   useMilestone,
@@ -62,18 +62,21 @@ export function MilestoneDetail({ id }: { id: string }) {
   function complete() {
     setStatus.mutate("completed", {
       onSuccess: (row) => {
+        const celebration = (xp?: number) => ({
+          title: t("celebration.title"),
+          subtitle: row.title,
+          reward: row.reward ? t("celebration.reward", { reward: row.reward }) : undefined,
+          // XP only the first time; completing it again after reopening awards nothing.
+          xp,
+        });
         awardXp.mutate(
-          { kind: "milestone_completed", idempotencyKey: row.id },
           {
-            onSuccess: ({ awarded, xp }) =>
-              celebrate({
-                title: t("celebration.title"),
-                subtitle: row.title,
-                reward: row.reward ? t("celebration.reward", { reward: row.reward }) : undefined,
-                // XP only the first time; completing it again after reopening awards nothing.
-                xp: awarded ? xp : undefined,
-              }),
+            reason: "milestone_completed",
+            refId: row.id,
+            celebration: ({ awarded, xp }) => celebration(awarded ? xp : undefined),
           },
+          // The milestone is done either way; a failed award still celebrates it.
+          { onError: () => celebrate(celebration()) },
         );
       },
     });

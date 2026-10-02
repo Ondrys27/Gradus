@@ -7,11 +7,18 @@ export type SessionUser = { id: string; email: string };
 
 export type Profile = Pick<
   Database["public"]["Tables"]["profiles"]["Row"],
-  "id" | "username" | "display_name" | "avatar_url" | "industry" | "onboarding_completed_at"
+  | "id"
+  | "username"
+  | "display_name"
+  | "avatar_url"
+  | "industry"
+  | "onboarding_completed_at"
+  | "mode"
+  | "path_key"
 >;
 
 export const PROFILE_COLUMNS =
-  "id, username, display_name, avatar_url, industry, onboarding_completed_at" as const;
+  "id, username, display_name, avatar_url, industry, onboarding_completed_at, mode, path_key" as const;
 
 /** Section of the owner's app a worker may be given, and what they may do there. */
 export type WorkerAccess = { view: boolean; edit: boolean };

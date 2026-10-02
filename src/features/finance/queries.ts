@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
 import { useWorkspaceId } from "@/features/account/workspace-queries";
+import { useAwardXp } from "@/features/game/queries";
 import type { DailyRow, DateRange, MonthlyRow } from "./finance-logic";
 import { PAGE_SIZE } from "./finance-logic";
 import {
@@ -162,6 +163,7 @@ export async function fetchTransaction(id: string): Promise<Transaction | null> 
 }
 
 export function useSaveTransaction() {
+  const awardXp = useAwardXp();
   return useFinanceMutation(
     async ({ id, input }: { id?: string; input: TransactionInput }, workspaceId) => {
       const row = { ...input, description: input.description || null };
@@ -170,6 +172,8 @@ export function useSaveTransaction() {
         ? await supabase.from("transactions").update(row).eq("user_id", workspaceId).eq("id", id)
         : await supabase.from("transactions").insert({ ...row, user_id: workspaceId });
       if (error) throw error;
+      // A small reward for a new one; the server finds the transaction it has not paid for yet.
+      if (!id) awardXp.mutate({ reason: "transaction_added" });
     },
   );
 }

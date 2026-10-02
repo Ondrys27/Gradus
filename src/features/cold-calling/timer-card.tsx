@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { GlowCard } from "@/components/ui/glow-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useProspectingRecord } from "@/features/gamification/queries";
+import { useAwardXp, useProspectingRecord } from "@/features/game/queries";
 import { formatStopwatch, formatTime, todayIsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { useUrlIntent } from "@/lib/use-url-intent";
@@ -27,7 +27,7 @@ const PAUSED_TICK_MS = 30_000;
  */
 export function TimerCard() {
   const t = useTranslations("coldCalling.timer");
-  const tCelebration = useTranslations("gamification.celebration.prospectingRecord");
+  const tCelebration = useTranslations("game.celebration.prospectingRecord");
   const { celebrate } = useCelebration();
   const settings = useFormatSettings();
   const reading = useTimerReading();
@@ -35,6 +35,9 @@ export function TimerCard() {
   // Only someone who may work the list runs a timer; the database checks it too.
   const canRun = useCan("cold_calling", "edit");
   const record = useProspectingRecord();
+  const awardXp = useAwardXp();
+  // The day a record was last celebrated: once a day is enough, later pauses only extend it.
+  const recordShownOn = useRef<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const [idleNotice, setIdleNotice] = useState<string | null>(null);
 
@@ -81,13 +84,16 @@ export function TimerCard() {
         else if (kind === "start") setIdleNotice(null);
         // A pause is when today's total settles, so this is when a record shows.
         if (kind === "pause") {
+          // 30 minutes on the phone today pays once; the server checks the total.
+          awardXp.mutate({ reason: "call_30min" });
           record.mutate(undefined, {
-            onSuccess: ({ awarded, seconds, xp }) => {
-              if (!awarded) return;
+            onSuccess: ({ isRecord, seconds }) => {
+              const today = todayIsoDate(settings);
+              if (!isRecord || recordShownOn.current === today) return;
+              recordShownOn.current = today;
               celebrate({
                 title: tCelebration("title"),
                 subtitle: tCelebration("subtitle", { minutes: Math.round(seconds / 60) }),
-                xp,
               });
             },
           });

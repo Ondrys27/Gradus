@@ -154,10 +154,9 @@
     "myTasks": "Úkoly",
     "myRewards": "Odměny",
     "locked": {
-      "coldCalling": "{remaining, plural, one {ještě # kontakt} few {ještě # kontakty} other {ještě # kontaktů}} k odemčení",
-      "calendar": "Domluvte první schůzku a odemknete to",
-      "finance": "Vyhrajte první obchod a odemknete to",
-      "workers": "{remaining, plural, one {ještě # vyhraný obchod} few {ještě # vyhrané obchody} other {ještě # vyhraných obchodů}} k odemčení"
+      "milestone": "Odemkne milník „{milestone}“",
+      "level": "Odemkne se na úrovni {level}",
+      "path": "Odemkne ji milník tvé cesty"
     },
     "justUnlocked": "Nově odemčeno"
   },
@@ -2370,29 +2369,34 @@
       "dateRequired": "Vyber datum."
     }
   },
-  "gamification": {
+  "game": {
     "celebration": {
-      "sectionUnlocked": {
-        "title": "Nová sekce odemčena!",
-        "subtitle": "{section} je teď dostupná v menu."
-      },
       "prospectingRecord": {
         "title": "Nový osobní rekord!",
         "subtitle": "{minutes, plural, one {# minuta} few {# minuty} other {# minut}} na telefonu dnes — váš zatím nejlepší den."
-      },
-      "firstContacts": {
-        "title": "První kontakty vygenerovány!",
-        "subtitle": "{count, plural, one {# nový kontakt čeká} few {# nové kontakty čekají} other {# nových kontaktů čeká}} v Neoslovených."
-      },
-      "tenthMeeting": {
-        "title": "10 domluvených schůzek!",
-        "subtitle": "Cold calling se mění ve skutečné rozhovory."
       },
       "onboardingCompleted": {
         "title": "Účet je nastavený!",
         "subtitle": "Vítej ve hře. Ať se daří!"
       }
-    }
+    },
+    "levelUp": {
+      "title": "Úroveň {level}!",
+      "unlocked": "Odemčeno: {items}"
+    },
+    "tiers": {
+      "apprentice": "Učeň",
+      "trader": "Živnostník",
+      "dealmaker": "Obchodník",
+      "entrepreneur": "Podnikatel",
+      "strategist": "Stratég",
+      "legend": "Legenda"
+    },
+    "unlocked": {
+      "title": "Odemčeno!",
+      "subtitle": "Nově k dispozici: {name}"
+    },
+    "achievementEarned": "Nový odznak!"
   },
   "onboarding": {
     "title": "Nastavení účtu",

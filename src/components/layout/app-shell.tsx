@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { JarvisDock } from "@/components/jarvis/jarvis-dock";
-import { SectionUnlockWatcher } from "@/features/gamification/unlock-watcher";
+import { GameSessionStart } from "@/features/game/game-session-start";
 import { OnboardingGate } from "@/features/onboarding/onboarding-gate";
 import { SearchProvider } from "@/features/search/search-provider";
 import { BottomNav } from "./bottom-nav";
@@ -21,7 +21,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
         <BottomNav />
         <JarvisDock />
-        <SectionUnlockWatcher />
+        <GameSessionStart />
         <OnboardingGate />
       </div>
     </SearchProvider>

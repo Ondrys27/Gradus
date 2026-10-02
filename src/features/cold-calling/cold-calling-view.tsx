@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { MoveResult } from "@/features/contacts/move-contact-dialog";
 import { useContactList, useContactTables, useTableCounts } from "@/features/contacts/queries";
 import { TableSwitcher } from "@/features/contacts/table-switcher";
-import { MarkSeenOnVisit } from "@/features/gamification/mark-seen-on-visit";
+import { MarkSeenOnVisit } from "@/features/game/mark-seen-on-visit";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { CallContactPanel } from "./call-contact-panel";
 import { CallList } from "./call-list";

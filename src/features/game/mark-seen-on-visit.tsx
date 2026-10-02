@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useSession } from "@/features/account/queries";
-import { useMarkSectionSeen, useSectionUnlocks } from "./queries";
+import { useGameState, useMarkUnlockSeen } from "./queries";
 import { SECTION_UNLOCK_KEYS, type LockableSection } from "./types";
 
 /**
@@ -12,17 +12,19 @@ import { SECTION_UNLOCK_KEYS, type LockableSection } from "./types";
  */
 export function MarkSeenOnVisit({ section }: { section: LockableSection }) {
   const { worker } = useSession();
-  const unlocks = useSectionUnlocks();
-  const markSeen = useMarkSectionSeen();
+  const game = useGameState();
+  const markSeen = useMarkUnlockSeen();
   const done = useRef(false);
 
-  const row = unlocks.data?.[section];
+  const key = SECTION_UNLOCK_KEYS[section];
+  const row = game.data?.sections.find((item) => item.key === key);
+  const fresh = game.data?.mode === "game" && !!row?.unlockedAt && !row.seenAt;
   useEffect(() => {
-    if (worker || done.current || !row || !row.unlocked || row.seen_at) return;
+    if (worker || done.current || !fresh) return;
     done.current = true;
-    markSeen.mutate(SECTION_UNLOCK_KEYS[section]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only the unlock row should retrigger this
-  }, [row, section, worker]);
+    markSeen.mutate(key);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only the unlock state should retrigger this
+  }, [fresh, key, worker]);
 
   return null;
 }

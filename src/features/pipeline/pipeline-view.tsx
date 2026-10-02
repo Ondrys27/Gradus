@@ -13,7 +13,7 @@ import { useCelebration } from "@/components/celebration/celebration-provider";
 import { useUserSettings } from "@/features/account/queries";
 import { MeetingSurveyDialog, type SurveyTarget } from "@/features/dashboard/meeting-survey-dialog";
 import { offersMeetingSurvey } from "@/features/dashboard/survey-trigger";
-import { useAwardXp } from "@/features/gamification/queries";
+import { useAwardXp } from "@/features/game/queries";
 import { useUrlIntent } from "@/lib/use-url-intent";
 import { Board } from "./board";
 import { groupDealsByStage, moveKind, reorderStages, sortStages } from "./board-logic";
@@ -24,6 +24,7 @@ import { useDeals, useMoveDeal, useRenameStage, useReorderStages, useStages } fr
 import { AddStageDialog, RemoveStageDialog } from "./stage-dialogs";
 import { useCan } from "@/features/account/workspace-queries";
 import type { Deal, Stage } from "./types";
+import { MarkSeenOnVisit } from "@/features/game/mark-seen-on-visit";
 
 export function PipelineView() {
   const t = useTranslations("pipeline");
@@ -73,16 +74,19 @@ export function PipelineView() {
   const openDeal = deals.find((deal) => deal.id === openId) ?? null;
 
   function celebrateWon(deal: Deal) {
+    const celebration = (xp?: number) => ({
+      title: t("celebration.title"),
+      subtitle: deal.title,
+      xp,
+    });
     awardXp.mutate(
-      { kind: "deal_won", idempotencyKey: deal.id },
       {
-        onSuccess: ({ awarded, xp }) =>
-          celebrate({
-            title: t("celebration.title"),
-            subtitle: deal.title,
-            xp: awarded ? xp : undefined,
-          }),
+        reason: "deal_won",
+        refId: deal.id,
+        celebration: ({ awarded, xp }) => celebration(awarded ? xp : undefined),
       },
+      // The deal is won either way; a failed award still celebrates it.
+      { onError: () => celebrate(celebration()) },
     );
   }
 
@@ -153,6 +157,7 @@ export function PipelineView() {
 
   return (
     <div className="flex flex-col gap-6">
+      <MarkSeenOnVisit section="pipeline" />
       <PageHeader title={tNav("pipeline")} description={t("description")} actions={headerActions} />
 
       {notice && <FormAlert>{t(`notices.${notice}`)}</FormAlert>}

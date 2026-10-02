@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useCan } from "@/features/account/workspace-queries";
-import { useAwardXp } from "@/features/gamification/queries";
+import { useAwardXp } from "@/features/game/queries";
 import { useCreateTask, useDeleteTask, useReorderTasks, useSetTaskStatus } from "./queries";
 import { TITLE_MAX } from "./schemas";
 import { TaskFormDialog, type TaskFormMode } from "./task-form-dialog";
@@ -91,7 +91,7 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
           // A quiet, small reward: no confetti, just a bit of XP.
           onSuccess: () => {
             if (status === "done") {
-              awardXp.mutate({ kind: "task_completed", idempotencyKey: task.id });
+              awardXp.mutate({ reason: "task_completed", refId: task.id });
             }
           },
         },

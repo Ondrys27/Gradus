@@ -3,22 +3,22 @@
 import { useMemo } from "react";
 import { useSession } from "@/features/account/queries";
 import { useWorkspace } from "@/features/account/workspace-queries";
-import { SECTION_UNLOCK_KEYS, type LockableSection } from "@/features/gamification/types";
-import { useSectionUnlocks } from "@/features/gamification/queries";
+import { useLocale } from "next-intl";
+import { useGameState } from "@/features/game/queries";
+import { isLockableSection, localized, SECTION_UNLOCK_KEYS } from "@/features/game/types";
 import { bottomNavKeysFor, navItemsFor, type NavItem, type WorkerNavAccess } from "./nav-items";
 
+/** What opens a locked section: a milestone of the path (by its title) or a level. */
+export type LockHint =
+  { kind: "milestone"; title: string } | { kind: "level"; level: number } | { kind: "path" };
+
 export type NavItemState = NavItem & {
-  /** Not yet earned: dimmed, with a lock icon and what is left to unlock it. */
+  /** Not yet earned: dimmed, with a lock icon and what unlocks it. */
   locked: boolean;
   /** Unlocked but not opened yet: glows in the sidebar until the section is visited. */
   fresh: boolean;
-  progress: number;
-  needed: number;
+  lockHint: LockHint | null;
 };
-
-function isLockable(key: string): key is LockableSection {
-  return key in SECTION_UNLOCK_KEYS;
-}
 
 /** What the signed-in account may open; a worker's rights are live, so a change shows at once. */
 export function useNavAccess(): WorkerNavAccess {
@@ -31,30 +31,39 @@ export function useNavAccess(): WorkerNavAccess {
 
 /**
  * The sidebar and the phone bar of this account, with lock state merged in.
- * Only an owner's own four gated sections ever lock; a worker's access is
- * entirely decided by what the owner already granted them.
+ * Only an owner in game mode ever sees a lock; tool mode opens everything and
+ * a worker's access is entirely decided by what the owner already granted.
  */
 export function useNavItems() {
   const access = useNavAccess();
   const { worker } = useSession();
-  const unlocks = useSectionUnlocks();
+  const game = useGameState();
+  const locale = useLocale();
 
   return useMemo(() => {
     const items = navItemsFor(access);
     const bottomKeys = bottomNavKeysFor(access);
+    const playing = game.data?.mode === "game";
     const withState: NavItemState[] = items.map((item) => {
-      if (worker || !isLockable(item.key)) {
-        return { ...item, locked: false, fresh: false, progress: 0, needed: 0 };
-      }
-      const row = unlocks.data?.[item.key];
+      const unlockKey =
+        !worker && playing && isLockableSection(item.key) ? SECTION_UNLOCK_KEYS[item.key] : null;
+      const section = unlockKey
+        ? game.data?.sections.find((row) => row.key === unlockKey)
+        : undefined;
+      // Unknown while loading reads as unlocked, matching the app's rule that
+      // page chrome never waits on a network read.
+      if (!section) return { ...item, locked: false, fresh: false, lockHint: null };
+      const title = section.milestone?.title ?? localized(section.templateTitle, locale);
+      const lockHint: LockHint = title
+        ? { kind: "milestone", title }
+        : section.level
+          ? { kind: "level", level: section.level }
+          : { kind: "path" };
       return {
         ...item,
-        // Unknown while loading reads as unlocked, matching the app's rule that
-        // page chrome never waits on a network read.
-        locked: row ? !row.unlocked : false,
-        fresh: row ? row.unlocked && !row.seen_at : false,
-        progress: row?.progress ?? 0,
-        needed: row?.needed ?? 1,
+        locked: !section.unlocked,
+        fresh: section.unlocked && !!section.unlockedAt && !section.seenAt,
+        lockHint: section.unlocked ? null : lockHint,
       };
     });
     return {
@@ -62,5 +71,5 @@ export function useNavItems() {
       primary: withState.filter((item) => bottomKeys.includes(item.key)),
       more: withState.filter((item) => !bottomKeys.includes(item.key)),
     };
-  }, [access, worker, unlocks.data]);
+  }, [access, worker, game.data, locale]);
 }

@@ -13,7 +13,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { PageHeader } from "@/components/ui/page-header";
-import { MarkSeenOnVisit } from "@/features/gamification/mark-seen-on-visit";
+import { MarkSeenOnVisit } from "@/features/game/mark-seen-on-visit";
 import {
   formatCalendarDate,
   formatMonthYear,

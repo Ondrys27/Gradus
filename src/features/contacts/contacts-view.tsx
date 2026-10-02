@@ -30,6 +30,7 @@ import {
 import { TableSwitcher } from "./table-switcher";
 import type { ContactDraft } from "./schemas";
 import type { ContactListItem } from "./types";
+import { MarkSeenOnVisit } from "@/features/game/mark-seen-on-visit";
 
 /** The selected table lives in the address, so Back from a contact returns to it. */
 const TABLE_PARAM = "table";
@@ -98,6 +99,7 @@ export function ContactsView() {
 
   return (
     <div className="flex flex-col gap-6">
+      <MarkSeenOnVisit section="contacts" />
       <PageHeader
         title={tNav("contacts")}
         description={t("description")}

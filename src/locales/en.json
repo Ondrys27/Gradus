@@ -154,10 +154,9 @@
     "myTasks": "Tasks",
     "myRewards": "Rewards",
     "locked": {
-      "coldCalling": "{remaining, plural, one {# more contact} other {# more contacts}} to unlock",
-      "calendar": "Book your first meeting to unlock",
-      "finance": "Win your first deal to unlock",
-      "workers": "{remaining, plural, one {# more won deal} other {# more won deals}} to unlock"
+      "milestone": "Unlocks with the milestone “{milestone}”",
+      "level": "Unlocks at level {level}",
+      "path": "Unlocks with a milestone of your path"
     },
     "justUnlocked": "Just unlocked"
   },
@@ -2370,29 +2369,34 @@
       "dateRequired": "Pick a date."
     }
   },
-  "gamification": {
+  "game": {
     "celebration": {
-      "sectionUnlocked": {
-        "title": "New section unlocked!",
-        "subtitle": "{section} is now open in the menu."
-      },
       "prospectingRecord": {
         "title": "New personal record!",
         "subtitle": "{minutes, plural, one {# minute} other {# minutes}} on the phone today — your best day yet."
-      },
-      "firstContacts": {
-        "title": "First contacts generated!",
-        "subtitle": "{count, plural, one {# new contact is} other {# new contacts are}} waiting in Unreached."
-      },
-      "tenthMeeting": {
-        "title": "10 meetings booked!",
-        "subtitle": "Cold calling is turning into real conversations."
       },
       "onboardingCompleted": {
         "title": "Account is set up!",
         "subtitle": "Welcome to the game. Good luck out there!"
       }
-    }
+    },
+    "levelUp": {
+      "title": "Level {level}!",
+      "unlocked": "Unlocked: {items}"
+    },
+    "tiers": {
+      "apprentice": "Apprentice",
+      "trader": "Sole Trader",
+      "dealmaker": "Dealmaker",
+      "entrepreneur": "Entrepreneur",
+      "strategist": "Strategist",
+      "legend": "Legend"
+    },
+    "unlocked": {
+      "title": "Unlocked!",
+      "subtitle": "Now available: {name}"
+    },
+    "achievementEarned": "New badge!"
   },
   "onboarding": {
     "title": "Account setup",

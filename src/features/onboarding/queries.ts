@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { accountKeys, useSession } from "@/features/account/queries";
 import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { PROFILE_COLUMNS } from "@/features/account/types";
-import { useAwardXp } from "@/features/gamification/queries";
+import { fetchPaths, gameKeys, pathForIndustry } from "@/features/game/queries";
 import { milestoneKeys } from "@/features/milestones/queries";
 import { MILESTONE_COLUMNS, TASK_COLUMNS, type Milestone } from "@/features/milestones/types";
 import { createClient } from "@/lib/supabase/client";
@@ -59,13 +59,14 @@ export function useCreateFirstMilestone() {
 }
 
 /**
- * Saves the chosen branch, marks the wizard done for good and awards its one
- * XP event. `award_xp` is idempotent, so a retried finish never double-pays.
+ * Saves the chosen branch, marks the wizard done for good and gives the
+ * account the game path that fits the branch, so its milestones lead to the
+ * locked sections. A retried finish adds nothing twice (choose_path skips
+ * steps the account already has).
  */
 export function useFinishOnboarding() {
   const { user } = useSession();
   const queryClient = useQueryClient();
-  const awardXp = useAwardXp();
   return useMutation({
     mutationFn: async (industry: IndustryKey) => {
       const { data, error } = await createClient()
@@ -78,12 +79,19 @@ export function useFinishOnboarding() {
         .select(PROFILE_COLUMNS)
         .single();
       if (error) throw error;
-      const { awarded, xp } = await awardXp.mutateAsync({
-        kind: "onboarding_completed",
-        idempotencyKey: "onboarding",
-      });
-      return { profile: data, awarded, xp };
+      const pathKey = pathForIndustry(await fetchPaths(), industryKeyOf(industry));
+      if (pathKey) {
+        const { error: pathError } = await createClient().rpc("choose_path", {
+          _path_key: pathKey,
+        });
+        if (pathError) throw pathError;
+      }
+      return { profile: data };
     },
-    onSuccess: ({ profile }) => queryClient.setQueryData(accountKeys.profile(user.id), profile),
+    onSuccess: ({ profile }) => {
+      queryClient.setQueryData(accountKeys.profile(user.id), profile);
+      void queryClient.invalidateQueries({ queryKey: milestoneKeys.all(user.id) });
+      void queryClient.invalidateQueries({ queryKey: gameKeys.all(user.id) });
+    },
   });
 }

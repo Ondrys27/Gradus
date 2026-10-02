@@ -20,11 +20,11 @@ import { WelcomeStep } from "./steps/welcome-step";
  * First-login wizard: welcome, branch, region confirm, first milestone, first
  * contact, then a short Jarvis intro before the completion celebration. Any
  * step can be bypassed at once with "Skip"; the wizard still finishes (and
- * still awards its XP) so it never comes back.
+ * still sets up the game path) so it never comes back.
  */
 export function OnboardingFlow() {
   const t = useTranslations("onboarding");
-  const tCelebration = useTranslations("gamification.celebration.onboardingCompleted");
+  const tCelebration = useTranslations("game.celebration.onboardingCompleted");
   const [stepIndex, setStepIndex] = useState(0);
   const [closing, setClosing] = useState(false);
   const [industry, setIndustry] = useState<IndustryKey | null>(null);
@@ -35,11 +35,10 @@ export function OnboardingFlow() {
 
   function finishNow(chosenIndustry: IndustryKey) {
     finish.mutate(chosenIndustry, {
-      onSuccess: ({ awarded, xp }) =>
+      onSuccess: () =>
         celebrate({
           title: tCelebration("title"),
           subtitle: tCelebration("subtitle"),
-          xp: awarded ? xp : undefined,
         }),
     });
   }

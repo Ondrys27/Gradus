@@ -19,6 +19,7 @@ import { useSignOut } from "@/features/account/queries";
 import { cn } from "@/lib/utils";
 import { isActivePath } from "./nav-items";
 import { useNavItems, type NavItemState } from "./use-nav";
+import { LockHintText } from "./lock-hint";
 const accountItems = [
   { key: "profile", href: "/profile", icon: UserRoundIcon },
   { key: "settings", href: "/settings", icon: SettingsIcon },
@@ -77,7 +78,6 @@ export function BottomNav() {
           {moreItems.map((item) => {
             const active = isActivePath(pathname, item.href);
             if (item.locked) {
-              const remaining = Math.max(0, item.needed - item.progress);
               return (
                 <li key={item.key}>
                   <Popover.Root>
@@ -88,7 +88,7 @@ export function BottomNav() {
                     <Popover.Portal>
                       <Popover.Positioner side="top" sideOffset={8} className="z-popover">
                         <Popover.Popup className="max-w-64 rounded-xl border border-line-strong bg-surface px-3 py-2 text-sm text-ink-soft shadow-popover outline-none">
-                          {t(`locked.${item.key}`, { remaining })}
+                          <LockHintText item={item} />
                         </Popover.Popup>
                       </Popover.Positioner>
                     </Popover.Portal>
@@ -196,7 +196,6 @@ function ItemBody({ icon: Icon, label, active, fresh }: ItemProps) {
 /** Dimmed, tappable only to explain what is left; goes nowhere. */
 function LockedBottomNavItem({ item }: { item: NavItemState }) {
   const t = useTranslations("nav");
-  const remaining = Math.max(0, item.needed - item.progress);
   return (
     <Popover.Root>
       <Popover.Trigger
@@ -211,7 +210,7 @@ function LockedBottomNavItem({ item }: { item: NavItemState }) {
       <Popover.Portal>
         <Popover.Positioner side="top" sideOffset={8} className="z-popover">
           <Popover.Popup className="max-w-64 rounded-xl border border-line-strong bg-surface px-3 py-2 text-sm text-ink-soft shadow-popover outline-none">
-            {t(`locked.${item.key}`, { remaining })}
+            <LockHintText item={item} />
           </Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>

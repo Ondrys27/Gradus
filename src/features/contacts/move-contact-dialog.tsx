@@ -3,7 +3,6 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { ArrowLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCelebration } from "@/components/celebration/celebration-provider";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
@@ -13,7 +12,7 @@ import { Input, Textarea } from "@/components/ui/input";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toneFill } from "@/components/ui/tone";
-import { useAwardXp, useMeetingTenth } from "@/features/gamification/queries";
+import { useAwardXp } from "@/features/game/queries";
 import { useFreshOnOpen } from "@/features/milestones/use-fresh-on-open";
 import { instantToZonedParts, todayIsoDate, zonedWallClockToInstant } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
@@ -166,12 +165,9 @@ function AnswerForm({
   onMoved: (result: MoveResult) => void;
 }) {
   const t = useTranslations("contacts.move");
-  const tCelebration = useTranslations("gamification.celebration.tenthMeeting");
-  const { celebrate } = useCelebration();
   const settings = useFormatSettings();
   const move = useMoveContact();
   const awardXp = useAwardXp();
-  const meetingTenth = useMeetingTenth();
   const [answers, setAnswers] = useState<Answers>(() =>
     initialAnswers(fields, settings, new Date(), prefillBySystemKey),
   );
@@ -202,20 +198,10 @@ function AnswerForm({
       );
       onDone();
       onMoved({ table, meetingBooked });
-      // Quiet, small reward for every move; no confetti, just a bit of XP.
-      awardXp.mutate({
-        kind: "contact_moved",
-        idempotencyKey: `${contactId}:${table.id}:${Date.now()}`,
-      });
-      if (meetingBooked) {
-        meetingTenth.mutate(undefined, {
-          onSuccess: ({ awarded, xp }) => {
-            if (awarded) {
-              celebrate({ title: tCelebration("title"), subtitle: tCelebration("subtitle"), xp });
-            }
-          },
-        });
-      }
+      // Quiet, small reward for every move; no confetti, just a bit of XP. The
+      // server finds the move (and the meeting it booked) it has not paid for yet.
+      awardXp.mutate({ reason: "contact_moved" });
+      if (meetingBooked) awardXp.mutate({ reason: "meeting_booked" });
     } catch (error) {
       // The database names the question it refused.
       const { message, details } = (error ?? {}) as { message?: string; details?: string };

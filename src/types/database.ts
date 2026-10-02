@@ -39,6 +39,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          condition: Json
+          created_at: string
+          description: Json
+          icon: string
+          key: string
+          name: Json
+          position: number
+        }
+        Insert: {
+          condition: Json
+          created_at?: string
+          description: Json
+          icon: string
+          key: string
+          name: Json
+          position?: number
+        }
+        Update: {
+          condition?: Json
+          created_at?: string
+          description?: Json
+          icon?: string
+          key?: string
+          name?: Json
+          position?: number
+        }
+        Relationships: []
+      }
       ai_usage: {
         Row: {
           cache_read_tokens: number
@@ -969,6 +999,29 @@ export type Database = {
         }
         Relationships: []
       }
+      level_rewards: {
+        Row: {
+          level: number
+          unlock_key: string
+        }
+        Insert: {
+          level: number
+          unlock_key: string
+        }
+        Update: {
+          level?: number
+          unlock_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "level_rewards_unlock_key_fkey"
+            columns: ["unlock_key"]
+            isOneToOne: false
+            referencedRelation: "unlock_definitions"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
       meeting_surveys: {
         Row: {
           answers: Json
@@ -1028,6 +1081,7 @@ export type Database = {
           status: Database["public"]["Enums"]["milestone_status"]
           tag: string | null
           target_date: string | null
+          template_id: string | null
           title: string
           updated_at: string
           user_id: string
@@ -1045,6 +1099,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["milestone_status"]
           tag?: string | null
           target_date?: string | null
+          template_id?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -1062,9 +1117,140 @@ export type Database = {
           status?: Database["public"]["Enums"]["milestone_status"]
           tag?: string | null
           target_date?: string | null
+          template_id?: string | null
           title?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestones_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "path_milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      path_milestones: {
+        Row: {
+          chapter: number
+          created_at: string
+          description: Json
+          id: string
+          key: string
+          path_key: string
+          position: number
+          reward_hint: Json | null
+          title: Json
+          unlock_key: string | null
+          xp: number
+        }
+        Insert: {
+          chapter: number
+          created_at?: string
+          description: Json
+          id?: string
+          key: string
+          path_key: string
+          position: number
+          reward_hint?: Json | null
+          title: Json
+          unlock_key?: string | null
+          xp: number
+        }
+        Update: {
+          chapter?: number
+          created_at?: string
+          description?: Json
+          id?: string
+          key?: string
+          path_key?: string
+          position?: number
+          reward_hint?: Json | null
+          title?: Json
+          unlock_key?: string | null
+          xp?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "path_milestones_path_key_fkey"
+            columns: ["path_key"]
+            isOneToOne: false
+            referencedRelation: "paths"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "path_milestones_unlock_key_fkey"
+            columns: ["unlock_key"]
+            isOneToOne: false
+            referencedRelation: "unlock_definitions"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
+      path_tasks: {
+        Row: {
+          created_at: string
+          description: Json | null
+          id: string
+          path_milestone_id: string
+          position: number
+          title: Json
+        }
+        Insert: {
+          created_at?: string
+          description?: Json | null
+          id?: string
+          path_milestone_id: string
+          position: number
+          title: Json
+        }
+        Update: {
+          created_at?: string
+          description?: Json | null
+          id?: string
+          path_milestone_id?: string
+          position?: number
+          title?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "path_tasks_path_milestone_id_fkey"
+            columns: ["path_milestone_id"]
+            isOneToOne: false
+            referencedRelation: "path_milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      paths: {
+        Row: {
+          created_at: string
+          description: Json
+          icon: string
+          industries: string[]
+          key: string
+          name: Json
+          position: number
+        }
+        Insert: {
+          created_at?: string
+          description: Json
+          icon: string
+          industries?: string[]
+          key: string
+          name: Json
+          position?: number
+        }
+        Update: {
+          created_at?: string
+          description?: Json
+          icon?: string
+          industries?: string[]
+          key?: string
+          name?: Json
+          position?: number
         }
         Relationships: []
       }
@@ -1156,7 +1342,9 @@ export type Database = {
           display_name: string | null
           id: string
           industry: string | null
+          mode: string
           onboarding_completed_at: string | null
+          path_key: string | null
           updated_at: string
           username: string | null
         }
@@ -1166,7 +1354,9 @@ export type Database = {
           display_name?: string | null
           id: string
           industry?: string | null
+          mode?: string
           onboarding_completed_at?: string | null
+          path_key?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -1176,11 +1366,21 @@ export type Database = {
           display_name?: string | null
           id?: string
           industry?: string | null
+          mode?: string
           onboarding_completed_at?: string | null
+          path_key?: string | null
           updated_at?: string
           username?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_path_key_fkey"
+            columns: ["path_key"]
+            isOneToOne: false
+            referencedRelation: "paths"
+            referencedColumns: ["key"]
+          },
+        ]
       }
       prospecting_segments: {
         Row: {
@@ -1411,6 +1611,7 @@ export type Database = {
           parent_task_id: string | null
           position: number
           status: Database["public"]["Enums"]["task_status"]
+          template_id: string | null
           title: string
           updated_at: string
           user_id: string
@@ -1426,6 +1627,7 @@ export type Database = {
           parent_task_id?: string | null
           position?: number
           status?: Database["public"]["Enums"]["task_status"]
+          template_id?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -1441,6 +1643,7 @@ export type Database = {
           parent_task_id?: string | null
           position?: number
           status?: Database["public"]["Enums"]["task_status"]
+          template_id?: string | null
           title?: string
           updated_at?: string
           user_id?: string
@@ -1459,6 +1662,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "tasks"
             referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "tasks_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "path_tasks"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1538,6 +1748,36 @@ export type Database = {
           },
         ]
       }
+      unlock_definitions: {
+        Row: {
+          created_at: string
+          description: Json
+          icon: string
+          key: string
+          kind: string
+          name: Json
+          position: number
+        }
+        Insert: {
+          created_at?: string
+          description: Json
+          icon: string
+          key: string
+          kind: string
+          name: Json
+          position?: number
+        }
+        Update: {
+          created_at?: string
+          description?: Json
+          icon?: string
+          key?: string
+          kind?: string
+          name?: Json
+          position?: number
+        }
+        Relationships: []
+      }
       unlocks: {
         Row: {
           created_at: string
@@ -1600,6 +1840,32 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_achievements: {
+        Row: {
+          achievement_key: string
+          earned_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_key: string
+          earned_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_key?: string
+          earned_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_key_fkey"
+            columns: ["achievement_key"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["key"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -2153,28 +2419,7 @@ export type Database = {
         Args: { _code: string; _user_id: string }
         Returns: string
       }
-      award_meeting_tenth: {
-        Args: never
-        Returns: {
-          awarded: boolean
-          meetings: number
-          xp: number
-        }[]
-      }
-      award_xp: {
-        Args: {
-          _idempotency_key: string
-          _kind: string
-          _metadata?: Json
-          _timezone?: string
-        }
-        Returns: {
-          awarded: boolean
-          streak: number
-          total_xp: number
-          xp: number
-        }[]
-      }
+      award_xp: { Args: { _reason: string; _ref_id?: string }; Returns: Json }
       book_invoice_income: {
         Args: {
           _invoice: Database["public"]["Tables"]["invoices"]["Row"]
@@ -2182,6 +2427,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      choose_path: { Args: { _path_key: string }; Returns: Json }
       create_invoice_from_deal: {
         Args: { _deal_id: string }
         Returns: {
@@ -2209,6 +2455,7 @@ export type Database = {
         }
       }
       current_workspace_id: { Args: never; Returns: string }
+      evaluate_achievements: { Args: never; Returns: Json }
       fakturoid_apply_invoice: {
         Args: {
           _amount: number
@@ -2245,6 +2492,38 @@ export type Database = {
           income: number
         }[]
       }
+      game_daily_cap: { Args: { _kind: string }; Returns: number }
+      game_evaluate_achievements: {
+        Args: { _tz: string; _uid: string }
+        Returns: Json
+      }
+      game_grant: {
+        Args: {
+          _cap_group?: string
+          _day_start: string
+          _key: string
+          _kind: string
+          _uid: string
+          _xp: number
+        }
+        Returns: number
+      }
+      game_level_for_xp: { Args: { _xp: number }; Returns: number }
+      game_level_threshold: { Args: { _level: number }; Returns: number }
+      game_metrics: { Args: { _tz: string; _uid: string }; Returns: Json }
+      game_state: { Args: never; Returns: Json }
+      game_streak: {
+        Args: { _tz: string; _uid: string }
+        Returns: {
+          freeze_available: boolean
+          streak: number
+        }[]
+      }
+      game_timezone: { Args: { _uid: string }; Returns: string }
+      game_unlock_json: {
+        Args: { _key: string; _level: number; _source: string }
+        Returns: Json
+      }
       global_search: {
         Args: {
           _amount?: number
@@ -2261,6 +2540,7 @@ export type Database = {
           title: string
         }[]
       }
+      grant_used_sections: { Args: { _uid: string }; Returns: undefined }
       grant_worker_rewards: {
         Args: {
           _basis: number
@@ -2432,10 +2712,9 @@ export type Database = {
       prospecting_record: {
         Args: { _timezone: string }
         Returns: {
-          awarded: boolean
+          is_record: boolean
           previous_best: number
           seconds: number
-          xp: number
         }[]
       }
       prospecting_seconds_for_day: {
@@ -2523,17 +2802,6 @@ export type Database = {
       search_rank: {
         Args: { _doc: string; _q: string; _title: string }
         Returns: number
-      }
-      section_unlocks: {
-        Args: never
-        Returns: {
-          key: string
-          needed: number
-          progress: number
-          seen_at: string
-          unlocked: boolean
-          unlocked_at: string
-        }[]
       }
       set_deposit_stage: {
         Args: { _percent?: number; _stage_id: string }
@@ -2640,14 +2908,6 @@ export type Database = {
           id: string
           running: boolean
           started_at: string
-        }[]
-      }
-      xp_streak: { Args: { _timezone: string }; Returns: number }
-      xp_summary: {
-        Args: { _timezone: string }
-        Returns: {
-          streak: number
-          total_xp: number
         }[]
       }
     }
