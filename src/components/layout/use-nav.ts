@@ -10,7 +10,9 @@ import { bottomNavKeysFor, navItemsFor, type NavItem, type WorkerNavAccess } fro
 
 /** What opens a locked section: a milestone of the path (by its title) or a level. */
 export type LockHint =
-  { kind: "milestone"; title: string } | { kind: "level"; level: number } | { kind: "path" };
+  | { kind: "milestone"; title: string; milestoneId: string | null }
+  | { kind: "level"; level: number }
+  | { kind: "path" };
 
 export type NavItemState = NavItem & {
   /** Not yet earned: dimmed, with a lock icon and what unlocks it. */
@@ -55,7 +57,7 @@ export function useNavItems() {
       if (!section) return { ...item, locked: false, fresh: false, lockHint: null };
       const title = section.milestone?.title ?? localized(section.templateTitle, locale);
       const lockHint: LockHint = title
-        ? { kind: "milestone", title }
+        ? { kind: "milestone", title, milestoneId: section.milestone?.id ?? null }
         : section.level
           ? { kind: "level", level: section.level }
           : { kind: "path" };

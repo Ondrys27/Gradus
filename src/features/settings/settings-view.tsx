@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Stagger, StaggerItem } from "@/components/ui/stagger";
 import { Switch } from "@/components/ui/switch";
-import { useUpdateSettings, useUserSettings } from "@/features/account/queries";
+import { useSession, useUpdateSettings, useUserSettings } from "@/features/account/queries";
 import { locales } from "@/i18n/locales";
 import {
   countryName,
@@ -38,7 +38,9 @@ import type { UserSettingsPatch } from "@/lib/user-settings";
 import { useUrlIntent } from "@/lib/use-url-intent";
 import { cn } from "@/lib/utils";
 import { useWorkspace } from "@/features/account/workspace-queries";
+import { AppearanceSettings } from "./appearance-settings";
 import { FakturoidIntegration } from "./fakturoid-integration";
+import { GameSettings } from "./game-settings";
 import { FormatPreview, useNow } from "./format-preview";
 import { JarvisTest } from "./jarvis-test";
 import { TimeZonePicker } from "./time-zone-picker";
@@ -53,6 +55,8 @@ export function SettingsView() {
   const t = useTranslations("settings");
   // A worker sets only their own formats; the business settings stay the owner's.
   const isOwner = useWorkspace().role === "owner";
+  // Workers have no game of their own; the owner picks the mode and the path.
+  const { worker } = useSession();
   const uiLocale = useLocale();
   const settings = useUserSettings();
   const format = useFormatSettings();
@@ -260,6 +264,20 @@ export function SettingsView() {
               />
             </SettingRow>
           </div>
+        </Section>
+      </StaggerItem>
+
+      {!worker && (
+        <StaggerItem>
+          <Section title={t("game.title")} description={t("game.description")}>
+            <GameSettings />
+          </Section>
+        </StaggerItem>
+      )}
+
+      <StaggerItem>
+        <Section title={t("appearance.title")} description={t("appearance.description")}>
+          <AppearanceSettings save={save} />
         </Section>
       </StaggerItem>
 

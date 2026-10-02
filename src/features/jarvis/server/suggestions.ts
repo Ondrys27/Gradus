@@ -233,6 +233,70 @@ export async function listSuggestions(
   });
 }
 
+/** How long after onboarding Jarvis still points to the milestones the path created. */
+export const PATH_READY_DAYS = 14;
+
+/**
+ * Once per path, soon after onboarding in game mode: Jarvis points to the
+ * milestones the path created. Not a rule suggestion, so it stays until the
+ * user opens or dismisses it. Reads with the user's client, writes with the
+ * admin client, always for this user.
+ */
+export async function syncPathReady(
+  supabase: Client,
+  admin: Client,
+  userId: string,
+  now: Date = new Date(),
+) {
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("mode, path_key, onboarding_completed_at")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  if (
+    !profile ||
+    profile.mode !== "game" ||
+    !profile.path_key ||
+    !profile.onboarding_completed_at ||
+    new Date(profile.onboarding_completed_at) < subDays(now, PATH_READY_DAYS)
+  ) {
+    return;
+  }
+
+  const {
+    data: steps,
+    error: stepsError,
+    count,
+  } = await supabase
+    .from("milestones")
+    .select("title", { count: "exact" })
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .not("template_id", "is", null)
+    .order("position")
+    .limit(1);
+  if (stepsError) throw stepsError;
+  const total = count ?? steps.length;
+  if (total === 0) return;
+
+  const { error: insertError } = await admin.from("jarvis_suggestions").upsert(
+    {
+      user_id: userId,
+      type: "pathReady",
+      text: `Your path is ready: ${total} milestones`,
+      action: {
+        kind: "open",
+        href: "/milestones?view=path",
+        params: { count: total, first: steps[0]?.title ?? "" },
+      } as unknown as Json,
+      dedupe_key: `pathReady:${profile.path_key}`,
+    },
+    { onConflict: "user_id,dedupe_key", ignoreDuplicates: true },
+  );
+  if (insertError) throw insertError;
+}
+
 /** The instant triggers for one user, then the list the panel shows. */
 export async function refreshSuggestions(args: {
   supabase: Client;
@@ -242,5 +306,6 @@ export async function refreshSuggestions(args: {
 }): Promise<Suggestion[]> {
   const inputs = await loadRuleInputs(args.supabase, args.userId, args.settings);
   await syncRuleSuggestions(args.admin, args.userId, inputs);
+  await syncPathReady(args.supabase, args.admin, args.userId);
   return listSuggestions(args.supabase, args.userId);
 }

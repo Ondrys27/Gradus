@@ -4,12 +4,12 @@ import { useEffect, useRef } from "react";
 import { LockIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
-import { useCelebration } from "@/components/celebration/celebration-provider";
 import { FormAlert } from "@/components/ui/form-alert";
 import { GlowCard } from "@/components/ui/glow-card";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/features/account/queries";
+import { useGameCelebrate } from "@/features/game/queries";
 import { formatNumber } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
 import { useFormatSettings } from "@/lib/use-format-settings";
@@ -48,7 +48,7 @@ function useIndustryInsights() {
 export function BestIndustriesCard() {
   const t = useTranslations("coldCalling.industries");
   const settings = useFormatSettings();
-  const { celebrate } = useCelebration();
+  const celebrate = useGameCelebrate();
   const insights = useIndustryInsights();
   const n = (value: number) => formatNumber(value, {}, settings);
   const percent = (value: number) =>

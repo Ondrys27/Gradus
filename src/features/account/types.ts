@@ -15,10 +15,11 @@ export type Profile = Pick<
   | "onboarding_completed_at"
   | "mode"
   | "path_key"
+  | "seen_level"
 >;
 
 export const PROFILE_COLUMNS =
-  "id, username, display_name, avatar_url, industry, onboarding_completed_at, mode, path_key" as const;
+  "id, username, display_name, avatar_url, industry, onboarding_completed_at, mode, path_key, seen_level" as const;
 
 /** Section of the owner's app a worker may be given, and what they may do there. */
 export type WorkerAccess = { view: boolean; edit: boolean };

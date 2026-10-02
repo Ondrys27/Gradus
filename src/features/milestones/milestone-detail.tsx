@@ -27,9 +27,8 @@ import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { MilestoneFormDialog } from "./milestone-form-dialog";
 import { JarvisBot } from "@/components/jarvis/jarvis-bot";
-import { useCelebration } from "@/components/celebration/celebration-provider";
 import { useCan } from "@/features/account/workspace-queries";
-import { useAwardXp } from "@/features/game/queries";
+import { useAwardXp, useGameCelebrate } from "@/features/game/queries";
 import {
   useDeleteMilestone,
   useMilestone,
@@ -52,7 +51,7 @@ export function MilestoneDetail({ id }: { id: string }) {
   const setStatus = useSetMilestoneStatus(id);
   const remove = useDeleteMilestone(id);
   const reviewing = useMilestoneReviewPending(id);
-  const { celebrate } = useCelebration();
+  const celebrate = useGameCelebrate();
   const awardXp = useAwardXp();
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -74,9 +73,10 @@ export function MilestoneDetail({ id }: { id: string }) {
             reason: "milestone_completed",
             refId: row.id,
             celebration: ({ awarded, xp }) => celebration(awarded ? xp : undefined),
+            moment: "milestone",
           },
           // The milestone is done either way; a failed award still celebrates it.
-          { onError: () => celebrate(celebration()) },
+          { onError: () => celebrate(celebration(), "milestone") },
         );
       },
     });

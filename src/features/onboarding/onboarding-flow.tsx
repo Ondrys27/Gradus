@@ -5,41 +5,54 @@ import { Dialog } from "@base-ui/react/dialog";
 import { useTranslations } from "next-intl";
 import { useCelebration } from "@/components/celebration/celebration-provider";
 import { Button } from "@/components/ui/button";
+import type { GameMode } from "@/features/game/types";
 import { cn } from "@/lib/utils";
-import { useFinishOnboarding } from "./queries";
+import { useFinishOnboarding, type FinishOnboardingInput } from "./queries";
 import { DEFAULT_INDUSTRY, type IndustryKey } from "./industries";
-import { ONBOARDING_STEPS, type OnboardingStep } from "./types";
+import { onboardingSteps } from "./types";
 import { ClosingStep } from "./steps/closing-step";
 import { ContactStep } from "./steps/contact-step";
 import { IndustryStep } from "./steps/industry-step";
 import { MilestoneStep } from "./steps/milestone-step";
+import { ModeStep } from "./steps/mode-step";
+import { PathStep } from "./steps/path-step";
 import { RegionStep } from "./steps/region-step";
 import { WelcomeStep } from "./steps/welcome-step";
 
 /**
- * First-login wizard: welcome, branch, region confirm, first milestone, first
- * contact, then a short Jarvis intro before the completion celebration. Any
- * step can be bypassed at once with "Skip"; the wizard still finishes (and
- * still sets up the game path) so it never comes back.
+ * First-login wizard: welcome, how to use the app (game or tool), branch,
+ * then the path (game) or a first milestone (tool), region, first contact and
+ * a short Jarvis intro before the completion celebration. Any step can be
+ * bypassed at once with "Skip"; the wizard still finishes (in game mode with
+ * the path for the branch, unless tool mode was picked) so it never comes back.
  */
 export function OnboardingFlow() {
   const t = useTranslations("onboarding");
   const tCelebration = useTranslations("game.celebration.onboardingCompleted");
   const [stepIndex, setStepIndex] = useState(0);
   const [closing, setClosing] = useState(false);
+  const [mode, setMode] = useState<GameMode | null>(null);
   const [industry, setIndustry] = useState<IndustryKey | null>(null);
+  const [pathKey, setPathKey] = useState<string | null>(null);
   const finish = useFinishOnboarding();
   const { celebrate } = useCelebration();
 
-  const step: OnboardingStep = ONBOARDING_STEPS[stepIndex];
+  const steps = onboardingSteps(mode);
+  const step = steps[stepIndex] ?? "welcome";
+  const next = () => setStepIndex((index) => index + 1);
+  const input: FinishOnboardingInput = {
+    industry: industry ?? DEFAULT_INDUSTRY,
+    mode: mode ?? "game",
+    pathKey,
+  };
 
-  function finishNow(chosenIndustry: IndustryKey) {
-    finish.mutate(chosenIndustry, {
-      onSuccess: () =>
-        celebrate({
-          title: tCelebration("title"),
-          subtitle: tCelebration("subtitle"),
-        }),
+  function finishNow() {
+    finish.mutate(input, {
+      onSuccess: () => {
+        if (input.mode === "game") {
+          celebrate({ title: tCelebration("title"), subtitle: tCelebration("subtitle") });
+        }
+      },
     });
   }
 
@@ -53,7 +66,7 @@ export function OnboardingFlow() {
         >
           <header className="flex shrink-0 items-center justify-between gap-3 px-4 sm:px-8">
             <ol className="flex items-center gap-1.5" aria-label={t("progress")}>
-              {ONBOARDING_STEPS.map((key, index) => (
+              {steps.map((key, index) => (
                 <li
                   key={key}
                   className={cn(
@@ -68,11 +81,7 @@ export function OnboardingFlow() {
               ))}
             </ol>
             {!closing && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => finishNow(industry ?? DEFAULT_INDUSTRY)}
-              >
+              <Button variant="ghost" size="sm" disabled={finish.isPending} onClick={finishNow}>
                 {t("actions.skip")}
               </Button>
             )}
@@ -81,23 +90,41 @@ export function OnboardingFlow() {
           <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-8 sm:px-8">
             <Dialog.Title className="sr-only">{t("title")}</Dialog.Title>
             {closing ? (
-              <ClosingStep industry={industry ?? DEFAULT_INDUSTRY} />
+              <ClosingStep input={input} />
             ) : (
               <>
-                {step === "welcome" && <WelcomeStep onNext={() => setStepIndex(1)} />}
+                {step === "welcome" && <WelcomeStep onNext={next} />}
+                {step === "mode" && (
+                  <ModeStep
+                    value={mode}
+                    onChoose={(value) => {
+                      setMode(value);
+                      next();
+                    }}
+                  />
+                )}
                 {step === "industry" && (
                   <IndustryStep
                     value={industry}
-                    onChange={setIndustry}
-                    onNext={() => setStepIndex(2)}
+                    onChange={(value) => {
+                      setIndustry(value);
+                      // A new branch suggests its own path again.
+                      setPathKey(null);
+                    }}
+                    onNext={next}
                   />
                 )}
-                {step === "region" && <RegionStep onNext={() => setStepIndex(3)} />}
-                {step === "milestone" && (
-                  <MilestoneStep
+                {step === "path" && (
+                  <PathStep
                     industry={industry ?? DEFAULT_INDUSTRY}
-                    onNext={() => setStepIndex(4)}
+                    value={pathKey}
+                    onChange={setPathKey}
+                    onNext={next}
                   />
+                )}
+                {step === "region" && <RegionStep onNext={next} />}
+                {step === "milestone" && (
+                  <MilestoneStep industry={industry ?? DEFAULT_INDUSTRY} onNext={next} />
                 )}
                 {step === "contact" && <ContactStep onNext={() => setClosing(true)} />}
               </>

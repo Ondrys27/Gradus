@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Popover } from "@base-ui/react/popover";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   EllipsisIcon,
@@ -19,7 +18,7 @@ import { useSignOut } from "@/features/account/queries";
 import { cn } from "@/lib/utils";
 import { isActivePath } from "./nav-items";
 import { useNavItems, type NavItemState } from "./use-nav";
-import { LockHintText } from "./lock-hint";
+import { LockedSectionPopover } from "./lock-hint";
 const accountItems = [
   { key: "profile", href: "/profile", icon: UserRoundIcon },
   { key: "settings", href: "/settings", icon: SettingsIcon },
@@ -80,19 +79,21 @@ export function BottomNav() {
             if (item.locked) {
               return (
                 <li key={item.key}>
-                  <Popover.Root>
-                    <Popover.Trigger className="flex min-h-20 w-full cursor-not-allowed flex-col justify-between gap-3 rounded-card border border-line bg-canvas-deep/40 p-4 text-left text-sm font-semibold text-ink-muted/60 outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
-                      <LockIcon aria-hidden className="size-5" />
-                      {t(item.key)}
-                    </Popover.Trigger>
-                    <Popover.Portal>
-                      <Popover.Positioner side="top" sideOffset={8} className="z-popover">
-                        <Popover.Popup className="max-w-64 rounded-xl border border-line-strong bg-surface px-3 py-2 text-sm text-ink-soft shadow-popover outline-none">
-                          <LockHintText item={item} />
-                        </Popover.Popup>
-                      </Popover.Positioner>
-                    </Popover.Portal>
-                  </Popover.Root>
+                  <LockedSectionPopover
+                    item={item}
+                    side="top"
+                    onNavigate={() => setMoreOpen(false)}
+                    trigger={
+                      <button
+                        type="button"
+                        aria-label={t("lockedLabel", { section: t(item.key) })}
+                        className="flex min-h-20 w-full cursor-pointer flex-col justify-between gap-3 rounded-card border border-line bg-canvas-deep/40 p-4 text-left text-sm font-semibold text-ink-muted/60 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                      >
+                        <LockIcon aria-hidden className="size-5" />
+                        {t(item.key)}
+                      </button>
+                    }
+                  />
                 </li>
               );
             }
@@ -106,7 +107,9 @@ export function BottomNav() {
                     "relative flex min-h-20 flex-col justify-between gap-3 rounded-card border p-4 text-sm font-semibold outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
                     active
                       ? "border-violet/60 bg-violet/20 text-ink shadow-glow-strong"
-                      : "border-line bg-canvas-deep/60 text-ink-soft",
+                      : item.fresh
+                        ? "border-teal/50 bg-teal/10 text-ink shadow-[0_0_18px_-4px_var(--color-teal)]"
+                        : "border-line bg-canvas-deep/60 text-ink-soft",
                   )}
                 >
                   <span className="relative inline-block">
@@ -177,6 +180,12 @@ function ItemBody({ icon: Icon, label, active, fresh }: ItemProps) {
           className="absolute inset-x-0.5 inset-y-1.5 rounded-xl border border-violet/60 bg-violet/20 shadow-glow-strong"
         />
       )}
+      {!active && fresh && (
+        <span
+          aria-hidden
+          className="absolute inset-x-0.5 inset-y-1.5 rounded-xl border border-teal/50 bg-teal/10 shadow-[0_0_18px_-4px_var(--color-teal)]"
+        />
+      )}
       <span className="relative inline-block">
         <Icon aria-hidden className={cn("size-5", active ? "text-violet" : undefined)} />
         {fresh && (
@@ -193,28 +202,26 @@ function ItemBody({ icon: Icon, label, active, fresh }: ItemProps) {
   );
 }
 
-/** Dimmed, tappable only to explain what is left; goes nowhere. */
+/** Dimmed, tappable to see what the section does and what unlocks it. */
 function LockedBottomNavItem({ item }: { item: NavItemState }) {
   const t = useTranslations("nav");
   return (
-    <Popover.Root>
-      <Popover.Trigger
-        aria-label={t(item.key)}
-        className="relative flex min-w-11 flex-1 cursor-not-allowed flex-col items-center justify-center gap-1 rounded-xl text-ink-muted/60 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-      >
-        <LockIcon aria-hidden className="size-5" />
-        <span className="max-w-full truncate text-[10px] leading-none font-medium tracking-tight">
-          {t(item.key)}
-        </span>
-      </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Positioner side="top" sideOffset={8} className="z-popover">
-          <Popover.Popup className="max-w-64 rounded-xl border border-line-strong bg-surface px-3 py-2 text-sm text-ink-soft shadow-popover outline-none">
-            <LockHintText item={item} />
-          </Popover.Popup>
-        </Popover.Positioner>
-      </Popover.Portal>
-    </Popover.Root>
+    <LockedSectionPopover
+      item={item}
+      side="top"
+      trigger={
+        <button
+          type="button"
+          aria-label={t("lockedLabel", { section: t(item.key) })}
+          className="relative flex min-w-11 flex-1 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl text-ink-muted/60 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        >
+          <LockIcon aria-hidden className="size-5" />
+          <span className="max-w-full truncate text-[10px] leading-none font-medium tracking-tight">
+            {t(item.key)}
+          </span>
+        </button>
+      }
+    />
   );
 }
 

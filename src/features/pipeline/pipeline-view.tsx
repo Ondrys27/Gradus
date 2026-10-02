@@ -9,11 +9,10 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { FormAlert } from "@/components/ui/form-alert";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCelebration } from "@/components/celebration/celebration-provider";
 import { useUserSettings } from "@/features/account/queries";
 import { MeetingSurveyDialog, type SurveyTarget } from "@/features/dashboard/meeting-survey-dialog";
 import { offersMeetingSurvey } from "@/features/dashboard/survey-trigger";
-import { useAwardXp } from "@/features/game/queries";
+import { useAwardXp, useGameCelebrate } from "@/features/game/queries";
 import { useUrlIntent } from "@/lib/use-url-intent";
 import { Board } from "./board";
 import { groupDealsByStage, moveKind, reorderStages, sortStages } from "./board-logic";
@@ -29,7 +28,7 @@ import { MarkSeenOnVisit } from "@/features/game/mark-seen-on-visit";
 export function PipelineView() {
   const t = useTranslations("pipeline");
   const tNav = useTranslations("nav");
-  const { celebrate } = useCelebration();
+  const celebrate = useGameCelebrate();
   const awardXp = useAwardXp();
   const settings = useUserSettings();
   const stagesQuery = useStages();
@@ -84,9 +83,10 @@ export function PipelineView() {
         reason: "deal_won",
         refId: deal.id,
         celebration: ({ awarded, xp }) => celebration(awarded ? xp : undefined),
+        moment: "win",
       },
       // The deal is won either way; a failed award still celebrates it.
-      { onError: () => celebrate(celebration()) },
+      { onError: () => celebrate(celebration(), "win") },
     );
   }
 

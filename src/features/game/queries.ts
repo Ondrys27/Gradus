@@ -1,12 +1,13 @@
 "use client";
 
+import { useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import {
   useCelebration,
   type CelebrationOptions,
 } from "@/components/celebration/celebration-provider";
-import { accountKeys, useSession } from "@/features/account/queries";
+import { accountKeys, useProfile, useSession } from "@/features/account/queries";
 import { createClient } from "@/lib/supabase/client";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { parseAwardResult, parseGameState } from "./parse";
@@ -35,6 +36,40 @@ export function useGameState() {
 }
 
 /**
+ * Whether the account plays the game: an owner in game mode. Read from the
+ * profile the app layout loaded, so it is known on the first render. A worker
+ * has no game of their own.
+ */
+export function useIsPlaying(): boolean {
+  const { worker } = useSession();
+  const profile = useProfile();
+  return !worker && profile.mode !== "tool";
+}
+
+/** Which big moment a celebration is; tool mode keeps only a milestone and a win. */
+export type CelebrationMoment = "milestone" | "win" | "other";
+
+/**
+ * celebrate() that knows the mode: in tool mode only a finished milestone
+ * and a won deal are celebrated, and never with XP.
+ */
+export function useGameCelebrate() {
+  const { celebrate } = useCelebration();
+  const toolMode = useProfile().mode === "tool";
+  return useCallback(
+    (options: CelebrationOptions, moment: CelebrationMoment = "other") => {
+      if (!toolMode) {
+        celebrate(options);
+        return;
+      }
+      if (moment === "other") return;
+      celebrate({ title: options.title, subtitle: options.subtitle, reward: options.reward });
+    },
+    [celebrate, toolMode],
+  );
+}
+
+/**
  * Plays the big moments an award brings, in order: the caller's own (a
  * milestone, a won deal), a section the milestone unlocked, a level-up with
  * what it unlocked, each new badge. Plain XP stays quiet; the top bar pulses.
@@ -42,10 +77,10 @@ export function useGameState() {
 function useCelebrateAward() {
   const t = useTranslations("game");
   const locale = useLocale();
-  const { celebrate } = useCelebration();
-  return (result: AwardResult, own?: CelebrationOptions | null) => {
+  const celebrate = useGameCelebrate();
+  return (result: AwardResult, own?: CelebrationOptions | null, moment?: CelebrationMoment) => {
     // The caller's own moment (a milestone, a won deal) first, then what it led to.
-    if (own) celebrate(own);
+    if (own) celebrate(own, moment);
     for (const item of result.unlocks.filter((unlock) => unlock.source === "milestone")) {
       celebrate({
         title: t("unlocked.title"),
@@ -53,13 +88,18 @@ function useCelebrateAward() {
       });
     }
     if (result.leveledUp) {
-      const names = result.unlocks
-        .filter((item) => item.source === "level")
-        .map((item) => localized(item.name, locale));
       celebrate({
         title: t("levelUp.title", { level: result.level }),
         subtitle: t(`tiers.${tierForLevel(result.level)}`),
-        reward: names.length > 0 ? t("levelUp.unlocked", { items: names.join(", ") }) : undefined,
+        level: result.level,
+        rewards: result.unlocks
+          .filter((item) => item.source === "level")
+          .map((item) => ({
+            key: item.key,
+            name: localized(item.name, locale),
+            description: localized(item.description, locale),
+            icon: item.icon,
+          })),
       });
     }
     for (const achievement of result.achievements) {
@@ -76,6 +116,8 @@ export type AwardInput = {
   refId?: string;
   /** The big moment this action is, built from the result (e.g. to show the XP gained). */
   celebration?: (result: AwardResult) => CelebrationOptions | null;
+  /** Which moment the celebration is, so tool mode can keep it or drop it. */
+  moment?: CelebrationMoment;
 };
 
 /**
@@ -105,8 +147,9 @@ export function useAwardXp() {
             : prev,
         );
       }
-      celebrateAward(result, variables.celebration?.(result));
-      void queryClient.invalidateQueries({ queryKey: gameKeys.state(user.id) });
+      celebrateAward(result, variables.celebration?.(result), variables.moment);
+      // State, path progress, today's XP and the history all follow an award.
+      void queryClient.invalidateQueries({ queryKey: gameKeys.all(user.id) });
     },
   });
 }

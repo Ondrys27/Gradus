@@ -368,9 +368,9 @@ describe("award_xp", () => {
     expect(result.leveled_up).toBe(true);
     expect(result.previous_level).toBe(2);
     expect(result.level).toBe(3);
-    expect(result.unlocks.map((u) => u.key)).toEqual(["theme_aurora"]);
+    expect(result.unlocks.map((u) => u.key)).toEqual(["theme_midnight"]);
     expect(
-      await count(`select 1 from unlocks where user_id = $1 and key = 'theme_aurora'`, [user]),
+      await count(`select 1 from unlocks where user_id = $1 and key = 'theme_midnight'`, [user]),
     ).toBe(1);
 
     // Level 10 opens Workers, computed from XP even without the row.
@@ -613,5 +613,101 @@ describe("streak", () => {
         freeze: ts.freezeAvailable,
       });
     }
+  });
+});
+
+describe("themes, seen level and the path notice (step 9.4)", () => {
+  it("has the six themes of the design system on levels 3, 7, 12, 18 and 25", async () => {
+    const rewards = await rows<{ level: number; unlock_key: string }>(
+      `select r.level, r.unlock_key from level_rewards r
+       join unlock_definitions d on d.key = r.unlock_key
+       where d.kind = 'theme' order by r.level`,
+    );
+    expect(rewards).toEqual([
+      { level: 3, unlock_key: "theme_midnight" },
+      { level: 7, unlock_key: "theme_forest" },
+      { level: 12, unlock_key: "theme_sunset" },
+      { level: 18, unlock_key: "theme_steel" },
+      { level: 25, unlock_key: "theme_light" },
+    ]);
+    expect(await count(`select 1 from unlock_definitions where kind = 'theme'`)).toBe(5);
+  });
+
+  it("lets the client pick only a theme it has unlocked, any theme in tool mode", async () => {
+    const user = await createAuthUser();
+    await asUser(user);
+    await expect(
+      db.query(`update user_settings set theme = 'midnight' where user_id = $1`, [user]),
+    ).rejects.toThrow(/theme_locked/);
+    await expect(
+      db.query(`update user_settings set theme = 'unknown' where user_id = $1`, [user]),
+    ).rejects.toThrow();
+    // The default is always open, other columns stay writable.
+    await db.query(
+      `update user_settings set theme = 'gradus', sound_enabled = false where user_id = $1`,
+      [user],
+    );
+    await asServer();
+
+    // Level 3 by XP opens Midnight, not Forest.
+    await db.query(
+      `insert into xp_events (user_id, kind, xp, idempotency_key) values ($1, 'onboarding_completed', $2, 'seed')`,
+      [user, xpForLevel(3)],
+    );
+    await asUser(user);
+    await db.query(`update user_settings set theme = 'midnight' where user_id = $1`, [user]);
+    await expect(
+      db.query(`update user_settings set theme = 'forest' where user_id = $1`, [user]),
+    ).rejects.toThrow(/theme_locked/);
+
+    // Tool mode opens all of them.
+    await db.query(`update profiles set mode = 'tool' where id = $1`, [user]);
+    await db.query(`update user_settings set theme = 'light' where user_id = $1`, [user]);
+    await asServer();
+    expect(
+      (await one<{ theme: string }>(`select theme from user_settings where user_id = $1`, [user]))
+        .theme,
+    ).toBe("light");
+  });
+
+  it("stores the seen level on the user's own profile only, within 1–30", async () => {
+    const user = await createAuthUser();
+    const other = await createAuthUser();
+    expect(
+      (await one<{ seen_level: number }>(`select seen_level from profiles where id = $1`, [user]))
+        .seen_level,
+    ).toBe(1);
+    await asUser(user);
+    await db.query(`update profiles set seen_level = 4 where id = $1`, [user]);
+    await expect(
+      db.query(`update profiles set seen_level = 31 where id = $1`, [user]),
+    ).rejects.toThrow();
+    await db.query(`update profiles set seen_level = 9 where id = $1`, [other]);
+    await asServer();
+    expect(
+      (await one<{ seen_level: number }>(`select seen_level from profiles where id = $1`, [user]))
+        .seen_level,
+    ).toBe(4);
+    expect(
+      (await one<{ seen_level: number }>(`select seen_level from profiles where id = $1`, [other]))
+        .seen_level,
+    ).toBe(1);
+  });
+
+  it("accepts a pathReady suggestion from the server only", async () => {
+    const user = await createAuthUser();
+    await db.query(
+      `insert into jarvis_suggestions (user_id, type, text, dedupe_key) values ($1, 'pathReady', 'x', 'pathReady:general')`,
+      [user],
+    );
+    await asUser(user);
+    await expect(
+      db.query(
+        `insert into jarvis_suggestions (user_id, type, text) values ($1, 'pathReady', 'x')`,
+        [user],
+      ),
+    ).rejects.toThrow();
+    await asServer();
+    expect(await count(`select 1 from jarvis_suggestions where user_id = $1`, [user])).toBe(1);
   });
 });

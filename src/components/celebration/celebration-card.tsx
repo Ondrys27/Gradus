@@ -4,8 +4,9 @@ import { useEffect, useRef } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import confetti from "canvas-confetti";
 import { motion, useReducedMotion, type Transition } from "framer-motion";
-import { GiftIcon, TrophyIcon } from "lucide-react";
+import { GiftIcon, ShieldIcon, TrophyIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { GameIcon } from "@/features/game/unlock-icon";
 import { isAnimationsEnabled } from "@/lib/animation-preference";
 import { formatNumber } from "@/lib/format";
 import { isSoundEnabled } from "@/lib/sound-preference";
@@ -18,7 +19,15 @@ type CelebrationCardProps = CelebrationOptions & { onContinue: () => void };
 /** Seconds after mount at which each beat of the sequence starts. */
 const BEAT = { card: 0.05, trophy: 0.2, confetti: 0.3, text: 0.4, bar: 0.55, xp: 1.1 } as const;
 
-export function CelebrationCard({ title, subtitle, reward, xp, onContinue }: CelebrationCardProps) {
+export function CelebrationCard({
+  title,
+  subtitle,
+  reward,
+  xp,
+  level,
+  rewards,
+  onContinue,
+}: CelebrationCardProps) {
   const t = useTranslations("celebration");
   // Either the OS says to reduce motion or the user turned animations off in Settings.
   const reduceMotion = (useReducedMotion() ?? false) || !isAnimationsEnabled();
@@ -35,12 +44,12 @@ export function CelebrationCard({ title, subtitle, reward, xp, onContinue }: Cel
     const timers = [
       setTimeout(() => fireConfetti(cardRef.current, "--color-gold", 60), BEAT.confetti * 1000),
       setTimeout(
-        () => fireConfetti(cardRef.current, "--color-violet", 120),
+        () => fireConfetti(cardRef.current, level ? "--color-teal" : "--color-violet", 120),
         (BEAT.confetti + 0.18) * 1000,
       ),
     ];
     return () => timers.forEach(clearTimeout);
-  }, [reduceMotion]);
+  }, [reduceMotion, level]);
 
   const spring = (delay: number, bounce = 0.35): Transition =>
     reduceMotion ? { duration: 0.15, delay: 0 } : { type: "spring", bounce, duration: 0.6, delay };
@@ -82,11 +91,15 @@ export function CelebrationCard({ title, subtitle, reward, xp, onContinue }: Cel
           transition={spring(BEAT.trophy, 0.55)}
           className="relative grid size-28 place-items-center rounded-full border border-gold/60 bg-[radial-gradient(circle,color-mix(in_oklab,var(--color-gold)_35%,transparent)_0%,color-mix(in_oklab,var(--color-gold)_8%,transparent)_70%)] shadow-[0_0_48px_-4px_var(--color-gold)]"
         >
-          <TrophyIcon
-            aria-hidden
-            className="size-14 text-gold drop-shadow-[0_0_12px_var(--color-gold)]"
-            strokeWidth={1.75}
-          />
+          {level ? (
+            <LevelShield level={formatNumber(level, {}, formatSettings)} />
+          ) : (
+            <TrophyIcon
+              aria-hidden
+              className="size-14 text-gold drop-shadow-[0_0_12px_var(--color-gold)]"
+              strokeWidth={1.75}
+            />
+          )}
         </motion.div>
       </div>
 
@@ -118,6 +131,25 @@ export function CelebrationCard({ title, subtitle, reward, xp, onContinue }: Cel
           </motion.p>
         )}
       </div>
+
+      {rewards && rewards.length > 0 && (
+        <motion.ul {...fadeUp(BEAT.text + 0.2)} className="flex w-full flex-col gap-2">
+          {rewards.map((item) => (
+            <li
+              key={item.key}
+              className="flex items-center gap-3 rounded-2xl border border-teal/40 bg-teal/10 px-3 py-2.5 text-left"
+            >
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-teal/15 text-teal">
+                <GameIcon name={item.icon} className="size-5" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold text-ink">{item.name}</span>
+                <span className="block text-xs text-ink-soft">{item.description}</span>
+              </span>
+            </li>
+          ))}
+        </motion.ul>
+      )}
 
       <div
         role="progressbar"
@@ -178,4 +210,18 @@ function fireConfetti(card: HTMLElement | null, colorToken: string, angle: numbe
     colors: color ? [color] : undefined,
     disableForReducedMotion: true,
   });
+}
+
+/** The level-up emblem: a shield with the level number, in place of the trophy. */
+function LevelShield({ level }: { level: string }) {
+  return (
+    <span className="relative grid size-20 place-items-center">
+      <ShieldIcon
+        aria-hidden
+        className="absolute inset-0 size-20 fill-teal/15 text-teal drop-shadow-[0_0_12px_var(--color-teal)]"
+        strokeWidth={1.5}
+      />
+      <span className="relative pb-1 text-3xl font-black text-ink tabular-nums">{level}</span>
+    </span>
+  );
 }

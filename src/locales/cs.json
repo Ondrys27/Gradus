@@ -156,9 +156,12 @@
     "locked": {
       "milestone": "Odemkne milník „{milestone}“",
       "level": "Odemkne se na úrovni {level}",
-      "path": "Odemkne ji milník tvé cesty"
+      "path": "Odemkne ji milník tvé cesty",
+      "openMilestone": "Otevřít milník",
+      "openPath": "Zobrazit cestu"
     },
-    "justUnlocked": "Nově odemčeno"
+    "justUnlocked": "Nově odemčeno",
+    "lockedLabel": "{section} (zamčeno)"
   },
   "topBar": {
     "home": "Přejít na přehled",
@@ -166,7 +169,9 @@
       "long": "{count, plural, one {Série {days} den} few {Série {days} dny} other {Série {days} dní}}"
     },
     "level": {
-      "long": "Úroveň {level}"
+      "long": "Úroveň {level}",
+      "open": "{level}: otevřít podrobnosti úrovně",
+      "newLevel": "{level}: nová úroveň, otevřít podrobnosti"
     },
     "account": {
       "open": "Nabídka účtu",
@@ -426,6 +431,10 @@
       },
       "taskCompleted": {
         "text": "Označil jsem „{task}“ jako hotové."
+      },
+      "pathReady": {
+        "text": "{count, plural, one {Tvoje cesta je připravená, má {countFormatted} milník. Začni milníkem „{first}“.} few {Tvoje cesta je připravená, má {countFormatted} milníky. Začni milníkem „{first}“.} other {Tvoje cesta je připravená, má {countFormatted} milníků. Začni milníkem „{first}“.}}",
+        "noFirst": "{count, plural, one {Tvoje cesta je připravená, má {countFormatted} milník.} few {Tvoje cesta je připravená, má {countFormatted} milníky.} other {Tvoje cesta je připravená, má {countFormatted} milníků.}}"
       }
     }
   },
@@ -716,6 +725,63 @@
       "reengageMonths": "{count, plural, one {# měsíci} few {# měsících} other {# měsících}}",
       "reengageCustom": "Vlastní počet měsíců",
       "reengageCustomLabel": "Počet měsíců"
+    },
+    "game": {
+      "title": "Hra",
+      "description": "Hraj s cestou, úrovněmi a odměnami, nebo jen používej nástroje.",
+      "modeLabel": "Režim",
+      "modes": {
+        "game": {
+          "title": "Hrát hru",
+          "description": "Cesta, úrovně, XP a odznaky. Sekce se odemykají milníky."
+        },
+        "tool": {
+          "title": "Jen používat",
+          "description": "Všechno otevřené, bez XP, úrovní a série."
+        }
+      },
+      "pathLabel": "Cesta",
+      "pathHint": "Milníky pro tvůj obor. Nová cesta přidá své milníky, hotové zůstanou.",
+      "confirm": {
+        "close": "Zavřít",
+        "cancel": "Zrušit",
+        "failed": "Nepovedlo se. Zkus to znovu.",
+        "tool": {
+          "title": "Přepnout na jen používání?",
+          "point1": "Všechny sekce a témata se hned odemknou.",
+          "point2": "XP, úroveň a série se skryjí. Slaví se jen dokončené milníky a vyhrané obchody.",
+          "point3": "Tvůj postup zůstane uložený; po návratu do hry se všechno vrátí.",
+          "action": "Přepnout"
+        },
+        "game": {
+          "title": "Přepnout do hry?",
+          "point1": "Sekce, které už používáš, zůstanou otevřené; ostatní odemknou milníky tvé cesty.",
+          "point2": "Vrátí se XP, úroveň, série a odznaky se vším, co už máš.",
+          "point3": "Témata se odemykají s úrovněmi; zamčené se vrátí na Gradus.",
+          "action": "Začít hrát"
+        },
+        "path": {
+          "title": "Přepnout na cestu „{path}“?",
+          "point1": "Její milníky a úkoly se přidají k tvým milníkům.",
+          "point2": "Hotové a rozpracované milníky zůstanou, jak jsou.",
+          "point3": "Nezačaté milníky staré cesty se odeberou.",
+          "action": "Změnit cestu"
+        }
+      }
+    },
+    "appearance": {
+      "title": "Vzhled",
+      "description": "Barevné téma celé aplikace. Ve hře se témata odemykají s úrovněmi.",
+      "themes": {
+        "gradus": "Gradus",
+        "midnight": "Půlnoc",
+        "forest": "Les",
+        "sunset": "Západ",
+        "steel": "Ocel",
+        "light": "Světlé"
+      },
+      "level": "Úroveň {level}",
+      "locked": "Zamčeno"
     }
   },
   "milestones": {
@@ -901,6 +967,11 @@
     "celebration": {
       "title": "Milník splněn!",
       "reward": "Tvoje odměna: {reward}"
+    },
+    "view": {
+      "label": "Zobrazení",
+      "list": "Seznam",
+      "path": "Cesta"
     }
   },
   "pipeline": {
@@ -2381,8 +2452,7 @@
       }
     },
     "levelUp": {
-      "title": "Úroveň {level}!",
-      "unlocked": "Odemčeno: {items}"
+      "title": "Úroveň {level}!"
     },
     "tiers": {
       "apprentice": "Učeň",
@@ -2396,7 +2466,92 @@
       "title": "Odemčeno!",
       "subtitle": "Nově k dispozici: {name}"
     },
-    "achievementEarned": "Nový odznak!"
+    "achievementEarned": "Nový odznak!",
+    "levelWindow": {
+      "title": "Tvoje úroveň",
+      "close": "Zavřít",
+      "progress": "Postup k další úrovni",
+      "level": "Úroveň",
+      "xpOf": "{xp} / {next} XP",
+      "maxLevel": "{xp} XP · nejvyšší úroveň",
+      "toNext": "{xp} XP do úrovně {level}",
+      "earnTitle": "Jak získat XP",
+      "xp": "+{xp} XP",
+      "earnedOfCap": "{xp} / {cap}",
+      "earnedNoCap": "+{xp} dnes",
+      "nextRewards": "Na příští úrovni získáš",
+      "laterRewards": "Na úrovni {level} získáš",
+      "noRewards": "Už není co odemknout — jsi na vrcholu.",
+      "pathTitle": "Tvoje cesta",
+      "openPath": "Zobrazit celou cestu",
+      "badgesTitle": "Odznaky {earned} / {total}",
+      "historyTitle": "Historie",
+      "historyEmpty": "Zatím žádné XP. Dokonči úkol a získáš první."
+    },
+    "sources": {
+      "daily_login": "Denní přihlášení",
+      "task_completed": "Úkoly",
+      "milestone_completed": "Milníky",
+      "contact_moved": "Přesuny kontaktů",
+      "contact_generated": "Vygenerované kontakty",
+      "meeting_booked": "Domluvené schůzky",
+      "call_30min": "30 minut volání",
+      "deal_won": "Vyhrané obchody",
+      "calendar_event": "Události v kalendáři",
+      "transaction_added": "Transakce"
+    },
+    "suggestions": {
+      "completeMilestone": "Dokonči milník „{milestone}“",
+      "finishTasks": "{count, plural, one {Dokonči {countFormatted} úkol z milníku „{milestone}“} few {Dokonči {countFormatted} úkoly z milníku „{milestone}“} other {Dokonči {countFormatted} úkolů z milníku „{milestone}“}}",
+      "firstTask": "Přidej první úkol do milníku „{milestone}“",
+      "callToday": "Provolej dnes 30 minut",
+      "moveContacts": "{count, plural, one {Přesuň {countFormatted} kontakt do další tabulky} few {Přesuň {countFormatted} kontakty do další tabulky} other {Přesuň {countFormatted} kontaktů do další tabulky}}",
+      "bookMeeting": "Domluv schůzku",
+      "addEvent": "Přidej událost do kalendáře",
+      "addTransaction": "Zapiš příjem nebo výdaj"
+    },
+    "history": {
+      "task_completed": "Hotový úkol",
+      "milestone_completed": "Dokončený milník",
+      "deal_won": "Vyhraný obchod",
+      "meeting_booked": "Domluvená schůzka",
+      "contact_moved": "Přesunutý kontakt",
+      "contact_generated": "Vygenerované kontakty",
+      "call_30min": "30 minut volání",
+      "calendar_event": "Událost v kalendáři",
+      "transaction_added": "Zapsaná transakce",
+      "daily_login": "Denní přihlášení",
+      "section_unlocked": "Odemčená sekce",
+      "prospecting_record": "Osobní rekord ve volání",
+      "contacts_generated_first": "První vygenerované kontakty",
+      "meeting_tenth": "Desátá schůzka",
+      "onboarding_completed": "Nastavený účet",
+      "other": "XP"
+    },
+    "path": {
+      "label": "Mapa cesty",
+      "chapter": "Kapitola {number}",
+      "chapters": {
+        "1": "Základy",
+        "2": "První klienti",
+        "3": "Rozjezd",
+        "4": "Růst"
+      },
+      "progress": "{done} / {total}",
+      "current": "Aktuální milník",
+      "unlocks": "Odemkne: {name}",
+      "xp": "+{xp} XP",
+      "removed": "Odebráno z tvých milníků",
+      "open": "{milestone}, {state}",
+      "states": {
+        "done": "hotovo",
+        "current": "aktuální",
+        "upcoming": "čeká",
+        "removed": "odebráno"
+      },
+      "emptyTitle": "Zatím žádná cesta",
+      "emptyDescription": "Vyber cestu v Nastavení → Hra a její milníky se ukážou tady."
+    }
   },
   "onboarding": {
     "title": "Nastavení účtu",
@@ -2488,7 +2643,28 @@
     },
     "closing": {
       "title": "Já jsem Jarvis",
-      "description": "Najdeš mě vpravo dole na každé obrazovce. Zeptej se mě na cokoliv a párkrát denně se ti sám ozvu s postřehem."
+      "description": "Najdeš mě vpravo dole na každé obrazovce. Zeptej se mě na cokoliv a párkrát denně se ti sám ozvu s postřehem.",
+      "descriptionGame": "Tvoje cesta čeká v Milnících. Najdeš mě v pravém dolním rohu každé obrazovky. Zeptej se mě na cokoliv a párkrát denně se podívám, jak ti to jde."
+    },
+    "mode": {
+      "title": "Jak chceš {appName} používat?",
+      "description": "Hraj ho jako hru, nebo ho měj jako obyčejný nástroj.",
+      "changeLater": "Přepnout jde kdykoliv v Nastavení → Hra.",
+      "game": {
+        "title": "Hrát hru",
+        "description": "Cesta milníků, úrovně a odměny. Sekce se odemykají, jak postupuješ."
+      },
+      "tool": {
+        "title": "Jen používat",
+        "description": "Všechno hned k dispozici, bez XP a úrovní."
+      }
+    },
+    "path": {
+      "title": "Vyber si cestu",
+      "description": "Milníky pro tvůj obor ve čtyřech kapitolách. Vybrali jsme tu, která sedí k tomu, co děláš.",
+      "suggested": "Sedí ti",
+      "preview": "Co tě čeká",
+      "more": "{count, plural, one {a ještě {countFormatted} milník} few {a ještě {countFormatted} milníky} other {a ještě {countFormatted} milníků}}"
     }
   },
   "workspace": {

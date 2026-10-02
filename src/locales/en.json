@@ -156,9 +156,12 @@
     "locked": {
       "milestone": "Unlocks with the milestone “{milestone}”",
       "level": "Unlocks at level {level}",
-      "path": "Unlocks with a milestone of your path"
+      "path": "Unlocks with a milestone of your path",
+      "openMilestone": "Open the milestone",
+      "openPath": "Show the path"
     },
-    "justUnlocked": "Just unlocked"
+    "justUnlocked": "Just unlocked",
+    "lockedLabel": "{section} (locked)"
   },
   "topBar": {
     "home": "Go to dashboard",
@@ -166,7 +169,9 @@
       "long": "{count, plural, one {{days} day streak} other {{days} day streak}}"
     },
     "level": {
-      "long": "Level {level}"
+      "long": "Level {level}",
+      "open": "{level}: open level details",
+      "newLevel": "{level}: new level reached, open details"
     },
     "account": {
       "open": "Account menu",
@@ -426,6 +431,10 @@
       },
       "taskCompleted": {
         "text": "I marked “{task}” as done."
+      },
+      "pathReady": {
+        "text": "{count, plural, one {Your path is ready with {countFormatted} milestone. Start with “{first}”.} other {Your path is ready with {countFormatted} milestones. Start with “{first}”.}}",
+        "noFirst": "{count, plural, one {Your path is ready with {countFormatted} milestone.} other {Your path is ready with {countFormatted} milestones.}}"
       }
     }
   },
@@ -716,6 +725,63 @@
       "reengageMonths": "{count, plural, one {# month} other {# months}}",
       "reengageCustom": "Custom number of months",
       "reengageCustomLabel": "Number of months"
+    },
+    "game": {
+      "title": "Game",
+      "description": "Play with a path, levels and rewards, or just use the tools.",
+      "modeLabel": "Mode",
+      "modes": {
+        "game": {
+          "title": "Play the game",
+          "description": "Path, levels, XP and badges. Sections open with milestones."
+        },
+        "tool": {
+          "title": "Just use it",
+          "description": "Everything open, without XP, levels or streak."
+        }
+      },
+      "pathLabel": "Path",
+      "pathHint": "Milestones for your field. A new path adds its milestones; finished ones stay.",
+      "confirm": {
+        "close": "Close",
+        "cancel": "Cancel",
+        "failed": "That didn't work. Try again.",
+        "tool": {
+          "title": "Switch to just using it?",
+          "point1": "Every section and theme opens right away.",
+          "point2": "XP, level and streak are hidden. Only finished milestones and won deals are celebrated.",
+          "point3": "Your progress stays saved; switching back brings it all back.",
+          "action": "Switch"
+        },
+        "game": {
+          "title": "Switch to the game?",
+          "point1": "Sections you already use stay open; the others open with the milestones of your path.",
+          "point2": "XP, level, streak and badges come back, with everything you earned before.",
+          "point3": "Themes open with levels; a locked one falls back to Gradus.",
+          "action": "Start playing"
+        },
+        "path": {
+          "title": "Switch to the path “{path}”?",
+          "point1": "Its milestones and tasks are added to your milestones.",
+          "point2": "Finished milestones and the ones you've started stay as they are.",
+          "point3": "Untouched milestones of the old path are removed.",
+          "action": "Switch path"
+        }
+      }
+    },
+    "appearance": {
+      "title": "Appearance",
+      "description": "The colour theme of the whole app. In the game, themes open with levels.",
+      "themes": {
+        "gradus": "Gradus",
+        "midnight": "Midnight",
+        "forest": "Forest",
+        "sunset": "Sunset",
+        "steel": "Steel",
+        "light": "Light"
+      },
+      "level": "Level {level}",
+      "locked": "Locked"
     }
   },
   "milestones": {
@@ -901,6 +967,11 @@
     "celebration": {
       "title": "Milestone completed!",
       "reward": "Your reward: {reward}"
+    },
+    "view": {
+      "label": "View",
+      "list": "List",
+      "path": "Path"
     }
   },
   "pipeline": {
@@ -2381,8 +2452,7 @@
       }
     },
     "levelUp": {
-      "title": "Level {level}!",
-      "unlocked": "Unlocked: {items}"
+      "title": "Level {level}!"
     },
     "tiers": {
       "apprentice": "Apprentice",
@@ -2396,7 +2466,92 @@
       "title": "Unlocked!",
       "subtitle": "Now available: {name}"
     },
-    "achievementEarned": "New badge!"
+    "achievementEarned": "New badge!",
+    "levelWindow": {
+      "title": "Your level",
+      "close": "Close",
+      "progress": "Progress to the next level",
+      "level": "Level",
+      "xpOf": "{xp} / {next} XP",
+      "maxLevel": "{xp} XP · top level reached",
+      "toNext": "{xp} XP to level {level}",
+      "earnTitle": "How to earn XP",
+      "xp": "+{xp} XP",
+      "earnedOfCap": "{xp} / {cap}",
+      "earnedNoCap": "+{xp} today",
+      "nextRewards": "At the next level you get",
+      "laterRewards": "At level {level} you get",
+      "noRewards": "Nothing more to unlock — you're at the top.",
+      "pathTitle": "Your path",
+      "openPath": "Show the whole path",
+      "badgesTitle": "Badges {earned} / {total}",
+      "historyTitle": "History",
+      "historyEmpty": "No XP yet. Finish a task to earn your first."
+    },
+    "sources": {
+      "daily_login": "Daily login",
+      "task_completed": "Tasks",
+      "milestone_completed": "Milestones",
+      "contact_moved": "Contact moves",
+      "contact_generated": "Generated contacts",
+      "meeting_booked": "Booked meetings",
+      "call_30min": "30 minutes on the phone",
+      "deal_won": "Won deals",
+      "calendar_event": "Calendar events",
+      "transaction_added": "Transactions"
+    },
+    "suggestions": {
+      "completeMilestone": "Complete the milestone “{milestone}”",
+      "finishTasks": "{count, plural, one {Finish {countFormatted} task of “{milestone}”} other {Finish {countFormatted} tasks of “{milestone}”}}",
+      "firstTask": "Add the first task to “{milestone}”",
+      "callToday": "Spend 30 minutes on the phone today",
+      "moveContacts": "{count, plural, one {Move {countFormatted} contact on to the next table} other {Move {countFormatted} contacts on to the next table}}",
+      "bookMeeting": "Book a meeting",
+      "addEvent": "Add an event to the calendar",
+      "addTransaction": "Record an income or an expense"
+    },
+    "history": {
+      "task_completed": "Task done",
+      "milestone_completed": "Milestone completed",
+      "deal_won": "Deal won",
+      "meeting_booked": "Meeting booked",
+      "contact_moved": "Contact moved",
+      "contact_generated": "Contacts generated",
+      "call_30min": "30 minutes on the phone",
+      "calendar_event": "Calendar event",
+      "transaction_added": "Transaction recorded",
+      "daily_login": "Daily login",
+      "section_unlocked": "Section unlocked",
+      "prospecting_record": "Personal record on the phone",
+      "contacts_generated_first": "First generated contacts",
+      "meeting_tenth": "Tenth meeting",
+      "onboarding_completed": "Account set up",
+      "other": "XP"
+    },
+    "path": {
+      "label": "Path map",
+      "chapter": "Chapter {number}",
+      "chapters": {
+        "1": "Basics",
+        "2": "First clients",
+        "3": "Getting going",
+        "4": "Growth"
+      },
+      "progress": "{done} / {total}",
+      "current": "Current milestone",
+      "unlocks": "Unlocks: {name}",
+      "xp": "+{xp} XP",
+      "removed": "Removed from your milestones",
+      "open": "{milestone}, {state}",
+      "states": {
+        "done": "done",
+        "current": "current",
+        "upcoming": "coming up",
+        "removed": "removed"
+      },
+      "emptyTitle": "No path yet",
+      "emptyDescription": "Pick a path in Settings → Game and its milestones show up here."
+    }
   },
   "onboarding": {
     "title": "Account setup",
@@ -2488,7 +2643,28 @@
     },
     "closing": {
       "title": "I'm Jarvis",
-      "description": "You'll find me in the bottom right corner of every screen. Ask me anything, and I'll check in on your progress a few times a day."
+      "description": "You'll find me in the bottom right corner of every screen. Ask me anything, and I'll check in on your progress a few times a day.",
+      "descriptionGame": "Your path is waiting in Milestones. You'll find me in the bottom right corner of every screen. Ask me anything, and I'll check in on your progress a few times a day."
+    },
+    "mode": {
+      "title": "How do you want to use {appName}?",
+      "description": "Play it as a game, or keep it a plain tool.",
+      "changeLater": "You can switch any time in Settings → Game.",
+      "game": {
+        "title": "Play the game",
+        "description": "A path of milestones, levels and rewards. Sections open as you progress."
+      },
+      "tool": {
+        "title": "Just use it",
+        "description": "Everything available right away, without XP or levels."
+      }
+    },
+    "path": {
+      "title": "Choose your path",
+      "description": "Milestones for your field in four chapters. We picked the one that fits what you do.",
+      "suggested": "Fits you",
+      "preview": "What's ahead",
+      "more": "{count, plural, one {and {countFormatted} more milestone} other {and {countFormatted} more milestones}}"
     }
   },
   "workspace": {

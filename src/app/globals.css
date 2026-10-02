@@ -156,7 +156,7 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* The app has a single dark theme. */
+/* shadcn/ui variables on top of the theme tokens (see the themes below). */
 :root {
   color-scheme: dark;
   --background: var(--color-canvas);
@@ -191,6 +191,133 @@
   --sidebar-accent-foreground: var(--color-ink);
   --sidebar-border: var(--color-line);
   --sidebar-ring: var(--color-violet);
+}
+
+/*
+ * Colour themes (src/lib/themes.ts). The attribute sits on <html>; a preview
+ * card can carry its own data-theme to show another theme in place, so every
+ * theme, the default included, sets the full palette. Token names keep their
+ * role across themes: "violet" is the primary colour, "teal" the progress and
+ * success colour, whatever hue a theme gives them.
+ */
+[data-theme="gradus"] {
+  color-scheme: dark;
+  --color-canvas: #070b1f;
+  --color-canvas-deep: #05081a;
+  --color-surface: #0d1234;
+  --color-surface-hover: #121a3c;
+  --color-grid: #141a3c;
+  --color-line: #2a3468;
+  --color-line-strong: #3b4682;
+  --color-violet: #7c5cff;
+  --color-teal: #2fe3c8;
+  --color-gold: #ffc64b;
+  --color-green: #3ddc97;
+  --color-orange: #ff9f43;
+  --color-pink: #ff6b8a;
+  --color-ink: #ffffff;
+  --color-ink-soft: #aeb8de;
+  --color-ink-muted: #8892be;
+}
+
+[data-theme="midnight"] {
+  color-scheme: dark;
+  --color-canvas: #050a18;
+  --color-canvas-deep: #030712;
+  --color-surface: #0b1530;
+  --color-surface-hover: #111d3d;
+  --color-grid: #101a36;
+  --color-line: #253660;
+  --color-line-strong: #34497c;
+  --color-violet: #4c8dff;
+  --color-teal: #c9d6ee;
+  --color-gold: #ffc64b;
+  --color-green: #3ddc97;
+  --color-orange: #ff9f43;
+  --color-pink: #ff6b8a;
+  --color-ink: #ffffff;
+  --color-ink-soft: #b4c2e0;
+  --color-ink-muted: #8494b8;
+}
+
+[data-theme="forest"] {
+  color-scheme: dark;
+  --color-canvas: #06120d;
+  --color-canvas-deep: #040c09;
+  --color-surface: #0c1f17;
+  --color-surface-hover: #12291f;
+  --color-grid: #10221a;
+  --color-line: #22473a;
+  --color-line-strong: #2f5e4c;
+  --color-violet: #34c27a;
+  --color-teal: #f2c14e;
+  --color-gold: #ffd36b;
+  --color-green: #5fe3a1;
+  --color-orange: #ff9f43;
+  --color-pink: #ff6b8a;
+  --color-ink: #ffffff;
+  --color-ink-soft: #b5d4c4;
+  --color-ink-muted: #86a897;
+}
+
+[data-theme="sunset"] {
+  color-scheme: dark;
+  --color-canvas: #140912;
+  --color-canvas-deep: #0e060c;
+  --color-surface: #24101f;
+  --color-surface-hover: #2e1528;
+  --color-grid: #261222;
+  --color-line: #4c2543;
+  --color-line-strong: #63325a;
+  --color-violet: #ff8a3d;
+  --color-teal: #ff6fa5;
+  --color-gold: #ffc64b;
+  --color-green: #3ddc97;
+  --color-orange: #ffb04a;
+  --color-pink: #ff5d7a;
+  --color-ink: #ffffff;
+  --color-ink-soft: #e2bccf;
+  --color-ink-muted: #b08aa0;
+}
+
+[data-theme="steel"] {
+  color-scheme: dark;
+  --color-canvas: #0b0d10;
+  --color-canvas-deep: #07080a;
+  --color-surface: #15181d;
+  --color-surface-hover: #1c2026;
+  --color-grid: #171a1f;
+  --color-line: #30363f;
+  --color-line-strong: #434a55;
+  --color-violet: #8d99ae;
+  --color-teal: #2fe3c8;
+  --color-gold: #ffc64b;
+  --color-green: #3ddc97;
+  --color-orange: #ff9f43;
+  --color-pink: #ff6b8a;
+  --color-ink: #ffffff;
+  --color-ink-soft: #bcc3ce;
+  --color-ink-muted: #8a929e;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --color-canvas: #f4f5fb;
+  --color-canvas-deep: #e9ebf5;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f0f1f9;
+  --color-grid: #e6e8f3;
+  --color-line: #d5d9ea;
+  --color-line-strong: #b9bfd8;
+  --color-violet: #6a4bf0;
+  --color-teal: #0d9e8a;
+  --color-gold: #b97f00;
+  --color-green: #1b9461;
+  --color-orange: #cf6a12;
+  --color-pink: #d63c62;
+  --color-ink: #12162e;
+  --color-ink-soft: #3c4468;
+  --color-ink-muted: #646c90;
 }
 
 /*

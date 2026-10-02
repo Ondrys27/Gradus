@@ -3,12 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { PauseIcon, PlayIcon, TimerOffIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCelebration } from "@/components/celebration/celebration-provider";
 import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { GlowCard } from "@/components/ui/glow-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAwardXp, useProspectingRecord } from "@/features/game/queries";
+import { useAwardXp, useGameCelebrate, useProspectingRecord } from "@/features/game/queries";
 import { formatStopwatch, formatTime, todayIsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { useUrlIntent } from "@/lib/use-url-intent";
@@ -28,7 +27,7 @@ const PAUSED_TICK_MS = 30_000;
 export function TimerCard() {
   const t = useTranslations("coldCalling.timer");
   const tCelebration = useTranslations("game.celebration.prospectingRecord");
-  const { celebrate } = useCelebration();
+  const celebrate = useGameCelebrate();
   const settings = useFormatSettings();
   const reading = useTimerReading();
   const action = useTimerAction();

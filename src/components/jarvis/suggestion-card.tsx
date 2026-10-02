@@ -9,6 +9,7 @@ import {
   FlagIcon,
   HourglassIcon,
   LightbulbIcon,
+  MapIcon,
   PhoneCallIcon,
   TrophyIcon,
   Undo2Icon,
@@ -30,6 +31,7 @@ const ICONS: Record<SuggestionType, LucideIcon> = {
   milestoneReady: FlagIcon,
   taskCompleted: CircleCheckIcon,
   insight: LightbulbIcon,
+  pathReady: MapIcon,
 };
 
 const ICON_TONE: Record<SuggestionType, string> = {
@@ -40,6 +42,7 @@ const ICON_TONE: Record<SuggestionType, string> = {
   milestoneReady: "text-gold",
   taskCompleted: "text-green",
   insight: "text-violet",
+  pathReady: "text-teal",
 };
 
 /**
@@ -78,6 +81,13 @@ export function useSuggestionText() {
               ? suggestion.action.prompt ||
                 (type === "dealWon" || type === "stalledDeal" ? t(`${type}.prompt`, params) : "")
               : "",
+        };
+      }
+      if (suggestion.type === "pathReady") {
+        return {
+          title: params.first ? t("pathReady.text", params) : t("pathReady.noFirst", params),
+          detail: null,
+          prompt: "",
         };
       }
       if (suggestion.type === "taskCompleted") {

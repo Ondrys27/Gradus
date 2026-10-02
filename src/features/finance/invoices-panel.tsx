@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { CheckIcon, ExternalLinkIcon, RefreshCwIcon, Trash2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCelebration } from "@/components/celebration/celebration-provider";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -14,6 +13,7 @@ import { APP_NAME } from "@/lib/constants";
 import { formatCalendarDate, formatCurrency, formatDateTime, todayIsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
+import { useGameCelebrate } from "@/features/game/queries";
 import { fakturoidInvoiceUrl } from "./fakturoid/schema";
 import { useInvoiceErrorText } from "./fakturoid/use-invoice-error";
 import { decimalsFor, displayInvoiceStatus, pageCount, PAGE_SIZE } from "./finance-logic";
@@ -150,7 +150,7 @@ function InvoiceRow({
   const settings = useFormatSettings();
   const markPaid = useMarkInvoicePaid();
   const errorText = useInvoiceErrorText();
-  const { celebrate } = useCelebration();
+  const celebrate = useGameCelebrate();
   const status = displayInvoiceStatus(invoice, todayIsoDate(settings));
   const payable = (status === "pending" || status === "overdue") && Boolean(onDelete);
 
@@ -193,10 +193,13 @@ function InvoiceRow({
                   markPaid.mutate(invoice.id, {
                     onSuccess: ({ dealMoved }) => {
                       if (dealMoved) {
-                        celebrate({
-                          title: t("dealWon"),
-                          subtitle: invoice.customer_name ?? invoice.number,
-                        });
+                        celebrate(
+                          {
+                            title: t("dealWon"),
+                            subtitle: invoice.customer_name ?? invoice.number,
+                          },
+                          "win",
+                        );
                       }
                     },
                   })

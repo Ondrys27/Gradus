@@ -27,7 +27,13 @@ export type CelebrationOptions = {
   reward?: string;
   /** XP awarded; the +XP badge is hidden when missing or zero. */
   xp?: number;
+  /** A level-up: a shield with this number instead of the trophy. */
+  level?: number;
+  /** What the level unlocked, shown as cards. */
+  rewards?: CelebrationReward[];
 };
+
+export type CelebrationReward = { key: string; name: string; description: string; icon: string };
 
 type QueuedCelebration = CelebrationOptions & { id: number };
 

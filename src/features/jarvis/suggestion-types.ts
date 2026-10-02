@@ -10,7 +10,7 @@ export const RULE_TYPES = [
   "milestoneReady",
 ] as const;
 export type RuleType = (typeof RULE_TYPES)[number];
-export type SuggestionType = RuleType | "taskCompleted" | "insight";
+export type SuggestionType = RuleType | "taskCompleted" | "insight" | "pathReady";
 
 export function isRuleType(type: string): type is RuleType {
   return (RULE_TYPES as readonly string[]).includes(type);

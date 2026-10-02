@@ -14,7 +14,7 @@ describe("parseAwardResult", () => {
       leveled_up: true,
       unlocks: [
         {
-          key: "theme_aurora",
+          key: "theme_midnight",
           kind: "theme",
           name: { en: "Aurora theme", cs: "Téma Polární záře" },
           description: { en: "d", cs: "p" },
@@ -28,7 +28,7 @@ describe("parseAwardResult", () => {
     });
     expect(result.totalXp).toBe(700);
     expect(result.leveledUp).toBe(true);
-    expect(result.unlocks[0]).toMatchObject({ key: "theme_aurora", source: "level", level: 3 });
+    expect(result.unlocks[0]).toMatchObject({ key: "theme_midnight", source: "level", level: 3 });
     expect(localized(result.achievements[0]!.name, "cs")).toBe("První krok");
   });
 

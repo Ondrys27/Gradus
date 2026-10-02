@@ -5,6 +5,8 @@ import { accountKeys, useSession } from "@/features/account/queries";
 import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { PROFILE_COLUMNS } from "@/features/account/types";
 import { fetchPaths, gameKeys, pathForIndustry } from "@/features/game/queries";
+import type { GameMode } from "@/features/game/types";
+import { jarvisKeys } from "@/features/jarvis/queries";
 import { milestoneKeys } from "@/features/milestones/queries";
 import { MILESTONE_COLUMNS, TASK_COLUMNS, type Milestone } from "@/features/milestones/types";
 import { createClient } from "@/lib/supabase/client";
@@ -58,33 +60,44 @@ export function useCreateFirstMilestone() {
   });
 }
 
+export type FinishOnboardingInput = {
+  industry: IndustryKey;
+  /** Game (a path, levels, unlocks) or tool (everything open). */
+  mode: GameMode;
+  /** The path picked in game mode; the one for the industry when none was picked. */
+  pathKey: string | null;
+};
+
 /**
- * Saves the chosen branch, marks the wizard done for good and gives the
- * account the game path that fits the branch, so its milestones lead to the
- * locked sections. A retried finish adds nothing twice (choose_path skips
- * steps the account already has).
+ * Saves the branch and the mode and marks the wizard done for good. In game
+ * mode the account gets the chosen path, so its milestones lead to the locked
+ * sections, and Jarvis points to them. A retried finish adds nothing twice
+ * (choose_path skips steps the account already has).
  */
 export function useFinishOnboarding() {
   const { user } = useSession();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (industry: IndustryKey) => {
+    mutationFn: async ({ industry, mode, pathKey }: FinishOnboardingInput) => {
       const { data, error } = await createClient()
         .from("profiles")
         .update({
           industry: industryKeyOf(industry),
+          mode,
           onboarding_completed_at: new Date().toISOString(),
         })
         .eq("id", user.id)
         .select(PROFILE_COLUMNS)
         .single();
       if (error) throw error;
-      const pathKey = pathForIndustry(await fetchPaths(), industryKeyOf(industry));
-      if (pathKey) {
-        const { error: pathError } = await createClient().rpc("choose_path", {
-          _path_key: pathKey,
-        });
-        if (pathError) throw pathError;
+      if (mode === "game") {
+        const path = pathKey ?? pathForIndustry(await fetchPaths(), industryKeyOf(industry));
+        if (path) {
+          const { error: pathError } = await createClient().rpc("choose_path", {
+            _path_key: path,
+          });
+          if (pathError) throw pathError;
+        }
       }
       return { profile: data };
     },
@@ -92,6 +105,8 @@ export function useFinishOnboarding() {
       queryClient.setQueryData(accountKeys.profile(user.id), profile);
       void queryClient.invalidateQueries({ queryKey: milestoneKeys.all(user.id) });
       void queryClient.invalidateQueries({ queryKey: gameKeys.all(user.id) });
+      // Asking for suggestions lets the server add Jarvis's note about the new path.
+      void queryClient.invalidateQueries({ queryKey: jarvisKeys.suggestions(user.id) });
     },
   });
 }

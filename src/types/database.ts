@@ -1345,6 +1345,7 @@ export type Database = {
           mode: string
           onboarding_completed_at: string | null
           path_key: string | null
+          seen_level: number
           updated_at: string
           username: string | null
         }
@@ -1357,6 +1358,7 @@ export type Database = {
           mode?: string
           onboarding_completed_at?: string | null
           path_key?: string | null
+          seen_level?: number
           updated_at?: string
           username?: string | null
         }
@@ -1369,6 +1371,7 @@ export type Database = {
           mode?: string
           onboarding_completed_at?: string | null
           path_key?: string | null
+          seen_level?: number
           updated_at?: string
           username?: string | null
         }
@@ -1907,6 +1910,7 @@ export type Database = {
           recent_searches: string[]
           reengage_after_months: number
           sound_enabled: boolean
+          theme: string
           time_format: string
           timezone: string
           updated_at: string
@@ -1927,6 +1931,7 @@ export type Database = {
           recent_searches?: string[]
           reengage_after_months?: number
           sound_enabled?: boolean
+          theme?: string
           time_format?: string
           timezone?: string
           updated_at?: string
@@ -1947,6 +1952,7 @@ export type Database = {
           recent_searches?: string[]
           reengage_after_months?: number
           sound_enabled?: boolean
+          theme?: string
           time_format?: string
           timezone?: string
           updated_at?: string
@@ -2847,6 +2853,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      theme_available: { Args: { _theme: string }; Returns: boolean }
       timer_idle_interval: { Args: never; Returns: string }
       user_today: { Args: { _user_id: string }; Returns: string }
       username_available: { Args: { _username: string }; Returns: boolean }

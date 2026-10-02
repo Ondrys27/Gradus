@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { cookies } from "next/headers";
 import { getLocale, getMessages, getTimeZone, getTranslations } from "next-intl/server";
 import { IntlProvider } from "@/components/intl-provider";
 import { Background } from "@/components/layout/background";
 import { Providers } from "@/components/providers";
 import { APP_NAME } from "@/lib/constants";
+import { DEFAULT_THEME, isThemeKey, THEME_COOKIE } from "@/lib/themes";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin", "latin-ext"] });
@@ -29,14 +31,18 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [locale, messages, timeZone] = await Promise.all([
+  const [locale, messages, timeZone, cookieStore] = await Promise.all([
     getLocale(),
     getMessages(),
     getTimeZone(),
+    cookies(),
   ]);
+  // The theme shown last time; the app corrects it from user_settings once loaded.
+  const storedTheme = cookieStore.get(THEME_COOKIE)?.value;
+  const theme = isThemeKey(storedTheme) ? storedTheme : DEFAULT_THEME;
 
   return (
-    <html lang={locale} className={`dark ${inter.variable}`}>
+    <html lang={locale} data-theme={theme} className={`dark ${inter.variable}`}>
       <body>
         <Background />
         <IntlProvider locale={locale} messages={messages} timeZone={timeZone}>

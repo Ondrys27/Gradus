@@ -1,11 +1,10 @@
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { useCelebration } from "@/components/celebration/celebration-provider";
-import { useFinishOnboarding } from "../queries";
-import type { IndustryKey } from "../industries";
+import { useFinishOnboarding, type FinishOnboardingInput } from "../queries";
 import { StepShell } from "../step-shell";
 
-export function ClosingStep({ industry }: { industry: IndustryKey }) {
+export function ClosingStep({ input }: { input: FinishOnboardingInput }) {
   const t = useTranslations("onboarding.closing");
   const tActions = useTranslations("onboarding.actions");
   const tCelebration = useTranslations("game.celebration.onboardingCompleted");
@@ -13,12 +12,13 @@ export function ClosingStep({ industry }: { industry: IndustryKey }) {
   const { celebrate } = useCelebration();
 
   function done() {
-    finish.mutate(industry, {
-      onSuccess: () =>
-        celebrate({
-          title: tCelebration("title"),
-          subtitle: tCelebration("subtitle"),
-        }),
+    finish.mutate(input, {
+      // Tool mode celebrates only a milestone and a win, not the setup.
+      onSuccess: () => {
+        if (input.mode === "game") {
+          celebrate({ title: tCelebration("title"), subtitle: tCelebration("subtitle") });
+        }
+      },
     });
   }
 
@@ -26,7 +26,7 @@ export function ClosingStep({ industry }: { industry: IndustryKey }) {
     <StepShell
       jarvisState="happy"
       title={t("title")}
-      description={t("description")}
+      description={input.mode === "game" ? t("descriptionGame") : t("description")}
       footer={
         <Button
           type="button"

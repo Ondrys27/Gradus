@@ -3,6 +3,7 @@ import { JarvisDock } from "@/components/jarvis/jarvis-dock";
 import { GameSessionStart } from "@/features/game/game-session-start";
 import { OnboardingGate } from "@/features/onboarding/onboarding-gate";
 import { SearchProvider } from "@/features/search/search-provider";
+import { ThemeSync } from "@/features/settings/theme";
 import { BottomNav } from "./bottom-nav";
 import { SectionGuard } from "./section-guard";
 import { Sidebar } from "./sidebar";
@@ -22,6 +23,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <BottomNav />
         <JarvisDock />
         <GameSessionStart />
+        <ThemeSync />
         <OnboardingGate />
       </div>
     </SearchProvider>
