@@ -95,6 +95,8 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - Přihlášení se ověřuje jednou při startu; přechody stránek nikdy nečekají a nezobrazují načítání.
 - Stromová mapa: spojnice ve dvou vrstvách (plná čára + lesk), žádný `objectBoundingBox` přechod, rozvržení z naměřených rozměrů, celá obrazovka jako overlay (iOS), ResizeObserver, nikdy neukládat nulové rozměry.
 - `prefers-reduced-motion` všude.
+- **Barevná témata** přes `data-theme` na `html`, tokeny v `@theme` pro každé téma, volba v `user_settings`. Šest témat: Gradus (výchozí), Půlnoc, Les, Západ, Ocel, Světlé. V game režimu je odemyká úroveň (Půlnoc 3, Les 7, Západ 12, Ocel 18, Světlé 25), v tool režimu jsou všechna hned; zamčené téma hlídá i DB trigger.
+- **Pilulka úrovně** v horní liště (jen game režim) pulzuje od postupu na novou úroveň, dokud uživatel okno úrovně neotevře (`profiles.seen_level`).
 
 ### Pracovní prostor
 - Prostor = účet majitele. Majitel pracuje ve svém, pracovník v prostoru majitele, který ho pozval (zatím právě jeden). Dotazy filtrují podle current_workspace_id(), nikdy podle auth.uid(). Ochrana řádků přes has_section_access(owner, sekce, úroveň).
