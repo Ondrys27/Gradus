@@ -27,10 +27,18 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 8.6 | builder | 2026-09-30 Filtr znovu oslovit filtruje jen svůj sloupec s nastavitelnou dobou v user_settings, přesouvání fází přes dnd-kit s pružinou, výraznější karta Přidat fázi.
 - [x] K8 | reviewer | 2026-09-30 Kontrola fáze 8: opraveno ukládání telefonu z vyhledávání do E.164, hledání čísla s úvodní nulou, mez pro vlastní počet měsíců znovu oslovit a reduced-motion u přesunu fází; RLS a hledání bez admin klienta ověřeny bez nálezu.
 - [x] STOP | Konec opravného kola 1. Ověř opravené věci: v konzoli žádné chyby, nabídky v onboardingu se otevírají, telefony se formátují, časová pásma ukazují čas, vyhledávání ⌘K najde kontakt bez diakritiky i podle části čísla, dlaždice se otevírají jako velké okno s procenty v kruhu, mapa úkolů má barevné stavy a klidné přibližování, milník jde dokončit až po všech úkolech a ukáže odměnu, filtr znovu oslovit filtruje jen svůj sloupec a fáze se přesouvají za myší. Pak pokračuj v testování od Kontaktů dál a poznámky pošli do chatu s Claude.
+- [ ] 9.0 | architect |
+- [ ] 9.1 | architect |
+- [ ] 9.2 | builder |
+- [ ] 9.3 | architect |
+- [ ] 9.4 | architect |
+- [ ] 9.5 | builder |
+- [ ] 9.6 | architect |
+- [ ] 9.7 | architect |
+- [ ] K9 | reviewer |
+- [ ] STOP | Konec kola 2. Ověř: Jarvisův chat odpovídá a tlačítko Otestovat Jarvise v nastavení prochází. Pracovník Caller ve druhém prohlížeči vidí a upravuje kontakty, ale nevidí finance; po odebrání práva zmizí hned. Graf příjmu jde přiblížit. Založ nový účet v herním režimu, vyber cestu Řemeslník, projdi průvodce a ověř, že vznikly milníky s popisky „Odemkne". Klepni na úroveň vpravo nahoře. Přepni téma v nastavení. Zkontroluj postavu Jarvise na /design-system/jarvis ve všech stavech. Nech aplikaci otevřenou a sleduj, jestli se Jarvis sám ozve — a jestli neotravuje. Poznámky pošli do chatu s Claude.
 - [ ] 7.1 | RUČNĚ | Nasazení vyžaduje tvoje přihlášení do Vercelu a nastavení v jeho administraci. Spusť ho interaktivně: přepni /model na Sonnet a vlož prompt 7.1 z docs/plan.md.
 
 ## Odloženo
 
 Tyto věci `/pokracuj` neprovádí, čekají na další kolo.
-
-- Jarvis nefunguje — při dalším kole přiložit výstup z terminálu s `bun run dev` a z konzole prohlížeče při odeslání zprávy.

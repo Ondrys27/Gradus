@@ -37,6 +37,7 @@ bun run db:types      # generuje src/types/database.ts
 - `src/app/(app)/` — chráněná aplikace, layout se sidebarem
 - `src/app/api/` — serverové routy (jarvis, generate-contacts, cron/*)
 - `src/features/<sekce>/` — komponenty, dotazy, mutace a serverové akce sekce
+- Cesty, úrovně, odznaky a odemykání jsou v src/features/game, Jarvisova postava a proaktivní chování v src/features/jarvis
 - `src/components/ui/` — sdílené prvky (GlowCard, StatTile, ProgressBar, ProgressRing, StatusPill, AnimatedNumber, EmptyState)
 - `src/components/layout/` — Sidebar, TopBar, BottomNav, Background, JarvisButton
 - `src/components/celebration/`, `src/components/jarvis/`
@@ -94,6 +95,17 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - Přihlášení se ověřuje jednou při startu; přechody stránek nikdy nečekají a nezobrazují načítání.
 - Stromová mapa: spojnice ve dvou vrstvách (plná čára + lesk), žádný `objectBoundingBox` přechod, rozvržení z naměřených rozměrů, celá obrazovka jako overlay (iOS), ResizeObserver, nikdy neukládat nulové rozměry.
 - `prefers-reduced-motion` všude.
+
+### Pracovní prostor
+- Prostor = účet majitele. Dotazy filtrují podle current_workspace_id(), nikdy podle auth.uid(). Ochrana řádků přes has_section_access(owner, sekce, úroveň).
+- Tam, kde záleží, kdo akci udělal, je actor_id vedle user_id.
+- Pracovník nikdy nevidí finance bez výslovného práva, nastavení a pracovníky nikdy.
+
+### Hra
+- Dva režimy: game a tool. Tool nic nezamyká a nezobrazuje XP.
+- XP jen přes award_xp na serveru. Milník a odznak jen poprvé, opakovatelné zdroje mají denní stropy.
+- Odemykání sekcí v game režimu jen přes milníky cesty a úrovně. Úroveň se počítá z celkového XP, neukládá se.
+- Jarvis se sám ozývá nejvýš jednou za relaci a ne dřív než po 4 hodinách, nikdy při běžícím časovači nebo otevřeném dialogu. Nic nevytváří bez potvrzení.
 
 ---
 
