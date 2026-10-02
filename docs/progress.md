@@ -27,7 +27,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 8.6 | builder | 2026-09-30 Filtr znovu oslovit filtruje jen svůj sloupec s nastavitelnou dobou v user_settings, přesouvání fází přes dnd-kit s pružinou, výraznější karta Přidat fázi.
 - [x] K8 | reviewer | 2026-09-30 Kontrola fáze 8: opraveno ukládání telefonu z vyhledávání do E.164, hledání čísla s úvodní nulou, mez pro vlastní počet měsíců znovu oslovit a reduced-motion u přesunu fází; RLS a hledání bez admin klienta ověřeny bez nálezu.
 - [x] STOP | Konec opravného kola 1. Ověř opravené věci: v konzoli žádné chyby, nabídky v onboardingu se otevírají, telefony se formátují, časová pásma ukazují čas, vyhledávání ⌘K najde kontakt bez diakritiky i podle části čísla, dlaždice se otevírají jako velké okno s procenty v kruhu, mapa úkolů má barevné stavy a klidné přibližování, milník jde dokončit až po všech úkolech a ukáže odměnu, filtr znovu oslovit filtruje jen svůj sloupec a fáze se přesouvají za myší. Pak pokračuj v testování od Kontaktů dál a poznámky pošli do chatu s Claude.
-- [ ] 9.0 | architect |
+- [x] 9.0 | architect | 2026-10-02 Jarvisovi došel kredit na Anthropic účtu; přidáno srozumitelné hlášení noCredit, logování chyb modelu a tlačítko Otestovat Jarvise v Nastavení.
 - [ ] 9.1 | architect |
 - [ ] 9.2 | builder |
 - [ ] 9.3 | architect |
