@@ -102,6 +102,7 @@ export async function streamModel(call: ModelCall): Promise<ModelResult> {
 
     if (!text.trim()) {
       const error = `empty answer (stop_reason: ${stopReason ?? "none"})`;
+      console.error(`jarvis ${call.feature} on ${model} failed: ${error}`);
       await call.log({
         feature: call.feature,
         model,
@@ -114,24 +115,40 @@ export async function streamModel(call: ModelCall): Promise<ModelResult> {
     await call.log({ feature: call.feature, model, tokens, durationMs: Date.now() - started });
     return { ok: true, model, text, tokens };
   } catch (error) {
+    const reason = describeError(error);
+    // Without this the reason was only in ai_usage and the server log stayed silent.
+    console.error(`jarvis ${call.feature} on ${model} failed: ${reason}`);
     await call.log({
       feature: call.feature,
       model,
       tokens,
       durationMs: Date.now() - started,
-      error: describeError(error),
+      error: reason,
     });
     return { ok: false, model, code: errorCode(error), text, tokens };
   }
 }
 
-/** What the panel says; the details stay in ai_usage.error. */
+/**
+ * An account without credit. The API answers it as a 400 invalid_request_error
+ * (sometimes as billing_error / 402), so the message is the only reliable sign.
+ */
+function isNoCredit(error: InstanceType<typeof Anthropic.APIError>): boolean {
+  return (
+    error.status === 402 ||
+    error.type === "billing_error" ||
+    /credit balance/i.test(error.message)
+  );
+}
+
+/** What the panel says; the details stay in ai_usage.error and the server log. */
 export function errorCode(error: unknown): ChatErrorCode {
+  if (error instanceof Anthropic.APIError && isNoCredit(error)) return "noCredit";
   if (error instanceof Anthropic.RateLimitError) return "busy";
   if (error instanceof Anthropic.AuthenticationError) return "notConfigured";
   if (error instanceof Anthropic.PermissionDeniedError) return "notConfigured";
   if (error instanceof Anthropic.APIError && error.type === "overloaded_error") return "busy";
-  // Missing credits, bad requests, outages and lost connections all read the same to the user.
+  // Bad requests, outages and lost connections all read the same to the user.
   return "unavailable";
 }
 

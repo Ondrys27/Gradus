@@ -1,17 +1,25 @@
 import { NextResponse } from "next/server";
 import { toModelMessages, type StoredMessage } from "@/features/jarvis/history";
-import { EMPTY_USAGE, JARVIS_MODELS, modelFor, type JarvisFeature } from "@/features/jarvis/models";
+import {
+  costUsd,
+  EMPTY_USAGE,
+  JARVIS_MODELS,
+  modelFor,
+  type JarvisFeature,
+} from "@/features/jarvis/models";
 import { featureRequestNote, situationBlock } from "@/features/jarvis/prompt";
 import {
   chatRequestSchema,
   emailReplyRequestSchema,
   milestoneReviewRequestSchema,
+  pingRequestSchema,
   rewardSetupRequestSchema,
   salesAnalysisRequestSchema,
   type ChatErrorCode,
   type ChatEvent,
   type FileErrorCode,
   type JarvisOverview,
+  type PingResult,
 } from "@/features/jarvis/protocol";
 import { describeSituation, suggestionsFor } from "@/features/jarvis/situation";
 import type { SuggestionsResponse } from "@/features/jarvis/suggestions";
@@ -168,7 +176,48 @@ export async function POST(request: Request) {
   if (kind === "salesAnalysis") return salesAnalysis(ctx, body);
   if (kind === "rewardSetup") return rewardSetup(ctx, body);
   if (kind === "emailReply") return emailReply(ctx, body);
+  if (kind === "ping") return ping(ctx, body);
   return chat(ctx, body);
+}
+
+const PING_QUESTION = "This is a connection test from the settings. Reply with one short sentence.";
+
+/**
+ * Settings → Integrations → "Test Jarvis": one short question on the chat's
+ * model through the same streaming call, with the time and price it took.
+ * Nothing is saved besides the ai_usage row every call writes.
+ */
+async function ping(ctx: Context, body: unknown) {
+  if (!pingRequestSchema.safeParse(body).success) return jobError("unknown", 400);
+  const { supabase, admin, userId, settings } = ctx;
+  const respond = (result: PingResult, status = 200) => NextResponse.json(result, { status });
+
+  const usage = await loadAiUsage(supabase, admin, userId, settings);
+  if (limitReached(usage)) {
+    return respond({ ok: false, code: "limitReached", durationMs: null, usage }, 429);
+  }
+  const client = createAnthropic();
+  if (!client) {
+    await logNotConfigured(ctx, "ping");
+    return respond({ ok: false, code: "notConfigured", durationMs: null }, 503);
+  }
+
+  const started = Date.now();
+  const result = await streamModel({
+    client,
+    feature: "ping",
+    context: "",
+    messages: [{ role: "user", content: PING_QUESTION }],
+    log: (entry) => logAiUsage(admin, { ...entry, userId, conversationId: null }),
+  });
+  const durationMs = Date.now() - started;
+  if (!result.ok) return respond({ ok: false, code: result.code, durationMs }, 502);
+  return respond({
+    ok: true,
+    durationMs,
+    costUsd: costUsd(result.model, result.tokens),
+    model: result.model,
+  });
 }
 
 function jobError(code: ChatErrorCode | "locked" | "alreadyReviewed" | "empty", status: number) {

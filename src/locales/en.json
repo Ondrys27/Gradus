@@ -376,6 +376,7 @@
     "error": {
       "limitReached": "You've used all {limit} Jarvis messages for this month. They renew on the 1st.",
       "notConfigured": "Jarvis isn't connected yet. Try again later.",
+      "noCredit": "Jarvis's AI account has run out of credit, so it can't answer. Top up credit in the Anthropic Console (Plans & Billing), then try again.",
       "busy": "Jarvis has too much going on right now. Try again in a minute.",
       "unavailable": "Jarvis can't answer right now. Try again in a while.",
       "notFound": "This conversation no longer exists. Your next message starts a new one.",
@@ -686,6 +687,18 @@
           "tooLong": "This is too long.",
           "invalidSlug": "Use only the slug, e.g. mycompany."
         }
+      },
+      "jarvis": {
+        "name": "Jarvis",
+        "description": "Sends Jarvis a short question and shows whether it answered, how long it took and what it cost.",
+        "test": "Test Jarvis",
+        "testing": "Asking Jarvis…",
+        "ok": "Jarvis answered",
+        "duration": "In {seconds} s",
+        "cost": "Cost {cost}",
+        "model": "Model {model}",
+        "failed": "Jarvis didn't answer",
+        "failedAfter": "The error came after {seconds} s."
       }
     },
     "gameplay": {

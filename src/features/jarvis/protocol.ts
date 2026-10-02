@@ -43,6 +43,14 @@ export const emailReplyRequestSchema = z.object({
   receivedEmail: z.string().trim().min(1).max(RECEIVED_EMAIL_MAX),
 });
 
+/** Settings → Integrations: one short question to check that Jarvis answers. */
+export const pingRequestSchema = z.object({ kind: z.literal("ping") });
+
+/** POST /api/jarvis { kind: "ping" }; the time is measured on the server around the model call. */
+export type PingResult =
+  | { ok: true; durationMs: number; costUsd: number; model: string }
+  | { ok: false; code: ChatErrorCode; durationMs: number | null; usage?: AiCallUsage };
+
 /** A file shown on a message. */
 export type ChatAttachment = { id: string; name: string; kind: FileKind };
 
@@ -52,6 +60,8 @@ export type AiCallUsage = { used: number; limit: number };
 export type ChatErrorCode =
   | "limitReached"
   | "notConfigured"
+  /** The Anthropic account has run out of credit; only the app's operator can fix it. */
+  | "noCredit"
   | "busy"
   | "unavailable"
   | "notFound"

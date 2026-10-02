@@ -376,6 +376,7 @@
     "error": {
       "limitReached": "Všech {limit} zpráv pro Jarvise je na tento měsíc vyčerpáno. Obnoví se prvního dne dalšího měsíce.",
       "notConfigured": "Jarvis ještě není připojený. Zkus to později.",
+      "noCredit": "Účtu, přes který Jarvis běží, došel kredit, takže nemůže odpovědět. Dobij kredit v Anthropic Console (Plans & Billing) a zkus to znovu.",
       "busy": "Jarvis má teď moc práce. Zkus to za minutu.",
       "unavailable": "Jarvis teď nemůže odpovědět. Zkus to za chvíli.",
       "notFound": "Tenhle rozhovor už neexistuje. Další zpráva začne nový.",
@@ -686,6 +687,18 @@
           "tooLong": "Tohle je moc dlouhé.",
           "invalidSlug": "Zadej jen název účtu, např. mojefirma."
         }
+      },
+      "jarvis": {
+        "name": "Jarvis",
+        "description": "Pošle Jarvisovi krátký dotaz a ukáže, jestli odpověděl, za jak dlouho a kolik to stálo.",
+        "test": "Otestovat Jarvise",
+        "testing": "Ptám se Jarvise…",
+        "ok": "Jarvis odpověděl",
+        "duration": "Za {seconds} s",
+        "cost": "Stálo to {cost}",
+        "model": "Model {model}",
+        "failed": "Jarvis neodpověděl",
+        "failedAfter": "Chyba přišla za {seconds} s."
       }
     },
     "gameplay": {

@@ -39,6 +39,7 @@ import { useUrlIntent } from "@/lib/use-url-intent";
 import { cn } from "@/lib/utils";
 import { FakturoidIntegration } from "./fakturoid-integration";
 import { FormatPreview, useNow } from "./format-preview";
+import { JarvisTest } from "./jarvis-test";
 import { TimeZonePicker } from "./time-zone-picker";
 
 type Option = { value: string; label: string; detail?: string };
@@ -316,6 +317,7 @@ export function SettingsView() {
         >
           <Section title={t("integrations.title")} description={t("integrations.description")}>
             <FakturoidIntegration />
+            <JarvisTest />
           </Section>
         </div>
       </StaggerItem>

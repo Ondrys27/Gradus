@@ -26,6 +26,7 @@ export const JARVIS_FEATURES = [
   "analysis",
   "reward_setup",
   "email_reply",
+  "ping",
 ] as const;
 export type JarvisFeature = (typeof JARVIS_FEATURES)[number];
 
@@ -40,6 +41,8 @@ const ROUTES: Record<JarvisFeature, JarvisModel> = {
   reward_setup: JARVIS_MODELS.sonnet,
   // A reply the user sends in their own name: needs a real conversation model.
   email_reply: JARVIS_MODELS.sonnet,
+  // The test in Settings checks the chat's own model, so a wrong model id shows there too.
+  ping: JARVIS_MODELS.sonnet,
   analysis: JARVIS_MODELS.opus,
 };
 

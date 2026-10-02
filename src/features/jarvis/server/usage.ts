@@ -9,19 +9,42 @@ type Client = SupabaseClient<Database>;
 
 type PlanLimits = { aiCalls: number; fileUploads: number };
 
-/** The plan's monthly numbers (the default plan without a subscription). */
-async function loadLimits(supabase: Client, userId: string): Promise<PlanLimits> {
-  const { data: subscription } = await supabase
-    .from("subscriptions")
-    .select("plan_key")
-    .eq("user_id", userId)
-    .maybeSingle();
-  const query = supabase.from("plans").select("ai_calls_limit, file_uploads_limit");
-  const { data: plan, error } = await (
-    subscription ? query.eq("key", subscription.plan_key) : query.eq("is_default", true)
-  ).maybeSingle();
-  if (error) throw error;
+type PlanRow = {
+  key: string;
+  is_default: boolean;
+  ai_calls_limit: number;
+  file_uploads_limit: number;
+};
+
+/** Plans are a handful of rows; reading them all keeps the fallback in one query. */
+const PLAN_LIMIT = 50;
+
+/**
+ * The numbers of the user's plan. Without a subscription, or with one whose
+ * plan no longer exists, the default plan applies: a new user must never end
+ * up with a limit of 0 only because a row is missing.
+ */
+export function planLimits(plans: PlanRow[], planKey: string | null): PlanLimits {
+  const plan =
+    (planKey ? plans.find((row) => row.key === planKey) : undefined) ??
+    plans.find((row) => row.is_default);
   return { aiCalls: plan?.ai_calls_limit ?? 0, fileUploads: plan?.file_uploads_limit ?? 0 };
+}
+
+/** The plan's monthly numbers, read with the user's own client (RLS: own subscription, all plans). */
+async function loadLimits(supabase: Client, userId: string): Promise<PlanLimits> {
+  const [subscription, plans] = await Promise.all([
+    supabase.from("subscriptions").select("plan_key").eq("user_id", userId).maybeSingle(),
+    supabase
+      .from("plans")
+      .select("key, is_default, ai_calls_limit, file_uploads_limit")
+      .limit(PLAN_LIMIT),
+  ]);
+  if (subscription.error) throw subscription.error;
+  if (plans.error) throw plans.error;
+  const limits = planLimits(plans.data, subscription.data?.plan_key ?? null);
+  if (limits.aiCalls === 0) console.error("jarvis: no plan applies to user", userId);
+  return limits;
 }
 
 /** Start of the user's calendar month as an instant. */

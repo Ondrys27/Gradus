@@ -156,8 +156,28 @@ describe("errorCode", () => {
     expect(errorCode(apiError(429, "rate_limit_error"))).toBe("busy");
     expect(errorCode(apiError(529, "overloaded_error"))).toBe("busy");
     expect(errorCode(apiError(401, "authentication_error"))).toBe("notConfigured");
-    expect(errorCode(apiError(400, "billing_error"))).toBe("unavailable");
+    expect(errorCode(apiError(400, "invalid_request_error"))).toBe("unavailable");
     expect(errorCode(apiError(500, "api_error"))).toBe("unavailable");
     expect(errorCode(new Error("socket hang up"))).toBe("unavailable");
+  });
+
+  it("tells an account without credit apart from other bad requests", () => {
+    // The exact answer the API gave on 2026-09-30 and 2026-10-02.
+    const noCredit = Anthropic.APIError.generate(
+      400,
+      {
+        type: "error",
+        error: {
+          type: "invalid_request_error",
+          message:
+            "Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.",
+        },
+      },
+      undefined,
+      new Headers(),
+    );
+    expect(errorCode(noCredit)).toBe("noCredit");
+    expect(errorCode(apiError(400, "billing_error"))).toBe("noCredit");
+    expect(errorCode(apiError(402, "api_error"))).toBe("noCredit");
   });
 });
