@@ -11,6 +11,7 @@ import { usePathList } from "@/features/game/overview-queries";
 import { useChoosePath, useSetGameMode } from "@/features/game/queries";
 import { localized, type GameMode } from "@/features/game/types";
 import { GameIcon } from "@/features/game/unlock-icon";
+import { APP_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 type Pending = { kind: "mode"; mode: GameMode } | { kind: "path"; pathKey: string };
@@ -140,7 +141,7 @@ export function GameSettings() {
             <ul className="flex list-disc flex-col gap-2 pl-5 text-sm text-ink-soft">
               {(pending.kind === "mode"
                 ? (["point1", "point2", "point3"] as const).map((point) =>
-                    t(`confirm.${pending.mode}.${point}`),
+                    t(`confirm.${pending.mode}.${point}`, { appName: APP_NAME }),
                   )
                 : (["point1", "point2", "point3"] as const).map((point) =>
                     t(`confirm.path.${point}`),

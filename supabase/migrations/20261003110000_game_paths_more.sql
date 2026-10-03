@@ -14,10 +14,17 @@ returns void
 language sql
 as $$
   insert into public.paths (key, position, icon, industries, name, description)
-  values (_key, _position, _icon, _industries, _name, _description);
+  values (_key, _position, _icon, _industries, _name, _description)
+  on conflict (key) do update
+    set position = excluded.position,
+        icon = excluded.icon,
+        industries = excluded.industries,
+        name = excluded.name,
+        description = excluded.description;
 $$;
 
--- _tasks: [{"en": "...", "cs": "..."}, ...] in order.
+-- _tasks: [{"en": "...", "cs": "..."}, ...] in order. Re-running updates the
+-- step and its tasks in place (ids stay, so copies keep their template_id).
 create or replace function pg_temp.seed_milestone(
   _path text, _chapter integer, _position integer, _key text, _xp integer, _unlock text,
   _title jsonb, _description jsonb, _reward_hint jsonb, _tasks jsonb
@@ -30,11 +37,23 @@ declare
 begin
   insert into public.path_milestones (path_key, chapter, position, key, xp, unlock_key, title, description, reward_hint)
   values (_path, _chapter, _position, _key, _xp, _unlock, _title, _description, _reward_hint)
+  on conflict (path_key, key) do update
+    set chapter = excluded.chapter,
+        position = excluded.position,
+        xp = excluded.xp,
+        unlock_key = excluded.unlock_key,
+        title = excluded.title,
+        description = excluded.description,
+        reward_hint = excluded.reward_hint
   returning id into _id;
 
   insert into public.path_tasks (path_milestone_id, position, title)
   select _id, t.ordinality, t.value
-  from jsonb_array_elements(_tasks) with ordinality as t(value, ordinality);
+  from jsonb_array_elements(_tasks) with ordinality as t(value, ordinality)
+  on conflict (path_milestone_id, position) do update set title = excluded.title;
+
+  delete from public.path_tasks
+  where path_milestone_id = _id and position > jsonb_array_length(_tasks);
 end;
 $$;
 

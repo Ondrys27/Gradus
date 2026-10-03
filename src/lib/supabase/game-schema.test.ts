@@ -206,6 +206,24 @@ describe("definitions and paths", () => {
     );
     expect(workers.level).toBe(10);
   });
+
+  it("can run the path migrations again without duplicates or new ids", async () => {
+    await asServer();
+    const snapshot = () =>
+      rows(
+        `select pm.id, pm.path_key, pm.key, pm.title,
+                (select jsonb_agg(jsonb_build_object('id', t.id, 'title', t.title) order by t.position)
+                 from path_tasks t where t.path_milestone_id = pm.id) as tasks
+         from path_milestones pm order by pm.path_key, pm.chapter, pm.position`,
+      );
+    const before = await snapshot();
+    const paths = await rows(`select * from paths order by key`);
+    for (const file of readdirSync(MIGRATIONS_DIR).filter((f) => /_game_paths/.test(f)).sort()) {
+      await db.exec(readFileSync(path.join(MIGRATIONS_DIR, file), "utf8"));
+    }
+    expect(await snapshot()).toEqual(before);
+    expect(await rows(`select * from paths order by key`)).toEqual(paths);
+  });
 });
 
 describe("levels", () => {
@@ -423,6 +441,29 @@ describe("award_xp", () => {
       await count(`select 1 from unlocks where user_id = $1 and key = 'section_pipeline'`, [owner]),
     ).toBe(0);
     expect((await award(owner, "task_completed", task)).xp).toBe(10);
+  });
+
+  it("opens Best industries at once in tool mode, behind 10 meetings in game mode", async () => {
+    type Insights = { unlocked_at: string | null; seen_at: string | null; meetings: number };
+    const user = await createAuthUser();
+    const insights = async () => {
+      await asUser(user);
+      const { result } = await one<{ result: Insights }>(`select industry_insights() as result`);
+      await asServer();
+      return result;
+    };
+    const game = await insights();
+    expect(game.meetings).toBe(0);
+    expect(game.unlocked_at).toBeNull();
+
+    await db.query(`update profiles set mode = 'tool' where id = $1`, [user]);
+    const tool = await insights();
+    expect(tool.unlocked_at).not.toBeNull();
+    // Already seen: nothing to celebrate, and no unlock row is written.
+    expect(tool.seen_at).not.toBeNull();
+    expect(
+      await count(`select 1 from unlocks where user_id = $1 and key = 'best_industries'`, [user]),
+    ).toBe(0);
   });
 });
 

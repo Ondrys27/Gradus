@@ -5,6 +5,7 @@ import { CheckIcon, LockIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useUserSettings } from "@/features/account/queries";
 import { useDefinitions } from "@/features/game/overview-queries";
+import { APP_NAME } from "@/lib/constants";
 import { formatNumber } from "@/lib/format";
 import {
   effectiveTheme,
@@ -68,7 +69,7 @@ export function AppearanceSettings({ save }: { save: (patch: UserSettingsPatch) 
           >
             <ThemePreview theme={theme} dimmed={!available} />
             <span className="flex min-h-8 items-center justify-between gap-2 px-1">
-              <span className="text-sm font-semibold text-ink">{t(`themes.${theme}`)}</span>
+              <span className="text-sm font-semibold text-ink">{t(`themes.${theme}`, { appName: APP_NAME })}</span>
               {checked ? (
                 <CheckIcon aria-hidden className="size-4 shrink-0 text-violet" />
               ) : !available ? (

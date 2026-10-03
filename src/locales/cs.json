@@ -907,7 +907,7 @@
           "title": "Přepnout do hry?",
           "point1": "Sekce, které už používáš, zůstanou otevřené; ostatní odemknou milníky tvé cesty.",
           "point2": "Vrátí se XP, úroveň, série a odznaky se vším, co už máš.",
-          "point3": "Témata se odemykají s úrovněmi; zamčené se vrátí na Gradus.",
+          "point3": "Témata se odemykají s úrovněmi; zamčené se vrátí na {appName}.",
           "action": "Začít hrát"
         },
         "path": {
@@ -923,7 +923,7 @@
       "title": "Vzhled",
       "description": "Barevné téma celé aplikace. Ve hře se témata odemykají s úrovněmi.",
       "themes": {
-        "gradus": "Gradus",
+        "gradus": "{appName}",
         "midnight": "Půlnoc",
         "forest": "Les",
         "sunset": "Západ",

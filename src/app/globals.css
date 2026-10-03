@@ -112,6 +112,21 @@
   }
 }
 
+/*
+ * Jarvis's antenna pulse as a CSS animation, so the idle loop never runs the
+ * JavaScript frame loop on pages with the task map or charts. The element sets
+ * --glow-lo and --glow-hi.
+ */
+@keyframes jarvis-glow {
+  0%,
+  100% {
+    opacity: var(--glow-lo);
+  }
+  50% {
+    opacity: var(--glow-hi);
+  }
+}
+
 /* shadcn/ui semantic names mapped onto the Gradus tokens. */
 @theme inline {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;

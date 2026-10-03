@@ -187,19 +187,17 @@ export const Jarvis = memo(function Jarvis({
 
   const body = bodyMotion(state, live, amp, pose.lean, spring);
 
-  // Antenna glow: slow pulse, quick blink while thinking, dim while asleep.
+  // Antenna glow: slow pulse, quick blink while thinking, dim while asleep. A CSS
+  // animation, not a framer loop: it is on screen on every page (the corner
+  // button) and must not keep the JavaScript frame loop busy.
   const glow = pose.antennaGlow;
-  const antennaGlow: { animate: TargetAndTransition; transition: Transition } = !live
-    ? { animate: { opacity: glow }, transition: fade }
-    : state === "thinking"
-      ? {
-          animate: { opacity: [0.15, 1, 0.15] },
-          transition: { duration: 0.55, repeat: Infinity, ease: "easeInOut" },
-        }
-      : {
-          animate: { opacity: [glow * 0.45, glow, glow * 0.45] },
-          transition: { duration: sleeping ? 4.2 : 2.6, repeat: Infinity, ease: "easeInOut" },
-        };
+  const antennaGlowStyle: React.CSSProperties = !live
+    ? { opacity: glow, transition: reduce ? undefined : "opacity 0.2s ease-out" }
+    : ({
+        "--glow-lo": state === "thinking" ? 0.15 : glow * 0.45,
+        "--glow-hi": state === "thinking" ? 1 : glow,
+        animation: `jarvis-glow ${state === "thinking" ? 0.55 : sleeping ? 4.2 : 2.6}s ease-in-out infinite`,
+      } as React.CSSProperties);
 
   // The arm raised higher is the one pointing.
   const pointsLeft = state === "pointing" && pose.leftArm > -pose.rightArm;
@@ -352,14 +350,12 @@ export const Jarvis = memo(function Jarvis({
                   strokeWidth="2.5"
                   strokeLinecap="round"
                 />
-                <motion.circle
+                <circle
                   cx="60"
                   cy="10"
                   r="9.5"
                   fill={`url(#${ref("glow")})`}
-                  initial={false}
-                  animate={antennaGlow.animate}
-                  transition={antennaGlow.transition}
+                  style={antennaGlowStyle}
                 />
                 <motion.circle
                   cx="60"

@@ -907,7 +907,7 @@
           "title": "Switch to the game?",
           "point1": "Sections you already use stay open; the others open with the milestones of your path.",
           "point2": "XP, level, streak and badges come back, with everything you earned before.",
-          "point3": "Themes open with levels; a locked one falls back to Gradus.",
+          "point3": "Themes open with levels; a locked one falls back to {appName}.",
           "action": "Start playing"
         },
         "path": {
@@ -923,7 +923,7 @@
       "title": "Appearance",
       "description": "The colour theme of the whole app. In the game, themes open with levels.",
       "themes": {
-        "gradus": "Gradus",
+        "gradus": "{appName}",
         "midnight": "Midnight",
         "forest": "Forest",
         "sunset": "Sunset",
