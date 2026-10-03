@@ -33,7 +33,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 9.3 | architect | 2026-10-02 Herní jádro: dva režimy, cesty podle oboru (3 cesty, 12 milníků každá), award_xp se stropy, 30 úrovní (120·n^1.6), odznaky, série se záchranou; pravidla doplněna do CLAUDE.md sekce Hra.
 - [x] 9.4 | architect | 2026-10-02 Rozhraní hry: volba hra/nástroj a cesty v onboardingu, okno úrovně, oslava postupu se štítem, Seznam/Cesta v Milnících, zamčené sekce v menu, 6 barevných témat odemykaných úrovní; migrace pushnuta, typy přegenerované.
 - [x] 9.5 | builder | 2026-10-03 Doplněných pět cest (e-shop, gastronomie, osobní služby, reality, fitness), celkem 8 cest, stejná struktura a pořadí odemykání; migrace pushnuta, typy přegenerované. Krok oboru v onboardingu zatím nabízí jen původních 7 oborů.
-- [ ] 9.6 | architect |
+- [x] 9.6 | architect | 2026-10-03 Nový Jarvis: vrstvená SVG postavička (tělo, hlava s displejem, ručičky, stín), 7 stavů + přílet/odlet, sdílené sledování kurzoru, smyčky se zastaví mimo obrazovku; tlačítko používá jen hlavu; ladicí stránka /design-system/jarvis.
 - [ ] 9.7 | architect |
 - [ ] K9 | reviewer |
 - [ ] STOP | Konec kola 2. Ověř: Jarvisův chat odpovídá a tlačítko Otestovat Jarvise v nastavení prochází. Pracovník Caller ve druhém prohlížeči vidí a upravuje kontakty, ale nevidí finance; po odebrání práva zmizí hned. Graf příjmu jde přiblížit. Založ nový účet v herním režimu, vyber cestu Řemeslník, projdi průvodce a ověř, že vznikly milníky s popisky „Odemkne". Klepni na úroveň vpravo nahoře. Přepni téma v nastavení. Zkontroluj postavu Jarvise na /design-system/jarvis ve všech stavech. Nech aplikaci otevřenou a sleduj, jestli se Jarvis sám ozve — a jestli neotravuje. Poznámky pošli do chatu s Claude.

@@ -26,7 +26,7 @@ import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { MilestoneFormDialog } from "./milestone-form-dialog";
-import { JarvisBot } from "@/components/jarvis/jarvis-bot";
+import { Jarvis } from "@/components/jarvis/jarvis";
 import { useCan } from "@/features/account/workspace-queries";
 import { useAwardXp, useGameCelebrate } from "@/features/game/queries";
 import {
@@ -254,7 +254,7 @@ export function MilestoneDetail({ id }: { id: string }) {
 
       {(milestone.ai_feedback || reviewing) && (
         <GlowCard interactive={false} className="flex items-start gap-3 border-teal/40">
-          <JarvisBot size={36} state={reviewing ? "thinking" : "idle"} />
+          <Jarvis variant="head" size={40} state={reviewing ? "thinking" : "idle"} />
           <div className="min-w-0 flex-1">
             <p className="micro-label">{t("detail.jarvisFeedback")}</p>
             <p

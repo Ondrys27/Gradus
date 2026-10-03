@@ -21,7 +21,7 @@ import {
   XIcon,
   type LucideIcon,
 } from "lucide-react";
-import { JarvisBot } from "@/components/jarvis/jarvis-bot";
+import { Jarvis } from "@/components/jarvis/jarvis";
 import { SuggestionCard, useSuggestionActions } from "@/components/jarvis/suggestion-card";
 import {
   ACCEPTED_EXTENSIONS,
@@ -208,7 +208,7 @@ export function JarvisPanel({ chat, onClose }: JarvisPanelProps) {
       )}
     >
       <header className="flex items-center gap-3 border-b border-line px-4 py-2">
-        <JarvisBot size={36} state={busy ? "thinking" : "idle"} />
+        <Jarvis variant="head" size={40} state={busy ? "thinking" : "idle"} />
         <div className="min-w-0 flex-1">
           <h2 className="text-sm font-semibold text-ink">{t("title")}</h2>
           <p className="truncate text-xs text-ink-muted">

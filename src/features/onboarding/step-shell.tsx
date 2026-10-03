@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { JarvisBot, type JarvisState } from "@/components/jarvis/jarvis-bot";
+import { Jarvis, type JarvisState } from "@/components/jarvis/jarvis";
 import { cn } from "@/lib/utils";
 
 /**
@@ -25,7 +25,7 @@ export function StepShell({
   return (
     <div className={cn("flex flex-col gap-6", className)}>
       <div className="flex flex-col items-center gap-3 text-center">
-        <JarvisBot size={56} state={jarvisState} />
+        <Jarvis variant="head" size={64} state={jarvisState} />
         <h2 className="text-2xl font-bold text-balance text-ink">{title}</h2>
         {description && <p className="max-w-sm text-sm text-pretty text-ink-soft">{description}</p>}
       </div>

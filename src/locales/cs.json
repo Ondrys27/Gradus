@@ -133,7 +133,50 @@
     "jarvis": {
       "idle": "V klidu",
       "thinking": "Přemýšlí",
-      "happy": "Má radost"
+      "happy": "Má radost",
+      "waving": "Mává",
+      "pointing": "Ukazuje",
+      "surprised": "Je překvapený",
+      "sleeping": "Spí",
+      "playground": "Otevřít ladění Jarvise"
+    },
+    "jarvisPage": {
+      "title": "Jarvis",
+      "description": "Všechny stavy a velikosti vedle sebe. Přepínej je a laď animaci.",
+      "back": "Design systém",
+      "px": "{size} px",
+      "controls": {
+        "state": "Stav",
+        "direction": "Směr ukazování",
+        "size": "Velikost",
+        "variant": "Varianta",
+        "entrance": "Odkud přiletí",
+        "reducedMotion": "Omezený pohyb"
+      },
+      "directions": {
+        "left": "Vlevo",
+        "up-left": "Vlevo nahoru",
+        "up": "Nahoru",
+        "up-right": "Vpravo nahoru",
+        "right": "Vpravo",
+        "down": "Dolů"
+      },
+      "variants": {
+        "full": "Celý",
+        "head": "Jen hlava"
+      },
+      "edges": {
+        "left": "Zleva",
+        "right": "Zprava",
+        "top": "Shora",
+        "bottom": "Zdola"
+      },
+      "flyIn": "Přiletět",
+      "flyOut": "Odletět",
+      "sections": {
+        "sizes": "Velikosti",
+        "states": "Stavy"
+      }
     }
   },
   "nav": {

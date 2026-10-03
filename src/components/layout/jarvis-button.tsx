@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { JarvisBot, type JarvisState } from "@/components/jarvis/jarvis-bot";
+import { Jarvis, JARVIS_SIZES, type JarvisState } from "@/components/jarvis/jarvis";
 import { formatNumber } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 
@@ -84,7 +84,7 @@ export function JarvisButton({
           </span>
         )}
         <span className="relative grid size-16 place-items-center rounded-full border border-teal/50 bg-canvas-deep shadow-[0_0_28px_-4px_var(--color-teal)] transition-transform group-hover:scale-105 group-active:scale-95">
-          <JarvisBot size={44} state={state} />
+          <Jarvis variant="head" size={JARVIS_SIZES.button} state={state} />
         </span>
       </button>
     </motion.div>

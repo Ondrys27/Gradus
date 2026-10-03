@@ -10,8 +10,9 @@ import {
   TrophyIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { JarvisBot, type JarvisState } from "@/components/jarvis/jarvis-bot";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Jarvis, JARVIS_SIZES, type JarvisState } from "@/components/jarvis/jarvis";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DatePicker } from "@/components/ui/date-picker";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -286,13 +287,15 @@ export function DesignSystemShowcase() {
           {jarvisStates.map((state) => (
             <div key={state} className="flex flex-col items-center gap-3">
               <div className="flex items-end gap-4">
-                <JarvisBot state={state} size={96} />
-                <JarvisBot state={state} size={40} />
-                <JarvisBot state={state} size={24} />
+                <Jarvis state={state} size={JARVIS_SIZES.bubble} />
+                <Jarvis state={state} variant="head" size={JARVIS_SIZES.button} />
               </div>
               <span className="micro-label">{t(`jarvis.${state}`)}</span>
             </div>
           ))}
+          <Link href="/design-system/jarvis" className={buttonVariants({ variant: "outline" })}>
+            {t("jarvis.playground")}
+          </Link>
         </GlowCard>
       </Section>
 

@@ -133,7 +133,50 @@
     "jarvis": {
       "idle": "Idle",
       "thinking": "Thinking",
-      "happy": "Happy"
+      "happy": "Happy",
+      "waving": "Waving",
+      "pointing": "Pointing",
+      "surprised": "Surprised",
+      "sleeping": "Sleeping",
+      "playground": "Open the Jarvis playground"
+    },
+    "jarvisPage": {
+      "title": "Jarvis",
+      "description": "Every state and size side by side. Switch them to tune the animation.",
+      "back": "Design system",
+      "px": "{size} px",
+      "controls": {
+        "state": "State",
+        "direction": "Pointing direction",
+        "size": "Size",
+        "variant": "Variant",
+        "entrance": "Fly in from",
+        "reducedMotion": "Reduced motion"
+      },
+      "directions": {
+        "left": "Left",
+        "up-left": "Up left",
+        "up": "Up",
+        "up-right": "Up right",
+        "right": "Right",
+        "down": "Down"
+      },
+      "variants": {
+        "full": "Full",
+        "head": "Head only"
+      },
+      "edges": {
+        "left": "Left",
+        "right": "Right",
+        "top": "Top",
+        "bottom": "Bottom"
+      },
+      "flyIn": "Fly in",
+      "flyOut": "Fly out",
+      "sections": {
+        "sizes": "Sizes",
+        "states": "States"
+      }
     }
   },
   "nav": {
