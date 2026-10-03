@@ -32,7 +32,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 9.2 | builder | 2026-10-02 Zoomovatelný graf příjmu a výdajů (Měsíc po dnech / Rok po měsících, kumulativní linka, kolečko/tažení/pinch, Brush, tlačítka přiblížení, souhrn a seznam transakcí přepočítané na vybraný úsek) nahradil starý graf na dashboardu i ve Financích; nová DB funkce finance_daily_totals.
 - [x] 9.3 | architect | 2026-10-02 Herní jádro: dva režimy, cesty podle oboru (3 cesty, 12 milníků každá), award_xp se stropy, 30 úrovní (120·n^1.6), odznaky, série se záchranou; pravidla doplněna do CLAUDE.md sekce Hra.
 - [x] 9.4 | architect | 2026-10-02 Rozhraní hry: volba hra/nástroj a cesty v onboardingu, okno úrovně, oslava postupu se štítem, Seznam/Cesta v Milnících, zamčené sekce v menu, 6 barevných témat odemykaných úrovní; migrace pushnuta, typy přegenerované.
-- [ ] 9.5 | builder |
+- [x] 9.5 | builder | 2026-10-03 Doplněných pět cest (e-shop, gastronomie, osobní služby, reality, fitness), celkem 8 cest, stejná struktura a pořadí odemykání; migrace pushnuta, typy přegenerované. Krok oboru v onboardingu zatím nabízí jen původních 7 oborů.
 - [ ] 9.6 | architect |
 - [ ] 9.7 | architect |
 - [ ] K9 | reviewer |
