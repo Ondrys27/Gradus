@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { JarvisDock } from "@/components/jarvis/jarvis-dock";
+import { JarvisTour } from "@/components/jarvis/jarvis-tour";
 import { GameSessionStart } from "@/features/game/game-session-start";
 import { OnboardingGate } from "@/features/onboarding/onboarding-gate";
 import { SearchProvider } from "@/features/search/search-provider";
@@ -25,6 +26,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <GameSessionStart />
         <ThemeSync />
         <OnboardingGate />
+        <JarvisTour />
       </div>
     </SearchProvider>
   );

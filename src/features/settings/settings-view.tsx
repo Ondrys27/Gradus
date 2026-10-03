@@ -42,6 +42,7 @@ import { AppearanceSettings } from "./appearance-settings";
 import { FakturoidIntegration } from "./fakturoid-integration";
 import { GameSettings } from "./game-settings";
 import { FormatPreview, useNow } from "./format-preview";
+import { HelpSettings, JarvisSettings } from "./jarvis-settings";
 import { JarvisTest } from "./jarvis-test";
 import { TimeZonePicker } from "./time-zone-picker";
 
@@ -310,6 +311,14 @@ export function SettingsView() {
         </Section>
       </StaggerItem>
 
+      {!worker && (
+        <StaggerItem>
+          <Section title={t("jarvis.title")} description={t("jarvis.description")}>
+            <JarvisSettings save={save} />
+          </Section>
+        </StaggerItem>
+      )}
+
       {isOwner && (
         <StaggerItem>
           <Section title={t("pipeline.title")} description={t("pipeline.description")}>
@@ -343,6 +352,12 @@ export function SettingsView() {
             <JarvisTest />
           </Section>
         </div>
+      </StaggerItem>
+
+      <StaggerItem>
+        <Section title={t("help.title")} description={t("help.description")}>
+          <HelpSettings />
+        </Section>
       </StaggerItem>
     </Stagger>
   );

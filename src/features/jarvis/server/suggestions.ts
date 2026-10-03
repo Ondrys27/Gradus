@@ -212,6 +212,8 @@ export async function listSuggestions(
     .from("jarvis_suggestions")
     .select("id, type, text, action, seen_at, created_at")
     .eq("user_id", userId)
+    // Briefings and questions belong to the bubble, not to the panel's list.
+    .eq("kind", "suggestion")
     .is("dismissed_at", null)
     .or(`type.neq.insight,created_at.gte."${insightSince}"`)
     .order("created_at", { ascending: false })

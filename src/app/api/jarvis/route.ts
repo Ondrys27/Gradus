@@ -13,6 +13,7 @@ import {
   emailReplyRequestSchema,
   milestoneReviewRequestSchema,
   pingRequestSchema,
+  proactiveRequestSchema,
   rewardSetupRequestSchema,
   salesAnalysisRequestSchema,
   type ChatErrorCode,
@@ -29,11 +30,17 @@ import {
   prepareAttachments,
   recordAttachments,
 } from "@/features/jarvis/server/attachments";
+import { runBriefings } from "@/features/jarvis/server/briefing";
 import { suggestEmailReply } from "@/features/jarvis/server/email-reply";
 import { handleFeatureRequest } from "@/features/jarvis/server/feature-requests";
 import { loadSituation } from "@/features/jarvis/server/load-situation";
 import { reviewMilestone } from "@/features/jarvis/server/milestone-review";
 import { createAnthropic, streamModel } from "@/features/jarvis/server/model";
+import {
+  loadAnswersBlock,
+  loadProactive,
+  reactToProactive,
+} from "@/features/jarvis/server/proactive";
 import { runRewardSetup } from "@/features/jarvis/server/reward-setup";
 import { runSalesAnalysis } from "@/features/jarvis/server/sales-analysis";
 import { leafCount, rewardTreeSchema } from "@/features/workers/rewards/reward-tree";
@@ -79,6 +86,7 @@ async function context() {
     admin: createAdminClient(),
     userId,
     email: typeof email === "string" ? email : null,
+    row,
     settings: toFormatSettings(row),
     locale: row?.locale ?? "en",
   };
@@ -114,12 +122,15 @@ async function logNotConfigured(ctx: Context, feature: JarvisFeature) {
 
 /**
  * - `?task=watch`: the opportunity watch, run by Vercel Cron with CRON_SECRET.
+ * - `?task=briefing`: the morning briefs (hourly, each user at 6 a.m. their time), Cron only.
  * - `?view=suggestions`: the instant triggers, then the open suggestions.
+ * - `?view=proactive`: the one thing Jarvis would bring up on his own now, or nothing.
  * - otherwise: calls and files left this month and the chips for the situation.
  */
 export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
   if (params.get("task") === "watch") return watch(request);
+  if (params.get("task") === "briefing") return briefing(request);
 
   const ctx = await context();
   if (!ctx) return unauthorized();
@@ -128,6 +139,11 @@ export async function GET(request: Request) {
     const suggestions = await refreshSuggestions(ctx);
     const body: SuggestionsResponse = { suggestions };
     return NextResponse.json(body);
+  }
+
+  if (params.get("view") === "proactive") {
+    const body = await loadProactive(ctx);
+    return NextResponse.json(body, { headers: { "Cache-Control": "no-store" } });
   }
 
   const [usage, files, situation] = await Promise.all([
@@ -162,6 +178,22 @@ async function watch(request: Request) {
   }
 }
 
+async function briefing(request: Request) {
+  if (!isCronRequest(request)) return unauthorized();
+  const started = Date.now();
+  try {
+    const summary = await runBriefings({
+      client: createAnthropic(),
+      admin: createAdminClient(),
+      deadline: started + maxDuration * 1000 - WATCH_MARGIN_MS,
+    });
+    return NextResponse.json({ ok: true, ...summary, ms: Date.now() - started });
+  } catch (error) {
+    console.error("jarvis briefing failed", error);
+    return NextResponse.json({ error: "briefing_failed" }, { status: 500 });
+  }
+}
+
 // ---------------------------------------------------------------------------
 // POST
 // ---------------------------------------------------------------------------
@@ -177,7 +209,21 @@ export async function POST(request: Request) {
   if (kind === "rewardSetup") return rewardSetup(ctx, body);
   if (kind === "emailReply") return emailReply(ctx, body);
   if (kind === "ping") return ping(ctx, body);
+  if (kind === "proactive") return proactive(ctx, body);
   return chat(ctx, body);
+}
+
+/** What the user did with something Jarvis brought up on his own; no model call. */
+async function proactive(ctx: Context, body: unknown) {
+  const parsed = proactiveRequestSchema.safeParse(body);
+  if (!parsed.success) return jobError("unknown", 400);
+  const result = await reactToProactive({ ...ctx, ...parsed.data });
+  if (!result.ok)
+    return jobError(
+      result.code === "notFound" ? "notFound" : "unknown",
+      result.code === "notFound" ? 404 : 400,
+    );
+  return NextResponse.json({ ok: true, created: result.created });
 }
 
 const PING_QUESTION = "This is a connection test from the settings. Reply with one short sentence.";
@@ -468,7 +514,7 @@ async function chat(ctx: Context, body: unknown) {
     },
   );
 
-  const [history, situation, idea] = await Promise.all([
+  const [history, situation, idea, answers] = await Promise.all([
     supabase
       .from("jarvis_messages")
       .select("id, role, content")
@@ -496,6 +542,10 @@ async function chat(ctx: Context, body: unknown) {
           return false;
         })
       : false,
+    loadAnswersBlock(supabase, userId).catch((error) => {
+      console.error("jarvis answers failed", error);
+      return "";
+    }),
   ]);
   if (history.error) throw history.error;
   const rows = history.data.reverse();
@@ -513,7 +563,7 @@ async function chat(ctx: Context, body: unknown) {
     attachments: row.id === userMessage.id ? current : earlierFiles.get(row.id),
   }));
   const messages = toModelMessages(stored);
-  const extra = idea ? `\n${featureRequestNote()}` : "";
+  const extra = (answers ? `\n${answers}` : "") + (idea ? `\n${featureRequestNote()}` : "");
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({

@@ -479,6 +479,113 @@
         "text": "{count, plural, one {Tvoje cesta je připravená, má {countFormatted} milník. Začni milníkem „{first}“.} few {Tvoje cesta je připravená, má {countFormatted} milníky. Začni milníkem „{first}“.} other {Tvoje cesta je připravená, má {countFormatted} milníků. Začni milníkem „{first}“.}}",
         "noFirst": "{count, plural, one {Tvoje cesta je připravená, má {countFormatted} milník.} few {Tvoje cesta je připravená, má {countFormatted} milníky.} other {Tvoje cesta je připravená, má {countFormatted} milníků.}}"
       }
+    },
+    "tour": {
+      "next": "Další",
+      "skip": "Přeskočit",
+      "done": "Hotovo",
+      "progress": "Krok {step} z {total}",
+      "action": {
+        "openMilestone": "Otevřít „{milestone}“",
+        "createMilestone": "Založit první milník",
+        "openTasks": "Otevřít moje úkoly"
+      },
+      "steps": {
+        "dashboard": {
+          "title": "Dashboard",
+          "text": "Tady začíná tvůj den. Dashboard ukazuje dnešní úkoly, komu zavolat zpátky, obchody a příjem za měsíc."
+        },
+        "milestones": {
+          "title": "Milníky",
+          "text": "Tady bydlí velké cíle rozdělené na úkoly. Odškrtávej úkoly, a když jsou všechny hotové, milník dokončíš sám.",
+          "textGame": "Tady je tvoje cesta: milníky rozdělené na úkoly. Každý dokončený milník tě posune dál a odemkne další části aplikace."
+        },
+        "jarvis": {
+          "title": "To jsem já",
+          "text": "Klepni na mě v rohu, kdykoliv budeš chtít. Naplánuju s tebou den, napíšu e-mail nebo scénář hovoru, nebo se podívám na tvoje čísla."
+        },
+        "level": {
+          "title": "Úroveň a série",
+          "text": "Každý opravdový krok ti přinese XP. Plamínek počítá dny v řadě, kdy jsi něco udělal. Klepni na úroveň a uvidíš, co tě čeká."
+        },
+        "search": {
+          "title": "Vyhledávání",
+          "text": "Najdi kterýkoliv kontakt, obchod, úkol nebo nastavení během vteřiny. Na počítači stačí ⌘K nebo Ctrl+K."
+        },
+        "settings": {
+          "title": "Nastavení",
+          "text": "Jazyk, formáty, témata a jak často se ozývám najdeš v nabídce účtu. V části Nápověda si tohle provedení pustíš znovu."
+        },
+        "finish": {
+          "title": "Jdeme na to",
+          "text": "To je pro začátek všechno. Tady je dobrý první krok:"
+        },
+        "workerDashboard": {
+          "title": "Tvůj dashboard",
+          "text": "Tady vidíš svůj den na jeden pohled: úkoly, odpracovaný čas a co sis vydělal."
+        },
+        "workerTasks": {
+          "title": "Tvoje úkoly",
+          "text": "Tohle jsou úkoly, které jsi dostal. Odškrtni je, až budou hotové, a tvůj postup bude hned vidět."
+        },
+        "workerFinish": {
+          "title": "Můžeš začít",
+          "text": "To je všechno. Začni svými úkoly:"
+        }
+      }
+    },
+    "proactive": {
+      "close": "Zavřít",
+      "later": "Později",
+      "show": "Ukázat",
+      "ask": "Zeptat se Jarvise",
+      "add": "Přidat úkoly",
+      "thanks": "Díky",
+      "send": "Odeslat",
+      "answerPlaceholder": "Nebo napiš vlastní odpověď…",
+      "answerLabel": "Tvoje odpověď",
+      "options": "Odpovědi",
+      "tasksPreview": "Úkoly, které Jarvis navrhuje",
+      "failed": "Tohle se nepovedlo. Zkus to znovu.",
+      "answered": "Díky, budu s tím počítat.",
+      "added": "Přidáno do milníku.",
+      "heading": {
+        "briefing": "Dobré ráno",
+        "suggestion": "Jarvis si všiml",
+        "question": "Rychlá otázka"
+      },
+      "questions": {
+        "monthlyGoal": {
+          "text": "Jaký je tvůj hlavní cíl na tento měsíc?",
+          "options": {
+            "firstClient": "Získat prvního klienta",
+            "moreClients": "Víc klientů",
+            "revenue": "Vyšší tržby",
+            "launch": "Rozjet podnikání"
+          }
+        },
+        "callingHours": {
+          "text": "Kolik hodin týdně chceš věnovat volání?",
+          "options": {
+            "h2": "Asi 2 h",
+            "h5": "Asi 5 h",
+            "h10": "Asi 10 h",
+            "h20": "20 h a víc"
+          }
+        },
+        "obstacle": {
+          "text": "Co tě teď nejvíc brzdí?",
+          "options": {
+            "time": "Čas",
+            "leads": "Málo kontaktů",
+            "confidence": "Prodávat je mi nepříjemné",
+            "money": "Peníze"
+          }
+        },
+        "idealCustomer": {
+          "text": "Kdo je tvůj ideální zákazník? Stačí jedna věta."
+        }
+      }
     }
   },
   "celebration": {
@@ -825,6 +932,36 @@
       },
       "level": "Úroveň {level}",
       "locked": "Zamčeno"
+    },
+    "jarvis": {
+      "title": "Jarvis",
+      "description": "Kdy se Jarvis ozve sám od sebe. Chat v rohu funguje vždycky.",
+      "proactive": "Jarvis se ozývá sám",
+      "proactiveHint": "Občas přiletí s ranním shrnutím, návrhem nebo otázkou. Nikdy, když běží časovač volání.",
+      "frequency": "Jak často",
+      "frequencies": {
+        "often": "Často",
+        "sometimes": "Občas",
+        "briefing_only": "Jen shrnutí"
+      },
+      "frequencyHint": {
+        "often": "Nejvýš jednou za 4 hodiny.",
+        "sometimes": "Nejvýš jednou za 12 hodin.",
+        "briefing_only": "Jen ranní shrnutí, žádné návrhy ani otázky."
+      },
+      "quiet": {
+        "title": "Tichý režim",
+        "hint": "V tyhle hodiny Jarvis mlčí. Časy jsou ve tvém časovém pásmu.",
+        "from": "Od",
+        "to": "Do"
+      }
+    },
+    "help": {
+      "title": "Nápověda",
+      "description": "Jak se v aplikaci vyznat.",
+      "tour": "Provedení aplikací",
+      "tourHint": "Jarvis ti znovu ukáže hlavní části aplikace.",
+      "start": "Spustit provedení"
     }
   },
   "milestones": {

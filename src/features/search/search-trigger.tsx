@@ -20,6 +20,7 @@ export function SearchTrigger({ className }: { className?: string }) {
       aria-label={t("label")}
       aria-keyshortcuts={isMac ? "Meta+K" : "Control+K"}
       aria-haspopup="dialog"
+      data-tour="search"
       className={cn(
         "group flex h-11 w-full cursor-pointer items-center gap-3 rounded-full border border-line bg-surface/60 pr-2 pl-4 text-left text-sm text-ink-muted outline-none transition-colors hover:border-line-strong hover:text-ink-soft focus-visible:ring-3 focus-visible:ring-ring/50",
         className,
@@ -44,6 +45,7 @@ export function SearchIconButton({ className }: { className?: string }) {
       onClick={() => setOpen(true)}
       aria-label={t("open")}
       aria-haspopup="dialog"
+      data-tour="search"
       className={cn(
         "grid size-11 shrink-0 cursor-pointer place-items-center rounded-full text-ink-soft outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-ring/50",
         className,

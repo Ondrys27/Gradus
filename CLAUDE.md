@@ -85,6 +85,17 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - Automatické akce jen s oznámením a možností Vrátit. Milník nikdy nedokončuje sám.
 - Hodnocení milníku: když je dobrý, řekne to a nevymýšlí výtky.
 - Soubory: PDF, PNG, JPG, TXT, CSV, DOCX, XLSX; 10 MB; 3 na zprávu; typ podle obsahu.
+- **Průvodce** po onboardingu (pracovník dostane zkrácený): postava 140 u prvku s atributem `data-tour`, zbytek ztmavne, spotlight s měkkými okraji, Další / Přeskočit, tečky. Dokončení i přeskočení zapíše `profiles.tour_completed_at`; znovu z Nastavení → Nápověda.
+- **Proaktivní ozvání** jen z `jarvis_suggestions` (`kind` briefing | suggestion | question, `payload`, `shown_at`, `answered_at`, `snoozed_until`). Píše jen server přes `/api/jarvis`, klient smí jen `seen_at`/`dismissed_at`. Postava přilétá do levého dolního rohu obsahu s bublinou; zobrazení i každá reakce jdou do `usage_events` (`jarvis_proactive`).
+- **Pravidla, ať neotravuje:**
+  - nejvýš jedno proaktivní zobrazení za relaci a ne dřív než 4 hodiny po předchozím (frekvence Občas = 12 hodin)
+  - nikdy, když běží časovač volání nebo je otevřený dialog (ani průvodce, onboarding, panel Jarvise)
+  - nikdy do 30 sekund po načtení stránky nebo přechodu na jinou
+  - Později = další den v pásmu uživatele; Zavřít = už nikdy tenhle návrh
+  - Nastavení → Jarvis: přepínač, frekvence (často / občas / jen ranní shrnutí), tichý režim v celých hodinách
+  - když není co říct, neukazuje se — žádné plané „jak se máš"
+- **Ranní shrnutí:** cron každou hodinu, píše se v 6–10 h v pásmu uživatele, Sonnet (`briefing`), měřeno v `ai_usage`; prázdný den = žádné volání. Odemyká úroveň 5 v game režimu, v tool režimu je vždy. Zobrazí se při prvním otevření toho dne.
+- **Návrhy** z dávkové kontroly můžou nést úkoly k náhledu; vzniknou až po Přidat (klientem uživatele přes RLS). **Otázky** nejvýš dvě týdně, odpovědi jdou do kontextu chatu.
 
 ### Rozhraní
 - Tokeny v `@theme`, **žádné hexy v komponentách.** Fialová `#7C5CFF`, tyrkysová `#2FE3C8`, zlatá `#FFC64B`, zelená `#3DDC97`, oranžová `#FF9F43` (rozpracované), růžová `#FF6B8A`, pozadí `#070B1F`, karta `#0D1234`.
@@ -118,7 +129,7 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - **Odznaky** (`achievements`, `user_achievements`) se vyhodnocují serverově po každé relevantní akci (`evaluate_achievements`), jen poprvé.
 - **Série:** den se počítá, když uživatel udělá aspoň jednu akci dávající XP (denní přihlášení se nepočítá). Jedna záchrana za týden (pondělí–neděle) — vynechaný den sérii nepřeruší, záchrana se spotřebuje jen když opravdu přemostí k dřívějšímu aktivnímu dni.
 - Odemykání sekcí v game režimu jen přes milníky cesty (`unlock_key`) a úrovně, nikdy přes počty akcí. Zamčená sekce v menu ukazuje, který milník ji odemkne.
-- Jarvis se sám ozývá nejvýš jednou za relaci a ne dřív než po 4 hodinách, nikdy při běžícím časovači nebo otevřeném dialogu. Nic nevytváří bez potvrzení.
+- Jarvis se sám ozývá podle pravidel v sekci Jarvis. Nic nevytváří bez potvrzení.
 
 ---
 
@@ -138,7 +149,7 @@ Veřejné v `.env`, tajné v `.env.local`. Vždy udržovat `.env.example`.
 | `CRON_SECRET` | Ověření Vercel Cron |
 | `FAKTUROID_*` | Per uživatel, šifrovaně v DB, ne v env |
 
-**Cron úlohy:** `call_time_stats` denně · automatické platby denně · hlídání příležitostí 3× denně.
+**Cron úlohy:** `call_time_stats` denně · automatické platby denně · hlídání příležitostí 3× denně · ranní shrnutí Jarvise každou hodinu (6:00 v pásmu uživatele).
 
 Registrace jen s pozvánkovým kódem. **První účet = owner.** Potvrzování e-mailu vypnuté — zapnout před spuštěním.
 

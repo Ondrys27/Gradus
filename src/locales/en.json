@@ -479,6 +479,113 @@
         "text": "{count, plural, one {Your path is ready with {countFormatted} milestone. Start with “{first}”.} other {Your path is ready with {countFormatted} milestones. Start with “{first}”.}}",
         "noFirst": "{count, plural, one {Your path is ready with {countFormatted} milestone.} other {Your path is ready with {countFormatted} milestones.}}"
       }
+    },
+    "tour": {
+      "next": "Next",
+      "skip": "Skip",
+      "done": "Done",
+      "progress": "Step {step} of {total}",
+      "action": {
+        "openMilestone": "Open “{milestone}”",
+        "createMilestone": "Create your first milestone",
+        "openTasks": "Open my tasks"
+      },
+      "steps": {
+        "dashboard": {
+          "title": "Dashboard",
+          "text": "Your day starts here. The Dashboard shows today's tasks, who to follow up with, your deals and this month's income."
+        },
+        "milestones": {
+          "title": "Milestones",
+          "text": "Big goals live here, split into tasks. Tick off the tasks, and when all are done, finish the milestone yourself.",
+          "textGame": "Your path lives here: milestones split into tasks. Every milestone you finish moves you along the path and unlocks more of the app."
+        },
+        "jarvis": {
+          "title": "That's me",
+          "text": "Tap me in the corner any time. I'll plan your day with you, write an e-mail or a call script, or look at your numbers."
+        },
+        "level": {
+          "title": "Level and streak",
+          "text": "Every real step earns XP. The flame counts the days in a row you got something done. Tap your level to see what's coming next."
+        },
+        "search": {
+          "title": "Search",
+          "text": "Find any contact, deal, task or setting in a second. On a computer, press ⌘K or Ctrl+K."
+        },
+        "settings": {
+          "title": "Settings",
+          "text": "Language, formats, themes and how often I speak up are in your account menu. Under Help you can run this tour again."
+        },
+        "finish": {
+          "title": "Let's go",
+          "text": "That's all you need for now. Here's a good first step:"
+        },
+        "workerDashboard": {
+          "title": "Your dashboard",
+          "text": "This is your day at a glance: your tasks, your working time and what you've earned."
+        },
+        "workerTasks": {
+          "title": "Your tasks",
+          "text": "These are the tasks you've been given. Tick them off when they're done and your progress shows right away."
+        },
+        "workerFinish": {
+          "title": "You're all set",
+          "text": "That's it. Start with your tasks:"
+        }
+      }
+    },
+    "proactive": {
+      "close": "Close",
+      "later": "Later",
+      "show": "Show me",
+      "ask": "Ask Jarvis",
+      "add": "Add tasks",
+      "thanks": "Thanks",
+      "send": "Send",
+      "answerPlaceholder": "Or write your own answer…",
+      "answerLabel": "Your answer",
+      "options": "Answers",
+      "tasksPreview": "Tasks Jarvis suggests",
+      "failed": "That didn't work. Try again.",
+      "answered": "Thanks, I'll keep it in mind.",
+      "added": "Added to the milestone.",
+      "heading": {
+        "briefing": "Good morning",
+        "suggestion": "Jarvis noticed",
+        "question": "Quick question"
+      },
+      "questions": {
+        "monthlyGoal": {
+          "text": "What's your main goal this month?",
+          "options": {
+            "firstClient": "Land the first client",
+            "moreClients": "More clients",
+            "revenue": "Higher revenue",
+            "launch": "Launch the business"
+          }
+        },
+        "callingHours": {
+          "text": "How many hours a week do you want to spend calling?",
+          "options": {
+            "h2": "About 2 h",
+            "h5": "About 5 h",
+            "h10": "About 10 h",
+            "h20": "20 h or more"
+          }
+        },
+        "obstacle": {
+          "text": "What's holding you back the most right now?",
+          "options": {
+            "time": "Time",
+            "leads": "Too few leads",
+            "confidence": "Selling feels awkward",
+            "money": "Money"
+          }
+        },
+        "idealCustomer": {
+          "text": "Who's your ideal customer? One sentence is enough."
+        }
+      }
     }
   },
   "celebration": {
@@ -825,6 +932,36 @@
       },
       "level": "Level {level}",
       "locked": "Locked"
+    },
+    "jarvis": {
+      "title": "Jarvis",
+      "description": "When Jarvis speaks up on his own. The chat in the corner always works.",
+      "proactive": "Jarvis speaks up",
+      "proactiveHint": "Now and then he flies in with a morning brief, a suggestion or a question. Never while the call timer runs.",
+      "frequency": "How often",
+      "frequencies": {
+        "often": "Often",
+        "sometimes": "Now and then",
+        "briefing_only": "Brief only"
+      },
+      "frequencyHint": {
+        "often": "At most once every 4 hours.",
+        "sometimes": "At most once every 12 hours.",
+        "briefing_only": "Only the morning brief, no suggestions or questions."
+      },
+      "quiet": {
+        "title": "Quiet hours",
+        "hint": "Jarvis stays silent in these hours. Times are in your time zone.",
+        "from": "From",
+        "to": "To"
+      }
+    },
+    "help": {
+      "title": "Help",
+      "description": "Find your way around the app.",
+      "tour": "Guided tour",
+      "tourHint": "Jarvis shows you the main parts of the app again.",
+      "start": "Start the tour"
     }
   },
   "milestones": {

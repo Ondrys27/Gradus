@@ -8,6 +8,7 @@ import { useJarvisSuggestions } from "@/features/jarvis/queries";
 import { useJarvisChat } from "@/features/jarvis/use-jarvis-chat";
 import { whenIdle } from "@/lib/idle";
 import { AutoActionNotice } from "./auto-action-notice";
+import { ProactiveJarvis } from "./proactive-jarvis";
 
 const loadPanel = () => import("./jarvis-panel");
 
@@ -20,13 +21,22 @@ const JarvisPanel = dynamic(() => loadPanel().then((module) => module.JarvisPane
  * Jarvis in the bottom-right corner: the button and its panel. The chat lives
  * here, so an answer keeps streaming (and is saved) when the panel closes.
  * Unseen suggestions make the button's ring pulse; a task Jarvis marked done
- * is announced next to the button with Undo, never silently.
+ * is announced next to the button with Undo, never silently. Now and then
+ * Jarvis also flies in on his own (bottom left) when he has something to say.
  */
 export function JarvisDock() {
   const [open, setOpen] = useState(false);
   const chat = useJarvisChat();
   const suggestions = useJarvisSuggestions();
   const close = useCallback(() => setOpen(false), []);
+  const send = chat.send;
+  const ask = useCallback(
+    (prompt: string) => {
+      setOpen(true);
+      void send(prompt);
+    },
+    [send],
+  );
 
   // Fetched once the browser is idle, so the first tap on Jarvis opens at once.
   useEffect(() => whenIdle(loadPanel), []);
@@ -53,6 +63,7 @@ export function JarvisDock() {
         onClick={() => setOpen((value) => !value)}
       />
       <AnimatePresence>{open && <JarvisPanel chat={chat} onClose={close} />}</AnimatePresence>
+      <ProactiveJarvis panelOpen={open} onAsk={ask} />
     </>
   );
 }

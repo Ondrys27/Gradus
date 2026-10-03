@@ -38,6 +38,7 @@ export function Sidebar() {
             <Link
               key={item.key}
               href={item.href}
+              data-tour={`nav-${item.key}`}
               aria-current={isActivePath(pathname, item.href) ? "page" : undefined}
               aria-label={t(item.key)}
               title={t(item.key)}
@@ -93,6 +94,7 @@ function LockedNavItem({ item }: { item: NavItemState }) {
         <button
           type="button"
           aria-label={t("lockedLabel", { section: t(item.key) })}
+          data-tour={`nav-${item.key}`}
           className="group relative flex h-11 cursor-pointer items-center justify-center gap-3 rounded-xl px-3 text-sm font-medium text-ink-muted/60 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 lg:justify-start"
         >
           <LockIcon aria-hidden className="relative size-5 shrink-0" />

@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { MAX_FILES_PER_MESSAGE, type FileKind } from "./files";
+import type { ProactiveKind } from "./proactive";
+import type { SuggestionAction } from "./suggestions";
 
 /** Longest message a user can send; the panel stops typing there too. */
 export const MAX_MESSAGE_LENGTH = 4000;
@@ -42,6 +44,19 @@ export const emailReplyRequestSchema = z.object({
   dealId: z.uuid().nullish(),
   receivedEmail: z.string().trim().min(1).max(RECEIVED_EMAIL_MAX),
 });
+
+/** How the user reacted to Jarvis speaking up on his own; `shown` is logged by the bubble itself. */
+export const PROACTIVE_REACTIONS = ["shown", "open", "accept", "answer", "later", "close"] as const;
+export type ProactiveReaction = (typeof PROACTIVE_REACTIONS)[number];
+
+export const proactiveRequestSchema = z.object({
+  kind: z.literal("proactive"),
+  id: z.uuid(),
+  reaction: z.enum(PROACTIVE_REACTIONS),
+  /** An option key or a free answer to a question. */
+  answer: z.string().max(1000).optional(),
+});
+export type ProactiveRequest = z.input<typeof proactiveRequestSchema>;
 
 /** Settings → Integrations: one short question to check that Jarvis answers. */
 export const pingRequestSchema = z.object({ kind: z.literal("ping") });
@@ -105,6 +120,27 @@ export type JarvisOverview = {
   /** Files attached this month and the plan's monthly number. */
   files: { used: number; limit: number };
   suggestions: SuggestionKey[];
+};
+
+/** One thing Jarvis brings up on his own (GET /api/jarvis?view=proactive). */
+export type ProactiveItem = {
+  id: string;
+  kind: ProactiveKind;
+  /** A suggestion type, or "briefing" / "question". */
+  type: string;
+  text: string;
+  action: SuggestionAction;
+  /** Proposed tasks, to preview and add only on the user's confirmation. */
+  tasks: string[];
+  /** A question: its key in JARVIS_QUESTIONS. */
+  questionKey: string | null;
+  createdAt: string;
+};
+
+export type ProactiveResponse = {
+  item: ProactiveItem | null;
+  /** When asking again makes sense (e.g. the 4-hour gap ends); null = the usual interval. */
+  retryAt: string | null;
 };
 
 /** POST /api/jarvis { kind: "milestoneReview" } and { kind: "salesAnalysis" } */

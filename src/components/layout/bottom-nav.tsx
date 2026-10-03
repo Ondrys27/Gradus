@@ -51,6 +51,7 @@ export function BottomNav() {
             <BottomNavLink
               key={item.key}
               href={item.href}
+              tour={`nav-${item.key}`}
               icon={item.icon}
               label={t(item.key)}
               active={isActivePath(pathname, item.href)}
@@ -213,6 +214,7 @@ function LockedBottomNavItem({ item }: { item: NavItemState }) {
         <button
           type="button"
           aria-label={t("lockedLabel", { section: t(item.key) })}
+          data-tour={`nav-${item.key}`}
           className="relative flex min-w-11 flex-1 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl text-ink-muted/60 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           <LockIcon aria-hidden className="size-5" />
@@ -231,10 +233,11 @@ const itemClass = (active: boolean) =>
     active ? "text-ink" : "text-ink-muted",
   );
 
-function BottomNavLink({ href, ...props }: ItemProps & { href: string }) {
+function BottomNavLink({ href, tour, ...props }: ItemProps & { href: string; tour?: string }) {
   return (
     <Link
       href={href}
+      data-tour={tour}
       aria-current={props.active ? "page" : undefined}
       className={itemClass(props.active)}
     >

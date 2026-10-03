@@ -942,11 +942,16 @@ export type Database = {
       jarvis_suggestions: {
         Row: {
           action: Json
+          answered_at: string | null
           created_at: string
           dedupe_key: string | null
           dismissed_at: string | null
           id: string
+          kind: string
+          payload: Json
           seen_at: string | null
+          shown_at: string | null
+          snoozed_until: string | null
           text: string
           type: string
           updated_at: string
@@ -954,11 +959,16 @@ export type Database = {
         }
         Insert: {
           action?: Json
+          answered_at?: string | null
           created_at?: string
           dedupe_key?: string | null
           dismissed_at?: string | null
           id?: string
+          kind?: string
+          payload?: Json
           seen_at?: string | null
+          shown_at?: string | null
+          snoozed_until?: string | null
           text: string
           type: string
           updated_at?: string
@@ -966,11 +976,16 @@ export type Database = {
         }
         Update: {
           action?: Json
+          answered_at?: string | null
           created_at?: string
           dedupe_key?: string | null
           dismissed_at?: string | null
           id?: string
+          kind?: string
+          payload?: Json
           seen_at?: string | null
+          shown_at?: string | null
+          snoozed_until?: string | null
           text?: string
           type?: string
           updated_at?: string
@@ -1346,6 +1361,7 @@ export type Database = {
           onboarding_completed_at: string | null
           path_key: string | null
           seen_level: number
+          tour_completed_at: string | null
           updated_at: string
           username: string | null
         }
@@ -1359,6 +1375,7 @@ export type Database = {
           onboarding_completed_at?: string | null
           path_key?: string | null
           seen_level?: number
+          tour_completed_at?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -1372,6 +1389,7 @@ export type Database = {
           onboarding_completed_at?: string | null
           path_key?: string | null
           seen_level?: number
+          tour_completed_at?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -1904,6 +1922,10 @@ export type Database = {
           date_format: string
           first_day_of_week: number
           id: string
+          jarvis_frequency: string
+          jarvis_proactive: boolean
+          jarvis_quiet_from: number | null
+          jarvis_quiet_to: number | null
           locale: string
           number_format: string
           recent_search_items: Json
@@ -1925,6 +1947,10 @@ export type Database = {
           date_format?: string
           first_day_of_week?: number
           id?: string
+          jarvis_frequency?: string
+          jarvis_proactive?: boolean
+          jarvis_quiet_from?: number | null
+          jarvis_quiet_to?: number | null
           locale?: string
           number_format?: string
           recent_search_items?: Json
@@ -1946,6 +1972,10 @@ export type Database = {
           date_format?: string
           first_day_of_week?: number
           id?: string
+          jarvis_frequency?: string
+          jarvis_proactive?: boolean
+          jarvis_quiet_from?: number | null
+          jarvis_quiet_to?: number | null
           locale?: string
           number_format?: string
           recent_search_items?: Json
@@ -2589,6 +2619,12 @@ export type Database = {
         Returns: undefined
       }
       is_client_request: { Args: never; Returns: boolean }
+      jarvis_briefing_candidates: {
+        Args: { _limit: number; _now: string }
+        Returns: {
+          user_id: string
+        }[]
+      }
       jarvis_watch_candidates: {
         Args: { _active_since: string; _limit: number }
         Returns: {

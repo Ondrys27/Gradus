@@ -81,7 +81,7 @@ export function TopBar() {
 
         <div className="flex shrink-0 items-center gap-2 md:justify-self-end">
           {showGame && (
-            <>
+            <div data-tour="level" className="flex items-center gap-2">
               <motion.span
                 animate={{ scale: !reduceMotion && pulse === "streak" ? [1, 1.18, 1] : 1 }}
                 transition={{ duration: 0.5, ease: "easeOut" }}
@@ -141,7 +141,7 @@ export function TopBar() {
                   />
                 )}
               </motion.button>
-            </>
+            </div>
           )}
           <AccountMenu />
         </div>

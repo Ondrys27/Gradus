@@ -119,7 +119,15 @@ export function useUpdateSettings() {
 }
 
 export type ProfilePatch = Partial<
-  Pick<Profile, "username" | "display_name" | "avatar_url" | "industry" | "onboarding_completed_at">
+  Pick<
+    Profile,
+    | "username"
+    | "display_name"
+    | "avatar_url"
+    | "industry"
+    | "onboarding_completed_at"
+    | "tour_completed_at"
+  >
 >;
 
 export function useUpdateProfile() {
