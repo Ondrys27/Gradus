@@ -140,7 +140,7 @@ describe("definitions and paths", () => {
   it("are readable by every signed-in user and writable by none", async () => {
     const user = await createAuthUser();
     await asUser(user);
-    expect(await count(`select 1 from paths`)).toBe(3);
+    expect(await count(`select 1 from paths`)).toBe(8);
     expect(await count(`select 1 from achievements`)).toBe(16);
     expect(await count(`select 1 from level_rewards`)).toBeGreaterThan(0);
     expect(await count(`select 1 from unlock_definitions where kind = 'section'`)).toBe(6);
