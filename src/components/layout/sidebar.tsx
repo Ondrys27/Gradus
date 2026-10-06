@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { isActivePath } from "./nav-items";
 import { useNavItems, type NavItemState } from "./use-nav";
 import { LockedSectionPopover } from "./lock-hint";
+import { Logo } from "./logo";
 
 /** 240 px with labels from 1024 px, icon rail from 768 px, hidden on phones. */
 export function Sidebar() {
@@ -119,16 +120,3 @@ function FreshDot() {
   );
 }
 
-export function Logo({ className }: { className?: string }) {
-  return (
-    <span
-      aria-hidden
-      className={cn(
-        "grid size-9 shrink-0 place-items-center rounded-xl bg-linear-to-br from-violet to-teal text-base font-black text-canvas shadow-glow",
-        className,
-      )}
-    >
-      {APP_NAME.charAt(0)}
-    </span>
-  );
-}

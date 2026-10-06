@@ -14,7 +14,7 @@ import { formatNumber } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { AccountMenu } from "./account-menu";
-import { Logo } from "./sidebar";
+import { Logo } from "./logo";
 
 /** The level window is not part of the first load; it loads on the first tap. */
 const LevelDialog = dynamic(
