@@ -149,18 +149,32 @@ export function TourOverlay({
     return () => window.removeEventListener("keydown", onKey);
   }, [skip]);
 
+  // Unlike the onboarding dialog, this overlay isn't a Base UI Dialog (it
+  // sits on top of the live page so it can light up a real element), so it
+  // has to lock the page's own scroll itself, or a drag could scroll the
+  // spotlighted element out of place.
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
   const next = () => (last ? onFinish("done") : setIndex((value) => value + 1));
 
-  // The last step suggests one first action.
+  // The last step suggests one first action. Its button text is always fixed;
+  // a named target (a milestone to start with) shows in the bubble instead.
   const firstAction =
     step.key === "workerFinish"
-      ? { label: t("action.openTasks"), href: "/tasks" }
+      ? { label: t("action.openTasks"), href: "/tasks", target: null }
       : firstMilestone.data
         ? {
-            label: t("action.openMilestone", { milestone: firstMilestone.data.title }),
+            label: t("action.openFirstTask"),
             href: `/milestones/${firstMilestone.data.id}`,
+            target: firstMilestone.data.title,
           }
-        : { label: t("action.createMilestone"), href: "/milestones" };
+        : { label: t("action.createMilestone"), href: "/milestones", target: null };
 
   const state: JarvisState =
     placement.side === "center" ? (last ? "happy" : "waving") : index === 0 ? "waving" : "pointing";
@@ -254,6 +268,11 @@ export function TourOverlay({
             {t(`steps.${step.key}.title`)}
           </h2>
           <TypedText key={step.key} text={t(`steps.${textKey}`)} />
+          {last && firstAction.target && (
+            <p className="mt-1.5 truncate text-sm font-semibold text-ink">
+              {t("steps.finish.target", { milestone: firstAction.target })}
+            </p>
+          )}
           {last && (
             <Button
               variant="secondary"

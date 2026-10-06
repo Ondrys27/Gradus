@@ -486,7 +486,7 @@
       "done": "Done",
       "progress": "Step {step} of {total}",
       "action": {
-        "openMilestone": "Open “{milestone}”",
+        "openFirstTask": "Open first task",
         "createMilestone": "Create your first milestone",
         "openTasks": "Open my tasks"
       },
@@ -518,7 +518,8 @@
         },
         "finish": {
           "title": "Let's go",
-          "text": "That's all you need for now. Here's a good first step:"
+          "text": "That's all you need for now. Here's a good first step:",
+          "target": "“{milestone}”"
         },
         "workerDashboard": {
           "title": "Your dashboard",

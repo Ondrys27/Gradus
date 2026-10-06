@@ -486,7 +486,7 @@
       "done": "Hotovo",
       "progress": "Krok {step} z {total}",
       "action": {
-        "openMilestone": "Otevřít „{milestone}“",
+        "openFirstTask": "Otevřít první úkol",
         "createMilestone": "Založit první milník",
         "openTasks": "Otevřít moje úkoly"
       },
@@ -518,7 +518,8 @@
         },
         "finish": {
           "title": "Jdeme na to",
-          "text": "To je pro začátek všechno. Tady je dobrý první krok:"
+          "text": "To je pro začátek všechno. Tady je dobrý první krok:",
+          "target": "„{milestone}“"
         },
         "workerDashboard": {
           "title": "Tvůj dashboard",

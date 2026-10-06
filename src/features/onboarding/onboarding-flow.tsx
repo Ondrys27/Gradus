@@ -62,7 +62,7 @@ export function OnboardingFlow() {
         <Dialog.Backdrop className="fixed inset-0 z-takeover bg-canvas/90 backdrop-blur-md" />
         <Dialog.Popup
           initialFocus={false}
-          className="fixed inset-0 z-takeover flex flex-col overflow-y-auto pt-[calc(env(safe-area-inset-top)+16px)] pb-[calc(env(safe-area-inset-bottom)+16px)] outline-none"
+          className="fixed inset-0 z-takeover flex h-dvh flex-col overflow-hidden pt-[calc(env(safe-area-inset-top)+16px)] pb-[calc(env(safe-area-inset-bottom)+16px)] outline-none"
         >
           <header className="flex shrink-0 items-center justify-between gap-3 px-4 sm:px-8">
             <ol className="flex items-center gap-1.5" aria-label={t("progress")}>
@@ -87,7 +87,7 @@ export function OnboardingFlow() {
             )}
           </header>
 
-          <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-8 sm:px-8">
+          <div className="mx-auto flex w-full max-w-md min-h-0 flex-1 flex-col px-4 py-6 sm:px-8">
             <Dialog.Title className="sr-only">{t("title")}</Dialog.Title>
             {closing ? (
               <ClosingStep input={input} />
