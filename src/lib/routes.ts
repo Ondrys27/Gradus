@@ -33,12 +33,21 @@ export type LocalizedPage = keyof typeof LOCALIZED_PAGES;
 
 /** In-page anchors of the home page, named in the page's language. */
 export const HOME_ANCHORS = {
+  preview: { cs: "ukazka", en: "preview" },
   features: { cs: "funkce", en: "features" },
+  howItWorks: { cs: "jak-to-funguje", en: "how-it-works" },
+  pricing: { cs: "cenik", en: "pricing" },
+  faq: { cs: "caste-otazky", en: "faq" },
 } as const satisfies Record<string, Record<SiteLocale, string>>;
 
 /** A section of the home page from anywhere on the site, e.g. `/#funkce`, `/en#features`. */
 export function homeAnchor(locale: SiteLocale, anchor: keyof typeof HOME_ANCHORS): string {
   return `${LOCALIZED_PAGES.home[locale]}#${HOME_ANCHORS[anchor][locale]}`;
+}
+
+/** In-page anchor id of a home page section. */
+export function homeAnchorId(locale: SiteLocale, anchor: keyof typeof HOME_ANCHORS): string {
+  return HOME_ANCHORS[anchor][locale];
 }
 
 /** Pages of the marketing site (its own layout, no app around it). */

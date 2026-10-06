@@ -8,14 +8,23 @@ function asLocale(value: string | null | undefined): Locale | null {
   return locales.includes(value as Locale) ? (value as Locale) : null;
 }
 
-export default getRequestConfig(async () => {
-  // The public site and the sign-in pages carry their language in the address;
-  // the app uses the account's language, kept in the cookie.
+/**
+ * The public website's root layouts set the language with `setRequestLocale`
+ * (from the address); that keeps them static. Everything else reads it per
+ * request: the sign-in pages from the address (the middleware's header), the
+ * app from the account's language, kept in the cookie.
+ */
+async function localeOfRequest(): Promise<Locale> {
   const [headerList, cookieStore] = await Promise.all([headers(), cookies()]);
-  const locale: Locale =
+  return (
     asLocale(headerList.get(URL_LOCALE_HEADER)) ??
     asLocale(cookieStore.get(LOCALE_COOKIE)?.value) ??
-    defaultLocale;
+    defaultLocale
+  );
+}
+
+export default getRequestConfig(async ({ requestLocale }) => {
+  const locale = asLocale(await requestLocale) ?? (await localeOfRequest());
 
   return {
     locale,

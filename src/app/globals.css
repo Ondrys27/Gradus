@@ -60,6 +60,8 @@
   --animate-edge-shine: edge-shine 4.2s linear infinite;
   /* The live ring of an in-progress task: one slow turn of --ring-angle. */
   --animate-ring-spin: ring-spin 3.6s linear infinite;
+  /* Website headline: each word rises in; the delay is set per word. */
+  --animate-word-in: word-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 
   @keyframes shimmer {
     0% {
@@ -83,6 +85,17 @@
   @keyframes ring-spin {
     to {
       --ring-angle: 360deg;
+    }
+  }
+
+  @keyframes word-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.35em);
+    }
+    to {
+      opacity: 1;
+      transform: none;
     }
   }
 

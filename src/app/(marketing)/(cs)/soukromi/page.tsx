@@ -1,13 +1,7 @@
-import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
-import { LegalPage } from "@/features/marketing/legal-page";
+import { LegalPage, legalMetadata } from "@/features/marketing/legal-page";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("marketing.meta");
-  return { title: t("privacyTitle") };
-}
+export const generateMetadata = () => legalMetadata("cs", "privacy");
 
-export default async function Page() {
-  const t = await getTranslations("marketing.meta");
-  return <LegalPage title={t("privacyTitle")} />;
+export default function Page() {
+  return <LegalPage locale="cs" kind="privacy" />;
 }

@@ -1,9 +1,13 @@
 import { redirect } from "next/navigation";
+import { AppRoot, appRootMetadata } from "@/components/app-root";
 import { AppShell } from "@/components/layout/app-shell";
 import { loadAccount } from "@/features/account/load-account";
 import { SessionProvider } from "@/features/account/session-provider";
 import { getLocale } from "next-intl/server";
 import { loginPath } from "@/lib/auth/routes";
+
+export { rootViewport as viewport } from "@/components/root-document";
+export const generateMetadata = appRootMetadata;
 
 /**
  * The one place the session is verified. Next.js keeps this layout mounted
@@ -14,8 +18,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!account) redirect(loginPath(await getLocale()));
 
   return (
-    <SessionProvider initial={account}>
-      <AppShell>{children}</AppShell>
-    </SessionProvider>
+    <AppRoot>
+      <SessionProvider initial={account}>
+        <AppShell>{children}</AppShell>
+      </SessionProvider>
+    </AppRoot>
   );
 }
