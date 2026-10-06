@@ -81,7 +81,10 @@ export function PricingCards({
               </span>
             )}
             <div className="flex flex-col gap-1">
-              <h3 className="text-xl font-semibold text-ink">{t(`names.${plan.key}`)}</h3>
+              {/* h2: every caller puts this straight under its own h1/h2, never under an h2 that
+                  would make this an h3 — the plan page, the website and /cenik all go h1 or h2
+                  then this, so h2 never skips a level. */}
+              <h2 className="text-xl font-semibold text-ink">{t(`names.${plan.key}`)}</h2>
               <p className="text-sm text-ink-soft">{t(`taglines.${plan.key}`)}</p>
             </div>
             <div className="flex flex-col gap-1">

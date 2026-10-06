@@ -78,6 +78,7 @@ export async function Hero({
         <HeroTilt>
           <Screenshot
             name="dashboard"
+            mobileName="dashboard-mobile"
             alt={t("home.hero.previewAlt", { appName: APP_NAME })}
             priority
             sizes="(min-width: 1152px) 1088px, 100vw"

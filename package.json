@@ -12,7 +12,9 @@
     "test:e2e": "playwright test",
     "db:migrate": "supabase db push",
     "db:types": "supabase gen types typescript --linked > src/types/database.ts.tmp && mv src/types/database.ts.tmp src/types/database.ts",
-    "verify:workspace": "bun scripts/verify-workspace-rls.ts"
+    "verify:workspace": "bun scripts/verify-workspace-rls.ts",
+    "demo:seed": "bun scripts/demo-seed.ts",
+    "screenshots": "bun scripts/screenshots.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",

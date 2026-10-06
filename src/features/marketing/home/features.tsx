@@ -13,17 +13,31 @@ import { cn } from "@/lib/utils";
 import { Reveal } from "./reveal";
 import { DriftIntoFocus } from "./scroll-effects";
 import { Screenshot } from "./screenshot";
-import type { ScreenshotName } from "./screenshots";
+import type { MobileScreenshotName, ScreenshotName } from "./screenshots";
 import { Section, SectionHeading } from "./section";
 
-const FEATURES = [
+type FeatureItem = {
+  key: string;
+  icon: typeof RouteIcon;
+  shot: ScreenshotName;
+  mobileShot?: MobileScreenshotName;
+  tone: string;
+};
+
+const FEATURES: readonly FeatureItem[] = [
   { key: "milestones", icon: RouteIcon, shot: "milestones", tone: "text-violet bg-violet/12" },
   { key: "pipeline", icon: SquareKanbanIcon, shot: "pipeline", tone: "text-green bg-green/12" },
-  { key: "contacts", icon: PhoneCallIcon, shot: "cold-calling", tone: "text-teal bg-teal/12" },
+  {
+    key: "contacts",
+    icon: PhoneCallIcon,
+    shot: "cold-calling",
+    mobileShot: "cold-calling-mobile",
+    tone: "text-teal bg-teal/12",
+  },
   { key: "calendar", icon: CalendarDaysIcon, shot: "calendar", tone: "text-gold bg-gold/12" },
   { key: "finance", icon: WalletIcon, shot: "finance", tone: "text-orange bg-orange/12" },
   { key: "jarvis", icon: BotIcon, shot: "jarvis", tone: "text-teal bg-teal/12" },
-] as const satisfies readonly { key: string; icon: unknown; shot: ScreenshotName; tone: string }[];
+];
 
 /** 3. Six features, text and screenshot side by side, alternating. */
 export async function Features({ locale }: { locale: SiteLocale }) {
@@ -32,7 +46,7 @@ export async function Features({ locale }: { locale: SiteLocale }) {
     <Section id={homeAnchorId(locale, "features")} labelledBy="features-title">
       <SectionHeading id="features-title" title={t("title")} subtitle={t("subtitle")} />
       <ul className="mt-20 flex flex-col gap-24 md:mt-28 md:gap-36">
-        {FEATURES.map(({ key, icon: Icon, shot, tone }, index) => (
+        {FEATURES.map(({ key, icon: Icon, shot, mobileShot, tone }, index) => (
           <li
             key={key}
             className={cn(
@@ -54,6 +68,7 @@ export async function Features({ locale }: { locale: SiteLocale }) {
             <DriftIntoFocus className={cn(index % 2 === 1 && "md:order-1")}>
               <Screenshot
                 name={shot}
+                mobileName={mobileShot}
                 alt={t(`items.${key}.alt`, { appName: APP_NAME })}
                 sizes="(min-width: 1152px) 620px, (min-width: 768px) 56vw, 100vw"
               />
