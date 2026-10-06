@@ -70,6 +70,10 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - **Co jde spočítat, se neukládá:** postup milníku, poslední kontakt, příslušnost do Klientů, denní součty časovače, XP úroveň.
 - Dotazy vždy stránkovat nebo omezit na zobrazené období. Žádné `select *` na velkých tabulkách.
 - **Zkušební období:** registrace z webu = plan pro, status trialing, 14 dní, bez karty. Po expiraci režim jen pro čtení vynucený na serveru, data se nemažou. Pozvánka = plan beta bez expirace.
+  - Trial zakládá DB trigger každému novému účtu (kromě úplně prvního); server pak účtu s pozvánkou (beta kód i pozvánka pracovníka) zavolá `grant_beta_plan`, při chybě účet smaže. Klient do `subscriptions` nezapíše.
+  - Plán a stav jen přes `current_plan(user_id)` (plán, status včetně `expired`, `read_only`, limity). Expirace se počítá, neukládá. Po expiraci jsou limity generování a AI 0.
+  - Jen pro čtení hlídá trigger `enforce_workspace_writable` na datech prostoru: zápis přihlášeného uživatele (i přes SECURITY DEFINER funkce) do prostoru s `read_only` skončí chybou `read_only`. Admin klient blokovaný není, serverové routy kontrolují `current_plan` samy. Nastavení, profil a XP zůstávají zapisovatelné. V rozhraní `useCan(…, "edit")` vrací false.
+  - `waitlist` píše a čte jen server; e-mail jen se souhlasem, platí až po potvrzení odkazem, nepotvrzené se po 30 dnech mažou.
 
 ### Konkrétní části
 - **Úkoly:** `parent_task_id` pro podúkoly do libovolné hloubky. Úkol s podúkoly **nejde odškrtnout, dokud nejsou všechny podúkoly hotové** (zamčené zaškrtávátko se zámkem). Jakmile jsou, odemkne se, ale **nedokončí se sám**, uživatel ho odškrtne ručně. Odškrtnutí podúkolu u hotového nadřazeného ho vrátí do rozpracovaného. Postup milníku = splněné / všechny úkoly.
@@ -150,7 +154,7 @@ Veřejné v `.env`, tajné v `.env.local`. Vždy udržovat `.env.example`.
 | `NEXT_PUBLIC_SITE_URL` | Základ odkazů v e-mailech (reset hesla) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server, obchází RLS |
 | `INVITE_CODE` | Uzavřená registrace |
-| `PUBLIC_SIGNUP_ENABLED` | true = registrace bez kódu a 14denní zkušební období; false = jen pozvánky a čekací listina |
+| `PUBLIC_SIGNUP_ENABLED` | true = registrace bez kódu a 14denní zkušební období; false (výchozí) = jen pozvánky a čekací listina. Čte jen server (`src/lib/signup.ts`), změna chce restart |
 | `GOOGLE_MAPS_API_KEY` | Generování kontaktů |
 | `ANTHROPIC_API_KEY` | Jarvis |
 | `RESEND_API_KEY` | E-maily |

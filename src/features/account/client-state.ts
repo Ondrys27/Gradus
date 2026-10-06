@@ -3,6 +3,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { resetAnimationsPreference } from "@/lib/animation-preference";
 import { resetSoundPreference } from "@/lib/sound-preference";
+import { loginPath } from "@/lib/auth/routes";
 import { createClient } from "@/lib/supabase/client";
 
 /** Forgets everything the signed-in user left in this tab. */
@@ -30,6 +31,6 @@ export async function signOutEverywhereInTab(queryClient: QueryClient) {
     await createClient().auth.signOut({ scope: "local" });
   } finally {
     clearClientState(queryClient);
-    window.location.replace("/login");
+    window.location.replace(loginPath(document.documentElement.lang));
   }
 }

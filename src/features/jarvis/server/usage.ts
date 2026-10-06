@@ -9,41 +9,23 @@ type Client = SupabaseClient<Database>;
 
 type PlanLimits = { aiCalls: number; fileUploads: number };
 
-type PlanRow = {
-  key: string;
-  is_default: boolean;
-  ai_calls_limit: number;
-  file_uploads_limit: number;
-};
-
-/** Plans are a handful of rows; reading them all keeps the fallback in one query. */
-const PLAN_LIMIT = 50;
+type PlanRow = { ai_calls_limit: number; file_uploads_limit: number; read_only: boolean };
 
 /**
- * The numbers of the user's plan. Without a subscription, or with one whose
- * plan no longer exists, the default plan applies: a new user must never end
- * up with a limit of 0 only because a row is missing.
+ * The monthly numbers from current_plan(), which already falls back to the
+ * default plan without a subscription and gives 0 once a trial has ended.
  */
-export function planLimits(plans: PlanRow[], planKey: string | null): PlanLimits {
-  const plan =
-    (planKey ? plans.find((row) => row.key === planKey) : undefined) ??
-    plans.find((row) => row.is_default);
-  return { aiCalls: plan?.ai_calls_limit ?? 0, fileUploads: plan?.file_uploads_limit ?? 0 };
+export function planLimits(row: PlanRow | null | undefined): PlanLimits {
+  return { aiCalls: row?.ai_calls_limit ?? 0, fileUploads: row?.file_uploads_limit ?? 0 };
 }
 
-/** The plan's monthly numbers, read with the user's own client (RLS: own subscription, all plans). */
+/** The plan's monthly numbers, read with the user's own client. */
 async function loadLimits(supabase: Client, userId: string): Promise<PlanLimits> {
-  const [subscription, plans] = await Promise.all([
-    supabase.from("subscriptions").select("plan_key").eq("user_id", userId).maybeSingle(),
-    supabase
-      .from("plans")
-      .select("key, is_default, ai_calls_limit, file_uploads_limit")
-      .limit(PLAN_LIMIT),
-  ]);
-  if (subscription.error) throw subscription.error;
-  if (plans.error) throw plans.error;
-  const limits = planLimits(plans.data, subscription.data?.plan_key ?? null);
-  if (limits.aiCalls === 0) console.error("jarvis: no plan applies to user", userId);
+  const { data, error } = await supabase.rpc("current_plan", { _user_id: userId });
+  if (error) throw error;
+  const row = data?.[0];
+  const limits = planLimits(row);
+  if (limits.aiCalls === 0 && !row?.read_only) console.error("jarvis: no plan applies to user", userId);
   return limits;
 }
 

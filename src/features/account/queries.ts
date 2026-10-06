@@ -11,6 +11,7 @@ import {
   type UserSettings,
   type UserSettingsPatch,
 } from "@/lib/user-settings";
+import type { PlanSnapshot } from "@/features/plan/plan";
 import { signOutEverywhereInTab } from "./client-state";
 import {
   PROFILE_COLUMNS,
@@ -30,6 +31,8 @@ export const SessionContext = createContext<{
   roles: AppRole[];
   /** Set when the account works for an owner; it then gets the worker environment. */
   worker: WorkerAccount | null;
+  /** The workspace's plan as loaded when the app started; usePlan() keeps it current. */
+  plan: PlanSnapshot;
 } | null>(null);
 
 export function useSession() {

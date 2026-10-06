@@ -31,6 +31,8 @@ export type Workspace = {
   /** The worker record when the account works for an owner. */
   workerId: string | null;
   permissions: WorkspacePermissions;
+  /** The trial of the workspace ended: everything can be seen, nothing changed. */
+  readOnly: boolean;
 };
 
 export function isWorkspaceSection(value: string): value is WorkspaceSection {
@@ -53,9 +55,10 @@ export function workspaceFor(
   userId: string,
   worker: Pick<WorkerAccount, "id" | "ownerId"> | null,
   permissions?: Partial<Record<string, WorkerAccess>>,
+  readOnly = false,
 ): Workspace {
   if (!worker) {
-    return { id: userId, role: "owner", userId, workerId: null, permissions: {} };
+    return { id: userId, role: "owner", userId, workerId: null, permissions: {}, readOnly };
   }
   return {
     id: worker.ownerId,
@@ -63,15 +66,20 @@ export function workspaceFor(
     userId,
     workerId: worker.id,
     permissions: cleanPermissions(permissions),
+    readOnly,
   };
 }
 
-/** The owner may do everything in their space; a worker what the owner granted. */
+/**
+ * The owner may do everything in their space; a worker what the owner granted.
+ * After the trial nobody changes the workspace's data; personal settings stay open.
+ */
 export function canAccess(
   workspace: Workspace,
   section: WorkspaceSection | "workers" | "settings",
   level: AccessLevel,
 ): boolean {
+  if (level === "edit" && workspace.readOnly && section !== "settings") return false;
   if (workspace.role === "owner") return true;
   if (!isWorkspaceSection(section)) return false;
   const access = workspace.permissions[section];

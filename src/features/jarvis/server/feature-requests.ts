@@ -84,7 +84,7 @@ export async function classifyFeatureRequest(
 }
 
 /** Where ideas go: OWNER_EMAIL, otherwise the owner account's e-mail and language. */
-async function ownerContact(
+export async function ownerContact(
   admin: Client,
 ): Promise<{ email: string | null; locale: string | null }> {
   const { data: role } = await admin

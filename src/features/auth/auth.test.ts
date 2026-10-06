@@ -32,12 +32,12 @@ describe("sign-up validation", () => {
       password: "123",
       inviteCode: "",
     });
+    // The invite code is checked by the server (decideSignup), not the schema.
     expect(bad.success).toBe(false);
     if (!bad.success) {
       expect(fieldErrorsFrom(bad.error)).toEqual({
         email: "invalidEmail",
         password: "passwordTooShort",
-        inviteCode: "inviteRequired",
       });
     }
   });

@@ -48,7 +48,12 @@ export function SessionProvider({
       if (event === "SIGNED_OUT" || !session) {
         // Signed out here, in another tab, or the session could not be refreshed.
         clearClientState(queryClient);
-        window.location.replace(loginUrlFor(window.location.pathname + window.location.search));
+        window.location.replace(
+          loginUrlFor(
+            window.location.pathname + window.location.search,
+            document.documentElement.lang,
+          ),
+        );
       } else if (session.user.id !== userId) {
         // Another account signed in from a different tab.
         clearClientState(queryClient);
@@ -59,8 +64,13 @@ export function SessionProvider({
   }, [queryClient, userId]);
 
   const session = useMemo(
-    () => ({ user: initial.user, roles: initial.roles, worker: initial.worker }),
-    [initial.user, initial.roles, initial.worker],
+    () => ({
+      user: initial.user,
+      roles: initial.roles,
+      worker: initial.worker,
+      plan: initial.plan,
+    }),
+    [initial.user, initial.roles, initial.worker, initial.plan],
   );
 
   return (

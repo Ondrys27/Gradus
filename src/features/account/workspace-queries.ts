@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
+import { usePlan } from "@/features/plan/queries";
 import { useSession } from "./queries";
 import {
   canAccess,
@@ -77,8 +78,12 @@ function useWorkerAccess() {
 export function useWorkspace(): Workspace {
   const { user, worker } = useSession();
   const access = useWorkerAccess();
+  const { readOnly } = usePlan();
   const permissions = access.data?.permissions;
-  return useMemo(() => workspaceFor(user.id, worker, permissions), [user.id, worker, permissions]);
+  return useMemo(
+    () => workspaceFor(user.id, worker, permissions, readOnly),
+    [user.id, worker, permissions, readOnly],
+  );
 }
 
 /** Shortcut for the id every shared query filters by. */

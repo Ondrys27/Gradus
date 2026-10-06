@@ -40,7 +40,8 @@ export const signUpSchema = z.object({
   displayName: z.string().trim().max(DISPLAY_NAME_MAX, "displayNameTooLong"),
   email,
   password,
-  inviteCode: z.string().trim().min(1, "inviteRequired"),
+  // Required unless public sign-up is on; the server decides (decideSignup).
+  inviteCode: z.string().trim().max(64).default(""),
   timeZone: z.string().max(64).default(""),
 });
 

@@ -10,21 +10,14 @@ type Client = SupabaseClient<Database>;
 const EVENT_LIMIT = 5000;
 
 /**
- * Daily and monthly limits of the workspace owner's plan (the default plan
- * without a subscription). Read with the admin client: a worker cannot see the
- * owner's subscription, and the id comes from the database, not the request.
+ * Daily and monthly limits of the workspace owner's plan from current_plan()
+ * (the default plan without a subscription, 0 once the trial has ended). Read
+ * with the admin client: the id comes from the database, not the request.
  */
 async function loadLimits(admin: Client, workspaceId: string) {
-  const { data: subscription } = await admin
-    .from("subscriptions")
-    .select("plan_key")
-    .eq("user_id", workspaceId)
-    .maybeSingle();
-  const query = admin.from("plans").select("daily_generation_limit, monthly_generation_limit");
-  const { data: plan, error } = await (
-    subscription ? query.eq("key", subscription.plan_key) : query.eq("is_default", true)
-  ).maybeSingle();
+  const { data, error } = await admin.rpc("current_plan", { _user_id: workspaceId });
   if (error) throw error;
+  const plan = data?.[0];
   return {
     daily: plan?.daily_generation_limit ?? 0,
     monthly: plan?.monthly_generation_limit ?? 0,

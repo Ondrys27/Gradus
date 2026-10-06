@@ -3,6 +3,7 @@ import { JarvisDock } from "@/components/jarvis/jarvis-dock";
 import { JarvisTour } from "@/components/jarvis/jarvis-tour";
 import { GameSessionStart } from "@/features/game/game-session-start";
 import { OnboardingGate } from "@/features/onboarding/onboarding-gate";
+import { TrialNotice } from "@/features/plan/trial-notice";
 import { SearchProvider } from "@/features/search/search-provider";
 import { ThemeSync } from "@/features/settings/theme";
 import { BottomNav } from "./bottom-nav";
@@ -18,6 +19,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="flex min-h-dvh min-w-0 flex-col">
           <TopBar />
           <main className="mx-auto w-full max-w-6xl flex-1 pt-6 pr-[max(--spacing(4),env(safe-area-inset-right))] pb-[calc(12px+64px+32px+env(safe-area-inset-bottom))] pl-[max(--spacing(4),env(safe-area-inset-left))] md:pr-[max(--spacing(8),env(safe-area-inset-right))] md:pl-8 md:pt-8 md:pb-28">
+            <TrialNotice />
             <SectionGuard>{children}</SectionGuard>
           </main>
         </div>

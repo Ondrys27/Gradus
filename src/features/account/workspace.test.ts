@@ -19,6 +19,7 @@ describe("workspaceFor", () => {
       userId: OWNER,
       workerId: null,
       permissions: {},
+      readOnly: false,
     });
   });
 
@@ -66,6 +67,22 @@ describe("canAccess", () => {
     });
     expect(canAccessContacts(viaColdCalling, "edit")).toBe(true);
     expect(canAccessContacts(workspaceFor(WORKER, worker, {}), "view")).toBe(false);
+  });
+});
+
+describe("after the trial", () => {
+  it("lets nobody change the workspace, but everyone still sees it", () => {
+    const owner = workspaceFor(OWNER, null, undefined, true);
+    const caller = workspaceFor(WORKER, worker, { contacts: { view: true, edit: true } }, true);
+    for (const section of ["milestones", "contacts", "finance", "workers"] as const) {
+      expect(canAccess(owner, section, "edit")).toBe(false);
+      expect(canAccess(owner, section, "view")).toBe(true);
+    }
+    expect(canAccess(caller, "contacts", "edit")).toBe(false);
+    expect(canAccess(caller, "contacts", "view")).toBe(true);
+    expect(canAccessContacts(caller, "edit")).toBe(false);
+    // Personal settings are not the workspace's data.
+    expect(canAccess(owner, "settings", "edit")).toBe(true);
   });
 });
 

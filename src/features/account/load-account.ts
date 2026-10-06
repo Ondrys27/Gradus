@@ -1,4 +1,5 @@
 import "server-only";
+import { toPlanSnapshot } from "@/features/plan/plan";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { USER_SETTINGS_COLUMNS } from "@/lib/user-settings";
@@ -63,7 +64,14 @@ export async function loadAccount(): Promise<AccountSnapshot | null> {
     };
   }
 
+  // The workspace's plan: a worker works under the owner's.
+  const { data: planRows, error: planError } = await supabase.rpc("current_plan", {
+    _user_id: worker?.ownerId ?? userId,
+  });
+  if (planError) console.error("[account] current_plan failed", planError);
+
   return {
+    plan: toPlanSnapshot(planRows?.[0] ?? null),
     user: { id: userId, email: typeof claims.email === "string" ? claims.email : "" },
     profile: profile.data,
     settings: settings.data,

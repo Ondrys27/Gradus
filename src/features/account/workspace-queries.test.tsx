@@ -30,7 +30,12 @@ vi.mock("@/lib/supabase/client", () => {
     };
     return builder;
   };
-  return { createClient: () => ({ from: query }) };
+  const rpc = () =>
+    Promise.resolve({
+      data: [{ plan_key: "beta", status: "active", trial_ends_at: null, read_only: false }],
+      error: null,
+    });
+  return { createClient: () => ({ from: query, rpc }) };
 });
 
 function wrapper(worker: WorkerAccount | null, client: QueryClient) {
@@ -42,6 +47,7 @@ function wrapper(worker: WorkerAccount | null, client: QueryClient) {
             user: { id: worker ? WORKER : OWNER, email: "x@example.com" },
             roles: [],
             worker,
+            plan: { planKey: "beta", status: "active", trialEndsAt: null, readOnly: false },
           }}
         >
           {children}

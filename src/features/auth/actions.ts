@@ -1,10 +1,12 @@
 "use server";
 
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { isFreshRecoverySession } from "@/lib/auth/recovery";
-import { HOME_PATH, RESET_PASSWORD_PATH, safeNextPath } from "@/lib/auth/routes";
+import { HOME_PATH, loginPath, safeNextPath } from "@/lib/auth/routes";
+import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE } from "@/i18n/locale-cookie";
+import { localizedPath } from "@/lib/routes";
 import { locales, type Locale } from "@/i18n/locales";
 import {
   countryFromTimeZone,
@@ -12,9 +14,12 @@ import {
   isValidTimeZone,
   regionFormats,
 } from "@/lib/region";
+import { siteOrigin } from "@/lib/site-origin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { isPublicSignupEnabled } from "@/lib/signup";
 import { inviteEmailMatches, isValidInviteCode } from "./invite-code";
+import { decideSignup } from "./signup-mode";
 import { findOpenWorkerInvite, type OpenWorkerInvite } from "./worker-invite";
 import {
   authErrorKey,
@@ -26,11 +31,9 @@ import {
   type FormState,
 } from "./schemas";
 
-const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
-
 async function setLocaleCookie(locale: string) {
   if (!locales.includes(locale as Locale)) return;
-  (await cookies()).set("locale", locale, {
+  (await cookies()).set(LOCALE_COOKIE, locale, {
     path: "/",
     maxAge: LOCALE_COOKIE_MAX_AGE,
     sameSite: "lax",
@@ -48,21 +51,6 @@ async function syncLocaleFromSettings(userId: string) {
   if (data?.locale) await setLocaleCookie(data.locale);
 }
 
-/**
- * Base URL for links in e-mails. The configured site URL wins, so a forged
- * Origin or Host header can never point a reset link at another site.
- */
-async function requestOrigin(): Promise<string> {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL;
-  if (configured) return configured.replace(/\/+$/, "");
-  const h = await headers();
-  const origin = h.get("origin");
-  if (origin) return origin;
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-  const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-  return `${proto}://${host}`;
-}
-
 export async function signIn(_prev: FormState, formData: FormData): Promise<FormState> {
   const parsed = signInSchema.safeParse(Object.fromEntries(formData));
   const values = { email: String(formData.get("email") ?? "") };
@@ -77,8 +65,10 @@ export async function signIn(_prev: FormState, formData: FormData): Promise<Form
 }
 
 /**
- * Registration is closed: public sign-ups are disabled in Supabase, so the
- * account can only be created here, after the invite code has been checked.
+ * Accounts are created only here (sign-ups are disabled in Supabase). With an
+ * invite code (beta or a worker invite) the account gets beta; without one,
+ * and only when PUBLIC_SIGNUP_ENABLED is on, a 14-day trial, which the
+ * database starts for every new account by itself.
  * E-mail confirmation is off for the beta; turn it on before launch.
  */
 export async function signUp(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -90,22 +80,30 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
   };
   if (!parsed.success) return { fieldErrors: fieldErrorsFrom(parsed.error), values };
 
-  // Either the closed-beta code, or a worker invite from an owner.
+  const code = parsed.data.inviteCode;
   const expected = process.env.INVITE_CODE;
+  const betaCodeMatches = Boolean(code) && isValidInviteCode(code, expected);
   let workerInvite: OpenWorkerInvite | null = null;
-  if (!isValidInviteCode(parsed.data.inviteCode, expected)) {
-    workerInvite = await findOpenWorkerInvite(parsed.data.inviteCode).catch((error) => {
+  if (code && !betaCodeMatches) {
+    workerInvite = await findOpenWorkerInvite(code).catch((error) => {
       console.error("[auth] worker invite lookup failed", error);
       return null;
     });
-    if (!workerInvite) {
-      return expected
-        ? { fieldErrors: { inviteCode: "invalidInvite" }, values }
-        : { error: "registrationClosed", values };
-    }
-    if (!inviteEmailMatches(workerInvite.email, parsed.data.email)) {
-      return { fieldErrors: { email: "inviteEmailMismatch" }, values };
-    }
+  }
+  const decision = decideSignup({
+    code,
+    betaCodeMatches,
+    workerInviteFound: Boolean(workerInvite),
+    betaCodeConfigured: Boolean(expected),
+    publicSignup: isPublicSignupEnabled(),
+  });
+  if (decision.kind === "error") {
+    return decision.field
+      ? { fieldErrors: { [decision.field]: decision.error }, values }
+      : { error: decision.error, values };
+  }
+  if (workerInvite && !inviteEmailMatches(workerInvite.email, parsed.data.email)) {
+    return { fieldErrors: { email: "inviteEmailMismatch" }, values };
   }
 
   const locale = await getLocale();
@@ -127,17 +125,29 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
   // The database trigger has created profile, settings and role. Fill in what the browser told us.
   const userId = created.user.id;
 
+  const rollback = async (what: string, error: unknown) => {
+    console.error(`[auth] ${what} failed`, error);
+    const { error: deleteError } = await admin.auth.admin.deleteUser(userId);
+    if (deleteError) console.error("[auth] rollback of new account failed", deleteError);
+  };
+
   // A worker's account is bound to the owner's worker record, or not created at all.
-  if (workerInvite) {
+  if (decision.kind === "worker") {
     const { error: acceptError } = await admin.rpc("accept_worker_invite", {
-      _code: parsed.data.inviteCode.trim(),
+      _code: code,
       _user_id: userId,
     });
     if (acceptError) {
-      console.error("[auth] accept_worker_invite failed", acceptError);
-      const { error: deleteError } = await admin.auth.admin.deleteUser(userId);
-      if (deleteError) console.error("[auth] rollback of worker account failed", deleteError);
+      await rollback("accept_worker_invite", acceptError);
       return { fieldErrors: { inviteCode: "invalidInvite" }, values };
+    }
+  }
+  // Invited accounts leave the trial the database started for them.
+  if (decision.kind === "beta" || decision.kind === "worker") {
+    const { error: betaError } = await admin.rpc("grant_beta_plan", { _user_id: userId });
+    if (betaError) {
+      await rollback("grant_beta_plan", betaError);
+      return { error: "generic", values };
     }
   }
   const timeZone = isValidTimeZone(parsed.data.timeZone) ? parsed.data.timeZone : DEFAULT_TIME_ZONE;
@@ -168,7 +178,7 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
     email: parsed.data.email,
     password: parsed.data.password,
   });
-  if (signInError) redirect("/login");
+  if (signInError) redirect(loginPath(locale));
 
   await setLocaleCookie(locale);
   redirect(HOME_PATH);
@@ -184,9 +194,10 @@ export async function requestPasswordReset(
   if (!parsed.success) return { fieldErrors: fieldErrorsFrom(parsed.error), values };
 
   const supabase = await createClient();
-  const origin = await requestOrigin();
+  const origin = await siteOrigin();
+  const resetPath = localizedPath("resetPassword", await getLocale());
   const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-    redirectTo: `${origin}/auth/confirm?next=${encodeURIComponent(RESET_PASSWORD_PATH)}`,
+    redirectTo: `${origin}/auth/confirm?next=${encodeURIComponent(resetPath)}`,
   });
   if (error) {
     const key = authErrorKey(error);

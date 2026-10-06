@@ -1,4 +1,5 @@
 import type { Database } from "@/types/database";
+import type { PlanSnapshot } from "@/features/plan/plan";
 import type { UserSettings } from "@/lib/user-settings";
 
 export type AppRole = Database["public"]["Enums"]["app_role"];
@@ -42,4 +43,6 @@ export type AccountSnapshot = {
   settings: UserSettings;
   roles: AppRole[];
   worker: WorkerAccount | null;
+  /** Plan of the workspace the account works in (the owner's for a worker). */
+  plan: PlanSnapshot;
 };
