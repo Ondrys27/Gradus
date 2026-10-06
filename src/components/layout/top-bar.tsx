@@ -105,7 +105,9 @@ export function TopBar() {
                 }}
                 aria-haspopup="dialog"
                 aria-label={
-                  levelUnseen ? t("level.newLevel", { level: levelLabel }) : t("level.open")
+                  levelUnseen
+                    ? t("level.newLevel", { level: levelLabel })
+                    : t("level.open", { level: levelLabel })
                 }
                 animate={{
                   scale: reduceMotion
