@@ -11,7 +11,14 @@ import { cn } from "@/lib/utils";
  * language. The address sets the language, which becomes the account's at
  * registration.
  */
-export function GuestLocaleSwitcher({ className }: { className?: string }) {
+export function GuestLocaleSwitcher({
+  className,
+  short = false,
+}: {
+  className?: string;
+  /** "CS / EN" instead of the full names (the website header). */
+  short?: boolean;
+}) {
   const t = useTranslations("topBar.account");
   const current = useLocale();
   const pathname = usePathname();
@@ -30,13 +37,15 @@ export function GuestLocaleSwitcher({ className }: { className?: string }) {
             key={code}
             href={search ? `${target}?${search}` : target}
             aria-current={code === current ? "true" : undefined}
+            aria-label={short ? t(`languages.${code}`) : undefined}
             hrefLang={code}
+            lang={code}
             className={cn(
               "flex min-h-11 items-center rounded-lg px-3 text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50 mouse:min-h-9",
               code === current ? "bg-violet/20 text-ink" : "text-ink-muted hover:text-ink",
             )}
           >
-            {t(`languages.${code}`)}
+            {short ? t(`languageCodes.${code}`) : t(`languages.${code}`)}
           </Link>
         );
       })}

@@ -24,10 +24,13 @@ export function PricingCards({
   currency,
   formatSettings,
   action,
+  footnote,
 }: {
   currency: PriceCurrency;
   formatSettings: FormatSettings;
   action: (plan: PaidPlan) => ReactNode;
+  /** Replaces the default line under the cards (trial and VAT). */
+  footnote?: ReactNode;
 }) {
   const t = useTranslations("plans");
   const [billing, setBilling] = useState<Billing>("monthly");
@@ -68,9 +71,7 @@ export function PricingCards({
             key={plan.key}
             className={cn(
               "relative flex flex-col gap-5 rounded-card border bg-surface p-6",
-              plan.recommended
-                ? "border-violet/70 shadow-glow-strong"
-                : "border-line shadow-glow",
+              plan.recommended ? "border-violet/70 shadow-glow-strong" : "border-line shadow-glow",
             )}
           >
             {plan.recommended && (
@@ -114,9 +115,11 @@ export function PricingCards({
         ))}
       </div>
 
-      <p className="text-center text-sm text-ink-muted">
-        {t("trialNote")} {t("vatNote")}
-      </p>
+      {footnote ?? (
+        <p className="text-center text-sm text-ink-muted">
+          {t("trialNote")} {t("vatNote")}
+        </p>
+      )}
     </div>
   );
 }

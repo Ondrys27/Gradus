@@ -226,7 +226,11 @@
       },
       "profile": "Profil",
       "settings": "Nastavení",
-      "signOut": "Odhlásit se"
+      "signOut": "Odhlásit se",
+      "languageCodes": {
+        "en": "EN",
+        "cs": "CS"
+      }
     }
   },
   "search": {
@@ -2864,18 +2868,22 @@
   },
   "marketing": {
     "meta": {
-      "homeTitle": "{appName} — podnikání krok za krokem",
-      "homeDescription": "{appName} rozloží rozjezd tvého podnikání na kroky, hlídá obchody i kontakty a každé ráno ti řekne, co dnes udělat.",
+      "homeTitle": "{appName} — každý den víš, co udělat",
+      "homeDescription": "{appName} rozloží rozjezd tvého podnikání na kroky, hlídá obchody i kontakty a každé ráno ti řekne, co dnes udělat. 14 dní zdarma, bez karty.",
       "pricingTitle": "Ceník",
-      "pricingDescription": "Tři tarify, 14 dní zdarma, bez platební karty.",
+      "pricingDescription": "Solo, Pro a Tým. Každý tarif začíná 14 dny zdarma, bez platební karty. Ceny bez DPH.",
       "termsTitle": "Obchodní podmínky",
+      "termsDescription": "Obchodní podmínky služby {appName}. Text připravujeme s právníkem.",
       "privacyTitle": "Ochrana osobních údajů",
-      "waitlistTitle": "Čekací listina"
+      "privacyDescription": "Jak {appName} zachází s tvými údaji. Text připravujeme s právníkem.",
+      "waitlistTitle": "Čekací listina",
+      "ogAlt": "{appName}: Každý den víš, co udělat. A chce se ti to."
     },
     "nav": {
       "label": "Hlavní navigace",
       "home": "{appName} — domů",
       "features": "Funkce",
+      "howItWorks": "Jak to funguje",
       "pricing": "Ceník",
       "login": "Přihlásit se",
       "menu": "Menu",
@@ -2885,19 +2893,238 @@
       "tryFree": "Vyzkoušet zdarma",
       "trial": "Vyzkoušet 14 dní zdarma",
       "waitlist": "Chci vědět o spuštění",
-      "noCard": "Bez platební karty. Zrušíš kdykoliv."
+      "noCard": "Bez platební karty. Zrušíš kdykoliv.",
+      "waitlistNote": "{appName} je teď v betě. Napíšeme ti jednou, až se otevře všem."
     },
     "home": {
-      "title": "Z nápadu k první faktuře. Krok za krokem.",
-      "subtitle": "{appName} rozloží rozjezd tvého podnikání na kroky, hlídá obchody i kontakty a každé ráno ti řekne, co dnes udělat. Když to splníš, oslaví to s tebou.",
-      "featuresTitle": "Jeden systém místo pěti nástrojů",
+      "hero": {
+        "badge": "Teď v betě · otevíráme v prosinci",
+        "title": "Každý den víš, co udělat. A chce se ti to.",
+        "subtitle": "{appName} rozloží rozjezd tvého podnikání na kroky, hlídá obchody i kontakty a každé ráno ti řekne, co dnes udělat. Když to splníš, oslaví to s tebou.",
+        "secondary": "Podívat se, jak to vypadá",
+        "previewAlt": "Přehled v aplikaci {appName}: dnešní úkoly, postup na cestě a obchody na jednom místě"
+      },
+      "pains": {
+        "title": "Zní ti to povědomě?",
+        "items": {
+          "spreadsheets": {
+            "title": "Tabulky všude",
+            "text": "Kontakty v jednom souboru, faktury ve druhém, plán nikde."
+          },
+          "followUps": {
+            "title": "Zapomenuté follow-upy",
+            "text": "„Ozvu se příští týden“ — a příští týden je pryč."
+          },
+          "today": {
+            "title": "Nevíš, co dnes",
+            "text": "Práce je dost, ale který krok tu firmu doopravdy posune?"
+          },
+          "motivation": {
+            "title": "Motivace mizí",
+            "text": "Výsledky přijdou za měsíce, chuť zmizí za týden."
+          }
+        }
+      },
       "features": {
-        "milestones": "Milníky a kapitoly",
-        "pipeline": "Pipeline obchodů",
-        "contacts": "Kontakty a Cold Calling",
-        "calendar": "Kalendář",
-        "finance": "Finance",
-        "jarvis": "Jarvis"
+        "title": "Jeden systém místo pěti nástrojů",
+        "subtitle": "Plán, obchody, kontakty, kalendář i peníze na jednom místě. A všechno spolu mluví.",
+        "items": {
+          "milestones": {
+            "title": "Milníky a kapitoly",
+            "text": "Vyber obor a dostaneš plán: kapitoly s úkoly, které v tvém oboru dávají smysl. Nebo si napiš vlastní.",
+            "alt": "Milníky v aplikaci {appName}: kapitoly cesty s úkoly a postupem"
+          },
+          "pipeline": {
+            "title": "Pipeline obchodů",
+            "text": "Vidíš, kde každý obchod stojí, a jedním tahem ho posuneš dál. Když zákazník zaplatí, {appName} to oslaví.",
+            "alt": "Pipeline obchodů v aplikaci {appName}: obchody ve sloupcích podle fáze"
+          },
+          "contacts": {
+            "title": "Kontakty a Cold Calling",
+            "text": "Vygeneruj si firmy ve svém okolí, obvolávej je s časovačem a posouvej mezi tabulkami. Nic se neztratí.",
+            "alt": "Cold Calling v aplikaci {appName}: seznam firem k obvolání a běžící časovač"
+          },
+          "calendar": {
+            "title": "Kalendář",
+            "text": "Schůzky, termíny úkolů i uzavření obchodů na jednom místě. Synchronizace s Googlem.",
+            "alt": "Kalendář v aplikaci {appName}: měsíc se schůzkami a termíny"
+          },
+          "finance": {
+            "title": "Finance",
+            "text": "Zaplacený obchod se do financí propíše sám. Fakturu vystavíš jedním klepnutím.",
+            "alt": "Finance v aplikaci {appName}: příjmy a výdaje po měsících"
+          },
+          "jarvis": {
+            "title": "Jarvis",
+            "text": "Asistent, který zná tvůj byznys. Ráno ti řekne, co udělat, a večer, co se stalo.",
+            "alt": "Jarvis v aplikaci {appName}: rozhovor s asistentem"
+          }
+        }
+      },
+      "how": {
+        "title": "Jak to funguje",
+        "steps": {
+          "pick": {
+            "title": "Vyber svůj obor",
+            "text": "{appName} ti připraví kapitoly a první úkoly."
+          },
+          "work": {
+            "title": "Pracuj po krocích",
+            "text": "Úkoly, kontakty, schůzky, obchody. Jarvis hlídá termíny."
+          },
+          "unlock": {
+            "title": "Odemykej dál",
+            "text": "Každá splněná kapitola otevře novou část aplikace."
+          }
+        },
+        "toolMode": "Nechceš hrát? Vypni to. {appName} funguje i jako obyčejný nástroj."
+      },
+      "jarvis": {
+        "title": "Seznam se s Jarvisem.",
+        "subtitle": "Vidí tvoje obchody, kontakty i kalendář, takže neradí obecně, ale k věci. Když nemá co říct, mlčí.",
+        "chat": {
+          "name": "Jarvis",
+          "you": "Ty",
+          "caption": "Ukázka",
+          "line": "{who}: {text}",
+          "question": "Co mám dělat s nabídkou pro Pekárnu U Mlýna?",
+          "answer": "Nabídku jsi poslal před 8 dny a od té doby ticho. Zavolej jim zítra dopoledne a zeptej se, jestli v ní něco nechybí. Když budou váhat, nabídni první měsíc za poloviční cenu.",
+          "action": "Připomenout zítra v 9:00"
+        },
+        "points": {
+          "knows": "Zná celý tvůj byznys",
+          "watches": "Sám hlídá příležitosti",
+          "advises": "Poradí s obchodem i cenou"
+        }
+      },
+      "game": {
+        "title": "Podnikání, které tě odměňuje.",
+        "text": "Rozjezd firmy je rozdělený do kapitol. Za každý splněný krok dostaneš body, postoupíš o úroveň a otevřeš další část aplikace. Velké okamžiky, jako první klient nebo první zaplacená faktura, {appName} oslaví s tebou.",
+        "points": {
+          "chapters": {
+            "title": "Kapitoly podle oboru.",
+            "text": "Víš, co je teď na řadě a co přijde potom."
+          },
+          "levels": {
+            "title": "Úrovně a odznaky.",
+            "text": "Postup je vidět, i když výsledky teprve přijdou."
+          },
+          "rewards": {
+            "title": "Vlastní odměny.",
+            "text": "K milníku si napíšeš, čím se odměníš, až ho splníš."
+          }
+        },
+        "demo": {
+          "label": "Ukázka milníku",
+          "chapter": "Kapitola 1 · Základy",
+          "title": "Sepiš nabídku a ceník",
+          "reward": "Odměna: večeře venku",
+          "task1": "Popiš, co prodáváš a komu",
+          "task2": "Spočítej si hodinovou sazbu",
+          "task3": "Pošli nabídku prvnímu zákazníkovi",
+          "progress": "Postup",
+          "progressValue": "{done} / {total}",
+          "remaining": "Zbývá 1 úkol",
+          "complete": "Dokončit milník",
+          "celebrationTitle": "Milník splněn",
+          "celebrationReward": "Tvoje odměna: večeře venku",
+          "xp": "+150 XP",
+          "replay": "Přehrát znovu"
+        }
+      },
+      "audience": {
+        "title": "Postavené pro lidi, kteří začínají.",
+        "subtitle": "Vyber obor a {appName} ti připraví první kapitolu na míru. Podívej se, čím začneš.",
+        "hint": "Ukaž první kapitolu",
+        "firstChapter": "{field} · kapitola 1",
+        "tiles": {
+          "craftsman": "Řemeslník",
+          "consultant": "Konzultant",
+          "ecommerce": "E-shop",
+          "gastro": "Gastro",
+          "personalServices": "Osobní služby",
+          "creative": "Kreativec",
+          "it": "IT",
+          "other": "Ostatní"
+        },
+        "paths": {
+          "general": {
+            "m1": "Založ si živnost",
+            "m2": "Podnikatelský účet a evidence",
+            "m3": "Sepiš nabídku a ceník"
+          },
+          "craftsman": {
+            "m1": "Získej řemeslnou živnost",
+            "m2": "Účet, nářadí a auto",
+            "m3": "Ceník práce a materiálu"
+          },
+          "consultant": {
+            "m1": "Živnost pro konzultanta",
+            "m2": "Účet, smlouva a nástroje",
+            "m3": "Definuj nabídku a sazby"
+          },
+          "ecommerce": {
+            "m1": "Založ živnost pro prodej online",
+            "m2": "Účet, platforma a platební brána",
+            "m3": "Obchodní podmínky, doprava a první produkty"
+          },
+          "gastro": {
+            "m1": "Založ živnost pro stravovací služby",
+            "m2": "Provozovna, hygiena a účet",
+            "m3": "Menu, alergeny a ceny"
+          },
+          "personal_services": {
+            "m1": "Založ živnost pro osobní služby",
+            "m2": "Provozovna, hygiena a účet",
+            "m3": "Ceník a nabídka služeb"
+          }
+        }
+      },
+      "pricing": {
+        "faqLink": "Máš otázky? Mrkni na časté otázky."
+      },
+      "faq": {
+        "title": "Časté otázky",
+        "items": {
+          "card": {
+            "question": "Potřebuju platební kartu?",
+            "answer": "Ne. 14 dní zkoušíš bez karty, pak si vybereš tarif."
+          },
+          "cancel": {
+            "question": "Můžu zrušit?",
+            "answer": "Kdykoliv, jedním klepnutím. Data si můžeš exportovat."
+          },
+          "mobile": {
+            "question": "Funguje to na telefonu?",
+            "answer": "Ano, celá aplikace. Nativní aplikace pro telefony připravujeme."
+          },
+          "game": {
+            "question": "Musím hrát?",
+            "answer": "Ne. Herní režim se dá vypnout a {appName} je pak obyčejný nástroj. Nic se nezamyká a nic neztratíš."
+          },
+          "ai": {
+            "question": "Co dělá AI s mými daty?",
+            "answer": "Jarvis vidí jen tvoje data a používá je jen pro tebe. Nikdy netrénujeme modely na datech zákazníků."
+          },
+          "notFor": {
+            "question": "Pro koho {appName} není?",
+            "answer": "Pro firmy s desítkami obchodníků a složitými procesy. Je pro lidi, kteří začínají nebo jedou v malém týmu."
+          },
+          "contacts": {
+            "question": "Odkud jsou kontakty?",
+            "answer": "Z veřejných údajů o firmách. Hlídáme limity i ochranu osobních údajů."
+          }
+        }
+      },
+      "final": {
+        "title": "Začni dnes. Za 14 dní budeš vědět.",
+        "titleWaitlist": "Buď u toho od prvního dne.",
+        "note": "Bez karty. Zrušíš kdykoliv. Data jsou tvoje.",
+        "noteWaitlist": "{appName} je teď v betě. Nech nám e-mail a napíšeme ti jednou, až se otevře všem.",
+        "founderLabel": "Slovo od zakladatele",
+        "founderNote": "{appName} stavíme s prvními podnikateli v betě. Tohle není hotový produkt velké firmy — je to nástroj, který roste s vámi, a každý nápad od vás čteme.",
+        "signature": "{name}, zakladatel",
+        "signatureRole": "Tým {appName}"
       }
     },
     "pricing": {
@@ -2906,12 +3133,39 @@
     },
     "legal": {
       "soon": "Připravujeme",
-      "soonText": "Text pro nás připravuje právník. Do té doby se nás klidně zeptej na cokoliv, co potřebuješ vědět."
+      "soonText": "Text pro nás připravuje právník. Do té doby se nás klidně zeptej na cokoliv, co potřebuješ vědět.",
+      "heading": "{number}. {title}",
+      "sectionSoon": "Text doplníme.",
+      "sections": {
+        "terms": {
+          "intro": "Úvodní ustanovení",
+          "account": "Registrace a účet",
+          "trial": "Zkušební období",
+          "pricing": "Cena a platby",
+          "use": "Používání služby",
+          "liability": "Odpovědnost",
+          "termination": "Zrušení a ukončení",
+          "final": "Závěrečná ustanovení"
+        },
+        "privacy": {
+          "controller": "Kdo údaje zpracovává",
+          "data": "Jaké údaje zpracováváme",
+          "purpose": "Proč a na jakém základě",
+          "processors": "Komu údaje předáváme",
+          "retention": "Jak dlouho je uchováváme",
+          "rights": "Tvoje práva",
+          "cookies": "Cookies",
+          "contact": "Kontakt"
+        }
+      }
     },
     "footer": {
       "label": "Patička",
+      "navLabel": "Odkazy v patičce",
+      "tagline": "{appName} vede začínající podnikatele od nápadu k prvním zákazníkům, krok za krokem.",
       "terms": "Podmínky",
       "privacy": "Soukromí",
+      "contact": "Kontakt",
       "copyright": "© {year} {appName}"
     },
     "waitlist": {

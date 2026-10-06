@@ -31,8 +31,7 @@ export function WaitlistDialog({
   const t = useTranslations("marketing.waitlist");
   const locale = useLocale();
   const [state, action] = useActionState<WaitlistState, FormData>(joinWaitlist, {});
-  const emailError =
-    state.error === "invalidEmail" ? t("errors.invalidEmail") : undefined;
+  const emailError = state.error === "invalidEmail" ? t("errors.invalidEmail") : undefined;
 
   return (
     <ResponsiveDialog

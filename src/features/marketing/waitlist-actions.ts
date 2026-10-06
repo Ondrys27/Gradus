@@ -25,7 +25,10 @@ function hashToken(token: string): string {
  * server-only. Always answers the same way whether the address was new,
  * waiting or confirmed, so the form cannot tell who signed up.
  */
-export async function joinWaitlist(_prev: WaitlistState, formData: FormData): Promise<WaitlistState> {
+export async function joinWaitlist(
+  _prev: WaitlistState,
+  formData: FormData,
+): Promise<WaitlistState> {
   const parsed = waitlistSchema.safeParse(Object.fromEntries(formData));
   const email = String(formData.get("email") ?? "");
   if (!parsed.success) return { error: waitlistError(parsed.error), email };

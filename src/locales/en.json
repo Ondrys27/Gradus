@@ -226,7 +226,11 @@
       },
       "profile": "Profile",
       "settings": "Settings",
-      "signOut": "Sign out"
+      "signOut": "Sign out",
+      "languageCodes": {
+        "en": "EN",
+        "cs": "CS"
+      }
     }
   },
   "search": {
@@ -2864,18 +2868,22 @@
   },
   "marketing": {
     "meta": {
-      "homeTitle": "{appName} — your business, step by step",
-      "homeDescription": "{appName} breaks getting your business off the ground into steps, keeps track of deals and contacts, and tells you every morning what to do today.",
+      "homeTitle": "{appName} — know what to do every day",
+      "homeDescription": "{appName} breaks getting your business off the ground into steps, keeps track of deals and contacts, and tells you every morning what to do today. 14 days free, no card.",
       "pricingTitle": "Pricing",
-      "pricingDescription": "Three plans, 14 days free, no credit card.",
+      "pricingDescription": "Solo, Pro and Team. Every plan starts with 14 days free, no credit card. Prices exclude VAT.",
       "termsTitle": "Terms",
+      "termsDescription": "Terms of the {appName} service. A lawyer is preparing the text.",
       "privacyTitle": "Privacy",
-      "waitlistTitle": "Waitlist"
+      "privacyDescription": "How {appName} handles your data. A lawyer is preparing the text.",
+      "waitlistTitle": "Waitlist",
+      "ogAlt": "{appName}: Know what to do every day. And actually feel like doing it."
     },
     "nav": {
       "label": "Main navigation",
       "home": "{appName} home",
       "features": "Features",
+      "howItWorks": "How it works",
       "pricing": "Pricing",
       "login": "Sign in",
       "menu": "Menu",
@@ -2885,19 +2893,238 @@
       "tryFree": "Try for free",
       "trial": "Try free for 14 days",
       "waitlist": "Tell me when it launches",
-      "noCard": "No credit card. Cancel any time."
+      "noCard": "No credit card. Cancel any time.",
+      "waitlistNote": "{appName} is in beta. We'll write once, when it opens to everyone."
     },
     "home": {
-      "title": "From idea to first invoice. One step at a time.",
-      "subtitle": "{appName} breaks getting your business off the ground into steps, keeps track of deals and contacts, and tells you every morning what to do today. When you get it done, it celebrates with you.",
-      "featuresTitle": "One system instead of five tools",
+      "hero": {
+        "badge": "Now in beta · opening in December",
+        "title": "Know what to do every day. And actually feel like doing it.",
+        "subtitle": "{appName} breaks getting your business off the ground into small steps, keeps an eye on your deals and contacts, and tells you each morning what to do today. When you get it done, it celebrates with you.",
+        "secondary": "See what it looks like",
+        "previewAlt": "The {appName} dashboard: today's tasks, progress along your path and deals in one place"
+      },
+      "pains": {
+        "title": "Sound familiar?",
+        "items": {
+          "spreadsheets": {
+            "title": "Spreadsheets everywhere",
+            "text": "Contacts in one file, invoices in another, the plan nowhere."
+          },
+          "followUps": {
+            "title": "Forgotten follow-ups",
+            "text": "“I’ll get back to them next week” — and next week is gone."
+          },
+          "today": {
+            "title": "No idea what today",
+            "text": "There’s plenty to do, but which step actually moves the business?"
+          },
+          "motivation": {
+            "title": "Motivation fades",
+            "text": "Results take months. The drive is gone in a week."
+          }
+        }
+      },
       "features": {
-        "milestones": "Milestones and chapters",
-        "pipeline": "Deal pipeline",
-        "contacts": "Contacts and cold calling",
-        "calendar": "Calendar",
-        "finance": "Finance",
-        "jarvis": "Jarvis"
+        "title": "One system instead of five tools",
+        "subtitle": "Your plan, deals, contacts, calendar and money in one place. And it all talks to each other.",
+        "items": {
+          "milestones": {
+            "title": "Milestones and chapters",
+            "text": "Pick your field and get a plan: chapters of tasks that make sense for what you do. Or write your own.",
+            "alt": "Milestones in {appName}: chapters of your path with tasks and progress"
+          },
+          "pipeline": {
+            "title": "Deal pipeline",
+            "text": "See where every deal stands and drag it forward. When a customer pays, {appName} celebrates.",
+            "alt": "The deal pipeline in {appName}: deals in columns by stage"
+          },
+          "contacts": {
+            "title": "Contacts and cold calling",
+            "text": "Generate businesses near you, call them with a timer and move them between tables. Nothing slips through.",
+            "alt": "Cold calling in {appName}: a list of businesses to call and a running timer"
+          },
+          "calendar": {
+            "title": "Calendar",
+            "text": "Meetings, task deadlines and deal closings in one place. Synced with Google.",
+            "alt": "The calendar in {appName}: a month of meetings and deadlines"
+          },
+          "finance": {
+            "title": "Finance",
+            "text": "A paid deal shows up in your finances on its own. Invoices take one tap.",
+            "alt": "Finance in {appName}: income and expenses by month"
+          },
+          "jarvis": {
+            "title": "Jarvis",
+            "text": "An assistant who knows your business. In the morning he tells you what to do, in the evening what happened.",
+            "alt": "Jarvis in {appName}: a chat with the assistant"
+          }
+        }
+      },
+      "how": {
+        "title": "How it works",
+        "steps": {
+          "pick": {
+            "title": "Pick your field",
+            "text": "{appName} sets up your chapters and first tasks."
+          },
+          "work": {
+            "title": "Work step by step",
+            "text": "Tasks, contacts, meetings, deals. Jarvis keeps an eye on deadlines."
+          },
+          "unlock": {
+            "title": "Keep unlocking",
+            "text": "Every chapter you finish opens a new part of the app."
+          }
+        },
+        "toolMode": "Not into games? Switch it off. {appName} works as a plain tool too."
+      },
+      "jarvis": {
+        "title": "Meet Jarvis.",
+        "subtitle": "He sees your deals, contacts and calendar, so his advice is about your business, not business in general. When there's nothing to say, he stays quiet.",
+        "chat": {
+          "name": "Jarvis",
+          "you": "You",
+          "caption": "Example",
+          "line": "{who}: {text}",
+          "question": "What should I do about the quote for Mill Lane Bakery?",
+          "answer": "You sent it 8 days ago and haven't heard back. Call them tomorrow morning and ask whether anything is missing. If they hesitate, offer the first month at half price.",
+          "action": "Remind me tomorrow at 9:00"
+        },
+        "points": {
+          "knows": "Knows your whole business",
+          "watches": "Spots opportunities on his own",
+          "advises": "Helps with deals and pricing"
+        }
+      },
+      "game": {
+        "title": "A business that rewards you.",
+        "text": "Getting your business going is split into chapters. Every step you finish earns points, levels you up and opens the next part of the app. The big moments, like your first client or first paid invoice, {appName} celebrates with you.",
+        "points": {
+          "chapters": {
+            "title": "Chapters for your field.",
+            "text": "You know what's next and what comes after."
+          },
+          "levels": {
+            "title": "Levels and badges.",
+            "text": "You can see progress even before the results arrive."
+          },
+          "rewards": {
+            "title": "Your own rewards.",
+            "text": "Write down how you'll treat yourself when you finish a milestone."
+          }
+        },
+        "demo": {
+          "label": "Example milestone",
+          "chapter": "Chapter 1 · Basics",
+          "title": "Write your offer and price list",
+          "reward": "Reward: dinner out",
+          "task1": "Describe what you sell and to whom",
+          "task2": "Work out your hourly rate",
+          "task3": "Send the offer to your first customer",
+          "progress": "Progress",
+          "progressValue": "{done} / {total}",
+          "remaining": "1 task left",
+          "complete": "Complete milestone",
+          "celebrationTitle": "Milestone done",
+          "celebrationReward": "Your reward: dinner out",
+          "xp": "+150 XP",
+          "replay": "Play again"
+        }
+      },
+      "audience": {
+        "title": "Built for people who are just starting.",
+        "subtitle": "Pick your field and {appName} prepares your first chapter. See where you'd begin.",
+        "hint": "Show the first chapter",
+        "firstChapter": "{field} · chapter 1",
+        "tiles": {
+          "craftsman": "Tradesperson",
+          "consultant": "Consultant",
+          "ecommerce": "Online shop",
+          "gastro": "Food & drink",
+          "personalServices": "Personal services",
+          "creative": "Creative",
+          "it": "IT",
+          "other": "Something else"
+        },
+        "paths": {
+          "general": {
+            "m1": "Get your trade licence",
+            "m2": "Business account and bookkeeping",
+            "m3": "Write your offer and price list"
+          },
+          "craftsman": {
+            "m1": "Get your craft trade licence",
+            "m2": "Account, tools and van",
+            "m3": "Price list for work and materials"
+          },
+          "consultant": {
+            "m1": "Set up as a freelancer",
+            "m2": "Account, contract and tools",
+            "m3": "Define your offer and rates"
+          },
+          "ecommerce": {
+            "m1": "Register your trade for online sales",
+            "m2": "Account, platform and payment gateway",
+            "m3": "Terms and conditions, shipping and your first products"
+          },
+          "gastro": {
+            "m1": "Register your food trade",
+            "m2": "Premises, hygiene and account",
+            "m3": "Menu, allergens and prices"
+          },
+          "personal_services": {
+            "m1": "Register your personal-services trade",
+            "m2": "Premises, hygiene and account",
+            "m3": "Price list and your service menu"
+          }
+        }
+      },
+      "pricing": {
+        "faqLink": "Questions? Check the FAQ."
+      },
+      "faq": {
+        "title": "Frequently asked questions",
+        "items": {
+          "card": {
+            "question": "Do I need a credit card?",
+            "answer": "No. You try it for 14 days without a card, then pick a plan."
+          },
+          "cancel": {
+            "question": "Can I cancel?",
+            "answer": "Any time, with one tap. You can export your data."
+          },
+          "mobile": {
+            "question": "Does it work on my phone?",
+            "answer": "Yes, the whole app. Native phone apps are on the way."
+          },
+          "game": {
+            "question": "Do I have to play?",
+            "answer": "No. Switch the game mode off and {appName} is a plain tool. Nothing gets locked and you lose nothing."
+          },
+          "ai": {
+            "question": "What does the AI do with my data?",
+            "answer": "Jarvis sees only your data and uses it only for you. We never train models on customer data."
+          },
+          "notFor": {
+            "question": "Who is {appName} not for?",
+            "answer": "Companies with dozens of salespeople and complex processes. It's for people who are starting out or running a small team."
+          },
+          "contacts": {
+            "question": "Where do the contacts come from?",
+            "answer": "From public business listings. We watch the limits and data protection rules."
+          }
+        }
+      },
+      "final": {
+        "title": "Start today. In 14 days you'll know.",
+        "titleWaitlist": "Be there from day one.",
+        "note": "No card. Cancel any time. Your data stays yours.",
+        "noteWaitlist": "{appName} is in beta. Leave your e-mail and we'll write once, when it opens to everyone.",
+        "founderLabel": "A word from the founder",
+        "founderNote": "We're building {appName} together with the first business owners in our beta. This isn't a finished product from a big company — it's a tool that grows with you, and we read every idea you send us.",
+        "signature": "{name}, founder",
+        "signatureRole": "The {appName} team"
       }
     },
     "pricing": {
@@ -2906,12 +3133,39 @@
     },
     "legal": {
       "soon": "Coming soon",
-      "soonText": "A lawyer is writing this text for us. Until then, feel free to ask us anything you need to know."
+      "soonText": "A lawyer is writing this text for us. Until then, feel free to ask us anything you need to know.",
+      "heading": "{number}. {title}",
+      "sectionSoon": "Text coming soon.",
+      "sections": {
+        "terms": {
+          "intro": "Introduction",
+          "account": "Sign-up and account",
+          "trial": "Free trial",
+          "pricing": "Prices and payment",
+          "use": "Using the service",
+          "liability": "Liability",
+          "termination": "Cancellation and termination",
+          "final": "Final provisions"
+        },
+        "privacy": {
+          "controller": "Who processes your data",
+          "data": "What data we process",
+          "purpose": "Why, and on what legal basis",
+          "processors": "Who we share it with",
+          "retention": "How long we keep it",
+          "rights": "Your rights",
+          "cookies": "Cookies",
+          "contact": "Contact"
+        }
+      }
     },
     "footer": {
       "label": "Footer",
+      "navLabel": "Footer links",
+      "tagline": "{appName} takes new business owners from idea to first customers, one step at a time.",
       "terms": "Terms",
       "privacy": "Privacy",
+      "contact": "Contact",
       "copyright": "© {year} {appName}"
     },
     "waitlist": {
