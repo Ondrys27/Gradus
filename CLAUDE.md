@@ -35,6 +35,8 @@ bun run db:types      # generuje src/types/database.ts
 
 - `src/app/(auth)/` — přihlášení, registrace, heslo
 - `src/app/(app)/` — chráněná aplikace, layout se sidebarem
+- `src/app/(app)/` je pod adresou /app
+- `src/app/(marketing)/` — veřejný web (/, /cenik, /podminky, /soukromi, anglicky pod /en), vlastní layout bez aplikace
 - `src/app/api/` — serverové routy (jarvis, generate-contacts, cron/*)
 - `src/features/<sekce>/` — komponenty, dotazy, mutace a serverové akce sekce
 - Cesty, úrovně, odznaky a odemykání jsou v src/features/game, Jarvisova postava a proaktivní chování v src/features/jarvis
@@ -42,6 +44,7 @@ bun run db:types      # generuje src/types/database.ts
 - `src/components/layout/` — Sidebar, TopBar, BottomNav, Background, JarvisButton
 - `src/components/celebration/`, `src/components/jarvis/`
 - `src/lib/format.ts` — veškeré formátování · `src/lib/constants.ts` — `APP_NAME` · `src/lib/supabase/` — klienti (browser, server, admin)
+- `src/config/pricing.ts` — ceny a limity tarifů na jednom místě
 - `src/locales/en.json`, `cs.json`
 
 Projekt je postavený od nuly. Starý kód z Lovable se nepoužívá, design je popsaný v tokenech a v plánu.
@@ -66,6 +69,7 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - Admin klient obchází RLS — jen v serverovém kódu, vždy filtrovat podle `userId` ze session.
 - **Co jde spočítat, se neukládá:** postup milníku, poslední kontakt, příslušnost do Klientů, denní součty časovače, XP úroveň.
 - Dotazy vždy stránkovat nebo omezit na zobrazené období. Žádné `select *` na velkých tabulkách.
+- **Zkušební období:** registrace z webu = plan pro, status trialing, 14 dní, bez karty. Po expiraci režim jen pro čtení vynucený na serveru, data se nemažou. Pozvánka = plan beta bez expirace.
 
 ### Konkrétní části
 - **Úkoly:** `parent_task_id` pro podúkoly do libovolné hloubky. Úkol s podúkoly **nejde odškrtnout, dokud nejsou všechny podúkoly hotové** (zamčené zaškrtávátko se zámkem). Jakmile jsou, odemkne se, ale **nedokončí se sám**, uživatel ho odškrtne ručně. Odškrtnutí podúkolu u hotového nadřazeného ho vrátí do rozpracovaného. Postup milníku = splněné / všechny úkoly.
@@ -131,6 +135,9 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - Odemykání sekcí v game režimu jen přes milníky cesty (`unlock_key`) a úrovně, nikdy přes počty akcí. Zamčená sekce v menu ukazuje, který milník ji odemkne.
 - Jarvis se sám ozývá podle pravidel v sekci Jarvis. Nic nevytváří bez potvrzení.
 
+### Web
+- Marketingový web: čeština výchozí, angličtina pod /en. Žádná vymyšlená čísla, recenze ani loga. Žádné sledovací cookies. Snímky aplikace jen z bun run screenshots nad demo účtem.
+
 ---
 
 ## Prostředí
@@ -143,6 +150,7 @@ Veřejné v `.env`, tajné v `.env.local`. Vždy udržovat `.env.example`.
 | `NEXT_PUBLIC_SITE_URL` | Základ odkazů v e-mailech (reset hesla) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server, obchází RLS |
 | `INVITE_CODE` | Uzavřená registrace |
+| `PUBLIC_SIGNUP_ENABLED` | true = registrace bez kódu a 14denní zkušební období; false = jen pozvánky a čekací listina |
 | `GOOGLE_MAPS_API_KEY` | Generování kontaktů |
 | `ANTHROPIC_API_KEY` | Jarvis |
 | `RESEND_API_KEY` | E-maily |

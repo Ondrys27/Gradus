@@ -37,6 +37,11 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 9.7 | architect | 2026-10-03 Průvodce po onboardingu (7 kroků, spotlight, pracovník zkrácená verze) a proaktivní Jarvis vlevo dole (ranní shrnutí, návrhy, otázky) s pravidly proti otravování; migrace pushnutá, pravidla v CLAUDE.md; hodinový cron na shrnutí potřebuje Vercel Pro.
 - [x] K9 | reviewer | 2026-10-03 Kontrola fáze 9: migrace cest zidempotentněny, oprava zámku Nejlepší obory v tool režimu, dohnané odemčení ranního shrnutí pro starší účty, anténa Jarvise přes CSS místo nekonečné Framer Motion smyčky (výkon), natvrdo Gradus nahrazen {appName}; RLS pracovního prostoru a stropy XP ověřeny bez nálezu.
 - [x] STOP | Konec kola 2. Ověř: Jarvisův chat odpovídá a tlačítko Otestovat Jarvise v nastavení prochází. Pracovník Caller ve druhém prohlížeči vidí a upravuje kontakty, ale nevidí finance; po odebrání práva zmizí hned. Graf příjmu jde přiblížit. Založ nový účet v herním režimu, vyber cestu Řemeslník, projdi průvodce a ověř, že vznikly milníky s popisky „Odemkne". Klepni na úroveň vpravo nahoře. Přepni téma v nastavení. Zkontroluj postavu Jarvise na /design-system/jarvis ve všech stavech. Nech aplikaci otevřenou a sleduj, jestli se Jarvis sám ozve — a jestli neotravuje. Poznámky pošli do chatu s Claude.
+- [ ] 10.1 | architect | env: RESEND_API_KEY
+- [ ] 10.2 | architect |
+- [ ] 10.3 | builder |
+- [ ] K10 | reviewer |
+- [ ] STOP | Konec kola 3. Otevři / odhlášený — musí být web, ne aplikace. Přihlas se přes Přihlásit se a ověř, že skončíš v /app a staré adresy přesměrují. Projdi web na počítači i telefonu, přepni jazyk. S PUBLIC_SIGNUP_ENABLED=false zkus čekací listinu a ověř, že přišel potvrzovací e-mail. Pak přepni na true, restartuj dev server, založ nový účet z webu a ověř pruh se zkušebním obdobím. Řekni Vášovi, ať si web projde — je to jeho část.
 - [ ] 7.1 | RUČNĚ | Nasazení vyžaduje tvoje přihlášení do Vercelu a nastavení v jeho administraci. Spusť ho interaktivně: přepni /model na Sonnet a vlož prompt 7.1 z docs/plan.md.
 
 ## Odloženo
