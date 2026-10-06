@@ -29,7 +29,7 @@ export function WorkerCard({ worker, profile, stats }: Props) {
 
   return (
     <Link
-      href={`/workers/${worker.id}`}
+      href={`/app/pracovnici/${worker.id}`}
       className="block rounded-card outline-none focus-visible:ring-3 focus-visible:ring-violet/40"
     >
       <GlowCard className="flex h-full flex-col gap-4">

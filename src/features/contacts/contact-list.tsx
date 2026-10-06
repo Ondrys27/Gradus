@@ -92,7 +92,7 @@ function ContactTableView({ contacts, tables, renderExtra, extraLabel }: Props) 
           {contacts.map((contact) => {
             const name = contactName(contact);
             const person = contactPerson(contact);
-            const href = `/contacts/${contact.id}`;
+            const href = `/app/kontakty/${contact.id}`;
             return (
               <tr
                 key={contact.id}
@@ -167,7 +167,7 @@ function ContactCard({ contact, tables, renderExtra }: Props & { contact: Contac
       <Avatar name={name} className="size-10" />
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <Link
-          href={`/contacts/${contact.id}`}
+          href={`/app/kontakty/${contact.id}`}
           className="truncate font-medium text-ink outline-none after:absolute after:inset-0 after:rounded-card focus-visible:after:ring-3 focus-visible:after:ring-violet/40"
         >
           {name}

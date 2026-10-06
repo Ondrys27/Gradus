@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 /**
- * A one-off request carried in the address, e.g. `/contacts?new=contact` from
+ * A one-off request carried in the address, e.g. `/app/kontakty?new=contact` from
  * the search: `handle` runs once for it, then the parameter (and `extra`
  * companions) is removed so Back or a refresh does not repeat it. Return
  * `false` while the page is not ready yet; it is tried again on the next render.

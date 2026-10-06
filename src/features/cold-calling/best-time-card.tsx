@@ -90,7 +90,7 @@ export function BestTimeCard() {
         <p className="text-sm text-ink-soft">
           {t.rich("noCountry", {
             link: (chunks) => (
-              <Link href="/settings" className="text-violet underline underline-offset-4">
+              <Link href="/app/nastaveni" className="text-violet underline underline-offset-4">
                 {chunks}
               </Link>
             ),

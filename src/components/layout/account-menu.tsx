@@ -60,11 +60,11 @@ export function AccountMenu() {
 
             <Menu.Separator className="my-1.5 h-px bg-line" />
 
-            <Menu.LinkItem closeOnClick render={<Link href="/profile" />} className={itemClass}>
+            <Menu.LinkItem closeOnClick render={<Link href="/app/profil" />} className={itemClass}>
               {t("profile")}
               <UserRoundIcon aria-hidden className="size-4 text-ink-muted" />
             </Menu.LinkItem>
-            <Menu.LinkItem closeOnClick render={<Link href="/settings" />} className={itemClass}>
+            <Menu.LinkItem closeOnClick render={<Link href="/app/nastaveni" />} className={itemClass}>
               {t("settings")}
               <SettingsIcon aria-hidden className="size-4 text-ink-muted" />
             </Menu.LinkItem>

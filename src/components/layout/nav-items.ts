@@ -11,6 +11,7 @@ import {
   WalletIcon,
   type LucideIcon,
 } from "lucide-react";
+import { APP_HOME_PATH } from "@/lib/routes";
 
 export type NavKey =
   | "dashboard"
@@ -27,14 +28,14 @@ export type NavKey =
 export type NavItem = { key: NavKey; href: string; icon: LucideIcon };
 
 export const navItems: NavItem[] = [
-  { key: "dashboard", href: "/dashboard", icon: LayoutDashboardIcon },
-  { key: "milestones", href: "/milestones", icon: MilestoneIcon },
-  { key: "contacts", href: "/contacts", icon: ContactRoundIcon },
-  { key: "pipeline", href: "/pipeline", icon: SquareKanbanIcon },
-  { key: "coldCalling", href: "/cold-calling", icon: PhoneCallIcon },
-  { key: "calendar", href: "/calendar", icon: CalendarDaysIcon },
-  { key: "finance", href: "/finance", icon: WalletIcon },
-  { key: "workers", href: "/workers", icon: UsersRoundIcon },
+  { key: "dashboard", href: "/app", icon: LayoutDashboardIcon },
+  { key: "milestones", href: "/app/milniky", icon: MilestoneIcon },
+  { key: "contacts", href: "/app/kontakty", icon: ContactRoundIcon },
+  { key: "pipeline", href: "/app/pipeline", icon: SquareKanbanIcon },
+  { key: "coldCalling", href: "/app/cold-calling", icon: PhoneCallIcon },
+  { key: "calendar", href: "/app/kalendar", icon: CalendarDaysIcon },
+  { key: "finance", href: "/app/finance", icon: WalletIcon },
+  { key: "workers", href: "/app/pracovnici", icon: UsersRoundIcon },
 ];
 
 /** Sections that get their own slot in the phone bottom bar; the rest live under "More". */
@@ -42,8 +43,8 @@ export const bottomNavKeys: NavKey[] = ["dashboard", "milestones", "pipeline", "
 
 /** Only a worker has these: the tasks their owner gave them and what they earned. */
 export const workerOnlyItems: NavItem[] = [
-  { key: "myTasks", href: "/tasks", icon: ListChecksIcon },
-  { key: "myRewards", href: "/rewards", icon: CoinsIcon },
+  { key: "myTasks", href: "/app/ukoly", icon: ListChecksIcon },
+  { key: "myRewards", href: "/app/odmeny", icon: CoinsIcon },
 ];
 
 /** Sections an owner can open to a worker, with the app_section each one is stored as. */
@@ -94,6 +95,8 @@ export function isPathAllowed(pathname: string, access: WorkerNavAccess): boolea
   return navItemsFor(access).some((item) => item.key === section.key);
 }
 
+/** The dashboard is /app itself, so only its exact address belongs to it. */
 export function isActivePath(pathname: string, href: string): boolean {
+  if (href === APP_HOME_PATH) return pathname === href;
   return pathname === href || pathname.startsWith(`${href}/`);
 }

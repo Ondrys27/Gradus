@@ -163,7 +163,7 @@ export function MilestonesView() {
       <MilestoneFormDialog
         open={creating}
         onOpenChange={setCreating}
-        onCreated={(milestone) => router.push(`/milestones/${milestone.id}`)}
+        onCreated={(milestone) => router.push(`/app/milniky/${milestone.id}`)}
       />
     </div>
   );

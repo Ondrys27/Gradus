@@ -96,26 +96,26 @@ export function hitHref(hit: SearchHit, settings: FormatSettings): string {
   const id = encodeURIComponent(hit.id);
   switch (hit.kind) {
     case "contact":
-      return `/contacts/${id}`;
+      return `/app/kontakty/${id}`;
     case "deal":
-      return `/pipeline?deal=${id}`;
+      return `/app/pipeline?deal=${id}`;
     case "milestone":
-      return `/milestones/${id}`;
+      return `/app/milniky/${id}`;
     case "task": {
       const milestone = text(hit.data.milestoneId);
-      return milestone ? `/milestones/${encodeURIComponent(milestone)}` : "/milestones";
+      return milestone ? `/app/milniky/${encodeURIComponent(milestone)}` : "/app/milniky";
     }
     case "event": {
       const starts = text(hit.data.startsAt);
       const date = starts ? todayIsoDate(settings, new Date(starts)) : null;
-      return date ? `/calendar?event=${id}&date=${date}` : `/calendar?event=${id}`;
+      return date ? `/app/kalendar?event=${id}&date=${date}` : `/app/kalendar?event=${id}`;
     }
     case "transaction":
-      return `/finance?tab=transactions&transaction=${id}`;
+      return `/app/finance?tab=transactions&transaction=${id}`;
     case "invoice":
-      return "/finance?tab=invoices";
+      return "/app/finance?tab=invoices";
     case "worker":
-      return `/workers/${id}`;
+      return `/app/pracovnici/${id}`;
   }
 }
 

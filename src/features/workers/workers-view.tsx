@@ -41,7 +41,7 @@ export function WorkersView() {
           description={tSections("description")}
           actions={
             <>
-              <Link href="/workers/rewards" className={buttonVariants({ variant: "outline" })}>
+              <Link href="/app/pracovnici/odmeny" className={buttonVariants({ variant: "outline" })}>
                 <GiftIcon aria-hidden data-icon="inline-start" />
                 {t("rewardSystem")}
               </Link>

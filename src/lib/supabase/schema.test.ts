@@ -2398,7 +2398,7 @@ describe("jarvis extensions", () => {
     await asServer();
     const suggestion = await one<{ id: string }>(
       `insert into jarvis_suggestions (user_id, type, text, action, dedupe_key)
-       values ($1, 'stalledDeal', 'Deal stuck', '{"kind":"open","href":"/pipeline"}', 'stalledDeal:x')
+       values ($1, 'stalledDeal', 'Deal stuck', '{"kind":"open","href":"/app/pipeline"}', 'stalledDeal:x')
        returning id`,
       [user],
     );

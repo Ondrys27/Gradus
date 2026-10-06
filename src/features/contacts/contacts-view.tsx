@@ -106,7 +106,7 @@ export function ContactsView() {
         actions={
           canEdit && (
             <>
-              <Link href="/contacts/tables" className={buttonVariants({ variant: "outline" })}>
+              <Link href="/app/kontakty/tabulky" className={buttonVariants({ variant: "outline" })}>
                 <PencilIcon aria-hidden data-icon="inline-start" />
                 {t("actions.editTables")}
               </Link>
@@ -246,7 +246,7 @@ export function ContactsView() {
         open={creating}
         onOpenChange={setCreating}
         initial={prefill}
-        onCreated={(contact) => router.push(`/contacts/${contact.id}`)}
+        onCreated={(contact) => router.push(`/app/kontakty/${contact.id}`)}
       />
     </div>
   );

@@ -3,6 +3,7 @@ import type { Tone } from "@/components/ui/tone";
 import { PERMISSION_SECTIONS, type PermissionSection } from "@/components/layout/nav-items";
 import { parseAmount } from "@/features/pipeline/schemas";
 import type { IsoDate } from "@/lib/format";
+import { localizedPath } from "@/lib/routes";
 import type { EarningStatus, WorkerInvite, WorkerPermission } from "./types";
 
 export const NAME_MAX = 80;
@@ -35,9 +36,13 @@ export function monthStartOf(today: IsoDate): IsoDate {
   return `${today.slice(0, 7)}-01`;
 }
 
-/** The link the owner sends; the code alone also works on the registration page. */
-export function inviteUrl(code: string, origin: string): string {
-  return `${origin.replace(/\/+$/, "")}/register?invite=${encodeURIComponent(code)}`;
+/**
+ * The link the owner sends, to the registration page in the owner's language;
+ * the code alone also works there.
+ */
+export function inviteUrl(code: string, origin: string, locale?: string): string {
+  const register = localizedPath("register", locale);
+  return `${origin.replace(/\/+$/, "")}${register}?invite=${encodeURIComponent(code)}`;
 }
 
 export type InviteState = "open" | "expired" | "accepted";

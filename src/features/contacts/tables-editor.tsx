@@ -46,7 +46,7 @@ export function TablesEditor() {
   const canEdit = useCan("contacts", "edit");
   const router = useRouter();
   useEffect(() => {
-    if (!canEdit) router.replace("/contacts");
+    if (!canEdit) router.replace("/app/kontakty");
   }, [canEdit, router]);
   return canEdit ? <Editor /> : null;
 }
@@ -71,7 +71,7 @@ function Editor() {
   return (
     <div className="flex flex-col gap-6">
       <Link
-        href="/contacts"
+        href="/app/kontakty"
         className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "self-start")}
       >
         <ArrowLeftIcon aria-hidden data-icon="inline-start" />

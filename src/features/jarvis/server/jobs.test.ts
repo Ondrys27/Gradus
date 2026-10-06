@@ -356,9 +356,9 @@ describe("opportunity watch", () => {
       completedTasks: [],
     });
     expect(parseWatchAnswer("nothing to report")).toBeNull();
-    expect(insightAction({ text: "Prepare", href: "/calendar", ask: "" })).toEqual({
+    expect(insightAction({ text: "Prepare", href: "/app/kalendar", ask: "" })).toEqual({
       kind: "open",
-      href: "/calendar",
+      href: "/app/kalendar",
     });
     expect(insightAction({ text: "Prepare", href: "https://evil", ask: "Help me" })).toEqual({
       kind: "ask",
@@ -485,7 +485,7 @@ describe("opportunity watch", () => {
       client: fakeModel(
         JSON.stringify({
           suggestions: [
-            { text: "One", href: "/calendar", ask: "" },
+            { text: "One", href: "/app/kalendar", ask: "" },
             { text: "Two", href: "", ask: "Help" },
             { text: "Three", href: "", ask: "" },
           ],

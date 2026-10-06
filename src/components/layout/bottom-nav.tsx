@@ -20,8 +20,8 @@ import { isActivePath } from "./nav-items";
 import { useNavItems, type NavItemState } from "./use-nav";
 import { LockedSectionPopover } from "./lock-hint";
 const accountItems = [
-  { key: "profile", href: "/profile", icon: UserRoundIcon },
-  { key: "settings", href: "/settings", icon: SettingsIcon },
+  { key: "profile", href: "/app/profil", icon: UserRoundIcon },
+  { key: "settings", href: "/app/nastaveni", icon: SettingsIcon },
 ] as const;
 
 /**

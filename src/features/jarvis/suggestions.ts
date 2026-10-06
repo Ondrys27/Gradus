@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { APP_HOME_PATH } from "@/lib/routes";
 import type { RuleType, SuggestionType } from "./suggestion-types";
 
 /**
@@ -21,19 +22,23 @@ export const PER_RULE_LIMIT = 3;
 
 /** Places in the app an action may open; nothing outside them. */
 export const APP_PATHS = [
-  "/dashboard",
-  "/milestones",
-  "/pipeline",
-  "/contacts",
-  "/cold-calling",
-  "/calendar",
-  "/finance",
+  APP_HOME_PATH,
+  "/app/milniky",
+  "/app/pipeline",
+  "/app/kontakty",
+  "/app/cold-calling",
+  "/app/kalendar",
+  "/app/finance",
 ] as const;
 
 export function isAppHref(href: string): boolean {
   if (!/^\/[A-Za-z0-9\-/?=&_]*$/.test(href) || href.includes("//")) return false;
   return APP_PATHS.some(
-    (path) => href === path || href.startsWith(`${path}/`) || href.startsWith(`${path}?`),
+    (path) =>
+      href === path ||
+      href.startsWith(`${path}?`) ||
+      // The dashboard is /app itself; everything below it is another section.
+      (path !== APP_HOME_PATH && href.startsWith(`${path}/`)),
   );
 }
 
@@ -120,7 +125,7 @@ export function ruleSuggestions(inputs: RuleInputs): RuleSuggestion[] {
       text: `${inputs.followUps.total} contacts to follow up today`,
       action: {
         kind: "open",
-        href: tableId ? `/contacts?table=${tableId}` : "/dashboard",
+        href: tableId ? `/app/kontakty?table=${tableId}` : "/app",
         params: { count: inputs.followUps.total, name: inputs.followUps.firstName ?? "" },
       },
     });
@@ -147,7 +152,7 @@ export function ruleSuggestions(inputs: RuleInputs): RuleSuggestion[] {
       text: `Task overdue: ${task.title}`,
       action: {
         kind: "open",
-        href: `/milestones/${task.milestoneId}`,
+        href: `/app/milniky/${task.milestoneId}`,
         params: { task: task.title, days: task.daysLate },
       },
     });
@@ -161,7 +166,7 @@ export function ruleSuggestions(inputs: RuleInputs): RuleSuggestion[] {
       text: `All tasks done: ${milestone.title}`,
       action: {
         kind: "open",
-        href: `/milestones/${milestone.id}`,
+        href: `/app/milniky/${milestone.id}`,
         params: { milestone: milestone.title },
       },
     });

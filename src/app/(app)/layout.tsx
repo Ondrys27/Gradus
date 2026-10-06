@@ -2,7 +2,8 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { loadAccount } from "@/features/account/load-account";
 import { SessionProvider } from "@/features/account/session-provider";
-import { LOGIN_PATH } from "@/lib/auth/routes";
+import { getLocale } from "next-intl/server";
+import { loginPath } from "@/lib/auth/routes";
 
 /**
  * The one place the session is verified. Next.js keeps this layout mounted
@@ -10,7 +11,7 @@ import { LOGIN_PATH } from "@/lib/auth/routes";
  */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const account = await loadAccount();
-  if (!account) redirect(LOGIN_PATH);
+  if (!account) redirect(loginPath(await getLocale()));
 
   return (
     <SessionProvider initial={account}>

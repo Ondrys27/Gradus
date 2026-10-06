@@ -185,7 +185,7 @@ function ProactiveCallout({
     item.action.kind === "open"
       ? item.action.href
       : item.type === "stalledDeal"
-        ? "/pipeline"
+        ? "/app/pipeline"
         : null;
 
   const show = () => {

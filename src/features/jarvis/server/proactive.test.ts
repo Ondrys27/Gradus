@@ -73,7 +73,7 @@ describe("toCandidate", () => {
     kind: "suggestion",
     type: "insight",
     text: "Prepare the Acme meeting",
-    action: { kind: "open", href: `/milestones/${MILESTONE}` },
+    action: { kind: "open", href: `/app/milniky/${MILESTONE}` },
     payload: { tasks: ["Write the agenda"], milestoneId: MILESTONE },
     created_at: "2026-10-03T08:00:00Z",
   };

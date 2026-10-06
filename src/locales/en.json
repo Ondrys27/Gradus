@@ -644,7 +644,8 @@
       "description": "Sign in to continue building your business in {appName}.",
       "forgot": "Forgot password?",
       "submit": "Sign in",
-      "noAccount": "Have an invite code? <link>Create an account</link>"
+      "noAccount": "Have an invite code? <link>Create an account</link>",
+      "noAccountPublic": "No account yet? <link>Try free for 14 days</link>"
     },
     "register": {
       "title": "Create your account",
@@ -654,7 +655,10 @@
       "haveAccount": "Already have an account? <link>Sign in</link>",
       "workerInvite": "You are joining {owner}'s team. Sign up with the e-mail they invited.",
       "workerInviteNoOwner": "You are joining a team. Sign up with the e-mail you were invited with.",
-      "workerInviteInvalid": "This invite has expired or was already used. Ask for a new link."
+      "workerInviteInvalid": "This invite has expired or was already used. Ask for a new link.",
+      "descriptionPublic": "14 days free, no credit card.",
+      "inviteOptional": "Invite code (optional)",
+      "inviteOptionalHint": "If you have an invite, enter it. Otherwise you start a 14-day trial."
     },
     "forgot": {
       "title": "Reset your password",
@@ -742,6 +746,13 @@
       "title": "Password",
       "submit": "Change password",
       "changed": "Your password has been changed."
+    },
+    "overview": {
+      "title": "App overview",
+      "trialing": "On a trial",
+      "expired": "Trial ended",
+      "waitlist": "On the waitlist",
+      "waitlistConfirmed": "{count} confirmed"
     }
   },
   "settings": {
@@ -2850,5 +2861,155 @@
   },
   "workspace": {
     "doneBy": "Done by {name}"
+  },
+  "marketing": {
+    "meta": {
+      "homeTitle": "{appName} — your business, step by step",
+      "homeDescription": "{appName} breaks getting your business off the ground into steps, keeps track of deals and contacts, and tells you every morning what to do today.",
+      "pricingTitle": "Pricing",
+      "pricingDescription": "Three plans, 14 days free, no credit card.",
+      "termsTitle": "Terms",
+      "privacyTitle": "Privacy",
+      "waitlistTitle": "Waitlist"
+    },
+    "nav": {
+      "label": "Main navigation",
+      "home": "{appName} home",
+      "features": "Features",
+      "pricing": "Pricing",
+      "login": "Sign in",
+      "menu": "Menu",
+      "closeMenu": "Close menu"
+    },
+    "cta": {
+      "tryFree": "Try for free",
+      "trial": "Try free for 14 days",
+      "waitlist": "Tell me when it launches",
+      "noCard": "No credit card. Cancel any time."
+    },
+    "home": {
+      "title": "From idea to first invoice. One step at a time.",
+      "subtitle": "{appName} breaks getting your business off the ground into steps, keeps track of deals and contacts, and tells you every morning what to do today. When you get it done, it celebrates with you.",
+      "featuresTitle": "One system instead of five tools",
+      "features": {
+        "milestones": "Milestones and chapters",
+        "pipeline": "Deal pipeline",
+        "contacts": "Contacts and cold calling",
+        "calendar": "Calendar",
+        "finance": "Finance",
+        "jarvis": "Jarvis"
+      }
+    },
+    "pricing": {
+      "title": "Pricing",
+      "subtitle": "Pick what you need. Every plan starts with 14 days free."
+    },
+    "legal": {
+      "soon": "Coming soon",
+      "soonText": "A lawyer is writing this text for us. Until then, feel free to ask us anything you need to know."
+    },
+    "footer": {
+      "label": "Footer",
+      "terms": "Terms",
+      "privacy": "Privacy",
+      "copyright": "© {year} {appName}"
+    },
+    "waitlist": {
+      "title": "We'll let you know when we launch",
+      "description": "{appName} is in beta right now. Leave your e-mail and we'll write as soon as it opens to everyone.",
+      "email": "E-mail",
+      "consent": "I agree that {appName} may e-mail me about the launch. More in the <link>privacy policy</link>.",
+      "submit": "Tell me when it launches",
+      "close": "Close",
+      "thanksTitle": "Thank you",
+      "thanks": "We've sent you an e-mail with a link. Tap it and you're on the list.",
+      "errors": {
+        "invalidEmail": "Enter a valid e-mail address.",
+        "consentRequired": "We can't write to you without your consent.",
+        "generic": "Something went wrong. Please try again."
+      }
+    },
+    "waitlistConfirmed": {
+      "title": "You're on the list",
+      "text": "Thanks for confirming. As soon as {appName} opens to everyone, you'll be among the first to hear.",
+      "invalidTitle": "This link doesn't work",
+      "invalidText": "The link has already been used or isn't valid. To join again, enter your e-mail on the home page.",
+      "back": "Back to the home page"
+    },
+    "waitlistEmail": {
+      "subject": "Confirm you want to hear when {appName} launches",
+      "intro": "Thanks for your interest in {appName}. Please confirm we may write to you once the app opens to everyone:",
+      "button": "Confirm e-mail",
+      "ignore": "If you didn't ask for this, just ignore this e-mail. Without confirming, we won't send you anything else."
+    }
+  },
+  "plans": {
+    "billing": {
+      "label": "Billing",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "yearlyNote": "2 months free"
+    },
+    "names": {
+      "solo": "Solo",
+      "pro": "Pro",
+      "team": "Team",
+      "beta": "Beta"
+    },
+    "taglines": {
+      "solo": "For one person.",
+      "pro": "For those who mean business.",
+      "team": "For a small team."
+    },
+    "perMonth": "per month",
+    "perWorker": "+ {price} for each worker",
+    "billedYearly": "{price} per year",
+    "recommended": "Recommended",
+    "vatNote": "Prices exclude VAT.",
+    "trialNote": "Every plan starts with 14 days free. No card.",
+    "features": {
+      "allSections": "Every section of the app",
+      "jarvis": "Jarvis, your assistant",
+      "generatedContacts": "{count} generated contacts a month",
+      "meetingAnalysis": "AI meeting analysis",
+      "jarvisFiles": "Files for Jarvis",
+      "calendarSync": "Calendar sync",
+      "prioritySupport": "Priority support",
+      "everythingInPro": "Everything in Pro",
+      "workers": "Workers with permissions",
+      "rewards": "Reward system",
+      "teamStats": "Team statistics"
+    },
+    "page": {
+      "title": "Plan",
+      "description": "Payments are coming soon. Tell us which plan you're interested in and we'll get in touch.",
+      "interest": "I'm interested",
+      "interestSent": "Thanks, we'll be in touch.",
+      "interestError": "The message couldn't be sent. Please try again.",
+      "current": "You have",
+      "status": {
+        "trialing": "{plan} trial until {date}",
+        "expired": "The trial ended on {date}",
+        "active": "{plan} plan",
+        "beta": "Beta with no time limit"
+      }
+    },
+    "interestEmail": {
+      "subject": "{appName}: interest in the {plan} plan",
+      "intro": "A user is interested in the {plan} plan.",
+      "from": "From",
+      "status": "Account status"
+    }
+  },
+  "trial": {
+    "banner": "Trial · {days, plural, one {# day} other {# days}} left",
+    "choosePlan": "Choose a plan",
+    "expired": {
+      "title": "Your trial has ended",
+      "text": "Your data stays and you can see all of it. You can create new things again once you choose a plan.",
+      "cta": "Choose a plan",
+      "workerText": "This account's trial has ended. You can see all the data; new things can be created once the owner chooses a plan."
+    },
+    "readOnlyError": "Your trial has ended. Choose a plan to carry on."
   }
 }

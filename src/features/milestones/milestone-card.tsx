@@ -25,7 +25,7 @@ export function MilestoneCard({ milestone }: { milestone: MilestoneWithCounts })
 
   return (
     <Link
-      href={`/milestones/${milestone.id}`}
+      href={`/app/milniky/${milestone.id}`}
       className="block rounded-card outline-none focus-visible:ring-3 focus-visible:ring-violet/40"
     >
       <GlowCard className={cn("flex flex-col gap-4", completed && "opacity-60")}>

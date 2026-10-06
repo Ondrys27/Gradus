@@ -33,16 +33,16 @@ function suggestionHref(suggestion: XpSuggestion): string {
     case "completeMilestone":
     case "finishTasks":
     case "firstTask":
-      return `/milestones/${suggestion.milestoneId}`;
+      return `/app/milniky/${suggestion.milestoneId}`;
     case "callToday":
-      return "/cold-calling";
+      return "/app/cold-calling";
     case "moveContacts":
-      return "/contacts";
+      return "/app/kontakty";
     case "bookMeeting":
     case "addEvent":
-      return "/calendar";
+      return "/app/kalendar";
     case "addTransaction":
-      return "/finance";
+      return "/app/finance";
   }
 }
 
@@ -402,7 +402,7 @@ function PathSection() {
                   />
                   {current?.milestoneId && (
                     <Link
-                      href={`/milestones/${current.milestoneId}`}
+                      href={`/app/milniky/${current.milestoneId}`}
                       className="mt-1 flex min-h-12 items-center gap-3 rounded-2xl border border-violet/60 bg-violet/15 px-4 py-2.5 shadow-glow outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                     >
                       <span className="size-2.5 shrink-0 rounded-full bg-violet shadow-[0_0_10px_var(--color-violet)]" />
@@ -420,7 +420,7 @@ function PathSection() {
             })}
           </ul>
           <Link
-            href="/milestones?view=path"
+            href="/app/milniky?view=path"
             className="inline-flex min-h-11 items-center gap-1 self-start text-sm font-medium text-teal outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             {t("levelWindow.openPath")}

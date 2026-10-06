@@ -644,7 +644,8 @@
       "description": "Přihlaste se a pokračujte v budování firmy v {appName}.",
       "forgot": "Zapomenuté heslo?",
       "submit": "Přihlásit se",
-      "noAccount": "Máte pozvánkový kód? <link>Vytvořit účet</link>"
+      "noAccount": "Máte pozvánkový kód? <link>Vytvořit účet</link>",
+      "noAccountPublic": "Ještě nemáte účet? <link>Vyzkoušet 14 dní zdarma</link>"
     },
     "register": {
       "title": "Vytvořte si účet",
@@ -654,7 +655,10 @@
       "haveAccount": "Už máte účet? <link>Přihlásit se</link>",
       "workerInvite": "Přidáváš se k týmu: {owner}. Zaregistruj se e-mailem, na který tě pozval.",
       "workerInviteNoOwner": "Přidáváš se k týmu. Zaregistruj se e-mailem, na který jsi dostal pozvánku.",
-      "workerInviteInvalid": "Pozvánka vypršela nebo už byla použita. Požádej o nový odkaz."
+      "workerInviteInvalid": "Pozvánka vypršela nebo už byla použita. Požádej o nový odkaz.",
+      "descriptionPublic": "14 dní zdarma, bez platební karty.",
+      "inviteOptional": "Pozvánkový kód (nepovinné)",
+      "inviteOptionalHint": "Máte-li pozvánku, zadejte ji. Jinak začnete 14denní zkušební období."
     },
     "forgot": {
       "title": "Obnovení hesla",
@@ -742,6 +746,13 @@
       "title": "Heslo",
       "submit": "Změnit heslo",
       "changed": "Heslo bylo změněno."
+    },
+    "overview": {
+      "title": "Přehled aplikace",
+      "trialing": "Na zkušebním období",
+      "expired": "Po expiraci",
+      "waitlist": "Na čekací listině",
+      "waitlistConfirmed": "{count} potvrzeno"
     }
   },
   "settings": {
@@ -2850,5 +2861,155 @@
   },
   "workspace": {
     "doneBy": "Udělal(a) {name}"
+  },
+  "marketing": {
+    "meta": {
+      "homeTitle": "{appName} — podnikání krok za krokem",
+      "homeDescription": "{appName} rozloží rozjezd tvého podnikání na kroky, hlídá obchody i kontakty a každé ráno ti řekne, co dnes udělat.",
+      "pricingTitle": "Ceník",
+      "pricingDescription": "Tři tarify, 14 dní zdarma, bez platební karty.",
+      "termsTitle": "Obchodní podmínky",
+      "privacyTitle": "Ochrana osobních údajů",
+      "waitlistTitle": "Čekací listina"
+    },
+    "nav": {
+      "label": "Hlavní navigace",
+      "home": "{appName} — domů",
+      "features": "Funkce",
+      "pricing": "Ceník",
+      "login": "Přihlásit se",
+      "menu": "Menu",
+      "closeMenu": "Zavřít menu"
+    },
+    "cta": {
+      "tryFree": "Vyzkoušet zdarma",
+      "trial": "Vyzkoušet 14 dní zdarma",
+      "waitlist": "Chci vědět o spuštění",
+      "noCard": "Bez platební karty. Zrušíš kdykoliv."
+    },
+    "home": {
+      "title": "Z nápadu k první faktuře. Krok za krokem.",
+      "subtitle": "{appName} rozloží rozjezd tvého podnikání na kroky, hlídá obchody i kontakty a každé ráno ti řekne, co dnes udělat. Když to splníš, oslaví to s tebou.",
+      "featuresTitle": "Jeden systém místo pěti nástrojů",
+      "features": {
+        "milestones": "Milníky a kapitoly",
+        "pipeline": "Pipeline obchodů",
+        "contacts": "Kontakty a Cold Calling",
+        "calendar": "Kalendář",
+        "finance": "Finance",
+        "jarvis": "Jarvis"
+      }
+    },
+    "pricing": {
+      "title": "Ceník",
+      "subtitle": "Vyber si, kolik toho potřebuješ. Každý tarif začíná 14 dny zdarma."
+    },
+    "legal": {
+      "soon": "Připravujeme",
+      "soonText": "Text pro nás připravuje právník. Do té doby se nás klidně zeptej na cokoliv, co potřebuješ vědět."
+    },
+    "footer": {
+      "label": "Patička",
+      "terms": "Podmínky",
+      "privacy": "Soukromí",
+      "copyright": "© {year} {appName}"
+    },
+    "waitlist": {
+      "title": "Dáme ti vědět o spuštění",
+      "description": "{appName} je teď v betě. Nech nám e-mail a ozveme se, jakmile se otevře všem.",
+      "email": "E-mail",
+      "consent": "Souhlasím, že mi {appName} pošle e-mail o spuštění. Víc v <link>zásadách soukromí</link>.",
+      "submit": "Chci vědět o spuštění",
+      "close": "Zavřít",
+      "thanksTitle": "Díky",
+      "thanks": "Poslali jsme ti e-mail s odkazem. Klepni na něj a jsi na listině.",
+      "errors": {
+        "invalidEmail": "Zadej platnou e-mailovou adresu.",
+        "consentRequired": "Bez souhlasu ti nemůžeme napsat.",
+        "generic": "Něco se pokazilo. Zkus to prosím znovu."
+      }
+    },
+    "waitlistConfirmed": {
+      "title": "Jsi na listině",
+      "text": "Díky za potvrzení. Jakmile {appName} otevřeme všem, napíšeme ti jako jedněm z prvních.",
+      "invalidTitle": "Odkaz nefunguje",
+      "invalidText": "Odkaz už byl použitý nebo je neplatný. Když se chceš přidat znovu, zadej e-mail na úvodní stránce.",
+      "back": "Zpět na úvod"
+    },
+    "waitlistEmail": {
+      "subject": "Potvrď, že chceš vědět o spuštění {appName}",
+      "intro": "Díky za zájem o {appName}. Potvrď prosím, že ti můžeme napsat, až se aplikace otevře všem:",
+      "button": "Potvrdit e-mail",
+      "ignore": "Pokud jsi o nic nežádal, tenhle e-mail ignoruj. Bez potvrzení ti nic dalšího nepošleme."
+    }
+  },
+  "plans": {
+    "billing": {
+      "label": "Platba",
+      "monthly": "Měsíčně",
+      "yearly": "Ročně",
+      "yearlyNote": "2 měsíce zdarma"
+    },
+    "names": {
+      "solo": "Solo",
+      "pro": "Pro",
+      "team": "Tým",
+      "beta": "Beta"
+    },
+    "taglines": {
+      "solo": "Pro jednoho.",
+      "pro": "Pro ty, kdo to myslí vážně.",
+      "team": "Pro malý tým."
+    },
+    "perMonth": "měsíčně",
+    "perWorker": "+ {price} za každého pracovníka",
+    "billedYearly": "{price} ročně",
+    "recommended": "Doporučeno",
+    "vatNote": "Ceny jsou bez DPH.",
+    "trialNote": "Všechny tarify začínají 14 dny zdarma. Bez karty.",
+    "features": {
+      "allSections": "Všechny sekce aplikace",
+      "jarvis": "Asistent Jarvis",
+      "generatedContacts": "{count} vygenerovaných kontaktů měsíčně",
+      "meetingAnalysis": "AI rozbor schůzek",
+      "jarvisFiles": "Soubory do Jarvise",
+      "calendarSync": "Synchronizace kalendáře",
+      "prioritySupport": "Přednostní podpora",
+      "everythingInPro": "Vše z Pro",
+      "workers": "Pracovníci s právy",
+      "rewards": "Systém odměn",
+      "teamStats": "Týmové statistiky"
+    },
+    "page": {
+      "title": "Tarif",
+      "description": "Platby spouštíme brzy. Dej nám vědět, o který tarif máš zájem, a ozveme se ti.",
+      "interest": "Mám zájem",
+      "interestSent": "Díky, ozveme se ti.",
+      "interestError": "Zprávu se nepodařilo odeslat. Zkus to prosím znovu.",
+      "current": "Teď máš",
+      "status": {
+        "trialing": "Zkušební období tarifu {plan} do {date}",
+        "expired": "Zkušební období skončilo {date}",
+        "active": "Tarif {plan}",
+        "beta": "Beta bez časového omezení"
+      }
+    },
+    "interestEmail": {
+      "subject": "{appName}: zájem o tarif {plan}",
+      "intro": "Uživatel má zájem o tarif {plan}.",
+      "from": "Od",
+      "status": "Stav účtu"
+    }
+  },
+  "trial": {
+    "banner": "Zkušební období · zbývá {days, plural, one {# den} few {# dny} other {# dní}}",
+    "choosePlan": "Vybrat tarif",
+    "expired": {
+      "title": "Zkušební období skončilo",
+      "text": "Tvoje data zůstávají a všechno vidíš. Nové věci půjde zakládat, až si vybereš tarif.",
+      "cta": "Vybrat tarif",
+      "workerText": "Zkušební období tohoto účtu skončilo. Data vidíš všechna, nové věci půjde zakládat, až majitel vybere tarif."
+    },
+    "readOnlyError": "Zkušební období skončilo. Vyber si tarif a můžeš pokračovat."
   }
 }

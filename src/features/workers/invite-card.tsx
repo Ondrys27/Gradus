@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CheckIcon, CopyIcon, MailPlusIcon, RefreshCwIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { Input } from "@/components/ui/input";
@@ -31,7 +31,8 @@ export function InviteCard({ invite, workerName, onRenew, renewing, renewFailed,
   const t = useTranslations("workers.invite");
   const settings = useFormatSettings();
   const [link, setLink] = useState("");
-  useEffect(() => setLink(inviteUrl(invite.code, siteOrigin())), [invite.code]);
+  const locale = useLocale();
+  useEffect(() => setLink(inviteUrl(invite.code, siteOrigin(), locale)), [invite.code, locale]);
   const state = inviteState(invite, new Date());
   if (state === "accepted") return null;
 

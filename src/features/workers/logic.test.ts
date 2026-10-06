@@ -25,7 +25,10 @@ describe("months and invites", () => {
 
   it("builds the registration link from the site and the code", () => {
     expect(inviteUrl("0f3a9c1b2d4e5f60718a", "https://gradus.app/")).toBe(
-      "https://gradus.app/register?invite=0f3a9c1b2d4e5f60718a",
+      "https://gradus.app/registrace?invite=0f3a9c1b2d4e5f60718a",
+    );
+    expect(inviteUrl("0f3a9c1b2d4e5f60718a", "https://gradus.app", "en")).toBe(
+      "https://gradus.app/en/register?invite=0f3a9c1b2d4e5f60718a",
     );
   });
 

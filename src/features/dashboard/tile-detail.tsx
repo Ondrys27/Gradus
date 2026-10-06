@@ -194,7 +194,7 @@ function IncomeDetail() {
 
       <IncomeChart today={today} />
 
-      <OpenLink href="/finance">{t("open")}</OpenLink>
+      <OpenLink href="/app/finance">{t("open")}</OpenLink>
     </Body>
   );
 }
@@ -228,7 +228,7 @@ function TasksDetail() {
             {open.map((task) => (
               <li key={task.id} className="flex min-h-11 items-center gap-3 py-2">
                 <Link
-                  href={`/milestones/${task.milestone_id}`}
+                  href={`/app/milniky/${task.milestone_id}`}
                   className="min-w-0 flex-1 text-sm text-ink outline-none hover:text-violet focus-visible:ring-3 focus-visible:ring-violet/40"
                 >
                   <span className="block truncate">{task.title}</span>
@@ -263,7 +263,7 @@ function TasksDetail() {
           </ul>
         )}
       </div>
-      <OpenLink href="/milestones">{t("open")}</OpenLink>
+      <OpenLink href="/app/milniky">{t("open")}</OpenLink>
     </Body>
   );
 }
@@ -338,7 +338,7 @@ function WinRateDetail() {
       </div>
 
       <SalesAnalysisSection />
-      <OpenLink href="/pipeline">{t("open")}</OpenLink>
+      <OpenLink href="/app/pipeline">{t("open")}</OpenLink>
     </Body>
   );
 }
@@ -483,7 +483,7 @@ function ActiveDealsDetail() {
           ))}
         </ul>
       )}
-      <OpenLink href="/pipeline">{t("open")}</OpenLink>
+      <OpenLink href="/app/pipeline">{t("open")}</OpenLink>
     </Body>
   );
 }
@@ -513,7 +513,7 @@ function NewContactsDetail() {
             {latest.data.map((contact) => (
               <li key={contact.id} className="min-h-11">
                 <Link
-                  href={`/contacts/${contact.id}`}
+                  href={`/app/kontakty/${contact.id}`}
                   className="flex min-h-11 items-center gap-3 py-2 outline-none hover:text-violet focus-visible:ring-3 focus-visible:ring-violet/40"
                 >
                   <span className="min-w-0 flex-1 truncate text-sm text-ink">
@@ -528,7 +528,7 @@ function NewContactsDetail() {
           </ul>
         </div>
       )}
-      <OpenLink href="/contacts">{t("open")}</OpenLink>
+      <OpenLink href="/app/kontakty">{t("open")}</OpenLink>
     </Body>
   );
 }
@@ -579,7 +579,7 @@ function ProspectingDetail() {
         formatTick={(value) => formatNumber(value, {}, settings)}
       />
       <p className="text-xs text-ink-muted">{t("axisMinutes")}</p>
-      <OpenLink href="/cold-calling">{t("open")}</OpenLink>
+      <OpenLink href="/app/cold-calling">{t("open")}</OpenLink>
     </Body>
   );
 }

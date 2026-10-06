@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { LEGACY_REDIRECTS } from "./src/lib/routes";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
@@ -24,6 +25,17 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: supabaseStoragePattern(),
     formats: ["image/avif", "image/webp"],
+  },
+  // The app moved under /app; old addresses keep working with a permanent 301.
+  async redirects() {
+    return LEGACY_REDIRECTS.flatMap(([source, destination]) => [
+      { source, destination, statusCode: 301 as const },
+      {
+        source: `${source}/:path+`,
+        destination: `${destination}/:path+`,
+        statusCode: 301 as const,
+      },
+    ]);
   },
 };
 

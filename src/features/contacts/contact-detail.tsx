@@ -55,7 +55,7 @@ export function ContactDetail({ id }: { id: string }) {
 
   const backLink = (
     <Link
-      href="/contacts"
+      href="/app/kontakty"
       className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "self-start")}
     >
       <ArrowLeftIcon aria-hidden data-icon="inline-start" />
@@ -121,7 +121,7 @@ function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNo
   async function confirmDelete() {
     try {
       await remove.mutateAsync();
-      router.replace("/contacts");
+      router.replace("/app/kontakty");
     } catch {
       /* the dialog shows the error */
     }
@@ -490,7 +490,7 @@ function DealsCard({ contactId }: { contactId: string }) {
     <GlowCard interactive={false} className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
         <h2 className="micro-label">{t("title")}</h2>
-        <Link href="/pipeline" className={buttonVariants({ variant: "ghost", size: "sm" })}>
+        <Link href="/app/pipeline" className={buttonVariants({ variant: "ghost", size: "sm" })}>
           {t("openPipeline")}
         </Link>
       </div>

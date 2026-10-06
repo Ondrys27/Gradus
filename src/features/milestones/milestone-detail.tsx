@@ -83,7 +83,7 @@ export function MilestoneDetail({ id }: { id: string }) {
   }
 
   const backLink = (
-    <Link href="/milestones" className={buttonVariants({ variant: "ghost", size: "sm" })}>
+    <Link href="/app/milniky" className={buttonVariants({ variant: "ghost", size: "sm" })}>
       <ArrowLeftIcon aria-hidden data-icon="inline-start" />
       {t("backToList")}
     </Link>
@@ -128,7 +128,7 @@ export function MilestoneDetail({ id }: { id: string }) {
         title={t("notFound.title")}
         description={t("notFound.description")}
         action={
-          <Link href="/milestones" className={buttonVariants()}>
+          <Link href="/app/milniky" className={buttonVariants()}>
             {t("notFound.action")}
           </Link>
         }
@@ -288,7 +288,7 @@ export function MilestoneDetail({ id }: { id: string }) {
         pending={remove.isPending}
         error={remove.isError ? t("delete.failed") : null}
         onConfirm={() =>
-          remove.mutate(undefined, { onSuccess: () => router.replace("/milestones") })
+          remove.mutate(undefined, { onSuccess: () => router.replace("/app/milniky") })
         }
       />
     </div>

@@ -190,7 +190,7 @@ function ContactFields({
             {duplicates.map((duplicate) => (
               <li key={duplicate.id}>
                 <Link
-                  href={`/contacts/${duplicate.id}`}
+                  href={`/app/kontakty/${duplicate.id}`}
                   className="inline-flex min-h-11 items-center gap-2 text-ink underline-offset-4 hover:underline mouse:min-h-0"
                 >
                   {contactName(duplicate)}

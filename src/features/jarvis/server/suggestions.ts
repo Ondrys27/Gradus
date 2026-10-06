@@ -289,7 +289,7 @@ export async function syncPathReady(
       text: `Your path is ready: ${total} milestones`,
       action: {
         kind: "open",
-        href: "/milestones?view=path",
+        href: "/app/milniky?view=path",
         params: { count: total, first: steps[0]?.title ?? "" },
       } as unknown as Json,
       dedupe_key: `pathReady:${profile.path_key}`,

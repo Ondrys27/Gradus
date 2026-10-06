@@ -103,7 +103,7 @@ function TaskRow({
         onToggle={onToggle}
       />
       <Link
-        href={`/milestones/${task.milestone_id}`}
+        href={`/app/milniky/${task.milestone_id}`}
         className={cn(rowLink, done && "text-ink-muted line-through")}
       >
         <span className="block truncate">{task.title}</span>
@@ -180,7 +180,7 @@ export function TodayCard({ overview }: { overview: Overview }) {
               {hiddenTasks > 0 && (
                 <li>
                   <Link
-                    href="/milestones"
+                    href="/app/milniky"
                     className="inline-flex min-h-11 items-center text-sm text-violet outline-none hover:underline focus-visible:ring-3 focus-visible:ring-violet/40"
                   >
                     {t("moreTasks", {
@@ -204,7 +204,7 @@ export function TodayCard({ overview }: { overview: Overview }) {
                   <span className="w-14 shrink-0 text-sm text-ink-muted tabular-nums">
                     {event.all_day ? t("allDay") : formatTime(new Date(event.starts_at), settings)}
                   </span>
-                  <Link href="/calendar" className={rowLink}>
+                  <Link href="/app/kalendar" className={rowLink}>
                     <span className="block truncate">{event.title}</span>
                   </Link>
                 </li>
@@ -223,7 +223,7 @@ export function TodayCard({ overview }: { overview: Overview }) {
                   <span className="w-14 shrink-0 text-sm text-ink-muted tabular-nums">
                     {formatTime(entry.dueAt, settings)}
                   </span>
-                  <Link href={`/contacts/${entry.contactId}`} className={rowLink}>
+                  <Link href={`/app/kontakty/${entry.contactId}`} className={rowLink}>
                     <span className="block truncate">{entry.name || t("unnamedContact")}</span>
                   </Link>
                   {entry.dueAt.toISOString() < from && (
@@ -244,7 +244,7 @@ export function TodayCard({ overview }: { overview: Overview }) {
                 const days = Math.floor((now - Date.parse(deal.entered_stage_at)) / DAY_MS);
                 return (
                   <li key={deal.id} className="flex min-h-11 items-center gap-3 py-1">
-                    <Link href={`/pipeline?deal=${deal.id}`} className={rowLink}>
+                    <Link href={`/app/pipeline?deal=${deal.id}`} className={rowLink}>
                       <span className="block truncate">{deal.title}</span>
                     </Link>
                     <span className="shrink-0 text-xs text-gold tabular-nums">

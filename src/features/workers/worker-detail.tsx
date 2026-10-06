@@ -72,7 +72,7 @@ export function WorkerDetail({ workerId }: { workerId: string }) {
   });
 
   const back = (
-    <Link href="/workers" className={backLinkClass}>
+    <Link href="/app/pracovnici" className={backLinkClass}>
       <ArrowLeftIcon aria-hidden data-icon="inline-start" />
       {t("back")}
     </Link>

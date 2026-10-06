@@ -19,7 +19,14 @@ export type RegisterInvite = {
   ownerName: string | null;
 };
 
-export function RegisterForm({ invite }: { invite?: RegisterInvite | null }) {
+export function RegisterForm({
+  invite,
+  codeOptional = false,
+}: {
+  invite?: RegisterInvite | null;
+  /** Public sign-up is on: without a code the account starts a trial. */
+  codeOptional?: boolean;
+}) {
   const t = useTranslations("auth");
   const [state, action] = useActionState<FormState, FormData>(signUp, {});
   const err = (field: string) =>
@@ -40,9 +47,9 @@ export function RegisterForm({ invite }: { invite?: RegisterInvite | null }) {
       )}
       <FormField
         id="register-invite"
-        label={t("fields.inviteCode")}
+        label={codeOptional ? t("register.inviteOptional") : t("fields.inviteCode")}
         error={err("inviteCode")}
-        hint={t("register.inviteHint")}
+        hint={codeOptional ? t("register.inviteOptionalHint") : t("register.inviteHint")}
       >
         <Input
           {...fieldA11y("register-invite", err("inviteCode"), true)}
@@ -50,8 +57,8 @@ export function RegisterForm({ invite }: { invite?: RegisterInvite | null }) {
           autoComplete="off"
           autoCapitalize="none"
           spellCheck={false}
-          required
-          autoFocus
+          required={!codeOptional}
+          autoFocus={!codeOptional}
           defaultValue={state.values?.inviteCode ?? invite?.code}
           key={`i-${state.values?.inviteCode}`}
         />
@@ -60,6 +67,7 @@ export function RegisterForm({ invite }: { invite?: RegisterInvite | null }) {
         <Input
           {...fieldA11y("register-name", err("displayName"))}
           name="displayName"
+          autoFocus={codeOptional}
           autoComplete="name"
           maxLength={60}
           defaultValue={state.values?.displayName ?? invite?.workerName}

@@ -67,7 +67,7 @@ export function TopBar() {
     <header className="sticky top-0 z-30 border-b border-line/50 bg-canvas/70 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
       <div className="relative flex h-18 items-center gap-2 pr-[max(--spacing(4),env(safe-area-inset-right))] pl-[max(--spacing(4),env(safe-area-inset-left))] md:grid md:grid-cols-[1fr_minmax(0,480px)_1fr] md:gap-4 md:pr-[max(--spacing(8),env(safe-area-inset-right))] md:pl-8">
         <Link
-          href="/dashboard"
+          href="/app"
           aria-label={t("home")}
           className="grid size-11 shrink-0 place-items-center rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50 md:hidden"
         >

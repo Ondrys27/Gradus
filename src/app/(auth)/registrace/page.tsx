@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { AuthCard, authLinkClass } from "@/features/auth/auth-card";
 import { FormAlert } from "@/components/ui/form-alert";
 import { RegisterForm, type RegisterInvite } from "@/features/auth/register-form";
 import { findOpenWorkerInvite } from "@/features/auth/worker-invite";
 import { APP_NAME } from "@/lib/constants";
+import { localizedPath } from "@/lib/routes";
+import { isPublicSignupEnabled } from "@/lib/signup";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("auth.register");
@@ -17,7 +19,7 @@ export default async function RegisterPage({
 }: {
   searchParams: Promise<{ invite?: string | string[] }>;
 }) {
-  const t = await getTranslations("auth.register");
+  const [t, locale] = await Promise.all([getTranslations("auth.register"), getLocale()]);
   const { invite: inviteParam } = await searchParams;
   const code = typeof inviteParam === "string" ? inviteParam.trim().slice(0, 64) : "";
 
@@ -33,20 +35,26 @@ export default async function RegisterPage({
     else inviteInvalid = true;
   }
 
+  const publicSignup = isPublicSignupEnabled();
+
   return (
     <AuthCard
       title={t("title")}
-      description={t("description", { appName: APP_NAME })}
+      description={
+        publicSignup && !invite
+          ? t("descriptionPublic")
+          : t("description", { appName: APP_NAME })
+      }
       footer={t.rich("haveAccount", {
         link: (chunks) => (
-          <Link href="/login" className={authLinkClass}>
+          <Link href={localizedPath("login", locale)} className={authLinkClass}>
             {chunks}
           </Link>
         ),
       })}
     >
       {inviteInvalid && <FormAlert className="mb-4">{t("workerInviteInvalid")}</FormAlert>}
-      <RegisterForm invite={invite} />
+      <RegisterForm invite={invite} codeOptional={publicSignup && !invite} />
     </AuthCard>
   );
 }

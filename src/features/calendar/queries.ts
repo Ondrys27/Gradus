@@ -101,14 +101,14 @@ export function useMirrors(
           source: "task",
           title: task.title,
           date: task.due_date!,
-          href: `/milestones/${task.milestone_id}`,
+          href: `/app/milniky/${task.milestone_id}`,
         })),
         ...(deals?.data ?? []).map((deal): MirrorItem => ({
           id: deal.id,
           source: "deal",
           title: deal.title,
           date: deal.expected_close_date!,
-          href: `/pipeline?deal=${deal.id}`,
+          href: `/app/pipeline?deal=${deal.id}`,
         })),
       ];
     },

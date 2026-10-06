@@ -1,23 +1,33 @@
 import { describe, expect, it } from "vitest";
-import { HOME_PATH, loginUrlFor, routeKind, safeNextPath } from "./routes";
+import { HOME_PATH, isResetPasswordPath, loginUrlFor, routeKind, safeNextPath } from "./routes";
 
 describe("routeKind", () => {
-  it("classifies auth pages, open routes and the app", () => {
-    expect(routeKind("/login")).toBe("guest");
-    expect(routeKind("/register")).toBe("guest");
-    expect(routeKind("/forgot-password")).toBe("guest");
-    expect(routeKind("/reset-password")).toBe("reset");
+  it("classifies sign-in pages in both languages", () => {
+    for (const path of ["/prihlaseni", "/registrace", "/zapomenute-heslo"]) {
+      expect(routeKind(path)).toBe("guest");
+    }
+    for (const path of ["/en/login", "/en/register", "/en/forgot-password"]) {
+      expect(routeKind(path)).toBe("guest");
+    }
+    expect(routeKind("/nove-heslo")).toBe("reset");
+    expect(routeKind("/en/reset-password")).toBe("reset");
+  });
+
+  it("keeps the marketing site public and the app protected", () => {
+    for (const path of ["/", "/cenik", "/podminky", "/soukromi", "/en", "/en/pricing"]) {
+      expect(routeKind(path)).toBe("public");
+    }
+    expect(routeKind("/app")).toBe("protected");
+    expect(routeKind("/app/milniky/42")).toBe("protected");
+    expect(routeKind("/application")).toBe("open");
     expect(routeKind("/auth/confirm")).toBe("open");
     expect(routeKind("/api/cron/stats")).toBe("open");
-    expect(routeKind("/dashboard")).toBe("protected");
-    expect(routeKind("/")).toBe("protected");
-    expect(routeKind("/login-help")).toBe("protected");
   });
 });
 
 describe("safeNextPath", () => {
   it("keeps same-origin app paths with their query", () => {
-    expect(safeNextPath("/pipeline?deal=1#notes")).toBe("/pipeline?deal=1#notes");
+    expect(safeNextPath("/app/pipeline?deal=1#notes")).toBe("/app/pipeline?deal=1#notes");
   });
 
   it("falls back home for anything that could leave the app", () => {
@@ -28,21 +38,35 @@ describe("safeNextPath", () => {
       "//evil.test",
       "/\\evil.test",
       "javascript:alert(1)",
-      "dashboard",
+      "app",
+      "/",
+      "/cenik",
     ]) {
       expect(safeNextPath(bad)).toBe(HOME_PATH);
     }
   });
 
   it("never sends a user back to an auth page", () => {
-    expect(safeNextPath("/login")).toBe(HOME_PATH);
-    expect(safeNextPath("/reset-password")).toBe(HOME_PATH);
+    expect(safeNextPath("/prihlaseni")).toBe(HOME_PATH);
+    expect(safeNextPath("/en/reset-password")).toBe(HOME_PATH);
   });
 });
 
 describe("loginUrlFor", () => {
-  it("remembers where the visitor wanted to go", () => {
-    expect(loginUrlFor("/contacts?table=2")).toBe("/login?next=%2Fcontacts%3Ftable%3D2");
-    expect(loginUrlFor("/dashboard")).toBe("/login");
+  it("remembers where the visitor wanted to go, in their language", () => {
+    expect(loginUrlFor("/app/kontakty?table=2")).toBe(
+      "/prihlaseni?next=%2Fapp%2Fkontakty%3Ftable%3D2",
+    );
+    expect(loginUrlFor("/app", "en")).toBe("/en/login");
+    expect(loginUrlFor("/app")).toBe("/prihlaseni");
+  });
+});
+
+describe("isResetPasswordPath", () => {
+  it("knows the reset page in both languages", () => {
+    expect(isResetPasswordPath("/nove-heslo")).toBe(true);
+    expect(isResetPasswordPath("/en/reset-password")).toBe(true);
+    expect(isResetPasswordPath("/app")).toBe(false);
+    expect(isResetPasswordPath(null)).toBe(false);
   });
 });

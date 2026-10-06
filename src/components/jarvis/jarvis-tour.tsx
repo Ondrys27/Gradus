@@ -44,7 +44,7 @@ export function JarvisTour() {
   useEffect(() => {
     if (request === handledRequest.current) return;
     handledRequest.current = request;
-    if (pathname !== "/dashboard") router.push("/dashboard");
+    if (pathname !== "/app") router.push("/app");
     setActive(true);
   }, [request, pathname, router]);
 

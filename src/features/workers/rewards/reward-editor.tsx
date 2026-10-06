@@ -131,7 +131,7 @@ export function RewardEditor() {
     <Stagger className="flex flex-col gap-6">
       <StaggerItem>
         <Link
-          href="/workers"
+          href="/app/pracovnici"
           className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "self-start")}
         >
           <ArrowLeftIcon aria-hidden data-icon="inline-start" />

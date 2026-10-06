@@ -1,11 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { HOME_PATH, loginUrlFor, routeKind, safeNextPath } from "@/lib/auth/routes";
+import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, URL_LOCALE_HEADER } from "@/i18n/locale-cookie";
+import { localizedPath, pageForPath, type SiteLocale } from "@/lib/routes";
+import { prefersEnglish } from "@/lib/site-locale";
 import { supabasePublicKey, supabaseUrl } from "@/lib/supabase/env";
 import type { Database } from "@/types/database";
 
 /**
- * Refreshes the Supabase session cookies and guards pages.
+ * Refreshes the Supabase session cookies, guards pages and fixes the language
+ * of the public site and the sign-in pages from their address.
  * `getClaims()` verifies the JWT locally with the project's signing keys, so a
  * page change never waits on a round trip to the auth server.
  */
@@ -31,21 +35,49 @@ export async function middleware(request: NextRequest) {
 
   const { pathname, search } = request.nextUrl;
   const kind = routeKind(pathname);
+  const page = pageForPath(pathname);
+  const storedLocale = request.cookies.get(LOCALE_COOKIE)?.value;
 
   if (kind === "protected" && !signedIn) {
-    return redirectKeepingCookies(request, response, loginUrlFor(pathname + search));
+    return redirectKeepingCookies(request, response, loginUrlFor(pathname + search, storedLocale));
   }
   if (kind === "guest" && signedIn) {
     const next = safeNextPath(request.nextUrl.searchParams.get("next"));
     return redirectKeepingCookies(request, response, next);
   }
   if (kind === "reset" && !signedIn) {
-    return redirectKeepingCookies(request, response, "/forgot-password?expired=1");
+    const forgot = localizedPath("forgotPassword", page?.locale);
+    return redirectKeepingCookies(request, response, `${forgot}?expired=1`);
   }
-  if (pathname === "/" && signedIn) {
+  if (page?.page === "home" && signedIn) {
     return redirectKeepingCookies(request, response, HOME_PATH);
   }
+  // The browser's language decides only on the very first visit to the home page.
+  if (page?.page === "home" && page.locale === "cs" && !storedLocale) {
+    if (prefersEnglish(request.headers.get("accept-language"))) {
+      const redirect = redirectKeepingCookies(request, response, localizedPath("home", "en"));
+      return withLocaleCookie(redirect, "en");
+    }
+  }
 
+  if (!page && !request.headers.has(URL_LOCALE_HEADER)) return response;
+
+  // The address decides the language of this page; nobody else may set the header.
+  const headers = new Headers(request.headers);
+  headers.delete(URL_LOCALE_HEADER);
+  if (page) headers.set(URL_LOCALE_HEADER, page.locale);
+  const localized = NextResponse.next({ request: { headers } });
+  response.cookies.getAll().forEach((cookie) => localized.cookies.set(cookie));
+  // A visitor's cookie remembers the language; an account's language comes from its settings.
+  return page && !signedIn ? withLocaleCookie(localized, page.locale) : localized;
+}
+
+function withLocaleCookie(response: NextResponse, locale: SiteLocale) {
+  response.cookies.set(LOCALE_COOKIE, locale, {
+    path: "/",
+    maxAge: LOCALE_COOKIE_MAX_AGE,
+    sameSite: "lax",
+  });
   return response;
 }
 

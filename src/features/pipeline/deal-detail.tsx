@@ -385,7 +385,7 @@ function InvoiceSection({
             number: invoice.data.invoice.number,
           })}
           <Link
-            href="/finance?tab=invoices"
+            href="/app/finance?tab=invoices"
             className="text-violet underline-offset-4 hover:underline"
           >
             {t("openInvoices")}

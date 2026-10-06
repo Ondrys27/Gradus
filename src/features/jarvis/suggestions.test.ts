@@ -48,14 +48,14 @@ describe("ruleSuggestions", () => {
     ]);
     expect(rules[1].action).toEqual({
       kind: "open",
-      href: "/contacts?table=t1",
+      href: "/app/kontakty?table=t1",
       params: { count: 4, name: "Petr" },
     });
     expect(rules[2].action).toMatchObject({ kind: "ask", prompt: "", params: { days: 27 } });
     // A milestone is only pointed to, never finished.
     expect(rules[4].action).toEqual({
       kind: "open",
-      href: "/milestones/m2",
+      href: "/app/milniky/m2",
       params: { milestone: "Launch" },
     });
     for (const rule of rules)
@@ -74,12 +74,12 @@ describe("ruleSuggestions", () => {
 
 describe("suggestion actions", () => {
   it("opens only places inside the app", () => {
-    expect(isAppHref("/pipeline")).toBe(true);
-    expect(isAppHref("/milestones/5b2c")).toBe(true);
-    expect(isAppHref("/contacts?table=abc")).toBe(true);
+    expect(isAppHref("/app/pipeline")).toBe(true);
+    expect(isAppHref("/app/milniky/5b2c")).toBe(true);
+    expect(isAppHref("/app/kontakty?table=abc")).toBe(true);
     expect(isAppHref("https://evil.example")).toBe(false);
     expect(isAppHref("//evil.example")).toBe(false);
-    expect(isAppHref("/settings")).toBe(false);
+    expect(isAppHref("/app/nastaveni")).toBe(false);
     expect(isAppHref("/pipelinex")).toBe(false);
     expect(isAppHref("javascript:alert(1)")).toBe(false);
     expect(

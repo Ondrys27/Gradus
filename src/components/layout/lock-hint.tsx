@@ -37,10 +37,10 @@ function LockedSectionCard({ item, onNavigate }: { item: NavItemState; onNavigat
   const hint = item.lockHint;
   const href =
     hint?.kind === "milestone" && hint.milestoneId
-      ? `/milestones/${hint.milestoneId}`
+      ? `/app/milniky/${hint.milestoneId}`
       : hint?.kind === "level"
         ? null
-        : "/milestones?view=path";
+        : "/app/milniky?view=path";
 
   return (
     <div className="flex w-72 max-w-[calc(100vw-32px)] flex-col gap-3">

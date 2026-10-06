@@ -97,7 +97,7 @@ export function EventDetail({ event, onClose, onEdit, readOnly = false }: Props)
               {current.contact && (
                 <li>
                   <Link
-                    href={`/contacts/${current.contact.id}`}
+                    href={`/app/kontakty/${current.contact.id}`}
                     className="flex min-h-11 items-center gap-2 rounded-xl px-2 text-sm text-violet outline-none hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-ring/50"
                   >
                     <UserIcon aria-hidden className="size-4 shrink-0" />
@@ -108,7 +108,7 @@ export function EventDetail({ event, onClose, onEdit, readOnly = false }: Props)
               {current.deal && (
                 <li>
                   <Link
-                    href={`/pipeline?deal=${current.deal.id}`}
+                    href={`/app/pipeline?deal=${current.deal.id}`}
                     className="flex min-h-11 items-center gap-2 rounded-xl px-2 text-sm text-violet outline-none hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-ring/50"
                   >
                     <HandshakeIcon aria-hidden className="size-4 shrink-0" />

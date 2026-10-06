@@ -98,7 +98,7 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
       id: "create",
       title: t("empty.createContact", { query: tidy }),
       context: null,
-      href: `/contacts?new=contact&name=${encodeURIComponent(tidy)}`,
+      href: `/app/kontakty?new=contact&name=${encodeURIComponent(tidy)}`,
       icon: KIND_ICONS.create,
       rank: 0,
     };

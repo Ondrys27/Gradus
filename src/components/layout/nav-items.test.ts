@@ -10,13 +10,18 @@ import {
 
 describe("isActivePath", () => {
   it("matches the section and its sub-pages", () => {
-    expect(isActivePath("/pipeline", "/pipeline")).toBe(true);
-    expect(isActivePath("/pipeline/42", "/pipeline")).toBe(true);
+    expect(isActivePath("/app/pipeline", "/app/pipeline")).toBe(true);
+    expect(isActivePath("/app/pipeline/42", "/app/pipeline")).toBe(true);
   });
 
   it("does not match sections that only share a prefix", () => {
-    expect(isActivePath("/contacts-archive", "/contacts")).toBe(false);
-    expect(isActivePath("/dashboard", "/calendar")).toBe(false);
+    expect(isActivePath("/app/kontakty-archive", "/app/kontakty")).toBe(false);
+    expect(isActivePath("/app", "/app/kalendar")).toBe(false);
+  });
+
+  it("keeps the dashboard to its own address, not every page under /app", () => {
+    expect(isActivePath("/app", "/app")).toBe(true);
+    expect(isActivePath("/app/pipeline", "/app")).toBe(false);
   });
 });
 
@@ -48,10 +53,10 @@ describe("worker navigation", () => {
   });
 
   it("opens the calendar only with the right to see it", () => {
-    expect(isPathAllowed("/calendar", worker)).toBe(false);
+    expect(isPathAllowed("/app/kalendar", worker)).toBe(false);
     const withCalendar = { permissions: { calendar: { view: true, edit: false } } };
     expect(navItemsFor(withCalendar).map((item) => item.key)).toContain("calendar");
-    expect(isPathAllowed("/calendar", withCalendar)).toBe(true);
+    expect(isPathAllowed("/app/kalendar", withCalendar)).toBe(true);
   });
 
   it("keeps the owner's sidebar as it was", () => {
@@ -60,13 +65,14 @@ describe("worker navigation", () => {
   });
 
   it("closes sections outside the sidebar, never profile or settings", () => {
-    expect(isPathAllowed("/pipeline/abc", worker)).toBe(true);
-    expect(isPathAllowed("/finance", worker)).toBe(false);
-    expect(isPathAllowed("/workers", worker)).toBe(false);
-    expect(isPathAllowed("/milestones", worker)).toBe(false);
-    expect(isPathAllowed("/settings", worker)).toBe(true);
-    expect(isPathAllowed("/tasks", null)).toBe(false);
-    expect(isPathAllowed("/rewards", null)).toBe(false);
-    expect(isPathAllowed("/workers/rewards", null)).toBe(true);
+    expect(isPathAllowed("/app/pipeline/abc", worker)).toBe(true);
+    expect(isPathAllowed("/app/finance", worker)).toBe(false);
+    expect(isPathAllowed("/app/pracovnici", worker)).toBe(false);
+    expect(isPathAllowed("/app/milniky", worker)).toBe(false);
+    expect(isPathAllowed("/app/nastaveni", worker)).toBe(true);
+    expect(isPathAllowed("/app/tarif", worker)).toBe(true);
+    expect(isPathAllowed("/app/ukoly", null)).toBe(false);
+    expect(isPathAllowed("/app/odmeny", null)).toBe(false);
+    expect(isPathAllowed("/app/pracovnici/odmeny", null)).toBe(true);
   });
 });

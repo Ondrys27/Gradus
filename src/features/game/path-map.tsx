@@ -230,7 +230,7 @@ function StepNode({ step, x, y }: { step: StepProgress; x: number; y: number }) 
   }
   return (
     <Link
-      href={`/milestones/${step.milestoneId}`}
+      href={`/app/milniky/${step.milestoneId}`}
       aria-label={t("open", { milestone: title, state: t(`states.${step.state}`) })}
       className={cn(className, "group")}
       style={style}

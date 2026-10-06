@@ -432,7 +432,7 @@ export async function applyWatch(args: {
         kind: "suggestion",
         text: item.text.trim().slice(0, 1000),
         action: (proposal
-          ? { kind: "open", href: `/milestones/${proposal.milestoneId}` }
+          ? { kind: "open", href: `/app/milniky/${proposal.milestoneId}` }
           : insightAction(item)) as unknown as Json,
         payload: (proposal ?? {}) as unknown as Json,
       };

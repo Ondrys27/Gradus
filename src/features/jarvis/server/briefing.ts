@@ -200,7 +200,7 @@ export async function briefUser(args: {
   const text = result.text.trim().slice(0, BRIEFING_MAX);
   if (!text) return "failed";
 
-  const action: SuggestionAction = { kind: "open", href: "/dashboard" };
+  const action: SuggestionAction = { kind: "open", href: "/app" };
   const { error: insertError } = await admin.from("jarvis_suggestions").upsert(
     {
       user_id: userId,

@@ -161,7 +161,7 @@ function PanelBody({
 
       {canOpenDetail && (
         <Link
-          href={`/contacts/${contactId}`}
+          href={`/app/kontakty/${contactId}`}
           className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "self-start")}
         >
           <ExternalLinkIcon aria-hidden data-icon="inline-start" />

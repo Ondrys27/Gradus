@@ -141,7 +141,7 @@ describe("recent lists", () => {
     kind: "contact",
     id,
     title: `Contact ${id}`,
-    href: `/contacts/${id}`,
+    href: `/app/kontakty/${id}`,
   });
 
   it("keeps the newest eight opened results without duplicates", () => {
@@ -175,7 +175,7 @@ describe("recent lists", () => {
       ]),
     ).toEqual([item("1")]);
     expect(readRecentItems(null)).toEqual([]);
-    expect(isSafeHref("/settings?focus=settings-currency")).toBe(true);
+    expect(isSafeHref("/app/nastaveni?focus=settings-currency")).toBe(true);
     expect(isSafeHref("https://evil.example")).toBe(false);
   });
 });

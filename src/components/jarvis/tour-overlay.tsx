@@ -167,14 +167,14 @@ export function TourOverlay({
   // a named target (a milestone to start with) shows in the bubble instead.
   const firstAction =
     step.key === "workerFinish"
-      ? { label: t("action.openTasks"), href: "/tasks", target: null }
+      ? { label: t("action.openTasks"), href: "/app/ukoly", target: null }
       : firstMilestone.data
         ? {
             label: t("action.openFirstTask"),
-            href: `/milestones/${firstMilestone.data.id}`,
+            href: `/app/milniky/${firstMilestone.data.id}`,
             target: firstMilestone.data.title,
           }
-        : { label: t("action.createMilestone"), href: "/milestones", target: null };
+        : { label: t("action.createMilestone"), href: "/app/milniky", target: null };
 
   const state: JarvisState =
     placement.side === "center" ? (last ? "happy" : "waving") : index === 0 ? "waving" : "pointing";
