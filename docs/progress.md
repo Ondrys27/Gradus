@@ -37,7 +37,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 9.7 | architect | 2026-10-03 Průvodce po onboardingu (7 kroků, spotlight, pracovník zkrácená verze) a proaktivní Jarvis vlevo dole (ranní shrnutí, návrhy, otázky) s pravidly proti otravování; migrace pushnutá, pravidla v CLAUDE.md; hodinový cron na shrnutí potřebuje Vercel Pro.
 - [x] K9 | reviewer | 2026-10-03 Kontrola fáze 9: migrace cest zidempotentněny, oprava zámku Nejlepší obory v tool režimu, dohnané odemčení ranního shrnutí pro starší účty, anténa Jarvise přes CSS místo nekonečné Framer Motion smyčky (výkon), natvrdo Gradus nahrazen {appName}; RLS pracovního prostoru a stropy XP ověřeny bez nálezu.
 - [x] STOP | Konec kola 2. Ověř: Jarvisův chat odpovídá a tlačítko Otestovat Jarvise v nastavení prochází. Pracovník Caller ve druhém prohlížeči vidí a upravuje kontakty, ale nevidí finance; po odebrání práva zmizí hned. Graf příjmu jde přiblížit. Založ nový účet v herním režimu, vyber cestu Řemeslník, projdi průvodce a ověř, že vznikly milníky s popisky „Odemkne". Klepni na úroveň vpravo nahoře. Přepni téma v nastavení. Zkontroluj postavu Jarvise na /design-system/jarvis ve všech stavech. Nech aplikaci otevřenou a sleduj, jestli se Jarvis sám ozve — a jestli neotravuje. Poznámky pošli do chatu s Claude.
-- [ ] 10.1 | architect | env: RESEND_API_KEY
+- [x] 10.1 | architect | env: RESEND_API_KEY | 2026-10-06 Marketingový web pod / a aplikace pod /app se 301 přesměrováními, čekací listina a veřejná registrace podle PUBLIC_SIGNUP_ENABLED, 14denní trial a režim jen pro čtení po expiraci.
 - [ ] 10.2 | architect |
 - [ ] 10.3 | builder |
 - [ ] K10 | reviewer |
