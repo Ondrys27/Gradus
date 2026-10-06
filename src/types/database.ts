@@ -1587,6 +1587,7 @@ export type Database = {
           id: string
           plan_key: string
           status: Database["public"]["Enums"]["subscription_status"]
+          trial_ends_at: string | null
           updated_at: string
           user_id: string
         }
@@ -1597,6 +1598,7 @@ export type Database = {
           id?: string
           plan_key: string
           status?: Database["public"]["Enums"]["subscription_status"]
+          trial_ends_at?: string | null
           updated_at?: string
           user_id: string
         }
@@ -1607,6 +1609,7 @@ export type Database = {
           id?: string
           plan_key?: string
           status?: Database["public"]["Enums"]["subscription_status"]
+          trial_ends_at?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -1987,6 +1990,39 @@ export type Database = {
           timezone?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      waitlist: {
+        Row: {
+          confirm_sent_at: string | null
+          confirm_token_hash: string | null
+          confirmed_at: string | null
+          created_at: string
+          email: string
+          id: string
+          locale: string
+          source: string
+        }
+        Insert: {
+          confirm_sent_at?: string | null
+          confirm_token_hash?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          locale?: string
+          source?: string
+        }
+        Update: {
+          confirm_sent_at?: string | null
+          confirm_token_hash?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          locale?: string
+          source?: string
         }
         Relationships: []
       }
@@ -2455,6 +2491,15 @@ export type Database = {
         Args: { _code: string; _user_id: string }
         Returns: string
       }
+      app_overview: {
+        Args: never
+        Returns: {
+          expired: number
+          trialing: number
+          waitlist: number
+          waitlist_confirmed: number
+        }[]
+      }
       award_xp: { Args: { _reason: string; _ref_id?: string }; Returns: Json }
       book_invoice_income: {
         Args: {
@@ -2489,6 +2534,19 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      current_plan: {
+        Args: { _user_id: string }
+        Returns: {
+          ai_calls_limit: number
+          daily_generation_limit: number
+          file_uploads_limit: number
+          monthly_generation_limit: number
+          plan_key: string
+          read_only: boolean
+          status: string
+          trial_ends_at: string
+        }[]
       }
       current_workspace_id: { Args: never; Returns: string }
       evaluate_achievements: { Args: never; Returns: Json }
@@ -2576,6 +2634,7 @@ export type Database = {
           title: string
         }[]
       }
+      grant_beta_plan: { Args: { _user_id: string }; Returns: undefined }
       grant_used_sections: { Args: { _uid: string }; Returns: undefined }
       grant_worker_rewards: {
         Args: {
@@ -2953,6 +3012,7 @@ export type Database = {
           started_at: string
         }[]
       }
+      workspace_read_only: { Args: { _owner: string }; Returns: boolean }
     }
     Enums: {
       app_role: "owner" | "admin" | "user"
