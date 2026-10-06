@@ -12,7 +12,7 @@ import {
   type PaidPlan,
   type PriceCurrency,
 } from "@/config/pricing";
-import { formatCurrency, type FormatSettings } from "@/lib/format";
+import { formatCurrency, formatNumber, type FormatSettings } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 /**
@@ -109,7 +109,9 @@ export function PricingCards({
               {plan.features.map((feature) => (
                 <li key={feature} className="flex items-start gap-2.5 text-sm text-ink-soft">
                   <CheckIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-teal" />
-                  {t(`features.${feature}`, { count: String(plan.monthlyContacts) })}
+                  {t(`features.${feature}`, {
+                    count: formatNumber(plan.monthlyContacts, {}, formatSettings),
+                  })}
                 </li>
               ))}
             </ul>

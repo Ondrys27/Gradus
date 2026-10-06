@@ -2007,6 +2007,7 @@
         "dealValueRequired": "Add a value to the deal to invoice it.",
         "invoiceNotFound": "The invoice was not found.",
         "saveFailed": "The invoice could not be saved here, so it was withdrawn in Fakturoid too. Try again.",
+        "readOnly": "Your trial has ended. Choose a plan to carry on.",
         "unknown": "Something went wrong. Try again."
       },
       "detail": "Fakturoid says: {detail}"
@@ -2292,6 +2293,7 @@
         "fileMissing": "One of the attachments could not be read. Try attaching it again.",
         "tooManyFiles": "At most {max} files at a time.",
         "sendFailed": "The e-mail could not be sent.",
+        "readOnly": "Your trial has ended. Choose a plan to carry on.",
         "unknown": "Something went wrong. Try again."
       },
       "detail": "({detail})",

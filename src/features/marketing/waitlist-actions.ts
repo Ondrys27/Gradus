@@ -92,8 +92,17 @@ export async function joinWaitlist(
   });
   if (!sent.ok) {
     console.error("[waitlist] confirmation e-mail failed", sent.error);
-    // Let the visitor try again at once.
-    await admin.from("waitlist").update({ confirm_sent_at: null }).eq("email", parsed.data.email);
+    // An address that never got its confirmation link is not kept; a waiting
+    // one may try again at once.
+    if (existing) {
+      await admin.from("waitlist").update({ confirm_sent_at: null }).eq("id", existing.id);
+    } else {
+      await admin
+        .from("waitlist")
+        .delete()
+        .eq("email", parsed.data.email)
+        .is("confirmed_at", null);
+    }
     return { error: "generic", email };
   }
   return { ok: true };

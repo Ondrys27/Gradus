@@ -11,6 +11,7 @@ export const EMAIL_ERROR_CODES = [
   "fileMissing",
   "tooManyFiles",
   "sendFailed",
+  "readOnly",
   "unknown",
 ] as const;
 export type EmailErrorCode = (typeof EMAIL_ERROR_CODES)[number];

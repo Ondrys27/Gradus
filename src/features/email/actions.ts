@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { sendEmail } from "@/lib/email/resend";
+import { isWorkspaceReadOnly } from "@/features/plan/server";
 import { createClient } from "@/lib/supabase/server";
 import { EmailError, toFailure, type ActionResult } from "./errors";
 import { ATTACHMENTS_BUCKET, bodyToHtml, isOwnEmailUploadPath, prepareAttachment } from "./service";
@@ -60,6 +61,10 @@ export async function sendEmailAction(
   try {
     const ctx = await session();
     if (!ctx) return { ok: false, error: "unknown" };
+    // The e-mail would leave before the trigger refuses the activity row.
+    if (await isWorkspaceReadOnly(ctx.supabase, ctx.workspaceId)) {
+      return { ok: false, error: "readOnly" };
+    }
     return {
       ok: true,
       data: await sendContactEmail(ctx.supabase, ctx.userId, ctx.workspaceId, parsed.data),

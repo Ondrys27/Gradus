@@ -17,6 +17,7 @@ export const INVOICE_ERROR_CODES = [
   "dealValueRequired",
   "invoiceNotFound",
   "saveFailed",
+  "readOnly",
   "unknown",
 ] as const;
 export type InvoiceErrorCode = (typeof INVOICE_ERROR_CODES)[number];

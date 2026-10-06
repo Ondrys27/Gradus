@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { isWorkspaceReadOnly } from "@/features/plan/server";
 import { createClient } from "@/lib/supabase/server";
 import type { Invoice } from "../types";
 import { InvoiceError, toFailure, type ActionResult } from "./errors";
@@ -66,6 +67,17 @@ async function requireFinance(ctx: Ctx, level: "view" | "edit") {
   if (error || !data) throw new InvoiceError("forbidden");
 }
 
+/**
+ * Fakturoid writes happen outside the database and land through the admin
+ * client, which the read-only trigger lets through; a workspace whose trial
+ * ended is refused here.
+ */
+async function requireWritable(ctx: Ctx) {
+  if (await isWorkspaceReadOnly(ctx.supabase, ctx.workspaceId)) {
+    throw new InvoiceError("readOnly");
+  }
+}
+
 export async function fakturoidStatusAction(): Promise<ActionResult<FakturoidStatus>> {
   return run(async (ctx) => {
     await requireFinance(ctx, "view");
@@ -105,6 +117,7 @@ export async function issueInvoiceAction(
   if (!parsed.success) return { ok: false, error: "dealNotFound" };
   return run(async (ctx) => {
     await requireFinance(ctx, "edit");
+    await requireWritable(ctx);
     return issueInvoice(ctx.supabase, ctx.workspaceId, parsed.data);
   });
 }
@@ -116,6 +129,7 @@ export async function markInvoicePaidAction(
   if (!parsed.success) return { ok: false, error: "invoiceNotFound" };
   return run(async (ctx) => {
     await requireFinance(ctx, "edit");
+    await requireWritable(ctx);
     return markInvoicePaid(ctx.supabase, ctx.workspaceId, parsed.data);
   });
 }
@@ -123,6 +137,7 @@ export async function markInvoicePaidAction(
 export async function syncFakturoidAction(): Promise<ActionResult<SyncOutcome>> {
   return run(async (ctx) => {
     await requireFinance(ctx, "edit");
+    await requireWritable(ctx);
     return syncUser(ctx.workspaceId);
   });
 }

@@ -2007,6 +2007,7 @@
         "dealValueRequired": "Aby šel obchod vyfakturovat, doplň mu hodnotu.",
         "invoiceNotFound": "Faktura se nenašla.",
         "saveFailed": "Fakturu se nepodařilo uložit tady, proto byla stažena i ve Fakturoidu. Zkus to znovu.",
+        "readOnly": "Zkušební období skončilo. Vyber si tarif a můžeš pokračovat.",
         "unknown": "Něco se pokazilo. Zkus to znovu."
       },
       "detail": "Fakturoid píše: {detail}"
@@ -2292,6 +2293,7 @@
         "fileMissing": "Jednu z příloh se nepodařilo načíst. Zkus ji přiložit znovu.",
         "tooManyFiles": "Najednou nejvýše {max} souborů.",
         "sendFailed": "E-mail se nepodařilo odeslat.",
+        "readOnly": "Zkušební období skončilo. Vyber si tarif a můžeš pokračovat.",
         "unknown": "Něco se pokazilo. Zkus to znovu."
       },
       "detail": "({detail})",

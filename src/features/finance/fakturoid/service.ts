@@ -374,6 +374,13 @@ export async function syncAllConnections(): Promise<{
   let paid = 0;
   for (const { user_id } of data) {
     try {
+      // After the trial the workspace stays as it was; last_synced_at is kept,
+      // so the first sync after choosing a plan catches up.
+      const { data: readOnly, error: planError } = await admin.rpc("workspace_read_only", {
+        _owner: user_id,
+      });
+      if (planError) throw planError;
+      if (readOnly) continue;
       paid += (await syncUser(user_id)).paid;
     } catch (syncError) {
       failed++;
