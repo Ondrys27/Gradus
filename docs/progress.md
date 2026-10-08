@@ -43,7 +43,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] K10 | reviewer | 2026-10-06 Kontrola kola 3: zkušební období po expiraci teď blokuje i e-mail z kontaktu a Fakturoid (vystavení, platbu, sync), denní sync Fakturoidu expirované účty přeskočí, čekací listina neuloží adresu při nezdařeném e-mailu, počty kontaktů na tarifech přes format.ts; adresy, přesměrování a texty ověřeny bez nálezu.
 - [x] STOP | Konec kola 3. Otevři / odhlášený — musí být web, ne aplikace. Přihlas se přes Přihlásit se a ověř, že skončíš v /app a staré adresy přesměrují. Projdi web na počítači i telefonu, přepni jazyk. S PUBLIC_SIGNUP_ENABLED=false zkus čekací listinu a ověř, že přišel potvrzovací e-mail. Pak přepni na true, restartuj dev server, založ nový účet z webu a ověř pruh se zkušebním obdobím. Řekni Vášovi, ať si web projde — je to jeho část.
 - [x] 11.1 | architect | 2026-10-08 Měření používání: katalog událostí events.ts se zod validací, analytics_events a app_sessions, track() na serveru a /api/t z prohlížeče s omezením frekvence a sendBeacon, usage_events přesměrováno, profiles.is_internal, chyby a výkon, úklid po 13 měsících, odstavec na /soukromi.
-- [ ] 11.2 | architect |
+- [x] 11.2 | architect | 2026-10-08 Registr 155 metrik s výpočty v SQL (trychtýř, kohorty, retence D1/D7/D30, heatmapa), metrics_daily plněná noční úlohou, metrics:backfill, náklady v costs.ts proti pricing.ts, měny se nesčítají.
 - [ ] 11.3 | architect | env: RESEND_API_KEY
 - [ ] 11.4 | architect |
 - [ ] 11.5 | builder |
