@@ -45,7 +45,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 11.1 | architect | 2026-10-08 Měření používání: katalog událostí events.ts se zod validací, analytics_events a app_sessions, track() na serveru a /api/t z prohlížeče s omezením frekvence a sendBeacon, usage_events přesměrováno, profiles.is_internal, chyby a výkon, úklid po 13 měsících, odstavec na /soukromi.
 - [x] 11.2 | architect | 2026-10-08 Registr 155 metrik s výpočty v SQL (trychtýř, kohorty, retence D1/D7/D30, heatmapa), metrics_daily plněná noční úlohou, metrics:backfill, náklady v costs.ts proti pricing.ts, měny se nesčítají.
 - [x] 11.3 | architect | env: RESEND_API_KEY | 2026-10-08 Administrace na /admin: přihlášení s TOTP druhým faktorem a QR průvodcem, 404 pro kohokoli bez role owner + aal2, e-mail po přihlášení přes Resend, admin_audit s exportem, odhlášení po 30 min nečinnosti / 8 h.
-- [ ] 11.4 | architect |
+- [x] 11.4 | architect | 2026-10-08 Rozhraní administrace: sidebar se 13 sekcemi (ostatní „Brzy" do 11.5), společné ovládání (období, porovnání, segmenty, interní účty, obnova), stránky Přehled/Růst/Aktivace/Retence s trychtýřem, kohortami, retencí a heatmapou, sdílený graf s přiblížením a exportem PNG/CSV do auditu.
 - [ ] 11.5 | builder |
 - [ ] K11 | reviewer |
 - [ ] STOP | Konec kola 4. Připrav si v telefonu autentizační aplikaci (Google Authenticator, 1Password nebo podobnou). Otevři /admin/prihlaseni, přihlas se majitelským účtem a zapni druhý faktor. Proklikej všechny sekce administrace. Pak v jiném prohlížeči použij aplikaci jako běžný uživatel pár minut a ověř, že se v administraci objevila aktivita — a že tvůj vlastní účet ve výchozím stavu vidět není. Zkus /admin v anonymním okně: musí být 404.
