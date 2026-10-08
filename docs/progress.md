@@ -42,7 +42,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 10.3 | builder | 2026-10-06 Ukázkový účet (`bun run demo:seed`, idempotentní) a snímky aplikace (`bun run screenshots`, Playwright proti produkčnímu buildu) v /public/screenshots jako WebP 2×; nahrazeny zástupné rámečky na webu, mobilní snímky v hlavičce a u Cold Callingu; oprava pořadí nadpisů na ceníku. Lighthouse na mobilu: best-practices/SEO 100, accessibility 96, performance 88–89 (LCP vychází z simulovaného pomalého mobilu v Lighthouse — reálné LCP naměřené v prohlížeči 112 ms).
 - [x] K10 | reviewer | 2026-10-06 Kontrola kola 3: zkušební období po expiraci teď blokuje i e-mail z kontaktu a Fakturoid (vystavení, platbu, sync), denní sync Fakturoidu expirované účty přeskočí, čekací listina neuloží adresu při nezdařeném e-mailu, počty kontaktů na tarifech přes format.ts; adresy, přesměrování a texty ověřeny bez nálezu.
 - [x] STOP | Konec kola 3. Otevři / odhlášený — musí být web, ne aplikace. Přihlas se přes Přihlásit se a ověř, že skončíš v /app a staré adresy přesměrují. Projdi web na počítači i telefonu, přepni jazyk. S PUBLIC_SIGNUP_ENABLED=false zkus čekací listinu a ověř, že přišel potvrzovací e-mail. Pak přepni na true, restartuj dev server, založ nový účet z webu a ověř pruh se zkušebním obdobím. Řekni Vášovi, ať si web projde — je to jeho část.
-- [ ] 11.1 | architect |
+- [x] 11.1 | architect | 2026-10-08 Měření používání: katalog událostí events.ts se zod validací, analytics_events a app_sessions, track() na serveru a /api/t z prohlížeče s omezením frekvence a sendBeacon, usage_events přesměrováno, profiles.is_internal, chyby a výkon, úklid po 13 měsících, odstavec na /soukromi.
 - [ ] 11.2 | architect |
 - [ ] 11.3 | architect | env: RESEND_API_KEY
 - [ ] 11.4 | architect |
