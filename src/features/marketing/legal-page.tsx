@@ -13,6 +13,7 @@ const SECTIONS: Record<LegalKind, readonly string[]> = {
     "controller",
     "data",
     "purpose",
+    "usage",
     "processors",
     "retention",
     "rights",
@@ -30,6 +31,14 @@ export async function legalMetadata(locale: SiteLocale, kind: LegalKind): Promis
     description: t(`${kind}Description`, { appName: APP_NAME }),
   });
 }
+
+/**
+ * Sections whose text is already final, as paragraph keys under
+ * `marketing.legal.bodies.<kind>.<section>`; the rest wait for the lawyer.
+ */
+const BODIES: Partial<Record<LegalKind, Record<string, readonly string[]>>> = {
+  privacy: { usage: ["p1", "p2", "p3"] },
+};
 
 /** Terms and privacy until the lawyer's texts arrive: the headings and a clear notice. */
 export async function LegalPage({ locale, kind }: { locale: SiteLocale; kind: LegalKind }) {
@@ -50,14 +59,28 @@ export async function LegalPage({ locale, kind }: { locale: SiteLocale; kind: Le
         </div>
       </header>
       <ol className="flex flex-col gap-8">
-        {SECTIONS[kind].map((section, index) => (
-          <li key={section} className="flex flex-col gap-2">
-            <h2 className="text-xl font-semibold text-ink">
-              {t("heading", { number: String(index + 1), title: t(`sections.${kind}.${section}`) })}
-            </h2>
-            <p className="text-ink-muted">{t("sectionSoon")}</p>
-          </li>
-        ))}
+        {SECTIONS[kind].map((section, index) => {
+          const paragraphs = BODIES[kind]?.[section];
+          return (
+            <li key={section} id={section} className="flex scroll-mt-24 flex-col gap-2">
+              <h2 className="text-xl font-semibold text-ink">
+                {t("heading", {
+                  number: String(index + 1),
+                  title: t(`sections.${kind}.${section}`),
+                })}
+              </h2>
+              {paragraphs ? (
+                paragraphs.map((key) => (
+                  <p key={key} className="text-ink-soft">
+                    {t(`bodies.${kind}.${section}.${key}`, { appName: APP_NAME })}
+                  </p>
+                ))
+              ) : (
+                <p className="text-ink-muted">{t("sectionSoon")}</p>
+              )}
+            </li>
+          );
+        })}
       </ol>
     </article>
   );

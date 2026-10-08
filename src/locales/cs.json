@@ -667,7 +667,8 @@
       "workerInviteInvalid": "Pozvánka vypršela nebo už byla použita. Požádej o nový odkaz.",
       "descriptionPublic": "14 dní zdarma, bez platební karty.",
       "inviteOptional": "Pozvánkový kód (nepovinné)",
-      "inviteOptionalHint": "Máte-li pozvánku, zadejte ji. Jinak začnete 14denní zkušební období."
+      "inviteOptionalHint": "Máte-li pozvánku, zadejte ji. Jinak začnete 14denní zkušební období.",
+      "usageNote": "{appName} měří, jak se aplikace používá — jen typy akcí a časy, nikdy obsah tvých dat. <link>Víc o měření</link>"
     },
     "forgot": {
       "title": "Obnovení hesla",
@@ -3158,11 +3159,21 @@
           "controller": "Kdo údaje zpracovává",
           "data": "Jaké údaje zpracováváme",
           "purpose": "Proč a na jakém základě",
+          "usage": "Měření používání",
           "processors": "Komu údaje předáváme",
           "retention": "Jak dlouho je uchováváme",
           "rights": "Tvoje práva",
           "cookies": "Cookies",
           "contact": "Kontakt"
+        }
+      },
+      "bodies": {
+        "privacy": {
+          "usage": {
+            "p1": "Abychom věděli, které části {appName} pomáhají a co je potřeba zlepšit, zaznamenáváme, jak se aplikace používá: které obrazovky otevřeš, jaké akce uděláš (třeba založení milníku nebo přesun kontaktu), jak dlouho v aplikaci jsi, z jakého typu zařízení a jaké chyby nastaly.",
+            "p2": "Ukládáme jen typy akcí, počty, časy a stavy, nikdy obsah: žádná jména, telefony, e-maily, názvy firem, obchodů ani úkolů a žádné zprávy Jarvisovi. Záznamy jsou spojené s tvým účtem, vidí je jen provozovatel {appName} a nepoužíváme k tomu žádné sledovací cookies ani služby třetích stran.",
+            "p3": "Záznamy o používání a relacích se automaticky mažou po 13 měsících. Smazáním účtu zmizí hned."
+          }
         }
       }
     },

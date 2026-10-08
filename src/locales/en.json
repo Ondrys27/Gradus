@@ -667,7 +667,8 @@
       "workerInviteInvalid": "This invite has expired or was already used. Ask for a new link.",
       "descriptionPublic": "14 days free, no credit card.",
       "inviteOptional": "Invite code (optional)",
-      "inviteOptionalHint": "If you have an invite, enter it. Otherwise you start a 14-day trial."
+      "inviteOptionalHint": "If you have an invite, enter it. Otherwise you start a 14-day trial.",
+      "usageNote": "{appName} measures how the app is used — only types of actions and times, never the content of your data. <link>More about it</link>"
     },
     "forgot": {
       "title": "Reset your password",
@@ -3158,11 +3159,21 @@
           "controller": "Who processes your data",
           "data": "What data we process",
           "purpose": "Why, and on what legal basis",
+          "usage": "Usage measurement",
           "processors": "Who we share it with",
           "retention": "How long we keep it",
           "rights": "Your rights",
           "cookies": "Cookies",
           "contact": "Contact"
+        }
+      },
+      "bodies": {
+        "privacy": {
+          "usage": {
+            "p1": "To learn which parts of {appName} help and what needs to get better, we record how the app is used: which screens you open, which actions you take (such as creating a milestone or moving a contact), how long you spend in the app, what kind of device you use and which errors happened.",
+            "p2": "We store only types of actions, counts, times and states, never content: no names, phone numbers, e-mails, company, deal or task names, and no messages to Jarvis. The records are linked to your account, only the operator of {appName} can see them, and we use no tracking cookies or third-party services for this.",
+            "p3": "Usage records and sessions are deleted automatically after 13 months. Deleting your account removes them at once."
+          }
         }
       }
     },

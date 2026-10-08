@@ -41,9 +41,7 @@ export default async function RegisterPage({
     <AuthCard
       title={t("title")}
       description={
-        publicSignup && !invite
-          ? t("descriptionPublic")
-          : t("description", { appName: APP_NAME })
+        publicSignup && !invite ? t("descriptionPublic") : t("description", { appName: APP_NAME })
       }
       footer={t.rich("haveAccount", {
         link: (chunks) => (
@@ -55,6 +53,16 @@ export default async function RegisterPage({
     >
       {inviteInvalid && <FormAlert className="mb-4">{t("workerInviteInvalid")}</FormAlert>}
       <RegisterForm invite={invite} codeOptional={publicSignup && !invite} />
+      <p className="mt-4 text-xs text-ink-muted">
+        {t.rich("usageNote", {
+          appName: APP_NAME,
+          link: (chunks) => (
+            <Link href={`${localizedPath("privacy", locale)}#usage`} className={authLinkClass}>
+              {chunks}
+            </Link>
+          ),
+        })}
+      </p>
     </AuthCard>
   );
 }
