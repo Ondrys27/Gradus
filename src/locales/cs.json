@@ -3918,5 +3918,99 @@
         "description": "Otázka na doporučení po 7 dnech; měří se od kroku 11.5."
       }
     }
+  },
+  "admin": {
+    "login": {
+      "title": "Administrace",
+      "description": "Přihlas se majitelským účtem {appName}. Budeš potřebovat kód z autentizační aplikace.",
+      "submit": "Pokračovat",
+      "verifyTitle": "Kód z autentizační aplikace",
+      "verifyDescription": "Zadej šestimístný kód, který ti aplikace právě ukazuje.",
+      "verifySubmit": "Přihlásit",
+      "codeLabel": "Kód",
+      "enrollTitle": "Zapni druhý faktor",
+      "enrollDescription": "Bez něj zůstane administrace zavřená. Zabere to minutu.",
+      "enrollStepScan": "1. Otevři autentizační aplikaci (Google Authenticator, 1Password nebo podobnou) a naskenuj kód.",
+      "enrollStepCode": "2. Zadej šestimístný kód, který aplikace ukáže.",
+      "enrollLoading": "Připravuju kód…",
+      "enrollSubmit": "Ověřit a zapnout",
+      "qrAlt": "QR kód pro autentizační aplikaci",
+      "secretLabel": "Nejde naskenovat? Zadej tenhle klíč ručně:",
+      "backupHint": "Tip: hned potom můžeš přidat druhé zařízení jako zálohu.",
+      "backupTitle": "Přidej záložní zařízení",
+      "backupDescription": "Když ztratíš telefon, druhé zařízení ti cestu dovnitř nechá otevřenou. Doporučujeme ho přidat hned: další telefon, tablet nebo správce hesel.",
+      "backupAdd": "Přidat druhé zařízení",
+      "backupSkip": "Pokračovat do administrace",
+      "backupEnrollTitle": "Druhé zařízení",
+      "backupEnrollDescription": "Naskenuj tenhle kód záložním zařízením. Dostane vlastní klíč, takže přihlásí kterékoli z obou.",
+      "startOver": "Začít znovu",
+      "errors": {
+        "invalid": "Špatný e-mail nebo heslo.",
+        "invalidCode": "Kód nesedí. Zkontroluj čas v zařízení a zkus další kód.",
+        "locked": "Příliš mnoho chybných pokusů. Zkus to znovu za {minutes, plural, one {# minutu} few {# minuty} other {# minut}}.",
+        "restart": "Přihlášení vypršelo. Začni znovu heslem.",
+        "generic": "Něco se pokazilo. Zkus to znovu."
+      }
+    },
+    "shell": {
+      "title": "Administrace",
+      "signOut": "Odhlásit",
+      "nav": {
+        "overview": "Přehled",
+        "audit": "Audit"
+      }
+    },
+    "overview": {
+      "title": "Přehled",
+      "description": "Tady budou čísla a grafy aplikace.",
+      "auditHint": "Každé přihlášení, zobrazení a export administrace se zapisuje.",
+      "auditLink": "Otevřít audit"
+    },
+    "audit": {
+      "title": "Audit",
+      "description": "Každé přihlášení, zobrazení a export administrace, nejnovější nahoře.",
+      "export": "Export CSV",
+      "emptyTitle": "Zatím nic zapsaného",
+      "emptyDescription": "Tady se objeví přihlášení, zobrazení a exporty.",
+      "columns": {
+        "time": "Čas",
+        "who": "Kdo",
+        "kind": "Akce",
+        "target": "Pohled nebo export",
+        "ip": "Otisk IP"
+      },
+      "kinds": {
+        "login": "Přihlášení",
+        "view": "Zobrazení",
+        "export": "Export"
+      },
+      "pagination": "Stránky auditu",
+      "newer": "Novější",
+      "older": "Starší",
+      "page": "Strana {page}"
+    },
+    "loginEmail": {
+      "subject": "Nové přihlášení do administrace {appName}",
+      "intro": "Do administrace {appName} se právě někdo přihlásil tvým účtem.",
+      "time": "Čas: {time}",
+      "device": "Zařízení: {device}",
+      "deviceValue": "{browser} · {device}",
+      "ip": "Otisk IP: {ip}",
+      "notYou": "Pokud jsi to nebyl ty, hned si změň heslo a odeber autentizátor v Supabase (Authentication → Users)."
+    },
+    "device": {
+      "desktop": "počítač",
+      "mobile": "telefon",
+      "tablet": "tablet"
+    },
+    "browser": {
+      "chrome": "Chrome",
+      "safari": "Safari",
+      "firefox": "Firefox",
+      "edge": "Edge",
+      "samsung": "Samsung Internet",
+      "opera": "Opera",
+      "other": "jiný prohlížeč"
+    }
   }
 }

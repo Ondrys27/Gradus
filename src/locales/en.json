@@ -3918,5 +3918,99 @@
         "description": "The recommendation question after 7 days; measured from step 11.5."
       }
     }
+  },
+  "admin": {
+    "login": {
+      "title": "Administration",
+      "description": "Sign in with the owner account of {appName}. You will need the code from your authenticator app.",
+      "submit": "Continue",
+      "verifyTitle": "Code from the authenticator app",
+      "verifyDescription": "Enter the six-digit code your authenticator app shows right now.",
+      "verifySubmit": "Sign in",
+      "codeLabel": "Code",
+      "enrollTitle": "Turn on the second factor",
+      "enrollDescription": "Without it the administration stays closed. It takes a minute.",
+      "enrollStepScan": "1. Open an authenticator app (Google Authenticator, 1Password or similar) and scan the code.",
+      "enrollStepCode": "2. Enter the six-digit code the app shows.",
+      "enrollLoading": "Preparing the code…",
+      "enrollSubmit": "Verify and turn on",
+      "qrAlt": "QR code for the authenticator app",
+      "secretLabel": "Can't scan it? Enter this key by hand:",
+      "backupHint": "Tip: next you can add a second device as a backup.",
+      "backupTitle": "Add a backup device",
+      "backupDescription": "If you lose your phone, a second device keeps the way in open. We recommend adding one now: another phone, a tablet or a password manager.",
+      "backupAdd": "Add a second device",
+      "backupSkip": "Continue to the administration",
+      "backupEnrollTitle": "Second device",
+      "backupEnrollDescription": "Scan this code with the backup device. It gets its own key, so either device can sign you in.",
+      "startOver": "Start over",
+      "errors": {
+        "invalid": "Wrong e-mail or password.",
+        "invalidCode": "That code doesn't fit. Check the time on your device and try the next code.",
+        "locked": "Too many wrong attempts. Try again in {minutes, plural, one {# minute} other {# minutes}}.",
+        "restart": "The sign-in has expired. Start again with your password.",
+        "generic": "Something went wrong. Try again."
+      }
+    },
+    "shell": {
+      "title": "Administration",
+      "signOut": "Sign out",
+      "nav": {
+        "overview": "Overview",
+        "audit": "Audit"
+      }
+    },
+    "overview": {
+      "title": "Overview",
+      "description": "Numbers and charts of the app will be here.",
+      "auditHint": "Every sign-in, view and export of the administration is recorded.",
+      "auditLink": "Open the audit"
+    },
+    "audit": {
+      "title": "Audit",
+      "description": "Every sign-in, view and export of the administration, newest first.",
+      "export": "Export CSV",
+      "emptyTitle": "Nothing recorded yet",
+      "emptyDescription": "Sign-ins, views and exports appear here.",
+      "columns": {
+        "time": "Time",
+        "who": "Who",
+        "kind": "Action",
+        "target": "View or export",
+        "ip": "IP fingerprint"
+      },
+      "kinds": {
+        "login": "Sign-in",
+        "view": "View",
+        "export": "Export"
+      },
+      "pagination": "Audit pages",
+      "newer": "Newer",
+      "older": "Older",
+      "page": "Page {page}"
+    },
+    "loginEmail": {
+      "subject": "New sign-in to the {appName} administration",
+      "intro": "Someone has just signed in to the {appName} administration with your account.",
+      "time": "Time: {time}",
+      "device": "Device: {device}",
+      "deviceValue": "{browser} · {device}",
+      "ip": "IP fingerprint: {ip}",
+      "notYou": "If it wasn't you, change your password right away and remove the authenticator in Supabase (Authentication → Users)."
+    },
+    "device": {
+      "desktop": "computer",
+      "mobile": "phone",
+      "tablet": "tablet"
+    },
+    "browser": {
+      "chrome": "Chrome",
+      "safari": "Safari",
+      "firefox": "Firefox",
+      "edge": "Edge",
+      "samsung": "Samsung Internet",
+      "opera": "Opera",
+      "other": "another browser"
+    }
   }
 }

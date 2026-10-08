@@ -69,6 +69,84 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_audit: {
+        Row: {
+          created_at: string
+          id: number
+          ip_hash: string | null
+          kind: Database["public"]["Enums"]["admin_audit_kind"]
+          target: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          ip_hash?: string | null
+          kind: Database["public"]["Enums"]["admin_audit_kind"]
+          target: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          ip_hash?: string | null
+          kind?: Database["public"]["Enums"]["admin_audit_kind"]
+          target?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      admin_login_attempts: {
+        Row: {
+          created_at: string
+          email_hash: string | null
+          id: number
+          ip_hash: string
+          stage: string
+          success: boolean
+        }
+        Insert: {
+          created_at?: string
+          email_hash?: string | null
+          id?: never
+          ip_hash: string
+          stage: string
+          success: boolean
+        }
+        Update: {
+          created_at?: string
+          email_hash?: string | null
+          id?: never
+          ip_hash?: string
+          stage?: string
+          success?: boolean
+        }
+        Relationships: []
+      }
+      admin_sessions: {
+        Row: {
+          ended_at: string | null
+          last_seen_at: string
+          session_id: string
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          ended_at?: string | null
+          last_seen_at?: string
+          session_id: string
+          started_at: string
+          user_id: string
+        }
+        Update: {
+          ended_at?: string | null
+          last_seen_at?: string
+          session_id?: string
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ai_usage: {
         Row: {
           cache_read_tokens: number
@@ -2649,6 +2727,8 @@ export type Database = {
         Args: { _code: string; _user_id: string }
         Returns: string
       }
+      admin_session_end: { Args: never; Returns: undefined }
+      admin_session_touch: { Args: { _activity?: boolean }; Returns: Json }
       analytics_take_quota: {
         Args: { _limit: number; _units: number; _user_id: string }
         Returns: number
@@ -2858,6 +2938,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      jwt_totp_at: { Args: { _claims: Json }; Returns: string }
       mark_invoice_paid: {
         Args: { _invoice_id: string }
         Returns: {
@@ -3644,6 +3725,7 @@ export type Database = {
       workspace_read_only: { Args: { _owner: string }; Returns: boolean }
     }
     Enums: {
+      admin_audit_kind: "login" | "view" | "export"
       app_role: "owner" | "admin" | "user"
       app_section:
         | "dashboard"
@@ -3843,6 +3925,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      admin_audit_kind: ["login", "view", "export"],
       app_role: ["owner", "admin", "user"],
       app_section: [
         "dashboard",

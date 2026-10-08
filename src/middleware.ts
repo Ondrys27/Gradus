@@ -1,5 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import {
+  ADMIN_NOT_FOUND_PATH,
+  claimsMayEnterAdmin,
+  isAdminLoginPath,
+  isAdminPath,
+  parseSessionStatus,
+} from "@/features/admin/access";
 import { HOME_PATH, loginUrlFor, routeKind, safeNextPath } from "@/lib/auth/routes";
 import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, URL_LOCALE_HEADER } from "@/i18n/locale-cookie";
 import { localizedPath, pageForPath, type SiteLocale } from "@/lib/routes";
@@ -14,6 +21,15 @@ import type { Database } from "@/types/database";
  * page change never waits on a round trip to the auth server.
  */
 export async function middleware(request: NextRequest) {
+  const response = await route(request);
+  // The administration is never indexed. Its 404 stays identical to any other.
+  if (isAdminPath(request.nextUrl.pathname) && response.status !== 404) {
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
+  return response;
+}
+
+async function route(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient<Database>(supabaseUrl(), supabasePublicKey(), {
@@ -34,6 +50,24 @@ export async function middleware(request: NextRequest) {
   const signedIn = Boolean(data?.claims?.sub);
 
   const { pathname, search } = request.nextUrl;
+
+  // Owner with the second factor and a live admin session, or the site's 404.
+  // The sign-in page is the only way in; it checks the role itself.
+  if (isAdminPath(pathname) && !isAdminLoginPath(pathname)) {
+    let allowed = false;
+    if (claimsMayEnterAdmin(data?.claims)) {
+      const touched = await supabase.rpc("admin_session_touch", { _activity: true });
+      allowed = !touched.error && parseSessionStatus(touched.data).status === "ok";
+    }
+    if (!allowed) {
+      const notFound = NextResponse.rewrite(new URL(ADMIN_NOT_FOUND_PATH, request.url), {
+        status: 404,
+      });
+      response.cookies.getAll().forEach((cookie) => notFound.cookies.set(cookie));
+      return notFound;
+    }
+  }
+
   const kind = routeKind(pathname);
   const page = pageForPath(pathname);
   const storedLocale = request.cookies.get(LOCALE_COOKIE)?.value;
