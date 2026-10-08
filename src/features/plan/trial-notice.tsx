@@ -1,11 +1,13 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HourglassIcon, LockIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { buttonVariants } from "@/components/ui/button";
 import { useSession } from "@/features/account/queries";
+import { track } from "@/lib/analytics/client";
 import { PLAN_PATH } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { trialNotice } from "./plan";
@@ -15,12 +17,27 @@ import { usePlan } from "./queries";
  * Above the content: a quiet bar while the trial runs (louder in its last
  * three days), a card once it ended and the workspace is read-only.
  */
+/** The notice is recorded once per load, not on every page it appears on. */
+let noticeTracked = false;
+
 export function TrialNotice() {
   const t = useTranslations("trial");
   const plan = usePlan();
   const { worker } = useSession();
   const pathname = usePathname();
   const notice = trialNotice(plan);
+  const shownKind =
+    notice.kind === "none" || pathname === PLAN_PATH || (worker && notice.kind === "trial")
+      ? null
+      : notice.kind;
+  const daysLeft = notice.kind === "trial" ? notice.daysLeft : 0;
+
+  // Once per load of the app: the trial's state as the owner sees it.
+  useEffect(() => {
+    if (!shownKind || noticeTracked) return;
+    noticeTracked = true;
+    track("trial_notice_shown", { days_left: daysLeft, expired: shownKind === "expired" });
+  }, [shownKind, daysLeft]);
 
   // The plan page says it all itself.
   if (notice.kind === "none" || pathname === PLAN_PATH) return null;

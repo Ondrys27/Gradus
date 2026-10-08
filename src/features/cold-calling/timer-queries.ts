@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
+import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import type { TimerReading } from "./timer-logic";
@@ -49,11 +50,13 @@ export function useTimerAction() {
       if (action === "start") {
         const { error } = await supabase.rpc("start_prospecting");
         if (error) throw error;
+        track("timer_started", {});
         return { idleAt: null };
       }
       const { data, error } = await supabase.rpc("pause_prospecting");
       if (error) throw error;
       const segment = data as { end_reason: string | null; ended_at: string | null } | null;
+      track("timer_paused", { found_idle: segment?.end_reason === "idle" });
       return { idleAt: segment?.end_reason === "idle" ? segment.ended_at : null };
     },
     // The timer and today's bar in the statistics.

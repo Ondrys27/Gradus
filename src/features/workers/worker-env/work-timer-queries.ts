@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
 import type { TimerReading } from "@/features/cold-calling/timer-logic";
+import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { workerKeys } from "../queries";
@@ -49,11 +50,13 @@ export function useWorkAction(workerId: string) {
       if (action === "start") {
         const { error } = await supabase.rpc("start_work_session", { _worker_id: workerId });
         if (error) throw error;
+        track("work_timer_started", {});
         return { idleAt: null };
       }
       const { data, error } = await supabase.rpc("pause_work_session", { _worker_id: workerId });
       if (error) throw error;
       const session = data as { end_reason: string | null; ended_at: string | null } | null;
+      track("work_timer_paused", { found_idle: session?.end_reason === "idle" });
       return { idleAt: session?.end_reason === "idle" ? session.ended_at : null };
     },
     // Closing a session may have created an hourly earning.

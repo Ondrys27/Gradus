@@ -105,6 +105,8 @@ function ComposeForm({
   );
   const [showAiHelper, setShowAiHelper] = useState(false);
   const [receivedEmail, setReceivedEmail] = useState("");
+  // Whether the body started from Jarvis's draft, for "used AI drafts" (never the text).
+  const [usedAiDraft, setUsedAiDraft] = useState(false);
 
   const sendCode = send.error ? errorCodeOf(send.error).code : null;
   const sendDetail = send.error ? errorCodeOf(send.error).detail : undefined;
@@ -142,6 +144,7 @@ function ComposeForm({
         subject: subject.trim(),
         body: body.trim(),
         files,
+        usedAiDraft,
       });
       onSent({ subject: subject.trim(), body: body.trim() });
       onDone();
@@ -159,6 +162,7 @@ function ComposeForm({
         receivedEmail: receivedEmail.trim(),
       });
       setBody(reply);
+      setUsedAiDraft(true);
     } catch {
       // The error banner below shows the reason.
     }

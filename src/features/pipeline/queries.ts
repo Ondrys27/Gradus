@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
 import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { invalidateFinance } from "@/features/finance/queries";
+import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
 import { applyMove, nextDealPosition, reorderStages, sortStages } from "./board-logic";
 import type { DealInput, StageInput } from "./schemas";
@@ -148,6 +149,22 @@ export function useCreateDeal() {
       return data;
     },
     onSuccess: (row) => {
+      track("deal_created", {
+        currency: row.currency,
+        ...(row.value !== null ? { value: row.value } : {}),
+        has_contact: row.contact_id !== null,
+      });
+      // Created straight into a won stage is a win too.
+      const stage = queryClient
+        .getQueryData<Stage[]>(pipelineKeys.stages(user.id))
+        ?.find((item) => item.id === row.stage_id);
+      if (stage?.is_won) {
+        track("deal_won", {
+          currency: row.currency,
+          ...(row.value !== null ? { value: row.value } : {}),
+          days_open: 0,
+        });
+      }
       queryClient.setQueryData<Deal[]>(pipelineKeys.deals(user.id), (deals) =>
         deals ? [row, ...deals] : deals,
       );
@@ -174,6 +191,7 @@ export function useUpdateDeal(id: string) {
       return data;
     },
     onSuccess: (row) => {
+      track("deal_updated", {});
       queryClient.setQueryData<Deal[]>(pipelineKeys.deals(user.id), (deals) =>
         deals?.map((deal) => (deal.id === row.id ? row : deal)),
       );
@@ -192,6 +210,7 @@ export function useDeleteDeal() {
       return id;
     },
     onSuccess: (id) => {
+      track("deal_deleted", {});
       queryClient.setQueryData<Deal[]>(pipelineKeys.deals(user.id), (deals) =>
         deals?.filter((deal) => deal.id !== id),
       );
@@ -222,6 +241,12 @@ export function useMoveDeal() {
         })
         .eq("id", deal.id);
       if (error) throw error;
+      trackMove(
+        deal,
+        stage,
+        lostReason,
+        queryClient.getQueryData<Stage[]>(pipelineKeys.stages(user.id)),
+      );
     },
     onMutate: async ({ deal, stage, lostReason }) => {
       await queryClient.cancelQueries({ queryKey: key });
@@ -255,6 +280,32 @@ export function useMoveDeal() {
   });
 }
 
+/** A stage change as analytics sees it: positions and times, plus a win or a loss with its value. */
+function trackMove(deal: Deal, stage: Stage, lostReason: string | undefined, stages?: Stage[]) {
+  const now = Date.now();
+  const from = stages?.find((item) => item.id === deal.stage_id);
+  const value = deal.value !== null ? { value: deal.value } : {};
+  track("deal_moved", {
+    from_position: Math.max(0, from?.position ?? 0),
+    to_position: Math.max(0, stage.position),
+    hours_in_stage: Math.max(
+      0,
+      Math.floor((now - new Date(deal.entered_stage_at).getTime()) / 3_600_000),
+    ),
+    to_won: stage.is_won,
+    to_lost: stage.is_lost,
+  });
+  if (stage.is_won && !from?.is_won) {
+    track("deal_won", {
+      currency: deal.currency,
+      ...value,
+      days_open: Math.max(0, Math.floor((now - new Date(deal.created_at).getTime()) / 86_400_000)),
+    });
+  } else if (stage.is_lost && !from?.is_lost) {
+    track("deal_lost", { currency: deal.currency, ...value, has_reason: Boolean(lostReason) });
+  }
+}
+
 export function useCreateStage() {
   const { user } = useSession();
   const workspaceId = useWorkspaceId();
@@ -279,6 +330,7 @@ export function useCreateStage() {
       return data;
     },
     onSuccess: (row) => {
+      track("pipeline_stage_edited", { action: "create" });
       queryClient.setQueryData<Stage[]>(pipelineKeys.stages(user.id), (stages) =>
         stages ? sortStages([...stages, row]) : stages,
       );
@@ -295,6 +347,7 @@ export function useRenameStage() {
       if (error) throw error;
     },
     onSuccess: (_result, { id, name }) => {
+      track("pipeline_stage_edited", { action: "rename" });
       queryClient.setQueryData<Stage[]>(pipelineKeys.stages(user.id), (stages) =>
         stages?.map((stage) => (stage.id === id ? { ...stage, name } : stage)),
       );
@@ -317,6 +370,7 @@ export function useSetDepositStage() {
         _percent: percent,
       });
       if (error) throw error;
+      track("pipeline_stage_edited", { action: "deposit" });
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: pipelineKeys.stages(user.id) }),
   });
@@ -342,6 +396,7 @@ export function useReorderStages() {
       );
       const failed = results.find((result) => result.error);
       if (failed?.error) throw failed.error;
+      track("pipeline_stage_edited", { action: "reorder" });
     },
     onMutate: async ({ activeId, overId }) => {
       await queryClient.cancelQueries({ queryKey: key });
@@ -367,6 +422,7 @@ export function useRemoveStage() {
         _move_to: moveTo ?? undefined,
       });
       if (error) throw error;
+      track("pipeline_stage_edited", { action: "remove" });
     },
     onSuccess: () =>
       Promise.all([
@@ -415,6 +471,13 @@ export function useCreateContact() {
         .select("id, company_name, first_name, last_name")
         .single();
       if (error) throw error;
+      track("contact_created", {
+        source: "manual",
+        where: "pipeline",
+        has_email: false,
+        has_phone: false,
+        has_website: false,
+      });
       return data;
     },
   });

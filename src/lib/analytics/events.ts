@@ -4,6 +4,7 @@ import { PROACTIVE_KINDS } from "@/features/jarvis/proactive";
 import { PROACTIVE_REACTIONS } from "@/features/jarvis/protocol";
 import { INDUSTRY_KEYS } from "@/features/onboarding/industries";
 import { XP_REASONS } from "@/features/game/rules";
+import { Constants } from "@/types/database";
 import { field, isSafeField, isScrubbedTextField } from "./fields";
 import { APP_ROUTES, ANALYTICS_SECTIONS, type AnalyticsSection } from "./routes";
 
@@ -85,10 +86,11 @@ const FAILURE_REASONS = [
   "other",
   "custom",
 ] as const;
-const FIELD_TYPES = ["text", "long_text", "date", "datetime", "select", "boolean"] as const;
-const ACTIVITY_TYPES = ["call", "email", "meeting", "note", "move", "sms"] as const;
-const CALENDAR_KINDS = ["meeting", "call", "reminder", "other"] as const;
-const RECURRING_FREQUENCIES = ["weekly", "monthly", "quarterly", "yearly"] as const;
+const DB_ENUMS = Constants.public.Enums;
+const FIELD_TYPES = DB_ENUMS.contact_field_type;
+const ACTIVITY_TYPES = DB_ENUMS.contact_activity_type;
+const CALENDAR_KINDS = DB_ENUMS.calendar_event_kind;
+const RECURRING_FREQUENCIES = DB_ENUMS.recurring_frequency;
 const SETTINGS = [
   "locale",
   "currency",
@@ -105,6 +107,7 @@ const SETTINGS = [
   "jarvis_frequency",
   "jarvis_quiet_hours",
   "reengage_months",
+  "daily_call_goal",
 ] as const;
 const CRON_JOBS = [
   "call_time_stats",
@@ -177,10 +180,12 @@ export const EVENTS = {
     index: count(20),
     mode: optional(oneOf(MODES)),
   }),
+  /** `skipped_at`: the step where Skip ended it early. */
   onboarding_completed: event("onboarding", "client", false, {
     mode: oneOf(MODES),
     industry: optional(oneOf(INDUSTRY_KEYS)),
     path: optional(key()),
+    skipped_at: optional(oneOf(ONBOARDING_STEPS)),
   }),
   tour_step_viewed: event("onboarding", "client", false, {
     step: oneOf(TOUR_STEPS),
@@ -234,27 +239,26 @@ export const EVENTS = {
     has_target_date: bool(),
   }),
   milestone_updated: event("milestones", "client", true, { has_reward: bool() }),
+  /** The milestone's id leads to its chapter (template and position) for "where people get stuck". */
   milestone_completed: event("milestones", "client", true, {
     milestone_id: id(),
     from_template: bool(),
-    /** The chapter's order in its path, for "where people get stuck". */
-    chapter: optional(count(100)),
     task_count: count(10_000),
     days_open: count(100_000),
     has_reward: bool(),
   }),
-  milestone_reopened: event("milestones", "client", true, { from_template: bool() }),
-  milestone_deleted: event("milestones", "client", true, { from_template: bool() }),
+  milestone_reopened: event("milestones", "client", true, {}),
+  milestone_deleted: event("milestones", "client", true, {}),
   milestone_review_requested: event("milestones", "client", true, { auto: bool() }),
   task_created: event("milestones", "client", true, {
     depth: count(100),
     is_subtask: bool(),
   }),
   task_updated: event("milestones", "client", true, {}),
+  /** Depth is known in the milestone; the dashboard's list does not carry it. */
   task_completed: event("milestones", "client", true, {
-    depth: count(100),
-    is_subtask: bool(),
-    from_template: bool(),
+    depth: optional(count(100)),
+    is_subtask: optional(bool()),
     where: oneOf(["milestone", "dashboard"]),
   }),
   task_reopened: event("milestones", "client", true, { where: oneOf(["milestone", "dashboard"]) }),
@@ -359,7 +363,8 @@ export const EVENTS = {
 
   // --- cold calling ----------------------------------------------------------
   timer_started: event("cold_calling", "client", true, {}),
-  timer_paused: event("cold_calling", "client", true, { seconds: optional(count(86_400)) }),
+  /** `found_idle`: the timer had already stopped itself after 15 idle minutes. */
+  timer_paused: event("cold_calling", "client", true, { found_idle: bool() }),
 
   // --- calendar -----------------------------------------------------------
   calendar_event_created: event("calendar", "client", true, {
@@ -396,9 +401,7 @@ export const EVENTS = {
   worker_invited: event("workers", "client", true, {}),
   worker_invite_renewed: event("workers", "client", true, {}),
   worker_invite_accepted: event("workers", "server", false, {}),
-  worker_updated: event("workers", "client", true, {
-    status: optional(oneOf(["invited", "active", "inactive"])),
-  }),
+  worker_updated: event("workers", "client", true, {}),
   worker_permissions_saved: event("workers", "client", true, {
     view_sections: count(20),
     edit_sections: count(20),
@@ -409,10 +412,13 @@ export const EVENTS = {
     by: oneOf(["owner", "worker"]),
   }),
   worker_task_deleted: event("workers", "client", true, {}),
-  worker_earnings_approved: event("workers", "client", true, { count: count(10_000) }),
-  worker_payment_recorded: event("workers", "client", true, { currency: isoCode(3) }),
+  worker_earnings_approved: event("workers", "client", true, {
+    all: bool(),
+    count: optional(count(10_000)),
+  }),
+  worker_payment_recorded: event("workers", "client", true, {}),
   work_timer_started: event("workers", "client", true, {}),
-  work_timer_paused: event("workers", "client", true, {}),
+  work_timer_paused: event("workers", "client", true, { found_idle: bool() }),
   reward_rules_confirmed: event("workers", "client", true, { rules: count(1000) }),
 
   // --- search --------------------------------------------------------------
@@ -462,9 +468,13 @@ export const EVENTS = {
     tasks_created: optional(count(100)),
     question: optional(key()),
   }),
-  jarvis_suggestion_dismissed: event("jarvis", "client", false, {}),
+  /** A card in Jarvis's panel: used (open, ask, undo) or dismissed. */
+  jarvis_suggestion_reacted: event("jarvis", "client", false, {
+    reaction: oneOf(["used", "dismissed"]),
+    action: oneOf(["open", "ask", "undoTask"]),
+  }),
   /** Something Jarvis did on his own, shown with an Undo. */
-  jarvis_auto_action: event("jarvis", "client", false, { action: key() }),
+  jarvis_auto_action: event("jarvis", "server", false, { action: key() }),
   jarvis_auto_action_undone: event("jarvis", "client", true, { action: key() }),
   sales_analysis_requested: event("jarvis", "client", true, { ok: bool() }),
 

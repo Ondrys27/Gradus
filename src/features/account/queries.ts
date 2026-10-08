@@ -20,6 +20,8 @@ import {
   type SessionUser,
   type WorkerAccount,
 } from "./types";
+import { flush, track } from "@/lib/analytics/client";
+import { settingsEvents } from "@/lib/analytics/settings-events";
 
 export const accountKeys = {
   profile: (userId: string) => ["account", userId, "profile"] as const,
@@ -117,7 +119,10 @@ export function useUpdateSettings() {
         }
       }
     },
-    onSuccess: (row) => queryClient.setQueryData(key, row),
+    onSuccess: (row, patch) => {
+      for (const props of settingsEvents(patch)) track("settings_changed", props);
+      queryClient.setQueryData(key, row);
+    },
   });
 }
 
@@ -155,5 +160,10 @@ export function useUpdateProfile() {
 
 export function useSignOut() {
   const queryClient = useQueryClient();
-  return () => signOutEverywhereInTab(queryClient);
+  return () => {
+    track("signed_out", {});
+    // The queue goes out before the tab leaves the app.
+    flush({ beacon: true });
+    return signOutEverywhereInTab(queryClient);
+  };
 }

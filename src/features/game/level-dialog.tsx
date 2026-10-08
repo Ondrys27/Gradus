@@ -26,6 +26,7 @@ import { useGameState } from "./queries";
 import { levelProgress, MAX_LEVEL, tierForLevel } from "./rules";
 import { localized, SECTION_UNLOCK_KEYS, type LockableSection } from "./types";
 import { GameIcon } from "./unlock-icon";
+import { track } from "@/lib/analytics/client";
 
 /** Where a suggestion leads: the milestone itself, or the section the action happens in. */
 function suggestionHref(suggestion: XpSuggestion): string {
@@ -70,6 +71,10 @@ export function LevelDialog({
     if (open && game.data) markSeen.mutate(game.data.level);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once per opening and level
   }, [open, game.data?.level]);
+  useEffect(() => {
+    if (open) track("level_dialog_opened", { level });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per opening
+  }, [open]);
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>

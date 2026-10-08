@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import {
   useMutation,
   useMutationState,
@@ -10,6 +11,7 @@ import {
 import { useSession } from "@/features/account/queries";
 import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { JarvisJobError, postJarvisJob } from "@/features/jarvis/queries";
+import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
 import type { MilestoneInput, TaskInput } from "./schemas";
 import {
@@ -19,6 +21,7 @@ import {
   reopenedMilestone,
   reorderSiblings,
   subtreeIds,
+  taskDepth,
   type PositionChange,
 } from "./task-tree";
 import {
@@ -151,6 +154,7 @@ export function useReviewMilestone() {
   return useMutation({
     mutationKey: REVIEW_MUTATION,
     mutationFn: async (id: string) => {
+      track("milestone_review_requested", { auto: true });
       const result = await postJarvisJob<{ feedback: string }>({
         kind: "milestoneReview",
         milestoneId: id,
@@ -195,6 +199,12 @@ export function useCreateMilestone() {
       return data;
     },
     onSuccess: (row) => {
+      track("milestone_created", {
+        where: "form",
+        category: row.category,
+        has_reward: Boolean(row.reward),
+        has_target_date: Boolean(row.target_date),
+      });
       queryClient.setQueryData(milestoneKeys.detail(user.id, row.id), row);
       // Jarvis looks at every new milestone once; a failure only means no feedback.
       review.mutate(row.id);
@@ -224,7 +234,10 @@ export function useUpdateMilestone(id: string) {
       if (error) throw error;
       return data;
     },
-    onSuccess: (row) => syncMilestone(queryClient, user.id, row),
+    onSuccess: (row) => {
+      track("milestone_updated", { has_reward: Boolean(row.reward) });
+      syncMilestone(queryClient, user.id, row);
+    },
   });
 }
 
@@ -241,12 +254,33 @@ export function useSetMilestoneStatus(id: string) {
         .from("milestones")
         .update({ status })
         .eq("id", id)
-        .select(MILESTONE_COLUMNS)
+        .select(`${MILESTONE_COLUMNS}, template_id`)
         .single();
       if (error) throw error;
       return data;
     },
-    onSuccess: (row) => syncMilestone(queryClient, user.id, row),
+    onSuccess: (row) => {
+      if (row.status === "completed") {
+        const counts = queryClient
+          .getQueryData<MilestoneWithCounts[]>(milestoneKeys.list(user.id))
+          ?.find((item) => item.id === row.id);
+        const tasks = queryClient.getQueryData<Task[]>(milestoneKeys.tasks(user.id, row.id));
+        const finished = row.completed_at ? new Date(row.completed_at) : new Date();
+        track("milestone_completed", {
+          milestone_id: row.id,
+          from_template: row.template_id !== null,
+          task_count: tasks?.length ?? counts?.total ?? 0,
+          days_open: Math.max(
+            0,
+            Math.floor((finished.getTime() - new Date(row.created_at).getTime()) / 86_400_000),
+          ),
+          has_reward: Boolean(row.reward),
+        });
+      } else if (row.status === "active") {
+        track("milestone_reopened", {});
+      }
+      syncMilestone(queryClient, user.id, row);
+    },
   });
 }
 
@@ -260,6 +294,7 @@ export function useDeleteMilestone(id: string) {
       if (error) throw error;
     },
     onSuccess: () => {
+      track("milestone_deleted", {});
       queryClient.removeQueries({ queryKey: milestoneKeys.detail(user.id, id) });
       queryClient.removeQueries({ queryKey: milestoneKeys.tasks(user.id, id) });
       queryClient.setQueryData<MilestoneWithCounts[]>(milestoneKeys.list(user.id), (list) =>
@@ -351,6 +386,8 @@ export function useCreateTask(milestoneId: string) {
         .select(TASK_COLUMNS)
         .single();
       if (error) throw error;
+      const depth = parentId ? taskDepth(tasks, parentId) + 1 : 0;
+      track("task_created", { depth, is_subtask: depth > 0 });
       return data;
     },
     onSuccess: (row, _variables, tasks) => reopenAncestors([...tasks, row], row.id),
@@ -362,6 +399,7 @@ export function useUpdateTask(milestoneId: string) {
     mutationFn: async ({ id, input }) => {
       const { error } = await createClient().from("tasks").update(toTaskRow(input)).eq("id", id);
       if (error) throw error;
+      track("task_updated", {});
     },
     apply: (tasks, { id, input }) => {
       const { status, ...fields } = toTaskRow(input);
@@ -373,24 +411,42 @@ export function useUpdateTask(milestoneId: string) {
 }
 
 export function useSetTaskStatus(milestoneId: string) {
+  // What the task was before the change, noted when the cache is updated, for the event.
+  const before = useRef(new Map<string, { status: TaskStatus; depth: number }>());
   return useTaskMutation<{ id: string; status: TaskStatus }>(milestoneId, {
     mutationFn: async ({ id, status }) => {
       const { error } = await createClient().from("tasks").update({ status }).eq("id", id);
       if (error) throw error;
+      const previous = before.current.get(id);
+      before.current.delete(id);
+      const depth = previous?.depth ?? 0;
+      if (status === "done" && previous?.status !== "done") {
+        track("task_completed", { depth, is_subtask: depth > 0, where: "milestone" });
+      } else if (status !== "done" && previous?.status === "done") {
+        track("task_reopened", { where: "milestone" });
+      }
     },
-    apply: (tasks, { id, status }) => applyStatusChange(tasks, id, status).tasks,
+    apply: (tasks, { id, status }) => {
+      const task = tasks.find((item) => item.id === id);
+      if (task) before.current.set(id, { status: task.status, depth: taskDepth(tasks, id) });
+      return applyStatusChange(tasks, id, status).tasks;
+    },
   });
 }
 
 /** Subtasks are deleted with their task (cascade in the database). */
 export function useDeleteTask(milestoneId: string) {
+  const removedCount = useRef(new Map<string, number>());
   return useTaskMutation<string>(milestoneId, {
     mutationFn: async (id) => {
       const { error } = await createClient().from("tasks").delete().eq("id", id);
       if (error) throw error;
+      track("task_deleted", { removed: removedCount.current.get(id) ?? 1 });
+      removedCount.current.delete(id);
     },
     apply: (tasks, id) => {
       const removed = subtreeIds(tasks, id);
+      removedCount.current.set(id, removed.size);
       return tasks.filter((task) => !removed.has(task.id));
     },
   });
@@ -409,6 +465,7 @@ export function useReorderTasks(milestoneId: string) {
         );
         const failed = results.find((result) => result.error);
         if (failed?.error) throw failed.error;
+        track("tasks_reordered", {});
       },
       apply: (tasks, { activeId, overId }) => reorderSiblings(tasks, activeId, overId).tasks,
     },

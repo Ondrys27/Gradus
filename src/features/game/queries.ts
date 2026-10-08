@@ -8,6 +8,7 @@ import {
   type CelebrationOptions,
 } from "@/components/celebration/celebration-provider";
 import { accountKeys, useProfile, useSession } from "@/features/account/queries";
+import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { parseAwardResult, parseGameState } from "./parse";
@@ -57,17 +58,26 @@ export function useGameCelebrate() {
   const { celebrate } = useCelebration();
   const toolMode = useProfile().mode === "tool";
   return useCallback(
-    (options: CelebrationOptions, moment: CelebrationMoment = "other") => {
+    (
+      options: CelebrationOptions,
+      moment: CelebrationMoment = "other",
+      kind: CelebrationKind = moment,
+    ) => {
       if (!toolMode) {
+        track("celebration_shown", { kind, quiet: false });
         celebrate(options);
         return;
       }
       if (moment === "other") return;
+      track("celebration_shown", { kind, quiet: true });
       celebrate({ title: options.title, subtitle: options.subtitle, reward: options.reward });
     },
     [celebrate, toolMode],
   );
 }
+
+/** What a celebration was for, as analytics counts them. */
+type CelebrationKind = CelebrationMoment | "level" | "achievement" | "unlock";
 
 /**
  * Plays the big moments an award brings, in order: the caller's own (a
@@ -82,33 +92,64 @@ function useCelebrateAward() {
     // The caller's own moment (a milestone, a won deal) first, then what it led to.
     if (own) celebrate(own, moment);
     for (const item of result.unlocks.filter((unlock) => unlock.source === "milestone")) {
-      celebrate({
-        title: t("unlocked.title"),
-        subtitle: t("unlocked.subtitle", { name: localized(item.name, locale) }),
-      });
+      celebrate(
+        {
+          title: t("unlocked.title"),
+          subtitle: t("unlocked.subtitle", { name: localized(item.name, locale) }),
+        },
+        "other",
+        "unlock",
+      );
     }
     if (result.leveledUp) {
-      celebrate({
-        title: t("levelUp.title", { level: result.level }),
-        subtitle: t(`tiers.${tierForLevel(result.level)}`),
-        level: result.level,
-        rewards: result.unlocks
-          .filter((item) => item.source === "level")
-          .map((item) => ({
-            key: item.key,
-            name: localized(item.name, locale),
-            description: localized(item.description, locale),
-            icon: item.icon,
-          })),
-      });
+      celebrate(
+        {
+          title: t("levelUp.title", { level: result.level }),
+          subtitle: t(`tiers.${tierForLevel(result.level)}`),
+          level: result.level,
+          rewards: result.unlocks
+            .filter((item) => item.source === "level")
+            .map((item) => ({
+              key: item.key,
+              name: localized(item.name, locale),
+              description: localized(item.description, locale),
+              icon: item.icon,
+            })),
+        },
+        "other",
+        "level",
+      );
     }
     for (const achievement of result.achievements) {
-      celebrate({
-        title: t("achievementEarned"),
-        subtitle: localized(achievement.name, locale),
-      });
+      celebrate(
+        {
+          title: t("achievementEarned"),
+          subtitle: localized(achievement.name, locale),
+        },
+        "other",
+        "achievement",
+      );
     }
   };
+}
+
+/** What an award brought, as events: XP, a new level, badges and unlocks. */
+function trackAward(result: AwardResult) {
+  if (!result.awarded) return;
+  track("xp_awarded", {
+    reason: result.reason,
+    xp: Math.max(0, result.xp),
+    level: result.level,
+    total_xp: Math.max(0, result.totalXp),
+    streak: Math.max(0, result.streak),
+  });
+  if (result.leveledUp) track("level_reached", { level: result.level });
+  for (const achievement of result.achievements) {
+    track("achievement_earned", { achievement: achievement.key });
+  }
+  for (const unlock of result.unlocks) {
+    track("section_unlocked", { unlock: unlock.key, source: unlock.source });
+  }
 }
 
 export type AwardInput = {
@@ -140,6 +181,7 @@ export function useAwardXp() {
       return parseAwardResult(data);
     },
     onSuccess: (result, variables) => {
+      trackAward(result);
       if (result.awarded) {
         queryClient.setQueryData(gameKeys.state(user.id), (prev: GameState | undefined) =>
           prev
@@ -162,6 +204,7 @@ export function useSetGameMode() {
     mutationFn: async (mode: GameMode) => {
       const { error } = await createClient().from("profiles").update({ mode }).eq("id", user.id);
       if (error) throw error;
+      track("game_mode_changed", { to: mode, where: "settings" });
     },
     onSuccess: () =>
       Promise.all([
@@ -199,6 +242,7 @@ export function useChoosePath() {
     mutationFn: async (pathKey: string) => {
       const { error } = await createClient().rpc("choose_path", { _path_key: pathKey });
       if (error) throw error;
+      track("path_chosen", { path: pathKey, where: "settings" });
     },
     onSuccess: () =>
       Promise.all([

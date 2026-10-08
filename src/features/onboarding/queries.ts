@@ -9,8 +9,10 @@ import type { GameMode } from "@/features/game/types";
 import { jarvisKeys } from "@/features/jarvis/queries";
 import { milestoneKeys } from "@/features/milestones/queries";
 import { MILESTONE_COLUMNS, TASK_COLUMNS, type Milestone } from "@/features/milestones/types";
+import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
 import { industryKeyOf, type IndustryKey } from "./industries";
+import type { OnboardingStep } from "./types";
 
 /** The milestone plus its three suggested tasks, created together on step 4. */
 export function useCreateFirstMilestone() {
@@ -53,7 +55,16 @@ export function useCreateFirstMilestone() {
 
       return milestone;
     },
-    onSuccess: (row) => {
+    onSuccess: (row, { tasks }) => {
+      track("milestone_created", {
+        where: "onboarding",
+        category: row.category,
+        has_reward: false,
+        has_target_date: false,
+      });
+      for (const title of tasks) {
+        if (title.trim()) track("task_created", { depth: 0, is_subtask: false });
+      }
       queryClient.setQueryData(milestoneKeys.detail(user.id, row.id), row);
       void queryClient.invalidateQueries({ queryKey: milestoneKeys.list(user.id) });
     },
@@ -66,6 +77,8 @@ export type FinishOnboardingInput = {
   mode: GameMode;
   /** The path picked in game mode; the one for the industry when none was picked. */
   pathKey: string | null;
+  /** The step where Skip ended the wizard, if it did. */
+  skippedAt?: OnboardingStep;
 };
 
 /**
@@ -78,7 +91,7 @@ export function useFinishOnboarding() {
   const { user } = useSession();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ industry, mode, pathKey }: FinishOnboardingInput) => {
+    mutationFn: async ({ industry, mode, pathKey, skippedAt }: FinishOnboardingInput) => {
       const { data, error } = await createClient()
         .from("profiles")
         .update({
@@ -90,15 +103,24 @@ export function useFinishOnboarding() {
         .select(PROFILE_COLUMNS)
         .single();
       if (error) throw error;
+      let chosen: string | null = null;
       if (mode === "game") {
-        const path = pathKey ?? pathForIndustry(await fetchPaths(), industryKeyOf(industry));
-        if (path) {
+        chosen = pathKey ?? pathForIndustry(await fetchPaths(), industryKeyOf(industry));
+        if (chosen) {
           const { error: pathError } = await createClient().rpc("choose_path", {
-            _path_key: path,
+            _path_key: chosen,
           });
           if (pathError) throw pathError;
+          track("path_chosen", { path: chosen, where: "onboarding" });
         }
       }
+      track("game_mode_changed", { to: mode, where: "onboarding" });
+      track("onboarding_completed", {
+        mode,
+        industry: industryKeyOf(industry),
+        ...(chosen ? { path: chosen } : {}),
+        ...(skippedAt ? { skipped_at: skippedAt } : {}),
+      });
       return { profile: data };
     },
     onSuccess: ({ profile }) => {

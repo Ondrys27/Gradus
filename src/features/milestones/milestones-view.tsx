@@ -18,6 +18,7 @@ import { MilestoneFormDialog } from "./milestone-form-dialog";
 import { useMilestones } from "./queries";
 import { sortMilestones } from "./task-tree";
 import type { MilestoneCategory } from "./types";
+import { useViewTracking } from "@/lib/analytics/use-view-tracking";
 
 type Filter = "all" | MilestoneCategory;
 type View = "list" | "path";
@@ -43,6 +44,7 @@ export function MilestonesView() {
     if (value === "path") setView("path");
   });
   const showPath = hasPath && view === "path";
+  useViewTracking("milestones", showPath ? "path" : "list");
 
   const visible = useMemo(
     () => sortMilestones(data ?? []).filter((m) => filter === "all" || m.category === filter),

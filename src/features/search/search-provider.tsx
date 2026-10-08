@@ -1,7 +1,16 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { ReactNode } from "react";
+import { track } from "@/lib/analytics/client";
 import { SearchPalette } from "./search-palette";
 
 type SearchContextValue = { open: boolean; setOpen: (open: boolean) => void };
@@ -29,12 +38,19 @@ export function isSearchShortcut(
 /** Holds the search window's open state and listens for the shortcut. */
 export function SearchProvider({ children }: { children: ReactNode }) {
   const [open, setOpenState] = useState(false);
-  const setOpen = useCallback((next: boolean) => setOpenState(next), []);
+  const openRef = useRef(false);
+  openRef.current = open;
+  // Opening by a click (the triggers call this); closing is not an event.
+  const setOpen = useCallback((next: boolean) => {
+    if (next && !openRef.current) track("search_opened", { via: "click" });
+    setOpenState(next);
+  }, []);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (!isSearchShortcut(event) || event.repeat) return;
       event.preventDefault();
+      if (!openRef.current) track("search_opened", { via: "shortcut" });
       setOpenState((current) => !current);
     }
     window.addEventListener("keydown", onKeyDown);

@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toneFill } from "@/components/ui/tone";
 import { useAwardXp } from "@/features/game/queries";
 import { useFreshOnOpen } from "@/features/milestones/use-fresh-on-open";
+import { track } from "@/lib/analytics/client";
 import { instantToZonedParts, todayIsoDate, zonedWallClockToInstant } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
@@ -68,6 +69,7 @@ export function MoveContactDialog({
       <MoveSteps
         key={generation}
         contactId={contactId}
+        from={tables.find((table) => table.id === currentTableId) ?? null}
         // Clients fill themselves from won deals; nobody moves there by hand.
         targets={byPosition(tables).filter(
           (table) => table.id !== currentTableId && table.system_key !== "clients",
@@ -83,6 +85,7 @@ export function MoveContactDialog({
 
 function MoveSteps({
   contactId,
+  from,
   targets,
   targetSystemKey,
   prefillBySystemKey,
@@ -90,6 +93,7 @@ function MoveSteps({
   onMoved,
 }: {
   contactId: string;
+  from: ContactTable | null;
   targets: ContactTable[];
   targetSystemKey?: string;
   prefillBySystemKey?: Record<string, string>;
@@ -108,6 +112,7 @@ function MoveSteps({
       <AnswerForm
         key={target.id}
         contactId={contactId}
+        from={from}
         table={target}
         fields={fields}
         prefillBySystemKey={prefillBySystemKey}
@@ -149,6 +154,7 @@ function MoveSteps({
 
 function AnswerForm({
   contactId,
+  from,
   table,
   fields,
   prefillBySystemKey,
@@ -157,6 +163,7 @@ function AnswerForm({
   onMoved,
 }: {
   contactId: string;
+  from: ContactTable | null;
   table: ContactTable;
   fields: ContactField[];
   prefillBySystemKey?: Record<string, string>;
@@ -196,6 +203,7 @@ function AnswerForm({
       const meetingBooked = shown.some(
         (field) => field.system_key === MEETING_FIELD_KEY && field.id in toSave,
       );
+      trackMove(from, table, shown, toSave, meetingBooked);
       onDone();
       onMoved({ table, meetingBooked });
       // Quiet, small reward for every move; no confetti, just a bit of XP. The
@@ -251,6 +259,55 @@ function AnswerForm({
       </div>
     </form>
   );
+}
+
+const TABLE_KEYS = [
+  "unreached",
+  "no_answer",
+  "failed",
+  "meeting_scheduled",
+  "email_sent",
+  "follow_up",
+  "clients",
+] as const;
+const DEFAULT_REASONS = [
+  "has_solution",
+  "not_interested",
+  "no_budget",
+  "not_target_group",
+  "other",
+] as const;
+
+function tableKey(table: ContactTable | null) {
+  if (!table) return "none" as const;
+  return TABLE_KEYS.find((key) => key === table.system_key) ?? ("custom" as const);
+}
+
+/**
+ * The move as analytics sees it: which kinds of table, how many questions,
+ * whether a meeting was booked and, for Unsuccessful, which default reason.
+ * The answers themselves never leave.
+ */
+function trackMove(
+  from: ContactTable | null,
+  to: ContactTable,
+  shown: ContactField[],
+  saved: Record<string, unknown>,
+  meetingBooked: boolean,
+) {
+  const reasonField = shown.find((field) => field.system_key === "reason");
+  const answer = reasonField ? saved[reasonField.id] : undefined;
+  const reason =
+    typeof answer === "string"
+      ? (DEFAULT_REASONS.find((key) => key === answer) ?? ("custom" as const))
+      : undefined;
+  track("contact_moved", {
+    from_table: tableKey(from),
+    to_table: tableKey(to),
+    questions: shown.length,
+    meeting_booked: meetingBooked,
+    ...(reason ? { reason } : {}),
+  });
 }
 
 function AnswerField({

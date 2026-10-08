@@ -93,9 +93,13 @@ function useViewport(): Size {
 export function TourOverlay({
   steps,
   onFinish,
+  onStep,
 }: {
   steps: TourStep[];
-  onFinish: (how: "done" | "skipped") => void;
+  /** How it ended and on which step (its index). */
+  onFinish: (how: "done" | "skipped", index: number) => void;
+  /** Every step shown, for the tour's drop-off. */
+  onStep?: (index: number) => void;
 }) {
   const t = useTranslations("jarvis.tour");
   const router = useRouter();
@@ -108,6 +112,7 @@ export function TourOverlay({
   const step = steps[Math.min(index, steps.length - 1)]!;
   const last = index >= steps.length - 1;
   const box = useTargetBox(step.target);
+  useEffect(() => onStep?.(index), [index, onStep]);
   const firstMilestone = useFirstActiveMilestone(step.key === "finish");
 
   // The callout's real size decides where it fits; measured, never assumed zero.
@@ -137,7 +142,10 @@ export function TourOverlay({
   const primaryRef = useRef<HTMLButtonElement>(null);
   useEffect(() => primaryRef.current?.focus({ preventScroll: true }), [index]);
 
-  const skip = useCallback(() => onFinish(last ? "done" : "skipped"), [onFinish, last]);
+  const skip = useCallback(
+    () => onFinish(last ? "done" : "skipped", index),
+    [onFinish, last, index],
+  );
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -161,7 +169,7 @@ export function TourOverlay({
     };
   }, []);
 
-  const next = () => (last ? onFinish("done") : setIndex((value) => value + 1));
+  const next = () => (last ? onFinish("done", index) : setIndex((value) => value + 1));
 
   // The last step suggests one first action. Its button text is always fixed;
   // a named target (a milestone to start with) shows in the bubble instead.
@@ -279,7 +287,7 @@ export function TourOverlay({
               className="mt-3 w-full justify-start"
               onClick={() => {
                 router.push(firstAction.href);
-                onFinish("done");
+                onFinish("done", index);
               }}
             >
               {firstAction.label}

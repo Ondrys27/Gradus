@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { TriangleAlertIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -12,8 +12,10 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { useUserSettings } from "@/features/account/queries";
 import { useFreshOnOpen } from "@/features/milestones/use-fresh-on-open";
+import { track } from "@/lib/analytics/client";
 import { formatPhone, toE164 } from "@/lib/phone";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
+import { duplicateEmailKey, duplicatePhoneKey } from "./contact-search";
 import { useCreateContact, useDuplicates, useUpdateContact } from "./queries";
 import {
   ADDRESS_MAX,
@@ -103,7 +105,8 @@ function ContactFields({
   const [draft, setDraft] = useState<ContactDraft>(() => {
     if (contact || !initial) return draftOf(contact);
     // A number typed into the search is saved like any other: E.164.
-    const phone = initial.phone === undefined ? {} : { phone: toE164(initial.phone, country) ?? "" };
+    const phone =
+      initial.phone === undefined ? {} : { phone: toE164(initial.phone, country) ?? "" };
     return { ...draftOf(), ...initial, ...phone };
   });
   const [errors, setErrors] = useState<Partial<Record<string, ContactErrorKey>>>({});
@@ -111,7 +114,23 @@ function ContactFields({
 
   const phone = useDebouncedValue(draft.phone, 400);
   const email = useDebouncedValue(draft.email, 400);
-  const duplicates = useDuplicates(phone, email, contact?.id).data ?? [];
+  const duplicateRows = useDuplicates(phone, email, contact?.id).data;
+  const duplicates = useMemo(() => duplicateRows ?? [], [duplicateRows]);
+  // A caught duplicate is recorded once per form, by what matched (never the values).
+  const warned = useRef(false);
+  useEffect(() => {
+    if (warned.current || duplicates.length === 0) return;
+    warned.current = true;
+    const phoneKey = duplicatePhoneKey(phone);
+    const emailKey = duplicateEmailKey(email);
+    const byPhone =
+      phoneKey !== null && duplicates.some((d) => duplicatePhoneKey(d.phone) === phoneKey);
+    const byEmail =
+      emailKey !== null && duplicates.some((d) => duplicateEmailKey(d.email) === emailKey);
+    track("contact_duplicate_warned", {
+      match: byPhone && byEmail ? "both" : byEmail ? "email" : "phone",
+    });
+  }, [duplicates, phone, email]);
   const pending = create.isPending || update.isPending;
 
   async function submit(event: FormEvent) {

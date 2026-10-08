@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { toneFill } from "@/components/ui/tone";
+import { track } from "@/lib/analytics/client";
 import { formatCurrency } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
@@ -148,7 +149,10 @@ export function StageColumn({
           <button
             type="button"
             aria-pressed={relaunchOnly}
-            onClick={() => setRelaunchOnly((value) => !value)}
+            onClick={() => {
+              track("reengage_filter_used", { enabled: !relaunchOnly });
+              setRelaunchOnly(!relaunchOnly);
+            }}
             className={cn(
               "inline-flex h-11 w-fit cursor-pointer items-center gap-1.5 self-start rounded-full border px-3 text-xs font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-gold/40 mouse:h-8",
               relaunchOnly

@@ -16,6 +16,7 @@ import type {
   PingResult,
 } from "./protocol";
 import type { Suggestion, SuggestionsResponse } from "./suggestions";
+import { track } from "@/lib/analytics/client";
 
 const ENDPOINT = "/api/jarvis";
 const ATTACHMENTS_BUCKET = "attachments";
@@ -294,6 +295,7 @@ export function useUndoTaskCompletion() {
         .eq("user_id", workspaceId)
         .eq("id", input.taskId);
       if (error) throw error;
+      track("jarvis_auto_action_undone", { action: "task_completed" });
     },
     onSuccess: () =>
       Promise.all([
@@ -353,6 +355,7 @@ export function useRunSalesAnalysis() {
     mutationKey: ["jarvis", "sales-analysis"],
     mutationFn: async () => {
       const result = await postJarvisJob<{ analysis: SalesAnalysis }>({ kind: "salesAnalysis" });
+      track("sales_analysis_requested", { ok: result.ok });
       if (!result.ok) throw new JarvisJobError(result.code);
       return result.analysis;
     },

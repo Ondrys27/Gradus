@@ -421,7 +421,9 @@ describe("opportunity watch", () => {
       openTasks: [task],
     });
     expect(outcome).toEqual({ status: "checked", insights: 0, completed: 1 });
-    const tables = admin.calls.map((c) => c.table).filter((t) => t !== "ai_usage");
+    const tables = admin.calls
+      .map((c) => c.table)
+      .filter((t) => t !== "ai_usage" && t !== "analytics_events");
     // The announcement (with Undo) is written first, then the task changes.
     expect(tables).toEqual(["jarvis_suggestions", "tasks"]);
     const claim = op(
@@ -440,6 +442,12 @@ describe("opportunity watch", () => {
       ["id", task.id],
       ["user_id", "user-1"],
     ]);
+    // The automatic action is counted, without the task.
+    expect(op(admin.calls.find((c) => c.table === "analytics_events"), "insert")?.[0]).toEqual({
+      user_id: "user-1",
+      event: "jarvis_auto_action",
+      props: { action: "task_completed" },
+    });
   });
 
   it("never completes a task the user took back, and withdraws the notice when the task cannot be done", async () => {

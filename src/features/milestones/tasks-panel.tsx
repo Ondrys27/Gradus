@@ -30,6 +30,7 @@ import { TaskGroup, type TaskHandlers } from "./task-row";
 import { buildTree, openSubtasks, reorderSiblings } from "./task-tree";
 import { useTaskView, type TaskView } from "./task-view-preference";
 import type { Milestone, Task } from "./types";
+import { useViewTracking } from "@/lib/analytics/use-view-tracking";
 
 type TaskFormState = { open: boolean; mode: TaskFormMode };
 
@@ -38,6 +39,7 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
   const t = useTranslations("milestones.tasks");
   const milestoneId = milestone.id;
   const [view, setView] = useTaskView();
+  useViewTracking("tasks", view);
   const setStatus = useSetTaskStatus(milestoneId);
   const create = useCreateTask(milestoneId);
   const remove = useDeleteTask(milestoneId);

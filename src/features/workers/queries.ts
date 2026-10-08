@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
 import { zonedWallClockToInstant, type IsoDate } from "@/lib/format";
+import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import {
@@ -227,7 +228,10 @@ export function useSaveWorkerPermissions(workerId: string) {
   const key = workerKeys.permissions(user.id, workerId);
   return useMutation({
     mutationKey: ["workers", "permissions", workerId],
-    mutationFn: (draft: PermissionDraft) => savePermissions(user.id, workerId, draft),
+    mutationFn: async (draft: PermissionDraft) => {
+      await savePermissions(user.id, workerId, draft);
+      trackPermissions(draft);
+    },
     onMutate: async (draft) => {
       await queryClient.cancelQueries({ queryKey: key });
       const previous = queryClient.getQueryData<WorkerPermission[]>(key);
@@ -241,6 +245,15 @@ export function useSaveWorkerPermissions(workerId: string) {
       if (queryClient.isMutating({ mutationKey: ["workers", "permissions", workerId] }) > 1) return;
       void queryClient.invalidateQueries({ queryKey: key });
     },
+  });
+}
+
+/** How many sections a worker may see and edit, never which person. */
+function trackPermissions(draft: PermissionDraft) {
+  const levels = Object.values(draft);
+  track("worker_permissions_saved", {
+    view_sections: levels.filter((level) => level !== "none").length,
+    edit_sections: levels.filter((level) => level === "edit").length,
   });
 }
 
@@ -264,6 +277,8 @@ export function useCreateWorker() {
         .select(INVITE_COLUMNS)
         .single();
       if (inviteError) throw inviteError;
+      track("worker_invited", {});
+      trackPermissions(input.permissions);
       return { worker, invite };
     },
     onSettled: () => invalidateAll(queryClient, user.id),
@@ -282,6 +297,8 @@ export function useUpdateWorker(workerId: string) {
         .eq("owner_id", user.id);
       if (error) throw error;
       if (input.permissions) await savePermissions(user.id, workerId, input.permissions);
+      track("worker_updated", {});
+      if (input.permissions) trackPermissions(input.permissions);
     },
     onSettled: () => invalidateAll(queryClient, user.id),
   });
@@ -306,6 +323,7 @@ export function useRenewInvite(workerId: string) {
         .select(INVITE_COLUMNS)
         .single();
       if (error) throw error;
+      track("worker_invite_renewed", {});
       return data;
     },
     onSuccess: (invite) => queryClient.setQueryData(workerKeys.invite(user.id, workerId), invite),
@@ -368,6 +386,7 @@ export function useSaveWorkerTask(workerId: string) {
             .from("worker_tasks")
             .insert({ ...input, owner_id: user.id, worker_id: workerId, assigned_by: user.id });
       if (error) throw error;
+      track("worker_task_saved", { created: !id });
     },
     onSettled: () => invalidateAll(queryClient, user.id),
   });
@@ -380,6 +399,7 @@ export function useDeleteWorkerTask() {
     mutationFn: async (id: string) => {
       const { error } = await createClient().from("worker_tasks").delete().eq("id", id);
       if (error) throw error;
+      track("worker_task_deleted", {});
     },
     onSettled: () => invalidateAll(queryClient, user.id),
   });
@@ -387,12 +407,16 @@ export function useDeleteWorkerTask() {
 
 /** Ticking a task off (or back on). Doing it may create a pending earning in the database. */
 export function useSetWorkerTaskStatus() {
-  const { user } = useSession();
+  const { user, worker } = useSession();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: TaskStatus }) => {
       const { error } = await createClient().from("worker_tasks").update({ status }).eq("id", id);
       if (error) throw error;
+      track("worker_task_status_changed", {
+        status: status === "done" ? "done" : "open",
+        by: worker ? "worker" : "owner",
+      });
     },
     onSettled: () => invalidateAll(queryClient, user.id),
   });
@@ -465,6 +489,10 @@ export function useApproveEarnings(workerId: string) {
       if (ids !== "all") query = query.in("id", ids);
       const { error } = await query;
       if (error) throw error;
+      track(
+        "worker_earnings_approved",
+        ids === "all" ? { all: true } : { all: false, count: ids.length },
+      );
     },
     onSettled: () => invalidateAll(queryClient, user.id),
   });
@@ -507,6 +535,7 @@ export function useRecordPayment(workerId: string) {
         _note: input.note,
       });
       if (error) throw error;
+      track("worker_payment_recorded", {});
     },
     onSettled: () => invalidateAll(queryClient, user.id),
   });

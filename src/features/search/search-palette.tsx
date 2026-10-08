@@ -13,6 +13,7 @@ import {
   XIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { track } from "@/lib/analytics/client";
 import { useAnimationsEnabled } from "@/lib/animation-preference";
 import { useIsMac } from "@/lib/use-is-mac";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
@@ -115,6 +116,23 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
   const sizes = visibleGroups.map((group) => group.rows.length);
   const current = Math.min(selected, Math.max(rows.length - 1, 0));
 
+  // One search per settled query: its length and how much it found, never the words.
+  const resultCount = groups.reduce(
+    (sum, group) =>
+      sum + group.rows.filter((row) => row.kind !== "action" && row.kind !== "section").length,
+    0,
+  );
+  const measured = useRef("");
+  useEffect(() => {
+    if (!debounced || !settled || measured.current === `${debounced}|${expanded}`) return;
+    measured.current = `${debounced}|${expanded}`;
+    track("search_performed", {
+      query_length: Math.min(debounced.length, 500),
+      results: Math.min(resultCount, 1000),
+      filtered: expanded !== null,
+    });
+  }, [debounced, settled, expanded, resultCount]);
+
   // New results start at the best match.
   const firstKey = rows[0]?.key;
   useEffect(() => setSelected(0), [firstKey, expanded]);
@@ -150,6 +168,11 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
       return;
     }
     if (!row.href) return;
+    if (row.kind === "action") {
+      track("search_quick_action_used", { action: row.id });
+    } else {
+      track("search_result_opened", { kind: row.kind, position: Math.max(0, rows.indexOf(row)) });
+    }
     remember(row);
     if (background) {
       window.open(row.href, "_blank", "noopener");

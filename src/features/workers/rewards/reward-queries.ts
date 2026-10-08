@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
 import { JarvisJobError, postJarvisJob } from "@/features/jarvis/queries";
+import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
 import { workerKeys } from "../queries";
 import {
@@ -109,6 +110,7 @@ export function useConfirmRewardRules() {
       const checked = rules.map((rule) => compiledRuleSchema.parse(rule));
       const { error } = await createClient().rpc("replace_reward_rules", { _rules: checked });
       if (error) throw error;
+      track("reward_rules_confirmed", { rules: checked.length });
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: workerKeys.all(user.id) }),
   });

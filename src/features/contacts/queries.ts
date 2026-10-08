@@ -10,6 +10,7 @@ import {
 } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
 import { useWorkspaceId } from "@/features/account/workspace-queries";
+import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
 import { duplicateEmailKey, duplicatePhoneKey, searchFilter } from "./contact-search";
 import { moveContact, type MoveContactInput } from "./move-contact";
@@ -273,8 +274,17 @@ export function useDuplicates(phone: string, email: string, excludeId?: string) 
   });
 }
 
+/** Which fields a contact has filled, for "how complete are contacts" (never the values). */
+function filled(row: Pick<Contact, "email" | "phone" | "website">) {
+  return {
+    has_email: Boolean(row.email),
+    has_phone: Boolean(row.phone),
+    has_website: Boolean(row.website),
+  };
+}
+
 /** The database fills phone_normalized and puts the contact into Unreached. */
-export function useCreateContact() {
+export function useCreateContact(where: "contacts" | "onboarding" = "contacts") {
   const { user } = useSession();
   const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
@@ -289,6 +299,11 @@ export function useCreateContact() {
       return data;
     },
     onSuccess: (row) => {
+      track("contact_created", {
+        source: row.source === "generated" || row.source === "import" ? row.source : "manual",
+        where,
+        ...filled(row),
+      });
       queryClient.setQueryData(contactKeys.detail(user.id, row.id), row);
       return queryClient.invalidateQueries({ queryKey: contactKeys.all(user.id) });
     },
@@ -312,6 +327,7 @@ export function useUpdateContact(id: string) {
       return data;
     },
     onSuccess: (row) => {
+      track("contact_updated", filled(row));
       queryClient.setQueryData(contactKeys.detail(user.id, id), row);
       return queryClient.invalidateQueries({ queryKey: contactKeys.lists(user.id) });
     },
@@ -332,6 +348,7 @@ export function useDeleteContact(id: string) {
       if (error) throw error;
     },
     onSuccess: () => {
+      track("contact_deleted", {});
       queryClient.removeQueries({ queryKey: contactKeys.detail(user.id, id) });
       void queryClient.invalidateQueries({ queryKey: contactKeys.all(user.id) });
       // Deals keep their row but lose the contact.
@@ -356,6 +373,7 @@ export function useAddActivity(contactId: string) {
       return data;
     },
     onSuccess: (row) => {
+      track("contact_activity_logged", { type: row.type });
       queryClient.setQueryData<Activity[]>(contactKeys.activities(user.id, contactId), (list) =>
         list ? [row, ...list].sort((a, b) => b.occurred_at.localeCompare(a.occurred_at)) : list,
       );
@@ -379,6 +397,7 @@ export function useDeleteActivity(contactId: string) {
       return activityId;
     },
     onSuccess: (activityId) => {
+      track("contact_activity_deleted", {});
       queryClient.setQueryData<Activity[]>(contactKeys.activities(user.id, contactId), (list) =>
         list?.filter((item) => item.id !== activityId),
       );

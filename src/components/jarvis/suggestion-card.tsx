@@ -22,6 +22,7 @@ import { isRuleType, type SuggestionType } from "@/features/jarvis/suggestion-ty
 import { formatNumber, type FormatSettings } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics/client";
 
 const ICONS: Record<SuggestionType, LucideIcon> = {
   dealWon: TrophyIcon,
@@ -133,6 +134,7 @@ export function useSuggestionActions(options: {
       } else {
         await undo.mutateAsync({ taskId: action.taskId, previousStatus: action.previousStatus });
       }
+      track("jarvis_suggestion_reacted", { reaction: "used", action: action.kind });
       dismiss.mutate([suggestion.id]);
     },
     [router, onNavigate, ask, undo, dismiss, text],
@@ -140,7 +142,13 @@ export function useSuggestionActions(options: {
 
   return {
     run,
-    dismiss: (suggestion: Suggestion) => dismiss.mutate([suggestion.id]),
+    dismiss: (suggestion: Suggestion) => {
+      track("jarvis_suggestion_reacted", {
+        reaction: "dismissed",
+        action: suggestion.action.kind,
+      });
+      dismiss.mutate([suggestion.id]);
+    },
     undoPending: undo.isPending,
     undoFailed: undo.isError,
   };

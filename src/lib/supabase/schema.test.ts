@@ -159,9 +159,13 @@ describe("row level security", () => {
     await expect(
       db.query(`insert into user_roles (user_id, role) values ('${owner}', 'admin')`),
     ).rejects.toThrow(/row-level security/);
+    // usage_events is history only now: nobody may write it at all.
     await expect(
       db.query(`insert into usage_events (user_id, event_type) values ('${owner}', 'x')`),
-    ).rejects.toThrow(/row-level security/);
+    ).rejects.toThrow(/permission denied/);
+    await expect(
+      db.query(`insert into analytics_events (user_id, event) values ('${owner}', 'page_viewed')`),
+    ).rejects.toThrow(/permission denied/);
     await expect(
       db.query(
         `insert into ai_usage (user_id, purpose, model) values ('${owner}', 'chat', 'haiku')`,

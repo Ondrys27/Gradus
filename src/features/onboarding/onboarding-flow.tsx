@@ -18,6 +18,7 @@ import { ModeStep } from "./steps/mode-step";
 import { PathStep } from "./steps/path-step";
 import { RegionStep } from "./steps/region-step";
 import { WelcomeStep } from "./steps/welcome-step";
+import { track } from "@/lib/analytics/client";
 
 /**
  * First-login wizard: welcome, how to use the app (game or tool), branch,
@@ -39,7 +40,15 @@ export function OnboardingFlow() {
 
   const steps = onboardingSteps(mode);
   const step = steps[stepIndex] ?? "welcome";
-  const next = () => setStepIndex((index) => index + 1);
+  // Every finished step is recorded, so the drop-off step shows in the funnel.
+  const next = (chosenMode: GameMode | null = mode) => {
+    track("onboarding_step_completed", {
+      step,
+      index: stepIndex,
+      ...(chosenMode ? { mode: chosenMode } : {}),
+    });
+    setStepIndex((index) => index + 1);
+  };
   const input: FinishOnboardingInput = {
     industry: industry ?? DEFAULT_INDUSTRY,
     mode: mode ?? "game",
@@ -47,13 +56,16 @@ export function OnboardingFlow() {
   };
 
   function finishNow() {
-    finish.mutate(input, {
-      onSuccess: () => {
-        if (input.mode === "game") {
-          celebrate({ title: tCelebration("title"), subtitle: tCelebration("subtitle") });
-        }
+    finish.mutate(
+      { ...input, skippedAt: step },
+      {
+        onSuccess: () => {
+          if (input.mode === "game") {
+            celebrate({ title: tCelebration("title"), subtitle: tCelebration("subtitle") });
+          }
+        },
       },
-    });
+    );
   }
 
   return (
@@ -93,13 +105,13 @@ export function OnboardingFlow() {
               <ClosingStep input={input} />
             ) : (
               <>
-                {step === "welcome" && <WelcomeStep onNext={next} />}
+                {step === "welcome" && <WelcomeStep onNext={() => next()} />}
                 {step === "mode" && (
                   <ModeStep
                     value={mode}
                     onChoose={(value) => {
                       setMode(value);
-                      next();
+                      next(value);
                     }}
                   />
                 )}
@@ -111,7 +123,7 @@ export function OnboardingFlow() {
                       // A new branch suggests its own path again.
                       setPathKey(null);
                     }}
-                    onNext={next}
+                    onNext={() => next()}
                   />
                 )}
                 {step === "path" && (
@@ -119,14 +131,21 @@ export function OnboardingFlow() {
                     industry={industry ?? DEFAULT_INDUSTRY}
                     value={pathKey}
                     onChange={setPathKey}
-                    onNext={next}
+                    onNext={() => next()}
                   />
                 )}
-                {step === "region" && <RegionStep onNext={next} />}
+                {step === "region" && <RegionStep onNext={() => next()} />}
                 {step === "milestone" && (
-                  <MilestoneStep industry={industry ?? DEFAULT_INDUSTRY} onNext={next} />
+                  <MilestoneStep industry={industry ?? DEFAULT_INDUSTRY} onNext={() => next()} />
                 )}
-                {step === "contact" && <ContactStep onNext={() => setClosing(true)} />}
+                {step === "contact" && (
+                  <ContactStep
+                    onNext={() => {
+                      track("onboarding_step_completed", { step, index: stepIndex });
+                      setClosing(true);
+                    }}
+                  />
+                )}
               </>
             )}
           </div>

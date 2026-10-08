@@ -188,3 +188,16 @@ export function sortMilestones(milestones: MilestoneWithCounts[]): MilestoneWith
     return a.position - b.position || a.created_at.localeCompare(b.created_at);
   });
 }
+
+/** How deep a task sits: 0 for a top-level task, 1 for its subtask and so on. */
+export function taskDepth(tasks: Pick<Task, "id" | "parent_task_id">[], taskId: string): number {
+  const byId = new Map(tasks.map((task) => [task.id, task]));
+  let depth = 0;
+  let parent = byId.get(taskId)?.parent_task_id ?? null;
+  // The guard stops a broken cycle from looping forever.
+  while (parent && depth < 100) {
+    depth += 1;
+    parent = byId.get(parent)?.parent_task_id ?? null;
+  }
+  return depth;
+}

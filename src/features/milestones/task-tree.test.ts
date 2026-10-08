@@ -269,3 +269,28 @@ describe("milestone completion", () => {
     expect(reopenedMilestone(active, [task("a")])).toBe(active);
   });
 });
+
+describe("taskDepth", () => {
+  const tree = [
+    { id: "a", parent_task_id: null },
+    { id: "b", parent_task_id: "a" },
+    { id: "c", parent_task_id: "b" },
+  ];
+
+  it("counts the parents above a task", async () => {
+    const { taskDepth } = await import("./task-tree");
+    expect(taskDepth(tree, "a")).toBe(0);
+    expect(taskDepth(tree, "b")).toBe(1);
+    expect(taskDepth(tree, "c")).toBe(2);
+    expect(taskDepth(tree, "missing")).toBe(0);
+  });
+
+  it("stops on a broken cycle", async () => {
+    const { taskDepth } = await import("./task-tree");
+    const cycle = [
+      { id: "x", parent_task_id: "y" },
+      { id: "y", parent_task_id: "x" },
+    ];
+    expect(taskDepth(cycle, "x")).toBe(100);
+  });
+});

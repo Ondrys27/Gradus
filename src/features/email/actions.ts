@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { measure } from "@/lib/analytics/instrument";
 import { sendEmail } from "@/lib/email/resend";
 import { isWorkspaceReadOnly } from "@/features/plan/server";
 import { createClient } from "@/lib/supabase/server";
@@ -54,6 +55,13 @@ async function session() {
 }
 
 export async function sendEmailAction(
+  input: SendEmailInput,
+): Promise<ActionResult<{ activityLogged: boolean }>> {
+  // Timed with its outcome code: Resend's error rate in the health overview.
+  return measure("email.send", sendFromApp)(input);
+}
+
+async function sendFromApp(
   input: SendEmailInput,
 ): Promise<ActionResult<{ activityLogged: boolean }>> {
   const parsed = sendEmailInputSchema.safeParse(input);

@@ -15,6 +15,7 @@ import {
   waitlistSchema,
   type WaitlistState,
 } from "./waitlist";
+import { track } from "@/lib/analytics/track";
 
 function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
@@ -97,14 +98,12 @@ export async function joinWaitlist(
     if (existing) {
       await admin.from("waitlist").update({ confirm_sent_at: null }).eq("id", existing.id);
     } else {
-      await admin
-        .from("waitlist")
-        .delete()
-        .eq("email", parsed.data.email)
-        .is("confirmed_at", null);
+      await admin.from("waitlist").delete().eq("email", parsed.data.email).is("confirmed_at", null);
     }
     return { error: "generic", email };
   }
+  // A person on the list, never who: no user, no address in the event.
+  if (!existing) await track("waitlist_joined", { locale }, { userId: null, admin });
   return { ok: true };
 }
 
@@ -121,5 +120,6 @@ export async function confirmWaitlist(token: string): Promise<{ ok: boolean }> {
     console.error("[waitlist] confirm failed", error);
     return { ok: false };
   }
+  if (data.length === 1) await track("waitlist_confirmed", {}, { userId: null });
   return { ok: data.length === 1 };
 }

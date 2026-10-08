@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { JarvisButton } from "@/components/layout/jarvis-button";
 import { useJarvisSuggestions } from "@/features/jarvis/queries";
 import { useJarvisChat } from "@/features/jarvis/use-jarvis-chat";
+import { track } from "@/lib/analytics/client";
 import { whenIdle } from "@/lib/idle";
 import { AutoActionNotice } from "./auto-action-notice";
 import { ProactiveJarvis } from "./proactive-jarvis";
@@ -40,6 +41,9 @@ export function JarvisDock() {
 
   // Fetched once the browser is idle, so the first tap on Jarvis opens at once.
   useEffect(() => whenIdle(loadPanel), []);
+  useEffect(() => {
+    if (open) track("jarvis_opened", {});
+  }, [open]);
 
   const list = suggestions.data ?? [];
   const unseen = list.filter((item) => !item.seen).length;

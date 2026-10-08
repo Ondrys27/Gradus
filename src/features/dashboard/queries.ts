@@ -10,6 +10,7 @@ import { contactName } from "@/features/contacts/types";
 import { useFields } from "@/features/contacts/table-queries";
 import { periodRange } from "@/features/finance/finance-logic";
 import { milestoneKeys } from "@/features/milestones/queries";
+import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
 import { todayIsoDate, type IsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
@@ -189,6 +190,8 @@ export function useToggleDashTask() {
         .eq("user_id", workspaceId)
         .eq("id", task.id);
       if (error) throw error;
+      if (done) track("task_completed", { where: "dashboard" });
+      else track("task_reopened", { where: "dashboard" });
     },
     onMutate: async ({ task, done }) => {
       await queryClient.cancelQueries({ queryKey: key });

@@ -2,6 +2,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { subDays, subHours } from "date-fns";
 import { z } from "zod";
+import { track } from "@/lib/analytics/track";
 import { APP_NAME } from "@/lib/constants";
 import { todayIsoDate, type FormatSettings } from "@/lib/format";
 import { toFormatSettings, USER_SETTINGS_COLUMNS } from "@/lib/user-settings";
@@ -418,7 +419,10 @@ export async function applyWatch(args: {
   let completed = 0;
   for (const item of answer.completedTasks) {
     const task = byId.get(item.taskId);
-    if (task && (await completeTask(admin, userId, task, item.reason))) completed += 1;
+    if (task && (await completeTask(admin, userId, task, item.reason))) {
+      completed += 1;
+      await track("jarvis_auto_action", { action: "task_completed" }, { userId, admin });
+    }
   }
 
   const insights = answer.suggestions

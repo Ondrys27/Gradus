@@ -1,8 +1,15 @@
 "use client";
 
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
 import { useWorkspaceId } from "@/features/account/workspace-queries";
+import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
 import type { IsoDate } from "@/lib/format";
 import { dayRangeToInstants } from "./calendar-logic";
@@ -128,6 +135,17 @@ function toRow(input: EventInput) {
   };
 }
 
+/** The kind of an event already on screen (a drag sends only the new time). */
+function findKind(queryClient: QueryClient, userId: string, id: string) {
+  for (const [, events] of queryClient.getQueriesData<CalendarEvent[]>({
+    queryKey: [...calendarKeys.all(userId), "events"],
+  })) {
+    const found = events?.find((event) => event.id === id);
+    if (found) return found.kind;
+  }
+  return null;
+}
+
 export function useCreateEvent() {
   const { user } = useSession();
   const workspaceId = useWorkspaceId();
@@ -138,6 +156,7 @@ export function useCreateEvent() {
         .from("calendar_events")
         .insert({ ...toRow(input), user_id: workspaceId });
       if (error) throw error;
+      track("calendar_event_created", { kind: input.kind, has_contact: Boolean(input.contact_id) });
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: calendarKeys.all(user.id) }),
   });
@@ -156,6 +175,8 @@ export function useUpdateEvent() {
     mutationFn: async ({ id, patch }: { id: string; patch: Partial<ReturnType<typeof toRow>> }) => {
       const { error } = await createClient().from("calendar_events").update(patch).eq("id", id);
       if (error) throw error;
+      const kind = patch.kind ?? findKind(queryClient, user.id, id);
+      if (kind) track("calendar_event_updated", { kind });
     },
     onMutate: async ({ id, patch }): Promise<{ snapshot: Snapshot }> => {
       const filter = { queryKey: [...calendarKeys.all(user.id), "events"] };
@@ -181,6 +202,7 @@ export function useDeleteEvent() {
     mutationFn: async (id: string) => {
       const { error } = await createClient().from("calendar_events").delete().eq("id", id);
       if (error) throw error;
+      track("calendar_event_deleted", {});
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: calendarKeys.all(user.id) }),
   });

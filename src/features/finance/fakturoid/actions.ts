@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { isWorkspaceReadOnly } from "@/features/plan/server";
+import { measure } from "@/lib/analytics/instrument";
 import { createClient } from "@/lib/supabase/server";
 import type { Invoice } from "../types";
 import { InvoiceError, toFailure, type ActionResult } from "./errors";
@@ -39,7 +40,12 @@ async function session() {
 
 type Ctx = NonNullable<Awaited<ReturnType<typeof session>>>;
 
-async function run<T>(work: (ctx: Ctx) => Promise<T>): Promise<ActionResult<T>> {
+/** Every action is timed with its outcome (an error code, never data) for the health overview. */
+function run<T>(name: string, work: (ctx: Ctx) => Promise<T>): Promise<ActionResult<T>> {
+  return measure(`fakturoid.${name}`, () => runWork(work))();
+}
+
+async function runWork<T>(work: (ctx: Ctx) => Promise<T>): Promise<ActionResult<T>> {
   try {
     const ctx = await session();
     if (!ctx) return { ok: false, error: "unknown" };
@@ -79,7 +85,7 @@ async function requireWritable(ctx: Ctx) {
 }
 
 export async function fakturoidStatusAction(): Promise<ActionResult<FakturoidStatus>> {
-  return run(async (ctx) => {
+  return run("status", async (ctx) => {
     await requireFinance(ctx, "view");
     return getFakturoidStatus(ctx.workspaceId);
   });
@@ -88,14 +94,14 @@ export async function fakturoidStatusAction(): Promise<ActionResult<FakturoidSta
 export async function connectFakturoidAction(
   input: FakturoidConnectInput,
 ): Promise<ActionResult<FakturoidStatus>> {
-  return run((ctx) => {
+  return run("connect", (ctx) => {
     ownerOnly(ctx);
     return connectFakturoid(ctx.userId, input);
   });
 }
 
 export async function disconnectFakturoidAction(): Promise<ActionResult<null>> {
-  return run(async (ctx) => {
+  return run("disconnect", async (ctx) => {
     ownerOnly(ctx);
     await disconnectFakturoid(ctx.userId);
     return null;
@@ -103,7 +109,7 @@ export async function disconnectFakturoidAction(): Promise<ActionResult<null>> {
 }
 
 export async function setMoveDealOnPaidAction(value: boolean): Promise<ActionResult<null>> {
-  return run(async (ctx) => {
+  return run("setMoveDealOnPaid", async (ctx) => {
     ownerOnly(ctx);
     await setMoveDealOnPaid(ctx.userId, z.boolean().parse(value));
     return null;
@@ -115,7 +121,7 @@ export async function issueInvoiceAction(
 ): Promise<ActionResult<{ invoice: Invoice; external: boolean }>> {
   const parsed = id.safeParse(dealId);
   if (!parsed.success) return { ok: false, error: "dealNotFound" };
-  return run(async (ctx) => {
+  return run("issueInvoice", async (ctx) => {
     await requireFinance(ctx, "edit");
     await requireWritable(ctx);
     return issueInvoice(ctx.supabase, ctx.workspaceId, parsed.data);
@@ -127,7 +133,7 @@ export async function markInvoicePaidAction(
 ): Promise<ActionResult<{ dealMoved: boolean }>> {
   const parsed = id.safeParse(invoiceId);
   if (!parsed.success) return { ok: false, error: "invoiceNotFound" };
-  return run(async (ctx) => {
+  return run("markInvoicePaid", async (ctx) => {
     await requireFinance(ctx, "edit");
     await requireWritable(ctx);
     return markInvoicePaid(ctx.supabase, ctx.workspaceId, parsed.data);
@@ -135,7 +141,7 @@ export async function markInvoicePaidAction(
 }
 
 export async function syncFakturoidAction(): Promise<ActionResult<SyncOutcome>> {
-  return run(async (ctx) => {
+  return run("sync", async (ctx) => {
     await requireFinance(ctx, "edit");
     await requireWritable(ctx);
     return syncUser(ctx.workspaceId);

@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
 import { useWorkspaceId } from "@/features/account/workspace-queries";
+import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
 import { byPosition, nextPosition, reorder, type PositionChange } from "./field-logic";
 import { contactKeys } from "./queries";
@@ -56,6 +57,7 @@ export function useCreateTable() {
       return data;
     },
     onSuccess: (row) => {
+      track("contact_table_edited", { action: "create" });
       queryClient.setQueryData<ContactTable[]>(contactKeys.tables(user.id), (tables) =>
         tables ? byPosition([...tables, row]) : tables,
       );
@@ -78,6 +80,7 @@ export function useUpdateTable() {
       return data;
     },
     onSuccess: (row) => {
+      track("contact_table_edited", { action: "update" });
       queryClient.setQueryData<ContactTable[]>(contactKeys.tables(user.id), (tables) =>
         tables?.map((table) => (table.id === row.id ? row : table)),
       );
@@ -104,7 +107,10 @@ export function useReorderTables() {
   const queryClient = useQueryClient();
   const key = contactKeys.tables(user.id);
   return useMutation({
-    mutationFn: ({ changes }: ReorderVariables) => savePositions("contact_tables", changes),
+    mutationFn: async ({ changes }: ReorderVariables) => {
+      await savePositions("contact_tables", changes);
+      track("contact_table_edited", { action: "reorder" });
+    },
     onMutate: async ({ activeId, overId }) => {
       await queryClient.cancelQueries({ queryKey: key });
       const previous = queryClient.getQueryData<ContactTable[]>(key);
@@ -129,6 +135,7 @@ export function useRemoveTable() {
         _move_to: moveTo ?? undefined,
       });
       if (error) throw error;
+      track("contact_table_edited", { action: "remove" });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: contactKeys.all(user.id) }),
   });
@@ -172,6 +179,11 @@ export function useSaveField() {
           .update(row)
           .eq("id", field.id);
         if (error) throw error;
+        track("contact_field_edited", {
+          action: "update",
+          type: input.type,
+          dependent: Boolean(input.depends_on_field_id),
+        });
         return;
       }
       const siblings = (queryClient.getQueryData<ContactField[]>(key) ?? []).filter(
@@ -184,6 +196,11 @@ export function useSaveField() {
         position: nextPosition(siblings),
       });
       if (error) throw error;
+      track("contact_field_edited", {
+        action: "create",
+        type: input.type,
+        dependent: Boolean(input.depends_on_field_id),
+      });
     },
     // Changing a select's options may remove the questions that hung on them.
     onSuccess: () => queryClient.invalidateQueries({ queryKey: key }),
@@ -197,6 +214,7 @@ export function useDeleteField() {
     mutationFn: async (id: string) => {
       const { error } = await createClient().from("contact_table_fields").delete().eq("id", id);
       if (error) throw error;
+      track("contact_field_edited", { action: "remove" });
     },
     // Questions depending on it go too.
     onSuccess: () => queryClient.invalidateQueries({ queryKey: fieldKeys.all(user.id) }),
@@ -208,8 +226,10 @@ export function useReorderFields() {
   const queryClient = useQueryClient();
   const key = fieldKeys.all(user.id);
   return useMutation({
-    mutationFn: ({ changes }: ReorderVariables & { tableId: string }) =>
-      savePositions("contact_table_fields", changes),
+    mutationFn: async ({ changes }: ReorderVariables & { tableId: string }) => {
+      await savePositions("contact_table_fields", changes);
+      track("contact_field_edited", { action: "reorder" });
+    },
     onMutate: async ({ activeId, overId, tableId }) => {
       await queryClient.cancelQueries({ queryKey: key });
       const previous = queryClient.getQueryData<ContactField[]>(key);

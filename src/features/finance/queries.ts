@@ -24,6 +24,7 @@ import {
 import { unwrap } from "./fakturoid/errors";
 import type { FakturoidConnectInput, FakturoidStatus } from "./fakturoid/schema";
 import type { RecurringInput, TransactionInput } from "./schemas";
+import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
 import {
   INVOICE_COLUMNS,
@@ -172,6 +173,15 @@ export function useSaveTransaction() {
         ? await supabase.from("transactions").update(row).eq("user_id", workspaceId).eq("id", id)
         : await supabase.from("transactions").insert({ ...row, user_id: workspaceId });
       if (error) throw error;
+      if (id) {
+        track("transaction_updated", { type: input.type });
+      } else {
+        track("transaction_created", {
+          type: input.type,
+          currency: input.currency,
+          has_category: input.category !== null,
+        });
+      }
       // A small reward for a new one; the server finds the transaction it has not paid for yet.
       if (!id) awardXp.mutate({ reason: "transaction_added" });
     },
@@ -182,6 +192,7 @@ export function useDeleteTransaction() {
   return useFinanceMutation(async (id: string) => {
     const { error } = await createClient().from("transactions").delete().eq("id", id);
     if (error) throw error;
+    track("transaction_deleted", {});
   });
 }
 
@@ -193,6 +204,7 @@ export function useConfirmTransaction() {
       .update({ needs_review: false })
       .eq("id", id);
     if (error) throw error;
+    track("transaction_confirmed", {});
   });
 }
 
@@ -232,6 +244,11 @@ export function useSaveRecurring() {
             .eq("id", id)
         : await supabase.from("recurring_payments").insert({ ...row, user_id: workspaceId });
       if (error) throw error;
+      track("recurring_payment_saved", {
+        created: !id,
+        type: input.type,
+        frequency: input.frequency,
+      });
     },
   );
 }
@@ -243,6 +260,7 @@ export function useToggleRecurring() {
       .update({ is_active: active })
       .eq("id", id);
     if (error) throw error;
+    track("recurring_payment_toggled", { active });
   });
 }
 
@@ -250,6 +268,7 @@ export function useDeleteRecurring() {
   return useFinanceMutation(async (id: string) => {
     const { error } = await createClient().from("recurring_payments").delete().eq("id", id);
     if (error) throw error;
+    track("recurring_payment_deleted", {});
   });
 }
 
@@ -278,7 +297,11 @@ export function useInvoices(page: number) {
  * when it is connected, otherwise only in the app.
  */
 export function useCreateInvoiceFromDeal() {
-  return useFinanceMutation(async (dealId: string) => unwrap(await issueInvoiceAction(dealId)));
+  return useFinanceMutation(async (dealId: string) => {
+    const result = unwrap(await issueInvoiceAction(dealId));
+    track("invoice_issued", {});
+    return result;
+  });
 }
 
 /**
@@ -291,6 +314,7 @@ export function useMarkInvoicePaid() {
   return useMutation({
     mutationFn: async (id: string) => unwrap(await markInvoicePaidAction(id)),
     onSuccess: ({ dealMoved }) => {
+      track("invoice_paid_marked", {});
       if (!dealMoved) return;
       void queryClient.invalidateQueries({ queryKey: ["pipeline", user.id] });
       void queryClient.invalidateQueries({ queryKey: ["contacts", user.id] });
@@ -303,6 +327,7 @@ export function useDeleteInvoice() {
   return useFinanceMutation(async (id: string) => {
     const { error } = await createClient().from("invoices").delete().eq("id", id);
     if (error) throw error;
+    track("invoice_deleted", {});
   });
 }
 
@@ -320,14 +345,17 @@ export function useFakturoidStatus() {
 }
 
 export function useConnectFakturoid() {
-  return useFinanceMutation(async (input: FakturoidConnectInput) =>
-    unwrap(await connectFakturoidAction(input)),
-  );
+  return useFinanceMutation(async (input: FakturoidConnectInput) => {
+    const result = unwrap(await connectFakturoidAction(input));
+    track("fakturoid_connected", {});
+    return result;
+  });
 }
 
 export function useDisconnectFakturoid() {
   return useFinanceMutation(async () => {
     unwrap(await disconnectFakturoidAction());
+    track("fakturoid_disconnected", {});
   });
 }
 
@@ -353,6 +381,7 @@ export function useSyncFakturoid() {
   return useMutation({
     mutationFn: async () => unwrap(await syncFakturoidAction()),
     onSuccess: ({ dealsMoved }) => {
+      track("fakturoid_synced", {});
       if (!dealsMoved) return;
       void queryClient.invalidateQueries({ queryKey: ["pipeline", user.id] });
       void queryClient.invalidateQueries({ queryKey: ["contacts", user.id] });

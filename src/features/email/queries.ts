@@ -13,6 +13,7 @@ import { pipelineKeys } from "@/features/pipeline/queries";
 import { createClient } from "@/lib/supabase/client";
 import { sendEmailAction, type SendEmailInput } from "./actions";
 import { EmailError, unwrap } from "./errors";
+import { track } from "@/lib/analytics/client";
 
 const ATTACHMENTS_BUCKET = "attachments";
 
@@ -43,6 +44,8 @@ export type SendEmailArgs = {
   subject: string;
   body: string;
   files: File[];
+  /** The body started from Jarvis's draft. */
+  usedAiDraft?: boolean;
 };
 
 /**
@@ -78,6 +81,11 @@ export function useSendEmail() {
       }
     },
     onSuccess: (_data, args) => {
+      track("email_sent", {
+        attachments: args.files.length,
+        used_ai_draft: args.usedAiDraft === true,
+        from_deal: args.dealId !== null,
+      });
       void queryClient.invalidateQueries({
         queryKey: contactKeys.activities(user.id, args.contactId),
       });
@@ -103,6 +111,10 @@ export function useSuggestEmailReply() {
       receivedEmail: string;
     }) => {
       const result = await postJarvisJob<{ reply: string }>({ kind: "emailReply", ...args });
+      track("email_draft_requested", {
+        ok: result.ok,
+        ...(result.ok ? {} : { error_code: result.code }),
+      });
       if (!result.ok) throw new JarvisJobError(result.code);
       return result.reply;
     },

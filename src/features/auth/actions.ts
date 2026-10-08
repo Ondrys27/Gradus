@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
+import { track } from "@/lib/analytics/track";
 import { isFreshRecoverySession } from "@/lib/auth/recovery";
 import { HOME_PATH, loginPath, safeNextPath } from "@/lib/auth/routes";
 import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE } from "@/i18n/locale-cookie";
@@ -61,6 +62,7 @@ export async function signIn(_prev: FormState, formData: FormData): Promise<Form
   if (error || !data.user) return { error: authErrorKey(error), values };
 
   await syncLocaleFromSettings(data.user.id);
+  await track("signed_in", {}, { userId: data.user.id });
   redirect(safeNextPath(String(formData.get("next") ?? "")));
 }
 
@@ -172,6 +174,9 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
   ]);
   if (settingsResult.error) console.error("[auth] initial settings failed", settingsResult.error);
   if (profileResult.error) console.error("[auth] initial profile failed", profileResult.error);
+
+  await track("account_registered", { method: decision.kind }, { userId, admin });
+  if (decision.kind === "worker") await track("worker_invite_accepted", {}, { userId, admin });
 
   const supabase = await createClient();
   const { error: signInError } = await supabase.auth.signInWithPassword({
