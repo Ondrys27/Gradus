@@ -1,5 +1,6 @@
 import type { IsoDate } from "@/lib/format";
 import type { MetricUnit } from "@/lib/analytics/metrics";
+import type { Database } from "@/types/database";
 
 /** What the server hands the administration's components: plain, serialisable data. */
 
@@ -79,3 +80,23 @@ export type HeatmapCell = { weekday: number; hour: number; events: number; users
 
 /** A block that could not load; the page shows a short note instead of failing whole. */
 export type Loaded<T> = { ok: true; data: T } | { ok: false };
+
+// --- Feedback (shared with the client, so they stay out of server-only files) ------
+
+export type FeatureRequestStatus = Database["public"]["Enums"]["feature_request_status"];
+export const FEATURE_REQUEST_STATUSES: readonly FeatureRequestStatus[] = [
+  "new",
+  "planned",
+  "in_progress",
+  "done",
+  "declined",
+];
+
+export type FeatureRequestRow = {
+  id: string;
+  userId: string;
+  title: string;
+  description: string | null;
+  status: FeatureRequestStatus;
+  createdAt: string;
+};

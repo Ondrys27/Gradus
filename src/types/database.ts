@@ -3031,6 +3031,32 @@ export type Database = {
         }[]
       }
       metric_active_events: { Args: never; Returns: string[] }
+      metric_admin_user_detail: {
+        Args: { _tz?: string; _user_id: string }
+        Returns: Json
+      }
+      metric_admin_users: {
+        Args: {
+          _limit?: number
+          _offset?: number
+          _query?: string
+          _sort?: string
+          _tz?: string
+        }
+        Returns: {
+          ai_cost_usd: number
+          country: string
+          industry: string
+          is_internal: boolean
+          last_active_at: string
+          mode: string
+          plan: string
+          role: string
+          signed_up_at: string
+          status: string
+          user_id: string
+        }[]
+      }
       metric_adoption: {
         Args: {
           _from: string

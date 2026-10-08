@@ -4072,6 +4072,208 @@
       "more": "Více",
       "activeDaysHint": "Kolik dní v týdnu jsou lidé aktivní: uživatelotýdny podle počtu aktivních dní."
     },
+    "features": {
+      "title": "Funkce",
+      "description": "Každá sekce aplikace: kdo ji používá, kolik a jaký je trend.",
+      "tabs": "Sekce",
+      "adoptionTitle": "Adopce",
+      "adoptionDescription": "Ze všech aktivních v období podíl, který danou sekci alespoň jednou použil.",
+      "fromTemplate": "Z šablony cesty",
+      "custom": "Vlastní milník",
+      "columns": {
+        "section": "Sekce",
+        "adoption": "Adopce",
+        "actions": "Akce",
+        "actionsPerUser": "Akcí na uživatele",
+        "group": "Skupina",
+        "medianDays": "Medián dní",
+        "keyword": "Klíčové slovo",
+        "searches": "Hledání",
+        "metric": "Metrika",
+        "currency": "Měna",
+        "count": "Počet",
+        "total": "Celkem"
+      },
+      "moneyMetric": {
+        "deals_created": "Vytvořené obchody",
+        "deals_won": "Vyhrané obchody",
+        "deals_lost": "Prohrané obchody",
+        "income": "Příjmy",
+        "expense": "Výdaje",
+        "invoices_issued": "Vystavené faktury"
+      }
+    },
+    "ai": {
+      "title": "AI a Jarvis",
+      "description": "Volání, tokeny, náklady, latence a jak lidé reagují na Jarvise.",
+      "topUsersTitle": "10 nejnákladnějších uživatelů",
+      "topUsersDescription": "Jen identifikátor a plán; detail uživatele otevřeš kliknutím.",
+      "openDetail": "{id} → otevřít detail",
+      "columns": {
+        "key": "Název",
+        "calls": "Volání",
+        "users": "Uživatelé",
+        "cost": "Náklad",
+        "cacheHit": "Míra zásahu mezipaměti",
+        "p50": "p50",
+        "p95": "p95",
+        "user": "Uživatel",
+        "plan": "Plán"
+      }
+    },
+    "game": {
+      "title": "Hra",
+      "description": "Herní vs. běžný režim, úrovně, XP, kapitoly, odznaky a série."
+    },
+    "costs": {
+      "title": "Náklady",
+      "description": "Co provoz Gradusu stojí, na uživatele a proti ceníku.",
+      "columns": {
+        "plan": "Plán",
+        "price": "Cena",
+        "costPerUser": "Náklad na aktivního uživatele",
+        "margin": "Marže",
+        "marginShare": "Marže (%)"
+      }
+    },
+    "health": {
+      "title": "Zdraví",
+      "description": "Chyby, latence a jestli naplánované úlohy proběhly.",
+      "ok": "V pořádku",
+      "failed": "Selhalo",
+      "columns": {
+        "count": "Počet",
+        "p50": "p50",
+        "p95": "p95",
+        "route": "Trasa",
+        "page": "Stránka",
+        "job": "Úloha",
+        "lastRun": "Poslední běh",
+        "lastOk": "Poslední výsledek",
+        "runs7d": "Běhy (7 dní)",
+        "failures7d": "Selhání (7 dní)"
+      }
+    },
+    "feedback": {
+      "title": "Zpětná vazba",
+      "description": "Nápady, NPS a jak lidé hodnotí Jarvisovy odpovědi.",
+      "commentsTitle": "Komentáře k NPS",
+      "commentsDescription": "Nejnovější odpovědi, které obsahovaly komentář.",
+      "noComments": "Zatím žádné komentáře.",
+      "npsScoreBadge": "Skóre {score}/10",
+      "ideasTitle": "Nápady",
+      "ideasDescription": "Odeslané přes Jarvise; stav měň podle toho, jak je zpracováváš.",
+      "emptyTitle": "Zatím žádné nápady",
+      "emptyDescription": "Nápady, které lidé pošlou Jarvisovi, se zobrazí tady.",
+      "ideaMeta": "Od {id} · {date}",
+      "statusFailed": "Nepodařilo se uložit. Zkus to znovu.",
+      "status": {
+        "new": "Nový",
+        "planned": "Plánováno",
+        "in_progress": "Rozpracováno",
+        "done": "Hotovo",
+        "declined": "Zamítnuto"
+      }
+    },
+    "users": {
+      "title": "Uživatelé",
+      "description": "Hledání podle identifikátoru, řazení podle aktivity nebo nákladů. Žádný obsah dat.",
+      "searchPlaceholder": "Hledat podle id uživatele…",
+      "sortBy": "Řadit podle",
+      "sort": {
+        "activity": "Aktivity",
+        "cost": "Nákladů",
+        "signup": "Registrace"
+      },
+      "emptyTitle": "Žádní uživatelé",
+      "emptyDescription": "Zkus jiné id, nebo hledání vymaž.",
+      "pagination": "Stránky výsledků",
+      "newer": "Novější",
+      "older": "Starší",
+      "page": "Strana {page}",
+      "internal": "Interní",
+      "columns": {
+        "id": "Id",
+        "plan": "Plán",
+        "status": "Stav",
+        "role": "Role",
+        "signedUp": "Registrace",
+        "lastActive": "Poslední aktivita",
+        "aiCost": "Náklad AI",
+        "internal": "Interní"
+      },
+      "status": {
+        "trialing": "Zkušební",
+        "active": "Aktivní",
+        "past_due": "Po splatnosti",
+        "cancelled": "Zrušeno",
+        "expired": "Vypršelo"
+      },
+      "detailTitle": "Uživatel {id}",
+      "detailDescription": "Plán a stav, aktivita a spotřeba. Bez obsahu kontaktů, obchodů, úkolů a zpráv.",
+      "industry": "Obor",
+      "mode": "Režim",
+      "level": "Úroveň",
+      "activeDays30": "Aktivní dny (30 dní)",
+      "workers": "Pracovníci",
+      "featureRequests": "Odeslané nápady",
+      "npsScore": "Poslední skóre NPS",
+      "aiTitle": "Spotřeba AI",
+      "aiCalls": "Volání",
+      "inputTokens": "Vstupní tokeny",
+      "outputTokens": "Výstupní tokeny",
+      "sectionsTitle": "Použité sekce",
+      "sectionsDescription": "Zaznamenané akce podle sekce, za celou dobu.",
+      "noActivity": "Žádná zaznamenaná aktivita.",
+      "timelineTitle": "Časová osa",
+      "timelineDescription": "Posledních 50 akcí, jen podle typu.",
+      "sections": {
+        "platform": "Platforma",
+        "account": "Účet",
+        "onboarding": "Onboarding",
+        "dashboard": "Přehled",
+        "milestones": "Milníky",
+        "contacts": "Kontakty",
+        "generation": "Generování kontaktů",
+        "pipeline": "Pipeline",
+        "cold_calling": "Cold Calling",
+        "calendar": "Kalendář",
+        "finance": "Finance",
+        "workers": "Pracovníci",
+        "search": "Vyhledávání",
+        "email": "E-mail",
+        "settings": "Nastavení",
+        "jarvis": "Jarvis",
+        "game": "Hra",
+        "plan": "Tarif"
+      }
+    },
+    "explorer": {
+      "title": "Průzkumník",
+      "description": "Libovolná událost z katalogu, vlastní výpočet, seskupení a segment.",
+      "event": "Událost",
+      "calc": "Výpočet",
+      "prop": "Vlastnost",
+      "grain": "Seskupit podle",
+      "saveView": "Uložit tento pohled",
+      "saveViewPrompt": "Pojmenuj tento pohled",
+      "removeView": "Odebrat pohled {name}",
+      "calcValues": {
+        "count": "Počet",
+        "users": "Unikátní uživatelé",
+        "sum": "Součet",
+        "avg": "Průměr"
+      },
+      "grainValues": {
+        "day": "Den",
+        "week": "Týden",
+        "month": "Měsíc"
+      },
+      "columns": {
+        "period": "Období",
+        "value": "Hodnota"
+      }
+    },
     "controls": {
       "period": "Období",
       "periods": {
@@ -4179,7 +4381,7 @@
       "joined": "Přihlášení",
       "confirmed": "Potvrzení",
       "confirm_rate": "Míra potvrzení",
-      "converted": "Převedeno na účet",
+      "converted": "Převedeno",
       "invites_sent": "Odeslané pozvánky",
       "invites_accepted": "Přijaté pozvánky",
       "invites_expired": "Vypršelé pozvánky",
@@ -4191,7 +4393,25 @@
       "sessions_per_user_week": "Relací na uživatele za týden",
       "median_minutes": "Délka relace (medián)",
       "p90_minutes": "Délka relace (p90)",
-      "minutes_per_user_day": "Čas v aplikaci na uživatele za den"
+      "minutes_per_user_day": "Čas v aplikaci na uživatele za den",
+      "hours": "Odvolané hodiny",
+      "users": "Uživatelé",
+      "callers": "Lidí, kteří volali",
+      "hours_per_caller": "Hodin na volajícího",
+      "meetings": "Domluvené schůzky",
+      "meetings_per_hour": "Schůzky na hodinu volání",
+      "conversations": "Konverzace",
+      "user_messages": "Odeslané zprávy",
+      "messages_per_user": "Zpráv na uživatele",
+      "median_messages_per_conversation": "Zpráv na konverzaci (medián)",
+      "ai_usd": "AI (USD)",
+      "places_usd": "Google Places (USD)",
+      "emails_usd": "E-maily (USD)",
+      "total_usd": "Celkem (USD)",
+      "total_czk": "Celkem (Kč)",
+      "running": "Běžící",
+      "ending_this_week": "Končí tento týden",
+      "expired": "Vypršelé"
     }
   }
 }

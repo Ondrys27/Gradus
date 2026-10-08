@@ -4072,6 +4072,208 @@
       "more": "More",
       "activeDaysHint": "How many days a week people are active: user weeks by number of active days."
     },
+    "features": {
+      "title": "Features",
+      "description": "Every section of the app: who uses it, how much and the trend.",
+      "tabs": "Sections",
+      "adoptionTitle": "Adoption",
+      "adoptionDescription": "Of everyone active in the period, the share that used each section at least once.",
+      "fromTemplate": "From a path template",
+      "custom": "Own milestone",
+      "columns": {
+        "section": "Section",
+        "adoption": "Adoption",
+        "actions": "Actions",
+        "actionsPerUser": "Actions per user",
+        "group": "Group",
+        "medianDays": "Median days",
+        "keyword": "Keyword",
+        "searches": "Searches",
+        "metric": "Metric",
+        "currency": "Currency",
+        "count": "Count",
+        "total": "Total"
+      },
+      "moneyMetric": {
+        "deals_created": "Deals created",
+        "deals_won": "Deals won",
+        "deals_lost": "Deals lost",
+        "income": "Income",
+        "expense": "Expense",
+        "invoices_issued": "Invoices issued"
+      }
+    },
+    "ai": {
+      "title": "AI and Jarvis",
+      "description": "Calls, tokens, cost, latency and how people react to Jarvis.",
+      "topUsersTitle": "10 most costly users",
+      "topUsersDescription": "Identifier and plan only; open a user for their full detail.",
+      "openDetail": "{id} → open detail",
+      "columns": {
+        "key": "Name",
+        "calls": "Calls",
+        "users": "Users",
+        "cost": "Cost",
+        "cacheHit": "Cache hit rate",
+        "p50": "p50",
+        "p95": "p95",
+        "user": "User",
+        "plan": "Plan"
+      }
+    },
+    "game": {
+      "title": "Game",
+      "description": "Game vs. tool mode, levels, XP, chapters, badges and streaks."
+    },
+    "costs": {
+      "title": "Costs",
+      "description": "What running Gradus costs, per user and against the price list.",
+      "columns": {
+        "plan": "Plan",
+        "price": "Price",
+        "costPerUser": "Cost per active user",
+        "margin": "Margin",
+        "marginShare": "Margin (%)"
+      }
+    },
+    "health": {
+      "title": "Health",
+      "description": "Errors, latency and whether the scheduled jobs ran.",
+      "ok": "OK",
+      "failed": "Failed",
+      "columns": {
+        "count": "Count",
+        "p50": "p50",
+        "p95": "p95",
+        "route": "Route",
+        "page": "Page",
+        "job": "Job",
+        "lastRun": "Last run",
+        "lastOk": "Last result",
+        "runs7d": "Runs (7 d)",
+        "failures7d": "Failures (7 d)"
+      }
+    },
+    "feedback": {
+      "title": "Feedback",
+      "description": "Ideas, NPS and how people rate Jarvis's answers.",
+      "commentsTitle": "NPS comments",
+      "commentsDescription": "The most recent answers that left a comment.",
+      "noComments": "No comments yet.",
+      "npsScoreBadge": "Score {score}/10",
+      "ideasTitle": "Ideas",
+      "ideasDescription": "Submitted through Jarvis; change the status as you triage them.",
+      "emptyTitle": "No ideas yet",
+      "emptyDescription": "Ideas people send Jarvis show up here.",
+      "ideaMeta": "From {id} · {date}",
+      "statusFailed": "Could not be saved. Try again.",
+      "status": {
+        "new": "New",
+        "planned": "Planned",
+        "in_progress": "In progress",
+        "done": "Done",
+        "declined": "Declined"
+      }
+    },
+    "users": {
+      "title": "Users",
+      "description": "Search by identifier, sort by activity or cost. No content of anyone's data.",
+      "searchPlaceholder": "Search by user id…",
+      "sortBy": "Sort by",
+      "sort": {
+        "activity": "Activity",
+        "cost": "Cost",
+        "signup": "Sign-up"
+      },
+      "emptyTitle": "No users found",
+      "emptyDescription": "Try a different id, or clear the search.",
+      "pagination": "Result pages",
+      "newer": "Newer",
+      "older": "Older",
+      "page": "Page {page}",
+      "internal": "Internal",
+      "columns": {
+        "id": "Id",
+        "plan": "Plan",
+        "status": "Status",
+        "role": "Role",
+        "signedUp": "Signed up",
+        "lastActive": "Last active",
+        "aiCost": "AI cost",
+        "internal": "Internal"
+      },
+      "status": {
+        "trialing": "Trialing",
+        "active": "Active",
+        "past_due": "Past due",
+        "cancelled": "Cancelled",
+        "expired": "Expired"
+      },
+      "detailTitle": "User {id}",
+      "detailDescription": "Plan and status, activity and consumption. No content of contacts, deals, tasks or messages.",
+      "industry": "Industry",
+      "mode": "Mode",
+      "level": "Level",
+      "activeDays30": "Active days (30 d)",
+      "workers": "Workers",
+      "featureRequests": "Ideas submitted",
+      "npsScore": "Last NPS score",
+      "aiTitle": "AI usage",
+      "aiCalls": "Calls",
+      "inputTokens": "Input tokens",
+      "outputTokens": "Output tokens",
+      "sectionsTitle": "Sections used",
+      "sectionsDescription": "Actions recorded per section, all time.",
+      "noActivity": "No activity recorded.",
+      "timelineTitle": "Timeline",
+      "timelineDescription": "The last 50 actions, by type only.",
+      "sections": {
+        "platform": "Platform",
+        "account": "Account",
+        "onboarding": "Onboarding",
+        "dashboard": "Dashboard",
+        "milestones": "Milestones",
+        "contacts": "Contacts",
+        "generation": "Contact generation",
+        "pipeline": "Pipeline",
+        "cold_calling": "Cold calling",
+        "calendar": "Calendar",
+        "finance": "Finance",
+        "workers": "Workers",
+        "search": "Search",
+        "email": "E-mail",
+        "settings": "Settings",
+        "jarvis": "Jarvis",
+        "game": "Game",
+        "plan": "Plan"
+      }
+    },
+    "explorer": {
+      "title": "Explorer",
+      "description": "Any catalog event, your own calculation, grouping and segment.",
+      "event": "Event",
+      "calc": "Calculation",
+      "prop": "Property",
+      "grain": "Group by",
+      "saveView": "Save this view",
+      "saveViewPrompt": "Name this view",
+      "removeView": "Remove the view {name}",
+      "calcValues": {
+        "count": "Count",
+        "users": "Unique users",
+        "sum": "Sum",
+        "avg": "Average"
+      },
+      "grainValues": {
+        "day": "Day",
+        "week": "Week",
+        "month": "Month"
+      },
+      "columns": {
+        "period": "Period",
+        "value": "Value"
+      }
+    },
     "controls": {
       "period": "Period",
       "periods": {
@@ -4179,7 +4381,7 @@
       "joined": "Joined",
       "confirmed": "Confirmed",
       "confirm_rate": "Confirmation rate",
-      "converted": "Became accounts",
+      "converted": "Converted",
       "invites_sent": "Invites sent",
       "invites_accepted": "Invites accepted",
       "invites_expired": "Invites expired",
@@ -4191,7 +4393,25 @@
       "sessions_per_user_week": "Sessions per user a week",
       "median_minutes": "Session length (median)",
       "p90_minutes": "Session length (p90)",
-      "minutes_per_user_day": "Time in the app per user a day"
+      "minutes_per_user_day": "Time in the app per user a day",
+      "hours": "Hours of calling",
+      "users": "Users",
+      "callers": "People who called",
+      "hours_per_caller": "Hours per caller",
+      "meetings": "Meetings booked",
+      "meetings_per_hour": "Meetings per hour of calling",
+      "conversations": "Conversations",
+      "user_messages": "Messages sent",
+      "messages_per_user": "Messages per user",
+      "median_messages_per_conversation": "Messages per conversation (median)",
+      "ai_usd": "AI (USD)",
+      "places_usd": "Google Places (USD)",
+      "emails_usd": "E-mails (USD)",
+      "total_usd": "Total (USD)",
+      "total_czk": "Total (CZK)",
+      "running": "Running",
+      "ending_this_week": "Ending this week",
+      "expired": "Expired"
     }
   }
 }

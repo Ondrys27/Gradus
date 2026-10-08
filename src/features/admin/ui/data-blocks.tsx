@@ -1,13 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { DownloadIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { MetricUnit } from "@/lib/analytics/metrics";
 import { SEGMENT_VALUES } from "@/lib/analytics/metrics";
 import { countryName, formatCalendarDate, formatNumber, weekdayShortName } from "@/lib/format";
+import { cn } from "@/lib/utils";
+import { toCsv } from "../access";
 import { dropOff } from "../cohorts";
 import { ADMIN_FORMAT_SETTINGS, formatMetricValue } from "../format-metric";
 import { heat } from "../numbers";
 import type { BreakdownData, CohortRow, FieldsData, FunnelStep, HeatmapCell } from "../types";
 import { AdminEmpty } from "./blocks";
+import { downloadBlob } from "./export-image";
 import { ChangeBadge } from "./metric-tile";
 
 const SETTINGS = ADMIN_FORMAT_SETTINGS;
@@ -309,4 +316,119 @@ export function FieldsGrid({ data }: { data: FieldsData }) {
       ))}
     </dl>
   );
+}
+
+// --- Generic rows table ------------------------------------------------------------
+
+export type DataTableColumn<T> = {
+  key: string;
+  label: string;
+  align?: "left" | "right";
+  /** Renders the cell; the plain value also becomes the CSV cell unless `csv` is given. */
+  render: (row: T) => string;
+  /** The raw value for the CSV export, when it should differ from the rendered text. */
+  csv?: (row: T) => string | number | null;
+};
+
+/**
+ * Any table of rows the registry returns as-is (a top-10 list, a cost
+ * breakdown, a cron job's last run…). One export button, written to the
+ * audit like a chart's.
+ */
+export function DataTable<T>({
+  id,
+  columns,
+  rows,
+}: {
+  id: string;
+  columns: DataTableColumn<T>[];
+  rows: T[];
+}) {
+  const tChart = useTranslations("admin.chart");
+  const [exporting, setExporting] = useState(false);
+  const [failed, setFailed] = useState(false);
+  if (rows.length === 0) return <AdminEmpty className="py-6" />;
+
+  async function exportCsv() {
+    setExporting(true);
+    setFailed(false);
+    try {
+      const header = columns.map((column) => column.key);
+      const body = rows.map((row) =>
+        columns.map((column) => (column.csv ? column.csv(row) : column.render(row))),
+      );
+      const blob = new Blob([toCsv(header, body)], { type: "text/csv;charset=utf-8" });
+      // Imported lazily: a server action, pulled in only when the button is used.
+      const { recordExport } = await import("../server/export-actions");
+      const { ok } = await recordExport(`table.${id}.csv`);
+      if (!ok) throw new Error("Audit refused the export");
+      downloadBlob(blob, `${id.replace(/\./g, "-")}.csv`);
+    } catch (error) {
+      console.error("[admin] table export failed", error);
+      setFailed(true);
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex justify-end">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          aria-label={tChart("exportCsv")}
+          title={tChart("exportCsv")}
+          disabled={exporting}
+          onClick={() => void exportCsv()}
+        >
+          <DownloadIcon aria-hidden />
+        </Button>
+      </div>
+      {failed && <p className="text-xs text-pink">{tChart("exportFailed")}</p>}
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[32rem] text-left text-sm">
+          <thead className="text-xs text-ink-soft">
+            <tr className="border-b border-line">
+              {columns.map((column) => (
+                <th
+                  key={column.key}
+                  scope="col"
+                  className={cn(
+                    "px-3 py-2 font-medium whitespace-nowrap",
+                    column.align === "right" && "text-right",
+                  )}
+                >
+                  {column.label}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, index) => (
+              <tr key={index} className="border-b border-line last:border-0">
+                {columns.map((column) => (
+                  <td
+                    key={column.key}
+                    className={cn(
+                      "px-3 py-2 tabular-nums whitespace-nowrap",
+                      column.align === "right" && "text-right",
+                    )}
+                  >
+                    {column.render(row)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/** A cell of a registry unit, formatted the same way a tile would. */
+export function dataCell(value: unknown, unit: MetricUnit, tUnits: ReturnType<typeof useTranslations>) {
+  return formatMetricValue(typeof value === "number" ? value : Number(value ?? NaN), unit, tUnits);
 }

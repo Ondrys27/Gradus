@@ -71,8 +71,12 @@ describe("admin metric blocks", () => {
   });
 
   it("shows a pending metric without asking the database", async () => {
-    const tile = await scalarTile(q, "nps");
-    expect(tile).toMatchObject({ key: "nps", value: null, pending: "11.5" });
+    const tile = await scalarTile(q, "streak_freezes");
+    expect(tile).toMatchObject({
+      key: "streak_freezes",
+      value: null,
+      pending: "game-streak-freeze-log",
+    });
     expect(calls).toHaveLength(0);
   });
 

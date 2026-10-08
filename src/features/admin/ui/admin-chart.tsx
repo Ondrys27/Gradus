@@ -31,7 +31,7 @@ import {
   visibleRows,
   type IndexWindow,
 } from "../numbers";
-import { recordChartExport } from "../server/export-actions";
+import { recordExport } from "../server/export-actions";
 import type { ChartData, ChartSeries } from "../types";
 import { AdminEmpty } from "./blocks";
 import { downloadBlob, svgToPngBlob } from "./export-image";
@@ -201,7 +201,7 @@ export function AdminChart({
         if (!svg || !containerRef.current) throw new Error("No chart to export");
         blob = await svgToPngBlob(svg, containerRef.current);
       }
-      const { ok } = await recordChartExport(`chart.${data.id}.${kind}`);
+      const { ok } = await recordExport(`chart.${data.id}.${kind}`);
       if (!ok) throw new Error("Audit refused the export");
       const first = rows[0]?.x ?? "";
       const last = rows[rows.length - 1]?.x ?? "";

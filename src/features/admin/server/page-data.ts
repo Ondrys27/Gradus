@@ -12,6 +12,7 @@ import type {
   HeatmapCell,
   TileData,
 } from "../types";
+import { autoBreakdowns, autoTiles } from "./auto-metrics";
 import {
   breakdown,
   dailyChart,
@@ -24,7 +25,8 @@ import {
   usersTile,
   type AdminQuery,
 } from "./metrics-data";
-import type { MetricUnit } from "@/lib/analytics/metrics";
+import { metricsIn, type MetricUnit } from "@/lib/analytics/metrics";
+import type { AnalyticsSection } from "@/lib/analytics/routes";
 
 /**
  * The blocks of the Overview, Growth, Activation and Retention pages. Every
@@ -92,7 +94,7 @@ export function growthCharts(q: AdminQuery): Promise<ChartData[]> {
 }
 
 /** One row of a function as named values, with the previous period when compared. */
-async function fields(
+export async function fields(
   q: AdminQuery,
   key: string,
   columns: { name: string; unit: MetricUnit }[],
@@ -270,4 +272,377 @@ export async function retentionHeatmap(q: AdminQuery): Promise<HeatmapCell[][]> 
 
 export function retentionBreakdowns(q: AdminQuery): Promise<BreakdownData[]> {
   return Promise.all([breakdown(q, "returns_from_jarvis")]);
+}
+
+// --- Features ----------------------------------------------------------------------
+
+/** The app sections the Features page offers as tabs, in the order of docs/metrics.md. */
+export const FEATURE_SECTIONS = [
+  "milestones",
+  "pipeline",
+  "contacts",
+  "generation",
+  "cold_calling",
+  "calendar",
+  "finance",
+  "workers",
+  "search",
+  "email",
+  "settings",
+] as const satisfies readonly AnalyticsSection[];
+
+/**
+ * The metric whose daily count stands for a section's trend chart: one of
+ * its metrics that is a plain series, not a breakdown. Milestones, calendar
+ * and settings have none simple enough, so they show none.
+ */
+const SECTION_TREND: Partial<Record<AnalyticsSection, string>> = {
+  pipeline: "deals_created",
+  contacts: "contact_moves",
+  generation: "generation_batches",
+  cold_calling: "timer_sessions",
+  finance: "invoices_issued",
+  workers: "worker_tasks_assigned",
+  search: "searches",
+  email: "emails_sent",
+};
+
+export type AdoptionRow = {
+  section: string;
+  users: number | null;
+  activeUsers: number | null;
+  pct: number | null;
+  actions: number | null;
+  actionsPerUser: number | null;
+};
+
+/** Adoption, actions and actions per user of every section, one row each. */
+export async function featureAdoption(q: AdminQuery): Promise<AdoptionRow[]> {
+  const rows = rowsOf(await run(q, "feature_adoption"));
+  return rows.map((row) => ({
+    section: String(row.section),
+    users: num(row.users),
+    activeUsers: num(row.active_users),
+    pct: num(row.pct),
+    actions: num(row.actions),
+    actionsPerUser: num(row.actions_per_user),
+  }));
+}
+
+function sectionKeys(section: AnalyticsSection): string[] {
+  return metricsIn("features")
+    .filter((definition) => definition.section === section)
+    .map((definition) => definition.key);
+}
+
+export async function featureSectionTiles(
+  q: AdminQuery,
+  section: AnalyticsSection,
+): Promise<TileData[]> {
+  return autoTiles(q, sectionKeys(section));
+}
+
+export async function featureSectionBreakdowns(
+  q: AdminQuery,
+  section: AnalyticsSection,
+): Promise<BreakdownData[]> {
+  return autoBreakdowns(q, sectionKeys(section));
+}
+
+export async function featureSectionTrend(
+  q: AdminQuery,
+  section: AnalyticsSection,
+): Promise<ChartData | null> {
+  const key = SECTION_TREND[section];
+  if (!key) return null;
+  return dailyChart(q, `features.${section}`, [{ key, kind: "bar", color: "violet" }]);
+}
+
+/** milestone_days_to_complete, grouped by whether the milestone came from a path template. */
+export async function milestoneDaysToComplete(
+  q: AdminQuery,
+): Promise<{ key: string; p50: number | null }[]> {
+  const rows = rowsOf(await run(q, "milestone_days_to_complete"));
+  return rows.map((row) => ({ key: String(row.key), p50: num(row.p50) }));
+}
+
+export type MoneyRow = { metric: string; currency: string; items: number | null; total: number | null };
+
+async function moneyRows(q: AdminQuery, key: string): Promise<MoneyRow[]> {
+  const rows = rowsOf(await run(q, key));
+  return rows.map((row) => ({
+    metric: String(row.metric),
+    currency: String(row.currency),
+    items: num(row.items),
+    total: num(row.total),
+  }));
+}
+
+export const dealValue = (q: AdminQuery) => moneyRows(q, "deal_value");
+export const financeValue = (q: AdminQuery) => moneyRows(q, "finance_value");
+
+export const callTimeFields = (q: AdminQuery) =>
+  fields(q, "call_time", [
+    { name: "hours", unit: "hours" },
+    { name: "callers", unit: "users" },
+    { name: "hours_per_caller", unit: "hours" },
+    { name: "meetings", unit: "count" },
+    { name: "meetings_per_hour", unit: "ratio" },
+  ]);
+
+export async function generationKeywords(
+  q: AdminQuery,
+): Promise<{ keyword: string; searches: number | null }[]> {
+  const rows = rowsOf(await run(q, "generation_keywords"));
+  return rows.map((row) => ({ keyword: String(row.keyword), searches: num(row.searches) }));
+}
+
+export const workerInviteFields = (q: AdminQuery) =>
+  fields(q, "worker_invites", [
+    { name: "invites_sent", unit: "count" },
+    { name: "invites_accepted", unit: "count" },
+    { name: "invites_expired", unit: "count" },
+    { name: "workers", unit: "users" },
+    { name: "active_workers", unit: "users" },
+    { name: "owners_with_workers", unit: "users" },
+    { name: "workers_per_owner", unit: "count" },
+  ]);
+
+// --- AI and Jarvis -------------------------------------------------------------------
+
+export const AI_TILE_KEYS = [
+  "ai_calls",
+  "ai_cost",
+  "ai_cost_per_active_user",
+  "ai_cap_users",
+  "jarvis_auto_actions_undone",
+  "jarvis_file_size",
+] as const;
+
+export function aiTiles(q: AdminQuery): Promise<TileData[]> {
+  return autoTiles(q, AI_TILE_KEYS);
+}
+
+export const AI_BREAKDOWN_KEYS = [
+  "proactive_reactions",
+  "proactive_acceptance",
+  "jarvis_auto_actions",
+  "jarvis_answer_ratings",
+  "jarvis_files",
+  "jarvis_files_rejected",
+] as const;
+
+export function aiBreakdowns(q: AdminQuery): Promise<BreakdownData[]> {
+  return autoBreakdowns(q, AI_BREAKDOWN_KEYS);
+}
+
+export function aiCostChart(q: AdminQuery): Promise<ChartData> {
+  return dailyChart(q, "ai.cost", [{ key: "ai_cost", kind: "area", color: "violet" }]);
+}
+
+export type AiUsageRow = {
+  key: string;
+  calls: number | null;
+  failed: number | null;
+  users: number | null;
+  inputTokens: number | null;
+  cacheReadTokens: number | null;
+  cacheWriteTokens: number | null;
+  outputTokens: number | null;
+  costUsd: number | null;
+  p50Ms: number | null;
+  p95Ms: number | null;
+};
+
+async function aiUsageRows(q: AdminQuery, key: "ai_by_feature" | "ai_by_model"): Promise<AiUsageRow[]> {
+  const rows = rowsOf(await run(q, key));
+  return rows.map((row) => ({
+    key: String(row.key),
+    calls: num(row.calls),
+    failed: num(row.failed),
+    users: num(row.users),
+    inputTokens: num(row.input_tokens),
+    cacheReadTokens: num(row.cache_read_tokens),
+    cacheWriteTokens: num(row.cache_write_tokens),
+    outputTokens: num(row.output_tokens),
+    costUsd: num(row.cost_usd),
+    p50Ms: num(row.p50_ms),
+    p95Ms: num(row.p95_ms),
+  }));
+}
+
+export const aiByFeature = (q: AdminQuery) => aiUsageRows(q, "ai_by_feature");
+export const aiByModel = (q: AdminQuery) => aiUsageRows(q, "ai_by_model");
+
+export async function aiErrors(q: AdminQuery): Promise<{ key: string; calls: number | null }[]> {
+  const rows = rowsOf(await run(q, "ai_errors"));
+  return rows.map((row) => ({ key: String(row.key), calls: num(row.calls) }));
+}
+
+export type AiTopUser = { userId: string; plan: string; calls: number | null; costUsd: number | null };
+
+export async function aiTopUsers(q: AdminQuery): Promise<AiTopUser[]> {
+  const rows = rowsOf(await run(q, "ai_top_users"));
+  return rows.map((row) => ({
+    userId: String(row.user_id),
+    plan: String(row.plan ?? ""),
+    calls: num(row.calls),
+    costUsd: num(row.cost_usd),
+  }));
+}
+
+export const jarvisConversations = (q: AdminQuery) =>
+  fields(q, "jarvis_conversations", [
+    { name: "conversations", unit: "count" },
+    { name: "users", unit: "users" },
+    { name: "user_messages", unit: "count" },
+    { name: "messages_per_user", unit: "count" },
+    { name: "median_messages_per_conversation", unit: "count" },
+  ]);
+
+// --- Game --------------------------------------------------------------------------
+
+export const GAME_TILE_KEYS = ["streak_freezes"] as const;
+
+export function gameTiles(q: AdminQuery): Promise<TileData[]> {
+  return autoTiles(q, GAME_TILE_KEYS);
+}
+
+export const GAME_BREAKDOWN_KEYS = [
+  "users_by_mode",
+  "mode_switches",
+  "level_distribution",
+  "chapters_completed",
+  "unlock_days",
+  "achievements",
+  "streaks",
+  "celebrations",
+] as const;
+
+export function gameBreakdowns(q: AdminQuery): Promise<BreakdownData[]> {
+  return autoBreakdowns(q, GAME_BREAKDOWN_KEYS);
+}
+
+export function gameChart(q: AdminQuery): Promise<ChartData> {
+  return dailyChart(q, "game.xp", [{ key: "xp_per_day", kind: "area", color: "gold" }]);
+}
+
+export async function xpSources(q: AdminQuery): Promise<BreakdownData> {
+  return breakdown(q, "xp_sources");
+}
+
+// --- Costs -------------------------------------------------------------------------
+
+export function costsTiles(q: AdminQuery): Promise<TileData[]> {
+  return Promise.all([
+    seriesTile(q, "ai_cost", "sum", { lowerIsBetter: true }),
+    seriesTile(q, "places_requests", "sum"),
+    scalarTile(q, "cost_per_active_user", { spark: true, lowerIsBetter: true }),
+  ]);
+}
+
+export async function costBreakdownFields(q: AdminQuery): Promise<FieldsData> {
+  return fields(q, "cost_breakdown", [
+    { name: "ai_usd", unit: "usd" },
+    { name: "places_usd", unit: "usd" },
+    { name: "emails_usd", unit: "usd" },
+    { name: "total_usd", unit: "usd" },
+    { name: "total_czk", unit: "czk" },
+  ]);
+}
+
+export type MarginRow = {
+  plan: string;
+  priceCzk: number | null;
+  costPerActiveUserCzk: number | null;
+  marginCzk: number | null;
+  marginShare: number | null;
+};
+
+/** Cost per active user next to the plan's price and estimated margin. */
+export async function marginByPlanRows(q: AdminQuery): Promise<MarginRow[]> {
+  const rows = rowsOf(await run(q, "margin_by_plan"));
+  return rows.map((row) => ({
+    plan: String(row.plan),
+    priceCzk: num(row.price_czk),
+    costPerActiveUserCzk: num(row.cost_per_active_user_czk),
+    marginCzk: num(row.margin_czk),
+    marginShare: num(row.margin_share),
+  }));
+}
+
+export const trialFields = (q: AdminQuery) =>
+  fields(
+    q,
+    "trials",
+    [
+      { name: "running", unit: "count" },
+      { name: "ending_this_week", unit: "count" },
+      { name: "expired", unit: "count" },
+      { name: "converted", unit: "count" },
+    ],
+    false,
+  );
+
+export function costsBreakdowns(q: AdminQuery): Promise<BreakdownData[]> {
+  return autoBreakdowns(q, ["plan_interest"]);
+}
+
+// --- Technical health ----------------------------------------------------------------
+
+export const HEALTH_TILE_KEYS = ["errors", "server_error_rate"] as const;
+
+export function healthTiles(q: AdminQuery): Promise<TileData[]> {
+  return autoTiles(q, HEALTH_TILE_KEYS);
+}
+
+export const HEALTH_BREAKDOWN_KEYS = [
+  "top_server_errors",
+  "client_errors_by_page",
+  "integration_errors",
+] as const;
+
+export function healthBreakdowns(q: AdminQuery): Promise<BreakdownData[]> {
+  return autoBreakdowns(q, HEALTH_BREAKDOWN_KEYS);
+}
+
+export function healthChart(q: AdminQuery): Promise<ChartData> {
+  return dailyChart(q, "health.errors", [{ key: "errors", kind: "bar", color: "pink" }]);
+}
+
+export type LatencyRow = { key: string; n: number | null; p50: number | null; p95: number | null };
+
+async function latencyRows(q: AdminQuery, key: string): Promise<LatencyRow[]> {
+  const rows = rowsOf(await run(q, key));
+  return rows.map((row) => ({
+    key: String(row.key || "–"),
+    n: num(row.n),
+    p50: num(row.p50),
+    p95: num(row.p95),
+  }));
+}
+
+export const routeLatency = (q: AdminQuery) => latencyRows(q, "route_latency");
+export const pageLoad = (q: AdminQuery) => latencyRows(q, "page_load");
+
+export type CronRow = {
+  job: string;
+  lastRunAt: string | null;
+  lastOk: boolean | null;
+  lastDurationMs: number | null;
+  runs7d: number | null;
+  failures7d: number | null;
+};
+
+/** Takes no range or segment: every job's very last run and its last 7 days. */
+export async function cronRuns(q: AdminQuery): Promise<CronRow[]> {
+  const rows = rowsOf(await run(q, "cron_runs"));
+  return rows.map((row) => ({
+    job: String(row.job),
+    lastRunAt: row.last_run_at ? String(row.last_run_at) : null,
+    lastOk: typeof row.last_ok === "boolean" ? row.last_ok : null,
+    lastDurationMs: num(row.last_duration_ms),
+    runs7d: num(row.runs_7d),
+    failures7d: num(row.failures_7d),
+  }));
 }
