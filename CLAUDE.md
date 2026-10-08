@@ -46,6 +46,9 @@ bun run db:types      # generuje src/types/database.ts
 - `src/lib/format.ts` — veškeré formátování · `src/lib/constants.ts` — `APP_NAME` · `src/lib/supabase/` — klienti (browser, server, admin)
 - `src/config/pricing.ts` — ceny a limity tarifů na jednom místě
 - `src/locales/en.json`, `cs.json`
+- `src/app/(admin)/` — administrace na /admin, jen majitel s druhým faktorem
+- `src/lib/analytics/` — katalog událostí (events.ts), registr metrik (metrics.ts), track()
+- `docs/metrics.md` — závazný katalog metrik
 
 Projekt je postavený od nuly. Starý kód z Lovable se nepoužívá, design je popsaný v tokenech a v plánu.
 
@@ -141,6 +144,15 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 
 ### Web
 - Marketingový web: čeština výchozí, angličtina pod /en. Žádná vymyšlená čísla, recenze ani loga. Žádné sledovací cookies. Snímky aplikace jen z bun run screenshots nad demo účtem.
+
+### Analytika a administrace
+- Události jen z katalogu events.ts. Vlastnosti jen identifikátory, výčty, čísla, pravdivostní hodnoty — nikdy volný text, jména, kontakty, názvy ani obsah zpráv.
+- Zápis jen přes track() na serveru nebo /api/t, které bere uživatele ze session. Do analytics_events nikdy nezapisuje klient přímo.
+- Interní účty (profiles.is_internal) jsou z metrik ve výchozím stavu vyloučené.
+- Měny se v metrikách nesčítají.
+- /admin: role owner + aal2 (TOTP), jinak 404. Data administrace jen na serveru přes admin klienta po ověření, každý pohled a export do admin_audit.
+- Nová funkce v aplikaci = nové události v katalogu a případně nová metrika v docs/metrics.md.
+- Události a relace se mažou po 13 měsících.
 
 ---
 
