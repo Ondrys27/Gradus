@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-import { isCronRequest } from "@/lib/cron/verify";
+import { runCron } from "@/lib/analytics/instrument";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -9,14 +8,10 @@ export const runtime = "nodejs";
  * account's moves. The work happens in refresh_call_time_stats(); the target
  * table has no link to any user.
  */
-export async function GET(request: Request) {
-  if (!isCronRequest(request)) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
-  const { data, error } = await createAdminClient().rpc("refresh_call_time_stats");
-  if (error) {
-    console.error("refresh_call_time_stats failed", error);
-    return NextResponse.json({ error: "refresh_failed" }, { status: 500 });
-  }
-  return NextResponse.json({ ok: true, cells: data });
+export function GET(request: Request) {
+  return runCron("call_time_stats", request, async () => {
+    const { data, error } = await createAdminClient().rpc("refresh_call_time_stats");
+    if (error) throw error;
+    return { processed: data ?? 0, body: { cells: data } };
+  });
 }

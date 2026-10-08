@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-import { isCronRequest } from "@/lib/cron/verify";
+import { runCron } from "@/lib/analytics/instrument";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -9,14 +8,10 @@ export const runtime = "nodejs";
  * post_due_recurring_payments(): one transaction per due day in each user's own
  * time zone, so running it twice books nothing twice.
  */
-export async function GET(request: Request) {
-  if (!isCronRequest(request)) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
-  const { data, error } = await createAdminClient().rpc("post_due_recurring_payments");
-  if (error) {
-    console.error("post_due_recurring_payments failed", error);
-    return NextResponse.json({ error: "posting_failed" }, { status: 500 });
-  }
-  return NextResponse.json({ ok: true, booked: data });
+export function GET(request: Request) {
+  return runCron("recurring_payments", request, async () => {
+    const { data, error } = await createAdminClient().rpc("post_due_recurring_payments");
+    if (error) throw error;
+    return { processed: data ?? 0, body: { booked: data } };
+  });
 }

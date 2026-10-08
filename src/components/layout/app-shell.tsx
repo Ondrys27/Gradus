@@ -5,6 +5,7 @@ import { GameSessionStart } from "@/features/game/game-session-start";
 import { OnboardingGate } from "@/features/onboarding/onboarding-gate";
 import { TrialNotice } from "@/features/plan/trial-notice";
 import { SearchProvider } from "@/features/search/search-provider";
+import { AnalyticsProvider } from "@/lib/analytics/analytics-provider";
 import { ThemeSync } from "@/features/settings/theme";
 import { BottomNav } from "./bottom-nav";
 import { SectionGuard } from "./section-guard";
@@ -29,6 +30,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <ThemeSync />
         <OnboardingGate />
         <JarvisTour />
+        <AnalyticsProvider />
       </div>
     </SearchProvider>
   );

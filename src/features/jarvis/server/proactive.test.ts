@@ -166,9 +166,7 @@ describe("loadProactive", () => {
         profiles: { data: { mode: "game" } },
         "rpc:prospecting_status": { data: [{ running: false }] },
         jarvis_suggestions: (call) =>
-          has(call, "eq", "kind", "question")
-            ? { data: asked }
-            : { data: [] },
+          has(call, "eq", "kind", "question") ? { data: asked } : { data: [] },
       });
 
     const admin = fakeDb({ jarvis_suggestions: { data: [question] } });
@@ -219,7 +217,11 @@ describe("reactToProactive", () => {
       milestones: { data: { id: MILESTONE } },
       tasks: { data: [{ position: 4 }] },
     });
-  const react = (supabase: ReturnType<typeof fakeDb>, admin: ReturnType<typeof fakeDb>, extra: object) =>
+  const react = (
+    supabase: ReturnType<typeof fakeDb>,
+    admin: ReturnType<typeof fakeDb>,
+    extra: object,
+  ) =>
     reactToProactive({
       supabase: supabase.db,
       admin: admin.db,
@@ -241,10 +243,15 @@ describe("reactToProactive", () => {
       ["id", ID],
       ["user_id", USER],
     ]);
-    expect(op(admin.calls.find((c) => c.table === "usage_events"), "insert")?.[0]).toMatchObject({
+    expect(
+      op(
+        admin.calls.find((c) => c.table === "analytics_events"),
+        "insert",
+      )?.[0],
+    ).toEqual({
       user_id: USER,
-      event_type: "jarvis_proactive",
-      metadata: { reaction: "later", kind: "suggestion", type: "insight" },
+      event: "jarvis_proactive_reacted",
+      props: { reaction: "later", kind: "suggestion", type: "insight" },
     });
 
     const closed = fakeDb();
@@ -263,8 +270,13 @@ describe("reactToProactive", () => {
       { user_id: USER, milestone_id: MILESTONE, title: "Slides", position: 6 },
     ]);
     expect(admin.calls.some((c) => c.table === "tasks")).toBe(false);
-    expect(op(admin.calls.find((c) => c.table === "usage_events"), "insert")?.[0]).toMatchObject({
-      quantity: 2,
+    expect(
+      op(
+        admin.calls.find((c) => c.table === "analytics_events"),
+        "insert",
+      )?.[0],
+    ).toMatchObject({
+      props: { reaction: "accept", tasks_created: 2 },
     });
   });
 
@@ -314,7 +326,10 @@ describe("proposedTasks", () => {
     const milestones = [{ id: MILESTONE, title: "Launch" }];
     expect(
       proposedTasks(
-        { tasks: [" Write  agenda ", "write agenda", "", "A", "B", "C", "D", "E"], milestoneId: MILESTONE },
+        {
+          tasks: [" Write  agenda ", "write agenda", "", "A", "B", "C", "D", "E"],
+          milestoneId: MILESTONE,
+        },
         milestones,
       ),
     ).toEqual({
@@ -373,7 +388,10 @@ describe("morning brief", () => {
     // Every read is the user's own.
     for (const call of admin.calls.filter((c) => !c.table.startsWith("rpc:"))) {
       expect(
-        call.ops.some(([n, a]) => n === "eq" && (a[0] === "user_id" || a[0] === "milestone_id") && a[1] !== undefined),
+        call.ops.some(
+          ([n, a]) =>
+            n === "eq" && (a[0] === "user_id" || a[0] === "milestone_id") && a[1] !== undefined,
+        ),
       ).toBe(true);
     }
   });

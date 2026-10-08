@@ -11,6 +11,11 @@
       "clear": "Clear",
       "title": "Choose a date",
       "close": "Close"
+    },
+    "pageError": {
+      "title": "This page ran into a problem",
+      "description": "Something went wrong while showing this page. Your data is safe; try it again.",
+      "retry": "Try again"
     }
   },
   "phone": {

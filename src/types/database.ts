@@ -128,6 +128,101 @@ export type Database = {
           },
         ]
       }
+      analytics_events: {
+        Row: {
+          created_at: string
+          device: string | null
+          event: string
+          game_mode: string | null
+          id: number
+          locale: string | null
+          owner_id: string | null
+          plan_key: string | null
+          props: Json
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          device?: string | null
+          event: string
+          game_mode?: string | null
+          id?: never
+          locale?: string | null
+          owner_id?: string | null
+          plan_key?: string | null
+          props?: Json
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          device?: string | null
+          event?: string
+          game_mode?: string | null
+          id?: never
+          locale?: string | null
+          owner_id?: string | null
+          plan_key?: string | null
+          props?: Json
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_events_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "app_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      analytics_rate_limits: {
+        Row: {
+          used: number
+          user_id: string
+          window_start: string
+        }
+        Insert: {
+          used?: number
+          user_id: string
+          window_start: string
+        }
+        Update: {
+          used?: number
+          user_id?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
+      app_sessions: {
+        Row: {
+          browser: string
+          device: string
+          id: string
+          last_seen_at: string
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          browser?: string
+          device?: string
+          id?: string
+          last_seen_at?: string
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          browser?: string
+          device?: string
+          id?: string
+          last_seen_at?: string
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       attachments: {
         Row: {
           created_at: string
@@ -792,6 +887,24 @@ export type Database = {
         }
         Relationships: []
       }
+      generation_keyword_stats: {
+        Row: {
+          day: string
+          keyword: string
+          searches: number
+        }
+        Insert: {
+          day: string
+          keyword: string
+          searches?: number
+        }
+        Update: {
+          day?: string
+          keyword?: string
+          searches?: number
+        }
+        Relationships: []
+      }
       invoices: {
         Row: {
           amount: number
@@ -1357,6 +1470,7 @@ export type Database = {
           display_name: string | null
           id: string
           industry: string | null
+          is_internal: boolean
           mode: string
           onboarding_completed_at: string | null
           path_key: string | null
@@ -1371,6 +1485,7 @@ export type Database = {
           display_name?: string | null
           id: string
           industry?: string | null
+          is_internal?: boolean
           mode?: string
           onboarding_completed_at?: string | null
           path_key?: string | null
@@ -1385,6 +1500,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           industry?: string | null
+          is_internal?: boolean
           mode?: string
           onboarding_completed_at?: string | null
           path_key?: string | null
@@ -2491,6 +2607,10 @@ export type Database = {
         Args: { _code: string; _user_id: string }
         Returns: string
       }
+      analytics_take_quota: {
+        Args: { _limit: number; _units: number; _user_id: string }
+        Returns: number
+      }
       app_overview: {
         Args: never
         Returns: {
@@ -2509,6 +2629,10 @@ export type Database = {
         Returns: undefined
       }
       choose_path: { Args: { _path_key: string }; Returns: Json }
+      count_generation_keyword: {
+        Args: { _keyword: string }
+        Returns: undefined
+      }
       create_invoice_from_deal: {
         Args: { _deal_id: string }
         Returns: {
@@ -2678,6 +2802,7 @@ export type Database = {
         Returns: undefined
       }
       is_client_request: { Args: never; Returns: boolean }
+      is_internal_account: { Args: { _user_id: string }; Returns: boolean }
       jarvis_briefing_candidates: {
         Args: { _limit: number; _now: string }
         Returns: {
@@ -2833,6 +2958,15 @@ export type Database = {
           today_seconds: number
         }[]
       }
+      purge_analytics: {
+        Args: { _before?: string }
+        Returns: {
+          events: number
+          keywords: number
+          sessions: number
+          usage: number
+        }[]
+      }
       record_worker_payment: {
         Args: {
           _amount: number
@@ -2950,6 +3084,10 @@ export type Database = {
       }
       theme_available: { Args: { _theme: string }; Returns: boolean }
       timer_idle_interval: { Args: never; Returns: string }
+      touch_app_session: {
+        Args: { _browser: string; _device: string; _user_id: string }
+        Returns: string
+      }
       user_today: { Args: { _user_id: string }; Returns: string }
       username_available: { Args: { _username: string }; Returns: boolean }
       work_seconds_between: {

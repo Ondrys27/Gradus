@@ -1,7 +1,8 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { todayIsoDate, zonedWallClockToInstant, type FormatSettings } from "@/lib/format";
-import type { Database, Json } from "@/types/database";
+import { track } from "@/lib/analytics/track";
+import type { Database } from "@/types/database";
 import { USAGE_EVENT, type GenerationUsage } from "../generation";
 
 type Client = SupabaseClient<Database>;
@@ -26,8 +27,9 @@ async function loadLimits(admin: Client, workspaceId: string) {
 
 /**
  * Contacts generated in the workspace today and this month, days and months
- * counted in the user's zone. usage_events is server-only, so the admin client
- * reads it, filtered by the workspace id the database gave for the session.
+ * counted in the user's zone, summed from the `saved` of every Google request.
+ * analytics_events is server-only, so the admin client reads it, filtered by
+ * the workspace (owner_id) the database gave for the session.
  */
 export async function loadGenerationUsage(
   admin: Client,
@@ -42,10 +44,10 @@ export async function loadGenerationUsage(
   const [limits, events] = await Promise.all([
     loadLimits(admin, workspaceId),
     admin
-      .from("usage_events")
-      .select("quantity, created_at")
-      .eq("user_id", workspaceId)
-      .eq("event_type", USAGE_EVENT)
+      .from("analytics_events")
+      .select("props, created_at")
+      .eq("owner_id", workspaceId)
+      .eq("event", USAGE_EVENT)
       .gte("created_at", monthStart.toISOString())
       .limit(EVENT_LIMIT),
   ]);
@@ -54,8 +56,10 @@ export async function loadGenerationUsage(
   let daily = 0;
   let monthly = 0;
   for (const event of events.data) {
-    monthly += event.quantity;
-    if (new Date(event.created_at) >= dayStart) daily += event.quantity;
+    const saved = Number((event.props as { saved?: unknown } | null)?.saved ?? 0);
+    const quantity = Number.isFinite(saved) && saved > 0 ? saved : 0;
+    monthly += quantity;
+    if (new Date(event.created_at) >= dayStart) daily += quantity;
   }
   return {
     daily: { used: daily, limit: limits.daily },
@@ -63,20 +67,64 @@ export async function loadGenerationUsage(
   };
 }
 
-/** Every call to Google is logged, failures too, with the HTTP status and Google's message. */
+export type PlacesRequestLog = {
+  page?: number;
+  ok: boolean;
+  saved: number;
+  results?: number;
+  duplicates?: number;
+  httpStatus?: number;
+  errorCode?: string;
+};
+
+/**
+ * Every call to Google is recorded, failures too, with the HTTP status and
+ * the error code (Google's message stays in the server log, never in the data).
+ * The event belongs to the person who pressed the button, in their workspace.
+ */
 export async function logGenerationCall(
   admin: Client,
+  actorId: string,
   workspaceId: string,
-  entry: { success: boolean; quantity: number; message?: string | null; metadata: Json },
+  entry: PlacesRequestLog,
 ) {
-  const { error } = await admin.from("usage_events").insert({
-    user_id: workspaceId,
-    event_type: USAGE_EVENT,
-    success: entry.success,
-    quantity: entry.quantity,
-    message: entry.message ?? null,
-    metadata: entry.metadata,
-  });
-  // A lost log line must not hide the result from the user; it shows in the server log.
-  if (error) console.error("usage_events insert failed", error);
+  await track(
+    USAGE_EVENT,
+    {
+      ok: entry.ok,
+      saved: entry.saved,
+      ...(entry.page !== undefined ? { page: entry.page } : {}),
+      ...(entry.results !== undefined ? { results: entry.results } : {}),
+      ...(entry.duplicates !== undefined ? { duplicates: entry.duplicates } : {}),
+      ...(entry.httpStatus ? { http_status: entry.httpStatus } : {}),
+      ...(entry.errorCode ? { error_code: entry.errorCode } : {}),
+    },
+    { userId: actorId, ownerId: workspaceId, admin },
+  );
+}
+
+/**
+ * The searched industry for the "most searched" overview: lower case, no
+ * accents, one space, at most 40 characters, and kept without any link to a
+ * person or a day's user.
+ */
+export function normalizeKeyword(industry: string): string | null {
+  const keyword = industry
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]+/g, " ")
+    .replace(/\d{5,}/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 40)
+    .trim();
+  return keyword.length >= 2 ? keyword : null;
+}
+
+export async function countKeyword(admin: Client, industry: string) {
+  const keyword = normalizeKeyword(industry);
+  if (!keyword) return;
+  const { error } = await admin.rpc("count_generation_keyword", { _keyword: keyword });
+  if (error) console.error("[generation] keyword count failed", error.code);
 }

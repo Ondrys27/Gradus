@@ -52,7 +52,8 @@ import {
   logAiUsage,
 } from "@/features/jarvis/server/usage";
 import { runWatch } from "@/features/jarvis/server/watch";
-import { isCronRequest } from "@/lib/cron/verify";
+import { instrumentRoute, runCron } from "@/lib/analytics/instrument";
+import { track, trackLater } from "@/lib/analytics/track";
 import { todayIsoDate } from "@/lib/format";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -93,6 +94,11 @@ async function context() {
 }
 type Context = NonNullable<Awaited<ReturnType<typeof context>>>;
 
+/** The plan's AI calls are used up; recorded for "users at the AI limit". */
+function limitHit(ctx: Context, feature: JarvisFeature) {
+  trackLater("jarvis_limit_reached", { feature }, { userId: ctx.userId, admin: ctx.admin });
+}
+
 const unauthorized = () => NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
 const FILE_ERROR_STATUS: Record<FileErrorCode, number> = {
@@ -127,7 +133,7 @@ async function logNotConfigured(ctx: Context, feature: JarvisFeature) {
  * - `?view=proactive`: the one thing Jarvis would bring up on his own now, or nothing.
  * - otherwise: calls and files left this month and the chips for the situation.
  */
-export async function GET(request: Request) {
+export const GET = instrumentRoute("api.jarvis.get", async (request: Request) => {
   const params = new URL(request.url).searchParams;
   if (params.get("task") === "watch") return watch(request);
   if (params.get("task") === "briefing") return briefing(request);
@@ -160,38 +166,30 @@ export async function GET(request: Request) {
     suggestions: situation ? suggestionsFor(situation) : ["planDay"],
   };
   return NextResponse.json(body);
-}
+});
 
-async function watch(request: Request) {
-  if (!isCronRequest(request)) return unauthorized();
-  const started = Date.now();
-  try {
+function watch(request: Request) {
+  return runCron("jarvis_watch", request, async () => {
+    const started = Date.now();
     const summary = await runWatch({
       client: createAnthropic(),
       admin: createAdminClient(),
       deadline: started + maxDuration * 1000 - WATCH_MARGIN_MS,
     });
-    return NextResponse.json({ ok: true, ...summary, ms: Date.now() - started });
-  } catch (error) {
-    console.error("jarvis watch failed", error);
-    return NextResponse.json({ error: "watch_failed" }, { status: 500 });
-  }
+    return { processed: summary.checked, body: { ...summary, ms: Date.now() - started } };
+  });
 }
 
-async function briefing(request: Request) {
-  if (!isCronRequest(request)) return unauthorized();
-  const started = Date.now();
-  try {
+function briefing(request: Request) {
+  return runCron("jarvis_briefing", request, async () => {
+    const started = Date.now();
     const summary = await runBriefings({
       client: createAnthropic(),
       admin: createAdminClient(),
       deadline: started + maxDuration * 1000 - WATCH_MARGIN_MS,
     });
-    return NextResponse.json({ ok: true, ...summary, ms: Date.now() - started });
-  } catch (error) {
-    console.error("jarvis briefing failed", error);
-    return NextResponse.json({ error: "briefing_failed" }, { status: 500 });
-  }
+    return { processed: summary.written, body: { ...summary, ms: Date.now() - started } };
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -199,7 +197,7 @@ async function briefing(request: Request) {
 // ---------------------------------------------------------------------------
 
 /** The chat by default; `kind` picks another job. Every model call of the app goes through here. */
-export async function POST(request: Request) {
+export const POST = instrumentRoute("api.jarvis.post", async (request: Request) => {
   const ctx = await context();
   if (!ctx) return unauthorized();
   const body: unknown = await request.json().catch(() => null);
@@ -211,7 +209,7 @@ export async function POST(request: Request) {
   if (kind === "ping") return ping(ctx, body);
   if (kind === "proactive") return proactive(ctx, body);
   return chat(ctx, body);
-}
+});
 
 /** What the user did with something Jarvis brought up on his own; no model call. */
 async function proactive(ctx: Context, body: unknown) {
@@ -240,6 +238,7 @@ async function ping(ctx: Context, body: unknown) {
 
   const usage = await loadAiUsage(supabase, admin, userId, settings);
   if (limitReached(usage)) {
+    limitHit(ctx, "ping");
     return respond({ ok: false, code: "limitReached", durationMs: null, usage }, 429);
   }
   const client = createAnthropic();
@@ -287,7 +286,10 @@ async function milestoneReview(ctx: Context, body: unknown) {
   if (milestone.ai_feedback) return jobError("alreadyReviewed", 409);
 
   const usage = await loadAiUsage(supabase, admin, userId, settings);
-  if (limitReached(usage)) return jobError("limitReached", 429);
+  if (limitReached(usage)) {
+    limitHit(ctx, "milestone_review");
+    return jobError("limitReached", 429);
+  }
   const client = createAnthropic();
   if (!client) {
     await logNotConfigured(ctx, "milestone_review");
@@ -314,7 +316,10 @@ async function salesAnalysis(ctx: Context, body: unknown) {
   const { supabase, admin, userId, settings, locale } = ctx;
 
   const usage = await loadAiUsage(supabase, admin, userId, settings);
-  if (limitReached(usage)) return jobError("limitReached", 429);
+  if (limitReached(usage)) {
+    limitHit(ctx, "analysis");
+    return jobError("limitReached", 429);
+  }
   const client = createAnthropic();
   if (!client) {
     await logNotConfigured(ctx, "analysis");
@@ -345,7 +350,10 @@ async function rewardSetup(ctx: Context, body: unknown) {
   const { supabase, admin, userId, settings, locale } = ctx;
 
   const usage = await loadAiUsage(supabase, admin, userId, settings);
-  if (limitReached(usage)) return jobError("limitReached", 429);
+  if (limitReached(usage)) {
+    limitHit(ctx, "reward_setup");
+    return jobError("limitReached", 429);
+  }
   const client = createAnthropic();
   if (!client) {
     await logNotConfigured(ctx, "reward_setup");
@@ -411,7 +419,10 @@ async function emailReply(ctx: Context, body: unknown) {
   }
 
   const usage = await loadAiUsage(supabase, admin, userId, settings);
-  if (limitReached(usage)) return jobError("limitReached", 429);
+  if (limitReached(usage)) {
+    limitHit(ctx, "email_reply");
+    return jobError("limitReached", 429);
+  }
   const client = createAnthropic();
   if (!client) {
     await logNotConfigured(ctx, "email_reply");
@@ -447,9 +458,19 @@ async function chat(ctx: Context, body: unknown) {
   }
   const { message, attachments: refs } = parsed.data;
   const { supabase, admin, userId, settings, locale } = ctx;
+  /** The turn as analytics sees it: sizes and outcome, never the text. */
+  const turn = (ok: boolean, code?: string) =>
+    ({
+      new_conversation: !parsed.data.conversationId,
+      attachments: refs.length,
+      message_length: message.length,
+      ok,
+      ...(code ? { error_code: code } : {}),
+    }) as const;
 
   const usage = await loadAiUsage(supabase, admin, userId, settings);
   if (limitReached(usage)) {
+    limitHit(ctx, "chat");
     const event: ChatEvent = { type: "error", code: "limitReached", usage };
     return NextResponse.json(event, { status: 429 });
   }
@@ -465,6 +486,7 @@ async function chat(ctx: Context, body: unknown) {
   // Files are checked by content before the message is saved; a refused file refuses the message.
   const prepared = await prepareAttachments({ supabase, admin, userId, settings, refs });
   if (!prepared.ok) {
+    trackLater("jarvis_message_sent", turn(false, prepared.code), { userId, admin });
     const event: ChatEvent = { type: "error", code: prepared.code, usage };
     return NextResponse.json(event, { status: FILE_ERROR_STATUS[prepared.code] });
   }
@@ -619,12 +641,16 @@ async function chat(ctx: Context, body: unknown) {
         const fresh = await loadAiUsage(supabase, admin, userId, settings).catch(() => usage);
         if (result.ok && messageId) {
           send({ type: "done", messageId, usage: fresh });
+          await track("jarvis_message_sent", turn(true), { userId, admin });
         } else {
-          send({ type: "error", code: result.ok ? "unknown" : result.code, usage: fresh });
+          const code = result.ok ? "unknown" : result.code;
+          send({ type: "error", code, usage: fresh });
+          await track("jarvis_message_sent", turn(false, code), { userId, admin });
         }
       } catch (error) {
         console.error("jarvis chat failed", error);
         send({ type: "error", code: "unknown" });
+        await track("jarvis_message_sent", turn(false, "unknown"), { userId, admin });
       } finally {
         if (open) controller.close();
       }

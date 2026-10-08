@@ -9,9 +9,12 @@ import {
 } from "@/features/contacts/generation";
 import { searchText } from "@/features/contacts/server/places";
 import {
+  countKeyword,
   loadGenerationUsage,
   logGenerationCall,
 } from "@/features/contacts/server/generation-usage";
+import { instrumentRoute } from "@/lib/analytics/instrument";
+import { track } from "@/lib/analytics/track";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { toFormatSettings, USER_SETTINGS_COLUMNS } from "@/lib/user-settings";
@@ -71,7 +74,7 @@ async function mayUseContacts(
 }
 
 /** How much of the plan is left, for the form. */
-export async function GET() {
+export const GET = instrumentRoute("api.generateContacts.get", async () => {
   const ctx = await context();
   if (!ctx) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   if (!(await mayUseContacts(ctx, "view"))) {
@@ -79,14 +82,14 @@ export async function GET() {
   }
   const usage = await loadGenerationUsage(ctx.admin, ctx.workspaceId, ctx.settings);
   return NextResponse.json({ usage, max: maxRequestable(usage) });
-}
+});
 
 /**
  * Searches Google Places for "<industry> <location>", page by page, until the
  * wanted number of new contacts is saved or Google has no more. Progress goes
  * back as NDJSON lines (GenerationEvent).
  */
-export async function POST(request: Request) {
+export const POST = instrumentRoute("api.generateContacts.post", async (request: Request) => {
   const ctx = await context();
   if (!ctx) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   if (!(await mayUseContacts(ctx, "edit"))) {
@@ -101,25 +104,60 @@ export async function POST(request: Request) {
   const { supabase, admin, userId, workspaceId, settings } = ctx;
   const textQuery = `${industry} ${location}`;
   // Usage is counted for the workspace; who pressed the button goes with it.
-  const log = (entry: Parameters<typeof logGenerationCall>[2]) =>
-    logGenerationCall(admin, workspaceId, {
-      ...entry,
-      metadata: { ...(entry.metadata as Record<string, unknown>), actor_id: userId },
-    });
+  const log = (entry: Parameters<typeof logGenerationCall>[3]) =>
+    logGenerationCall(admin, userId, workspaceId, entry);
+  /** One press of Generate as analytics sees it: numbers and the outcome, never the search. */
+  const recordBatch = async (outcome: {
+    saved: number;
+    duplicates: number;
+    pages: number;
+    exhausted: boolean;
+    errorCode?: string;
+    usage?: GenerationUsage;
+  }) => {
+    const usageAfter = outcome.usage;
+    await track(
+      "contacts_generated",
+      {
+        requested: count,
+        saved: outcome.saved,
+        duplicates: outcome.duplicates,
+        pages: outcome.pages,
+        exhausted: outcome.exhausted,
+        ok: !outcome.errorCode,
+        ...(outcome.errorCode ? { error_code: outcome.errorCode } : {}),
+        at_daily_cap: usageAfter ? usageAfter.daily.used >= usageAfter.daily.limit : false,
+        at_monthly_cap: usageAfter ? usageAfter.monthly.used >= usageAfter.monthly.limit : false,
+      },
+      { userId, ownerId: workspaceId, admin },
+    );
+  };
 
   const usage = await loadGenerationUsage(admin, workspaceId, settings);
   if (count > maxRequestable(usage)) {
+    await recordBatch({
+      saved: 0,
+      duplicates: 0,
+      pages: 0,
+      exhausted: false,
+      errorCode: "limitReached",
+      usage,
+    });
     const event: GenerationEvent = { type: "error", code: "limitReached", created: 0, usage };
     return NextResponse.json(event, { status: 429 });
   }
+  await countKeyword(admin, industry);
 
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
   if (!apiKey) {
-    await log({
-      success: false,
-      quantity: 0,
-      message: "GOOGLE_MAPS_API_KEY is not set",
-      metadata: { query: textQuery },
+    console.error("generate-contacts: GOOGLE_MAPS_API_KEY is not set");
+    await log({ ok: false, saved: 0, errorCode: "notConfigured" });
+    await recordBatch({
+      saved: 0,
+      duplicates: 0,
+      pages: 0,
+      exhausted: false,
+      errorCode: "notConfigured",
     });
     const event: GenerationEvent = { type: "error", code: "notConfigured", created: 0 };
     return NextResponse.json(event, { status: 503 });
@@ -135,6 +173,7 @@ export async function POST(request: Request) {
 
       let created = 0;
       let duplicates = 0;
+      let pages = 0;
       let pageToken: string | null = null;
       let exhausted = false;
 
@@ -151,20 +190,31 @@ export async function POST(request: Request) {
             pageToken,
           });
 
+          pages = page;
           if (!result.ok) {
             const { failure } = result;
+            // Google's own message goes to the server log only.
+            console.error(
+              "generate-contacts: Google refused",
+              failure.httpStatus,
+              failure.googleStatus,
+              failure.googleMessage,
+            );
             await log({
-              success: false,
-              quantity: 0,
-              message: failure.googleMessage || failure.code,
-              metadata: {
-                query: textQuery,
-                page,
-                http_status: failure.httpStatus,
-                google_status: failure.googleStatus,
-                reason: failure.reason,
-                code: failure.code,
-              },
+              page,
+              ok: false,
+              saved: 0,
+              httpStatus: failure.httpStatus,
+              errorCode: failure.code,
+            });
+            const freshAfter = await freshUsage();
+            await recordBatch({
+              saved: created,
+              duplicates,
+              pages,
+              exhausted: false,
+              errorCode: failure.code,
+              usage: freshAfter,
             });
             send({
               type: "error",
@@ -172,7 +222,7 @@ export async function POST(request: Request) {
               created,
               httpStatus: failure.httpStatus || undefined,
               googleMessage: failure.googleMessage || undefined,
-              usage: await freshUsage(),
+              usage: freshAfter,
             });
             return;
           }
@@ -192,20 +242,26 @@ export async function POST(request: Request) {
           duplicates += data?.duplicates ?? 0;
 
           await log({
-            success: true,
-            quantity: pageCreated,
-            metadata: {
-              query: textQuery,
-              page,
-              http_status: result.httpStatus,
-              results: result.places.length,
-              created: pageCreated,
-              duplicates: data?.duplicates ?? 0,
-              ...(error ? { import_error: error.message } : {}),
-            },
+            page,
+            ok: !error,
+            saved: pageCreated,
+            httpStatus: result.httpStatus,
+            results: result.places.length,
+            duplicates: data?.duplicates ?? 0,
+            ...(error ? { errorCode: "saveFailed" } : {}),
           });
           if (error) {
-            send({ type: "error", code: "saveFailed", created, usage: await freshUsage() });
+            console.error("generate-contacts: import failed", error.code);
+            const freshAfter = await freshUsage();
+            await recordBatch({
+              saved: created,
+              duplicates,
+              pages,
+              exhausted: false,
+              errorCode: "saveFailed",
+              usage: freshAfter,
+            });
+            send({ type: "error", code: "saveFailed", created, usage: freshAfter });
             return;
           }
 
@@ -216,15 +272,24 @@ export async function POST(request: Request) {
           }
         }
 
+        const finalUsage = (await freshUsage()) ?? usage;
+        await recordBatch({ saved: created, duplicates, pages, exhausted, usage: finalUsage });
         send({
           type: "done",
           created,
           duplicates,
           exhausted,
-          usage: (await freshUsage()) ?? usage,
+          usage: finalUsage,
         });
       } catch (error) {
         console.error("generate-contacts failed", error);
+        await recordBatch({
+          saved: created,
+          duplicates,
+          pages,
+          exhausted: false,
+          errorCode: "unknown",
+        });
         send({ type: "error", code: "unknown", created });
       } finally {
         controller.close();
@@ -238,4 +303,4 @@ export async function POST(request: Request) {
       "Cache-Control": "no-store",
     },
   });
-}
+});

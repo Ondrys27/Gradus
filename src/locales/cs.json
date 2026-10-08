@@ -11,6 +11,11 @@
       "clear": "Vymazat",
       "title": "Vyberte datum",
       "close": "Zavřít"
+    },
+    "pageError": {
+      "title": "Tahle stránka narazila na problém",
+      "description": "Při zobrazení stránky se něco pokazilo. Tvoje data jsou v pořádku, zkus to znovu.",
+      "retry": "Zkusit znovu"
     }
   },
   "phone": {

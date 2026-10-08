@@ -6,7 +6,8 @@ import { toE164 } from "@/lib/phone";
  * events and what a Google error means.
  */
 
-export const USAGE_EVENT = "generate_contacts";
+/** The analytics event of one Google request; the plan's limits sum its `saved`. */
+export const USAGE_EVENT = "places_request";
 /** Places Text Search returns at most 20 places a page and 3 pages for one query. */
 export const PAGE_SIZE = 20;
 export const MAX_PAGES = 3;

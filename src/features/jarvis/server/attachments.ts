@@ -1,14 +1,15 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { FormatSettings } from "@/lib/format";
-import type { Database, Json } from "@/types/database";
+import { track } from "@/lib/analytics/track";
+import type { Database } from "@/types/database";
 import { cleanFileName, isImageKind, MAX_FILE_BYTES, MIME_BY_KIND, type FileKind } from "../files";
 import type { HistoryAttachment } from "../history";
 import type { AttachmentRef, ChatAttachment, FileErrorCode } from "../protocol";
 import { extractText, UnreadableFileError, type Extracted } from "./extract";
 import { detectFileKind } from "./file-type";
 import { prepareImage, type ModelImage } from "./images";
-import { FILE_UPLOAD_EVENT, loadFileUsage } from "./usage";
+import { loadFileUsage } from "./usage";
 
 type Client = SupabaseClient<Database>;
 
@@ -85,7 +86,7 @@ export type PrepareResult =
  * user's own uploads, fit the monthly number of the plan, are at most 10 MB
  * and are really one of the allowed types by content. Text comes out of the
  * documents here and images are prepared for the model. A refused message
- * leaves no files behind; the refusal is logged in usage_events.
+ * leaves no files behind; the refusal is recorded as an analytics event.
  */
 export async function prepareAttachments(args: {
   supabase: Client;
@@ -104,9 +105,9 @@ export async function prepareAttachments(args: {
       const { error } = await supabase.storage.from(ATTACHMENTS_BUCKET).remove(own);
       if (error) console.error("jarvis attachment cleanup failed", error);
     }
-    await logFileEvents(admin, userId, [
-      { success: false, message: `${code}: ${detail}`.slice(0, 1000) },
-    ]);
+    // The detail (file name, size) stays in the server log; the event keeps only the reason.
+    console.warn(`jarvis file refused: ${code}`, detail.slice(0, 300));
+    await track("jarvis_file_rejected", { reason: code }, { userId, admin });
     return { ok: false, code };
   };
 
@@ -128,27 +129,10 @@ export async function prepareAttachments(args: {
   }
 }
 
-async function logFileEvents(
-  admin: Client,
-  userId: string,
-  events: { success: boolean; message?: string; metadata?: Json }[],
-) {
-  if (!events.length) return;
-  const { error } = await admin.from("usage_events").insert(
-    events.map((event) => ({
-      user_id: userId,
-      event_type: FILE_UPLOAD_EVENT,
-      success: event.success,
-      message: event.message ?? null,
-      metadata: event.metadata ?? {},
-    })),
-  );
-  if (error) console.error("usage_events insert failed", error);
-}
-
 /**
  * Records accepted files on the saved message (server-only rows with the type
- * detected from the content) and counts them in usage_events.
+ * detected from the content) and counts them as analytics events (the plan's
+ * monthly number of files is read from those).
  */
 export async function recordAttachments(
   admin: Client,
@@ -173,13 +157,14 @@ export async function recordAttachments(
     )
     .select("id, storage_path");
   if (error) throw error;
-  await logFileEvents(
-    admin,
-    userId,
-    files.map((file) => ({
-      success: true,
-      metadata: { kind: file.kind, size: file.size, truncated: file.extracted?.truncated ?? false },
-    })),
+  await Promise.all(
+    files.map((file) =>
+      track(
+        "jarvis_file_attached",
+        { kind: file.kind, size_kb: Math.min(20_000, Math.ceil(file.size / 1024)) },
+        { userId, admin },
+      ),
+    ),
   );
   const ids = new Map(data.map((row) => [row.storage_path, row.id]));
   return files.map((file) => ({

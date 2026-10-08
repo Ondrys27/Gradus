@@ -4,11 +4,13 @@ import { subDays } from "date-fns";
 import { z } from "zod";
 import { todayIsoDate } from "@/lib/format";
 import { toFormatSettings, type UserSettings } from "@/lib/user-settings";
+import { track } from "@/lib/analytics/track";
 import type { Database, Json } from "@/types/database";
 import {
   isJarvisFrequency,
   nextAllowedAt,
   pickProactive,
+  PROACTIVE_KINDS,
   PROACTIVE_SUGGESTION_TYPES,
   questionAllowed,
   serverBlock,
@@ -30,8 +32,8 @@ import { suggestionActionSchema, type SuggestionAction } from "../suggestions";
 
 type Client = SupabaseClient<Database>;
 
-/** Logged to usage_events for every appearance and every reaction to it. */
-export const PROACTIVE_EVENT = "jarvis_proactive";
+/** Recorded for every appearance and every reaction to it. */
+export const PROACTIVE_EVENT = "jarvis_proactive_reacted";
 
 const CANDIDATE_LIMIT = 30;
 const CANDIDATE_DAYS = 30;
@@ -294,7 +296,7 @@ async function addProposedTasks(
  * POST /api/jarvis { kind: "proactive" }: records what the user did with
  * something Jarvis brought up. Later = not before tomorrow, Close = never
  * again, Add = the proposed tasks are created now (and only now). Every
- * reaction lands in usage_events.
+ * reaction is recorded as an analytics event.
  */
 export async function reactToProactive(args: {
   supabase: Client;
@@ -387,14 +389,19 @@ export async function logProactiveEvent(
     detail?: Record<string, string>;
   },
 ) {
-  const { error } = await admin.from("usage_events").insert({
-    user_id: userId,
-    event_type: PROACTIVE_EVENT,
-    quantity: event.quantity ?? 1,
-    metadata: { reaction: event.reaction, kind: event.kind, type: event.type, ...event.detail },
-  });
-  // A lost log line must not undo what the user did; it shows in the server log.
-  if (error) console.error("usage_events insert failed", error);
+  if (!(PROACTIVE_KINDS as readonly string[]).includes(event.kind)) return;
+  // A lost event must not undo what the user did; track() never throws.
+  await track(
+    PROACTIVE_EVENT,
+    {
+      reaction: event.reaction,
+      kind: event.kind as ProactiveKind,
+      ...(/^[A-Za-z0-9_]{1,40}$/.test(event.type) ? { type: event.type } : {}),
+      ...(event.reaction === "accept" ? { tasks_created: event.quantity ?? 0 } : {}),
+      ...(event.detail?.question ? { question: event.detail.question } : {}),
+    },
+    { userId, admin },
+  );
 }
 
 /**

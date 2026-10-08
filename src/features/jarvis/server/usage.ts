@@ -25,7 +25,8 @@ async function loadLimits(supabase: Client, userId: string): Promise<PlanLimits>
   if (error) throw error;
   const row = data?.[0];
   const limits = planLimits(row);
-  if (limits.aiCalls === 0 && !row?.read_only) console.error("jarvis: no plan applies to user", userId);
+  if (limits.aiCalls === 0 && !row?.read_only)
+    console.error("jarvis: no plan applies to user", userId);
   return limits;
 }
 
@@ -64,11 +65,12 @@ export async function loadAiUsage(
   return { used: used.count ?? 0, limit: limits.aiCalls };
 }
 
-export const FILE_UPLOAD_EVENT = "file_upload";
+/** Every accepted file is one of these analytics events. */
+export const FILE_ATTACHED_EVENT = "jarvis_file_attached";
 
 /**
- * Files attached to Jarvis this month and the plan's number. usage_events is
- * server-only, read with the admin client filtered by the session's user id.
+ * Files attached to Jarvis this month and the plan's number. analytics_events
+ * is server-only, read with the admin client filtered by the session's user id.
  */
 export async function loadFileUsage(
   supabase: Client,
@@ -80,11 +82,10 @@ export async function loadFileUsage(
   const [limits, used] = await Promise.all([
     loadLimits(supabase, userId),
     admin
-      .from("usage_events")
+      .from("analytics_events")
       .select("id", { count: "exact", head: true })
       .eq("user_id", userId)
-      .eq("event_type", FILE_UPLOAD_EVENT)
-      .eq("success", true)
+      .eq("event", FILE_ATTACHED_EVENT)
       .gte("created_at", monthStart(settings, now)),
   ]);
   if (used.error) throw used.error;
