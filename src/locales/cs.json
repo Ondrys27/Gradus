@@ -453,6 +453,10 @@
       "selected": "Soubory k odeslání",
       "remove": "Odebrat {name}"
     },
+    "rate": {
+      "up": "Dobrá odpověď",
+      "down": "Nepovedená odpověď"
+    },
     "suggestion": {
       "heading": "Jarvis si všiml",
       "do": "Udělat",
@@ -2025,6 +2029,14 @@
       "afternoon": "Dobré odpoledne{hasName, select, yes {, {name}} other {}}",
       "evening": "Dobrý večer{hasName, select, yes {, {name}} other {}}",
       "night": "Ahoj{hasName, select, yes {, {name}} other {}}"
+    },
+    "nps": {
+      "question": "Jak pravděpodobně bys Gradus doporučil jinému podnikateli?",
+      "low": "Nepravděpodobné",
+      "high": "Velmi pravděpodobné",
+      "commentPlaceholder": "Chceš něco doplnit? (nepovinné)",
+      "submit": "Odeslat",
+      "close": "Zavřít, už se neptat"
     },
     "summary": {
       "lead": "Dnes máš {list}.",

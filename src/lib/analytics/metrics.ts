@@ -838,7 +838,12 @@ export const METRICS: readonly MetricDefinition[] = [
     "ratio",
     ratio(count("jarvis_auto_action_undone"), count("jarvis_auto_action")),
   ),
-  metric("jarvis_answer_ratings", "ai", "count", pending("11.5")),
+  metric(
+    "jarvis_answer_ratings",
+    "ai",
+    "count",
+    split("rating", count("jarvis_message_rated")),
+  ),
   metric(
     "ai_cap_users",
     "ai",
@@ -915,7 +920,8 @@ export const METRICS: readonly MetricDefinition[] = [
 
   // --- 9. Feedback -----------------------------------------------------------
   metric("feature_requests", "feedback", "count", dist("feature_request_status")),
-  metric("nps", "feedback", "count", pending("11.5")),
+  // The breakdown by score (0-10); npsScore() in numbers.ts turns it into the -100..100 index.
+  metric("nps", "feedback", "count", split("score", count("nps_submitted"))),
 ];
 
 const BY_KEY = new Map(METRICS.map((definition) => [definition.key, definition]));

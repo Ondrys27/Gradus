@@ -478,6 +478,13 @@ export const EVENTS = {
   jarvis_auto_action: event("jarvis", "server", false, { action: key() }),
   jarvis_auto_action_undone: event("jarvis", "client", true, { action: key() }),
   sales_analysis_requested: event("jarvis", "client", true, { ok: bool() }),
+  /** Thumb up/down on one of Jarvis's answers. */
+  jarvis_message_rated: event("jarvis", "server", false, { rating: oneOf(["up", "down"]) }),
+
+  // --- feedback --------------------------------------------------------------
+  /** "How likely would you recommend Gradus?", asked once after 7 days. */
+  nps_submitted: event("platform", "client", false, { score: count(10) }),
+  nps_dismissed: event("platform", "client", false, {}),
 
   // --- plan and trial ------------------------------------------------------
   plan_interest_clicked: event("plan", "server", false, { plan: oneOf(PAID_PLANS), ok: bool() }),

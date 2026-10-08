@@ -14,6 +14,7 @@ import {
   milestoneReviewRequestSchema,
   pingRequestSchema,
   proactiveRequestSchema,
+  rateMessageRequestSchema,
   rewardSetupRequestSchema,
   salesAnalysisRequestSchema,
   type ChatErrorCode,
@@ -208,8 +209,38 @@ export const POST = instrumentRoute("api.jarvis.post", async (request: Request) 
   if (kind === "emailReply") return emailReply(ctx, body);
   if (kind === "ping") return ping(ctx, body);
   if (kind === "proactive") return proactive(ctx, body);
+  if (kind === "rateMessage") return rateMessage(ctx, body);
   return chat(ctx, body);
 });
+
+/**
+ * Thumb up/down on one of Jarvis's own answers; no model call. jarvis_messages
+ * carries no client update policy, so this goes through the admin client,
+ * checked against the session's own user id and the assistant role first.
+ */
+async function rateMessage(ctx: Context, body: unknown) {
+  const parsed = rateMessageRequestSchema.safeParse(body);
+  if (!parsed.success) return jobError("unknown", 400);
+  const { admin, userId } = ctx;
+  const { data: message, error } = await admin
+    .from("jarvis_messages")
+    .select("id, role, rating")
+    .eq("id", parsed.data.messageId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!message || message.role !== "assistant") return jobError("notFound", 404);
+
+  // Sending the same rating again clears it.
+  const next = message.rating === parsed.data.rating ? null : parsed.data.rating;
+  const { error: updateError } = await admin
+    .from("jarvis_messages")
+    .update({ rating: next })
+    .eq("id", parsed.data.messageId);
+  if (updateError) throw updateError;
+  if (next) await track("jarvis_message_rated", { rating: next }, { userId, admin });
+  return NextResponse.json({ ok: true, rating: next });
+}
 
 /** What the user did with something Jarvis brought up on his own; no model call. */
 async function proactive(ctx: Context, body: unknown) {

@@ -156,3 +156,24 @@ export function heat(value: number | null, max: number): number {
   if (value === null || value <= 0 || max <= 0) return 0;
   return Math.min(1, 0.12 + 0.88 * (value / max));
 }
+
+// --- NPS -------------------------------------------------------------------------
+
+/**
+ * The Net Promoter Score from the 0–10 breakdown ("nps" metric): share of
+ * promoters (9–10) minus detractors (0–6), -100 to 100. Null without answers.
+ */
+export function npsScore(items: readonly { key: string; value: number | null }[]): number | null {
+  const total = items.reduce((sum, item) => sum + (item.value ?? 0), 0);
+  if (total <= 0) return null;
+  const group = (from: number, to: number) =>
+    items
+      .filter((item) => {
+        const score = Number(item.key);
+        return Number.isFinite(score) && score >= from && score <= to;
+      })
+      .reduce((sum, item) => sum + (item.value ?? 0), 0);
+  const promoters = group(9, 10);
+  const detractors = group(0, 6);
+  return ((promoters - detractors) / total) * 100;
+}

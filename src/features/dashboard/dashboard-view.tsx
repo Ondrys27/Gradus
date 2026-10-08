@@ -9,6 +9,7 @@ import { useProfile } from "@/features/account/queries";
 import { formatList, formatNumber } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { daySummaryParts, greetingPart } from "./dashboard-logic";
+import { NpsCard } from "./nps-card";
 import { TileDetail } from "./tile-detail";
 import {
   ActiveDealsTile,
@@ -56,6 +57,8 @@ export function DashboardView() {
           {overview.pending ? <Skeleton className="h-6 w-72 max-w-full" /> : summary}
         </div>
       </header>
+
+      <NpsCard />
 
       <Stagger className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px]">
         {/* On a phone what to do today comes first; on a wide screen it is the right-hand card. */}

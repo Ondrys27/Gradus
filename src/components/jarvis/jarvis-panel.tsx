@@ -18,6 +18,8 @@ import {
   ImageIcon,
   PaperclipIcon,
   SquarePenIcon,
+  ThumbsDownIcon,
+  ThumbsUpIcon,
   XIcon,
   type LucideIcon,
 } from "lucide-react";
@@ -30,12 +32,13 @@ import {
   uploadContentType,
   type FileKind,
 } from "@/features/jarvis/files";
-import { MAX_MESSAGE_LENGTH, type SuggestionKey } from "@/features/jarvis/protocol";
+import { MAX_MESSAGE_LENGTH, type Rating, type SuggestionKey } from "@/features/jarvis/protocol";
 import {
   useJarvisConversation,
   useJarvisOverview,
   useJarvisSuggestions,
   useMarkSuggestionsSeen,
+  useRateJarvisMessage,
 } from "@/features/jarvis/queries";
 import type { ChatError, useJarvisChat } from "@/features/jarvis/use-jarvis-chat";
 import { formatNumber } from "@/lib/format";
@@ -61,6 +64,7 @@ export function JarvisPanel({ chat, onClose }: JarvisPanelProps) {
   const overview = useJarvisOverview(true);
   const noticed = useJarvisSuggestions();
   const markSeen = useMarkSuggestionsSeen();
+  const rateMessage = useRateJarvisMessage();
   const [draft, setDraft] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -280,7 +284,12 @@ export function JarvisPanel({ chat, onClose }: JarvisPanelProps) {
               files={message.attachments?.map((file) => ({ name: file.name, kind: file.kind }))}
             />
           ) : (
-            <AssistantBubble key={message.id} text={message.content} />
+            <AssistantBubble
+              key={message.id}
+              text={message.content}
+              rating={message.rating}
+              onRate={(rating) => rateMessage.mutate({ messageId: message.id, rating })}
+            />
           ),
         )}
         {pending && (pending.userText || pending.fileNames.length > 0) && (
@@ -393,11 +402,52 @@ export function JarvisPanel({ chat, onClose }: JarvisPanelProps) {
   );
 }
 
-/** Jarvis speaks from the left, marked by a teal edge. */
-function AssistantBubble({ text }: { text: string }) {
+/** Jarvis speaks from the left, marked by a teal edge; a rated answer keeps a thumb row. */
+function AssistantBubble({
+  text,
+  rating,
+  onRate,
+}: {
+  text: string;
+  rating?: Rating | null;
+  onRate?: (rating: Rating) => void;
+}) {
+  const t = useTranslations("jarvis");
   return (
-    <div className="max-w-[88%] self-start rounded-2xl rounded-tl-md border-l-[3px] border-teal bg-surface-hover px-3.5 py-2.5 text-sm leading-relaxed break-words whitespace-pre-wrap text-ink">
-      {text}
+    <div className="flex max-w-[88%] flex-col items-start gap-1">
+      <div className="rounded-2xl rounded-tl-md border-l-[3px] border-teal bg-surface-hover px-3.5 py-2.5 text-sm leading-relaxed break-words whitespace-pre-wrap text-ink">
+        {text}
+      </div>
+      {onRate && (
+        <div className="flex items-center gap-0.5 pl-1">
+          <button
+            type="button"
+            onClick={() => onRate("up")}
+            aria-pressed={rating === "up"}
+            aria-label={t("rate.up")}
+            title={t("rate.up")}
+            className={cn(
+              "grid size-9 place-items-center rounded-full outline-none transition-colors hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-teal/50 mouse:size-7",
+              rating === "up" ? "text-green" : "text-ink-muted",
+            )}
+          >
+            <ThumbsUpIcon aria-hidden className="size-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => onRate("down")}
+            aria-pressed={rating === "down"}
+            aria-label={t("rate.down")}
+            title={t("rate.down")}
+            className={cn(
+              "grid size-9 place-items-center rounded-full outline-none transition-colors hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-teal/50 mouse:size-7",
+              rating === "down" ? "text-pink" : "text-ink-muted",
+            )}
+          >
+            <ThumbsDownIcon aria-hidden className="size-3.5" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

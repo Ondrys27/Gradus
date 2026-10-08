@@ -453,6 +453,10 @@
       "selected": "Files to send",
       "remove": "Remove {name}"
     },
+    "rate": {
+      "up": "Good answer",
+      "down": "Not a good answer"
+    },
     "suggestion": {
       "heading": "Jarvis noticed",
       "do": "Do it",
@@ -2025,6 +2029,14 @@
       "afternoon": "Good afternoon{hasName, select, yes {, {name}} other {}}",
       "evening": "Good evening{hasName, select, yes {, {name}} other {}}",
       "night": "Hello{hasName, select, yes {, {name}} other {}}"
+    },
+    "nps": {
+      "question": "How likely would you recommend Gradus to another entrepreneur?",
+      "low": "Not likely",
+      "high": "Very likely",
+      "commentPlaceholder": "Anything you'd like to add? (optional)",
+      "submit": "Send",
+      "close": "Close, don't ask again"
     },
     "summary": {
       "lead": "Today you have {list}.",

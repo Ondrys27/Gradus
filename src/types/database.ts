@@ -1114,6 +1114,7 @@ export type Database = {
           created_at: string
           id: string
           model: string | null
+          rating: string | null
           role: Database["public"]["Enums"]["jarvis_role"]
           updated_at: string
           user_id: string
@@ -1124,6 +1125,7 @@ export type Database = {
           created_at?: string
           id?: string
           model?: string | null
+          rating?: string | null
           role: Database["public"]["Enums"]["jarvis_role"]
           updated_at?: string
           user_id: string
@@ -1134,6 +1136,7 @@ export type Database = {
           created_at?: string
           id?: string
           model?: string | null
+          rating?: string | null
           role?: Database["public"]["Enums"]["jarvis_role"]
           updated_at?: string
           user_id?: string
@@ -1380,6 +1383,30 @@ export type Database = {
           },
         ]
       }
+      nps_responses: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          score: number
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          score: number
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          score?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       path_milestones: {
         Row: {
           chapter: number
@@ -1592,6 +1619,7 @@ export type Database = {
           industry: string | null
           is_internal: boolean
           mode: string
+          nps_asked_at: string | null
           onboarding_completed_at: string | null
           path_key: string | null
           seen_level: number
@@ -1607,6 +1635,7 @@ export type Database = {
           industry?: string | null
           is_internal?: boolean
           mode?: string
+          nps_asked_at?: string | null
           onboarding_completed_at?: string | null
           path_key?: string | null
           seen_level?: number
@@ -1622,6 +1651,7 @@ export type Database = {
           industry?: string | null
           is_internal?: boolean
           mode?: string
+          nps_asked_at?: string | null
           onboarding_completed_at?: string | null
           path_key?: string | null
           seen_level?: number
@@ -3725,7 +3755,7 @@ export type Database = {
       workspace_read_only: { Args: { _owner: string }; Returns: boolean }
     }
     Enums: {
-      admin_audit_kind: "login" | "view" | "export"
+      admin_audit_kind: "login" | "view" | "export" | "update"
       app_role: "owner" | "admin" | "user"
       app_section:
         | "dashboard"
@@ -3925,7 +3955,7 @@ export const Constants = {
   },
   public: {
     Enums: {
-      admin_audit_kind: ["login", "view", "export"],
+      admin_audit_kind: ["login", "view", "export", "update"],
       app_role: ["owner", "admin", "user"],
       app_section: [
         "dashboard",

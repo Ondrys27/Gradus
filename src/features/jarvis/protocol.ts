@@ -61,6 +61,15 @@ export type ProactiveRequest = z.input<typeof proactiveRequestSchema>;
 /** Settings → Integrations: one short question to check that Jarvis answers. */
 export const pingRequestSchema = z.object({ kind: z.literal("ping") });
 
+/** Thumb up/down on one of Jarvis's own answers; sending the same rating again clears it. */
+export const RATINGS = ["up", "down"] as const;
+export type Rating = (typeof RATINGS)[number];
+export const rateMessageRequestSchema = z.object({
+  kind: z.literal("rateMessage"),
+  messageId: z.uuid(),
+  rating: z.enum(RATINGS),
+});
+
 /** POST /api/jarvis { kind: "ping" }; the time is measured on the server around the model call. */
 export type PingResult =
   | { ok: true; durationMs: number; costUsd: number; model: string }

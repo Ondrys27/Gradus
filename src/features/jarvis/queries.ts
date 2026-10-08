@@ -14,6 +14,7 @@ import type {
   ChatRequest,
   JarvisOverview,
   PingResult,
+  Rating,
 } from "./protocol";
 import type { Suggestion, SuggestionsResponse } from "./suggestions";
 import { track } from "@/lib/analytics/client";
@@ -39,6 +40,7 @@ export type ChatMessage = {
   role: "user" | "assistant";
   content: string;
   attachments?: ChatAttachment[];
+  rating?: Rating | null;
 };
 
 export type Conversation = { id: string | null; messages: ChatMessage[] };
@@ -72,7 +74,7 @@ export function useJarvisConversation(enabled: boolean) {
 
       const { data, error: messagesError } = await supabase
         .from("jarvis_messages")
-        .select("id, role, content")
+        .select("id, role, content, rating")
         .eq("conversation_id", conversation.id)
         .order("created_at", { ascending: false })
         .limit(VISIBLE_MESSAGES);
@@ -103,6 +105,7 @@ export function useJarvisConversation(enabled: boolean) {
         id: conversation.id,
         messages: data.reverse().map((message) => ({
           ...message,
+          rating: message.rating as Rating | null,
           attachments: files.get(message.id),
         })),
       };
@@ -283,6 +286,43 @@ export function useDismissSuggestion() {
 }
 
 /** Takes back a task Jarvis marked done: the user's own change, through RLS. */
+/** Thumb up/down on one of Jarvis's own answers; tapping the same one again clears it. */
+export function useRateJarvisMessage() {
+  const { user } = useSession();
+  const queryClient = useQueryClient();
+  const key = jarvisKeys.conversation(user.id);
+  return useMutation({
+    mutationFn: async (input: { messageId: string; rating: Rating }) => {
+      const result = await postJarvisJob<{ rating: Rating | null }>({
+        kind: "rateMessage",
+        messageId: input.messageId,
+        rating: input.rating,
+      });
+      if (!result.ok) throw new JarvisJobError(result.code);
+      return result.rating;
+    },
+    onMutate: ({ messageId, rating }) => {
+      const previous = queryClient.getQueryData<Conversation>(key);
+      queryClient.setQueryData<Conversation>(key, (conversation) =>
+        conversation
+          ? {
+              ...conversation,
+              messages: conversation.messages.map((message) =>
+                message.id === messageId
+                  ? { ...message, rating: message.rating === rating ? null : rating }
+                  : message,
+              ),
+            }
+          : conversation,
+      );
+      return { previous };
+    },
+    onError: (_error, _input, context) => {
+      if (context?.previous) queryClient.setQueryData(key, context.previous);
+    },
+  });
+}
+
 export function useUndoTaskCompletion() {
   const { user } = useSession();
   const workspaceId = useWorkspaceId();
