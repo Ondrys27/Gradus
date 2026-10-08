@@ -238,6 +238,55 @@ const SEGMENT_OF: Record<string, keyof typeof SEGMENT_VALUES> = {
   users_by_locale: "locale",
 };
 
+/** A small export button for a breakdown or a fields block, keyed by the metric. */
+function ExportRowsButton({
+  id,
+  header,
+  rows,
+}: {
+  id: string;
+  header: readonly string[];
+  rows: readonly (readonly (string | number | null)[])[];
+}) {
+  const tChart = useTranslations("admin.chart");
+  const [exporting, setExporting] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  async function exportCsv() {
+    setExporting(true);
+    setFailed(false);
+    try {
+      const blob = new Blob([toCsv(header, rows)], { type: "text/csv;charset=utf-8" });
+      const { recordExport } = await import("../server/export-actions");
+      const { ok } = await recordExport(`table.${id}.csv`);
+      if (!ok) throw new Error("Audit refused the export");
+      downloadBlob(blob, `${id.replace(/\./g, "-")}.csv`);
+    } catch (error) {
+      console.error("[admin] export failed", error);
+      setFailed(true);
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  return (
+    <div className="flex items-center justify-end gap-2">
+      {failed && <span className="text-xs text-pink">{tChart("exportFailed")}</span>}
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-sm"
+        aria-label={tChart("exportCsv")}
+        title={tChart("exportCsv")}
+        disabled={exporting}
+        onClick={() => void exportCsv()}
+      >
+        <DownloadIcon aria-hidden />
+      </Button>
+    </div>
+  );
+}
+
 /** One metric split into groups, as bars with their share and change. */
 export function BreakdownList({ data, max = 12 }: { data: BreakdownData; max?: number }) {
   const t = useTranslations();
@@ -262,36 +311,43 @@ export function BreakdownList({ data, max = 12 }: { data: BreakdownData; max?: n
   }
 
   return (
-    <ul className="flex flex-col gap-1.5">
-      {items.map((item) => (
-        <li key={item.key} className="flex flex-col gap-1">
-          <div className="flex items-baseline justify-between gap-3 text-sm">
-            <span className="truncate text-ink-soft">{label(item.key)}</span>
-            <span className="flex shrink-0 items-baseline gap-2 tabular-nums">
-              <span className="font-semibold text-ink">
-                {formatMetricValue(item.value, data.unit, tUnits)}
-              </span>
-              {data.unit !== "ratio" && data.unit !== "percent" && total > 0 && (
-                <span className="text-xs text-ink-muted">
-                  {formatNumber(
-                    (item.value ?? 0) / total,
-                    { style: "percent", decimals: 0 },
-                    SETTINGS,
-                  )}
+    <div className="flex flex-col gap-2">
+      <ul className="flex flex-col gap-1.5">
+        {items.map((item) => (
+          <li key={item.key} className="flex flex-col gap-1">
+            <div className="flex items-baseline justify-between gap-3 text-sm">
+              <span className="truncate text-ink-soft">{label(item.key)}</span>
+              <span className="flex shrink-0 items-baseline gap-2 tabular-nums">
+                <span className="font-semibold text-ink">
+                  {formatMetricValue(item.value, data.unit, tUnits)}
                 </span>
-              )}
-              <ChangeBadge current={item.value} previous={item.previous} />
-            </span>
-          </div>
-          <div className="h-1.5 rounded-full bg-line/40">
-            <div
-              className="h-full rounded-full bg-violet"
-              style={{ width: `${top > 0 ? ((item.value ?? 0) / top) * 100 : 0}%` }}
-            />
-          </div>
-        </li>
-      ))}
-    </ul>
+                {data.unit !== "ratio" && data.unit !== "percent" && total > 0 && (
+                  <span className="text-xs text-ink-muted">
+                    {formatNumber(
+                      (item.value ?? 0) / total,
+                      { style: "percent", decimals: 0 },
+                      SETTINGS,
+                    )}
+                  </span>
+                )}
+                <ChangeBadge current={item.value} previous={item.previous} />
+              </span>
+            </div>
+            <div className="h-1.5 rounded-full bg-line/40">
+              <div
+                className="h-full rounded-full bg-violet"
+                style={{ width: `${top > 0 ? ((item.value ?? 0) / top) * 100 : 0}%` }}
+              />
+            </div>
+          </li>
+        ))}
+      </ul>
+      <ExportRowsButton
+        id={`breakdown.${data.key}`}
+        header={["key", "value"]}
+        rows={items.map((item) => [item.key, item.value])}
+      />
+    </div>
   );
 }
 
@@ -302,19 +358,26 @@ export function FieldsGrid({ data }: { data: FieldsData }) {
   const tUnits = useTranslations("admin.units");
   if (data.fields.every((field) => !field.value)) return <AdminEmpty className="py-6" />;
   return (
-    <dl className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3">
-      {data.fields.map((field) => (
-        <div key={field.name} className="flex min-w-0 flex-col gap-0.5">
-          <dt className="truncate text-xs text-ink-muted">{t(field.name)}</dt>
-          <dd className="flex flex-wrap items-baseline gap-x-2">
-            <span className="stat-number text-lg text-ink">
-              {formatMetricValue(field.value, field.unit, tUnits)}
-            </span>
-            <ChangeBadge current={field.value} previous={field.previous} />
-          </dd>
-        </div>
-      ))}
-    </dl>
+    <div className="flex flex-col gap-2">
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3">
+        {data.fields.map((field) => (
+          <div key={field.name} className="flex min-w-0 flex-col gap-0.5">
+            <dt className="truncate text-xs text-ink-muted">{t(field.name)}</dt>
+            <dd className="flex flex-wrap items-baseline gap-x-2">
+              <span className="stat-number text-lg text-ink">
+                {formatMetricValue(field.value, field.unit, tUnits)}
+              </span>
+              <ChangeBadge current={field.value} previous={field.previous} />
+            </dd>
+          </div>
+        ))}
+      </dl>
+      <ExportRowsButton
+        id={`fields.${data.key}`}
+        header={["name", "value"]}
+        rows={data.fields.map((field) => [field.name, field.value])}
+      />
+    </div>
   );
 }
 
