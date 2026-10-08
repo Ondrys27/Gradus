@@ -44,7 +44,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] STOP | Konec kola 3. Otevři / odhlášený — musí být web, ne aplikace. Přihlas se přes Přihlásit se a ověř, že skončíš v /app a staré adresy přesměrují. Projdi web na počítači i telefonu, přepni jazyk. S PUBLIC_SIGNUP_ENABLED=false zkus čekací listinu a ověř, že přišel potvrzovací e-mail. Pak přepni na true, restartuj dev server, založ nový účet z webu a ověř pruh se zkušebním obdobím. Řekni Vášovi, ať si web projde — je to jeho část.
 - [x] 11.1 | architect | 2026-10-08 Měření používání: katalog událostí events.ts se zod validací, analytics_events a app_sessions, track() na serveru a /api/t z prohlížeče s omezením frekvence a sendBeacon, usage_events přesměrováno, profiles.is_internal, chyby a výkon, úklid po 13 měsících, odstavec na /soukromi.
 - [x] 11.2 | architect | 2026-10-08 Registr 155 metrik s výpočty v SQL (trychtýř, kohorty, retence D1/D7/D30, heatmapa), metrics_daily plněná noční úlohou, metrics:backfill, náklady v costs.ts proti pricing.ts, měny se nesčítají.
-- [ ] 11.3 | architect | env: RESEND_API_KEY
+- [x] 11.3 | architect | env: RESEND_API_KEY | 2026-10-08 Administrace na /admin: přihlášení s TOTP druhým faktorem a QR průvodcem, 404 pro kohokoli bez role owner + aal2, e-mail po přihlášení přes Resend, admin_audit s exportem, odhlášení po 30 min nečinnosti / 8 h.
 - [ ] 11.4 | architect |
 - [ ] 11.5 | builder |
 - [ ] K11 | reviewer |
