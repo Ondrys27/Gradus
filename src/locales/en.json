@@ -3957,14 +3957,26 @@
       "signOut": "Sign out",
       "nav": {
         "overview": "Overview",
-        "audit": "Audit"
-      }
+        "audit": "Audit",
+        "growth": "Growth",
+        "activation": "Activation",
+        "retention": "Retention",
+        "features": "Features",
+        "ai": "AI and Jarvis",
+        "game": "Game",
+        "costs": "Costs",
+        "health": "Health",
+        "feedback": "Feedback",
+        "users": "Users",
+        "explorer": "Explorer"
+      },
+      "soon": "Soon"
     },
     "overview": {
       "title": "Overview",
-      "description": "Numbers and charts of the app will be here.",
-      "auditHint": "Every sign-in, view and export of the administration is recorded.",
-      "auditLink": "Open the audit"
+      "description": "The main numbers of the app at a glance.",
+      "chartTitle": "Active users and sign-ups",
+      "chartDescription": "Daily, weekly and monthly active users, with sign-ups per day on the right axis."
     },
     "audit": {
       "title": "Audit",
@@ -4011,6 +4023,163 @@
       "samsung": "Samsung Internet",
       "opera": "Opera",
       "other": "another browser"
+    },
+    "growth": {
+      "title": "Growth",
+      "description": "Sign-ups, active users and who they are.",
+      "charts": {
+        "signups": "Sign-ups and all users",
+        "active": "DAU, WAU and MAU",
+        "new_returning": "New and returning active users",
+        "stickiness": "Stickiness"
+      },
+      "distributionsTitle": "Who the users are",
+      "distributionsDescription": "All accounts as they are today, split by an attribute. A snapshot: it does not follow the period."
+    },
+    "activation": {
+      "title": "Activation",
+      "description": "How far new accounts get and how quickly."
+    },
+    "retention": {
+      "title": "Retention",
+      "description": "Who comes back, how often and when.",
+      "charts": {
+        "sessions": "Sessions and time in the app",
+        "churned": "Churned users"
+      },
+      "curvesTitle": "Retention curves",
+      "curvesDescription": "Share of each sign-up week active in the weeks after, and the average weighted by cohort size.",
+      "average": "Average",
+      "cohortOf": "Week of {week}",
+      "cohort": "Sign-up week",
+      "size": "Users",
+      "weekShort": "W{n}",
+      "day": "Day",
+      "heatCell": "{day} {hour}:00 — {events} actions, {users} people",
+      "less": "Less",
+      "more": "More",
+      "activeDaysHint": "How many days a week people are active: user weeks by number of active days."
+    },
+    "controls": {
+      "period": "Period",
+      "periods": {
+        "today": "Today",
+        "7d": "7 days",
+        "30d": "30 days",
+        "90d": "90 days",
+        "12m": "12 months",
+        "custom": "Custom"
+      },
+      "compare": "Compare with previous period",
+      "internal": "Include internal accounts",
+      "segments": "Segments",
+      "segmentsActive": "Segments ({count})",
+      "refreshedAt": "Updated {time}",
+      "refresh": "Refresh now",
+      "allValues": "All",
+      "segmentKeys": {
+        "plan": "Plan",
+        "mode": "Mode",
+        "industry": "Industry",
+        "locale": "Language",
+        "country": "Country",
+        "role": "Role",
+        "device": "Device"
+      },
+      "segmentValues": {
+        "plan": {
+          "beta": "Beta",
+          "trial": "Trial",
+          "solo": "Solo",
+          "pro": "Pro",
+          "team": "Team"
+        },
+        "mode": {
+          "game": "Game",
+          "tool": "Tool"
+        },
+        "role": {
+          "owner": "Owner",
+          "worker": "Worker"
+        },
+        "device": {
+          "mobile": "Phone",
+          "tablet": "Tablet",
+          "desktop": "Computer"
+        },
+        "locale": {
+          "cs": "Czech",
+          "en": "English"
+        }
+      },
+      "removeSegment": "Remove segment {segment}: {value}",
+      "internalWarningTitle": "Internal accounts are included",
+      "internalWarning": "The owner, demo and test accounts are counted. These numbers are not the real users' numbers; switch it off before reading them as such.",
+      "range": "Period {range}.",
+      "rangeCompared": "Period {range}, compared with {previous}."
+    },
+    "units": {
+      "none": "–",
+      "minutes": "{value} min",
+      "hours": "{value} h",
+      "days": "{value} d",
+      "ms": "{value} ms",
+      "kb": "{value} kB"
+    },
+    "tile": {
+      "pending": "Measured from a later step",
+      "noComparison": "no comparison",
+      "noComparisonHint": "The previous period has no value to compare with.",
+      "vsPrevious": "Change against the previous period"
+    },
+    "chart": {
+      "legend": "Series",
+      "reset": "Whole period",
+      "exportCsv": "Export CSV",
+      "exportPng": "Export PNG",
+      "exportFailed": "The export could not be saved. Try again.",
+      "week": "Week {n}",
+      "hint": "Drag across the chart to zoom in, use the wheel to zoom, double-click for the whole period."
+    },
+    "empty": {
+      "title": "No data yet",
+      "description": "These numbers fill in as people use the app. Nothing has been recorded for this period and segment yet.",
+      "loadFailed": "This block could not be loaded. The rest of the page works; try refreshing."
+    },
+    "funnel": {
+      "dropOff": "{value} dropped off",
+      "median": "median {value}",
+      "steps": {
+        "registered": "Signed up",
+        "onboarding_completed": "Onboarding completed",
+        "first_milestone": "First milestone",
+        "first_task_completed": "First completed task",
+        "first_contact": "First contact",
+        "first_deal": "First deal",
+        "first_meeting": "First booked meeting",
+        "first_won_deal": "First won deal"
+      }
+    },
+    "breakdown": {
+      "none": "Not set"
+    },
+    "fields": {
+      "joined": "Joined",
+      "confirmed": "Confirmed",
+      "confirm_rate": "Confirmation rate",
+      "converted": "Became accounts",
+      "invites_sent": "Invites sent",
+      "invites_accepted": "Invites accepted",
+      "invites_expired": "Invites expired",
+      "workers": "Workers",
+      "active_workers": "Active workers",
+      "owners_with_workers": "Owners with workers",
+      "workers_per_owner": "Workers per owner",
+      "sessions_per_user_day": "Sessions per user a day",
+      "sessions_per_user_week": "Sessions per user a week",
+      "median_minutes": "Session length (median)",
+      "p90_minutes": "Session length (p90)",
+      "minutes_per_user_day": "Time in the app per user a day"
     }
   }
 }

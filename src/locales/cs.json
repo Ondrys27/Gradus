@@ -3957,14 +3957,26 @@
       "signOut": "Odhlásit",
       "nav": {
         "overview": "Přehled",
-        "audit": "Audit"
-      }
+        "audit": "Audit",
+        "growth": "Růst",
+        "activation": "Aktivace",
+        "retention": "Retence",
+        "features": "Funkce",
+        "ai": "AI a Jarvis",
+        "game": "Hra",
+        "costs": "Náklady",
+        "health": "Zdraví",
+        "feedback": "Zpětná vazba",
+        "users": "Uživatelé",
+        "explorer": "Průzkumník"
+      },
+      "soon": "Brzy"
     },
     "overview": {
       "title": "Přehled",
-      "description": "Tady budou čísla a grafy aplikace.",
-      "auditHint": "Každé přihlášení, zobrazení a export administrace se zapisuje.",
-      "auditLink": "Otevřít audit"
+      "description": "Hlavní čísla aplikace na jednom místě.",
+      "chartTitle": "Aktivní uživatelé a registrace",
+      "chartDescription": "Denně, týdně a měsíčně aktivní uživatelé, registrace za den na pravé ose."
     },
     "audit": {
       "title": "Audit",
@@ -4011,6 +4023,163 @@
       "samsung": "Samsung Internet",
       "opera": "Opera",
       "other": "jiný prohlížeč"
+    },
+    "growth": {
+      "title": "Růst",
+      "description": "Registrace, aktivní uživatelé a kdo to je.",
+      "charts": {
+        "signups": "Registrace a všichni uživatelé",
+        "active": "DAU, WAU a MAU",
+        "new_returning": "Noví a vracející se aktivní",
+        "stickiness": "Stickiness"
+      },
+      "distributionsTitle": "Kdo jsou uživatelé",
+      "distributionsDescription": "Všechny účty, jak jsou dnes, rozdělené podle vlastnosti. Snímek stavu: neřídí se obdobím."
+    },
+    "activation": {
+      "title": "Aktivace",
+      "description": "Kam až nové účty dojdou a jak rychle."
+    },
+    "retention": {
+      "title": "Retence",
+      "description": "Kdo se vrací, jak často a kdy.",
+      "charts": {
+        "sessions": "Relace a čas v aplikaci",
+        "churned": "Odpadlí uživatelé"
+      },
+      "curvesTitle": "Retenční křivky",
+      "curvesDescription": "Podíl aktivních z každého týdne registrace v dalších týdnech a průměr vážený velikostí kohorty.",
+      "average": "Průměr",
+      "cohortOf": "Týden od {week}",
+      "cohort": "Týden registrace",
+      "size": "Uživatelé",
+      "weekShort": "T{n}",
+      "day": "Den",
+      "heatCell": "{day} {hour}:00 — {events} akcí, {users} lidí",
+      "less": "Méně",
+      "more": "Více",
+      "activeDaysHint": "Kolik dní v týdnu jsou lidé aktivní: uživatelotýdny podle počtu aktivních dní."
+    },
+    "controls": {
+      "period": "Období",
+      "periods": {
+        "today": "Dnes",
+        "7d": "7 dní",
+        "30d": "30 dní",
+        "90d": "90 dní",
+        "12m": "12 měsíců",
+        "custom": "Vlastní"
+      },
+      "compare": "Porovnat s předchozím obdobím",
+      "internal": "Včetně interních účtů",
+      "segments": "Segmenty",
+      "segmentsActive": "Segmenty ({count})",
+      "refreshedAt": "Aktualizováno {time}",
+      "refresh": "Obnovit teď",
+      "allValues": "Vše",
+      "segmentKeys": {
+        "plan": "Plán",
+        "mode": "Režim",
+        "industry": "Obor",
+        "locale": "Jazyk",
+        "country": "Země",
+        "role": "Role",
+        "device": "Zařízení"
+      },
+      "segmentValues": {
+        "plan": {
+          "beta": "Beta",
+          "trial": "Zkušební",
+          "solo": "Solo",
+          "pro": "Pro",
+          "team": "Tým"
+        },
+        "mode": {
+          "game": "Hra",
+          "tool": "Běžný"
+        },
+        "role": {
+          "owner": "Majitel",
+          "worker": "Pracovník"
+        },
+        "device": {
+          "mobile": "Telefon",
+          "tablet": "Tablet",
+          "desktop": "Počítač"
+        },
+        "locale": {
+          "cs": "Čeština",
+          "en": "Angličtina"
+        }
+      },
+      "removeSegment": "Odebrat segment {segment}: {value}",
+      "internalWarningTitle": "Započítané interní účty",
+      "internalWarning": "Počítá se majitel, demo a testovací účty. Nejsou to čísla skutečných uživatelů; před čtením je přepínač vypni.",
+      "range": "Období {range}.",
+      "rangeCompared": "Období {range}, porovnáno s {previous}."
+    },
+    "units": {
+      "none": "–",
+      "minutes": "{value} min",
+      "hours": "{value} h",
+      "days": "{value} d",
+      "ms": "{value} ms",
+      "kb": "{value} kB"
+    },
+    "tile": {
+      "pending": "Měří se od pozdějšího kroku",
+      "noComparison": "bez porovnání",
+      "noComparisonHint": "Předchozí období nemá hodnotu k porovnání.",
+      "vsPrevious": "Změna proti předchozímu období"
+    },
+    "chart": {
+      "legend": "Řady",
+      "reset": "Celé období",
+      "exportCsv": "Export CSV",
+      "exportPng": "Export PNG",
+      "exportFailed": "Export se nepodařilo uložit. Zkus to znovu.",
+      "week": "Týden {n}",
+      "hint": "Tažením přes graf přiblížíš oblast, kolečkem měníš přiblížení, dvojklik vrátí celé období."
+    },
+    "empty": {
+      "title": "Zatím žádná data",
+      "description": "Čísla přibydou, jak budou lidé aplikaci používat. Pro toto období a segment zatím nic zaznamenáno není.",
+      "loadFailed": "Tenhle blok se nepodařilo načíst. Zbytek stránky funguje; zkus obnovit."
+    },
+    "funnel": {
+      "dropOff": "odpadlo {value}",
+      "median": "medián {value}",
+      "steps": {
+        "registered": "Registrace",
+        "onboarding_completed": "Dokončený onboarding",
+        "first_milestone": "První milník",
+        "first_task_completed": "První splněný úkol",
+        "first_contact": "První kontakt",
+        "first_deal": "První obchod",
+        "first_meeting": "První domluvená schůzka",
+        "first_won_deal": "První vyhraný obchod"
+      }
+    },
+    "breakdown": {
+      "none": "Nevyplněno"
+    },
+    "fields": {
+      "joined": "Přihlášení",
+      "confirmed": "Potvrzení",
+      "confirm_rate": "Míra potvrzení",
+      "converted": "Převedeno na účet",
+      "invites_sent": "Odeslané pozvánky",
+      "invites_accepted": "Přijaté pozvánky",
+      "invites_expired": "Vypršelé pozvánky",
+      "workers": "Pracovníci",
+      "active_workers": "Aktivní pracovníci",
+      "owners_with_workers": "Majitelé s pracovníky",
+      "workers_per_owner": "Pracovníků na majitele",
+      "sessions_per_user_day": "Relací na uživatele za den",
+      "sessions_per_user_week": "Relací na uživatele za týden",
+      "median_minutes": "Délka relace (medián)",
+      "p90_minutes": "Délka relace (p90)",
+      "minutes_per_user_day": "Čas v aplikaci na uživatele za den"
     }
   }
 }
