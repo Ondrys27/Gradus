@@ -18,8 +18,13 @@ export async function POST(request: Request) {
   const userId = data?.claims?.sub ?? null;
   if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
+  // Refuse an announced oversize body before reading it into memory.
+  const declared = Number(request.headers.get("content-length") ?? 0);
+  if (declared > MAX_BODY_BYTES) {
+    return NextResponse.json({ error: "tooLarge" }, { status: 413 });
+  }
   const text = await request.text().catch(() => "");
-  if (text.length > MAX_BODY_BYTES) {
+  if (new TextEncoder().encode(text).byteLength > MAX_BODY_BYTES) {
     return NextResponse.json({ error: "tooLarge" }, { status: 413 });
   }
   let payload: unknown = null;

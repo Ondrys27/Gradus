@@ -146,7 +146,7 @@ export const POST = instrumentRoute("api.generateContacts.post", async (request:
     const event: GenerationEvent = { type: "error", code: "limitReached", created: 0, usage };
     return NextResponse.json(event, { status: 429 });
   }
-  await countKeyword(admin, industry);
+  await countKeyword(admin, userId, industry);
 
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
   if (!apiKey) {

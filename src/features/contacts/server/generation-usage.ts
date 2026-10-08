@@ -122,9 +122,20 @@ export function normalizeKeyword(industry: string): string | null {
   return keyword.length >= 2 ? keyword : null;
 }
 
-export async function countKeyword(admin: Client, industry: string) {
+/**
+ * Counts the keyword unless the person is an internal account: the stats have
+ * no link to anyone, so internal searches could never be left out later.
+ */
+export async function countKeyword(admin: Client, userId: string, industry: string) {
   const keyword = normalizeKeyword(industry);
   if (!keyword) return;
+  const { data: profile, error: profileError } = await admin
+    .from("profiles")
+    .select("is_internal")
+    .eq("id", userId)
+    .maybeSingle();
+  if (profileError) console.error("[generation] internal check failed", profileError.code);
+  if (profileError || profile?.is_internal) return;
   const { error } = await admin.rpc("count_generation_keyword", { _keyword: keyword });
   if (error) console.error("[generation] keyword count failed", error.code);
 }

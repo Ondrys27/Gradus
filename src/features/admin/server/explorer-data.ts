@@ -1,4 +1,5 @@
 import "server-only";
+import type { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { EVENTS, type EventName } from "@/lib/analytics/events";
 import { METRICS_TIMEZONE, type EventCalc } from "@/lib/analytics/metrics";
@@ -23,7 +24,12 @@ export const EXPLORER_GRAINS: readonly ExplorerGrain[] = ["day", "week", "month"
  * schema that accepts a number but refuses a string accepts only numbers.
  */
 export function numericPropsOf(event: EventName): string[] {
-  return Object.entries(EVENTS[event].props)
+  const props: Record<string, z.ZodType> = EVENTS[event].props;
+  // An amount next to a currency is money: summing or averaging it would add
+  // currencies together. Money is shown per currency on the finance pages.
+  const isMoney = "currency" in props;
+  return Object.entries(props)
+    .filter(([prop]) => !(isMoney && prop === "value"))
     .filter(([, schema]) => schema.safeParse(1).success && !schema.safeParse("1").success)
     .map(([prop]) => prop);
 }

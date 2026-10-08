@@ -14,15 +14,35 @@ import type { BreakdownData, FeatureRequestRow, FeatureRequestStatus } from "../
  * which must not pull this server-only module into its bundle.
  */
 
+/**
+ * Internal accounts (profiles.is_internal), left out of the lists unless the
+ * view includes them — the same default as every metric. A handful of rows.
+ */
+async function internalUserIds(): Promise<string[]> {
+  const { data, error } = await createAdminClient()
+    .from("profiles")
+    .select("id")
+    .eq("is_internal", true)
+    .limit(1000);
+  if (error) throw new Error(`profiles.is_internal: ${error.message}`);
+  return data.map((row) => row.id);
+}
+
+/** A PostgREST `in` list of uuids. */
+const inList = (ids: string[]) => `(${ids.join(",")})`;
+
 export async function loadFeatureRequests(
   status: FeatureRequestStatus | null,
+  includeInternal = false,
 ): Promise<FeatureRequestRow[]> {
+  const internal = includeInternal ? [] : await internalUserIds();
   let query = createAdminClient()
     .from("feature_requests")
     .select("id, user_id, title, description, status, created_at")
     .order("created_at", { ascending: false })
     .limit(200);
   if (status) query = query.eq("status", status);
+  if (internal.length) query = query.not("user_id", "in", inList(internal));
   const { data, error } = await query;
   if (error) throw new Error(`feature_requests: ${error.message}`);
   return data.map((row) => ({
@@ -38,13 +58,16 @@ export async function loadFeatureRequests(
 export type NpsComment = { userId: string; score: number; comment: string; createdAt: string };
 
 /** The most recent answers that left a comment; the score alone is in the breakdown. */
-export async function loadNpsComments(limit = 50): Promise<NpsComment[]> {
-  const { data, error } = await createAdminClient()
+export async function loadNpsComments(includeInternal = false, limit = 50): Promise<NpsComment[]> {
+  const internal = includeInternal ? [] : await internalUserIds();
+  let query = createAdminClient()
     .from("nps_responses")
     .select("user_id, score, comment, created_at")
     .not("comment", "is", null)
     .order("created_at", { ascending: false })
     .limit(limit);
+  if (internal.length) query = query.not("user_id", "in", inList(internal));
+  const { data, error } = await query;
   if (error) throw new Error(`nps_responses: ${error.message}`);
   return data
     .filter((row): row is typeof row & { comment: string } => Boolean(row.comment))

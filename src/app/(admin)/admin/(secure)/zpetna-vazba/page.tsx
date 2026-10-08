@@ -51,7 +51,10 @@ export default async function AdminFeedbackPage({ searchParams }: Props) {
       <Suspense key={`jarvis:${key}`} fallback={<GridSkeleton count={1} height={160} />}>
         <JarvisRatings q={q} />
       </Suspense>
-      <Suspense key={`ideas:${status}`} fallback={<GridSkeleton count={1} height={320} />}>
+      <Suspense
+        key={`ideas:${status}:${q.view.internal}`}
+        fallback={<GridSkeleton count={1} height={320} />}
+      >
         <Ideas q={q} status={status} />
       </Suspense>
     </>
@@ -61,7 +64,7 @@ export default async function AdminFeedbackPage({ searchParams }: Props) {
 async function Nps({ q }: { q: AdminQuery }) {
   const [loaded, comments, t] = await Promise.all([
     safe("nps summary", () => loadNpsSummary(q)),
-    safe("nps comments", () => loadNpsComments()),
+    safe("nps comments", () => loadNpsComments(q.view.internal)),
     getTranslations("admin.feedback"),
   ]);
   return (
@@ -89,7 +92,9 @@ async function Nps({ q }: { q: AdminQuery }) {
                   <li key={index} className="rounded-xl border border-line px-3.5 py-2.5">
                     <div className="mb-1 flex items-center justify-between gap-2 text-xs text-ink-muted">
                       <span>{t("npsScoreBadge", { score: row.score })}</span>
-                      <span>{formatCalendarDate(row.createdAt.slice(0, 10), ADMIN_FORMAT_SETTINGS)}</span>
+                      <span>
+                        {formatCalendarDate(row.createdAt.slice(0, 10), ADMIN_FORMAT_SETTINGS)}
+                      </span>
                     </div>
                     <p className="text-sm text-ink">{row.comment}</p>
                   </li>
@@ -117,7 +122,7 @@ async function JarvisRatings({ q }: { q: AdminQuery }) {
 
 async function Ideas({ q, status }: { q: AdminQuery; status: FeatureRequestStatus | null }) {
   const [rows, counts, t] = await Promise.all([
-    safe("feature requests", () => loadFeatureRequests(status)),
+    safe("feature requests", () => loadFeatureRequests(status, q.view.internal)),
     safe("feature request counts", () => featureRequestCounts(q)),
     getTranslations("admin.feedback"),
   ]);

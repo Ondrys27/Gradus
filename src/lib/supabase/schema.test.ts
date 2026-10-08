@@ -936,9 +936,21 @@ describe("security: an ordinary signed-in account", () => {
     ).rejects.toThrow(/feature_request_status_is_admin_only/);
     await asServer();
 
+    // Other people's ideas only through the administration (the server), never the app client.
     await asUser(owner);
+    expect(
+      (await db.query(`select 1 from feature_requests where id = $1`, [request])).rows,
+    ).toEqual([]);
     await db.query(`update feature_requests set status = 'planned' where id = $1`, [request]);
     await asServer();
+    expect(
+      (
+        await db.query<{ status: string }>(`select status from feature_requests where id = $1`, [
+          request,
+        ])
+      ).rows[0]?.status,
+    ).toBe("new");
+    await db.query(`update feature_requests set status = 'planned' where id = $1`, [request]);
   });
 });
 
