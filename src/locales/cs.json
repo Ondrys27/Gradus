@@ -3283,5 +3283,640 @@
       "workerText": "Zkušební období tohoto účtu skončilo. Data vidíš všechna, nové věci půjde zakládat, až majitel vybere tarif."
     },
     "readOnlyError": "Zkušební období skončilo. Vyber si tarif a můžeš pokračovat."
+  },
+  "metrics": {
+    "categories": {
+      "growth": "Růst",
+      "activation": "Aktivace",
+      "retention": "Retence",
+      "features": "Funkce",
+      "ai": "AI a Jarvis",
+      "game": "Hra",
+      "costs": "Náklady",
+      "health": "Zdraví",
+      "feedback": "Zpětná vazba"
+    },
+    "items": {
+      "signups": {
+        "name": "Registrace",
+        "description": "Nové účty za den."
+      },
+      "users_total": {
+        "name": "Celkem uživatelů",
+        "description": "Všechny účty ke konci dne, kumulativně."
+      },
+      "waitlist": {
+        "name": "Čekací listina",
+        "description": "Přihlášení, potvrzení odkazem, míra potvrzení a kolik potvrzených má účet."
+      },
+      "dau": {
+        "name": "DAU",
+        "description": "Uživatelé s aspoň jednou smysluplnou akcí za den. Přihlášení ani zobrazení stránky se nepočítá."
+      },
+      "wau": {
+        "name": "WAU",
+        "description": "Aktivní uživatelé za posledních 7 dní."
+      },
+      "mau": {
+        "name": "MAU",
+        "description": "Aktivní uživatelé za posledních 30 dní."
+      },
+      "stickiness": {
+        "name": "Stickiness",
+        "description": "DAU / MAU: jak velká část měsíčně aktivních se vrací každý den."
+      },
+      "new_active": {
+        "name": "Noví aktivní",
+        "description": "Aktivní, pro které je to první aktivní den vůbec."
+      },
+      "returning_active": {
+        "name": "Vracející se aktivní",
+        "description": "Aktivní, kteří už dřív aktivní byli."
+      },
+      "users_by_plan": {
+        "name": "Uživatelé podle plánu",
+        "description": "Beta, zkušební období, Solo, Pro, Tým. Pracovník má plán svého majitele."
+      },
+      "users_by_industry": {
+        "name": "Uživatelé podle oboru",
+        "description": "Obor zvolený v onboardingu."
+      },
+      "users_by_locale": {
+        "name": "Uživatelé podle jazyka",
+        "description": "Jazyk aplikace z nastavení."
+      },
+      "users_by_country": {
+        "name": "Uživatelé podle země",
+        "description": "Země z nastavení."
+      },
+      "users_by_role": {
+        "name": "Uživatelé podle role",
+        "description": "Majitelé a pracovníci."
+      },
+      "users_by_device": {
+        "name": "Uživatelé podle zařízení",
+        "description": "Zařízení poslední relace."
+      },
+      "users_by_browser": {
+        "name": "Uživatelé podle prohlížeče",
+        "description": "Prohlížeč poslední relace."
+      },
+      "workers": {
+        "name": "Pracovníci",
+        "description": "Počet aktivních pracovníků, kolik z nich bylo aktivních, majitelé s pracovníky a průměr na majitele."
+      },
+      "funnel": {
+        "name": "Trychtýř aktivace",
+        "description": "Registrace → onboarding → první milník → první splněný úkol → první kontakt → první obchod → první schůzka → první výhra. Procenta a medián času mezi kroky."
+      },
+      "time_to_value": {
+        "name": "Doba do hodnoty",
+        "description": "Medián hodin od registrace k první domluvené schůzce."
+      },
+      "onboarding_steps": {
+        "name": "Onboarding po krocích",
+        "description": "Kolik lidí dokončilo který krok; kde odpadají."
+      },
+      "onboarding_completed": {
+        "name": "Dokončený onboarding",
+        "description": "Uživatelé, kteří onboarding dokončili."
+      },
+      "onboarding_skipped_at": {
+        "name": "Onboarding přeskočen",
+        "description": "Krok, na kterém lidé onboarding přeskočili."
+      },
+      "tour_outcome": {
+        "name": "Jarvisův průvodce",
+        "description": "Dokončen nebo přeskočen."
+      },
+      "tour_skipped_at": {
+        "name": "Průvodce přeskočen na kroku",
+        "description": "Na kterém kroku lidé průvodce přeskočili."
+      },
+      "activation_rate": {
+        "name": "Míra aktivace",
+        "description": "Podíl registrovaných, kteří byli do 7 dnů aktivní aspoň 3 různé dny ve 2 různých sekcích."
+      },
+      "cohorts": {
+        "name": "Kohorty",
+        "description": "Týden registrace × podíl aktivních v týdnech 0 až 12."
+      },
+      "retention": {
+        "name": "Retence D1, D7, D30",
+        "description": "Podíl registrovaných aktivních přesně 1, 7 a 30 dní po registraci."
+      },
+      "retention_d1": {
+        "name": "Retence D1",
+        "description": "Aktivní den po registraci."
+      },
+      "retention_d7": {
+        "name": "Retence D7",
+        "description": "Aktivní 7. den po registraci."
+      },
+      "retention_d30": {
+        "name": "Retence D30",
+        "description": "Aktivní 30. den po registraci."
+      },
+      "churned": {
+        "name": "Odpadlí",
+        "description": "Dřív aktivní, posledních 14 dní bez jediné akce."
+      },
+      "sessions": {
+        "name": "Relace",
+        "description": "Počet relací za den."
+      },
+      "app_minutes": {
+        "name": "Čas v aplikaci",
+        "description": "Minuty v aplikaci za den, všichni dohromady."
+      },
+      "session_stats": {
+        "name": "Relace na uživatele",
+        "description": "Relace na uživatele za den a týden, délka relace (medián, p90) a čas v aplikaci za den."
+      },
+      "active_days_per_week": {
+        "name": "Aktivní dny v týdnu",
+        "description": "Rozdělení 1 až 7 aktivních dní v týdnu."
+      },
+      "usage_heatmap": {
+        "name": "Kdy aplikaci používají",
+        "description": "Akce podle dne v týdnu a hodiny."
+      },
+      "returns_from_email": {
+        "name": "Návraty z e-mailu",
+        "description": "Uživatelé, kteří aplikaci otevřeli z odkazu v e-mailu."
+      },
+      "returns_from_jarvis": {
+        "name": "Reakce na Jarvisovu bublinu",
+        "description": "Uživatelé podle reakce na proaktivní bublinu."
+      },
+      "feature_adoption": {
+        "name": "Adopce sekcí",
+        "description": "U každé sekce podíl aktivních, kteří ji použili, počet akcí a akce na uživatele."
+      },
+      "milestones_created": {
+        "name": "Vytvořené milníky",
+        "description": "Vlastní milníky z formuláře a onboardingu."
+      },
+      "milestones_completed": {
+        "name": "Dokončené milníky",
+        "description": "Z kapitoly cesty a vlastní."
+      },
+      "milestone_completion_rate": {
+        "name": "Míra dokončení milníků",
+        "description": "Dokončené / vytvořené milníky."
+      },
+      "milestone_days_to_complete": {
+        "name": "Doba dokončení milníku",
+        "description": "Medián a p90 dní od založení po dokončení."
+      },
+      "tasks_created": {
+        "name": "Vytvořené úkoly",
+        "description": "Úkoly a podúkoly."
+      },
+      "tasks_completed": {
+        "name": "Splněné úkoly",
+        "description": "Úkoly a podúkoly."
+      },
+      "task_tree_depth": {
+        "name": "Hloubka stromu úkolů",
+        "description": "Nové úkoly podle hloubky (0 = hlavní úkol)."
+      },
+      "milestone_views": {
+        "name": "Pohledy na milníky",
+        "description": "Seznam, Mapa, Cesta."
+      },
+      "milestone_reward_share": {
+        "name": "Vyplněná odměna",
+        "description": "Nové milníky s odměnou a bez ní."
+      },
+      "milestone_reviews": {
+        "name": "AI hodnocení milníku",
+        "description": "Vyžádaná hodnocení milníku od Jarvise."
+      },
+      "deals_created": {
+        "name": "Vytvořené obchody",
+        "description": "Nové obchody v pipeline."
+      },
+      "deal_moves": {
+        "name": "Přesuny obchodů",
+        "description": "Přesuny mezi fázemi."
+      },
+      "deals_won": {
+        "name": "Výhry",
+        "description": "Vyhrané obchody."
+      },
+      "deals_lost": {
+        "name": "Prohry",
+        "description": "Prohrané obchody."
+      },
+      "win_rate": {
+        "name": "Míra výhry",
+        "description": "Výhry / (výhry + prohry)."
+      },
+      "deal_value": {
+        "name": "Hodnota obchodů po měnách",
+        "description": "Počet, celková a průměrná hodnota vytvořených, vyhraných a prohraných obchodů, každá měna zvlášť."
+      },
+      "hours_in_stage": {
+        "name": "Čas ve fázi",
+        "description": "Medián a p90 hodin, které obchod strávil ve fázi, než se posunul."
+      },
+      "stages_customized": {
+        "name": "Upravené fáze",
+        "description": "Uživatelé, kteří upravili fáze pipeline."
+      },
+      "reengage_used": {
+        "name": "Znovu oslovit",
+        "description": "Uživatelé, kteří zapnuli filtr „znovu oslovit“."
+      },
+      "contacts_added": {
+        "name": "Přidané kontakty",
+        "description": "Ručně, vygenerované, importované."
+      },
+      "contact_moves": {
+        "name": "Přesuny kontaktů",
+        "description": "Přesuny mezi tabulkami."
+      },
+      "contact_tables_created": {
+        "name": "Vlastní tabulky",
+        "description": "Vytvořené vlastní tabulky kontaktů."
+      },
+      "contact_fields_created": {
+        "name": "Vlastní pole",
+        "description": "Vytvořená pole tabulek."
+      },
+      "contact_email_filled": {
+        "name": "Vyplněný e-mail",
+        "description": "Podíl nových kontaktů s e-mailem."
+      },
+      "contact_phone_filled": {
+        "name": "Vyplněný telefon",
+        "description": "Podíl nových kontaktů s telefonem."
+      },
+      "contact_website_filled": {
+        "name": "Vyplněný web",
+        "description": "Podíl nových kontaktů s webem."
+      },
+      "duplicates_caught": {
+        "name": "Zachycené duplicity",
+        "description": "Upozornění na duplicitní kontakt podle shody."
+      },
+      "activities_logged": {
+        "name": "Zaznamenané aktivity",
+        "description": "Aktivity u kontaktů podle typu."
+      },
+      "generation_batches": {
+        "name": "Dávky generování",
+        "description": "Stisknutí Generovat."
+      },
+      "generation_requested": {
+        "name": "Vyžádané kontakty",
+        "description": "Kolik kontaktů si lidé vyžádali."
+      },
+      "generation_saved": {
+        "name": "Uložené kontakty",
+        "description": "Kolik vygenerovaných kontaktů se uložilo."
+      },
+      "generation_duplicates": {
+        "name": "Duplicity při generování",
+        "description": "Výsledky vynechané jako duplicity."
+      },
+      "generation_errors": {
+        "name": "Chyby generování",
+        "description": "Neúspěšné požadavky na Google podle kódu chyby."
+      },
+      "generation_error_rate": {
+        "name": "Chybovost generování",
+        "description": "Neúspěšné / všechny požadavky na Google Places."
+      },
+      "generation_daily_cap": {
+        "name": "Na denním stropu",
+        "description": "Podíl generujících, kteří narazili na denní strop."
+      },
+      "generation_monthly_cap": {
+        "name": "Na měsíčním stropu",
+        "description": "Podíl generujících, kteří narazili na měsíční strop."
+      },
+      "generation_keywords": {
+        "name": "Nejhledanější obory",
+        "description": "Top 20 normalizovaných klíčových slov, bez vazby na uživatele."
+      },
+      "call_time": {
+        "name": "Odvolané hodiny",
+        "description": "Hodiny na časovači celkem a na volajícího, domluvené schůzky a schůzky na hodinu volání."
+      },
+      "timer_sessions": {
+        "name": "Relace časovače",
+        "description": "Spuštění časovače."
+      },
+      "timer_auto_pauses": {
+        "name": "Automatické pauzy",
+        "description": "Podíl pauz, kdy se časovač zastavil sám po 15 minutách nečinnosti."
+      },
+      "contacts_reached": {
+        "name": "Oslovení",
+        "description": "Přesuny z Neoslovených."
+      },
+      "reached_to_meeting": {
+        "name": "Oslovení → schůzka",
+        "description": "Podíl oslovení, která skončila domluvenou schůzkou."
+      },
+      "reached_to_failed": {
+        "name": "Oslovení → neúspěch",
+        "description": "Neúspěšná oslovení podle důvodu."
+      },
+      "meetings_per_call_hour": {
+        "name": "Schůzky na hodinu volání",
+        "description": "Domluvené schůzky / hodiny na časovači."
+      },
+      "calendar_events": {
+        "name": "Události v kalendáři",
+        "description": "Nové události podle typu."
+      },
+      "google_calendar_connected": {
+        "name": "Připojený Google Kalendář",
+        "description": "Zatím se neměří: propojení s Google Kalendářem ještě neexistuje."
+      },
+      "calendar_sync_errors": {
+        "name": "Chyby synchronizace",
+        "description": "Zatím se neměří: propojení s Google Kalendářem ještě neexistuje."
+      },
+      "transactions": {
+        "name": "Transakce",
+        "description": "Nové příjmy a výdaje."
+      },
+      "finance_value": {
+        "name": "Finance po měnách",
+        "description": "Příjmy, výdaje a vystavené faktury, každá měna zvlášť."
+      },
+      "invoices_issued": {
+        "name": "Vystavené faktury",
+        "description": "Faktury vystavené v aplikaci."
+      },
+      "fakturoid_connected": {
+        "name": "Připojený Fakturoid",
+        "description": "Účty s připojeným Fakturoidem."
+      },
+      "recurring_payments": {
+        "name": "Automatické platby",
+        "description": "Nově nastavené opakované platby."
+      },
+      "worker_invites": {
+        "name": "Pozvánky pracovníků",
+        "description": "Odeslané, přijaté a vypršelé pozvánky."
+      },
+      "worker_tasks_assigned": {
+        "name": "Zadané úkoly pracovníkům",
+        "description": "Nové úkoly pro pracovníky."
+      },
+      "worker_tasks_done": {
+        "name": "Splněné úkoly pracovníků",
+        "description": "Úkoly pracovníků označené jako hotové."
+      },
+      "worker_earnings_approved": {
+        "name": "Schválené výdělky",
+        "description": "Schválení výdělků pracovníků."
+      },
+      "workers_per_owner": {
+        "name": "Pracovníci na majitele",
+        "description": "Majitelé podle počtu aktivních pracovníků."
+      },
+      "searches": {
+        "name": "Hledání",
+        "description": "Provedená hledání."
+      },
+      "search_results_opened": {
+        "name": "Otevřené výsledky",
+        "description": "Otevřené výsledky hledání podle typu."
+      },
+      "search_no_results": {
+        "name": "Hledání bez výsledku",
+        "description": "Podíl hledání, která nic nenašla."
+      },
+      "search_opened_via": {
+        "name": "⌘K vs. kliknutí",
+        "description": "Jak lidé hledání otevírají."
+      },
+      "search_quick_actions": {
+        "name": "Rychlé akce",
+        "description": "Použité rychlé akce z hledání."
+      },
+      "emails_sent": {
+        "name": "Odeslané e-maily",
+        "description": "E-maily odeslané z aplikace."
+      },
+      "email_drafts_requested": {
+        "name": "Vyžádané AI návrhy",
+        "description": "Návrhy e-mailu vyžádané od Jarvise."
+      },
+      "email_drafts_used": {
+        "name": "Použité AI návrhy",
+        "description": "Odeslané e-maily, které vycházely z AI návrhu."
+      },
+      "settings_currency": {
+        "name": "Měna",
+        "description": "Uživatelé podle zvolené měny."
+      },
+      "settings_theme": {
+        "name": "Motiv",
+        "description": "Uživatelé podle barevného tématu."
+      },
+      "settings_animations": {
+        "name": "Animace",
+        "description": "Zapnuté a vypnuté animace."
+      },
+      "settings_sounds": {
+        "name": "Zvuky",
+        "description": "Zapnuté a vypnuté zvuky."
+      },
+      "settings_jarvis_proactive": {
+        "name": "Jarvisova iniciativa",
+        "description": "Zapnutá a vypnutá proaktivní ozvání."
+      },
+      "ai_calls": {
+        "name": "Volání AI",
+        "description": "Volání modelu za den."
+      },
+      "ai_by_feature": {
+        "name": "AI podle funkce",
+        "description": "Volání, tokeny, náklady, latence a chyby podle funkce (chat, hodnocení milníku, hlídání…)."
+      },
+      "ai_by_model": {
+        "name": "AI podle modelu",
+        "description": "Volání, tokeny, náklady a latence podle modelu."
+      },
+      "ai_tokens": {
+        "name": "Tokeny",
+        "description": "Vstup, z mezipaměti, zápis do mezipaměti a výstup; míra zásahu mezipaměti."
+      },
+      "ai_cost": {
+        "name": "Náklady na AI",
+        "description": "USD za den podle ai_usage."
+      },
+      "ai_cost_per_active_user": {
+        "name": "AI na aktivního uživatele",
+        "description": "Náklad AI za období / aktivní uživatelé."
+      },
+      "ai_top_users": {
+        "name": "Nejnákladnější uživatelé",
+        "description": "10 účtů s nejvyšším nákladem AI, jen identifikátor a plán."
+      },
+      "jarvis_conversations": {
+        "name": "Konverzace s Jarvisem",
+        "description": "Konverzace, zprávy na uživatele a medián zpráv v konverzaci."
+      },
+      "ai_errors": {
+        "name": "Chyby AI",
+        "description": "Neúspěšná volání podle kódu chyby."
+      },
+      "jarvis_files": {
+        "name": "Soubory",
+        "description": "Přiložené soubory podle typu."
+      },
+      "jarvis_file_size": {
+        "name": "Velikost souborů",
+        "description": "Medián a p90 velikosti v kB."
+      },
+      "jarvis_files_rejected": {
+        "name": "Odmítnuté soubory",
+        "description": "Odmítnuté soubory podle důvodu."
+      },
+      "proactive_reactions": {
+        "name": "Proaktivní bubliny",
+        "description": "Zobrazeno, Udělat, Ukázat, Později, Zavřít."
+      },
+      "proactive_acceptance": {
+        "name": "Míra přijetí bublin",
+        "description": "Udělat / zobrazeno podle typu (shrnutí, návrh, otázka)."
+      },
+      "jarvis_auto_actions": {
+        "name": "Automatické akce",
+        "description": "Co Jarvis udělal sám."
+      },
+      "jarvis_auto_actions_undone": {
+        "name": "Vrácené akce",
+        "description": "Podíl automatických akcí, které uživatel vrátil."
+      },
+      "jarvis_answer_ratings": {
+        "name": "Hodnocení odpovědí",
+        "description": "Palec nahoru a dolů; měří se od kroku 11.5."
+      },
+      "ai_cap_users": {
+        "name": "Na stropu AI",
+        "description": "Podíl uživatelů Jarvise, kteří narazili na měsíční strop."
+      },
+      "users_by_mode": {
+        "name": "Hra / běžný režim",
+        "description": "Uživatelé podle režimu."
+      },
+      "mode_switches": {
+        "name": "Přepnutí režimu",
+        "description": "Přepnutí v nastavení podle cílového režimu."
+      },
+      "mode_switch_days": {
+        "name": "Kdy přepínají",
+        "description": "Medián dní od registrace k přepnutí režimu."
+      },
+      "level_distribution": {
+        "name": "Úrovně",
+        "description": "Uživatelé podle úrovně."
+      },
+      "xp_per_day": {
+        "name": "XP za den",
+        "description": "Udělené XP za den."
+      },
+      "xp_sources": {
+        "name": "Zdroje XP",
+        "description": "XP podle důvodu."
+      },
+      "chapters_completed": {
+        "name": "Kapitoly",
+        "description": "Dokončené kapitoly podle cesty a pořadí: kde se lidé zasekávají."
+      },
+      "unlock_days": {
+        "name": "Odemčení sekcí",
+        "description": "Medián dní od registrace k odemčení."
+      },
+      "achievements": {
+        "name": "Odznaky",
+        "description": "Kolik lidí má který odznak; nejvzácnější nahoře."
+      },
+      "streaks": {
+        "name": "Série",
+        "description": "Uživatelé podle délky série."
+      },
+      "streak_freezes": {
+        "name": "Zamrazení série",
+        "description": "Zatím se neměří: použité záchrany se neukládají."
+      },
+      "celebrations": {
+        "name": "Oslavy",
+        "description": "Zobrazené oslavy podle druhu."
+      },
+      "cost_breakdown": {
+        "name": "Náklady",
+        "description": "AI, Google Places (požadavky × cena) a e-maily (počet × cena) v USD a Kč."
+      },
+      "places_requests": {
+        "name": "Požadavky Google Places",
+        "description": "Požadavky za den."
+      },
+      "cost_per_active_user": {
+        "name": "Náklad na aktivního uživatele",
+        "description": "Všechny náklady období / aktivní uživatelé."
+      },
+      "margin_by_plan": {
+        "name": "Marže podle plánu",
+        "description": "Měsíční cena plánu proti nákladu na aktivního uživatele."
+      },
+      "trials": {
+        "name": "Zkušební období",
+        "description": "Běžící, končící tento týden, vypršelá a převedená na placený plán."
+      },
+      "plan_interest": {
+        "name": "Mám zájem",
+        "description": "Uživatelé, kteří klepli na zájem o plán."
+      },
+      "errors": {
+        "name": "Chyby",
+        "description": "Chyby serverových rout, úloh a prohlížeče za den."
+      },
+      "server_error_rate": {
+        "name": "Chybovost serveru",
+        "description": "Neúspěšná / všechna volání rout a funkcí."
+      },
+      "top_server_errors": {
+        "name": "Nejčastější chyby",
+        "description": "Chyby serveru podle kódu."
+      },
+      "route_latency": {
+        "name": "Latence rout",
+        "description": "p50 a p95 doby rout a funkcí."
+      },
+      "page_load": {
+        "name": "Načtení stránek",
+        "description": "p50 a p95 doby prvního načtení podle stránky."
+      },
+      "client_errors_by_page": {
+        "name": "Chyby v prohlížeči",
+        "description": "Chyby podle stránky."
+      },
+      "cron_runs": {
+        "name": "Naplánované úlohy",
+        "description": "Poslední běh, výsledek, doba a selhání za 7 dní."
+      },
+      "integration_errors": {
+        "name": "Chyby integrací",
+        "description": "Neúspěšná volání podle routy nebo funkce (Places, Fakturoid, Resend, Anthropic…)."
+      },
+      "feature_requests": {
+        "name": "Nápady od uživatelů",
+        "description": "Nápady podle stavu."
+      },
+      "nps": {
+        "name": "NPS",
+        "description": "Otázka na doporučení po 7 dnech; měří se od kroku 11.5."
+      }
+    }
   }
 }

@@ -3283,5 +3283,640 @@
       "workerText": "This account's trial has ended. You can see all the data; new things can be created once the owner chooses a plan."
     },
     "readOnlyError": "Your trial has ended. Choose a plan to carry on."
+  },
+  "metrics": {
+    "categories": {
+      "growth": "Growth",
+      "activation": "Activation",
+      "retention": "Retention",
+      "features": "Features",
+      "ai": "AI and Jarvis",
+      "game": "Game",
+      "costs": "Costs",
+      "health": "Health",
+      "feedback": "Feedback"
+    },
+    "items": {
+      "signups": {
+        "name": "Sign-ups",
+        "description": "New accounts per day."
+      },
+      "users_total": {
+        "name": "Total users",
+        "description": "All accounts at the end of each day, cumulative."
+      },
+      "waitlist": {
+        "name": "Waitlist",
+        "description": "Sign-ups, confirmations by link, confirmation rate and how many confirmed people have an account."
+      },
+      "dau": {
+        "name": "DAU",
+        "description": "Users with at least one meaningful action that day. Signing in or viewing a page does not count."
+      },
+      "wau": {
+        "name": "WAU",
+        "description": "Active users in the last 7 days."
+      },
+      "mau": {
+        "name": "MAU",
+        "description": "Active users in the last 30 days."
+      },
+      "stickiness": {
+        "name": "Stickiness",
+        "description": "DAU / MAU: how much of the monthly active base comes back every day."
+      },
+      "new_active": {
+        "name": "New active",
+        "description": "Active users for whom it is their first active day ever."
+      },
+      "returning_active": {
+        "name": "Returning active",
+        "description": "Active users who were active before."
+      },
+      "users_by_plan": {
+        "name": "Users by plan",
+        "description": "Beta, trial, Solo, Pro, Team. A worker has their owner's plan."
+      },
+      "users_by_industry": {
+        "name": "Users by industry",
+        "description": "The industry chosen in onboarding."
+      },
+      "users_by_locale": {
+        "name": "Users by language",
+        "description": "The app language from settings."
+      },
+      "users_by_country": {
+        "name": "Users by country",
+        "description": "The country from settings."
+      },
+      "users_by_role": {
+        "name": "Users by role",
+        "description": "Owners and workers."
+      },
+      "users_by_device": {
+        "name": "Users by device",
+        "description": "The device of the latest session."
+      },
+      "users_by_browser": {
+        "name": "Users by browser",
+        "description": "The browser of the latest session."
+      },
+      "workers": {
+        "name": "Workers",
+        "description": "Active workers, how many of them were active, owners with workers and the average per owner."
+      },
+      "funnel": {
+        "name": "Activation funnel",
+        "description": "Sign-up → onboarding → first milestone → first completed task → first contact → first deal → first meeting → first win. Shares and median time between steps."
+      },
+      "time_to_value": {
+        "name": "Time to value",
+        "description": "Median hours from sign-up to the first booked meeting."
+      },
+      "onboarding_steps": {
+        "name": "Onboarding by step",
+        "description": "How many people finished each step; where they drop off."
+      },
+      "onboarding_completed": {
+        "name": "Onboarding completed",
+        "description": "Users who finished onboarding."
+      },
+      "onboarding_skipped_at": {
+        "name": "Onboarding skipped at",
+        "description": "The step where people skipped onboarding."
+      },
+      "tour_outcome": {
+        "name": "Jarvis's tour",
+        "description": "Completed or skipped."
+      },
+      "tour_skipped_at": {
+        "name": "Tour skipped at step",
+        "description": "The step where people skipped the tour."
+      },
+      "activation_rate": {
+        "name": "Activation rate",
+        "description": "Share of sign-ups active on at least 3 different days in 2 different sections within 7 days."
+      },
+      "cohorts": {
+        "name": "Cohorts",
+        "description": "Week of sign-up × share active in weeks 0 to 12."
+      },
+      "retention": {
+        "name": "Retention D1, D7, D30",
+        "description": "Share of sign-ups active exactly 1, 7 and 30 days after signing up."
+      },
+      "retention_d1": {
+        "name": "D1 retention",
+        "description": "Active the day after signing up."
+      },
+      "retention_d7": {
+        "name": "D7 retention",
+        "description": "Active on day 7 after signing up."
+      },
+      "retention_d30": {
+        "name": "D30 retention",
+        "description": "Active on day 30 after signing up."
+      },
+      "churned": {
+        "name": "Churned",
+        "description": "Active before, no action in the last 14 days."
+      },
+      "sessions": {
+        "name": "Sessions",
+        "description": "Sessions per day."
+      },
+      "app_minutes": {
+        "name": "Time in the app",
+        "description": "Minutes in the app per day, everyone together."
+      },
+      "session_stats": {
+        "name": "Sessions per user",
+        "description": "Sessions per user per day and week, session length (median, p90) and time in the app per day."
+      },
+      "active_days_per_week": {
+        "name": "Active days per week",
+        "description": "Distribution of 1 to 7 active days a week."
+      },
+      "usage_heatmap": {
+        "name": "When people use the app",
+        "description": "Actions by weekday and hour."
+      },
+      "returns_from_email": {
+        "name": "Returns from e-mail",
+        "description": "Users who opened the app from a link in an e-mail."
+      },
+      "returns_from_jarvis": {
+        "name": "Reactions to Jarvis's bubble",
+        "description": "Users by their reaction to a proactive bubble."
+      },
+      "feature_adoption": {
+        "name": "Section adoption",
+        "description": "For each section the share of active users who used it, actions and actions per user."
+      },
+      "milestones_created": {
+        "name": "Milestones created",
+        "description": "Custom milestones from the form and onboarding."
+      },
+      "milestones_completed": {
+        "name": "Milestones completed",
+        "description": "From a path chapter and custom."
+      },
+      "milestone_completion_rate": {
+        "name": "Milestone completion rate",
+        "description": "Completed / created milestones."
+      },
+      "milestone_days_to_complete": {
+        "name": "Time to complete a milestone",
+        "description": "Median and p90 days from creation to completion."
+      },
+      "tasks_created": {
+        "name": "Tasks created",
+        "description": "Tasks and subtasks."
+      },
+      "tasks_completed": {
+        "name": "Tasks completed",
+        "description": "Tasks and subtasks."
+      },
+      "task_tree_depth": {
+        "name": "Task tree depth",
+        "description": "New tasks by depth (0 = top-level task)."
+      },
+      "milestone_views": {
+        "name": "Milestone views",
+        "description": "List, Map, Path."
+      },
+      "milestone_reward_share": {
+        "name": "Reward filled in",
+        "description": "New milestones with and without a reward."
+      },
+      "milestone_reviews": {
+        "name": "AI milestone reviews",
+        "description": "Milestone reviews requested from Jarvis."
+      },
+      "deals_created": {
+        "name": "Deals created",
+        "description": "New deals in the pipeline."
+      },
+      "deal_moves": {
+        "name": "Deal moves",
+        "description": "Moves between stages."
+      },
+      "deals_won": {
+        "name": "Deals won",
+        "description": "Won deals."
+      },
+      "deals_lost": {
+        "name": "Deals lost",
+        "description": "Lost deals."
+      },
+      "win_rate": {
+        "name": "Win rate",
+        "description": "Wins / (wins + losses)."
+      },
+      "deal_value": {
+        "name": "Deal value by currency",
+        "description": "Count, total and average value of created, won and lost deals, each currency separately."
+      },
+      "hours_in_stage": {
+        "name": "Time in stage",
+        "description": "Median and p90 hours a deal spent in a stage before it moved."
+      },
+      "stages_customized": {
+        "name": "Customised stages",
+        "description": "Users who edited the pipeline's stages."
+      },
+      "reengage_used": {
+        "name": "Re-engage",
+        "description": "Users who turned on the re-engage filter."
+      },
+      "contacts_added": {
+        "name": "Contacts added",
+        "description": "Manual, generated, imported."
+      },
+      "contact_moves": {
+        "name": "Contact moves",
+        "description": "Moves between tables."
+      },
+      "contact_tables_created": {
+        "name": "Custom tables",
+        "description": "Custom contact tables created."
+      },
+      "contact_fields_created": {
+        "name": "Custom fields",
+        "description": "Table fields created."
+      },
+      "contact_email_filled": {
+        "name": "E-mail filled in",
+        "description": "Share of new contacts with an e-mail."
+      },
+      "contact_phone_filled": {
+        "name": "Phone filled in",
+        "description": "Share of new contacts with a phone."
+      },
+      "contact_website_filled": {
+        "name": "Website filled in",
+        "description": "Share of new contacts with a website."
+      },
+      "duplicates_caught": {
+        "name": "Duplicates caught",
+        "description": "Duplicate contact warnings by match."
+      },
+      "activities_logged": {
+        "name": "Activities logged",
+        "description": "Contact activities by type."
+      },
+      "generation_batches": {
+        "name": "Generation batches",
+        "description": "Presses of Generate."
+      },
+      "generation_requested": {
+        "name": "Contacts requested",
+        "description": "How many contacts people asked for."
+      },
+      "generation_saved": {
+        "name": "Contacts saved",
+        "description": "How many generated contacts were saved."
+      },
+      "generation_duplicates": {
+        "name": "Duplicates when generating",
+        "description": "Results skipped as duplicates."
+      },
+      "generation_errors": {
+        "name": "Generation errors",
+        "description": "Failed Google requests by error code."
+      },
+      "generation_error_rate": {
+        "name": "Generation error rate",
+        "description": "Failed / all Google Places requests."
+      },
+      "generation_daily_cap": {
+        "name": "At the daily cap",
+        "description": "Share of people generating who hit the daily cap."
+      },
+      "generation_monthly_cap": {
+        "name": "At the monthly cap",
+        "description": "Share of people generating who hit the monthly cap."
+      },
+      "generation_keywords": {
+        "name": "Most searched industries",
+        "description": "Top 20 normalised keywords, not linked to anyone."
+      },
+      "call_time": {
+        "name": "Hours of calling",
+        "description": "Timer hours in total and per caller, booked meetings and meetings per hour of calling."
+      },
+      "timer_sessions": {
+        "name": "Timer sessions",
+        "description": "Timer starts."
+      },
+      "timer_auto_pauses": {
+        "name": "Automatic pauses",
+        "description": "Share of pauses where the timer had stopped itself after 15 idle minutes."
+      },
+      "contacts_reached": {
+        "name": "Contacts reached",
+        "description": "Moves out of Unreached."
+      },
+      "reached_to_meeting": {
+        "name": "Reached → meeting",
+        "description": "Share of reached contacts that ended with a booked meeting."
+      },
+      "reached_to_failed": {
+        "name": "Reached → unsuccessful",
+        "description": "Unsuccessful calls by reason."
+      },
+      "meetings_per_call_hour": {
+        "name": "Meetings per hour of calling",
+        "description": "Booked meetings / timer hours."
+      },
+      "calendar_events": {
+        "name": "Calendar events",
+        "description": "New events by type."
+      },
+      "google_calendar_connected": {
+        "name": "Google Calendar connected",
+        "description": "Not measured yet: the Google Calendar connection does not exist yet."
+      },
+      "calendar_sync_errors": {
+        "name": "Sync errors",
+        "description": "Not measured yet: the Google Calendar connection does not exist yet."
+      },
+      "transactions": {
+        "name": "Transactions",
+        "description": "New income and expenses."
+      },
+      "finance_value": {
+        "name": "Finance by currency",
+        "description": "Income, expenses and issued invoices, each currency separately."
+      },
+      "invoices_issued": {
+        "name": "Invoices issued",
+        "description": "Invoices issued in the app."
+      },
+      "fakturoid_connected": {
+        "name": "Fakturoid connected",
+        "description": "Accounts with Fakturoid connected."
+      },
+      "recurring_payments": {
+        "name": "Recurring payments",
+        "description": "Newly set up recurring payments."
+      },
+      "worker_invites": {
+        "name": "Worker invitations",
+        "description": "Sent, accepted and expired invitations."
+      },
+      "worker_tasks_assigned": {
+        "name": "Tasks assigned to workers",
+        "description": "New tasks for workers."
+      },
+      "worker_tasks_done": {
+        "name": "Worker tasks done",
+        "description": "Worker tasks marked done."
+      },
+      "worker_earnings_approved": {
+        "name": "Earnings approved",
+        "description": "Approvals of workers' earnings."
+      },
+      "workers_per_owner": {
+        "name": "Workers per owner",
+        "description": "Owners by number of active workers."
+      },
+      "searches": {
+        "name": "Searches",
+        "description": "Searches performed."
+      },
+      "search_results_opened": {
+        "name": "Results opened",
+        "description": "Opened search results by type."
+      },
+      "search_no_results": {
+        "name": "Searches without results",
+        "description": "Share of searches that found nothing."
+      },
+      "search_opened_via": {
+        "name": "⌘K vs. click",
+        "description": "How people open search."
+      },
+      "search_quick_actions": {
+        "name": "Quick actions",
+        "description": "Quick actions used from search."
+      },
+      "emails_sent": {
+        "name": "E-mails sent",
+        "description": "E-mails sent from the app."
+      },
+      "email_drafts_requested": {
+        "name": "AI drafts requested",
+        "description": "E-mail drafts requested from Jarvis."
+      },
+      "email_drafts_used": {
+        "name": "AI drafts used",
+        "description": "Sent e-mails based on an AI draft."
+      },
+      "settings_currency": {
+        "name": "Currency",
+        "description": "Users by chosen currency."
+      },
+      "settings_theme": {
+        "name": "Theme",
+        "description": "Users by colour theme."
+      },
+      "settings_animations": {
+        "name": "Animations",
+        "description": "Animations on and off."
+      },
+      "settings_sounds": {
+        "name": "Sounds",
+        "description": "Sounds on and off."
+      },
+      "settings_jarvis_proactive": {
+        "name": "Jarvis's initiative",
+        "description": "Proactive messages on and off."
+      },
+      "ai_calls": {
+        "name": "AI calls",
+        "description": "Model calls per day."
+      },
+      "ai_by_feature": {
+        "name": "AI by feature",
+        "description": "Calls, tokens, cost, latency and errors by feature (chat, milestone review, watch…)."
+      },
+      "ai_by_model": {
+        "name": "AI by model",
+        "description": "Calls, tokens, cost and latency by model."
+      },
+      "ai_tokens": {
+        "name": "Tokens",
+        "description": "Input, cache read, cache write and output; cache hit rate."
+      },
+      "ai_cost": {
+        "name": "AI cost",
+        "description": "USD per day from ai_usage."
+      },
+      "ai_cost_per_active_user": {
+        "name": "AI per active user",
+        "description": "AI cost of the period / active users."
+      },
+      "ai_top_users": {
+        "name": "Most expensive users",
+        "description": "The 10 accounts with the highest AI cost, identifier and plan only."
+      },
+      "jarvis_conversations": {
+        "name": "Conversations with Jarvis",
+        "description": "Conversations, messages per user and median messages per conversation."
+      },
+      "ai_errors": {
+        "name": "AI errors",
+        "description": "Failed calls by error code."
+      },
+      "jarvis_files": {
+        "name": "Files",
+        "description": "Attached files by type."
+      },
+      "jarvis_file_size": {
+        "name": "File size",
+        "description": "Median and p90 size in kB."
+      },
+      "jarvis_files_rejected": {
+        "name": "Rejected files",
+        "description": "Rejected files by reason."
+      },
+      "proactive_reactions": {
+        "name": "Proactive bubbles",
+        "description": "Shown, Do, Show, Later, Close."
+      },
+      "proactive_acceptance": {
+        "name": "Bubble acceptance",
+        "description": "Do / shown by type (briefing, suggestion, question)."
+      },
+      "jarvis_auto_actions": {
+        "name": "Automatic actions",
+        "description": "What Jarvis did on his own."
+      },
+      "jarvis_auto_actions_undone": {
+        "name": "Undone actions",
+        "description": "Share of automatic actions the user undid."
+      },
+      "jarvis_answer_ratings": {
+        "name": "Answer ratings",
+        "description": "Thumbs up and down; measured from step 11.5."
+      },
+      "ai_cap_users": {
+        "name": "At the AI cap",
+        "description": "Share of Jarvis users who hit the monthly cap."
+      },
+      "users_by_mode": {
+        "name": "Game / tool mode",
+        "description": "Users by mode."
+      },
+      "mode_switches": {
+        "name": "Mode switches",
+        "description": "Switches in settings by target mode."
+      },
+      "mode_switch_days": {
+        "name": "When people switch",
+        "description": "Median days from sign-up to switching mode."
+      },
+      "level_distribution": {
+        "name": "Levels",
+        "description": "Users by level."
+      },
+      "xp_per_day": {
+        "name": "XP per day",
+        "description": "XP awarded per day."
+      },
+      "xp_sources": {
+        "name": "XP sources",
+        "description": "XP by reason."
+      },
+      "chapters_completed": {
+        "name": "Chapters",
+        "description": "Completed chapters by path and position: where people get stuck."
+      },
+      "unlock_days": {
+        "name": "Section unlocks",
+        "description": "Median days from sign-up to unlock."
+      },
+      "achievements": {
+        "name": "Badges",
+        "description": "How many people have each badge; the rarest first."
+      },
+      "streaks": {
+        "name": "Streaks",
+        "description": "Users by streak length."
+      },
+      "streak_freezes": {
+        "name": "Streak freezes",
+        "description": "Not measured yet: used freezes are not stored."
+      },
+      "celebrations": {
+        "name": "Celebrations",
+        "description": "Celebrations shown by kind."
+      },
+      "cost_breakdown": {
+        "name": "Costs",
+        "description": "AI, Google Places (requests × price) and e-mails (count × price) in USD and CZK."
+      },
+      "places_requests": {
+        "name": "Google Places requests",
+        "description": "Requests per day."
+      },
+      "cost_per_active_user": {
+        "name": "Cost per active user",
+        "description": "All costs of the period / active users."
+      },
+      "margin_by_plan": {
+        "name": "Margin by plan",
+        "description": "The plan's monthly price against the cost per active user."
+      },
+      "trials": {
+        "name": "Trials",
+        "description": "Running, ending this week, expired and converted to a paid plan."
+      },
+      "plan_interest": {
+        "name": "Interested",
+        "description": "Users who tapped interest in a plan."
+      },
+      "errors": {
+        "name": "Errors",
+        "description": "Errors of server routes, jobs and the browser per day."
+      },
+      "server_error_rate": {
+        "name": "Server error rate",
+        "description": "Failed / all calls of routes and functions."
+      },
+      "top_server_errors": {
+        "name": "Top errors",
+        "description": "Server errors by code."
+      },
+      "route_latency": {
+        "name": "Route latency",
+        "description": "p50 and p95 duration of routes and functions."
+      },
+      "page_load": {
+        "name": "Page load",
+        "description": "p50 and p95 of the first load by page."
+      },
+      "client_errors_by_page": {
+        "name": "Browser errors",
+        "description": "Errors by page."
+      },
+      "cron_runs": {
+        "name": "Scheduled jobs",
+        "description": "Last run, result, duration and failures in 7 days."
+      },
+      "integration_errors": {
+        "name": "Integration errors",
+        "description": "Failed calls by route or function (Places, Fakturoid, Resend, Anthropic…)."
+      },
+      "feature_requests": {
+        "name": "Ideas from users",
+        "description": "Ideas by status."
+      },
+      "nps": {
+        "name": "NPS",
+        "description": "The recommendation question after 7 days; measured from step 11.5."
+      }
+    }
   }
 }

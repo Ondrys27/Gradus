@@ -116,6 +116,7 @@ const CRON_JOBS = [
   "jarvis_watch",
   "jarvis_briefing",
   "analytics_retention",
+  "metrics_daily",
 ] as const;
 const FILE_ERRORS = [
   "fileType",

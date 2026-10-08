@@ -128,6 +128,24 @@ export type Database = {
           },
         ]
       }
+      analytics_event_catalog: {
+        Row: {
+          active: boolean
+          event: string
+          section: string
+        }
+        Insert: {
+          active: boolean
+          event: string
+          section: string
+        }
+        Update: {
+          active?: boolean
+          event?: string
+          section?: string
+        }
+        Relationships: []
+      }
       analytics_events: {
         Row: {
           created_at: string
@@ -1194,6 +1212,30 @@ export type Database = {
             referencedColumns: ["id", "user_id"]
           },
         ]
+      }
+      metrics_daily: {
+        Row: {
+          computed_at: string
+          date: string
+          metric_key: string
+          segment: Json
+          value: number
+        }
+        Insert: {
+          computed_at?: string
+          date: string
+          metric_key: string
+          segment?: Json
+          value: number
+        }
+        Update: {
+          computed_at?: string
+          date?: string
+          metric_key?: string
+          segment?: Json
+          value?: number
+        }
+        Relationships: []
       }
       milestones: {
         Row: {
@@ -2849,6 +2891,454 @@ export type Database = {
           meetings: number
         }[]
       }
+      metric_activation: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          activated: number
+          eligible: number
+          pct: number
+          signups: number
+        }[]
+      }
+      metric_active_days: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          days: number
+          user_weeks: number
+        }[]
+      }
+      metric_active_events: { Args: never; Returns: string[] }
+      metric_adoption: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          actions: number
+          actions_per_user: number
+          active_users: number
+          pct: number
+          section: string
+          users: number
+        }[]
+      }
+      metric_ai_top_users: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _limit?: number
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          calls: number
+          cost_usd: number
+          plan: string
+          user_id: string
+        }[]
+      }
+      metric_ai_usage: {
+        Args: {
+          _by?: string
+          _from: string
+          _include_internal?: boolean
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          cache_read_tokens: number
+          cache_write_tokens: number
+          calls: number
+          cost_usd: number
+          failed: number
+          input_tokens: number
+          key: string
+          output_tokens: number
+          p50_ms: number
+          p95_ms: number
+          users: number
+        }[]
+      }
+      metric_call_time: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          callers: number
+          hours: number
+          hours_per_caller: number
+          meetings: number
+          meetings_per_hour: number
+        }[]
+      }
+      metric_check_event: { Args: { _event: string }; Returns: undefined }
+      metric_check_prop: { Args: { _prop: string }; Returns: undefined }
+      metric_check_range: {
+        Args: { _from: string; _to: string }
+        Returns: undefined
+      }
+      metric_check_segment: { Args: { _segment: Json }; Returns: undefined }
+      metric_cohorts: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _segment?: Json
+          _to: string
+          _tz?: string
+          _weeks?: number
+        }
+        Returns: {
+          active_users: number
+          cohort_size: number
+          cohort_week: string
+          pct: number
+          week: number
+        }[]
+      }
+      metric_cost_inputs: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          active_users: number
+          ai_calls: number
+          ai_cost_usd: number
+          emails_sent: number
+          places_requests: number
+          plan: string
+          users: number
+        }[]
+      }
+      metric_cron_runs: {
+        Args: never
+        Returns: {
+          failures_7d: number
+          job: string
+          last_duration_ms: number
+          last_ok: boolean
+          last_run_at: string
+          runs_7d: number
+        }[]
+      }
+      metric_daily_keys: {
+        Args: never
+        Returns: {
+          device: boolean
+          metric_key: string
+          segmentable: boolean
+        }[]
+      }
+      metric_daily_value: {
+        Args: {
+          _day: string
+          _device?: string
+          _metric: string
+          _tz: string
+          _users: string[]
+        }
+        Returns: number
+      }
+      metric_day_start: { Args: { _day: string; _tz: string }; Returns: string }
+      metric_distribution: {
+        Args: {
+          _include_internal?: boolean
+          _kind: string
+          _segment?: Json
+          _tz?: string
+        }
+        Returns: {
+          key: string
+          users: number
+          value: number
+        }[]
+      }
+      metric_event_breakdown: {
+        Args: {
+          _by: string
+          _calc: string
+          _event: string
+          _filter?: Json
+          _from: string
+          _include_internal?: boolean
+          _limit?: number
+          _prop?: string
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          key: string
+          value: number
+        }[]
+      }
+      metric_event_key: {
+        Args: {
+          _by: string
+          _device: string
+          _locale: string
+          _mode: string
+          _plan: string
+          _props: Json
+        }
+        Returns: string
+      }
+      metric_event_number: {
+        Args: {
+          _created_at: string
+          _prop: string
+          _props: Json
+          _user: string
+        }
+        Returns: number
+      }
+      metric_event_percentiles: {
+        Args: {
+          _by?: string
+          _event: string
+          _filter?: Json
+          _from: string
+          _include_internal?: boolean
+          _prop: string
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          average: number
+          key: string
+          n: number
+          p50: number
+          p90: number
+          p95: number
+        }[]
+      }
+      metric_event_series: {
+        Args: {
+          _calc: string
+          _event: string
+          _filter?: Json
+          _from: string
+          _grain?: string
+          _include_internal?: boolean
+          _prop?: string
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          bucket: string
+          value: number
+        }[]
+      }
+      metric_funnel: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          median_hours_from_previous: number
+          median_hours_from_start: number
+          pct_of_previous: number
+          pct_of_start: number
+          step: number
+          step_key: string
+          users: number
+        }[]
+      }
+      metric_generation_keywords: {
+        Args: { _from: string; _limit?: number; _to: string }
+        Returns: {
+          keyword: string
+          searches: number
+        }[]
+      }
+      metric_jarvis_conversations: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          conversations: number
+          median_messages_per_conversation: number
+          messages_per_user: number
+          user_messages: number
+          users: number
+        }[]
+      }
+      metric_money_by_currency: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          average: number
+          currency: string
+          items: number
+          metric: string
+          total: number
+        }[]
+      }
+      metric_precomputed_segments: { Args: never; Returns: Json[] }
+      metric_retention: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          day_n: number
+          eligible: number
+          pct: number
+          retained: number
+        }[]
+      }
+      metric_segment_has_user_keys: {
+        Args: { _segment: Json }
+        Returns: boolean
+      }
+      metric_segment_key: {
+        Args: { _include_internal: boolean; _segment: Json }
+        Returns: Json
+      }
+      metric_series: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _metrics: string[]
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          day: string
+          metric_key: string
+          value: number
+        }[]
+      }
+      metric_sessions: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          median_minutes: number
+          minutes_per_user_day: number
+          p90_minutes: number
+          sessions: number
+          sessions_per_user_day: number
+          sessions_per_user_week: number
+          users: number
+        }[]
+      }
+      metric_trials: {
+        Args: { _include_internal?: boolean; _tz?: string }
+        Returns: {
+          converted: number
+          ending_this_week: number
+          expired: number
+          running: number
+        }[]
+      }
+      metric_usage_heatmap: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          events: number
+          hour: number
+          users: number
+          weekday: number
+        }[]
+      }
+      metric_user_dims: {
+        Args: { _tz?: string }
+        Returns: {
+          country: string
+          industry: string
+          is_internal: boolean
+          locale: string
+          mode: string
+          plan: string
+          role: string
+          signed_up_at: string
+          signup_week: string
+          user_id: string
+        }[]
+      }
+      metric_users: {
+        Args: { _include_internal?: boolean; _segment?: Json; _tz?: string }
+        Returns: string[]
+      }
+      metric_waitlist: {
+        Args: { _from: string; _to: string; _tz?: string }
+        Returns: {
+          confirm_rate: number
+          confirmed: number
+          converted: number
+          joined: number
+        }[]
+      }
+      metric_workers: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          active_workers: number
+          invites_accepted: number
+          invites_expired: number
+          invites_sent: number
+          owners_with_workers: number
+          workers: number
+          workers_per_owner: number
+        }[]
+      }
+      metrics_timezone: { Args: never; Returns: string }
       move_contact: {
         Args: { _answers?: Json; _contact_id: string; _to_table_id: string }
         Returns: {
@@ -3002,6 +3492,7 @@ export type Database = {
         Returns: string
       }
       refresh_call_time_stats: { Args: never; Returns: number }
+      refresh_metrics_daily: { Args: { _day: string }; Returns: number }
       remove_contact_table: {
         Args: { _move_to?: string; _table_id: string }
         Returns: undefined

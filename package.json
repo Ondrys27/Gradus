@@ -14,7 +14,8 @@
     "db:types": "supabase gen types typescript --linked > src/types/database.ts.tmp && mv src/types/database.ts.tmp src/types/database.ts",
     "verify:workspace": "bun scripts/verify-workspace-rls.ts",
     "demo:seed": "bun scripts/demo-seed.ts",
-    "screenshots": "bun scripts/screenshots.ts"
+    "screenshots": "bun scripts/screenshots.ts",
+    "metrics:backfill": "bun scripts/metrics-backfill.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",
