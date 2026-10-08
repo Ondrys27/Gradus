@@ -69,6 +69,7 @@ export type UserDetail = {
   role: string | null;
   isInternal: boolean;
   signedUpAt: string;
+  lastActiveAt: string | null;
   pathKey: string | null;
   seenLevel: number | null;
   activeDays30: number;
@@ -98,6 +99,7 @@ export async function loadUserDetail(userId: string): Promise<UserDetail | null>
     role: (d.role as string) ?? null,
     isInternal: Boolean(d.is_internal),
     signedUpAt: String(d.signed_up_at),
+    lastActiveAt: (d.last_active_at as string) ?? null,
     pathKey: (d.path_key as string) ?? null,
     seenLevel: num(d.seen_level),
     activeDays30: num(d.active_days_30) ?? 0,

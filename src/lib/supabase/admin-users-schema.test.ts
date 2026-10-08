@@ -137,6 +137,7 @@ describe("metric_admin_user_detail", () => {
     expect(d.plan).toBeTruthy();
     expect(d.feature_requests).toBe(1);
     expect(d.nps_score).toBe(9);
+    expect(d.last_active_at).toBeTruthy();
     expect((d.ai as { calls: number }).calls).toBe(1);
     expect(Array.isArray(d.timeline)).toBe(true);
     expect((d.timeline as unknown[]).length).toBe(2);

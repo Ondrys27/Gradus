@@ -57,6 +57,10 @@ export default async function AdminUserDetailPage({ params }: Props) {
           value={t.has(`status.${detail.status}`) ? t(`status.${detail.status}`) : detail.status}
         />
         <Fact label={t("columns.signedUp")} value={formatCalendarDate(detail.signedUpAt.slice(0, 10), ADMIN_FORMAT_SETTINGS)} />
+        <Fact
+          label={t("columns.lastActive")}
+          value={detail.lastActiveAt ? formatDateTime(new Date(detail.lastActiveAt), ADMIN_FORMAT_SETTINGS) : "–"}
+        />
         <Fact label={t("industry")} value={industryLabel(detail.industry)} />
         <Fact label={t("mode")} value={label(tControls, "mode", detail.mode)} />
         <Fact label={t("level")} value={detail.seenLevel ? String(detail.seenLevel) : "–"} />
