@@ -90,6 +90,8 @@ export type NumberFormat = {
   /** ISO 4217 code for `style: "currency"`; defaults to the user's currency. */
   currency?: string;
   decimals?: number;
+  /** Always show the sign (except for zero), e.g. a change against last period. */
+  signed?: boolean;
 };
 
 export function formatNumber(
@@ -97,9 +99,10 @@ export function formatNumber(
   options: NumberFormat = {},
   settings: FormatSettings = DEFAULT_FORMAT_SETTINGS,
 ): string {
-  const { style = "decimal", currency, decimals = 0 } = options;
+  const { style = "decimal", currency, decimals = 0, signed = false } = options;
   return new Intl.NumberFormat(settings.numberLocale, {
     style,
+    signDisplay: signed ? "exceptZero" : "auto",
     currency: style === "currency" ? (currency ?? settings.currency) : undefined,
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
@@ -146,6 +149,20 @@ export function formatCalendarDate(
   settings: FormatSettings = DEFAULT_FORMAT_SETTINGS,
 ): string {
   return formatDateFns(isoDateToLocal(value), settings.dateFormat);
+}
+
+/**
+ * Day and month without the year, for chart axes, e.g. "8. 10." — in the
+ * number style of the settings, not the UI language.
+ */
+export function formatDayMonth(
+  value: IsoDate,
+  settings: FormatSettings = DEFAULT_FORMAT_SETTINGS,
+): string {
+  return new Intl.DateTimeFormat(settings.numberLocale, {
+    day: "numeric",
+    month: "numeric",
+  }).format(isoDateToLocal(value));
 }
 
 /** Day number inside a calendar grid. */

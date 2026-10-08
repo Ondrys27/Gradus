@@ -30,8 +30,8 @@ export type MetricParams = {
   /** Internal accounts count only when switched on in the administration. */
   includeInternal?: boolean;
   segment?: Segment;
-  /** Buckets of event series. */
-  grain?: "day" | "week" | "month";
+  /** Buckets of event series; `all` is one value for the whole range. */
+  grain?: "day" | "week" | "month" | "all";
   tz?: string;
 };
 
