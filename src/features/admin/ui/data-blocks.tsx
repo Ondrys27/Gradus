@@ -4,11 +4,11 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { DownloadIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { MetricUnit } from "@/lib/analytics/metrics";
 import { SEGMENT_VALUES } from "@/lib/analytics/metrics";
 import { countryName, formatCalendarDate, formatNumber, weekdayShortName } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { toCsv } from "../access";
+import type { TableData } from "../table";
 import { dropOff } from "../cohorts";
 import { ADMIN_FORMAT_SETTINGS, formatMetricValue } from "../format-metric";
 import { heat } from "../numbers";
@@ -383,43 +383,24 @@ export function FieldsGrid({ data }: { data: FieldsData }) {
 
 // --- Generic rows table ------------------------------------------------------------
 
-export type DataTableColumn<T> = {
-  key: string;
-  label: string;
-  align?: "left" | "right";
-  /** Renders the cell; the plain value also becomes the CSV cell unless `csv` is given. */
-  render: (row: T) => string;
-  /** The raw value for the CSV export, when it should differ from the rendered text. */
-  csv?: (row: T) => string | number | null;
-};
-
 /**
  * Any table of rows the registry returns as-is (a top-10 list, a cost
- * breakdown, a cron job's last run…). One export button, written to the
- * audit like a chart's.
+ * breakdown, a cron job's last run…). The page builds it on the server with
+ * `buildTable`, so only plain data crosses into this client component. One
+ * export button, written to the audit like a chart's.
  */
-export function DataTable<T>({
-  id,
-  columns,
-  rows,
-}: {
-  id: string;
-  columns: DataTableColumn<T>[];
-  rows: T[];
-}) {
+export function DataTable({ id, table }: { id: string; table: TableData }) {
   const tChart = useTranslations("admin.chart");
   const [exporting, setExporting] = useState(false);
   const [failed, setFailed] = useState(false);
-  if (rows.length === 0) return <AdminEmpty className="py-6" />;
+  if (table.rows.length === 0) return <AdminEmpty className="py-6" />;
 
   async function exportCsv() {
     setExporting(true);
     setFailed(false);
     try {
-      const header = columns.map((column) => column.key);
-      const body = rows.map((row) =>
-        columns.map((column) => (column.csv ? column.csv(row) : column.render(row))),
-      );
+      const header = table.columns.map((column) => column.key);
+      const body = table.rows.map((row) => row.csv);
       const blob = new Blob([toCsv(header, body)], { type: "text/csv;charset=utf-8" });
       // Imported lazily: a server action, pulled in only when the button is used.
       const { recordExport } = await import("../server/export-actions");
@@ -454,7 +435,7 @@ export function DataTable<T>({
         <table className="w-full min-w-[32rem] text-left text-sm">
           <thead className="text-xs text-ink-soft">
             <tr className="border-b border-line">
-              {columns.map((column) => (
+              {table.columns.map((column) => (
                 <th
                   key={column.key}
                   scope="col"
@@ -469,9 +450,9 @@ export function DataTable<T>({
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, index) => (
+            {table.rows.map((row, index) => (
               <tr key={index} className="border-b border-line last:border-0">
-                {columns.map((column) => (
+                {table.columns.map((column, cell) => (
                   <td
                     key={column.key}
                     className={cn(
@@ -479,7 +460,7 @@ export function DataTable<T>({
                       column.align === "right" && "text-right",
                     )}
                   >
-                    {column.render(row)}
+                    {row.cells[cell]}
                   </td>
                 ))}
               </tr>
@@ -489,9 +470,4 @@ export function DataTable<T>({
       </div>
     </div>
   );
-}
-
-/** A cell of a registry unit, formatted the same way a tile would. */
-export function dataCell(value: unknown, unit: MetricUnit, tUnits: ReturnType<typeof useTranslations>) {
-  return formatMetricValue(typeof value === "number" ? value : Number(value ?? NaN), unit, tUnits);
 }

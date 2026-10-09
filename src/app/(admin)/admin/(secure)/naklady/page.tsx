@@ -14,6 +14,7 @@ import {
 import { ADMIN_FORMAT_SETTINGS, formatMetricValue } from "@/features/admin/format-metric";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
 import { AdminCard, GridSkeleton, TilesSkeleton } from "@/features/admin/ui/blocks";
+import { buildTable } from "@/features/admin/table";
 import { BreakdownList, DataTable, FieldsGrid } from "@/features/admin/ui/data-blocks";
 import { TileGrid } from "@/features/admin/ui/metric-tile";
 import { formatNumber } from "@/lib/format";
@@ -85,8 +86,7 @@ async function Margin({ q }: { q: AdminQuery }) {
         {(rows) => (
           <DataTable
             id="costs.margin"
-            rows={rows}
-            columns={[
+            table={buildTable(rows, [
               { key: "plan", label: t("columns.plan"), render: (row) => row.plan },
               {
                 key: "price_czk",
@@ -119,7 +119,7 @@ async function Margin({ q }: { q: AdminQuery }) {
                     : formatMetricValue(row.marginShare * 100, "percent", tUnits),
                 csv: (row) => row.marginShare,
               },
-            ]}
+            ])}
           />
         )}
       </Show>

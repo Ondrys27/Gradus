@@ -15,6 +15,7 @@ import {
 import { AdminChart } from "@/features/admin/ui/admin-chart";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
 import { AdminCard, GridSkeleton, TilesSkeleton } from "@/features/admin/ui/blocks";
+import { buildTable } from "@/features/admin/table";
 import { BreakdownList, DataTable } from "@/features/admin/ui/data-blocks";
 import { ADMIN_FORMAT_SETTINGS, formatMetricValue } from "@/features/admin/format-metric";
 import { TileGrid } from "@/features/admin/ui/metric-tile";
@@ -108,10 +109,10 @@ async function Latency({ q }: { q: AdminQuery }) {
   return (
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
       <AdminCard title={tItems("route_latency.name")} description={tItems("route_latency.description")}>
-        <Show loaded={route}>{(rows) => <DataTable id="health.route_latency" rows={rows} columns={columns(t("columns.route"))} />}</Show>
+        <Show loaded={route}>{(rows) => <DataTable id="health.route_latency" table={buildTable(rows, columns(t("columns.route")))} />}</Show>
       </AdminCard>
       <AdminCard title={tItems("page_load.name")} description={tItems("page_load.description")}>
-        <Show loaded={page}>{(rows) => <DataTable id="health.page_load" rows={rows} columns={columns(t("columns.page"))} />}</Show>
+        <Show loaded={page}>{(rows) => <DataTable id="health.page_load" table={buildTable(rows, columns(t("columns.page")))} />}</Show>
       </AdminCard>
     </div>
   );
@@ -149,8 +150,7 @@ async function Cron({ q }: { q: AdminQuery }) {
         {(rows) => (
           <DataTable
             id="health.cron_runs"
-            rows={rows}
-            columns={[
+            table={buildTable(rows, [
               { key: "job", label: t("columns.job"), render: (row) => row.job },
               {
                 key: "last_run_at",
@@ -178,7 +178,7 @@ async function Cron({ q }: { q: AdminQuery }) {
                 render: (row) => String(row.failures7d ?? 0),
                 csv: (row) => row.failures7d,
               },
-            ]}
+            ])}
           />
         )}
       </Show>

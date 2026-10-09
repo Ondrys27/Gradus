@@ -25,6 +25,7 @@ import { ADMIN_PATH } from "@/features/admin/access";
 import { AdminChart } from "@/features/admin/ui/admin-chart";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
 import { AdminCard, CardSkeleton, GridSkeleton, TilesSkeleton } from "@/features/admin/ui/blocks";
+import { buildTable } from "@/features/admin/table";
 import { BreakdownList, DataTable, FieldsGrid } from "@/features/admin/ui/data-blocks";
 import { TileGrid } from "@/features/admin/ui/metric-tile";
 import { viewKey, viewQuery, parseAdminView } from "@/features/admin/view-state";
@@ -117,8 +118,7 @@ async function Adoption({ q }: { q: AdminQuery }) {
         {(rows) => (
           <DataTable
             id="features.adoption"
-            rows={rows}
-            columns={[
+            table={buildTable(rows, [
               {
                 key: "section",
                 label: t("columns.section"),
@@ -147,7 +147,7 @@ async function Adoption({ q }: { q: AdminQuery }) {
                   row.actionsPerUser === null ? tUnits("none") : row.actionsPerUser.toFixed(1),
                 csv: (row) => row.actionsPerUser,
               },
-            ]}
+            ])}
           />
         )}
       </Show>
@@ -213,8 +213,7 @@ async function SectionExtra({ q, section }: { q: AdminQuery; section: AnalyticsS
           >
             <DataTable
               id="features.milestone_days"
-              rows={rows}
-              columns={[
+              table={buildTable(rows, [
                 {
                   key: "key",
                   label: t("columns.group"),
@@ -227,7 +226,7 @@ async function SectionExtra({ q, section }: { q: AdminQuery; section: AnalyticsS
                   render: (row) => (row.p50 === null ? tUnits("none") : row.p50.toFixed(1)),
                   csv: (row) => row.p50,
                 },
-              ]}
+              ])}
             />
           </AdminCard>
         )}
@@ -255,8 +254,7 @@ async function SectionExtra({ q, section }: { q: AdminQuery; section: AnalyticsS
           >
             <DataTable
               id="features.generation_keywords"
-              rows={rows}
-              columns={[
+              table={buildTable(rows, [
                 { key: "keyword", label: t("columns.keyword"), render: (row) => row.keyword },
                 {
                   key: "searches",
@@ -265,7 +263,7 @@ async function SectionExtra({ q, section }: { q: AdminQuery; section: AnalyticsS
                   render: (row) => String(row.searches ?? 0),
                   csv: (row) => row.searches,
                 },
-              ]}
+              ])}
             />
           </AdminCard>
         )}
@@ -333,8 +331,7 @@ function MoneyTable({
     <AdminCard title={title}>
       <DataTable
         id={id}
-        rows={rows}
-        columns={[
+        table={buildTable(rows, [
           { key: "metric", label: t("columns.metric"), render: (row) => t(`moneyMetric.${row.metric}`) },
           { key: "currency", label: t("columns.currency"), render: (row) => row.currency },
           {
@@ -351,7 +348,7 @@ function MoneyTable({
             render: (row) => formatCurrency(row.total ?? 0, row.currency, settings),
             csv: (row) => row.total,
           },
-        ]}
+        ])}
       />
     </AdminCard>
   );

@@ -21,6 +21,7 @@ import {
 import { AdminChart } from "@/features/admin/ui/admin-chart";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
 import { AdminCard, GridSkeleton, TilesSkeleton } from "@/features/admin/ui/blocks";
+import { buildTable } from "@/features/admin/table";
 import { BreakdownList, DataTable, FieldsGrid } from "@/features/admin/ui/data-blocks";
 import { TileGrid } from "@/features/admin/ui/metric-tile";
 import { formatMetricValue } from "@/features/admin/format-metric";
@@ -147,10 +148,10 @@ async function Usage({ q }: { q: AdminQuery }) {
   return (
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
       <AdminCard title={tItems("ai_by_feature.name")} description={tItems("ai_by_feature.description")}>
-        <Show loaded={byFeature}>{(rows) => <DataTable id="ai.by_feature" rows={rows} columns={columns} />}</Show>
+        <Show loaded={byFeature}>{(rows) => <DataTable id="ai.by_feature" table={buildTable(rows, columns)} />}</Show>
       </AdminCard>
       <AdminCard title={tItems("ai_by_model.name")} description={tItems("ai_by_model.description")}>
-        <Show loaded={byModel}>{(rows) => <DataTable id="ai.by_model" rows={rows} columns={columns} />}</Show>
+        <Show loaded={byModel}>{(rows) => <DataTable id="ai.by_model" table={buildTable(rows, columns)} />}</Show>
       </AdminCard>
     </div>
   );
@@ -174,8 +175,7 @@ async function More({ q }: { q: AdminQuery }) {
           {(rows) => (
             <DataTable
               id="ai.errors"
-              rows={rows}
-              columns={[
+              table={buildTable(rows, [
                 { key: "key", label: t("columns.key"), render: (row) => row.key },
                 {
                   key: "calls",
@@ -184,7 +184,7 @@ async function More({ q }: { q: AdminQuery }) {
                   render: (row) => String(row.calls ?? 0),
                   csv: (row) => row.calls,
                 },
-              ]}
+              ])}
             />
           )}
         </Show>
@@ -218,8 +218,7 @@ async function TopUsers({ q }: { q: AdminQuery }) {
         {(rows) => (
           <DataTable
             id="ai.top_users"
-            rows={rows}
-            columns={[
+            table={buildTable(rows, [
               {
                 key: "user_id",
                 label: t("columns.user"),
@@ -240,7 +239,7 @@ async function TopUsers({ q }: { q: AdminQuery }) {
                 render: (row) => formatMetricValue(row.costUsd, "usd", tUnits),
                 csv: (row) => row.costUsd,
               },
-            ]}
+            ])}
           />
         )}
       </Show>

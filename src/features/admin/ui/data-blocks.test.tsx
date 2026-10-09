@@ -5,7 +5,8 @@ import { afterEach, describe, expect, it } from "vitest";
 import cs from "@/locales/cs.json";
 import en from "@/locales/en.json";
 import { heatmapGrid } from "../cohorts";
-import { BreakdownList, CohortTable, FieldsGrid, Funnel, UsageHeatmap } from "./data-blocks";
+import { buildTable } from "../table";
+import { BreakdownList, CohortTable, DataTable, FieldsGrid, Funnel, UsageHeatmap } from "./data-blocks";
 import { TileGrid } from "./metric-tile";
 
 afterEach(cleanup);
@@ -94,6 +95,24 @@ describe.each(["cs", "en"] as const)("admin blocks in %s", (locale) => {
       </>,
     );
     expect(screen.getByText("Beta")).toBeTruthy();
+  });
+
+  it("renders a table built on the server", () => {
+    renderIn(
+      locale,
+      <DataTable
+        id="test.table"
+        table={buildTable(
+          [{ job: "daily-stats", runs: 7 }],
+          [
+            { key: "job", label: "Job", render: (row) => row.job },
+            { key: "runs", label: "Runs", align: "right", render: (row) => `${row.runs}×` },
+          ],
+        )}
+      />,
+    );
+    expect(screen.getByText("daily-stats")).toBeTruthy();
+    expect(screen.getByText("7×").className).toContain("text-right");
   });
 
   it("explains an empty block instead of showing zeros", () => {

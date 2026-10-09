@@ -19,6 +19,7 @@ import {
 import { AdminChart } from "@/features/admin/ui/admin-chart";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
 import { AdminCard, CardSkeleton } from "@/features/admin/ui/blocks";
+import { buildTable } from "@/features/admin/table";
 import { DataTable } from "@/features/admin/ui/data-blocks";
 import { ExplorerControls } from "@/features/admin/ui/explorer-controls";
 import { viewKey } from "@/features/admin/view-state";
@@ -93,8 +94,7 @@ async function Result({ q, query }: { q: AdminQuery; query: ExplorerQuery }) {
             <AdminChart data={chart} title={query.event} />
             <DataTable
               id={`explorer.${query.event}`}
-              rows={chart.rows}
-              columns={[
+              table={buildTable(chart.rows, [
                 { key: "x", label: t("columns.period"), render: (row) => String(row.x) },
                 {
                   key: "value",
@@ -103,7 +103,7 @@ async function Result({ q, query }: { q: AdminQuery; query: ExplorerQuery }) {
                   render: (row) => (row.value === null ? "–" : String(row.value)),
                   csv: (row) => (typeof row.value === "number" ? row.value : null),
                 },
-              ]}
+              ])}
             />
           </div>
         )}
