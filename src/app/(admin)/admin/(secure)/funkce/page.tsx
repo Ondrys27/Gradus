@@ -51,9 +51,9 @@ export default async function AdminFeaturesPage({ searchParams }: Props) {
   const tab: AnalyticsSection = isSection(rawTab) ? rawTab : FEATURE_SECTIONS[0];
   const query = viewQuery(parseAdminView(params));
 
-  const [t, tShell] = await Promise.all([
+  const [t, tSections] = await Promise.all([
     getTranslations("admin.features"),
-    getTranslations("admin.shell"),
+    getTranslations("admin.users.sections"),
   ]);
 
   return (
@@ -81,7 +81,7 @@ export default async function AdminFeaturesPage({ searchParams }: Props) {
                 active ? "bg-violet/20 text-ink" : "text-ink-soft hover:bg-surface-hover hover:text-ink",
               )}
             >
-              {tShell(`nav.${section}`)}
+              {tSections(section)}
             </Link>
           );
         })}
@@ -105,11 +105,11 @@ function SectionSkeleton() {
 }
 
 async function Adoption({ q }: { q: AdminQuery }) {
-  const [loaded, t, tUnits, tShell] = await Promise.all([
+  const [loaded, t, tUnits, tSections] = await Promise.all([
     safe("feature adoption", () => featureAdoption(q)),
     getTranslations("admin.features"),
     getTranslations("admin.units"),
-    getTranslations("admin.shell"),
+    getTranslations("admin.users.sections"),
   ]);
   return (
     <AdminCard title={t("adoptionTitle")} description={t("adoptionDescription")}>
@@ -123,7 +123,7 @@ async function Adoption({ q }: { q: AdminQuery }) {
                 key: "section",
                 label: t("columns.section"),
                 render: (row) =>
-                  tShell.has(`nav.${row.section}`) ? tShell(`nav.${row.section}`) : row.section,
+                  tSections.has(row.section) ? tSections(row.section) : row.section,
               },
               {
                 key: "pct",
