@@ -60,8 +60,6 @@
   --animate-edge-shine: edge-shine 4.2s linear infinite;
   /* The live ring of an in-progress task: one slow turn of --ring-angle. */
   --animate-ring-spin: ring-spin 3.6s linear infinite;
-  /* Website headline: each word rises in; the delay is set per word. */
-  --animate-word-in: word-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 
   @keyframes shimmer {
     0% {
@@ -85,17 +83,6 @@
   @keyframes ring-spin {
     to {
       --ring-angle: 360deg;
-    }
-  }
-
-  @keyframes word-in {
-    from {
-      opacity: 0;
-      transform: translateY(0.35em);
-    }
-    to {
-      opacity: 1;
-      transform: none;
     }
   }
 
@@ -144,6 +131,10 @@
 @theme inline {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  /* The public website only: a grotesk with character for headlines and a
+     handwritten face for notes drawn onto screenshots (set in marketing-root). */
+  --font-display: var(--font-bricolage, var(--font-inter)), ui-sans-serif, system-ui, sans-serif;
+  --font-hand: var(--font-caveat, cursive), cursive;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-sidebar-ring: var(--sidebar-ring);

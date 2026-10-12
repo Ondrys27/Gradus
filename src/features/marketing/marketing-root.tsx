@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
+import { Bricolage_Grotesque, Caveat } from "next/font/google";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { IntlProvider } from "@/components/intl-provider";
 import { RootDocument } from "@/components/root-document";
@@ -8,10 +9,30 @@ import { APP_NAME } from "@/lib/constants";
 import type { SiteLocale } from "@/lib/routes";
 import { isPublicSignupEnabled } from "@/lib/signup";
 import { DEFAULT_THEME } from "@/lib/themes";
+import { cn } from "@/lib/utils";
 import { MarketingProviders } from "./marketing-providers";
 import { siteUrl } from "./seo";
 import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
+
+/*
+ * The website's own faces, downloaded at build time and served from our
+ * domain (next/font). Bricolage Grotesque carries the headlines: a grotesk
+ * with some character, tight at display sizes thanks to its optical size
+ * axis, and with Czech diacritics. Caveat is the handwriting of the notes
+ * drawn onto the screenshots. Body text stays in Inter, like the app.
+ */
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
+  subsets: ["latin", "latin-ext"],
+  axes: ["opsz"],
+  display: "swap",
+});
+const caveat = Caveat({
+  variable: "--font-caveat",
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
+});
 
 /**
  * The website shows no dates or times; a fixed zone only keeps the server and
@@ -35,7 +56,8 @@ export async function marketingRootMetadata(locale: SiteLocale): Promise<Metadat
 /**
  * Root of the public website in one language. The language comes from the
  * address via `setRequestLocale`, so every page under it can be generated
- * statically: no session, no cookies, the default theme.
+ * statically: no session, no cookies, the default theme. The backdrop is the
+ * bare canvas: the website has one light, in the hero, and nothing else.
  */
 export async function MarketingRoot({
   locale,
@@ -51,17 +73,19 @@ export async function MarketingRoot({
     <RootDocument
       lang={locale}
       theme={DEFAULT_THEME}
-      className="scroll-pt-24 scroll-smooth motion-reduce:scroll-auto"
+      backdrop="plain"
+      className={cn(
+        "scroll-pt-24 scroll-smooth motion-reduce:scroll-auto",
+        bricolage.variable,
+        caveat.variable,
+      )}
     >
-      {/* Without JavaScript, nothing may stay hidden waiting for its entrance. */}
-      <noscript>
-        <style>{"[data-reveal]{opacity:1!important;transform:none!important}"}</style>
-      </noscript>
       <IntlProvider locale={locale} messages={messages} timeZone={SITE_TIME_ZONE}>
         <MarketingProviders>
           <div className="flex min-h-dvh flex-col">
             <SiteHeader signupEnabled={isPublicSignupEnabled()} />
-            <main className="flex flex-1 flex-col">{children}</main>
+            {/* Screenshots run past the grid on purpose; the page itself never scrolls sideways. */}
+            <main className="flex flex-1 flex-col overflow-x-clip">{children}</main>
             <SiteFooter />
           </div>
         </MarketingProviders>

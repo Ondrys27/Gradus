@@ -12,19 +12,15 @@ import {
   type ScreenshotName,
 } from "./screenshots";
 
-const chrome = (
-  <div aria-hidden className="flex h-7 items-center gap-1.5 border-b border-line/60 px-3 md:h-9">
-    <span className="size-2.5 rounded-full bg-pink/70" />
-    <span className="size-2.5 rounded-full bg-gold/70" />
-    <span className="size-2.5 rounded-full bg-green/70" />
-  </div>
-);
+const frameClass =
+  "overflow-hidden rounded-xl border border-line-strong/60 bg-surface shadow-popover md:rounded-2xl";
 
 /**
- * A screenshot of the app in a window frame: the real image once
- * /public/screenshots has it, a drawn stand-in of the same size until then.
- * With `mobileName`, phones get their own, taller shot instead of a scaled
- * down desktop one (the hero and the Cold Calling feature use this).
+ * A screenshot of the app, plainly framed: a thin line and a deep shadow,
+ * no drawn window around it. The real image once /public/screenshots has
+ * it, a drawn stand-in of the same size until then. With `mobileName`,
+ * phones get their own, taller shot instead of a scaled down desktop one.
+ * `overlay` is drawn over the desktop shot only (the notes point at its details).
  */
 export function Screenshot({
   name,
@@ -33,6 +29,7 @@ export function Screenshot({
   priority = false,
   sizes,
   className,
+  overlay,
 }: {
   name: ScreenshotName;
   mobileName?: MobileScreenshotName;
@@ -41,55 +38,35 @@ export function Screenshot({
   priority?: boolean;
   sizes: string;
   className?: string;
+  overlay?: React.ReactNode;
 }) {
   const src = screenshotSrc(name);
-  const frameClass = cn(
-    "overflow-hidden rounded-2xl border border-line-strong/70 bg-surface shadow-glow-strong",
-    className,
+  const desktop = (
+    <div className={cn("relative", frameClass, mobileName && "hidden md:block", className)}>
+      {src ? (
+        <Image
+          src={src}
+          alt={alt}
+          width={SCREENSHOT_WIDTH}
+          height={SCREENSHOT_HEIGHT}
+          sizes={sizes}
+          priority={priority}
+          className="block h-auto w-full"
+        />
+      ) : (
+        <PreviewMock name={name} label={alt} />
+      )}
+      {overlay}
+    </div>
   );
 
-  if (!mobileName) {
-    return (
-      <div className={frameClass}>
-        {chrome}
-        {src ? (
-          <Image
-            src={src}
-            alt={alt}
-            width={SCREENSHOT_WIDTH}
-            height={SCREENSHOT_HEIGHT}
-            sizes={sizes}
-            priority={priority}
-            className="block h-auto w-full"
-          />
-        ) : (
-          <PreviewMock name={name} label={alt} />
-        )}
-      </div>
-    );
-  }
+  if (!mobileName) return desktop;
 
   const mobileSrc = mobileScreenshotSrc(mobileName);
   return (
     <>
-      <div className={cn(frameClass, "hidden md:block")}>
-        {chrome}
-        {src ? (
-          <Image
-            src={src}
-            alt={alt}
-            width={SCREENSHOT_WIDTH}
-            height={SCREENSHOT_HEIGHT}
-            sizes={sizes}
-            priority={priority}
-            className="block h-auto w-full"
-          />
-        ) : (
-          <PreviewMock name={name} label={alt} />
-        )}
-      </div>
-      <div className={cn(frameClass, "mx-auto block w-[min(78vw,320px)] md:hidden")}>
-        {chrome}
+      {desktop}
+      <div className={cn(frameClass, "mx-auto block w-[min(78vw,320px)] md:hidden", className)}>
         {mobileSrc ? (
           <Image
             src={mobileSrc}

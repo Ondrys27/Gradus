@@ -29,17 +29,20 @@ export function RootDocument({
   lang,
   theme,
   className,
+  backdrop = "app",
   children,
 }: {
   lang: string;
   theme: string;
   className?: string;
+  /** "app" draws the grid and the two glows; "plain" is the bare canvas (the public website). */
+  backdrop?: "app" | "plain";
   children: ReactNode;
 }) {
   return (
     <html lang={lang} data-theme={theme} className={cn("dark", inter.variable, className)}>
-      <body>
-        <Background />
+      <body className={backdrop === "plain" ? "bg-canvas" : undefined}>
+        {backdrop === "app" && <Background />}
         {children}
       </body>
     </html>

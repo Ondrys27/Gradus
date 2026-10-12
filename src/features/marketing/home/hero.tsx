@@ -3,13 +3,15 @@ import { getTranslations } from "next-intl/server";
 import { APP_NAME } from "@/lib/constants";
 import { homeAnchorId, type SiteLocale } from "@/lib/routes";
 import { SignupCta } from "../signup-cta";
+import { NoteList, NotesOverlay, type Note } from "./notes";
 import { HeroTilt } from "./scroll-effects";
 import { Screenshot } from "./screenshot";
-import { WordReveal, wordRevealEnd } from "./word-reveal";
 
-const SUBTITLE_STAGGER = 0.022;
-
-/** 1. The promise, the main button and the app itself right under it. */
+/**
+ * 1. The promise, one honest sentence about the problem, the button, and the
+ * app itself leaning back under it. The screenshot runs past the text column
+ * on the right on purpose; the only light on the page sits behind it.
+ */
 export async function Hero({
   locale,
   signupEnabled,
@@ -17,73 +19,70 @@ export async function Hero({
   locale: SiteLocale;
   signupEnabled: boolean;
 }) {
-  const t = await getTranslations({ locale, namespace: "marketing" });
-  const title = t("home.hero.title");
-  const subtitle = t("home.hero.subtitle", { appName: APP_NAME });
-  const subtitleStart = wordRevealEnd(title) + 0.1;
-  const actionsDelay = `${(wordRevealEnd(subtitle, subtitleStart, SUBTITLE_STAGGER) + 0.1).toFixed(2)}s`;
+  const t = await getTranslations({ locale, namespace: "marketing.home.hero" });
+  const tCta = await getTranslations({ locale, namespace: "marketing.cta" });
   const previewId = homeAnchorId(locale, "preview");
+  const notes: readonly Note[] = [
+    { text: t("notes.stalled"), at: [80, 42.5], label: [58, 70], align: "end", tilt: -2 },
+    { text: t("notes.streak"), at: [80.5, 4], label: [60, 11], align: "end", tilt: 1.5 },
+  ];
 
   return (
     <section
       aria-labelledby="hero-title"
-      className="relative mx-auto flex w-full max-w-6xl flex-col items-center px-4 pt-14 text-center md:px-8 md:pt-24"
+      className="relative mx-auto w-full max-w-6xl px-4 pt-8 md:px-8 md:pt-16"
     >
-      <p className="mb-6 inline-flex animate-word-in items-center gap-2 rounded-full border border-line bg-surface/70 px-3 py-1 text-sm text-ink-soft motion-reduce:animate-none">
-        <span
-          aria-hidden
-          className="size-2 rounded-full bg-teal shadow-[0_0_10px_var(--color-teal)]"
-        />
-        {t("home.hero.badge")}
-      </p>
-      <h1
-        id="hero-title"
-        className="max-w-4xl text-[2.6rem] leading-[1.05] font-bold tracking-tight text-balance text-ink sm:text-6xl md:text-7xl"
-      >
-        <WordReveal text={title} />
-      </h1>
-      <p className="mt-6 max-w-2xl text-lg text-pretty text-ink-soft md:text-xl">
-        <WordReveal text={subtitle} startDelay={subtitleStart} stagger={SUBTITLE_STAGGER} />
-      </p>
-
-      <div
-        className="mt-10 flex animate-word-in flex-col items-center gap-3 motion-reduce:animate-none"
-        style={{ animationDelay: actionsDelay }}
-      >
-        <SignupCta
-          signupEnabled={signupEnabled}
-          source="hero"
-          long
-          size="lg"
-          className="h-13 px-7"
-        />
-        <p className="text-sm text-ink-muted">
-          {signupEnabled ? t("cta.noCard") : t("cta.waitlistNote", { appName: APP_NAME })}
+      <div className="max-w-[54rem]">
+        <h1
+          id="hero-title"
+          className="font-display text-[2.9rem] leading-[0.96] font-semibold tracking-[-0.035em] text-ink sm:text-6xl md:text-[5.4rem]"
+        >
+          {t("title")}
+        </h1>
+        <p className="mt-7 max-w-[40rem] text-lg leading-relaxed text-ink-soft md:mt-9 md:text-xl">
+          {t("problem")} {t("promise", { appName: APP_NAME })}
         </p>
+        <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
+          <SignupCta
+            signupEnabled={signupEnabled}
+            source="hero"
+            long
+            size="lg"
+            className="h-13 px-7"
+          />
+          <p className="text-sm text-ink-muted">
+            {signupEnabled ? tCta("noCard") : tCta("waitlistNote", { appName: APP_NAME })}
+          </p>
+        </div>
         <a
           href={`#${previewId}`}
-          className="mt-2 inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-medium text-ink-soft outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-ring/50"
+          className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-ink-soft outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-ring/50"
         >
-          {t("home.hero.secondary")}
+          {t("secondary")}
           <ArrowDownIcon aria-hidden className="size-4" />
         </a>
       </div>
 
-      <div id={previewId} className="relative mt-14 w-full scroll-mt-24 md:mt-20">
-        {/* A soft violet light behind the window. */}
+      <div
+        id={previewId}
+        className="relative mt-12 scroll-mt-24 md:mt-16 md:-mr-[10%] lg:-mr-[18%] xl:-mr-[24%]"
+      >
+        {/* The one light on the website: a violet glow behind the leaning window. */}
         <div
           aria-hidden
-          className="absolute inset-x-[10%] top-[8%] bottom-0 -z-10 rounded-full bg-violet/40 blur-[90px]"
+          className="absolute inset-x-[12%] top-[10%] bottom-[6%] -z-10 rounded-full bg-violet/35 blur-[90px]"
         />
         <HeroTilt>
           <Screenshot
             name="dashboard"
             mobileName="dashboard-mobile"
-            alt={t("home.hero.previewAlt", { appName: APP_NAME })}
+            alt={t("previewAlt", { appName: APP_NAME })}
             priority
-            sizes="(min-width: 1152px) 1088px, 100vw"
+            sizes="(min-width: 1280px) 1420px, (min-width: 768px) 110vw, 100vw"
+            overlay={<NotesOverlay notes={notes} />}
           />
         </HeroTilt>
+        <NoteList notes={notes} className="mx-auto mt-5 w-[min(78vw,320px)] md:hidden" />
       </div>
     </section>
   );

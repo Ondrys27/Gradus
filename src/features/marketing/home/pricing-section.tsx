@@ -1,10 +1,11 @@
 import { getTranslations } from "next-intl/server";
 import { homeAnchorId, type SiteLocale } from "@/lib/routes";
 import { WebPricing } from "../web-pricing";
-import { Reveal } from "./reveal";
-import { Section, SectionHeading } from "./section";
 
-/** 8. The three plans; on the home page under #cenik, and as the /cenik page. */
+/**
+ * 6. The three plans; on the home page under #cenik, and as the /cenik page.
+ * The heading sits on the left with one plain sentence, the cards under it.
+ */
 export async function PricingSection({
   locale,
   signupEnabled,
@@ -16,30 +17,28 @@ export async function PricingSection({
   headingLevel?: 1 | 2;
 }) {
   const t = await getTranslations({ locale, namespace: "marketing.pricing" });
-  const heading =
-    headingLevel === 1 ? (
-      <Reveal
-        as="header"
-        className="mx-auto flex max-w-3xl flex-col items-center gap-4 text-center"
-      >
-        <h1
-          id="pricing-title"
-          className="text-4xl font-bold tracking-tight text-balance text-ink md:text-6xl"
-        >
-          {t("title")}
-        </h1>
-        <p className="text-lg text-pretty text-ink-soft md:text-xl">{t("subtitle")}</p>
-      </Reveal>
-    ) : (
-      <SectionHeading id="pricing-title" title={t("title")} subtitle={t("subtitle")} />
-    );
+  const Heading = headingLevel === 1 ? "h1" : "h2";
 
   return (
-    <Section id={homeAnchorId(locale, "pricing")} labelledBy="pricing-title">
-      {heading}
-      <Reveal className="mt-16">
+    <section
+      id={homeAnchorId(locale, "pricing")}
+      aria-labelledby="pricing-title"
+      className="mx-auto w-full max-w-6xl scroll-mt-24 px-4 pt-28 md:px-8 md:pt-44"
+    >
+      <header className="grid gap-4 md:grid-cols-12 md:items-end">
+        <Heading
+          id="pricing-title"
+          className="font-display text-5xl leading-[0.95] font-semibold tracking-[-0.035em] text-ink md:col-span-4 md:text-7xl"
+        >
+          {t("title")}
+        </Heading>
+        <p className="max-w-[34rem] text-lg leading-relaxed text-ink-soft md:col-span-7 md:col-start-6">
+          {t("subtitle")}
+        </p>
+      </header>
+      <div className="mt-12 md:mt-16">
         <WebPricing signupEnabled={signupEnabled} faqHref={`#${homeAnchorId(locale, "faq")}`} />
-      </Reveal>
-    </Section>
+      </div>
+    </section>
   );
 }

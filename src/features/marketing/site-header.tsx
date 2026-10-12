@@ -46,7 +46,7 @@ export function SiteHeader({ signupEnabled }: { signupEnabled: boolean }) {
 
   const links = [
     { href: homeAnchor(locale, "features"), label: t("features") },
-    { href: homeAnchor(locale, "howItWorks"), label: t("howItWorks") },
+    { href: homeAnchor(locale, "game"), label: t("game") },
     { href: homeAnchor(locale, "pricing"), label: t("pricing") },
   ];
   const login = localizedPath("login", locale);
@@ -74,7 +74,9 @@ export function SiteHeader({ signupEnabled }: { signupEnabled: boolean }) {
             className="flex min-h-11 items-center gap-3 rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             <Logo />
-            <span className="text-lg font-bold tracking-tight text-ink">{APP_NAME}</span>
+            <span className="font-display text-xl font-semibold tracking-tight text-ink">
+              {APP_NAME}
+            </span>
           </Link>
 
           <nav aria-label={t("label")} className="hidden justify-center lg:flex">

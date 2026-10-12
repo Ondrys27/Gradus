@@ -35,7 +35,7 @@ export type LocalizedPage = keyof typeof LOCALIZED_PAGES;
 export const HOME_ANCHORS = {
   preview: { cs: "ukazka", en: "preview" },
   features: { cs: "funkce", en: "features" },
-  howItWorks: { cs: "jak-to-funguje", en: "how-it-works" },
+  game: { cs: "hra", en: "game" },
   pricing: { cs: "cenik", en: "pricing" },
   faq: { cs: "caste-otazky", en: "faq" },
 } as const satisfies Record<string, Record<SiteLocale, string>>;
@@ -68,9 +68,7 @@ export function localizedPath(page: LocalizedPage, locale: string | null | undef
 }
 
 /** Which localized page an address is, and in which language; null for anything else. */
-export function pageForPath(
-  pathname: string,
-): { page: LocalizedPage; locale: SiteLocale } | null {
+export function pageForPath(pathname: string): { page: LocalizedPage; locale: SiteLocale } | null {
   const clean = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
   for (const [page, paths] of Object.entries(LOCALIZED_PAGES)) {
     for (const locale of SITE_LOCALES) {

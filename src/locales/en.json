@@ -2917,11 +2917,11 @@
       "label": "Main navigation",
       "home": "{appName} home",
       "features": "Features",
-      "howItWorks": "How it works",
       "pricing": "Pricing",
       "login": "Sign in",
       "menu": "Menu",
-      "closeMenu": "Close menu"
+      "closeMenu": "Close menu",
+      "game": "The game"
     },
     "cta": {
       "tryFree": "Try for free",
@@ -2932,122 +2932,61 @@
     },
     "home": {
       "hero": {
-        "badge": "Now in beta · opening in December",
-        "title": "Know what to do every day. And actually feel like doing it.",
-        "subtitle": "{appName} breaks getting your business off the ground into small steps, keeps an eye on your deals and contacts, and tells you each morning what to do today. When you get it done, it celebrates with you.",
-        "secondary": "See what it looks like",
-        "previewAlt": "The {appName} dashboard: today's tasks, progress along your path and deals in one place"
-      },
-      "pains": {
-        "title": "Sound familiar?",
-        "items": {
-          "spreadsheets": {
-            "title": "Spreadsheets everywhere",
-            "text": "Contacts in one file, invoices in another, the plan nowhere."
-          },
-          "followUps": {
-            "title": "Forgotten follow-ups",
-            "text": "“I’ll get back to them next week” — and next week is gone."
-          },
-          "today": {
-            "title": "No idea what today",
-            "text": "There’s plenty to do, but which step actually moves the business?"
-          },
-          "motivation": {
-            "title": "Motivation fades",
-            "text": "Results take months. The drive is gone in a week."
-          }
+        "title": "Every day you know what to do for your business.",
+        "ogLine": "Starting a business, step by step. 14 days free, no card.",
+        "problem": "When you are starting out, your contacts live in a spreadsheet, your invoices in an accounting tool, your offer in your head, and in the evening you can't tell whether the business moved today.",
+        "promise": "{appName} breaks the start into chapters and tasks, keeps an eye on your deals and tells you in the morning to call Mr. Novak, because his quote has been sitting unanswered for 8 days.",
+        "secondary": "Look inside the app",
+        "previewAlt": "The {appName} dashboard: this month's income, tasks done, active deals and the list of deals that have stalled",
+        "notes": {
+          "stalled": "deals stalled for over 20 days, the first thing you see in the morning",
+          "streak": "11 days in a row you got something done"
         }
       },
-      "features": {
-        "title": "One system instead of five tools",
-        "subtitle": "Your plan, deals, contacts, calendar and money in one place. And it all talks to each other.",
-        "items": {
-          "milestones": {
-            "title": "Milestones and chapters",
-            "text": "Pick your field and get a plan: chapters of tasks that make sense for what you do. Or write your own.",
-            "alt": "Milestones in {appName}: chapters of your path with tasks and progress"
-          },
-          "pipeline": {
-            "title": "Deal pipeline",
-            "text": "See where every deal stands and drag it forward. When a customer pays, {appName} celebrates.",
-            "alt": "The deal pipeline in {appName}: deals in columns by stage"
-          },
-          "contacts": {
-            "title": "Contacts and cold calling",
-            "text": "Generate businesses near you, call them with a timer and move them between tables. Nothing slips through.",
-            "alt": "Cold calling in {appName}: a list of businesses to call and a running timer"
-          },
-          "calendar": {
-            "title": "Calendar",
-            "text": "Meetings, task deadlines and deal closings in one place. Synced with Google.",
-            "alt": "The calendar in {appName}: a month of meetings and deadlines"
-          },
-          "finance": {
-            "title": "Finance",
-            "text": "A paid deal shows up in your finances on its own. Invoices take one tap.",
-            "alt": "Finance in {appName}: income and expenses by month"
-          },
-          "jarvis": {
-            "title": "Jarvis",
-            "text": "An assistant who knows your business. In the morning he tells you what to do, in the evening what happened.",
-            "alt": "Jarvis in {appName}: a chat with the assistant"
-          }
-        }
-      },
-      "how": {
-        "title": "How it works",
-        "steps": {
-          "pick": {
-            "title": "Pick your field",
-            "text": "{appName} sets up your chapters and first tasks."
-          },
-          "work": {
-            "title": "Work step by step",
-            "text": "Tasks, contacts, meetings, deals. Jarvis keeps an eye on deadlines."
-          },
-          "unlock": {
-            "title": "Keep unlocking",
-            "text": "Every chapter you finish opens a new part of the app."
+      "stories": {
+        "label": "What {appName} does",
+        "pipeline": {
+          "title": "Every deal has a stage, an amount and the date it got there.",
+          "text": "New lead, meeting, quote sent, deposit paid. You name the stages yourself and drag a deal between them. When \"New website for the bakery\" has sat in New lead for 28 days, you see it on the dashboard before the customer forgets who you are. A paid deal flows into your finances and the invoice goes out through Fakturoid.",
+          "alt": "The pipeline in {appName}: columns New lead, Meeting, Quote sent and Deposit paid with deals and totals",
+          "notes": {
+            "1": "168 000 Kč in one stage, the total sits right under the name",
+            "2": "drag it on and {appName} notes the date itself"
           }
         },
-        "toolMode": "Not into games? Switch it off. {appName} works as a plain tool too."
-      },
-      "jarvis": {
-        "title": "Meet Jarvis.",
-        "subtitle": "He sees your deals, contacts and calendar, so his advice is about your business, not business in general. When there's nothing to say, he stays quiet.",
-        "chat": {
-          "name": "Jarvis",
-          "you": "You",
-          "caption": "Example",
-          "line": "{who}: {text}",
-          "question": "What should I do about the quote for Mill Lane Bakery?",
-          "answer": "You sent it 8 days ago and haven't heard back. Call them tomorrow morning and ask whether anything is missing. If they hesitate, offer the first month at half price.",
-          "action": "Remind me tomorrow at 9:00"
+        "calling": {
+          "title": "A list of companies, a timer and tables you move a contact to after the call.",
+          "text": "Generate, say, 40 bakeries around Brno, start the timer and call. After the call you move the contact to No answer, Call back or Meeting booked and {appName} asks when and with whom. If you don't move anyone for 15 minutes the timer stops on its own, so the time on the phone is the time you really spent calling.",
+          "alt": "Cold calling in {appName}: contact tables, a running timer and the time-on-phone statistics",
+          "notes": {
+            "1": "stops by itself after 15 minutes without a move",
+            "2": "you name the tables yourself, these are the defaults"
+          }
         },
-        "points": {
-          "knows": "Knows your whole business",
-          "watches": "Spots opportunities on his own",
-          "advises": "Helps with deals and pricing"
+        "jarvis": {
+          "title": "Jarvis reads your deals and speaks up only when he has something to say.",
+          "text": "He sees your pipeline, contacts and calendar. In the morning he writes that the 76 000 Kč conference catering has been waiting for a reply to the quote for a week and suggests what to send the customer. When you win a deal he reminds you to ask for a referral while it is fresh. When nothing is happening, he is quiet.",
+          "alt": "Jarvis in {appName}: a panel of remarks about deals and a conversation with the assistant",
+          "notes": {
+            "1": "he wrote this himself, you didn't ask",
+            "2": "one tap and the task is on your list"
+          },
+          "chat": {
+            "name": "Jarvis",
+            "you": "You",
+            "caption": "Example",
+            "line": "{who}: {text}",
+            "question": "What should I do about the quote for Mill Lane Bakery?",
+            "answer": "You sent it 8 days ago and haven't heard back. Call them tomorrow morning and ask whether anything is missing. If they hesitate, offer the first month at half price.",
+            "action": "Remind me tomorrow at 9:00"
+          }
         }
       },
       "game": {
-        "title": "A business that rewards you.",
-        "text": "Getting your business going is split into chapters. Every step you finish earns points, levels you up and opens the next part of the app. The big moments, like your first client or first paid invoice, {appName} celebrates with you.",
-        "points": {
-          "chapters": {
-            "title": "Chapters for your field.",
-            "text": "You know what's next and what comes after."
-          },
-          "levels": {
-            "title": "Levels and badges.",
-            "text": "You can see progress even before the results arrive."
-          },
-          "rewards": {
-            "title": "Your own rewards.",
-            "text": "Write down how you'll treat yourself when you finish a milestone."
-          }
-        },
+        "title": "The start as a game, if you want it that way.",
+        "text1": "Pick a field, say tradesman or e-shop, and you get chapters with tasks: register your trade, open a business account, write your offer and price list. A finished task is 10 XP, a milestone up to 400, a won deal 150. Level 7 opens a new colour theme, level 10 opens workers.",
+        "text2": "You write your own reward on a milestone, dinner out for instance, and {appName} reminds you of it when you finish. It never closes the milestone for you; the last tap is yours.",
+        "toolMode": "The game can be switched off in settings. {appName} is then a plain tool: nothing is locked and no XP is shown anywhere.",
         "demo": {
           "label": "Example milestone",
           "chapter": "Chapter 1 · Basics",
@@ -3066,104 +3005,56 @@
           "replay": "Play again"
         }
       },
-      "audience": {
-        "title": "Built for people who are just starting.",
-        "subtitle": "Pick your field and {appName} prepares your first chapter. See where you'd begin.",
-        "hint": "Show the first chapter",
-        "firstChapter": "{field} · chapter 1",
-        "tiles": {
-          "craftsman": "Tradesperson",
-          "consultant": "Consultant",
-          "ecommerce": "Online shop",
-          "gastro": "Food & drink",
-          "personalServices": "Personal services",
-          "creative": "Creative",
-          "it": "IT",
-          "other": "Something else"
-        },
-        "paths": {
-          "general": {
-            "m1": "Get your trade licence",
-            "m2": "Business account and bookkeeping",
-            "m3": "Write your offer and price list"
-          },
-          "craftsman": {
-            "m1": "Get your craft trade licence",
-            "m2": "Account, tools and van",
-            "m3": "Price list for work and materials"
-          },
-          "consultant": {
-            "m1": "Set up as a freelancer",
-            "m2": "Account, contract and tools",
-            "m3": "Define your offer and rates"
-          },
-          "ecommerce": {
-            "m1": "Register your trade for online sales",
-            "m2": "Account, platform and payment gateway",
-            "m3": "Terms and conditions, shipping and your first products"
-          },
-          "gastro": {
-            "m1": "Register your food trade",
-            "m2": "Premises, hygiene and account",
-            "m3": "Menu, allergens and prices"
-          },
-          "personal_services": {
-            "m1": "Register your personal-services trade",
-            "m2": "Premises, hygiene and account",
-            "m3": "Price list and your service menu"
-          }
-        }
-      },
       "pricing": {
-        "faqLink": "Questions? Check the FAQ."
+        "faqLink": "The answers to common questions are below."
       },
       "faq": {
-        "title": "Frequently asked questions",
+        "title": "What people ask before they start",
         "items": {
           "card": {
             "question": "Do I need a credit card?",
-            "answer": "No. You try it for 14 days without a card, then pick a plan."
+            "answer": "No. You try the Pro plan for 14 days without a card. Then you pick a plan, or the account stays read-only and nothing is deleted."
           },
           "cancel": {
             "question": "Can I cancel?",
-            "answer": "Any time, with one tap. You can export your data."
+            "answer": "Any time, in settings. You can export your data first."
           },
           "mobile": {
             "question": "Does it work on my phone?",
-            "answer": "Yes, the whole app. Native phone apps are on the way."
+            "answer": "Yes, the whole app in the browser, including the call timer. A native app is in the works."
           },
           "game": {
             "question": "Do I have to play?",
-            "answer": "No. Switch the game mode off and {appName} is a plain tool. Nothing gets locked and you lose nothing."
+            "answer": "No. Switch the game mode off in settings and {appName} is a plain tool. Nothing gets locked and you lose nothing."
           },
           "ai": {
-            "question": "What does the AI do with my data?",
-            "answer": "Jarvis sees only your data and uses it only for you. We never train models on customer data."
+            "question": "What does Jarvis do with my data?",
+            "answer": "He sees only your deals, contacts and calendar and uses them only for your answers. Nothing is trained on customer data."
           },
           "notFor": {
             "question": "Who is {appName} not for?",
-            "answer": "Companies with dozens of salespeople and complex processes. It's for people who are starting out or running a small team."
+            "answer": "Companies with dozens of salespeople and approval processes. It is for people starting on their own or with a few workers."
           },
           "contacts": {
-            "question": "Where do the contacts come from?",
-            "answer": "From public business listings. We watch the limits and data protection rules."
+            "question": "Where do generated contacts come from?",
+            "answer": "From public business listings via Google Places: name, address and phone. There are no e-mails in them. We watch the monthly limits and data protection rules."
           }
         }
       },
       "final": {
-        "title": "Start today. In 14 days you'll know.",
-        "titleWaitlist": "Be there from day one.",
+        "title": "Start today. In 14 days you'll know whether it fits.",
+        "titleWaitlist": "We'll write when {appName} opens to everyone.",
         "note": "No card. Cancel any time. Your data stays yours.",
         "noteWaitlist": "{appName} is in beta. Leave your e-mail and we'll write once, when it opens to everyone.",
-        "founderLabel": "A word from the founder",
-        "founderNote": "We're building {appName} together with the first business owners in our beta. This isn't a finished product from a big company — it's a tool that grows with you, and we read every idea you send us.",
+        "founderLabel": "From the founder",
+        "founderNote": "I started building {appName} because I was starting a business myself, with contacts in a spreadsheet and ideas I kept putting off until there was time. The first business owners are trying it in beta now and I read every message they send myself. If something doesn't feel right, write to me.",
         "signature": "{name}, founder",
         "signatureRole": "The {appName} team"
       }
     },
     "pricing": {
       "title": "Pricing",
-      "subtitle": "Pick what you need. Every plan starts with 14 days free."
+      "subtitle": "Solo for one person, Pro with meeting analysis and calendar sync, Team with workers and their permissions. Every plan starts with 14 days free, no card. Prices are without VAT."
     },
     "legal": {
       "soon": "Coming soon",

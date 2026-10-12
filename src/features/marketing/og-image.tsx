@@ -105,7 +105,7 @@ export async function renderOgImage(locale: SiteLocale): Promise<ImageResponse> 
         >
           {t("title")}
         </div>
-        <div style={{ color: TOKENS.inkSoft, fontSize: 30, fontWeight: 500 }}>{t("badge")}</div>
+        <div style={{ color: TOKENS.inkSoft, fontSize: 30, fontWeight: 500 }}>{t("ogLine")}</div>
       </div>
     </div>,
     { ...OG_SIZE, fonts: await fonts() },

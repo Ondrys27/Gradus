@@ -25,12 +25,15 @@ export function PricingCards({
   formatSettings,
   action,
   footnote,
+  flat = false,
 }: {
   currency: PriceCurrency;
   formatSettings: FormatSettings;
   action: (plan: PaidPlan) => ReactNode;
   /** Replaces the default line under the cards (trial and VAT). */
   footnote?: ReactNode;
+  /** No glow under the cards (the website, which has one light only). */
+  flat?: boolean;
 }) {
   const t = useTranslations("plans");
   const [billing, setBilling] = useState<Billing>("monthly");
@@ -71,7 +74,8 @@ export function PricingCards({
             key={plan.key}
             className={cn(
               "relative flex flex-col gap-5 rounded-card border bg-surface p-6",
-              plan.recommended ? "border-violet/70 shadow-glow-strong" : "border-line shadow-glow",
+              plan.recommended ? "border-violet/70" : "border-line",
+              !flat && (plan.recommended ? "shadow-glow-strong" : "shadow-glow"),
             )}
           >
             {plan.recommended && (

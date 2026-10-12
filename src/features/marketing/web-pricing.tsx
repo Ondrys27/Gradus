@@ -27,6 +27,7 @@ export function WebPricing({
       : { ...DEFAULT_FORMAT_SETTINGS, numberLocale: NUMBER_FORMATS.en };
   return (
     <PricingCards
+      flat
       currency={priceCurrencyFor(locale)}
       formatSettings={formatSettings}
       action={(plan) => (
