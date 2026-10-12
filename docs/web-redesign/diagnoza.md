@@ -33,3 +33,22 @@ Co jsem našel navíc:
 - Jedna záře, jen v úvodu. Pozadí webu bez mřížky a bez září. Fialová jako jediný akcent, tyrkysová jen u Jarvise a postupu.
 - Animace zůstávají tři: otáčení snímku pod úvodem (beze změny), ukázka milníku, Jarvisův chat. Žádné nástupy při posunu, žádné skládání slov.
 - Fotka zakladatelů: `public/founders.jpg` neexistuje, sekce zůstává bez fotky.
+
+## Porovnání před a po
+
+Snímky po: `after/home-cs-1440.png`, `after/home-cs-390.png` (a anglické verze), z produkčního buildu.
+
+| | Před | Po |
+|---|---|---|
+| Sekce | 10 (úvod, bolesti, 6 funkcí, kroky, Jarvis, hra, obory, ceník, otázky, závěr) | 6 (úvod, 3 příběhy, hra, ceník, otázky + závěr) |
+| Výška stránky na 1440 px | 12 177 px | 8 104 px |
+| Záře | 2 v pozadí + 5 v sekcích + glow stín na každé kartě | 1, za snímkem v úvodu |
+| Písmo | Inter na všem | Bricolage Grotesque nadpisy, Inter text, Caveat popisky |
+| Nadpisy | vycentrované, 4–6xl, slovo po slově | vlevo, 5,4rem v úvodu, těsný prostrk, bez animace |
+| Animace | skládání slov, nástup každého bloku, rozostření snímků, otočné dlaždice | otáčení snímku (beze změny), ukázka milníku, Jarvisův chat |
+| Snímky | 7 × 620 px v kresleném okně | 4 velké přes šířku, přesahující mřížku, s popisky u detailů (168 000 Kč ve fázi, 28 dní v Novém leadu, časovač, „Jarvis si všiml") |
+| Ikony | u každého bodu (21 ikon v kroužcích) | jen v ukázce milníku a u otázek (plus) |
+| Texty | trojice, řečnické otázky, „Ne X. Y." | konkrétní situace: Fakturoid, pan Novák, 8 dní bez odpovědi, 10 XP za úkol, úroveň 7 a 10 |
+| Zakladatel | citát v kartě, podpis podle role | citát u fialové linky, podpis ručním písmem se jménem z profilu majitele; bez fotky, protože žádná není |
+
+Co zůstalo: `HeroTilt` v `scroll-effects.tsx` beze změny, ceník (tarify, ceny, přepínač, poznámky) obsahově stejný, všechny otázky, obě jazykové verze, strukturovaná data a metadata. Kotva `#jak-to-funguje` je nahrazená kotvou `#hra`.
