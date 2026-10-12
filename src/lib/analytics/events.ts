@@ -461,6 +461,16 @@ export const EVENTS = {
   }),
   jarvis_file_rejected: event("jarvis", "server", false, { reason: oneOf(FILE_ERRORS) }),
   jarvis_limit_reached: event("jarvis", "server", false, { feature: key() }),
+  /**
+   * A model call that did not happen: the monthly budget is used up, or the
+   * API refused for lack of credit (error_code: billing_error,
+   * enforced_spend_limit_reached). A system event: the credits are shared.
+   */
+  jarvis_paused: event("jarvis", "server", false, {
+    feature: key(),
+    reason: oneOf(["budget", "credits"]),
+    error_code: optional(key()),
+  }),
   /** A bubble shown and every reaction to it (Do = accept, Show = open, Later, Close). */
   jarvis_proactive_reacted: event("jarvis", "server", false, {
     reaction: oneOf(PROACTIVE_REACTIONS),

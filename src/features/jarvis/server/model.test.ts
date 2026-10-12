@@ -4,7 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 
 vi.mock("server-only", () => ({}));
 
-const { errorCode, streamModel } = await import("./model");
+const { creditErrorCode, errorCode, streamModel } = await import("./model");
 const { JARVIS_PERSONA } = await import("../prompt");
 const { JARVIS_MODELS } = await import("../models");
 
@@ -94,7 +94,7 @@ describe("streamModel", () => {
     expect(log.mock.calls[0][0].error).toBeUndefined();
   });
 
-  it("sends routine work to Haiku without an effort setting", async () => {
+  it("sends routine work to Haiku without thinking, at low effort", async () => {
     const { client, calls } = fakeClient([start(10), delta("yes"), end(1)]);
     await streamModel({
       client,
@@ -104,10 +104,11 @@ describe("streamModel", () => {
       log: vi.fn().mockResolvedValue(undefined),
     });
     expect(calls[0].model).toBe(JARVIS_MODELS.haiku);
-    expect(calls[0].output_config).toBeUndefined();
+    expect(calls[0].thinking).toEqual({ type: "disabled" });
+    expect(calls[0].output_config).toEqual({ effort: "low" });
   });
 
-  it("turns missing credits into a calm error and still logs the attempt", async () => {
+  it("turns a bad request into a calm error and still logs the attempt", async () => {
     const { client } = fakeClient([], apiError(400, "invalid_request_error"));
     const log = vi.fn().mockResolvedValue(undefined);
     const result = await streamModel({
@@ -151,6 +152,72 @@ describe("streamModel", () => {
   });
 });
 
+describe("budget", () => {
+  function guard(allowed: boolean) {
+    return { allows: vi.fn().mockResolvedValue(allowed), creditsExhausted: vi.fn() };
+  }
+
+  it("makes no call over the budget and answers with the pause", async () => {
+    const { client, calls } = fakeClient([start(10), delta("never"), end(1)]);
+    const budget = guard(false);
+    const log = vi.fn().mockResolvedValue(undefined);
+    const result = await streamModel({
+      client: { ...client, budget },
+      feature: "chat",
+      context: "",
+      messages: [{ role: "user", content: "hi" }],
+      log,
+    });
+    expect(result).toMatchObject({ ok: false, code: "paused", text: "" });
+    expect(budget.allows).toHaveBeenCalledWith("chat");
+    expect(calls).toHaveLength(0);
+    expect(log).not.toHaveBeenCalled();
+  });
+
+  it("calls the model while the budget allows it", async () => {
+    const { client, calls } = fakeClient([start(10), delta("ok"), end(1)]);
+    const result = await streamModel({
+      client: { ...client, budget: guard(true) },
+      feature: "chat",
+      context: "",
+      messages: [{ role: "user", content: "hi" }],
+      log: vi.fn().mockResolvedValue(undefined),
+    });
+    expect(result).toMatchObject({ ok: true, text: "ok" });
+    expect(calls).toHaveLength(1);
+  });
+
+  it("shows exhausted credit as the pause, tells the guard and logs the attempt", async () => {
+    const { client } = fakeClient([], apiError(402, "billing_error"));
+    const budget = guard(true);
+    const log = vi.fn().mockResolvedValue(undefined);
+    const result = await streamModel({
+      client: { ...client, budget },
+      feature: "opportunity_scan",
+      context: "",
+      messages: [{ role: "user", content: "hi" }],
+      log,
+    });
+    expect(result).toMatchObject({ ok: false, code: "paused" });
+    expect(budget.creditsExhausted).toHaveBeenCalledWith("opportunity_scan", "billing_error");
+    expect(log.mock.calls[0][0].error).toContain("billing_error");
+  });
+
+  it("does not report other failures as missing credit", async () => {
+    const { client } = fakeClient([], apiError(429, "rate_limit_error"));
+    const budget = guard(true);
+    const result = await streamModel({
+      client: { ...client, budget },
+      feature: "chat",
+      context: "",
+      messages: [{ role: "user", content: "hi" }],
+      log: vi.fn().mockResolvedValue(undefined),
+    });
+    expect(result).toMatchObject({ ok: false, code: "busy" });
+    expect(budget.creditsExhausted).not.toHaveBeenCalled();
+  });
+});
+
 describe("errorCode", () => {
   it("maps API errors to what the panel says", () => {
     expect(errorCode(apiError(429, "rate_limit_error"))).toBe("busy");
@@ -161,9 +228,34 @@ describe("errorCode", () => {
     expect(errorCode(new Error("socket hang up"))).toBe("unavailable");
   });
 
-  it("tells an account without credit apart from other bad requests", () => {
-    // The exact answer the API gave on 2026-09-30 and 2026-10-02.
-    const noCredit = Anthropic.APIError.generate(
+  it("tells missing credit and spend limits apart by type and code, never by text", () => {
+    expect(errorCode(apiError(402, "billing_error"))).toBe("paused");
+    expect(errorCode(apiError(400, "billing_error"))).toBe("paused");
+    expect(creditErrorCode(apiError(402, "api_error"))).toBe("billing_error");
+
+    // The usage tier's monthly cap: a 429 with a machine-readable code, unlike a rate limit.
+    const spendCap = Anthropic.APIError.generate(
+      429,
+      {
+        type: "error",
+        error: {
+          type: "rate_limit_error",
+          message: "You have reached your API usage limits.",
+          details: { error_code: "enforced_spend_limit_reached" },
+        },
+      },
+      undefined,
+      new Headers(),
+    );
+    expect(creditErrorCode(spendCap)).toBe("enforced_spend_limit_reached");
+    expect(errorCode(spendCap)).toBe("paused");
+    expect(creditErrorCode(apiError(429, "rate_limit_error"))).toBeNull();
+    expect(creditErrorCode(new Error("credit balance"))).toBeNull();
+
+    // The answer the API gave on 2026-09-30: an ordinary invalid_request_error
+    // whose only sign is the text. Not read from the text, so it stays calm
+    // but generic.
+    const textOnly = Anthropic.APIError.generate(
       400,
       {
         type: "error",
@@ -176,8 +268,7 @@ describe("errorCode", () => {
       undefined,
       new Headers(),
     );
-    expect(errorCode(noCredit)).toBe("noCredit");
-    expect(errorCode(apiError(400, "billing_error"))).toBe("noCredit");
-    expect(errorCode(apiError(402, "api_error"))).toBe("noCredit");
+    expect(creditErrorCode(textOnly)).toBeNull();
+    expect(errorCode(textOnly)).toBe("unavailable");
   });
 });

@@ -385,7 +385,10 @@ function SalesAnalysisSection() {
       </div>
       {failure && (
         <FormAlert>
-          {failure === "limitReached" || failure === "notConfigured" || failure === "busy"
+          {failure === "limitReached" ||
+          failure === "notConfigured" ||
+          failure === "busy" ||
+          failure === "paused"
             ? t(`aiError.${failure}`)
             : failure === "locked"
               ? t("aiLocked", {

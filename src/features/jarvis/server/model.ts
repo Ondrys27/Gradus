@@ -1,5 +1,7 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
 import {
   EMPTY_USAGE,
   JARVIS_MODELS,
@@ -11,19 +13,27 @@ import {
 } from "../models";
 import { JARVIS_PERSONA } from "../prompt";
 import type { ChatErrorCode } from "../protocol";
+import { createBudgetGuard, type BudgetGuard } from "./budget";
 import type { AiUsageEntry } from "./usage";
 
 /**
- * The only place that talks to Anthropic. It is called from /api/jarvis and
- * nowhere else; the key never leaves the server.
+ * The SDK's messages and the monthly budget that guards them. Every client
+ * made by createAnthropic carries the guard; test doubles may leave it out.
  */
-export function createAnthropic(): Anthropic | null {
+export type ModelClient = Pick<Anthropic, "messages"> & { budget?: BudgetGuard };
+export type JarvisClient = ModelClient & { budget: BudgetGuard };
+
+/**
+ * The only place that talks to Anthropic. It is called from /api/jarvis and
+ * nowhere else; the key never leaves the server. The admin client reads the
+ * month's spend (all accounts) and records the owner's budget e-mails.
+ */
+export function createAnthropic(admin: SupabaseClient<Database>): JarvisClient | null {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return null;
-  return new Anthropic({ apiKey, maxRetries: 1 });
+  const anthropic = new Anthropic({ apiKey, maxRetries: 1 });
+  return { messages: anthropic.messages, budget: createBudgetGuard(admin) };
 }
-
-export type ModelClient = Pick<Anthropic, "messages">;
 
 export type ModelCall = {
   client: ModelClient;
@@ -56,6 +66,10 @@ export async function streamModel(call: ModelCall): Promise<ModelResult> {
   const started = Date.now();
   let text = "";
 
+  if (call.client.budget && !(await call.client.budget.allows(call.feature))) {
+    return { ok: false, model, code: "paused", text, tokens };
+  }
+
   const params: Anthropic.MessageStreamParams = {
     model,
     max_tokens: maxTokensFor(call.feature),
@@ -68,9 +82,10 @@ export async function streamModel(call: ModelCall): Promise<ModelResult> {
       ...(call.context ? [{ type: "text" as const, text: call.context }] : []),
     ],
     messages: call.messages,
-    // Haiku takes no effort setting; conversation stays quick on the others.
+    // Routine Haiku work answers without thinking first, as it did before
+    // thinking came to Haiku; conversation stays quick on the others.
     ...(model === JARVIS_MODELS.haiku
-      ? {}
+      ? { thinking: { type: "disabled" }, output_config: { effort: "low" } }
       : { output_config: { effort: call.feature === "analysis" ? "high" : "low" } }),
   };
 
@@ -125,25 +140,40 @@ export async function streamModel(call: ModelCall): Promise<ModelResult> {
       durationMs: Date.now() - started,
       error: reason,
     });
+    const credit = creditErrorCode(error);
+    if (credit) await call.client.budget?.creditsExhausted(call.feature, credit);
     return { ok: false, model, code: errorCode(error), text, tokens };
   }
 }
 
 /**
- * An account without credit. The API answers it as a 400 invalid_request_error
- * (sometimes as billing_error / 402), so the message is the only reliable sign.
+ * Spend caps reported with a machine-readable code in error.details: the
+ * usage tier's monthly cap is a 429 rate_limit_error carrying this code.
  */
-function isNoCredit(error: InstanceType<typeof Anthropic.APIError>): boolean {
-  return (
-    error.status === 402 ||
-    error.type === "billing_error" ||
-    /credit balance/i.test(error.message)
-  );
+const SPEND_LIMIT_CODES = new Set(["enforced_spend_limit_reached"]);
+
+function detailsCode(error: InstanceType<typeof Anthropic.APIError>): string | null {
+  const body = error.error as { error?: { details?: { error_code?: unknown } } } | undefined;
+  const code = body?.error?.details?.error_code;
+  return typeof code === "string" ? code : null;
+}
+
+/**
+ * The API refused because the organization has no credit left or reached its
+ * spend limit. Read from the SDK's error type, status and error code, never
+ * from the message text: billing_error (402) or a spend-limit code. Returns
+ * the code for analytics, null for every other failure.
+ */
+export function creditErrorCode(error: unknown): string | null {
+  if (!(error instanceof Anthropic.APIError)) return null;
+  if (error.type === "billing_error" || error.status === 402) return "billing_error";
+  const code = detailsCode(error);
+  return code && SPEND_LIMIT_CODES.has(code) ? code : null;
 }
 
 /** What the panel says; the details stay in ai_usage.error and the server log. */
 export function errorCode(error: unknown): ChatErrorCode {
-  if (error instanceof Anthropic.APIError && isNoCredit(error)) return "noCredit";
+  if (creditErrorCode(error)) return "paused";
   if (error instanceof Anthropic.RateLimitError) return "busy";
   if (error instanceof Anthropic.AuthenticationError) return "notConfigured";
   if (error instanceof Anthropic.PermissionDeniedError) return "notConfigured";

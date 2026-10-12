@@ -2,9 +2,55 @@ import { PAID_PLANS, type PaidPlanKey } from "./pricing";
 
 /**
  * What running Gradus costs per use, in one place. The administration turns
- * the counts from metric_cost_inputs() into money with these; the AI cost is
- * not here because ai_usage already stores the price of every model call.
+ * the counts from metric_cost_inputs() into money with these. The AI cost of
+ * a period is not computed here: ai_usage stores the price of every model
+ * call, priced with MODEL_PRICES below when the call ends.
  */
+
+/** USD per million tokens of one model: base input, 5-minute cache write, cache read, output. */
+export type ModelPrice = {
+  input: number;
+  cacheWrite: number;
+  cacheRead: number;
+  output: number;
+  /**
+   * Higher prices for a request whose prompt (input + cache reads + cache
+   * writes) is over `aboveTokens`; the whole request then pays them.
+   */
+  longPrompt?: {
+    aboveTokens: number;
+    input: number;
+    cacheWrite: number;
+    cacheRead: number;
+    output: number;
+  };
+};
+
+/**
+ * Claude API list prices, first-party, global routing (no inference_geo).
+ * Source: https://platform.claude.com/docs/en/about-claude/pricing and
+ * https://platform.claude.com/docs/en/about-claude/models/overview (checked 2026-10-12).
+ * Cache reads are 0.05× input on Opus 5.5 and Sonnet 5.5, 0.1× on Haiku 5.5;
+ * a 5-minute cache write is 1.25× input. Haiku 5.5 costs more above a
+ * 100,000-token prompt.
+ */
+export const MODEL_PRICES = {
+  "claude-haiku-5-5": {
+    input: 0.1,
+    cacheWrite: 0.125,
+    cacheRead: 0.01,
+    output: 0.5,
+    longPrompt: {
+      aboveTokens: 100_000,
+      input: 0.5,
+      cacheWrite: 0.625,
+      cacheRead: 0.05,
+      output: 2.5,
+    },
+  },
+  "claude-sonnet-5-5": { input: 2, cacheWrite: 2.5, cacheRead: 0.1, output: 10 },
+  "claude-opus-5-5": { input: 4, cacheWrite: 5, cacheRead: 0.2, output: 20 },
+} as const satisfies Record<string, ModelPrice>;
 
 /**
  * Czech crowns for one US dollar. Update now and then from the ČNB rate:

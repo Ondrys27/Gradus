@@ -2,11 +2,13 @@
  * Which model does which job, and what a call costs. Shared by the route and
  * its tests; nothing here talks to the API.
  */
+import { MODEL_PRICES } from "@/config/costs";
 
+/** The newest Haiku, Sonnet and Opus (checked against the models overview on 2026-10-12). */
 export const JARVIS_MODELS = {
-  haiku: "claude-haiku-4-5",
-  sonnet: "claude-sonnet-5",
-  opus: "claude-opus-5",
+  haiku: "claude-haiku-5-5",
+  sonnet: "claude-sonnet-5-5",
+  opus: "claude-opus-5-5",
 } as const;
 
 export type JarvisModel = (typeof JARVIS_MODELS)[keyof typeof JARVIS_MODELS];
@@ -65,17 +67,6 @@ export function maxTokensFor(feature: JarvisFeature): number {
   }
 }
 
-/** USD per million tokens, first-party API list prices. */
-const PRICES: Record<JarvisModel, { input: number; output: number }> = {
-  "claude-haiku-4-5": { input: 1, output: 5 },
-  "claude-sonnet-5": { input: 2, output: 10 },
-  "claude-opus-5": { input: 5, output: 25 },
-};
-
-/** Reading from the cache costs a tenth of input, writing a 5-minute entry a quarter more. */
-const CACHE_READ_FACTOR = 0.1;
-const CACHE_WRITE_FACTOR = 1.25;
-
 export type TokenUsage = {
   /** Input tokens that were neither read from nor written to the cache. */
   inputTokens: number;
@@ -91,13 +82,20 @@ export const EMPTY_USAGE: TokenUsage = {
   outputTokens: 0,
 };
 
-/** Price of one call in USD, rounded to the column's six decimals. */
+/**
+ * Price of one call in USD (MODEL_PRICES in src/config/costs.ts), rounded to
+ * the column's six decimals. A long prompt on a model with a long-prompt
+ * price pays that price for the whole request.
+ */
 export function costUsd(model: JarvisModel, usage: TokenUsage): number {
-  const price = PRICES[model];
+  const base = MODEL_PRICES[model];
+  const prompt = usage.inputTokens + usage.cacheReadTokens + usage.cacheWriteTokens;
+  const long = "longPrompt" in base ? base.longPrompt : undefined;
+  const price = long && prompt > long.aboveTokens ? long : base;
   const micro =
     usage.inputTokens * price.input +
-    usage.cacheReadTokens * price.input * CACHE_READ_FACTOR +
-    usage.cacheWriteTokens * price.input * CACHE_WRITE_FACTOR +
+    usage.cacheReadTokens * price.cacheRead +
+    usage.cacheWriteTokens * price.cacheWrite +
     usage.outputTokens * price.output;
   return Math.round(micro) / 1_000_000;
 }

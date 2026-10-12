@@ -84,8 +84,11 @@ export type AiCallUsage = { used: number; limit: number };
 export type ChatErrorCode =
   | "limitReached"
   | "notConfigured"
-  /** The Anthropic account has run out of credit; only the app's operator can fix it. */
-  | "noCredit"
+  /**
+   * Jarvis takes a break until the month ends: the monthly budget is used up
+   * or the API has run out of credit. The rest of the app works on.
+   */
+  | "paused"
   | "busy"
   | "unavailable"
   | "notFound"

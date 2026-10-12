@@ -432,7 +432,7 @@
     "error": {
       "limitReached": "Všech {limit} zpráv pro Jarvise je na tento měsíc vyčerpáno. Obnoví se prvního dne dalšího měsíce.",
       "notConfigured": "Jarvis ještě není připojený. Zkus to později.",
-      "noCredit": "Účtu, přes který Jarvis běží, došel kredit, takže nemůže odpovědět. Dobij kredit v Anthropic Console (Plans & Billing) a zkus to znovu.",
+      "paused": "Jarvis si dává do konce měsíce pauzu, aplikace funguje dál.",
       "busy": "Jarvis má teď moc práce. Zkus to za minutu.",
       "unavailable": "Jarvis teď nemůže odpovědět. Zkus to za chvíli.",
       "notFound": "Tenhle rozhovor už neexistuje. Další zpráva začne nový.",
@@ -2139,7 +2139,8 @@
           "limitReached": "Tento měsíc jsi vyčerpal všechna volání Jarvise.",
           "notConfigured": "Jarvis ještě není připojený. Zkus to později.",
           "busy": "Jarvis má teď moc práce. Zkus to za minutu.",
-          "unavailable": "Rozbor teď nejde udělat. Zkus to za chvíli."
+          "unavailable": "Rozbor teď nejde udělat. Zkus to za chvíli.",
+          "paused": "Jarvis si dává do konce měsíce pauzu, aplikace funguje dál."
         }
       },
       "activeDeals": {
@@ -2269,6 +2270,18 @@
     }
   },
   "email": {
+    "jarvisBudget": {
+      "nearSubject": "{appName}: Jarvis vyčerpal {share} měsíčního rozpočtu",
+      "pausedSubject": "{appName}: Jarvis má do konce měsíce pauzu",
+      "nearIntro": "Jarvis tento měsíc utratil přes 80 % rozpočtu na AI. Při 100 % přestane volat model až do konce měsíce.",
+      "pausedIntro": "Jarvis vyčerpal rozpočet na AI pro tento měsíc a do konce měsíce model nevolá. Uživatelé vidí vlídnou hlášku o pauze, hlídání příležitostí běží jen z pravidel a ranní shrnutí se nepíšou.",
+      "creditsIntro": "API odmítlo volání kvůli nedostatku kreditu nebo dosaženému limitu útraty ({code}). Jarvis model nevolá, dokud kredit nebude zpátky. Uživatelé vidí vlídnou hlášku o pauze.",
+      "spent": "Útrata tento měsíc: {spent} z {budget} ({share}).",
+      "projected": "Při dosavadním tempu do konce měsíce: {projected}.",
+      "calls": "Volání modelu tento měsíc: {calls}.",
+      "appWorks": "Zbytek aplikace {appName} funguje dál. Tenhle e-mail přijde nejvýš jednou denně.",
+      "details": "Podrobnosti: {url}"
+    },
     "featureRequest": {
       "subject": "{appName}: nový nápad – {title}",
       "intro": "Uživatel aplikace {appName} napsal Jarvisovi, co mu v aplikaci chybí.",
@@ -2297,6 +2310,7 @@
         "busy": "Jarvis má teď moc práce. Zkus to za minutu.",
         "unavailable": "Jarvis teď nemůže odpovědět. Zkus to později.",
         "limitReached": "Volání Jarvise na tento měsíc došla.",
+        "paused": "Jarvis si dává do konce měsíce pauzu, takže odpověď napiš sám. Aplikace funguje dál.",
         "network": "Spojení se přerušilo. Zkontroluj internet a zkus to znovu.",
         "unknown": "Něco se pokazilo. Zkus to znovu, nebo napiš odpověď sám."
       },
@@ -4106,6 +4120,24 @@
     "ai": {
       "title": "AI a Jarvis",
       "description": "Volání, tokeny, náklady, latence a jak lidé reagují na Jarvise.",
+      "budget": {
+        "title": "Měsíční rozpočet",
+        "description": "Útrata všech účtů v tomto kalendářním měsíci (UTC), včetně interních, proti JARVIS_MONTHLY_BUDGET_USD.",
+        "meter": "Využití rozpočtu",
+        "spentOf": "{spent} z {budget}",
+        "projected": "Odhad do konce měsíce",
+        "calls": "Volání tento měsíc",
+        "status": {
+          "ok": "V pořádku",
+          "near": "Blízko limitu",
+          "paused": "Pauza"
+        },
+        "statusHint": {
+          "ok": "Jarvis volá model jako obvykle.",
+          "near": "Nad 80 %: majitel dostává jeden e-mail denně.",
+          "paused": "Na 100 %: do konce měsíce žádné volání modelu, hlídání běží jen z pravidel."
+        }
+      },
       "topUsersTitle": "10 nejnákladnějších uživatelů",
       "topUsersDescription": "Jen identifikátor a plán; detail uživatele otevřeš kliknutím.",
       "openDetail": "{id} → otevřít detail",

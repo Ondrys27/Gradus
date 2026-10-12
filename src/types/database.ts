@@ -1077,6 +1077,24 @@ export type Database = {
           },
         ]
       }
+      jarvis_budget_alerts: {
+        Row: {
+          created_at: string
+          day: string
+          kind: string
+        }
+        Insert: {
+          created_at?: string
+          day: string
+          kind: string
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          kind?: string
+        }
+        Relationships: []
+      }
       jarvis_conversations: {
         Row: {
           archived_at: string | null
@@ -2959,6 +2977,13 @@ export type Database = {
         Args: { _limit: number; _now: string }
         Returns: {
           user_id: string
+        }[]
+      }
+      jarvis_month_spend: {
+        Args: { _since: string }
+        Returns: {
+          calls: number
+          cost_usd: number
         }[]
       }
       jarvis_watch_candidates: {

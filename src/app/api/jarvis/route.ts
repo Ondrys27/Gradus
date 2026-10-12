@@ -169,12 +169,23 @@ export const GET = instrumentRoute("api.jarvis.get", async (request: Request) =>
   return NextResponse.json(body);
 });
 
+/**
+ * The model client of a cron run, or null when there is no key or Jarvis is
+ * paused (budget used up): the watch then runs on its rules only and no
+ * morning brief is written.
+ */
+async function cronClient(admin: ReturnType<typeof createAdminClient>, feature: JarvisFeature) {
+  const client = createAnthropic(admin);
+  return client && (await client.budget.allows(feature)) ? client : null;
+}
+
 function watch(request: Request) {
   return runCron("jarvis_watch", request, async () => {
     const started = Date.now();
+    const admin = createAdminClient();
     const summary = await runWatch({
-      client: createAnthropic(),
-      admin: createAdminClient(),
+      client: await cronClient(admin, "opportunity_scan"),
+      admin,
       deadline: started + maxDuration * 1000 - WATCH_MARGIN_MS,
     });
     return { processed: summary.checked, body: { ...summary, ms: Date.now() - started } };
@@ -184,9 +195,10 @@ function watch(request: Request) {
 function briefing(request: Request) {
   return runCron("jarvis_briefing", request, async () => {
     const started = Date.now();
+    const admin = createAdminClient();
     const summary = await runBriefings({
-      client: createAnthropic(),
-      admin: createAdminClient(),
+      client: await cronClient(admin, "briefing"),
+      admin,
       deadline: started + maxDuration * 1000 - WATCH_MARGIN_MS,
     });
     return { processed: summary.written, body: { ...summary, ms: Date.now() - started } };
@@ -272,7 +284,7 @@ async function ping(ctx: Context, body: unknown) {
     limitHit(ctx, "ping");
     return respond({ ok: false, code: "limitReached", durationMs: null, usage }, 429);
   }
-  const client = createAnthropic();
+  const client = createAnthropic(ctx.admin);
   if (!client) {
     await logNotConfigured(ctx, "ping");
     return respond({ ok: false, code: "notConfigured", durationMs: null }, 503);
@@ -321,7 +333,7 @@ async function milestoneReview(ctx: Context, body: unknown) {
     limitHit(ctx, "milestone_review");
     return jobError("limitReached", 429);
   }
-  const client = createAnthropic();
+  const client = createAnthropic(ctx.admin);
   if (!client) {
     await logNotConfigured(ctx, "milestone_review");
     return jobError("notConfigured", 503);
@@ -351,7 +363,7 @@ async function salesAnalysis(ctx: Context, body: unknown) {
     limitHit(ctx, "analysis");
     return jobError("limitReached", 429);
   }
-  const client = createAnthropic();
+  const client = createAnthropic(ctx.admin);
   if (!client) {
     await logNotConfigured(ctx, "analysis");
     return jobError("notConfigured", 503);
@@ -385,7 +397,7 @@ async function rewardSetup(ctx: Context, body: unknown) {
     limitHit(ctx, "reward_setup");
     return jobError("limitReached", 429);
   }
-  const client = createAnthropic();
+  const client = createAnthropic(ctx.admin);
   if (!client) {
     await logNotConfigured(ctx, "reward_setup");
     return jobError("notConfigured", 503);
@@ -454,7 +466,7 @@ async function emailReply(ctx: Context, body: unknown) {
     limitHit(ctx, "email_reply");
     return jobError("limitReached", 429);
   }
-  const client = createAnthropic();
+  const client = createAnthropic(ctx.admin);
   if (!client) {
     await logNotConfigured(ctx, "email_reply");
     return jobError("notConfigured", 503);
@@ -507,10 +519,15 @@ async function chat(ctx: Context, body: unknown) {
   }
 
   // Checked before anything is saved, so a missing key leaves no unanswered message.
-  const client = createAnthropic();
+  const client = createAnthropic(ctx.admin);
   if (!client) {
     await logNotConfigured(ctx, "chat");
     const event: ChatEvent = { type: "error", code: "notConfigured", usage };
+    return NextResponse.json(event, { status: 503 });
+  }
+  // Paused for the rest of the month: the kind note, and nothing is saved.
+  if (!(await client.budget.allows("chat"))) {
+    const event: ChatEvent = { type: "error", code: "paused", usage };
     return NextResponse.json(event, { status: 503 });
   }
 

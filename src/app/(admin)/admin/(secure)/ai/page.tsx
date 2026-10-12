@@ -18,7 +18,10 @@ import {
   jarvisConversations,
   type AiUsageRow,
 } from "@/features/admin/server/page-data";
+import { loadBudget } from "@/features/jarvis/server/budget";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { AdminChart } from "@/features/admin/ui/admin-chart";
+import { BudgetCard } from "@/features/admin/ui/budget-card";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
 import { AdminCard, GridSkeleton, TilesSkeleton } from "@/features/admin/ui/blocks";
 import { buildTable } from "@/features/admin/table";
@@ -43,6 +46,9 @@ export default async function AdminAiPage({ searchParams }: Props) {
   return (
     <>
       <AdminPageHeader section="ai" q={q} />
+      <Suspense fallback={<GridSkeleton count={1} height={180} />}>
+        <Budget />
+      </Suspense>
       <Suspense key={`tiles:${key}`} fallback={<TilesSkeleton count={6} />}>
         <Tiles q={q} />
       </Suspense>
@@ -60,6 +66,12 @@ export default async function AdminAiPage({ searchParams }: Props) {
       </Suspense>
     </>
   );
+}
+
+/** Always this calendar month, whatever range the controls show: the budget is monthly. */
+async function Budget() {
+  const loaded = await safe("jarvis budget", () => loadBudget(createAdminClient()));
+  return <Show loaded={loaded}>{(budget) => <BudgetCard budget={budget} />}</Show>;
 }
 
 async function Tiles({ q }: { q: AdminQuery }) {
