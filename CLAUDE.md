@@ -107,6 +107,7 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
   - když není co říct, neukazuje se — žádné plané „jak se máš"
 - **Ranní shrnutí:** cron každou hodinu, píše se v 6–10 h v pásmu uživatele, Sonnet (`briefing`), měřeno v `ai_usage`; prázdný den = žádné volání. Odemyká úroveň 5 v game režimu, v tool režimu je vždy. Zobrazí se při prvním otevření toho dne.
 - **Návrhy** z dávkové kontroly můžou nést úkoly k náhledu; vzniknou až po Přidat (klientem uživatele přes RLS). **Otázky** nejvýš dvě týdně, odpovědi jdou do kontextu chatu.
+- Jarvis běží na API kreditech s měsíčním stropem. Před každým voláním kontrola rozpočtu z ai_usage; vyčerpané kredity nebo rozpočet = vlídná hláška, nikdy surová chyba, e-mail majiteli max jednou denně.
 
 ### Rozhraní
 - Tokeny v `@theme`, **žádné hexy v komponentách.** Fialová `#7C5CFF`, tyrkysová `#2FE3C8`, zlatá `#FFC64B`, zelená `#3DDC97`, oranžová `#FF9F43` (rozpracované), růžová `#FF6B8A`, pozadí `#070B1F`, karta `#0D1234`.
@@ -169,9 +170,11 @@ Veřejné v `.env`, tajné v `.env.local`. Vždy udržovat `.env.example`.
 | `PUBLIC_SIGNUP_ENABLED` | true = registrace bez kódu a 14denní zkušební období; false (výchozí) = jen pozvánky a čekací listina. Čte jen server (`src/lib/signup.ts`), změna chce restart |
 | `GOOGLE_MAPS_API_KEY` | Generování kontaktů |
 | `ANTHROPIC_API_KEY` | Jarvis |
+| `JARVIS_MONTHLY_BUDGET_USD` | Měsíční strop útraty Jarvise (výchozí 90). Nad 100 % Jarvis nevolá model. |
 | `RESEND_API_KEY` | E-maily |
 | `CRON_SECRET` | Ověření Vercel Cron |
 | `FAKTUROID_*` | Per uživatel, šifrovaně v DB, ne v env |
+| `NEXT_PUBLIC_BETA` | Štítek Beta v aplikaci |
 
 **Cron úlohy:** `call_time_stats` denně · automatické platby denně · hlídání příležitostí 3× denně · ranní shrnutí Jarvise každou hodinu (6:00 v pásmu uživatele).
 
@@ -185,6 +188,8 @@ Registrace jen s pozvánkovým kódem. **První účet = owner.** Potvrzování 
 - Commit po každém dokončeném kroku, popis anglicky.
 - Po každé sekci: Vitest na klíčovou logiku, ruční průchod na 390 / 768 / 1440 px.
 - Chyby hlásit s výstupem terminálu nebo konzole, ne popisem.
+- Před každým nasazením musí projít `bun run e2e`.
+- Hlášení od testerů jsou v `bug_reports`; oprava hlášení = stav Opraveno v administraci.
 
 ## Do prosince nepatří
 

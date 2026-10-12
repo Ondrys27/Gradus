@@ -1,6 +1,7 @@
 ---
 description: Provede další kroky plánu přestavby až po nejbližší zastávku
 ---
+
 Provádíš plán přestavby Gradusu krok za krokem. Postupuj přesně takto a nic nepřeskakuj.
 
 1. Přečti `docs/progress.md` a najdi první nezaškrtnutou položku. Formát řádku je `- [ ] ID | agent | požadavek`.
@@ -13,7 +14,7 @@ Provádíš plán přestavby Gradusu krok za krokem. Postupuj přesně takto a n
 
 5. Najdi v `docs/plan.md` sekci k ID. ID `3.8` odpovídá nadpisu začínajícímu `## Prompt 3.8`, ID `K3` nadpisu začínajícímu `## Kontrola fáze 3`. Vezmi text promptu z bloku kódu pod nadpisem, doslova, celý.
 
-6. Deleguj úkol subagentovi, jehož jméno je v položce (`builder`, `architect` nebo `reviewer`). Předej mu první řádek „Toto je prompt ID z plánu přestavby." a pod něj text promptu doslova. Nic dalšího nepřidávej.
+6. Deleguj úkol subagentovi, jehož jméno je v položce (`builder`, `architect`, `designer` nebo `reviewer`). Předej mu první řádek „Toto je prompt ID z plánu přestavby." a pod něj text promptu doslova. Nic dalšího nepřidávej.
 
 7. Po návratu subagenta sám ověř `bun run lint` a `bun run build`. Když něco selže, deleguj opravu stejnému subagentovi jednou a přilož výstup chyby. Když selže i podruhé, položku nezaškrtávej, vypiš uživateli chybu a skonči.
 
