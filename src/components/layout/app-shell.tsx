@@ -1,3 +1,5 @@
+"use client";
+
 import type { ReactNode } from "react";
 import { JarvisDock } from "@/components/jarvis/jarvis-dock";
 import { JarvisTour } from "@/components/jarvis/jarvis-tour";
@@ -12,6 +14,14 @@ import { SectionGuard } from "./section-guard";
 import { Sidebar } from "./sidebar";
 import { TopBar } from "./top-bar";
 
+/**
+ * The app frame around every page. A client component on purpose: rendered
+ * from the server layout, its nine siblings arrived as separate client
+ * references, and whether their code was already in the browser changed the
+ * tree React numbers useId by, so ids (the account menu, Jarvis's gradients,
+ * every switch on the page) came out different from the server HTML on a
+ * reload. As one client module the shell hydrates the same way every time.
+ */
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <SearchProvider>

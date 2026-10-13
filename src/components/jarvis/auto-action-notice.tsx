@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { CircleCheckIcon, Undo2Icon, XIcon } from "lucide-react";
 import { useMarkSuggestionsSeen } from "@/features/jarvis/queries";
@@ -8,6 +8,7 @@ import type { Suggestion } from "@/features/jarvis/suggestions";
 import { formatNumber } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { useSuggestionActions, useSuggestionText } from "./suggestion-card";
+import { useReducedMotionSafe } from "@/lib/use-media-query";
 
 /**
  * Announces a task Jarvis marked done, right above his button, with Undo.
@@ -23,7 +24,7 @@ export function AutoActionNotice({
 }) {
   const t = useTranslations("jarvis.suggestion");
   const settings = useFormatSettings();
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useReducedMotionSafe();
   const markSeen = useMarkSuggestionsSeen();
   const text = useSuggestionText();
   const actions = useSuggestionActions({ ask: () => undefined });

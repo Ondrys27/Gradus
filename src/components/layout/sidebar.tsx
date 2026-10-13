@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { LockIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { APP_NAME } from "@/lib/constants";
@@ -11,12 +11,13 @@ import { isActivePath } from "./nav-items";
 import { useNavItems, type NavItemState } from "./use-nav";
 import { LockedSectionPopover } from "./lock-hint";
 import { Logo } from "./logo";
+import { useReducedMotionSafe } from "@/lib/use-media-query";
 
 /** 240 px with labels from 1024 px, icon rail from 768 px, hidden on phones. */
 export function Sidebar() {
   const t = useTranslations("nav");
   const pathname = usePathname();
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useReducedMotionSafe();
   const { items } = useNavItems();
 
   return (
@@ -108,7 +109,7 @@ function LockedNavItem({ item }: { item: NavItemState }) {
 
 /** A section just unlocked and not opened yet. */
 function FreshDot() {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useReducedMotionSafe();
   return (
     <span
       aria-hidden

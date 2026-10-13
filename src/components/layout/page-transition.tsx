@@ -1,15 +1,16 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useIsFirstPaint } from "@/lib/first-paint";
+import { useReducedMotionSafe } from "@/lib/use-media-query";
 
 /**
  * Fade and a 12 px rise over 250 ms. Never waits for data. The page the app
  * starts on is painted straight away; only later page changes animate.
  */
 export function PageTransition({ children }: { children: ReactNode }) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useReducedMotionSafe();
   const firstPaint = useIsFirstPaint();
   return (
     <motion.div

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { FlameIcon, SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useLevelUnseen } from "@/features/game/overview-queries";
@@ -15,6 +15,7 @@ import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { AccountMenu } from "./account-menu";
 import { Logo } from "./logo";
+import { useReducedMotionSafe } from "@/lib/use-media-query";
 
 /** The level window is not part of the first load; it loads on the first tap. */
 const LevelDialog = dynamic(
@@ -28,7 +29,7 @@ const LevelDialog = dynamic(
  */
 export function TopBar() {
   const t = useTranslations("topBar");
-  const osReducedMotion = useReducedMotion();
+  const osReducedMotion = useReducedMotionSafe();
   const animationsEnabled = useAnimationsEnabled();
   const reduceMotion = osReducedMotion || !animationsEnabled;
   const settings = useFormatSettings();

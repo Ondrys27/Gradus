@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { animate, useReducedMotion } from "framer-motion";
+import { animate } from "framer-motion";
 import { formatNumber, type NumberFormat } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
+import { useReducedMotionSafe } from "@/lib/use-media-query";
 
 type AnimatedNumberProps = {
   value: number;
@@ -16,7 +17,7 @@ type AnimatedNumberProps = {
 
 /** Counts up from zero on mount, then animates between values. */
 export function AnimatedNumber({ value, format, duration = 1.2, className }: AnimatedNumberProps) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useReducedMotionSafe();
   const settings = useFormatSettings();
   const [display, setDisplay] = useState(0);
   const current = useRef(0);

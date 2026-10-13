@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { npsEligible } from "./nps-trigger";
+import { useReducedMotionSafe } from "@/lib/use-media-query";
 
 const SCORE_MAX = 10;
 const chip =
@@ -24,7 +25,7 @@ const chipOff = "border-line text-ink-soft hover:border-line-strong hover:text-i
  */
 export function NpsCard() {
   const t = useTranslations("dashboard.nps");
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useReducedMotionSafe();
   const { user } = useSession();
   const profile = useProfile();
   const updateProfile = useUpdateProfile();

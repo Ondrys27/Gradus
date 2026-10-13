@@ -3,7 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog } from "@base-ui/react/dialog";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   ArrowLeftIcon,
   ChevronRightIcon,
@@ -32,6 +32,7 @@ import {
   type ResultKind,
 } from "./search-logic";
 import { KIND_ICONS, useSearchRows, type Row, type RowGroup } from "./use-search-rows";
+import { useReducedMotionSafe } from "@/lib/use-media-query";
 
 /** Typing settles for this long before the database is asked. */
 const DEBOUNCE_MS = 150;
@@ -64,7 +65,7 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const listId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
-  const osReducedMotion = useReducedMotion();
+  const osReducedMotion = useReducedMotionSafe();
   const animationsEnabled = useAnimationsEnabled();
   const reduceMotion = osReducedMotion || !animationsEnabled;
 

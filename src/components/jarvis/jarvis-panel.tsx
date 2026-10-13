@@ -9,7 +9,7 @@ import {
   type FormEvent,
   type KeyboardEvent,
 } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import {
   ArrowUpIcon,
@@ -43,7 +43,7 @@ import {
 import type { ChatError, useJarvisChat } from "@/features/jarvis/use-jarvis-chat";
 import { formatNumber } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
-import { useIsPhone } from "@/lib/use-media-query";
+import { useIsPhone, useReducedMotionSafe } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
 
 type JarvisPanelProps = {
@@ -58,7 +58,7 @@ type JarvisPanelProps = {
 export function JarvisPanel({ chat, onClose }: JarvisPanelProps) {
   const t = useTranslations("jarvis");
   const settings = useFormatSettings();
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useReducedMotionSafe();
   const isPhone = useIsPhone();
   const conversation = useJarvisConversation(true);
   const overview = useJarvisOverview(true);
@@ -498,7 +498,7 @@ function UserBubble({
 }
 
 function TypingDots({ label }: { label: string }) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useReducedMotionSafe();
   return (
     <div
       role="status"

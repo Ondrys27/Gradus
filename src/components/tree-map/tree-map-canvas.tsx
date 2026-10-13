@@ -11,7 +11,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
-import { animate, AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { animate, AnimatePresence, motion } from "framer-motion";
 import { CrosshairIcon, MaximizeIcon, MinimizeIcon, ZoomInIcon, ZoomOutIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
@@ -44,6 +44,7 @@ import {
   type Anchor,
   type Transform,
 } from "./tree-map-zoom";
+import { useReducedMotionSafe } from "@/lib/use-media-query";
 
 /** Room around the tree inside the pannable canvas. */
 const CANVAS_PAD = 48;
@@ -93,7 +94,7 @@ function shift(box: Box): Box {
 export function TreeMap({ tree, label, contentKey, renderNode, overlay }: Props) {
   const t = useTranslations("treeMap");
   const instanceId = useId();
-  const reduceMotion = useReducedMotion() ?? false;
+  const reduceMotion = useReducedMotionSafe() ?? false;
   const containerRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
   const transformRef = useRef<ReactZoomPanPinchContentRef>(null);

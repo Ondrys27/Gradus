@@ -22,6 +22,12 @@ function supabaseStoragePattern() {
 const nextConfig: NextConfig = {
   // PDF text extraction (pdf.js inside) runs from node_modules, not bundled.
   serverExternalPackages: ["unpdf"],
+  experimental: {
+    // The dev-only segment explorer wraps segments in extra nodes that shift
+    // React's useId between the server HTML and the browser, so every app page
+    // logged a hydration mismatch in development (never in a build).
+    devtoolSegmentExplorer: false,
+  },
   images: {
     remotePatterns: supabaseStoragePattern(),
     formats: ["image/avif", "image/webp"],

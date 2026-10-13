@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type PointerEvent, type WheelEvent } from "react";
-import { useReducedMotion } from "framer-motion";
 import {
   Bar,
   Brush,
@@ -52,6 +51,7 @@ import { Pager } from "./pager";
 import { Segmented } from "./segmented";
 import { TransactionRow } from "./transactions-panel";
 import { useDailyTotals, useMonthlyTotals, useTotals, useTransactions } from "./queries";
+import { useReducedMotionSafe } from "@/lib/use-media-query";
 
 const CHART_HEIGHT = 220;
 const BRUSH_HEIGHT = 28;
@@ -75,7 +75,7 @@ export function IncomeChart({ today }: { today: IsoDate }) {
   const t = useTranslations("finance.chart");
   const locale = useLocale();
   const settings = useFormatSettings();
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useReducedMotionSafe();
   const containerRef = useRef<HTMLDivElement>(null);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const gesture = useRef<Gesture | null>(null);

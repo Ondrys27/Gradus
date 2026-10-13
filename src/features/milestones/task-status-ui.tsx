@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { CheckIcon, ChevronDownIcon, LockIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { TASK_VISUAL_STATES, taskStateChipClass, type TaskVisualState } from "./task-status";
 import type { TaskStatus } from "./types";
+import { useReducedMotionSafe } from "@/lib/use-media-query";
 
 /** Small pill with the state's colour, used in the list. */
 export function TaskStatePill({ state }: { state: TaskVisualState }) {
@@ -64,7 +65,7 @@ function StateMark({ state }: { state: TaskVisualState }) {
 /** Top-left corner of the map: what each look means. Starts folded on a phone. */
 export function TaskStateLegend() {
   const t = useTranslations("milestones");
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useReducedMotionSafe();
   const [open, setOpen] = useState(
     () => typeof window === "undefined" || window.matchMedia("(min-width: 768px)").matches,
   );

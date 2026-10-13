@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   EllipsisIcon,
   LockIcon,
@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { isActivePath } from "./nav-items";
 import { useNavItems, type NavItemState } from "./use-nav";
 import { LockedSectionPopover } from "./lock-hint";
+import { useReducedMotionSafe } from "@/lib/use-media-query";
 const accountItems = [
   { key: "profile", href: "/app/profil", icon: UserRoundIcon },
   { key: "settings", href: "/app/nastaveni", icon: SettingsIcon },
@@ -169,7 +170,7 @@ export function BottomNav() {
 type ItemProps = { icon: LucideIcon; label: string; active: boolean; fresh?: boolean };
 
 function ItemBody({ icon: Icon, label, active, fresh }: ItemProps) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useReducedMotionSafe();
   return (
     <>
       {active && (

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { useFirstActiveMilestone } from "@/features/game/overview-queries";
@@ -13,7 +13,7 @@ import {
   type Size,
   type TourStep,
 } from "@/features/jarvis/tour";
-import { useIsPhone } from "@/lib/use-media-query";
+import { useIsPhone, useReducedMotionSafe } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
 import { Jarvis, JARVIS_SIZES, type JarvisState } from "./jarvis";
 import { SpeechBubble, TypedText, type BubbleTail } from "./speech-bubble";
@@ -103,7 +103,7 @@ export function TourOverlay({
 }) {
   const t = useTranslations("jarvis.tour");
   const router = useRouter();
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useReducedMotionSafe();
   const isPhone = useIsPhone();
   const viewport = useViewport();
   const maskId = `tour-mask-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;

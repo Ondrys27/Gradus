@@ -34,6 +34,17 @@ export function maxRequestable(usage: GenerationUsage): number {
   return Math.max(0, Math.min(PER_REQUEST_MAX, left));
 }
 
+/**
+ * The count the form keeps for a number the user typed. Below 1 becomes 1.
+ * Above `max` it is cut to `max` (at least 1) and refused, but only once the
+ * limits are known: before they load, `max` is undefined and the number stays
+ * as typed (submitting waits for the limits anyway).
+ */
+export function fitCount(next: number, max: number | undefined): { count: number; refused: boolean } {
+  if (max !== undefined && next > max) return { count: Math.max(max, 1), refused: true };
+  return { count: Math.max(1, next), refused: false };
+}
+
 /** Asking Google, then sorting out duplicates and saving in one database call. */
 export type GenerationPhase = "searching" | "saving";
 

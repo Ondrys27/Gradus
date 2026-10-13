@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { useReducedMotion } from "framer-motion";
 import { XIcon } from "lucide-react";
 import { useAnimationsEnabled } from "@/lib/animation-preference";
 import { cn } from "@/lib/utils";
+import { useReducedMotionSafe } from "@/lib/use-media-query";
 
 /** Where the tail points: the side of the bubble Jarvis is on, and which end of it. */
 export type BubbleTail = {
@@ -84,7 +84,7 @@ const TICK_MS = 24;
  * off) the whole text is there at once. `finish()` shows the rest now.
  */
 export function useTypewriter(text: string): { shown: string; done: boolean; finish: () => void } {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useReducedMotionSafe();
   const animations = useAnimationsEnabled();
   const instant = Boolean(reduceMotion) || !animations;
   const [state, setState] = useState({ text, count: 0 });

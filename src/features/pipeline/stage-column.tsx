@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
-import { useReducedMotion } from "framer-motion";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVerticalIcon, PlusIcon, RotateCcwIcon, Trash2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -18,6 +17,7 @@ import { DealCard, DealCardBody } from "./deal-card";
 import { useSetDepositStage } from "./queries";
 import { STAGE_NAME_MAX } from "./schemas";
 import { stageTone, type Deal, type Stage } from "./types";
+import { useReducedMotionSafe } from "@/lib/use-media-query";
 
 /**
  * A bouncy overshoot curve so sibling stages spring into their new slot while
@@ -55,7 +55,7 @@ export function StageColumn({
 }: Props) {
   const t = useTranslations("pipeline");
   const settings = useFormatSettings();
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useReducedMotionSafe();
   const {
     setNodeRef,
     setActivatorNodeRef,

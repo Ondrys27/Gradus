@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import confetti from "canvas-confetti";
-import { motion, useReducedMotion, type Transition } from "framer-motion";
+import { motion, type Transition } from "framer-motion";
 import { GiftIcon, ShieldIcon, TrophyIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { GameIcon } from "@/features/game/unlock-icon";
@@ -13,6 +13,7 @@ import { isSoundEnabled } from "@/lib/sound-preference";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { playCelebrationSound } from "./celebration-sound";
 import type { CelebrationOptions } from "./celebration-provider";
+import { useReducedMotionSafe } from "@/lib/use-media-query";
 
 type CelebrationCardProps = CelebrationOptions & { onContinue: () => void };
 
@@ -30,7 +31,7 @@ export function CelebrationCard({
 }: CelebrationCardProps) {
   const t = useTranslations("celebration");
   // Either the OS says to reduce motion or the user turned animations off in Settings.
-  const reduceMotion = (useReducedMotion() ?? false) || !isAnimationsEnabled();
+  const reduceMotion = (useReducedMotionSafe() ?? false) || !isAnimationsEnabled();
   const formatSettings = useFormatSettings();
   const cardRef = useRef<HTMLDivElement>(null);
   const soundPlayed = useRef(false);

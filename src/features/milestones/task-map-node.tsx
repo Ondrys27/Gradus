@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, type MouseEvent, type PointerEvent } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { ChevronLeftIcon, FlagIcon, PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatNumber, todayIsoDate } from "@/lib/format";
@@ -11,6 +11,7 @@ import { TaskCheckbox } from "./task-checkbox";
 import { overdueDays, taskCardClass, taskVisualState } from "./task-status";
 import { OverdueBadge } from "./task-status-ui";
 import type { Task } from "./types";
+import { useReducedMotionSafe } from "@/lib/use-media-query";
 
 /** Shared by the visible node and its hidden twin in the measuring layer. */
 const cardBase =
@@ -54,7 +55,7 @@ export function TaskMapNode({
 }: TaskMapNodeProps) {
   const t = useTranslations("milestones");
   const settings = useFormatSettings();
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useReducedMotionSafe();
   const done = task.status === "done";
   const locked = remaining > 0;
   const state = taskVisualState(task, remaining);

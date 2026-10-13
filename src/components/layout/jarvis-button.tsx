@@ -1,10 +1,12 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { Jarvis, JARVIS_SIZES, type JarvisState } from "@/components/jarvis/jarvis";
+import { useJarvisOverlay } from "@/features/jarvis/overlay-store";
 import { formatNumber } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
+import { useReducedMotionSafe } from "@/lib/use-media-query";
 
 type JarvisButtonProps = {
   state?: JarvisState;
@@ -26,7 +28,10 @@ export function JarvisButton({
   onClick,
 }: JarvisButtonProps) {
   const t = useTranslations("jarvis");
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useReducedMotionSafe();
+  // While the guided tour lights the button up, it holds still: a bobbing
+  // target would drag the tour's bubble (and its Next button) along with it.
+  const tourActive = useJarvisOverlay((overlay) => overlay.tourActive);
   const settings = useFormatSettings();
   const noticed = attention > 0 && !expanded;
   const label = expanded ? t("close") : t("open");
@@ -35,8 +40,12 @@ export function JarvisButton({
     <motion.div
       data-tour="jarvis"
       className="fixed right-[max(16px,env(safe-area-inset-right))] bottom-[calc(12px+env(safe-area-inset-bottom))] z-nav md:right-[max(24px,env(safe-area-inset-right))] md:bottom-[max(24px,env(safe-area-inset-bottom))]"
-      animate={reduceMotion ? undefined : { y: [0, -6, 0] }}
-      transition={{ duration: 3, ease: "easeInOut", repeat: Infinity }}
+      animate={reduceMotion || tourActive ? { y: 0 } : { y: [0, -6, 0] }}
+      transition={
+        reduceMotion || tourActive
+          ? { duration: 0 }
+          : { duration: 3, ease: "easeInOut", repeat: Infinity }
+      }
     >
       <button
         type="button"

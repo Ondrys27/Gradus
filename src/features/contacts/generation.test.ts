@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { classifyGoogleError, maxRequestable, toFoundPlaces } from "./generation";
+import { classifyGoogleError, fitCount, maxRequestable, toFoundPlaces } from "./generation";
 
 function googleError(code: number, status: string, message: string, reason?: string) {
   return {
@@ -120,5 +120,22 @@ describe("toFoundPlaces", () => {
       },
     ]);
     expect(toFoundPlaces(undefined)).toEqual([]);
+  });
+});
+
+describe("fitCount", () => {
+  it("keeps a typed number while the limits are still loading", () => {
+    expect(fitCount(3, undefined)).toEqual({ count: 3, refused: false });
+    expect(fitCount(500, undefined)).toEqual({ count: 500, refused: false });
+  });
+
+  it("cuts a number above the limit and refuses it", () => {
+    expect(fitCount(80, 60)).toEqual({ count: 60, refused: true });
+    expect(fitCount(5, 0)).toEqual({ count: 1, refused: true });
+  });
+
+  it("never goes below one", () => {
+    expect(fitCount(0, 60)).toEqual({ count: 1, refused: false });
+    expect(fitCount(0, undefined)).toEqual({ count: 1, refused: false });
   });
 });

@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { CheckCircle2Icon, LockIcon, RotateCcwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import type { MilestoneCompletion } from "./task-tree";
+import { useReducedMotionSafe } from "@/lib/use-media-query";
 
 type Props = {
   completion: MilestoneCompletion;
@@ -21,7 +22,7 @@ type Props = {
  */
 export function CompleteMilestoneButton({ completion, pending, onComplete, onReopen }: Props) {
   const t = useTranslations("milestones.actions");
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useReducedMotionSafe();
   const ready = completion.kind === "ready";
 
   // Unlocking is played only when it happens in front of the user.

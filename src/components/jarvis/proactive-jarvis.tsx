@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import { CheckIcon, PlusIcon, SendIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -18,7 +18,7 @@ import type { ProactiveItem } from "@/features/jarvis/protocol";
 import { ANSWER_MAX, questionByKey } from "@/features/jarvis/questions";
 import type { Suggestion } from "@/features/jarvis/suggestions";
 import type { SuggestionType } from "@/features/jarvis/suggestion-types";
-import { useIsPhone } from "@/lib/use-media-query";
+import { useIsPhone, useReducedMotionSafe } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
 import { Jarvis, JARVIS_SIZES, type JarvisState } from "./jarvis";
 import { SpeechBubble, TypedText } from "./speech-bubble";
@@ -143,7 +143,7 @@ function ProactiveCallout({
 }) {
   const t = useTranslations("jarvis.proactive");
   const router = useRouter();
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useReducedMotionSafe();
   const reaction = useProactiveReaction();
   const suggestionText = useSuggestionText();
   const isPhone = useIsPhone();

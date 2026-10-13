@@ -1,8 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { motion, useReducedMotion, type Variants } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { useIsFirstPaint } from "@/lib/first-paint";
+import { useReducedMotionSafe } from "@/lib/use-media-query";
 
 const STAGGER_SECONDS = 0.04;
 
@@ -16,7 +17,7 @@ const item: Variants = {
  * Not on the server-rendered first paint, which must be visible without JavaScript.
  */
 export function Stagger({ className, children }: { className?: string; children: ReactNode }) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useReducedMotionSafe();
   const firstPaint = useIsFirstPaint();
   return (
     <motion.div

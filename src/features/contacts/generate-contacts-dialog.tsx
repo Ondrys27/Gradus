@@ -17,6 +17,7 @@ import { formatNumber } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import {
+  fitCount,
   generateSchema,
   INDUSTRY_MAX,
   LOCATION_MAX,
@@ -97,17 +98,12 @@ function GenerateForm({
   const n = (value: number) => formatNumber(value, {}, settings);
 
   function applyCount(next: number) {
-    if (next > max) {
-      setCount(Math.max(max, 1));
-      setCountText(String(Math.max(max, 1)));
-      setRefused(true);
-      setShaking(true);
-      return;
-    }
-    const clean = Math.max(1, next);
-    setCount(clean);
-    setCountText(String(clean));
-    setRefused(false);
+    // Typed before the limits arrived: kept as is, not cut to a max of zero.
+    const fitted = fitCount(next, usageQuery.data ? max : undefined);
+    setCount(fitted.count);
+    setCountText(String(fitted.count));
+    setRefused(fitted.refused);
+    if (fitted.refused) setShaking(true);
   }
 
   function setBusy(value: boolean) {
