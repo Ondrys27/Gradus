@@ -20,6 +20,9 @@ function supabaseStoragePattern() {
 }
 
 const nextConfig: NextConfig = {
+  // A production build next to a running dev server (bun run e2e against a
+  // build) needs its own folder; everything else keeps the default .next.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   // PDF text extraction (pdf.js inside) runs from node_modules, not bundled.
   serverExternalPackages: ["unpdf"],
   experimental: {

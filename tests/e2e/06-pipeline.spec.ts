@@ -43,10 +43,18 @@ test("6 · deal → dragged to the won stage → celebration → contact in Clie
   await form.locator("#new-deal-title").fill(title);
   await form.locator("#new-deal-contact").fill(contactName);
   await form.getByRole("button", { name: t("pipeline.form.contactCreate", { name: contactName }) }).click();
-  await expect(form.getByText(contactName)).toBeVisible();
+  // The picked contact shows as a chip with a remove button once it is created.
+  await expect(form.getByRole("button", { name: exact(L, "pipeline.form.contactClear") })).toBeVisible();
+  await expect(form.getByText(contactName, { exact: true })).toBeVisible();
   await form.locator("#new-deal-value").fill("25000");
   await form.getByRole("button", { name: exact(L, "pipeline.form.create") }).click();
   await expect(form).toBeHidden();
+  await expect
+    .poll(async () => {
+      const { data } = await admin().from("deals").select("contact_id").eq("user_id", account.id).maybeSingle();
+      return Boolean(data?.contact_id);
+    }, { message: "the new deal is saved with its contact" })
+    .toBe(true);
 
   const { data: stages } = await admin()
     .from("pipeline_stages")
@@ -79,13 +87,28 @@ test("6 · deal → dragged to the won stage → celebration → contact in Clie
   expect(surveyAsked, "the meeting survey was offered").toBe(true);
 
   // The contact is a client now.
-  await openApp(page, "/app/kontakty");
-  const clients = (await admin()
+  const { data: won } = await admin()
+    .from("deals")
+    .select("contact_id, won_at")
+    .eq("user_id", account.id)
+    .single();
+  expect(won?.contact_id, "the deal kept its contact").toBeTruthy();
+  expect(won?.won_at).toBeTruthy();
+  const { data: clientsTable } = await admin()
     .from("contact_tables")
-    .select("name")
+    .select("id, name")
     .eq("user_id", account.id)
     .eq("system_key", "clients")
-    .single()).data!.name;
+    .single();
+  const { data: entry } = await admin()
+    .from("contact_table_entries")
+    .select("table_id")
+    .eq("user_id", account.id)
+    .eq("contact_id", won!.contact_id!)
+    .single();
+  expect(entry?.table_id).toBe(clientsTable!.id);
+  const clients = clientsTable!.name;
+  await openApp(page, "/app/kontakty");
   await page
     .getByRole("group", { name: t("contacts.tables.label") })
     .getByRole("button", { name: new RegExp(clients) })

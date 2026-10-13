@@ -28,7 +28,7 @@ test("11 · contacts are generated from Google Maps into Unreached", async ({ pa
   const db = admin();
   const { data: contacts } = await db
     .from("contacts")
-    .select("id, external_place_id")
+    .select("id, company_name, external_place_id")
     .eq("user_id", account.id);
   expect(contacts!.length).toBeGreaterThan(0);
   expect(contacts!.length).toBeLessThanOrEqual(3);
@@ -40,10 +40,11 @@ test("11 · contacts are generated from Google Maps into Unreached", async ({ pa
     .eq("owner_id", account.id)
     .eq("event", "places_request");
   expect(requests!.length).toBeGreaterThan(0);
-  console.log(`Google requests: ${JSON.stringify(requests!.map((row) => row.props))}`);
-  console.log(`Outcome: ${await dialog.locator("[role=status], p").allInnerTexts()}`);
 
   await dialog.getByRole("button", { name: exact(L, "contacts.generate.done.show") }).click();
   await expect(dialog).toBeHidden();
-  await expect(page.locator("main li").filter({ visible: true }).first()).toBeVisible();
+  // The list switched to Unreached and shows what was generated.
+  await expect(
+    page.locator("main").getByText(contacts![0]!.company_name!, { exact: true }).filter({ visible: true }).first(),
+  ).toBeVisible();
 });

@@ -7,6 +7,8 @@ import "./tests/e2e/support/env";
  * the database from .env / .env.local, with throw-away internal accounts
  * (e2e-…@gradus.local) that are removed again.
  */
+const baseURL = process.env.E2E_BASE_URL || "http://localhost:3000";
+
 export default defineConfig({
   testDir: "./tests/e2e",
   testIgnore: ["support/**"],
@@ -19,7 +21,7 @@ export default defineConfig({
   retries: 0,
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: baseURL,
     locale: "cs-CZ",
     timezoneId: "Europe/Prague",
     trace: "retain-on-failure",
@@ -33,7 +35,9 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
     },
   ],
-  webServer: {
+  // E2E_BASE_URL points the run at another server (e.g. a production build);
+  // otherwise the local dev server is used and started when not running.
+  webServer: process.env.E2E_BASE_URL ? undefined : {
     command: "bun run dev",
     url: "http://localhost:3000",
     reuseExistingServer: true,
