@@ -4,12 +4,12 @@ import { memo, useEffect, useId, useRef, useState } from "react";
 import {
   motion,
   useInView,
-  useReducedMotionConfig,
   useSpring,
   type TargetAndTransition,
   type Transition,
   type Variants,
 } from "framer-motion";
+import { useReducedMotionSafe } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
 import {
   lookToward,
@@ -125,7 +125,9 @@ export const Jarvis = memo(function Jarvis({
   const ref = (suffix: string) => `jv${uid}-${suffix}`;
   const rootRef = useRef<HTMLDivElement>(null);
   const inView = useInView(rootRef, { margin: "80px" });
-  const reduce = useReducedMotionConfig() ?? false;
+  // Hydration-safe: framer's hook already knows the OS setting on the first
+  // client render, so the glow's style differed from the server HTML.
+  const reduce = useReducedMotionSafe();
   const live = inView && !reduce;
   const full = variant === "full";
   const pose = poseFor(state, direction);
