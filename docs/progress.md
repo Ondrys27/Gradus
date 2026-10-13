@@ -54,7 +54,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 12.2 | designer | 2026-10-12 Domovská stránka přepracovaná z deseti šablonovitých sekcí na šest s vlastní typografií (Bricolage Grotesque, Caveat), jednou září a bez nástupových animací; diagnóza a snímky před/po v docs/web-redesign.
 - [x] STOP | Prohlédni si nový web v anonymním okně a porovnej snímky v docs/web-redesign/before a after. Co nesedí, napiš Claude Code rovnou. Pokud chcete s Vášou na web společnou fotku, ulož ji jako public/founders.jpg a napiš Claude Code, ať ji zapojí. Pak /pokracuj.
 - [x] STOP | Ruční krok: Google Maps. V .env.local chybí GOOGLE_MAPS_API_KEY, bez něj testerům nepůjde generovat kontakty. V Google Cloud Console: projekt s připojenou fakturací, povolené „Places API (New)", klíč s omezením API jen na Places API (New) a bez omezení podle webu nebo IP. Ověř ho příkazem z dřívějška v terminálu (musí vrátit firmy, ne 403), pak ho vlož do .env.local a restartuj dev server. Když nechceš generování v betě, přeskoč — test ho vynechá. Pak /pokracuj.
-- [ ] 12.3 | architect |
+- [x] 12.3 | architect | 2026-10-13 21 end-to-end testů hlavních cest v Playwrightu (bun run e2e) s vlastními @gradus.local účty; opravena hydratace pro omezený pohyb, nehybné tlačítko Jarvise během průvodce, srážení počtu generovaných kontaktů na 1 a chybná izolace při produkčním buildu; vše ověřeno i proti bun run build; docs/e2e-report.md.
 - [ ] 12.4 | builder | env: RESEND_API_KEY
 - [ ] 12.5 | architect | env: CRON_SECRET
 - [ ] K12 | reviewer |
