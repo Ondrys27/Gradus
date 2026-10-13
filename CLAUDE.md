@@ -27,6 +27,7 @@ bun run dev
 bun run build
 bun run lint
 bun run test
+bun run e2e           # Playwright proti běžícímu dev serveru, interní účty e2e-…@gradus.local; před každým nasazením musí projít
 bun run db:migrate    # supabase db push
 bun run db:types      # generuje src/types/database.ts
 ```

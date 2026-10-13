@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./support/fixtures";
 
 test("a signed-out visitor is sent to login and keeps where they wanted to go", async ({
   page,
@@ -39,8 +39,12 @@ test("the home page is the public site for a signed-out visitor", async ({ page 
   await expect(page.locator("header a[href='/prihlaseni']")).toBeVisible();
 });
 
-test("an English browser lands on the English site on its first visit", async ({ page }) => {
-  await page.setExtraHTTPHeaders({ "accept-language": "en-GB,en;q=0.9" });
-  await page.goto("/");
-  await expect(page).toHaveURL(/\/en$/);
+test.describe("an English browser", () => {
+  test.use({ locale: "en-GB" });
+
+  test("lands on the English site on its first visit", async ({ page }) => {
+    await page.setExtraHTTPHeaders({ "accept-language": "en-GB,en;q=0.9" });
+    await page.goto("/");
+    await expect(page).toHaveURL(/\/en$/);
+  });
 });
