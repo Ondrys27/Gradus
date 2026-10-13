@@ -14,14 +14,14 @@ type Accounts = {
   register: (email: string) => void;
 };
 
-/** Against `next dev` (no E2E_BASE_URL); a production build is checked with no exception. */
-const AGAINST_DEV_SERVER = !process.env.E2E_BASE_URL;
+/** Against `next dev` unless E2E_BUILD=1 says the target is a production build (no exception there). */
+const AGAINST_DEV_SERVER = process.env.E2E_BUILD !== "1";
 
 /**
  * The one known `next dev` artefact: under load the dev server sometimes
  * hydrates the app with useId values shifted against its own HTML (base-ui
  * ids, Jarvis's gradient ids). Only the ids differ, nothing else, and a full
- * run against a production build (E2E_BASE_URL) shows none, so on the dev
+ * run against a production build (E2E_BUILD=1) shows none, so on the dev
  * server exactly this message is reported in the output but does not fail a
  * test. Any other difference in a hydration message still fails.
  */

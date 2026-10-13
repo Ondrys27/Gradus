@@ -35,8 +35,13 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
     },
   ],
-  // E2E_BASE_URL points the run at another server (e.g. a production build);
-  // otherwise the local dev server is used and started when not running.
+  // E2E_BASE_URL points the run at another server: a dev server already
+  // running on another port (never start a second `next dev` in this folder,
+  // two dev servers share .next and answer 500), or a production build:
+  //   NEXT_DIST_DIR=.next-e2e bun run build
+  //   NEXT_DIST_DIR=.next-e2e bunx next start -p 3100
+  //   E2E_BUILD=1 E2E_BASE_URL=http://localhost:3100 bun run e2e
+  // Without it the dev server on :3000 is used and started when not running.
   webServer: process.env.E2E_BASE_URL ? undefined : {
     command: "bun run dev",
     url: "http://localhost:3000",
