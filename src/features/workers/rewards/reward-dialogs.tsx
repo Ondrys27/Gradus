@@ -42,7 +42,14 @@ type BranchDialogProps = {
 };
 
 /** A trigger: what event pays, and for whom. */
-export function BranchDialog({ open, onOpenChange, branch, workers, onSave, onDelete }: BranchDialogProps) {
+export function BranchDialog({
+  open,
+  onOpenChange,
+  branch,
+  workers,
+  onSave,
+  onDelete,
+}: BranchDialogProps) {
   const t = useTranslations("workers.rewards");
   const generation = useFreshOnOpen(open);
   return (
@@ -165,7 +172,14 @@ type LeafDialogProps = {
 };
 
 /** A rule: how much, in what way, and conditions in plain words. */
-export function LeafDialog({ open, onOpenChange, trigger, leaf, onSave, onDelete }: LeafDialogProps) {
+export function LeafDialog({
+  open,
+  onOpenChange,
+  trigger,
+  leaf,
+  onSave,
+  onDelete,
+}: LeafDialogProps) {
   const t = useTranslations("workers.rewards");
   const generation = useFreshOnOpen(open);
   return (

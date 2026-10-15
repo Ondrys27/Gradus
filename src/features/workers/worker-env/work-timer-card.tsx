@@ -8,7 +8,13 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { GlowCard } from "@/components/ui/glow-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { pastDeadline, shownSeconds } from "@/features/cold-calling/timer-logic";
-import { formatNumber, formatStopwatch, formatTime, splitDuration, todayIsoDate } from "@/lib/format";
+import {
+  formatNumber,
+  formatStopwatch,
+  formatTime,
+  splitDuration,
+  todayIsoDate,
+} from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { useWorkAction, useWorkReading } from "./work-timer-queries";
@@ -137,7 +143,11 @@ export function WorkTimerCard({ workerId }: { workerId: string }) {
       )}
 
       <div className="grid grid-cols-2 gap-2">
-        <Button size="lg" disabled={!data || running || action.isPending} onClick={() => run("start")}>
+        <Button
+          size="lg"
+          disabled={!data || running || action.isPending}
+          onClick={() => run("start")}
+        >
           <PlayIcon aria-hidden data-icon="inline-start" />
           {t("start")}
         </Button>

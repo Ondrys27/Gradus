@@ -12,7 +12,13 @@ type Props<T extends string> = {
 };
 
 /** Tabs as a pill row; 44 px tall targets on touch screens. */
-export function Segmented<T extends string>({ label, value, options, onChange, panelId }: Props<T>) {
+export function Segmented<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+  panelId,
+}: Props<T>) {
   return (
     <div
       role="tablist"

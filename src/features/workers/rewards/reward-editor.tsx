@@ -121,10 +121,12 @@ export function RewardEditor() {
     });
   }
 
-  const aiCode = setup.error instanceof JarvisJobError ? setup.error.code : setup.error ? "unknown" : null;
+  const aiCode =
+    setup.error instanceof JarvisJobError ? setup.error.code : setup.error ? "unknown" : null;
   const openBranch = tree?.branches.find((branch) => branch.id === branchDialog.id) ?? null;
   const leafBranch = tree?.branches.find((branch) => branch.id === leafDialog.branchId) ?? null;
-  const openLeaf = tree && leafDialog.leafId ? (findLeaf(tree, leafDialog.leafId)?.leaf ?? null) : null;
+  const openLeaf =
+    tree && leafDialog.leafId ? (findLeaf(tree, leafDialog.leafId)?.leaf ?? null) : null;
   const rules = tree ? leafCount(tree) : 0;
 
   return (

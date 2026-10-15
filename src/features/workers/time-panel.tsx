@@ -27,7 +27,13 @@ export function TimePanel({ workerId }: { workerId: string }) {
     );
   }
   if (sessions.data.length === 0) {
-    return <EmptyState icon={<TimerIcon />} title={t("emptyTitle")} description={t("emptyDescription")} />;
+    return (
+      <EmptyState
+        icon={<TimerIcon />}
+        title={t("emptyTitle")}
+        description={t("emptyDescription")}
+      />
+    );
   }
 
   return (

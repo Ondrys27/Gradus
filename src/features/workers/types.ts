@@ -31,7 +31,14 @@ export const WORKER_TASK_COLUMNS =
   "id, worker_id, title, description, due_date, status, completed_at, created_at" as const;
 export type WorkerTask = Pick<
   Tables["worker_tasks"]["Row"],
-  "id" | "worker_id" | "title" | "description" | "due_date" | "status" | "completed_at" | "created_at"
+  | "id"
+  | "worker_id"
+  | "title"
+  | "description"
+  | "due_date"
+  | "status"
+  | "completed_at"
+  | "created_at"
 >;
 
 export const EARNING_COLUMNS =

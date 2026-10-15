@@ -69,9 +69,7 @@ export function RuleText({
           {t(`sentence.${trigger}.${kind}`, { amount: amount(kind, rule.rule.amount) })}
         </span>
         <span className="text-xs text-ink-soft">
-          {rule.workerId
-            ? (workerNames.get(rule.workerId) ?? t("scope.removed"))
-            : t("scope.all")}
+          {rule.workerId ? (workerNames.get(rule.workerId) ?? t("scope.removed")) : t("scope.all")}
           {extras.length > 0 && ` · ${extras.join(" · ")}`}
         </span>
       </div>

@@ -27,7 +27,14 @@ function siteOrigin(): string {
 }
 
 /** The link and code to send, with what happens next. Expired links can be renewed. */
-export function InviteCard({ invite, workerName, onRenew, renewing, renewFailed, className }: Props) {
+export function InviteCard({
+  invite,
+  workerName,
+  onRenew,
+  renewing,
+  renewFailed,
+  className,
+}: Props) {
   const t = useTranslations("workers.invite");
   const settings = useFormatSettings();
   const [link, setLink] = useState("");
@@ -39,7 +46,10 @@ export function InviteCard({ invite, workerName, onRenew, renewing, renewFailed,
   return (
     <section
       aria-label={t("title", { name: workerName })}
-      className={cn("flex flex-col gap-4 rounded-card border border-teal/30 bg-teal/5 p-5", className)}
+      className={cn(
+        "flex flex-col gap-4 rounded-card border border-teal/30 bg-teal/5 p-5",
+        className,
+      )}
     >
       <div className="flex items-start gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-teal/30 bg-teal/10 text-teal">

@@ -47,8 +47,7 @@ export const recurringSchema = z
 export type RecurringInput = z.infer<typeof recurringSchema>;
 
 export type Validated<T> =
-  | { ok: true; data: T }
-  | { ok: false; errors: Partial<Record<string, FinanceErrorKey>> };
+  { ok: true; data: T } | { ok: false; errors: Partial<Record<string, FinanceErrorKey>> };
 
 /** The first message per field, as translation keys. */
 function firstErrors(error: z.ZodError): Partial<Record<string, FinanceErrorKey>> {

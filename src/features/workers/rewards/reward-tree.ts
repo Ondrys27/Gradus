@@ -8,7 +8,12 @@ import type { MapBranch } from "@/components/tree-map/tree-map-layout";
  * conditions and explains the result; kinds and amounts never come from the model.
  */
 
-export const REWARD_TRIGGERS = ["task_completed", "meeting_booked", "deal_won", "hour_worked"] as const;
+export const REWARD_TRIGGERS = [
+  "task_completed",
+  "meeting_booked",
+  "deal_won",
+  "hour_worked",
+] as const;
 export type RewardTrigger = (typeof REWARD_TRIGGERS)[number];
 
 export const REWARD_KINDS = ["fixed", "percent", "hourly"] as const;
@@ -55,10 +60,18 @@ export const rewardTreeSchema = z
     tree.branches.forEach((branch, b) =>
       branch.leaves.forEach((leaf, l) => {
         if (!kindsFor(branch.trigger).includes(leaf.kind)) {
-          context.addIssue({ code: "custom", path: ["branches", b, "leaves", l, "kind"], message: "kind" });
+          context.addIssue({
+            code: "custom",
+            path: ["branches", b, "leaves", l, "kind"],
+            message: "kind",
+          });
         }
         if (leaf.kind === "percent" && leaf.amount > PERCENT_MAX) {
-          context.addIssue({ code: "custom", path: ["branches", b, "leaves", l, "amount"], message: "amount" });
+          context.addIssue({
+            code: "custom",
+            path: ["branches", b, "leaves", l, "amount"],
+            message: "amount",
+          });
         }
       }),
     );
@@ -172,7 +185,11 @@ export function leafCount(tree: RewardTree): number {
 
 export const conditionsSchema = z
   .object({
-    minDealValue: z.number().min(0).max(AMOUNT_MAX * 100).optional(),
+    minDealValue: z
+      .number()
+      .min(0)
+      .max(AMOUNT_MAX * 100)
+      .optional(),
     onlyBeforeDue: z.boolean().optional(),
     maxPerMonth: z.number().int().min(1).max(999_999).optional(),
   })

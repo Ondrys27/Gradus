@@ -44,7 +44,11 @@ export function PaymentsPanel({ workerId }: { workerId: string }) {
   }
   if (query.data.rows.length === 0) {
     return (
-      <EmptyState icon={<BanknoteIcon />} title={t("emptyTitle")} description={t("emptyDescription")} />
+      <EmptyState
+        icon={<BanknoteIcon />}
+        title={t("emptyTitle")}
+        description={t("emptyDescription")}
+      />
     );
   }
 
@@ -68,7 +72,12 @@ export function PaymentsPanel({ workerId }: { workerId: string }) {
               )}
             </div>
             <span className="font-semibold text-green tabular-nums">
-              {formatCurrency(payment.amount, undefined, settings, payment.amount % 1 === 0 ? 0 : 2)}
+              {formatCurrency(
+                payment.amount,
+                undefined,
+                settings,
+                payment.amount % 1 === 0 ? 0 : 2,
+              )}
             </span>
           </li>
         ))}
@@ -157,7 +166,9 @@ function PaymentFields({
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-4">
       <p className="text-sm text-ink-soft">
-        {t("owedNow", { amount: formatCurrency(owed, undefined, settings, owed % 1 === 0 ? 0 : 2) })}
+        {t("owedNow", {
+          amount: formatCurrency(owed, undefined, settings, owed % 1 === 0 ? 0 : 2),
+        })}
       </p>
       <FormField id="payment-amount" label={t("amount")} error={err("amount")}>
         <Input

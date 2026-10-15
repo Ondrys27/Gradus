@@ -5,9 +5,8 @@ import type { RewardTree } from "@/features/workers/rewards/reward-tree";
 
 vi.mock("server-only", () => ({}));
 
-const { runRewardSetup, rewardSetupContext, REWARD_SETUP_INSTRUCTIONS } = await import(
-  "./reward-setup"
-);
+const { runRewardSetup, rewardSetupContext, REWARD_SETUP_INSTRUCTIONS } =
+  await import("./reward-setup");
 const { JARVIS_MODELS } = await import("../models");
 
 type StreamEvent = Anthropic.MessageStreamEvent;
@@ -75,7 +74,11 @@ describe("reward setup", () => {
       JSON.stringify({
         summary: "Jana dostane 10 % z obchodů nad 20 000 Kč, všichni 150 Kč za schůzku.",
         rules: [
-          { leafId: "l1", name: "Podíl z obchodu", conditions: { minDealValue: 20000, amount: 50 } },
+          {
+            leafId: "l1",
+            name: "Podíl z obchodu",
+            conditions: { minDealValue: 20000, amount: 50 },
+          },
           { leafId: "l2", name: "Schůzka", conditions: {} },
         ],
       }),
@@ -106,7 +109,12 @@ describe("reward setup", () => {
           {
             name: "Podíl z obchodu",
             workerId: WORKER,
-            rule: { trigger: "deal_won", kind: "percent", amount: 10, conditions: { minDealValue: 20000 } },
+            rule: {
+              trigger: "deal_won",
+              kind: "percent",
+              amount: 10,
+              conditions: { minDealValue: 20000 },
+            },
           },
           {
             name: "Schůzka",
@@ -121,7 +129,14 @@ describe("reward setup", () => {
   it("reports a failed call clearly and still logs it", async () => {
     const { client } = fakeModel(new Error("credit balance is too low"));
     const log = vi.fn(async () => {});
-    const result = await runRewardSetup({ client, tree, workers: [], currency: "CZK", locale: "en", log });
+    const result = await runRewardSetup({
+      client,
+      tree,
+      workers: [],
+      currency: "CZK",
+      locale: "en",
+      log,
+    });
     expect(result).toEqual({ ok: false, code: "unavailable" });
     expect(log).toHaveBeenCalledWith(
       expect.objectContaining({ feature: "reward_setup", error: "credit balance is too low" }),

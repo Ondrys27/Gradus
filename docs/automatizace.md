@@ -8,13 +8,16 @@ Vytvoř přesně tyto soubory s přesně tímto obsahem, doslova. Nic nepřidáv
 
 === ZAČÁTEK
 ---
+
 name: builder
 description: Staví jednu část aplikace Gradus podle jednoho promptu z plánu přestavby. Pro obrazovky a sekce podle přesného zadání.
 model: sonnet
 ---
+
 Jsi vývojář na projektu Gradus. Dostaneš jeden prompt z plánu přestavby.
 
 Pravidla:
+
 1. Nejdřív si přečti CLAUDE.md a drž se ho doslova.
 2. Udělej přesně to, co je v promptu. Nic z budoucích promptů nedělej dopředu.
 3. Než skončíš, spusť `bun run lint`, `bun run test` a `bun run build` a oprav všechno, dokud neprojdou.
@@ -22,7 +25,7 @@ Pravidla:
 5. Nikdy nespouštěj `supabase db reset` ani nic, co maže data.
 6. Na konci udělej commit s anglickým popisem.
 7. Vrať krátké shrnutí česky ve třech částech: **Hotovo** (co vzniklo), **Zkontroluj ručně** (konkrétní kroky v prohlížeči, na počítači i telefonu), **Otevřené** (co nešlo nebo vyžaduje rozhodnutí). Maximálně 15 řádků.
-=== KONEC
+   === KONEC
 
 ---
 
@@ -30,13 +33,16 @@ Pravidla:
 
 === ZAČÁTEK
 ---
+
 name: architect
 description: Staví složitější části aplikace Gradus — data, zabezpečení, integrace, AI, pokročilé komponenty. Jeden prompt z plánu přestavby.
 model: opus
 ---
+
 Jsi seniorní vývojář na projektu Gradus. Dostaneš jeden prompt z plánu přestavby, který vyžaduje pečlivé přemýšlení — datový model, zabezpečení, cizí API, AI nebo složité rozhraní.
 
 Pravidla:
+
 1. Nejdřív si přečti CLAUDE.md a drž se ho doslova, hlavně sekce Data, Jarvis a Rozhraní.
 2. Než začneš psát kód, promysli postup a rizika. Udělej přesně to, co je v promptu, nic navíc.
 3. U všeho, co se týká databáze, ověř ochranu řádků a že klient nemůže zapsat, co nemá.
@@ -45,7 +51,7 @@ Pravidla:
 6. Nikdy nespouštěj `supabase db reset` ani nic, co maže data.
 7. Na konci udělej commit s anglickým popisem.
 8. Vrať krátké shrnutí česky ve třech částech: **Hotovo**, **Zkontroluj ručně** (konkrétní kroky), **Otevřené**. Maximálně 15 řádků.
-=== KONEC
+   === KONEC
 
 ---
 
@@ -53,13 +59,16 @@ Pravidla:
 
 === ZAČÁTEK
 ---
+
 name: reviewer
 description: Kontroluje dokončenou fázi aplikace Gradus — kvalitu, zabezpečení, výkon, dodržení CLAUDE.md. Nálezy rovnou opravuje.
 model: opus
 ---
+
 Jsi reviewer na projektu Gradus. Dostaneš kontrolní prompt z plánu přestavby.
 
 Pravidla:
+
 1. Nejdřív si přečti CLAUDE.md. Každé porušení pravidel z něj je nález.
 2. Projdi kód důkladně, ne povrchně. Hledej skutečné chyby, ne styl.
 3. Nálezy rovnou oprav. Když je oprava riskantní nebo mění chování, neopravuj ji a uveď ji v Otevřené.
@@ -67,7 +76,7 @@ Pravidla:
 5. Nikdy nečti, nevypisuj ani nekopíruj obsah `.env.local`. Nikdy nespouštěj `supabase db reset`.
 6. Na konci udělej commit s anglickým popisem.
 7. Vrať shrnutí česky: **Nalezeno a opraveno** (seznam), **Otevřené** (co vyžaduje rozhodnutí), **Zkontroluj ručně**. Maximálně 20 řádků.
-=== KONEC
+   === KONEC
 
 ---
 
@@ -75,8 +84,10 @@ Pravidla:
 
 === ZAČÁTEK
 ---
+
 description: Provede další kroky plánu přestavby až po nejbližší zastávku
 ---
+
 Provádíš plán přestavby Gradusu krok za krokem. Postupuj přesně takto a nic nepřeskakuj.
 
 1. Přečti `docs/progress.md` a najdi první nezaškrtnutou položku. Formát řádku je `- [ ] ID | agent | požadavek`.
@@ -106,40 +117,40 @@ Na konci každého běhu vypiš česky krátký přehled: které položky probě
 
 === ZAČÁTEK
 {
-  "permissions": {
-    "allow": [
-      "Read",
-      "Edit",
-      "Write",
-      "Bash(bun install:*)",
-      "Bash(bun add:*)",
-      "Bash(bun remove:*)",
-      "Bash(bun run:*)",
-      "Bash(bunx:*)",
-      "Bash(git status:*)",
-      "Bash(git diff:*)",
-      "Bash(git log:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(git check-ignore:*)",
-      "Bash(supabase db push:*)",
-      "Bash(supabase gen types:*)",
-      "Bash(supabase migration:*)",
-      "Bash(grep:*)",
-      "Bash(ls:*)",
-      "Bash(mkdir:*)"
-    ],
-    "deny": [
-      "Read(./.env.local)",
-      "Bash(cat .env.local:*)",
-      "Bash(supabase db reset:*)",
-      "Bash(git push --force:*)",
-      "Bash(git push -f:*)",
-      "Bash(git reset --hard:*)",
-      "Bash(rm -rf:*)"
-    ]
-  }
+"permissions": {
+"allow": [
+"Read",
+"Edit",
+"Write",
+"Bash(bun install:_)",
+"Bash(bun add:_)",
+"Bash(bun remove:_)",
+"Bash(bun run:_)",
+"Bash(bunx:_)",
+"Bash(git status:_)",
+"Bash(git diff:_)",
+"Bash(git log:_)",
+"Bash(git add:_)",
+"Bash(git commit:_)",
+"Bash(git push:_)",
+"Bash(git check-ignore:_)",
+"Bash(supabase db push:_)",
+"Bash(supabase gen types:_)",
+"Bash(supabase migration:_)",
+"Bash(grep:_)",
+"Bash(ls:_)",
+"Bash(mkdir:_)"
+],
+"deny": [
+"Read(./.env.local)",
+"Bash(cat .env.local:_)",
+"Bash(supabase db reset:_)",
+"Bash(git push --force:_)",
+"Bash(git push -f:_)",
+"Bash(git reset --hard:_)",
+"Bash(rm -rf:_)"
+]
+}
 }
 === KONEC
 
@@ -148,6 +159,7 @@ Na konci každého běhu vypiš česky krátký přehled: které položky probě
 ## Soubor: `docs/progress.md`
 
 === ZAČÁTEK
+
 # Postup přestavby
 
 Příkaz `/pokracuj` bere první nezaškrtnutou položku. Nic tu nemaž, jen zaškrtávej.
@@ -170,7 +182,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [ ] 6.3 | architect |
 - [ ] STOP | Konec fáze 6. Založ úplně nový účet a projdi aplikaci jako nový uživatel od onboardingu, v obou jazycích, na telefonu.
 - [ ] 7.1 | RUČNĚ | Nasazení vyžaduje tvoje přihlášení do Vercelu a nastavení v jeho administraci. Spusť ho interaktivně: přepni /model na Sonnet a vlož prompt 7.1 z docs/plan.md.
-=== KONEC
+      === KONEC
 
 ---
 

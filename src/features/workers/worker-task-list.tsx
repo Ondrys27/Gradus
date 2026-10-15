@@ -141,7 +141,9 @@ function TaskRow({
         >
           <Checkbox
             checked={isDone}
-            aria-label={isDone ? t("reopen", { title: task.title }) : t("complete", { title: task.title })}
+            aria-label={
+              isDone ? t("reopen", { title: task.title }) : t("complete", { title: task.title })
+            }
             onCheckedChange={() => {
               if (!isDone) setPops((count) => count + 1);
               onToggle(task);
@@ -160,7 +162,9 @@ function TaskRow({
           className="flex min-h-11 min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-lg text-left outline-none focus-visible:ring-3 focus-visible:ring-violet/40"
         >
           <span className="flex min-w-0 flex-1 flex-col gap-1">
-            <span className={cn("text-sm text-ink [overflow-wrap:anywhere]", isDone && "text-ink-soft")}>
+            <span
+              className={cn("text-sm text-ink [overflow-wrap:anywhere]", isDone && "text-ink-soft")}
+            >
               {task.title}
             </span>
             {meta}

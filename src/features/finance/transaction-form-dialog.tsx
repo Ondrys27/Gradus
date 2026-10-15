@@ -98,41 +98,41 @@ function Fields({ transaction, onDone }: { transaction: Transaction | null; onDo
 
   return (
     <>
-    <form onSubmit={submit} noValidate className="flex flex-col gap-4">
-      <MoneyFields
-        idPrefix="transaction"
-        draft={draft}
-        errors={errors}
-        onChange={(patch) => setDraft((current) => ({ ...current, ...patch }))}
-      />
-      <FormField
-        id="transaction-date"
-        label={t("date")}
-        error={errors.occurred_on && tErrors(errors.occurred_on)}
-      >
-        <DatePicker id="transaction-date" value={date} onValueChange={setDate} />
-      </FormField>
-      {failed && <FormAlert>{t("saveFailed")}</FormAlert>}
-      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        {transaction && (
-          <Button
-            type="button"
-            variant="destructive"
-            className="sm:mr-auto"
-            onClick={() => setConfirmingDelete(true)}
-          >
-            <Trash2Icon aria-hidden data-icon="inline-start" />
-            {t("delete")}
+      <form onSubmit={submit} noValidate className="flex flex-col gap-4">
+        <MoneyFields
+          idPrefix="transaction"
+          draft={draft}
+          errors={errors}
+          onChange={(patch) => setDraft((current) => ({ ...current, ...patch }))}
+        />
+        <FormField
+          id="transaction-date"
+          label={t("date")}
+          error={errors.occurred_on && tErrors(errors.occurred_on)}
+        >
+          <DatePicker id="transaction-date" value={date} onValueChange={setDate} />
+        </FormField>
+        {failed && <FormAlert>{t("saveFailed")}</FormAlert>}
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          {transaction && (
+            <Button
+              type="button"
+              variant="destructive"
+              className="sm:mr-auto"
+              onClick={() => setConfirmingDelete(true)}
+            >
+              <Trash2Icon aria-hidden data-icon="inline-start" />
+              {t("delete")}
+            </Button>
+          )}
+          <Button type="button" variant="ghost" onClick={onDone}>
+            {t("cancel")}
           </Button>
-        )}
-        <Button type="button" variant="ghost" onClick={onDone}>
-          {t("cancel")}
-        </Button>
-        <Button type="submit" disabled={save.isPending}>
-          {t("save")}
-        </Button>
-      </div>
-    </form>
+          <Button type="submit" disabled={save.isPending}>
+            {t("save")}
+          </Button>
+        </div>
+      </form>
       <ConfirmDialog
         open={confirmingDelete}
         onOpenChange={setConfirmingDelete}

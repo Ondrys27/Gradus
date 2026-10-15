@@ -93,7 +93,7 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - Anthropic SDK, `ANTHROPIC_API_KEY`. Streamovat. Systémový prompt cachovat.
 - Routing: Haiku rutina a klasifikace, Sonnet rozhovor a hodnocení, Opus velké rozbory.
 - **Zápis do `ai_usage` přímo ve volání**, ne zpětně.
-- Hlídání příležitostí **dávkově 3× denně** + okamžité spouštěče. Když nic, mlčí.
+- Hlídání příležitostí **dávkově 1× denně** (na Vercel Pro 3× denně) + okamžité spouštěče. Když nic, mlčí.
 - Automatické akce jen s oznámením a možností Vrátit. Milník nikdy nedokončuje sám.
 - Hodnocení milníku: když je dobrý, řekne to a nevymýšlí výtky.
 - Soubory: PDF, PNG, JPG, TXT, CSV, DOCX, XLSX; 10 MB; 3 na zprávu; typ podle obsahu.
@@ -181,7 +181,7 @@ Veřejné v `.env`, tajné v `.env.local`. Vždy udržovat `.env.example`.
 | `FAKTUROID_*` | Per uživatel, šifrovaně v DB, ne v env |
 | `NEXT_PUBLIC_BETA` | Štítek Beta v aplikaci |
 
-**Cron úlohy:** `call_time_stats` denně · automatické platby denně · hlídání příležitostí 3× denně · ranní shrnutí Jarvise každou hodinu (6:00 v pásmu uživatele).
+**Cron úlohy:** `call_time_stats` denně · automatické platby denně · hlídání příležitostí 1× denně (10:00 UTC) · ranní shrnutí Jarvise 1× denně (5:00 UTC = 6–8 h v Česku). Běžíme na Vercel Hobby: každá úloha smí běžet nejvýš jednou denně a spouští se kdykoliv během zadané hodiny, jinak nasazení spadne. Častější běh (3× denně, každou hodinu) vrátit až po přechodu na Vercel Pro.
 
 Registrace jen s pozvánkovým kódem. **První účet = owner.** Potvrzování e-mailu vypnuté — zapnout před spuštěním.
 

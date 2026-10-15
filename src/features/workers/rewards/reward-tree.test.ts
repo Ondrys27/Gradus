@@ -34,7 +34,12 @@ const tree: RewardTree = {
         { id: "l3", kind: "fixed", amount: 1000, note: "" },
       ],
     },
-    { id: "b3", trigger: "hour_worked", workerId: null, leaves: [{ id: "l4", kind: "hourly", amount: 250, note: "" }] },
+    {
+      id: "b3",
+      trigger: "hour_worked",
+      workerId: null,
+      leaves: [{ id: "l4", kind: "hourly", amount: 250, note: "" }],
+    },
   ],
 };
 
@@ -62,16 +67,27 @@ describe("reward tree", () => {
     const more = addLeaf(tree, "b1", { id: "l9", kind: "fixed", amount: 1, note: "" });
     expect(more.branches[0].leaves).toHaveLength(2);
     expect(removeLeaf(more, "l9")).toEqual(tree);
-    expect(addBranch(tree, { id: "b9", trigger: "meeting_booked", workerId: null, leaves: [] }).branches).toHaveLength(4);
+    expect(
+      addBranch(tree, { id: "b9", trigger: "meeting_booked", workerId: null, leaves: [] }).branches,
+    ).toHaveLength(4);
   });
 
   it("starts over from a stored draft that no longer parses", () => {
-    expect(parseTree({ branches: [{ id: "x", trigger: "nope", leaves: [] }] })).toEqual({ branches: [] });
+    expect(parseTree({ branches: [{ id: "x", trigger: "nope", leaves: [] }] })).toEqual({
+      branches: [],
+    });
     expect(parseTree(tree)).toEqual(tree);
     // A share above 100 % or an hourly rate on tasks is not a valid tree.
     expect(
       parseTree({
-        branches: [{ id: "b", trigger: "task_completed", workerId: null, leaves: [{ id: "l", kind: "hourly", amount: 1, note: "" }] }],
+        branches: [
+          {
+            id: "b",
+            trigger: "task_completed",
+            workerId: null,
+            leaves: [{ id: "l", kind: "hourly", amount: 1, note: "" }],
+          },
+        ],
       }),
     ).toEqual({ branches: [] });
   });
@@ -99,12 +115,22 @@ describe("compiling", () => {
       {
         name: "Úkol včas",
         workerId: null,
-        rule: { trigger: "task_completed", kind: "fixed", amount: 200, conditions: { onlyBeforeDue: true, maxPerMonth: 3 } },
+        rule: {
+          trigger: "task_completed",
+          kind: "fixed",
+          amount: 200,
+          conditions: { onlyBeforeDue: true, maxPerMonth: 3 },
+        },
       },
       {
         name: "Podíl z obchodu",
         workerId: WORKER,
-        rule: { trigger: "deal_won", kind: "percent", amount: 10, conditions: { minDealValue: 10000, maxPerMonth: 5 } },
+        rule: {
+          trigger: "deal_won",
+          kind: "percent",
+          amount: 10,
+          conditions: { minDealValue: 10000, maxPerMonth: 5 },
+        },
       },
       {
         name: "deal_won fixed",
@@ -123,12 +149,19 @@ describe("compiling", () => {
     const proposal = compileRewardTree(tree, null);
     expect(proposal.summary).toBeNull();
     expect(proposal.rules[0].name).toBe("Jen když to stihne do termínu");
-    expect(proposal.rules.every((rule) => Object.keys(rule.rule.conditions).length === 0)).toBe(true);
-    expect(notesWithoutAi(tree)).toEqual(["Jen když to stihne do termínu", "Obchody nad 10 000, max 5 za měsíc"]);
+    expect(proposal.rules.every((rule) => Object.keys(rule.rule.conditions).length === 0)).toBe(
+      true,
+    );
+    expect(notesWithoutAi(tree)).toEqual([
+      "Jen když to stihne do termínu",
+      "Obchody nad 10 000, max 5 za měsíc",
+    ]);
   });
 
   it("keeps only conditions the trigger supports", () => {
-    expect(cleanConditions("meeting_booked", { minDealValue: 5, onlyBeforeDue: true, maxPerMonth: 2 })).toEqual({
+    expect(
+      cleanConditions("meeting_booked", { minDealValue: 5, onlyBeforeDue: true, maxPerMonth: 2 }),
+    ).toEqual({
       maxPerMonth: 2,
     });
     expect(cleanConditions("deal_won", { minDealValue: -1, maxPerMonth: 1.5 })).toEqual({});
@@ -137,7 +170,11 @@ describe("compiling", () => {
 
   it("reads stored rules back and skips rows of another shape", () => {
     expect(
-      storedRule({ name: "A", worker_id: null, rules: { trigger: "meeting_booked", kind: "fixed", amount: 150 } }),
+      storedRule({
+        name: "A",
+        worker_id: null,
+        rules: { trigger: "meeting_booked", kind: "fixed", amount: 150 },
+      }),
     ).toEqual({
       name: "A",
       workerId: null,

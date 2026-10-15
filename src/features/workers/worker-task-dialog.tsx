@@ -42,12 +42,7 @@ export function WorkerTaskDialog({ open, onOpenChange, workerId, task }: Props) 
       closeLabel={t("close")}
       className="w-[min(100vw-32px,480px)]"
     >
-      <Fields
-        key={generation}
-        workerId={workerId}
-        task={task}
-        onDone={() => onOpenChange(false)}
-      />
+      <Fields key={generation} workerId={workerId} task={task} onDone={() => onOpenChange(false)} />
     </ResponsiveDialog>
   );
 }
@@ -114,11 +109,7 @@ function Fields({
             onChange={(event) => setTitle(event.target.value)}
           />
         </FormField>
-        <FormField
-          id="worker-task-description"
-          label={t("description")}
-          error={err("description")}
-        >
+        <FormField id="worker-task-description" label={t("description")} error={err("description")}>
           <Textarea
             {...fieldA11y("worker-task-description", err("description"))}
             value={description}

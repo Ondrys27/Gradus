@@ -60,8 +60,7 @@ ${JSON.stringify(readable, null, 2)}
 }
 
 export type RewardSetupResult =
-  | { ok: true; proposal: RewardProposal }
-  | { ok: false; code: ChatErrorCode };
+  { ok: true; proposal: RewardProposal } | { ok: false; code: ChatErrorCode };
 
 /**
  * Sonnet reads the tree and returns names, conditions and a summary. Nothing

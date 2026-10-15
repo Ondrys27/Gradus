@@ -34,11 +34,7 @@ export function WorkerCard({ worker, profile, stats }: Props) {
     >
       <GlowCard className="flex h-full flex-col gap-4">
         <div className="flex items-start gap-3">
-          <Avatar
-            src={profile?.avatarUrl}
-            name={worker.name}
-            className="size-12 text-base"
-          />
+          <Avatar src={profile?.avatarUrl} name={worker.name} className="size-12 text-base" />
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
             <span className="truncate font-semibold text-ink">{worker.name}</span>
             <span className="truncate text-sm text-ink-muted">

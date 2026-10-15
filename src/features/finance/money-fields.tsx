@@ -58,9 +58,10 @@ export function MoneyFields({ idPrefix, draft, errors, descriptionRequired, onCh
               onClick={() =>
                 onChange({
                   type,
-                  category: draft.category && CATEGORIES[type].includes(draft.category)
-                    ? draft.category
-                    : defaultCategory(type),
+                  category:
+                    draft.category && CATEGORIES[type].includes(draft.category)
+                      ? draft.category
+                      : defaultCategory(type),
                 })
               }
               className={cn(
