@@ -2789,6 +2789,7 @@
     "actions": {
       "start": "Let's go",
       "next": "Continue",
+      "back": "Back",
       "skip": "Skip",
       "saving": "Saving…",
       "addContact": "Add contact",

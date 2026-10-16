@@ -25,11 +25,14 @@ export function PathStep({
   value,
   onChange,
   onNext,
+  onBack,
 }: {
   industry: IndustryKey;
   value: string | null;
   onChange: (pathKey: string) => void;
-  onNext: () => void;
+  /** Continues with the path shown as selected (the suggested one unless another was picked). */
+  onNext: (pathKey: string) => void;
+  onBack: () => void;
 }) {
   const t = useTranslations("onboarding.path");
   const tActions = useTranslations("onboarding.actions");
@@ -59,15 +62,13 @@ export function PathStep({
     <StepShell
       title={t("title")}
       description={t("description")}
+      onBack={onBack}
       footer={
         <Button
           type="button"
           size="lg"
           disabled={!selected}
-          onClick={() => {
-            if (selected && selected !== value) onChange(selected);
-            onNext();
-          }}
+          onClick={() => selected && onNext(selected)}
           className="w-full sm:w-auto"
         >
           {tActions("next")}

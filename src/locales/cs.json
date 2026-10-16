@@ -2789,6 +2789,7 @@
     "actions": {
       "start": "Pojďme na to",
       "next": "Pokračovat",
+      "back": "Zpět",
       "skip": "Přeskočit",
       "saving": "Ukládám…",
       "addContact": "Přidat kontakt",

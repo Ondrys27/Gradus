@@ -14,7 +14,16 @@ import { CURRENCIES, countryName, currencyName } from "@/lib/format";
 import { browserTimeZone, COUNTRY_CODES, countryFromTimeZone } from "@/lib/region";
 import { StepShell } from "../step-shell";
 
-export function RegionStep({ onNext }: { onNext: () => void }) {
+export function RegionStep({
+  detect,
+  onNext,
+  onBack,
+}: {
+  /** Guess the country from the browser's time zone; off once the step was confirmed. */
+  detect: boolean;
+  onNext: () => void;
+  onBack: () => void;
+}) {
   const t = useTranslations("onboarding.region");
   const tActions = useTranslations("onboarding.actions");
   const uiLocale = useLocale();
@@ -25,7 +34,9 @@ export function RegionStep({ onNext }: { onNext: () => void }) {
   const [currency, setCurrency] = useState(settings.currency);
 
   // Detected once, after mount: the server does not know the browser's zone.
+  // Coming back to a confirmed step shows what was saved instead.
   useEffect(() => {
+    if (!detect) return;
     const zone = browserTimeZone();
     const detected = countryFromTimeZone(zone);
     if (detected) setCountry((current) => (current === settings.country_code ? detected : current));
@@ -60,6 +71,7 @@ export function RegionStep({ onNext }: { onNext: () => void }) {
     <StepShell
       title={t("title")}
       description={t("description")}
+      onBack={onBack}
       footer={
         <Button type="button" size="lg" onClick={next} className="w-full sm:w-auto">
           {tActions("next")}

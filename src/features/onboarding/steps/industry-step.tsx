@@ -9,10 +9,12 @@ export function IndustryStep({
   value,
   onChange,
   onNext,
+  onBack,
 }: {
   value: IndustryKey | null;
   onChange: (value: IndustryKey) => void;
   onNext: () => void;
+  onBack: () => void;
 }) {
   const t = useTranslations("onboarding.industry");
   const tActions = useTranslations("onboarding.actions");
@@ -20,6 +22,7 @@ export function IndustryStep({
     <StepShell
       title={t("title")}
       description={t("description")}
+      onBack={onBack}
       footer={
         <Button
           type="button"

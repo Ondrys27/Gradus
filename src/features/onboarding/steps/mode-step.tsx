@@ -14,9 +14,11 @@ const OPTIONS: { mode: GameMode; icon: typeof Gamepad2Icon }[] = [
 export function ModeStep({
   value,
   onChoose,
+  onBack,
 }: {
   value: GameMode | null;
   onChoose: (mode: GameMode) => void;
+  onBack: () => void;
 }) {
   const t = useTranslations("onboarding.mode");
   return (
@@ -24,6 +26,7 @@ export function ModeStep({
       title={t("title", { appName: APP_NAME })}
       description={t("description")}
       footer={<p className="text-center text-xs text-ink-muted">{t("changeLater")}</p>}
+      onBack={onBack}
     >
       <div role="radiogroup" aria-label={t("title", { appName: APP_NAME })} className="grid gap-3">
         {OPTIONS.map(({ mode, icon: Icon }) => {

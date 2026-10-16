@@ -1,4 +1,7 @@
 import { useRef, type ReactNode } from "react";
+import { ArrowLeftIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Button } from "@/components/ui/button";
 import { Jarvis, type JarvisState } from "@/components/jarvis/jarvis";
 import { useOverflowBottom } from "@/lib/use-overflow-bottom";
 import { cn } from "@/lib/utils";
@@ -11,6 +14,7 @@ import { cn } from "@/lib/utils";
  * paths or industries, say — scrolls on its own. A soft fade at its bottom
  * hints there is more below; `overscroll-behavior: contain` stops a drag
  * that reaches the end of that list from scrolling the page underneath.
+ * With `onBack`, a quiet Back sits bottom left (below the buttons on a phone).
  */
 export function StepShell({
   jarvisState = "idle",
@@ -18,6 +22,8 @@ export function StepShell({
   description,
   children,
   footer,
+  onBack,
+  backDisabled = false,
   className,
 }: {
   jarvisState?: JarvisState;
@@ -25,8 +31,12 @@ export function StepShell({
   description?: ReactNode;
   children?: ReactNode;
   footer: ReactNode;
+  /** One step back; leave out where there is nothing to return to. */
+  onBack?: () => void;
+  backDisabled?: boolean;
   className?: string;
 }) {
+  const tActions = useTranslations("onboarding.actions");
   const scrollRef = useRef<HTMLDivElement>(null);
   const moreBelow = useOverflowBottom(scrollRef);
 
@@ -57,8 +67,22 @@ export function StepShell({
           </>
         )}
       </div>
-      <div className="flex shrink-0 flex-col-reverse gap-2 pt-4 sm:flex-row sm:justify-center">
-        {footer}
+      <div className="grid shrink-0 gap-2 pt-4 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+        <div className="flex flex-col-reverse gap-2 sm:col-start-2 sm:flex-row sm:justify-center">
+          {footer}
+        </div>
+        {onBack && (
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={backDisabled}
+            onClick={onBack}
+            className="justify-self-start text-ink-soft sm:col-start-1 sm:row-start-1"
+          >
+            <ArrowLeftIcon aria-hidden data-icon="inline-start" />
+            {tActions("back")}
+          </Button>
+        )}
       </div>
     </div>
   );

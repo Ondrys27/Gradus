@@ -1,7 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { redirect, RedirectType } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { track } from "@/lib/analytics/track";
 import { isFreshRecoverySession } from "@/lib/auth/recovery";
@@ -63,7 +63,10 @@ export async function signIn(_prev: FormState, formData: FormData): Promise<Form
 
   await syncLocaleFromSettings(data.user.id);
   await track("signed_in", {}, { userId: data.user.id });
-  redirect(safeNextPath(String(formData.get("next") ?? "")));
+  // Replace, not push: the sign-in page must not stay in the history under
+  // the app, or Back leads to it, the middleware sends a signed-in user back
+  // to the app and everything (the first-login wizard too) loads again.
+  redirect(safeNextPath(String(formData.get("next") ?? "")), RedirectType.replace);
 }
 
 /**
@@ -186,7 +189,8 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
   if (signInError) redirect(loginPath(locale));
 
   await setLocaleCookie(locale);
-  redirect(HOME_PATH);
+  // Replace: Back from the wizard that follows must not return to the form.
+  redirect(HOME_PATH, RedirectType.replace);
 }
 
 /** Always reports success so the form cannot be used to find out who has an account. */
@@ -230,5 +234,5 @@ export async function resetPassword(_prev: FormState, formData: FormData): Promi
   }
 
   await syncLocaleFromSettings(claims.claims.sub);
-  redirect(HOME_PATH);
+  redirect(HOME_PATH, RedirectType.replace);
 }

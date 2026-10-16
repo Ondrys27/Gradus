@@ -1,15 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { useTranslations } from "next-intl";
 import { useCelebration } from "@/components/celebration/celebration-provider";
 import { Button } from "@/components/ui/button";
-import type { GameMode } from "@/features/game/types";
+import { useSession } from "@/features/account/queries";
 import { cn } from "@/lib/utils";
-import { useFinishOnboarding, type FinishOnboardingInput } from "./queries";
-import { DEFAULT_INDUSTRY, type IndustryKey } from "./industries";
+import {
+  useFinishOnboarding,
+  useWizardContact,
+  useWizardMilestone,
+  type FinishOnboardingInput,
+} from "./queries";
+import { DEFAULT_INDUSTRY } from "./industries";
 import { onboardingSteps } from "./types";
+import { useWizard } from "./use-wizard";
+import { withIndustry, withMode, withPath } from "./wizard-state";
 import { ClosingStep } from "./steps/closing-step";
 import { ContactStep } from "./steps/contact-step";
 import { IndustryStep } from "./steps/industry-step";
@@ -18,7 +24,6 @@ import { ModeStep } from "./steps/mode-step";
 import { PathStep } from "./steps/path-step";
 import { RegionStep } from "./steps/region-step";
 import { WelcomeStep } from "./steps/welcome-step";
-import { track } from "@/lib/analytics/client";
 
 /**
  * First-login wizard: welcome, how to use the app (game or tool), branch,
@@ -26,40 +31,39 @@ import { track } from "@/lib/analytics/client";
  * a short Jarvis intro before the completion celebration. Any step can be
  * bypassed at once with "Skip"; the wizard still finishes (in game mode with
  * the path for the branch, unless tool mode was picked) so it never comes back.
+ *
+ * The step is in the address and every step but the welcome has Back (see
+ * `useWizard`). Going back keeps the answers; what a step already saved (the
+ * region, the first milestone, the first contact) is edited when it is
+ * confirmed again, never added twice, and the path is only applied at the end.
  */
 export function OnboardingFlow() {
   const t = useTranslations("onboarding");
   const tCelebration = useTranslations("game.celebration.onboardingCompleted");
-  const [stepIndex, setStepIndex] = useState(0);
-  const [closing, setClosing] = useState(false);
-  const [mode, setMode] = useState<GameMode | null>(null);
-  const [industry, setIndustry] = useState<IndustryKey | null>(null);
-  const [pathKey, setPathKey] = useState<string | null>(null);
+  const { user } = useSession();
+  const { step, draft, advance, back, update, clear } = useWizard(user.id);
   const finish = useFinishOnboarding();
   const { celebrate } = useCelebration();
+  // Looked up right away, so the steps that edit them do not wait.
+  useWizardMilestone();
+  useWizardContact();
 
-  const steps = onboardingSteps(mode);
-  const step = steps[stepIndex] ?? "welcome";
-  // Every finished step is recorded, so the drop-off step shows in the funnel.
-  const next = (chosenMode: GameMode | null = mode) => {
-    track("onboarding_step_completed", {
-      step,
-      index: stepIndex,
-      ...(chosenMode ? { mode: chosenMode } : {}),
-    });
-    setStepIndex((index) => index + 1);
-  };
+  const steps = onboardingSteps(draft.mode);
+  const closing = step === "closing";
+  const current = closing ? steps.length : steps.indexOf(step);
   const input: FinishOnboardingInput = {
-    industry: industry ?? DEFAULT_INDUSTRY,
-    mode: mode ?? "game",
-    pathKey,
+    industry: draft.industry ?? DEFAULT_INDUSTRY,
+    mode: draft.mode ?? "game",
+    pathKey: draft.pathKey,
   };
 
-  function finishNow() {
+  function finishWizard(skippedAt?: FinishOnboardingInput["skippedAt"]) {
     finish.mutate(
-      { ...input, skippedAt: step },
+      { ...input, ...(skippedAt ? { skippedAt } : {}) },
       {
         onSuccess: () => {
+          clear();
+          // Tool mode celebrates only a milestone and a win, not the setup.
           if (input.mode === "game") {
             celebrate({ title: tCelebration("title"), subtitle: tCelebration("subtitle") });
           }
@@ -83,17 +87,18 @@ export function OnboardingFlow() {
                   key={key}
                   className={cn(
                     "h-1.5 w-6 rounded-full transition-colors",
-                    !closing && index === stepIndex
-                      ? "bg-violet"
-                      : closing || index < stepIndex
-                        ? "bg-violet/50"
-                        : "bg-line",
+                    index === current ? "bg-violet" : index < current ? "bg-violet/50" : "bg-line",
                   )}
                 />
               ))}
             </ol>
             {!closing && (
-              <Button variant="ghost" size="sm" disabled={finish.isPending} onClick={finishNow}>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={finish.isPending}
+                onClick={() => finishWizard(step)}
+              >
                 {t("actions.skip")}
               </Button>
             )}
@@ -101,52 +106,53 @@ export function OnboardingFlow() {
 
           <div className="mx-auto flex w-full max-w-md min-h-0 flex-1 flex-col px-4 py-6 sm:px-8">
             <Dialog.Title className="sr-only">{t("title")}</Dialog.Title>
-            {closing ? (
-              <ClosingStep input={input} />
-            ) : (
-              <>
-                {step === "welcome" && <WelcomeStep onNext={() => next()} />}
-                {step === "mode" && (
-                  <ModeStep
-                    value={mode}
-                    onChoose={(value) => {
-                      setMode(value);
-                      next(value);
-                    }}
-                  />
-                )}
-                {step === "industry" && (
-                  <IndustryStep
-                    value={industry}
-                    onChange={(value) => {
-                      setIndustry(value);
-                      // A new branch suggests its own path again.
-                      setPathKey(null);
-                    }}
-                    onNext={() => next()}
-                  />
-                )}
-                {step === "path" && (
-                  <PathStep
-                    industry={industry ?? DEFAULT_INDUSTRY}
-                    value={pathKey}
-                    onChange={setPathKey}
-                    onNext={() => next()}
-                  />
-                )}
-                {step === "region" && <RegionStep onNext={() => next()} />}
-                {step === "milestone" && (
-                  <MilestoneStep industry={industry ?? DEFAULT_INDUSTRY} onNext={() => next()} />
-                )}
-                {step === "contact" && (
-                  <ContactStep
-                    onNext={() => {
-                      track("onboarding_step_completed", { step, index: stepIndex });
-                      setClosing(true);
-                    }}
-                  />
-                )}
-              </>
+            {step === "welcome" && <WelcomeStep onNext={() => advance()} />}
+            {step === "mode" && (
+              <ModeStep
+                value={draft.mode}
+                onChoose={(value) => advance((d) => withMode(d, value))}
+                onBack={back}
+              />
+            )}
+            {step === "industry" && (
+              <IndustryStep
+                value={draft.industry}
+                onChange={(value) => update((d) => withIndustry(d, value))}
+                onNext={() => advance()}
+                onBack={back}
+              />
+            )}
+            {step === "path" && (
+              <PathStep
+                industry={draft.industry ?? DEFAULT_INDUSTRY}
+                value={draft.pathKey}
+                onChange={(value) => update((d) => withPath(d, value))}
+                onNext={(value) => advance((d) => withPath(d, value))}
+                onBack={back}
+              />
+            )}
+            {step === "region" && (
+              <RegionStep
+                detect={!draft.done.includes("region")}
+                onNext={() => advance()}
+                onBack={back}
+              />
+            )}
+            {step === "milestone" && (
+              <MilestoneStep
+                industry={draft.industry ?? DEFAULT_INDUSTRY}
+                onNext={() => advance()}
+                onBack={back}
+              />
+            )}
+            {step === "contact" && <ContactStep onNext={() => advance()} onBack={back} />}
+            {closing && (
+              <ClosingStep
+                mode={input.mode}
+                pending={finish.isPending}
+                onFinish={() => finishWizard()}
+                onBack={back}
+              />
             )}
           </div>
         </Dialog.Popup>

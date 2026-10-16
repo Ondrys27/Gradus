@@ -5,8 +5,8 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { fieldA11y, FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useUserSettings } from "@/features/account/queries";
-import { useCreateContact } from "@/features/contacts/queries";
 import {
   contactSchema,
   EMAIL_MAX,
@@ -15,6 +15,8 @@ import {
   type ContactDraft,
   type ContactErrorKey,
 } from "@/features/contacts/schemas";
+import type { Contact } from "@/features/contacts/types";
+import { useSaveFirstContact, useWizardContact } from "../queries";
 import { StepShell } from "../step-shell";
 
 const EMPTY_DRAFT: ContactDraft = {
@@ -28,13 +30,65 @@ const EMPTY_DRAFT: ContactDraft = {
   city: "",
 };
 
-export function ContactStep({ onNext }: { onNext: () => void }) {
+function draftOf(contact: Contact): ContactDraft {
+  return {
+    company_name: contact.company_name ?? "",
+    first_name: contact.first_name ?? "",
+    last_name: contact.last_name ?? "",
+    email: contact.email ?? "",
+    phone: contact.phone ?? "",
+    website: contact.website ?? "",
+    address: contact.address ?? "",
+    city: contact.city ?? "",
+  };
+}
+
+type StepProps = { onNext: () => void; onBack: () => void };
+
+/**
+ * The first contact. Coming back to the step shows the contact the wizard
+ * added and saving edits it, so there is never a second one.
+ */
+export function ContactStep({ onNext, onBack }: StepProps) {
+  const t = useTranslations("onboarding.contact");
+  const saved = useWizardContact();
+  if (saved.isPending) {
+    return (
+      <StepShell title={t("title")} description={t("description")} onBack={onBack} footer={null}>
+        <Skeleton className="h-48 rounded-2xl" />
+      </StepShell>
+    );
+  }
+  return (
+    <ContactForm
+      existing={saved.data ?? null}
+      lookupFailed={saved.isError}
+      retryLookup={() => void saved.refetch()}
+      onNext={onNext}
+      onBack={onBack}
+    />
+  );
+}
+
+function ContactForm({
+  existing,
+  lookupFailed,
+  retryLookup,
+  onNext,
+  onBack,
+}: StepProps & {
+  existing: Contact | null;
+  lookupFailed: boolean;
+  retryLookup: () => void;
+}) {
   const t = useTranslations("onboarding.contact");
   const tContacts = useTranslations("contacts");
   const tActions = useTranslations("onboarding.actions");
   const country = useUserSettings().country_code;
-  const create = useCreateContact("onboarding");
-  const [draft, setDraft] = useState<ContactDraft>(EMPTY_DRAFT);
+  const save = useSaveFirstContact();
+  const [draft, setDraft] = useState<ContactDraft>(() =>
+    existing ? draftOf(existing) : EMPTY_DRAFT,
+  );
   const [errors, setErrors] = useState<Partial<Record<string, ContactErrorKey>>>({});
   const [failed, setFailed] = useState(false);
 
@@ -46,8 +100,14 @@ export function ContactStep({ onNext }: { onNext: () => void }) {
       return;
     }
     setErrors({});
+    // Without knowing whether a contact is there already, saving could add a second one.
+    if (lookupFailed) {
+      setFailed(true);
+      retryLookup();
+      return;
+    }
     try {
-      await create.mutateAsync(parsed.data);
+      await save.mutateAsync({ existingId: existing?.id ?? null, input: parsed.data });
       onNext();
     } catch {
       setFailed(true);
@@ -58,25 +118,34 @@ export function ContactStep({ onNext }: { onNext: () => void }) {
     <StepShell
       title={t("title")}
       description={t("description")}
+      onBack={onBack}
+      backDisabled={save.isPending}
       footer={
         <>
+          {/* Once added, the contact is kept or edited; there is nothing left to skip. */}
+          {!existing && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="lg"
+              onClick={onNext}
+              className="w-full sm:w-auto"
+            >
+              {tActions("skip")}
+            </Button>
+          )}
           <Button
             type="button"
-            variant="ghost"
             size="lg"
-            onClick={onNext}
-            className="w-full sm:w-auto"
-          >
-            {tActions("skip")}
-          </Button>
-          <Button
-            type="button"
-            size="lg"
-            disabled={create.isPending}
+            disabled={save.isPending}
             onClick={add}
             className="w-full sm:w-auto"
           >
-            {create.isPending ? tActions("saving") : tActions("addContact")}
+            {save.isPending
+              ? tActions("saving")
+              : existing
+                ? tActions("next")
+                : tActions("addContact")}
           </Button>
         </>
       }

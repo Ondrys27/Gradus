@@ -181,6 +181,16 @@ export const EVENTS = {
     index: count(20),
     mode: optional(oneOf(MODES)),
   }),
+  /**
+   * Back in the wizard (its button or the browser's), from `step` to `to`.
+   * A step finished again after going back is not another
+   * `onboarding_step_completed`.
+   */
+  onboarding_step_back: event("onboarding", "client", false, {
+    step: oneOf([...ONBOARDING_STEPS, "closing"] as const),
+    to: oneOf(ONBOARDING_STEPS),
+    via: oneOf(["button", "browser"]),
+  }),
   /** `skipped_at`: the step where Skip ended it early. */
   onboarding_completed: event("onboarding", "client", false, {
     mode: oneOf(MODES),

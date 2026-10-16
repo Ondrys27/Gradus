@@ -1,42 +1,38 @@
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { useCelebration } from "@/components/celebration/celebration-provider";
-import { useFinishOnboarding, type FinishOnboardingInput } from "../queries";
+import type { GameMode } from "@/features/game/types";
 import { StepShell } from "../step-shell";
 
-export function ClosingStep({ input }: { input: FinishOnboardingInput }) {
+export function ClosingStep({
+  mode,
+  pending,
+  onFinish,
+  onBack,
+}: {
+  mode: GameMode;
+  pending: boolean;
+  onFinish: () => void;
+  onBack: () => void;
+}) {
   const t = useTranslations("onboarding.closing");
   const tActions = useTranslations("onboarding.actions");
-  const tCelebration = useTranslations("game.celebration.onboardingCompleted");
-  const finish = useFinishOnboarding();
-  const { celebrate } = useCelebration();
-
-  function done() {
-    finish.mutate(input, {
-      // Tool mode celebrates only a milestone and a win, not the setup.
-      onSuccess: () => {
-        if (input.mode === "game") {
-          celebrate({ title: tCelebration("title"), subtitle: tCelebration("subtitle") });
-        }
-      },
-    });
-  }
-
   return (
     <StepShell
       jarvisState="happy"
       title={t("title")}
-      description={input.mode === "game" ? t("descriptionGame") : t("description")}
+      description={mode === "game" ? t("descriptionGame") : t("description")}
+      onBack={onBack}
+      backDisabled={pending}
       footer={
         <Button
           type="button"
           size="lg"
           autoFocus
-          disabled={finish.isPending}
-          onClick={done}
+          disabled={pending}
+          onClick={onFinish}
           className="w-full sm:w-auto"
         >
-          {finish.isPending ? tActions("saving") : tActions("finish")}
+          {pending ? tActions("saving") : tActions("finish")}
         </Button>
       }
     />

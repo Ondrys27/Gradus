@@ -10,7 +10,10 @@ const redirect = vi.fn((target: string) => {
 });
 
 vi.mock("server-only", () => ({}));
-vi.mock("next/navigation", () => ({ redirect: (target: string) => redirect(target) }));
+vi.mock("next/navigation", () => ({
+  redirect: (target: string) => redirect(target),
+  RedirectType: { push: "push", replace: "replace" },
+}));
 vi.mock("next/headers", () => ({ cookies: async () => ({ set: vi.fn() }) }));
 vi.mock("next-intl/server", () => ({ getLocale: async () => "cs" }));
 vi.mock("@/lib/site-origin", () => ({ siteOrigin: async () => "http://localhost:3000" }));
