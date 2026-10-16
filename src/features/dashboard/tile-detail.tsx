@@ -29,6 +29,7 @@ import {
   formatNumber,
   splitDuration,
 } from "@/lib/format";
+import { lockPageScroll } from "@/lib/scroll-lock";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { compareToPrevious, winRate, winRateSeries, WIN_RATE_DAYS } from "./dashboard-logic";
@@ -75,12 +76,11 @@ export function TileDetail({ tile, onClose }: Props) {
       if (event.key === "Escape") onClose();
     }
     document.addEventListener("keydown", onKeyDown);
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const release = lockPageScroll();
     panelRef.current?.focus();
     return () => {
       document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = previousOverflow;
+      release();
       previouslyFocused?.focus?.();
     };
   }, [onClose]);

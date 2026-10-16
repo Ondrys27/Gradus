@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   clampScale,
   easeOutCubic,
+  isZoomWheel,
   MAX_SCALE,
   MIN_SCALE,
   normalizeWheelDelta,
+  oneFingerPans,
   wheelZoomFactor,
   zoomFrame,
 } from "./tree-map-zoom";
@@ -74,5 +76,19 @@ describe("zoomFrame", () => {
     }
     expect(zoomFrame(from, 1.2, anchor, 1).scale).toBeCloseTo(1.2);
     expect(zoomFrame(from, 1.2, anchor, 0)).toEqual(from);
+  });
+});
+
+describe("what moves the page and what moves the map", () => {
+  it("a plain wheel scrolls the page; Ctrl, ⌘ or a trackpad pinch zooms", () => {
+    expect(isZoomWheel({ ctrlKey: false, metaKey: false })).toBe(false);
+    expect(isZoomWheel({ ctrlKey: true, metaKey: false })).toBe(true);
+    expect(isZoomWheel({ ctrlKey: false, metaKey: true })).toBe(true);
+  });
+
+  it("one finger moves the map only in Adjust view or full screen", () => {
+    expect(oneFingerPans(false, false)).toBe(false);
+    expect(oneFingerPans(true, false)).toBe(true);
+    expect(oneFingerPans(false, true)).toBe(true);
   });
 });

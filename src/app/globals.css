@@ -481,6 +481,10 @@
   body {
     @apply isolate min-h-dvh overflow-x-hidden text-ink-soft antialiased;
   }
+  /* The shared page scroll lock (src/lib/scroll-lock.ts). */
+  html[data-page-scroll-locked] body {
+    overflow: hidden;
+  }
   h1,
   h2,
   h3,

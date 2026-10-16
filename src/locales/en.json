@@ -27,7 +27,8 @@
     "zoomOut": "Zoom out",
     "centre": "Centre the map",
     "fullscreen": "Full screen",
-    "exitFullscreen": "Exit full screen"
+    "exitFullscreen": "Exit full screen",
+    "editView": "Adjust view"
   },
   "designSystem": {
     "eyebrow": "Internal",

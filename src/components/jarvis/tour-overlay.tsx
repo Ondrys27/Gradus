@@ -13,6 +13,7 @@ import {
   type Size,
   type TourStep,
 } from "@/features/jarvis/tour";
+import { usePageScrollLock } from "@/lib/scroll-lock";
 import { useIsPhone, useReducedMotionSafe } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
 import { Jarvis, JARVIS_SIZES, type JarvisState } from "./jarvis";
@@ -160,14 +161,9 @@ export function TourOverlay({
   // Unlike the onboarding dialog, this overlay isn't a Base UI Dialog (it
   // sits on top of the live page so it can light up a real element), so it
   // has to lock the page's own scroll itself, or a drag could scroll the
-  // spotlighted element out of place.
-  useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, []);
+  // spotlighted element out of place. Through the shared lock: it may start
+  // while the onboarding celebration still holds Base UI's.
+  usePageScrollLock();
 
   const next = () => (last ? onFinish("done", index) : setIndex((value) => value + 1));
 

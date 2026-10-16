@@ -9,6 +9,7 @@ import { Logo } from "@/components/layout/logo";
 import { GuestLocaleSwitcher } from "@/features/auth/guest-locale-switcher";
 import { APP_NAME } from "@/lib/constants";
 import { homeAnchor, localizedPath, toSiteLocale } from "@/lib/routes";
+import { lockPageScroll } from "@/lib/scroll-lock";
 import { cn } from "@/lib/utils";
 import { SignupCta } from "./signup-cta";
 
@@ -35,11 +36,10 @@ export function SiteHeader({ signupEnabled }: { signupEnabled: boolean }) {
   useEffect(() => {
     if (!menuOpen) return;
     const close = (event: KeyboardEvent) => event.key === "Escape" && setMenuOpen(false);
-    const { overflow } = document.body.style;
-    document.body.style.overflow = "hidden";
+    const release = lockPageScroll();
     window.addEventListener("keydown", close);
     return () => {
-      document.body.style.overflow = overflow;
+      release();
       window.removeEventListener("keydown", close);
     };
   }, [menuOpen]);

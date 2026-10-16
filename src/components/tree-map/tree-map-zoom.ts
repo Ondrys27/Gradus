@@ -24,6 +24,25 @@ const MAX_PINCH_STEP = Math.log(1.03);
 
 export type WheelLike = { deltaY: number; deltaMode: number; ctrlKey: boolean };
 
+/**
+ * Whether a wheel event zooms the map. A plain wheel or two-finger swipe
+ * scrolls the page; only Ctrl/⌘ + wheel zooms, and so does a trackpad pinch,
+ * which browsers send as a wheel event with ctrlKey.
+ */
+export function isZoomWheel(event: { ctrlKey: boolean; metaKey: boolean }): boolean {
+  return event.ctrlKey || event.metaKey;
+}
+
+/**
+ * Whether one finger moves the map. On a touch screen one finger scrolls the
+ * page, unless the person turned on "Adjust view" or the map fills the
+ * screen (there is no page behind it to scroll). Two fingers always move
+ * and zoom the map.
+ */
+export function oneFingerPans(editing: boolean, fullscreen: boolean): boolean {
+  return editing || fullscreen;
+}
+
 /** deltaY in pixels whatever the delta mode (0 pixels, 1 lines, 2 pages). */
 export function normalizeWheelDelta(event: WheelLike, pageHeight = 800): number {
   if (event.deltaMode === 1) return event.deltaY * LINE_HEIGHT;

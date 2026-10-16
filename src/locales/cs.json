@@ -27,7 +27,8 @@
     "zoomOut": "Oddálit",
     "centre": "Vycentrovat mapu",
     "fullscreen": "Celá obrazovka",
-    "exitFullscreen": "Zavřít celou obrazovku"
+    "exitFullscreen": "Zavřít celou obrazovku",
+    "editView": "Upravit pohled"
   },
   "designSystem": {
     "eyebrow": "Interní",

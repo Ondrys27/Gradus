@@ -10,6 +10,7 @@ import { SearchProvider } from "@/features/search/search-provider";
 import { AnalyticsProvider } from "@/lib/analytics/analytics-provider";
 import { ThemeSync } from "@/features/settings/theme";
 import { BottomNav } from "./bottom-nav";
+import { PageLockGuard } from "./page-lock-guard";
 import { SectionGuard } from "./section-guard";
 import { Sidebar } from "./sidebar";
 import { TopBar } from "./top-bar";
@@ -41,6 +42,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <OnboardingGate />
         <JarvisTour />
         <AnalyticsProvider />
+        <PageLockGuard />
       </div>
     </SearchProvider>
   );

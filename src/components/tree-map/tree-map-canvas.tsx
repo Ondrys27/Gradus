@@ -12,7 +12,14 @@ import {
   type ReactNode,
 } from "react";
 import { animate, AnimatePresence, motion } from "framer-motion";
-import { CrosshairIcon, MaximizeIcon, MinimizeIcon, ZoomInIcon, ZoomOutIcon } from "lucide-react";
+import {
+  CrosshairIcon,
+  MaximizeIcon,
+  MinimizeIcon,
+  MoveIcon,
+  ZoomInIcon,
+  ZoomOutIcon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   TransformComponent,
@@ -36,15 +43,18 @@ import {
 import {
   BUTTON_FACTOR,
   clampScale,
+  isZoomWheel,
   MAX_SCALE,
   MIN_SCALE,
+  oneFingerPans,
   wheelZoomFactor,
   ZOOM_TIME,
   zoomFrame,
   type Anchor,
   type Transform,
 } from "./tree-map-zoom";
-import { useReducedMotionSafe } from "@/lib/use-media-query";
+import { lockPageScroll } from "@/lib/scroll-lock";
+import { useMediaQuery, useReducedMotionSafe } from "@/lib/use-media-query";
 
 /** Room around the tree inside the pannable canvas. */
 const CANVAS_PAD = 48;
@@ -102,6 +112,9 @@ export function TreeMap({ tree, label, contentKey, renderNode, overlay }: Props)
   const [sizes, setSizes] = useState<ReadonlyMap<string, Size>>(() => new Map());
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => new Set());
   const [fullscreen, setFullscreen] = useState(false);
+  /** Touch: "Adjust view" lets one finger move the map instead of the page. */
+  const [editing, setEditing] = useState(false);
+  const coarsePointer = useMediaQuery("(pointer: coarse)");
   const [viewport, setViewport] = useState<Size | null>(null);
   /** While the full-screen switch animates, the viewport is not measured. */
   const transitioning = useRef(false);
@@ -229,14 +242,15 @@ export function TreeMap({ tree, label, contentKey, renderNode, overlay }: Props)
     [zoomTo],
   );
 
-  // Wheel and trackpad pinch: native listener, because React's wheel handler is passive.
+  // Ctrl/⌘ + wheel and trackpad pinch zoom; a plain wheel is left to scroll the
+  // page. Native listener, because React's wheel handler is passive.
   useEffect(() => {
     const element = containerRef.current;
     if (!element) return;
     const onWheel = (event: WheelEvent) => {
       const api = transformRef.current;
       const wrapper = api?.instance.wrapperComponent;
-      if (!api || !wrapper || event.deltaY === 0) return;
+      if (!api || !wrapper || event.deltaY === 0 || !isZoomWheel(event)) return;
       event.preventDefault();
       const rect = wrapper.getBoundingClientRect();
       const base = zoom.current.frame !== null ? zoom.current.target : api.instance.state.scale;
@@ -245,12 +259,58 @@ export function TreeMap({ tree, label, contentKey, renderNode, overlay }: Props)
         y: event.clientY - rect.top,
       });
     };
+    // Safari reports a trackpad pinch as gesture events, not as a wheel with ctrlKey.
+    type GestureLike = Event & { scale: number; clientX: number; clientY: number };
+    let gestureBase = 1;
+    const onGestureStart = (event: Event) => {
+      event.preventDefault();
+      stopZoom();
+      gestureBase = transformRef.current?.instance.state.scale ?? 1;
+    };
+    const onGestureChange = (event: Event) => {
+      const api = transformRef.current;
+      const wrapper = api?.instance.wrapperComponent;
+      if (!api || !wrapper) return;
+      event.preventDefault();
+      const gesture = event as GestureLike;
+      const rect = wrapper.getBoundingClientRect();
+      const scale = clampScale(gestureBase * gesture.scale);
+      const { positionX, positionY, scale: current } = api.instance.state;
+      const view = zoomFrame(
+        { x: positionX, y: positionY, scale: current },
+        scale,
+        { x: gesture.clientX - rect.left, y: gesture.clientY - rect.top },
+        1,
+      );
+      zoom.current.target = view.scale;
+      api.setTransform(view.x, view.y, view.scale, 0);
+    };
     element.addEventListener("wheel", onWheel, { passive: false });
+    element.addEventListener("gesturestart", onGestureStart);
+    element.addEventListener("gesturechange", onGestureChange);
     return () => {
       element.removeEventListener("wheel", onWheel);
+      element.removeEventListener("gesturestart", onGestureStart);
+      element.removeEventListener("gesturechange", onGestureChange);
       stopZoom();
     };
   }, [zoomTo, stopZoom]);
+
+  // Touch: one finger scrolls the page and never reaches the library, unless
+  // one-finger panning is on; a second finger joins as the library's pinch,
+  // which zooms and moves the map.
+  const touchPans = oneFingerPans(editing, fullscreen);
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element || touchPans) return;
+    const onTouchStart = (event: TouchEvent) => {
+      if (event.touches.length !== 1) return;
+      if ((event.target as Element).closest("[data-map-ui]")) return;
+      event.stopPropagation();
+    };
+    element.addEventListener("touchstart", onTouchStart, { capture: true, passive: true });
+    return () => element.removeEventListener("touchstart", onTouchStart, { capture: true });
+  }, [touchPans]);
 
   const centre = useCallback(
     (animationTime = 300, fitAll = false) => {
@@ -325,12 +385,10 @@ export function TreeMap({ tree, label, contentKey, renderNode, overlay }: Props)
       }
       setFullscreen(false);
     };
-    const html = document.documentElement;
-    const overflow = html.style.overflow;
-    html.style.overflow = "hidden";
+    const release = lockPageScroll();
     window.addEventListener("keydown", onKeyDown);
     return () => {
-      html.style.overflow = overflow;
+      release();
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [fullscreen]);
@@ -387,6 +445,8 @@ export function TreeMap({ tree, label, contentKey, renderNode, overlay }: Props)
         centre(300, true);
       }}
       className={cn(
+        // One finger scrolls the page natively; the map's own gestures are JavaScript.
+        touchPans ? "touch-none" : "touch-pan-x touch-pan-y",
         "overflow-hidden [background-image:radial-gradient(color-mix(in_oklab,var(--color-line)_55%,transparent)_1px,transparent_1.5px)] [background-size:22px_22px]",
         fullscreen
           ? "fixed inset-0 z-overlay h-dvh bg-canvas"
@@ -590,6 +650,17 @@ export function TreeMap({ tree, label, contentKey, renderNode, overlay }: Props)
         <Button variant="ghost" size="icon" aria-label={t("centre")} onClick={() => centre()}>
           <CrosshairIcon aria-hidden />
         </Button>
+        {coarsePointer && !fullscreen && (
+          <Button
+            variant={editing ? "secondary" : "ghost"}
+            size="icon"
+            aria-label={t("editView")}
+            aria-pressed={editing}
+            onClick={() => setEditing((value) => !value)}
+          >
+            <MoveIcon aria-hidden />
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="icon"
