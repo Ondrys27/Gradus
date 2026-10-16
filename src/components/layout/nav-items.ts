@@ -5,6 +5,7 @@ import {
   ListChecksIcon,
   LayoutDashboardIcon,
   MilestoneIcon,
+  NotebookPenIcon,
   PhoneCallIcon,
   SquareKanbanIcon,
   UsersRoundIcon,
@@ -16,6 +17,7 @@ import { APP_HOME_PATH } from "@/lib/routes";
 export type NavKey =
   | "dashboard"
   | "milestones"
+  | "notes"
   | "contacts"
   | "pipeline"
   | "coldCalling"
@@ -30,6 +32,7 @@ export type NavItem = { key: NavKey; href: string; icon: LucideIcon };
 export const navItems: NavItem[] = [
   { key: "dashboard", href: "/app", icon: LayoutDashboardIcon },
   { key: "milestones", href: "/app/milniky", icon: MilestoneIcon },
+  { key: "notes", href: "/app/poznamky", icon: NotebookPenIcon },
   { key: "contacts", href: "/app/kontakty", icon: ContactRoundIcon },
   { key: "pipeline", href: "/app/pipeline", icon: SquareKanbanIcon },
   { key: "coldCalling", href: "/app/cold-calling", icon: PhoneCallIcon },
@@ -67,9 +70,9 @@ export type WorkerNavAccess = {
 const WORKER_BASE: NavKey[] = ["dashboard", "myTasks", "myRewards"];
 
 /**
- * The sidebar of an account. An owner gets the eight sections; a worker gets
+ * The sidebar of an account. An owner gets the nine sections; a worker gets
  * their own Dashboard, Tasks and Rewards, then every section the owner lets
- * them see. Workers and settings of the owner are never among them.
+ * them see. Workers, notes and settings of the owner are never among them.
  */
 export function navItemsFor(access: WorkerNavAccess): NavItem[] {
   if (!access) return navItems;

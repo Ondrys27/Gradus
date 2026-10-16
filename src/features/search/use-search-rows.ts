@@ -9,6 +9,7 @@ import {
   HistoryIcon,
   LayoutGridIcon,
   ListChecksIcon,
+  NotebookPenIcon,
   ReceiptTextIcon,
   SettingsIcon,
   SquareKanbanIcon,
@@ -25,6 +26,7 @@ import {
   formatCurrency,
   formatDate,
   formatDateTime,
+  formatEditedAt,
   todayIsoDate,
   type FormatSettings,
 } from "@/lib/format";
@@ -72,6 +74,7 @@ export const KIND_ICONS: Record<RowKind, LucideIcon> = {
   deal: SquareKanbanIcon,
   milestone: FlagIcon,
   task: ListChecksIcon,
+  note: NotebookPenIcon,
   event: CalendarDaysIcon,
   transaction: ArrowLeftRightIcon,
   invoice: ReceiptTextIcon,
@@ -105,6 +108,8 @@ export function hitHref(hit: SearchHit, settings: FormatSettings): string {
       const milestone = text(hit.data.milestoneId);
       return milestone ? `/app/milniky/${encodeURIComponent(milestone)}` : "/app/milniky";
     }
+    case "note":
+      return `/app/poznamky?note=${id}`;
     case "event": {
       const starts = text(hit.data.startsAt);
       const date = starts ? todayIsoDate(settings, new Date(starts)) : null;
@@ -234,6 +239,13 @@ export function useSearchRows({ query, hits, history, expanded }: Args): RowGrou
         case "task": {
           const milestone = text(d.milestone);
           return milestone ? t("context.inMilestone", { milestone }) : null;
+        }
+        case "note": {
+          const updated = text(d.updatedAt);
+          return join(
+            updated ? t("context.edited", { date: formatEditedAt(new Date(updated), settings) }) : null,
+            text(d.preview),
+          );
         }
         case "event": {
           const starts = text(d.startsAt);

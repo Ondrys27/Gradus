@@ -189,6 +189,7 @@
     "label": "Main navigation",
     "dashboard": "Dashboard",
     "milestones": "Milestones",
+    "notes": "Notes",
     "contacts": "Contacts",
     "pipeline": "Pipeline",
     "coldCalling": "Cold Calling",
@@ -270,6 +271,7 @@
       "deal": "Deals",
       "milestone": "Milestones",
       "task": "Tasks",
+      "note": "Notes",
       "event": "Calendar",
       "transaction": "Transactions",
       "invoice": "Invoices",
@@ -307,6 +309,7 @@
     "sections": {
       "dashboard": "home overview today",
       "milestones": "goals tasks plan",
+      "notes": "notes ideas writing pricing script customer competitors",
       "contacts": "people companies leads clients tables",
       "pipeline": "deals sales board kanban",
       "coldCalling": "calls prospecting timer phone",
@@ -375,6 +378,7 @@
       "account": "Account",
       "table": "In {table}",
       "inMilestone": "In {milestone}",
+      "edited": "Edited {date}",
       "due": "Due {date}",
       "allDay": "{date}, all day",
       "income": "Income",
@@ -1179,6 +1183,148 @@
       "label": "View",
       "list": "List",
       "path": "Path"
+    }
+  },
+  "notes": {
+    "title": "Notes",
+    "searchPlaceholder": "Search notes",
+    "searchLabel": "Search notes",
+    "clearSearch": "Clear search",
+    "new": "New note",
+    "newHint": "New note (⌘N or ⌥N)",
+    "untitled": "New note",
+    "noText": "No additional text",
+    "pinnedGroup": "Pinned",
+    "notesGroup": "Notes",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "pinnedLabel": "Pinned",
+    "delete": "Delete",
+    "deleted": "Moved to Recently Deleted.",
+    "undo": "Undo",
+    "noResults": "No note matches “{query}”.",
+    "searching": "Searching…",
+    "loadError": "Notes could not be loaded.",
+    "retry": "Try again",
+    "back": "Notes",
+    "selectNote": "Pick a note on the left, or start a new one.",
+    "readOnly": "Your trial has ended: notes can be read, not changed.",
+    "saveStatus": {
+      "pending": "Saving…",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "error": "Not saved yet, trying again",
+      "offline": "Offline, saves once you are back",
+      "tooLarge": "Too long to save, shorten the note"
+    },
+    "trash": {
+      "open": "Recently Deleted",
+      "title": "Recently Deleted",
+      "hint": "Notes here are deleted for good after 30 days.",
+      "empty": "Nothing deleted lately.",
+      "restore": "Restore",
+      "daysLeft": "{days, plural, =0 {Deleted today} one {# day left} other {# days left}}",
+      "close": "Back to notes"
+    },
+    "empty": {
+      "title": "Everything about your business in one place",
+      "text": "Write down who your customer is, what you sell and for how much. Start from a prepared outline with questions, or with a blank page.",
+      "blank": "Blank note",
+      "useTemplate": "Create “{title}”"
+    },
+    "editor": {
+      "label": "Note text",
+      "placeholderTitle": "Title",
+      "placeholderBody": "Write something…",
+      "toolbar": "Formatting",
+      "heading1": "Title",
+      "heading2": "Heading",
+      "heading3": "Subheading",
+      "paragraph": "Body text",
+      "bold": "Bold",
+      "italic": "Italic",
+      "bulletList": "Bulleted list",
+      "orderedList": "Numbered list",
+      "taskList": "Checklist",
+      "link": "Link",
+      "linkPlaceholder": "Paste a link",
+      "linkApply": "Add link",
+      "linkRemove": "Remove link",
+      "linkCancel": "Cancel",
+      "hideKeyboard": "Done"
+    },
+    "templates": {
+      "idealCustomer": {
+        "title": "Ideal customer",
+        "hint": "Describe one specific person or company you want to sell to.",
+        "questions": {
+          "who": "Who are they? Age, field, company size, where they are.",
+          "problem": "What problem or wish brings them to you?",
+          "today": "How do they solve it today, and what bothers them about it?",
+          "where": "Where do you find them? Where do they spend time, what do they read, whom do they listen to?",
+          "decides": "Who decides about the purchase, and what convinces them?"
+        },
+        "industry": {
+          "realEstate": "Are they buying, selling or renting? In which area and price range?",
+          "coaching": "With what goal or pain do people come to you?",
+          "ecommerce": "Where do they shop online, and what do they choose by (price, speed, reviews)?",
+          "trades": "Households or companies? How far do you travel?",
+          "freelanceIt": "How big are the companies, and what technologies do they use?",
+          "agency": "How big are the companies, in which fields, and what is their marketing budget?"
+        }
+      },
+      "offer": {
+        "title": "Products and services",
+        "hint": "Everything you sell, and what the customer gets out of it.",
+        "questions": {
+          "what": "What exactly do you sell? List the products and services.",
+          "outcome": "What result does the customer get?",
+          "different": "What makes you different from the others?",
+          "main": "Which offer is the main one, and which are extras?",
+          "later": "What would you like to add later?"
+        }
+      },
+      "pricing": {
+        "title": "Pricing",
+        "hint": "Your prices in one place, and how you arrived at them.",
+        "questions": {
+          "items": "Items and prices",
+          "basis": "How do you price: per hour, project, piece or month?",
+          "margin": "What does each item cost you, and what is left?",
+          "discounts": "Discounts, bundles and the minimum order",
+          "compare": "How do you compare with competitors?"
+        },
+        "industry": {
+          "realEstate": "Commission: what percentage or fixed amount, and what does it include?",
+          "coaching": "Single sessions, or a package or programme?",
+          "ecommerce": "Shipping price, and from what amount is it free?",
+          "trades": "How do you charge for material, travel and an hour of work?",
+          "freelanceIt": "Hourly rate or a project price? How do you handle changes to the brief?",
+          "agency": "Monthly retainer or one-off projects?"
+        }
+      },
+      "competition": {
+        "title": "Competitors",
+        "hint": "Who else your customers can go to, and why they should pick you.",
+        "questions": {
+          "who": "Who are your main competitors? (name, website)",
+          "strong": "What are they good at?",
+          "weak": "Where are they weak, or what do customers miss?",
+          "prices": "What are their prices?",
+          "edge": "Why should a customer choose you?"
+        }
+      },
+      "salesScript": {
+        "title": "Sales script",
+        "hint": "What you say on a call or at a meeting, step by step.",
+        "questions": {
+          "opening": "Opening: who you are and why you are calling (first sentence)",
+          "questions": "Questions that uncover what they need",
+          "pitch": "Your offer in one or two sentences",
+          "objections": "The most common objections and your answers",
+          "close": "Close: what next step will you suggest (meeting, demo, quote)?"
+        }
+      }
     }
   },
   "pipeline": {

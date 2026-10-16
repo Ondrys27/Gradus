@@ -4,6 +4,7 @@ import { PROACTIVE_KINDS } from "@/features/jarvis/proactive";
 import { PROACTIVE_REACTIONS } from "@/features/jarvis/protocol";
 import { INDUSTRY_KEYS } from "@/features/onboarding/industries";
 import { XP_REASONS } from "@/features/game/rules";
+import { NOTE_TEMPLATE_KEYS } from "@/features/notes/templates";
 import { Constants } from "@/types/database";
 import { field, isSafeField, isScrubbedTextField } from "./fields";
 import { APP_ROUTES, ANALYTICS_SECTIONS, type AnalyticsSection } from "./routes";
@@ -117,6 +118,7 @@ const CRON_JOBS = [
   "jarvis_briefing",
   "analytics_retention",
   "metrics_daily",
+  "notes_trash",
 ] as const;
 const FILE_ERRORS = [
   "fileType",
@@ -280,6 +282,20 @@ export const EVENTS = {
     view: oneOf(["list", "map", "path"]),
     initial: bool(),
   }),
+
+  // --- notes ---------------------------------------------------------------
+  /** A new note: empty (button, ⌘N) or from one of the prepared outlines. */
+  note_created: event("notes", "client", true, {
+    source: oneOf(["blank", "template"]),
+    where: oneOf(["list", "empty_state", "shortcut"]),
+  }),
+  /** Which prepared outline was used, and whether the industry from onboarding shaped it. */
+  note_template_used: event("notes", "client", true, {
+    template: oneOf(NOTE_TEMPLATE_KEYS),
+    industry: optional(oneOf(INDUSTRY_KEYS)),
+  }),
+  /** Moved to the trash (it can still be restored for 30 days). */
+  note_deleted: event("notes", "client", true, { pinned: bool() }),
 
   // --- pipeline ------------------------------------------------------------
   deal_created: event("pipeline", "client", true, {

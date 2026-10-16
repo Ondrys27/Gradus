@@ -26,8 +26,13 @@ describe("isActivePath", () => {
 });
 
 describe("navigation", () => {
-  it("has eight sections, four of them in the phone bar", () => {
-    expect(navItems).toHaveLength(8);
+  it("has nine sections, four of them in the phone bar", () => {
+    expect(navItems).toHaveLength(9);
+    expect(navItems.map((item) => item.key).slice(0, 3)).toEqual([
+      "dashboard",
+      "milestones",
+      "notes",
+    ]);
     expect(bottomNavKeys).toHaveLength(4);
     expect(bottomNavKeys.every((key) => navItems.some((item) => item.key === key))).toBe(true);
   });
@@ -69,6 +74,9 @@ describe("worker navigation", () => {
     expect(isPathAllowed("/app/finance", worker)).toBe(false);
     expect(isPathAllowed("/app/pracovnici", worker)).toBe(false);
     expect(isPathAllowed("/app/milniky", worker)).toBe(false);
+    // The owner's notes stay private, whatever the worker may see.
+    expect(isPathAllowed("/app/poznamky", worker)).toBe(false);
+    expect(isPathAllowed("/app/poznamky", null)).toBe(true);
     expect(isPathAllowed("/app/nastaveni", worker)).toBe(true);
     expect(isPathAllowed("/app/tarif", worker)).toBe(true);
     expect(isPathAllowed("/app/ukoly", null)).toBe(false);

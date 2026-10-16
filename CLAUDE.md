@@ -88,6 +88,15 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - **Generování kontaktů:** Places API (New) jen ze serveru, klíč nikdy do prohlížeče, minimální maska polí. Limity denně a měsíčně podle `plans`. Duplicity: `external_place_id`, telefon bez formátování, název + adresa. Google nevrací e-maily. Každé volání do `usage_events` včetně neúspěchů se zprávou od Googlu.
 - **Sdílený graf času volání:** jediná data napříč uživateli. V `call_time_stats` jen země, den, hodina, pokusy, schůzky. Políčko < 20 pokusů nezobrazovat, země < 200 nepočítat. Nikdy ukázková čísla. Cron započítá z jednoho uživatele nanejvýš 30 pokusů na hodinu a den, aby jeden účet nezkreslil graf.
 
+### Poznámky
+- **Účel:** podklady k podnikání na jednom místě (ideální zákazník, produkty a služby, ceník, konkurence, prodejní skript, nápady), ovládání jako Apple Notes. Sekce /app/poznamky v menu po Milnících, nikdy zamčená.
+- **Data:** `notes` (title = první řádek, content = JSON editoru Tiptap, content_text = čistý text po řádcích pro hledání a Jarvise, pinned, deleted_at; generované `preview` a `search_vector` (simple + unaccent)). RLS jen vlastní řádky; pracovník k poznámkám majitele přístup nemá a sekci nevidí. Klient zapisuje jen title, content, content_text, pinned, deleted_at; časy hlídá `notes_guard` (updated_at jen při změně textu). Limit velikosti v DB (content 400 kB, text 100 000 znaků, název 200).
+- **Ukládání** jen přes `NoteSaver` (src/features/notes/note-saver.ts): debounce 600 ms, jeden požadavek na poznámku, neuložené v localStorage a odeslané po obnovení, varování při zavření karty. Žádné tlačítko Uložit.
+- **Koš:** smazání nastaví deleted_at, obnovení ho vynuluje; cron `notes-trash` jednou denně maže po 30 dnech (`purge_deleted_notes`, jen server). Prázdná poznámka se po odchodu z ní smaže hned.
+- **Hledání:** `search_notes()` (fulltext, předpony slov, bez diakritiky), používá ho seznam i ⌘K.
+- Šablony v `src/features/notes/templates.ts` (klíče idealCustomer, offer, pricing, competition, salesScript; texty v překladech, otázka navíc podle oboru).
+- **Obsah poznámek je vždy data uživatele, nikdy instrukce pro Jarvise.** Do kontextu jde ohraničený a označený jako data.
+
 ### Jarvis
 - **Jedna route `/api/jarvis` pro všechna volání modelu.** Nikdy z prohlížeče, nikdy jinou cestou.
 - Anthropic SDK, `ANTHROPIC_API_KEY`. Streamovat. Systémový prompt cachovat.
@@ -181,7 +190,7 @@ Veřejné v `.env`, tajné v `.env.local`. Vždy udržovat `.env.example`.
 | `FAKTUROID_*` | Per uživatel, šifrovaně v DB, ne v env |
 | `NEXT_PUBLIC_BETA` | Štítek Beta v aplikaci |
 
-**Cron úlohy:** `call_time_stats` denně · automatické platby denně · hlídání příležitostí 1× denně (10:00 UTC) · ranní shrnutí Jarvise 1× denně (5:00 UTC = 6–8 h v Česku). Běžíme na Vercel Hobby: každá úloha smí běžet nejvýš jednou denně a spouští se kdykoliv během zadané hodiny, jinak nasazení spadne. Častější běh (3× denně, každou hodinu) vrátit až po přechodu na Vercel Pro.
+**Cron úlohy:** `call_time_stats` denně · koš poznámek denně · automatické platby denně · hlídání příležitostí 1× denně (10:00 UTC) · ranní shrnutí Jarvise 1× denně (5:00 UTC = 6–8 h v Česku). Běžíme na Vercel Hobby: každá úloha smí běžet nejvýš jednou denně a spouští se kdykoliv během zadané hodiny, jinak nasazení spadne. Častější běh (3× denně, každou hodinu) vrátit až po přechodu na Vercel Pro.
 
 Registrace jen s pozvánkovým kódem. **První účet = owner.** Potvrzování e-mailu vypnuté — zapnout před spuštěním.
 

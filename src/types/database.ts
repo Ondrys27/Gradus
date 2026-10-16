@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   graphql_public: {
     Tables: {
@@ -1400,6 +1400,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notes: {
+        Row: {
+          content: Json
+          content_text: string
+          created_at: string
+          deleted_at: string | null
+          id: string
+          pinned: boolean
+          preview: string | null
+          search_vector: unknown
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: Json
+          content_text?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          pinned?: boolean
+          preview?: string | null
+          search_vector?: unknown
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          content?: Json
+          content_text?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          pinned?: boolean
+          preview?: string | null
+          search_vector?: unknown
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       nps_responses: {
         Row: {
@@ -3619,6 +3661,7 @@ export type Database = {
           usage: number
         }[]
       }
+      purge_deleted_notes: { Args: never; Returns: number }
       record_worker_payment: {
         Args: {
           _amount: number
@@ -3687,6 +3730,15 @@ export type Database = {
         }[]
       }
       search_norm: { Args: { _value: string }; Returns: string }
+      search_notes: {
+        Args: { _limit?: number; _query: string }
+        Returns: {
+          data: Json
+          id: string
+          rank: number
+          title: string
+        }[]
+      }
       search_rank: {
         Args: { _doc: string; _q: string; _title: string }
         Returns: number

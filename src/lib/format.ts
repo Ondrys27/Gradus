@@ -308,6 +308,20 @@ export function formatDateTime(
   return `${formatDate(instant, settings)} ${formatTime(instant, settings)}`;
 }
 
+/**
+ * When something was last changed, as a list shows it: the time for today
+ * (in the user's zone), the date otherwise.
+ */
+export function formatEditedAt(
+  instant: Date,
+  settings: FormatSettings = DEFAULT_FORMAT_SETTINGS,
+  now: Date = new Date(),
+): string {
+  return todayIsoDate(settings, instant) === todayIsoDate(settings, now)
+    ? formatTime(instant, settings)
+    : formatDate(instant, settings);
+}
+
 /** Full weekday name in the UI language, e.g. "Monday" / "pondělí". */
 export function formatWeekdayLong(date: Date, uiLocale: string): string {
   return new Intl.DateTimeFormat(uiLocale, { weekday: "long" }).format(date);

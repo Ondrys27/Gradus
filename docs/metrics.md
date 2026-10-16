@@ -45,6 +45,8 @@ U každé sekce: adopce (% aktivních, kteří ji použili), počet akcí, akce 
 
 **Milníky** — vytvořené (z kapitoly / vlastní), dokončené, míra a medián doby dokončení, úkoly a podúkoly vytvořené a splněné, hloubka stromu, podíl pohledů Seznam / Mapa / Cesta, vyplněná odměna (%), vyžádané AI hodnocení
 
+**Poznámky** — založené (prázdné / ze šablony, podle klíče šablony a oboru), smazané, uživatelé s aspoň jednou poznámkou (z `note_created`, `note_template_used`, `note_deleted`; nikdy názvy ani obsah)
+
 **Pipeline** — obchody vytvořené, přesuny, výhry, prohry, míra výhry, průměrná a celková hodnota po měnách, medián času ve fázi, uživatelé s upravenými fázemi, použité „znovu oslovit"
 
 **Kontakty** — přidané ručně / vygenerované, přesuny mezi tabulkami, vytvořené vlastní tabulky a pole, vyplněnost e-mailu, telefonu a webu (%), zachycené duplicity, zaznamenané aktivity

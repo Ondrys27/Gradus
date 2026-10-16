@@ -4,6 +4,7 @@ import {
   formatCalendarDate,
   formatCurrency,
   formatDateTime,
+  formatEditedAt,
   formatNumber,
   formatTime,
   isoDateToLocal,
@@ -153,5 +154,24 @@ describe("formatList", () => {
     // Czech keeps the "a" glued to the next word with a no-break space.
     expect(formatList(["a", "b", "c"], "cs").replace(/\u00a0/g, " ")).toBe("a, b a c");
     expect(formatList(["a"], "cs")).toBe("a");
+  });
+});
+
+describe("formatEditedAt", () => {
+  it("shows the time for today and the date before, in the user's zone", () => {
+    const now = new Date("2026-10-16T21:30:00Z"); // 23:30 in Prague
+    expect(formatEditedAt(new Date("2026-10-16T22:10:00Z"), DEFAULT_FORMAT_SETTINGS, now)).toBe(
+      "17. 10. 2026",
+    );
+    expect(formatEditedAt(new Date("2026-10-16T06:05:00Z"), DEFAULT_FORMAT_SETTINGS, now)).toBe(
+      "08:05",
+    );
+    // Just after midnight in Prague is still the evening before in UTC.
+    expect(formatEditedAt(new Date("2026-10-15T22:01:00Z"), DEFAULT_FORMAT_SETTINGS, now)).toBe(
+      "00:01",
+    );
+    expect(formatEditedAt(new Date("2026-10-15T21:59:00Z"), DEFAULT_FORMAT_SETTINGS, now)).toBe(
+      "15. 10. 2026",
+    );
   });
 });

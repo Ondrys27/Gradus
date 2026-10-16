@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import {
   readRecentItems,
   searchParams,
+  searchPlan,
   shouldQueryDatabase,
   type DbKind,
   type RecentItem,
@@ -26,28 +27,53 @@ export const searchKeys = {
 };
 
 /**
- * One call of `global_search()` with the signed-in user's own client, so row
- * level security decides what comes back. A newer query aborts the one still
- * running (TanStack Query aborts the signal of a query nobody watches anymore).
+ * One search with the signed-in user's own client, so row level security
+ * decides what comes back: `global_search()` for everything but notes and
+ * `search_notes()` for the user's own notes, side by side. A newer query
+ * aborts the one still running (TanStack Query aborts the signal of a query
+ * nobody watches anymore).
  */
 export function useGlobalSearch(query: string, kinds: readonly DbKind[] | null) {
-  const { user } = useSession();
+  const { user, worker } = useSession();
   return useQuery({
     queryKey: searchKeys.results(user.id, query, kinds),
     queryFn: async ({ signal }) => {
       const params = searchParams(query, kinds ?? undefined);
-      const { data, error } = await createClient()
-        .rpc("global_search", {
-          _query: params._query,
-          _phone_patterns: params._phone_patterns,
-          _limit: params._limit,
-          // The generated type misses that these two are nullable.
-          _amount: params._amount as unknown as number,
-          _kinds: params._kinds as unknown as string[],
-        })
-        .abortSignal(signal);
-      if (error) throw error;
-      return (data ?? []) as SearchHit[];
+      const plan = searchPlan(params._kinds, !worker);
+      const supabase = createClient();
+      const [global, notes] = await Promise.all([
+        plan.globalKinds === null || plan.globalKinds.length > 0
+          ? supabase
+              .rpc("global_search", {
+                _query: params._query,
+                _phone_patterns: params._phone_patterns,
+                _limit: params._limit,
+                // The generated type misses that these two are nullable.
+                _amount: params._amount as unknown as number,
+                _kinds: plan.globalKinds as unknown as string[],
+              })
+              .abortSignal(signal)
+          : null,
+        plan.notes
+          ? supabase
+              .rpc("search_notes", { _query: params._query, _limit: params._limit })
+              .abortSignal(signal)
+          : null,
+      ]);
+      if (global?.error) throw global.error;
+      if (notes?.error) throw notes.error;
+      return [
+        ...((global?.data ?? []) as SearchHit[]),
+        ...(notes?.data ?? []).map(
+          (hit): SearchHit => ({
+            kind: "note",
+            id: hit.id,
+            title: hit.title,
+            rank: hit.rank,
+            data: (hit.data ?? {}) as Record<string, unknown>,
+          }),
+        ),
+      ];
     },
     enabled: shouldQueryDatabase(query),
     placeholderData: keepPreviousData,

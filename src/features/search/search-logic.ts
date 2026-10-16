@@ -6,12 +6,17 @@
 import { cleanTerm, phoneSearchDigits } from "@/features/contacts/contact-search";
 import type { ContactDraft } from "@/features/contacts/schemas";
 
-/** Result kinds that live in the database, in their default order. */
+/**
+ * Result kinds that live in the database, in their default order. Notes come
+ * from `search_notes()` (full text, the user's own notes only), the rest from
+ * `global_search()`.
+ */
 export const DB_KINDS = [
   "contact",
   "deal",
   "milestone",
   "task",
+  "note",
   "event",
   "transaction",
   "invoice",
@@ -92,6 +97,20 @@ export function searchParams(query: string, kinds?: readonly string[]): SearchRp
     _kinds: only && only.length > 0 ? only : null,
     _limit: only && only.length === 1 ? ALL_SIZE : GROUP_SIZE + 1,
   };
+}
+
+/**
+ * How one search is split between the two functions: the kinds asked of
+ * `global_search()` (null = all of them, [] = skip it) and whether notes are
+ * searched. A worker's search never includes notes (they are not in their app).
+ */
+export function searchPlan(
+  kinds: DbKind[] | null,
+  includeNotes: boolean,
+): { globalKinds: DbKind[] | null; notes: boolean } {
+  const notes = includeNotes && (kinds === null || kinds.includes("note"));
+  if (kinds === null) return { globalKinds: null, notes };
+  return { globalKinds: kinds.filter((kind) => kind !== "note"), notes };
 }
 
 /** Whether the query is worth a database round trip. */

@@ -189,6 +189,7 @@
     "label": "Hlavní navigace",
     "dashboard": "Přehled",
     "milestones": "Milníky",
+    "notes": "Poznámky",
     "contacts": "Kontakty",
     "pipeline": "Pipeline",
     "coldCalling": "Cold Calling",
@@ -270,6 +271,7 @@
       "deal": "Obchody",
       "milestone": "Milníky",
       "task": "Úkoly",
+      "note": "Poznámky",
       "event": "Kalendář",
       "transaction": "Transakce",
       "invoice": "Faktury",
@@ -307,6 +309,7 @@
     "sections": {
       "dashboard": "domů přehled dnes",
       "milestones": "cíle úkoly plán",
+      "notes": "poznámky nápady zápisky ceník skript zákazník konkurence",
       "contacts": "lidé firmy klienti tabulky",
       "pipeline": "obchody prodej nástěnka zakázky",
       "coldCalling": "volání hovory telefon časovač",
@@ -375,6 +378,7 @@
       "account": "Účet",
       "table": "V tabulce {table}",
       "inMilestone": "Milník {milestone}",
+      "edited": "Upraveno {date}",
       "due": "Termín {date}",
       "allDay": "{date}, celý den",
       "income": "Příjem",
@@ -1179,6 +1183,148 @@
       "label": "Zobrazení",
       "list": "Seznam",
       "path": "Cesta"
+    }
+  },
+  "notes": {
+    "title": "Poznámky",
+    "searchPlaceholder": "Hledat v poznámkách",
+    "searchLabel": "Hledat v poznámkách",
+    "clearSearch": "Vymazat hledání",
+    "new": "Nová poznámka",
+    "newHint": "Nová poznámka (⌘N nebo ⌥N)",
+    "untitled": "Nová poznámka",
+    "noText": "Žádný další text",
+    "pinnedGroup": "Připnuté",
+    "notesGroup": "Poznámky",
+    "pin": "Připnout",
+    "unpin": "Odepnout",
+    "pinnedLabel": "Připnutá",
+    "delete": "Smazat",
+    "deleted": "Přesunuto do Nedávno smazaných.",
+    "undo": "Vrátit",
+    "noResults": "Žádná poznámka neodpovídá „{query}“.",
+    "searching": "Hledám…",
+    "loadError": "Poznámky se nepodařilo načíst.",
+    "retry": "Zkusit znovu",
+    "back": "Poznámky",
+    "selectNote": "Vyber poznámku vlevo, nebo založ novou.",
+    "readOnly": "Zkušební období skončilo: poznámky si přečteš, ale nezměníš.",
+    "saveStatus": {
+      "pending": "Ukládám…",
+      "saving": "Ukládám…",
+      "saved": "Uloženo",
+      "error": "Zatím neuloženo, zkouším znovu",
+      "offline": "Offline, uložím po připojení",
+      "tooLarge": "Poznámka je moc dlouhá, zkrať ji"
+    },
+    "trash": {
+      "open": "Nedávno smazané",
+      "title": "Nedávno smazané",
+      "hint": "Odsud se poznámky po 30 dnech smažou natrvalo.",
+      "empty": "Nic smazaného tu není.",
+      "restore": "Obnovit",
+      "daysLeft": "{days, plural, =0 {Smaže se dnes} one {Zbývá # den} few {Zbývají # dny} other {Zbývá # dní}}",
+      "close": "Zpět na poznámky"
+    },
+    "empty": {
+      "title": "Podklady k podnikání na jednom místě",
+      "text": "Zapiš si, kdo je tvůj zákazník, co prodáváš a za kolik. Začni předpřipravenou osnovou s otázkami, nebo prázdnou stránkou.",
+      "blank": "Prázdná poznámka",
+      "useTemplate": "Založit „{title}“"
+    },
+    "editor": {
+      "label": "Text poznámky",
+      "placeholderTitle": "Nadpis",
+      "placeholderBody": "Piš…",
+      "toolbar": "Formátování",
+      "heading1": "Nadpis",
+      "heading2": "Mezititulek",
+      "heading3": "Podtitulek",
+      "paragraph": "Běžný text",
+      "bold": "Tučné",
+      "italic": "Kurzíva",
+      "bulletList": "Odrážky",
+      "orderedList": "Číslovaný seznam",
+      "taskList": "Zaškrtávací seznam",
+      "link": "Odkaz",
+      "linkPlaceholder": "Vlož odkaz",
+      "linkApply": "Přidat odkaz",
+      "linkRemove": "Odebrat odkaz",
+      "linkCancel": "Zrušit",
+      "hideKeyboard": "Hotovo"
+    },
+    "templates": {
+      "idealCustomer": {
+        "title": "Ideální zákazník",
+        "hint": "Popiš jednoho konkrétního člověka nebo firmu, které chceš prodávat.",
+        "questions": {
+          "who": "Kdo to je? Věk, obor, velikost firmy, kde je.",
+          "problem": "Jaký problém nebo přání ho k tobě přivádí?",
+          "today": "Jak to řeší dnes a co mu na tom vadí?",
+          "where": "Kde ho najdeš? Kde tráví čas, co čte, koho poslouchá?",
+          "decides": "Kdo rozhoduje o nákupu a co ho přesvědčí?"
+        },
+        "industry": {
+          "realEstate": "Kupuje, prodává, nebo pronajímá? V jaké lokalitě a cenové hladině?",
+          "coaching": "S jakým cílem nebo trápením za tebou lidé chodí?",
+          "ecommerce": "Kde nakupuje online a podle čeho vybírá (cena, rychlost, recenze)?",
+          "trades": "Domácnosti, nebo firmy? Jak daleko za zakázkou jezdíš?",
+          "freelanceIt": "Jak velké firmy a s jakými technologiemi?",
+          "agency": "Jak velké firmy, z jakých oborů a s jakým rozpočtem na marketing?"
+        }
+      },
+      "offer": {
+        "title": "Produkty a služby",
+        "hint": "Všechno, co prodáváš, a co z toho zákazník má.",
+        "questions": {
+          "what": "Co přesně prodáváš? Vypiš produkty a služby.",
+          "outcome": "Jaký výsledek zákazník dostane?",
+          "different": "Čím se lišíš od ostatních?",
+          "main": "Která nabídka je hlavní a která doplňková?",
+          "later": "Co chceš přidat později?"
+        }
+      },
+      "pricing": {
+        "title": "Ceník",
+        "hint": "Ceny na jednom místě a jak jsi k nim došel.",
+        "questions": {
+          "items": "Položky a ceny",
+          "basis": "Jak cenu počítáš: za hodinu, projekt, kus, nebo měsíčně?",
+          "margin": "Kolik tě každá položka stojí a kolik ti zbude?",
+          "discounts": "Slevy, balíčky a minimální zakázka",
+          "compare": "Jak jsi na tom proti konkurenci?"
+        },
+        "industry": {
+          "realEstate": "Provize: kolik procent nebo jaká pevná částka a co v ní je?",
+          "coaching": "Jednotlivá sezení, nebo balíček či program?",
+          "ecommerce": "Kolik stojí doprava a od jaké částky je zdarma?",
+          "trades": "Jak účtuješ materiál, dopravu a hodinu práce?",
+          "freelanceIt": "Hodinová sazba, nebo cena za projekt? Jak řešíš změny zadání?",
+          "agency": "Měsíční paušál, nebo jednorázové projekty?"
+        }
+      },
+      "competition": {
+        "title": "Konkurence",
+        "hint": "Za kým další můžou tví zákazníci jít a proč by si měli vybrat tebe.",
+        "questions": {
+          "who": "Kdo jsou tví hlavní konkurenti? (název, web)",
+          "strong": "V čem jsou dobří?",
+          "weak": "Kde mají slabiny nebo co zákazníkům chybí?",
+          "prices": "Jaké mají ceny?",
+          "edge": "Proč by si zákazník měl vybrat tebe?"
+        }
+      },
+      "salesScript": {
+        "title": "Prodejní skript",
+        "hint": "Co říkáš na telefonu nebo na schůzce, krok za krokem.",
+        "questions": {
+          "opening": "Úvod: kdo jsi a proč voláš (první věta)",
+          "questions": "Otázky, kterými zjistíš, co potřebuje",
+          "pitch": "Tvoje nabídka v jedné až dvou větách",
+          "objections": "Nejčastější námitky a tvoje odpovědi",
+          "close": "Závěr: jaký další krok navrhneš (schůzka, ukázka, nabídka)?"
+        }
+      }
     }
   },
   "pipeline": {
