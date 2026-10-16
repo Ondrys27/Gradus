@@ -55,11 +55,19 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] STOP | Prohlédni si nový web v anonymním okně a porovnej snímky v docs/web-redesign/before a after. Co nesedí, napiš Claude Code rovnou. Pokud chcete s Vášou na web společnou fotku, ulož ji jako public/founders.jpg a napiš Claude Code, ať ji zapojí. Pak /pokracuj.
 - [x] STOP | Ruční krok: Google Maps. V .env.local chybí GOOGLE_MAPS_API_KEY, bez něj testerům nepůjde generovat kontakty. V Google Cloud Console: projekt s připojenou fakturací, povolené „Places API (New)", klíč s omezením API jen na Places API (New) a bez omezení podle webu nebo IP. Ověř ho příkazem z dřívějška v terminálu (musí vrátit firmy, ne 403), pak ho vlož do .env.local a restartuj dev server. Když nechceš generování v betě, přeskoč — test ho vynechá. Pak /pokracuj.
 - [x] 12.3 | architect | 2026-10-13 21 end-to-end testů hlavních cest v Playwrightu (bun run e2e) s vlastními @gradus.local účty; opravena hydratace pro omezený pohyb, nehybné tlačítko Jarvise během průvodce, srážení počtu generovaných kontaktů na 1 a chybná izolace při produkčním buildu; vše ověřeno i proti bun run build; docs/e2e-report.md.
+- [ ] 13.1 | architect |
+- [ ] 13.2 | architect |
+- [ ] 13.3 | architect |
+- [ ] 13.4 | architect | env: ANTHROPIC_API_KEY
+- [ ] 13.5 | architect |
+- [ ] 13.6 | architect | env: ANTHROPIC_API_KEY
+- [ ] K13 | reviewer |
+- [ ] STOP | Konec fáze 13. Všechno už je nasazené u Váši. Projděte spolu: nový účet v anonymním okně — průvodce tam a zpět tlačítkem i šipkou prohlížeče, obnovení uprostřed. Milníky: přechod z nástěnky a scroll kolečkem i na telefonu. Poznámky: založ Ideálního zákazníka, piš, obnov stránku, najdi ho hledáním, propoj s úkolem a zeptej se Jarvise na něco, co v poznámce je. V /admin/ai nastav strop a ověř, že platí. Večer se Jarvise zeptej, co máš teď dělat — nesmí poslat volat. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [ ] 12.4 | builder | env: RESEND_API_KEY
 - [ ] 12.5 | architect | env: CRON_SECRET
 - [ ] K12 | reviewer |
-- [ ] STOP | Ruční krok před nasazením. 1) Supabase: přejdi na tarif Pro (25 USD) — bezplatný projekt nemá zálohy a po týdnu bez provozu se uspí, což by testerům rozbilo aplikaci. 2) Supabase → Authentication: napoj SMTP na Resend podle docs/supabase-email.md a vlož šablony z docs/email-templates/. 3) Kup doménu, pokud ještě nemáš. 4) Založ účet na Vercelu. 5) V /podminky a /soukromi doplň místa [DOPLNIT]. Pak pokračuj nasazením 7.1.
-- [ ] 7.1 | RUČNĚ | Nasazení vyžaduje tvoje přihlášení do Vercelu a nastavení v jeho administraci. Spusť ho interaktivně: přepni /model na Sonnet a vlož prompt 7.1 z docs/plan.md.
+- [ ] STOP | Ruční krok před pozváním dalších testerů. 1) Supabase → Authentication: napoj SMTP na Resend podle docs/supabase-email.md, vlož šablony z docs/email-templates/ a zapni potvrzování e-mailu. 2) Kup doménu, pokud ještě nemáš, ověř ji v Resendu (RESEND_FROM) a přidej ji na Vercel. 3) V /podminky a /soukromi doplň místa [DOPLNIT]. Pak /pokracuj.
+- [ ] 7.1 | RUČNĚ | Aplikace běží na Vercel Hobby a každý push na main se nasadí sám. Až budeš mít doménu: nastav ji ve Vercelu, změň NEXT_PUBLIC_SITE_URL ve Vercelu, uprav Site URL a Redirect URLs v Supabase → URL Configuration a dej Redeploy. Projdi produkci v anonymním okně a pak tuhle položku zaškrtni ručně.
 
 ## Odloženo
 

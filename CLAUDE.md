@@ -195,6 +195,9 @@ Registrace jen s pozvánkovým kódem. **První účet = owner.** Potvrzování 
 - Chyby hlásit s výstupem terminálu nebo konzole, ne popisem.
 - Před každým nasazením musí projít `bun run e2e`.
 - Hlášení od testerů jsou v `bug_reports`; oprava hlášení = stav Opraveno v administraci.
+- **Produkce běží.** Aplikace je na Vercelu (Hobby) a každý push na main se hned nasadí k testerům. Pushuj jen s procházejícím `bun run lint`, `bun run test` a `bun run build`.
+- **Databáze je jedna pro vývoj i produkci.** Migrace jen přidávací: nové tabulky, nové sloupce s výchozí hodnotou nebo povolené null. Nic nemazat, nepřejmenovávat ani neměnit typ bez samostatného plánu přechodu. Testovací data jen pod účty @gradus.local.
+- **Plánované úlohy max 1× denně** (Vercel Hobby), viz Cron úlohy.
 
 ## Do prosince nepatří
 
