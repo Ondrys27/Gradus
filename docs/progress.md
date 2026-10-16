@@ -57,7 +57,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 12.3 | architect | 2026-10-13 21 end-to-end testů hlavních cest v Playwrightu (bun run e2e) s vlastními @gradus.local účty; opravena hydratace pro omezený pohyb, nehybné tlačítko Jarvise během průvodce, srážení počtu generovaných kontaktů na 1 a chybná izolace při produkčním buildu; vše ověřeno i proti bun run build; docs/e2e-report.md.
 - [x] 13.1 | architect | 2026-10-16 Krok průvodce je v adrese s historií, tlačítko Zpět na všech krocích, uložená data (milník, kontakt, cesta) se při návratu upraví místo duplicitního vzniku; přihlášení/registrace/reset hesla přesměrují přes replace.
 - [x] 13.2 | architect | 2026-10-16 Zbytkový zámek scrollu po Jarvisově prohlídce opraven centrálním počítaným zámkem (scroll-lock.ts) s úklidem po přechodu stránky; mapa úkolů scrolluje kolečkem a přibližuje jen Ctrl/⌘ nebo dvěma prsty.
-- [ ] 13.3 | architect |
+- [x] 13.3 | architect | 2026-10-17 Nová sekce Poznámky (/app/poznamky) jako Apple Notes s Tiptap editorem, autosave, fulltextem, koš na 30 dní, pěti šablonami podle oboru a napojením na ⌘K; pracovník k nim nemá přístup.
 - [ ] 13.4 | architect | env: ANTHROPIC_API_KEY
 - [ ] 13.5 | architect |
 - [ ] 13.6 | architect | env: ANTHROPIC_API_KEY
