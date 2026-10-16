@@ -56,7 +56,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] STOP | Ruční krok: Google Maps. V .env.local chybí GOOGLE_MAPS_API_KEY, bez něj testerům nepůjde generovat kontakty. V Google Cloud Console: projekt s připojenou fakturací, povolené „Places API (New)", klíč s omezením API jen na Places API (New) a bez omezení podle webu nebo IP. Ověř ho příkazem z dřívějška v terminálu (musí vrátit firmy, ne 403), pak ho vlož do .env.local a restartuj dev server. Když nechceš generování v betě, přeskoč — test ho vynechá. Pak /pokracuj.
 - [x] 12.3 | architect | 2026-10-13 21 end-to-end testů hlavních cest v Playwrightu (bun run e2e) s vlastními @gradus.local účty; opravena hydratace pro omezený pohyb, nehybné tlačítko Jarvise během průvodce, srážení počtu generovaných kontaktů na 1 a chybná izolace při produkčním buildu; vše ověřeno i proti bun run build; docs/e2e-report.md.
 - [x] 13.1 | architect | 2026-10-16 Krok průvodce je v adrese s historií, tlačítko Zpět na všech krocích, uložená data (milník, kontakt, cesta) se při návratu upraví místo duplicitního vzniku; přihlášení/registrace/reset hesla přesměrují přes replace.
-- [ ] 13.2 | architect |
+- [x] 13.2 | architect | 2026-10-16 Zbytkový zámek scrollu po Jarvisově prohlídce opraven centrálním počítaným zámkem (scroll-lock.ts) s úklidem po přechodu stránky; mapa úkolů scrolluje kolečkem a přibližuje jen Ctrl/⌘ nebo dvěma prsty.
 - [ ] 13.3 | architect |
 - [ ] 13.4 | architect | env: ANTHROPIC_API_KEY
 - [ ] 13.5 | architect |
