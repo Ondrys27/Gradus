@@ -37,6 +37,26 @@ type Props = {
 
 const HEIGHT = 168;
 
+/** Every how many bars an axis label fits in the narrow statistics column. */
+const LABEL_STEP: Record<PeriodKind, number> = { week: 1, month: 5, year: 2 };
+
+/**
+ * The bars labelled on the axis: every LABEL_STEP-th, and always the current
+ * one ("Today"), whose close neighbours then give way so labels never collide.
+ * Recharts' own thinning (minTickGap) could drop exactly the Today label.
+ */
+export function axisTicks(bars: readonly { key: string; current: boolean }[], kind: PeriodKind): string[] {
+  const step = LABEL_STEP[kind];
+  const currentAt = bars.findIndex((bar) => bar.current);
+  return bars
+    .filter((bar, index) => {
+      if (index === currentAt) return true;
+      if (index % step !== 0) return false;
+      return currentAt < 0 || step === 1 || Math.abs(index - currentAt) >= Math.ceil(step / 2) + 1;
+    })
+    .map((bar) => bar.key);
+}
+
 /**
  * One series, so no legend: the title names it. Thin columns rounded at the
  * top, square at the baseline; today in gold with "Today" on the axis, so the
@@ -76,10 +96,11 @@ export function DailyBarChart({ title, bars, kind, color, formatValue, plot, for
               dataKey="key"
               axisLine={false}
               tickLine={false}
-              interval="preserveStartEnd"
-              minTickGap={8}
-              tick={({ x, y, payload, index }) => {
-                const bar = data[index];
+              ticks={axisTicks(data, kind)}
+              interval={0}
+              tick={({ x, y, payload }) => {
+                // By key: with skipped ticks the index is not the bar's index.
+                const bar = data.find((item) => item.key === String(payload.value));
                 return (
                   <text
                     x={x}

@@ -46,11 +46,13 @@ function linksOf(value: unknown): Link[] {
 }
 
 /**
- * A note's text can never pass for the block's own markup: any tag that
- * names user_notes or note loses its angle bracket.
+ * A note's text can never pass for markup of the prompt: not the block's own
+ * elements, nor the ones around it (<task>, <milestone>, <file>…). Anything
+ * that opens or closes a tag ("<x", "</x", "< /x") loses its angle bracket;
+ * a plain "a < b" stays as it is.
  */
 export function neutralizeNoteText(text: string): string {
-  return text.replace(/<(\/?\s*(?:user_notes|note)\b)/gi, "‹$1");
+  return text.replace(/<(?=\s*\/|[A-Za-z_!?])/g, "‹");
 }
 
 function oneLine(value: string, max: number): string {
