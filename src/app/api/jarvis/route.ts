@@ -37,6 +37,8 @@ import { handleFeatureRequest } from "@/features/jarvis/server/feature-requests"
 import { loadSituation } from "@/features/jarvis/server/load-situation";
 import { reviewMilestone } from "@/features/jarvis/server/milestone-review";
 import { createAnthropic, streamModel } from "@/features/jarvis/server/model";
+import { loadMilestoneNotes, loadNotesContext } from "@/features/jarvis/server/notes";
+import { e2eEchoClient, wantsE2eEcho } from "@/features/jarvis/server/e2e-model";
 import {
   loadAnswersBlock,
   loadProactive,
@@ -222,7 +224,7 @@ export const POST = instrumentRoute("api.jarvis.post", async (request: Request) 
   if (kind === "ping") return ping(ctx, body);
   if (kind === "proactive") return proactive(ctx, body);
   if (kind === "rateMessage") return rateMessage(ctx, body);
-  return chat(ctx, body);
+  return chat(ctx, body, request);
 });
 
 /**
@@ -339,6 +341,12 @@ async function milestoneReview(ctx: Context, body: unknown) {
     return jobError("notConfigured", 503);
   }
 
+  // Notes tied to it (or its tasks) count for the review; the review goes on without them.
+  const notes = await loadMilestoneNotes(supabase, parsed.data.milestoneId).catch((error) => {
+    console.error("jarvis milestone notes failed", error);
+    return "";
+  });
+
   const result = await reviewMilestone({
     client,
     admin,
@@ -347,6 +355,7 @@ async function milestoneReview(ctx: Context, body: unknown) {
     milestone,
     today: todayIsoDate(settings),
     locale,
+    notes,
     log: (entry) => logAiUsage(admin, { ...entry, userId, conversationId: null }),
   });
   if (!result.ok) return jobError(result.code, 502);
@@ -494,7 +503,7 @@ async function emailReply(ctx: Context, body: unknown) {
  * Jarvis's answer as NDJSON lines (ChatEvent), then saves the answer and its
  * usage.
  */
-async function chat(ctx: Context, body: unknown) {
+async function chat(ctx: Context, body: unknown, request: Request) {
   const parsed = chatRequestSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "invalid", issues: parsed.error.issues }, { status: 400 });
@@ -519,7 +528,10 @@ async function chat(ctx: Context, body: unknown) {
   }
 
   // Checked before anything is saved, so a missing key leaves no unanswered message.
-  const client = createAnthropic(ctx.admin);
+  // The end-to-end tests' own accounts may ask for the echo stand-in (never in production).
+  const client = wantsE2eEcho(request.headers, ctx.email)
+    ? e2eEchoClient(ctx.admin)
+    : createAnthropic(ctx.admin);
   if (!client) {
     await logNotConfigured(ctx, "chat");
     const event: ChatEvent = { type: "error", code: "notConfigured", usage };
@@ -584,7 +596,7 @@ async function chat(ctx: Context, body: unknown) {
     },
   );
 
-  const [history, situation, idea, answers] = await Promise.all([
+  const [history, situation, idea, answers, notes] = await Promise.all([
     supabase
       .from("jarvis_messages")
       .select("id, role, content")
@@ -616,6 +628,11 @@ async function chat(ctx: Context, body: unknown) {
       console.error("jarvis answers failed", error);
       return "";
     }),
+    // The user's notes as data: titles, and the texts that matter for this message.
+    loadNotesContext(supabase, message, settings).catch((error) => {
+      console.error("jarvis notes failed", error);
+      return "";
+    }),
   ]);
   if (history.error) throw history.error;
   const rows = history.data.reverse();
@@ -633,7 +650,10 @@ async function chat(ctx: Context, body: unknown) {
     attachments: row.id === userMessage.id ? current : earlierFiles.get(row.id),
   }));
   const messages = toModelMessages(stored);
-  const extra = (answers ? `\n${answers}` : "") + (idea ? `\n${featureRequestNote()}` : "");
+  const extra =
+    (notes ? `\n${notes}` : "") +
+    (answers ? `\n${answers}` : "") +
+    (idea ? `\n${featureRequestNote()}` : "");
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({

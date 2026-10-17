@@ -126,3 +126,64 @@ export function fitsLimits(draft: NoteDraft): boolean {
 export function isBlank(draft: Pick<NoteDraft, "content_text">): boolean {
   return draft.content_text.trim() === "";
 }
+
+function paragraph(value: string): DocNode {
+  return value ? { type: "paragraph", content: [{ type: "text", text: value }] } : { type: "paragraph" };
+}
+
+/**
+ * Plain text (one of Jarvis's answers) as editor blocks: lines starting with
+ * "- " or "1. " become lists, other lines paragraphs, empty lines go.
+ */
+export function blocksFromPlainText(text: string): DocNode[] {
+  const blocks: DocNode[] = [];
+  let list: DocNode | null = null;
+  for (const raw of text.replace(/\r\n?/g, "\n").split("\n")) {
+    const line = raw.trim();
+    const bullet = /^[-*•]\s+(.*)$/.exec(line);
+    const ordered = bullet ? null : /^(\d+)[.)]\s+(.*)$/.exec(line);
+    if (bullet || ordered) {
+      const type = bullet ? "bulletList" : "orderedList";
+      if (!list || list.type !== type) {
+        list = ordered
+          ? { type, attrs: { start: Number(ordered[1]) }, content: [] }
+          : { type, content: [] };
+        blocks.push(list);
+      }
+      const value = (bullet ? bullet[1] : ordered![2]).trim();
+      list.content!.push({ type: "listItem", content: [paragraph(value)] });
+      continue;
+    }
+    list = null;
+    if (line) blocks.push(paragraph(line));
+  }
+  return blocks;
+}
+
+/** A new document: a title line, then the blocks. */
+export function docWithTitle(title: string, blocks: DocNode[]): DocNode {
+  return {
+    type: "doc",
+    content: [
+      { type: "heading", attrs: { level: 1 }, content: title ? [{ type: "text", text: title }] : [] },
+      ...blocks,
+    ],
+  };
+}
+
+/** The document with a small heading and the blocks added at its end. */
+export function appendToDoc(doc: DocNode, heading: string, blocks: DocNode[]): DocNode {
+  const content = (doc.content ?? []).filter(
+    // An empty last paragraph would leave a gap before the added part.
+    (node, i, all) => !(i === all.length - 1 && node.type === "paragraph" && !node.content?.length),
+  );
+  return {
+    ...doc,
+    type: "doc",
+    content: [
+      ...content,
+      { type: "heading", attrs: { level: 3 }, content: [{ type: "text", text: heading }] },
+      ...blocks,
+    ],
+  };
+}

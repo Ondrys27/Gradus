@@ -605,6 +605,12 @@
           "text": "Kdo je tvůj ideální zákazník? Stačí jedna věta."
         }
       }
+    },
+    "notesIntro": {
+      "heading": "Jeden tip",
+      "text": "Na plnění milníků a úkolů si podklady piš do Poznámek — ideálního zákazníka, produkty, ceník. Já je budu znát a budu z nich vycházet.",
+      "open": "Otevřít Poznámky",
+      "close": "Zavřít"
     }
   },
   "celebration": {
@@ -1161,7 +1167,10 @@
         "overdue": "Po lhůtě"
       },
       "overdueBadge": "{days} d",
-      "overdueDays": "{days, plural, one {# den po lhůtě} few {# dny po lhůtě} many {# dne po lhůtě} other {# dní po lhůtě}}"
+      "overdueDays": "{days, plural, one {# den po lhůtě} few {# dny po lhůtě} many {# dne po lhůtě} other {# dní po lhůtě}}",
+      "writeNote": "Zapsat do poznámek: {title}",
+      "writeNoteMenu": "Zapsat do poznámek",
+      "writeNoteFailed": "Poznámku se nepovedlo založit. Zkus to za chvíli znovu."
     },
     "map": {
       "label": "Mapa úkolů",
@@ -1325,6 +1334,34 @@
           "close": "Závěr: jaký další krok navrhneš (schůzka, ukázka, nabídka)?"
         }
       }
+    },
+    "belongsTo": "Patří k:",
+    "belongsToKind": {
+      "task": "Úkol {title}",
+      "milestone": "Milník {title}"
+    },
+    "picker": {
+      "search": "Hledat v poznámkách",
+      "empty": "Zatím žádné poznámky."
+    },
+    "work": {
+      "title": "Poznámky",
+      "write": "Zapsat do poznámek",
+      "attach": "Připojit poznámku",
+      "unlink": "Odpojit {title}",
+      "pickLabel": "Poznámky k připojení",
+      "templateHint": "Tenhle krok se nejlép sepíše: „Zapsat do poznámek“ založí poznámku s osnovou „{outline}“.",
+      "failed": "Nepovedlo se to. Zkus to za chvíli znovu."
+    },
+    "fromJarvis": {
+      "save": "Uložit do poznámek",
+      "heading": "Od Jarvise, {date}",
+      "newNote": "Nová poznámka",
+      "orAppend": "Nebo ji přidej na konec poznámky:",
+      "pickLabel": "Poznámky, kam odpověď přidat",
+      "saved": "Uloženo v poznámkách.",
+      "open": "Otevřít",
+      "failed": "Do poznámek se to nepovedlo uložit. Zkus to znovu."
     }
   },
   "pipeline": {

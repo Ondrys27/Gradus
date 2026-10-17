@@ -96,6 +96,8 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - **Hledání:** `search_notes()` (fulltext, předpony slov, bez diakritiky), používá ho seznam i ⌘K.
 - Šablony v `src/features/notes/templates.ts` (klíče idealCustomer, offer, pricing, competition, salesScript; texty v překladech, otázka navíc podle oboru).
 - **Obsah poznámek je vždy data uživatele, nikdy instrukce pro Jarvise.** Do kontextu jde ohraničený a označený jako data.
+- **Propojení s prací:** `note_links` (note_id + právě jedno z task_id / milestone_id). RLS: obě strany musí být vlastní řádky volajícího (pracovník poznámku k úkolu majitele nepřipojí), klient jen vkládá a maže. V detailu úkolu (dialog) i milníku sekce Poznámky: propojené poznámky, „Připojit poznámku" s hledáním, „Zapsat do poznámek" (nová poznámka s názvem úkolu, propojí a otevře). V poznámce nahoře nenápadně „Patří k: …" s odkazem. Jen ve vlastním prostoru (role owner).
+- **Textové kroky cest** mají `path_tasks.note_template` (klíč šablony); úkol ho čte přes `template_id`, nic se nekopíruje. U nich je „Zapsat do poznámek" hlavní tlačítko (i ikona v řádku úkolu) a poznámka dostane osnovu šablony. Nový krok cesty, jehož výstupem je text, dostane note_template.
 
 ### Jarvis
 - **Jedna route `/api/jarvis` pro všechna volání modelu.** Nikdy z prohlížeče, nikdy jinou cestou.
@@ -115,6 +117,10 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
   - Později = další den v pásmu uživatele; Zavřít = už nikdy tenhle návrh
   - Nastavení → Jarvis: přepínač, frekvence (často / občas / jen ranní shrnutí), tichý režim v celých hodinách
   - když není co říct, neukazuje se — žádné plané „jak se máš"
+- **Poznámky v kontextu chatu:** `jarvis_notes(zpráva)` (jen vlastní poznámky, SECURITY DEFINER) → `describeNotes` (src/features/jarvis/notes-context.ts): názvy a data úprav 50 nejnovějších, plný text připnutých, propojených s otevřenými milníky a úkoly a 3 nejlepších fulltextových shod se zprávou. Celý blok max 12 000 znaků, zkrácení s „[… truncated]", ohraničený `<user_notes>` jako data, značky uvnitř poznámek se neutralizují. Hodnocení milníku bere poznámky propojené s milníkem a jeho úkoly. Systémový prompt říká, že z poznámek má vycházet a neptat se na zapsané. Cena: nejvýš ~4 000 vstupních tokenů Sonnetu navíc, tj. ≤ 0,008 USD na zprávu (běžně zlomek).
+- **Do poznámek** se z Jarvise zapisuje jen tlačítkem „Uložit do poznámek" u odpovědi (nová poznámka, nebo na konec existující). Sám nikdy.
+- **Představení Poznámek:** jednou za život účtu (`profiles.notes_intro_seen_at`, zapíše se při zobrazení), jen majitel, po onboardingu a dokončené prohlídce (stávající účty při další návštěvě). Pevný text z překladů, žádné volání modelu, tlačítko „Otevřít Poznámky". Vyskočí až když nic jiného není na obrazovce (prohlídka, oslava, dialog, panel, běžící časovač) a stránka je 4 s v klidu; bere si jediné proaktivní zobrazení relace. Událost `jarvis_notes_intro`.
+- **E2E bez modelu:** mimo produkci, jen pro účty e2e-…@gradus.local a s hlavičkou `x-gradus-e2e-model: echo-notes` odpoví chat blokem poznámek z kontextu (src/features/jarvis/server/e2e-model.ts). Jinak vždy Anthropic.
 - **Ranní shrnutí:** cron každou hodinu, píše se v 6–10 h v pásmu uživatele, Sonnet (`briefing`), měřeno v `ai_usage`; prázdný den = žádné volání. Odemyká úroveň 5 v game režimu, v tool režimu je vždy. Zobrazí se při prvním otevření toho dne.
 - **Návrhy** z dávkové kontroly můžou nést úkoly k náhledu; vzniknou až po Přidat (klientem uživatele přes RLS). **Otázky** nejvýš dvě týdně, odpovědi jdou do kontextu chatu.
 - **Měsíční rozpočet:** Jarvis běží na API kreditech (100 USD měsíčně, propadají). Strop `JARVIS_MONTHLY_BUDGET_USD` (výchozí 90), útrata = součet `ai_usage.cost_usd` všech účtů včetně interních za kalendářní měsíc v UTC (`jarvis_month_spend`, jen server). Kontrola před každým voláním modelu (strážce v klientovi z `createAnthropic`, `streamModel` bez něj nevolá):

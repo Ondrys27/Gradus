@@ -1401,6 +1401,55 @@ export type Database = {
           },
         ]
       }
+      note_links: {
+        Row: {
+          created_at: string
+          id: string
+          milestone_id: string | null
+          note_id: string
+          task_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          milestone_id?: string | null
+          note_id: string
+          task_id?: string | null
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          milestone_id?: string | null
+          note_id?: string
+          task_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_links_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "note_links_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "note_links_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notes: {
         Row: {
           content: Json
@@ -1529,6 +1578,7 @@ export type Database = {
           created_at: string
           description: Json | null
           id: string
+          note_template: string | null
           path_milestone_id: string
           position: number
           title: Json
@@ -1537,6 +1587,7 @@ export type Database = {
           created_at?: string
           description?: Json | null
           id?: string
+          note_template?: string | null
           path_milestone_id: string
           position: number
           title: Json
@@ -1545,6 +1596,7 @@ export type Database = {
           created_at?: string
           description?: Json | null
           id?: string
+          note_template?: string | null
           path_milestone_id?: string
           position?: number
           title?: Json
@@ -1679,6 +1731,7 @@ export type Database = {
           industry: string | null
           is_internal: boolean
           mode: string
+          notes_intro_seen_at: string | null
           nps_asked_at: string | null
           onboarding_completed_at: string | null
           path_key: string | null
@@ -1695,6 +1748,7 @@ export type Database = {
           industry?: string | null
           is_internal?: boolean
           mode?: string
+          notes_intro_seen_at?: string | null
           nps_asked_at?: string | null
           onboarding_completed_at?: string | null
           path_key?: string | null
@@ -1711,6 +1765,7 @@ export type Database = {
           industry?: string | null
           is_internal?: boolean
           mode?: string
+          notes_intro_seen_at?: string | null
           nps_asked_at?: string | null
           onboarding_completed_at?: string | null
           path_key?: string | null
@@ -3026,6 +3081,19 @@ export type Database = {
         Returns: {
           calls: number
           cost_usd: number
+        }[]
+      }
+      jarvis_notes: {
+        Args: { _body_chars?: number; _query?: string }
+        Returns: {
+          body: string
+          id: string
+          links: Json
+          match_rank: number
+          pinned: boolean
+          recent: boolean
+          title: string
+          updated_at: string
         }[]
       }
       jarvis_watch_candidates: {

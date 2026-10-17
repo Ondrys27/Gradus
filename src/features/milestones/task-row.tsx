@@ -7,6 +7,7 @@ import {
   ChevronDownIcon,
   EllipsisIcon,
   GripVerticalIcon,
+  NotebookPenIcon,
   PencilIcon,
   PlusIcon,
   Trash2Icon,
@@ -14,6 +15,7 @@ import {
 import { differenceInCalendarDays } from "date-fns";
 import { useTranslations } from "next-intl";
 import { formatCalendarDate, isoDateToLocal, todayIsoDate } from "@/lib/format";
+import type { NoteTemplateKey } from "@/features/notes/templates";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { TaskCheckbox } from "./task-checkbox";
@@ -32,6 +34,10 @@ export type TaskHandlers = {
   onDelete: (task: Task) => void;
   /** Without the right to edit milestones: no ticking, reordering or menu. */
   readOnly?: boolean;
+  /** Path steps whose result is a text, with the key of their note outline. */
+  noteTemplates?: Readonly<Record<string, NoteTemplateKey>>;
+  /** "Write in notes"; missing where notes are not the account's own (a worker). */
+  onWriteNote?: (task: Task) => void;
 };
 
 /** One level of siblings; every level is its own sortable list. */
@@ -135,6 +141,19 @@ function TaskRow({ node, handlers }: { node: TaskNode; handlers: TaskHandlers })
           )}
         </div>
 
+        {handlers.onWriteNote && handlers.noteTemplates?.[task.id] && !done && (
+          <button
+            type="button"
+            onClick={() => handlers.onWriteNote?.(task)}
+            aria-label={t("writeNote", { title: task.title })}
+            title={t("writeNote", { title: task.title })}
+            data-testid="task-write-note"
+            className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-lg text-violet outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40 mouse:size-8"
+          >
+            <NotebookPenIcon aria-hidden className="size-4" />
+          </button>
+        )}
+
         {children.length > 0 && (
           <button
             type="button"
@@ -189,6 +208,12 @@ function TaskMenu({ task, handlers }: { task: Task; handlers: TaskHandlers }) {
               <PencilIcon aria-hidden />
               {t("edit")}
             </Menu.Item>
+            {handlers.onWriteNote && (
+              <Menu.Item className={itemClass} onClick={() => handlers.onWriteNote?.(task)}>
+                <NotebookPenIcon aria-hidden />
+                {t("writeNoteMenu")}
+              </Menu.Item>
+            )}
             <Menu.Item
               className={cn(itemClass, "text-pink")}
               onClick={() => handlers.onDelete(task)}

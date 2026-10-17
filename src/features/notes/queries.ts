@@ -11,7 +11,13 @@ import {
 import { useSession } from "@/features/account/queries";
 import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
-import { previewFromText, type DocNode, type NoteDraft } from "./document";
+import {
+  appendToDoc,
+  draftFromDoc,
+  previewFromText,
+  type DocNode,
+  type NoteDraft,
+} from "./document";
 import { NoteSaver, type BackupEntry, type DraftBackup } from "./note-saver";
 import { sortNotes, TRASH_DAYS } from "./notes-logic";
 import type { NoteTemplateKey } from "./templates";
@@ -21,6 +27,9 @@ import type { IndustryKey } from "@/features/onboarding/industries";
 const LIST_LIMIT = 500;
 const TRASH_LIMIT = 200;
 export const SEARCH_LIMIT = 50;
+
+/** Sent with { id, content } when a note's text was changed outside its editor. */
+export const NOTE_REPLACED_EVENT = "gradus:note-replaced";
 
 export const NOTE_LIST_COLUMNS = "id, title, preview, pinned, created_at, updated_at" as const;
 const NOTE_DETAIL_COLUMNS = `${NOTE_LIST_COLUMNS}, content, content_text` as const;
@@ -340,7 +349,7 @@ export function useRestoreUnsavedNotes(notes: NoteListItem[] | undefined) {
 
 export type CreateNoteInput = {
   draft: NoteDraft;
-  where: "list" | "empty_state" | "shortcut";
+  where: "list" | "empty_state" | "shortcut" | "task" | "milestone" | "jarvis";
   template?: { key: NoteTemplateKey; industry: IndustryKey | null };
 };
 
@@ -496,6 +505,41 @@ export function useRemoveBlankNote() {
     },
     onError: () => {
       void queryClient.invalidateQueries({ queryKey: noteKeys.list(user.id) });
+    },
+  });
+}
+
+/**
+ * Adds a small heading and blocks at the end of an existing note (one of
+ * Jarvis's answers), through the autosave like any edit. An open editor of
+ * the note takes the new text over, so its next keystroke keeps it.
+ */
+export function useAppendToNote() {
+  const { user } = useSession();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, heading, blocks }: { id: string; heading: string; blocks: DocNode[] }) => {
+      const saver = getNoteSaver(user.id);
+      let content = saver.latestDraft(id)?.content;
+      if (!content) {
+        const { data, error } = await createClient()
+          .from("notes")
+          .select("content")
+          .eq("user_id", user.id)
+          .eq("id", id)
+          .is("deleted_at", null)
+          .maybeSingle();
+        if (error) throw error;
+        if (!data) throw new Error("note_not_found");
+        content = data.content as DocNode;
+      }
+      const next = appendToDoc(content, heading, blocks);
+      const draft = draftFromDoc(next);
+      saver.edit(id, draft);
+      applyDraftToCache(queryClient, user.id, id, draft);
+      window.dispatchEvent(new CustomEvent(NOTE_REPLACED_EVENT, { detail: { id, content: next } }));
+      await saver.flush(id);
+      if (saver.unsavedDraft(id)) throw new Error("note_not_saved");
     },
   });
 }

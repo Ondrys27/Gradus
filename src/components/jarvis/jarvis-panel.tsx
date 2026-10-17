@@ -24,6 +24,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Jarvis } from "@/components/jarvis/jarvis";
+import { SaveAnswerToNotes } from "@/features/notes/save-answer";
 import { SuggestionCard, useSuggestionActions } from "@/components/jarvis/suggestion-card";
 import {
   ACCEPTED_EXTENSIONS,
@@ -289,6 +290,7 @@ export function JarvisPanel({ chat, onClose }: JarvisPanelProps) {
               text={message.content}
               rating={message.rating}
               onRate={(rating) => rateMessage.mutate({ messageId: message.id, rating })}
+              savable
             />
           ),
         )}
@@ -407,19 +409,22 @@ function AssistantBubble({
   text,
   rating,
   onRate,
+  savable = false,
 }: {
   text: string;
   rating?: Rating | null;
   onRate?: (rating: Rating) => void;
+  /** A finished answer: "Save to notes" next to the thumbs. */
+  savable?: boolean;
 }) {
   const t = useTranslations("jarvis");
   return (
-    <div className="flex max-w-[88%] flex-col items-start gap-1">
+    <div className={cn("flex flex-col items-start gap-1", savable ? "max-w-[92%]" : "max-w-[88%]")}>
       <div className="rounded-2xl rounded-tl-md border-l-[3px] border-teal bg-surface-hover px-3.5 py-2.5 text-sm leading-relaxed break-words whitespace-pre-wrap text-ink">
         {text}
       </div>
       {onRate && (
-        <div className="flex items-center gap-0.5 pl-1">
+        <div className="flex w-full flex-wrap items-center gap-0.5 pl-1">
           <button
             type="button"
             onClick={() => onRate("up")}
@@ -446,6 +451,7 @@ function AssistantBubble({
           >
             <ThumbsDownIcon aria-hidden className="size-3.5" />
           </button>
+          {savable && <SaveAnswerToNotes text={text} />}
         </div>
       )}
     </div>

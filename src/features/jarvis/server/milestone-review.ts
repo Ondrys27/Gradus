@@ -20,13 +20,18 @@ export function milestoneReviewContext(
   milestone: ReviewedMilestone,
   today: string,
   locale: string,
+  /** The <user_notes> block of notes tied to the milestone or its tasks, or "". */
+  notes = "",
 ): string {
+  const notesPart = notes
+    ? `\nThe user's notes tied to this milestone follow it. Take what they already worked out into account (it can make the milestone specific or measurable), and do not ask for what is written there.`
+    : "";
   return `<task>
 The user has just created a milestone. Review its quality in 2 to 4 sentences of plain text, no list, no heading.
 Judge three things: is it specific (clear what "done" means), is it measurable (a number, a result or an obvious finish line), and does it have a realistic deadline.
 If the milestone is good, say plainly that it is good and why in one or two sentences, and stop. Do not invent criticism, do not add "but" or "you could also", do not suggest changes for the sake of it.
 If something important is missing, name at most the one or two things that matter most and give a concrete better wording or number the user can take over.
-Write in the interface language (${locale}) unless the milestone is clearly written in another language; then use that one. Speak to the user directly.
+Write in the interface language (${locale}) unless the milestone is clearly written in another language; then use that one. Speak to the user directly.${notesPart}
 </task>
 <milestone>
 Title: "${milestone.title}"
@@ -34,7 +39,7 @@ Description: ${milestone.description ? `"${milestone.description}"` : "none"}
 Category: ${milestone.category}
 Deadline: ${milestone.target_date ?? "none"}
 Today: ${today}
-</milestone>`;
+</milestone>${notes ? `\n${notes}` : ""}`;
 }
 
 export const MAX_FEEDBACK_LENGTH = 1200;
@@ -52,12 +57,14 @@ export async function reviewMilestone(args: {
   milestone: ReviewedMilestone;
   today: string;
   locale: string;
+  /** Notes tied to the milestone and its tasks, already wrapped as user data. */
+  notes?: string;
   log: ModelCall["log"];
 }) {
   const result = await streamModel({
     client: args.client,
     feature: "milestone_review",
-    context: milestoneReviewContext(args.milestone, args.today, args.locale),
+    context: milestoneReviewContext(args.milestone, args.today, args.locale, args.notes),
     messages: [{ role: "user", content: "Review my new milestone." }],
     log: args.log,
   });

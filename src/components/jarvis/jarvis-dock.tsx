@@ -9,6 +9,7 @@ import { useJarvisChat } from "@/features/jarvis/use-jarvis-chat";
 import { track } from "@/lib/analytics/client";
 import { whenIdle } from "@/lib/idle";
 import { AutoActionNotice } from "./auto-action-notice";
+import { NotesIntro } from "./notes-intro";
 import { ProactiveJarvis } from "./proactive-jarvis";
 
 const loadPanel = () => import("./jarvis-panel");
@@ -68,6 +69,7 @@ export function JarvisDock() {
       />
       <AnimatePresence>{open && <JarvisPanel chat={chat} onClose={close} />}</AnimatePresence>
       <ProactiveJarvis panelOpen={open} onAsk={ask} />
+      <NotesIntro panelOpen={open} />
     </>
   );
 }

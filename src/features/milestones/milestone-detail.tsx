@@ -39,6 +39,9 @@ import {
 import { CompleteMilestoneButton } from "./complete-milestone-button";
 import { countTasks, milestoneCompletion, progressOf } from "./task-tree";
 import { TasksPanel } from "./tasks-panel";
+import { useNotesInWork } from "@/features/notes/link-queries";
+import { WorkNotes } from "@/features/notes/work-notes";
+import type { Milestone } from "./types";
 
 const RING_SIZE = 220;
 
@@ -276,6 +279,8 @@ export function MilestoneDetail({ id }: { id: string }) {
 
       <TasksPanel milestone={milestone} tasks={tasks} />
 
+      <MilestoneNotes milestone={milestone} />
+
       <MilestoneFormDialog open={editing} onOpenChange={setEditing} milestone={milestone} />
       <ConfirmDialog
         open={deleting}
@@ -292,5 +297,20 @@ export function MilestoneDetail({ id }: { id: string }) {
         }
       />
     </div>
+  );
+}
+
+/** The milestone's notes: only in the account's own space, notes are private. */
+function MilestoneNotes({ milestone }: { milestone: Milestone }) {
+  const { allowed } = useNotesInWork();
+  if (!allowed) return null;
+  return (
+    <GlowCard interactive={false} className="p-4 sm:p-5">
+      <WorkNotes
+        target={{ kind: "milestone", id: milestone.id }}
+        title={milestone.title}
+        template={null}
+      />
+    </GlowCard>
   );
 }

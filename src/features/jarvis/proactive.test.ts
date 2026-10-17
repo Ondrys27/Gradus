@@ -3,6 +3,8 @@ import {
   clientBlock,
   inQuietHours,
   nextAllowedAt,
+  NOTES_INTRO_SETTLE_MS,
+  notesIntroDue,
   PAGE_SETTLE_MS,
   pickProactive,
   questionAllowed,
@@ -88,6 +90,31 @@ describe("clientBlock", () => {
 
   it("never twice in one session", () => {
     expect(clientBlock({ ...base, shownThisSession: true })).toBe("session");
+  });
+
+  it("can settle for a shorter time when a caller asks for it", () => {
+    const calm = { ...base, pageSince: base.now - NOTES_INTRO_SETTLE_MS, settleMs: NOTES_INTRO_SETTLE_MS };
+    expect(clientBlock(calm)).toBeNull();
+    expect(clientBlock({ ...calm, pageSince: base.now - 1_000 })).toBe("settling");
+    expect(clientBlock({ ...calm, dialogOpen: true })).toBe("dialog");
+  });
+});
+
+describe("notesIntroDue", () => {
+  const done = "2026-10-17T08:00:00Z";
+  const base = {
+    worker: false,
+    onboardingCompletedAt: done,
+    tourCompletedAt: done,
+    notesIntroSeenAt: null,
+  };
+
+  it("comes once, after the onboarding and the tour, in the account's own space", () => {
+    expect(notesIntroDue(base)).toBe(true);
+    expect(notesIntroDue({ ...base, notesIntroSeenAt: done })).toBe(false);
+    expect(notesIntroDue({ ...base, tourCompletedAt: null })).toBe(false);
+    expect(notesIntroDue({ ...base, onboardingCompletedAt: null })).toBe(false);
+    expect(notesIntroDue({ ...base, worker: true })).toBe(false);
   });
 });
 

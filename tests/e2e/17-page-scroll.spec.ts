@@ -89,10 +89,18 @@ test("17 · milestones scroll after an in-app move, a dialog and the map", async
   await page.mouse.move(mapBox.x + mapBox.width / 2, mapBox.y + 40);
   const transformOf = () =>
     map.locator(".react-transform-component").evaluate((element) => getComputedStyle(element).transform);
+  // Let the first centring settle (it waits for the measured layout).
+  await page.waitForTimeout(500);
   const before = await transformOf();
   for (let i = 0; i < 4; i += 1) await page.mouse.wheel(0, 200);
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(100);
   expect(await transformOf()).toBe(before);
+  // The page moved under the pointer (more fits below the map now): point at the map again.
+  const scrolledBox = (await map.boundingBox())!;
+  await page.mouse.move(
+    scrolledBox.x + scrolledBox.width / 2,
+    Math.max(scrolledBox.y, 0) + Math.min(scrolledBox.height, 300) / 2,
+  );
   await page.keyboard.down("Control");
   await page.mouse.wheel(0, -200);
   await page.keyboard.up("Control");

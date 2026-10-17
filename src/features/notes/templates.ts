@@ -66,6 +66,26 @@ export function templateDoc(
   };
 }
 
+export function isNoteTemplateKey(value: unknown): value is NoteTemplateKey {
+  return typeof value === "string" && (NOTE_TEMPLATE_KEYS as readonly string[]).includes(value);
+}
+
+/**
+ * A note written from a task or a milestone: its title as the first line and,
+ * for a step whose result is a text, the outline of its template under it.
+ */
+export function workNoteDoc(
+  title: string,
+  key: NoteTemplateKey | null,
+  industry: IndustryKey | null,
+  t: TemplateTranslator,
+): DocNode {
+  const heading: DocNode = { type: "heading", attrs: { level: 1 }, content: text(title.trim()) };
+  if (!key) return { type: "doc", content: [heading, { type: "paragraph" }] };
+  const [, ...outline] = templateDoc(key, industry, t).content ?? [];
+  return { type: "doc", content: [heading, ...outline] };
+}
+
 export function templateDraft(
   key: NoteTemplateKey,
   industry: IndustryKey | null,

@@ -117,6 +117,8 @@ export async function createAccount(options: AccountOptions): Promise<Account> {
           mode,
           onboarding_completed_at: now,
           tour_completed_at: now,
+          // Jarvis's one-time Notes introduction would fly in over what a test clicks.
+          notes_intro_seen_at: now,
         })
         .eq("id", id);
       if (profile.error) throw profile.error;

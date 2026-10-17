@@ -112,15 +112,43 @@ export function clientBlock(input: {
   dialogOpen: boolean;
   busy: boolean;
   visible: boolean;
+  /** How long a page must settle; Jarvis's own rule unless a caller needs less. */
+  settleMs?: number;
 }): ClientBlock | null {
   if (input.shownThisSession) return "session";
   if (!input.visible) return "hidden";
   if (input.busy) return "busy";
   if (input.timerRunning) return "timer";
   if (input.dialogOpen) return "dialog";
-  if (input.now - input.pageSince < PAGE_SETTLE_MS) return "settling";
+  if (input.now - input.pageSince < (input.settleMs ?? PAGE_SETTLE_MS)) return "settling";
   return null;
 }
+
+/**
+ * Jarvis's one-time introduction of Notes: for an account's own space, once
+ * the onboarding and the guided tour are behind it (new accounts right after
+ * the tour, existing ones on their next visit), and never again once shown.
+ */
+export function notesIntroDue(input: {
+  worker: boolean;
+  onboardingCompletedAt: string | null;
+  tourCompletedAt: string | null;
+  notesIntroSeenAt: string | null;
+}): boolean {
+  return (
+    !input.worker &&
+    !!input.onboardingCompletedAt &&
+    !!input.tourCompletedAt &&
+    !input.notesIntroSeenAt
+  );
+}
+
+/**
+ * The introduction waits until nothing else is on screen (the tour, its
+ * celebration or any dialog, Jarvis's panel, a running call timer) and the
+ * page has been calm this long, so it always comes after them.
+ */
+export const NOTES_INTRO_SETTLE_MS = 4_000;
 
 /** Briefing only: no suggestions, no questions. */
 export function kindsFor(frequency: JarvisFrequency): ProactiveKind[] {

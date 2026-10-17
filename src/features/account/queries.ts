@@ -135,6 +135,7 @@ export type ProfilePatch = Partial<
     | "industry"
     | "onboarding_completed_at"
     | "tour_completed_at"
+    | "notes_intro_seen_at"
     | "nps_asked_at"
   >
 >;

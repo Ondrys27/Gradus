@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import en from "@/locales/en.json";
 import cs from "@/locales/cs.json";
 import {
+  appendToDoc,
+  blocksFromPlainText,
+  docWithTitle,
   draftFromDoc,
   extractText,
   fitsLimits,
@@ -14,8 +17,10 @@ import {
   INDUSTRY_TEMPLATES,
   NOTE_TEMPLATE_KEYS,
   TEMPLATE_QUESTIONS,
+  isNoteTemplateKey,
   templateDoc,
   templateDraft,
+  workNoteDoc,
 } from "./templates";
 import { INDUSTRY_KEYS } from "@/features/onboarding/industries";
 
@@ -136,5 +141,58 @@ describe("templates", () => {
         }
       }
     }
+  });
+});
+
+describe("notes written from a task or a milestone", () => {
+  const t = (key: string) => key;
+
+  it("names a plain note after the task and leaves a line to write on", () => {
+    const draft = draftFromDoc(workNoteDoc("  Napiš skript  ", null, null, t));
+    expect(draft.title).toBe("Napiš skript");
+    expect(draft.content.content).toHaveLength(2);
+  });
+
+  it("gives a text step the outline of its template under the task's title", () => {
+    const draft = draftFromDoc(workNoteDoc("Popiš ideálního zákazníka", "idealCustomer", "trades", t));
+    expect(draft.title).toBe("Popiš ideálního zákazníka");
+    expect(draft.content_text).not.toContain("idealCustomer.title");
+    expect(draft.content_text).toContain("idealCustomer.hint");
+    expect(draft.content_text).toContain("idealCustomer.questions.who");
+    expect(draft.content_text).toContain("idealCustomer.industry.trades");
+  });
+
+  it("knows its template keys", () => {
+    expect(isNoteTemplateKey("pricing")).toBe(true);
+    expect(isNoteTemplateKey("poem")).toBe(false);
+    expect(isNoteTemplateKey(null)).toBe(false);
+  });
+});
+
+describe("Jarvis's answers in notes", () => {
+  const answer = "Tvůj ceník:\n\n- Konzultace 1 500 Kč\n- Balíček 5 000 Kč\n\n1. Zavolej\n2. Pošli nabídku\nHotovo.";
+
+  it("turns the answer's lines into paragraphs and lists", () => {
+    const blocks = blocksFromPlainText(answer);
+    expect(blocks.map((b) => b.type)).toEqual(["paragraph", "bulletList", "orderedList", "paragraph"]);
+    expect(blocks[1].content).toHaveLength(2);
+    expect(blocks[2].attrs).toEqual({ start: 1 });
+    expect(extractText({ type: "doc", content: blocks })).toBe(
+      "Tvůj ceník:\n- Konzultace 1 500 Kč\n- Balíček 5 000 Kč\n1. Zavolej\n2. Pošli nabídku\nHotovo.",
+    );
+  });
+
+  it("starts a new note with a title line", () => {
+    const draft = draftFromDoc(docWithTitle("Od Jarvise, 17. 10. 2026", blocksFromPlainText(answer)));
+    expect(draft.title).toBe("Od Jarvise, 17. 10. 2026");
+    expect(draft.content_text).toContain("Balíček 5 000 Kč");
+  });
+
+  it("adds to the end of a note under a small heading, keeping what was there", () => {
+    const doc: DocNode = { type: "doc", content: [p("Ceník"), p("Stará cena"), { type: "paragraph" }] };
+    const next = appendToDoc(doc, "Od Jarvise", blocksFromPlainText("Nová cena 2 000 Kč"));
+    expect(extractText(next)).toBe("Ceník\nStará cena\nOd Jarvise\nNová cena 2 000 Kč");
+    expect(next.content?.[2]).toMatchObject({ type: "heading", attrs: { level: 3 } });
+    expect(doc.content).toHaveLength(3);
   });
 });

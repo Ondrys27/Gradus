@@ -22,6 +22,8 @@ import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useCan } from "@/features/account/workspace-queries";
 import { useAwardXp } from "@/features/game/queries";
+import { useNotesInWork, useTaskNoteTemplates } from "@/features/notes/link-queries";
+import { useWriteAndOpen } from "@/features/notes/work-notes";
 import { useCreateTask, useDeleteTask, useReorderTasks, useSetTaskStatus } from "./queries";
 import { TITLE_MAX } from "./schemas";
 import { TaskFormDialog, type TaskFormMode } from "./task-form-dialog";
@@ -46,6 +48,9 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
   const reorder = useReorderTasks(milestoneId);
   const awardXp = useAwardXp();
   const canEdit = useCan("milestones", "edit");
+  const notesInWork = useNotesInWork();
+  const noteTemplates = useTaskNoteTemplates(milestoneId, notesInWork.allowed);
+  const writeNote = useWriteAndOpen();
 
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
@@ -102,6 +107,16 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
     onAddSubtask: (task) => setForm({ open: true, mode: { kind: "create", parent: task } }),
     onEdit: (task) => setForm({ open: true, mode: { kind: "edit", task } }),
     readOnly: !canEdit,
+    noteTemplates: noteTemplates.data,
+    onWriteNote:
+      notesInWork.allowed && !notesInWork.readOnly
+        ? (task) =>
+            writeNote.run(
+              { kind: "task", id: task.id, milestoneId },
+              task.title,
+              noteTemplates.data?.[task.id] ?? null,
+            )
+        : undefined,
     onDelete: (task) => {
       if (tasks.some((other) => other.parent_task_id === task.id)) {
         setDeleting({ task, open: true });
@@ -143,6 +158,7 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
       </div>
 
       {error && <FormAlert>{error}</FormAlert>}
+      {writeNote.failed && <FormAlert>{t("writeNoteFailed")}</FormAlert>}
 
       {view === "map" ? (
         <TaskMap

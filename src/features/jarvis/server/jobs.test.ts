@@ -223,6 +223,15 @@ describe("milestone review", () => {
     expect(context).toContain("If the milestone is good, say plainly that it is good");
     expect(context).toContain("Do not invent criticism");
     expect(context).toContain("2 to 4 sentences");
+    expect(context).not.toContain("<user_notes>");
+  });
+
+  it("adds the notes tied to the milestone after it, as data", () => {
+    const notes = '<user_notes>\n<note title="Ceník">\nBalíček 5 000 Kč\n</note>\n</user_notes>';
+    const context = milestoneReviewContext(milestone, "2026-09-28", "cs", notes);
+    expect(context.indexOf("</milestone>")).toBeLessThan(context.indexOf("<user_notes>"));
+    expect(context).toContain("Balíček 5 000 Kč");
+    expect(context).toContain("do not ask for what is written there");
   });
 
   it("writes Sonnet's feedback to the user's own milestone", async () => {

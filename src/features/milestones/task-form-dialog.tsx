@@ -8,6 +8,8 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { fieldA11y, FormField } from "@/components/ui/form-field";
 import { Input, Textarea } from "@/components/ui/input";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
+import { useTaskNoteTemplates } from "@/features/notes/link-queries";
+import { WorkNotes } from "@/features/notes/work-notes";
 import { useCreateTask, useUpdateTask } from "./queries";
 import {
   DESCRIPTION_MAX,
@@ -77,6 +79,7 @@ function TaskFields({
   const [failed, setFailed] = useState(false);
   const pending = create.isPending || update.isPending;
   const locked = editing ? openSubtasks(tasks, editing.id) > 0 : false;
+  const noteTemplates = useTaskNoteTemplates(milestoneId, !!editing);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -139,6 +142,15 @@ function TaskFields({
           placeholder={t("tasks.form.dueDatePlaceholder")}
         />
       </FormField>
+      {editing && (
+        <WorkNotes
+          target={{ kind: "task", id: editing.id, milestoneId }}
+          title={editing.title}
+          template={noteTemplates.data?.[editing.id] ?? null}
+          onOpenNote={onDone}
+          className="border-t border-line pt-4"
+        />
+      )}
       {failed && <FormAlert>{t("tasks.errors.saveFailed")}</FormAlert>}
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button type="button" variant="ghost" onClick={onDone}>

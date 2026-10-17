@@ -287,7 +287,7 @@ export const EVENTS = {
   /** A new note: empty (button, ⌘N) or from one of the prepared outlines. */
   note_created: event("notes", "client", true, {
     source: oneOf(["blank", "template"]),
-    where: oneOf(["list", "empty_state", "shortcut"]),
+    where: oneOf(["list", "empty_state", "shortcut", "task", "milestone", "jarvis"]),
   }),
   /** Which prepared outline was used, and whether the industry from onboarding shaped it. */
   note_template_used: event("notes", "client", true, {
@@ -296,6 +296,15 @@ export const EVENTS = {
   }),
   /** Moved to the trash (it can still be restored for 30 days). */
   note_deleted: event("notes", "client", true, { pinned: bool() }),
+  /** A note tied to a task or a milestone: an existing one, or a new one written from it. */
+  note_linked: event("notes", "client", true, {
+    target: oneOf(["task", "milestone"]),
+    how: oneOf(["attach", "write"]),
+    template: optional(oneOf(NOTE_TEMPLATE_KEYS)),
+  }),
+  note_unlinked: event("notes", "client", false, { target: oneOf(["task", "milestone"]) }),
+  /** One of Jarvis's answers kept in the notes, as a new note or added to one. */
+  note_saved_from_jarvis: event("notes", "client", true, { mode: oneOf(["new", "append"]) }),
 
   // --- pipeline ------------------------------------------------------------
   deal_created: event("pipeline", "client", true, {
@@ -516,6 +525,10 @@ export const EVENTS = {
   sales_analysis_requested: event("jarvis", "client", true, { ok: bool() }),
   /** Thumb up/down on one of Jarvis's answers. */
   jarvis_message_rated: event("jarvis", "server", false, { rating: oneOf(["up", "down"]) }),
+  /** Jarvis's one-time introduction of Notes: shown, then opened or closed. */
+  jarvis_notes_intro: event("jarvis", "client", false, {
+    action: oneOf(["shown", "open", "close"]),
+  }),
 
   // --- feedback --------------------------------------------------------------
   /** "How likely would you recommend Gradus?", asked once after 7 days. */

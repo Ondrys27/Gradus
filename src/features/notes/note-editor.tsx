@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
 import { Extension } from "@tiptap/core";
 import { EditorContent, useEditor } from "@tiptap/react";
@@ -15,7 +16,8 @@ import { cn } from "@/lib/utils";
 import { draftFromDoc, type DocNode } from "./document";
 import { EditorToolbar, LINK_SHORTCUT_EVENT } from "./editor-toolbar";
 import { isAllowedLink } from "./links";
-import { applyDraftToCache, useNoteSaver, type NoteDetail } from "./queries";
+import { useNoteBacklinks } from "./link-queries";
+import { applyDraftToCache, NOTE_REPLACED_EVENT, useNoteSaver, type NoteDetail } from "./queries";
 import { useKeyboardInset } from "./use-keyboard-inset";
 
 /** ⌘⇧K opens the link field (⌘K is the app's search). */
@@ -42,6 +44,29 @@ type Props = {
   /** The phone's way back to the list. */
   back: React.ReactNode;
 };
+
+/** What the note belongs to, quietly above its text, each with a link back. */
+function Backlinks({ noteId }: { noteId: string }) {
+  const t = useTranslations("notes");
+  const links = useNoteBacklinks(noteId);
+  const items = links.data ?? [];
+  if (items.length === 0) return null;
+  return (
+    <p className="mt-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-ink-muted" data-testid="note-backlinks">
+      <span>{t("belongsTo")}</span>
+      {items.map((item) => (
+        <Link
+          key={item.linkId}
+          href={`/app/milniky/${item.milestoneId}`}
+          className="inline-flex min-h-8 items-center rounded-md font-medium text-ink-soft underline decoration-line underline-offset-2 hover:text-ink"
+          aria-label={t(`belongsToKind.${item.kind}`, { title: item.title })}
+        >
+          {item.title}
+        </Link>
+      ))}
+    </p>
+  );
+}
 
 /** Saving state of the open note, quietly next to its date. */
 export function SaveStatus({ noteId }: { noteId: string }) {
@@ -146,6 +171,19 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back }
     editor?.setEditable(!readOnly);
   }, [editor, readOnly]);
 
+  // Text added from outside (one of Jarvis's answers) shows in the open editor
+  // too, so the next keystroke does not save over it.
+  useEffect(() => {
+    if (!editor) return;
+    const onReplaced = (event: Event) => {
+      const detail = (event as CustomEvent<{ id: string; content: DocNode }>).detail;
+      if (detail?.id !== note.id) return;
+      editor.commands.setContent(detail.content as object, { emitUpdate: false });
+    };
+    window.addEventListener(NOTE_REPLACED_EVENT, onReplaced);
+    return () => window.removeEventListener(NOTE_REPLACED_EVENT, onReplaced);
+  }, [editor, note.id]);
+
   // Leaving the note (another note, another page) sends its text right away.
   useEffect(() => {
     const id = note.id;
@@ -176,6 +214,7 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back }
       )}
 
       <div className={cn("flex-1", isPhone ? "px-5 pb-32" : "pb-16")}>
+        <Backlinks noteId={note.id} />
         <p className="mt-3 mb-5 text-center text-xs text-ink-muted">
           <time dateTime={note.updated_at}>{formatDateTime(new Date(note.updated_at), settings)}</time>
           <span className="mx-2">·</span>

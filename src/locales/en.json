@@ -605,6 +605,12 @@
           "text": "Who's your ideal customer? One sentence is enough."
         }
       }
+    },
+    "notesIntro": {
+      "heading": "One tip",
+      "text": "Write the groundwork for your milestones and tasks in Notes — your ideal customer, products, price list. I will know them and build on them.",
+      "open": "Open Notes",
+      "close": "Close"
     }
   },
   "celebration": {
@@ -1161,7 +1167,10 @@
         "overdue": "Overdue"
       },
       "overdueBadge": "{days}d",
-      "overdueDays": "{days, plural, one {# day overdue} other {# days overdue}}"
+      "overdueDays": "{days, plural, one {# day overdue} other {# days overdue}}",
+      "writeNote": "Write in notes: {title}",
+      "writeNoteMenu": "Write in notes",
+      "writeNoteFailed": "The note could not be created. Try again in a moment."
     },
     "map": {
       "label": "Task map",
@@ -1325,6 +1334,34 @@
           "close": "Close: what next step will you suggest (meeting, demo, quote)?"
         }
       }
+    },
+    "belongsTo": "Belongs to:",
+    "belongsToKind": {
+      "task": "Task {title}",
+      "milestone": "Milestone {title}"
+    },
+    "picker": {
+      "search": "Search notes",
+      "empty": "No notes yet."
+    },
+    "work": {
+      "title": "Notes",
+      "write": "Write in notes",
+      "attach": "Attach a note",
+      "unlink": "Detach {title}",
+      "pickLabel": "Notes to attach",
+      "templateHint": "This step is best written down: “Write in notes” starts a note with the “{outline}” outline.",
+      "failed": "That did not work. Try again in a moment."
+    },
+    "fromJarvis": {
+      "save": "Save to notes",
+      "heading": "From Jarvis, {date}",
+      "newNote": "New note",
+      "orAppend": "Or add it to the end of a note:",
+      "pickLabel": "Notes to add the answer to",
+      "saved": "Saved in notes.",
+      "open": "Open",
+      "failed": "Could not save it to notes. Try again."
     }
   },
   "pipeline": {
