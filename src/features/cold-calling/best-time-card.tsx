@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { FormAlert } from "@/components/ui/form-alert";
 import { GlowCard } from "@/components/ui/glow-card";
@@ -15,7 +14,6 @@ import {
   weekdayName,
   weekdayShortName,
 } from "@/lib/format";
-import { createClient } from "@/lib/supabase/client";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import {
@@ -24,29 +22,11 @@ import {
   MIN_CELL_ATTEMPTS,
   MIN_COUNTRY_ATTEMPTS,
   type Cell,
-  type StatRow,
 } from "./heatmap-logic";
+import { useCallTimeStats } from "./stats-queries";
 
 /** Hours labelled under the grid; the rest stay unlabelled to keep it calm. */
 const LABELLED_HOURS = new Set([7, 10, 13, 16, 19]);
-
-function useCallTimeStats(country: string | null) {
-  return useQuery({
-    queryKey: ["call-time-stats", country],
-    enabled: country !== null,
-    // Rebuilt once a day.
-    staleTime: 60 * 60 * 1000,
-    queryFn: async (): Promise<StatRow[]> => {
-      const { data, error } = await createClient()
-        .from("call_time_stats")
-        .select("day_of_week, hour, attempts, meetings")
-        .eq("country_code", country ?? "")
-        .limit(24 * 7);
-      if (error) throw error;
-      return data;
-    },
-  });
-}
 
 /**
  * When calls in the user's country end in meetings: weekday × hour, one hue

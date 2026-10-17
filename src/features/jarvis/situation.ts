@@ -8,6 +8,7 @@ import {
   type IsoDate,
 } from "@/lib/format";
 import type { SuggestionKey } from "./protocol";
+import { describeTimeWindow, type TimeWindow } from "./time-window";
 
 /**
  * The user's situation as Jarvis sees it before every call: loaded from the
@@ -15,6 +16,10 @@ import type { SuggestionKey } from "./protocol";
  */
 export type UserSituation = {
   today: IsoDate;
+  /** The moment the situation was read. */
+  now: Date;
+  /** Whether it is a time to reach people or to prepare (time-window.ts). */
+  window: TimeWindow;
   /** Start of today in the user's zone; a follow-up before it is overdue. */
   todayStart: Date;
   milestones: { title: string; done: number; total: number; targetDate: IsoDate | null }[];
@@ -59,6 +64,7 @@ export function describeSituation(situation: UserSituation, settings: FormatSett
   lines.push(
     `Today: ${situation.today} (${formatWeekdayLong(isoDateToLocal(situation.today), "en")}), time zone ${settings.timeZone}, currency ${settings.currency}.`,
   );
+  lines.push(describeTimeWindow(situation.window, situation.now, settings));
 
   if (situation.milestones.length) {
     const items = situation.milestones.map((m) => {
@@ -128,12 +134,15 @@ export function suggestionsFor(situation: UserSituation, limit = 3): SuggestionK
   if (situation.followUpsTotal) keys.push("followUps");
   if (situation.overdueTotal) keys.push("overdueTasks");
   if (situation.stalledDeals) keys.push("stalledDeals");
-  if (situation.events.length) keys.push("planDay");
+  // Late in the day, at the weekend or on a holiday the next working day is what to plan.
+  const plan: SuggestionKey =
+    situation.window.open || situation.window.reason === "beforeHours" ? "planDay" : "planNext";
+  if (situation.events.length) keys.push(plan);
   if (!situation.milestonesTotal) keys.push("firstMilestone");
   else keys.push("nextMilestoneStep");
   if (!situation.stages.some((stage) => stage.open > 0)) keys.push("firstDeal");
   if (situation.prospectingSeconds === 0) keys.push("startCalling");
   keys.push("monthFinance");
-  if (!keys.includes("planDay")) keys.push("planDay");
+  if (!keys.includes(plan)) keys.push(plan);
   return keys.slice(0, limit);
 }

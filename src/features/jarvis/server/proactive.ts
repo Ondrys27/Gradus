@@ -28,7 +28,9 @@ import {
   questionByKey,
   questionDedupeKey,
 } from "../questions";
-import { suggestionActionSchema, type SuggestionAction } from "../suggestions";
+import { reachesPeople, suggestionActionSchema, type SuggestionAction } from "../suggestions";
+import type { TimeWindow } from "../time-window";
+import { loadTimeWindow } from "./time-window";
 
 type Client = SupabaseClient<Database>;
 
@@ -49,6 +51,8 @@ const payloadSchema = z
     question: z.string().optional(),
     answer: z.string().optional(),
     date: z.string().optional(),
+    /** The suggestion means reaching people (a call, a meeting). */
+    people: z.boolean().optional(),
   })
   .catch({});
 type Payload = z.infer<typeof payloadSchema>;
@@ -76,8 +80,16 @@ type Row = {
 
 type Candidate = ProactiveCandidate & { item: ProactiveItem };
 
-/** A stored row as the bubble shows it, or null when it is not fit to show. */
-export function toCandidate(row: Row, now: Date): Candidate | null {
+/**
+ * A stored row as the bubble shows it, or null when it is not fit to show.
+ * A call or meeting is never brought up outside the time window; it waits in
+ * the panel with the next time and comes up once the window opens.
+ */
+export function toCandidate(
+  row: Row,
+  now: Date,
+  window: TimeWindow | null = null,
+): Candidate | null {
   const action = suggestionActionSchema.safeParse(row.action);
   if (!action.success) return null;
   const kind = row.kind as ProactiveKind;
@@ -85,6 +97,7 @@ export function toCandidate(row: Row, now: Date): Candidate | null {
   if (kind === "suggestion") {
     if (!(PROACTIVE_SUGGESTION_TYPES as readonly string[]).includes(row.type)) return null;
     if (new Date(row.created_at) < subDays(now, SUGGESTION_FRESH_DAYS)) return null;
+    if (window && !window.open && reachesPeople(row.type, payload.people, row.text)) return null;
   } else if (kind === "question") {
     if (!payload.question || !questionByKey(payload.question)) return null;
   } else if (kind !== "briefing") {
@@ -225,7 +238,7 @@ export async function loadProactive(args: {
   if (await timerRunning(supabase, settings.timeZone)) return none;
 
   const nowIso = now.toISOString();
-  const [rows, unlocked] = await Promise.all([
+  const [rows, unlocked, window] = await Promise.all([
     supabase
       .from("jarvis_suggestions")
       .select("id, kind, type, text, action, payload, created_at")
@@ -237,17 +250,22 @@ export async function loadProactive(args: {
       .order("created_at", { ascending: false })
       .limit(CANDIDATE_LIMIT),
     briefingUnlocked(supabase, userId),
+    loadTimeWindow(supabase, {
+      timeZone: settings.timeZone,
+      country: args.row?.country_code ?? null,
+      now,
+    }),
   ]);
   if (rows.error) throw rows.error;
 
   const today = todayIsoDate(toFormatSettings(args.row), now);
   const options = { frequency: settings.frequency, today, briefingUnlocked: unlocked };
-  const candidates = rows.data.flatMap((row) => toCandidate(row, now) ?? []);
+  const candidates = rows.data.flatMap((row) => toCandidate(row, now, window) ?? []);
   let picked = pickProactive(candidates, options);
 
   if (!picked && settings.frequency !== "briefing_only") {
     const question = await ensureQuestion(supabase, admin, userId, today, now);
-    const candidate = question ? toCandidate(question, now) : null;
+    const candidate = question ? toCandidate(question, now, window) : null;
     if (candidate) picked = pickProactive([candidate], options);
   }
   return { item: picked?.item ?? null, retryAt: null };

@@ -9,7 +9,13 @@ import type { RuleType, SuggestionType } from "./suggestion-types";
  * interface language; insights and automatic actions carry Jarvis's own text.
  */
 
-export { RULE_TYPES, isRuleType, type RuleType, type SuggestionType } from "./suggestion-types";
+export {
+  RULE_TYPES,
+  isRuleType,
+  reachesPeople,
+  type RuleType,
+  type SuggestionType,
+} from "./suggestion-types";
 
 /** Won deals are celebrated for a week, then the suggestion goes. */
 export const WON_RECENT_DAYS = 7;
@@ -64,6 +70,11 @@ export type Suggestion = {
   action: SuggestionAction;
   seen: boolean;
   createdAt: string;
+  /**
+   * A call or meeting outside the time window: the next time to reach people
+   * (ISO), so the panel offers it for then instead of now. Null otherwise.
+   */
+  notBefore: string | null;
 };
 
 /** GET /api/jarvis?view=suggestions */

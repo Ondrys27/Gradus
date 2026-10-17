@@ -120,6 +120,7 @@ export type ChatEvent =
 /** Chips offered in the panel, chosen from the user's situation. Text in `jarvis.chip.*`. */
 export const SUGGESTION_KEYS = [
   "planDay",
+  "planNext",
   "followUps",
   "stalledDeals",
   "overdueTasks",

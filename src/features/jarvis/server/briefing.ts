@@ -6,8 +6,10 @@ import { instantToZonedParts, todayIsoDate, type FormatSettings } from "@/lib/fo
 import { toFormatSettings, USER_SETTINGS_COLUMNS } from "@/lib/user-settings";
 import type { Database, Json } from "@/types/database";
 import type { SuggestionAction } from "../suggestions";
+import { describeDayPlan } from "../time-window";
 import { streamModel, type ModelClient } from "./model";
 import { loadRuleInputs } from "./suggestions";
+import { loadTimeWindow } from "./time-window";
 import { limitReached, loadAiUsage, logAiUsage } from "./usage";
 import { hasChanges, loadChanges, type WatchChanges } from "./watch";
 
@@ -22,6 +24,8 @@ const BRIEFING_MAX = 700;
 export type BriefingData = {
   locale: string;
   today: string;
+  /** Today's window for reaching people (describeDayPlan). */
+  dayPlan: string;
   yesterday: WatchChanges;
   dueToday: string[];
   overdue: { title: string; daysLate: number }[];
@@ -65,13 +69,14 @@ export async function loadBriefingData(
   settings: FormatSettings,
   locale: string,
   now: Date,
+  country: string | null = null,
 ): Promise<BriefingData> {
   const today = todayIsoDate(settings, now);
   const yesterday = previousDay(today);
   const yesterdayRange = dayRangeToInstants(yesterday, yesterday, settings.timeZone);
   const todayRange = dayRangeToInstants(today, today, settings.timeZone);
 
-  const [changes, rules, due, events] = await Promise.all([
+  const [changes, rules, due, events, window] = await Promise.all([
     loadChanges(admin, userId, yesterdayRange.from),
     loadRuleInputs(admin, userId, settings, now),
     admin
@@ -90,11 +95,13 @@ export async function loadBriefingData(
       .lt("starts_at", todayRange.to)
       .order("starts_at")
       .limit(LIST_LIMIT),
+    loadTimeWindow(admin, { timeZone: settings.timeZone, country, now }),
   ]);
 
   return {
     locale,
     today,
+    dayPlan: describeDayPlan(window, settings),
     yesterday: changes,
     dueToday: must(due).map((task) => task.title),
     overdue: rules.overdueTasks.map((task) => ({ title: task.title, daysLate: task.daysLate })),
@@ -117,7 +124,7 @@ export const BRIEFING_INSTRUCTIONS = `You are Jarvis, the assistant inside ${APP
 
 Write at most three short lines, each one sentence, plain text, no list markers, no greeting, no sign-off, no emoji:
 1. What happened yesterday, in a few words (skip this line if nothing happened).
-2. What waits today: meetings with their time, tasks due, contacts to follow up.
+2. What waits today: meetings with their time, tasks due, contacts to follow up. Plan it by <day_plan>: calls and meetings in its best times; on a day off nothing that needs other people today (say when instead, from <day_plan>), only preparation.
 3. One thing you noticed that the user is likely to miss, with names and numbers from the data, for example a deal that has been stuck in one stage for many days. Pick the single most useful one. Skip this line when nothing stands out; never make something up.
 
 Rules:
@@ -154,6 +161,7 @@ export function briefingContext(data: BriefingData): string {
   );
 
   return `<user>Language: ${data.locale}. Today: ${data.today}.</user>
+<day_plan>${data.dayPlan}</day_plan>
 <yesterday>
 ${yesterday.join("\n") || "nothing"}
 </yesterday>
@@ -182,7 +190,14 @@ export async function briefUser(args: {
     .maybeSingle();
   if (error) throw error;
   const settings = toFormatSettings(row);
-  const data = await loadBriefingData(admin, userId, settings, row?.locale ?? "en", now);
+  const data = await loadBriefingData(
+    admin,
+    userId,
+    settings,
+    row?.locale ?? "en",
+    now,
+    row?.country_code ?? null,
+  );
   if (briefingIsEmpty(data)) return "empty";
 
   const usage = await loadAiUsage(admin, admin, userId, settings, now);

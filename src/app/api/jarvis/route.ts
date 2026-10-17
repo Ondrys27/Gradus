@@ -158,7 +158,7 @@ export const GET = instrumentRoute("api.jarvis.get", async (request: Request) =>
   const [usage, files, situation] = await Promise.all([
     loadAiUsage(ctx.supabase, ctx.admin, ctx.userId, ctx.settings),
     loadFileUsage(ctx.supabase, ctx.admin, ctx.userId, ctx.settings),
-    loadSituation(ctx.supabase, ctx.settings).catch((error) => {
+    loadSituation(ctx.supabase, ctx.settings, ctx.row?.country_code ?? null).catch((error) => {
       console.error("jarvis situation failed", error);
       return null;
     }),
@@ -607,7 +607,7 @@ async function chat(ctx: Context, body: unknown, request: Request) {
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: false })
       .limit(HISTORY_LIMIT),
-    loadSituation(supabase, settings)
+    loadSituation(supabase, settings, ctx.row?.country_code ?? null)
       .then((value) => describeSituation(value, settings))
       .catch((error) => {
         // Jarvis still answers without the summary; the reason shows in the server log.

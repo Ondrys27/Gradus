@@ -7,6 +7,7 @@ import { periodRange } from "@/features/finance/finance-logic";
 import { todayIsoDate, type FormatSettings } from "@/lib/format";
 import type { Database } from "@/types/database";
 import type { UserSituation } from "../situation";
+import { loadTimeWindow } from "./time-window";
 
 type Client = SupabaseClient<Database>;
 
@@ -39,6 +40,7 @@ function list<T>(result: { data: T[] | null; error: unknown }): T[] {
 export async function loadSituation(
   supabase: Client,
   settings: FormatSettings,
+  country: string | null,
   now: Date = new Date(),
 ): Promise<UserSituation> {
   const today = todayIsoDate(settings, now);
@@ -48,6 +50,8 @@ export async function loadSituation(
   const { data: workspaceId, error: workspaceError } = await supabase.rpc("current_workspace_id");
   if (workspaceError) throw workspaceError;
   const ws = workspaceId ?? "";
+  // Read alongside the rest; it never fails (without statistics the default hours apply).
+  const timeWindow = loadTimeWindow(supabase, { timeZone, country, now });
 
   const [milestones, overdue, stages, openDeals, followUpTable, events, prospecting, finance] =
     await Promise.all([
@@ -159,6 +163,8 @@ export async function loadSituation(
 
   return {
     today,
+    now,
+    window: await timeWindow,
     todayStart: new Date(day.from),
     milestones: milestoneRows.map((m) => ({
       title: m.title,

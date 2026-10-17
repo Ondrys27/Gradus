@@ -14,6 +14,7 @@ import type { MoveResult } from "@/features/contacts/move-contact-dialog";
 import { useContactList, useContactTables, useTableCounts } from "@/features/contacts/queries";
 import { TableSwitcher } from "@/features/contacts/table-switcher";
 import { MarkSeenOnVisit } from "@/features/game/mark-seen-on-visit";
+import { CallWindowNotice } from "@/features/jarvis/call-window";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { CallContactPanel } from "./call-contact-panel";
 import { CallList } from "./call-list";
@@ -60,6 +61,7 @@ export function ColdCallingView() {
     <div className="flex flex-col gap-6">
       <MarkSeenOnVisit section="coldCalling" />
       <PageHeader title={tNav("coldCalling")} description={t("description")} />
+      <CallWindowNotice />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)]">
         <section aria-label={t("list.label")} className="flex min-w-0 flex-col gap-3">

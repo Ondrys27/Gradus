@@ -425,6 +425,7 @@
     "loadFailed": "Rozhovor se nepodařilo načíst.",
     "chip": {
       "planDay": "Naplánuj mi den",
+      "planNext": "Naplánuj mi další pracovní den",
       "followUps": "Komu se mám dnes ozvat?",
       "stalledDeals": "Které obchody stojí a co s nimi?",
       "overdueTasks": "Pomoz mi dohnat úkoly po termínu",
@@ -612,6 +613,20 @@
       "text": "Na plnění milníků a úkolů si podklady piš do Poznámek — ideálního zákazníka, produkty, ceník. Já je budu znát a budu z nich vycházet.",
       "open": "Otevřít Poznámky",
       "close": "Zavřít"
+    },
+    "callWindow": {
+      "closed": {
+        "afterHours": "Teď je po pracovní době, lidé to většinou nezvedají.",
+        "beforeHours": "Pracovní doba ještě nezačala, lidé to většinou nezvedají.",
+        "weekend": "Je víkend, lidé to většinou nezvedají.",
+        "holiday": "Je státní svátek, lidé to většinou nezvedají."
+      },
+      "next": "Nejbližší vhodný čas: {when}.",
+      "prepare": "Teď se hodí příprava: poznámky, seznam lidí k zavolání, e-maily na ráno.",
+      "today": "dnes {time}",
+      "tomorrow": "zítra {time}",
+      "day": "{day} {time}",
+      "suggestionLater": "Hodí se až {when}, teď to lidé většinou nezvedají."
     }
   },
   "celebration": {

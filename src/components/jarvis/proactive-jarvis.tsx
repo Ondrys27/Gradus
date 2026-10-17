@@ -173,6 +173,8 @@ function ProactiveCallout({
       action: item.action,
       seen: true,
       createdAt: item.createdAt,
+      // The server never brings up a call outside the time window.
+      notBefore: null,
     };
     const worded = suggestionText(suggestion);
     text = worded.detail ? `${worded.title}\n${worded.detail}` : worded.title;

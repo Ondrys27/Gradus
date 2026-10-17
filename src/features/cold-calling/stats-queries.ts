@@ -5,6 +5,7 @@ import { useSession } from "@/features/account/queries";
 import type { IsoDate } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
 import { useFormatSettings } from "@/lib/use-format-settings";
+import type { StatRow } from "./heatmap-logic";
 import type { Range } from "./stats-logic";
 
 export const statsKeys = {
@@ -52,6 +53,28 @@ export function useDailyMeetings(range: Range, actor: string | null = null) {
       });
       if (error) throw error;
       return new Map(data.map((row) => [row.day, row.meetings]));
+    },
+  });
+}
+
+/**
+ * The shared "best time to call" statistics of a country: no user data, read
+ * by every signed-in user, rebuilt once a day. Also feeds Jarvis's time window.
+ */
+export function useCallTimeStats(country: string | null) {
+  return useQuery({
+    queryKey: ["call-time-stats", country],
+    enabled: country !== null,
+    // Rebuilt once a day.
+    staleTime: 60 * 60 * 1000,
+    queryFn: async (): Promise<StatRow[]> => {
+      const { data, error } = await createClient()
+        .from("call_time_stats")
+        .select("day_of_week, hour, attempts, meetings")
+        .eq("country_code", country ?? "")
+        .limit(24 * 7);
+      if (error) throw error;
+      return data;
     },
   });
 }

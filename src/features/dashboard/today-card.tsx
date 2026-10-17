@@ -9,6 +9,7 @@ import { GlowCard } from "@/components/ui/glow-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusPill } from "@/components/ui/status-pill";
 import { useCalendarEvents } from "@/features/calendar/queries";
+import { CallWindowNotice } from "@/features/jarvis/call-window";
 import { TaskCheckbox } from "@/features/milestones/task-checkbox";
 import { formatNumber, formatTime } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
@@ -59,11 +60,14 @@ function Section({
   icon,
   title,
   count,
+  note,
   children,
 }: {
   icon: ReactNode;
   title: string;
   count: number;
+  /** Shown above the rows, e.g. that people mostly do not pick up now. */
+  note?: ReactNode;
   children: ReactNode;
 }) {
   const settings = useFormatSettings();
@@ -74,6 +78,7 @@ function Section({
         <span className="micro-label">{title}</span>
         <span className="micro-label tabular-nums">{formatNumber(count, {}, settings)}</span>
       </h3>
+      {note}
       <ul className="flex flex-col">{children}</ul>
     </section>
   );
@@ -217,6 +222,7 @@ export function TodayCard({ overview }: { overview: Overview }) {
               icon={<PhoneCallIcon aria-hidden />}
               title={t("followUps")}
               count={followUpRows.length}
+              note={<CallWindowNotice className="my-1" />}
             >
               {followUpRows.slice(0, SHOWN_PER_SECTION).map((entry) => (
                 <li key={entry.entryId} className="flex min-h-11 items-center gap-3 py-1">

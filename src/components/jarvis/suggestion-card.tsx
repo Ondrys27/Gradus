@@ -16,6 +16,7 @@ import {
   XIcon,
   type LucideIcon,
 } from "lucide-react";
+import { useWhenLabel } from "@/features/jarvis/call-window";
 import { useDismissSuggestion, useUndoTaskCompletion } from "@/features/jarvis/queries";
 import type { Suggestion } from "@/features/jarvis/suggestions";
 import { isRuleType, type SuggestionType } from "@/features/jarvis/suggestion-types";
@@ -164,6 +165,8 @@ type CardProps = {
 
 export function SuggestionCard({ suggestion, onRun, onDismiss, busy, className }: CardProps) {
   const t = useTranslations("jarvis.suggestion");
+  const tWindow = useTranslations("jarvis.callWindow");
+  const when = useWhenLabel();
   const text = useSuggestionText()(suggestion);
   const Icon = ICONS[suggestion.type];
   const isUndo = suggestion.action.kind === "undoTask";
@@ -180,6 +183,11 @@ export function SuggestionCard({ suggestion, onRun, onDismiss, busy, className }
       <div className="min-w-0 flex-1">
         <p className="text-sm break-words text-ink">{text.title}</p>
         {text.detail && <p className="mt-0.5 text-xs break-words text-ink-muted">{text.detail}</p>}
+        {suggestion.notBefore && (
+          <p className="mt-0.5 text-xs text-ink-muted">
+            {tWindow("suggestionLater", { when: when(new Date(suggestion.notBefore)) })}
+          </p>
+        )}
         <div className="mt-2 flex flex-wrap gap-2">
           <button
             type="button"

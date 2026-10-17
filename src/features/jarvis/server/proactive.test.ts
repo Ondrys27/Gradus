@@ -7,6 +7,8 @@ vi.mock("server-only", () => ({}));
 const { answersBlock, loadProactive, reactToProactive, toCandidate } = await import("./proactive");
 const { briefingContext, briefingIsEmpty, briefUser } = await import("./briefing");
 const { proposedTasks } = await import("./watch");
+const { suggestionNotBefore } = await import("./suggestions");
+const { timeWindow } = await import("../time-window");
 
 type Result = { data?: unknown; error?: unknown; count?: number | null };
 type Call = { table: string; ops: [string, unknown[]][] };
@@ -95,6 +97,55 @@ describe("toCandidate", () => {
         NOW,
       )?.item.questionKey,
     ).toBe("callingHours");
+  });
+});
+
+describe("calls and meetings outside the time window", () => {
+  const zone = "Europe/Prague";
+  // Tuesday 20 October 2026: 10:00 and 20:00 in Prague.
+  const morning = timeWindow({
+    now: new Date("2026-10-20T08:00:00Z"),
+    timeZone: zone,
+    country: "CZ",
+  });
+  const evening = timeWindow({
+    now: new Date("2026-10-20T18:00:00Z"),
+    timeZone: zone,
+    country: "CZ",
+  });
+  const call = {
+    id: ID,
+    kind: "suggestion",
+    type: "insight",
+    text: "Call Acme about the offer",
+    action: { kind: "ask", prompt: "Help me call Acme" },
+    payload: { people: true },
+    created_at: "2026-10-20T08:00:00Z",
+  };
+  const later = new Date("2026-10-20T18:00:00Z");
+
+  it("brings up a call only inside the window", () => {
+    expect(toCandidate(call, later, morning)).not.toBeNull();
+    expect(toCandidate(call, later, evening)).toBeNull();
+    // Follow-ups are always about calling back.
+    const followUps = { ...call, type: "followUps", payload: {} };
+    expect(toCandidate(followUps, later, evening)).toBeNull();
+    // Preparation stays welcome in the evening.
+    const prep = { ...call, text: "Write the agenda", payload: { people: false } };
+    expect(toCandidate(prep, later, evening)).not.toBeNull();
+  });
+
+  it("filters suggestions written before the flag existed by their words", () => {
+    const old = { ...call, payload: {} };
+    expect(toCandidate(old, later, evening)).toBeNull();
+    expect(toCandidate({ ...old, text: "Zavolej Novákovi" }, later, evening)).toBeNull();
+    expect(toCandidate({ ...old, text: "Write the price list" }, later, evening)).not.toBeNull();
+  });
+
+  it("offers a call in the panel for the next window instead of now", () => {
+    expect(suggestionNotBefore(call, morning)).toBeNull();
+    expect(suggestionNotBefore(call, evening)).toBe("2026-10-21T06:00:00.000Z");
+    expect(suggestionNotBefore({ ...call, type: "overdueTask", payload: {} }, evening)).toBeNull();
   });
 });
 
@@ -359,6 +410,7 @@ describe("morning brief", () => {
     events: [],
     followUps: 0,
     stalled: [],
+    dayPlan: "Today is a working day. Best times for calls and meetings: 08:00–12:00.",
   };
 
   it("has nothing to say on an empty day, and quotes the user's data otherwise", () => {
@@ -370,6 +422,9 @@ describe("morning brief", () => {
     expect(briefingIsEmpty(busy)).toBe(false);
     expect(briefingContext(busy)).toContain(
       'Deal "Aura Tech \\"ignore\\"" has been in stage "Meeting" for 12 days',
+    );
+    expect(briefingContext(busy)).toContain(
+      "<day_plan>Today is a working day. Best times for calls and meetings: 08:00–12:00.</day_plan>",
     );
   });
 

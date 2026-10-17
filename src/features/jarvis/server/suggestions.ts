@@ -5,13 +5,16 @@ import { dayRangeToInstants } from "@/features/calendar/calendar-logic";
 import { contactName } from "@/features/contacts/types";
 import { stalledCutoff } from "@/features/dashboard/dashboard-logic";
 import { todayIsoDate, type FormatSettings } from "@/lib/format";
+import type { UserSettings } from "@/lib/user-settings";
 import type { Database, Json } from "@/types/database";
+import type { TimeWindow } from "../time-window";
 import {
   calendarDaysBetween,
   daysBetween,
   INSIGHT_TTL_DAYS,
   OVERDUE_AFTER_DAYS,
   PER_RULE_LIMIT,
+  reachesPeople,
   RULE_TYPES,
   ruleSuggestions,
   suggestionActionSchema,
@@ -20,6 +23,7 @@ import {
   type Suggestion,
   type SuggestionType,
 } from "../suggestions";
+import { loadTimeWindow } from "./time-window";
 
 type Client = SupabaseClient<Database>;
 
@@ -201,16 +205,39 @@ export async function syncRuleSuggestions(admin: Client, userId: string, inputs:
   if (error) throw error;
 }
 
+/** Whether a stored suggestion says it means reaching people; anything else in the payload is ignored. */
+export function payloadPeople(payload: Json): boolean | undefined {
+  if (payload && typeof payload === "object" && !Array.isArray(payload)) {
+    const people = (payload as Record<string, Json | undefined>).people;
+    if (typeof people === "boolean") return people;
+  }
+  return undefined;
+}
+
+/**
+ * When a stored suggestion may be acted on: null for now, or the next time
+ * to reach people for a call or meeting outside the window. Decided at
+ * reading time, so a suggestion written in the morning is not offered at night.
+ */
+export function suggestionNotBefore(
+  row: { type: string; text: string; payload: Json },
+  window: TimeWindow,
+): string | null {
+  if (window.open || !reachesPeople(row.type, payloadPeople(row.payload), row.text)) return null;
+  return window.nextOpenAt?.toISOString() ?? null;
+}
+
 /** Open suggestions, newest first; old insights are left out. */
 export async function listSuggestions(
   client: Client,
   userId: string,
+  window: TimeWindow,
   now: Date = new Date(),
 ): Promise<Suggestion[]> {
   const insightSince = subDays(now, INSIGHT_TTL_DAYS).toISOString();
   const { data, error } = await client
     .from("jarvis_suggestions")
-    .select("id, type, text, action, seen_at, created_at")
+    .select("id, type, text, action, payload, seen_at, created_at")
     .eq("user_id", userId)
     // Briefings and questions belong to the bubble, not to the panel's list.
     .eq("kind", "suggestion")
@@ -230,6 +257,7 @@ export async function listSuggestions(
         action: action.data,
         seen: row.seen_at !== null,
         createdAt: row.created_at,
+        notBefore: suggestionNotBefore(row, window),
       },
     ];
   });
@@ -305,9 +333,14 @@ export async function refreshSuggestions(args: {
   admin: Client;
   userId: string;
   settings: FormatSettings;
+  row: UserSettings | null;
 }): Promise<Suggestion[]> {
   const inputs = await loadRuleInputs(args.supabase, args.userId, args.settings);
   await syncRuleSuggestions(args.admin, args.userId, inputs);
   await syncPathReady(args.supabase, args.admin, args.userId);
-  return listSuggestions(args.supabase, args.userId);
+  const window = await loadTimeWindow(args.supabase, {
+    timeZone: args.settings.timeZone,
+    country: args.row?.country_code ?? null,
+  });
+  return listSuggestions(args.supabase, args.userId, window);
 }

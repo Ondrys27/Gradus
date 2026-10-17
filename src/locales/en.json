@@ -425,6 +425,7 @@
     "loadFailed": "The conversation couldn't be loaded.",
     "chip": {
       "planDay": "Plan my day",
+      "planNext": "Plan my next working day",
       "followUps": "Who should I follow up with today?",
       "stalledDeals": "Which deals are stuck and what should I do?",
       "overdueTasks": "Help me catch up on overdue tasks",
@@ -612,6 +613,20 @@
       "text": "Write the groundwork for your milestones and tasks in Notes — your ideal customer, products, price list. I will know them and build on them.",
       "open": "Open Notes",
       "close": "Close"
+    },
+    "callWindow": {
+      "closed": {
+        "afterHours": "It's after working hours now, people mostly don't pick up.",
+        "beforeHours": "Working hours haven't started yet, people mostly don't pick up.",
+        "weekend": "It's the weekend, people mostly don't pick up.",
+        "holiday": "It's a public holiday, people mostly don't pick up."
+      },
+      "next": "Next good time: {when}.",
+      "prepare": "Now is a good time to prepare: notes, the list of people to call, e-mails for the morning.",
+      "today": "today {time}",
+      "tomorrow": "tomorrow {time}",
+      "day": "{day} {time}",
+      "suggestionLater": "Better {when}: people mostly don't pick up now."
     }
   },
   "celebration": {

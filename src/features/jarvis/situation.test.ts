@@ -1,14 +1,21 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_FORMAT_SETTINGS, zonedWallClockToInstant } from "@/lib/format";
 import { describeSituation, suggestionsFor, type UserSituation } from "./situation";
+import { timeWindow } from "./time-window";
 
 const settings = { ...DEFAULT_FORMAT_SETTINGS, timeZone: "Europe/Prague", currency: "CZK" };
 const at = (time: string, day = "2026-09-28") =>
   zonedWallClockToInstant(day, time, settings.timeZone);
 
+/** Tuesday 29 September 2026, 10:15 in Prague: a working morning. */
+const WORKING_NOW = at("10:15", "2026-09-29");
+const windowAt = (now: Date) => timeWindow({ now, timeZone: settings.timeZone, country: "CZ" });
+
 function situation(overrides: Partial<UserSituation> = {}): UserSituation {
   return {
     today: "2026-09-28",
+    now: WORKING_NOW,
+    window: windowAt(WORKING_NOW),
     todayStart: at("00:00"),
     milestones: [],
     milestonesTotal: 0,
@@ -94,6 +101,35 @@ describe("describeSituation", () => {
   });
 });
 
+describe("describeSituation and the time of day", () => {
+  it("gives the local time, the weekday and working hours", () => {
+    const text = describeSituation(situation(), settings);
+    expect(text).toContain("Local time now: 10:15, Tuesday. Working hours now: yes.");
+    expect(text).toContain("Calls and meetings: a good time now.");
+  });
+
+  it("tells the evening apart and names the next time to reach people", () => {
+    const evening = at("20:30", "2026-10-16");
+    const text = describeSituation(
+      situation({ now: evening, window: windowAt(evening) }),
+      settings,
+    );
+    expect(text).toContain("Local time now: 20:30, Friday. Working hours now: no.");
+    expect(text).toContain("not now (after working hours)");
+    expect(text).toContain("Next time to reach people: Monday 2026-10-19 at 08:00.");
+    expect(text).toContain("the list of people to call");
+  });
+
+  it("writes the time in the user's own format", () => {
+    const evening = at("20:30", "2026-10-16");
+    const text = describeSituation(situation({ now: evening, window: windowAt(evening) }), {
+      ...settings,
+      timeFormat: "h:mm a",
+    });
+    expect(text).toContain("Local time now: 8:30 PM, Friday.");
+  });
+});
+
 describe("suggestionsFor", () => {
   it("puts what is due first and offers three chips at most", () => {
     const keys = suggestionsFor(
@@ -106,6 +142,13 @@ describe("suggestionsFor", () => {
       }),
     );
     expect(keys).toEqual(["followUps", "overdueTasks", "stalledDeals"]);
+  });
+
+  it("plans the next working day instead of today in the evening", () => {
+    const evening = at("20:30", "2026-10-16");
+    const keys = suggestionsFor(situation({ now: evening, window: windowAt(evening) }), 10);
+    expect(keys).toContain("planNext");
+    expect(keys).not.toContain("planDay");
   });
 
   it("helps a new user start", () => {
