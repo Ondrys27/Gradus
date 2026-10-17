@@ -58,7 +58,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 13.1 | architect | 2026-10-16 Krok průvodce je v adrese s historií, tlačítko Zpět na všech krocích, uložená data (milník, kontakt, cesta) se při návratu upraví místo duplicitního vzniku; přihlášení/registrace/reset hesla přesměrují přes replace.
 - [x] 13.2 | architect | 2026-10-16 Zbytkový zámek scrollu po Jarvisově prohlídce opraven centrálním počítaným zámkem (scroll-lock.ts) s úklidem po přechodu stránky; mapa úkolů scrolluje kolečkem a přibližuje jen Ctrl/⌘ nebo dvěma prsty.
 - [x] 13.3 | architect | 2026-10-17 Nová sekce Poznámky (/app/poznamky) jako Apple Notes s Tiptap editorem, autosave, fulltextem, koš na 30 dní, pěti šablonami podle oboru a napojením na ⌘K; pracovník k nim nemá přístup.
-- [ ] 13.4 | architect | env: ANTHROPIC_API_KEY
+- [x] 13.4 | architect | env: ANTHROPIC_API_KEY | 2026-10-17 Poznámky propojené s úkoly a milníky (note_links), 28 kroků cest se značkou note_template, Jarvis čte poznámky v kontextu (strop 12 000 znaků, ~0,008 USD navíc na zprávu) a umí uložit odpověď do poznámek; jednorázové představení Poznámek po průvodci. Pozor: představení nerespektuje vypínač proaktivního Jarvise — ověřit a případně dořešit.
 - [ ] 13.5 | architect |
 - [ ] 13.6 | architect | env: ANTHROPIC_API_KEY
 - [ ] K13 | reviewer |
