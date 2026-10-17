@@ -89,6 +89,11 @@ export type ChatErrorCode =
    * or the API has run out of credit. The rest of the app works on.
    */
   | "paused"
+  /**
+   * This user's own monthly AI cap (set in the administration) is used up or
+   * AI is blocked for them. The rest of the app works on.
+   */
+  | "userLimit"
   | "busy"
   | "unavailable"
   | "notFound"

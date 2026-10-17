@@ -39,6 +39,11 @@ export type ModelCall = {
   client: ModelClient;
   feature: JarvisFeature;
   /**
+   * Whose call it is: their own monthly cap (or block) is checked before the
+   * call. Null only for calls of no single user (none today).
+   */
+  userId: string | null;
+  /**
    * The fixed part of the system prompt, cached. Jarvis's persona by default;
    * routine jobs (classification, the opportunity watch) pass their own short one.
    */
@@ -66,9 +71,10 @@ export async function streamModel(call: ModelCall): Promise<ModelResult> {
   const started = Date.now();
   let text = "";
 
-  if (call.client.budget && !(await call.client.budget.allows(call.feature))) {
-    return { ok: false, model, code: "paused", text, tokens };
-  }
+  const verdict = call.client.budget
+    ? await call.client.budget.check(call.feature, call.userId)
+    : "ok";
+  if (verdict !== "ok") return { ok: false, model, code: verdict, text, tokens };
 
   const params: Anthropic.MessageStreamParams = {
     model,

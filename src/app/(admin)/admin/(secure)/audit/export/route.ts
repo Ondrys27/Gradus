@@ -18,8 +18,15 @@ export async function GET() {
     return new Response("Audit unavailable", { status: 503 });
   }
   const csv = toCsv(
-    ["created_at", "user_id", "kind", "target", "ip_hash"],
-    rows.map((row) => [row.created_at, row.user_id, row.kind, row.target, row.ip_hash]),
+    ["created_at", "user_id", "kind", "target", "ip_hash", "detail"],
+    rows.map((row) => [
+      row.created_at,
+      row.user_id,
+      row.kind,
+      row.target,
+      row.ip_hash,
+      row.detail === null ? null : JSON.stringify(row.detail),
+    ]),
   );
   const day = new Date().toISOString().slice(0, 10);
   return new Response(csv, {

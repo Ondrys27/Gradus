@@ -27,7 +27,7 @@ export default async function AdminAuditPage({
   await logAdminAction(context, "view", "audit");
   const [{ page: rawPage }, t] = await Promise.all([searchParams, getTranslations("admin.audit")]);
   const page = Math.min(10_000, Math.max(0, Number.parseInt(rawPage ?? "0", 10) || 0));
-  const { rows, hasMore } = await loadAuditPage(context, page);
+  const { rows, hasMore } = await loadAuditPage(context, page, t("emptyValue"));
   const pageHref = (n: number) => (n > 0 ? `${ADMIN_PATH}/audit?page=${n}` : `${ADMIN_PATH}/audit`);
 
   return (
@@ -64,6 +64,9 @@ export default async function AdminAuditPage({
                     {t("columns.target")}
                   </th>
                   <th scope="col" className="px-4 py-3 font-medium">
+                    {t("columns.detail")}
+                  </th>
+                  <th scope="col" className="px-4 py-3 font-medium">
                     {t("columns.ip")}
                   </th>
                 </tr>
@@ -75,6 +78,7 @@ export default async function AdminAuditPage({
                     <td className="px-4 py-2.5">{row.who}</td>
                     <td className="px-4 py-2.5">{t(`kinds.${row.kind}`)}</td>
                     <td className="px-4 py-2.5 font-mono text-xs">{row.target}</td>
+                    <td className="px-4 py-2.5 font-mono text-xs text-ink-soft">{row.detail}</td>
                     <td className="px-4 py-2.5 font-mono text-xs text-ink-soft">{row.ip}</td>
                   </tr>
                 ))}

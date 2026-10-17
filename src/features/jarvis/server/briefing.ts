@@ -190,6 +190,7 @@ export async function briefUser(args: {
 
   const result = await streamModel({
     client: args.client,
+    userId,
     feature: "briefing",
     instructions: BRIEFING_INSTRUCTIONS,
     context: briefingContext(data),

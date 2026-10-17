@@ -8,8 +8,11 @@ import { ADMIN_FORMAT_SETTINGS, formatMetricValue } from "@/features/admin/forma
 import { logAdminAction } from "@/features/admin/server/audit";
 import { requireAdmin } from "@/features/admin/server/guard";
 import { loadUserDetail } from "@/features/admin/server/users-data";
+import { loadUserAiCap } from "@/features/admin/server/ai-caps-data";
+import { remainingUsd, userCapModeOf } from "@/features/jarvis/caps";
 import { AdminCard } from "@/features/admin/ui/blocks";
 import { InternalToggle } from "@/features/admin/ui/internal-toggle";
+import { UserAiCapForm } from "@/features/admin/ui/user-ai-cap-form";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -25,8 +28,9 @@ export default async function AdminUserDetailPage({ params }: Props) {
   if (!z.uuid().safeParse(id).success) notFound();
   await logAdminAction(context, "view", "users.detail");
 
-  const [detail, t, tControls, tItems, tIndustry, tUnits] = await Promise.all([
+  const [detail, aiCap, t, tControls, tItems, tIndustry, tUnits] = await Promise.all([
     loadUserDetail(id),
+    loadUserAiCap(id),
     getTranslations("admin.users"),
     getTranslations("admin.controls"),
     getTranslations("metrics.items"),
@@ -77,6 +81,39 @@ export default async function AdminUserDetailPage({ params }: Props) {
           <Fact label={t("inputTokens")} value={formatMetricValue(detail.ai.inputTokens, "tokens", tUnits)} />
           <Fact label={t("outputTokens")} value={formatMetricValue(detail.ai.outputTokens, "tokens", tUnits)} />
         </div>
+      </AdminCard>
+
+      <AdminCard title={t("aiCap.title")} description={t("aiCap.description")}>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <Fact label={t("aiCap.spent")} value={formatMetricValue(aiCap.spentUsd, "usd", tUnits)} />
+          <Fact
+            label={t("aiCap.limit")}
+            value={
+              aiCap.limit.kind === "blocked"
+                ? t("aiCap.blocked")
+                : aiCap.limit.kind === "cap"
+                  ? `${formatMetricValue(aiCap.limit.usd, "usd", tUnits)} · ${t(
+                      aiCap.limit.source === "override" ? "aiCap.sourceOverride" : "aiCap.sourceGlobal",
+                    )}`
+                  : t("aiCap.noLimit")
+            }
+          />
+          <Fact
+            label={t("aiCap.left")}
+            value={
+              aiCap.limit.kind === "cap"
+                ? formatMetricValue(remainingUsd(aiCap.limit.usd, aiCap.spentUsd), "usd", tUnits)
+                : aiCap.limit.kind === "blocked"
+                  ? formatMetricValue(0, "usd", tUnits)
+                  : t("aiCap.noLimit")
+            }
+          />
+        </div>
+        <UserAiCapForm
+          userId={id}
+          mode={userCapModeOf(aiCap.override)}
+          capUsd={aiCap.override?.capUsd ?? null}
+        />
       </AdminCard>
 
       <AdminCard title={t("sectionsTitle")} description={t("sectionsDescription")}>

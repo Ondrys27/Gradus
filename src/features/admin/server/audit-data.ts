@@ -1,5 +1,6 @@
 import "server-only";
 import { formatDateTime } from "@/lib/format";
+import { describeAuditDetail } from "../audit-detail";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { toFormatSettings, USER_SETTINGS_COLUMNS } from "@/lib/user-settings";
 import type { AdminAuditKind } from "./audit";
@@ -16,9 +17,11 @@ export type AuditRow = {
   kind: AdminAuditKind;
   target: string;
   ip: string;
+  /** What a change changed, "field: old → new"; empty for views and exports. */
+  detail: string;
 };
 
-const COLUMNS = "id, created_at, user_id, kind, target, ip_hash";
+const COLUMNS = "id, created_at, user_id, kind, target, ip_hash, detail";
 
 /**
  * One page of the audit, newest first, with times already formatted in the
@@ -27,6 +30,7 @@ const COLUMNS = "id, created_at, user_id, kind, target, ip_hash";
 export async function loadAuditPage(
   context: AdminContext,
   page: number,
+  emptyValue: string,
 ): Promise<{ rows: AuditRow[]; hasMore: boolean }> {
   const admin = createAdminClient();
   const from = Math.max(0, page) * AUDIT_PAGE_SIZE;
@@ -61,6 +65,7 @@ export async function loadAuditPage(
       kind: row.kind,
       target: row.target,
       ip: row.ip_hash ?? "",
+      detail: describeAuditDetail(row.detail, emptyValue),
     })),
   };
 }

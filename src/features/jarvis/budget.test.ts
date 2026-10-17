@@ -27,6 +27,17 @@ describe("budgetStatus", () => {
     expect(budgetStatus(90, 90)).toBe("paused");
     expect(budgetStatus(130, 90)).toBe("paused");
   });
+
+  it("follows the threshold set in the administration", () => {
+    expect(budgetStatus(44.99, 90, 0.5)).toBe("ok");
+    expect(budgetStatus(45, 90, 0.5)).toBe("near");
+    expect(budgetStatus(89.99, 90, 1)).toBe("ok");
+  });
+
+  it("is paused at once with a cap of 0", () => {
+    expect(budgetStatus(0, 0)).toBe("paused");
+    expect(budgetSnapshot({ spentUsd: 0, calls: 0 }, 0, new Date()).share).toBe(1);
+  });
 });
 
 describe("the month", () => {
@@ -62,6 +73,7 @@ describe("budgetSnapshot", () => {
       budgetUsd: 90,
       calls: 812,
       share: 0.5,
+      warnShare: 0.8,
       projectedUsd: 93,
       status: "ok",
     });

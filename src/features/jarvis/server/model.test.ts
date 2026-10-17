@@ -65,6 +65,7 @@ describe("streamModel", () => {
 
     const result = await streamModel({
       client,
+      userId: "user-1",
       feature: "chat",
       context: "<situation>x</situation>",
       messages: [{ role: "user", content: "hi" }],
@@ -98,6 +99,7 @@ describe("streamModel", () => {
     const { client, calls } = fakeClient([start(10), delta("yes"), end(1)]);
     await streamModel({
       client,
+      userId: "user-1",
       feature: "classify",
       context: "",
       messages: [{ role: "user", content: "?" }],
@@ -113,6 +115,7 @@ describe("streamModel", () => {
     const log = vi.fn().mockResolvedValue(undefined);
     const result = await streamModel({
       client,
+      userId: "user-1",
       feature: "chat",
       context: "",
       messages: [{ role: "user", content: "hi" }],
@@ -128,6 +131,7 @@ describe("streamModel", () => {
     const log = vi.fn().mockResolvedValue(undefined);
     const result = await streamModel({
       client,
+      userId: "user-1",
       feature: "chat",
       context: "",
       messages: [{ role: "user", content: "hi" }],
@@ -142,6 +146,7 @@ describe("streamModel", () => {
     const log = vi.fn().mockResolvedValue(undefined);
     const result = await streamModel({
       client,
+      userId: "user-1",
       feature: "chat",
       context: "",
       messages: [{ role: "user", content: "hi" }],
@@ -153,23 +158,42 @@ describe("streamModel", () => {
 });
 
 describe("budget", () => {
-  function guard(allowed: boolean) {
-    return { allows: vi.fn().mockResolvedValue(allowed), creditsExhausted: vi.fn() };
+  function guard(verdict: "ok" | "paused" | "userLimit") {
+    return { check: vi.fn().mockResolvedValue(verdict), creditsExhausted: vi.fn() };
   }
 
   it("makes no call over the budget and answers with the pause", async () => {
     const { client, calls } = fakeClient([start(10), delta("never"), end(1)]);
-    const budget = guard(false);
+    const budget = guard("paused");
     const log = vi.fn().mockResolvedValue(undefined);
     const result = await streamModel({
       client: { ...client, budget },
+      userId: "user-1",
       feature: "chat",
       context: "",
       messages: [{ role: "user", content: "hi" }],
       log,
     });
     expect(result).toMatchObject({ ok: false, code: "paused", text: "" });
-    expect(budget.allows).toHaveBeenCalledWith("chat");
+    expect(budget.check).toHaveBeenCalledWith("chat", "user-1");
+    expect(calls).toHaveLength(0);
+    expect(log).not.toHaveBeenCalled();
+  });
+
+  it("makes no call when the user's own cap is used up and says so", async () => {
+    const { client, calls } = fakeClient([start(10), delta("never"), end(1)]);
+    const budget = guard("userLimit");
+    const log = vi.fn().mockResolvedValue(undefined);
+    const result = await streamModel({
+      client: { ...client, budget },
+      userId: "user-1",
+      feature: "milestone_review",
+      context: "",
+      messages: [{ role: "user", content: "hi" }],
+      log,
+    });
+    expect(result).toMatchObject({ ok: false, code: "userLimit", text: "" });
+    expect(budget.check).toHaveBeenCalledWith("milestone_review", "user-1");
     expect(calls).toHaveLength(0);
     expect(log).not.toHaveBeenCalled();
   });
@@ -177,7 +201,8 @@ describe("budget", () => {
   it("calls the model while the budget allows it", async () => {
     const { client, calls } = fakeClient([start(10), delta("ok"), end(1)]);
     const result = await streamModel({
-      client: { ...client, budget: guard(true) },
+      client: { ...client, budget: guard("ok") },
+      userId: "user-1",
       feature: "chat",
       context: "",
       messages: [{ role: "user", content: "hi" }],
@@ -189,10 +214,11 @@ describe("budget", () => {
 
   it("shows exhausted credit as the pause, tells the guard and logs the attempt", async () => {
     const { client } = fakeClient([], apiError(402, "billing_error"));
-    const budget = guard(true);
+    const budget = guard("ok");
     const log = vi.fn().mockResolvedValue(undefined);
     const result = await streamModel({
       client: { ...client, budget },
+      userId: "user-1",
       feature: "opportunity_scan",
       context: "",
       messages: [{ role: "user", content: "hi" }],
@@ -205,9 +231,10 @@ describe("budget", () => {
 
   it("does not report other failures as missing credit", async () => {
     const { client } = fakeClient([], apiError(429, "rate_limit_error"));
-    const budget = guard(true);
+    const budget = guard("ok");
     const result = await streamModel({
       client: { ...client, budget },
+      userId: "user-1",
       feature: "chat",
       context: "",
       messages: [{ role: "user", content: "hi" }],

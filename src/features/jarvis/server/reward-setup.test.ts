@@ -86,6 +86,7 @@ describe("reward setup", () => {
     const log = vi.fn(async () => {});
     const result = await runRewardSetup({
       client,
+      userId: "user-1",
       tree,
       workers: [{ id: WORKER, name: "Jana" }],
       currency: "CZK",
@@ -131,6 +132,7 @@ describe("reward setup", () => {
     const log = vi.fn(async () => {});
     const result = await runRewardSetup({
       client,
+      userId: "user-1",
       tree,
       workers: [],
       currency: "CZK",
@@ -147,6 +149,7 @@ describe("reward setup", () => {
     const { client } = fakeModel("Sure! Here are your rules: pay everyone more.");
     const result = await runRewardSetup({
       client,
+      userId: "user-1",
       tree,
       workers: [],
       currency: "CZK",

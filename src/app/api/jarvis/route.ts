@@ -178,7 +178,7 @@ export const GET = instrumentRoute("api.jarvis.get", async (request: Request) =>
  */
 async function cronClient(admin: ReturnType<typeof createAdminClient>, feature: JarvisFeature) {
   const client = createAnthropic(admin);
-  return client && (await client.budget.allows(feature)) ? client : null;
+  return client && (await client.budget.check(feature)) === "ok" ? client : null;
 }
 
 function watch(request: Request) {
@@ -295,6 +295,7 @@ async function ping(ctx: Context, body: unknown) {
   const started = Date.now();
   const result = await streamModel({
     client,
+    userId,
     feature: "ping",
     context: "",
     messages: [{ role: "user", content: PING_QUESTION }],
@@ -422,6 +423,7 @@ async function rewardSetup(ctx: Context, body: unknown) {
 
   const result = await runRewardSetup({
     client,
+    userId,
     tree: tree.data,
     workers,
     currency: settings.currency,
@@ -488,6 +490,7 @@ async function emailReply(ctx: Context, body: unknown) {
 
   const result = await suggestEmailReply({
     client,
+    userId,
     contact: { name: contactName },
     deal,
     locale,
@@ -537,10 +540,11 @@ async function chat(ctx: Context, body: unknown, request: Request) {
     const event: ChatEvent = { type: "error", code: "notConfigured", usage };
     return NextResponse.json(event, { status: 503 });
   }
-  // Paused for the rest of the month: the kind note, and nothing is saved.
-  if (!(await client.budget.allows("chat"))) {
-    const event: ChatEvent = { type: "error", code: "paused", usage };
-    return NextResponse.json(event, { status: 503 });
+  // Paused for the rest of the month (everyone's cap or this user's own): the kind note, and nothing is saved.
+  const verdict = await client.budget.check("chat", userId);
+  if (verdict !== "ok") {
+    const event: ChatEvent = { type: "error", code: verdict, usage };
+    return NextResponse.json(event, { status: verdict === "paused" ? 503 : 429 });
   }
 
   // Files are checked by content before the message is saved; a refused file refuses the message.
@@ -678,6 +682,7 @@ async function chat(ctx: Context, body: unknown, request: Request) {
         });
         const result = await streamModel({
           client,
+          userId,
           feature: "chat",
           context: situationBlock(situation, locale) + extra,
           messages,

@@ -31,6 +31,7 @@ describe.skipIf(!live)("Jarvis against the real API", () => {
       const log = vi.fn().mockResolvedValue(undefined);
       const result = await streamModel({
         client: { messages: anthropic.messages },
+        userId: null,
         feature,
         context: "",
         messages: [

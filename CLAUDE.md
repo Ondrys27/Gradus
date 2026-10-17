@@ -123,11 +123,13 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - **E2E bez modelu:** mimo produkci, jen pro účty e2e-…@gradus.local a s hlavičkou `x-gradus-e2e-model: echo-notes` odpoví chat blokem poznámek z kontextu (src/features/jarvis/server/e2e-model.ts). Jinak vždy Anthropic.
 - **Ranní shrnutí:** cron každou hodinu, píše se v 6–10 h v pásmu uživatele, Sonnet (`briefing`), měřeno v `ai_usage`; prázdný den = žádné volání. Odemyká úroveň 5 v game režimu, v tool režimu je vždy. Zobrazí se při prvním otevření toho dne.
 - **Návrhy** z dávkové kontroly můžou nést úkoly k náhledu; vzniknou až po Přidat (klientem uživatele přes RLS). **Otázky** nejvýš dvě týdně, odpovědi jdou do kontextu chatu.
-- **Měsíční rozpočet:** Jarvis běží na API kreditech (100 USD měsíčně, propadají). Strop `JARVIS_MONTHLY_BUDGET_USD` (výchozí 90), útrata = součet `ai_usage.cost_usd` všech účtů včetně interních za kalendářní měsíc v UTC (`jarvis_month_spend`, jen server). Kontrola před každým voláním modelu (strážce v klientovi z `createAnthropic`, `streamModel` bez něj nevolá):
-  - od 80 %: majiteli jeden e-mail denně se stavem (Resend)
-  - od 100 %: žádné volání modelu do konce měsíce; chat a ostatní úlohy ukážou vlídnou hlášku (kód `paused`: „Jarvis si dává do konce měsíce pauzu, aplikace funguje dál"), hlídání příležitostí běží jen z pravidel, ranní shrnutí se nepíše
+- **Měsíční rozpočet:** Jarvis běží na API kreditech (100 USD měsíčně, propadají). Stropy se nastavují v administraci (/admin → AI a Jarvis → Strop využití AI) bez nového nasazení: `app_settings` klíč `ai_caps` (`monthly_usd` 0–10 000, `per_user_usd` 0–1 000 nebo prázdné = bez limitu, `warn_percent` 1–100). Dokud v DB nic není, platí `JARVIS_MONTHLY_BUDGET_USD` (výchozí 90), bez stropu na uživatele a 80 %. Útrata = součet `ai_usage.cost_usd` všech účtů včetně interních za kalendářní měsíc v UTC (`jarvis_month_spend`, jen server). Kontrola před každým voláním modelu (strážce `check(feature, userId)` v klientovi z `createAnthropic`, `streamModel` bez něj nevolá; každé volání nese `userId`); stropy se čtou s cache nejvýš 30 s, změna platí do minuty:
+  - od prahu upozornění: majiteli jeden e-mail denně se stavem (Resend)
+  - od 100 % celkového stropu: žádné volání modelu do konce měsíce; chat a ostatní úlohy ukážou vlídnou hlášku (kód `paused`: „Jarvis si dává do konce měsíce pauzu, aplikace funguje dál"), hlídání příležitostí běží jen z pravidel, ranní shrnutí se nepíše
+  - strop uživatele (výjimka v `ai_user_caps` — vlastní strop nebo zablokovaná AI, nastavuje se v /admin/uzivatele/[id] —, jinak `per_user_usd`): po dosažení žádné volání modelu pro tohoto uživatele, kód `userLimit` („AI pomocník má pro tvůj účet tento měsíc vyčerpaný limit, zbytek aplikace funguje dál"), bez e-mailu, `jarvis_paused` s důvodem `user_cap` / `user_blocked`
+  - `app_settings` a `ai_user_caps` čte jen server, zapisují je jen `admin_set_app_setting` / `admin_set_ai_user_cap` (SECURITY DEFINER, ověří majitele s živou relací administrace a aal2) a ve stejné transakci zapíšou do `admin_audit` kdo, kdy a `detail` z čeho na co; formuláře se ptají na potvrzení
   - vyčerpaný kredit nebo limit útraty z API se pozná podle typu chyby SDK (`billing_error`/402, `error.details.error_code` `enforced_spend_limit_reached`), nikdy podle textu: tatáž hláška, `jarvis_paused` v analytice s kódem, e-mail majiteli max jednou denně (`jarvis_budget_alerts`), nikdy surová chyba
-  - administrace AI a Jarvis: karta rozpočtu nahoře (útrata, odhad, volání, stav)
+  - administrace AI a Jarvis: karta rozpočtu nahoře (útrata, odhad, volání, stav), pod ní Strop využití AI s útratou a zbytkem u každé hodnoty
 
 ### Rozhraní
 - Tokeny v `@theme`, **žádné hexy v komponentách.** Fialová `#7C5CFF`, tyrkysová `#2FE3C8`, zlatá `#FFC64B`, zelená `#3DDC97`, oranžová `#FF9F43` (rozpracované), růžová `#FF6B8A`, pozadí `#070B1F`, karta `#0D1234`.
@@ -190,7 +192,7 @@ Veřejné v `.env`, tajné v `.env.local`. Vždy udržovat `.env.example`.
 | `PUBLIC_SIGNUP_ENABLED` | true = registrace bez kódu a 14denní zkušební období; false (výchozí) = jen pozvánky a čekací listina. Čte jen server (`src/lib/signup.ts`), změna chce restart |
 | `GOOGLE_MAPS_API_KEY` | Generování kontaktů |
 | `ANTHROPIC_API_KEY` | Jarvis |
-| `JARVIS_MONTHLY_BUDGET_USD` | Měsíční strop útraty Jarvise v USD za všechny účty (výchozí 90, rezerva pod 100 USD kreditů). Od 80 % e-mail majiteli jednou denně, od 100 % Jarvis do konce měsíce nevolá model. |
+| `JARVIS_MONTHLY_BUDGET_USD` | Jen výchozí hodnota celkového měsíčního stropu Jarvise v USD (90, rezerva pod 100 USD kreditů), dokud ho majitel nenastaví v administraci (`app_settings.ai_caps`). Platné stropy a práh upozornění jsou v administraci. |
 | `RESEND_API_KEY` | E-maily |
 | `CRON_SECRET` | Ověření Vercel Cron |
 | `FAKTUROID_*` | Per uživatel, šifrovaně v DB, ne v env |

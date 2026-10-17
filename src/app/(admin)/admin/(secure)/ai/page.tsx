@@ -18,9 +18,12 @@ import {
   jarvisConversations,
   type AiUsageRow,
 } from "@/features/admin/server/page-data";
+import { loadAiCapsOverview } from "@/features/admin/server/ai-caps-data";
 import { loadBudget } from "@/features/jarvis/server/budget";
+import { loadAiCaps } from "@/features/jarvis/server/caps";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AdminChart } from "@/features/admin/ui/admin-chart";
+import { AiCapsForm } from "@/features/admin/ui/ai-caps-form";
 import { BudgetCard } from "@/features/admin/ui/budget-card";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
 import { AdminCard, GridSkeleton, TilesSkeleton } from "@/features/admin/ui/blocks";
@@ -49,6 +52,9 @@ export default async function AdminAiPage({ searchParams }: Props) {
       <Suspense fallback={<GridSkeleton count={1} height={180} />}>
         <Budget />
       </Suspense>
+      <Suspense fallback={<GridSkeleton count={1} height={260} />}>
+        <Caps />
+      </Suspense>
       <Suspense key={`tiles:${key}`} fallback={<TilesSkeleton count={6} />}>
         <Tiles q={q} />
       </Suspense>
@@ -70,8 +76,37 @@ export default async function AdminAiPage({ searchParams }: Props) {
 
 /** Always this calendar month, whatever range the controls show: the budget is monthly. */
 async function Budget() {
-  const loaded = await safe("jarvis budget", () => loadBudget(createAdminClient()));
+  const loaded = await safe("jarvis budget", async () => {
+    const admin = createAdminClient();
+    return loadBudget(admin, new Date(), await loadAiCaps(admin, { fresh: true }));
+  });
   return <Show loaded={loaded}>{(budget) => <BudgetCard budget={budget} />}</Show>;
+}
+
+/** The caps set here apply within a minute; this month's spend under each. */
+async function Caps() {
+  const [loaded, t] = await Promise.all([
+    safe("ai caps", () => loadAiCapsOverview()),
+    getTranslations("admin.ai.caps"),
+  ]);
+  return (
+    <AdminCard title={t("title")} description={t("description")}>
+      <Show loaded={loaded}>
+        {(overview) => (
+          <AiCapsForm
+            saved={{
+              monthlyUsd: overview.caps.monthlyUsd,
+              perUserUsd: overview.caps.perUserUsd,
+              warnPercent: Math.round(overview.caps.warnShare * 100),
+            }}
+            fromDefaults={overview.caps.source === "default"}
+            spentUsd={overview.spentUsd}
+            topUserSpentUsd={overview.topUserSpentUsd}
+          />
+        )}
+      </Show>
+    </AdminCard>
+  );
 }
 
 async function Tiles({ q }: { q: AdminQuery }) {

@@ -65,11 +65,13 @@ export type FeatureClassification = z.infer<typeof classificationSchema>;
 /** Asks Haiku whether the message is an idea for the app; null when unsure or on failure. */
 export async function classifyFeatureRequest(
   client: ModelClient,
+  userId: string,
   message: string,
   log: ModelCall["log"],
 ): Promise<FeatureClassification | null> {
   const result = await streamModel({
     client,
+    userId,
     feature: "classify",
     instructions: FEATURE_CLASSIFIER_INSTRUCTIONS,
     context: "",
@@ -133,7 +135,7 @@ export async function handleFeatureRequest(args: {
   log: ModelCall["log"];
 }): Promise<boolean> {
   if (!mightBeFeatureRequest(args.message)) return false;
-  const idea = await classifyFeatureRequest(args.client, args.message, args.log);
+  const idea = await classifyFeatureRequest(args.client, args.userId, args.message, args.log);
   if (!idea) return false;
 
   const { error } = await args.supabase.from("feature_requests").insert({

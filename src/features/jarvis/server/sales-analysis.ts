@@ -108,6 +108,7 @@ export async function runSalesAnalysis(args: {
 
   const result = await streamModel({
     client: args.client,
+    userId: args.userId,
     feature: "analysis",
     context: salesAnalysisContext(surveys, args.locale),
     messages: [{ role: "user", content: "Analyse my sales meetings." }],

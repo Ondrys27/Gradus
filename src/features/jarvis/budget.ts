@@ -5,12 +5,15 @@
  * read on the server (server/budget.ts).
  */
 
-/** JARVIS_MONTHLY_BUDGET_USD when unset: a reserve below the 100 USD of credits. */
+/**
+ * The default cap while the administration has not set one (caps.ts):
+ * JARVIS_MONTHLY_BUDGET_USD, or this when unset, a reserve below the 100 USD of credits.
+ */
 export const DEFAULT_MONTHLY_BUDGET_USD = 90;
-/** From this share of the budget on, the owner gets one e-mail a day. */
+/** The default warning threshold: from this share of the budget on, the owner gets one e-mail a day. */
 export const NEAR_LIMIT_SHARE = 0.8;
 
-/** ok, near the limit (≥ 80 %), or paused (≥ 100 %: no model calls until the month ends). */
+/** ok, near the limit (≥ the warning threshold), or paused (≥ 100 %: no model calls until the month ends). */
 export type BudgetStatus = "ok" | "near" | "paused";
 
 export function monthlyBudgetUsd(raw: string | undefined): number {
@@ -18,9 +21,13 @@ export function monthlyBudgetUsd(raw: string | undefined): number {
   return raw?.trim() && Number.isFinite(value) && value > 0 ? value : DEFAULT_MONTHLY_BUDGET_USD;
 }
 
-export function budgetStatus(spentUsd: number, budgetUsd: number): BudgetStatus {
+export function budgetStatus(
+  spentUsd: number,
+  budgetUsd: number,
+  warnShare: number = NEAR_LIMIT_SHARE,
+): BudgetStatus {
   if (spentUsd >= budgetUsd) return "paused";
-  if (spentUsd >= budgetUsd * NEAR_LIMIT_SHARE) return "near";
+  if (spentUsd >= budgetUsd * warnShare) return "near";
   return "ok";
 }
 
@@ -50,8 +57,10 @@ export type BudgetSnapshot = {
   budgetUsd: number;
   /** Model calls this month, failed ones included. */
   calls: number;
-  /** Spent / budget, 0–∞. */
+  /** Spent / budget, 0–∞; 1 when the budget is 0. */
   share: number;
+  /** The warning threshold as a share of the budget. */
+  warnShare: number;
   projectedUsd: number;
   status: BudgetStatus;
 };
@@ -60,13 +69,15 @@ export function budgetSnapshot(
   usage: { spentUsd: number; calls: number },
   budgetUsd: number,
   now: Date,
+  warnShare: number = NEAR_LIMIT_SHARE,
 ): BudgetSnapshot {
   return {
     spentUsd: usage.spentUsd,
     budgetUsd,
     calls: usage.calls,
-    share: usage.spentUsd / budgetUsd,
+    share: budgetUsd > 0 ? usage.spentUsd / budgetUsd : 1,
+    warnShare,
     projectedUsd: projectedMonthSpend(usage.spentUsd, now),
-    status: budgetStatus(usage.spentUsd, budgetUsd),
+    status: budgetStatus(usage.spentUsd, budgetUsd, warnShare),
   };
 }

@@ -72,6 +72,7 @@ export type Database = {
       admin_audit: {
         Row: {
           created_at: string
+          detail: Json | null
           id: number
           ip_hash: string | null
           kind: Database["public"]["Enums"]["admin_audit_kind"]
@@ -80,6 +81,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          detail?: Json | null
           id?: never
           ip_hash?: string | null
           kind: Database["public"]["Enums"]["admin_audit_kind"]
@@ -88,6 +90,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          detail?: Json | null
           id?: never
           ip_hash?: string | null
           kind?: Database["public"]["Enums"]["admin_audit_kind"]
@@ -206,6 +209,30 @@ export type Database = {
           },
         ]
       }
+      ai_user_caps: {
+        Row: {
+          blocked: boolean
+          cap_usd: number | null
+          updated_at: string
+          updated_by: string | null
+          user_id: string
+        }
+        Insert: {
+          blocked?: boolean
+          cap_usd?: number | null
+          updated_at?: string
+          updated_by?: string | null
+          user_id: string
+        }
+        Update: {
+          blocked?: boolean
+          cap_usd?: number | null
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       analytics_event_catalog: {
         Row: {
           active: boolean
@@ -316,6 +343,27 @@ export type Database = {
           last_seen_at?: string
           started_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      app_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
         }
         Relationships: []
       }
@@ -2874,6 +2922,19 @@ export type Database = {
       }
       admin_session_end: { Args: never; Returns: undefined }
       admin_session_touch: { Args: { _activity?: boolean }; Returns: Json }
+      admin_set_ai_user_cap: {
+        Args: {
+          _blocked: boolean
+          _cap_usd: number
+          _ip_hash?: string
+          _user_id: string
+        }
+        Returns: Json
+      }
+      admin_set_app_setting: {
+        Args: { _ip_hash?: string; _key: string; _value: Json }
+        Returns: Json
+      }
       analytics_take_quota: {
         Args: { _limit: number; _units: number; _user_id: string }
         Returns: number
@@ -3095,6 +3156,17 @@ export type Database = {
           title: string
           updated_at: string
         }[]
+      }
+      jarvis_top_user_spend: {
+        Args: { _since: string }
+        Returns: {
+          cost_usd: number
+          user_id: string
+        }[]
+      }
+      jarvis_user_month_spend: {
+        Args: { _since: string; _user_id: string }
+        Returns: number
       }
       jarvis_watch_candidates: {
         Args: { _active_since: string; _limit: number }
@@ -3863,6 +3935,7 @@ export type Database = {
       }
       user_today: { Args: { _user_id: string }; Returns: string }
       username_available: { Args: { _username: string }; Returns: boolean }
+      valid_ai_caps: { Args: { _value: Json }; Returns: boolean }
       work_seconds_between: {
         Args: { _from: string; _to: string; _worker_id: string }
         Returns: number

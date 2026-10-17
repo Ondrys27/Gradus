@@ -52,6 +52,7 @@ export type EmailReplyResult = { ok: true; reply: string } | { ok: false; code: 
 /** Sonnet drafts a reply; the user reads it over, edits it and sends it themselves. */
 export async function suggestEmailReply(args: {
   client: ModelClient;
+  userId: string;
   contact: EmailReplyContact;
   deal: EmailReplyDeal | null;
   locale: string;
@@ -60,6 +61,7 @@ export async function suggestEmailReply(args: {
 }): Promise<EmailReplyResult> {
   const result = await streamModel({
     client: args.client,
+    userId: args.userId,
     feature: "email_reply",
     instructions: EMAIL_REPLY_INSTRUCTIONS,
     context: emailReplyContext(args),

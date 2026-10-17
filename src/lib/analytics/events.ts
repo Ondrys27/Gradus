@@ -500,10 +500,11 @@ export const EVENTS = {
    * A model call that did not happen: the monthly budget is used up, or the
    * API refused for lack of credit (error_code: billing_error,
    * enforced_spend_limit_reached). A system event: the credits are shared.
+   * One user's own cap or block (user_cap, user_blocked) is recorded on that user.
    */
   jarvis_paused: event("jarvis", "server", false, {
     feature: key(),
-    reason: oneOf(["budget", "credits"]),
+    reason: oneOf(["budget", "credits", "user_cap", "user_blocked"]),
     error_code: optional(key()),
   }),
   /** A bubble shown and every reaction to it (Do = accept, Show = open, Later, Close). */

@@ -68,6 +68,7 @@ export type RewardSetupResult =
  */
 export async function runRewardSetup(args: {
   client: ModelClient;
+  userId: string;
   tree: RewardTree;
   workers: WorkerName[];
   currency: string;
@@ -76,6 +77,7 @@ export async function runRewardSetup(args: {
 }): Promise<RewardSetupResult> {
   const result = await streamModel({
     client: args.client,
+    userId: args.userId,
     feature: "reward_setup",
     instructions: REWARD_SETUP_INSTRUCTIONS,
     context: rewardSetupContext(args.tree, args.workers, args.currency, args.locale),

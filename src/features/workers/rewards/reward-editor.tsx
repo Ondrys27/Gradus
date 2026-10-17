@@ -46,7 +46,16 @@ import { ProposalDialog } from "./proposal-dialog";
 import { RuleText } from "./rule-text";
 
 /** Codes with their own text under `workers.rewards.aiError`. */
-const AI_ERRORS = ["notConfigured", "busy", "unavailable", "limitReached", "network", "empty"];
+const AI_ERRORS = [
+  "notConfigured",
+  "busy",
+  "unavailable",
+  "limitReached",
+  "paused",
+  "userLimit",
+  "network",
+  "empty",
+];
 
 const noop = () => {};
 

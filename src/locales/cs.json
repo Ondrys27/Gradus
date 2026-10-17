@@ -450,7 +450,8 @@
       "fileMissing": "Soubor nedorazil. Přilož ho znovu.",
       "fileLimit": "Tento měsíc jsi přiložil všech {limit} souborů. Obnoví se 1. dne v měsíci.",
       "fileUpload": "Soubor se nepodařilo nahrát. Zkontroluj připojení a zkus to znovu.",
-      "tooManyFiles": "K jedné zprávě jdou přiložit nejvýš {max} soubory."
+      "tooManyFiles": "K jedné zprávě jdou přiložit nejvýš {max} soubory.",
+      "userLimit": "AI pomocník má pro tvůj účet tento měsíc vyčerpaný limit. Zbytek aplikace funguje dál."
     },
     "files": {
       "attach": "Přiložit soubory",
@@ -2324,7 +2325,8 @@
           "notConfigured": "Jarvis ještě není připojený. Zkus to později.",
           "busy": "Jarvis má teď moc práce. Zkus to za minutu.",
           "unavailable": "Rozbor teď nejde udělat. Zkus to za chvíli.",
-          "paused": "Jarvis si dává do konce měsíce pauzu, aplikace funguje dál."
+          "paused": "Jarvis si dává do konce měsíce pauzu, aplikace funguje dál.",
+          "userLimit": "AI pomocník má pro tvůj účet tento měsíc vyčerpaný limit. Zbytek aplikace funguje dál."
         }
       },
       "activeDeals": {
@@ -2457,7 +2459,7 @@
     "jarvisBudget": {
       "nearSubject": "{appName}: Jarvis vyčerpal {share} měsíčního rozpočtu",
       "pausedSubject": "{appName}: Jarvis má do konce měsíce pauzu",
-      "nearIntro": "Jarvis tento měsíc utratil přes 80 % rozpočtu na AI. Při 100 % přestane volat model až do konce měsíce.",
+      "nearIntro": "Jarvis tento měsíc utratil přes {threshold} rozpočtu na AI. Při 100 % přestane volat model až do konce měsíce.",
       "pausedIntro": "Jarvis vyčerpal rozpočet na AI pro tento měsíc a do konce měsíce model nevolá. Uživatelé vidí vlídnou hlášku o pauze, hlídání příležitostí běží jen z pravidel a ranní shrnutí se nepíšou.",
       "creditsIntro": "API odmítlo volání kvůli nedostatku kreditu nebo dosaženému limitu útraty ({code}). Jarvis model nevolá, dokud kredit nebude zpátky. Uživatelé vidí vlídnou hlášku o pauze.",
       "spent": "Útrata tento měsíc: {spent} z {budget} ({share}).",
@@ -2496,7 +2498,8 @@
         "limitReached": "Volání Jarvise na tento měsíc došla.",
         "paused": "Jarvis si dává do konce měsíce pauzu, takže odpověď napiš sám. Aplikace funguje dál.",
         "network": "Spojení se přerušilo. Zkontroluj internet a zkus to znovu.",
-        "unknown": "Něco se pokazilo. Zkus to znovu, nebo napiš odpověď sám."
+        "unknown": "Něco se pokazilo. Zkus to znovu, nebo napiš odpověď sám.",
+        "userLimit": "AI pomocník má pro tvůj účet tento měsíc vyčerpaný limit, takže odpověď napiš sám. Aplikace funguje dál."
       },
       "attach": "Přiložit soubory (max {max}, každý do {size} MB)",
       "filesSelected": "Přiložené soubory",
@@ -2827,7 +2830,9 @@
         "limitReached": "Volání Jarvise na tento měsíc došla. Můžeš nastavit bez AI.",
         "network": "Spojení se přerušilo. Zkontroluj internet a zkus to znovu.",
         "empty": "Nejdřív přidej aspoň jedno pravidlo.",
-        "unknown": "Něco se pokazilo. Zkus to znovu, nebo nastav bez AI."
+        "unknown": "Něco se pokazilo. Zkus to znovu, nebo nastav bez AI.",
+        "userLimit": "AI pomocník má pro tvůj účet tento měsíc vyčerpaný limit. Můžeš nastavit bez AI.",
+        "paused": "Jarvis si dává do konce měsíce pauzu. Můžeš nastavit bez AI."
       },
       "proposal": {
         "title": "Jak to bude fungovat",
@@ -4091,17 +4096,20 @@
         "who": "Kdo",
         "kind": "Akce",
         "target": "Pohled nebo export",
-        "ip": "Otisk IP"
+        "ip": "Otisk IP",
+        "detail": "Změna"
       },
       "kinds": {
         "login": "Přihlášení",
         "view": "Zobrazení",
-        "export": "Export"
+        "export": "Export",
+        "update": "Změna"
       },
       "pagination": "Stránky auditu",
       "newer": "Novější",
       "older": "Starší",
-      "page": "Strana {page}"
+      "page": "Strana {page}",
+      "emptyValue": "nic"
     },
     "loginEmail": {
       "subject": "Nové přihlášení do administrace {appName}",
@@ -4198,7 +4206,7 @@
       "description": "Volání, tokeny, náklady, latence a jak lidé reagují na Jarvise.",
       "budget": {
         "title": "Měsíční rozpočet",
-        "description": "Útrata všech účtů v tomto kalendářním měsíci (UTC), včetně interních, proti JARVIS_MONTHLY_BUDGET_USD.",
+        "description": "Útrata všech účtů v tomto kalendářním měsíci (UTC), včetně interních, proti měsíčnímu stropu nastavenému níž.",
         "meter": "Využití rozpočtu",
         "spentOf": "{spent} z {budget}",
         "projected": "Odhad do konce měsíce",
@@ -4210,7 +4218,7 @@
         },
         "statusHint": {
           "ok": "Jarvis volá model jako obvykle.",
-          "near": "Nad 80 %: majitel dostává jeden e-mail denně.",
+          "near": "Nad prahem upozornění: majitel dostává jeden e-mail denně.",
           "paused": "Na 100 %: do konce měsíce žádné volání modelu, hlídání běží jen z pravidel."
         }
       },
@@ -4227,6 +4235,47 @@
         "p95": "p95",
         "user": "Uživatel",
         "plan": "Plán"
+      },
+      "caps": {
+        "title": "Strop využití AI",
+        "description": "Změna platí do minuty, bez nového nasazení. Každá změna se zapíše do auditu s původní a novou hodnotou.",
+        "defaults": "Zatím nic uloženého, platí výchozí hodnoty: JARVIS_MONTHLY_BUDGET_USD ({budget}), bez stropu na uživatele, upozornění na {percent} %.",
+        "monthlyLabel": "Celkový měsíční strop pro celou aplikaci (USD)",
+        "monthlyHint": "Všechny účty dohromady, včetně interních. 0 zastaví každé volání modelu. Nejvýš {max}.",
+        "perUserLabel": "Měsíční strop na jednoho uživatele (USD)",
+        "perUserHint": "Prázdné = bez limitu. Nejvýš {max}. Výjimku pro jednoho uživatele nastavíš v jeho detailu.",
+        "warnLabel": "Práh upozornění (%)",
+        "warnHint": "Od tohoto podílu měsíčního stropu dostává majitel jeden e-mail denně.",
+        "monthlyMeter": "Útrata tento měsíc proti celkovému stropu",
+        "perUserMeter": "Nejdražší uživatel tento měsíc proti stropu na uživatele",
+        "warnMeter": "Útrata tento měsíc proti prahu upozornění",
+        "spentOf": "{spent} z {cap}",
+        "left": "Zbývá {amount}",
+        "noLimit": "Bez limitu",
+        "topUser": "Nejdražší uživatel tento měsíc: {spent}",
+        "untilWarning": "Do upozornění zbývá {amount}",
+        "warningReached": "Práh upozornění dosažen",
+        "save": "Uložit změny",
+        "noChanges": "Není co ukládat, hodnoty jsou stejné.",
+        "confirmTitle": "Změnit stropy AI?",
+        "confirmDescription": "Nové hodnoty začnou do minuty platit pro všechny uživatele.",
+        "confirm": "Změnit stropy",
+        "cancel": "Zrušit",
+        "close": "Zavřít",
+        "saved": "Uloženo. Změna platí do minuty.",
+        "fields": {
+          "monthlyUsd": "Celkový strop",
+          "perUserUsd": "Strop na uživatele",
+          "warnPercent": "Práh upozornění"
+        },
+        "errors": {
+          "monthlyUsd": "Zadej částku od 0 do {max} USD, nejvýš dvě desetinná místa.",
+          "perUserUsd": "Zadej částku nad 0 a nejvýš {max} USD, nebo nech prázdné.",
+          "warnPercent": "Zadej celé číslo od 1 do 100.",
+          "invalid": "Některá hodnota je mimo rozsah. Zkontroluj pole.",
+          "forbidden": "Relace administrace skončila. Přihlas se znovu.",
+          "failed": "Změnu se nepodařilo uložit. Zkus to znovu."
+        }
       }
     },
     "game": {
@@ -4354,6 +4403,44 @@
         "jarvis": "Jarvis",
         "game": "Hra",
         "plan": "Tarif"
+      },
+      "aiCap": {
+        "title": "Limit AI",
+        "description": "Výjimka pro tohoto uživatele má přednost před stropem na uživatele pro celou aplikaci. Platí do minuty.",
+        "spent": "Útrata tento měsíc",
+        "limit": "Strop",
+        "left": "Zbývá",
+        "noLimit": "Bez limitu",
+        "blocked": "AI zablokovaná",
+        "sourceGlobal": "celá aplikace",
+        "sourceOverride": "výjimka",
+        "modeLabel": "Limit pro tohoto uživatele",
+        "modes": {
+          "default": "Stropy celé aplikace",
+          "cap": "Vlastní měsíční strop",
+          "blocked": "Zablokovat AI"
+        },
+        "capLabel": "Vlastní měsíční strop (USD)",
+        "capHint": "Nad 0, nejvýš {max}.",
+        "save": "Uložit",
+        "noChanges": "Není co ukládat, limit je stejný.",
+        "confirmTitle": "Změnit limit AI tohoto uživatele?",
+        "confirmDescription": "{from} → {to}. Platí do minuty.",
+        "confirm": "Změnit limit",
+        "cancel": "Zrušit",
+        "close": "Zavřít",
+        "saved": "Uloženo. Změna platí do minuty.",
+        "summary": {
+          "default": "stropy celé aplikace",
+          "cap": "vlastní strop {amount}",
+          "blocked": "AI zablokovaná"
+        },
+        "errors": {
+          "capUsd": "Zadej částku nad 0 a nejvýš {max} USD.",
+          "invalid": "Hodnota je mimo rozsah.",
+          "forbidden": "Relace administrace skončila. Přihlas se znovu.",
+          "failed": "Změnu se nepodařilo uložit. Zkus to znovu."
+        }
       }
     },
     "explorer": {

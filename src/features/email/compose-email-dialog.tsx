@@ -33,7 +33,15 @@ const SEND_ERRORS: EmailErrorCode[] = [
   "sendFailed",
 ];
 /** Codes with their own text under `email.compose.aiError`. */
-const AI_ERRORS = ["notConfigured", "busy", "unavailable", "limitReached", "paused", "network"];
+const AI_ERRORS = [
+  "notConfigured",
+  "busy",
+  "unavailable",
+  "limitReached",
+  "paused",
+  "userLimit",
+  "network",
+];
 
 type Props = {
   open: boolean;

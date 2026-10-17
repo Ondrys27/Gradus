@@ -405,6 +405,7 @@ export async function applyWatch(args: {
   const { admin, userId } = args;
   const result = await streamModel({
     client: args.client,
+    userId,
     feature: "opportunity_scan",
     instructions: WATCH_INSTRUCTIONS,
     context: args.context,

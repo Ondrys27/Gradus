@@ -388,7 +388,8 @@ function SalesAnalysisSection() {
           {failure === "limitReached" ||
           failure === "notConfigured" ||
           failure === "busy" ||
-          failure === "paused"
+          failure === "paused" ||
+          failure === "userLimit"
             ? t(`aiError.${failure}`)
             : failure === "locked"
               ? t("aiLocked", {

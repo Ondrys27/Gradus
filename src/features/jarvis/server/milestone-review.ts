@@ -63,6 +63,7 @@ export async function reviewMilestone(args: {
 }) {
   const result = await streamModel({
     client: args.client,
+    userId: args.userId,
     feature: "milestone_review",
     context: milestoneReviewContext(args.milestone, args.today, args.locale, args.notes),
     messages: [{ role: "user", content: "Review my new milestone." }],

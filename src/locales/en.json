@@ -450,7 +450,8 @@
       "fileMissing": "The file didn't arrive. Attach it again.",
       "fileLimit": "You've attached all {limit} files for this month. They renew on the 1st.",
       "fileUpload": "The file couldn't be uploaded. Check your connection and try again.",
-      "tooManyFiles": "You can attach at most {max} files to one message."
+      "tooManyFiles": "You can attach at most {max} files to one message.",
+      "userLimit": "The AI assistant has used up its limit for your account this month. The rest of the app works as usual."
     },
     "files": {
       "attach": "Attach files",
@@ -2324,7 +2325,8 @@
           "notConfigured": "Jarvis isn't connected yet. Try again later.",
           "busy": "Jarvis has too much going on right now. Try again in a minute.",
           "unavailable": "The analysis couldn't be made right now. Try again in a while.",
-          "paused": "Jarvis is taking a break until the end of the month. The rest of the app works as usual."
+          "paused": "Jarvis is taking a break until the end of the month. The rest of the app works as usual.",
+          "userLimit": "The AI assistant has used up its limit for your account this month. The rest of the app works as usual."
         }
       },
       "activeDeals": {
@@ -2457,7 +2459,7 @@
     "jarvisBudget": {
       "nearSubject": "{appName}: Jarvis has used {share} of this month's budget",
       "pausedSubject": "{appName}: Jarvis is paused until the end of the month",
-      "nearIntro": "Jarvis has used more than 80 % of this month's AI budget. At 100 % it stops calling the model until the month ends.",
+      "nearIntro": "Jarvis has used more than {threshold} of this month's AI budget. At 100 % it stops calling the model until the month ends.",
       "pausedIntro": "Jarvis has used up this month's AI budget and does not call the model until the month ends. Users see a kind note about a break; the opportunity watch runs on rules only and no morning briefs are written.",
       "creditsIntro": "The AI API refused a call for lack of credit or because a spend limit was reached ({code}). Jarvis does not call the model until the credit is back. Users see a kind note about a break.",
       "spent": "Spent this month: {spent} of {budget} ({share}).",
@@ -2496,7 +2498,8 @@
         "limitReached": "Jarvis's calls for this month are used up.",
         "paused": "Jarvis is taking a break until the end of the month, so write the reply yourself. The rest of the app works as usual.",
         "network": "The connection dropped. Check the internet and try again.",
-        "unknown": "Something went wrong. Try again, or write the reply yourself."
+        "unknown": "Something went wrong. Try again, or write the reply yourself.",
+        "userLimit": "The AI assistant has used up its limit for your account this month, so write the reply yourself. The rest of the app works as usual."
       },
       "attach": "Attach files (up to {max}, {size} MB each)",
       "filesSelected": "Attached files",
@@ -2827,7 +2830,9 @@
         "limitReached": "This month's Jarvis calls are used up. You can set up without AI.",
         "network": "The connection dropped. Check your internet and try again.",
         "empty": "Add at least one rule first.",
-        "unknown": "Something went wrong. Try again, or set up without AI."
+        "unknown": "Something went wrong. Try again, or set up without AI.",
+        "userLimit": "The AI assistant has used up its limit for your account this month. You can set up without AI.",
+        "paused": "Jarvis is taking a break until the end of the month. You can set up without AI."
       },
       "proposal": {
         "title": "How it will work",
@@ -4091,17 +4096,20 @@
         "who": "Who",
         "kind": "Action",
         "target": "View or export",
-        "ip": "IP fingerprint"
+        "ip": "IP fingerprint",
+        "detail": "Change"
       },
       "kinds": {
         "login": "Sign-in",
         "view": "View",
-        "export": "Export"
+        "export": "Export",
+        "update": "Change"
       },
       "pagination": "Audit pages",
       "newer": "Newer",
       "older": "Older",
-      "page": "Page {page}"
+      "page": "Page {page}",
+      "emptyValue": "none"
     },
     "loginEmail": {
       "subject": "New sign-in to the {appName} administration",
@@ -4198,7 +4206,7 @@
       "description": "Calls, tokens, cost, latency and how people react to Jarvis.",
       "budget": {
         "title": "Monthly budget",
-        "description": "Spend of all accounts this calendar month (UTC), internal ones too, against JARVIS_MONTHLY_BUDGET_USD.",
+        "description": "Spend of all accounts this calendar month (UTC), internal ones too, against the monthly cap set below.",
         "meter": "Budget used",
         "spentOf": "{spent} of {budget}",
         "projected": "Estimate by month end",
@@ -4210,7 +4218,7 @@
         },
         "statusHint": {
           "ok": "Jarvis calls the model as usual.",
-          "near": "Above 80 %: the owner gets one e-mail a day.",
+          "near": "Above the warning threshold: the owner gets one e-mail a day.",
           "paused": "At 100 %: no model calls until the month ends; the watch runs on rules only."
         }
       },
@@ -4227,6 +4235,47 @@
         "p95": "p95",
         "user": "User",
         "plan": "Plan"
+      },
+      "caps": {
+        "title": "AI usage caps",
+        "description": "Changes apply within a minute, without a new deployment. Every change is written to the audit with its old and new value.",
+        "defaults": "Nothing saved yet, the defaults apply: JARVIS_MONTHLY_BUDGET_USD ({budget}), no per-user cap, warning at {percent} %.",
+        "monthlyLabel": "Monthly cap for the whole app (USD)",
+        "monthlyHint": "All accounts together, internal ones too. 0 stops every model call. At most {max}.",
+        "perUserLabel": "Monthly cap per user (USD)",
+        "perUserHint": "Empty = no limit. At most {max}. Exceptions for one user are set in their detail.",
+        "warnLabel": "Warning threshold (%)",
+        "warnHint": "From this share of the monthly cap the owner gets one e-mail a day.",
+        "monthlyMeter": "Spent this month against the monthly cap",
+        "perUserMeter": "The costliest user this month against the per-user cap",
+        "warnMeter": "Spent this month against the warning threshold",
+        "spentOf": "{spent} of {cap}",
+        "left": "{amount} left",
+        "noLimit": "No limit",
+        "topUser": "Costliest user this month: {spent}",
+        "untilWarning": "{amount} until the warning",
+        "warningReached": "Warning threshold reached",
+        "save": "Save changes",
+        "noChanges": "Nothing to save, the values are the same.",
+        "confirmTitle": "Change the AI caps?",
+        "confirmDescription": "The new values apply to every user within a minute.",
+        "confirm": "Change caps",
+        "cancel": "Cancel",
+        "close": "Close",
+        "saved": "Saved. The change applies within a minute.",
+        "fields": {
+          "monthlyUsd": "Monthly cap",
+          "perUserUsd": "Per-user cap",
+          "warnPercent": "Warning threshold"
+        },
+        "errors": {
+          "monthlyUsd": "Enter an amount from 0 to {max} USD, at most two decimals.",
+          "perUserUsd": "Enter an amount above 0 and at most {max} USD, or leave it empty.",
+          "warnPercent": "Enter a whole number from 1 to 100.",
+          "invalid": "Some value is out of range. Check the fields.",
+          "forbidden": "The admin session has ended. Sign in again.",
+          "failed": "The change could not be saved. Try again."
+        }
       }
     },
     "game": {
@@ -4354,6 +4403,44 @@
         "jarvis": "Jarvis",
         "game": "Game",
         "plan": "Plan"
+      },
+      "aiCap": {
+        "title": "AI limit",
+        "description": "An exception for this user overrides the per-user cap of the app. Applies within a minute.",
+        "spent": "Spent this month",
+        "limit": "Cap",
+        "left": "Left",
+        "noLimit": "No limit",
+        "blocked": "AI blocked",
+        "sourceGlobal": "app-wide",
+        "sourceOverride": "exception",
+        "modeLabel": "Limit for this user",
+        "modes": {
+          "default": "App-wide caps",
+          "cap": "Own monthly cap",
+          "blocked": "Block AI"
+        },
+        "capLabel": "Own monthly cap (USD)",
+        "capHint": "Above 0, at most {max}.",
+        "save": "Save",
+        "noChanges": "Nothing to save, the limit is the same.",
+        "confirmTitle": "Change this user's AI limit?",
+        "confirmDescription": "{from} → {to}. Applies within a minute.",
+        "confirm": "Change limit",
+        "cancel": "Cancel",
+        "close": "Close",
+        "saved": "Saved. The change applies within a minute.",
+        "summary": {
+          "default": "app-wide caps",
+          "cap": "own cap {amount}",
+          "blocked": "AI blocked"
+        },
+        "errors": {
+          "capUsd": "Enter an amount above 0 and at most {max} USD.",
+          "invalid": "The value is out of range.",
+          "forbidden": "The admin session has ended. Sign in again.",
+          "failed": "The change could not be saved. Try again."
+        }
       }
     },
     "explorer": {

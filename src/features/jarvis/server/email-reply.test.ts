@@ -71,6 +71,7 @@ describe("suggestEmailReply", () => {
     const log = vi.fn(async () => {});
     const result = await suggestEmailReply({
       client,
+      userId: "user-1",
       contact: { name: "Acme s.r.o." },
       deal: null,
       locale: "cs",
@@ -92,6 +93,7 @@ describe("suggestEmailReply", () => {
     const log = vi.fn(async () => {});
     const result = await suggestEmailReply({
       client,
+      userId: "user-1",
       contact: { name: "Acme s.r.o." },
       deal: null,
       locale: "en",
@@ -108,6 +110,7 @@ describe("suggestEmailReply", () => {
     const { client } = fakeModel("   ");
     const result = await suggestEmailReply({
       client,
+      userId: "user-1",
       contact: { name: "Acme s.r.o." },
       deal: null,
       locale: "en",
