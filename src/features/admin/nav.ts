@@ -33,15 +33,3 @@ export function isActiveSection(href: string, pathname: string): boolean {
   if (href === ADMIN_PATH) return pathname === ADMIN_PATH || pathname === `${ADMIN_PATH}/`;
   return pathname === href || pathname.startsWith(`${href}/`);
 }
-
-/**
- * Pages whose numbers follow the shared controls. The audit keeps its own
- * paging and the administrators have no numbers by period, so the controls
- * are hidden there.
- */
-export function usesControls(pathname: string): boolean {
-  return (
-    !isActiveSection(`${ADMIN_PATH}/audit`, pathname) &&
-    !isActiveSection(`${ADMIN_PATH}/administratori`, pathname)
-  );
-}

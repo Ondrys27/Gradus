@@ -26,7 +26,7 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 export default async function AdminGrowthPage({ searchParams }: Props) {
   const context = await requireAdmin();
   await logAdminAction(context, "view", "growth");
-  const q = adminQuery(await searchParams);
+  const q = adminQuery(await searchParams, "growth");
 
   return (
     <>

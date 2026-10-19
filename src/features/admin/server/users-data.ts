@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { METRICS_TIMEZONE } from "@/lib/analytics/metrics";
+import type { AdminView } from "../view-state";
 import { num } from "./metrics-data";
 
 /**
@@ -28,7 +29,9 @@ export type UserRow = {
   aiCostUsd: number;
 };
 
+/** The accounts of the view (internal accounts and segment), searched, sorted and paged. */
 export async function loadUsers(input: {
+  view: AdminView;
   query: string;
   sort: UserSort;
   page: number;
@@ -41,6 +44,8 @@ export async function loadUsers(input: {
     _sort: input.sort,
     _limit: limit + 1,
     _offset: offset,
+    _include_internal: input.view.internal,
+    _segment: { ...input.view.segment },
   });
   if (error) throw new Error(`metric_admin_users: ${error.message}`);
   const rows = (data ?? []).slice(0, limit).map(

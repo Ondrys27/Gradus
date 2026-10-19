@@ -46,7 +46,7 @@ export default async function AdminFeaturesPage({ searchParams }: Props) {
   const context = await requireAdmin();
   await logAdminAction(context, "view", "features");
   const params = await searchParams;
-  const q = adminQuery(params);
+  const q = adminQuery(params, "features");
   const rawTab = Array.isArray(params.tab) ? params.tab[0] : params.tab;
   const tab: AnalyticsSection = isSection(rawTab) ? rawTab : FEATURE_SECTIONS[0];
   const query = viewQuery(parseAdminView(params));

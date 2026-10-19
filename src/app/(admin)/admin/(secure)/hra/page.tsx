@@ -26,7 +26,7 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 export default async function AdminGamePage({ searchParams }: Props) {
   const context = await requireAdmin();
   await logAdminAction(context, "view", "game");
-  const q = adminQuery(await searchParams);
+  const q = adminQuery(await searchParams, "game");
 
   return (
     <>

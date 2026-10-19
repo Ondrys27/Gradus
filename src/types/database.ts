@@ -2965,6 +2965,23 @@ export type Database = {
         Args: { _code: string; _user_id: string }
         Returns: string
       }
+      admin_feature_requests: {
+        Args: {
+          _include_internal?: boolean
+          _limit?: number
+          _segment?: Json
+          _status?: Database["public"]["Enums"]["feature_request_status"]
+          _tz?: string
+        }
+        Returns: {
+          created_at: string
+          description: string
+          id: string
+          status: Database["public"]["Enums"]["feature_request_status"]
+          title: string
+          user_id: string
+        }[]
+      }
       admin_invite_accept: {
         Args: { _ip_hash?: string; _token_hash: string }
         Returns: undefined
@@ -2992,6 +3009,22 @@ export type Database = {
           logins_30d: number
           removed_at: string
           role: string
+          user_id: string
+        }[]
+      }
+      admin_nps_comments: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _limit?: number
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          comment: string
+          created_at: string
+          score: number
           user_id: string
         }[]
       }
@@ -3332,9 +3365,11 @@ export type Database = {
       }
       metric_admin_users: {
         Args: {
+          _include_internal?: boolean
           _limit?: number
           _offset?: number
           _query?: string
+          _segment?: Json
           _sort?: string
           _tz?: string
         }
@@ -3702,7 +3737,7 @@ export type Database = {
         }[]
       }
       metric_trials: {
-        Args: { _include_internal?: boolean; _tz?: string }
+        Args: { _include_internal?: boolean; _segment?: Json; _tz?: string }
         Returns: {
           converted: number
           ending_this_week: number
@@ -3757,6 +3792,7 @@ export type Database = {
         Args: {
           _from: string
           _include_internal?: boolean
+          _segment?: Json
           _to: string
           _tz?: string
         }

@@ -10,6 +10,8 @@ import { ADMIN_PATH } from "@/features/admin/access";
 import { ADMIN_FORMAT_SETTINGS, formatMetricValue } from "@/features/admin/format-metric";
 import { logAdminAction } from "@/features/admin/server/audit";
 import { requireAdmin } from "@/features/admin/server/guard";
+import { adminQuery } from "@/features/admin/server/metrics-data";
+import { parseAdminView, serializeAdminView } from "@/features/admin/view-state";
 import { loadUsers, USER_SORTS, type UserSort } from "@/features/admin/server/users-data";
 import { peopleNamer } from "@/features/admin/server/people";
 import { InternalToggle } from "@/features/admin/ui/internal-toggle";
@@ -39,9 +41,12 @@ export default async function AdminUsersPage({ searchParams }: Props) {
   const query = first(params.q);
   const sort = isSort(first(params.sort)) ? (first(params.sort) as UserSort) : "activity";
   const page = Math.max(0, Number.parseInt(first(params.page) || "0", 10) || 0);
+  // The filters this page offers apply; the whole view stays in every link.
+  const { view } = adminQuery(params, "users");
+  const kept = serializeAdminView(parseAdminView(params));
 
   const [{ rows, hasMore }, t, tUnits, tControls] = await Promise.all([
-    loadUsers({ query, sort, page }),
+    loadUsers({ view, query, sort, page }),
     getTranslations("admin.users"),
     getTranslations("admin.units"),
     getTranslations("admin.controls"),
@@ -54,7 +59,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
     role && tControls.has(`segmentValues.role.${role}`) ? tControls(`segmentValues.role.${role}`) : "–";
 
   const linkFor = (next: { sort?: UserSort; page?: number }) => {
-    const p = new URLSearchParams();
+    const p = new URLSearchParams(kept);
     if (query) p.set("q", query);
     p.set("sort", next.sort ?? sort);
     if (next.page) p.set("page", String(next.page));
@@ -75,6 +80,9 @@ export default async function AdminUsersPage({ searchParams }: Props) {
             className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-muted"
           />
           <input type="hidden" name="sort" value={sort} />
+          {[...kept].map(([key, value]) => (
+            <input key={key} type="hidden" name={key} value={value} />
+          ))}
           <input
             type="search"
             name="q"
@@ -145,7 +153,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
                   <tr key={row.userId} className="border-b border-line last:border-0">
                     <td className="max-w-64 px-4 py-2.5">
                       <Link
-                        href={`${ADMIN_PATH}/uzivatele/${row.userId}`}
+                        href={`${ADMIN_PATH}/uzivatele/${row.userId}${kept.size ? `?${kept}` : ""}`}
                         prefetch={false}
                         className="block truncate font-medium text-violet underline-offset-2 hover:underline"
                       >

@@ -77,13 +77,18 @@ test.describe("a short window", () => {
     await expect(main).not.toHaveAttribute("aria-busy", "true");
     expect(Math.abs((await scrollY(page)) - before)).toBeLessThanOrEqual(50);
 
-    // A shared control (the period) from the same place: the page stays.
-    const again = await scrollTo(page, tabs, 120);
+    // A shared control (the period) from the same place: the page stays. The
+    // active filter shows as a label above the content, so the browser keeps
+    // the content in place on screen rather than the raw scroll offset.
+    await scrollTo(page, tabs, 120);
+    const tabsTop = () => tabs.evaluate((element) => Math.round(element.getBoundingClientRect().top));
+    const onScreen = await tabsTop();
     await page.getByRole("radio", { name: exact(L, "admin.controls.periods.7d") }).click();
     await expect(page).toHaveURL(/period=7d/);
     await expect(page).toHaveURL(/tab=pipeline/);
     await expect(main).not.toHaveAttribute("aria-busy", "true");
-    expect(Math.abs((await scrollY(page)) - again)).toBeLessThanOrEqual(50);
+    expect(Math.abs((await tabsTop()) - onScreen)).toBeLessThanOrEqual(50);
+    expect(await scrollY(page)).toBeGreaterThan(60);
 
     // Another section from the menu starts at the top, as it should.
     await page.getByRole("link", { name: exact(L, "admin.shell.nav.ai") }).click();

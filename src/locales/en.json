@@ -4365,7 +4365,7 @@
         "signup": "Sign-up"
       },
       "emptyTitle": "No users found",
-      "emptyDescription": "Try a different name or e-mail, or clear the search.",
+      "emptyDescription": "Try a different name or e-mail, change the filters, or clear the search.",
       "pagination": "Result pages",
       "newer": "Newer",
       "older": "Older",
@@ -4470,7 +4470,7 @@
     },
     "explorer": {
       "title": "Explorer",
-      "description": "Any catalog event, your own calculation, grouping and segment.",
+      "description": "Any catalog event, your own calculation, grouping and filters.",
       "event": "Event",
       "calc": "Calculation",
       "prop": "Property",
@@ -4506,8 +4506,11 @@
       },
       "compare": "Compare with previous period",
       "internal": "Include internal accounts",
-      "segments": "Segments",
-      "segmentsActive": "Segments ({count})",
+      "filters": "Filters",
+      "filtersActive": "Filters ({count})",
+      "activeFilters": "Active filters",
+      "clearFilters": "Clear filters",
+      "noCompare": "No comparison",
       "refreshedAt": "Updated {time}",
       "refresh": "Refresh now",
       "allValues": "All",
@@ -4546,7 +4549,7 @@
           "en": "English"
         }
       },
-      "removeSegment": "Remove segment {segment}: {value}",
+      "removeFilter": "Remove filter {filter}",
       "internalWarningTitle": "Internal accounts are included",
       "internalWarning": "The owner, demo and test accounts are counted. These numbers are not the real users' numbers; switch it off before reading them as such.",
       "range": "Period {range}.",
@@ -4577,7 +4580,7 @@
     },
     "empty": {
       "title": "No data yet",
-      "description": "These numbers fill in as people use the app. Nothing has been recorded for this period and segment yet.",
+      "description": "These numbers fill in as people use the app. Nothing has been recorded for this period and these filters yet.",
       "loadFailed": "This block could not be loaded. The rest of the page works; try refreshing."
     },
     "funnel": {

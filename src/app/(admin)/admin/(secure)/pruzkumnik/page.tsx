@@ -59,7 +59,7 @@ export default async function AdminExplorerPage({ searchParams }: Props) {
   const context = await requireAdmin();
   await logAdminAction(context, "view", "explorer");
   const params = await searchParams;
-  const q = adminQuery(params);
+  const q = adminQuery(params, "explorer");
   const query = parseQuery(params);
 
   const numericPropsByEvent = Object.fromEntries(

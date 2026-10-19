@@ -1,53 +1,47 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { METRICS_TIMEZONE } from "@/lib/analytics/metrics";
+import { metricParams } from "../view-state";
 import { breakdown, distribution, type AdminQuery } from "./metrics-data";
 import { npsScore } from "../numbers";
 import { peopleNamer } from "./people";
 import type { BreakdownData, FeatureRequestRow, FeatureRequestStatus } from "../types";
 
 /**
- * The Feedback page's own data: ideas and NPS comments, read directly (they
- * are explicit, intended-for-the-owner feedback, not analytics content) next
- * to the registry's nps and jarvis_answer_ratings breakdowns.
+ * The Feedback page's own data: ideas and NPS comments (explicit feedback
+ * meant for the owner, not analytics content), through admin_feature_requests
+ * and admin_nps_comments with the same internal accounts and segment as the
+ * registry's nps and jarvis_answer_ratings breakdowns next to them.
  *
  * FeatureRequestStatus, FEATURE_REQUEST_STATUSES and FeatureRequestRow live in
  * ../types (not here): the status row is also rendered by a client component,
  * which must not pull this server-only module into its bundle.
  */
 
-/**
- * Internal accounts (profiles.is_internal), left out of the lists unless the
- * view includes them — the same default as every metric. A handful of rows.
- */
-async function internalUserIds(): Promise<string[]> {
-  const { data, error } = await createAdminClient()
-    .from("profiles")
-    .select("id")
-    .eq("is_internal", true)
-    .limit(1000);
-  if (error) throw new Error(`profiles.is_internal: ${error.message}`);
-  return data.map((row) => row.id);
+/** The accounts in the view, as every list of this page filters them. */
+function viewArgs(q: AdminQuery) {
+  const params = metricParams(q.view, q.range);
+  return {
+    _tz: METRICS_TIMEZONE,
+    _include_internal: params.includeInternal ?? false,
+    _segment: params.segment ?? {},
+  };
 }
 
-/** A PostgREST `in` list of uuids. */
-const inList = (ids: string[]) => `(${ids.join(",")})`;
-
+/** The backlog now (like its status counts), of the accounts in the view. */
 export async function loadFeatureRequests(
+  q: AdminQuery,
   status: FeatureRequestStatus | null,
-  includeInternal = false,
 ): Promise<FeatureRequestRow[]> {
-  const internal = includeInternal ? [] : await internalUserIds();
-  let query = createAdminClient()
-    .from("feature_requests")
-    .select("id, user_id, title, description, status, created_at")
-    .order("created_at", { ascending: false })
-    .limit(200);
-  if (status) query = query.eq("status", status);
-  if (internal.length) query = query.not("user_id", "in", inList(internal));
-  const { data, error } = await query;
-  if (error) throw new Error(`feature_requests: ${error.message}`);
-  const nameOf = await peopleNamer(data.map((row) => row.user_id));
-  return data.map((row) => ({
+  const { data, error } = await createAdminClient().rpc("admin_feature_requests", {
+    ...viewArgs(q),
+    _status: status ?? undefined,
+    _limit: 200,
+  });
+  if (error) throw new Error(`admin_feature_requests: ${error.message}`);
+  const rows = data ?? [];
+  const nameOf = await peopleNamer(rows.map((row) => row.user_id));
+  return rows.map((row) => ({
     id: row.id,
     userId: row.user_id,
     userName: nameOf(row.user_id),
@@ -60,19 +54,16 @@ export async function loadFeatureRequests(
 
 export type NpsComment = { userId: string; score: number; comment: string; createdAt: string };
 
-/** The most recent answers that left a comment; the score alone is in the breakdown. */
-export async function loadNpsComments(includeInternal = false, limit = 50): Promise<NpsComment[]> {
-  const internal = includeInternal ? [] : await internalUserIds();
-  let query = createAdminClient()
-    .from("nps_responses")
-    .select("user_id, score, comment, created_at")
-    .not("comment", "is", null)
-    .order("created_at", { ascending: false })
-    .limit(limit);
-  if (internal.length) query = query.not("user_id", "in", inList(internal));
-  const { data, error } = await query;
-  if (error) throw new Error(`nps_responses: ${error.message}`);
-  return data
+/** The answers in the period that left a comment; the score alone is in the breakdown. */
+export async function loadNpsComments(q: AdminQuery, limit = 50): Promise<NpsComment[]> {
+  const { data, error } = await createAdminClient().rpc("admin_nps_comments", {
+    ...viewArgs(q),
+    _from: q.range.from,
+    _to: q.range.to,
+    _limit: limit,
+  });
+  if (error) throw new Error(`admin_nps_comments: ${error.message}`);
+  return (data ?? [])
     .filter((row): row is typeof row & { comment: string } => Boolean(row.comment))
     .map((row) => ({
       userId: row.user_id,

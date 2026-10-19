@@ -5,6 +5,8 @@ import { metricDefinition, metricsToday, type MetricUnit } from "@/lib/analytics
 import type { MetricParams, MetricResult } from "@/lib/analytics/metrics-plan";
 import { runMetric } from "@/lib/analytics/metrics-query";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { PAGE_FILTERS, scopeView } from "../filters";
+import type { AdminSectionKey } from "../nav";
 import { aggregate, alignToRange, splitRange, type Aggregate, type Point } from "../numbers";
 import type { BreakdownData, ChartData, ChartRow, ChartSeries, Loaded, TileData } from "../types";
 import {
@@ -30,10 +32,15 @@ export type AdminQuery = {
   today: IsoDate;
 };
 
+/**
+ * The view of one page: the filters it does not offer are back at their
+ * neutral value, so they never reach its queries (see ../filters.ts).
+ */
 export function adminQuery(
   searchParams: Record<string, string | string[] | undefined>,
+  section: AdminSectionKey,
 ): AdminQuery {
-  const view = parseAdminView(searchParams);
+  const view = scopeView(parseAdminView(searchParams), PAGE_FILTERS[section]);
   const today = metricsToday();
   const range = resolveRange(view, today);
   return { view, range, previous: view.compare ? previousRange(range) : null, today };

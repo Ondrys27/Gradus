@@ -10,6 +10,7 @@ import { logAdminAction } from "@/features/admin/server/audit";
 import { loadAuditPage } from "@/features/admin/server/audit-data";
 import { requireAdmin } from "@/features/admin/server/guard";
 import { mayExport } from "@/features/admin/roles";
+import { parseAdminView, serializeAdminView } from "@/features/admin/view-state";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.audit");
@@ -22,14 +23,21 @@ const linkClass =
 export default async function AdminAuditPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const context = await requireAdmin();
   await logAdminAction(context, "view", "audit");
-  const [{ page: rawPage }, t] = await Promise.all([searchParams, getTranslations("admin.audit")]);
+  const [params, t] = await Promise.all([searchParams, getTranslations("admin.audit")]);
+  const rawPage = Array.isArray(params.page) ? params.page[0] : params.page;
   const page = Math.min(10_000, Math.max(0, Number.parseInt(rawPage ?? "0", 10) || 0));
   const { rows, hasMore } = await loadAuditPage(context, page, t("emptyValue"));
-  const pageHref = (n: number) => (n > 0 ? `${ADMIN_PATH}/audit?page=${n}` : `${ADMIN_PATH}/audit`);
+  // The audit has no filters, but the view of the other pages stays in the address.
+  const kept = serializeAdminView(parseAdminView(params));
+  const pageHref = (n: number) => {
+    const query = new URLSearchParams(kept);
+    if (n > 0) query.set("page", String(n));
+    return query.size ? `${ADMIN_PATH}/audit?${query}` : `${ADMIN_PATH}/audit`;
+  };
 
   return (
     <>

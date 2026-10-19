@@ -21,7 +21,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { isActiveSection, sectionsFor, usesControls, type AdminSectionKey } from "../nav";
+import { isActiveSection, sectionsFor, type AdminSectionKey } from "../nav";
+import { parseAdminView, viewQuery } from "../view-state";
 import type { AdminRole } from "../roles";
 
 const ICONS: Record<AdminSectionKey, LucideIcon> = {
@@ -46,14 +47,15 @@ const itemClass =
 
 /**
  * The sections of the administration: a sidebar on wide screens, a row that
- * scrolls sideways on narrow ones. Links keep the shared controls (period,
- * segment…) so switching pages keeps the view.
+ * scrolls sideways on narrow ones. Links keep the shared filters (period,
+ * plan, country…) so switching pages keeps the view.
  */
 export function AdminNav({ variant, role }: { variant: "sidebar" | "strip"; role: AdminRole }) {
   const t = useTranslations("admin.shell");
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const query = searchParams.toString();
+  // Only the shared view travels: a tab, sort or search belongs to its own page.
+  const query = viewQuery(parseAdminView(new URLSearchParams(searchParams)));
 
   return (
     <nav aria-label={t("title")}>
@@ -85,8 +87,8 @@ export function AdminNav({ variant, role }: { variant: "sidebar" | "strip"; role
             );
           }
           const active = isActiveSection(section.href, pathname);
-          const href =
-            query && usesControls(section.href) ? `${section.href}?${query}` : section.href;
+          // Every section keeps the view, also those without filters, so it survives the way back.
+          const href = `${section.href}${query}`;
           return (
             <li key={section.key}>
               {/* No prefetch: every view is written to the audit, and only real visits count. */}

@@ -63,9 +63,9 @@ const FUNCTION_PARAMS: Record<
   metric_ai_top_users: { range: true, tz: true, internal: true, segment: true },
   metric_jarvis_conversations: { range: true, tz: true, internal: true, segment: true },
   metric_call_time: { range: true, tz: true, internal: true, segment: true },
-  metric_trials: { range: false, tz: true, internal: true, segment: false },
+  metric_trials: { range: false, tz: true, internal: true, segment: true },
   metric_waitlist: { range: true, tz: true, internal: false, segment: false },
-  metric_workers: { range: true, tz: true, internal: true, segment: false },
+  metric_workers: { range: true, tz: true, internal: true, segment: true },
   metric_cron_runs: { range: false, tz: false, internal: false, segment: false },
   metric_generation_keywords: { range: true, tz: false, internal: false, segment: false },
 };

@@ -15,11 +15,17 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { SEGMENT_VALUES } from "@/lib/analytics/metrics";
-import { formatTime } from "@/lib/format";
+import { formatCalendarDate, formatTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ADMIN_FORMAT_SETTINGS } from "../format-metric";
 import { useAdminView } from "./admin-view";
-import { usesControls } from "../nav";
+import {
+  activeFilters,
+  filtersFor,
+  withoutFilter,
+  withoutFilters,
+  type ActiveFilter,
+} from "../filters";
 import {
   ADMIN_PERIODS,
   ADMIN_REFRESH_MS,
@@ -39,9 +45,11 @@ export type OpenSegmentOptions = Partial<Record<"industry" | "country", SegmentO
 const ALL = "__all";
 
 /**
- * The controls every page shares: period, comparison, segment, internal
- * accounts and the five-minute refresh. Everything is in the address, so a
- * view can be bookmarked; changing it reloads the page's numbers.
+ * The filters the pages share: period, comparison, internal accounts, plan,
+ * industry, country… and the five-minute refresh. A page shows only the
+ * filters it applies (../filters.ts); the active ones are labels with a cross
+ * above the content, with "Clear filters". Everything is in the address, so a
+ * view can be shared and survives going to another section.
  */
 export function AdminControls({
   today,
@@ -58,7 +66,8 @@ export function AdminControls({
   const { pending: changing, navigate } = useAdminView();
   const pending = refreshing || changing;
   const view = useMemo(() => parseAdminView(new URLSearchParams(searchParams)), [searchParams]);
-  const [showSegments, setShowSegments] = useState(() => Object.keys(view.segment).length > 0);
+  const filters = filtersFor(pathname);
+  const [showSegments, setShowSegments] = useState(false);
   const [refreshedAt, setRefreshedAt] = useState<Date | null>(null);
 
   useEffect(() => setRefreshedAt(new Date()), [searchParams]);
@@ -86,7 +95,7 @@ export function AdminControls({
     };
   }, [router]);
 
-  if (!usesControls(pathname)) return null;
+  if (filters.length === 0) return null;
 
   function apply(next: AdminView) {
     // No scroll to the top and the old numbers stay on screen while the new ones load.
@@ -121,11 +130,36 @@ export function AdminControls({
     return optionsFor(key).find((option) => option.value === value)?.label ?? value;
   }
 
-  const activeSegments = ADMIN_SEGMENT_KEYS.filter((key) => view.segment[key]);
+  function periodLabel(): string {
+    if (view.period === "custom" && view.from && view.to) {
+      const from = formatCalendarDate(view.from, ADMIN_FORMAT_SETTINGS);
+      const to = formatCalendarDate(view.to, ADMIN_FORMAT_SETTINGS);
+      return view.from === view.to ? from : `${from} – ${to}`;
+    }
+    return t(`periods.${view.period}`);
+  }
+
+  function chipText(filter: ActiveFilter): { name: string; value: string | null } {
+    switch (filter.kind) {
+      case "period":
+        return { name: t("period"), value: periodLabel() };
+      case "compare":
+        return { name: t("noCompare"), value: null };
+      case "internal":
+        return { name: t("internal"), value: null };
+      case "segment":
+        return { name: t(`segmentKeys.${filter.key}`), value: labelOf(filter.key, filter.value) };
+    }
+  }
+
+  const offers = (filter: (typeof filters)[number]) => filters.includes(filter);
+  const segmentKeys = ADMIN_SEGMENT_KEYS.filter((key) => offers(key));
+  const active = activeFilters(view, filters);
 
   return (
     <div className="flex flex-col gap-3" aria-busy={pending}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        {offers("period") && (
         <div
           role="radiogroup"
           aria-label={t("period")}
@@ -147,8 +181,9 @@ export function AdminControls({
             </button>
           ))}
         </div>
+        )}
 
-        {view.period === "custom" && (
+        {offers("period") && view.period === "custom" && (
           <div className="flex items-center gap-2">
             <DatePicker
               value={view.from}
@@ -175,35 +210,39 @@ export function AdminControls({
           </div>
         )}
 
-        <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-ink-soft">
-          <Switch
-            checked={view.compare}
-            onCheckedChange={(compare) => apply({ ...view, compare })}
-          />
-          {t("compare")}
-        </label>
+        {offers("compare") && (
+          <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-ink-soft">
+            <Switch
+              checked={view.compare}
+              onCheckedChange={(compare) => apply({ ...view, compare })}
+            />
+            {t("compare")}
+          </label>
+        )}
 
-        <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-ink-soft">
-          <Switch
-            checked={view.internal}
-            onCheckedChange={(internal) => apply({ ...view, internal })}
-          />
-          {t("internal")}
-        </label>
+        {offers("internal") && (
+          <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-ink-soft">
+            <Switch
+              checked={view.internal}
+              onCheckedChange={(internal) => apply({ ...view, internal })}
+            />
+            {t("internal")}
+          </label>
+        )}
 
-        <Button
-          type="button"
-          variant={showSegments || activeSegments.length ? "secondary" : "ghost"}
-          size="sm"
-          aria-expanded={showSegments}
-          aria-controls="admin-segments"
-          onClick={() => setShowSegments((open) => !open)}
-        >
-          <FilterIcon aria-hidden />
-          {activeSegments.length
-            ? t("segmentsActive", { count: activeSegments.length })
-            : t("segments")}
-        </Button>
+        {segmentKeys.length > 0 && (
+          <Button
+            type="button"
+            variant={showSegments || active.length ? "secondary" : "ghost"}
+            size="sm"
+            aria-expanded={showSegments}
+            aria-controls="admin-filters"
+            onClick={() => setShowSegments((open) => !open)}
+          >
+            <FilterIcon aria-hidden />
+            {active.length ? t("filtersActive", { count: active.length }) : t("filters")}
+          </Button>
+        )}
 
         <div className="ml-auto flex items-center gap-1 text-xs text-ink-muted">
           <span aria-live="polite">
@@ -230,12 +269,12 @@ export function AdminControls({
         </div>
       </div>
 
-      {showSegments && (
+      {showSegments && segmentKeys.length > 0 && (
         <div
-          id="admin-segments"
+          id="admin-filters"
           className="grid grid-cols-1 gap-2 rounded-card border border-line bg-surface p-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7"
         >
-          {ADMIN_SEGMENT_KEYS.map((key) => {
+          {segmentKeys.map((key) => {
             const options = optionsFor(key);
             const items = [{ value: ALL, label: t("allValues") }, ...options];
             const id = `admin-segment-${key}`;
@@ -269,29 +308,46 @@ export function AdminControls({
         </div>
       )}
 
-      {!showSegments && activeSegments.length > 0 && (
-        <ul className="flex flex-wrap gap-2" aria-label={t("segments")}>
-          {activeSegments.map((key) => (
-            <li key={key}>
-              <button
-                type="button"
-                onClick={() => setSegment(key, null)}
-                aria-label={t("removeSegment", {
-                  segment: t(`segmentKeys.${key}`),
-                  value: labelOf(key, view.segment[key]!),
-                })}
-                className="flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full border border-violet/40 bg-violet/12 px-3 text-sm text-ink outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:min-h-8"
-              >
-                <span className="text-ink-soft">{t(`segmentKeys.${key}`)}:</span>
-                {labelOf(key, view.segment[key]!)}
-                <XIcon aria-hidden className="size-3.5" />
-              </button>
-            </li>
-          ))}
-        </ul>
+      {active.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <ul className="flex flex-wrap gap-2" aria-label={t("activeFilters")}>
+            {active.map((filter) => {
+              const { name, value } = chipText(filter);
+              const text = value ? `${name}: ${value}` : name;
+              return (
+                <li key={filter.kind === "segment" ? filter.key : filter.kind}>
+                  <button
+                    type="button"
+                    onClick={() => apply(withoutFilter(view, filter))}
+                    aria-label={t("removeFilter", { filter: text })}
+                    className="flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full border border-violet/40 bg-violet/12 px-3 text-sm text-ink outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:min-h-8"
+                  >
+                    {value ? (
+                      <>
+                        <span className="text-ink-soft">{name}:</span>
+                        {value}
+                      </>
+                    ) : (
+                      name
+                    )}
+                    <XIcon aria-hidden className="size-3.5" />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => apply(withoutFilters(view, filters))}
+          >
+            {t("clearFilters")}
+          </Button>
+        </div>
       )}
 
-      {view.internal && (
+      {offers("internal") && view.internal && (
         <div
           role="alert"
           className="flex items-start gap-3 rounded-card border-2 border-orange bg-orange/15 px-4 py-3 text-sm text-ink"

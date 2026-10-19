@@ -4365,7 +4365,7 @@
         "signup": "Registrace"
       },
       "emptyTitle": "Žádní uživatelé",
-      "emptyDescription": "Zkus jiné jméno nebo e-mail, nebo hledání vymaž.",
+      "emptyDescription": "Zkus jiné jméno nebo e-mail, uprav filtry, nebo hledání vymaž.",
       "pagination": "Stránky výsledků",
       "newer": "Novější",
       "older": "Starší",
@@ -4470,7 +4470,7 @@
     },
     "explorer": {
       "title": "Průzkumník",
-      "description": "Libovolná událost z katalogu, vlastní výpočet, seskupení a segment.",
+      "description": "Libovolná událost z katalogu, vlastní výpočet, seskupení a filtry.",
       "event": "Událost",
       "calc": "Výpočet",
       "prop": "Vlastnost",
@@ -4506,8 +4506,11 @@
       },
       "compare": "Porovnat s předchozím obdobím",
       "internal": "Včetně interních účtů",
-      "segments": "Segmenty",
-      "segmentsActive": "Segmenty ({count})",
+      "filters": "Filtry",
+      "filtersActive": "Filtry ({count})",
+      "activeFilters": "Aktivní filtry",
+      "clearFilters": "Zrušit filtry",
+      "noCompare": "Bez porovnání",
       "refreshedAt": "Aktualizováno {time}",
       "refresh": "Obnovit teď",
       "allValues": "Vše",
@@ -4546,7 +4549,7 @@
           "en": "Angličtina"
         }
       },
-      "removeSegment": "Odebrat segment {segment}: {value}",
+      "removeFilter": "Zrušit filtr {filter}",
       "internalWarningTitle": "Započítané interní účty",
       "internalWarning": "Počítá se majitel, demo a testovací účty. Nejsou to čísla skutečných uživatelů; před čtením je přepínač vypni.",
       "range": "Období {range}.",
@@ -4577,7 +4580,7 @@
     },
     "empty": {
       "title": "Zatím žádná data",
-      "description": "Čísla přibydou, jak budou lidé aplikaci používat. Pro toto období a segment zatím nic zaznamenáno není.",
+      "description": "Čísla přibydou, jak budou lidé aplikaci používat. Pro toto období a filtry zatím nic zaznamenáno není.",
       "loadFailed": "Tenhle blok se nepodařilo načíst. Zbytek stránky funguje; zkus obnovit."
     },
     "funnel": {

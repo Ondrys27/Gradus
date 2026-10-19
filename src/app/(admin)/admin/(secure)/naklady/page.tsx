@@ -29,7 +29,7 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 export default async function AdminCostsPage({ searchParams }: Props) {
   const context = await requireAdmin();
   await logAdminAction(context, "view", "costs");
-  const q = adminQuery(await searchParams);
+  const q = adminQuery(await searchParams, "costs");
 
   return (
     <>

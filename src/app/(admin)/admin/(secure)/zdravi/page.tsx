@@ -31,7 +31,7 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 export default async function AdminHealthPage({ searchParams }: Props) {
   const context = await requireAdmin();
   await logAdminAction(context, "view", "health");
-  const q = adminQuery(await searchParams);
+  const q = adminQuery(await searchParams, "health");
 
   return (
     <>

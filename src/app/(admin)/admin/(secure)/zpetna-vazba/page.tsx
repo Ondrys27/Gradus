@@ -36,7 +36,7 @@ export default async function AdminFeedbackPage({ searchParams }: Props) {
   const context = await requireAdmin();
   await logAdminAction(context, "view", "feedback");
   const params = await searchParams;
-  const q = adminQuery(params);
+  const q = adminQuery(params, "feedback");
   const rawStatus = Array.isArray(params.status) ? params.status[0] : params.status;
   const status = isStatus(rawStatus) ? rawStatus : null;
 
@@ -60,7 +60,7 @@ export default async function AdminFeedbackPage({ searchParams }: Props) {
 async function Nps({ q }: { q: AdminQuery }) {
   const [loaded, comments, t] = await Promise.all([
     safe("nps summary", () => loadNpsSummary(q)),
-    safe("nps comments", () => loadNpsComments(q.view.internal)),
+    safe("nps comments", () => loadNpsComments(q)),
     getTranslations("admin.feedback"),
   ]);
   return (
@@ -118,7 +118,7 @@ async function JarvisRatings({ q }: { q: AdminQuery }) {
 
 async function Ideas({ q, status }: { q: AdminQuery; status: FeatureRequestStatus | null }) {
   const [rows, counts, t] = await Promise.all([
-    safe("feature requests", () => loadFeatureRequests(status, q.view.internal)),
+    safe("feature requests", () => loadFeatureRequests(q, status)),
     safe("feature request counts", () => featureRequestCounts(q)),
     getTranslations("admin.feedback"),
   ]);

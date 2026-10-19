@@ -131,9 +131,9 @@ export const METRIC_FUNCTIONS = {
   metric_ai_top_users: USER,
   metric_jarvis_conversations: USER,
   metric_call_time: USER,
-  metric_trials: NONE,
+  metric_trials: USER,
   metric_waitlist: NONE,
-  metric_workers: NONE,
+  metric_workers: USER,
   metric_cron_runs: NONE,
   metric_generation_keywords: NONE,
 } as const satisfies Record<string, readonly SegmentKey[]>;

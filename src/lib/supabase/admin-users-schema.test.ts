@@ -93,14 +93,15 @@ describe("metric_admin_users", () => {
     );
     await db.query(`insert into analytics_events (user_id, event) values ($1, 'app_opened')`, [a]);
 
-    const byId = await rows<{ user_id: string }>(`select user_id from metric_admin_users($1, $2)`, [
-      "Europe/Prague",
-      a.slice(0, 8),
-    ]);
+    // The first account is the owner, an internal account: the view includes them.
+    const byId = await rows<{ user_id: string }>(
+      `select user_id from metric_admin_users($1, $2, 'activity', 50, 0, true)`,
+      ["Europe/Prague", a.slice(0, 8)],
+    );
     expect(byId.map((r) => r.user_id)).toEqual([a]);
 
     const bySort = await rows<{ user_id: string; ai_cost_usd: string }>(
-      `select user_id, ai_cost_usd from metric_admin_users($1, null, 'cost')`,
+      `select user_id, ai_cost_usd from metric_admin_users($1, null, 'cost', 50, 0, true)`,
       ["Europe/Prague"],
     );
     expect(bySort[0].user_id).toBe(a);
@@ -204,5 +205,157 @@ describe("admin_people", () => {
       await expect(db.query(`select * from admin_people(array[$1]::uuid[])`, [user])).rejects.toThrow();
       await asServer();
     }
+  });
+});
+
+describe("administration filters (step 14.5)", () => {
+  // Three accounts of one search tag: a beta one in Slovakia, a trial one in
+  // Czechia with the industry "it", and an internal beta one.
+  let beta: string;
+  let trial: string;
+  let internal: string;
+  const tag = `flt${crypto.randomUUID().slice(0, 6)}`;
+
+  beforeAll(async () => {
+    beta = await createUser();
+    trial = await createUser();
+    internal = await createUser();
+    for (const [id, suffix] of [
+      [beta, "a"],
+      [trial, "b"],
+      [internal, "c"],
+    ]) {
+      await db.query(`update profiles set display_name = $2 where id = $1`, [id, `${tag}${suffix}`]);
+    }
+    await db.query(`select grant_beta_plan($1)`, [beta]);
+    await db.query(`select grant_beta_plan($1)`, [internal]);
+    await db.query(
+      `update subscriptions set plan_key = 'pro', status = 'trialing', trial_ends_at = now() + interval '3 days' where user_id = $1`,
+      [trial],
+    );
+    await db.query(`update user_settings set country_code = 'SK' where user_id = $1`, [beta]);
+    await db.query(`update user_settings set country_code = 'CZ' where user_id = any($1::uuid[])`, [
+      [trial, internal],
+    ]);
+    await db.query(`update profiles set industry = 'it' where id = $1`, [trial]);
+    await db.query(`update profiles set is_internal = true where id = $1`, [internal]);
+  });
+
+  async function users(includeInternal: boolean, segment: Record<string, string>) {
+    const result = await rows<{ user_id: string }>(
+      `select user_id from metric_admin_users('Europe/Prague', $1, 'signup', 50, 0, $2, $3::jsonb)`,
+      [tag, includeInternal, JSON.stringify(segment)],
+    );
+    return result.map((r) => r.user_id).sort();
+  }
+
+  it("lists users by internal accounts, plan, country and industry", async () => {
+    expect(await users(false, {})).toEqual([beta, trial].sort());
+    expect(await users(true, {})).toEqual([beta, trial, internal].sort());
+    expect(await users(false, { plan: "beta" })).toEqual([beta]);
+    expect(await users(true, { plan: "beta" })).toEqual([beta, internal].sort());
+    expect(await users(false, { plan: "trial" })).toEqual([trial]);
+    expect(await users(true, { country: "CZ" })).toEqual([trial, internal].sort());
+    expect(await users(false, { industry: "it" })).toEqual([trial]);
+    expect(await users(false, { plan: "beta", country: "CZ" })).toEqual([]);
+    // The old five-argument call still works: internal accounts left out.
+    const plain = await rows<{ user_id: string }>(`select user_id from metric_admin_users($1, $2)`, [
+      "Europe/Prague",
+      tag,
+    ]);
+    expect(plain.map((r) => r.user_id).sort()).toEqual([beta, trial].sort());
+  });
+
+  it("filters trials and workers by the segment", async () => {
+    const running = async (segment: Record<string, string>) =>
+      Number(
+        (
+          await one<{ running: string }>(
+            `select running from metric_trials('Europe/Prague', true, $1::jsonb)`,
+            [JSON.stringify(segment)],
+          )
+        ).running,
+      );
+    const all = await running({});
+    expect(all).toBeGreaterThanOrEqual(1);
+    expect(await running({ plan: "beta" })).toBe(0);
+    expect(await running({ industry: "it" })).toBe(1);
+
+    const { id: worker } = await one<{ id: string }>(
+      `insert into workers (owner_id, name) values ($1, 'W') returning id`,
+      [beta],
+    );
+    await db.query(`insert into worker_invites (owner_id, worker_id, email) values ($1, $2, 'w@example.com')`, [
+      beta,
+      worker,
+    ]);
+    const sent = async (segment: Record<string, string>) =>
+      Number(
+        (
+          await one<{ invites_sent: string }>(
+            `select invites_sent from metric_workers(current_date - 1, current_date + 1, 'Europe/Prague', false, $1::jsonb)`,
+            [JSON.stringify(segment)],
+          )
+        ).invites_sent,
+      );
+    expect(await sent({ country: "SK" })).toBe(1);
+    expect(await sent({ country: "CZ" })).toBe(0);
+  });
+
+  it("filters the Feedback lists by internal accounts, segment and period", async () => {
+    await db.query(
+      `insert into feature_requests (user_id, title) values ($1, 'Beta idea'), ($2, 'Trial idea'), ($3, 'Internal idea')`,
+      [beta, trial, internal],
+    );
+    await db.query(
+      `insert into nps_responses (user_id, score, comment, created_at) values
+         ($1, 9, 'beta now', now()), ($2, 6, 'trial now', now()),
+         ($3, 10, 'internal now', now()), ($1, 3, 'beta long ago', now() - interval '60 days')`,
+      [beta, trial, internal],
+    );
+
+    const ideas = async (includeInternal: boolean, segment: Record<string, string>) =>
+      (
+        await rows<{ title: string }>(
+          `select title from admin_feature_requests(null, 'Europe/Prague', $1, $2::jsonb)
+           where title like '% idea'`,
+          [includeInternal, JSON.stringify(segment)],
+        )
+      )
+        .map((r) => r.title)
+        .sort();
+    expect(await ideas(false, {})).toEqual(["Beta idea", "Trial idea"]);
+    expect(await ideas(true, {})).toEqual(["Beta idea", "Internal idea", "Trial idea"]);
+    expect(await ideas(false, { plan: "beta" })).toEqual(["Beta idea"]);
+    expect(await ideas(true, { country: "CZ" })).toEqual(["Internal idea", "Trial idea"]);
+
+    const comments = async (from: string, includeInternal: boolean, segment: Record<string, string>) =>
+      (
+        await rows<{ comment: string }>(
+          `select comment from admin_nps_comments($1::date, current_date, 'Europe/Prague', $2, $3::jsonb)`,
+          [from, includeInternal, JSON.stringify(segment)],
+        )
+      )
+        .map((r) => r.comment)
+        .sort();
+    const today = new Date().toISOString().slice(0, 10);
+    const longAgo = new Date(Date.now() - 90 * 86_400_000).toISOString().slice(0, 10);
+    expect(await comments(today, false, {})).toEqual(["beta now", "trial now"]);
+    expect(await comments(longAgo, false, { plan: "beta" })).toEqual(["beta long ago", "beta now"]);
+    expect(await comments(today, true, { plan: "beta" })).toEqual(["beta now", "internal now"]);
+  });
+
+  it("keeps the new functions closed to a signed-in user", async () => {
+    await db.exec(`set role authenticated;`);
+    for (const sql of [
+      `select * from admin_feature_requests()`,
+      `select * from admin_nps_comments(current_date, current_date)`,
+      `select * from metric_trials()`,
+      `select * from metric_workers(current_date, current_date)`,
+      `select * from metric_admin_users('Europe/Prague', null, 'activity', 50, 0, true, '{}')`,
+    ]) {
+      await expect(db.query(sql), sql).rejects.toThrow();
+    }
+    await asServer();
   });
 });
