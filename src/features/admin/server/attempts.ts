@@ -1,6 +1,11 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { ADMIN_ATTEMPTS_LOOKBACK_MS, lockedUntil, minutesLeft } from "../access";
+import {
+  ADMIN_ATTEMPTS_LOOKBACK_MS,
+  isFreshInviteAcceptance,
+  lockedUntil,
+  minutesLeft,
+} from "../access";
 import { hashInviteToken, isWellFormedInviteToken } from "../invite-token";
 import { fingerprint, requestInfo } from "./request-info";
 
@@ -101,6 +106,28 @@ export async function findOpenInvite(
     return null;
   }
   return data?.id ?? null;
+}
+
+/**
+ * Whether `userId` accepted this invitation a moment ago. Only for a live
+ * admin session (the caller checks it): when the code step sets the new
+ * session cookies, Next.js renders the link's page again, and the person who
+ * just accepted it must stay on the backup step instead of the neutral
+ * message. Anyone else, or later, still gets that message.
+ */
+export async function isInviteJustAcceptedBy(token: string, userId: string): Promise<boolean> {
+  if (!isWellFormedInviteToken(token)) return false;
+  const { data, error } = await createAdminClient()
+    .from("admin_invites")
+    .select("accepted_by, accepted_at")
+    .eq("token_hash", hashInviteToken(token))
+    .eq("accepted_by", userId)
+    .maybeSingle();
+  if (error) {
+    console.error("[admin] reading an invitation failed", error.message);
+    return false;
+  }
+  return isFreshInviteAcceptance(data, userId);
 }
 
 /**

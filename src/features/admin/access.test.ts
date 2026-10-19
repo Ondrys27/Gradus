@@ -8,6 +8,7 @@ import {
   idleStep,
   isAdminLoginPath,
   isAdminPath,
+  isFreshInviteAcceptance,
   isFreshPasswordSession,
   isFreshTotpSession,
   lockedUntil,
@@ -208,5 +209,30 @@ describe("toCsv", () => {
         ],
       ),
     ).toBe('a,b\r\n"x,y","say ""hi"""\r\n\'=SUM(A1),\r\n-5,\'-5\r\n');
+  });
+});
+
+describe("isFreshInviteAcceptance", () => {
+  const me = "11111111-1111-4111-8111-111111111111";
+  const other = "22222222-2222-4222-8222-222222222222";
+  const accepted = (by: string | null, at: Date | null) => ({
+    accepted_by: by,
+    accepted_at: at ? at.toISOString() : null,
+  });
+
+  it("holds only for this account, a moment after it accepted", () => {
+    expect(isFreshInviteAcceptance(accepted(me, minutesAgo(0)), me, now.getTime())).toBe(true);
+    expect(isFreshInviteAcceptance(accepted(me, minutesAgo(9)), me, now.getTime())).toBe(true);
+  });
+
+  it("is false for someone else's, an open, an old or a missing invitation", () => {
+    expect(isFreshInviteAcceptance(accepted(other, minutesAgo(1)), me, now.getTime())).toBe(false);
+    expect(isFreshInviteAcceptance(accepted(null, null), me, now.getTime())).toBe(false);
+    expect(isFreshInviteAcceptance(accepted(me, minutesAgo(11)), me, now.getTime())).toBe(false);
+    expect(isFreshInviteAcceptance(null, me, now.getTime())).toBe(false);
+    expect(isFreshInviteAcceptance(accepted(me, minutesAgo(1)), "", now.getTime())).toBe(false);
+    expect(
+      isFreshInviteAcceptance({ accepted_by: me, accepted_at: "not a date" }, me, now.getTime()),
+    ).toBe(false);
   });
 });

@@ -125,6 +125,21 @@ export function isFreshTotpSession(
   return age !== null && age >= -60 && age <= ADMIN_FRESH_SIGN_IN_SECONDS;
 }
 
+/**
+ * The invitation was accepted a moment ago by this very account: the link's
+ * page is still in the middle of that sign-in (the backup step), because the
+ * code step's new session cookies make Next.js render the page again.
+ */
+export function isFreshInviteAcceptance(
+  invite: { accepted_by: string | null; accepted_at: string | null } | null | undefined,
+  userId: string,
+  nowMs = Date.now(),
+): boolean {
+  if (!invite?.accepted_at || !userId || invite.accepted_by !== userId) return false;
+  const age = nowMs - new Date(invite.accepted_at).getTime();
+  return Number.isFinite(age) && age >= -60_000 && age <= ADMIN_FRESH_SIGN_IN_SECONDS * 1000;
+}
+
 export type LoginAttempt = { at: Date | string; success: boolean };
 
 /**

@@ -5,7 +5,8 @@ import { ArrowLeftIcon, LinkIcon } from "lucide-react";
 import { Logo } from "@/components/layout/logo";
 import { GlowCard } from "@/components/ui/glow-card";
 import { AdminLogin } from "@/features/admin/admin-login";
-import { checkInviteLink } from "@/features/admin/server/attempts";
+import { checkInviteLink, isInviteJustAcceptedBy } from "@/features/admin/server/attempts";
+import { adminAccess } from "@/features/admin/server/guard";
 import { HOME_PATH } from "@/lib/auth/routes";
 import { APP_NAME } from "@/lib/constants";
 
@@ -14,16 +15,27 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("title", { appName: APP_NAME }), referrer: "no-referrer" };
 }
 
+async function usableLink(token: string): Promise<boolean> {
+  const session = await adminAccess();
+  if (session && (await isInviteJustAcceptedBy(token, session.userId))) return true;
+  return checkInviteLink(token);
+}
+
 /**
  * An invitation to the administration. A usable link leads through sign-in
  * or a new account, the authenticator and then into /admin; anything else
  * (unknown, used, revoked, expired, or too many tries from this address) gets
  * one neutral message.
+ *
+ * The code step sets new session cookies, so Next.js renders this page again
+ * right after the invitation was accepted. The live admin session that
+ * accepted it a moment ago keeps the sign-in (and its backup step) open;
+ * nobody else gets past the neutral message.
  */
 export default async function AdminInvitePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const [usable, t, tLogin] = await Promise.all([
-    checkInviteLink(token),
+    usableLink(token),
     getTranslations("admin.invite"),
     getTranslations("admin.login"),
   ]);

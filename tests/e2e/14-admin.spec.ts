@@ -100,7 +100,9 @@ test("14 · the owner without the second factor signs in and returns to the page
   const skip = page.getByRole("button", { name: exact(L, "admin.login.backupSkip") });
   const form = page.getByTestId("ai-caps-form");
   await expect(skip.or(form)).toBeVisible();
-  if (await skip.isVisible()) await skip.click();
+  // On the sign-in page the code's new session cookies render the page again,
+  // which goes straight on: the offer can vanish between seeing and clicking it.
+  await skip.click({ timeout: 3_000 }).catch(() => undefined);
 
   await expect(page).toHaveURL(/\/admin\/ai$/);
   await expect(form).toBeVisible();

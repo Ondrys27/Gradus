@@ -47,8 +47,39 @@ async function enrollAuthenticator(page: Page) {
   const skip = page.getByRole("button", { name: exact(L, "admin.login.backupSkip") });
   const nav = page.getByRole("link", { name: exact(L, "admin.shell.nav.ai") }).first();
   await expect(skip.or(nav)).toBeVisible();
-  if (await skip.isVisible()) await skip.click();
+  // On the sign-in page the code's new session cookies render the page again,
+  // which goes straight on: the offer can vanish between seeing and clicking it.
+  await skip.click({ timeout: 3_000 }).catch(() => undefined);
   await expect(nav).toBeVisible();
+}
+
+/**
+ * The invited person's code: it accepts the invitation and sets the new
+ * session cookies, so Next.js renders the link's page again in the same
+ * answer. The backup step must survive that (not the neutral "link cannot be
+ * used" message), and skipping it leads into /admin.
+ */
+async function acceptWithAuthenticator(page: Page) {
+  await expect(page.getByText(text(L, "admin.login.secretLabel"))).toBeVisible();
+  const secret = (await page.locator("code").first().textContent())?.trim() ?? "";
+  expect(secret).toMatch(/^[A-Z2-7]+=*$/);
+  await page.locator("#admin-code").fill(totp(secret));
+  const answer = page.waitForResponse(
+    (response) => response.request().method() === "POST" && response.url().includes("/admin/pozvanka/"),
+  );
+  await page.getByRole("button", { name: exact(L, "admin.login.enrollSubmit") }).click();
+  await (await answer).finished();
+  const backupTitle = page.getByRole("heading", { name: exact(L, "admin.login.backupTitle") });
+  const invalidTitle = page.getByRole("heading", { name: exact(L, "admin.invite.invalidTitle") });
+  await expect(backupTitle).toBeVisible();
+  await expect(invalidTitle).toHaveCount(0);
+  // Still there a moment later: the page rendered again and kept the step.
+  await page.waitForTimeout(1_000);
+  await expect(backupTitle).toBeVisible();
+  await expect(invalidTitle).toHaveCount(0);
+  await page.getByRole("button", { name: exact(L, "admin.login.backupSkip") }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+  await expect(page.getByRole("link", { name: exact(L, "admin.shell.nav.ai") }).first()).toBeVisible();
 }
 
 async function signInOwner(page: Page, owner: Account) {
@@ -170,8 +201,7 @@ test("22 · an invitation makes a new admin, works once, and removal locks them 
       .is("accepted_at", null);
   }
 
-  await enrollAuthenticator(invited);
-  await expect(invited).toHaveURL(/\/admin$/);
+  await acceptWithAuthenticator(invited);
 
   // The admin does not see the Administrators section, and its address is a 404.
   await expect(invited.getByRole("link", { name: exact(L, "admin.shell.nav.admins") })).toHaveCount(0);
