@@ -66,7 +66,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 14.1 | architect | 2026-10-19 Kdo nemá živou relaci administrace, jde z /admin na /admin/prihlaseni?next=… (jen cesty pod /admin), přihlašovací stránku vidí každý s odkazem zpět do aplikace, ne-majitel po hesle dostane 404, vypršelá relace během práce přesměruje místo chyby; testy, E2E i CLAUDE.md upraveny.
 - [x] 14.2 | architect | 2026-10-19 Administrace i aplikace drží pozici scrollu při změně pohledu: záložky, stránkování a řazení v /admin přes AdminViewLink se scroll:false, odstraněné key u Suspense (staré rozvržení zůstane ztlumené), KeepHeight pro záložky Financí, kontakty ztlumí starý seznam; změna období v administraci už nezahazuje záložku; nové Vitest a E2E test 21-view-scroll.
 - [x] 14.3 | architect | 2026-10-19 Administrace ukazuje jména místo ID (pomocník displayName: jméno → e-mail → „Účet bez jména · xxxx“) v seznamu a detailu uživatelů, auditu, zpětné vazbě a žebříčku AI; ID jen jako kód s Kopírovat v detailu; hledání uživatelů podle jména i e-mailu bez diakritiky (metric_admin_users, nová admin_people); CSV mají jméno i ID; .next-build ignorován v eslintu a gitu.
-- [ ] 14.4 | architect | env: RESEND_API_KEY
+- [x] 14.4 | architect | env: RESEND_API_KEY | 2026-10-19 Nová role admin vedle owner s omezeným přístupem (vidí vše kromě Administrátorů, stropů AI jen ke čtení, exportů s osobními údaji), sekce Administrátoři s pozvánkami přes jednorázový token (SHA-256, 7 dní) a přehledem přihlášení; docs/admin-roles.md.
 - [ ] 14.5 | architect |
 - [ ] 14.6 | designer |
 - [ ] K14 | reviewer |
