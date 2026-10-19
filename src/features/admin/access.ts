@@ -140,6 +140,37 @@ export function isFreshInviteAcceptance(
   return Number.isFinite(age) && age >= -60_000 && age <= ADMIN_FRESH_SIGN_IN_SECONDS * 1000;
 }
 
+/**
+ * The backup offer after the very first code: set by the code step (mode
+ * "enroll") the moment the first authenticator is verified, cleared once the
+ * person decides (skip, a backup device, or an ordinary sign-in). Only while
+ * it is open does the sign-in page skip its redirect for a live admin
+ * session, and only in the answer of a server action, so the offer is not
+ * replaced by /admin in the same answer that set the new session cookies.
+ */
+export const ADMIN_BACKUP_OFFER_COOKIE = "gradus-admin-backup-offer";
+export const ADMIN_BACKUP_OFFER_SECONDS = 5 * 60;
+
+/** The cookie's value: whose offer and when it opened. */
+export function backupOfferValue(userId: string, nowMs = Date.now()): string {
+  return `${userId}.${nowMs}`;
+}
+
+/** The offer is this account's and opened within the last few minutes. */
+export function isBackupOfferOpen(
+  value: string | null | undefined,
+  userId: string,
+  nowMs = Date.now(),
+): boolean {
+  if (!value || !userId) return false;
+  const dot = value.lastIndexOf(".");
+  if (dot < 1 || value.slice(0, dot) !== userId) return false;
+  const stamp = value.slice(dot + 1);
+  if (!/^\d{1,16}$/.test(stamp)) return false;
+  const age = nowMs - Number(stamp);
+  return age >= -60_000 && age <= ADMIN_BACKUP_OFFER_SECONDS * 1000;
+}
+
 export type LoginAttempt = { at: Date | string; success: boolean };
 
 /**

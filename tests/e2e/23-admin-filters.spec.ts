@@ -27,10 +27,8 @@ async function signInToAdmin(page: Page, account: Account) {
   await page.getByRole("button", { name: exact(L, "admin.login.enrollSubmit") }).click();
   const skip = page.getByRole("button", { name: exact(L, "admin.login.backupSkip") });
   const nav = page.getByRole("link", { name: exact(L, "admin.shell.nav.users") }).first();
-  await expect(skip.or(nav)).toBeVisible();
-  // On the sign-in page the code's new session cookies render the page again,
-  // which goes straight on: the offer can vanish between seeing and clicking it.
-  await skip.click({ timeout: 3_000 }).catch(() => undefined);
+  // The backup offer stays until it is skipped, then the sign-in goes on.
+  await skip.click();
   await expect(nav).toBeVisible();
 }
 

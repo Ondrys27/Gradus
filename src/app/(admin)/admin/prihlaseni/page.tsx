@@ -6,6 +6,7 @@ import { ArrowLeftIcon } from "lucide-react";
 import { Logo } from "@/components/layout/logo";
 import { safeAdminNextPath } from "@/features/admin/access";
 import { AdminLogin } from "@/features/admin/admin-login";
+import { isBackupOfferPending } from "@/features/admin/server/backup-offer";
 import { adminAccess } from "@/features/admin/server/guard";
 import { HOME_PATH } from "@/lib/auth/routes";
 import { APP_NAME } from "@/lib/constants";
@@ -19,6 +20,10 @@ export async function generateMetadata(): Promise<Metadata> {
  * The only way into the administration, shown to anyone. Whether the account
  * is the owner is decided after the password (anyone else gets the 404 then);
  * the owner with a live admin session goes straight on to `next`.
+ *
+ * Except right after the first authenticator: its code sets new session
+ * cookies, so Next.js renders this page again in that action's answer, and
+ * the backup offer must stay until the person decides (backup-offer.ts).
  */
 export default async function AdminLoginPage({
   searchParams,
@@ -27,7 +32,8 @@ export default async function AdminLoginPage({
 }) {
   const { next: rawNext } = await searchParams;
   const next = safeAdminNextPath(typeof rawNext === "string" ? rawNext : null);
-  if (await adminAccess()) redirect(next, RedirectType.replace);
+  const session = await adminAccess();
+  if (session && !(await isBackupOfferPending(session.userId))) redirect(next, RedirectType.replace);
   const t = await getTranslations("admin.login");
 
   return (

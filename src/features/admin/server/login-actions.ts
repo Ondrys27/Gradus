@@ -14,6 +14,7 @@ import { isFreshPasswordSession, isFreshTotpSession, minutesLeft, type AdminClai
 import { hashInviteToken } from "../invite-token";
 import { currentLock, failure, findOpenInvite, keysFor, recordAttempt, type Admin } from "./attempts";
 import { logAdminAction } from "./audit";
+import { closeBackupOffer, openBackupOffer } from "./backup-offer";
 import { adminAccess, isAdminAccount } from "./guard";
 import { sendAdminLoginEmail } from "./login-email";
 import { fingerprint, requestInfo } from "./request-info";
@@ -348,7 +349,16 @@ export async function verifyAdminCode(input: {
       await sendAdminLoginEmail({ userId, email: claims.email, userAgent, ipHash: keys.ip });
     }
   }
+  // The first authenticator is followed by the backup offer; the sign-in page
+  // holds its redirect for it (backup-offer.ts). Anything else closes it.
+  if (input.mode === "enroll") await openBackupOffer(userId);
+  else await closeBackupOffer();
   return { ok: true, next: input.mode === "enroll" ? "backup" : "admin" };
+}
+
+/** The backup offer was skipped: the sign-in page goes straight on again. */
+export async function skipAdminBackup(): Promise<void> {
+  await closeBackupOffer();
 }
 
 /** Leaves the administration; the app session stays signed in. */

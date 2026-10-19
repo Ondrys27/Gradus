@@ -30,13 +30,10 @@ async function signInToAdmin(page: Page, account: Account) {
   expect(secret).toMatch(/^[A-Z2-7]+=*$/);
   await page.locator("#admin-code").fill(totp(secret));
   await page.getByRole("button", { name: exact(L, "admin.login.enrollSubmit") }).click();
-  // The offer of a backup device may show, or the refreshed session goes straight in.
   const skip = page.getByRole("button", { name: exact(L, "admin.login.backupSkip") });
   const overview = page.getByRole("link", { name: exact(L, "admin.shell.nav.ai") });
-  await expect(skip.or(overview)).toBeVisible();
-  // On the sign-in page the code's new session cookies render the page again,
-  // which goes straight on: the offer can vanish between seeing and clicking it.
-  await skip.click({ timeout: 3_000 }).catch(() => undefined);
+  // The backup offer stays until it is skipped, then the sign-in goes on.
+  await skip.click();
   await expect(overview).toBeVisible();
 }
 

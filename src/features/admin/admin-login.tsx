@@ -22,6 +22,7 @@ import { safeAdminNextPath } from "./access";
 import {
   adminInviteSignIn,
   adminSignIn,
+  skipAdminBackup,
   startAdminEnrollment,
   verifyAdminCode,
   type AdminLoginError,
@@ -52,6 +53,10 @@ export function AdminLogin({ next, invite }: { next?: string; invite?: string })
   }, []);
   const enter = useCallback(() => window.location.assign(safeAdminNextPath(next)), [next]);
   const toBackup = useCallback(() => setStep("backup"), []);
+  // Closes the offer first, so the sign-in page goes straight on again.
+  const skipBackup = useCallback(() => {
+    void skipAdminBackup().catch(() => undefined).finally(enter);
+  }, [enter]);
   const afterPassword = useCallback((next: "enroll" | "verify") => {
     setRestarted(false);
     setStep(next);
@@ -89,7 +94,7 @@ export function AdminLogin({ next, invite }: { next?: string; invite?: string })
             <Button size="lg" onClick={() => setStep("backupEnroll")}>
               {t("backupAdd")}
             </Button>
-            <Button size="lg" variant="ghost" onClick={enter}>
+            <Button size="lg" variant="ghost" onClick={skipBackup}>
               {t("backupSkip")}
             </Button>
           </div>

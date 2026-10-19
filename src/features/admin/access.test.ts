@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   adminLoginUrl,
+  ADMIN_BACKUP_OFFER_SECONDS,
+  backupOfferValue,
   ADMIN_HEARTBEAT_MS,
   ADMIN_IDLE_MS,
   ADMIN_LOCKOUT_MS,
@@ -8,6 +10,7 @@ import {
   idleStep,
   isAdminLoginPath,
   isAdminPath,
+  isBackupOfferOpen,
   isFreshInviteAcceptance,
   isFreshPasswordSession,
   isFreshTotpSession,
@@ -234,5 +237,30 @@ describe("isFreshInviteAcceptance", () => {
     expect(
       isFreshInviteAcceptance({ accepted_by: me, accepted_at: "not a date" }, me, now.getTime()),
     ).toBe(false);
+  });
+});
+
+describe("isBackupOfferOpen", () => {
+  const me = "11111111-1111-4111-8111-111111111111";
+  const other = "22222222-2222-4222-8222-222222222222";
+  const at = now.getTime();
+
+  it("holds for this account's offer within its few minutes", () => {
+    expect(isBackupOfferOpen(backupOfferValue(me, at), me, at)).toBe(true);
+    expect(isBackupOfferOpen(backupOfferValue(me, minutesAgo(4).getTime()), me, at)).toBe(true);
+    expect(ADMIN_BACKUP_OFFER_SECONDS).toBeLessThanOrEqual(10 * 60);
+  });
+
+  it("is closed for someone else's, an old, a future, a missing or a garbled value", () => {
+    expect(isBackupOfferOpen(backupOfferValue(other, at), me, at)).toBe(false);
+    expect(isBackupOfferOpen(backupOfferValue(me, minutesAgo(6).getTime()), me, at)).toBe(false);
+    expect(isBackupOfferOpen(backupOfferValue(me, at + 5 * 60_000), me, at)).toBe(false);
+    expect(isBackupOfferOpen(undefined, me, at)).toBe(false);
+    expect(isBackupOfferOpen("", me, at)).toBe(false);
+    expect(isBackupOfferOpen(backupOfferValue(me, at), "", at)).toBe(false);
+    expect(isBackupOfferOpen(`${me}.`, me, at)).toBe(false);
+    expect(isBackupOfferOpen(`${me}.12x`, me, at)).toBe(false);
+    expect(isBackupOfferOpen(`${me}x.${at}`, me, at)).toBe(false);
+    expect(isBackupOfferOpen(`.${at}`, me, at)).toBe(false);
   });
 });
