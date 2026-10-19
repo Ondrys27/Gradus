@@ -4066,6 +4066,7 @@
       "backupEnrollTitle": "Druhé zařízení",
       "backupEnrollDescription": "Naskenuj tenhle kód záložním zařízením. Dostane vlastní klíč, takže přihlásí kterékoli z obou.",
       "startOver": "Začít znovu",
+      "backToApp": "Zpět do aplikace {appName}",
       "errors": {
         "invalid": "Špatný e-mail nebo heslo.",
         "invalidCode": "Kód nesedí. Zkontroluj čas v zařízení a zkus další kód.",

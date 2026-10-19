@@ -1,9 +1,15 @@
 import "server-only";
 import { cache } from "react";
-import { notFound } from "next/navigation";
+import { headers } from "next/headers";
+import { redirect, RedirectType } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { claimsMayEnterAdmin, parseSessionStatus } from "../access";
+import {
+  ADMIN_PATH_HEADER,
+  adminLoginUrl,
+  claimsMayEnterAdmin,
+  parseSessionStatus,
+} from "../access";
 
 export type AdminContext = {
   userId: string;
@@ -42,13 +48,16 @@ export const adminAccess = cache(
 );
 
 /**
- * The first line of every page, layout and server action of the
- * administration. Anyone else gets the ordinary 404: the administration does
- * not exist for them.
+ * The first line of every page and layout of the administration. Anyone else
+ * (or a session that ended since the middleware let the request in) goes to
+ * the sign-in, which continues to this page afterwards.
  */
 export async function requireAdmin(activity = false): Promise<AdminContext> {
   const context = await adminAccess(activity);
-  if (!context) notFound();
+  if (!context) {
+    const path = (await headers()).get(ADMIN_PATH_HEADER);
+    redirect(adminLoginUrl(path), RedirectType.replace);
+  }
   return context;
 }
 
@@ -60,7 +69,7 @@ export function adminNotFound(): Response {
   });
 }
 
-/** Whether an account holds the owner role; the sign-in page shows itself to no one else. */
+/** Whether an account holds the owner role; nobody else gets past the password. */
 export async function isOwnerAccount(userId: string): Promise<boolean> {
   const { data, error } = await createAdminClient().rpc("has_role", {
     _user_id: userId,

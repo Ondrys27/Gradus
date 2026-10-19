@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient as createStatelessClient } from "@supabase/supabase-js";
+import { notFound } from "next/navigation";
 import { z } from "zod";
 import { APP_NAME } from "@/lib/constants";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -155,9 +156,16 @@ export async function adminSignIn(
   const { data, error } = await probe.auth.signInWithPassword(parsed.data);
   const session = !error ? data.session : null;
   const owner = session ? await isOwnerAccount(session.user.id) : false;
-  if (!session || !owner) {
-    if (session) await probe.auth.signOut({ scope: "local" });
+  if (!session) {
     return { ok: false, email, ...(await failure(admin, keys, "password", "invalid")) };
+  }
+  if (!owner) {
+    // The right password of an account that is not the owner: counted like a
+    // wrong one, and the administration answers with the site's ordinary 404.
+    // A wrong password looks the same whether the e-mail exists or not.
+    await probe.auth.signOut({ scope: "local" });
+    await failure(admin, keys, "password", "invalid");
+    notFound();
   }
 
   const supabase = await createClient();

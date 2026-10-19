@@ -177,7 +177,7 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - Zápis jen přes track() na serveru nebo /api/t, které bere uživatele ze session. Do analytics_events nikdy nezapisuje klient přímo.
 - Interní účty (profiles.is_internal) jsou z metrik ve výchozím stavu vyloučené.
 - Měny se v metrikách nesčítají.
-- /admin: role owner + aal2 (TOTP), jinak 404. Data administrace jen na serveru přes admin klienta po ověření, každý pohled a export do admin_audit.
+- /admin: role owner + aal2 (TOTP) a živá relace administrace. Kdo je nemá (nepřihlášený, bez druhého faktoru, vypršelá relace), jde na /admin/prihlaseni?next=… (jen cesty pod /admin, `safeAdminNextPath`), po heslu a TOTP zpět na next. Přihlášení vidí každý; kdo není majitel, dostane po hesle 404, špatné heslo neprozradí, zda e-mail existuje. Data administrace jen na serveru přes admin klienta po ověření, každý pohled a export do admin_audit.
 - Nová funkce v aplikaci = nové události v katalogu a případně nová metrika v docs/metrics.md.
 - Události a relace se mažou po 13 měsících.
 

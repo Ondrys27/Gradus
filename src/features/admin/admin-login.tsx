@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { SubmitButton } from "@/features/auth/submit-button";
 import { APP_NAME } from "@/lib/constants";
-import { ADMIN_PATH } from "./access";
+import { safeAdminNextPath } from "./access";
 import {
   adminSignIn,
   startAdminEnrollment,
@@ -33,9 +33,10 @@ type Problem = { error: AdminLoginError; minutes?: number } | null;
 /**
  * Password, then the code from the authenticator app. The first time, the
  * second factor is set up here (QR code, check with a code) and a backup
- * device is recommended. Every step is checked again on the server.
+ * device is recommended. Every step is checked again on the server. After
+ * the code it continues to `next`, the administration page asked for.
  */
-export function AdminLogin() {
+export function AdminLogin({ next }: { next?: string }) {
   const t = useTranslations("admin.login");
   const [step, setStep] = useState<Step>("password");
   const [restarted, setRestarted] = useState(false);
@@ -45,7 +46,7 @@ export function AdminLogin() {
     setRestarted(true);
     setStep("password");
   }, []);
-  const enter = useCallback(() => window.location.assign(ADMIN_PATH), []);
+  const enter = useCallback(() => window.location.assign(safeAdminNextPath(next)), [next]);
   const toBackup = useCallback(() => setStep("backup"), []);
   const afterPassword = useCallback((next: "enroll" | "verify") => {
     setRestarted(false);

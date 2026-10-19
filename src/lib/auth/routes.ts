@@ -47,21 +47,37 @@ export function loginPath(locale: string | null | undefined): string {
   return localizedPath("login", locale);
 }
 
+/** Which paths a `next` target may point to, and where to go otherwise. */
+export type NextPathScope = {
+  accepts: (pathname: string) => boolean;
+  fallback: string;
+};
+
+/** The app: any protected page, otherwise the app's home. */
+export const APP_NEXT_SCOPE: NextPathScope = {
+  accepts: (pathname) => routeKind(pathname) === "protected",
+  fallback: HOME_PATH,
+};
+
 /**
- * The `next` target after sign-in. Only same-origin app paths are allowed, so
- * the login form can never be used to bounce someone to another site.
+ * The `next` target after sign-in. Only same-origin relative paths inside the
+ * scope (the app by default) are allowed, so a sign-in form can never be used
+ * to bounce someone to another site.
  */
-export function safeNextPath(next: string | null | undefined): string {
+export function safeNextPath(
+  next: string | null | undefined,
+  scope: NextPathScope = APP_NEXT_SCOPE,
+): string {
   if (!next || !next.startsWith("/") || next.startsWith("//") || next.startsWith("/\\")) {
-    return HOME_PATH;
+    return scope.fallback;
   }
   try {
     const url = new URL(next, "http://local");
-    if (url.origin !== "http://local") return HOME_PATH;
-    if (routeKind(url.pathname) !== "protected") return HOME_PATH;
+    if (url.origin !== "http://local") return scope.fallback;
+    if (!scope.accepts(url.pathname)) return scope.fallback;
     return url.pathname + url.search + url.hash;
   } catch {
-    return HOME_PATH;
+    return scope.fallback;
   }
 }
 

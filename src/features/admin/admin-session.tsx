@@ -4,16 +4,24 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { LogOutIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ADMIN_LOGIN_PATH, idleStep } from "./access";
+import { ADMIN_LOGIN_PATH, adminLoginUrl, idleStep } from "./access";
 import { adminHeartbeat, endAdminSession } from "./server/login-actions";
 
 const TICK_MS = 15_000;
 const ACTIVITY_EVENTS = ["pointerdown", "keydown", "wheel", "touchstart", "scroll"] as const;
 
-async function leave() {
+/**
+ * Back to the sign-in. A session that ran out returns to this page after
+ * signing in again; signing out starts from the beginning.
+ */
+async function leave(reason: "timeout" | "signOut") {
   // The server ends an idle or expired session by itself; this only makes it immediate.
   await endAdminSession().catch(() => undefined);
-  window.location.replace(ADMIN_LOGIN_PATH);
+  window.location.replace(
+    reason === "timeout"
+      ? adminLoginUrl(window.location.pathname + window.location.search)
+      : ADMIN_LOGIN_PATH,
+  );
 }
 
 /**
@@ -46,14 +54,14 @@ export function AdminIdleGuard({ expiresAt }: { expiresAt: string }) {
       });
       if (step === "end") {
         leaving = true;
-        void leave();
+        void leave("timeout");
       } else if (step === "heartbeat") {
         lastHeartbeat.current = Date.now();
         void adminHeartbeat()
           .then((result) => {
             if (!result.ok) {
               leaving = true;
-              void leave();
+              void leave("timeout");
             }
           })
           .catch(() => undefined);
@@ -85,7 +93,7 @@ export function AdminSignOutButton() {
       disabled={pending}
       onClick={() => {
         setPending(true);
-        void leave();
+        void leave("signOut");
       }}
     >
       <LogOutIcon aria-hidden />

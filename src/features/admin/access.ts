@@ -4,13 +4,16 @@
  * database function admin_session_touch() makes the final decision.
  */
 
+import { safeNextPath, type NextPathScope } from "@/lib/auth/routes";
+
 export const ADMIN_PATH = "/admin";
 export const ADMIN_LOGIN_PATH = "/admin/prihlaseni";
 /**
- * Where the middleware rewrites anyone who may not see the administration.
- * No page lives here, so the answer is the site's ordinary 404.
+ * The page path the middleware hands to the server guard of an admin page
+ * (set on every request it lets through), so the guard can send an expired
+ * session back to the sign-in with the same `next`.
  */
-export const ADMIN_NOT_FOUND_PATH = "/__not-found";
+export const ADMIN_PATH_HEADER = "x-gradus-admin-path";
 
 export const ADMIN_IDLE_MS = 30 * 60_000;
 export const ADMIN_MAX_SESSION_MS = 8 * 60 * 60_000;
@@ -33,6 +36,25 @@ export function isAdminPath(pathname: string): boolean {
 export function isAdminLoginPath(pathname: string): boolean {
   const clean = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
   return clean === ADMIN_LOGIN_PATH;
+}
+
+/** After the sign-in: any administration page except the sign-in itself. */
+export const ADMIN_NEXT_SCOPE: NextPathScope = {
+  accepts: (pathname) => isAdminPath(pathname) && !isAdminLoginPath(pathname),
+  fallback: ADMIN_PATH,
+};
+
+/** Where the sign-in continues: a relative path inside the administration, else /admin. */
+export function safeAdminNextPath(next: string | null | undefined): string {
+  return safeNextPath(next, ADMIN_NEXT_SCOPE);
+}
+
+/** The sign-in page, remembering which administration page was asked for. */
+export function adminLoginUrl(next?: string | null): string {
+  const target = safeAdminNextPath(next);
+  return target === ADMIN_PATH
+    ? ADMIN_LOGIN_PATH
+    : `${ADMIN_LOGIN_PATH}?next=${encodeURIComponent(target)}`;
 }
 
 type AmrEntry = { method: string; timestamp: number };

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  adminLoginUrl,
   ADMIN_HEARTBEAT_MS,
   ADMIN_IDLE_MS,
   ADMIN_LOCKOUT_MS,
@@ -12,6 +13,7 @@ import {
   lockedUntil,
   minutesLeft,
   parseSessionStatus,
+  safeAdminNextPath,
   toCsv,
 } from "./access";
 
@@ -28,6 +30,45 @@ describe("admin paths", () => {
     expect(isAdminLoginPath("/admin/prihlaseni")).toBe(true);
     expect(isAdminLoginPath("/admin/prihlaseni/")).toBe(true);
     expect(isAdminLoginPath("/admin/prihlaseni/x")).toBe(false);
+  });
+});
+
+describe("next after the admin sign-in", () => {
+  it("keeps relative paths inside the administration", () => {
+    expect(safeAdminNextPath("/admin/ai")).toBe("/admin/ai");
+    expect(safeAdminNextPath("/admin/uzivatele/abc?tab=ai#caps")).toBe(
+      "/admin/uzivatele/abc?tab=ai#caps",
+    );
+  });
+
+  it("falls back to /admin for anything else", () => {
+    for (const next of [
+      null,
+      undefined,
+      "",
+      "admin/ai",
+      "/app",
+      "/app/nastaveni",
+      "/administrator",
+      "/admin/../app",
+      "/admin/prihlaseni",
+      "/admin/prihlaseni/?next=/admin/ai",
+      "//evil.example/admin",
+      "/\\evil.example/admin",
+      "https://evil.example/admin/ai",
+      "javascript:alert(1)",
+    ]) {
+      expect(safeAdminNextPath(next), String(next)).toBe("/admin");
+    }
+  });
+
+  it("builds the sign-in address, with next only when it says more than /admin", () => {
+    expect(adminLoginUrl("/admin")).toBe("/admin/prihlaseni");
+    expect(adminLoginUrl(null)).toBe("/admin/prihlaseni");
+    expect(adminLoginUrl("//evil.example")).toBe("/admin/prihlaseni");
+    expect(adminLoginUrl("/admin/rust?range=30d")).toBe(
+      "/admin/prihlaseni?next=%2Fadmin%2Frust%3Frange%3D30d",
+    );
   });
 });
 

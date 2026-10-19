@@ -1,7 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import {
-  ADMIN_NOT_FOUND_PATH,
+  ADMIN_PATH_HEADER,
+  adminLoginUrl,
   claimsMayEnterAdmin,
   isAdminLoginPath,
   isAdminPath,
@@ -22,8 +23,8 @@ import type { Database } from "@/types/database";
  */
 export async function middleware(request: NextRequest) {
   const response = await route(request);
-  // The administration is never indexed. Its 404 stays identical to any other.
-  if (isAdminPath(request.nextUrl.pathname) && response.status !== 404) {
+  // The administration is never indexed.
+  if (isAdminPath(request.nextUrl.pathname)) {
     response.headers.set("X-Robots-Tag", "noindex, nofollow");
   }
   return response;
@@ -51,8 +52,10 @@ async function route(request: NextRequest) {
 
   const { pathname, search } = request.nextUrl;
 
-  // Owner with the second factor and a live admin session, or the site's 404.
-  // The sign-in page is the only way in; it checks the role itself.
+  // Owner with the second factor and a live admin session; anyone else (signed
+  // out, no second factor, an idle, expired or ended admin session) goes to the
+  // sign-in, which then continues to the page asked for. The sign-in page
+  // checks the role itself, after the password.
   if (isAdminPath(pathname) && !isAdminLoginPath(pathname)) {
     let allowed = false;
     if (claimsMayEnterAdmin(data?.claims)) {
@@ -60,12 +63,23 @@ async function route(request: NextRequest) {
       allowed = !touched.error && parseSessionStatus(touched.data).status === "ok";
     }
     if (!allowed) {
-      const notFound = NextResponse.rewrite(new URL(ADMIN_NOT_FOUND_PATH, request.url), {
-        status: 404,
-      });
-      response.cookies.getAll().forEach((cookie) => notFound.cookies.set(cookie));
-      return notFound;
+      const login = adminLoginUrl(pathname + search);
+      // A server action expects an answer it can read: it tells the page to go there.
+      if (request.method === "POST" && request.headers.has("next-action")) {
+        return withCookiesOf(
+          response,
+          new NextResponse(null, {
+            status: 200,
+            headers: { "content-type": "text/plain", "x-action-redirect": `${login};replace` },
+          }),
+        );
+      }
+      return redirectKeepingCookies(request, response, login);
     }
+    // The server guard sends a session that ends mid-request back with this path.
+    request.headers.set(ADMIN_PATH_HEADER, pathname + search);
+    request.headers.delete(URL_LOCALE_HEADER);
+    return withCookiesOf(response, NextResponse.next({ request }));
   }
 
   const kind = routeKind(pathname);
@@ -115,11 +129,14 @@ function withLocaleCookie(response: NextResponse, locale: SiteLocale) {
   return response;
 }
 
-/** A redirect must carry any refreshed session cookies, or the user is signed out. */
+/** Any answer must carry the refreshed session cookies, or the user is signed out. */
+function withCookiesOf<T extends NextResponse>(from: NextResponse, to: T): T {
+  from.cookies.getAll().forEach((cookie) => to.cookies.set(cookie));
+  return to;
+}
+
 function redirectKeepingCookies(request: NextRequest, from: NextResponse, target: string) {
-  const redirect = NextResponse.redirect(new URL(target, request.url));
-  from.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
-  return redirect;
+  return withCookiesOf(from, NextResponse.redirect(new URL(target, request.url)));
 }
 
 export const config = {

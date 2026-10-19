@@ -4066,6 +4066,7 @@
       "backupEnrollTitle": "Second device",
       "backupEnrollDescription": "Scan this code with the backup device. It gets its own key, so either device can sign you in.",
       "startOver": "Start over",
+      "backToApp": "Back to the {appName} app",
       "errors": {
         "invalid": "Wrong e-mail or password.",
         "invalidCode": "That code doesn't fit. Check the time on your device and try the next code.",

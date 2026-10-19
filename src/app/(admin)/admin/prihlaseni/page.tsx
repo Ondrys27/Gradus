@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import Link from "next/link";
+import { redirect, RedirectType } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { ArrowLeftIcon } from "lucide-react";
 import { Logo } from "@/components/layout/logo";
-import { ADMIN_PATH } from "@/features/admin/access";
+import { safeAdminNextPath } from "@/features/admin/access";
 import { AdminLogin } from "@/features/admin/admin-login";
-import { adminAccess, isOwnerAccount } from "@/features/admin/server/guard";
+import { adminAccess } from "@/features/admin/server/guard";
+import { HOME_PATH } from "@/lib/auth/routes";
 import { APP_NAME } from "@/lib/constants";
-import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.login");
@@ -14,15 +16,19 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * The only way into the administration. A signed-in account that is not the
- * owner gets the 404 here too; the owner with a live admin session goes on.
+ * The only way into the administration, shown to anyone. Whether the account
+ * is the owner is decided after the password (anyone else gets the 404 then);
+ * the owner with a live admin session goes straight on to `next`.
  */
-export default async function AdminLoginPage() {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  const userId = data?.claims?.sub;
-  if (userId && !(await isOwnerAccount(userId))) notFound();
-  if (userId && (await adminAccess())) redirect(ADMIN_PATH);
+export default async function AdminLoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string | string[] }>;
+}) {
+  const { next: rawNext } = await searchParams;
+  const next = safeAdminNextPath(typeof rawNext === "string" ? rawNext : null);
+  if (await adminAccess()) redirect(next, RedirectType.replace);
+  const t = await getTranslations("admin.login");
 
   return (
     <div className="flex min-h-dvh flex-col items-center px-4 pt-[calc(24px+env(safe-area-inset-top))] pb-[calc(24px+env(safe-area-inset-bottom))]">
@@ -31,7 +37,14 @@ export default async function AdminLoginPage() {
         <span className="text-lg font-bold tracking-tight text-ink">{APP_NAME}</span>
       </div>
       <main className="flex w-full max-w-md flex-1 flex-col justify-center py-8">
-        <AdminLogin />
+        <AdminLogin next={next} />
+        <Link
+          href={HOME_PATH}
+          className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 self-center rounded-lg px-3 text-sm text-ink-soft transition-colors hover:text-ink focus-visible:text-ink"
+        >
+          <ArrowLeftIcon aria-hidden className="size-4" />
+          {t("backToApp", { appName: APP_NAME })}
+        </Link>
       </main>
     </div>
   );
