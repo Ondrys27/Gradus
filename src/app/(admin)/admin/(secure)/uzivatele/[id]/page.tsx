@@ -7,6 +7,7 @@ import { formatCalendarDate, formatDateTime } from "@/lib/format";
 import { ADMIN_FORMAT_SETTINGS, formatMetricValue } from "@/features/admin/format-metric";
 import { logAdminAction } from "@/features/admin/server/audit";
 import { requireAdmin } from "@/features/admin/server/guard";
+import { adminCan } from "@/features/admin/roles";
 import { loadUserDetail } from "@/features/admin/server/users-data";
 import { loadUserAiCap } from "@/features/admin/server/ai-caps-data";
 import { peopleNamer } from "@/features/admin/server/people";
@@ -115,11 +116,14 @@ export default async function AdminUserDetailPage({ params }: Props) {
             }
           />
         </div>
-        <UserAiCapForm
-          userId={id}
-          mode={userCapModeOf(aiCap.override)}
-          capUsd={aiCap.override?.capUsd ?? null}
-        />
+        {/* An admin reads the exception above; changing it is the owner's. */}
+        {adminCan(context.role, "editAiCaps") && (
+          <UserAiCapForm
+            userId={id}
+            mode={userCapModeOf(aiCap.override)}
+            capUsd={aiCap.override?.capUsd ?? null}
+          />
+        )}
       </AdminCard>
 
       <AdminCard title={t("sectionsTitle")} description={t("sectionsDescription")}>

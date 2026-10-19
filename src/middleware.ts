@@ -4,8 +4,8 @@ import {
   ADMIN_PATH_HEADER,
   adminLoginUrl,
   claimsMayEnterAdmin,
-  isAdminLoginPath,
   isAdminPath,
+  isAdminPublicPath,
   parseSessionStatus,
 } from "@/features/admin/access";
 import { HOME_PATH, loginUrlFor, routeKind, safeNextPath } from "@/lib/auth/routes";
@@ -52,11 +52,12 @@ async function route(request: NextRequest) {
 
   const { pathname, search } = request.nextUrl;
 
-  // Owner with the second factor and a live admin session; anyone else (signed
+  // Owner or admin with the second factor and a live admin session; anyone else (signed
   // out, no second factor, an idle, expired or ended admin session) goes to the
   // sign-in, which then continues to the page asked for. The sign-in page
-  // checks the role itself, after the password.
-  if (isAdminPath(pathname) && !isAdminLoginPath(pathname)) {
+  // checks the role itself, after the password; an invitation page checks its
+  // token.
+  if (isAdminPath(pathname) && !isAdminPublicPath(pathname)) {
     let allowed = false;
     if (claimsMayEnterAdmin(data?.claims)) {
       const touched = await supabase.rpc("admin_session_touch", { _activity: true });

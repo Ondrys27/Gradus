@@ -47,7 +47,7 @@ bun run db:types      # generuje src/types/database.ts
 - `src/lib/format.ts` — veškeré formátování · `src/lib/constants.ts` — `APP_NAME` · `src/lib/supabase/` — klienti (browser, server, admin)
 - `src/config/pricing.ts` — ceny a limity tarifů na jednom místě
 - `src/locales/en.json`, `cs.json`
-- `src/app/(admin)/` — administrace na /admin, jen majitel s druhým faktorem
+- `src/app/(admin)/` — administrace na /admin, majitel a administrátoři s druhým faktorem
 - `src/lib/analytics/` — katalog událostí (events.ts), registr metrik (metrics.ts), track()
 - `docs/metrics.md` — závazný katalog metrik
 
@@ -69,6 +69,7 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 ### Data
 - **RLS na všech tabulkách.** Uživatel vidí jen svoje. Výjimky: `call_time_stats` (souhrny, čte každý přihlášený), tabulky pracovníků (pracovník vidí své záznamy), sdílený pracovní prostor (pracovník vidí sekce majitele podle práv, viz Pracovní prostor).
 - **Role v `user_roles`**, ne v `profiles`. Bez klientského zápisu. `has_role()` je `SECURITY DEFINER`.
+- **Administrátoři:** role `owner` (právě jeden) a `admin`. Admina přidává jen pozvánka v `admin_invites` (jen SHA-256 32bajtového tokenu, 7 dní, jednorázová, zrušitelná); zápis jen přes SECURITY DEFINER funkce `admin_invite_create` / `admin_invite_revoke` / `admin_remove` (majitel s živou relací a aal2) a `admin_invite_accept` (pozvaný s aal2; token se spotřebuje v téže transakci, kde vznikne role), vše do `admin_audit`. Účet založený z pozvánky (`user_metadata.admin_invite`, nastavuje jen server) nemá onboarding, pracovní prostor ani zkušební období; každý držitel role admin je interní.
 - **`usage_events`, `ai_usage`, `call_time_stats` zapisuje jen server** přes admin klienta. Bez klientských INSERT/UPDATE/DELETE pravidel.
 - Admin klient obchází RLS — jen v serverovém kódu, vždy filtrovat podle `userId` ze session.
 - **Co jde spočítat, se neukládá:** postup milníku, poslední kontakt, příslušnost do Klientů, denní součty časovače, XP úroveň.
@@ -177,7 +178,9 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - Zápis jen přes track() na serveru nebo /api/t, které bere uživatele ze session. Do analytics_events nikdy nezapisuje klient přímo.
 - Interní účty (profiles.is_internal) jsou z metrik ve výchozím stavu vyloučené.
 - Měny se v metrikách nesčítají.
-- /admin: role owner + aal2 (TOTP) a živá relace administrace. Kdo je nemá (nepřihlášený, bez druhého faktoru, vypršelá relace), jde na /admin/prihlaseni?next=… (jen cesty pod /admin, `safeAdminNextPath`), po heslu a TOTP zpět na next. Přihlášení vidí každý; kdo není majitel, dostane po hesle 404, špatné heslo neprozradí, zda e-mail existuje. Data administrace jen na serveru přes admin klienta po ověření, každý pohled a export do admin_audit.
+- /admin: role owner nebo admin + aal2 (TOTP) a živá relace administrace. Kdo je nemá (nepřihlášený, bez druhého faktoru, vypršelá relace), jde na /admin/prihlaseni?next=… (jen cesty pod /admin, `safeAdminNextPath`), po heslu a TOTP zpět na next. Přihlášení vidí každý; kdo není majitel ani admin, dostane po hesle 404, špatné heslo neprozradí, zda e-mail existuje. Data administrace jen na serveru přes admin klienta po ověření, každý pohled a export do admin_audit.
+- Admin vidí vše kromě sekce Administrátoři (/admin/administratori, adminovi 404), stropy AI a výjimky jen čte, exporty s osobními údaji (`PERSONAL_DATA_EXPORTS`, export auditu) nemá. Co nesmí, se neukáže (ne šedé); server i DB (`admin_require_owner()`) to vynucují. Tabulka práv v `docs/admin-roles.md`, pravidla v `src/features/admin/roles.ts`; nová akce nebo funkce administrace = nový řádek v tabulce.
+- Pozvánka: `/admin/pozvanka/<token>` → přihlášení nebo nový účet → povinné TOTP → role admin → /admin. Neplatný, použitý, zrušený i vypršelý odkaz dostane tutéž neutrální hlášku a počítá se do limitu pokusů podle IP jako přihlášení. Odebrání admina ukončí jeho živou relaci hned. Přihlášení do administrace ukládá do `admin_audit` IP zkrácenou na /24 (IPv6 /48) a třídu prohlížeče, nikdy celou adresu ani User-Agent.
 - Nová funkce v aplikaci = nové události v katalogu a případně nová metrika v docs/metrics.md.
 - Události a relace se mažou po 13 měsících.
 

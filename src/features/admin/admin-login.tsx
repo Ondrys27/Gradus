@@ -20,6 +20,7 @@ import { SubmitButton } from "@/features/auth/submit-button";
 import { APP_NAME } from "@/lib/constants";
 import { safeAdminNextPath } from "./access";
 import {
+  adminInviteSignIn,
   adminSignIn,
   startAdminEnrollment,
   verifyAdminCode,
@@ -35,8 +36,11 @@ type Problem = { error: AdminLoginError; minutes?: number } | null;
  * second factor is set up here (QR code, check with a code) and a backup
  * device is recommended. Every step is checked again on the server. After
  * the code it continues to `next`, the administration page asked for.
+ *
+ * With `invite` (the token of an invitation link) the same steps sign in or
+ * create the account, and the code accepts the invitation.
  */
-export function AdminLogin({ next }: { next?: string }) {
+export function AdminLogin({ next, invite }: { next?: string; invite?: string }) {
   const t = useTranslations("admin.login");
   const [step, setStep] = useState<Step>("password");
   const [restarted, setRestarted] = useState(false);
@@ -55,18 +59,25 @@ export function AdminLogin({ next }: { next?: string }) {
 
   return (
     <GlowCard interactive={false} className="flex flex-col gap-6 p-6 md:p-8">
-      {step === "password" && <PasswordStep restarted={restarted} onNext={afterPassword} />}
+      {step === "password" &&
+        (invite ? (
+          <InvitePasswordStep invite={invite} restarted={restarted} onNext={afterPassword} />
+        ) : (
+          <PasswordStep restarted={restarted} onNext={afterPassword} />
+        ))}
       {step === "verify" && (
         <CodeStep
           title={t("verifyTitle")}
           description={t("verifyDescription")}
           submitLabel={t("verifySubmit")}
-          onSubmit={(code) => verifyAdminCode({ mode: "login", code })}
+          onSubmit={(code) => verifyAdminCode({ mode: "login", code, invite })}
           onDone={enter}
           onRestart={restart}
         />
       )}
-      {step === "enroll" && <EnrollStep kind="primary" onDone={toBackup} onRestart={restart} />}
+      {step === "enroll" && (
+        <EnrollStep kind="primary" invite={invite} onDone={toBackup} onRestart={restart} />
+      )}
       {step === "backup" && (
         <div className="flex flex-col gap-5">
           <StepHeader
@@ -178,6 +189,92 @@ function PasswordStep({
   );
 }
 
+function InvitePasswordStep({
+  invite,
+  restarted,
+  onNext,
+}: {
+  invite: string;
+  restarted: boolean;
+  onNext: (next: "enroll" | "verify") => void;
+}) {
+  const t = useTranslations("admin.invite");
+  const tAuth = useTranslations("auth.fields");
+  const [mode, setMode] = useState<"signin" | "signup">("signup");
+  const [state, action] = useActionState<AdminSignInState, FormData>(adminInviteSignIn, {
+    ok: false,
+  });
+
+  useEffect(() => {
+    if (state.ok) onNext(state.next);
+  }, [state, onNext]);
+
+  const problem: Problem =
+    !state.ok && state.error
+      ? { error: state.error, minutes: state.minutes }
+      : restarted
+        ? { error: "restart" }
+        : null;
+
+  return (
+    <form action={action} className="flex flex-col gap-5" noValidate>
+      <StepHeader
+        icon={ShieldCheckIcon}
+        title={t("title", { appName: APP_NAME })}
+        description={t("description", { appName: APP_NAME })}
+      />
+      <input type="hidden" name="invite" value={invite} />
+      <input type="hidden" name="mode" value={mode} />
+      <div role="radiogroup" aria-label={t("modeLabel")} className="grid grid-cols-2 gap-1 rounded-xl border border-line p-1">
+        {(["signup", "signin"] as const).map((option) => (
+          <button
+            key={option}
+            type="button"
+            role="radio"
+            aria-checked={mode === option}
+            onClick={() => setMode(option)}
+            className={
+              mode === option
+                ? "min-h-11 rounded-lg bg-violet/15 text-sm font-medium text-ink"
+                : "min-h-11 rounded-lg text-sm text-ink-soft hover:text-ink"
+            }
+          >
+            {t(`mode.${option}`)}
+          </button>
+        ))}
+      </div>
+      <FormField id="admin-email" label={tAuth("email")}>
+        <Input
+          {...fieldA11y("admin-email", undefined)}
+          name="email"
+          type="email"
+          autoComplete={mode === "signup" ? "email" : "username"}
+          inputMode="email"
+          required
+          autoFocus
+          defaultValue={!state.ok ? state.email : undefined}
+        />
+      </FormField>
+      <FormField
+        id="admin-password"
+        label={tAuth("password")}
+        hint={mode === "signup" ? t("passwordHint") : undefined}
+      >
+        <PasswordInput
+          {...fieldA11y("admin-password", undefined)}
+          name="password"
+          autoComplete={mode === "signup" ? "new-password" : "current-password"}
+          required
+          showLabel={tAuth("showPassword")}
+          hideLabel={tAuth("hidePassword")}
+        />
+      </FormField>
+      <ProblemAlert problem={problem} />
+      <SubmitButton className="w-full">{t(`submit.${mode}`)}</SubmitButton>
+    </form>
+  );
+}
+
 function CodeStep({
   title,
   description,
@@ -249,10 +346,12 @@ function CodeStep({
 
 function EnrollStep({
   kind,
+  invite,
   onDone,
   onRestart,
 }: {
   kind: "primary" | "backup";
+  invite?: string;
   onDone: () => void;
   onRestart: () => void;
 }) {
@@ -264,7 +363,7 @@ function EnrollStep({
 
   useEffect(() => {
     let cancelled = false;
-    startAdminEnrollment(kind)
+    startAdminEnrollment(kind, invite)
       .catch(() => ({ ok: false as const, error: "generic" as const }))
       .then((result) => {
         if (cancelled) return;
@@ -275,7 +374,7 @@ function EnrollStep({
     return () => {
       cancelled = true;
     };
-  }, [kind, onRestart]);
+  }, [kind, invite, onRestart]);
 
   const title = kind === "primary" ? t("enrollTitle") : t("backupEnrollTitle");
   const description = kind === "primary" ? t("enrollDescription") : t("backupEnrollDescription");
@@ -314,6 +413,7 @@ function EnrollStep({
           mode: kind === "primary" ? "enroll" : "backup",
           code,
           factorId: factor.factorId,
+          invite,
         })
       }
       onDone={onDone}

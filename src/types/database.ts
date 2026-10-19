@@ -71,31 +71,76 @@ export type Database = {
       }
       admin_audit: {
         Row: {
+          browser: string | null
           created_at: string
           detail: Json | null
           id: number
           ip_hash: string | null
+          ip_prefix: string | null
           kind: Database["public"]["Enums"]["admin_audit_kind"]
           target: string
           user_id: string | null
         }
         Insert: {
+          browser?: string | null
           created_at?: string
           detail?: Json | null
           id?: never
           ip_hash?: string | null
+          ip_prefix?: string | null
           kind: Database["public"]["Enums"]["admin_audit_kind"]
           target: string
           user_id?: string | null
         }
         Update: {
+          browser?: string | null
           created_at?: string
           detail?: Json | null
           id?: never
           ip_hash?: string | null
+          ip_prefix?: string | null
           kind?: Database["public"]["Enums"]["admin_audit_kind"]
           target?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      admin_invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          expires_at: string
+          id: string
+          note: string | null
+          revoked_at: string | null
+          token_hash: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          expires_at?: string
+          id?: string
+          note?: string | null
+          revoked_at?: string | null
+          token_hash: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          expires_at?: string
+          id?: string
+          note?: string | null
+          revoked_at?: string | null
+          token_hash?: string
         }
         Relationships: []
       }
@@ -2920,6 +2965,36 @@ export type Database = {
         Args: { _code: string; _user_id: string }
         Returns: string
       }
+      admin_invite_accept: {
+        Args: { _ip_hash?: string; _token_hash: string }
+        Returns: undefined
+      }
+      admin_invite_create: {
+        Args: {
+          _email?: string
+          _ip_hash?: string
+          _note?: string
+          _token_hash: string
+        }
+        Returns: string
+      }
+      admin_invite_revoke: {
+        Args: { _id: string; _ip_hash?: string }
+        Returns: undefined
+      }
+      admin_members: {
+        Args: never
+        Returns: {
+          active: boolean
+          added_at: string
+          last_login_at: string
+          last_seen_at: string
+          logins_30d: number
+          removed_at: string
+          role: string
+          user_id: string
+        }[]
+      }
       admin_people: {
         Args: { _ids: string[] }
         Returns: {
@@ -2928,6 +3003,11 @@ export type Database = {
           user_id: string
         }[]
       }
+      admin_remove: {
+        Args: { _ip_hash?: string; _user_id: string }
+        Returns: undefined
+      }
+      admin_require_owner: { Args: never; Returns: undefined }
       admin_session_end: { Args: never; Returns: undefined }
       admin_session_touch: { Args: { _activity?: boolean }; Returns: Json }
       admin_set_ai_user_cap: {

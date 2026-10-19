@@ -12,12 +12,12 @@ import {
 import { clearAiCapsCache } from "@/features/jarvis/server/caps";
 import { createClient } from "@/lib/supabase/server";
 import { ADMIN_PATH } from "../access";
-import { adminAccess } from "./guard";
+import { adminAccessFor } from "./guard";
 import { fingerprint, requestInfo } from "./request-info";
 
 /**
  * The AI caps changed from the administration. Each action checks the owner's
- * admin session (role owner, aal2) first; the database function then checks
+ * admin session (role owner, aal2) first; an admin only reads the caps; the database function then checks
  * it once more from the signed token, saves the value and writes who changed
  * what from what to what into admin_audit, all in one transaction.
  */
@@ -50,7 +50,7 @@ function refused(error: { code?: string; message: string }): CapsActionResult {
 export async function saveAiCaps(input: AiCapsForm): Promise<CapsActionResult> {
   const parsed = aiCapsFormSchema.safeParse(input);
   if (!parsed.success) return invalid(parsed.error);
-  if (!(await adminAccess(true))) return { ok: false, error: "forbidden" };
+  if (!(await adminAccessFor("editAiCaps"))) return { ok: false, error: "forbidden" };
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("admin_set_app_setting", {
@@ -71,7 +71,7 @@ export async function saveUserAiCap(userId: string, input: UserCapForm): Promise
   if (!id.success) return { ok: false, error: "invalid" };
   const parsed = userCapFormSchema.safeParse(input);
   if (!parsed.success) return invalid(parsed.error);
-  if (!(await adminAccess(true))) return { ok: false, error: "forbidden" };
+  if (!(await adminAccessFor("editAiCaps"))) return { ok: false, error: "forbidden" };
 
   const cap = parsed.data.mode === "cap" ? parsed.data.capUsd : null;
   const supabase = await createClient();

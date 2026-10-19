@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { headers } from "next/headers";
-import { redirect, RedirectType } from "next/navigation";
+import { notFound, redirect, RedirectType } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -10,16 +10,19 @@ import {
   claimsMayEnterAdmin,
   parseSessionStatus,
 } from "../access";
+import { adminCan, type AdminRole, type OwnerOnly } from "../roles";
 
 export type AdminContext = {
   userId: string;
+  /** Owner or admin: both pass the gate, a few things are the owner's (roles.ts). */
+  role: AdminRole;
   /** When the 8-hour limit ends the admin session, ISO. */
   expiresAt: string;
 };
 
 /**
- * Role owner, second factor (aal2) and a live admin session, checked by the
- * database from the signed token. Null for anyone else; never says why.
+ * Role owner or admin, second factor (aal2) and a live admin session, checked
+ * by the database from the signed token. Null for anyone else; never says why.
  */
 export const adminAccess = cache(
   async (activity: boolean = false): Promise<AdminContext | null> => {
@@ -36,10 +39,15 @@ export const adminAccess = cache(
         return null;
       }
       const session = parseSessionStatus(touched);
-      if (session.status !== "ok" || session.userId !== claims?.sub || !session.expiresAt) {
+      if (
+        session.status !== "ok" ||
+        session.userId !== claims?.sub ||
+        !session.expiresAt ||
+        !session.role
+      ) {
         return null;
       }
-      return { userId: session.userId, expiresAt: session.expiresAt };
+      return { userId: session.userId, role: session.role, expiresAt: session.expiresAt };
     } catch (error) {
       console.error("[admin] session check threw", error);
       return null;
@@ -61,6 +69,22 @@ export async function requireAdmin(activity = false): Promise<AdminContext> {
   return context;
 }
 
+/**
+ * A page or action only the owner may use. An admin gets the ordinary 404,
+ * the same as an address that does not exist.
+ */
+export async function requireOwnerFor(what: OwnerOnly, activity = false): Promise<AdminContext> {
+  const context = await requireAdmin(activity);
+  if (!adminCan(context.role, what)) notFound();
+  return context;
+}
+
+/** For server actions: the context only when the role may do `what`. */
+export async function adminAccessFor(what: OwnerOnly): Promise<AdminContext | null> {
+  const context = await adminAccess(true);
+  return context && adminCan(context.role, what) ? context : null;
+}
+
 /** For route handlers: the same 404 as an unknown address. */
 export function adminNotFound(): Response {
   return new Response("Not Found", {
@@ -69,12 +93,16 @@ export function adminNotFound(): Response {
   });
 }
 
-/** Whether an account holds the owner role; nobody else gets past the password. */
-export async function isOwnerAccount(userId: string): Promise<boolean> {
-  const { data, error } = await createAdminClient().rpc("has_role", {
-    _user_id: userId,
-    _role: "owner",
-  });
-  if (error) console.error("[admin] role check failed", error.message);
-  return data === true;
+/** Whether an account holds the owner or the admin role; nobody else gets past the password. */
+export async function isAdminAccount(userId: string): Promise<boolean> {
+  const admin = createAdminClient();
+  const results = await Promise.all(
+    (["owner", "admin"] as const).map((role) =>
+      admin.rpc("has_role", { _user_id: userId, _role: role }),
+    ),
+  );
+  for (const { error } of results) {
+    if (error) console.error("[admin] role check failed", error.message);
+  }
+  return results.some(({ data }) => data === true);
 }

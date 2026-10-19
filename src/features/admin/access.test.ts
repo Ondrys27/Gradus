@@ -106,8 +106,13 @@ describe("claims", () => {
     expect(parseSessionStatus({ status: "ok", user_id: "u", expires_at: "x" })).toEqual({
       status: "ok",
       userId: "u",
+      role: null,
       expiresAt: "x",
     });
+    expect(
+      parseSessionStatus({ status: "ok", user_id: "u", role: "admin", expires_at: "x" }).role,
+    ).toBe("admin");
+    expect(parseSessionStatus({ status: "ok", user_id: "u", role: "user" }).role).toBeNull();
   });
 });
 

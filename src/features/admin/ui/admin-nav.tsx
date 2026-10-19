@@ -14,13 +14,15 @@ import {
   MessageSquareIcon,
   RepeatIcon,
   ScrollTextIcon,
+  ShieldCheckIcon,
   SparklesIcon,
   TrendingUpIcon,
   UsersIcon,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ADMIN_SECTIONS, isActiveSection, usesControls, type AdminSectionKey } from "../nav";
+import { isActiveSection, sectionsFor, usesControls, type AdminSectionKey } from "../nav";
+import type { AdminRole } from "../roles";
 
 const ICONS: Record<AdminSectionKey, LucideIcon> = {
   overview: LayoutDashboardIcon,
@@ -36,6 +38,7 @@ const ICONS: Record<AdminSectionKey, LucideIcon> = {
   users: UsersIcon,
   explorer: CompassIcon,
   audit: ScrollTextIcon,
+  admins: ShieldCheckIcon,
 };
 
 const itemClass =
@@ -46,7 +49,7 @@ const itemClass =
  * scrolls sideways on narrow ones. Links keep the shared controls (period,
  * segment…) so switching pages keeps the view.
  */
-export function AdminNav({ variant }: { variant: "sidebar" | "strip" }) {
+export function AdminNav({ variant, role }: { variant: "sidebar" | "strip"; role: AdminRole }) {
   const t = useTranslations("admin.shell");
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -61,7 +64,7 @@ export function AdminNav({ variant }: { variant: "sidebar" | "strip" }) {
             : "-mx-4 flex gap-1 overflow-x-auto px-4 pb-1 [scrollbar-width:none]",
         )}
       >
-        {ADMIN_SECTIONS.map((section) => {
+        {sectionsFor(role).map((section) => {
           const Icon = ICONS[section.key];
           const label = t(`nav.${section.key}`);
           if (!section.ready) {

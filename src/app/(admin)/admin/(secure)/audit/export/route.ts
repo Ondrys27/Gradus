@@ -2,6 +2,7 @@ import { toCsv } from "@/features/admin/access";
 import { logAdminAction } from "@/features/admin/server/audit";
 import { loadAuditExport } from "@/features/admin/server/audit-data";
 import { adminAccess, adminNotFound } from "@/features/admin/server/guard";
+import { mayExport } from "@/features/admin/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,8 @@ export const dynamic = "force-dynamic";
  */
 export async function GET() {
   const context = await adminAccess(true);
-  if (!context) return adminNotFound();
+  // It names people: the owner's only, an admin gets the 404.
+  if (!context || !mayExport(context.role, "audit")) return adminNotFound();
 
   const rows = await loadAuditExport();
   if (!(await logAdminAction(context, "export", "audit"))) {

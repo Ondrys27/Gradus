@@ -11,8 +11,8 @@ import { AdminNav } from "@/features/admin/ui/admin-nav";
 import { AdminViewMain, AdminViewProvider } from "@/features/admin/ui/admin-view";
 
 /**
- * Everything inside needs the owner with the second factor and a live admin
- * session. A sidebar of sections and, above every page, the shared controls.
+ * Everything inside needs the owner or an admin with the second factor and a
+ * live admin session. A sidebar of sections and, above every page, the shared controls.
  */
 export default async function AdminSecureLayout({ children }: { children: React.ReactNode }) {
   const context = await requireAdmin();
@@ -45,7 +45,7 @@ export default async function AdminSecureLayout({ children }: { children: React.
           <span className="font-bold tracking-tight text-ink">{t("title")}</span>
         </div>
         <Suspense>
-          <AdminNav variant="sidebar" />
+          <AdminNav variant="sidebar" role={context.role} />
         </Suspense>
       </aside>
 
@@ -64,7 +64,7 @@ export default async function AdminSecureLayout({ children }: { children: React.
             </div>
             <div className="lg:hidden">
               <Suspense>
-                <AdminNav variant="strip" />
+                <AdminNav variant="strip" role={context.role} />
               </Suspense>
             </div>
             <Suspense>

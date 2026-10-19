@@ -6,6 +6,7 @@ import { cacheHitRate } from "@/lib/analytics/metrics";
 import { ADMIN_PATH } from "@/features/admin/access";
 import { logAdminAction } from "@/features/admin/server/audit";
 import { requireAdmin } from "@/features/admin/server/guard";
+import { adminCan, mayExport } from "@/features/admin/roles";
 import { adminQuery, safe, type AdminQuery } from "@/features/admin/server/metrics-data";
 import {
   aiBreakdowns,
@@ -52,7 +53,7 @@ export default async function AdminAiPage({ searchParams }: Props) {
         <Budget />
       </Suspense>
       <Suspense fallback={<GridSkeleton count={1} height={260} />}>
-        <Caps />
+        <Caps readOnly={!adminCan(context.role, "editAiCaps")} />
       </Suspense>
       <Suspense fallback={<TilesSkeleton count={6} />}>
         <Tiles q={q} />
@@ -67,7 +68,7 @@ export default async function AdminAiPage({ searchParams }: Props) {
         <More q={q} />
       </Suspense>
       <Suspense fallback={<GridSkeleton count={1} height={260} />}>
-        <TopUsers q={q} />
+        <TopUsers q={q} exportable={mayExport(context.role, "table.ai.top_users.csv")} />
       </Suspense>
     </>
   );
@@ -83,7 +84,7 @@ async function Budget() {
 }
 
 /** The caps set here apply within a minute; this month's spend under each. */
-async function Caps() {
+async function Caps({ readOnly }: { readOnly: boolean }) {
   const [loaded, t] = await Promise.all([
     safe("ai caps", () => loadAiCapsOverview()),
     getTranslations("admin.ai.caps"),
@@ -101,6 +102,7 @@ async function Caps() {
             fromDefaults={overview.caps.source === "default"}
             spentUsd={overview.spentUsd}
             topUserSpentUsd={overview.topUserSpentUsd}
+            readOnly={readOnly}
           />
         )}
       </Show>
@@ -252,7 +254,7 @@ async function More({ q }: { q: AdminQuery }) {
   );
 }
 
-async function TopUsers({ q }: { q: AdminQuery }) {
+async function TopUsers({ q, exportable }: { q: AdminQuery; exportable: boolean }) {
   const [loaded, t, tUnits] = await Promise.all([
     safe("ai top users", () => aiTopUsers(q)),
     getTranslations("admin.ai"),
@@ -265,6 +267,7 @@ async function TopUsers({ q }: { q: AdminQuery }) {
         {(rows) => (
           <DataTable
             id="ai.top_users"
+            exportable={exportable}
             table={buildTable(rows, [
               {
                 key: "user_name",

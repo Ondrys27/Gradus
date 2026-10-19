@@ -4072,7 +4072,11 @@
         "invalidCode": "That code doesn't fit. Check the time on your device and try the next code.",
         "locked": "Too many wrong attempts. Try again in {minutes, plural, one {# minute} other {# minutes}}.",
         "restart": "The sign-in has expired. Start again with your password.",
-        "generic": "Something went wrong. Try again."
+        "generic": "Something went wrong. Try again.",
+        "inviteInvalid": "This link cannot be used. Ask for a new invitation.",
+        "emailTaken": "An account with this e-mail already exists. Switch to \"I have an account\" and sign in.",
+        "passwordTooShort": "The password needs at least 8 characters.",
+        "passwordTooLong": "The password can have at most 72 characters."
       }
     },
     "shell": {
@@ -4091,7 +4095,8 @@
         "health": "Health",
         "feedback": "Feedback",
         "users": "Users",
-        "explorer": "Explorer"
+        "explorer": "Explorer",
+        "admins": "Administrators"
       },
       "soon": "Soon"
     },
@@ -4630,6 +4635,98 @@
     },
     "people": {
       "unnamed": "Unnamed account · {suffix}"
+    },
+    "invite": {
+      "title": "Invitation to the {appName} administration",
+      "description": "Sign in with your account or create a new one. Then you set up an authenticator app and enter the {appName} administration.",
+      "modeLabel": "Account",
+      "mode": {
+        "signup": "New account",
+        "signin": "I have an account"
+      },
+      "passwordHint": "At least 8 characters.",
+      "submit": {
+        "signup": "Create account and continue",
+        "signin": "Sign in and continue"
+      },
+      "invalidTitle": "This link cannot be used",
+      "invalidDescription": "Ask the person who invited you for a new link."
+    },
+    "inviteEmail": {
+      "subject": "Invitation to the {appName} administration",
+      "intro": "You have been invited to the {appName} administration.",
+      "link": "Open the invitation",
+      "expires": "The link is valid until {expires} and works only once.",
+      "ignore": "If you were not expecting this invitation, ignore this e-mail."
+    },
+    "admins": {
+      "title": "Administrators",
+      "description": "Who may enter the administration. An administrator sees everything except this section, does not change AI caps and does not export personal data.",
+      "membersTitle": "Owner and administrators",
+      "role": {
+        "owner": "Owner",
+        "admin": "Administrator"
+      },
+      "status": {
+        "active": "Active",
+        "removed": "Removed"
+      },
+      "lastLogin": "Last sign-in",
+      "logins30d": "Sign-ins in 30 days",
+      "lastSeen": "Last activity",
+      "removedAt": "Removed",
+      "history": "Sign-in and session history",
+      "loginsTitle": "Sign-ins",
+      "sessionsTitle": "Sessions",
+      "none": "Nothing yet.",
+      "sessionEnded": "ended {at}",
+      "sessionLastSeen": "last seen {at}",
+      "invitesTitle": "Open invitations",
+      "invitesDescription": "A link is valid for 7 days and works once. It is shown only when created.",
+      "noInvites": "No open invitation.",
+      "noEmail": "No e-mail",
+      "inviteDates": "Created {created} · valid until {expires}",
+      "invite": {
+        "open": "Invite an administrator",
+        "title": "Invite an administrator",
+        "description": "Creates a one-time link valid for 7 days. The invited person signs in or creates an account and sets up an authenticator app.",
+        "emailLabel": "E-mail",
+        "emailOptional": "Optional. Only for sending the link by e-mail.",
+        "noteLabel": "Note",
+        "noteHint": "Optional, only you see it. At most 200 characters.",
+        "cancel": "Cancel",
+        "create": "Create link",
+        "close": "Close",
+        "onceOnly": "The link is shown only now. Copy it; once closed, nobody can show it again.",
+        "expires": "Valid until {at}, once.",
+        "copy": "Copy",
+        "copied": "Copied",
+        "sendEmail": "Send by e-mail",
+        "emailSent": "Sent",
+        "emailHint": "Without a verified domain in Resend the e-mail only reaches the Resend account address. Otherwise send the link yourself.",
+        "emailFailed": "The e-mail could not be sent. Copy the link and send it yourself.",
+        "errors": {
+          "forbidden": "The admin session has ended. Sign in again.",
+          "invalid": "Check the e-mail and the note.",
+          "failed": "The invitation could not be created. Try again."
+        }
+      },
+      "revoke": {
+        "open": "Revoke",
+        "title": "Revoke the invitation?",
+        "description": "The link stops working at once. Whoever got it can no longer use it.",
+        "confirm": "Revoke invitation",
+        "cancel": "Keep",
+        "failed": "The invitation could not be revoked. It may have been used already."
+      },
+      "remove": {
+        "open": "Remove",
+        "title": "Remove the administrator?",
+        "description": "{name} loses access to the administration at once, even in an open session. The app account stays.",
+        "confirm": "Remove",
+        "cancel": "Keep",
+        "failed": "The administrator could not be removed. Try again."
+      }
     }
   }
 }

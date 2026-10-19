@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { logAdminAction } from "./audit";
+import { mayExport } from "../roles";
 import { adminAccess } from "./guard";
 
 /** `chart.<page>.<chart>.<csv|png>` or `table.<page>.<table>.csv`: identifiers only, never free text. */
@@ -18,6 +19,7 @@ export async function recordExport(target: string): Promise<{ ok: boolean }> {
   const parsed = EXPORT_TARGET.safeParse(target);
   if (!parsed.success) return { ok: false };
   const context = await adminAccess(true);
-  if (!context) return { ok: false };
+  // Exports that name people are the owner's (the button is not shown to an admin).
+  if (!context || !mayExport(context.role, parsed.data)) return { ok: false };
   return { ok: await logAdminAction(context, "export", parsed.data) };
 }

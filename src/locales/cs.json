@@ -4072,7 +4072,11 @@
         "invalidCode": "Kód nesedí. Zkontroluj čas v zařízení a zkus další kód.",
         "locked": "Příliš mnoho chybných pokusů. Zkus to znovu za {minutes, plural, one {# minutu} few {# minuty} other {# minut}}.",
         "restart": "Přihlášení vypršelo. Začni znovu heslem.",
-        "generic": "Něco se pokazilo. Zkus to znovu."
+        "generic": "Něco se pokazilo. Zkus to znovu.",
+        "inviteInvalid": "Tento odkaz nelze použít. Požádej o novou pozvánku.",
+        "emailTaken": "S tímto e-mailem už účet existuje. Přepni na „Mám účet“ a přihlas se.",
+        "passwordTooShort": "Heslo musí mít aspoň 8 znaků.",
+        "passwordTooLong": "Heslo může mít nejvýš 72 znaků."
       }
     },
     "shell": {
@@ -4091,7 +4095,8 @@
         "health": "Zdraví",
         "feedback": "Zpětná vazba",
         "users": "Uživatelé",
-        "explorer": "Průzkumník"
+        "explorer": "Průzkumník",
+        "admins": "Administrátoři"
       },
       "soon": "Brzy"
     },
@@ -4630,6 +4635,98 @@
     },
     "people": {
       "unnamed": "Účet bez jména · {suffix}"
+    },
+    "invite": {
+      "title": "Pozvánka do administrace {appName}",
+      "description": "Přihlas se svým účtem, nebo si založ nový. Pak nastavíš ověřovací aplikaci a dostaneš se do administrace {appName}.",
+      "modeLabel": "Účet",
+      "mode": {
+        "signup": "Nový účet",
+        "signin": "Mám účet"
+      },
+      "passwordHint": "Aspoň 8 znaků.",
+      "submit": {
+        "signup": "Založit účet a pokračovat",
+        "signin": "Přihlásit a pokračovat"
+      },
+      "invalidTitle": "Odkaz nelze použít",
+      "invalidDescription": "Požádej toho, kdo tě zval, o nový odkaz."
+    },
+    "inviteEmail": {
+      "subject": "Pozvánka do administrace {appName}",
+      "intro": "Dostal(a) jsi pozvánku do administrace {appName}.",
+      "link": "Otevřít pozvánku",
+      "expires": "Odkaz platí do {expires} a jde použít jen jednou.",
+      "ignore": "Pokud pozvánku nečekáš, e-mail ignoruj."
+    },
+    "admins": {
+      "title": "Administrátoři",
+      "description": "Kdo smí do administrace. Administrátor vidí všechno kromě této sekce, nemění stropy AI a neexportuje osobní údaje.",
+      "membersTitle": "Majitel a administrátoři",
+      "role": {
+        "owner": "Majitel",
+        "admin": "Administrátor"
+      },
+      "status": {
+        "active": "Aktivní",
+        "removed": "Odebraný"
+      },
+      "lastLogin": "Poslední přihlášení",
+      "logins30d": "Přihlášení za 30 dní",
+      "lastSeen": "Poslední aktivita",
+      "removedAt": "Odebrán",
+      "history": "Historie přihlášení a relací",
+      "loginsTitle": "Přihlášení",
+      "sessionsTitle": "Relace",
+      "none": "Zatím nic.",
+      "sessionEnded": "skončila {at}",
+      "sessionLastSeen": "naposledy {at}",
+      "invitesTitle": "Otevřené pozvánky",
+      "invitesDescription": "Odkaz platí 7 dní a jde použít jednou. Zobrazí se jen při vytvoření.",
+      "noInvites": "Žádná otevřená pozvánka.",
+      "noEmail": "Bez e-mailu",
+      "inviteDates": "Vytvořena {created} · platí do {expires}",
+      "invite": {
+        "open": "Pozvat administrátora",
+        "title": "Pozvat administrátora",
+        "description": "Vznikne jednorázový odkaz na 7 dní. Pozvaný se přihlásí nebo založí účet a nastaví ověřovací aplikaci.",
+        "emailLabel": "E-mail",
+        "emailOptional": "Nepovinné. Jen kvůli odeslání odkazu e-mailem.",
+        "noteLabel": "Poznámka",
+        "noteHint": "Nepovinné, uvidíš ji jen ty. Nejvýš 200 znaků.",
+        "cancel": "Zrušit",
+        "create": "Vytvořit odkaz",
+        "close": "Zavřít",
+        "onceOnly": "Odkaz se ukáže jen teď. Zkopíruj ho, po zavření ho už nikdo nezobrazí.",
+        "expires": "Platí do {at}, jen jednou.",
+        "copy": "Kopírovat",
+        "copied": "Zkopírováno",
+        "sendEmail": "Poslat e-mailem",
+        "emailSent": "Odesláno",
+        "emailHint": "Bez ověřené domény v Resend dojde e-mail jen na adresu účtu Resend. Jinak pošli odkaz sám.",
+        "emailFailed": "E-mail se nepodařilo odeslat. Zkopíruj odkaz a pošli ho sám.",
+        "errors": {
+          "forbidden": "Relace administrace skončila. Přihlas se znovu.",
+          "invalid": "Zkontroluj e-mail a poznámku.",
+          "failed": "Pozvánku se nepodařilo vytvořit. Zkus to znovu."
+        }
+      },
+      "revoke": {
+        "open": "Zrušit",
+        "title": "Zrušit pozvánku?",
+        "description": "Odkaz přestane platit hned. Kdo ho dostal, už se s ním nepřihlásí.",
+        "confirm": "Zrušit pozvánku",
+        "cancel": "Nechat",
+        "failed": "Pozvánku se nepodařilo zrušit. Možná už byla použita."
+      },
+      "remove": {
+        "open": "Odebrat",
+        "title": "Odebrat administrátora?",
+        "description": "{name} ztratí přístup do administrace hned, i uprostřed otevřené relace. Účet v aplikaci zůstane.",
+        "confirm": "Odebrat",
+        "cancel": "Nechat",
+        "failed": "Administrátora se nepodařilo odebrat. Zkus to znovu."
+      }
     }
   }
 }

@@ -9,6 +9,7 @@ import { ADMIN_PATH } from "@/features/admin/access";
 import { logAdminAction } from "@/features/admin/server/audit";
 import { loadAuditPage } from "@/features/admin/server/audit-data";
 import { requireAdmin } from "@/features/admin/server/guard";
+import { mayExport } from "@/features/admin/roles";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.audit");
@@ -37,10 +38,13 @@ export default async function AdminAuditPage({
         description={t("description")}
         actions={
           // A plain link: the export is a file download, written to the audit on the server.
-          <a href={`${ADMIN_PATH}/audit/export`} className={linkClass} download>
-            <DownloadIcon aria-hidden className="size-4" />
-            {t("export")}
-          </a>
+          // It names people, so only the owner sees it.
+          mayExport(context.role, "audit") ? (
+            <a href={`${ADMIN_PATH}/audit/export`} className={linkClass} download>
+              <DownloadIcon aria-hidden className="size-4" />
+              {t("export")}
+            </a>
+          ) : undefined
         }
       />
       {rows.length === 0 ? (

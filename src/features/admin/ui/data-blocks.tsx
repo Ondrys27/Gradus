@@ -389,7 +389,16 @@ export function FieldsGrid({ data }: { data: FieldsData }) {
  * `buildTable`, so only plain data crosses into this client component. One
  * export button, written to the audit like a chart's.
  */
-export function DataTable({ id, table }: { id: string; table: TableData }) {
+export function DataTable({
+  id,
+  table,
+  exportable = true,
+}: {
+  id: string;
+  table: TableData;
+  /** False hides the export button (rows that name people, for an admin). */
+  exportable?: boolean;
+}) {
   const tChart = useTranslations("admin.chart");
   const [exporting, setExporting] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -417,19 +426,21 @@ export function DataTable({ id, table }: { id: string; table: TableData }) {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex justify-end">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          aria-label={tChart("exportCsv")}
-          title={tChart("exportCsv")}
-          disabled={exporting}
-          onClick={() => void exportCsv()}
-        >
-          <DownloadIcon aria-hidden />
-        </Button>
-      </div>
+      {exportable && (
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label={tChart("exportCsv")}
+            title={tChart("exportCsv")}
+            disabled={exporting}
+            onClick={() => void exportCsv()}
+          >
+            <DownloadIcon aria-hidden />
+          </Button>
+        </div>
+      )}
       {failed && <p className="text-xs text-pink">{tChart("exportFailed")}</p>}
       <div className="overflow-x-auto">
         <table className="w-full min-w-[32rem] text-left text-sm">

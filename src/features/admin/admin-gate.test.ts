@@ -12,6 +12,8 @@ import { NextRequest } from "next/server";
 
 const OWNER = "11111111-1111-4111-8111-111111111111";
 const USER = "22222222-2222-4222-8222-222222222222";
+/** Holds the admin role: through the gate like the owner, without the owner-only things. */
+const ADMIN = "44444444-4444-4444-8444-444444444444";
 
 type Claims = { sub: string; aal: "aal1" | "aal2"; session_id: string; email: string };
 const state = {
@@ -38,10 +40,16 @@ function userClient() {
       state.rpcCalls.push(name);
       const claims = state.claims;
       const owner = claims?.sub === OWNER && claims.aal === "aal2";
+      if (claims?.sub === ADMIN && claims.aal === "aal2") {
+        return {
+          data: { status: "ok", user_id: ADMIN, role: "admin", expires_at: "2026-10-08T20:00:00Z" },
+          error: null,
+        };
+      }
       return {
         data:
           owner && state.ownerSession === "ok"
-            ? { status: "ok", user_id: OWNER, expires_at: "2026-10-08T20:00:00Z" }
+            ? { status: "ok", user_id: OWNER, role: "owner", expires_at: "2026-10-08T20:00:00Z" }
             : { status: owner ? state.ownerSession : "denied" },
         error: null,
       };
@@ -119,7 +127,8 @@ vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "anon");
 vi.stubEnv("SUPABASE_SECRET_KEY", "test-secret");
 
 const { middleware } = await import("@/middleware");
-const { requireAdmin } = await import("./server/guard");
+const { requireAdmin, requireOwnerFor } = await import("./server/guard");
+const { recordExport } = await import("./server/export-actions");
 const { GET: exportAudit } = await import("@/app/(admin)/admin/(secure)/audit/export/route");
 const { ADMIN_PATH_HEADER } = await import("./access");
 
@@ -207,6 +216,17 @@ describe("middleware", () => {
     expect(state.rpcCalls).toEqual(["admin_session_touch"]);
   });
 
+  it("shows an invitation link to anyone without the admin gate, never indexed", async () => {
+    for (const who of [null, USER]) {
+      signIn(who);
+      const response = await visit("/admin/pozvanka/abc");
+      expect(response.status).toBe(200);
+      expect(response.headers.get("location")).toBeNull();
+      expect(response.headers.get("X-Robots-Tag")).toBe("noindex, nofollow");
+    }
+    expect(state.rpcCalls).toEqual([]);
+  });
+
   it("shows the sign-in page to anyone, never indexed", async () => {
     for (const who of [null, USER, OWNER]) {
       signIn(who);
@@ -250,6 +270,7 @@ describe("requireAdmin", () => {
     signIn(OWNER, "aal2");
     await expect(requireAdmin()).resolves.toEqual({
       userId: OWNER,
+      role: "owner",
       expiresAt: "2026-10-08T20:00:00Z",
     });
   });
@@ -287,5 +308,33 @@ describe("audit export", () => {
     signIn(OWNER, "aal2");
     state.auditError = { message: "down" };
     expect((await exportAudit()).status).toBe(503);
+  });
+});
+
+describe("the admin role", () => {
+  it("passes the gate with aal2, and only with it", async () => {
+    signIn(ADMIN, "aal2");
+    expect((await visit("/admin/rust")).status).toBe(200);
+    await expect(requireAdmin()).resolves.toMatchObject({ userId: ADMIN, role: "admin" });
+    signIn(ADMIN, "aal1");
+    expect((await visit("/admin/rust")).status).toBe(307);
+  });
+
+  it("gets the 404 for the owner's pages", async () => {
+    signIn(ADMIN, "aal2");
+    await expect(requireOwnerFor("manageAdmins")).rejects.toThrow("NEXT_NOT_FOUND");
+    signIn(OWNER, "aal2");
+    await expect(requireOwnerFor("manageAdmins")).resolves.toMatchObject({ role: "owner" });
+  });
+
+  it("cannot export the audit or rows that name people, but exports numbers", async () => {
+    signIn(ADMIN, "aal2");
+    expect((await exportAudit()).status).toBe(404);
+    expect(await recordExport("table.ai.top_users.csv")).toEqual({ ok: false });
+    expect(state.audit).toEqual([]);
+    expect(await recordExport("chart.ai.cost.csv")).toEqual({ ok: true });
+    expect(state.audit).toHaveLength(1);
+    signIn(OWNER, "aal2");
+    expect(await recordExport("table.ai.top_users.csv")).toEqual({ ok: true });
   });
 });

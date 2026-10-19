@@ -40,12 +40,15 @@ export function AiCapsForm({
   fromDefaults,
   spentUsd,
   topUserSpentUsd,
+  readOnly = false,
 }: {
   saved: Saved;
   /** Nothing in the database yet: the values shown are the defaults. */
   fromDefaults: boolean;
   spentUsd: number;
   topUserSpentUsd: number | null;
+  /** An admin: the values and meters, no fields and no saving (the owner changes caps). */
+  readOnly?: boolean;
 }) {
   const t = useTranslations("admin.ai.caps");
   const router = useRouter();
@@ -116,6 +119,49 @@ export function AiCapsForm({
     errors.includes(field) ? t(`errors.${field}`, { max: max ? usd(max) : "" }) : undefined;
 
   const warnAt = saved.monthlyUsd * (saved.warnPercent / 100);
+
+  if (readOnly) {
+    const stored = (label: string, value: string) => (
+      <div className="flex flex-col gap-0.5">
+        <span className="text-sm text-ink-soft">{label}</span>
+        <span className="stat-number text-lg text-ink">{value}</span>
+      </div>
+    );
+    return (
+      <div className="flex flex-col gap-4" data-testid="ai-caps-readonly">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <div className="flex flex-col gap-3">
+            {stored(t("monthlyLabel"), show("monthlyUsd", saved.monthlyUsd))}
+            <Meter
+              label={t("monthlyMeter")}
+              value={saved.monthlyUsd > 0 ? spentUsd / saved.monthlyUsd : 1}
+              primary={t("spentOf", { spent: usd(spentUsd), cap: usd(saved.monthlyUsd) })}
+              secondary={t("left", { amount: usd(remainingUsd(saved.monthlyUsd, spentUsd)) })}
+            />
+          </div>
+          <div className="flex flex-col gap-3">
+            {stored(t("perUserLabel"), show("perUserUsd", saved.perUserUsd))}
+            <span className="text-xs text-ink-soft">
+              {t("topUser", { spent: usd(topUserSpentUsd ?? 0) })}
+            </span>
+          </div>
+          <div className="flex flex-col gap-3">
+            {stored(t("warnLabel"), show("warnPercent", saved.warnPercent))}
+            <Meter
+              label={t("warnMeter")}
+              value={warnAt > 0 ? spentUsd / warnAt : 1}
+              primary={t("spentOf", { spent: usd(spentUsd), cap: usd(warnAt) })}
+              secondary={
+                spentUsd >= warnAt
+                  ? t("warningReached")
+                  : t("untilWarning", { amount: usd(remainingUsd(warnAt, spentUsd)) })
+              }
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-4" data-testid="ai-caps-form">

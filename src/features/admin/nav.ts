@@ -1,4 +1,5 @@
 import { ADMIN_PATH } from "./access";
+import { adminCan, type AdminRole } from "./roles";
 
 /** The sections of the administration in sidebar order. */
 export const ADMIN_SECTIONS = [
@@ -15,9 +16,17 @@ export const ADMIN_SECTIONS = [
   { key: "users", href: `${ADMIN_PATH}/uzivatele`, ready: true },
   { key: "explorer", href: `${ADMIN_PATH}/pruzkumnik`, ready: true },
   { key: "audit", href: `${ADMIN_PATH}/audit`, ready: true },
+  { key: "admins", href: `${ADMIN_PATH}/administratori`, ready: true, ownerOnly: true },
 ] as const;
 
 export type AdminSectionKey = (typeof ADMIN_SECTIONS)[number]["key"];
+
+/** The sections a role sees: an admin never sees the owner's (not even greyed out). */
+export function sectionsFor(role: AdminRole) {
+  return ADMIN_SECTIONS.filter(
+    (section) => !("ownerOnly" in section && section.ownerOnly) || adminCan(role, "manageAdmins"),
+  );
+}
 
 /** Whether a section's link is the current page. */
 export function isActiveSection(href: string, pathname: string): boolean {
@@ -27,8 +36,12 @@ export function isActiveSection(href: string, pathname: string): boolean {
 
 /**
  * Pages whose numbers follow the shared controls. The audit keeps its own
- * paging, so the controls are hidden there.
+ * paging and the administrators have no numbers by period, so the controls
+ * are hidden there.
  */
 export function usesControls(pathname: string): boolean {
-  return !isActiveSection(`${ADMIN_PATH}/audit`, pathname);
+  return (
+    !isActiveSection(`${ADMIN_PATH}/audit`, pathname) &&
+    !isActiveSection(`${ADMIN_PATH}/administratori`, pathname)
+  );
 }

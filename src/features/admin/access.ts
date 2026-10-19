@@ -5,9 +5,12 @@
  */
 
 import { safeNextPath, type NextPathScope } from "@/lib/auth/routes";
+import { parseAdminRole, type AdminRole } from "./roles";
 
 export const ADMIN_PATH = "/admin";
 export const ADMIN_LOGIN_PATH = "/admin/prihlaseni";
+/** An invitation link: /admin/pozvanka/<token>, open to anyone like the sign-in. */
+export const ADMIN_INVITE_PATH = "/admin/pozvanka";
 /**
  * The page path the middleware hands to the server guard of an admin page
  * (set on every request it lets through), so the guard can send an expired
@@ -38,9 +41,18 @@ export function isAdminLoginPath(pathname: string): boolean {
   return clean === ADMIN_LOGIN_PATH;
 }
 
-/** After the sign-in: any administration page except the sign-in itself. */
+export function isAdminInvitePath(pathname: string): boolean {
+  return pathname === ADMIN_INVITE_PATH || pathname.startsWith(`${ADMIN_INVITE_PATH}/`);
+}
+
+/** The pages anyone may open: the sign-in and invitation links. */
+export function isAdminPublicPath(pathname: string): boolean {
+  return isAdminLoginPath(pathname) || isAdminInvitePath(pathname);
+}
+
+/** After the sign-in: any administration page except the sign-in and invitations. */
 export const ADMIN_NEXT_SCOPE: NextPathScope = {
-  accepts: (pathname) => isAdminPath(pathname) && !isAdminLoginPath(pathname),
+  accepts: (pathname) => isAdminPath(pathname) && !isAdminPublicPath(pathname),
   fallback: ADMIN_PATH,
 };
 
@@ -179,13 +191,20 @@ export function idleStep(input: {
 export function parseSessionStatus(data: unknown): {
   status: AdminSessionStatus;
   userId: string | null;
+  role: AdminRole | null;
   expiresAt: string | null;
 } {
-  const value = (data ?? {}) as { status?: unknown; user_id?: unknown; expires_at?: unknown };
+  const value = (data ?? {}) as {
+    status?: unknown;
+    user_id?: unknown;
+    role?: unknown;
+    expires_at?: unknown;
+  };
   const status = (["ok", "idle", "expired", "ended"] as const).find((s) => s === value.status);
   return {
     status: status ?? "denied",
     userId: typeof value.user_id === "string" ? value.user_id : null,
+    role: parseAdminRole(value.role),
     expiresAt: typeof value.expires_at === "string" ? value.expires_at : null,
   };
 }
