@@ -63,6 +63,14 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 13.6 | architect | env: ANTHROPIC_API_KEY | 2026-10-17 Jarvis zná aktuální čas a pracovní okno (time-window.ts): v chatu, proaktivních návrzích, ranním shrnutí i na nástěnce/Cold Callingu mimo pracovní dobu nenabízí volat hned, ale naplánuje a nabídne přípravu.
 - [x] K13 | reviewer | 2026-10-17 Kontrola fáze 13: opravena neutralizace značek v poznámkách v Jarvisově kontextu (dřív obešla ohraničení dat) a popisek „Dnes" v grafu Cold Callingu; RLS poznámek, app_settings/ai_user_caps, stropy AI, časové okno a autosave ověřeny bez nálezu.
 - [x] STOP | Konec fáze 13. Všechno už je nasazené u Váši. Projděte spolu: nový účet v anonymním okně — průvodce tam a zpět tlačítkem i šipkou prohlížeče, obnovení uprostřed. Milníky: přechod z nástěnky a scroll kolečkem i na telefonu. Poznámky: založ Ideálního zákazníka, piš, obnov stránku, najdi ho hledáním, propoj s úkolem a zeptej se Jarvise na něco, co v poznámce je. V /admin/ai nastav strop a ověř, že platí. Večer se Jarvise zeptej, co máš teď dělat — nesmí poslat volat. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
+- [ ] 14.1 | architect |
+- [ ] 14.2 | architect |
+- [ ] 14.3 | architect |
+- [ ] 14.4 | architect | env: RESEND_API_KEY
+- [ ] 14.5 | architect |
+- [ ] 14.6 | designer |
+- [ ] K14 | reviewer |
+- [ ] STOP | Konec fáze 14. V anonymním okně otevři /admin — musí tě poslat na přihlášení a po TOTP zpět. Projdi novou administraci: skupiny v menu, filtry (zapni Beta, počet řádků se musí změnit), scroll při přepínání záložek, jména místo ID. V Administrátorech vytvoř pozvánku, otevři odkaz v jiném prohlížeči, založ účet s TOTP a ověř, co nový admin vidí a nevidí. Porovnej snímky v docs/admin-redesign. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [ ] 12.4 | builder | env: RESEND_API_KEY
 - [ ] 12.5 | architect | env: CRON_SECRET
 - [ ] K12 | reviewer |
