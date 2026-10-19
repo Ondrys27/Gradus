@@ -109,6 +109,8 @@ export type Database = {
         Row: {
           accepted_at: string | null
           accepted_by: string | null
+          claimed_at: string | null
+          claimed_by: string | null
           created_at: string
           created_by: string | null
           email: string | null
@@ -121,6 +123,8 @@ export type Database = {
         Insert: {
           accepted_at?: string | null
           accepted_by?: string | null
+          claimed_at?: string | null
+          claimed_by?: string | null
           created_at?: string
           created_by?: string | null
           email?: string | null
@@ -133,6 +137,8 @@ export type Database = {
         Update: {
           accepted_at?: string | null
           accepted_by?: string | null
+          claimed_at?: string | null
+          claimed_by?: string | null
           created_at?: string
           created_by?: string | null
           email?: string | null
@@ -2986,6 +2992,7 @@ export type Database = {
         Args: { _ip_hash?: string; _token_hash: string }
         Returns: undefined
       }
+      admin_invite_claim: { Args: { _token_hash: string }; Returns: undefined }
       admin_invite_create: {
         Args: {
           _email?: string

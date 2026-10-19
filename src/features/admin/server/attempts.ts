@@ -76,17 +76,26 @@ export async function failure<E extends string>(
   return lock ? { error: "locked", minutes: minutesLeft(lock) } : { error };
 }
 
-/** The id of an invitation that can still be used, or null. Reads with the admin client. */
-export async function findOpenInvite(admin: Admin, token: unknown): Promise<string | null> {
+/**
+ * The id of an invitation that can still be used, or null. Reads with the
+ * admin client. `unclaimed`: only when no account has been created on it yet
+ * (the check before creating one; admin_invite_claim decides for real).
+ */
+export async function findOpenInvite(
+  admin: Admin,
+  token: unknown,
+  options: { unclaimed?: boolean } = {},
+): Promise<string | null> {
   if (!isWellFormedInviteToken(token)) return null;
-  const { data, error } = await admin
+  let query = admin
     .from("admin_invites")
     .select("id")
     .eq("token_hash", hashInviteToken(token))
     .is("accepted_at", null)
     .is("revoked_at", null)
-    .gt("expires_at", new Date().toISOString())
-    .maybeSingle();
+    .gt("expires_at", new Date().toISOString());
+  if (options.unclaimed) query = query.is("claimed_by", null);
+  const { data, error } = await query.maybeSingle();
   if (error) {
     console.error("[admin] reading an invitation failed", error.message);
     return null;

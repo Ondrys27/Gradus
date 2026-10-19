@@ -46,7 +46,18 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | `admin_invite_create` | owner | ukládá jen SHA-256 tokenu, píše `admin_audit` |
 | `admin_invite_revoke` | owner | píše `admin_audit` |
 | `admin_remove` | owner | nikdy majitele ani sebe; ukončí živé relace admina, píše `admin_audit` |
+| `admin_invite_claim` | účet právě založený na stránce pozvánky (stačí aal1) | zabere pozvánku (`claimed_by`) jedním podmíněným UPDATE; jiný účet ji už nezabere, týž účet smí znovu; píše `admin_audit` při prvním zabrání |
 | `admin_invite_accept` | pozvaný účet s aal2 | spotřebuje token a přidělí roli v jedné transakci, píše `admin_audit` |
 | `admin_require_owner` | jen uvnitř funkcí výše | bez práva EXECUTE pro klienty |
 | `admin_members`, `admin_people`, `metric_admin_users` | jen service role (server po stráži) | čtou `auth.users` |
 | `app_overview` | owner | v aplikaci, ne v administraci; beze změny |
+
+## Životní cyklus pozvánky
+
+1. **Vytvoření** (`admin_invite_create`): majitel dostane odkaz `/admin/pozvanka/<token>`, v DB je jen SHA-256 tokenu. Pozvánka není svázaná s e-mailem.
+2. **Nový účet** (`adminInviteSignIn`, režim „Nový účet“): server ověří, že pozvánka je otevřená a nikdo ji ještě nezabral, založí účet, přihlásí ho a tímto účtem zavolá `admin_invite_claim`. Když ji mezitím zabral jiný účet, právě založený účet se hned smaže a odpověď je tatáž neutrální hláška jako u neplatného odkazu. Přes jednu pozvánku tak vznikne nejvýš jeden nový účet. Smazáním zabírajícího účtu se pozvánka zase uvolní (`on delete set null`).
+3. **Přihlášení k existujícímu účtu** (režim „Mám účet“): nic nezabírá ani nekontroluje `claimed_by`, takže návrat na odkaz dokončí přerušené TOTP.
+4. **Přijetí** (`admin_invite_accept`, po TOTP s aal2): spotřebuje token a přidělí roli v jedné transakci. Pak už odkaz nefunguje pro nikoho.
+5. **Zrušení / vypršení** (7 dní): odkaz nefunguje, zabrání se nemění.
+
+Limit pokusů: neplatný nebo zabraný odkaz, existující e-mail i špatné heslo se počítají do téhož zámku (5 neúspěchů za 15 minut podle IP i e-mailu → 15 minut pauza). Hláška „e-mail už existuje“ se tak ukáže jen pár krát za sebou.

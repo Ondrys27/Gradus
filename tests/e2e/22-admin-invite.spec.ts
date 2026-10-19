@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type { Browser, Page } from "@playwright/test";
 import { admin, e2eEmail, e2ePassword, type Account } from "./support/accounts";
 import { expect, test } from "./support/fixtures";
@@ -6,9 +7,14 @@ import { totp } from "./support/totp";
 
 /**
  * Administrators (step 14.4): the owner invites someone, the link leads to a
- * new account, the authenticator and /admin. The same link fails the second
- * time. The admin does not see the Administrators section. Once removed, the
- * admin is out on the very next request.
+ * new account, the authenticator and /admin. While the TOTP step is still
+ * open, a second account cannot be created on the same link; once accepted,
+ * the link fails altogether. The admin does not see the Administrators
+ * section. Once removed, the admin is out on the very next request. An e-mail
+ * that already exists is said only a few times before the attempt limit.
+ *
+ * Contexts that make failed attempts on purpose send their own address
+ * (x-forwarded-for), so the pause they start never blocks the other tests.
  */
 
 const L = "cs";
@@ -16,6 +22,19 @@ const L = "cs";
 async function pinLocale(page: Page) {
   const baseURL = test.info().project.use.baseURL ?? "http://localhost:3000";
   await page.context().addCookies([{ name: "locale", value: L, url: baseURL }]);
+}
+
+async function inviteSignUp(page: Page, email: string, password: string) {
+  await page.locator("#admin-email").fill(email);
+  await page.locator("#admin-password").fill(password);
+  // Waits for the answer of the server action, so an alert left from the
+  // previous attempt is never mistaken for this one.
+  await Promise.all([
+    page.waitForResponse(
+      (response) => response.request().method() === "POST" && response.url().includes("/admin/pozvanka/"),
+    ),
+    page.getByRole("button", { name: exact(L, "admin.invite.submit.signup") }).click(),
+  ]);
 }
 
 /** A fresh authenticator after the password: read the secret, enter a code, skip the backup. */
@@ -41,8 +60,17 @@ async function signInOwner(page: Page, owner: Account) {
   await enrollAuthenticator(page);
 }
 
-async function freshPage(browser: Browser) {
-  const context = await browser.newContext({ locale: "cs-CZ", timezoneId: "Europe/Prague" });
+/** A random documentation address (TEST-NET-2), different for each context. */
+function randomIp() {
+  return `198.51.100.${1 + Math.floor(Math.random() * 254)}`;
+}
+
+async function freshPage(browser: Browser, ip?: string) {
+  const context = await browser.newContext({
+    locale: "cs-CZ",
+    timezoneId: "Europe/Prague",
+    ...(ip ? { extraHTTPHeaders: { "x-forwarded-for": ip } } : {}),
+  });
   const page = await context.newPage();
   await pinLocale(page);
   return page;
@@ -80,9 +108,68 @@ test("22 · an invitation makes a new admin, works once, and removal locks them 
   await expect(
     invited.getByRole("heading", { name: exact(L, "admin.invite.title", { appName: "Gradus" }) }),
   ).toBeVisible();
-  await invited.locator("#admin-email").fill(adminEmail);
-  await invited.locator("#admin-password").fill(e2ePassword());
-  await invited.getByRole("button", { name: exact(L, "admin.invite.submit.signup") }).click();
+  await inviteSignUp(invited, adminEmail, e2ePassword());
+  await expect(invited.getByText(text(L, "admin.login.secretLabel"))).toBeVisible();
+
+  // Before the invited person finishes the code, the link still opens, but a
+  // second new account on it is refused with the neutral message.
+  const tokenHash = createHash("sha256").update(invitePath.split("/").pop() ?? "").digest("hex");
+  const claimed = await admin()
+    .from("admin_invites")
+    .select("claimed_by, accepted_at")
+    .eq("token_hash", tokenHash)
+    .single();
+  if (claimed.error) throw claimed.error;
+  expect(claimed.data.claimed_by).not.toBeNull();
+  expect(claimed.data.accepted_at).toBeNull();
+  const intruder = await freshPage(browser, randomIp());
+  const intruderEmail = e2eEmail("invintruder");
+  accounts.register(intruderEmail);
+  await intruder.goto(invitePath);
+  await inviteSignUp(intruder, intruderEmail, e2ePassword());
+  await expect(intruder.getByText(text(L, "admin.login.errors.inviteInvalid"))).toBeVisible();
+  await expect(intruder.getByText(text(L, "admin.login.secretLabel"))).toHaveCount(0);
+  await intruder.context().close();
+  const after = await admin()
+    .from("admin_invites")
+    .select("claimed_by")
+    .eq("token_hash", tokenHash)
+    .single();
+  expect(after.data?.claimed_by).toBe(claimed.data.claimed_by);
+
+  // An e-mail that already exists (on a second, unclaimed link): said a few times, then the pause.
+  const taken = await accounts.create({ label: "invtaken" });
+  await page.goto("/admin/administratori");
+  await page.getByRole("button", { name: exact(L, "admin.admins.invite.open") }).click();
+  await page.getByRole("button", { name: exact(L, "admin.admins.invite.create") }).click();
+  const secondLink = page.getByTestId("admin-invite-link");
+  await expect(secondLink).toBeVisible();
+  const secondPath = new URL((await secondLink.textContent())?.trim() ?? "").pathname;
+  const secondHash = createHash("sha256").update(secondPath.split("/").pop() ?? "").digest("hex");
+  try {
+    const prober = await freshPage(browser, randomIp());
+    await prober.goto(secondPath);
+    const emailTaken = prober.getByText(text(L, "admin.login.errors.emailTaken"));
+    const lockedPrefix = text(L, "admin.login.errors.locked").split("{")[0];
+    const locked = prober.getByText(lockedPrefix);
+    // Five failures start the pause: four answers say the e-mail exists, the fifth is the pause.
+    for (let attempt = 1; attempt <= 4; attempt++) {
+      await inviteSignUp(prober, taken.email, e2ePassword());
+      await expect(emailTaken).toBeVisible();
+    }
+    await inviteSignUp(prober, taken.email, e2ePassword());
+    await expect(locked).toBeVisible();
+    await expect(emailTaken).toHaveCount(0);
+    await prober.context().close();
+  } finally {
+    // Nobody is meant to use the second link; close it.
+    await admin()
+      .from("admin_invites")
+      .update({ revoked_at: new Date().toISOString() })
+      .eq("token_hash", secondHash)
+      .is("accepted_at", null);
+  }
+
   await enrollAuthenticator(invited);
   await expect(invited).toHaveURL(/\/admin$/);
 

@@ -213,6 +213,98 @@ describe("admin invitations", () => {
   });
 });
 
+describe("claiming an invitation (one new account per link)", () => {
+  async function claim(uid: string, hash: string, aal: "aal1" | "aal2" = "aal1") {
+    await asUser(uid, aal);
+    return db.query(`select public.admin_invite_claim($1)`, [hash]);
+  }
+
+  it("lets only the first new account hold the link; the same account may call again", async () => {
+    const { hash } = newToken();
+    const id = await createInvite(hash);
+    const first = await createAuthUser({ locale: "cs", admin_invite: true });
+    const second = await createAuthUser({ locale: "cs", admin_invite: true });
+
+    await claim(first, hash);
+    await claim(first, hash); // a retry after a network error
+    await expect(claim(second, hash)).rejects.toThrow(/invalid_invite/);
+
+    await asServer();
+    const row = await one<{ claimed_by: string; claimed: boolean }>(
+      `select claimed_by, claimed_at is not null as claimed from public.admin_invites where id = $1`,
+      [id],
+    );
+    expect(row).toEqual({ claimed_by: first, claimed: true });
+    const audit = await one<{ n: number }>(
+      `select count(*)::int as n from public.admin_audit where target = 'admins.claim' and detail ->> 'invite' = $1`,
+      [id],
+    );
+    expect(audit.n).toBe(1);
+
+    // The holder still accepts it after the second factor.
+    await asUser(first);
+    await db.query(`select public.admin_invite_accept($1)`, [hash]);
+    expect((await touch()).role).toBe("admin");
+    // Once accepted, nobody claims it, not even the holder.
+    await expect(claim(first, hash)).rejects.toThrow(/invalid_invite/);
+  });
+
+  it("frees the link again when the holding account is deleted", async () => {
+    const { hash } = newToken();
+    const id = await createInvite(hash);
+    const gone = await createAuthUser({ locale: "cs", admin_invite: true });
+    await claim(gone, hash);
+    await asServer();
+    await db.query(`delete from public.profiles where id = $1`, [gone]);
+    await db.query(`delete from public.user_settings where user_id = $1`, [gone]);
+    await db.query(`delete from auth.users where id = $1`, [gone]);
+    const row = await one<{ claimed_by: string | null }>(
+      `select claimed_by from public.admin_invites where id = $1`,
+      [id],
+    );
+    expect(row.claimed_by).toBeNull();
+    const next = await createAuthUser({ locale: "cs", admin_invite: true });
+    await claim(next, hash);
+  });
+
+  it("is refused for expired, revoked or unknown links, the owner and anonymous callers", async () => {
+    const expired = newToken();
+    const expiredId = await createInvite(expired.hash);
+    await asServer();
+    await db.query(`update public.admin_invites set expires_at = now() - interval '1 second' where id = $1`, [
+      expiredId,
+    ]);
+    const revoked = newToken();
+    const revokedId = await createInvite(revoked.hash);
+    await asUser(owner);
+    await db.query(`select public.admin_invite_revoke($1)`, [revokedId]);
+
+    const someone = await createAuthUser({ locale: "cs", admin_invite: true });
+    await expect(claim(someone, expired.hash)).rejects.toThrow(/invalid_invite/);
+    await expect(claim(someone, revoked.hash)).rejects.toThrow(/invalid_invite/);
+    await expect(claim(someone, newToken().hash)).rejects.toThrow(/invalid_invite/);
+
+    const open = newToken();
+    await createInvite(open.hash);
+    await expect(claim(owner, open.hash)).rejects.toThrow(/invalid_invite/);
+    await asServer();
+    await db.exec(`set role anon;`);
+    await expect(db.query(`select public.admin_invite_claim($1)`, [open.hash])).rejects.toThrow(
+      /permission denied/,
+    );
+    await asServer();
+  });
+
+  it("cannot be written around: no direct update of claimed_by", async () => {
+    const { hash } = newToken();
+    const id = await createInvite(hash);
+    await asUser(user);
+    await expect(
+      db.query(`update public.admin_invites set claimed_by = $1 where id = $2`, [user, id]),
+    ).rejects.toThrow(/permission denied/);
+  });
+});
+
 describe("the admin role", () => {
   let adminId: string;
 

@@ -178,31 +178,61 @@ export async function adminInviteSignIn(
     return { ok: false, email, ...(await failure(admin, ipOnly, "invite", "inviteInvalid" as const)) };
   }
   if (!parsed.success) return { ok: false, error: "invalid", email };
-  const { mode } = form.data;
+  const { mode, invite } = form.data;
+  // From here on `keys` hold the address and the e-mail: every failure below
+  // counts towards the same pause as a wrong password or link.
 
+  let createdUserId: string | null = null;
   if (mode === "signup") {
+    // One new account per invitation: a link someone already signed up with
+    // answers like a used one (admin_invite_claim below decides for real).
+    if (!(await findOpenInvite(admin, invite, { unclaimed: true }))) {
+      return { ok: false, email, ...(await failure(admin, keys, "invite", "inviteInvalid" as const)) };
+    }
     const password = parsed.data.password;
     if (password.length < PASSWORD_MIN) return { ok: false, error: "passwordTooShort", email };
     if (password.length > PASSWORD_MAX) return { ok: false, error: "passwordTooLong", email };
-    const { error: createError } = await admin.auth.admin.createUser({
+    const { data: created, error: createError } = await admin.auth.admin.createUser({
       email: parsed.data.email,
       password,
       email_confirm: true,
       // admin_invite: the database gives this account a profile only (no workspace, no trial).
       user_metadata: { locale: await getLocale(), admin_invite: true },
     });
-    if (createError) {
-      const key = authErrorKey(createError);
-      if (key === "emailTaken") return { ok: false, error: "emailTaken", email };
-      console.error("[admin] creating the invited account failed", createError.message);
+    if (createError || !created.user) {
+      // An existing e-mail is said once, then counted like any other failure,
+      // so the page cannot be used to test addresses one after another.
+      if (createError && authErrorKey(createError) === "emailTaken") {
+        return { ok: false, email, ...(await failure(admin, keys, "invite", "emailTaken" as const)) };
+      }
+      console.error("[admin] creating the invited account failed", createError?.message);
       return { ok: false, error: "generic", email };
     }
+    createdUserId = created.user.id;
   }
 
   const probe = statelessClient();
   const { data, error } = await probe.auth.signInWithPassword(parsed.data);
   if (error || !data.session) {
     return { ok: false, email, ...(await failure(admin, keys, "password", "invalid" as const)) };
+  }
+
+  if (createdUserId) {
+    // The new account takes the invitation with its own session. Someone else
+    // may have signed up on the same link a moment ago: then this account has
+    // no use and is removed again.
+    const { error: claimError } = await probe.rpc("admin_invite_claim", {
+      _token_hash: hashInviteToken(invite),
+    });
+    if (claimError) {
+      if (claimError.code !== "42501") {
+        console.error("[admin] claiming the invitation failed", claimError.message);
+      }
+      // Deleting the account also ends the session it just got.
+      const { error: deleteError } = await admin.auth.admin.deleteUser(createdUserId);
+      if (deleteError) console.error("[admin] removing the unclaimed account failed", deleteError.message);
+      return { ok: false, email, ...(await failure(admin, keys, "invite", "inviteInvalid" as const)) };
+    }
   }
   return continueWith(data.session, email);
 }
