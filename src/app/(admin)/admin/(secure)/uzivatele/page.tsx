@@ -1,10 +1,8 @@
 import Link from "next/link";
-import { AdminViewLink } from "@/features/admin/ui/admin-view";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { SearchIcon } from "lucide-react";
-import { EmptyState } from "@/components/ui/empty-state";
-import { GlowCard } from "@/components/ui/glow-card";
+import { StatusPill } from "@/components/ui/status-pill";
 import { formatCalendarDate, formatDateTime } from "@/lib/format";
 import { ADMIN_PATH } from "@/features/admin/access";
 import { ADMIN_FORMAT_SETTINGS, formatMetricValue } from "@/features/admin/format-metric";
@@ -14,8 +12,9 @@ import { adminQuery } from "@/features/admin/server/metrics-data";
 import { parseAdminView, serializeAdminView } from "@/features/admin/view-state";
 import { loadUsers, USER_SORTS, type UserSort } from "@/features/admin/server/users-data";
 import { peopleNamer } from "@/features/admin/server/people";
-import { InternalToggle } from "@/features/admin/ui/internal-toggle";
-import { cn } from "@/lib/utils";
+import { AdminPageHeader } from "@/features/admin/ui/admin-page";
+import { AdminEmpty } from "@/features/admin/ui/blocks";
+import { ServerPager, ServerTable, type ServerColumn } from "@/features/admin/ui/server-table";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.users");
@@ -34,6 +33,19 @@ function isSort(value: string): value is UserSort {
   return (USER_SORTS as readonly string[]).includes(value);
 }
 
+/** Which column each sort orders by; a click on the heading sorts. */
+const SORT_COLUMN: Record<UserSort, string> = {
+  activity: "lastActive",
+  cost: "aiCost",
+  signup: "signedUp",
+};
+
+/**
+ * The accounts as a list. The search field sits in the sticky bar (`/`
+ * jumps to it); the list is the content, so there are no tiles — the
+ * numbers about users are on Growth. Changing an account (internal,
+ * AI cap) is in its detail.
+ */
 export default async function AdminUsersPage({ searchParams }: Props) {
   const context = await requireAdmin();
   await logAdminAction(context, "view", "users");
@@ -42,7 +54,8 @@ export default async function AdminUsersPage({ searchParams }: Props) {
   const sort = isSort(first(params.sort)) ? (first(params.sort) as UserSort) : "activity";
   const page = Math.max(0, Number.parseInt(first(params.page) || "0", 10) || 0);
   // The filters this page offers apply; the whole view stays in every link.
-  const { view } = adminQuery(params, "users");
+  const q = adminQuery(params, "users");
+  const { view } = q;
   const kept = serializeAdminView(parseAdminView(params));
 
   const [{ rows, hasMore }, t, tUnits, tControls] = await Promise.all([
@@ -65,145 +78,99 @@ export default async function AdminUsersPage({ searchParams }: Props) {
     if (next.page) p.set("page", String(next.page));
     return `${ADMIN_PATH}/uzivatele?${p.toString()}`;
   };
+  const sortColumn = (key: UserSort): Pick<ServerColumn, "sortHref" | "sorted"> => ({
+    sortHref: linkFor({ sort: key }),
+    sorted: sort === key ? "desc" : null,
+  });
+
+  const columns: ServerColumn[] = [
+    { key: "user", label: t("columns.user") },
+    { key: "plan", label: t("columns.plan") },
+    { key: "status", label: t("columns.status") },
+    { key: "role", label: t("columns.role") },
+    { key: SORT_COLUMN.signup, label: t("columns.signedUp"), ...sortColumn("signup") },
+    { key: SORT_COLUMN.activity, label: t("columns.lastActive"), ...sortColumn("activity") },
+    { key: SORT_COLUMN.cost, label: t("columns.aiCost"), align: "right", ...sortColumn("cost") },
+  ];
+
+  const search = (
+    <form className="relative max-w-sm" action={`${ADMIN_PATH}/uzivatele`} role="search">
+      <SearchIcon
+        aria-hidden
+        className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-muted"
+      />
+      <input type="hidden" name="sort" value={sort} />
+      {[...kept].map(([key, value]) => (
+        <input key={key} type="hidden" name={key} value={value} />
+      ))}
+      <input
+        type="search"
+        name="q"
+        defaultValue={query}
+        placeholder={t("searchPlaceholder")}
+        aria-label={t("searchPlaceholder")}
+        data-admin-search
+        className="h-10 w-full rounded-xl border border-line bg-surface pr-3 pl-9 text-sm text-ink outline-none placeholder:text-ink-muted focus-visible:border-violet/60 focus-visible:ring-3 focus-visible:ring-violet/30 mouse:h-9"
+      />
+    </form>
+  );
 
   return (
-    <div className="flex flex-col gap-4">
-      <header className="flex flex-col gap-2">
-        <h1 className="page-title">{t("title")}</h1>
-        <p className="text-sm text-ink-soft">{t("description")}</p>
-      </header>
-
-      <div className="flex flex-wrap items-center gap-3">
-        <form className="relative flex-1 min-w-48 max-w-xs" action={`${ADMIN_PATH}/uzivatele`}>
-          <SearchIcon
-            aria-hidden
-            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-muted"
+    <>
+      <AdminPageHeader section="users" q={q} extra={search} />
+      <div className="flex flex-col gap-3">
+        {rows.length === 0 ? (
+          <AdminEmpty title={t("emptyTitle")} hint={t("emptyDescription")} />
+        ) : (
+          <ServerTable
+            columns={columns}
+            minWidth="56rem"
+            caption={t("title")}
+            rows={rows.map((row) => ({
+              key: row.userId,
+              cells: [
+                <span key="name" className="flex items-center gap-2">
+                  <Link
+                    href={`${ADMIN_PATH}/uzivatele/${row.userId}${kept.size ? `?${kept}` : ""}`}
+                    prefetch={false}
+                    className="max-w-64 truncate font-medium text-ink underline-offset-2 hover:text-violet hover:underline"
+                  >
+                    {nameOf(row.userId)}
+                  </Link>
+                  {row.isInternal && (
+                    <StatusPill tone="neutral" className="h-5 px-2 text-xs">
+                      {t("internal")}
+                    </StatusPill>
+                  )}
+                </span>,
+                planLabel(row.plan),
+                statusLabel(row.status),
+                roleLabel(row.role),
+                <span key="signed" className="tabular-nums">
+                  {formatCalendarDate(row.signedUpAt.slice(0, 10), ADMIN_FORMAT_SETTINGS)}
+                </span>,
+                <span key="active" className="tabular-nums">
+                  {row.lastActiveAt
+                    ? formatDateTime(new Date(row.lastActiveAt), ADMIN_FORMAT_SETTINGS)
+                    : "–"}
+                </span>,
+                formatMetricValue(row.aiCostUsd, "usd", tUnits),
+              ],
+            }))}
           />
-          <input type="hidden" name="sort" value={sort} />
-          {[...kept].map(([key, value]) => (
-            <input key={key} type="hidden" name={key} value={value} />
-          ))}
-          <input
-            type="search"
-            name="q"
-            defaultValue={query}
-            placeholder={t("searchPlaceholder")}
-            aria-label={t("searchPlaceholder")}
-            className="h-11 w-full rounded-full border border-line bg-canvas pr-3 pl-9 text-sm text-ink outline-none placeholder:text-ink-muted focus-visible:border-violet/60 focus-visible:ring-3 focus-visible:ring-violet/30 mouse:h-9"
-          />
-        </form>
-        <div
-          role="radiogroup"
-          aria-label={t("sortBy")}
-          className="flex rounded-full border border-line p-0.5"
-        >
-          {USER_SORTS.map((value) => (
-            <AdminViewLink
-              key={value}
-              href={linkFor({ sort: value })}
-              role="radio"
-              aria-checked={sort === value}
-              className={cn(
-                "flex h-11 items-center rounded-full px-3 text-sm font-medium whitespace-nowrap outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:h-8",
-                sort === value ? "bg-violet/20 text-ink" : "text-ink-soft hover:text-ink",
-              )}
-            >
-              {t(`sort.${value}`)}
-            </AdminViewLink>
-          ))}
-        </div>
+        )}
+        <ServerPager
+          page={page}
+          hasMore={hasMore}
+          hrefFor={(n) => linkFor({ page: n })}
+          labels={{
+            pagination: t("pagination"),
+            newer: t("newer"),
+            older: t("older"),
+            page: t("page", { page: page + 1 }),
+          }}
+        />
       </div>
-
-      {rows.length === 0 ? (
-        <EmptyState title={t("emptyTitle")} description={t("emptyDescription")} />
-      ) : (
-        <GlowCard interactive={false} className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[56rem] text-left text-sm">
-              <thead className="text-xs text-ink-soft">
-                <tr className="border-b border-line">
-                  <th scope="col" className="px-4 py-3 font-medium">
-                    {t("columns.user")}
-                  </th>
-                  <th scope="col" className="px-4 py-3 font-medium">
-                    {t("columns.plan")}
-                  </th>
-                  <th scope="col" className="px-4 py-3 font-medium">
-                    {t("columns.status")}
-                  </th>
-                  <th scope="col" className="px-4 py-3 font-medium">
-                    {t("columns.role")}
-                  </th>
-                  <th scope="col" className="px-4 py-3 font-medium">
-                    {t("columns.signedUp")}
-                  </th>
-                  <th scope="col" className="px-4 py-3 font-medium">
-                    {t("columns.lastActive")}
-                  </th>
-                  <th scope="col" className="px-4 py-3 text-right font-medium">
-                    {t("columns.aiCost")}
-                  </th>
-                  <th scope="col" className="px-4 py-3 font-medium">
-                    {t("columns.internal")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row) => (
-                  <tr key={row.userId} className="border-b border-line last:border-0">
-                    <td className="max-w-64 px-4 py-2.5">
-                      <Link
-                        href={`${ADMIN_PATH}/uzivatele/${row.userId}${kept.size ? `?${kept}` : ""}`}
-                        prefetch={false}
-                        className="block truncate font-medium text-violet underline-offset-2 hover:underline"
-                      >
-                        {nameOf(row.userId)}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-2.5">{planLabel(row.plan)}</td>
-                    <td className="px-4 py-2.5">{statusLabel(row.status)}</td>
-                    <td className="px-4 py-2.5">{roleLabel(row.role)}</td>
-                    <td className="px-4 py-2.5 whitespace-nowrap tabular-nums">
-                      {formatCalendarDate(row.signedUpAt.slice(0, 10), ADMIN_FORMAT_SETTINGS)}
-                    </td>
-                    <td className="px-4 py-2.5 whitespace-nowrap tabular-nums">
-                      {row.lastActiveAt
-                        ? formatDateTime(new Date(row.lastActiveAt), ADMIN_FORMAT_SETTINGS)
-                        : "–"}
-                    </td>
-                    <td className="px-4 py-2.5 text-right tabular-nums">
-                      {formatMetricValue(row.aiCostUsd, "usd", tUnits)}
-                    </td>
-                    <td className="px-4 py-2.5">
-                      <InternalToggle userId={row.userId} value={row.isInternal} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </GlowCard>
-      )}
-
-      {(page > 0 || hasMore) && (
-        <nav aria-label={t("pagination")} className="flex items-center justify-between gap-2">
-          {page > 0 ? (
-            <AdminViewLink href={linkFor({ page: page - 1 })} className="text-sm text-violet">
-              {t("newer")}
-            </AdminViewLink>
-          ) : (
-            <span />
-          )}
-          <span className="text-sm text-ink-soft">{t("page", { page: page + 1 })}</span>
-          {hasMore ? (
-            <AdminViewLink href={linkFor({ page: page + 1 })} className="text-sm text-violet">
-              {t("older")}
-            </AdminViewLink>
-          ) : (
-            <span />
-          )}
-        </nav>
-      )}
-    </div>
+    </>
   );
 }

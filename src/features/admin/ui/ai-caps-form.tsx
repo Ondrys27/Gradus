@@ -124,7 +124,7 @@ export function AiCapsForm({
     const stored = (label: string, value: string) => (
       <div className="flex flex-col gap-0.5">
         <span className="text-sm text-ink-soft">{label}</span>
-        <span className="stat-number text-lg text-ink">{value}</span>
+        <span className="text-lg font-semibold text-ink tabular-nums">{value}</span>
       </div>
     );
     return (

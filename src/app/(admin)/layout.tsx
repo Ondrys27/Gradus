@@ -14,5 +14,6 @@ export async function generateMetadata(): Promise<Metadata> {
 export const dynamic = "force-dynamic";
 
 export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
-  return <AppRoot>{children}</AppRoot>;
+  // A calm canvas: no grid and no glows behind numbers.
+  return <AppRoot backdrop="plain">{children}</AppRoot>;
 }

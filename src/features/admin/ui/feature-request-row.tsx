@@ -50,7 +50,7 @@ export function FeatureRequestRowView({ row }: { row: FeatureRequestRow }) {
         </select>
       </div>
       {row.description && <p className="text-xs text-ink-soft">{row.description}</p>}
-      <p className="text-[11px] text-ink-muted">
+      <p className="text-xs text-ink-muted">
         {t("ideaMeta", {
           name: row.userName,
           date: formatCalendarDate(row.createdAt.slice(0, 10), ADMIN_FORMAT_SETTINGS),

@@ -12,9 +12,9 @@ import {
 } from "@/features/admin/server/page-data";
 import { AdminChart } from "@/features/admin/ui/admin-chart";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
-import { AdminCard, GridSkeleton, TilesSkeleton } from "@/features/admin/ui/blocks";
+import { AdminCard, BlockGrid, CardSkeleton, FiguresSkeleton, GridSkeleton } from "@/features/admin/ui/blocks";
 import { BreakdownList } from "@/features/admin/ui/data-blocks";
-import { TileGrid } from "@/features/admin/ui/metric-tile";
+import { Figures } from "@/features/admin/ui/metric-tile";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.game");
@@ -31,22 +31,24 @@ export default async function AdminGamePage({ searchParams }: Props) {
   return (
     <>
       <AdminPageHeader section="game" q={q} />
-      <Suspense fallback={<TilesSkeleton count={2} />}>
-        <Tiles q={q} />
-      </Suspense>
-      <Suspense fallback={<GridSkeleton count={1} />}>
-        <Chart q={q} />
-      </Suspense>
-      <Suspense fallback={<GridSkeleton count={4} height={180} />}>
-        <More q={q} />
-      </Suspense>
+      <div className="flex flex-col gap-4">
+        <Suspense fallback={<FiguresSkeleton count={2} />}>
+          <Tiles q={q} />
+        </Suspense>
+        <Suspense fallback={<CardSkeleton />}>
+          <Chart q={q} />
+        </Suspense>
+        <Suspense fallback={<GridSkeleton count={3} height={180} columns={3} />}>
+          <More q={q} />
+        </Suspense>
+      </div>
     </>
   );
 }
 
 async function Tiles({ q }: { q: AdminQuery }) {
   const loaded = await safe("game tiles", () => gameTiles(q));
-  return <Show loaded={loaded}>{(tiles) => <TileGrid tiles={tiles} />}</Show>;
+  return <Show loaded={loaded}>{(tiles) => <Figures tiles={tiles} />}</Show>;
 }
 
 async function Chart({ q }: { q: AdminQuery }) {
@@ -68,7 +70,7 @@ async function More({ q }: { q: AdminQuery }) {
     getTranslations("metrics.items"),
   ]);
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
+    <BlockGrid columns={3}>
       <AdminCard title={t("xp_sources.name")} description={t("xp_sources.description")}>
         <Show loaded={sources}>{(data) => <BreakdownList data={data} />}</Show>
       </AdminCard>
@@ -81,6 +83,6 @@ async function More({ q }: { q: AdminQuery }) {
           ))
         }
       </Show>
-    </div>
+    </BlockGrid>
   );
 }

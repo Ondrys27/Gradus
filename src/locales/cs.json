@@ -4098,7 +4098,24 @@
         "explorer": "Průzkumník",
         "admins": "Administrátoři"
       },
-      "soon": "Brzy"
+      "soon": "Brzy",
+      "groups": {
+        "overview": "Přehled",
+        "people": "Lidé",
+        "product": "Produkt",
+        "operations": "Provoz",
+        "settings": "Nastavení"
+      },
+      "collapse": "Sbalit menu",
+      "expand": "Rozbalit menu",
+      "close": "Zavřít",
+      "switcherHint": "přepíná sekce",
+      "switcher": {
+        "title": "Přejít na sekci",
+        "placeholder": "Napiš název sekce…",
+        "empty": "Žádná sekce neodpovídá.",
+        "hint": "↑↓ vybírá, Enter otevře, Esc zavře. Lomítko skočí do hledání."
+      }
     },
     "overview": {
       "title": "Přehled",
@@ -4130,7 +4147,8 @@
       "newer": "Novější",
       "older": "Starší",
       "page": "Strana {page}",
-      "emptyValue": "nic"
+      "emptyValue": "nic",
+      "exportHint": "Celý audit jako CSV, se jmény a e-maily. I tenhle export se zapíše do auditu."
     },
     "loginEmail": {
       "subject": "Nové přihlášení do administrace {appName}",
@@ -4297,7 +4315,9 @@
           "invalid": "Některá hodnota je mimo rozsah. Zkontroluj pole.",
           "forbidden": "Relace administrace skončila. Přihlas se znovu.",
           "failed": "Změnu se nepodařilo uložit. Zkus to znovu."
-        }
+        },
+        "sectionTitle": "Stropy",
+        "sectionDescription": "Změna stropu mění, kolik Jarvis smí utratit, od příští minuty."
       }
     },
     "game": {
@@ -4466,7 +4486,13 @@
           "forbidden": "Relace administrace skončila. Přihlas se znovu.",
           "failed": "Změnu se nepodařilo uložit. Zkus to znovu."
         }
-      }
+      },
+      "yes": "Ano",
+      "no": "Ne",
+      "changesTitle": "Změny účtu",
+      "changesDescription": "Co mění, jak se účet počítá a kolik za něj Jarvis smí utratit. Každá změna se zapíše do auditu.",
+      "internalTitle": "Interní účet",
+      "internalDescription": "Interní účet (majitel, demo, testy) se do metrik nepočítá, dokud ho ovládání nezapne."
     },
     "explorer": {
       "title": "Průzkumník",
@@ -4492,7 +4518,8 @@
       "columns": {
         "period": "Období",
         "value": "Hodnota"
-      }
+      },
+      "rowsTitle": "Hodnoty po obdobích"
     },
     "controls": {
       "period": "Období",
@@ -4504,7 +4531,7 @@
         "12m": "12 měsíců",
         "custom": "Vlastní"
       },
-      "compare": "Porovnat s předchozím obdobím",
+      "compare": "Porovnat s minulým",
       "internal": "Včetně interních účtů",
       "filters": "Filtry",
       "filtersActive": "Filtry ({count})",
@@ -4567,7 +4594,8 @@
       "pending": "Měří se od pozdějšího kroku",
       "noComparison": "bez porovnání",
       "noComparisonHint": "Předchozí období nemá hodnotu k porovnání.",
-      "vsPrevious": "Změna proti předchozímu období"
+      "vsPrevious": "Změna proti předchozímu období",
+      "more": "Další čísla"
     },
     "chart": {
       "legend": "Řady",
@@ -4576,12 +4604,16 @@
       "exportPng": "Export PNG",
       "exportFailed": "Export se nepodařilo uložit. Zkus to znovu.",
       "week": "Týden {n}",
-      "hint": "Tažením přes graf přiblížíš oblast, kolečkem měníš přiblížení, dvojklik vrátí celé období."
+      "hint": "Tažením přes graf přiblížíš oblast, kolečkem měníš přiblížení, dvojklik vrátí celé období.",
+      "confirmExport": "Export se zapíše do auditu s tvým jménem a časem. Stáhnout soubor?",
+      "confirm": "Stáhnout",
+      "cancel": "Zrušit"
     },
     "empty": {
       "title": "Zatím žádná data",
       "description": "Čísla přibydou, jak budou lidé aplikaci používat. Pro toto období a filtry zatím nic zaznamenáno není.",
-      "loadFailed": "Tenhle blok se nepodařilo načíst. Zbytek stránky funguje; zkus obnovit."
+      "loadFailed": "Tenhle blok se nepodařilo načíst. Zbytek stránky funguje; zkus obnovit.",
+      "retry": "Zkusit znovu"
     },
     "funnel": {
       "dropOff": "odpadlo {value}",
@@ -4598,7 +4630,19 @@
       }
     },
     "breakdown": {
-      "none": "Nevyplněno"
+      "none": "Nevyplněno",
+      "yes": "Ano",
+      "no": "Ne",
+      "values": {
+        "list": "Seznam",
+        "map": "Mapa",
+        "path": "Cesta",
+        "open": "Otevřeno",
+        "shown": "Zobrazeno",
+        "dismissed": "Zavřeno",
+        "later": "Později",
+        "done": "Uděláno"
+      }
     },
     "fields": {
       "joined": "Přihlášení",
@@ -4728,8 +4772,16 @@
         "description": "{name} ztratí přístup do administrace hned, i uprostřed otevřené relace. Účet v aplikaci zůstane.",
         "confirm": "Odebrat",
         "cancel": "Nechat",
-        "failed": "Administrátora se nepodařilo odebrat. Zkus to znovu."
+        "failed": "Administrátora se nepodařilo odebrat. Zkus to znovu.",
+        "hint": "Odebrání platí hned, i uprostřed otevřené relace."
       }
+    },
+    "table": {
+      "pagination": "Stránky tabulky",
+      "previous": "Předchozí",
+      "next": "Další",
+      "page": "Strana {page} z {pages}",
+      "rows": "{count, plural, one {# řádek} few {# řádky} other {# řádků}}"
     }
   }
 }

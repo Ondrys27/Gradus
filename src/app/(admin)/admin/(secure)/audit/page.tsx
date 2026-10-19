@@ -1,25 +1,26 @@
 import type { Metadata } from "next";
-import { AdminViewLink } from "@/features/admin/ui/admin-view";
 import { getTranslations } from "next-intl/server";
 import { DownloadIcon } from "lucide-react";
-import { EmptyState } from "@/components/ui/empty-state";
-import { GlowCard } from "@/components/ui/glow-card";
-import { PageHeader } from "@/components/ui/page-header";
 import { ADMIN_PATH } from "@/features/admin/access";
 import { logAdminAction } from "@/features/admin/server/audit";
 import { loadAuditPage } from "@/features/admin/server/audit-data";
 import { requireAdmin } from "@/features/admin/server/guard";
 import { mayExport } from "@/features/admin/roles";
 import { parseAdminView, serializeAdminView } from "@/features/admin/view-state";
+import { AdminEmpty } from "@/features/admin/ui/blocks";
+import { AdminPageBar } from "@/features/admin/ui/page-bar";
+import { ServerPager, ServerTable } from "@/features/admin/ui/server-table";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.audit");
   return { title: t("title") };
 }
 
-const linkClass =
-  "flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-medium text-violet outline-none hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-ring/50";
-
+/**
+ * The audit is a list, newest first: no numbers, no filters. The export of
+ * the whole audit names people, so it is the owner's, and it sits at the
+ * end of the page.
+ */
 export default async function AdminAuditPage({
   searchParams,
 }: {
@@ -38,86 +39,75 @@ export default async function AdminAuditPage({
     if (n > 0) query.set("page", String(n));
     return query.size ? `${ADMIN_PATH}/audit?${query}` : `${ADMIN_PATH}/audit`;
   };
+  const mono = "font-mono text-xs";
 
   return (
     <>
-      <PageHeader
-        title={t("title")}
-        description={t("description")}
-        actions={
-          // A plain link: the export is a file download, written to the audit on the server.
-          // It names people, so only the owner sees it.
-          mayExport(context.role, "audit") ? (
-            <a href={`${ADMIN_PATH}/audit/export`} className={linkClass} download>
+      <AdminPageBar title={t("title")} description={t("description")} />
+      <div className="flex flex-col gap-3">
+        {rows.length === 0 ? (
+          <AdminEmpty title={t("emptyTitle")} hint={t("emptyDescription")} />
+        ) : (
+          <ServerTable
+            columns={[
+              { key: "time", label: t("columns.time") },
+              { key: "who", label: t("columns.who") },
+              { key: "kind", label: t("columns.kind") },
+              { key: "target", label: t("columns.target") },
+              { key: "detail", label: t("columns.detail") },
+              { key: "ip", label: t("columns.ip") },
+            ]}
+            minWidth="44rem"
+            caption={t("title")}
+            rows={rows.map((row) => ({
+              key: String(row.id),
+              cells: [
+                <span key="time" className="text-ink tabular-nums">
+                  {row.time}
+                </span>,
+                <span key="who" className="text-ink">
+                  {row.who}
+                </span>,
+                t(`kinds.${row.kind}`),
+                <span key="target" className={mono}>
+                  {row.target}
+                </span>,
+                <span key="detail" className={mono}>
+                  {row.detail}
+                </span>,
+                <span key="ip" className={mono}>
+                  {row.ip}
+                </span>,
+              ],
+            }))}
+          />
+        )}
+        <ServerPager
+          page={page}
+          hasMore={hasMore}
+          hrefFor={pageHref}
+          labels={{
+            pagination: t("pagination"),
+            newer: t("newer"),
+            older: t("older"),
+            page: t("page", { page: page + 1 }),
+          }}
+        />
+        {/* A plain link: the export is a file download, written to the audit on the server. */}
+        {mayExport(context.role, "audit") && (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4 text-sm">
+            <span className="text-ink-muted">{t("exportHint")}</span>
+            <a
+              href={`${ADMIN_PATH}/audit/export`}
+              download
+              className="flex h-11 items-center gap-2 rounded-xl border border-line px-3 text-sm font-medium text-ink-soft outline-none hover:bg-surface-hover hover:text-ink focus-visible:ring-3 focus-visible:ring-ring/50 mouse:h-9"
+            >
               <DownloadIcon aria-hidden className="size-4" />
               {t("export")}
             </a>
-          ) : undefined
-        }
-      />
-      {rows.length === 0 ? (
-        <EmptyState title={t("emptyTitle")} description={t("emptyDescription")} />
-      ) : (
-        <GlowCard interactive={false} className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[40rem] text-left text-sm">
-              <thead className="text-xs text-ink-soft">
-                <tr className="border-b border-line">
-                  <th scope="col" className="px-4 py-3 font-medium">
-                    {t("columns.time")}
-                  </th>
-                  <th scope="col" className="px-4 py-3 font-medium">
-                    {t("columns.who")}
-                  </th>
-                  <th scope="col" className="px-4 py-3 font-medium">
-                    {t("columns.kind")}
-                  </th>
-                  <th scope="col" className="px-4 py-3 font-medium">
-                    {t("columns.target")}
-                  </th>
-                  <th scope="col" className="px-4 py-3 font-medium">
-                    {t("columns.detail")}
-                  </th>
-                  <th scope="col" className="px-4 py-3 font-medium">
-                    {t("columns.ip")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row) => (
-                  <tr key={row.id} className="border-b border-line last:border-0">
-                    <td className="px-4 py-2.5 whitespace-nowrap tabular-nums">{row.time}</td>
-                    <td className="px-4 py-2.5">{row.who}</td>
-                    <td className="px-4 py-2.5">{t(`kinds.${row.kind}`)}</td>
-                    <td className="px-4 py-2.5 font-mono text-xs">{row.target}</td>
-                    <td className="px-4 py-2.5 font-mono text-xs text-ink-soft">{row.detail}</td>
-                    <td className="px-4 py-2.5 font-mono text-xs text-ink-soft">{row.ip}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
-        </GlowCard>
-      )}
-      {(page > 0 || hasMore) && (
-        <nav aria-label={t("pagination")} className="flex items-center justify-between gap-2">
-          {page > 0 ? (
-            <AdminViewLink href={pageHref(page - 1)} className={linkClass}>
-              {t("newer")}
-            </AdminViewLink>
-          ) : (
-            <span />
-          )}
-          <span className="text-sm text-ink-soft">{t("page", { page: page + 1 })}</span>
-          {hasMore ? (
-            <AdminViewLink href={pageHref(page + 1)} className={linkClass}>
-              {t("older")}
-            </AdminViewLink>
-          ) : (
-            <span />
-          )}
-        </nav>
-      )}
+        )}
+      </div>
     </>
   );
 }

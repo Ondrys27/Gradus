@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { AlertTriangleIcon, FilterIcon, RefreshCwIcon, XIcon } from "lucide-react";
@@ -19,6 +19,7 @@ import { formatCalendarDate, formatTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ADMIN_FORMAT_SETTINGS } from "../format-metric";
 import { useAdminView } from "./admin-view";
+import { AdminPageBar } from "./page-bar";
 import {
   activeFilters,
   filtersFor,
@@ -44,19 +45,29 @@ export type OpenSegmentOptions = Partial<Record<"industry" | "country", SegmentO
 
 const ALL = "__all";
 
+const segmentedItem =
+  "h-10 shrink-0 cursor-pointer rounded-lg px-2.5 text-xs font-medium whitespace-nowrap outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:h-7";
+
 /**
- * The filters the pages share: period, comparison, internal accounts, plan,
- * industry, country… and the five-minute refresh. A page shows only the
- * filters it applies (../filters.ts); the active ones are labels with a cross
- * above the content, with "Clear filters". Everything is in the address, so a
- * view can be shared and survives going to another section.
+ * The sticky bar of a page with the shared controls: period, comparison,
+ * internal accounts, the filters (plan, industry, country…) and the
+ * five-minute refresh. A page shows only the filters it applies
+ * (../filters.ts). Everything is in the address, so a view can be shared and
+ * survives going to another section. Esc closes the filters panel.
  */
 export function AdminControls({
   today,
   openOptions,
+  title,
+  description,
+  extra,
 }: {
   today: string;
   openOptions: OpenSegmentOptions;
+  title: string;
+  description?: string;
+  /** Rendered under the bar: the page's own controls (search, tabs). */
+  extra?: ReactNode;
 }) {
   const t = useTranslations("admin.controls");
   const pathname = usePathname();
@@ -69,6 +80,7 @@ export function AdminControls({
   const filters = filtersFor(pathname);
   const [showSegments, setShowSegments] = useState(false);
   const [refreshedAt, setRefreshedAt] = useState<Date | null>(null);
+  const filtersButton = useRef<HTMLButtonElement>(null);
 
   useEffect(() => setRefreshedAt(new Date()), [searchParams]);
 
@@ -95,7 +107,17 @@ export function AdminControls({
     };
   }, [router]);
 
-  if (filters.length === 0) return null;
+  // Esc closes the open filters panel and puts focus back on its button.
+  useEffect(() => {
+    if (!showSegments) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setShowSegments(false);
+      filtersButton.current?.focus();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [showSegments]);
 
   function apply(next: AdminView) {
     // No scroll to the top and the old numbers stay on screen while the new ones load.
@@ -155,15 +177,17 @@ export function AdminControls({
   const offers = (filter: (typeof filters)[number]) => filters.includes(filter);
   const segmentKeys = ADMIN_SEGMENT_KEYS.filter((key) => offers(key));
   const active = activeFilters(view, filters);
+  const range = resolveRange(view, today);
+  const rangeText = `${formatCalendarDate(range.from, ADMIN_FORMAT_SETTINGS)} – ${formatCalendarDate(range.to, ADMIN_FORMAT_SETTINGS)}`;
 
-  return (
-    <div className="flex flex-col gap-3" aria-busy={pending}>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        {offers("period") && (
+  const controls = (
+    <div className="flex max-w-full flex-wrap items-center gap-x-3 gap-y-2" aria-busy={pending}>
+      {offers("period") && (
         <div
           role="radiogroup"
           aria-label={t("period")}
-          className="flex max-w-full overflow-x-auto rounded-full border border-line p-0.5"
+          title={rangeText}
+          className="flex max-w-full shrink-0 overflow-x-auto rounded-xl border border-line bg-surface p-0.5 [scrollbar-width:none]"
         >
           {ADMIN_PERIODS.map((period) => (
             <button
@@ -173,7 +197,7 @@ export function AdminControls({
               aria-checked={view.period === period}
               onClick={() => setPeriod(period)}
               className={cn(
-                "h-11 shrink-0 cursor-pointer rounded-full px-3 text-sm font-medium whitespace-nowrap outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:h-8",
+                segmentedItem,
                 view.period === period ? "bg-violet/20 text-ink" : "text-ink-soft hover:text-ink",
               )}
             >
@@ -181,98 +205,105 @@ export function AdminControls({
             </button>
           ))}
         </div>
-        )}
+      )}
 
-        {offers("period") && view.period === "custom" && (
-          <div className="flex items-center gap-2">
-            <DatePicker
-              value={view.from}
-              settings={ADMIN_FORMAT_SETTINGS}
-              className="w-36"
-              onValueChange={(from) => {
-                if (!from || from > today) return;
-                // Moving the start past the end moves the end along.
-                apply({ ...view, from, to: view.to && view.to >= from ? view.to : from });
-              }}
-            />
-            <span className="text-ink-muted" aria-hidden>
-              –
-            </span>
-            <DatePicker
-              value={view.to}
-              settings={ADMIN_FORMAT_SETTINGS}
-              className="w-36"
-              onValueChange={(to) => {
-                if (!to || to > today) return;
-                apply({ ...view, to, from: view.from && view.from <= to ? view.from : to });
-              }}
-            />
-          </div>
-        )}
-
-        {offers("compare") && (
-          <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-ink-soft">
-            <Switch
-              checked={view.compare}
-              onCheckedChange={(compare) => apply({ ...view, compare })}
-            />
-            {t("compare")}
-          </label>
-        )}
-
-        {offers("internal") && (
-          <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-ink-soft">
-            <Switch
-              checked={view.internal}
-              onCheckedChange={(internal) => apply({ ...view, internal })}
-            />
-            {t("internal")}
-          </label>
-        )}
-
-        {segmentKeys.length > 0 && (
-          <Button
-            type="button"
-            variant={showSegments || active.length ? "secondary" : "ghost"}
-            size="sm"
-            aria-expanded={showSegments}
-            aria-controls="admin-filters"
-            onClick={() => setShowSegments((open) => !open)}
-          >
-            <FilterIcon aria-hidden />
-            {active.length ? t("filtersActive", { count: active.length }) : t("filters")}
-          </Button>
-        )}
-
-        <div className="ml-auto flex items-center gap-1 text-xs text-ink-muted">
-          <span aria-live="polite">
-            {refreshedAt
-              ? t("refreshedAt", { time: formatTime(refreshedAt, ADMIN_FORMAT_SETTINGS) })
-              : null}
-          </span>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label={t("refresh")}
-            disabled={pending}
-            onClick={() => {
-              startTransition(() => router.refresh());
-              setRefreshedAt(new Date());
+      {offers("period") && view.period === "custom" && (
+        <div className="flex shrink-0 items-center gap-1.5">
+          <DatePicker
+            value={view.from}
+            settings={ADMIN_FORMAT_SETTINGS}
+            className="w-34"
+            onValueChange={(from) => {
+              if (!from || from > today) return;
+              // Moving the start past the end moves the end along.
+              apply({ ...view, from, to: view.to && view.to >= from ? view.to : from });
             }}
-          >
-            <RefreshCwIcon
-              aria-hidden
-              className={cn(pending && "animate-spin motion-reduce:animate-none")}
-            />
-          </Button>
+          />
+          <span className="text-ink-muted" aria-hidden>
+            –
+          </span>
+          <DatePicker
+            value={view.to}
+            settings={ADMIN_FORMAT_SETTINGS}
+            className="w-34"
+            onValueChange={(to) => {
+              if (!to || to > today) return;
+              apply({ ...view, to, from: view.from && view.from <= to ? view.from : to });
+            }}
+          />
         </div>
-      </div>
+      )}
 
+      {offers("compare") && (
+        <label className="flex h-10 shrink-0 cursor-pointer items-center gap-2 text-xs text-ink-soft mouse:h-8">
+          <Switch
+            checked={view.compare}
+            onCheckedChange={(compare) => apply({ ...view, compare })}
+          />
+          {t("compare")}
+        </label>
+      )}
+
+      {offers("internal") && (
+        <label className="flex h-10 shrink-0 cursor-pointer items-center gap-2 text-xs text-ink-soft mouse:h-8">
+          <Switch
+            checked={view.internal}
+            onCheckedChange={(internal) => apply({ ...view, internal })}
+          />
+          {t("internal")}
+        </label>
+      )}
+
+      {segmentKeys.length > 0 && (
+        <Button
+          ref={filtersButton}
+          type="button"
+          variant={showSegments || active.length ? "secondary" : "ghost"}
+          size="sm"
+          aria-expanded={showSegments}
+          aria-controls="admin-filters"
+          onClick={() => setShowSegments((open) => !open)}
+          className="shrink-0"
+        >
+          <FilterIcon aria-hidden />
+          {active.length ? t("filtersActive", { count: active.length }) : t("filters")}
+        </Button>
+      )}
+
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-sm"
+        aria-label={t("refresh")}
+        title={
+          refreshedAt
+            ? t("refreshedAt", { time: formatTime(refreshedAt, ADMIN_FORMAT_SETTINGS) })
+            : t("refresh")
+        }
+        disabled={pending}
+        onClick={() => {
+          startTransition(() => router.refresh());
+          setRefreshedAt(new Date());
+        }}
+        className="shrink-0 text-ink-muted"
+      >
+        <RefreshCwIcon
+          aria-hidden
+          className={cn(pending && "animate-spin motion-reduce:animate-none")}
+        />
+      </Button>
+      <span aria-live="polite" className="sr-only">
+        {refreshedAt ? t("refreshedAt", { time: formatTime(refreshedAt, ADMIN_FORMAT_SETTINGS) }) : null}
+      </span>
+    </div>
+  );
+
+  return (
+    <AdminPageBar title={title} description={description} controls={controls}>
       {showSegments && segmentKeys.length > 0 && (
         <div
           id="admin-filters"
-          className="grid grid-cols-1 gap-2 rounded-card border border-line bg-surface p-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7"
+          className="grid grid-cols-1 gap-2 rounded-xl border border-line bg-surface p-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7"
         >
           {segmentKeys.map((key) => {
             const options = optionsFor(key);
@@ -280,7 +311,7 @@ export function AdminControls({
             const id = `admin-segment-${key}`;
             return (
               <div key={key} className="flex min-w-0 flex-col gap-1">
-                <label htmlFor={id} className="micro-label">
+                <label htmlFor={id} className="text-xs font-medium text-ink-muted">
                   {t(`segmentKeys.${key}`)}
                 </label>
                 <Select
@@ -310,7 +341,7 @@ export function AdminControls({
 
       {active.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          <ul className="flex flex-wrap gap-2" aria-label={t("activeFilters")}>
+          <ul className="flex flex-wrap gap-1.5" aria-label={t("activeFilters")}>
             {active.map((filter) => {
               const { name, value } = chipText(filter);
               const text = value ? `${name}: ${value}` : name;
@@ -320,7 +351,7 @@ export function AdminControls({
                     type="button"
                     onClick={() => apply(withoutFilter(view, filter))}
                     aria-label={t("removeFilter", { filter: text })}
-                    className="flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full border border-violet/40 bg-violet/12 px-3 text-sm text-ink outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:min-h-8"
+                    className="flex h-10 cursor-pointer items-center gap-1.5 rounded-lg border border-violet/40 bg-violet/12 px-2.5 text-xs text-ink outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:h-7"
                   >
                     {value ? (
                       <>
@@ -330,7 +361,7 @@ export function AdminControls({
                     ) : (
                       name
                     )}
-                    <XIcon aria-hidden className="size-3.5" />
+                    <XIcon aria-hidden className="size-3" />
                   </button>
                 </li>
               );
@@ -348,17 +379,16 @@ export function AdminControls({
       )}
 
       {offers("internal") && view.internal && (
-        <div
-          role="alert"
-          className="flex items-start gap-3 rounded-card border-2 border-orange bg-orange/15 px-4 py-3 text-sm text-ink"
-        >
-          <AlertTriangleIcon aria-hidden className="mt-0.5 size-5 shrink-0 text-orange" />
-          <div className="flex flex-col gap-0.5">
-            <strong className="font-semibold">{t("internalWarningTitle")}</strong>
+        <p role="alert" className="flex items-start gap-2 text-xs text-orange">
+          <AlertTriangleIcon aria-hidden className="mt-0.5 size-3.5 shrink-0" />
+          <span>
+            <strong className="font-semibold">{t("internalWarningTitle")}.</strong>{" "}
             <span className="text-ink-soft">{t("internalWarning")}</span>
-          </div>
-        </div>
+          </span>
+        </p>
       )}
-    </div>
+
+      {extra}
+    </AdminPageBar>
   );
 }

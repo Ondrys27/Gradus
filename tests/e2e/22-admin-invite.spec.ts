@@ -103,6 +103,8 @@ test("22 · an invitation makes a new admin, works once, and removal locks them 
   const row = page.getByTestId("admin-member").filter({ hasText: adminEmail });
   await expect(row).toContainText(text(L, "admin.admins.role.admin"));
   await expect(row).toContainText(text(L, "admin.admins.status.active"));
+  // Removing sits at the end of the member's history, so the history opens first.
+  await row.locator("summary").click();
   await row.getByRole("button", { name: exact(L, "admin.admins.remove.open") }).click();
   await page
     .getByRole("dialog")

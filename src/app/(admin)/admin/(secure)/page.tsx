@@ -7,8 +7,8 @@ import { adminQuery, safe, type AdminQuery } from "@/features/admin/server/metri
 import { overviewChart, overviewTiles } from "@/features/admin/server/page-data";
 import { AdminChart } from "@/features/admin/ui/admin-chart";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
-import { AdminCard, CardSkeleton, TilesSkeleton } from "@/features/admin/ui/blocks";
-import { TileGrid } from "@/features/admin/ui/metric-tile";
+import { AdminCard, CardSkeleton, FiguresSkeleton } from "@/features/admin/ui/blocks";
+import { Figures } from "@/features/admin/ui/metric-tile";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.overview");
@@ -25,19 +25,21 @@ export default async function AdminOverviewPage({ searchParams }: Props) {
   return (
     <>
       <AdminPageHeader section="overview" q={q} />
-      <Suspense fallback={<TilesSkeleton count={10} />}>
-        <Tiles q={q} />
-      </Suspense>
-      <Suspense fallback={<CardSkeleton height={320} />}>
-        <MainChart q={q} />
-      </Suspense>
+      <div className="flex flex-col gap-4">
+        <Suspense fallback={<FiguresSkeleton more={6} />}>
+          <Tiles q={q} />
+        </Suspense>
+        <Suspense fallback={<CardSkeleton height={320} />}>
+          <MainChart q={q} />
+        </Suspense>
+      </div>
     </>
   );
 }
 
 async function Tiles({ q }: { q: AdminQuery }) {
   const loaded = await safe("overview tiles", () => overviewTiles(q));
-  return <Show loaded={loaded}>{(tiles) => <TileGrid tiles={tiles} />}</Show>;
+  return <Show loaded={loaded}>{(tiles) => <Figures tiles={tiles} />}</Show>;
 }
 
 async function MainChart({ q }: { q: AdminQuery }) {

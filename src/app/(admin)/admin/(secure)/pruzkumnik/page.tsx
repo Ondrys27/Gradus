@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { EVENTS, type EventName } from "@/lib/analytics/events";
 import type { EventCalc } from "@/lib/analytics/metrics";
+import { formatCalendarDate, formatNumber } from "@/lib/format";
 import { logAdminAction } from "@/features/admin/server/audit";
 import { requireAdmin } from "@/features/admin/server/guard";
 import { adminQuery, safe, type AdminQuery } from "@/features/admin/server/metrics-data";
@@ -16,9 +17,11 @@ import {
   type ExplorerGrain,
   type ExplorerQuery,
 } from "@/features/admin/server/explorer-data";
+import { ADMIN_FORMAT_SETTINGS } from "@/features/admin/format-metric";
+import { isIsoDate } from "@/features/admin/view-state";
 import { AdminChart } from "@/features/admin/ui/admin-chart";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
-import { AdminCard, CardSkeleton } from "@/features/admin/ui/blocks";
+import { AdminCard, BlockGrid, CardSkeleton } from "@/features/admin/ui/blocks";
 import { buildTable } from "@/features/admin/table";
 import { DataTable } from "@/features/admin/ui/data-blocks";
 import { ExplorerControls } from "@/features/admin/ui/explorer-controls";
@@ -55,6 +58,11 @@ function parseQuery(params: Record<string, string | string[] | undefined>): Expl
   return isValidExplorerQuery(query) ? query : { ...DEFAULT_QUERY, event: query.event };
 }
 
+/**
+ * The exception to the page template: there are no key numbers to show
+ * before the query is chosen, so the query comes first and the chart and
+ * its rows follow.
+ */
 export default async function AdminExplorerPage({ searchParams }: Props) {
   const context = await requireAdmin();
   await logAdminAction(context, "view", "explorer");
@@ -69,12 +77,14 @@ export default async function AdminExplorerPage({ searchParams }: Props) {
   return (
     <>
       <AdminPageHeader section="explorer" q={q} />
-      <AdminCard>
-        <ExplorerControls events={EXPLORER_EVENTS} numericPropsByEvent={numericPropsByEvent} current={query} />
-      </AdminCard>
-      <Suspense fallback={<CardSkeleton height={320} />}>
-        <Result q={q} query={query} />
-      </Suspense>
+      <div className="flex flex-col gap-4">
+        <AdminCard>
+          <ExplorerControls events={EXPLORER_EVENTS} numericPropsByEvent={numericPropsByEvent} current={query} />
+        </AdminCard>
+        <Suspense fallback={<CardSkeleton height={320} />}>
+          <Result q={q} query={query} />
+        </Suspense>
+      </div>
     </>
   );
 }
@@ -84,28 +94,38 @@ async function Result({ q, query }: { q: AdminQuery; query: ExplorerQuery }) {
     safe("explorer chart", () => explorerChart(q, query)),
     getTranslations("admin.explorer"),
   ]);
+  const title = EVENTS[query.event] ? query.event : t("title");
   return (
-    <AdminCard title={EVENTS[query.event] ? query.event : t("title")}>
-      <Show loaded={loaded}>
-        {(chart) => (
-          <div className="flex flex-col gap-4">
-            <AdminChart data={chart} title={query.event} />
+    <Show loaded={loaded}>
+      {(chart) => (
+        <BlockGrid>
+          <AdminCard title={title} wide>
+            <AdminChart data={chart} title={query.event} height={300} />
+          </AdminCard>
+          <AdminCard title={t("rowsTitle")} wide>
             <DataTable
               id={`explorer.${query.event}`}
               table={buildTable(chart.rows, [
-                { key: "x", label: t("columns.period"), render: (row) => String(row.x) },
+                {
+                  key: "x",
+                  label: t("columns.period"),
+                  render: (row) =>
+                    isIsoDate(row.x) ? formatCalendarDate(row.x, ADMIN_FORMAT_SETTINGS) : String(row.x),
+                  csv: (row) => row.x,
+                },
                 {
                   key: "value",
                   label: t("columns.value"),
                   align: "right",
-                  render: (row) => (row.value === null ? "–" : String(row.value)),
+                  render: (row) =>
+                    typeof row.value === "number" ? formatNumber(row.value, {}, ADMIN_FORMAT_SETTINGS) : "–",
                   csv: (row) => (typeof row.value === "number" ? row.value : null),
                 },
               ])}
             />
-          </div>
-        )}
-      </Show>
-    </AdminCard>
+          </AdminCard>
+        </BlockGrid>
+      )}
+    </Show>
   );
 }

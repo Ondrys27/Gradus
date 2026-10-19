@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { LogOutIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -83,19 +83,21 @@ export function AdminIdleGuard({ expiresAt }: { expiresAt: string }) {
   return null;
 }
 
+/** Signing out of the administration, for the menu's button. */
+export function useAdminSignOut() {
+  const [pending, setPending] = useState(false);
+  const signOut = useCallback(() => {
+    setPending(true);
+    void leave("signOut");
+  }, []);
+  return { signOut, pending };
+}
+
 export function AdminSignOutButton() {
   const t = useTranslations("admin.shell");
-  const [pending, setPending] = useState(false);
+  const { signOut, pending } = useAdminSignOut();
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      disabled={pending}
-      onClick={() => {
-        setPending(true);
-        void leave("signOut");
-      }}
-    >
+    <Button variant="ghost" size="sm" disabled={pending} onClick={signOut}>
       <LogOutIcon aria-hidden />
       {t("signOut")}
     </Button>

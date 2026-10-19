@@ -13,10 +13,10 @@ import {
 } from "@/features/admin/server/page-data";
 import { ADMIN_FORMAT_SETTINGS, formatMetricValue } from "@/features/admin/format-metric";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
-import { AdminCard, GridSkeleton, TilesSkeleton } from "@/features/admin/ui/blocks";
+import { AdminCard, BlockGrid, CardSkeleton, FiguresSkeleton, GridSkeleton } from "@/features/admin/ui/blocks";
 import { buildTable } from "@/features/admin/table";
 import { BreakdownList, DataTable, FieldsGrid } from "@/features/admin/ui/data-blocks";
-import { TileGrid } from "@/features/admin/ui/metric-tile";
+import { Figures } from "@/features/admin/ui/metric-tile";
 import { formatNumber } from "@/lib/format";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -34,25 +34,27 @@ export default async function AdminCostsPage({ searchParams }: Props) {
   return (
     <>
       <AdminPageHeader section="costs" q={q} />
-      <Suspense fallback={<TilesSkeleton count={3} />}>
-        <Tiles q={q} />
-      </Suspense>
-      <Suspense fallback={<GridSkeleton count={2} height={180} />}>
-        <BreakdownFields q={q} />
-      </Suspense>
-      <Suspense fallback={<GridSkeleton count={1} height={240} />}>
-        <Margin q={q} />
-      </Suspense>
-      <Suspense fallback={<GridSkeleton count={2} height={180} />}>
-        <Trial q={q} />
-      </Suspense>
+      <div className="flex flex-col gap-4">
+        <Suspense fallback={<FiguresSkeleton count={3} />}>
+          <Tiles q={q} />
+        </Suspense>
+        <Suspense fallback={<CardSkeleton height={180} />}>
+          <BreakdownFields q={q} />
+        </Suspense>
+        <Suspense fallback={<CardSkeleton height={240} />}>
+          <Margin q={q} />
+        </Suspense>
+        <Suspense fallback={<GridSkeleton count={2} height={180} />}>
+          <Trial q={q} />
+        </Suspense>
+      </div>
     </>
   );
 }
 
 async function Tiles({ q }: { q: AdminQuery }) {
   const loaded = await safe("costs tiles", () => costsTiles(q));
-  return <Show loaded={loaded}>{(tiles) => <TileGrid tiles={tiles} />}</Show>;
+  return <Show loaded={loaded}>{(tiles) => <Figures tiles={tiles} />}</Show>;
 }
 
 async function BreakdownFields({ q }: { q: AdminQuery }) {
@@ -132,7 +134,7 @@ async function Trial({ q }: { q: AdminQuery }) {
     getTranslations("metrics.items"),
   ]);
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <BlockGrid>
       <AdminCard title={t("trials.name")} description={t("trials.description")}>
         <Show loaded={trial}>{(data) => <FieldsGrid data={data} />}</Show>
       </AdminCard>
@@ -145,6 +147,6 @@ async function Trial({ q }: { q: AdminQuery }) {
           ))
         }
       </Show>
-    </div>
+    </BlockGrid>
   );
 }

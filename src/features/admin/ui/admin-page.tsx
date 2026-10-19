@@ -1,45 +1,65 @@
 import type { ReactNode } from "react";
-import { getTranslations } from "next-intl/server";
-import { PageHeader } from "@/components/ui/page-header";
-import { formatCalendarDate } from "@/lib/format";
-import { ADMIN_FORMAT_SETTINGS } from "../format-metric";
+import { Suspense } from "react";
+import { getLocale, getTranslations } from "next-intl/server";
+import { metricsToday } from "@/lib/analytics/metrics";
+import { countryName } from "@/lib/format";
 import type { AdminQuery } from "../server/metrics-data";
+import { openSegmentValues, safe } from "../server/metrics-data";
 import type { Loaded } from "../types";
 import { AdminBlockError } from "./blocks";
+import { AdminControls, type OpenSegmentOptions } from "./admin-controls";
+import { AdminPageBar } from "./page-bar";
 
-function rangeText(range: { from: string; to: string }): string {
-  const from = formatCalendarDate(range.from, ADMIN_FORMAT_SETTINGS);
-  const to = formatCalendarDate(range.to, ADMIN_FORMAT_SETTINGS);
-  return range.from === range.to ? from : `${from} – ${to}`;
-}
+export { AdminPageBar };
 
-/** Title of an administration page with the period it shows and what it compares with. */
-export async function AdminPageHeader({ section, q }: { section: string; q: AdminQuery }) {
-  const [t, tControls] = await Promise.all([
+/**
+ * The bar of a page with the shared controls: its name and sentence on the
+ * left, the period, comparison and filters on the right; `extra` goes under
+ * the bar (a search field, a row of tabs).
+ */
+export async function AdminPageHeader({
+  section,
+  q,
+  extra,
+}: {
+  section: string;
+  q: AdminQuery;
+  extra?: ReactNode;
+}) {
+  void q; // The period and comparison show in the controls themselves.
+  const [t, tIndustry, locale, values] = await Promise.all([
     getTranslations(`admin.${section}`),
-    getTranslations("admin.controls"),
+    getTranslations("onboarding.industry.industries"),
+    getLocale(),
+    safe("segment values", openSegmentValues),
   ]);
-  return (
-    <PageHeader
-      title={t("title")}
-      description={
-        <>
-          {t("description")}{" "}
-          <span className="text-ink-muted">
-            {q.previous
-              ? tControls("rangeCompared", {
-                  range: rangeText(q.range),
-                  previous: rangeText(q.previous),
-                })
-              : tControls("range", { range: rangeText(q.range) })}
-          </span>
-        </>
+  const openOptions: OpenSegmentOptions = values.ok
+    ? {
+        industry: values.data.industry.map((value) => ({
+          value,
+          label: tIndustry.has(`${value}.label`) ? tIndustry(`${value}.label`) : value,
+        })),
+        country: values.data.country.map((value) => ({
+          value,
+          label: countryName(value, locale),
+        })),
       }
-    />
+    : {};
+
+  return (
+    <Suspense fallback={<AdminPageBar title={t("title")} description={t("description")} />}>
+      <AdminControls
+        today={metricsToday()}
+        openOptions={openOptions}
+        title={t("title")}
+        description={t("description")}
+        extra={extra}
+      />
+    </Suspense>
   );
 }
 
-/** Renders a block that loaded, or a short note when it could not. */
+/** Renders a block that loaded, or a short note with a retry when it could not. */
 export function Show<T>({
   loaded,
   children,

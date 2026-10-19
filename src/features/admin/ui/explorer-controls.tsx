@@ -206,7 +206,7 @@ export function ExplorerControls({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex min-w-0 flex-col gap-1">
-      <span className="micro-label">{label}</span>
+      <span className="text-xs font-medium text-ink-muted">{label}</span>
       {children}
     </div>
   );

@@ -3,7 +3,7 @@ import { AdminViewLink } from "@/features/admin/ui/admin-view";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import type { AnalyticsSection } from "@/lib/analytics/routes";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatNumber } from "@/lib/format";
 import { logAdminAction } from "@/features/admin/server/audit";
 import { requireAdmin } from "@/features/admin/server/guard";
 import { adminQuery, safe, type AdminQuery } from "@/features/admin/server/metrics-data";
@@ -24,10 +24,10 @@ import { ADMIN_FORMAT_SETTINGS } from "@/features/admin/format-metric";
 import { ADMIN_PATH } from "@/features/admin/access";
 import { AdminChart } from "@/features/admin/ui/admin-chart";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
-import { AdminCard, CardSkeleton, GridSkeleton, TilesSkeleton } from "@/features/admin/ui/blocks";
+import { AdminCard, BlockGrid, FiguresSkeleton, GridSkeleton } from "@/features/admin/ui/blocks";
 import { buildTable } from "@/features/admin/table";
 import { BreakdownList, DataTable, FieldsGrid } from "@/features/admin/ui/data-blocks";
-import { TileGrid } from "@/features/admin/ui/metric-tile";
+import { Figures } from "@/features/admin/ui/metric-tile";
 import { viewQuery, parseAdminView } from "@/features/admin/view-state";
 import { cn } from "@/lib/utils";
 
@@ -41,6 +41,9 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 function isSection(value: string | undefined): value is AnalyticsSection {
   return (FEATURE_SECTIONS as readonly string[]).includes(value ?? "");
 }
+
+const SETTINGS = ADMIN_FORMAT_SETTINGS;
+const count = (value: number | null) => formatNumber(value ?? 0, {}, SETTINGS);
 
 export default async function AdminFeaturesPage({ searchParams }: Props) {
   const context = await requireAdmin();
@@ -56,148 +59,149 @@ export default async function AdminFeaturesPage({ searchParams }: Props) {
     getTranslations("admin.users.sections"),
   ]);
 
+  // The tabs live in the sticky bar, so the section stays in reach while scrolling.
+  const tabs = (
+    <nav
+      aria-label={t("tabs")}
+      className="-mx-4 flex gap-1 overflow-x-auto px-4 [scrollbar-width:none] lg:-mx-6 lg:px-6"
+    >
+      {FEATURE_SECTIONS.map((section) => {
+        const active = section === tab;
+        return (
+          <AdminViewLink
+            key={section}
+            href={`${ADMIN_PATH}/funkce?tab=${section}${query ? `&${query.slice(1)}` : ""}`}
+            aria-current={active ? "page" : undefined}
+            className={cn(
+              "flex h-10 shrink-0 items-center border-b-2 px-2.5 text-sm whitespace-nowrap outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:h-8",
+              active
+                ? "border-violet font-medium text-ink"
+                : "border-transparent text-ink-soft hover:text-ink",
+            )}
+          >
+            {tSections(section)}
+          </AdminViewLink>
+        );
+      })}
+    </nav>
+  );
+
   return (
     <>
-      <AdminPageHeader section="features" q={q} />
-
-      <Suspense fallback={<CardSkeleton height={260} />}>
-        <Adoption q={q} />
-      </Suspense>
-
-      <nav
-        aria-label={t("tabs")}
-        className="-mx-4 flex gap-1 overflow-x-auto px-4 pb-1 [scrollbar-width:none]"
-      >
-        {FEATURE_SECTIONS.map((section) => {
-          const active = section === tab;
-          return (
-            <AdminViewLink
-              key={section}
-              href={`${ADMIN_PATH}/funkce?tab=${section}${query ? `&${query.slice(1)}` : ""}`}
-              aria-current={active ? "page" : undefined}
-              className={cn(
-                "flex h-11 shrink-0 items-center rounded-full px-3.5 text-sm font-medium whitespace-nowrap outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:h-9",
-                active ? "bg-violet/20 text-ink" : "text-ink-soft hover:bg-surface-hover hover:text-ink",
-              )}
-            >
-              {tSections(section)}
-            </AdminViewLink>
-          );
-        })}
-      </nav>
-
-      <Suspense fallback={<SectionSkeleton />}>
-        <Section q={q} section={tab} />
-      </Suspense>
+      <AdminPageHeader section="features" q={q} extra={tabs} />
+      <div className="flex flex-col gap-4">
+        <Suspense fallback={<SectionSkeleton />}>
+          <Section q={q} section={tab} />
+        </Suspense>
+      </div>
     </>
   );
 }
 
 function SectionSkeleton() {
   return (
-    <div className="flex flex-col gap-4">
-      <CardSkeleton height={220} />
-      <TilesSkeleton count={6} />
-      <GridSkeleton count={3} height={160} />
-    </div>
-  );
-}
-
-async function Adoption({ q }: { q: AdminQuery }) {
-  const [loaded, t, tUnits, tSections] = await Promise.all([
-    safe("feature adoption", () => featureAdoption(q)),
-    getTranslations("admin.features"),
-    getTranslations("admin.units"),
-    getTranslations("admin.users.sections"),
-  ]);
-  return (
-    <AdminCard title={t("adoptionTitle")} description={t("adoptionDescription")}>
-      <Show loaded={loaded}>
-        {(rows) => (
-          <DataTable
-            id="features.adoption"
-            table={buildTable(rows, [
-              {
-                key: "section",
-                label: t("columns.section"),
-                render: (row) =>
-                  tSections.has(row.section) ? tSections(row.section) : row.section,
-              },
-              {
-                key: "pct",
-                label: t("columns.adoption"),
-                align: "right",
-                render: (row) => (row.pct === null ? tUnits("none") : `${row.pct.toFixed(0)} %`),
-                csv: (row) => row.pct,
-              },
-              {
-                key: "actions",
-                label: t("columns.actions"),
-                align: "right",
-                render: (row) => String(row.actions ?? 0),
-                csv: (row) => row.actions,
-              },
-              {
-                key: "actionsPerUser",
-                label: t("columns.actionsPerUser"),
-                align: "right",
-                render: (row) =>
-                  row.actionsPerUser === null ? tUnits("none") : row.actionsPerUser.toFixed(1),
-                csv: (row) => row.actionsPerUser,
-              },
-            ])}
-          />
-        )}
-      </Show>
-    </AdminCard>
+    <>
+      <FiguresSkeleton count={4} />
+      <GridSkeleton count={2} height={220} />
+      <GridSkeleton count={3} height={160} columns={3} />
+    </>
   );
 }
 
 async function Section({ q, section }: { q: AdminQuery; section: AnalyticsSection }) {
-  const [tiles, breakdowns, trend, t] = await Promise.all([
+  const [tiles, breakdowns, trend, adoption, t, tItems, tUnits, tSections] = await Promise.all([
     safe(`features ${section} tiles`, () => featureSectionTiles(q, section)),
     safe(`features ${section} breakdowns`, () => featureSectionBreakdowns(q, section)),
     safe(`features ${section} trend`, () => featureSectionTrend(q, section)),
+    safe("feature adoption", () => featureAdoption(q)),
+    getTranslations("admin.features"),
     getTranslations("metrics.items"),
+    getTranslations("admin.units"),
+    getTranslations("admin.users.sections"),
   ]);
 
   return (
-    <div className="flex flex-col gap-4">
-      {trend.ok && trend.data && (
-        <AdminCard>
-          <AdminChart data={trend.data} title={t(`${trend.data.series[0].key}.name`)} />
+    <>
+      <Show loaded={tiles}>{(data) => <Figures tiles={data} />}</Show>
+      <BlockGrid>
+        {trend.ok && trend.data && (
+          <AdminCard title={tItems(`${trend.data.series[0].key}.name`)}>
+            <AdminChart data={trend.data} title={tItems(`${trend.data.series[0].key}.name`)} />
+          </AdminCard>
+        )}
+        <AdminCard title={t("adoptionTitle")} description={t("adoptionDescription")} wide={!(trend.ok && trend.data)}>
+          <Show loaded={adoption}>
+            {(rows) => (
+              <DataTable
+                id="features.adoption"
+                table={buildTable(rows, [
+                  {
+                    key: "section",
+                    label: t("columns.section"),
+                    render: (row) =>
+                      tSections.has(row.section) ? tSections(row.section) : row.section,
+                  },
+                  {
+                    key: "pct",
+                    label: t("columns.adoption"),
+                    align: "right",
+                    render: (row) =>
+                      row.pct === null
+                        ? tUnits("none")
+                        : formatNumber(row.pct / 100, { style: "percent", decimals: 0 }, SETTINGS),
+                    csv: (row) => row.pct,
+                  },
+                  {
+                    key: "actions",
+                    label: t("columns.actions"),
+                    align: "right",
+                    render: (row) => count(row.actions),
+                    csv: (row) => row.actions,
+                  },
+                  {
+                    key: "actionsPerUser",
+                    label: t("columns.actionsPerUser"),
+                    align: "right",
+                    render: (row) =>
+                      row.actionsPerUser === null
+                        ? tUnits("none")
+                        : formatNumber(row.actionsPerUser, { decimals: 1 }, SETTINGS),
+                    csv: (row) => row.actionsPerUser,
+                  },
+                ])}
+              />
+            )}
+          </Show>
         </AdminCard>
-      )}
-      <Show loaded={tiles}>{(data) => <TileGrid tiles={data} />}</Show>
+      </BlockGrid>
       <Show loaded={breakdowns}>
         {(blocks) =>
           blocks.length > 0 && (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
+            <BlockGrid columns={3}>
               {blocks.map((block) => (
                 <AdminCard
                   key={block.key}
-                  title={t(`${block.key}.name`)}
-                  description={t(`${block.key}.description`)}
+                  title={tItems(`${block.key}.name`)}
+                  description={tItems(`${block.key}.description`)}
                 >
                   <BreakdownList data={block} />
                 </AdminCard>
               ))}
-            </div>
+            </BlockGrid>
           )
         }
       </Show>
       <SectionExtra q={q} section={section} />
-    </div>
+    </>
   );
 }
 
 /** The handful of metrics that are not a tile or a breakdown: tables built by hand. */
 async function SectionExtra({ q, section }: { q: AdminQuery; section: AnalyticsSection }) {
-  const [t, tItems, tUnits, settings] = await Promise.all([
+  const [t, tItems, tUnits] = await Promise.all([
     getTranslations("admin.features"),
     getTranslations("metrics.items"),
     getTranslations("admin.units"),
-    Promise.resolve(ADMIN_FORMAT_SETTINGS),
   ]);
 
   if (section === "milestones") {
@@ -221,7 +225,8 @@ async function SectionExtra({ q, section }: { q: AdminQuery; section: AnalyticsS
                   key: "p50",
                   label: t("columns.medianDays"),
                   align: "right",
-                  render: (row) => (row.p50 === null ? tUnits("none") : row.p50.toFixed(1)),
+                  render: (row) =>
+                    row.p50 === null ? tUnits("none") : formatNumber(row.p50, { decimals: 1 }, SETTINGS),
                   csv: (row) => row.p50,
                 },
               ])}
@@ -236,7 +241,7 @@ async function SectionExtra({ q, section }: { q: AdminQuery; section: AnalyticsS
     const loaded = await safe("deal value", () => dealValue(q));
     return (
       <Show loaded={loaded}>
-        {(rows) => <MoneyTable id="features.deal_value" title={tItems("deal_value.name")} rows={rows} t={t} settings={settings} />}
+        {(rows) => <MoneyTable id="features.deal_value" title={tItems("deal_value.name")} rows={rows} t={t} />}
       </Show>
     );
   }
@@ -258,7 +263,7 @@ async function SectionExtra({ q, section }: { q: AdminQuery; section: AnalyticsS
                   key: "searches",
                   label: t("columns.searches"),
                   align: "right",
-                  render: (row) => String(row.searches ?? 0),
+                  render: (row) => count(row.searches),
                   csv: (row) => row.searches,
                 },
               ])}
@@ -287,7 +292,7 @@ async function SectionExtra({ q, section }: { q: AdminQuery; section: AnalyticsS
     return (
       <Show loaded={loaded}>
         {(rows) => (
-          <MoneyTable id="features.finance_value" title={tItems("finance_value.name")} rows={rows} t={t} settings={settings} />
+          <MoneyTable id="features.finance_value" title={tItems("finance_value.name")} rows={rows} t={t} />
         )}
       </Show>
     );
@@ -317,13 +322,11 @@ function MoneyTable({
   title,
   rows,
   t,
-  settings,
 }: {
   id: string;
   title: string;
   rows: { metric: string; currency: string; items: number | null; total: number | null }[];
   t: Awaited<ReturnType<typeof getTranslations>>;
-  settings: typeof ADMIN_FORMAT_SETTINGS;
 }) {
   return (
     <AdminCard title={title}>
@@ -336,14 +339,14 @@ function MoneyTable({
             key: "items",
             label: t("columns.count"),
             align: "right",
-            render: (row) => String(row.items ?? 0),
+            render: (row) => count(row.items),
             csv: (row) => row.items,
           },
           {
             key: "total",
             label: t("columns.total"),
             align: "right",
-            render: (row) => formatCurrency(row.total ?? 0, row.currency, settings),
+            render: (row) => formatCurrency(row.total ?? 0, row.currency, SETTINGS),
             csv: (row) => row.total,
           },
         ])}

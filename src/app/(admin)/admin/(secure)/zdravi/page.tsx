@@ -14,12 +14,12 @@ import {
 } from "@/features/admin/server/page-data";
 import { AdminChart } from "@/features/admin/ui/admin-chart";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
-import { AdminCard, GridSkeleton, TilesSkeleton } from "@/features/admin/ui/blocks";
+import { AdminCard, BlockGrid, CardSkeleton, FiguresSkeleton, GridSkeleton } from "@/features/admin/ui/blocks";
 import { buildTable } from "@/features/admin/table";
 import { BreakdownList, DataTable } from "@/features/admin/ui/data-blocks";
 import { ADMIN_FORMAT_SETTINGS, formatMetricValue } from "@/features/admin/format-metric";
-import { TileGrid } from "@/features/admin/ui/metric-tile";
-import { formatDateTime } from "@/lib/format";
+import { Figures } from "@/features/admin/ui/metric-tile";
+import { formatDateTime, formatNumber } from "@/lib/format";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.health");
@@ -27,6 +27,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
+
+const count = (value: number | null) => formatNumber(value ?? 0, {}, ADMIN_FORMAT_SETTINGS);
 
 export default async function AdminHealthPage({ searchParams }: Props) {
   const context = await requireAdmin();
@@ -36,28 +38,30 @@ export default async function AdminHealthPage({ searchParams }: Props) {
   return (
     <>
       <AdminPageHeader section="health" q={q} />
-      <Suspense fallback={<TilesSkeleton count={2} />}>
-        <Tiles q={q} />
-      </Suspense>
-      <Suspense fallback={<GridSkeleton count={1} />}>
-        <Chart q={q} />
-      </Suspense>
-      <Suspense fallback={<GridSkeleton count={2} height={220} />}>
-        <Latency q={q} />
-      </Suspense>
-      <Suspense fallback={<GridSkeleton count={2} height={180} />}>
-        <Breakdowns q={q} />
-      </Suspense>
-      <Suspense fallback={<GridSkeleton count={1} height={240} />}>
-        <Cron q={q} />
-      </Suspense>
+      <div className="flex flex-col gap-4">
+        <Suspense fallback={<FiguresSkeleton count={2} />}>
+          <Tiles q={q} />
+        </Suspense>
+        <Suspense fallback={<CardSkeleton />}>
+          <Chart q={q} />
+        </Suspense>
+        <Suspense fallback={<GridSkeleton count={2} height={220} />}>
+          <Latency q={q} />
+        </Suspense>
+        <Suspense fallback={<GridSkeleton count={2} height={180} />}>
+          <Breakdowns q={q} />
+        </Suspense>
+        <Suspense fallback={<CardSkeleton height={240} />}>
+          <Cron q={q} />
+        </Suspense>
+      </div>
     </>
   );
 }
 
 async function Tiles({ q }: { q: AdminQuery }) {
   const loaded = await safe("health tiles", () => healthTiles(q));
-  return <Show loaded={loaded}>{(tiles) => <TileGrid tiles={tiles} />}</Show>;
+  return <Show loaded={loaded}>{(tiles) => <Figures tiles={tiles} />}</Show>;
 }
 
 async function Chart({ q }: { q: AdminQuery }) {
@@ -86,7 +90,7 @@ async function Latency({ q }: { q: AdminQuery }) {
       key: "n",
       label: t("columns.count"),
       align: "right" as const,
-      render: (row: { n: number | null }) => String(row.n ?? 0),
+      render: (row: { n: number | null }) => count(row.n),
       csv: (row: { n: number | null }) => row.n,
     },
     {
@@ -105,14 +109,14 @@ async function Latency({ q }: { q: AdminQuery }) {
     },
   ];
   return (
-    <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+    <BlockGrid>
       <AdminCard title={tItems("route_latency.name")} description={tItems("route_latency.description")}>
         <Show loaded={route}>{(rows) => <DataTable id="health.route_latency" table={buildTable(rows, columns(t("columns.route")))} />}</Show>
       </AdminCard>
       <AdminCard title={tItems("page_load.name")} description={tItems("page_load.description")}>
         <Show loaded={page}>{(rows) => <DataTable id="health.page_load" table={buildTable(rows, columns(t("columns.page")))} />}</Show>
       </AdminCard>
-    </div>
+    </BlockGrid>
   );
 }
 
@@ -122,7 +126,7 @@ async function Breakdowns({ q }: { q: AdminQuery }) {
     getTranslations("metrics.items"),
   ]);
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <BlockGrid>
       <Show loaded={loaded}>
         {(blocks) =>
           blocks.map((block) => (
@@ -132,7 +136,7 @@ async function Breakdowns({ q }: { q: AdminQuery }) {
           ))
         }
       </Show>
-    </div>
+    </BlockGrid>
   );
 }
 
@@ -166,14 +170,14 @@ async function Cron({ q }: { q: AdminQuery }) {
                 key: "runs_7d",
                 label: t("columns.runs7d"),
                 align: "right",
-                render: (row) => String(row.runs7d ?? 0),
+                render: (row) => count(row.runs7d),
                 csv: (row) => row.runs7d,
               },
               {
                 key: "failures_7d",
                 label: t("columns.failures7d"),
                 align: "right",
-                render: (row) => String(row.failures7d ?? 0),
+                render: (row) => count(row.failures7d),
                 csv: (row) => row.failures7d,
               },
             ])}

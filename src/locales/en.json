@@ -4098,7 +4098,24 @@
         "explorer": "Explorer",
         "admins": "Administrators"
       },
-      "soon": "Soon"
+      "soon": "Soon",
+      "groups": {
+        "overview": "Overview",
+        "people": "People",
+        "product": "Product",
+        "operations": "Operations",
+        "settings": "Settings"
+      },
+      "collapse": "Collapse menu",
+      "expand": "Expand menu",
+      "close": "Close",
+      "switcherHint": "switches sections",
+      "switcher": {
+        "title": "Go to section",
+        "placeholder": "Type a section name…",
+        "empty": "No section matches.",
+        "hint": "↑↓ to choose, Enter to open, Esc to close. / jumps to the search field."
+      }
     },
     "overview": {
       "title": "Overview",
@@ -4130,7 +4147,8 @@
       "newer": "Newer",
       "older": "Older",
       "page": "Page {page}",
-      "emptyValue": "none"
+      "emptyValue": "none",
+      "exportHint": "The whole audit as CSV, with names and e-mails. The export itself is written to the audit."
     },
     "loginEmail": {
       "subject": "New sign-in to the {appName} administration",
@@ -4297,7 +4315,9 @@
           "invalid": "Some value is out of range. Check the fields.",
           "forbidden": "The admin session has ended. Sign in again.",
           "failed": "The change could not be saved. Try again."
-        }
+        },
+        "sectionTitle": "Caps",
+        "sectionDescription": "Changing a cap changes what Jarvis may spend from the next minute on."
       }
     },
     "game": {
@@ -4466,7 +4486,13 @@
           "forbidden": "The admin session has ended. Sign in again.",
           "failed": "The change could not be saved. Try again."
         }
-      }
+      },
+      "yes": "Yes",
+      "no": "No",
+      "changesTitle": "Changes to the account",
+      "changesDescription": "What changes how this account is counted or what Jarvis may spend for it. Each change is written to the audit.",
+      "internalTitle": "Internal account",
+      "internalDescription": "An internal account (the owner, demo, tests) is left out of every metric unless the controls include it."
     },
     "explorer": {
       "title": "Explorer",
@@ -4492,7 +4518,8 @@
       "columns": {
         "period": "Period",
         "value": "Value"
-      }
+      },
+      "rowsTitle": "Values by period"
     },
     "controls": {
       "period": "Period",
@@ -4504,7 +4531,7 @@
         "12m": "12 months",
         "custom": "Custom"
       },
-      "compare": "Compare with previous period",
+      "compare": "Compare with previous",
       "internal": "Include internal accounts",
       "filters": "Filters",
       "filtersActive": "Filters ({count})",
@@ -4567,7 +4594,8 @@
       "pending": "Measured from a later step",
       "noComparison": "no comparison",
       "noComparisonHint": "The previous period has no value to compare with.",
-      "vsPrevious": "Change against the previous period"
+      "vsPrevious": "Change against the previous period",
+      "more": "More figures"
     },
     "chart": {
       "legend": "Series",
@@ -4576,12 +4604,16 @@
       "exportPng": "Export PNG",
       "exportFailed": "The export could not be saved. Try again.",
       "week": "Week {n}",
-      "hint": "Drag across the chart to zoom in, use the wheel to zoom, double-click for the whole period."
+      "hint": "Drag across the chart to zoom in, use the wheel to zoom, double-click for the whole period.",
+      "confirmExport": "The export is written to the audit with your name and the time. Download the file?",
+      "confirm": "Download",
+      "cancel": "Cancel"
     },
     "empty": {
       "title": "No data yet",
       "description": "These numbers fill in as people use the app. Nothing has been recorded for this period and these filters yet.",
-      "loadFailed": "This block could not be loaded. The rest of the page works; try refreshing."
+      "loadFailed": "This block could not be loaded. The rest of the page works; try refreshing.",
+      "retry": "Try again"
     },
     "funnel": {
       "dropOff": "{value} dropped off",
@@ -4598,7 +4630,19 @@
       }
     },
     "breakdown": {
-      "none": "Not set"
+      "none": "Not set",
+      "yes": "Yes",
+      "no": "No",
+      "values": {
+        "list": "List",
+        "map": "Map",
+        "path": "Path",
+        "open": "Opened",
+        "shown": "Shown",
+        "dismissed": "Dismissed",
+        "later": "Later",
+        "done": "Done"
+      }
     },
     "fields": {
       "joined": "Joined",
@@ -4728,8 +4772,16 @@
         "description": "{name} loses access to the administration at once, even in an open session. The app account stays.",
         "confirm": "Remove",
         "cancel": "Keep",
-        "failed": "The administrator could not be removed. Try again."
+        "failed": "The administrator could not be removed. Try again.",
+        "hint": "Removing takes effect at once, even in an open session."
       }
+    },
+    "table": {
+      "pagination": "Table pages",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {page} of {pages}",
+      "rows": "{count, plural, one {# row} other {# rows}}"
     }
   }
 }

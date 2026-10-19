@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, describe, expect, it } from "vitest";
 import cs from "@/locales/cs.json";
@@ -7,7 +7,7 @@ import en from "@/locales/en.json";
 import { heatmapGrid } from "../cohorts";
 import { buildTable } from "../table";
 import { BreakdownList, CohortTable, DataTable, FieldsGrid, Funnel, UsageHeatmap } from "./data-blocks";
-import { TileGrid } from "./metric-tile";
+import { Figures } from "./metric-tile";
 
 afterEach(cleanup);
 
@@ -56,7 +56,7 @@ describe.each(["cs", "en"] as const)("admin blocks in %s", (locale) => {
   it("renders tiles, including a pending one", () => {
     renderIn(
       locale,
-      <TileGrid
+      <Figures
         tiles={[
           { key: "signups", unit: "users", value: 12, previous: 6, spark: [1, 5, 6] },
           { key: "stickiness", unit: "ratio", value: 0.2, previous: null },
@@ -118,5 +118,27 @@ describe.each(["cs", "en"] as const)("admin blocks in %s", (locale) => {
   it("explains an empty block instead of showing zeros", () => {
     renderIn(locale, <Funnel steps={[]} />);
     expect(screen.getByText(locale === "cs" ? "Zatím žádná data" : "No data yet")).toBeTruthy();
+  });
+
+  it("sorts a table by a click on a heading, numbers largest first", () => {
+    renderIn(
+      locale,
+      <DataTable
+        id="test.sort"
+        table={buildTable(
+          [
+            { job: "b", runs: 2 },
+            { job: "a", runs: 9 },
+          ],
+          [
+            { key: "job", label: "Job", render: (row) => row.job },
+            { key: "runs", label: "Runs", align: "right", render: (row) => String(row.runs), csv: (row) => row.runs },
+          ],
+        )}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Runs" }));
+    const cells = screen.getAllByRole("cell").map((cell) => cell.textContent);
+    expect(cells).toEqual(["a", "9", "b", "2"]);
   });
 });

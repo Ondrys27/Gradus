@@ -16,14 +16,14 @@ import {
 } from "@/features/admin/server/page-data";
 import { AdminChart } from "@/features/admin/ui/admin-chart";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
-import { AdminCard, CardSkeleton, GridSkeleton, TilesSkeleton } from "@/features/admin/ui/blocks";
+import { AdminCard, BlockGrid, CardSkeleton, FiguresSkeleton, GridSkeleton } from "@/features/admin/ui/blocks";
 import {
   BreakdownList,
   CohortTable,
   FieldsGrid,
   UsageHeatmap,
 } from "@/features/admin/ui/data-blocks";
-import { TileGrid } from "@/features/admin/ui/metric-tile";
+import { Figures } from "@/features/admin/ui/metric-tile";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.retention");
@@ -40,28 +40,30 @@ export default async function AdminRetentionPage({ searchParams }: Props) {
   return (
     <>
       <AdminPageHeader section="retention" q={q} />
-      <Suspense fallback={<TilesSkeleton count={7} />}>
-        <Tiles q={q} />
-      </Suspense>
-      <Suspense fallback={<GridSkeleton count={2} height={300} />}>
-        <Cohorts q={q} />
-      </Suspense>
-      <Suspense fallback={<CardSkeleton height={200} />}>
-        <Heatmap q={q} />
-      </Suspense>
-      <Suspense fallback={<GridSkeleton count={2} />}>
-        <Charts q={q} />
-      </Suspense>
-      <Suspense fallback={<GridSkeleton count={3} height={160} />}>
-        <More q={q} />
-      </Suspense>
+      <div className="flex flex-col gap-4">
+        <Suspense fallback={<FiguresSkeleton more={3} />}>
+          <Tiles q={q} />
+        </Suspense>
+        <Suspense fallback={<GridSkeleton count={2} height={300} />}>
+          <Cohorts q={q} />
+        </Suspense>
+        <Suspense fallback={<CardSkeleton height={200} />}>
+          <Heatmap q={q} />
+        </Suspense>
+        <Suspense fallback={<GridSkeleton count={2} />}>
+          <Charts q={q} />
+        </Suspense>
+        <Suspense fallback={<GridSkeleton count={3} height={160} columns={3} />}>
+          <More q={q} />
+        </Suspense>
+      </div>
     </>
   );
 }
 
 async function Tiles({ q }: { q: AdminQuery }) {
   const loaded = await safe("retention tiles", () => retentionTiles(q));
-  return <Show loaded={loaded}>{(tiles) => <TileGrid tiles={tiles} />}</Show>;
+  return <Show loaded={loaded}>{(tiles) => <Figures tiles={tiles} />}</Show>;
 }
 
 async function Cohorts({ q }: { q: AdminQuery }) {
@@ -73,14 +75,14 @@ async function Cohorts({ q }: { q: AdminQuery }) {
   return (
     <Show loaded={loaded}>
       {({ cohorts, curves }) => (
-        <div className="grid grid-cols-1 gap-4 2xl:grid-cols-2">
+        <BlockGrid>
           <AdminCard title={tItems("name")} description={tItems("description")}>
             <CohortTable cohorts={cohorts} weeks={COHORT_WEEKS} />
           </AdminCard>
           <AdminCard title={t("curvesTitle")} description={t("curvesDescription")}>
             <AdminChart data={curves} title={t("curvesTitle")} />
           </AdminCard>
-        </div>
+        </BlockGrid>
       )}
     </Show>
   );
@@ -106,7 +108,7 @@ async function Charts({ q }: { q: AdminQuery }) {
   return (
     <Show loaded={loaded}>
       {(charts) => (
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <BlockGrid>
           {charts.map((chart) => {
             const name = chart.id.split(".")[1];
             return (
@@ -115,7 +117,7 @@ async function Charts({ q }: { q: AdminQuery }) {
               </AdminCard>
             );
           })}
-        </div>
+        </BlockGrid>
       )}
     </Show>
   );
@@ -130,7 +132,7 @@ async function More({ q }: { q: AdminQuery }) {
     getTranslations("admin.retention"),
   ]);
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
+    <BlockGrid columns={3}>
       <AdminCard title={t("session_stats.name")} description={t("session_stats.description")}>
         <Show loaded={sessions}>{(data) => <FieldsGrid data={data} />}</Show>
       </AdminCard>
@@ -150,6 +152,6 @@ async function More({ q }: { q: AdminQuery }) {
           ))
         }
       </Show>
-    </div>
+    </BlockGrid>
   );
 }

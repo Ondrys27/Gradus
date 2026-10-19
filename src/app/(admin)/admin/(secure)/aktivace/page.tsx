@@ -10,9 +10,9 @@ import {
   activationTiles,
 } from "@/features/admin/server/page-data";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
-import { AdminCard, CardSkeleton, GridSkeleton, TilesSkeleton } from "@/features/admin/ui/blocks";
+import { AdminCard, BlockGrid, CardSkeleton, FiguresSkeleton, GridSkeleton } from "@/features/admin/ui/blocks";
 import { BreakdownList, Funnel } from "@/features/admin/ui/data-blocks";
-import { TileGrid } from "@/features/admin/ui/metric-tile";
+import { Figures } from "@/features/admin/ui/metric-tile";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.activation");
@@ -29,22 +29,24 @@ export default async function AdminActivationPage({ searchParams }: Props) {
   return (
     <>
       <AdminPageHeader section="activation" q={q} />
-      <Suspense fallback={<TilesSkeleton count={3} />}>
-        <Tiles q={q} />
-      </Suspense>
-      <Suspense fallback={<CardSkeleton height={420} />}>
-        <FunnelBlock q={q} />
-      </Suspense>
-      <Suspense fallback={<GridSkeleton count={4} height={160} />}>
-        <Breakdowns q={q} />
-      </Suspense>
+      <div className="flex flex-col gap-4">
+        <Suspense fallback={<FiguresSkeleton count={3} />}>
+          <Tiles q={q} />
+        </Suspense>
+        <Suspense fallback={<CardSkeleton height={420} />}>
+          <FunnelBlock q={q} />
+        </Suspense>
+        <Suspense fallback={<GridSkeleton count={4} height={160} />}>
+          <Breakdowns q={q} />
+        </Suspense>
+      </div>
     </>
   );
 }
 
 async function Tiles({ q }: { q: AdminQuery }) {
   const loaded = await safe("activation tiles", () => activationTiles(q));
-  return <Show loaded={loaded}>{(tiles) => <TileGrid tiles={tiles} />}</Show>;
+  return <Show loaded={loaded}>{(tiles) => <Figures tiles={tiles} />}</Show>;
 }
 
 async function FunnelBlock({ q }: { q: AdminQuery }) {
@@ -67,7 +69,7 @@ async function Breakdowns({ q }: { q: AdminQuery }) {
   return (
     <Show loaded={loaded}>
       {(blocks) => (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <BlockGrid>
           {blocks.map((block) => (
             <AdminCard
               key={block.key}
@@ -77,7 +79,7 @@ async function Breakdowns({ q }: { q: AdminQuery }) {
               <BreakdownList data={block} />
             </AdminCard>
           ))}
-        </div>
+        </BlockGrid>
       )}
     </Show>
   );

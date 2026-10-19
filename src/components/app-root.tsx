@@ -21,7 +21,14 @@ export async function appRootMetadata(): Promise<Metadata> {
  * Root of the app, the sign-in pages and the design system: rendered per
  * request, language from the address or the account, theme from the cookie.
  */
-export async function AppRoot({ children }: { children: ReactNode }) {
+export async function AppRoot({
+  children,
+  backdrop = "app",
+}: {
+  children: ReactNode;
+  /** "app" draws the grid and the glows; "plain" is the bare canvas (the administration). */
+  backdrop?: "app" | "plain";
+}) {
   const [locale, messages, timeZone, cookieStore] = await Promise.all([
     getLocale(),
     getMessages(),
@@ -33,7 +40,7 @@ export async function AppRoot({ children }: { children: ReactNode }) {
   const theme = isThemeKey(storedTheme) ? storedTheme : DEFAULT_THEME;
 
   return (
-    <RootDocument lang={locale} theme={theme}>
+    <RootDocument lang={locale} theme={theme} backdrop={backdrop}>
       <IntlProvider locale={locale} messages={messages} timeZone={timeZone}>
         <Providers>{children}</Providers>
       </IntlProvider>

@@ -14,9 +14,8 @@ import {
   YAxis,
 } from "recharts";
 import { useTranslations } from "next-intl";
-import { DownloadIcon, ImageIcon, RotateCcwIcon } from "lucide-react";
+import { InfoIcon, RotateCcwIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FormAlert } from "@/components/ui/form-alert";
 import { wheelZoomFactor } from "@/components/tree-map/tree-map-zoom";
 import type { MetricUnit } from "@/lib/analytics/metrics";
 import { formatCalendarDate, formatDayMonth } from "@/lib/format";
@@ -35,6 +34,7 @@ import { recordExport } from "../server/export-actions";
 import type { ChartData, ChartSeries } from "../types";
 import { AdminEmpty } from "./blocks";
 import { downloadBlob, svgToPngBlob } from "./export-image";
+import { ExportFooter, type ExportKind } from "./export-footer";
 
 const AXIS_WIDTH = 56;
 const MARGIN_RIGHT = 8;
@@ -71,7 +71,6 @@ export function AdminChart({
   );
   const [zoom, setZoom] = useState<IndexWindow>(() => fullIndexWindow(data.rows.length));
   const [selection, setSelection] = useState<Selection | null>(null);
-  const [exporting, setExporting] = useState<"csv" | "png" | null>(null);
   const [exportFailed, setExportFailed] = useState(false);
   const length = data.rows.length;
 
@@ -96,7 +95,8 @@ export function AdminChart({
 
   function seriesName(series: ChartSeries): string {
     if (series.label) return t(`admin.${series.label.key}`, series.label.values ?? {});
-    return t(`metrics.items.${series.key}.name`);
+    // A series outside the registry (the explorer's "value") is named by the chart.
+    return t.has(`metrics.items.${series.key}.name`) ? t(`metrics.items.${series.key}.name`) : title;
   }
 
   function unitOf(series: ChartSeries): MetricUnit {
@@ -180,8 +180,7 @@ export function AdminChart({
     });
   }
 
-  async function exportAs(kind: "csv" | "png") {
-    setExporting(kind);
+  async function exportAs(kind: ExportKind) {
     setExportFailed(false);
     try {
       // Built before asking, so a chart that can not be drawn writes no audit row.
@@ -209,8 +208,6 @@ export function AdminChart({
     } catch (error) {
       console.error("[admin] chart export failed", error);
       setExportFailed(true);
-    } finally {
-      setExporting(null);
     }
   }
 
@@ -223,39 +220,46 @@ export function AdminChart({
         }
       : null;
 
+  const multi = data.series.length > 1;
+
   return (
     <figure className="flex min-w-0 flex-col gap-2" aria-label={title}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <ul className="flex flex-wrap items-center gap-1" aria-label={tChart("legend")}>
-          {data.series.map((series) => {
-            const off = hidden.has(series.key);
-            return (
-              <li key={series.key}>
-                <button
-                  type="button"
-                  aria-pressed={!off}
-                  onClick={() => toggle(series.key)}
-                  className={cn(
-                    "flex min-h-11 cursor-pointer items-center gap-1.5 rounded-lg px-2 text-xs outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:min-h-7",
-                    off ? "text-ink-muted line-through" : "text-ink-soft hover:text-ink",
-                  )}
-                >
-                  <span
-                    aria-hidden
-                    className={cn(
-                      "shrink-0",
-                      series.kind === "bar" ? "size-2.5 rounded-sm" : "h-1 w-3.5 rounded-full",
-                      off && "opacity-30",
-                    )}
-                    style={{ background: colorVar(series) }}
-                  />
-                  {seriesName(series)}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-        <div className="flex items-center gap-0.5">
+      {/* The legend only when there is more than one series; a lone series is the title. */}
+      {(multi || zoomed) && (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {multi ? (
+            <ul className="flex flex-wrap items-center gap-1" aria-label={tChart("legend")}>
+              {data.series.map((series) => {
+                const off = hidden.has(series.key);
+                return (
+                  <li key={series.key}>
+                    <button
+                      type="button"
+                      aria-pressed={!off}
+                      onClick={() => toggle(series.key)}
+                      className={cn(
+                        "flex min-h-10 cursor-pointer items-center gap-1.5 rounded-lg px-2 text-xs outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:min-h-7",
+                        off ? "text-ink-muted line-through" : "text-ink-soft hover:text-ink",
+                      )}
+                    >
+                      <span
+                        aria-hidden
+                        className={cn(
+                          "shrink-0",
+                          series.kind === "bar" ? "size-2.5 rounded-sm" : "h-1 w-3.5 rounded-full",
+                          off && "opacity-30",
+                        )}
+                        style={{ background: colorVar(series) }}
+                      />
+                      {seriesName(series)}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <span />
+          )}
           {zoomed && (
             <Button
               type="button"
@@ -267,35 +271,11 @@ export function AdminChart({
               {tChart("reset")}
             </Button>
           )}
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label={tChart("exportCsv")}
-            title={tChart("exportCsv")}
-            disabled={empty || exporting !== null}
-            onClick={() => void exportAs("csv")}
-          >
-            <DownloadIcon aria-hidden />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label={tChart("exportPng")}
-            title={tChart("exportPng")}
-            disabled={empty || exporting !== null}
-            onClick={() => void exportAs("png")}
-          >
-            <ImageIcon aria-hidden />
-          </Button>
         </div>
-      </div>
-
-      {exportFailed && <FormAlert>{tChart("exportFailed")}</FormAlert>}
+      )}
 
       {empty ? (
-        <AdminEmpty className="py-12" />
+        <AdminEmpty className="py-8" />
       ) : (
         <div
           ref={containerRef}
@@ -316,7 +296,7 @@ export function AdminChart({
                 tickLine={false}
                 interval="preserveStartEnd"
                 minTickGap={20}
-                tick={{ fill: "var(--color-ink-muted)", fontSize: 11 }}
+                tick={{ fill: "var(--color-ink-muted)", fontSize: 12 }}
                 tickFormatter={(value: string) => xLabel(value)}
               />
               <YAxis
@@ -325,7 +305,7 @@ export function AdminChart({
                 axisLine={false}
                 tickLine={false}
                 allowDecimals={false}
-                tick={{ fill: "var(--color-ink-muted)", fontSize: 11 }}
+                tick={{ fill: "var(--color-ink-muted)", fontSize: 12 }}
                 tickFormatter={(value: number) => formatMetricValue(value, data.unit, tUnits)}
               />
               {hasRight && (
@@ -336,7 +316,7 @@ export function AdminChart({
                   axisLine={false}
                   tickLine={false}
                   allowDecimals={false}
-                  tick={{ fill: "var(--color-ink-muted)", fontSize: 11 }}
+                  tick={{ fill: "var(--color-ink-muted)", fontSize: 12 }}
                   tickFormatter={(value: number) =>
                     formatMetricValue(value, data.rightUnit ?? data.unit, tUnits)
                   }
@@ -443,9 +423,25 @@ export function AdminChart({
           </ResponsiveContainer>
         </div>
       )}
-      {!empty && length > 2 && (
-        <figcaption className="text-xs text-ink-muted">{tChart("hint")}</figcaption>
-      )}
+      <figcaption className="flex items-center justify-between gap-2">
+        {!empty && length > 2 ? (
+          <span
+            className="flex h-7 items-center gap-1 text-xs text-ink-muted"
+            title={tChart("hint")}
+          >
+            <InfoIcon aria-hidden className="size-3.5" />
+            <span className="sr-only">{tChart("hint")}</span>
+          </span>
+        ) : (
+          <span />
+        )}
+        <ExportFooter
+          kinds={["csv", "png"]}
+          disabled={empty}
+          failed={exportFailed}
+          onExport={exportAs}
+        />
+      </figcaption>
     </figure>
   );
 }

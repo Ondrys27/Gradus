@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { EmptyState } from "@/components/ui/empty-state";
 import { formatCalendarDate } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { logAdminAction } from "@/features/admin/server/audit";
 import { requireAdmin } from "@/features/admin/server/guard";
 import { adminQuery, safe, type AdminQuery } from "@/features/admin/server/metrics-data";
@@ -15,10 +15,17 @@ import {
 } from "@/features/admin/server/feedback-data";
 import { ADMIN_FORMAT_SETTINGS } from "@/features/admin/format-metric";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
-import { AdminCard, GridSkeleton, TilesSkeleton } from "@/features/admin/ui/blocks";
+import {
+  AdminCard,
+  AdminEmpty,
+  BlockGrid,
+  CardSkeleton,
+  FiguresSkeleton,
+  GridSkeleton,
+} from "@/features/admin/ui/blocks";
 import { BreakdownList } from "@/features/admin/ui/data-blocks";
 import { FeatureRequestRowView } from "@/features/admin/ui/feature-request-row";
-import { MetricTile } from "@/features/admin/ui/metric-tile";
+import { Figures } from "@/features/admin/ui/metric-tile";
 import { FEATURE_REQUEST_STATUSES, type FeatureRequestStatus } from "@/features/admin/types";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -43,45 +50,45 @@ export default async function AdminFeedbackPage({ searchParams }: Props) {
   return (
     <>
       <AdminPageHeader section="feedback" q={q} />
-      <Suspense fallback={<TilesSkeleton count={1} />}>
-        <Nps q={q} />
-      </Suspense>
-      <Suspense fallback={<GridSkeleton count={1} height={160} />}>
-        <JarvisRatings q={q} />
-      </Suspense>
-      <Suspense fallback={<GridSkeleton count={1} height={320} />}
-      >
-        <Ideas q={q} status={status} />
-      </Suspense>
+      <div className="flex flex-col gap-4">
+        <Suspense fallback={<FiguresSkeleton count={1} />}>
+          <Nps q={q} />
+        </Suspense>
+        <Suspense fallback={<GridSkeleton count={2} height={200} />}>
+          <Voices q={q} />
+        </Suspense>
+        <Suspense fallback={<CardSkeleton height={320} />}>
+          <Ideas q={q} status={status} />
+        </Suspense>
+      </div>
     </>
   );
 }
 
 async function Nps({ q }: { q: AdminQuery }) {
-  const [loaded, comments, t] = await Promise.all([
-    safe("nps summary", () => loadNpsSummary(q)),
+  const loaded = await safe("nps summary", () => loadNpsSummary(q));
+  return (
+    <Show loaded={loaded}>
+      {(summary) => <Figures tiles={[{ key: "nps", unit: "count", value: summary.score }]} />}
+    </Show>
+  );
+}
+
+/** What people wrote: the NPS comments, and how they rate Jarvis's answers. */
+async function Voices({ q }: { q: AdminQuery }) {
+  const [comments, ratings, t, tItems] = await Promise.all([
     safe("nps comments", () => loadNpsComments(q)),
+    safe("jarvis answer ratings", () => jarvisAnswerRatings(q)),
     getTranslations("admin.feedback"),
+    getTranslations("metrics.items.jarvis_answer_ratings"),
   ]);
   return (
-    <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,280px)_minmax(0,1fr)]">
-      <Show loaded={loaded}>
-        {(summary) => (
-          <MetricTile
-            tile={{
-              key: "nps",
-              unit: "count",
-              value: summary.score,
-              spark: undefined,
-            }}
-          />
-        )}
-      </Show>
+    <BlockGrid>
       <AdminCard title={t("commentsTitle")} description={t("commentsDescription")}>
         <Show loaded={comments}>
           {(rows) =>
             rows.length === 0 ? (
-              <p className="py-4 text-sm text-ink-muted">{t("noComments")}</p>
+              <AdminEmpty hint={t("noComments")} />
             ) : (
               <ul className="flex max-h-96 flex-col gap-2 overflow-y-auto">
                 {rows.map((row, index) => (
@@ -100,19 +107,10 @@ async function Nps({ q }: { q: AdminQuery }) {
           }
         </Show>
       </AdminCard>
-    </div>
-  );
-}
-
-async function JarvisRatings({ q }: { q: AdminQuery }) {
-  const [loaded, t] = await Promise.all([
-    safe("jarvis answer ratings", () => jarvisAnswerRatings(q)),
-    getTranslations("metrics.items.jarvis_answer_ratings"),
-  ]);
-  return (
-    <AdminCard title={t("name")} description={t("description")}>
-      <Show loaded={loaded}>{(data) => <BreakdownList data={data} />}</Show>
-    </AdminCard>
+      <AdminCard title={tItems("name")} description={tItems("description")}>
+        <Show loaded={ratings}>{(data) => <BreakdownList data={data} />}</Show>
+      </AdminCard>
+    </BlockGrid>
   );
 }
 
@@ -122,22 +120,32 @@ async function Ideas({ q, status }: { q: AdminQuery; status: FeatureRequestStatu
     safe("feature request counts", () => featureRequestCounts(q)),
     getTranslations("admin.feedback"),
   ]);
+  const hasCounts = counts.ok && counts.data.items.some((item) => (item.value ?? 0) > 0);
   return (
-    <AdminCard title={t("ideasTitle")} description={t("ideasDescription")}>
-      <Show loaded={counts}>{(data) => <BreakdownList data={data} max={5} />}</Show>
-      <Show loaded={rows}>
-        {(ideas) =>
-          ideas.length === 0 ? (
-            <EmptyState title={t("emptyTitle")} description={t("emptyDescription")} />
-          ) : (
-            <ul className="mt-3 flex flex-col gap-2">
-              {ideas.map((row) => (
-                <FeatureRequestRowView key={row.id} row={row} />
-              ))}
-            </ul>
-          )
-        }
-      </Show>
+    <AdminCard title={t("ideasTitle")} description={t("ideasDescription")} wide>
+      <div
+        className={cn(
+          "grid grid-cols-1 gap-5",
+          hasCounts && "lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]",
+        )}
+      >
+        {hasCounts && (
+          <Show loaded={counts}>{(data) => <BreakdownList data={data} max={5} />}</Show>
+        )}
+        <Show loaded={rows}>
+          {(ideas) =>
+            ideas.length === 0 ? (
+              <AdminEmpty hint={t("emptyDescription")} />
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {ideas.map((row) => (
+                  <FeatureRequestRowView key={row.id} row={row} />
+                ))}
+              </ul>
+            )
+          }
+        </Show>
+      </div>
     </AdminCard>
   );
 }

@@ -50,6 +50,10 @@ vi.mock("@/features/admin/ui/feature-request-row", (load) => stubClientModule(lo
 vi.mock("@/features/admin/ui/admin-nav", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/admin-view", (load) => stubClientModule(load));
 vi.mock("@/features/admin/admin-session", (load) => stubClientModule(load));
+vi.mock("@/features/admin/ui/retry-button", (load) => stubClientModule(load));
+vi.mock("@/features/admin/ui/export-footer", (load) => stubClientModule(load));
+vi.mock("@/features/admin/ui/admins-controls", (load) => stubClientModule(load));
+vi.mock("@/features/admin/ui/copy-id", (load) => stubClientModule(load));
 vi.mock("next/link", () => ({ default: clientStub("Link") }));
 
 // --- Session, audit and database --------------------------------------------------

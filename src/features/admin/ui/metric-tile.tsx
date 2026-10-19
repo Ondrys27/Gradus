@@ -7,6 +7,9 @@ import { formatChange, formatMetricValue } from "../format-metric";
 import { changeTone, percentChange } from "../numbers";
 import type { TileData } from "../types";
 
+/** How many numbers a page shows large; the rest go into the compact strip. */
+export const KEY_FIGURES = 4;
+
 /** A tiny line of the values over the period; gaps where there is no value. */
 export function Sparkline({
   values,
@@ -16,7 +19,7 @@ export function Sparkline({
   className?: string;
 }) {
   const numbers = values.filter((value): value is number => value !== null);
-  if (values.length < 2 || numbers.length < 2) return <div className={cn("h-7", className)} />;
+  if (values.length < 2 || numbers.length < 2) return <div className={cn("h-6", className)} />;
   const min = Math.min(...numbers);
   const max = Math.max(...numbers);
   const span = max - min || 1;
@@ -38,13 +41,13 @@ export function Sparkline({
       viewBox="0 0 100 28"
       preserveAspectRatio="none"
       aria-hidden
-      className={cn("h-7 w-full overflow-visible text-violet", className)}
+      className={cn("h-6 w-full overflow-visible text-violet/80", className)}
     >
       <path
         d={path}
         fill="none"
         stroke="currentColor"
-        strokeWidth={1.75}
+        strokeWidth={1.5}
         strokeLinejoin="round"
         strokeLinecap="round"
         vectorEffect="non-scaling-stroke"
@@ -53,7 +56,11 @@ export function Sparkline({
   );
 }
 
-/** The change against the previous period, coloured by whether it is good news. */
+/**
+ * The change against the previous period: an arrow, and colour only where
+ * it means something (more sign-ups is green, more cost is pink, a flat line
+ * is grey). Nothing at all when there is nothing to compare with.
+ */
 export function ChangeBadge({
   current,
   previous,
@@ -68,19 +75,13 @@ export function ChangeBadge({
   const t = useTranslations("admin.tile");
   if (previous === undefined) return null;
   const change = percentChange(current, previous);
-  if (change === null) {
-    return (
-      <span className={cn("text-xs text-ink-muted", className)} title={t("noComparisonHint")}>
-        {t("noComparison")}
-      </span>
-    );
-  }
+  if (change === null) return <span className="sr-only">{t("noComparison")}</span>;
   const tone = changeTone(change, lowerIsBetter);
   const Icon = change > 0.05 ? ArrowUpRightIcon : change < -0.05 ? ArrowDownRightIcon : MinusIcon;
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-0.5 text-xs font-semibold tabular-nums",
+        "inline-flex items-center gap-0.5 text-xs font-medium tabular-nums",
         tone === "up" && "text-green",
         tone === "down" && "text-pink",
         tone === "flat" && "text-ink-muted",
@@ -95,10 +96,7 @@ export function ChangeBadge({
   );
 }
 
-/**
- * One number of the registry with its name, the change against the previous
- * period and a small chart of the period.
- */
+/** One of the key numbers of a page: name, value, change and the line of the period. */
 export function MetricTile({ tile }: { tile: TileData }) {
   const t = useTranslations();
   const tUnits = useTranslations("admin.units");
@@ -107,19 +105,22 @@ export function MetricTile({ tile }: { tile: TileData }) {
 
   return (
     <div
-      className="flex min-w-0 flex-col gap-1.5 rounded-xl border border-line bg-surface p-3"
+      className="flex min-w-0 flex-col gap-1 rounded-2xl border border-line bg-surface p-4"
       title={description}
+      data-testid="metric-tile"
     >
-      <span className="micro-label truncate">{name}</span>
+      <span className="truncate text-xs font-medium text-ink-muted">{name}</span>
       {tile.pending ? (
         <>
-          <span className="stat-number text-2xl text-ink-muted">{tUnits("none")}</span>
+          <span className="text-[28px] leading-8 font-semibold text-ink-muted tabular-nums">
+            {tUnits("none")}
+          </span>
           <span className="text-xs text-ink-muted">{t("admin.tile.pending")}</span>
         </>
       ) : (
         <>
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-            <span className="stat-number text-2xl whitespace-nowrap text-ink">
+            <span className="text-[28px] leading-8 font-semibold tracking-tight whitespace-nowrap text-ink tabular-nums">
               {formatMetricValue(tile.value, tile.unit, tUnits)}
             </span>
             <ChangeBadge
@@ -128,19 +129,56 @@ export function MetricTile({ tile }: { tile: TileData }) {
               lowerIsBetter={tile.lowerIsBetter}
             />
           </div>
-          {tile.spark ? <Sparkline values={tile.spark} /> : <div className="h-7" />}
+          {tile.spark ? <Sparkline values={tile.spark} /> : <div className="h-6" />}
         </>
       )}
     </div>
   );
 }
 
-export function TileGrid({ tiles }: { tiles: TileData[] }) {
+/** The numbers beyond the first four: name and value in one compact strip, no chart. */
+export function MoreFigures({ tiles }: { tiles: TileData[] }) {
+  const t = useTranslations();
+  const tUnits = useTranslations("admin.units");
+  if (tiles.length === 0) return null;
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+    <dl
+      className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-2xl border border-line bg-surface px-4 py-3 md:grid-cols-3 xl:grid-cols-6"
+      aria-label={t("admin.tile.more")}
+    >
       {tiles.map((tile) => (
-        <MetricTile key={tile.key} tile={tile} />
+        <div key={tile.key} className="flex min-w-0 flex-col gap-0.5" title={t(`metrics.items.${tile.key}.description`)}>
+          <dt className="truncate text-xs text-ink-muted">{t(`metrics.items.${tile.key}.name`)}</dt>
+          <dd className="flex flex-wrap items-baseline gap-x-1.5">
+            <span className="text-base font-semibold text-ink tabular-nums">
+              {tile.pending ? tUnits("none") : formatMetricValue(tile.value, tile.unit, tUnits)}
+            </span>
+            {!tile.pending && (
+              <ChangeBadge current={tile.value} previous={tile.previous} lowerIsBetter={tile.lowerIsBetter} />
+            )}
+          </dd>
+        </div>
       ))}
+    </dl>
+  );
+}
+
+/**
+ * The numbers of a page: the first four large, at the top in the same place
+ * on every page; the rest in the compact strip below.
+ */
+export function Figures({ tiles }: { tiles: TileData[] }) {
+  const key = tiles.slice(0, KEY_FIGURES);
+  const more = tiles.slice(KEY_FIGURES);
+  return (
+    <div className="flex flex-col gap-3">
+      {/* Always four columns from xl, so the key numbers sit in the same place on every page. */}
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        {key.map((tile) => (
+          <MetricTile key={tile.key} tile={tile} />
+        ))}
+      </div>
+      <MoreFigures tiles={more} />
     </div>
   );
 }
