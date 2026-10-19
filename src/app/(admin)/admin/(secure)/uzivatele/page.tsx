@@ -11,6 +11,7 @@ import { ADMIN_FORMAT_SETTINGS, formatMetricValue } from "@/features/admin/forma
 import { logAdminAction } from "@/features/admin/server/audit";
 import { requireAdmin } from "@/features/admin/server/guard";
 import { loadUsers, USER_SORTS, type UserSort } from "@/features/admin/server/users-data";
+import { peopleNamer } from "@/features/admin/server/people";
 import { InternalToggle } from "@/features/admin/ui/internal-toggle";
 import { cn } from "@/lib/utils";
 
@@ -45,6 +46,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
     getTranslations("admin.units"),
     getTranslations("admin.controls"),
   ]);
+  const nameOf = await peopleNamer(rows.map((row) => row.userId));
   const planLabel = (plan: string) =>
     tControls.has(`segmentValues.plan.${plan}`) ? tControls(`segmentValues.plan.${plan}`) : plan;
   const statusLabel = (status: string) => (t.has(`status.${status}`) ? t(`status.${status}`) : status);
@@ -113,7 +115,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
               <thead className="text-xs text-ink-soft">
                 <tr className="border-b border-line">
                   <th scope="col" className="px-4 py-3 font-medium">
-                    {t("columns.id")}
+                    {t("columns.user")}
                   </th>
                   <th scope="col" className="px-4 py-3 font-medium">
                     {t("columns.plan")}
@@ -141,13 +143,13 @@ export default async function AdminUsersPage({ searchParams }: Props) {
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.userId} className="border-b border-line last:border-0">
-                    <td className="px-4 py-2.5 font-mono text-xs">
+                    <td className="max-w-64 px-4 py-2.5">
                       <Link
                         href={`${ADMIN_PATH}/uzivatele/${row.userId}`}
                         prefetch={false}
-                        className="text-violet underline-offset-2 hover:underline"
+                        className="block truncate font-medium text-violet underline-offset-2 hover:underline"
                       >
-                        {row.userId.slice(0, 8)}
+                        {nameOf(row.userId)}
                       </Link>
                     </td>
                     <td className="px-4 py-2.5">{planLabel(row.plan)}</td>

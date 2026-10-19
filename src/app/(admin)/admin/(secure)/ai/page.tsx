@@ -28,6 +28,7 @@ import { BudgetCard } from "@/features/admin/ui/budget-card";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
 import { AdminCard, GridSkeleton, TilesSkeleton } from "@/features/admin/ui/blocks";
 import { buildTable } from "@/features/admin/table";
+import { peopleNamer } from "@/features/admin/server/people";
 import { BreakdownList, DataTable, FieldsGrid } from "@/features/admin/ui/data-blocks";
 import { TileGrid } from "@/features/admin/ui/metric-tile";
 import { formatMetricValue } from "@/features/admin/format-metric";
@@ -257,6 +258,7 @@ async function TopUsers({ q }: { q: AdminQuery }) {
     getTranslations("admin.ai"),
     getTranslations("admin.units"),
   ]);
+  const nameOf = await peopleNamer(loaded.ok ? loaded.data.map((row) => row.userId) : []);
   return (
     <AdminCard title={t("topUsersTitle")} description={t("topUsersDescription")}>
       <Show loaded={loaded}>
@@ -265,9 +267,15 @@ async function TopUsers({ q }: { q: AdminQuery }) {
             id="ai.top_users"
             table={buildTable(rows, [
               {
-                key: "user_id",
+                key: "user_name",
                 label: t("columns.user"),
-                render: (row) => row.userId.slice(0, 8),
+                render: (row) => nameOf(row.userId),
+              },
+              {
+                key: "user_id",
+                label: t("columns.userId"),
+                csvOnly: true,
+                render: (row) => row.userId,
               },
               { key: "plan", label: t("columns.plan"), render: (row) => row.plan },
               {
@@ -297,7 +305,7 @@ async function TopUsers({ q }: { q: AdminQuery }) {
                 prefetch={false}
                 className="text-xs text-violet underline-offset-2 hover:underline"
               >
-                {t("openDetail", { id: row.userId.slice(0, 8) })}
+                {t("openDetail", { name: nameOf(row.userId) })}
               </Link>
             </li>
           ))}

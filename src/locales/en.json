@@ -4239,8 +4239,8 @@
         }
       },
       "topUsersTitle": "10 most costly users",
-      "topUsersDescription": "Identifier and plan only; open a user for their full detail.",
-      "openDetail": "{id} → open detail",
+      "topUsersDescription": "Name and plan; open a user for their full detail. The CSV export has the name and the ID.",
+      "openDetail": "{name} → open detail",
       "columns": {
         "key": "Name",
         "calls": "Calls",
@@ -4250,7 +4250,8 @@
         "p50": "p50",
         "p95": "p95",
         "user": "User",
-        "plan": "Plan"
+        "plan": "Plan",
+        "userId": "User ID"
       },
       "caps": {
         "title": "AI usage caps",
@@ -4338,7 +4339,7 @@
       "ideasDescription": "Submitted through Jarvis; change the status as you triage them.",
       "emptyTitle": "No ideas yet",
       "emptyDescription": "Ideas people send Jarvis show up here.",
-      "ideaMeta": "From {id} · {date}",
+      "ideaMeta": "From {name} · {date}",
       "statusFailed": "Could not be saved. Try again.",
       "status": {
         "new": "New",
@@ -4350,8 +4351,8 @@
     },
     "users": {
       "title": "Users",
-      "description": "Search by identifier, sort by activity or cost. No content of anyone's data.",
-      "searchPlaceholder": "Search by user id…",
+      "description": "Search by name or e-mail, sort by activity or cost. No content of anyone's data.",
+      "searchPlaceholder": "Search by name or e-mail…",
       "sortBy": "Sort by",
       "sort": {
         "activity": "Activity",
@@ -4359,14 +4360,14 @@
         "signup": "Sign-up"
       },
       "emptyTitle": "No users found",
-      "emptyDescription": "Try a different id, or clear the search.",
+      "emptyDescription": "Try a different name or e-mail, or clear the search.",
       "pagination": "Result pages",
       "newer": "Newer",
       "older": "Older",
       "page": "Page {page}",
       "internal": "Internal",
       "columns": {
-        "id": "Id",
+        "user": "User",
         "plan": "Plan",
         "status": "Status",
         "role": "Role",
@@ -4382,7 +4383,10 @@
         "cancelled": "Cancelled",
         "expired": "Expired"
       },
-      "detailTitle": "User {id}",
+      "detailMetaTitle": "User detail",
+      "idLabel": "ID",
+      "copyId": "Copy",
+      "copied": "Copied",
       "detailDescription": "Plan and status, activity and consumption. No content of contacts, deals, tasks or messages.",
       "industry": "Industry",
       "mode": "Mode",
@@ -4623,6 +4627,9 @@
       "running": "Running",
       "ending_this_week": "Ending this week",
       "expired": "Expired"
+    },
+    "people": {
+      "unnamed": "Unnamed account · {suffix}"
     }
   }
 }

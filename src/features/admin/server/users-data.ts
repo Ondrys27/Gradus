@@ -6,7 +6,8 @@ import { num } from "./metrics-data";
 /**
  * The Users page: a searchable, sortable list and one account's detail, both
  * from the two dedicated functions of 20261009100000_admin_users.sql.
- * Identifiers and counts only — never a name, e-mail or any content.
+ * Identifiers and counts only; the page names people through ./people
+ * (admin_people), and the search also matches the name and e-mail.
  */
 
 export type UserSort = "activity" | "cost" | "signup";

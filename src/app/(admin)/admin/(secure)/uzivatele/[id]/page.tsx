@@ -9,6 +9,8 @@ import { logAdminAction } from "@/features/admin/server/audit";
 import { requireAdmin } from "@/features/admin/server/guard";
 import { loadUserDetail } from "@/features/admin/server/users-data";
 import { loadUserAiCap } from "@/features/admin/server/ai-caps-data";
+import { peopleNamer } from "@/features/admin/server/people";
+import { CopyId } from "@/features/admin/ui/copy-id";
 import { remainingUsd, userCapModeOf } from "@/features/jarvis/caps";
 import { AdminCard } from "@/features/admin/ui/blocks";
 import { InternalToggle } from "@/features/admin/ui/internal-toggle";
@@ -16,10 +18,10 @@ import { UserAiCapForm } from "@/features/admin/ui/user-ai-cap-form";
 
 type Props = { params: Promise<{ id: string }> };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
+export async function generateMetadata(): Promise<Metadata> {
+  // No name here: metadata is rendered apart from the page's admin guard.
   const t = await getTranslations("admin.users");
-  return { title: t("detailTitle", { id: id.slice(0, 8) }) };
+  return { title: t("detailMetaTitle") };
 }
 
 export default async function AdminUserDetailPage({ params }: Props) {
@@ -28,8 +30,9 @@ export default async function AdminUserDetailPage({ params }: Props) {
   if (!z.uuid().safeParse(id).success) notFound();
   await logAdminAction(context, "view", "users.detail");
 
-  const [detail, aiCap, t, tControls, tItems, tIndustry, tUnits] = await Promise.all([
+  const [detail, nameOf, aiCap, t, tControls, tItems, tIndustry, tUnits] = await Promise.all([
     loadUserDetail(id),
+    peopleNamer([id]),
     loadUserAiCap(id),
     getTranslations("admin.users"),
     getTranslations("admin.controls"),
@@ -48,11 +51,14 @@ export default async function AdminUserDetailPage({ params }: Props) {
 
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader
-        title={t("detailTitle", { id: id.slice(0, 8) })}
-        description={t("detailDescription")}
-        actions={<InternalToggle userId={id} value={detail.isInternal} />}
-      />
+      <div className="flex flex-col gap-2">
+        <PageHeader
+          title={nameOf(id)}
+          description={t("detailDescription")}
+          actions={<InternalToggle userId={id} value={detail.isInternal} />}
+        />
+        <CopyId id={id} />
+      </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         <Fact label={t("columns.plan")} value={label(tControls, "plan", detail.plan)} />

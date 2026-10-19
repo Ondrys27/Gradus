@@ -42,9 +42,19 @@ describe("buildTable", () => {
     expect(hasFunction(table)).toBe(false);
   });
 
+  it("keeps CSV-only columns out of the screen but in the export", () => {
+    const withId = buildTable([{ id: "u1", name: "Jana" }], [
+      { key: "user_name", label: "User", render: (row) => row.name },
+      { key: "user_id", label: "", csvOnly: true, render: (row) => row.id },
+    ]);
+    expect(withId.columns.map((column) => column.key)).toEqual(["user_name"]);
+    expect(withId.csvHeader).toEqual(["user_name", "user_id"]);
+    expect(withId.rows).toEqual([{ cells: ["Jana"], csv: ["Jana", "u1"] }]);
+  });
+
   it("only comes from buildTable", () => {
     // @ts-expect-error A hand-made table (that could hide a render function) does not type-check.
-    const handMade: TableData = { columns: [], rows: [] };
+    const handMade: TableData = { columns: [], csvHeader: [], rows: [] };
     expect(handMade.rows).toEqual([]);
   });
 });

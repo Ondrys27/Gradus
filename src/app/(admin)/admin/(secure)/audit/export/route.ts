@@ -18,12 +18,15 @@ export async function GET() {
     return new Response("Audit unavailable", { status: 503 });
   }
   const csv = toCsv(
-    ["created_at", "user_id", "kind", "target", "ip_hash", "detail"],
+    ["created_at", "user_name", "user_id", "kind", "target", "subject_name", "subject_id", "ip_hash", "detail"],
     rows.map((row) => [
       row.created_at,
+      row.user_name,
       row.user_id,
       row.kind,
       row.target,
+      row.subject_name,
+      row.subject_id,
       row.ip_hash,
       row.detail === null ? null : JSON.stringify(row.detail),
     ]),

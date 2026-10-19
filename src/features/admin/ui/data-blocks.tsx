@@ -399,7 +399,7 @@ export function DataTable({ id, table }: { id: string; table: TableData }) {
     setExporting(true);
     setFailed(false);
     try {
-      const header = table.columns.map((column) => column.key);
+      const header = table.csvHeader;
       const body = table.rows.map((row) => row.csv);
       const blob = new Blob([toCsv(header, body)], { type: "text/csv;charset=utf-8" });
       // Imported lazily: a server action, pulled in only when the button is used.

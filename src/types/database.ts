@@ -2920,6 +2920,14 @@ export type Database = {
         Args: { _code: string; _user_id: string }
         Returns: string
       }
+      admin_people: {
+        Args: { _ids: string[] }
+        Returns: {
+          display_name: string
+          email: string
+          user_id: string
+        }[]
+      }
       admin_session_end: { Args: never; Returns: undefined }
       admin_session_touch: { Args: { _activity?: boolean }; Returns: Json }
       admin_set_ai_user_cap: {

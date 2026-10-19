@@ -71,7 +71,7 @@ U každé sekce: adopce (% aktivních, kteří ji použili), počet akcí, akce 
 
 - Volání podle funkce (chat, hodnocení milníku, noční analýza, hlídání, návrh e-mailu, rozbor schůzek, nastavení odměn) a podle modelu
 - Tokeny vstup / z mezipaměti / výstup, míra zásahu mezipaměti
-- Náklady v USD a Kč — celkem, na aktivního uživatele, na funkci, 10 nejnákladnějších uživatelů (jen identifikátor a plán)
+- Náklady v USD a Kč — celkem, na aktivního uživatele, na funkci, 10 nejnákladnějších uživatelů (identifikátor a plán; administrace k nim dosadí jméno z profilu nebo e-mail, export CSV má jméno i ID)
 - Konverzace a zprávy na uživatele, délka konverzace
 - Latence p50 a p95, chybovost podle kódu
 - Soubory — počet, typy, velikost, odmítnuté a proč

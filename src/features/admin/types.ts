@@ -95,6 +95,8 @@ export const FEATURE_REQUEST_STATUSES: readonly FeatureRequestStatus[] = [
 export type FeatureRequestRow = {
   id: string;
   userId: string;
+  /** Who sent it, as the administration names people (display-name.ts). */
+  userName: string;
   title: string;
   description: string | null;
   status: FeatureRequestStatus;

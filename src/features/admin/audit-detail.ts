@@ -2,7 +2,7 @@
  * The before/after of an audited change (admin_audit.detail) as one line:
  * "monthly_usd: 90 → 120 · warn_percent: 80 → 75". Only the fields that
  * changed; identifiers and numbers, never free text. A user the change was
- * about leads with the first characters of their id.
+ * about leads, named by `nameOf` (see display-name.ts).
  */
 
 type Values = Record<string, unknown> | null;
@@ -20,7 +20,17 @@ function show(value: unknown, empty: string): string {
   return JSON.stringify(value).slice(0, 40);
 }
 
-export function describeAuditDetail(detail: unknown, empty: string): string {
+/** The id of the user an audited change was about, if any. */
+export function auditDetailUser(detail: unknown): string | null {
+  const root = asValues(detail);
+  return root && typeof root.user === "string" ? root.user : null;
+}
+
+export function describeAuditDetail(
+  detail: unknown,
+  empty: string,
+  nameOf: (id: string) => string,
+): string {
   const root = asValues(detail);
   if (!root) return "";
   const from = asValues(root.from);
@@ -30,6 +40,7 @@ export function describeAuditDetail(detail: unknown, empty: string): string {
     .filter((key) => JSON.stringify(from?.[key] ?? null) !== JSON.stringify(to?.[key] ?? null))
     .map((key) => `${key}: ${show(from?.[key], empty)} → ${show(to?.[key], empty)}`);
   if (!changes.length && from === null && to === null) changes.push(`${empty} → ${empty}`);
-  const user = typeof root.user === "string" ? root.user.slice(0, 8) : null;
+  const userId = auditDetailUser(root);
+  const user = userId ? nameOf(userId) : null;
   return [user, ...changes].filter(Boolean).join(" · ");
 }

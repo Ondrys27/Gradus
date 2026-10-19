@@ -68,8 +68,16 @@ vi.mock("next/navigation", () => ({
     throw new Error("NEXT_NOT_FOUND");
   },
 }));
+vi.mock("next-intl/server", () => ({
+  getTranslations: async () => (key: string, values?: Record<string, string>) =>
+    key === "unnamed" ? `Unnamed account · ${values?.suffix}` : key,
+}));
 vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: () => ({
+    rpc: async (name: string) =>
+      name === "admin_people"
+        ? { data: [{ user_id: OWNER, display_name: "Ondřej", email: "o@example.com" }], error: null }
+        : { data: null, error: { message: `unexpected ${name}` } },
     from: (table: string) => ({
       insert: async (row: Record<string, unknown>) => {
         if (table === "admin_audit" && !state.auditError) state.audit.push(row);
@@ -86,6 +94,16 @@ vi.mock("@/lib/supabase/admin", () => ({
                 kind: "login",
                 target: "sign_in",
                 ip_hash: "0123456789abcdef",
+                detail: null,
+              },
+              {
+                id: 2,
+                created_at: "2026-10-08T11:00:00Z",
+                user_id: OWNER,
+                kind: "update",
+                target: "ai_user_caps",
+                ip_hash: "0123456789abcdef",
+                detail: { user: USER, from: null, to: { blocked: true } },
               },
             ],
             error: null,
@@ -251,7 +269,14 @@ describe("audit export", () => {
     const response = await exportAudit();
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toContain("text/csv");
-    expect(await response.text()).toContain("sign_in");
+    const csv = await response.text();
+    expect(csv).toContain("sign_in");
+    const [header, ...lines] = csv.trim().split("\r\n");
+    expect(header).toBe(
+      "created_at,user_name,user_id,kind,target,subject_name,subject_id,ip_hash,detail",
+    );
+    expect(lines[0]).toContain(`Ondřej,${OWNER},login`);
+    expect(lines[1]).toContain(`Unnamed account · 2222,${USER}`);
     expect(state.audit).toHaveLength(1);
     expect(state.audit[0]).toMatchObject({ user_id: OWNER, kind: "export", target: "audit" });
     expect(state.audit[0].ip_hash).toMatch(/^[0-9a-f]{16}$/);

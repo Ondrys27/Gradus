@@ -2,6 +2,7 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { breakdown, distribution, type AdminQuery } from "./metrics-data";
 import { npsScore } from "../numbers";
+import { peopleNamer } from "./people";
 import type { BreakdownData, FeatureRequestRow, FeatureRequestStatus } from "../types";
 
 /**
@@ -45,9 +46,11 @@ export async function loadFeatureRequests(
   if (internal.length) query = query.not("user_id", "in", inList(internal));
   const { data, error } = await query;
   if (error) throw new Error(`feature_requests: ${error.message}`);
+  const nameOf = await peopleNamer(data.map((row) => row.user_id));
   return data.map((row) => ({
     id: row.id,
     userId: row.user_id,
+    userName: nameOf(row.user_id),
     title: row.title,
     description: row.description,
     status: row.status,

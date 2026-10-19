@@ -107,6 +107,29 @@ describe("metric_admin_users", () => {
     expect(Number(bySort[0].ai_cost_usd)).toBe(5);
   });
 
+  it("finds a user by name or e-mail without diacritics (step 14.3)", async () => {
+    const named = await createUser();
+    const other = await createUser();
+    await db.query(`update profiles set display_name = 'Jiří Čermák' where id = $1`, [named]);
+    await db.query(`update auth.users set email = 'zuzana.100%@example.com' where id = $1`, [other]);
+
+    const search = async (query: string) =>
+      (
+        await rows<{ user_id: string }>(`select user_id from metric_admin_users($1, $2)`, [
+          "Europe/Prague",
+          query,
+        ])
+      ).map((r) => r.user_id);
+
+    expect(await search("cerm")).toEqual([named]);
+    expect(await search("JIRI")).toEqual([named]);
+    expect(await search("zuzana")).toEqual([other]);
+    expect(await search("100%")).toEqual([other]);
+    // A LIKE wildcard in the query is a plain character, not "anything".
+    expect(await search("%")).toEqual([other]);
+    expect(await search("nobody-like-this")).toEqual([]);
+  });
+
   it("is closed to a signed-in user", async () => {
     await db.exec(`set role authenticated;`);
     await expect(db.query(`select * from metric_admin_users('Europe/Prague')`)).rejects.toThrow();
@@ -151,5 +174,35 @@ describe("metric_admin_user_detail", () => {
       `select metric_admin_user_detail(gen_random_uuid()) as metric_admin_user_detail`,
     );
     expect(detail.metric_admin_user_detail).toBeNull();
+  });
+});
+
+describe("admin_people", () => {
+  it("returns the profile name and e-mail, blanks as null", async () => {
+    const named = await createUser();
+    const blank = await createUser();
+    await db.query(`update profiles set display_name = '  Eva  ' where id = $1`, [named]);
+    await db.query(`update profiles set display_name = '   ' where id = $1`, [blank]);
+    await db.query(`update auth.users set email = null where id = $1`, [blank]);
+
+    const people = await rows<{ user_id: string; display_name: string | null; email: string | null }>(
+      `select user_id, display_name, email from admin_people($1::uuid[]) order by display_name nulls last`,
+      [[named, blank]],
+    );
+    expect(people).toHaveLength(2);
+    expect(people[0]).toMatchObject({ user_id: named, display_name: "Eva" });
+    expect(people[0].email).toContain("@example.com");
+    expect(people[1]).toEqual({ user_id: blank, display_name: null, email: null });
+  });
+
+  it("is closed to a signed-in user and to anon", async () => {
+    const user = await createUser();
+    for (const role of ["authenticated", "anon"]) {
+      await db.exec(
+        `set role ${role}; select set_config('request.jwt.claim.sub', '${user}', false);`,
+      );
+      await expect(db.query(`select * from admin_people(array[$1]::uuid[])`, [user])).rejects.toThrow();
+      await asServer();
+    }
   });
 });

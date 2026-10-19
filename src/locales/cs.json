@@ -4239,8 +4239,8 @@
         }
       },
       "topUsersTitle": "10 nejnákladnějších uživatelů",
-      "topUsersDescription": "Jen identifikátor a plán; detail uživatele otevřeš kliknutím.",
-      "openDetail": "{id} → otevřít detail",
+      "topUsersDescription": "Jméno a plán; detail uživatele otevřeš kliknutím. Export CSV má jméno i ID.",
+      "openDetail": "{name} → otevřít detail",
       "columns": {
         "key": "Název",
         "calls": "Volání",
@@ -4250,7 +4250,8 @@
         "p50": "p50",
         "p95": "p95",
         "user": "Uživatel",
-        "plan": "Plán"
+        "plan": "Plán",
+        "userId": "ID uživatele"
       },
       "caps": {
         "title": "Strop využití AI",
@@ -4338,7 +4339,7 @@
       "ideasDescription": "Odeslané přes Jarvise; stav měň podle toho, jak je zpracováváš.",
       "emptyTitle": "Zatím žádné nápady",
       "emptyDescription": "Nápady, které lidé pošlou Jarvisovi, se zobrazí tady.",
-      "ideaMeta": "Od {id} · {date}",
+      "ideaMeta": "Od {name} · {date}",
       "statusFailed": "Nepodařilo se uložit. Zkus to znovu.",
       "status": {
         "new": "Nový",
@@ -4350,8 +4351,8 @@
     },
     "users": {
       "title": "Uživatelé",
-      "description": "Hledání podle identifikátoru, řazení podle aktivity nebo nákladů. Žádný obsah dat.",
-      "searchPlaceholder": "Hledat podle id uživatele…",
+      "description": "Hledání podle jména nebo e-mailu, řazení podle aktivity nebo nákladů. Žádný obsah dat.",
+      "searchPlaceholder": "Hledat podle jména nebo e-mailu…",
       "sortBy": "Řadit podle",
       "sort": {
         "activity": "Aktivity",
@@ -4359,14 +4360,14 @@
         "signup": "Registrace"
       },
       "emptyTitle": "Žádní uživatelé",
-      "emptyDescription": "Zkus jiné id, nebo hledání vymaž.",
+      "emptyDescription": "Zkus jiné jméno nebo e-mail, nebo hledání vymaž.",
       "pagination": "Stránky výsledků",
       "newer": "Novější",
       "older": "Starší",
       "page": "Strana {page}",
       "internal": "Interní",
       "columns": {
-        "id": "Id",
+        "user": "Uživatel",
         "plan": "Plán",
         "status": "Stav",
         "role": "Role",
@@ -4382,7 +4383,10 @@
         "cancelled": "Zrušeno",
         "expired": "Vypršelo"
       },
-      "detailTitle": "Uživatel {id}",
+      "detailMetaTitle": "Detail uživatele",
+      "idLabel": "ID",
+      "copyId": "Kopírovat",
+      "copied": "Zkopírováno",
       "detailDescription": "Plán a stav, aktivita a spotřeba. Bez obsahu kontaktů, obchodů, úkolů a zpráv.",
       "industry": "Obor",
       "mode": "Režim",
@@ -4623,6 +4627,9 @@
       "running": "Běžící",
       "ending_this_week": "Končí tento týden",
       "expired": "Vypršelé"
+    },
+    "people": {
+      "unnamed": "Účet bez jména · {suffix}"
     }
   }
 }

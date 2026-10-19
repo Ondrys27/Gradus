@@ -1,6 +1,7 @@
 import "server-only";
 import { formatDateTime } from "@/lib/format";
-import { describeAuditDetail } from "../audit-detail";
+import { auditDetailUser, describeAuditDetail } from "../audit-detail";
+import { peopleNamer } from "./people";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { toFormatSettings, USER_SETTINGS_COLUMNS } from "@/lib/user-settings";
 import type { AdminAuditKind } from "./audit";
@@ -49,11 +50,9 @@ export async function loadAuditPage(
   ]);
   if (error) throw new Error(`admin_audit read failed: ${error.message}`);
 
-  const userIds = [...new Set(data.map((row) => row.user_id).filter((id): id is string => !!id))];
-  const { data: profiles } = userIds.length
-    ? await admin.from("profiles").select("id, display_name").in("id", userIds)
-    : { data: [] };
-  const names = new Map((profiles ?? []).map((p) => [p.id, p.display_name]));
+  const nameOf = await peopleNamer(
+    data.flatMap((row) => [row.user_id, auditDetailUser(row.detail)]),
+  );
   const format = toFormatSettings(settings);
 
   return {
@@ -61,16 +60,19 @@ export async function loadAuditPage(
     rows: data.slice(0, AUDIT_PAGE_SIZE).map((row) => ({
       id: row.id,
       time: formatDateTime(new Date(row.created_at), format),
-      who: (row.user_id && names.get(row.user_id)) || row.user_id?.slice(0, 8) || "",
+      who: row.user_id ? nameOf(row.user_id) : "",
       kind: row.kind,
       target: row.target,
       ip: row.ip_hash ?? "",
-      detail: describeAuditDetail(row.detail, emptyValue),
+      detail: describeAuditDetail(row.detail, emptyValue, nameOf),
     })),
   };
 }
 
-/** The audit for the CSV export: UTC times and identifiers, newest first. */
+/**
+ * The audit for the CSV export, newest first: UTC times, the ids and next to
+ * them the names (of who acted and of the user a change was about).
+ */
 export async function loadAuditExport() {
   const { data, error } = await createAdminClient()
     .from("admin_audit")
@@ -78,5 +80,16 @@ export async function loadAuditExport() {
     .order("created_at", { ascending: false })
     .limit(AUDIT_EXPORT_LIMIT);
   if (error) throw new Error(`admin_audit export failed: ${error.message}`);
-  return data;
+  const nameOf = await peopleNamer(
+    data.flatMap((row) => [row.user_id, auditDetailUser(row.detail)]),
+  );
+  return data.map((row) => {
+    const subject = auditDetailUser(row.detail);
+    return {
+      ...row,
+      user_name: row.user_id ? nameOf(row.user_id) : null,
+      subject_id: subject,
+      subject_name: subject ? nameOf(subject) : null,
+    };
+  });
 }
