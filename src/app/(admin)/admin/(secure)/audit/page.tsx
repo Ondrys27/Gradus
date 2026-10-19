@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { AdminViewLink } from "@/features/admin/ui/admin-view";
 import { getTranslations } from "next-intl/server";
 import { DownloadIcon } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -90,17 +90,17 @@ export default async function AdminAuditPage({
       {(page > 0 || hasMore) && (
         <nav aria-label={t("pagination")} className="flex items-center justify-between gap-2">
           {page > 0 ? (
-            <Link href={pageHref(page - 1)} prefetch={false} className={linkClass}>
+            <AdminViewLink href={pageHref(page - 1)} className={linkClass}>
               {t("newer")}
-            </Link>
+            </AdminViewLink>
           ) : (
             <span />
           )}
           <span className="text-sm text-ink-soft">{t("page", { page: page + 1 })}</span>
           {hasMore ? (
-            <Link href={pageHref(page + 1)} prefetch={false} className={linkClass}>
+            <AdminViewLink href={pageHref(page + 1)} className={linkClass}>
               {t("older")}
-            </Link>
+            </AdminViewLink>
           ) : (
             <span />
           )}

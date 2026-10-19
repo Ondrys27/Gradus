@@ -15,7 +15,6 @@ import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
 import { AdminCard, GridSkeleton, TilesSkeleton } from "@/features/admin/ui/blocks";
 import { BreakdownList, FieldsGrid } from "@/features/admin/ui/data-blocks";
 import { TileGrid } from "@/features/admin/ui/metric-tile";
-import { viewKey } from "@/features/admin/view-state";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.growth");
@@ -28,21 +27,20 @@ export default async function AdminGrowthPage({ searchParams }: Props) {
   const context = await requireAdmin();
   await logAdminAction(context, "view", "growth");
   const q = adminQuery(await searchParams);
-  const key = viewKey(q.view, q.range);
 
   return (
     <>
       <AdminPageHeader section="growth" q={q} />
-      <Suspense key={`tiles:${key}`} fallback={<TilesSkeleton count={8} />}>
+      <Suspense fallback={<TilesSkeleton count={8} />}>
         <Tiles q={q} />
       </Suspense>
-      <Suspense key={`charts:${key}`} fallback={<GridSkeleton count={4} />}>
+      <Suspense fallback={<GridSkeleton count={4} />}>
         <Charts q={q} />
       </Suspense>
-      <Suspense key={`fields:${key}`} fallback={<GridSkeleton count={2} height={120} />}>
+      <Suspense fallback={<GridSkeleton count={2} height={120} />}>
         <Fields q={q} />
       </Suspense>
-      <Suspense key={`dist:${key}`} fallback={<GridSkeleton count={4} height={160} />}>
+      <Suspense fallback={<GridSkeleton count={4} height={160} />}>
         <Distributions q={q} />
       </Suspense>
     </>

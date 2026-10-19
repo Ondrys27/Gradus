@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { GlowCard } from "@/components/ui/glow-card";
 import { PageHeader } from "@/components/ui/page-header";
+import { KeepHeight } from "@/components/ui/keep-height";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
@@ -130,11 +131,10 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
         onChange={setTab}
         panelId={() => "finance-panel"}
       />
-      <div id="finance-panel" role="tabpanel" aria-labelledby={`tab-${tab}`}>
+      {/* The old tab's height stays until the new one has loaded, so the page does not jump. */}
+      <KeepHeight token={tab} id="finance-panel" role="tabpanel" aria-labelledby={`tab-${tab}`}>
         {tab === "transactions" && (
-          // A new period starts the list on its first page again.
           <TransactionsPanel
-            key={`${range.from}:${range.to}`}
             range={range}
             onEdit={canEdit ? setTransaction : undefined}
             onCreate={canEdit ? () => setTransaction(null) : undefined}
@@ -147,7 +147,7 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
           />
         )}
         {tab === "invoices" && <InvoicesPanel readOnly={!canEdit} />}
-      </div>
+      </KeepHeight>
 
       <TransactionFormDialog
         open={transaction !== undefined}

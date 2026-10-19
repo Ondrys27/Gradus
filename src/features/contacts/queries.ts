@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  keepPreviousData,
   useInfiniteQuery,
   useMutation,
   useQueries,
@@ -138,11 +139,16 @@ export function useWonDeals(pages: string[][]): WonDealsByContact {
 }
 
 /** Most recently contacted first, never-contacted at the end; one page at a time. */
-export function useContactList(filter: ListFilter) {
+/**
+ * `keepPrevious`: while another table or search loads, the previous list stays
+ * (`isPlaceholderData`), so the page keeps its height and scroll position.
+ */
+export function useContactList(filter: ListFilter, { keepPrevious = false } = {}) {
   const { user } = useSession();
   const workspaceId = useWorkspaceId();
   return useInfiniteQuery({
     queryKey: contactKeys.list(user.id, filter),
+    placeholderData: keepPrevious ? keepPreviousData : undefined,
     initialPageParam: 0,
     queryFn: async ({ pageParam }): Promise<ContactListItem[]> => {
       let query = createClient()

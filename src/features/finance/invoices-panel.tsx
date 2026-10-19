@@ -7,6 +7,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormAlert } from "@/components/ui/form-alert";
+import { useHoldHeight } from "@/components/ui/keep-height";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusPill } from "@/components/ui/status-pill";
 import { APP_NAME } from "@/lib/constants";
@@ -37,6 +38,7 @@ export function InvoicesPanel({ readOnly = false }: { readOnly?: boolean }) {
   const [page, setPage] = useState(0);
   const [deleting, setDeleting] = useState<Invoice | null>(null);
   const query = useInvoices(page);
+  useHoldHeight(!query.data);
   const remove = useDeleteInvoice();
   // A failed status read only hides the Fakturoid extras; invoices still work.
   const status = useFakturoidStatus();

@@ -9,7 +9,6 @@ import { AdminChart } from "@/features/admin/ui/admin-chart";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
 import { AdminCard, CardSkeleton, TilesSkeleton } from "@/features/admin/ui/blocks";
 import { TileGrid } from "@/features/admin/ui/metric-tile";
-import { viewKey } from "@/features/admin/view-state";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.overview");
@@ -22,15 +21,14 @@ export default async function AdminOverviewPage({ searchParams }: Props) {
   const context = await requireAdmin();
   await logAdminAction(context, "view", "overview");
   const q = adminQuery(await searchParams);
-  const key = viewKey(q.view, q.range);
 
   return (
     <>
       <AdminPageHeader section="overview" q={q} />
-      <Suspense key={`tiles:${key}`} fallback={<TilesSkeleton count={10} />}>
+      <Suspense fallback={<TilesSkeleton count={10} />}>
         <Tiles q={q} />
       </Suspense>
-      <Suspense key={`chart:${key}`} fallback={<CardSkeleton height={320} />}>
+      <Suspense fallback={<CardSkeleton height={320} />}>
         <MainChart q={q} />
       </Suspense>
     </>

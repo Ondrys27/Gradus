@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormAlert } from "@/components/ui/form-alert";
 import { FormField } from "@/components/ui/form-field";
+import { useHoldHeight } from "@/components/ui/keep-height";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
@@ -38,7 +39,16 @@ export function TransactionsPanel({ range, onEdit, onCreate }: Props) {
   const t = useTranslations("finance");
   const [category, setCategory] = useState<string | null>(null);
   const [page, setPage] = useState(0);
+  // A new period starts the list on its first page again; the old rows stay
+  // (dimmed) until the new ones are in, so the page keeps its place.
+  const rangeKey = `${range.from}:${range.to}`;
+  const [seenRange, setSeenRange] = useState(rangeKey);
+  if (seenRange !== rangeKey) {
+    setSeenRange(rangeKey);
+    setPage(0);
+  }
   const query = useTransactions(range, category, page);
+  useHoldHeight(!query.data);
   const categoryItems = [
     { value: ALL, label: t("transactions.allCategories") },
     ...ALL_CATEGORIES.map((value) => ({ value, label: t(`categories.${value}`) })),
@@ -91,7 +101,13 @@ export function TransactionsPanel({ range, onEdit, onCreate }: Props) {
         />
       ) : (
         <>
-          <ul className="flex flex-col gap-2">
+          <ul
+            aria-busy={query.isPlaceholderData || undefined}
+            className={cn(
+              "flex flex-col gap-2 transition-opacity motion-reduce:transition-none",
+              query.isPlaceholderData && "opacity-60",
+            )}
+          >
             {query.data.rows.map((transaction) => (
               <li key={transaction.id}>
                 <TransactionRow transaction={transaction} onEdit={onEdit} />

@@ -20,7 +20,6 @@ import { BreakdownList, DataTable } from "@/features/admin/ui/data-blocks";
 import { ADMIN_FORMAT_SETTINGS, formatMetricValue } from "@/features/admin/format-metric";
 import { TileGrid } from "@/features/admin/ui/metric-tile";
 import { formatDateTime } from "@/lib/format";
-import { viewKey } from "@/features/admin/view-state";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.health");
@@ -33,21 +32,20 @@ export default async function AdminHealthPage({ searchParams }: Props) {
   const context = await requireAdmin();
   await logAdminAction(context, "view", "health");
   const q = adminQuery(await searchParams);
-  const key = viewKey(q.view, q.range);
 
   return (
     <>
       <AdminPageHeader section="health" q={q} />
-      <Suspense key={`tiles:${key}`} fallback={<TilesSkeleton count={2} />}>
+      <Suspense fallback={<TilesSkeleton count={2} />}>
         <Tiles q={q} />
       </Suspense>
-      <Suspense key={`chart:${key}`} fallback={<GridSkeleton count={1} />}>
+      <Suspense fallback={<GridSkeleton count={1} />}>
         <Chart q={q} />
       </Suspense>
-      <Suspense key={`latency:${key}`} fallback={<GridSkeleton count={2} height={220} />}>
+      <Suspense fallback={<GridSkeleton count={2} height={220} />}>
         <Latency q={q} />
       </Suspense>
-      <Suspense key={`breakdowns:${key}`} fallback={<GridSkeleton count={2} height={180} />}>
+      <Suspense fallback={<GridSkeleton count={2} height={180} />}>
         <Breakdowns q={q} />
       </Suspense>
       <Suspense fallback={<GridSkeleton count={1} height={240} />}>

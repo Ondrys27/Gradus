@@ -18,6 +18,7 @@ import { SEGMENT_VALUES } from "@/lib/analytics/metrics";
 import { formatTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ADMIN_FORMAT_SETTINGS } from "../format-metric";
+import { useAdminView } from "./admin-view";
 import { usesControls } from "../nav";
 import {
   ADMIN_PERIODS,
@@ -25,7 +26,7 @@ import {
   ADMIN_SEGMENT_KEYS,
   parseAdminView,
   resolveRange,
-  viewQuery,
+  withView,
   type AdminPeriod,
   type AdminSegmentKey,
   type AdminView,
@@ -53,7 +54,9 @@ export function AdminControls({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [refreshing, startTransition] = useTransition();
+  const { pending: changing, navigate } = useAdminView();
+  const pending = refreshing || changing;
   const view = useMemo(() => parseAdminView(new URLSearchParams(searchParams)), [searchParams]);
   const [showSegments, setShowSegments] = useState(() => Object.keys(view.segment).length > 0);
   const [refreshedAt, setRefreshedAt] = useState<Date | null>(null);
@@ -86,7 +89,8 @@ export function AdminControls({
   if (!usesControls(pathname)) return null;
 
   function apply(next: AdminView) {
-    startTransition(() => router.replace(`${pathname}${viewQuery(next)}`, { scroll: false }));
+    // No scroll to the top and the old numbers stay on screen while the new ones load.
+    navigate(`${pathname}${withView(new URLSearchParams(searchParams), next)}`, "replace");
   }
 
   function setPeriod(period: AdminPeriod) {

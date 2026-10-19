@@ -20,7 +20,6 @@ import { BreakdownList } from "@/features/admin/ui/data-blocks";
 import { FeatureRequestRowView } from "@/features/admin/ui/feature-request-row";
 import { MetricTile } from "@/features/admin/ui/metric-tile";
 import { FEATURE_REQUEST_STATUSES, type FeatureRequestStatus } from "@/features/admin/types";
-import { viewKey } from "@/features/admin/view-state";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.feedback");
@@ -38,22 +37,19 @@ export default async function AdminFeedbackPage({ searchParams }: Props) {
   await logAdminAction(context, "view", "feedback");
   const params = await searchParams;
   const q = adminQuery(params);
-  const key = viewKey(q.view, q.range);
   const rawStatus = Array.isArray(params.status) ? params.status[0] : params.status;
   const status = isStatus(rawStatus) ? rawStatus : null;
 
   return (
     <>
       <AdminPageHeader section="feedback" q={q} />
-      <Suspense key={`nps:${key}`} fallback={<TilesSkeleton count={1} />}>
+      <Suspense fallback={<TilesSkeleton count={1} />}>
         <Nps q={q} />
       </Suspense>
-      <Suspense key={`jarvis:${key}`} fallback={<GridSkeleton count={1} height={160} />}>
+      <Suspense fallback={<GridSkeleton count={1} height={160} />}>
         <JarvisRatings q={q} />
       </Suspense>
-      <Suspense
-        key={`ideas:${status}:${q.view.internal}`}
-        fallback={<GridSkeleton count={1} height={320} />}
+      <Suspense fallback={<GridSkeleton count={1} height={320} />}
       >
         <Ideas q={q} status={status} />
       </Suspense>

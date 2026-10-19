@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { BookmarkIcon, BookmarkPlusIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import type { EventName } from "@/lib/analytics/events";
 import type { EventCalc } from "@/lib/analytics/metrics";
 import { cn } from "@/lib/utils";
 import type { ExplorerGrain, ExplorerQuery } from "../server/explorer-data";
+import { useAdminView } from "./admin-view";
 
 type SavedView = { name: string; query: string };
 const STORAGE_KEY = "admin.explorer.views";
@@ -52,7 +53,7 @@ export function ExplorerControls({
   current: ExplorerQuery;
 }) {
   const t = useTranslations("admin.explorer");
-  const router = useRouter();
+  const { navigate } = useAdminView();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [views, setViews] = useState<SavedView[]>([]);
@@ -71,7 +72,7 @@ export function ExplorerControls({
     } else {
       params.delete("prop");
     }
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    navigate(`${pathname}?${params.toString()}`, "replace");
   }
 
   function saveCurrentView() {
@@ -181,7 +182,7 @@ export function ExplorerControls({
           >
             <button
               type="button"
-              onClick={() => router.replace(`${pathname}?${view.query}`, { scroll: false })}
+              onClick={() => navigate(`${pathname}?${view.query}`, "replace")}
               className="flex items-center gap-1 outline-none hover:text-ink"
             >
               <BookmarkIcon aria-hidden className="size-3.5" />

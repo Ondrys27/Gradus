@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormAlert } from "@/components/ui/form-alert";
+import { useHoldHeight } from "@/components/ui/keep-height";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Switch } from "@/components/ui/switch";
@@ -25,6 +26,7 @@ type Props = {
 export function RecurringPanel({ onEdit, onCreate }: Props) {
   const t = useTranslations("finance.recurring");
   const query = useRecurringPayments();
+  useHoldHeight(!query.data);
 
   if (query.isError) return <FormAlert>{t("loadFailed")}</FormAlert>;
   if (!query.data) {

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import Link from "next/link";
+import { AdminViewLink } from "@/features/admin/ui/admin-view";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import type { AnalyticsSection } from "@/lib/analytics/routes";
@@ -28,7 +28,7 @@ import { AdminCard, CardSkeleton, GridSkeleton, TilesSkeleton } from "@/features
 import { buildTable } from "@/features/admin/table";
 import { BreakdownList, DataTable, FieldsGrid } from "@/features/admin/ui/data-blocks";
 import { TileGrid } from "@/features/admin/ui/metric-tile";
-import { viewKey, viewQuery, parseAdminView } from "@/features/admin/view-state";
+import { viewQuery, parseAdminView } from "@/features/admin/view-state";
 import { cn } from "@/lib/utils";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -47,7 +47,6 @@ export default async function AdminFeaturesPage({ searchParams }: Props) {
   await logAdminAction(context, "view", "features");
   const params = await searchParams;
   const q = adminQuery(params);
-  const key = viewKey(q.view, q.range);
   const rawTab = Array.isArray(params.tab) ? params.tab[0] : params.tab;
   const tab: AnalyticsSection = isSection(rawTab) ? rawTab : FEATURE_SECTIONS[0];
   const query = viewQuery(parseAdminView(params));
@@ -61,7 +60,7 @@ export default async function AdminFeaturesPage({ searchParams }: Props) {
     <>
       <AdminPageHeader section="features" q={q} />
 
-      <Suspense key={`adoption:${key}`} fallback={<CardSkeleton height={260} />}>
+      <Suspense fallback={<CardSkeleton height={260} />}>
         <Adoption q={q} />
       </Suspense>
 
@@ -72,10 +71,9 @@ export default async function AdminFeaturesPage({ searchParams }: Props) {
         {FEATURE_SECTIONS.map((section) => {
           const active = section === tab;
           return (
-            <Link
+            <AdminViewLink
               key={section}
               href={`${ADMIN_PATH}/funkce?tab=${section}${query ? `&${query.slice(1)}` : ""}`}
-              prefetch={false}
               aria-current={active ? "page" : undefined}
               className={cn(
                 "flex h-11 shrink-0 items-center rounded-full px-3.5 text-sm font-medium whitespace-nowrap outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:h-9",
@@ -83,12 +81,12 @@ export default async function AdminFeaturesPage({ searchParams }: Props) {
               )}
             >
               {tSections(section)}
-            </Link>
+            </AdminViewLink>
           );
         })}
       </nav>
 
-      <Suspense key={`section:${key}:${tab}`} fallback={<SectionSkeleton />}>
+      <Suspense fallback={<SectionSkeleton />}>
         <Section q={q} section={tab} />
       </Suspense>
     </>

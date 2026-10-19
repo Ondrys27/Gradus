@@ -15,7 +15,6 @@ import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
 import { AdminCard, GridSkeleton, TilesSkeleton } from "@/features/admin/ui/blocks";
 import { BreakdownList } from "@/features/admin/ui/data-blocks";
 import { TileGrid } from "@/features/admin/ui/metric-tile";
-import { viewKey } from "@/features/admin/view-state";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.game");
@@ -28,18 +27,17 @@ export default async function AdminGamePage({ searchParams }: Props) {
   const context = await requireAdmin();
   await logAdminAction(context, "view", "game");
   const q = adminQuery(await searchParams);
-  const key = viewKey(q.view, q.range);
 
   return (
     <>
       <AdminPageHeader section="game" q={q} />
-      <Suspense key={`tiles:${key}`} fallback={<TilesSkeleton count={2} />}>
+      <Suspense fallback={<TilesSkeleton count={2} />}>
         <Tiles q={q} />
       </Suspense>
-      <Suspense key={`chart:${key}`} fallback={<GridSkeleton count={1} />}>
+      <Suspense fallback={<GridSkeleton count={1} />}>
         <Chart q={q} />
       </Suspense>
-      <Suspense key={`more:${key}`} fallback={<GridSkeleton count={4} height={180} />}>
+      <Suspense fallback={<GridSkeleton count={4} height={180} />}>
         <More q={q} />
       </Suspense>
     </>

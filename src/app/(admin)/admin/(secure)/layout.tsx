@@ -8,6 +8,7 @@ import { requireAdmin } from "@/features/admin/server/guard";
 import { openSegmentValues, safe } from "@/features/admin/server/metrics-data";
 import { AdminControls, type OpenSegmentOptions } from "@/features/admin/ui/admin-controls";
 import { AdminNav } from "@/features/admin/ui/admin-nav";
+import { AdminViewMain, AdminViewProvider } from "@/features/admin/ui/admin-view";
 
 /**
  * Everything inside needs the owner with the second factor and a live admin
@@ -36,6 +37,7 @@ export default async function AdminSecureLayout({ children }: { children: React.
     : {};
 
   return (
+    <AdminViewProvider>
     <div className="flex min-h-dvh">
       <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-4 overflow-y-auto border-r border-line bg-canvas-deep/60 px-3 py-4 lg:flex">
         <div className="flex min-h-11 items-center gap-3 px-2">
@@ -70,11 +72,12 @@ export default async function AdminSecureLayout({ children }: { children: React.
             </Suspense>
           </div>
         </header>
-        <main className="flex w-full max-w-[1600px] flex-1 flex-col gap-6 px-4 py-6 pb-[calc(24px+env(safe-area-inset-bottom))]">
+        <AdminViewMain className="flex w-full max-w-[1600px] flex-1 flex-col gap-6 px-4 py-6 pb-[calc(24px+env(safe-area-inset-bottom))]">
           {children}
-        </main>
+        </AdminViewMain>
       </div>
       <AdminIdleGuard expiresAt={context.expiresAt} />
     </div>
+    </AdminViewProvider>
   );
 }

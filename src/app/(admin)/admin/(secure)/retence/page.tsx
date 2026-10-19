@@ -24,7 +24,6 @@ import {
   UsageHeatmap,
 } from "@/features/admin/ui/data-blocks";
 import { TileGrid } from "@/features/admin/ui/metric-tile";
-import { viewKey } from "@/features/admin/view-state";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.retention");
@@ -37,24 +36,23 @@ export default async function AdminRetentionPage({ searchParams }: Props) {
   const context = await requireAdmin();
   await logAdminAction(context, "view", "retention");
   const q = adminQuery(await searchParams);
-  const key = viewKey(q.view, q.range);
 
   return (
     <>
       <AdminPageHeader section="retention" q={q} />
-      <Suspense key={`tiles:${key}`} fallback={<TilesSkeleton count={7} />}>
+      <Suspense fallback={<TilesSkeleton count={7} />}>
         <Tiles q={q} />
       </Suspense>
-      <Suspense key={`cohorts:${key}`} fallback={<GridSkeleton count={2} height={300} />}>
+      <Suspense fallback={<GridSkeleton count={2} height={300} />}>
         <Cohorts q={q} />
       </Suspense>
-      <Suspense key={`heatmap:${key}`} fallback={<CardSkeleton height={200} />}>
+      <Suspense fallback={<CardSkeleton height={200} />}>
         <Heatmap q={q} />
       </Suspense>
-      <Suspense key={`charts:${key}`} fallback={<GridSkeleton count={2} />}>
+      <Suspense fallback={<GridSkeleton count={2} />}>
         <Charts q={q} />
       </Suspense>
-      <Suspense key={`more:${key}`} fallback={<GridSkeleton count={3} height={160} />}>
+      <Suspense fallback={<GridSkeleton count={3} height={160} />}>
         <More q={q} />
       </Suspense>
     </>

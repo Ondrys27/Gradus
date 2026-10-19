@@ -48,6 +48,7 @@ vi.mock("@/features/admin/ui/ai-caps-form", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/user-ai-cap-form", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/feature-request-row", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/admin-nav", (load) => stubClientModule(load));
+vi.mock("@/features/admin/ui/admin-view", (load) => stubClientModule(load));
 vi.mock("@/features/admin/admin-session", (load) => stubClientModule(load));
 vi.mock("next/link", () => ({ default: clientStub("Link") }));
 

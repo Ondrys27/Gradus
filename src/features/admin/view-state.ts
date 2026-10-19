@@ -132,6 +132,24 @@ export function viewQuery(view: AdminView): string {
   return query ? `?${query}` : "";
 }
 
+/** Every address key the shared controls own. */
+const VIEW_PARAM_KEYS: readonly string[] = ["period", "from", "to", "cmp", "internal", ...ADMIN_SEGMENT_KEYS];
+
+/**
+ * The address query after a change of the shared controls: the page's own
+ * parameters (a tab, a sort, the explorer's query) stay, only the page number
+ * goes back to the first, since the list it counted is a different one.
+ */
+export function withView(current: URLSearchParams, view: AdminView): string {
+  const params = new URLSearchParams();
+  for (const [key, value] of current) {
+    if (key !== "page" && !VIEW_PARAM_KEYS.includes(key)) params.append(key, value);
+  }
+  for (const [key, value] of serializeAdminView(view)) params.set(key, value);
+  const query = params.toString();
+  return query ? `?${query}` : "";
+}
+
 const PERIOD_DAYS: Record<Exclude<AdminPeriod, "custom">, number> = {
   today: 1,
   "7d": 7,

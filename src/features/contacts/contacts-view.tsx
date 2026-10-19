@@ -31,6 +31,7 @@ import { TableSwitcher } from "./table-switcher";
 import type { ContactDraft } from "./schemas";
 import type { ContactListItem } from "./types";
 import { MarkSeenOnVisit } from "@/features/game/mark-seen-on-visit";
+import { cn } from "@/lib/utils";
 
 /** The selected table lives in the address, so Back from a contact returns to it. */
 const TABLE_PARAM = "table";
@@ -74,7 +75,7 @@ export function ContactsView() {
   const selected = tableId ? tables.get(tableId) : undefined;
   const isClients = selected?.system_key === "clients";
 
-  const listQuery = useContactList({ term: debounced, tableId });
+  const listQuery = useContactList({ term: debounced, tableId }, { keepPrevious: true });
   const contacts = useMemo(() => listQuery.data?.pages.flat() ?? [], [listQuery.data]);
   const wonDealPages = useMemo(
     () =>
@@ -209,7 +210,13 @@ export function ContactsView() {
           />
         )
       ) : (
-        <>
+        <div
+          aria-busy={listQuery.isPlaceholderData || undefined}
+          className={cn(
+            "flex flex-col gap-6 transition-opacity motion-reduce:transition-none",
+            listQuery.isPlaceholderData && "opacity-60",
+          )}
+        >
           <ContactList
             contacts={contacts}
             tables={tables}
@@ -230,7 +237,7 @@ export function ContactsView() {
               {listQuery.isFetchingNextPage ? t("list.loadingMore") : t("list.loadMore")}
             </Button>
           )}
-        </>
+        </div>
       )}
 
       <GenerateContactsDialog

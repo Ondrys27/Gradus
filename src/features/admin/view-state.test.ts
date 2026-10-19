@@ -9,6 +9,7 @@ import {
   resolveRange,
   serializeAdminView,
   viewQuery,
+  withView,
 } from "./view-state";
 
 const TODAY = "2026-10-08";
@@ -121,5 +122,21 @@ describe("ranges", () => {
       includeInternal: true,
       segment: { plan: "beta" },
     });
+  });
+});
+
+describe("a change of the shared controls", () => {
+  it("keeps the page's own parameters and replaces the view", () => {
+    const current = new URLSearchParams("tab=pipeline&period=7d&plan=pro&cmp=0");
+    expect(withView(current, { ...DEFAULT_VIEW, period: "90d" })).toBe("?tab=pipeline&period=90d");
+  });
+
+  it("goes back to the first page", () => {
+    const current = new URLSearchParams("sort=ai&page=3");
+    expect(withView(current, { ...DEFAULT_VIEW, internal: true })).toBe("?sort=ai&internal=1");
+  });
+
+  it("leaves no question mark for the default view", () => {
+    expect(withView(new URLSearchParams("period=7d"), DEFAULT_VIEW)).toBe("");
   });
 });

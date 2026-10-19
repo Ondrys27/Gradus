@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminViewLink } from "@/features/admin/ui/admin-view";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { SearchIcon } from "lucide-react";
@@ -87,19 +88,18 @@ export default async function AdminUsersPage({ searchParams }: Props) {
           className="flex rounded-full border border-line p-0.5"
         >
           {USER_SORTS.map((value) => (
-            <Link
+            <AdminViewLink
               key={value}
               href={linkFor({ sort: value })}
               role="radio"
               aria-checked={sort === value}
-              prefetch={false}
               className={cn(
                 "flex h-11 items-center rounded-full px-3 text-sm font-medium whitespace-nowrap outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:h-8",
                 sort === value ? "bg-violet/20 text-ink" : "text-ink-soft hover:text-ink",
               )}
             >
               {t(`sort.${value}`)}
-            </Link>
+            </AdminViewLink>
           ))}
         </div>
       </div>
@@ -178,17 +178,17 @@ export default async function AdminUsersPage({ searchParams }: Props) {
       {(page > 0 || hasMore) && (
         <nav aria-label={t("pagination")} className="flex items-center justify-between gap-2">
           {page > 0 ? (
-            <Link href={linkFor({ page: page - 1 })} prefetch={false} className="text-sm text-violet">
+            <AdminViewLink href={linkFor({ page: page - 1 })} className="text-sm text-violet">
               {t("newer")}
-            </Link>
+            </AdminViewLink>
           ) : (
             <span />
           )}
           <span className="text-sm text-ink-soft">{t("page", { page: page + 1 })}</span>
           {hasMore ? (
-            <Link href={linkFor({ page: page + 1 })} prefetch={false} className="text-sm text-violet">
+            <AdminViewLink href={linkFor({ page: page + 1 })} className="text-sm text-violet">
               {t("older")}
-            </Link>
+            </AdminViewLink>
           ) : (
             <span />
           )}
