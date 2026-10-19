@@ -14,6 +14,9 @@ import { dismissCelebrationsAutomatically, mainNav } from "./support/ui";
 const L = "cs" as const;
 const t = (key: string, values?: Record<string, string | number>) => text(L, key, values);
 const scrollY = (page: Page) => page.evaluate(() => Math.round(window.scrollY));
+/** How far the page can scroll now: a shorter tab may not reach the old position. */
+const maxScroll = (page: Page) =>
+  page.evaluate(() => Math.round(document.documentElement.scrollHeight - window.innerHeight));
 
 /** Scrolls until the control is a little below the top and returns the position. */
 async function scrollTo(page: Page, control: Locator, offset: number) {
@@ -22,6 +25,16 @@ async function scrollTo(page: Page, control: Locator, offset: number) {
     window.scrollTo(0, Math.max(0, top - by));
   }, offset);
   await expect(control).toBeInViewport();
+  return mustBeScrolled(page);
+}
+
+/** Scrolls the page itself down by `by` pixels (for controls in a sticky bar) and returns the position. */
+async function scrollDown(page: Page, by: number) {
+  await page.evaluate((y) => window.scrollTo(0, y), by);
+  return mustBeScrolled(page);
+}
+
+async function mustBeScrolled(page: Page) {
   const y = await scrollY(page);
   expect(y, "the page must be scrolled for the test to mean anything").toBeGreaterThan(60);
   return y;
@@ -66,8 +79,10 @@ test.describe("a short window", () => {
     );
     await expect(main).not.toHaveAttribute("aria-busy", "true");
 
-    // Milestones → Pipeline from halfway down.
-    const before = await scrollTo(page, tabs, 120);
+    // Milestones → Pipeline from halfway down. The tabs sit in the sticky page
+    // bar (step 14.6), so the page is scrolled under them.
+    const before = await scrollDown(page, 400);
+    expect(before, "the milestones tab must reach the position").toBe(400);
     await tabs.getByRole("link", { name: t("admin.users.sections.pipeline") }).click();
     await expect(page).toHaveURL(/tab=pipeline/);
     await expect(tabs.getByRole("link", { name: t("admin.users.sections.pipeline") })).toHaveAttribute(
@@ -75,20 +90,16 @@ test.describe("a short window", () => {
       "page",
     );
     await expect(main).not.toHaveAttribute("aria-busy", "true");
-    expect(Math.abs((await scrollY(page)) - before)).toBeLessThanOrEqual(50);
+    expect(Math.abs((await scrollY(page)) - Math.min(before, await maxScroll(page)))).toBeLessThanOrEqual(50);
 
-    // A shared control (the period) from the same place: the page stays. The
-    // active filter shows as a label above the content, so the browser keeps
-    // the content in place on screen rather than the raw scroll offset.
-    await scrollTo(page, tabs, 120);
-    const tabsTop = () => tabs.evaluate((element) => Math.round(element.getBoundingClientRect().top));
-    const onScreen = await tabsTop();
+    // A shared control (the period, also in the sticky bar) from the same
+    // place: the page stays where it was.
+    const beforePeriod = await scrollDown(page, 400);
     await page.getByRole("radio", { name: exact(L, "admin.controls.periods.7d") }).click();
     await expect(page).toHaveURL(/period=7d/);
     await expect(page).toHaveURL(/tab=pipeline/);
     await expect(main).not.toHaveAttribute("aria-busy", "true");
-    expect(Math.abs((await tabsTop()) - onScreen)).toBeLessThanOrEqual(50);
-    expect(await scrollY(page)).toBeGreaterThan(60);
+    expect(Math.abs((await scrollY(page)) - Math.min(beforePeriod, await maxScroll(page)))).toBeLessThanOrEqual(50);
 
     // Another section from the menu starts at the top, as it should.
     await page.getByRole("link", { name: exact(L, "admin.shell.nav.ai") }).click();
@@ -121,6 +132,6 @@ test.describe("a short window", () => {
     await expect(chip).toHaveAttribute("aria-pressed", "true");
     await expect(page).toHaveURL(new RegExp(`table=${unreached.id}`));
     await expect(page.getByText("E2E Posun 1", { exact: true }).first()).toBeVisible();
-    expect(Math.abs((await scrollY(page)) - before)).toBeLessThanOrEqual(50);
+    expect(Math.abs((await scrollY(page)) - Math.min(before, await maxScroll(page)))).toBeLessThanOrEqual(50);
   });
 });

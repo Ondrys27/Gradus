@@ -382,7 +382,7 @@ export function AdminControls({
         <p role="alert" className="flex items-start gap-2 text-xs text-orange">
           <AlertTriangleIcon aria-hidden className="mt-0.5 size-3.5 shrink-0" />
           <span>
-            <strong className="font-semibold">{t("internalWarningTitle")}.</strong>{" "}
+            <strong className="font-semibold">{t("internalWarningTitle")}</strong>{" "}
             <span className="text-ink-soft">{t("internalWarning")}</span>
           </span>
         </p>

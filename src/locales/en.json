@@ -4577,7 +4577,7 @@
         }
       },
       "removeFilter": "Remove filter {filter}",
-      "internalWarningTitle": "Internal accounts are included",
+      "internalWarningTitle": "Internal accounts are included.",
       "internalWarning": "The owner, demo and test accounts are counted. These numbers are not the real users' numbers; switch it off before reading them as such.",
       "range": "Period {range}.",
       "rangeCompared": "Period {range}, compared with {previous}."

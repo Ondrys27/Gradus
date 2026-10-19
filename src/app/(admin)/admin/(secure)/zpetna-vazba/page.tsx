@@ -120,7 +120,8 @@ async function Ideas({ q, status }: { q: AdminQuery; status: FeatureRequestStatu
     safe("feature request counts", () => featureRequestCounts(q)),
     getTranslations("admin.feedback"),
   ]);
-  const hasCounts = counts.ok && counts.data.items.some((item) => (item.value ?? 0) > 0);
+  // A failed load keeps its place and says so (Show), like every other block.
+  const hasCounts = !counts.ok || counts.data.items.some((item) => (item.value ?? 0) > 0);
   return (
     <AdminCard title={t("ideasTitle")} description={t("ideasDescription")} wide>
       <div

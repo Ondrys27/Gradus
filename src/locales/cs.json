@@ -4577,7 +4577,7 @@
         }
       },
       "removeFilter": "Zrušit filtr {filter}",
-      "internalWarningTitle": "Započítané interní účty",
+      "internalWarningTitle": "Započítané interní účty.",
       "internalWarning": "Počítá se majitel, demo a testovací účty. Nejsou to čísla skutečných uživatelů; před čtením je přepínač vypni.",
       "range": "Období {range}.",
       "rangeCompared": "Období {range}, porovnáno s {previous}."

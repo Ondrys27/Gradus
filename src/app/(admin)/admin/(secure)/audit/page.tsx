@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { DownloadIcon } from "lucide-react";
 import { ADMIN_PATH } from "@/features/admin/access";
 import { logAdminAction } from "@/features/admin/server/audit";
 import { loadAuditPage } from "@/features/admin/server/audit-data";
 import { requireAdmin } from "@/features/admin/server/guard";
 import { mayExport } from "@/features/admin/roles";
 import { parseAdminView, serializeAdminView } from "@/features/admin/view-state";
+import { AuditExportButton } from "@/features/admin/ui/audit-export-button";
 import { AdminEmpty } from "@/features/admin/ui/blocks";
 import { AdminPageBar } from "@/features/admin/ui/page-bar";
 import { ServerPager, ServerTable } from "@/features/admin/ui/server-table";
@@ -93,18 +93,11 @@ export default async function AdminAuditPage({
             page: t("page", { page: page + 1 }),
           }}
         />
-        {/* A plain link: the export is a file download, written to the audit on the server. */}
+        {/* Asks first; the file download is written to the audit on the server. */}
         {mayExport(context.role, "audit") && (
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4 text-sm">
             <span className="text-ink-muted">{t("exportHint")}</span>
-            <a
-              href={`${ADMIN_PATH}/audit/export`}
-              download
-              className="flex h-11 items-center gap-2 rounded-xl border border-line px-3 text-sm font-medium text-ink-soft outline-none hover:bg-surface-hover hover:text-ink focus-visible:ring-3 focus-visible:ring-ring/50 mouse:h-9"
-            >
-              <DownloadIcon aria-hidden className="size-4" />
-              {t("export")}
-            </a>
+            <AuditExportButton href={`${ADMIN_PATH}/audit/export`} label={t("export")} />
           </div>
         )}
       </div>
