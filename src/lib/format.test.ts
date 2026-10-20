@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatCsvDecimal,
+  formatUsd,
   DEFAULT_FORMAT_SETTINGS,
   formatCalendarDate,
   formatCurrency,
@@ -38,6 +40,19 @@ describe("formatNumber", () => {
     expect(formatNumber(1200, { style: "currency" }, { ...settings, currency: "EUR" })).toBe(
       "€1,200",
     );
+  });
+});
+
+describe("formatUsd and formatCsvDecimal", () => {
+  const plain = (text: string) => text.replace(/\s/g, " ");
+  it("shows dollars with two decimals and the ISO code in the given number format", () => {
+    expect(plain(formatUsd(0))).toBe("0,00 USD");
+    expect(plain(formatUsd(20.3225806))).toBe("20,32 USD");
+    expect(plain(formatUsd(1.2, settings))).toBe("USD 1.20");
+  });
+  it("writes numbers for CSV with a dot and without grouping", () => {
+    expect(formatCsvDecimal(1234.5, 2)).toBe("1234.50");
+    expect(formatCsvDecimal(0.004, 2)).toBe("0.00");
   });
 });
 

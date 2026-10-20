@@ -4298,12 +4298,11 @@
       "title": "AI a Jarvis",
       "description": "Volání, tokeny, náklady, latence a jak lidé reagují na Jarvise.",
       "budget": {
-        "title": "Měsíční rozpočet",
-        "description": "Útrata všech účtů v tomto kalendářním měsíci (UTC), včetně interních, proti měsíčnímu stropu nastavenému níž.",
+        "title": "Rozpočet Jarvise",
+        "description": "Útrata všech účtů včetně interních za období zvolené nahoře proti měsíčnímu stropu přepočtenému na toto období (u 30 dní kalendářní měsíc v UTC, jak ho hlídá kontrola před voláním modelu). Stav a odhad jsou vždy za tento měsíc.",
         "meter": "Využití rozpočtu",
-        "spentOf": "{spent} z {budget}",
         "projected": "Odhad do konce měsíce",
-        "calls": "Volání tento měsíc",
+        "calls": "Volání {period}",
         "status": {
           "ok": "V pořádku",
           "near": "Blízko limitu",
@@ -4313,6 +4312,14 @@
           "ok": "Jarvis volá model jako obvykle.",
           "near": "Nad prahem upozornění: majitel dostává jeden e-mail denně.",
           "paused": "Na 100 %: do konce měsíce žádné volání modelu, hlídání běží jen z pravidel."
+        },
+        "headline": "Útrata {period}: {spent} z {capName} {cap}",
+        "anchor": "měsíční strop {cap}",
+        "capOf": {
+          "monthly": "měsíčního limitu",
+          "weekly": "týdenního limitu",
+          "daily": "denního limitu",
+          "period": "limitu za období"
         }
       },
       "topUsersTitle": "10 nejnákladnějších uživatelů",
@@ -4340,13 +4347,13 @@
         "perUserHint": "Prázdné = bez limitu. Nejvýš {max}. Výjimku pro jednoho uživatele nastavíš v jeho detailu.",
         "warnLabel": "Práh upozornění (%)",
         "warnHint": "Od tohoto podílu měsíčního stropu dostává majitel jeden e-mail denně.",
-        "monthlyMeter": "Útrata tento měsíc proti celkovému stropu",
-        "perUserMeter": "Nejdražší uživatel tento měsíc proti stropu na uživatele",
-        "warnMeter": "Útrata tento měsíc proti prahu upozornění",
+        "monthlyMeter": "Útrata {period} proti celkovému stropu",
+        "perUserMeter": "Nejdražší uživatel {period} proti stropu na uživatele",
+        "warnMeter": "Útrata {period} proti prahu upozornění",
         "spentOf": "{spent} z {cap}",
         "left": "Zbývá {amount}",
         "noLimit": "Bez limitu",
-        "topUser": "Nejdražší uživatel tento měsíc: {spent}",
+        "topUser": "Nejdražší uživatel {period}: {spent}",
         "untilWarning": "Do upozornění zbývá {amount}",
         "warningReached": "Práh upozornění dosažen",
         "save": "Uložit změny",
@@ -4371,7 +4378,16 @@
           "failed": "Změnu se nepodařilo uložit. Zkus to znovu."
         },
         "sectionTitle": "Stropy",
-        "sectionDescription": "Změna stropu mění, kolik Jarvis smí utratit, od příští minuty."
+        "sectionDescription": "Změna stropu mění, kolik Jarvis smí utratit, od příští minuty.",
+        "periodNote": "Pole jsou měsíční stropy. Ukazatele pod nimi porovnávají útratu {period} se stropy přepočtenými na toto období (měsíční strop / počet dní měsíce za každý den)."
+      },
+      "period": {
+        "month": "tento měsíc",
+        "today": "dnes",
+        "7d": "za 7 dní",
+        "90d": "za 90 dní",
+        "12m": "za 12 měsíců",
+        "custom": "za {from} – {to}"
       }
     },
     "game": {

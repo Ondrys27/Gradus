@@ -4298,12 +4298,11 @@
       "title": "AI and Jarvis",
       "description": "Calls, tokens, cost, latency and how people react to Jarvis.",
       "budget": {
-        "title": "Monthly budget",
-        "description": "Spend of all accounts this calendar month (UTC), internal ones too, against the monthly cap set below.",
+        "title": "Jarvis budget",
+        "description": "Spend of all accounts, internal ones too, in the period chosen above against the monthly cap scaled to that period (for 30 days the calendar month in UTC, as the check before a model call counts it). Status and estimate are always for this month.",
         "meter": "Budget used",
-        "spentOf": "{spent} of {budget}",
         "projected": "Estimate by month end",
-        "calls": "Calls this month",
+        "calls": "Calls {period}",
         "status": {
           "ok": "OK",
           "near": "Close to the limit",
@@ -4313,6 +4312,14 @@
           "ok": "Jarvis calls the model as usual.",
           "near": "Above the warning threshold: the owner gets one e-mail a day.",
           "paused": "At 100 %: no model calls until the month ends; the watch runs on rules only."
+        },
+        "headline": "Spend {period}: {spent} of the {capName} {cap}",
+        "anchor": "monthly cap {cap}",
+        "capOf": {
+          "monthly": "monthly limit",
+          "weekly": "weekly limit",
+          "daily": "daily limit",
+          "period": "limit for the period"
         }
       },
       "topUsersTitle": "10 most costly users",
@@ -4340,13 +4347,13 @@
         "perUserHint": "Empty = no limit. At most {max}. Exceptions for one user are set in their detail.",
         "warnLabel": "Warning threshold (%)",
         "warnHint": "From this share of the monthly cap the owner gets one e-mail a day.",
-        "monthlyMeter": "Spent this month against the monthly cap",
-        "perUserMeter": "The costliest user this month against the per-user cap",
-        "warnMeter": "Spent this month against the warning threshold",
+        "monthlyMeter": "Spent {period} against the app-wide cap",
+        "perUserMeter": "The costliest user {period} against the per-user cap",
+        "warnMeter": "Spent {period} against the warning threshold",
         "spentOf": "{spent} of {cap}",
         "left": "{amount} left",
         "noLimit": "No limit",
-        "topUser": "Costliest user this month: {spent}",
+        "topUser": "Costliest user {period}: {spent}",
         "untilWarning": "{amount} until the warning",
         "warningReached": "Warning threshold reached",
         "save": "Save changes",
@@ -4371,7 +4378,16 @@
           "failed": "The change could not be saved. Try again."
         },
         "sectionTitle": "Caps",
-        "sectionDescription": "Changing a cap changes what Jarvis may spend from the next minute on."
+        "sectionDescription": "Changing a cap changes what Jarvis may spend from the next minute on.",
+        "periodNote": "The fields are monthly caps. The meters below compare the spend {period} with the caps scaled to this period (monthly cap / days of the month for each day)."
+      },
+      "period": {
+        "month": "this month",
+        "today": "today",
+        "7d": "over 7 days",
+        "90d": "over 90 days",
+        "12m": "over 12 months",
+        "custom": "{from} – {to}"
       }
     },
     "game": {

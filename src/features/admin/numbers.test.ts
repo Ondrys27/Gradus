@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { wheelZoomFactor } from "@/components/tree-map/tree-map-zoom";
-import { formatChange, formatMetricValue } from "./format-metric";
+import { decimalsFor, formatChange, formatMetricValue, metricCsvValue } from "./format-metric";
 import {
   aggregate,
   alignToRange,
@@ -112,6 +112,30 @@ describe("metric values", () => {
     expect(formatMetricValue(0.25, "ratio", t)).toMatch(/^25,0\s%$/);
     expect(formatMetricValue(1.5, "usd", t)).toMatch(/1,50/);
     expect(formatMetricValue(12, "hours", t)).toBe("12 hours");
+  });
+
+  it("shows US dollars always with two decimals and the code", () => {
+    const plain = (text: string) => text.replace(/\s/g, " ");
+    expect(plain(formatMetricValue(0, "usd", t))).toBe("0,00 USD");
+    expect(plain(formatMetricValue(1.2, "usd", t))).toBe("1,20 USD");
+    expect(plain(formatMetricValue(0.004, "usd", t))).toBe("0,00 USD");
+    expect(plain(formatMetricValue(12.4, "usd", t))).toBe("12,40 USD");
+    expect(plain(formatMetricValue(1234.5, "usd", t))).toBe("1 234,50 USD");
+    expect(plain(formatMetricValue(90, "usd", t))).toBe("90,00 USD");
+    expect(formatMetricValue(null, "usd", t)).toBe("none");
+    for (const value of [0, 1, 1.2, 150, 2500]) expect(decimalsFor(value, "usd")).toBe(2);
+    // Other units keep their decimals: whole stays whole, small averages one decimal.
+    expect(decimalsFor(150)).toBe(0);
+    expect(decimalsFor(4.25)).toBe(1);
+    expect(plain(formatMetricValue(150, "czk", t))).toBe("150 Kč");
+  });
+
+  it("exports US dollars with two decimals and other values as plain numbers", () => {
+    expect(metricCsvValue(1.2, "usd")).toBe("1.20");
+    expect(metricCsvValue(0, "usd")).toBe("0.00");
+    expect(metricCsvValue(1234.5, "usd")).toBe("1234.50");
+    expect(metricCsvValue(null, "usd")).toBeNull();
+    expect(metricCsvValue(42, "count")).toBe(42);
   });
 
   it("signs a change", () => {

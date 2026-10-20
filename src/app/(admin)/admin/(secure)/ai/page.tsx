@@ -20,7 +20,8 @@ import {
   jarvisConversations,
   type AiUsageRow,
 } from "@/features/admin/server/page-data";
-import { loadAiCapsOverview } from "@/features/admin/server/ai-caps-data";
+import { loadAiCapsOverview, loadPeriodSpend } from "@/features/admin/server/ai-caps-data";
+import { budgetPeriod, describePeriod } from "@/features/admin/ai-budget-period";
 import { loadBudget } from "@/features/jarvis/server/budget";
 import { loadAiCaps } from "@/features/jarvis/server/caps";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -40,7 +41,7 @@ import { buildTable } from "@/features/admin/table";
 import { peopleNamer } from "@/features/admin/server/people";
 import { BreakdownList, DataTable, FieldsGrid } from "@/features/admin/ui/data-blocks";
 import { Figures } from "@/features/admin/ui/metric-tile";
-import { ADMIN_FORMAT_SETTINGS, formatMetricValue } from "@/features/admin/format-metric";
+import { ADMIN_FORMAT_SETTINGS, formatMetricValue, metricCsvValue } from "@/features/admin/format-metric";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.ai");
@@ -79,7 +80,7 @@ export default async function AdminAiPage({ searchParams }: Props) {
         </div>
         {/* The caps change what Jarvis may spend: the one action with consequences, at the end. */}
         <Suspense fallback={<CardSkeleton height={260} />}>
-          <Caps readOnly={!adminCan(context.role, "editAiCaps")} />
+          <Caps q={q} readOnly={!adminCan(context.role, "editAiCaps")} />
         </Suspense>
       </div>
     </>
@@ -91,12 +92,21 @@ async function Tiles({ q }: { q: AdminQuery }) {
   return <Show loaded={loaded}>{(tiles) => <Figures tiles={tiles} />}</Show>;
 }
 
-/** The budget is always this calendar month, whatever range the controls show; the cost chart follows the range. */
+/**
+ * The budget card follows the range of the top bar: the calendar month for
+ * 30 days, otherwise the range's spend against the monthly cap scaled to it
+ * (ai-budget-period.ts). The cost chart follows the range too.
+ */
 async function BudgetAndCost({ q }: { q: AdminQuery }) {
+  const period = budgetPeriod(q.view, q.range, q.today);
   const [budget, chart, t] = await Promise.all([
     safe("jarvis budget", async () => {
       const admin = createAdminClient();
-      return loadBudget(admin, new Date(), await loadAiCaps(admin, { fresh: true }));
+      const [month, spend] = await Promise.all([
+        loadAiCaps(admin, { fresh: true }).then((caps) => loadBudget(admin, new Date(), caps)),
+        period.kind === "month" ? null : loadPeriodSpend(period.spend.from, period.spend.to),
+      ]);
+      return { month, spend };
     }),
     safe("ai cost chart", () => aiCostChart(q)),
     getTranslations("metrics.items.ai_cost"),
@@ -106,22 +116,32 @@ async function BudgetAndCost({ q }: { q: AdminQuery }) {
       <AdminCard title={t("name")} description={t("description")}>
         <Show loaded={chart}>{(data) => <AdminChart data={data} title={t("name")} />}</Show>
       </AdminCard>
-      <Show loaded={budget}>{(data) => <BudgetCard budget={data} />}</Show>
+      <Show loaded={budget}>
+        {(data) => <BudgetCard budget={data.month} period={period} spend={data.spend} />}
+      </Show>
     </BlockGrid>
   );
 }
 
-/** The caps set here apply within a minute; this month's spend under each. */
-async function Caps({ readOnly }: { readOnly: boolean }) {
-  const [loaded, t] = await Promise.all([
-    safe("ai caps", () => loadAiCapsOverview()),
+/** The caps set here apply within a minute; under each the spend of the chosen period. */
+async function Caps({ q, readOnly }: { q: AdminQuery; readOnly: boolean }) {
+  const period = budgetPeriod(q.view, q.range, q.today);
+  const [loaded, t, tPeriod] = await Promise.all([
+    safe("ai caps", async () => {
+      const [overview, spend] = await Promise.all([
+        loadAiCapsOverview(),
+        period.kind === "month" ? null : loadPeriodSpend(period.spend.from, period.spend.to),
+      ]);
+      return { overview, spend };
+    }),
     getTranslations("admin.ai.caps"),
+    getTranslations("admin.ai.period"),
   ]);
   return (
     <PageSection title={t("sectionTitle")} description={t("sectionDescription")}>
       <AdminCard title={t("title")} description={t("description")} id="stropy">
         <Show loaded={loaded}>
-          {(overview) => (
+          {({ overview, spend }) => (
             <AiCapsForm
               saved={{
                 monthlyUsd: overview.caps.monthlyUsd,
@@ -129,8 +149,13 @@ async function Caps({ readOnly }: { readOnly: boolean }) {
                 warnPercent: Math.round(overview.caps.warnShare * 100),
               }}
               fromDefaults={overview.caps.source === "default"}
-              spentUsd={overview.spentUsd}
-              topUserSpentUsd={overview.topUserSpentUsd}
+              period={{
+                label: describePeriod(period, tPeriod, ADMIN_FORMAT_SETTINGS),
+                factor: period.factor,
+                monthly: period.kind === "month",
+              }}
+              spentUsd={spend ? spend.spentUsd : overview.spentUsd}
+              topUserSpentUsd={spend ? spend.topUserSpentUsd : overview.topUserSpentUsd}
               readOnly={readOnly}
             />
           )}
@@ -165,7 +190,7 @@ function usageColumns(
       label: t("columns.cost"),
       align: "right" as const,
       render: (row: AiUsageRow) => formatMetricValue(row.costUsd, "usd", tUnits),
-      csv: (row: AiUsageRow) => row.costUsd,
+      csv: (row: AiUsageRow) => metricCsvValue(row.costUsd, "usd"),
     },
     {
       key: "cache_hit_rate",
@@ -308,7 +333,7 @@ async function TopUsers({ q, exportable }: { q: AdminQuery; exportable: boolean 
                 label: t("columns.cost"),
                 align: "right",
                 render: (row) => formatMetricValue(row.costUsd, "usd", tUnits),
-                csv: (row) => row.costUsd,
+                csv: (row) => metricCsvValue(row.costUsd, "usd"),
               },
             ])}
           />

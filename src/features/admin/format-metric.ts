@@ -1,4 +1,10 @@
-import { DEFAULT_FORMAT_SETTINGS, formatNumber, type FormatSettings } from "@/lib/format";
+import {
+  DEFAULT_FORMAT_SETTINGS,
+  formatCsvDecimal,
+  formatNumber,
+  formatUsd,
+  type FormatSettings,
+} from "@/lib/format";
 import { METRICS_TIMEZONE, type MetricUnit } from "@/lib/analytics/metrics";
 
 /** A translator of the `admin.units` namespace. */
@@ -10,8 +16,13 @@ export const ADMIN_FORMAT_SETTINGS: FormatSettings = {
   timeZone: METRICS_TIMEZONE,
 };
 
-/** Whole numbers stay whole; averages below 100 keep one decimal. */
-function decimalsFor(value: number): number {
+/**
+ * Decimals of a metric value. US dollars (AI, Google and e-mail costs) always
+ * have two: "0,00 USD", never "0" or "1,2". Otherwise whole numbers stay
+ * whole and averages below 100 keep one decimal.
+ */
+export function decimalsFor(value: number, unit?: MetricUnit): number {
+  if (unit === "usd") return 2;
   return Number.isInteger(value) || Math.abs(value) >= 100 ? 0 : 1;
 }
 
@@ -32,12 +43,13 @@ export function formatMetricValue(
     case "ratio":
       return formatNumber(value, { style: "percent", decimals: 1 }, settings);
     case "usd":
+      return formatUsd(value, settings);
     case "czk":
       return formatNumber(
         value,
         {
           style: "currency",
-          currency: unit === "usd" ? "USD" : "CZK",
+          currency: "CZK",
           decimals: Math.abs(value) < 10 && value !== 0 ? 2 : 0,
         },
         settings,
@@ -51,6 +63,15 @@ export function formatMetricValue(
     default:
       return formatNumber(value, { decimals: decimalsFor(value) }, settings);
   }
+}
+
+/**
+ * One value of a metric for a CSV export: a plain number, except US dollars,
+ * which keep their two decimals ("1.20") like on screen.
+ */
+export function metricCsvValue(value: number | null, unit: MetricUnit): string | number | null {
+  if (value === null || !Number.isFinite(value)) return null;
+  return unit === "usd" ? formatCsvDecimal(value, decimalsFor(value, unit)) : value;
 }
 
 /** A change in percent with its sign, e.g. "+12,5 %". */

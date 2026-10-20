@@ -3427,6 +3427,14 @@ export type Database = {
           updated_at: string
         }[]
       }
+      jarvis_range_spend: {
+        Args: { _since: string; _until: string }
+        Returns: {
+          calls: number
+          cost_usd: number
+          top_user_cost_usd: number
+        }[]
+      }
       jarvis_top_user_spend: {
         Args: { _since: string }
         Returns: {

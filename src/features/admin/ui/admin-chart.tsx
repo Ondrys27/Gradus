@@ -21,7 +21,7 @@ import type { MetricUnit } from "@/lib/analytics/metrics";
 import { formatCalendarDate, formatDayMonth } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { toCsv } from "../access";
-import { ADMIN_FORMAT_SETTINGS, formatMetricValue } from "../format-metric";
+import { ADMIN_FORMAT_SETTINGS, formatMetricValue, metricCsvValue } from "../format-metric";
 import {
   clampIndexWindow,
   fullIndexWindow,
@@ -191,7 +191,7 @@ export function AdminChart({
           row.x,
           ...data.series.map((series) => {
             const value = row[series.key];
-            return typeof value === "number" ? value : null;
+            return typeof value === "number" ? metricCsvValue(value, unitOf(series)) : null;
           }),
         ]);
         blob = new Blob([toCsv(header, body)], { type: "text/csv;charset=utf-8" });

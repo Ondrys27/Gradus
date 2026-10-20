@@ -92,6 +92,10 @@ export type NumberFormat = {
   decimals?: number;
   /** Always show the sign (except for zero), e.g. a change against last period. */
   signed?: boolean;
+  /** "code" shows the ISO code ("12,40 USD") instead of the symbol ("12,40 US$"). */
+  currencyDisplay?: "symbol" | "code";
+  /** Thousands separators; off for machine-readable files such as CSV. */
+  grouping?: boolean;
 };
 
 export function formatNumber(
@@ -99,11 +103,20 @@ export function formatNumber(
   options: NumberFormat = {},
   settings: FormatSettings = DEFAULT_FORMAT_SETTINGS,
 ): string {
-  const { style = "decimal", currency, decimals = 0, signed = false } = options;
+  const {
+    style = "decimal",
+    currency,
+    decimals = 0,
+    signed = false,
+    currencyDisplay = "symbol",
+    grouping = true,
+  } = options;
   return new Intl.NumberFormat(settings.numberLocale, {
     style,
     signDisplay: signed ? "exceptZero" : "auto",
     currency: style === "currency" ? (currency ?? settings.currency) : undefined,
+    currencyDisplay: style === "currency" ? currencyDisplay : undefined,
+    useGrouping: grouping,
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   }).format(value);
@@ -117,6 +130,26 @@ export function formatCurrency(
   decimals = 0,
 ): string {
   return formatNumber(value, { style: "currency", currency, decimals }, settings);
+}
+
+/**
+ * An amount in US dollars, always with two decimals and the ISO code:
+ * "0,00 USD", "12,40 USD" (AI costs and caps in the administration).
+ */
+export function formatUsd(value: number, settings: FormatSettings = DEFAULT_FORMAT_SETTINGS): string {
+  return formatNumber(
+    value,
+    { style: "currency", currency: "USD", decimals: 2, currencyDisplay: "code" },
+    settings,
+  );
+}
+
+/**
+ * A number for a CSV file: dot as the decimal separator, no grouping and a
+ * fixed number of decimals ("1234.50"), whatever the user's number format.
+ */
+export function formatCsvDecimal(value: number, decimals: number): string {
+  return formatNumber(value, { decimals, grouping: false }, { ...DEFAULT_FORMAT_SETTINGS, numberLocale: "en-US" });
 }
 
 /** Calendar date (no time, no time zone) as `yyyy-MM-dd`. */

@@ -15,12 +15,11 @@ import {
   MAX_USER_USD,
   remainingUsd,
 } from "@/features/jarvis/caps";
-import { formatNumber } from "@/lib/format";
+import { formatUsd } from "@/lib/format";
 import { ADMIN_FORMAT_SETTINGS } from "../format-metric";
 import { saveAiCaps, type CapsActionResult } from "../server/ai-caps-actions";
 
-const usd = (value: number) =>
-  formatNumber(value, { style: "currency", currency: "USD", decimals: 2 }, ADMIN_FORMAT_SETTINGS);
+const usd = (value: number) => formatUsd(value, ADMIN_FORMAT_SETTINGS);
 
 type Field = "monthlyUsd" | "perUserUsd" | "warnPercent";
 const FIELDS: Field[] = ["monthlyUsd", "perUserUsd", "warnPercent"];
@@ -30,14 +29,27 @@ type Saved = { monthlyUsd: number; perUserUsd: number | null; warnPercent: numbe
 /** A typed value as the field shows it; the form keeps the text until it is saved. */
 const asText = (value: number | null) => (value === null ? "" : String(value));
 
+/** The period of the top bar the meters show; the fields stay monthly. */
+type MeterPeriod = {
+  /** "this month", "over 7 days"… */
+  label: string;
+  /** Monthly cap × factor = the cap for the period (ai-budget-period.ts). */
+  factor: number;
+  /** The calendar month as the check counts it (30 days). */
+  monthly: boolean;
+};
+
 /**
  * The application-wide AI caps: monthly cap of all accounts, the cap of one
- * user and the warning threshold, each with this month's spend under it.
- * Saving asks for confirmation with every change listed from → to.
+ * user and the warning threshold, each with the spend of the chosen period
+ * under it against the cap scaled to that period. The stored caps and the
+ * fields stay monthly. Saving asks for confirmation with every change listed
+ * from → to.
  */
 export function AiCapsForm({
   saved,
   fromDefaults,
+  period,
   spentUsd,
   topUserSpentUsd,
   readOnly = false,
@@ -45,6 +57,8 @@ export function AiCapsForm({
   saved: Saved;
   /** Nothing in the database yet: the values shown are the defaults. */
   fromDefaults: boolean;
+  period: MeterPeriod;
+  /** Spend of all accounts in the period. */
   spentUsd: number;
   topUserSpentUsd: number | null;
   /** An admin: the values and meters, no fields and no saving (the owner changes caps). */
@@ -118,7 +132,16 @@ export function AiCapsForm({
   const error = (field: Field, max?: number) =>
     errors.includes(field) ? t(`errors.${field}`, { max: max ? usd(max) : "" }) : undefined;
 
-  const warnAt = saved.monthlyUsd * (saved.warnPercent / 100);
+  // The meters compare the period's spend with the caps scaled to the period.
+  const monthlyCap = saved.monthlyUsd * period.factor;
+  const perUserCap = saved.perUserUsd === null ? null : saved.perUserUsd * period.factor;
+  const warnAt = monthlyCap * (saved.warnPercent / 100);
+  const meters = { period: period.label };
+  const periodNote = period.monthly ? null : (
+    <p className="text-xs text-ink-muted" data-testid="ai-caps-period-note">
+      {t("periodNote", { period: period.label })}
+    </p>
+  );
 
   if (readOnly) {
     const stored = (label: string, value: string) => (
@@ -129,26 +152,27 @@ export function AiCapsForm({
     );
     return (
       <div className="flex flex-col gap-4" data-testid="ai-caps-readonly">
+        {periodNote}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <div className="flex flex-col gap-3">
             {stored(t("monthlyLabel"), show("monthlyUsd", saved.monthlyUsd))}
             <Meter
-              label={t("monthlyMeter")}
-              value={saved.monthlyUsd > 0 ? spentUsd / saved.monthlyUsd : 1}
-              primary={t("spentOf", { spent: usd(spentUsd), cap: usd(saved.monthlyUsd) })}
-              secondary={t("left", { amount: usd(remainingUsd(saved.monthlyUsd, spentUsd)) })}
+              label={t("monthlyMeter", meters)}
+              value={monthlyCap > 0 ? spentUsd / monthlyCap : 1}
+              primary={t("spentOf", { spent: usd(spentUsd), cap: usd(monthlyCap) })}
+              secondary={t("left", { amount: usd(remainingUsd(monthlyCap, spentUsd)) })}
             />
           </div>
           <div className="flex flex-col gap-3">
             {stored(t("perUserLabel"), show("perUserUsd", saved.perUserUsd))}
             <span className="text-xs text-ink-soft">
-              {t("topUser", { spent: usd(topUserSpentUsd ?? 0) })}
+              {t("topUser", { ...meters, spent: usd(topUserSpentUsd ?? 0) })}
             </span>
           </div>
           <div className="flex flex-col gap-3">
             {stored(t("warnLabel"), show("warnPercent", saved.warnPercent))}
             <Meter
-              label={t("warnMeter")}
+              label={t("warnMeter", meters)}
               value={warnAt > 0 ? spentUsd / warnAt : 1}
               primary={t("spentOf", { spent: usd(spentUsd), cap: usd(warnAt) })}
               secondary={
@@ -169,6 +193,7 @@ export function AiCapsForm({
         budget: usd(saved.monthlyUsd),
         percent: saved.warnPercent,
       })}</p>}
+      {periodNote}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="flex flex-col gap-3">
           <FormField
@@ -186,10 +211,10 @@ export function AiCapsForm({
             />
           </FormField>
           <Meter
-            label={t("monthlyMeter")}
-            value={saved.monthlyUsd > 0 ? spentUsd / saved.monthlyUsd : 1}
-            primary={t("spentOf", { spent: usd(spentUsd), cap: usd(saved.monthlyUsd) })}
-            secondary={t("left", { amount: usd(remainingUsd(saved.monthlyUsd, spentUsd)) })}
+            label={t("monthlyMeter", meters)}
+            value={monthlyCap > 0 ? spentUsd / monthlyCap : 1}
+            primary={t("spentOf", { spent: usd(spentUsd), cap: usd(monthlyCap) })}
+            secondary={t("left", { amount: usd(remainingUsd(monthlyCap, spentUsd)) })}
           />
         </div>
 
@@ -208,21 +233,21 @@ export function AiCapsForm({
               onChange={set("perUserUsd")}
             />
           </FormField>
-          {saved.perUserUsd === null ? (
+          {perUserCap === null ? (
             <div className="flex flex-col gap-1 text-xs text-ink-soft">
               <span className="font-semibold text-ink">{t("noLimit")}</span>
-              <span>{t("topUser", { spent: usd(topUserSpentUsd ?? 0) })}</span>
+              <span>{t("topUser", { ...meters, spent: usd(topUserSpentUsd ?? 0) })}</span>
             </div>
           ) : (
             <Meter
-              label={t("perUserMeter")}
-              value={(topUserSpentUsd ?? 0) / saved.perUserUsd}
+              label={t("perUserMeter", meters)}
+              value={(topUserSpentUsd ?? 0) / perUserCap}
               primary={t("spentOf", {
                 spent: usd(topUserSpentUsd ?? 0),
-                cap: usd(saved.perUserUsd),
+                cap: usd(perUserCap),
               })}
               secondary={t("left", {
-                amount: usd(remainingUsd(saved.perUserUsd, topUserSpentUsd ?? 0)),
+                amount: usd(remainingUsd(perUserCap, topUserSpentUsd ?? 0)),
               })}
             />
           )}
@@ -244,7 +269,7 @@ export function AiCapsForm({
             />
           </FormField>
           <Meter
-            label={t("warnMeter")}
+            label={t("warnMeter", meters)}
             value={warnAt > 0 ? spentUsd / warnAt : 1}
             primary={t("spentOf", { spent: usd(spentUsd), cap: usd(warnAt) })}
             secondary={

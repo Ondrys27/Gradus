@@ -301,3 +301,42 @@ describe("per-user spend", () => {
     await asServer();
   });
 });
+
+describe("jarvis_range_spend", () => {
+  it("sums a window of all accounts with its costliest user, for the server only", async () => {
+    const a = await createAuthUser();
+    const b = await createAuthUser();
+    await asServer();
+    await db.query(
+      `insert into ai_usage (user_id, purpose, model, cost_usd, created_at) values
+         ($1, 'chat', 'claude-sonnet-5-5', 1.25, '2030-03-01T00:00:00Z'),
+         ($1, 'chat', 'claude-sonnet-5-5', 0.75, '2030-03-02T12:00:00Z'),
+         ($2, 'chat', 'claude-sonnet-5-5', 1.5, '2030-03-03T23:59:59Z'),
+         ($2, 'chat', 'claude-sonnet-5-5', 40, '2030-03-04T00:00:00Z'),
+         ($1, 'chat', 'claude-sonnet-5-5', 30, '2030-02-28T23:59:59Z')`,
+      [a, b],
+    );
+    await asServiceRole();
+    const window = await one<{ cost_usd: string; calls: string; top_user_cost_usd: string }>(
+      `select cost_usd::text, calls::text, top_user_cost_usd::text
+         from jarvis_range_spend('2030-03-01T00:00:00Z', '2030-03-04T00:00:00Z')`,
+    );
+    expect(Number(window.cost_usd)).toBeCloseTo(3.5, 6);
+    expect(Number(window.calls)).toBe(3);
+    expect(Number(window.top_user_cost_usd)).toBeCloseTo(2, 6);
+
+    const empty = await one<{ cost_usd: string; calls: string; top_user_cost_usd: string | null }>(
+      `select cost_usd::text, calls::text, top_user_cost_usd::text
+         from jarvis_range_spend('2031-01-01T00:00:00Z', '2031-01-02T00:00:00Z')`,
+    );
+    expect(Number(empty.cost_usd)).toBe(0);
+    expect(Number(empty.calls)).toBe(0);
+    expect(empty.top_user_cost_usd).toBeNull();
+
+    await asUser(a);
+    await expect(
+      db.query(`select * from jarvis_range_spend(now() - interval '1 day', now())`),
+    ).rejects.toThrow(/permission denied/);
+    await asServer();
+  });
+});

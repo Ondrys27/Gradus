@@ -14,13 +14,12 @@ import {
   userCapFormSchema,
   type UserCapMode,
 } from "@/features/jarvis/caps";
-import { formatNumber } from "@/lib/format";
+import { formatUsd } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ADMIN_FORMAT_SETTINGS } from "../format-metric";
 import { saveUserAiCap, type CapsActionResult } from "../server/ai-caps-actions";
 
-const usd = (value: number) =>
-  formatNumber(value, { style: "currency", currency: "USD", decimals: 2 }, ADMIN_FORMAT_SETTINGS);
+const usd = (value: number) => formatUsd(value, ADMIN_FORMAT_SETTINGS);
 
 /**
  * One user's exception to the AI caps: the app-wide caps, an own monthly cap
