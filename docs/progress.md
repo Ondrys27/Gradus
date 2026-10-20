@@ -71,7 +71,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 14.6 | designer | 2026-10-19 Administrace přestavěná: 5 skupin v menu (sbalitelné, na telefonu spodní lišta), jedna přilepená lišta název + věta + ovládání, nejvýš 4 klíčová čísla, jedna typografická škála, tabulky s řazením a stránkováním, exporty a stropy na konci s potvrzením, `/` ⌘K Esc. Diagnóza a snímky před/po v docs/admin-redesign.
 - [x] K14 | reviewer | 2026-10-19 Kontrola fáze 14: opraven export auditu bez potvrzení, tichý pád statistik zpětné vazby a text natvrdo v JSX; brána, role, pozvánky (token, souběh) a filtry ověřeny bez nálezu. Pozor: pozvánka při založení nového účtu prozradí existenci e-mailu (emailTaken, mimo limit pokusů) a token jde před dokončením TOTP zneužít k založení víc účtů — chce to dořešit.
 - [x] STOP | Konec fáze 14. V anonymním okně otevři /admin — musí tě poslat na přihlášení a po TOTP zpět. Projdi novou administraci: skupiny v menu, filtry (zapni Beta, počet řádků se musí změnit), scroll při přepínání záložek, jména místo ID. V Administrátorech vytvoř pozvánku, otevři odkaz v jiném prohlížeči, založ účet s TOTP a ověř, co nový admin vidí a nevidí. Porovnej snímky v docs/admin-redesign. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
-- [ ] 15.1 | architect |
+- [x] 15.1 | architect | 2026-10-20 Jarvisova upozornění se ukazují po jednom ve frontě („2 z 5", šipky, ←/→, swipe) v bublině i v panelu chatu, kde dřívější seznam karet zakrýval chat.
 - [ ] 15.2 | architect |
 - [ ] 15.3 | architect |
 - [ ] 15.4 | architect |
