@@ -3396,7 +3396,7 @@
       "label": "Platba",
       "monthly": "Měsíčně",
       "yearly": "Ročně",
-      "yearlyNote": "2 měsíce zdarma"
+      "yearlyNote": "{months, plural, one {# měsíc zdarma} few {# měsíce zdarma} other {# měsíců zdarma}}"
     },
     "names": {
       "solo": "Solo",
@@ -3447,7 +3447,8 @@
       "intro": "Uživatel má zájem o tarif {plan}.",
       "from": "Od",
       "status": "Stav účtu"
-    }
+    },
+    "unlimited": "bez limitu"
   },
   "trial": {
     "banner": "Zkušební období · zbývá {days, plural, one {# den} few {# dny} other {# dní}}",
@@ -4150,7 +4151,8 @@
         "feedback": "Zpětná vazba",
         "users": "Uživatelé",
         "explorer": "Průzkumník",
-        "admins": "Administrátoři"
+        "admins": "Administrátoři",
+        "plans": "Tarify"
       },
       "soon": "Brzy",
       "groups": {
@@ -4881,6 +4883,131 @@
       "next": "Další",
       "page": "Strana {page} z {pages}",
       "rows": "{count, plural, one {# řádek} few {# řádky} other {# řádků}}"
+    },
+    "plans": {
+      "title": "Tarify",
+      "description": "Ceny, limity a texty tarifů. Úpravy jsou koncept, web a aplikace je uvidí až po zveřejnění.",
+      "readOnly": "Tarify upravuje a zveřejňuje majitel.",
+      "status": {
+        "noDraft": "Upravuješ zveřejněnou verzi. Uložením vznikne koncept.",
+        "draft": "Rozpracovaný koncept (založen {date}). Web ukazuje zveřejněnou verzi.",
+        "unsaved": "Neuložené změny"
+      },
+      "notices": {
+        "saved": "Koncept uložen. Web ukazuje pořád zveřejněnou verzi.",
+        "noChanges": "Žádné změny k uložení.",
+        "discarded": "Koncept zahozen.",
+        "published": "Zveřejněno. Web, aplikace i Jarvis ukazují novou verzi.",
+        "restored": "Verze vrácena a zveřejněna."
+      },
+      "actions": {
+        "save": "Uložit koncept",
+        "discard": "Zahodit koncept",
+        "publish": "Zveřejnit"
+      },
+      "cancel": "Zpět",
+      "close": "Zavřít",
+      "card": {
+        "moveLeft": "Posunout {name} doleva",
+        "moveRight": "Posunout {name} doprava",
+        "recommended": "Štítek „Doporučeno“",
+        "name": "Název ({locale})",
+        "tagline": "Podtitulek ({locale})",
+        "prices": "Ceny bez DPH",
+        "perWorker": "Cena za pracovníka",
+        "limits": "Limity",
+        "limitsHint": "Kontakty a Jarvis jsou limity za den nebo měsíc. Pracovníci a úložiště jsou limity toho, co účet má; prázdné pole = bez limitu. Kdo je nad nižším limitem, má od dalšího dne režim jen pro čtení, nic se nemaže.",
+        "unlimited": "bez limitu",
+        "features": "Vlastnosti na kartě",
+        "line": "Řádek {n} ({locale})",
+        "emptyLine": "prázdný řádek",
+        "highlight": "Zvýraznit řádek {n}",
+        "remove": "Odebrat řádek {n}",
+        "addLine": "Přidat vlastnost",
+        "placeholders": "Číslo z limitu vložíš do textu jako {list}."
+      },
+      "fields": {
+        "name": "Název",
+        "tagline": "Podtitulek",
+        "monthly": "Měsíčně",
+        "yearly": "Za rok",
+        "per_worker": "Za pracovníka měsíčně",
+        "features": "Vlastnosti na kartě",
+        "recommended": "Štítek „Doporučeno“",
+        "order": "Pořadí"
+      },
+      "limits": {
+        "daily_contacts": "Kontakty denně",
+        "monthly_contacts": "Kontakty měsíčně",
+        "ai_calls": "Odpovědi Jarvise měsíčně",
+        "ai_files": "Soubory do Jarvise měsíčně",
+        "workers": "Pracovníci",
+        "storage_mb": "Úložiště (MB)"
+      },
+      "errors": {
+        "required": "Vyplň.",
+        "tooLong": "Nejvýš {max} znaků.",
+        "number": "Zadej číslo.",
+        "positive": "Musí být víc než 0.",
+        "decimals": "Nejvýš dvě desetinná místa.",
+        "integer": "Jen celé číslo.",
+        "range": "Mimo povolený rozsah.",
+        "yearlyTooHigh": "Roční cena může být nejvýš 12× měsíční.",
+        "tooManyFeatures": "Nejvýš {max} řádků.",
+        "keys": "Tarify musí být právě Solo, Pro a Tým.",
+        "order": "Každý tarif musí mít jiné pořadí.",
+        "recommended": "Štítek může mít jen jeden tarif.",
+        "invalid": "Neplatná hodnota."
+      },
+      "problems": {
+        "invalid": "Koncept má chyby, oprav zvýrazněná pole.",
+        "forbidden": "Na to nemáš oprávnění nebo vypršela relace administrace.",
+        "stale": "Mezitím se změnila zveřejněná verze nebo koncept. Obnov stránku a zkontroluj rozdíl znovu.",
+        "failed": "Nepodařilo se. Zkus to prosím znovu."
+      },
+      "discardConfirm": {
+        "title": "Zahodit koncept?",
+        "description": "Změny v konceptu se ztratí. Zveřejněná verze zůstane, jak je.",
+        "confirm": "Zahodit"
+      },
+      "publishConfirm": {
+        "title": "Zveřejnit tarify?",
+        "description": "Tohle se změní na webu, v aplikaci i v Jarvisovi proti zveřejněné verzi:",
+        "confirm": "Zveřejnit"
+      },
+      "restoreConfirm": {
+        "title": "Vrátit verzi z {date}?",
+        "description": "Zveřejní se její kopie jako nová verze. Proti současné se změní:",
+        "confirm": "Vrátit a zveřejnit"
+      },
+      "diff": {
+        "none": "Žádný rozdíl proti zveřejněné verzi.",
+        "users": "Na tarifu {count, plural, one {je {formatted} účet} few {jsou {formatted} účty} other {je {formatted} účtů}}.",
+        "usersLoading": "Počítám účty na tarifu…",
+        "overLimit": "{count, plural, one {{formatted} účet je} few {{formatted} účty jsou} other {{formatted} účtů je}} nad novým limitem: od dalšího dne jen pro čtení, nic se nemaže.",
+        "noneOver": "Nižší limit nikoho nepřekročí.",
+        "featuresReordered": "Jiné pořadí nebo zvýraznění řádků",
+        "yes": "ano",
+        "no": "ne",
+        "unlimited": "bez limitu",
+        "empty": "prázdné"
+      },
+      "preview": {
+        "title": "Takto to uvidí návštěvník",
+        "publishedTitle": "Zveřejněné tarify",
+        "language": "Jazyk náhledu",
+        "cs": "Česky (CZK)",
+        "en": "Anglicky (EUR)",
+        "invalid": "Náhled se ukáže, až koncept nebude mít chyby."
+      },
+      "history": {
+        "title": "Historie verzí",
+        "description": "Vrácení zveřejní kopii vybrané verze jako novou verzi.",
+        "current": "Zveřejněno teď",
+        "restore": "Vrátit",
+        "noAuthor": "Výchozí verze nebo smazaný účet",
+        "empty": "Zatím žádná dřívější verze."
+      }
     }
   }
 }

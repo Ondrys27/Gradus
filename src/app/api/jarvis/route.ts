@@ -23,6 +23,7 @@ import {
   type JarvisOverview,
   type PingResult,
 } from "@/features/jarvis/protocol";
+import { describePlans } from "@/features/jarvis/plans-context";
 import { describeSituation, suggestionsFor } from "@/features/jarvis/situation";
 import type { SuggestionsResponse } from "@/features/jarvis/suggestions";
 import {
@@ -55,6 +56,7 @@ import {
   logAiUsage,
 } from "@/features/jarvis/server/usage";
 import { runWatch } from "@/features/jarvis/server/watch";
+import { getPublishedPlans } from "@/features/plan/catalog-server";
 import { instrumentRoute, runCron } from "@/lib/analytics/instrument";
 import { track, trackLater } from "@/lib/analytics/track";
 import { todayIsoDate } from "@/lib/format";
@@ -600,7 +602,7 @@ async function chat(ctx: Context, body: unknown, request: Request) {
     },
   );
 
-  const [history, situation, idea, answers, notes] = await Promise.all([
+  const [history, situation, idea, answers, notes, plans] = await Promise.all([
     supabase
       .from("jarvis_messages")
       .select("id, role, content")
@@ -637,6 +639,8 @@ async function chat(ctx: Context, body: unknown, request: Request) {
       console.error("jarvis notes failed", error);
       return "";
     }),
+    // The published plan catalog; getPublishedPlans() falls back to the seed itself.
+    getPublishedPlans().then((catalog) => describePlans(catalog, locale)),
   ]);
   if (history.error) throw history.error;
   const rows = history.data.reverse();
@@ -655,6 +659,7 @@ async function chat(ctx: Context, body: unknown, request: Request) {
   }));
   const messages = toModelMessages(stored);
   const extra =
+    `\n${plans}` +
     (notes ? `\n${notes}` : "") +
     (answers ? `\n${answers}` : "") +
     (idea ? `\n${featureRequestNote()}` : "");

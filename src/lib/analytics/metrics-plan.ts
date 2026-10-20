@@ -5,6 +5,7 @@ import {
   marginByPlan,
   type CostRates,
   type PlanCostInputs,
+  type PlanPricesCzk,
 } from "@/config/costs";
 import type { IsoDate } from "@/lib/format";
 import {
@@ -214,6 +215,7 @@ export function combineMetric(
   params: MetricParams,
   results: Row[][],
   rates: CostRates = COST_RATES,
+  prices?: PlanPricesCzk,
 ): MetricResult {
   const c = definition.compute;
   const [first = []] = results;
@@ -283,7 +285,7 @@ export function combineMetric(
           };
         case "margin_by_plan": {
           const periodDays = daysBetween(params.from, params.to).length;
-          return { kind: "rows", rows: marginByPlan(plans, periodDays, rates) };
+          return { kind: "rows", rows: marginByPlan(plans, periodDays, rates, prices) };
         }
       }
       break;

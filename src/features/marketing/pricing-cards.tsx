@@ -2,42 +2,50 @@
 
 import { useState, type ReactNode } from "react";
 import { CheckIcon, SparklesIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import type { Billing, CatalogPlan, PriceCurrency } from "@/config/pricing";
 import {
+  featureText,
   monthlyPrice,
-  PAID_PLANS,
   perWorkerPrice,
+  planText,
+  sortedPlans,
+  yearlyMonthsFree,
   yearlyPrice,
-  type Billing,
-  type PaidPlan,
-  type PriceCurrency,
-} from "@/config/pricing";
+} from "@/features/plan/catalog";
 import { formatCurrency, formatNumber, type FormatSettings } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 /**
- * The three plans side by side, prices from src/config/pricing.ts. Shared by
- * the public pricing page and the plan page in the app; each passes its own
- * button per plan.
+ * The three plans side by side, from the published plan catalog (or a draft
+ * in the administration's preview). Texts in the language of the nearest
+ * translation provider. Shared by the public pricing page, the plan page in
+ * the app and the preview; each passes its own button per plan.
  */
 export function PricingCards({
+  plans,
   currency,
   formatSettings,
   action,
   footnote,
   flat = false,
 }: {
+  plans: readonly CatalogPlan[];
   currency: PriceCurrency;
   formatSettings: FormatSettings;
-  action: (plan: PaidPlan) => ReactNode;
+  action: (plan: CatalogPlan) => ReactNode;
   /** Replaces the default line under the cards (trial and VAT). */
   footnote?: ReactNode;
   /** No glow under the cards (the website, which has one light only). */
   flat?: boolean;
 }) {
   const t = useTranslations("plans");
+  const locale = useLocale();
   const [billing, setBilling] = useState<Billing>("monthly");
-  const money = (value: number) => formatCurrency(value, currency, formatSettings);
+  const money = (value: number) =>
+    formatCurrency(value, currency, formatSettings, Number.isInteger(value) ? 0 : 2);
+  const count = (value: number) => formatNumber(value, {}, formatSettings);
+  const monthsFree = yearlyMonthsFree(plans, currency);
 
   return (
     <div className="flex flex-col gap-6">
@@ -59,9 +67,9 @@ export function PricingCards({
             )}
           >
             {t(`billing.${option}`)}
-            {option === "yearly" && (
+            {option === "yearly" && monthsFree !== null && (
               <span className="rounded-full bg-teal/15 px-2 py-0.5 text-xs text-teal">
-                {t("billing.yearlyNote")}
+                {t("billing.yearlyNote", { months: monthsFree })}
               </span>
             )}
           </button>
@@ -69,7 +77,7 @@ export function PricingCards({
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        {PAID_PLANS.map((plan) => (
+        {sortedPlans(plans).map((plan) => (
           <article
             key={plan.key}
             className={cn(
@@ -88,8 +96,10 @@ export function PricingCards({
               {/* h2: every caller puts this straight under its own h1/h2, never under an h2 that
                   would make this an h3 — the plan page, the website and /cenik all go h1 or h2
                   then this, so h2 never skips a level. */}
-              <h2 className="text-xl font-semibold text-ink">{t(`names.${plan.key}`)}</h2>
-              <p className="text-sm text-ink-soft">{t(`taglines.${plan.key}`)}</p>
+              <h2 className="text-xl font-semibold text-ink">{planText(plan.name, locale)}</h2>
+              {planText(plan.tagline, locale) && (
+                <p className="text-sm text-ink-soft">{planText(plan.tagline, locale)}</p>
+              )}
             </div>
             <div className="flex flex-col gap-1">
               <p className="flex items-baseline gap-2">
@@ -103,19 +113,27 @@ export function PricingCards({
                   {t("billedYearly", { price: money(yearlyPrice(plan, currency)) })}
                 </p>
               )}
-              {plan.perWorker && (
+              {plan.per_worker && (
                 <p className="text-sm text-ink-soft">
                   {t("perWorker", { price: money(perWorkerPrice(plan, currency, billing) ?? 0) })}
                 </p>
               )}
             </div>
             <ul className="flex flex-1 flex-col gap-2.5">
-              {plan.features.map((feature) => (
-                <li key={feature} className="flex items-start gap-2.5 text-sm text-ink-soft">
-                  <CheckIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-teal" />
-                  {t(`features.${feature}`, {
-                    count: formatNumber(plan.monthlyContacts, {}, formatSettings),
-                  })}
+              {plan.features.map((feature, index) => (
+                <li
+                  key={index}
+                  className={cn(
+                    "flex items-start gap-2.5 text-sm",
+                    feature.highlight ? "font-semibold text-ink" : "text-ink-soft",
+                  )}
+                >
+                  {feature.highlight ? (
+                    <SparklesIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-gold" />
+                  ) : (
+                    <CheckIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-teal" />
+                  )}
+                  {featureText(feature, plan, locale, count, t("unlimited"))}
                 </li>
               ))}
             </ul>

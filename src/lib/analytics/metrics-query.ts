@@ -1,5 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { COST_RATES } from "@/config/costs";
+import { getPublishedPlans } from "@/features/plan/catalog-server";
 import type { Database } from "@/types/database";
 import type { DailyMetricKey } from "./metrics";
 import {
@@ -41,8 +43,16 @@ export async function runMetric(
 ): Promise<MetricResult> {
   const definition = requireMetric(key);
   const calls = planMetric(definition, params);
-  const results = await Promise.all(calls.map(({ fn, args }) => call(admin, fn, args)));
-  return combineMetric(definition, params, results);
+  const [results, prices] = await Promise.all([
+    Promise.all(calls.map(({ fn, args }) => call(admin, fn, args))),
+    // The margin compares with the prices of the published plan catalog.
+    definition.compute.kind === "cost"
+      ? getPublishedPlans().then((plans) =>
+          Object.fromEntries(plans.map((plan) => [plan.key, plan.monthly.CZK])),
+        )
+      : undefined,
+  ]);
+  return combineMetric(definition, params, results, COST_RATES, prices);
 }
 
 /**

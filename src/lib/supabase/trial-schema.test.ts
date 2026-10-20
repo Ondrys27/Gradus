@@ -120,13 +120,19 @@ afterAll(async () => {
 });
 
 describe("plans", () => {
-  it("keeps the monthly contact limits of src/config/pricing.ts", async () => {
+  it("keeps the limits of the seed in src/config/pricing.ts", async () => {
     for (const plan of PAID_PLANS) {
-      const row = await one<{ monthly_generation_limit: number }>(
-        `select monthly_generation_limit from plans where key = $1`,
+      const row = await one<Row>(
+        `select daily_generation_limit, monthly_generation_limit, ai_calls_limit, file_uploads_limit
+         from plans where key = $1`,
         [plan.key],
       );
-      expect(row?.monthly_generation_limit, plan.key).toBe(plan.monthlyContacts);
+      expect(row, plan.key).toEqual({
+        daily_generation_limit: plan.limits.daily_contacts,
+        monthly_generation_limit: plan.limits.monthly_contacts,
+        ai_calls_limit: plan.limits.ai_calls,
+        file_uploads_limit: plan.limits.ai_files,
+      });
     }
   });
 });

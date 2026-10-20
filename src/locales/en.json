@@ -3396,7 +3396,7 @@
       "label": "Billing",
       "monthly": "Monthly",
       "yearly": "Yearly",
-      "yearlyNote": "2 months free"
+      "yearlyNote": "{months, plural, one {# month free} other {# months free}}"
     },
     "names": {
       "solo": "Solo",
@@ -3447,7 +3447,8 @@
       "intro": "A user is interested in the {plan} plan.",
       "from": "From",
       "status": "Account status"
-    }
+    },
+    "unlimited": "no limit"
   },
   "trial": {
     "banner": "Trial · {days, plural, one {# day} other {# days}} left",
@@ -4150,7 +4151,8 @@
         "feedback": "Feedback",
         "users": "Users",
         "explorer": "Explorer",
-        "admins": "Administrators"
+        "admins": "Administrators",
+        "plans": "Plans"
       },
       "soon": "Soon",
       "groups": {
@@ -4881,6 +4883,131 @@
       "next": "Next",
       "page": "Page {page} of {pages}",
       "rows": "{count, plural, one {# row} other {# rows}}"
+    },
+    "plans": {
+      "title": "Plans",
+      "description": "Prices, limits and texts of the plans. Changes stay a draft; the website and the app see them only once published.",
+      "readOnly": "The owner edits and publishes the plans.",
+      "status": {
+        "noDraft": "You're editing the published version. Saving creates a draft.",
+        "draft": "Draft in progress (started {date}). The website shows the published version.",
+        "unsaved": "Unsaved changes"
+      },
+      "notices": {
+        "saved": "Draft saved. The website still shows the published version.",
+        "noChanges": "Nothing to save.",
+        "discarded": "Draft discarded.",
+        "published": "Published. The website, the app and Jarvis show the new version.",
+        "restored": "Version brought back and published."
+      },
+      "actions": {
+        "save": "Save draft",
+        "discard": "Discard draft",
+        "publish": "Publish"
+      },
+      "cancel": "Back",
+      "close": "Close",
+      "card": {
+        "moveLeft": "Move {name} left",
+        "moveRight": "Move {name} right",
+        "recommended": "“Recommended” badge",
+        "name": "Name ({locale})",
+        "tagline": "Tagline ({locale})",
+        "prices": "Prices without VAT",
+        "perWorker": "Price per worker",
+        "limits": "Limits",
+        "limitsHint": "Contacts and Jarvis are limits per day or month. Workers and storage limit what an account holds; empty = no limit. An account above a lower limit turns read-only from the next day; nothing is deleted.",
+        "unlimited": "no limit",
+        "features": "Lines on the card",
+        "line": "Line {n} ({locale})",
+        "emptyLine": "empty line",
+        "highlight": "Highlight line {n}",
+        "remove": "Remove line {n}",
+        "addLine": "Add a line",
+        "placeholders": "Put a limit's number into the text as {list}."
+      },
+      "fields": {
+        "name": "Name",
+        "tagline": "Tagline",
+        "monthly": "Monthly",
+        "yearly": "Per year",
+        "per_worker": "Per worker a month",
+        "features": "Lines on the card",
+        "recommended": "“Recommended” badge",
+        "order": "Position"
+      },
+      "limits": {
+        "daily_contacts": "Contacts a day",
+        "monthly_contacts": "Contacts a month",
+        "ai_calls": "Jarvis answers a month",
+        "ai_files": "Files for Jarvis a month",
+        "workers": "Workers",
+        "storage_mb": "Storage (MB)"
+      },
+      "errors": {
+        "required": "Fill this in.",
+        "tooLong": "At most {max} characters.",
+        "number": "Enter a number.",
+        "positive": "Must be more than 0.",
+        "decimals": "At most two decimals.",
+        "integer": "Whole numbers only.",
+        "range": "Out of the allowed range.",
+        "yearlyTooHigh": "A year can cost at most 12 × the monthly price.",
+        "tooManyFeatures": "At most {max} lines.",
+        "keys": "The plans must be exactly Solo, Pro and Team.",
+        "order": "Every plan needs its own position.",
+        "recommended": "Only one plan can carry the badge.",
+        "invalid": "Invalid value."
+      },
+      "problems": {
+        "invalid": "The draft has errors; fix the highlighted fields.",
+        "forbidden": "You can't do that, or the administration session has expired.",
+        "stale": "The published version or the draft changed meanwhile. Reload the page and check the difference again.",
+        "failed": "That didn't work. Please try again."
+      },
+      "discardConfirm": {
+        "title": "Discard the draft?",
+        "description": "The draft's changes will be lost. The published version stays as it is.",
+        "confirm": "Discard"
+      },
+      "publishConfirm": {
+        "title": "Publish the plans?",
+        "description": "This changes on the website, in the app and in Jarvis compared with the published version:",
+        "confirm": "Publish"
+      },
+      "restoreConfirm": {
+        "title": "Bring back the version from {date}?",
+        "description": "A copy of it is published as a new version. Compared with the current one, this changes:",
+        "confirm": "Bring back and publish"
+      },
+      "diff": {
+        "none": "No difference from the published version.",
+        "users": "{count, plural, one {{formatted} account is} other {{formatted} accounts are}} on this plan.",
+        "usersLoading": "Counting the accounts on this plan…",
+        "overLimit": "{count, plural, one {{formatted} account is} other {{formatted} accounts are}} above the new limit: read-only from the next day, nothing is deleted.",
+        "noneOver": "Nobody is above the lower limit.",
+        "featuresReordered": "Lines reordered or highlighted differently",
+        "yes": "yes",
+        "no": "no",
+        "unlimited": "no limit",
+        "empty": "empty"
+      },
+      "preview": {
+        "title": "What a visitor will see",
+        "publishedTitle": "Published plans",
+        "language": "Preview language",
+        "cs": "Czech (CZK)",
+        "en": "English (EUR)",
+        "invalid": "The preview shows once the draft has no errors."
+      },
+      "history": {
+        "title": "Version history",
+        "description": "Bringing a version back publishes a copy of it as a new version.",
+        "current": "Published now",
+        "restore": "Bring back",
+        "noAuthor": "Default version or a deleted account",
+        "empty": "No earlier version yet."
+      }
     }
   }
 }

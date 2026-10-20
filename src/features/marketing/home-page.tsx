@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getPublishedPlans } from "@/features/plan/catalog-server";
 import { APP_NAME } from "@/lib/constants";
 import { homeAnchorId, type SiteLocale } from "@/lib/routes";
 import { isPublicSignupEnabled } from "@/lib/signup";
@@ -28,15 +29,15 @@ export async function homeMetadata(locale: SiteLocale): Promise<Metadata> {
  */
 export async function HomePage({ locale }: { locale: SiteLocale }) {
   setRequestLocale(locale);
-  const [tMeta, tPlans] = await Promise.all([
+  const [tMeta, plans] = await Promise.all([
     getTranslations({ locale, namespace: "marketing.meta" }),
-    getTranslations({ locale, namespace: "plans.names" }),
+    getPublishedPlans(),
   ]);
   const signupEnabled = isPublicSignupEnabled();
   const jsonLd = softwareApplicationJsonLd({
     locale,
     description: tMeta("homeDescription", { appName: APP_NAME }),
-    planNames: { solo: tPlans("solo"), pro: tPlans("pro"), team: tPlans("team") },
+    plans,
   });
 
   return (

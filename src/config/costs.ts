@@ -1,4 +1,4 @@
-import { PAID_PLANS, type PaidPlanKey } from "./pricing";
+import { PAID_PLANS } from "./pricing";
 
 /**
  * What running Gradus costs per use, in one place. The administration turns
@@ -129,7 +129,7 @@ export type PlanCostInputs = CostInputs & { plan: string };
 
 export type PlanMargin = {
   plan: string;
-  /** Monthly price in CZK from src/config/pricing.ts; null for beta and the trial. */
+  /** Monthly price in CZK of the published plan catalog; null for beta. */
   priceCzk: number | null;
   /** Cost per active user, scaled to 30 days. */
   costPerActiveUserCzk: number | null;
@@ -137,6 +137,13 @@ export type PlanMargin = {
   /** Margin as a share of the price, 0–1 (negative when a user costs more than they pay). */
   marginShare: number | null;
 };
+
+/** Monthly CZK price per plan key; the published catalog's, or the seed's by default. */
+export type PlanPricesCzk = Readonly<Record<string, number>>;
+
+export const SEED_PRICES_CZK: PlanPricesCzk = Object.fromEntries(
+  PAID_PLANS.map((plan) => [plan.key, plan.monthly.CZK]),
+);
 
 /**
  * Estimated monthly margin per plan: the plan's CZK price against what one
@@ -147,11 +154,11 @@ export function marginByPlan(
   rows: readonly PlanCostInputs[],
   periodDays: number,
   rates: CostRates = COST_RATES,
+  prices: PlanPricesCzk = SEED_PRICES_CZK,
 ): PlanMargin[] {
   const scale = periodDays > 0 ? 30 / periodDays : 0;
   return rows.map((row) => {
-    const paid = PAID_PLANS.find((plan) => plan.key === (row.plan as PaidPlanKey));
-    const priceCzk = paid ? paid.monthly.CZK : null;
+    const priceCzk = Object.hasOwn(prices, row.plan) ? prices[row.plan] : null;
     const perUser = costPerActiveUser(row, rates);
     const costPerActiveUserCzk = perUser ? perUser.czk * scale : null;
     const marginCzk =

@@ -2,27 +2,33 @@
 
 import { useState, useTransition } from "react";
 import { CheckIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { PageHeader } from "@/components/ui/page-header";
-import { priceCurrencyFor, type PaidPlan, type PaidPlanKey } from "@/config/pricing";
+import {
+  priceCurrencyFor,
+  type CatalogPlan,
+  type PaidPlanKey,
+  type PlanCatalog,
+} from "@/config/pricing";
 import { useSession, useUserSettings } from "@/features/account/queries";
 import { PricingCards } from "@/features/marketing/pricing-cards";
 import { formatDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { requestPlan } from "./actions";
+import { planName } from "./catalog";
 import type { PlanSnapshot } from "./plan";
 import { usePlan } from "./queries";
 
-const NAMED_PLANS = ["solo", "pro", "team", "beta"] as const;
-
 /**
- * The plan page: where the account stands and the three plans. Until payments
- * exist, "I'm interested" tells the app owner and thanks the user.
+ * The plan page: where the account stands and the three plans of the
+ * published catalog. Until payments exist, "I'm interested" tells the app
+ * owner and thanks the user.
  */
-export function PlanPage() {
+export function PlanPage({ plans }: { plans: PlanCatalog }) {
   const t = useTranslations("plans");
+  const locale = useLocale();
   const plan = usePlan();
   const { worker } = useSession();
   const settings = useUserSettings();
@@ -39,7 +45,7 @@ export function PlanPage() {
       else setFailed(true);
     });
 
-  const action = (paid: PaidPlan) => {
+  const action = (paid: CatalogPlan) => {
     // The owner chooses the plan of the workspace, not a worker.
     if (worker) return null;
     if (sent[paid.key]) {
@@ -70,10 +76,13 @@ export function PlanPage() {
       />
       <p className="rounded-xl border border-line/70 bg-surface/50 px-4 py-3 text-sm text-ink-soft">
         <span className="text-ink-muted">{t("page.current")}: </span>
-        <span className="font-medium text-ink">{statusText(plan, t, formatSettings)}</span>
+        <span className="font-medium text-ink">
+          {statusText(plan, planName(plans, plan.planKey, locale) ?? t("names.beta"), t, formatSettings)}
+        </span>
       </p>
       {failed && <FormAlert>{t("page.interestError")}</FormAlert>}
       <PricingCards
+        plans={plans}
         currency={priceCurrencyFor(settings.currency)}
         formatSettings={formatSettings}
         action={action}
@@ -82,15 +91,14 @@ export function PlanPage() {
   );
 }
 
+/** `name`: the plan's name from the catalog, "Beta" for everything outside it. */
 function statusText(
   plan: PlanSnapshot,
+  name: string,
   t: ReturnType<typeof useTranslations<"plans">>,
   formatSettings: ReturnType<typeof useFormatSettings>,
 ): string {
   const date = plan.trialEndsAt ? formatDate(new Date(plan.trialEndsAt), formatSettings) : "";
-  const name = (NAMED_PLANS as readonly string[]).includes(plan.planKey)
-    ? t(`names.${plan.planKey as (typeof NAMED_PLANS)[number]}`)
-    : plan.planKey;
   if (plan.status === "expired" || plan.readOnly) return t("page.status.expired", { date });
   if (plan.status === "trialing") return t("page.status.trialing", { plan: name, date });
   if (plan.planKey === "beta") return t("page.status.beta");

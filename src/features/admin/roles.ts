@@ -13,6 +13,8 @@ export type OwnerOnly =
   | "manageAdmins"
   /** AI caps and per-user exceptions; an admin reads them. */
   | "editAiCaps"
+  /** The plan catalog: draft, publishing, bringing back a version; an admin reads it. */
+  | "editPlans"
   /** Exports whose rows name people (names, e-mails, account ids). */
   | "exportPersonalData";
 

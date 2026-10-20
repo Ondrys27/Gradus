@@ -1,5 +1,6 @@
 import type { Metadata, MetadataRoute } from "next";
-import { monthlyPrice, PAID_PLANS, perWorkerPrice, priceCurrencyFor } from "@/config/pricing";
+import { priceCurrencyFor, type CatalogPlan } from "@/config/pricing";
+import { monthlyPrice, perWorkerPrice, planText, sortedPlans } from "@/features/plan/catalog";
 import { APP_NAME } from "@/lib/constants";
 import { LOCALIZED_PAGES, SITE_LOCALES, type SiteLocale } from "@/lib/routes";
 
@@ -79,17 +80,17 @@ export function sitemapEntries(lastModified: Date): MetadataRoute.Sitemap {
 }
 
 /**
- * schema.org SoftwareApplication with one offer per plan, prices from
- * src/config/pricing.ts in the page's currency, without VAT.
+ * schema.org SoftwareApplication with one offer per plan of the published
+ * catalog, in the page's language and currency, without VAT.
  */
 export function softwareApplicationJsonLd({
   locale,
   description,
-  planNames,
+  plans,
 }: {
   locale: SiteLocale;
   description: string;
-  planNames: Record<(typeof PAID_PLANS)[number]["key"], string>;
+  plans: readonly CatalogPlan[];
 }) {
   const currency = priceCurrencyFor(locale);
   return {
@@ -101,7 +102,7 @@ export function softwareApplicationJsonLd({
     inLanguage: locale,
     url: absoluteUrl(LOCALIZED_PAGES.home[locale]),
     description,
-    offers: PAID_PLANS.map((plan) => {
+    offers: sortedPlans(plans).map((plan) => {
       const perWorker = perWorkerPrice(plan, currency, "monthly");
       const monthly = {
         "@type": "UnitPriceSpecification",
@@ -112,7 +113,7 @@ export function softwareApplicationJsonLd({
       };
       return {
         "@type": "Offer",
-        name: planNames[plan.key],
+        name: planText(plan.name, locale),
         price: monthly.price,
         priceCurrency: currency,
         url: absoluteUrl(LOCALIZED_PAGES.pricing[locale]),

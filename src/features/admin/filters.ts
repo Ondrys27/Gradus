@@ -40,6 +40,8 @@ export const PAGE_FILTERS: Record<AdminSectionKey, readonly AdminFilter[]> = {
   // The accounts as they are now: no period.
   users: ["internal", ...ACCOUNT_SEGMENTS],
   audit: [],
+  // The catalog in force and its history: no period, no segments.
+  plans: [],
   admins: [],
 };
 

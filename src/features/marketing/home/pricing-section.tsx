@@ -1,9 +1,10 @@
 import { getTranslations } from "next-intl/server";
+import { getPublishedPlans } from "@/features/plan/catalog-server";
 import { homeAnchorId, type SiteLocale } from "@/lib/routes";
 import { WebPricing } from "../web-pricing";
 
 /**
- * 6. The three plans; on the home page under #cenik, and as the /cenik page.
+ * 6. The three published plans; on the home page under #cenik, and as the /cenik page.
  * The heading sits on the left with one plain sentence, the cards under it.
  */
 export async function PricingSection({
@@ -16,7 +17,10 @@ export async function PricingSection({
   /** The /cenik page has the plans as its main heading. */
   headingLevel?: 1 | 2;
 }) {
-  const t = await getTranslations({ locale, namespace: "marketing.pricing" });
+  const [t, plans] = await Promise.all([
+    getTranslations({ locale, namespace: "marketing.pricing" }),
+    getPublishedPlans(),
+  ]);
   const Heading = headingLevel === 1 ? "h1" : "h2";
 
   return (
@@ -37,7 +41,11 @@ export async function PricingSection({
         </p>
       </header>
       <div className="mt-12 md:mt-16">
-        <WebPricing signupEnabled={signupEnabled} faqHref={`#${homeAnchorId(locale, "faq")}`} />
+        <WebPricing
+          plans={plans}
+          signupEnabled={signupEnabled}
+          faqHref={`#${homeAnchorId(locale, "faq")}`}
+        />
       </div>
     </section>
   );

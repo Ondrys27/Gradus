@@ -25,6 +25,7 @@ import {
   Settings2Icon,
   ShieldCheckIcon,
   SparklesIcon,
+  TagsIcon,
   TrendingUpIcon,
   UsersIcon,
   UsersRoundIcon,
@@ -61,6 +62,7 @@ const SECTION_ICONS: Record<AdminSectionKey, LucideIcon> = {
   users: UsersIcon,
   explorer: CompassIcon,
   audit: ScrollTextIcon,
+  plans: TagsIcon,
   admins: ShieldCheckIcon,
 };
 

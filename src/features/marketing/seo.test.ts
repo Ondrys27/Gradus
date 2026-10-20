@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { PAID_PLANS } from "@/config/pricing";
+import { seedPlanCatalog } from "@/features/plan/catalog-seed";
 import {
   alternatesFor,
   INDEXED_PAGES,
@@ -9,7 +9,7 @@ import {
   softwareApplicationJsonLd,
 } from "./seo";
 
-const NAMES = { solo: "Solo", pro: "Pro", team: "Tým" };
+const PLANS = seedPlanCatalog();
 
 afterEach(() => vi.unstubAllEnvs());
 
@@ -56,22 +56,40 @@ describe("sitemap", () => {
 });
 
 describe("SoftwareApplication", () => {
-  it("offers every plan at the configured price, CZK in Czech", () => {
-    const data = softwareApplicationJsonLd({ locale: "cs", description: "D", planNames: NAMES });
-    expect(data.offers).toHaveLength(PAID_PLANS.length);
-    PAID_PLANS.forEach((plan, index) => {
-      expect(data.offers[index]).toMatchObject({ price: plan.monthly.CZK, priceCurrency: "CZK" });
+  it("offers every published plan at its price, CZK and Czech names in Czech", () => {
+    const data = softwareApplicationJsonLd({ locale: "cs", description: "D", plans: PLANS });
+    expect(data.offers).toHaveLength(PLANS.length);
+    PLANS.forEach((plan, index) => {
+      expect(data.offers[index]).toMatchObject({
+        name: plan.name.cs,
+        price: plan.monthly.CZK,
+        priceCurrency: "CZK",
+      });
     });
+    expect(data.offers.map((offer) => offer.name)).toEqual(["Solo", "Pro", "Tým"]);
   });
 
   it("uses EUR in English and adds the per-worker price for Team", () => {
-    const data = softwareApplicationJsonLd({ locale: "en", description: "D", planNames: NAMES });
-    const plan = PAID_PLANS.find((candidate) => candidate.key === "team")!;
-    const team = data.offers.find((offer) => offer.name === "Tým");
+    const data = softwareApplicationJsonLd({ locale: "en", description: "D", plans: PLANS });
+    const plan = PLANS.find((candidate) => candidate.key === "team")!;
+    const team = data.offers.find((offer) => offer.name === "Team");
     expect(team?.priceCurrency).toBe("EUR");
     expect(team?.priceSpecification).toEqual([
       expect.objectContaining({ price: plan.monthly.EUR, priceCurrency: "EUR" }),
-      expect.objectContaining({ price: plan.perWorker?.EUR, priceCurrency: "EUR" }),
+      expect.objectContaining({ price: plan.per_worker?.EUR, priceCurrency: "EUR" }),
+    ]);
+  });
+
+  it("follows the order and the prices of the catalog it is given", () => {
+    const changed = structuredClone(PLANS);
+    changed[0].order = 2;
+    changed[2].order = 0;
+    changed[0].monthly.CZK = 590;
+    const data = softwareApplicationJsonLd({ locale: "cs", description: "D", plans: changed });
+    expect(data.offers.map((offer) => [offer.name, offer.price])).toEqual([
+      ["Tým", 890],
+      ["Pro", 890],
+      ["Solo", 590],
     ]);
   });
 

@@ -1883,6 +1883,36 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_catalog_versions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          payload: Json
+          published_at: string | null
+          published_by: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          payload: Json
+          published_at?: string | null
+          published_by?: string | null
+          status: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          payload?: Json
+          published_at?: string | null
+          published_by?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       plans: {
         Row: {
           ai_calls_limit: number
@@ -3165,6 +3195,22 @@ export type Database = {
           user_id: string
         }[]
       }
+      admin_plan_catalog_discard_draft: {
+        Args: { _ip_hash?: string }
+        Returns: boolean
+      }
+      admin_plan_catalog_publish: {
+        Args: { _expected: string; _ip_hash?: string; _payload: Json }
+        Returns: string
+      }
+      admin_plan_catalog_restore: {
+        Args: { _expected: string; _ip_hash?: string; _version: string }
+        Returns: string
+      }
+      admin_plan_catalog_save_draft: {
+        Args: { _ip_hash?: string; _payload: Json }
+        Returns: string
+      }
       admin_remove: {
         Args: { _ip_hash?: string; _user_id: string }
         Returns: undefined
@@ -4030,6 +4076,42 @@ export type Database = {
         Args: { _country: string; _phone: string }
         Returns: string
       }
+      plan_catalog_count_ok: {
+        Args: { _nullable: boolean; _value: Json }
+        Returns: boolean
+      }
+      plan_catalog_feature_ok: { Args: { _value: Json }; Returns: boolean }
+      plan_catalog_impact: {
+        Args: { _payload: Json }
+        Returns: {
+          over_limit: number
+          plan_key: string
+          users: number
+        }[]
+      }
+      plan_catalog_keys_ok: {
+        Args: { _allowed: string[]; _value: Json }
+        Returns: boolean
+      }
+      plan_catalog_money_ok: { Args: { _value: Json }; Returns: boolean }
+      plan_catalog_number: { Args: { _value: Json }; Returns: number }
+      plan_catalog_plan_ok: { Args: { _p: Json }; Returns: boolean }
+      plan_catalog_text_ok: {
+        Args: { _max: number; _min: number; _value: Json }
+        Returns: boolean
+      }
+      plan_overage: {
+        Args: { _owner: string }
+        Returns: {
+          over_since: string
+          plan_key: string
+          read_only_from: string
+          storage_bytes: number
+          storage_limit_bytes: number
+          workers_limit: number
+          workers_used: number
+        }[]
+      }
       post_due_recurring_payments: { Args: never; Returns: number }
       prospecting_daily_seconds: {
         Args: { _actor?: string; _from: string; _timezone: string; _to: string }
@@ -4073,6 +4155,7 @@ export type Database = {
           today_seconds: number
         }[]
       }
+      published_plan: { Args: { _key: string }; Returns: Json }
       purge_analytics: {
         Args: { _before?: string }
         Returns: {
@@ -4217,6 +4300,7 @@ export type Database = {
       user_today: { Args: { _user_id: string }; Returns: string }
       username_available: { Args: { _username: string }; Returns: boolean }
       valid_ai_caps: { Args: { _value: Json }; Returns: boolean }
+      valid_plan_catalog: { Args: { _payload: Json }; Returns: boolean }
       work_seconds_between: {
         Args: { _from: string; _to: string; _worker_id: string }
         Returns: number
@@ -4277,6 +4361,7 @@ export type Database = {
           started_at: string
         }[]
       }
+      workspace_over_limit: { Args: { _owner: string }; Returns: boolean }
       workspace_read_only: { Args: { _owner: string }; Returns: boolean }
     }
     Enums: {

@@ -14,6 +14,7 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | `mutations.setFeatureRequestStatus` | owner + admin | třídění zpětné vazby |
 | `ai-caps-actions.saveAiCaps` | owner | stropy AI; admin je vidí jen ke čtení |
 | `ai-caps-actions.saveUserAiCap` | owner | výjimky AI; admin je vidí jen ke čtení |
+| `plans-actions.savePlanDraft`, `discardPlanDraft`, `planCatalogImpact`, `publishPlanCatalog`, `restorePlanVersion` | owner | katalog tarifů; admin vidí zveřejněnou verzi a historii jen ke čtení |
 | `export-actions.recordExport` (grafy, tabulky čísel) | owner + admin | souhrnná čísla |
 | `export-actions.recordExport` (`table.ai.top_users.csv`) | owner | jména a id uživatelů |
 | `GET /admin/audit/export` | owner | jména a id lidí v auditu; adminovi 404 |
@@ -32,6 +33,7 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | Přehled, Růst, Aktivace, Retence, Funkce, Hra, Náklady, Zdraví, Zpětná vazba, Uživatelé, Průzkumník, Audit | owner + admin |
 | AI a Jarvis — karta stropů | owner upravuje, admin čte |
 | Detail uživatele — výjimka AI | owner upravuje, admin čte |
+| Tarify (`/admin/tarify`) | owner upravuje a zveřejňuje, admin čte zveřejněnou verzi a historii |
 | Administrátoři (`/admin/administratori`) | owner; adminovi 404, v menu chybí |
 | `/admin/prihlaseni`, `/admin/pozvanka/<token>` | kdokoli (stránka sama ověřuje heslo, roli nebo token) |
 
@@ -48,6 +50,8 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | `admin_remove` | owner | nikdy majitele ani sebe; ukončí živé relace admina, píše `admin_audit` |
 | `admin_invite_claim` | účet právě založený na stránce pozvánky (stačí aal1) | zabere pozvánku (`claimed_by`) jedním podmíněným UPDATE; jiný účet ji už nezabere, týž účet smí znovu; píše `admin_audit` při prvním zabrání |
 | `admin_invite_accept` | pozvaný účet s aal2 | spotřebuje token a přidělí roli v jedné transakci, píše `admin_audit` |
+| `admin_plan_catalog_save_draft`, `_discard_draft`, `_publish`, `_restore` | owner | katalog tarifů, advisory lock, píše `admin_audit` (`settings.plans`, `settings.plans.draft`) |
+| `plan_catalog_impact`, `plan_overage`, `published_plan` | jen service role (server po stráži) | počty účtů a překročení limitů |
 | `admin_require_owner` | jen uvnitř funkcí výše | bez práva EXECUTE pro klienty |
 | `admin_members`, `admin_people`, `metric_admin_users` | jen service role (server po stráži) | čtou `auth.users` |
 | `admin_bug_reports` | jen service role (server po stráži) | Zpětná vazba → Hlášení chyb, hledání podle kódu chyby; owner + admin |

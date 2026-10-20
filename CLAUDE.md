@@ -45,7 +45,7 @@ bun run db:types      # generuje src/types/database.ts
 - `src/components/layout/` — Sidebar, TopBar, BottomNav, Background, JarvisButton
 - `src/components/celebration/`, `src/components/jarvis/`
 - `src/lib/format.ts` — veškeré formátování · `src/lib/constants.ts` — `APP_NAME` · `src/lib/supabase/` — klienti (browser, server, admin)
-- `src/config/pricing.ts` — ceny a limity tarifů na jednom místě
+- `src/config/pricing.ts` — jen typy katalogu tarifů a výchozí seed (první zveřejněná verze); platné ceny a limity jsou v DB (`plan_catalog_versions`), viz Tarify
 - `src/locales/en.json`, `cs.json`
 - `src/app/(admin)/` — administrace na /admin, majitel a administrátoři s druhým faktorem
 - `src/lib/analytics/` — katalog událostí (events.ts), registr metrik (metrics.ts), track()
@@ -88,6 +88,14 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - **Časovač:** úseky v `prospecting_segments`. Denní součet = úseky oříznuté na den, počítáno DB funkcí; o půlnoci nula bez jakékoliv úlohy. Nečinnost **15 minut** bez přesunu z Neoslovených: efektivní konec = min(teď, poslední aktivita + 15 min), platí i při čtení. Jen spustit / pozastavit, **žádné vynulování**. Prohlížeč do DB průběžně nezapisuje. Totéž pro `work_sessions` pracovníků.
 - **Generování kontaktů:** Places API (New) jen ze serveru, klíč nikdy do prohlížeče, minimální maska polí. Limity denně a měsíčně podle `plans`. Duplicity: `external_place_id`, telefon bez formátování, název + adresa. Google nevrací e-maily. Každé volání do `usage_events` včetně neúspěchů se zprávou od Googlu.
 - **Sdílený graf času volání:** jediná data napříč uživateli. V `call_time_stats` jen země, den, hodina, pokusy, schůzky. Políčko < 20 pokusů nezobrazovat, země < 200 nepočítat. Nikdy ukázková čísla. Cron započítá z jednoho uživatele nanejvýš 30 pokusů na hodinu a den, aby jeden účet nezkreslil graf.
+
+### Tarify
+- **Katalog v DB:** `plan_catalog_versions` (status draft | published | archived, `payload` = tři tarify solo / pro / team: název a podtitulek CS/EN, ceny CZK/EUR měsíčně a za rok, cena za pracovníka nebo null, limity, řádky karty CS/EN se `highlight`, `recommended`, `order`). Právě jedna published, nejvýš jeden draft; zveřejněná a archivní verze se nemění (`plan_catalog_versions_guard`), smazat jde jen draft. Validace stejná v `validatePlanCatalog` (`src/features/plan/catalog.ts`) i `valid_plan_catalog()`: ceny > 0 nejvýš na haléře, rok ≤ 12× měsíc, klíče neměnné, jeden štítek.
+- **Zápis** jen `admin_plan_catalog_save_draft` / `_discard_draft` / `_publish` / `_restore` (SECURITY DEFINER, majitel s aal2 a živou relací, advisory lock, `admin_audit`). Zveřejnění nese potvrzený payload a id verze, se kterou se porovnávalo; jinak `stale`. Vrácení = zveřejnění kopie archivní verze. Klient tabulku nečte ani nezapisuje.
+- **Čtení** jen `getPublishedPlans()` (`src/features/plan/catalog-server.ts`, `unstable_cache` s tagem `plan-catalog`, revalidace při zveřejnění, pojistka 5 min; při chybě DB seed). Web (/, /cenik, SEO offers), /app/tarif, e-mail o zájmu, marže v Nákladech a Jarvis (`<plans>` v kontextu chatu, `describePlans`) čtou jen zveřejněnou verzi; koncept nikdy.
+- **Limity** čte `current_plan()` při každém volání z published verze (`published_plan`), beta a jiné klíče z `plans`. V textu řádku karty jde použít `{monthly_contacts}` a další názvy limitů.
+- **Pracovníci a úložiště** jsou limity toho, co účet má (null = bez limitu). Kdo je nad limitem, má režim jen pro čtení (stejné pravidlo jako po zkušebním období, nic se nemaže) až od další půlnoci v pásmu majitele po pozdějším ze zveřejnění a překročení (`plan_overage`, `workspace_over_limit`). Pracovníka jde deaktivovat i v režimu jen pro čtení. Potvrzení zveřejnění ukazuje počet účtů na tarifu a kolik jich bude nad novým limitem (`plan_catalog_impact`).
+- **Administrace → Nastavení → Tarify** (/admin/tarify): editor konceptu (karty vedle sebe, řádky přetažením, náhled CS i EN), Uložit koncept / Zahodit koncept / Zveřejnit s rozdílem, historie s Vrátit. Admin jen čte.
 
 ### Poznámky
 - **Účel:** podklady k podnikání na jednom místě (ideální zákazník, produkty a služby, ceník, konkurence, prodejní skript, nápady), ovládání jako Apple Notes. Sekce /app/poznamky v menu po Milnících, nikdy zamčená.

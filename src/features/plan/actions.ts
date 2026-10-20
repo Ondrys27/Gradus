@@ -9,9 +9,10 @@ import { measure } from "@/lib/analytics/instrument";
 import { track } from "@/lib/analytics/track";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { planName } from "./catalog";
+import { getPublishedPlans } from "./catalog-server";
 
 const EVENT = "plan_interest_clicked";
-const KNOWN_PLANS = ["solo", "pro", "team", "beta"] as const;
 /** One e-mail per plan and person this often; another click just thanks again. */
 const REPEAT_AFTER_MS = 60 * 60_000;
 
@@ -43,27 +44,30 @@ async function sendPlanInterest(planKey: string): Promise<{ ok: boolean }> {
   if (countError) console.error("[plan] interest lookup failed", countError);
   if (count) return { ok: true };
 
-  const { data: planRows } = await supabase.rpc("current_plan", { _user_id: userId });
+  const [{ data: planRows }, owner, plans] = await Promise.all([
+    supabase.rpc("current_plan", { _user_id: userId }),
+    ownerContact(admin),
+    getPublishedPlans(),
+  ]);
   const current = planRows?.[0];
-  const owner = await ownerContact(admin);
   const t = serverTranslator(owner.locale);
-  const planName = t(`plans.names.${planKey}`);
-  const currentName =
-    current && (KNOWN_PLANS as readonly string[]).includes(current.plan_key)
-      ? t(`plans.names.${current.plan_key as (typeof KNOWN_PLANS)[number]}`)
-      : (current?.plan_key ?? "-");
+  // Names from the published catalog in the owner's language; beta is outside it.
+  const nameOf = (key: string) =>
+    planName(plans, key, owner.locale ?? "en") ?? (key === "beta" ? t("plans.names.beta") : key);
+  const requested = nameOf(planKey);
+  const currentName = current ? nameOf(current.plan_key) : "-";
   const status = current
     ? [currentName, current.status, current.trial_ends_at].filter(Boolean).join(" · ")
     : "-";
   const lines = [
-    t("plans.interestEmail.intro", { plan: planName }),
+    t("plans.interestEmail.intro", { plan: requested }),
     `${t("plans.interestEmail.from")}: ${email ?? userId}`,
     `${t("plans.interestEmail.status")}: ${status}`,
   ];
   const sent = owner.email
     ? await sendEmail({
         to: owner.email,
-        subject: t("plans.interestEmail.subject", { appName: APP_NAME, plan: planName }),
+        subject: t("plans.interestEmail.subject", { appName: APP_NAME, plan: requested }),
         text: lines.join("\n"),
         html: lines.map((line) => `<p>${escapeHtml(line)}</p>`).join("\n"),
       })

@@ -25,6 +25,7 @@ export const ADMIN_SECTIONS = [
   { key: "costs", group: "operations", href: `${ADMIN_PATH}/naklady`, ready: true },
   { key: "health", group: "operations", href: `${ADMIN_PATH}/zdravi`, ready: true },
   { key: "audit", group: "operations", href: `${ADMIN_PATH}/audit`, ready: true },
+  { key: "plans", group: "settings", href: `${ADMIN_PATH}/tarify`, ready: true },
   {
     key: "admins",
     group: "settings",

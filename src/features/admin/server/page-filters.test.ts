@@ -108,6 +108,7 @@ const PAGE_LOADERS: Record<AdminSectionKey, Loader[]> = {
   explorer: [(q) => explorerChart(q, { event: "app_opened", calc: "count", prop: null, grain: "day" })],
   users: [(q) => loadUsers({ view: q.view, query: "", sort: "activity", page: 0 })],
   audit: [],
+  plans: [],
   admins: [],
 };
 
