@@ -133,7 +133,7 @@ async function logNotConfigured(ctx: Context, feature: JarvisFeature) {
  * - `?task=watch`: the opportunity watch, run by Vercel Cron with CRON_SECRET.
  * - `?task=briefing`: the morning briefs (hourly, each user at 6 a.m. their time), Cron only.
  * - `?view=suggestions`: the instant triggers, then the open suggestions.
- * - `?view=proactive`: the one thing Jarvis would bring up on his own now, or nothing.
+ * - `?view=proactive`: what Jarvis would bring up on his own now (a queue, most urgent first), or nothing.
  * - otherwise: calls and files left this month and the chips for the situation.
  */
 export const GET = instrumentRoute("api.jarvis.get", async (request: Request) => {

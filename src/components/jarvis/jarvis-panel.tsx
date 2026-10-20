@@ -3,6 +3,7 @@
 import {
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type ChangeEvent,
@@ -24,6 +25,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Jarvis } from "@/components/jarvis/jarvis";
+import { NoticePager, NoticeSlide, queueKeyDown } from "@/components/jarvis/notice-queue";
 import { SaveAnswerToNotes } from "@/features/notes/save-answer";
 import { SuggestionCard, useSuggestionActions } from "@/components/jarvis/suggestion-card";
 import {
@@ -41,7 +43,9 @@ import {
   useMarkSuggestionsSeen,
   useRateJarvisMessage,
 } from "@/features/jarvis/queries";
+import { orderNotices } from "@/features/jarvis/notice-queue";
 import type { ChatError, useJarvisChat } from "@/features/jarvis/use-jarvis-chat";
+import { useNoticeQueue } from "@/features/jarvis/use-notice-queue";
 import { formatNumber } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { useIsPhone, useReducedMotionSafe } from "@/lib/use-media-query";
@@ -77,7 +81,11 @@ export function JarvisPanel({ chat, onClose }: JarvisPanelProps) {
   const usage = overview.data?.usage;
   const fileUsage = overview.data?.files;
   const suggestions = overview.data?.suggestions ?? [];
-  const cards = noticed.data ?? [];
+  const cards = noticed.data;
+  // One notice at a time, the most urgent first, in a card of fixed height:
+  // however many there are, the chat below keeps its room and never moves.
+  const ordered = useMemo(() => orderNotices(cards ?? []), [cards]);
+  const queue = useNoticeQueue(ordered);
   const busy = pending !== null;
   const actions = useSuggestionActions({
     ask: (prompt) => void chat.send(prompt),
@@ -87,7 +95,7 @@ export function JarvisPanel({ chat, onClose }: JarvisPanelProps) {
   });
 
   // Opening the panel shows what Jarvis noticed; the ring on the button stops.
-  const unseen = cards.filter((card) => !card.seen).map((card) => card.id);
+  const unseen = (cards ?? []).filter((card) => !card.seen).map((card) => card.id);
   const unseenKey = unseen.join(",");
   useEffect(() => {
     if (unseenKey) markSeen.mutate(unseenKey.split(","));
@@ -245,25 +253,44 @@ export function JarvisPanel({ chat, onClose }: JarvisPanelProps) {
         </button>
       </header>
 
-      {cards.length > 0 && (
+      {queue.current && (
         <section
           aria-label={t("suggestion.heading")}
-          className="max-h-[40%] shrink-0 overflow-y-auto overscroll-contain border-b border-line px-4 py-3"
+          data-testid="jarvis-noticed"
+          tabIndex={0}
+          onKeyDown={queueKeyDown(queue.previous, queue.next)}
+          className="shrink-0 border-b border-line px-4 pt-1 pb-3 outline-none focus-visible:ring-3 focus-visible:ring-teal/50 focus-visible:ring-inset"
         >
-          <h3 className="micro-label mb-2">{t("suggestion.heading")}</h3>
-          <ul className="flex flex-col gap-2">
-            {cards.map((card) => (
+          <div className="flex min-h-11 items-center justify-between gap-2 mouse:min-h-9">
+            <h3 className="micro-label">{t("suggestion.heading")}</h3>
+            <NoticePager
+              index={queue.index}
+              total={queue.total}
+              onPrevious={queue.previous}
+              onNext={queue.next}
+              className="-mr-2"
+            />
+          </div>
+          <NoticeSlide
+            itemKey={queue.current.id}
+            direction={queue.direction}
+            swipe={isPhone && queue.total > 1}
+            onPrevious={queue.previous}
+            onNext={queue.next}
+            className="h-32 mouse:h-28"
+          >
+            <ul className="h-full">
               <SuggestionCard
-                key={card.id}
-                suggestion={card}
+                suggestion={queue.current}
                 busy={busy || actions.undoPending}
                 onRun={(value) =>
                   void actions.run(value).catch(() => chat.showError({ code: "unknown" }))
                 }
                 onDismiss={actions.dismiss}
+                className="h-full overflow-y-auto overscroll-contain"
               />
-            ))}
-          </ul>
+            </ul>
+          </NoticeSlide>
         </section>
       )}
 

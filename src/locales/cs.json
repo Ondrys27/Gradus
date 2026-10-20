@@ -608,6 +608,12 @@
         }
       }
     },
+    "queue": {
+      "label": "Upozornění Jarvise",
+      "position": "{current} z {total}",
+      "previous": "Předchozí",
+      "next": "Další"
+    },
     "notesIntro": {
       "heading": "Jeden tip",
       "text": "Na plnění milníků a úkolů si podklady piš do Poznámek — ideálního zákazníka, produkty, ceník. Já je budu znát a budu z nich vycházet.",

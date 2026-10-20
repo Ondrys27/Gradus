@@ -140,7 +140,7 @@ export type JarvisOverview = {
   suggestions: SuggestionKey[];
 };
 
-/** One thing Jarvis brings up on his own (GET /api/jarvis?view=proactive). */
+/** One of the things Jarvis brings up on his own (GET /api/jarvis?view=proactive). */
 export type ProactiveItem = {
   id: string;
   kind: ProactiveKind;
@@ -156,7 +156,8 @@ export type ProactiveItem = {
 };
 
 export type ProactiveResponse = {
-  item: ProactiveItem | null;
+  /** The queue of one appearance, most urgent first; empty when there is nothing to say. */
+  items: ProactiveItem[];
   /** When asking again makes sense (e.g. the 4-hour gap ends); null = the usual interval. */
   retryAt: string | null;
 };

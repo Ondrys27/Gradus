@@ -7,14 +7,14 @@ import { jarvisKeys } from "./queries";
 
 const ENDPOINT = "/api/jarvis";
 
-/** What Jarvis would bring up now; nothing (and no retry hint) when the request fails. */
+/** What Jarvis would bring up now, most urgent first; nothing (and no retry hint) when the request fails. */
 export async function fetchProactive(): Promise<ProactiveResponse> {
   try {
     const response = await fetch(`${ENDPOINT}?view=proactive`, { cache: "no-store" });
-    if (!response.ok) return { item: null, retryAt: null };
+    if (!response.ok) return { items: [], retryAt: null };
     return (await response.json()) as ProactiveResponse;
   } catch {
-    return { item: null, retryAt: null };
+    return { items: [], retryAt: null };
   }
 }
 

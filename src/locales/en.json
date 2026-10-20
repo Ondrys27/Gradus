@@ -608,6 +608,12 @@
         }
       }
     },
+    "queue": {
+      "label": "Jarvis's notices",
+      "position": "{current} of {total}",
+      "previous": "Previous",
+      "next": "Next"
+    },
     "notesIntro": {
       "heading": "One tip",
       "text": "Write the groundwork for your milestones and tasks in Notes — your ideal customer, products, price list. I will know them and build on them.",

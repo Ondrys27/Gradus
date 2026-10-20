@@ -1,3 +1,4 @@
+import { urgencyOf } from "./notice-queue";
 import {
   DEFAULT_FORMAT_SETTINGS,
   todayIsoDate,
@@ -12,6 +13,7 @@ import {
  *
  * The rules (CLAUDE.md → Jarvis):
  * - at most one appearance per session and never sooner than 4 hours after the last
+ *   (one appearance carries a queue; its card shows one notice at a time)
  * - never while the call timer runs or a dialog is open
  * - never within 30 seconds of a page loading
  * - Later = the next day; Close = never this one again
@@ -157,6 +159,8 @@ export function kindsFor(frequency: JarvisFrequency): ProactiveKind[] {
 
 export type ProactiveCandidate = {
   kind: ProactiveKind;
+  /** A suggestion's type, for its urgency; the other kinds have none of their own. */
+  type?: string;
   createdAt: string;
   /** The day a briefing is about (yyyy-MM-dd); null for the other kinds. */
   briefingDate: string | null;
@@ -164,15 +168,19 @@ export type ProactiveCandidate = {
 
 const PRIORITY: Record<ProactiveKind, number> = { briefing: 0, suggestion: 1, question: 2 };
 
+/** The longest queue one appearance carries; the card shows one notice of it at a time. */
+export const PROACTIVE_QUEUE_LIMIT = 10;
+
 /**
- * The one thing worth saying now: today's briefing first (only when the
- * account has it), then the newest suggestion, then a question. Null when
- * there is nothing; Jarvis never comes just to say hello.
+ * What is worth saying now, in the order the card shows it: today's
+ * briefing first (only when the account has it), then the suggestions, the
+ * most urgent and then the newest first, then a question. Empty when there
+ * is nothing; Jarvis never comes just to say hello.
  */
-export function pickProactive<T extends ProactiveCandidate>(
+export function orderProactive<T extends ProactiveCandidate>(
   candidates: readonly T[],
   options: { frequency: JarvisFrequency; today: string; briefingUnlocked: boolean },
-): T | null {
+): T[] {
   const kinds = new Set(kindsFor(options.frequency));
   const eligible = candidates.filter((item) => {
     if (!kinds.has(item.kind)) return false;
@@ -181,11 +189,20 @@ export function pickProactive<T extends ProactiveCandidate>(
     }
     return true;
   });
-  eligible.sort(
+  return eligible.sort(
     (a, b) =>
-      PRIORITY[a.kind] - PRIORITY[b.kind] || Date.parse(b.createdAt) - Date.parse(a.createdAt),
+      PRIORITY[a.kind] - PRIORITY[b.kind] ||
+      (a.kind === "suggestion" ? urgencyOf(a.type ?? "") - urgencyOf(b.type ?? "") : 0) ||
+      Date.parse(b.createdAt) - Date.parse(a.createdAt),
   );
-  return eligible[0] ?? null;
+}
+
+/** The first thing of the queue, or null when there is nothing to say. */
+export function pickProactive<T extends ProactiveCandidate>(
+  candidates: readonly T[],
+  options: { frequency: JarvisFrequency; today: string; briefingUnlocked: boolean },
+): T | null {
+  return orderProactive(candidates, options)[0] ?? null;
 }
 
 /** "Later": the start of the next day in the user's zone. */

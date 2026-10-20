@@ -162,7 +162,7 @@ describe("loadProactive", () => {
       row: settingsRow,
       now: NOW,
     });
-    expect(result).toEqual({ item: null, retryAt: "2026-10-03T12:00:00.000Z" });
+    expect(result).toEqual({ items: [], retryAt: "2026-10-03T12:00:00.000Z" });
     expect(supabase.calls.some((c) => c.table === "rpc:prospecting_status")).toBe(false);
   });
 
@@ -174,7 +174,7 @@ describe("loadProactive", () => {
       row: settingsRow,
       now: NOW,
     });
-    expect(worker.item).toBeNull();
+    expect(worker.items).toEqual([]);
 
     const timer = await loadProactive({
       supabase: fakeDb({
@@ -187,7 +187,7 @@ describe("loadProactive", () => {
       row: settingsRow,
       now: NOW,
     });
-    expect(timer.item).toBeNull();
+    expect(timer.items).toEqual([]);
 
     const off = fakeDb();
     await loadProactive({
@@ -228,7 +228,8 @@ describe("loadProactive", () => {
       row: settingsRow,
       now: NOW,
     });
-    expect(asked.item).toMatchObject({ kind: "question", questionKey: "monthlyGoal" });
+    expect(asked.items).toHaveLength(1);
+    expect(asked.items[0]).toMatchObject({ kind: "question", questionKey: "monthlyGoal" });
     expect(op(admin.calls[0], "upsert")?.[0]).toMatchObject({
       user_id: USER,
       kind: "question",
@@ -246,8 +247,77 @@ describe("loadProactive", () => {
       row: settingsRow,
       now: NOW,
     });
-    expect(twoThisWeek.item).toBeNull();
+    expect(twoThisWeek.items).toEqual([]);
     expect(full.calls).toHaveLength(0);
+  });
+});
+
+describe("loadProactive queue", () => {
+  const suggestion = (id: string, type: string, created: string, kind = "suggestion") => ({
+    id,
+    kind,
+    type,
+    text: `About ${id}`,
+    action: { kind: "ask", prompt: "" },
+    payload: kind === "briefing" ? { date: "2026-10-03" } : { people: false },
+    created_at: created,
+  });
+
+  it("brings everything worth saying, briefing first, then the most urgent, and asks no question", async () => {
+    const rows = [
+      suggestion("insight-new", "insight", "2026-10-03T09:00:00Z"),
+      suggestion("overdue", "overdueTask", "2026-10-02T09:00:00Z"),
+      suggestion("insight-old", "insight", "2026-10-02T08:00:00Z"),
+      suggestion("brief", "briefing", "2026-10-03T04:00:00Z", "briefing"),
+      suggestion("ready", "milestoneReady", "2026-10-01T09:00:00Z"),
+    ];
+    const supabase = fakeDb({
+      workers: { data: [] },
+      unlocks: { data: [] },
+      profiles: { data: { mode: "tool" } },
+      "rpc:prospecting_status": { data: [{ running: false }] },
+      jarvis_suggestions: (call) =>
+        has(call, "select", "shown_at") ? { data: [] } : { data: rows },
+    });
+    const admin = fakeDb();
+    const result = await loadProactive({
+      supabase: supabase.db,
+      admin: admin.db,
+      userId: USER,
+      row: settingsRow,
+      now: NOW,
+    });
+    expect(result.items.map((item) => item.id)).toEqual([
+      "brief",
+      "overdue",
+      "ready",
+      "insight-new",
+      "insight-old",
+    ]);
+    expect(result.retryAt).toBeNull();
+    expect(admin.calls).toHaveLength(0);
+  });
+
+  it("carries at most ten notices", async () => {
+    const rows = Array.from({ length: 14 }, (_, n) =>
+      suggestion(`i${n}`, "insight", new Date(NOW.getTime() - (n + 1) * 60_000).toISOString()),
+    );
+    const result = await loadProactive({
+      supabase: fakeDb({
+        workers: { data: [] },
+        unlocks: { data: [] },
+        profiles: { data: { mode: "tool" } },
+        "rpc:prospecting_status": { data: [{ running: false }] },
+        jarvis_suggestions: (call) =>
+          has(call, "select", "shown_at") ? { data: [] } : { data: rows },
+      }).db,
+      admin: fakeDb().db,
+      userId: USER,
+      row: settingsRow,
+      now: NOW,
+    });
+    expect(result.items).toHaveLength(10);
+    expect(result.items[0]?.id).toBe("i0");
   });
 });
 

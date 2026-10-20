@@ -9,8 +9,9 @@ import type { Database, Json } from "@/types/database";
 import {
   isJarvisFrequency,
   nextAllowedAt,
-  pickProactive,
+  orderProactive,
   PROACTIVE_KINDS,
+  PROACTIVE_QUEUE_LIMIT,
   PROACTIVE_SUGGESTION_TYPES,
   questionAllowed,
   serverBlock,
@@ -105,6 +106,7 @@ export function toCandidate(
   }
   return {
     kind,
+    type: row.type,
     createdAt: row.created_at,
     briefingDate: kind === "briefing" ? (payload.date ?? null) : null,
     item: {
@@ -199,7 +201,8 @@ async function ensureQuestion(
 }
 
 /**
- * GET /api/jarvis?view=proactive: the one thing worth saying now, or nothing.
+ * GET /api/jarvis?view=proactive: what is worth saying now, in the order the
+ * card shows it (most urgent first), or nothing.
  * Reads with the user's own client (RLS), writes a new question with the
  * admin client for this user only.
  */
@@ -212,7 +215,7 @@ export async function loadProactive(args: {
 }): Promise<ProactiveResponse> {
   const { supabase, admin, userId } = args;
   const now = args.now ?? new Date();
-  const none: ProactiveResponse = { item: null, retryAt: null };
+  const none: ProactiveResponse = { items: [], retryAt: null };
   const settings = proactiveSettingsOf(args.row);
   if (!settings.enabled) return none;
   // A worker has the owner's environment, not Jarvis's own initiative.
@@ -230,7 +233,7 @@ export async function loadProactive(args: {
   const block = serverBlock({ now, settings, lastShownAt });
   if (block === "tooSoon") {
     return {
-      item: null,
+      items: [],
       retryAt: new Date(nextAllowedAt(lastShownAt, settings.frequency)).toISOString(),
     };
   }
@@ -261,14 +264,14 @@ export async function loadProactive(args: {
   const today = todayIsoDate(toFormatSettings(args.row), now);
   const options = { frequency: settings.frequency, today, briefingUnlocked: unlocked };
   const candidates = rows.data.flatMap((row) => toCandidate(row, now, window) ?? []);
-  let picked = pickProactive(candidates, options);
+  let queue = orderProactive(candidates, options).slice(0, PROACTIVE_QUEUE_LIMIT);
 
-  if (!picked && settings.frequency !== "briefing_only") {
+  if (!queue.length && settings.frequency !== "briefing_only") {
     const question = await ensureQuestion(supabase, admin, userId, today, now);
     const candidate = question ? toCandidate(question, now, window) : null;
-    if (candidate) picked = pickProactive([candidate], options);
+    if (candidate) queue = orderProactive([candidate], options);
   }
-  return { item: picked?.item ?? null, retryAt: null };
+  return { items: queue.map((candidate) => candidate.item), retryAt: null };
 }
 
 export type ReactionResult =

@@ -6,6 +6,7 @@ import {
   NOTES_INTRO_SETTLE_MS,
   notesIntroDue,
   PAGE_SETTLE_MS,
+  orderProactive,
   pickProactive,
   questionAllowed,
   serverBlock,
@@ -151,6 +152,53 @@ describe("pickProactive", () => {
 
   it("has nothing to say without candidates", () => {
     expect(pickProactive([], { frequency: "often", today, briefingUnlocked: true })).toBeNull();
+  });
+});
+
+describe("orderProactive", () => {
+  const today = "2026-10-03";
+  const options = { frequency: "often" as const, today, briefingUnlocked: true };
+  const item = (id: string, kind: ProactiveCandidate["kind"], type: string, createdAt: string) => ({
+    id,
+    kind,
+    type,
+    createdAt,
+    briefingDate: kind === "briefing" ? today : null,
+  });
+
+  it("puts the brief first, then suggestions by urgency and age, then questions", () => {
+    const ordered = orderProactive(
+      [
+        item("question", "question", "question", "2026-10-03T09:30:00Z"),
+        item("insight", "suggestion", "insight", "2026-10-03T09:00:00Z"),
+        item("stalled", "suggestion", "stalledDeal", "2026-10-01T09:00:00Z"),
+        item("overdue-old", "suggestion", "overdueTask", "2026-10-01T08:00:00Z"),
+        item("overdue-new", "suggestion", "overdueTask", "2026-10-02T08:00:00Z"),
+        item("brief", "briefing", "briefing", "2026-10-03T04:00:00Z"),
+      ],
+      options,
+    );
+    expect(ordered.map((entry) => entry.id)).toEqual([
+      "brief",
+      "overdue-new",
+      "overdue-old",
+      "stalled",
+      "insight",
+      "question",
+    ]);
+  });
+
+  it("leaves out what the frequency or the account does not allow", () => {
+    const list = [
+      item("brief", "briefing", "briefing", "2026-10-03T04:00:00Z"),
+      item("insight", "suggestion", "insight", "2026-10-03T09:00:00Z"),
+    ];
+    expect(orderProactive(list, { ...options, frequency: "briefing_only" }).map((e) => e.id)).toEqual(
+      ["brief"],
+    );
+    expect(orderProactive(list, { ...options, briefingUnlocked: false }).map((e) => e.id)).toEqual([
+      "insight",
+    ]);
   });
 });
 
