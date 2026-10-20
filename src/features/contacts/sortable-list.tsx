@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import {
   closestCenter,
   DndContext,
@@ -42,6 +42,9 @@ export function SortableList<T extends Item>({
   className,
 }: Props<T>) {
   const t = useTranslations("contacts.a11y");
+  // A stable id: dnd-kit otherwise numbers its aria ids from a module counter,
+  // which differs between the server's render and the browser's (hydration).
+  const dndId = useId();
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 6 } }),
@@ -68,6 +71,7 @@ export function SortableList<T extends Item>({
 
   return (
     <DndContext
+      id={dndId}
       sensors={sensors}
       collisionDetection={closestCenter}
       accessibility={{ announcements, screenReaderInstructions: { draggable: t("instructions") } }}

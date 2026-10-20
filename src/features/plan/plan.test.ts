@@ -35,6 +35,14 @@ describe("trialNotice", () => {
     ).toEqual({ kind: "expired" });
   });
 
+  it("tells a workspace over its plan's limits apart from an ended trial", () => {
+    expect(trialNotice({ ...trial(5 * day), readOnly: true }, now)).toEqual({ kind: "overLimit" });
+    expect(trialNotice({ ...trial(day), status: "active", readOnly: true }, now)).toEqual({
+      kind: "overLimit",
+    });
+    expect(trialNotice({ ...trial(-1), readOnly: true }, now)).toEqual({ kind: "expired" });
+  });
+
   it("shows nothing for beta and paid plans", () => {
     expect(trialNotice(UNKNOWN_PLAN, now)).toEqual({ kind: "none" });
     expect(trialNotice({ ...trial(day), status: "active" }, now)).toEqual({ kind: "none" });

@@ -40,20 +40,35 @@ export function toPlanSnapshot(
 export type TrialNotice =
   | { kind: "none" }
   | { kind: "trial"; daysLeft: number; urgent: boolean }
-  | { kind: "expired" };
+  | { kind: "expired" }
+  /** Read-only while the trial runs or the plan is paid: more workers or storage than the plan allows. */
+  | { kind: "overLimit" };
 
 const DAY_MS = 86_400_000;
 
+/** The trial is over, by the database's word or by the clock since it last answered. */
+function trialOver(plan: PlanSnapshot, now: Date): boolean {
+  if (plan.status === "expired") return true;
+  return (
+    plan.status === "trialing" &&
+    !!plan.trialEndsAt &&
+    Date.parse(plan.trialEndsAt) - now.getTime() <= 0
+  );
+}
+
 /**
  * What the app shows above the content: a quiet bar while the trial runs
- * (louder in the last days), a card once it ended, nothing otherwise.
+ * (louder in the last days), a card once it ended, a card when the workspace
+ * is read-only for being over its plan's limits, nothing otherwise.
  * Days left count started days, so the last 24 hours read "1 day".
  */
 export function trialNotice(plan: PlanSnapshot, now: Date = new Date()): TrialNotice {
-  if (plan.readOnly || plan.status === "expired") return { kind: "expired" };
+  if (trialOver(plan, now)) return { kind: "expired" };
+  // current_plan() says 'expired' whenever the trial is over, so read-only
+  // without it means the account holds more than its plan allows.
+  if (plan.readOnly) return { kind: "overLimit" };
   if (plan.status !== "trialing" || !plan.trialEndsAt) return { kind: "none" };
   const msLeft = Date.parse(plan.trialEndsAt) - now.getTime();
-  if (msLeft <= 0) return { kind: "expired" };
   const daysLeft = Math.ceil(msLeft / DAY_MS);
   return { kind: "trial", daysLeft, urgent: daysLeft <= TRIAL_URGENT_DAYS };
 }

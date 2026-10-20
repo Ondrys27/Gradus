@@ -18,7 +18,7 @@ import { formatDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { requestPlan } from "./actions";
 import { planName } from "./catalog";
-import type { PlanSnapshot } from "./plan";
+import { trialNotice, type PlanSnapshot } from "./plan";
 import { usePlan } from "./queries";
 
 /**
@@ -99,7 +99,9 @@ function statusText(
   formatSettings: ReturnType<typeof useFormatSettings>,
 ): string {
   const date = plan.trialEndsAt ? formatDate(new Date(plan.trialEndsAt), formatSettings) : "";
-  if (plan.status === "expired" || plan.readOnly) return t("page.status.expired", { date });
+  const notice = trialNotice(plan);
+  if (notice.kind === "expired") return t("page.status.expired", { date });
+  if (notice.kind === "overLimit") return t("page.status.overLimit", { plan: name });
   if (plan.status === "trialing") return t("page.status.trialing", { plan: name, date });
   if (plan.planKey === "beta") return t("page.status.beta");
   return t("page.status.active", { plan: name });

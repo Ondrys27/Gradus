@@ -3438,6 +3438,7 @@
       "status": {
         "trialing": "{plan} trial until {date}",
         "expired": "The trial ended on {date}",
+        "overLimit": "{plan} plan · over its limits, read-only",
         "active": "{plan} plan",
         "beta": "Beta with no time limit"
       }
@@ -3458,6 +3459,12 @@
       "text": "Your data stays and you can see all of it. You can create new things again once you choose a plan.",
       "cta": "Choose a plan",
       "workerText": "This account's trial has ended. You can see all the data; new things can be created once the owner chooses a plan."
+    },
+    "overLimit": {
+      "title": "Your account is over its plan's limits",
+      "text": "You have more workers or files than your plan allows. Your data stays and you can see all of it. You can create new things again once you are within the limits or choose a bigger plan.",
+      "cta": "See your plan",
+      "workerText": "This account is over its plan's limits. You can see all the data; new things can be created once the owner sorts it out."
     },
     "readOnlyError": "Your trial has ended. Choose a plan to carry on."
   },

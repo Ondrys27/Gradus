@@ -66,7 +66,9 @@ async function acceptWithAuthenticator(page: Page) {
     (response) => response.request().method() === "POST" && response.url().includes("/admin/pozvanka/"),
   );
   await page.getByRole("button", { name: exact(L, "admin.login.enrollSubmit") }).click();
-  await (await answer).finished();
+  // The response headers are enough: the server action keeps its stream open
+  // while the page renders again, so waiting for its end can hang.
+  await answer;
   const backupTitle = page.getByRole("heading", { name: exact(L, "admin.login.backupTitle") });
   const invalidTitle = page.getByRole("heading", { name: exact(L, "admin.invite.invalidTitle") });
   await expect(backupTitle).toBeVisible();

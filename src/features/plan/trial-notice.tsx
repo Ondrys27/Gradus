@@ -15,7 +15,8 @@ import { usePlan } from "./queries";
 
 /**
  * Above the content: a quiet bar while the trial runs (louder in its last
- * three days), a card once it ended and the workspace is read-only.
+ * three days), a card once it ended and the workspace is read-only, and the
+ * same card when it is read-only for holding more than its plan allows.
  */
 /** The notice is recorded once per load, not on every page it appears on. */
 let noticeTracked = false;
@@ -34,7 +35,7 @@ export function TrialNotice() {
 
   // Once per load of the app: the trial's state as the owner sees it.
   useEffect(() => {
-    if (!shownKind || noticeTracked) return;
+    if (!shownKind || shownKind === "overLimit" || noticeTracked) return;
     noticeTracked = true;
     track("trial_notice_shown", { days_left: daysLeft, expired: shownKind === "expired" });
   }, [shownKind, daysLeft]);
@@ -42,7 +43,8 @@ export function TrialNotice() {
   // The plan page says it all itself.
   if (notice.kind === "none" || pathname === PLAN_PATH) return null;
 
-  if (notice.kind === "expired") {
+  if (notice.kind === "expired" || notice.kind === "overLimit") {
+    const key = notice.kind;
     return (
       <section
         role="status"
@@ -50,14 +52,14 @@ export function TrialNotice() {
       >
         <LockIcon aria-hidden className="size-6 shrink-0 text-gold" />
         <div className="flex flex-1 flex-col gap-1">
-          <h2 className="font-semibold text-ink">{t("expired.title")}</h2>
+          <h2 className="font-semibold text-ink">{t(`${key}.title`)}</h2>
           <p className="text-sm text-ink-soft">
-            {worker ? t("expired.workerText") : t("expired.text")}
+            {worker ? t(`${key}.workerText`) : t(`${key}.text`)}
           </p>
         </div>
         {!worker && (
           <Link href={PLAN_PATH} className={buttonVariants()}>
-            {t("expired.cta")}
+            {t(`${key}.cta`)}
           </Link>
         )}
       </section>

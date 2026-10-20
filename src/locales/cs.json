@@ -3438,6 +3438,7 @@
       "status": {
         "trialing": "Zkušební období tarifu {plan} do {date}",
         "expired": "Zkušební období skončilo {date}",
+        "overLimit": "Tarif {plan} · nad limitem tarifu, jen pro čtení",
         "active": "Tarif {plan}",
         "beta": "Beta bez časového omezení"
       }
@@ -3458,6 +3459,12 @@
       "text": "Tvoje data zůstávají a všechno vidíš. Nové věci půjde zakládat, až si vybereš tarif.",
       "cta": "Vybrat tarif",
       "workerText": "Zkušební období tohoto účtu skončilo. Data vidíš všechna, nové věci půjde zakládat, až majitel vybere tarif."
+    },
+    "overLimit": {
+      "title": "Účet je nad limitem tarifu",
+      "text": "Máš víc pracovníků nebo souborů, než tarif dovoluje. Data zůstávají a všechno vidíš. Nové věci půjde zakládat, až se vejdeš do limitu nebo si vybereš vyšší tarif.",
+      "cta": "Zobrazit tarif",
+      "workerText": "Účet je nad limitem svého tarifu. Data vidíš všechna, nové věci půjde zakládat, až to majitel vyřeší."
     },
     "readOnlyError": "Zkušební období skončilo. Vyber si tarif a můžeš pokračovat."
   },
