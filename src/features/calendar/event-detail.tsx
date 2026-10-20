@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { StatusPill } from "@/components/ui/status-pill";
+import { MentionedInNotes } from "@/features/notes/mentioned-in-notes";
 import { contactLabel } from "@/features/pipeline/board-logic";
 import { formatCalendarDate, formatDate, formatTime } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
@@ -118,6 +119,7 @@ export function EventDetail({ event, onClose, onEdit, readOnly = false }: Props)
               )}
             </ul>
           )}
+          <MentionedInNotes kind="event" id={current.id} onOpenNote={onClose} />
           {!readOnly && (
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
               <Button type="button" variant="destructive" onClick={() => setConfirming(true)}>

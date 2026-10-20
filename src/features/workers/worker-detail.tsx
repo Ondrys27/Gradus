@@ -46,6 +46,7 @@ import type { WorkerTask } from "./types";
 import { WorkerFormDialog } from "./worker-form-dialog";
 import { WorkerTaskDialog } from "./worker-task-dialog";
 import { WorkerTaskList } from "./worker-task-list";
+import { MentionedInNotes } from "@/features/notes/mentioned-in-notes";
 
 const TABS = ["tasks", "earnings", "payments", "time"] as const;
 type Tab = (typeof TABS)[number];
@@ -191,8 +192,9 @@ export function WorkerDetail({ workerId }: { workerId: string }) {
         )}
       </StaggerItem>
 
-      <StaggerItem>
+      <StaggerItem className="flex flex-col gap-6">
         <PermissionsCard workerId={workerId} />
+        <MentionedInNotes kind="worker" id={workerId} card />
       </StaggerItem>
 
       <StaggerItem className="flex flex-col gap-4">

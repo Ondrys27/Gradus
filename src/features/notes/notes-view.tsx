@@ -4,9 +4,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { ChevronLeftIcon, PinIcon, PinOffIcon, SquarePenIcon, Trash2Icon } from "lucide-react";
+import { ChevronLeftIcon, PinIcon, PinOffIcon, SquarePenIcon, Trash2Icon, Undo2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfile, useSession } from "@/features/account/queries";
@@ -33,6 +34,7 @@ import {
   useRestoreNote,
   useRestoreUnsavedNotes,
   type NoteDetail,
+  type NoteListItem,
 } from "./queries";
 import { templateDraft, type NoteTemplateKey } from "./templates";
 
@@ -86,6 +88,10 @@ export function NotesView() {
   const [trashOpen, setTrashOpen] = useState(false);
   const [justCreated, setJustCreated] = useState<string | null>(null);
   const [undo, setUndo] = useState<{ id: string } | null>(null);
+  /** A note the list's bin (or the Delete key) asks to move to the trash. */
+  const [confirming, setConfirming] = useState<{ note: NoteListItem; viaKeyboard: boolean } | null>(
+    null,
+  );
   /** On the phone a note opened from the list was pushed, so Back returns to it. */
   const pushedRef = useRef(false);
 
@@ -203,13 +209,28 @@ export function NotesView() {
     return () => clearTimeout(timer);
   }, [undo]);
 
-  function remove(target: NoteDetail) {
+  /**
+   * Moves a note to the trash with Undo at the bottom. The open note gives way
+   * to its neighbour in the list; deleting another note keeps the open one.
+   */
+  function remove(target: Pick<NoteDetail, "id" | "pinned">, from: "editor" | "list" | "keyboard") {
     const visible = results ?? listed ?? [];
     const next = neighbourAfterRemoval(visible, target.id);
-    deleteNote.mutate({ id: target.id, pinned: target.pinned });
+    deleteNote.mutate({ id: target.id, pinned: target.pinned, from });
     setUndo({ id: target.id });
-    if (isPhone) closeOnPhone();
-    else select(next && next.id !== target.id ? next.id : null);
+    if (target.id !== selectedId) return;
+    if (isPhone) {
+      closeOnPhone();
+      return;
+    }
+    const nextId = next && next.id !== target.id ? next.id : null;
+    select(nextId);
+    // From the keyboard the next note is ready for the next key.
+    if (from === "keyboard" && nextId) {
+      requestAnimationFrame(() =>
+        document.querySelector<HTMLElement>(`[data-note-row="${CSS.escape(nextId)}"]`)?.focus(),
+      );
+    }
   }
 
   function undoRemove() {
@@ -253,7 +274,7 @@ export function NotesView() {
           aria-label={t("delete")}
           title={t("delete")}
           data-testid="note-delete"
-          onClick={() => remove(detail)}
+          onClick={() => remove(detail, "editor")}
         >
           <Trash2Icon />
         </Button>
@@ -276,16 +297,48 @@ export function NotesView() {
     <p className="pt-24 text-center text-sm text-ink-muted">{t("selectNote")}</p>
   );
 
+  // Bottom left of the content, where floating controls go (the right belongs to Jarvis).
   const undoBar = undo && (
     <div
       role="status"
-      className="flex items-center justify-between gap-3 rounded-xl bg-surface/80 px-3 py-2 text-sm text-ink-soft"
+      data-testid="notes-undo"
+      className="fixed bottom-[calc(12px+64px+12px+env(safe-area-inset-bottom))] left-[max(16px,env(safe-area-inset-left))] z-nav flex w-[min(360px,calc(100vw-32px))] items-center justify-between gap-3 rounded-2xl border border-line-strong bg-surface py-1.5 pr-1.5 pl-4 text-sm text-ink-soft shadow-popover md:bottom-[max(24px,env(safe-area-inset-bottom))] md:left-[calc(--spacing(19)+env(safe-area-inset-left)+24px)] lg:left-[calc(--spacing(60)+env(safe-area-inset-left)+32px)]"
     >
-      {t("deleted")}
-      <button type="button" onClick={undoRemove} className="min-h-11 font-semibold text-violet mouse:min-h-8">
+      <span className="flex items-center gap-2">
+        <Trash2Icon aria-hidden className="size-4 shrink-0 text-ink-muted" />
+        {t("deleted")}
+      </span>
+      <button
+        type="button"
+        onClick={undoRemove}
+        className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 font-semibold text-violet outline-none hover:bg-violet/10 focus-visible:ring-3 focus-visible:ring-ring/50 mouse:min-h-9"
+      >
+        <Undo2Icon aria-hidden className="size-4" />
         {t("undo")}
       </button>
     </div>
+  );
+
+  const confirmDialog = (
+    <ConfirmDialog
+      open={!!confirming}
+      onOpenChange={(open) => {
+        if (!open) setConfirming(null);
+      }}
+      title={t("deleteConfirm.title", {
+        title: confirming?.note.title || t("untitled"),
+      })}
+      description={t("deleteConfirm.text")}
+      confirmLabel={t("deleteConfirm.confirm")}
+      cancelLabel={t("deleteConfirm.cancel")}
+      closeLabel={t("deleteConfirm.cancel")}
+      onConfirm={() => {
+        if (!confirming) return;
+        const { note: target, viaKeyboard } = confirming;
+        setConfirming(null);
+        remove(target, viaKeyboard ? "keyboard" : "list");
+      }}
+    />
   );
 
   const side = trashOpen ? (
@@ -307,6 +360,9 @@ export function NotesView() {
       selectedId={selectedId}
       onSelect={(id) => select(id)}
       onOpenTrash={() => setTrashOpen(true)}
+      onRequestDelete={
+        readOnly ? undefined : (target, viaKeyboard) => setConfirming({ note: target, viaKeyboard })
+      }
       loadError={notes.isError && !listed}
       onRetry={() => void notes.refetch()}
     />
@@ -333,7 +389,6 @@ export function NotesView() {
         />
       ) : isPhone ? (
         <>
-          {undoBar}
           {side}
           {selectedId && (
             <div className="fixed inset-0 z-overlay overflow-y-auto overscroll-contain bg-canvas">
@@ -351,12 +406,13 @@ export function NotesView() {
       ) : (
         <div className="grid grid-cols-[17rem_minmax(0,1fr)] gap-8 lg:grid-cols-[19rem_minmax(0,1fr)] lg:gap-12">
           <aside className="sticky top-24 flex max-h-[calc(100dvh-8rem)] flex-col gap-3 self-start overflow-y-auto overscroll-contain pr-1">
-            {undoBar}
             {side}
           </aside>
           <div className="min-w-0 max-w-3xl">{editorPane}</div>
         </div>
       )}
+      {undoBar}
+      {confirmDialog}
     </div>
   );
 }

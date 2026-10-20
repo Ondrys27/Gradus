@@ -32,6 +32,7 @@ import { useUserSettings } from "@/features/account/queries";
 import { stageTone } from "@/features/pipeline/types";
 import { ComposeEmailDialog } from "@/features/email/compose-email-dialog";
 import { emailSummary } from "@/features/email/types";
+import { MentionedInNotes } from "@/features/notes/mentioned-in-notes";
 import { ActivityPanel } from "./activity-panel";
 import { ContactFormDialog } from "./contact-form-dialog";
 import { byPosition, fieldOptions } from "./field-logic";
@@ -202,6 +203,7 @@ function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNo
           <CurrentTableCard contactId={contact.id} />
           <NotesCard contact={contact} readOnly={!canEdit} />
           <DealsCard contactId={contact.id} />
+          <MentionedInNotes kind="contact" id={contact.id} card />
           {canEdit && (
             <Button variant="destructive" className="self-start" onClick={() => setDeleting(true)}>
               <Trash2Icon aria-hidden data-icon="inline-start" />

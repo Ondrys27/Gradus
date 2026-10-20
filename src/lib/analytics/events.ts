@@ -297,7 +297,10 @@ export const EVENTS = {
     industry: optional(oneOf(INDUSTRY_KEYS)),
   }),
   /** Moved to the trash (it can still be restored for 30 days). */
-  note_deleted: event("notes", "client", true, { pinned: bool() }),
+  note_deleted: event("notes", "client", true, {
+    pinned: bool(),
+    from: optional(oneOf(["editor", "list", "keyboard"])),
+  }),
   /** A note tied to a task or a milestone: an existing one, or a new one written from it. */
   note_linked: event("notes", "client", true, {
     target: oneOf(["task", "milestone"]),
@@ -305,6 +308,15 @@ export const EVENTS = {
     template: optional(oneOf(NOTE_TEMPLATE_KEYS)),
   }),
   note_unlinked: event("notes", "client", false, { target: oneOf(["task", "milestone"]) }),
+  /** A contact, deal, event or worker linked in a note's text with @ (or "Link to…"). */
+  note_mention_added: event("notes", "client", true, {
+    target: oneOf(["contact", "deal", "event", "worker"]),
+    how: oneOf(["typed", "button"]),
+  }),
+  /** A record opened from its chip in a note. */
+  note_mention_opened: event("notes", "client", true, {
+    target: oneOf(["contact", "deal", "event", "worker"]),
+  }),
   /** One of Jarvis's answers kept in the notes, as a new note or added to one. */
   note_saved_from_jarvis: event("notes", "client", true, { mode: oneOf(["new", "append"]) }),
 

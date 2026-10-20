@@ -1245,8 +1245,8 @@
     "pin": "Pin",
     "unpin": "Unpin",
     "pinnedLabel": "Pinned",
-    "delete": "Delete",
-    "deleted": "Moved to Recently Deleted.",
+    "delete": "Move to trash",
+    "deleted": "Moved to the trash",
     "undo": "Undo",
     "noResults": "No note matches “{query}”.",
     "searching": "Searching…",
@@ -1264,10 +1264,10 @@
       "tooLarge": "Too long to save, shorten the note"
     },
     "trash": {
-      "open": "Recently Deleted",
-      "title": "Recently Deleted",
-      "hint": "Notes here are deleted for good after 30 days.",
-      "empty": "Nothing deleted lately.",
+      "open": "Trash",
+      "title": "Trash",
+      "hint": "Notes in the trash are deleted for good after 30 days.",
+      "empty": "The trash is empty.",
       "restore": "Restore",
       "daysLeft": "{days, plural, =0 {Deleted today} one {# day left} other {# days left}}",
       "close": "Back to notes"
@@ -1297,7 +1297,8 @@
       "linkApply": "Add link",
       "linkRemove": "Remove link",
       "linkCancel": "Cancel",
-      "hideKeyboard": "Done"
+      "hideKeyboard": "Done",
+      "mention": "Link to…"
     },
     "templates": {
       "idealCustomer": {
@@ -1399,6 +1400,38 @@
       "saved": "Saved in notes.",
       "open": "Open",
       "failed": "Could not save it to notes. Try again."
+    },
+    "moveToTrash": "Move “{title}” to the trash",
+    "deleteConfirm": {
+      "title": "Move the note “{title}” to the trash?",
+      "text": "You can restore it from the trash for 30 days; after that it is deleted for good.",
+      "confirm": "Move to trash",
+      "cancel": "Cancel"
+    },
+    "mention": {
+      "kind": {
+        "contact": "contact",
+        "deal": "deal",
+        "event": "event",
+        "worker": "worker"
+      },
+      "missing": "This record no longer exists",
+      "missingLabel": "{label} (this record no longer exists)",
+      "unnamed": "Unnamed",
+      "open": {
+        "contact": "Open the contact",
+        "deal": "Open the deal in the pipeline",
+        "event": "Open the event in the calendar",
+        "worker": "Open the worker"
+      },
+      "menuLabel": "Link to a record",
+      "typeToSearch": "Type a name of a contact, deal, event or worker",
+      "searching": "Searching…",
+      "noResults": "Nothing found.",
+      "searchFailed": "Search failed. Try again."
+    },
+    "mentioned": {
+      "title": "Mentioned in notes"
     }
   },
   "pipeline": {

@@ -18,6 +18,7 @@ import {
   type DocNode,
   type NoteDraft,
 } from "./document";
+import { useMentionText } from "./mention-queries";
 import { NoteSaver, type BackupEntry, type DraftBackup } from "./note-saver";
 import { sortNotes, TRASH_DAYS } from "./notes-logic";
 import type { NoteTemplateKey } from "./templates";
@@ -429,7 +430,14 @@ export function useDeleteNote() {
   const queryClient = useQueryClient();
   const key = noteKeys.list(user.id);
   return useMutation({
-    mutationFn: async ({ id }: { id: string; pinned: boolean }) => {
+    mutationFn: async ({
+      id,
+    }: {
+      id: string;
+      pinned: boolean;
+      /** Where it was deleted: the open note's bin, the list's bin or the Delete key. */
+      from: "editor" | "list" | "keyboard";
+    }) => {
       await getNoteSaver(user.id).flush(id);
       const { error } = await createClient()
         .from("notes")
@@ -443,8 +451,8 @@ export function useDeleteNote() {
       queryClient.setQueryData<NoteListItem[]>(key, (list) => list?.filter((n) => n.id !== id));
       return { previous };
     },
-    onSuccess: (_data, { id, pinned }) => {
-      track("note_deleted", { pinned });
+    onSuccess: (_data, { id, pinned, from }) => {
+      track("note_deleted", { pinned, from });
       queryClient.removeQueries({ queryKey: noteKeys.detail(user.id, id) });
       void queryClient.invalidateQueries({ queryKey: noteKeys.trash(user.id) });
     },
@@ -517,6 +525,7 @@ export function useRemoveBlankNote() {
 export function useAppendToNote() {
   const { user } = useSession();
   const queryClient = useQueryClient();
+  const mentionText = useMentionText();
   return useMutation({
     mutationFn: async ({ id, heading, blocks }: { id: string; heading: string; blocks: DocNode[] }) => {
       const saver = getNoteSaver(user.id);
@@ -534,7 +543,7 @@ export function useAppendToNote() {
         content = data.content as DocNode;
       }
       const next = appendToDoc(content, heading, blocks);
-      const draft = draftFromDoc(next);
+      const draft = draftFromDoc(next, { mentionText });
       saver.edit(id, draft);
       applyDraftToCache(queryClient, user.id, id, draft);
       window.dispatchEvent(new CustomEvent(NOTE_REPLACED_EVENT, { detail: { id, content: next } }));

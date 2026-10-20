@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useEditorState, type Editor } from "@tiptap/react";
 import {
+  AtSignIcon,
   BoldIcon,
   CheckIcon,
   Heading1Icon,
@@ -26,6 +27,8 @@ type Props = {
   className?: string;
   /** Phone: a "Done" that closes the keyboard. */
   onDone?: () => void;
+  /** "Link to…" was used: it types @ and the record menu opens. */
+  onMention?: () => void;
 };
 
 function ToolButton({
@@ -65,7 +68,18 @@ function Divider() {
 }
 
 /** Headings, marks, lists and links; every button has a keyboard shortcut too. */
-export function EditorToolbar({ editor, className, onDone }: Props) {
+/**
+ * Types @ at the caret (after a space when it follows a word, so the record
+ * menu opens) and leaves the cursor behind it.
+ */
+export function insertMentionTrigger(editor: Editor) {
+  const { from } = editor.state.selection;
+  const before = from > 1 ? editor.state.doc.textBetween(from - 1, from, "\n", " ") : "";
+  const text = before && !/\s/.test(before) ? " @" : "@";
+  editor.chain().focus().insertContent(text).run();
+}
+
+export function EditorToolbar({ editor, className, onDone, onMention }: Props) {
   const t = useTranslations("notes.editor");
   const [linking, setLinking] = useState(false);
   const [href, setHref] = useState("");
@@ -225,6 +239,15 @@ export function EditorToolbar({ editor, className, onDone }: Props) {
       </ToolButton>
       <ToolButton label={`${t("link")} (⌘⇧K)`} active={state.link} onClick={openLink}>
         <LinkIcon />
+      </ToolButton>
+      <ToolButton
+        label={`${t("mention")} (@)`}
+        onClick={() => {
+          onMention?.();
+          insertMentionTrigger(editor);
+        }}
+      >
+        <AtSignIcon />
       </ToolButton>
       <Divider />
       <ToolButton

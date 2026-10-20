@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
 import { Extension } from "@tiptap/core";
-import { EditorContent, useEditor } from "@tiptap/react";
+import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { Placeholder } from "@tiptap/extensions";
@@ -17,6 +17,17 @@ import { draftFromDoc, type DocNode } from "./document";
 import { EditorToolbar, LINK_SHORTCUT_EVENT } from "./editor-toolbar";
 import { isAllowedLink } from "./links";
 import { useNoteBacklinks } from "./link-queries";
+import { createRecordMention, MentionMenuBridge, MentionTargetsContext } from "./mention-extension";
+import { MentionMenu } from "./mention-menu";
+import { useMentionTargets, useMentionText } from "./mention-queries";
+import {
+  mentionAttrsOf,
+  mentionSetKey,
+  mentionsInDoc,
+  staleLabels,
+  type MentionAttrs,
+  type MentionTarget,
+} from "./mentions";
 import { applyDraftToCache, NOTE_REPLACED_EVENT, useNoteSaver, type NoteDetail } from "./queries";
 import { useKeyboardInset } from "./use-keyboard-inset";
 
@@ -68,6 +79,28 @@ function Backlinks({ noteId }: { noteId: string }) {
   );
 }
 
+/**
+ * Chips show the record's current name: a renamed contact reads its new name
+ * as soon as the note opens. The stored label is brought in line quietly
+ * (no save, no undo step); the next edit saves it with the text.
+ */
+function refreshMentionLabels(editor: Editor, targets: ReadonlyMap<string, MentionTarget>) {
+  const nodes: { pos: number; attrs: MentionAttrs }[] = [];
+  editor.state.doc.descendants((node, pos) => {
+    const attrs = mentionAttrsOf({ type: node.type.name, attrs: node.attrs });
+    if (attrs) nodes.push({ pos, attrs });
+  });
+  const stale = staleLabels(nodes, targets);
+  if (stale.length === 0) return;
+  const tr = editor.state.tr;
+  for (const { pos, label } of stale) {
+    const node = tr.doc.nodeAt(pos);
+    if (node) tr.setNodeMarkup(pos, undefined, { ...node.attrs, label });
+  }
+  tr.setMeta("preventUpdate", true).setMeta("addToHistory", false);
+  editor.view.dispatch(tr);
+}
+
 /** Saving state of the open note, quietly next to its date. */
 export function SaveStatus({ noteId }: { noteId: string }) {
   const t = useTranslations("notes.saveStatus");
@@ -108,6 +141,10 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back }
   const [focused, setFocused] = useState(false);
   const blurTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const keyboardInset = useKeyboardInset(isPhone && focused);
+  const mentionText = useMentionText();
+  const [menu] = useState(() => new MentionMenuBridge());
+  const [mentions, setMentions] = useState(() => mentionsInDoc(note.content));
+  const targets = useMentionTargets(mentions);
 
   const extensions = useMemo(
     () => [
@@ -131,8 +168,9 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back }
           pos === 0 ? t("editor.placeholderTitle") : t("editor.placeholderBody"),
       }),
       LinkShortcut,
+      createRecordMention(menu),
     ],
-    [t],
+    [t, menu],
   );
 
   const editor = useEditor(
@@ -150,9 +188,14 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back }
         },
       },
       onUpdate: ({ editor: e }) => {
-        const draft = draftFromDoc(e.getJSON() as DocNode);
+        const doc = e.getJSON() as DocNode;
+        const draft = draftFromDoc(doc, { mentionText });
         saver.edit(note.id, draft);
         applyDraftToCache(queryClient, user.id, note.id, draft);
+        const next = mentionsInDoc(doc);
+        setMentions((previous) =>
+          mentionSetKey(previous) === mentionSetKey(next) ? previous : next,
+        );
       },
       onFocus: () => {
         if (blurTimer.current) clearTimeout(blurTimer.current);
@@ -170,6 +213,10 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back }
   useEffect(() => {
     editor?.setEditable(!readOnly);
   }, [editor, readOnly]);
+
+  useEffect(() => {
+    if (editor && !editor.isDestroyed && targets.data) refreshMentionLabels(editor, targets.data);
+  }, [editor, targets.data]);
 
   // Text added from outside (one of Jarvis's answers) shows in the open editor
   // too, so the next keystroke does not save over it.
@@ -205,7 +252,11 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back }
       ) : (
         <div className="sticky top-0 z-10 -mx-2 flex items-center gap-2 rounded-2xl bg-canvas/50 px-1 py-1 backdrop-blur-xl">
           {showToolbar ? (
-            <EditorToolbar editor={editor} className="min-w-0 flex-1" />
+            <EditorToolbar
+              editor={editor}
+              onMention={() => (menu.via = "button")}
+              className="min-w-0 flex-1"
+            />
           ) : (
             <span className="flex-1" />
           )}
@@ -220,7 +271,10 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back }
           <span className="mx-2">·</span>
           <SaveStatus noteId={note.id} />
         </p>
-        <EditorContent editor={editor} />
+        <MentionTargetsContext.Provider value={targets.data}>
+          <EditorContent editor={editor} />
+        </MentionTargetsContext.Provider>
+        {!readOnly && <MentionMenu bridge={menu} />}
       </div>
 
       {showToolbar && isPhone && focused && (
@@ -230,6 +284,7 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back }
         >
           <EditorToolbar
             editor={editor}
+            onMention={() => (menu.via = "button")}
             onDone={() => editor.commands.blur()}
           />
         </div>

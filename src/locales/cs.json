@@ -1245,9 +1245,9 @@
     "pin": "Připnout",
     "unpin": "Odepnout",
     "pinnedLabel": "Připnutá",
-    "delete": "Smazat",
-    "deleted": "Přesunuto do Nedávno smazaných.",
-    "undo": "Vrátit",
+    "delete": "Přesunout do koše",
+    "deleted": "Přesunuto do koše",
+    "undo": "Zpět",
     "noResults": "Žádná poznámka neodpovídá „{query}“.",
     "searching": "Hledám…",
     "loadError": "Poznámky se nepodařilo načíst.",
@@ -1264,10 +1264,10 @@
       "tooLarge": "Poznámka je moc dlouhá, zkrať ji"
     },
     "trash": {
-      "open": "Nedávno smazané",
-      "title": "Nedávno smazané",
-      "hint": "Odsud se poznámky po 30 dnech smažou natrvalo.",
-      "empty": "Nic smazaného tu není.",
+      "open": "Koš",
+      "title": "Koš",
+      "hint": "Poznámky v koši se po 30 dnech smažou natrvalo.",
+      "empty": "Koš je prázdný.",
       "restore": "Obnovit",
       "daysLeft": "{days, plural, =0 {Smaže se dnes} one {Zbývá # den} few {Zbývají # dny} other {Zbývá # dní}}",
       "close": "Zpět na poznámky"
@@ -1297,7 +1297,8 @@
       "linkApply": "Přidat odkaz",
       "linkRemove": "Odebrat odkaz",
       "linkCancel": "Zrušit",
-      "hideKeyboard": "Hotovo"
+      "hideKeyboard": "Hotovo",
+      "mention": "Odkázat na…"
     },
     "templates": {
       "idealCustomer": {
@@ -1399,6 +1400,38 @@
       "saved": "Uloženo v poznámkách.",
       "open": "Otevřít",
       "failed": "Do poznámek se to nepovedlo uložit. Zkus to znovu."
+    },
+    "moveToTrash": "Přesunout „{title}“ do koše",
+    "deleteConfirm": {
+      "title": "Přesunout poznámku „{title}“ do koše?",
+      "text": "Z koše ji můžeš 30 dní obnovit, pak se smaže natrvalo.",
+      "confirm": "Přesunout do koše",
+      "cancel": "Zrušit"
+    },
+    "mention": {
+      "kind": {
+        "contact": "kontakt",
+        "deal": "obchod",
+        "event": "událost",
+        "worker": "pracovník"
+      },
+      "missing": "Záznam už neexistuje",
+      "missingLabel": "{label} (záznam už neexistuje)",
+      "unnamed": "Bez názvu",
+      "open": {
+        "contact": "Otevřít kontakt",
+        "deal": "Otevřít obchod v pipeline",
+        "event": "Otevřít událost v kalendáři",
+        "worker": "Otevřít pracovníka"
+      },
+      "menuLabel": "Odkázat na záznam",
+      "typeToSearch": "Piš jméno kontaktu, obchodu, události nebo pracovníka",
+      "searching": "Hledám…",
+      "noResults": "Nic nenalezeno.",
+      "searchFailed": "Hledání se nepovedlo, zkus to znovu."
+    },
+    "mentioned": {
+      "title": "Zmíněno v poznámkách"
     }
   },
   "pipeline": {

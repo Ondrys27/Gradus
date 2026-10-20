@@ -45,7 +45,7 @@ U každé sekce: adopce (% aktivních, kteří ji použili), počet akcí, akce 
 
 **Milníky** — vytvořené (z kapitoly / vlastní), dokončené, míra a medián doby dokončení, úkoly a podúkoly vytvořené a splněné, hloubka stromu, podíl pohledů Seznam / Mapa / Cesta, vyplněná odměna (%), vyžádané AI hodnocení
 
-**Poznámky** — založené (prázdné / ze šablony, podle klíče šablony a oboru, odkud: seznam, úkol, milník, Jarvis), smazané, uživatelé s aspoň jednou poznámkou, propojení s úkoly a milníky (připojená / zapsaná, podle šablony), uložené odpovědi Jarvise (nová / připojená), představení Poznámek Jarvisem (zobrazeno / otevřeno / zavřeno) (z `note_created`, `note_template_used`, `note_deleted`, `note_linked`, `note_unlinked`, `note_saved_from_jarvis`, `jarvis_notes_intro`; nikdy názvy ani obsah)
+**Poznámky** — založené (prázdné / ze šablony, podle klíče šablony a oboru, odkud: seznam, úkol, milník, Jarvis), smazané, uživatelé s aspoň jednou poznámkou, propojení s úkoly a milníky (připojená / zapsaná, podle šablony), uložené odpovědi Jarvise (nová / připojená), představení Poznámek Jarvisem (zobrazeno / otevřeno / zavřeno), smazání podle místa (otevřená poznámka / popelnice v seznamu / klávesa), odkazy na záznamy v textu (kontakt / obchod / událost / pracovník, napsáním @ / tlačítkem) a jejich otevření z čipu (z `note_created`, `note_template_used`, `note_deleted`, `note_linked`, `note_unlinked`, `note_saved_from_jarvis`, `note_mention_added`, `note_mention_opened`, `jarvis_notes_intro`; nikdy názvy ani obsah)
 
 **Pipeline** — obchody vytvořené, přesuny, výhry, prohry, míra výhry, průměrná a celková hodnota po měnách, medián času ve fázi, uživatelé s upravenými fázemi, použité „znovu oslovit"
 

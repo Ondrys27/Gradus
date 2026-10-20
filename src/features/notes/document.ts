@@ -1,3 +1,5 @@
+import { mentionAttrsOf, mentionPlainText, type MentionTextFn } from "./mentions";
+
 /**
  * The editor's document (Tiptap / ProseMirror JSON) and what is derived from
  * it: the plain text kept for search and Jarvis, the title (its first line)
@@ -34,10 +36,15 @@ export const EMPTY_DOC: DocNode = { type: "doc", content: [] };
 /** Blocks that are one line of text each. */
 const TEXT_BLOCKS = new Set(["paragraph", "heading", "codeBlock"]);
 
-function inlineText(node: DocNode): string {
+/** How derived text is written; mentions read "[kontakt: Jan Novák]" in the interface language. */
+export type TextOptions = { mentionText?: MentionTextFn };
+
+function inlineText(node: DocNode, options: TextOptions): string {
   if (node.type === "text") return node.text ?? "";
   if (node.type === "hardBreak") return " ";
-  return (node.content ?? []).map(inlineText).join("");
+  const mention = mentionAttrsOf(node);
+  if (mention) return mentionPlainText(mention, options.mentionText);
+  return (node.content ?? []).map((child) => inlineText(child, options)).join("");
 }
 
 /**
@@ -45,12 +52,12 @@ function inlineText(node: DocNode): string {
  * their marker ("- ", "1. ", "[x] "), empty lines left out. The first line is
  * the title.
  */
-export function extractText(doc: DocNode | null | undefined): string {
+export function extractText(doc: DocNode | null | undefined, options: TextOptions = {}): string {
   const lines: string[] = [];
 
   function walk(node: DocNode, prefix: string, depth: number) {
     if (TEXT_BLOCKS.has(node.type)) {
-      const text = inlineText(node).replace(/\s+/g, " ").trim();
+      const text = inlineText(node, options).replace(/\s+/g, " ").trim();
       if (text) lines.push(`${"  ".repeat(depth)}${prefix}${text}`);
       return;
     }
@@ -100,8 +107,8 @@ export function titleFromText(text: string): string {
 }
 
 /** Everything the database stores for a document. */
-export function draftFromDoc(doc: DocNode): NoteDraft {
-  const text = extractText(doc).slice(0, NOTE_LIMITS.contentText);
+export function draftFromDoc(doc: DocNode, options: TextOptions = {}): NoteDraft {
+  const text = extractText(doc, options).slice(0, NOTE_LIMITS.contentText);
   return { title: titleFromText(text), content: doc, content_text: text };
 }
 

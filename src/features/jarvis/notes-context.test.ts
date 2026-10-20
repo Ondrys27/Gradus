@@ -3,6 +3,7 @@ import { DEFAULT_FORMAT_SETTINGS } from "@/lib/format";
 import {
   describeLinkedNotes,
   describeNotes,
+  MENTIONS_HINT,
   neutralizeNoteText,
   NOTES_CONTEXT_MAX_CHARS,
   TRUNCATED_MARK,
@@ -136,5 +137,20 @@ describe("describeLinkedNotes", () => {
     );
     expect(block.length).toBeLessThanOrEqual(3_000);
     expect(block).toContain(TRUNCATED_MARK);
+  });
+});
+
+describe("records mentioned in notes", () => {
+  it("explains the [kind: name] links and keeps them in the text Jarvis reads", () => {
+    const block = describeNotes(
+      [row({ title: "Plán", pinned: true, body: "Plán\nZavolat [kontakt: Jan Novák] kvůli [obchod: Web]" })],
+      settings,
+    );
+    expect(block).toContain(MENTIONS_HINT);
+    expect(block).toContain("Zavolat [kontakt: Jan Novák] kvůli [obchod: Web]");
+
+    const linked = describeLinkedNotes([{ title: "Plán", text: "Plán\n[pracovník: Petra] zavolá" }]);
+    expect(linked).toContain(MENTIONS_HINT);
+    expect(linked).toContain("[pracovník: Petra] zavolá");
   });
 });

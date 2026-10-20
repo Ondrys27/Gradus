@@ -73,7 +73,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] STOP | Konec fáze 14. V anonymním okně otevři /admin — musí tě poslat na přihlášení a po TOTP zpět. Projdi novou administraci: skupiny v menu, filtry (zapni Beta, počet řádků se musí změnit), scroll při přepínání záložek, jména místo ID. V Administrátorech vytvoř pozvánku, otevři odkaz v jiném prohlížeči, založ účet s TOTP a ověř, co nový admin vidí a nevidí. Porovnej snímky v docs/admin-redesign. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [x] 15.1 | architect | 2026-10-20 Jarvisova upozornění se ukazují po jednom ve frontě („2 z 5", šipky, ←/→, swipe) v bublině i v panelu chatu, kde dřívější seznam karet zakrýval chat.
 - [x] 15.2 | architect | 2026-10-20 Chyba v aplikaci ukáže omluvu s kódem GR-XXXXXX (Kopírovat, Zkusit znovu) a tlačítkem Odeslat zpětnou vazbu, které jedním klikem založí hlášení v nové tabulce bug_reports (i bez přihlášení, limit podle IP), dohledatelné podle kódu v /admin/zpetna-vazba.
-- [ ] 15.3 | architect |
+- [x] 15.3 | architect | 2026-10-20 Poznámky: červená popelnice v seznamu (i Delete/Backspace) s potvrzením, pak sousední poznámka a „Přesunuto do koše · Zpět“ na 6 s; @ odkazy na kontakty, obchody, události a pracovníky jako čipy (aktuální název, zaniklý záznam přeškrtnutý), nová tabulka note_mentions plněná triggerem a „Zmíněno v poznámkách“ v detailech; hledání i Jarvis čtou čip jako „[kontakt: Jméno]“.
 - [ ] 15.4 | architect |
 - [ ] 15.5 | architect |
 - [ ] K15 | reviewer |

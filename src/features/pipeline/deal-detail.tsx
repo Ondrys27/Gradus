@@ -33,6 +33,7 @@ import { useCan, useCanContacts } from "@/features/account/workspace-queries";
 import { useDeleteDeal, useUpdateDeal } from "./queries";
 import type { PipelineErrorKey } from "./schemas";
 import type { Deal, Stage } from "./types";
+import { MentionedInNotes } from "@/features/notes/mentioned-in-notes";
 
 /** Never a real contact; keeps a uuid column happy when the deal has none. */
 const NIL_CONTACT_ID = "00000000-0000-0000-0000-000000000000";
@@ -265,6 +266,8 @@ function DetailBody({
         </h3>
         <DealActivityTimeline dealId={deal.id} />
       </section>
+
+      <MentionedInNotes kind="deal" id={deal.id} className="border-t border-line pt-5" />
 
       {canEdit && (
         <Button type="button" variant="destructive" onClick={() => setConfirmingDelete(true)}>

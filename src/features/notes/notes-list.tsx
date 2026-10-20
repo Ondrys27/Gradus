@@ -19,6 +19,8 @@ type Props = {
   selectedId: string | null;
   onSelect: (id: string) => void;
   onOpenTrash: () => void;
+  /** Asks to move a note to the trash (its bin, or Delete / Backspace on its row); none when read-only. */
+  onRequestDelete?: (note: NoteListItem, viaKeyboard: boolean) => void;
   loadError: boolean;
   onRetry: () => void;
 };
@@ -27,30 +29,41 @@ function NoteRow({
   note,
   selected,
   onSelect,
+  onRequestDelete,
 }: {
   note: NoteListItem;
   selected: boolean;
   onSelect: (id: string) => void;
+  onRequestDelete?: (note: NoteListItem, viaKeyboard: boolean) => void;
 }) {
   const t = useTranslations("notes");
   const settings = useFormatSettings();
+  const title = note.title || t("untitled");
   return (
-    <li>
+    <li className="group relative">
       <button
         type="button"
         onClick={() => onSelect(note.id)}
+        onKeyDown={(event) => {
+          if (!onRequestDelete || (event.key !== "Delete" && event.key !== "Backspace")) return;
+          if (event.metaKey || event.ctrlKey || event.altKey) return;
+          event.preventDefault();
+          onRequestDelete(note, true);
+        }}
         aria-current={selected ? "true" : undefined}
         data-testid="note-row"
+        data-note-row={note.id}
         className={cn(
-          "group flex min-h-14 w-full flex-col gap-0.5 rounded-xl px-3 py-2.5 text-left transition-colors",
+          "flex min-h-14 w-full flex-col gap-0.5 rounded-xl px-3 py-2.5 text-left transition-colors",
           "focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+          onRequestDelete && "pr-13 mouse:pr-11",
           selected ? "bg-violet/14" : "hover:bg-surface/70",
         )}
       >
         <span className="flex items-center gap-1.5">
           {note.pinned && <PinIcon aria-label={t("pinnedLabel")} className="size-3 shrink-0 text-gold" />}
           <span className={cn("truncate font-semibold", note.title ? "text-ink" : "text-ink-muted")}>
-            {note.title || t("untitled")}
+            {title}
           </span>
         </span>
         <span className="flex min-w-0 gap-2 text-sm">
@@ -60,6 +73,23 @@ function NoteRow({
           <span className="truncate text-ink-muted">{note.preview || t("noText")}</span>
         </span>
       </button>
+      {onRequestDelete && (
+        // Always there on a phone; on a computer it shows on hover or focus.
+        <button
+          type="button"
+          onClick={() => onRequestDelete(note, false)}
+          aria-label={t("moveToTrash", { title })}
+          title={t("moveToTrash", { title })}
+          data-testid="note-row-delete"
+          className={cn(
+            "absolute top-1/2 right-1 grid size-11 -translate-y-1/2 place-items-center rounded-lg text-destructive outline-none transition-opacity",
+            "hover:bg-destructive/12 focus-visible:ring-3 focus-visible:ring-destructive/40 mouse:size-9",
+            "mouse:opacity-0 mouse:group-focus-within:opacity-100 mouse:group-hover:opacity-100 mouse:focus-visible:opacity-100",
+          )}
+        >
+          <Trash2Icon aria-hidden className="size-4" />
+        </button>
+      )}
     </li>
   );
 }
@@ -69,11 +99,13 @@ function Group({
   notes,
   selectedId,
   onSelect,
+  onRequestDelete,
 }: {
   label: string | null;
   notes: NoteListItem[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  onRequestDelete?: (note: NoteListItem, viaKeyboard: boolean) => void;
 }) {
   if (notes.length === 0) return null;
   return (
@@ -81,7 +113,13 @@ function Group({
       {label && <h2 className="micro-label px-3 pt-3 pb-1">{label}</h2>}
       <ul className="flex flex-col gap-0.5">
         {notes.map((note) => (
-          <NoteRow key={note.id} note={note} selected={note.id === selectedId} onSelect={onSelect} />
+          <NoteRow
+            key={note.id}
+            note={note}
+            selected={note.id === selectedId}
+            onSelect={onSelect}
+            onRequestDelete={onRequestDelete}
+          />
         ))}
       </ul>
     </section>
@@ -98,6 +136,7 @@ export function NotesList({
   selectedId,
   onSelect,
   onOpenTrash,
+  onRequestDelete,
   loadError,
   onRetry,
 }: Props) {
@@ -156,7 +195,13 @@ export function NotesList({
         </div>
       ) : results ? (
         results.length > 0 ? (
-          <Group label={null} notes={results} selectedId={selectedId} onSelect={onSelect} />
+          <Group
+            label={null}
+            notes={results}
+            selectedId={selectedId}
+            onSelect={onSelect}
+            onRequestDelete={onRequestDelete}
+          />
         ) : (
           <p className="px-3 py-4 text-sm text-ink-muted">
             {searching ? t("searching") : t("noResults", { query })}
@@ -169,12 +214,14 @@ export function NotesList({
             notes={groups.pinned}
             selectedId={selectedId}
             onSelect={onSelect}
+            onRequestDelete={onRequestDelete}
           />
           <Group
             label={groups.pinned.length > 0 ? t("notesGroup") : null}
             notes={groups.others}
             selectedId={selectedId}
             onSelect={onSelect}
+            onRequestDelete={onRequestDelete}
           />
         </>
       )}
