@@ -72,7 +72,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] K14 | reviewer | 2026-10-19 Kontrola fáze 14: opraven export auditu bez potvrzení, tichý pád statistik zpětné vazby a text natvrdo v JSX; brána, role, pozvánky (token, souběh) a filtry ověřeny bez nálezu. Pozor: pozvánka při založení nového účtu prozradí existenci e-mailu (emailTaken, mimo limit pokusů) a token jde před dokončením TOTP zneužít k založení víc účtů — chce to dořešit.
 - [x] STOP | Konec fáze 14. V anonymním okně otevři /admin — musí tě poslat na přihlášení a po TOTP zpět. Projdi novou administraci: skupiny v menu, filtry (zapni Beta, počet řádků se musí změnit), scroll při přepínání záložek, jména místo ID. V Administrátorech vytvoř pozvánku, otevři odkaz v jiném prohlížeči, založ účet s TOTP a ověř, co nový admin vidí a nevidí. Porovnej snímky v docs/admin-redesign. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [x] 15.1 | architect | 2026-10-20 Jarvisova upozornění se ukazují po jednom ve frontě („2 z 5", šipky, ←/→, swipe) v bublině i v panelu chatu, kde dřívější seznam karet zakrýval chat.
-- [ ] 15.2 | architect |
+- [x] 15.2 | architect | 2026-10-20 Chyba v aplikaci ukáže omluvu s kódem GR-XXXXXX (Kopírovat, Zkusit znovu) a tlačítkem Odeslat zpětnou vazbu, které jedním klikem založí hlášení v nové tabulce bug_reports (i bez přihlášení, limit podle IP), dohledatelné podle kódu v /admin/zpetna-vazba.
 - [ ] 15.3 | architect |
 - [ ] 15.4 | architect |
 - [ ] 15.5 | architect |
