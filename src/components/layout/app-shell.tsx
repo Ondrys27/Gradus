@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { JarvisDock } from "@/components/jarvis/jarvis-dock";
 import { JarvisTour } from "@/components/jarvis/jarvis-tour";
+import { useErrorScreenShown } from "@/features/errors/error-screen-state";
 import { GameSessionStart } from "@/features/game/game-session-start";
 import { OnboardingGate } from "@/features/onboarding/onboarding-gate";
 import { TrialNotice } from "@/features/plan/trial-notice";
@@ -24,6 +25,8 @@ import { TopBar } from "./top-bar";
  * reload. As one client module the shell hydrates the same way every time.
  */
 export function AppShell({ children }: { children: ReactNode }) {
+  // The error page has no Jarvis: neither the dock (it hides itself) nor the tour.
+  const errorShown = useErrorScreenShown();
   return (
     <SearchProvider>
       <div className="min-h-dvh md:pl-[calc(--spacing(19)+env(safe-area-inset-left))] lg:pl-[calc(--spacing(60)+env(safe-area-inset-left))]">
@@ -40,7 +43,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <GameSessionStart />
         <ThemeSync />
         <OnboardingGate />
-        <JarvisTour />
+        {!errorShown && <JarvisTour />}
         <AnalyticsProvider />
         <PageLockGuard />
       </div>

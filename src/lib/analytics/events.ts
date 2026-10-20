@@ -42,7 +42,7 @@ function event<S extends Shape>(
   return { section, from, active, props };
 }
 
-const { id, oneOf, key, isoCode, count, number, ms, bool, optional } = field;
+const { id, oneOf, key, isoCode, count, number, ms, bool, optional, errorCode } = field;
 
 const MODES = ["game", "tool"] as const;
 const ONBOARDING_STEPS = [
@@ -144,6 +144,8 @@ export const EVENTS = {
     route: oneOf(APP_ROUTES),
     source: oneOf(["boundary", "onerror", "unhandledrejection"]),
     message: field.scrubbedText(),
+    /** The code the error page shows (boundary errors), the key to its bug report. */
+    code: optional(errorCode()),
   }),
   /** A server route or action: how long and how it ended (an error code, never a message). */
   server_call: event("platform", "server", false, {
@@ -535,6 +537,12 @@ export const EVENTS = {
   /** "How likely would you recommend Gradus?", asked once after 7 days. */
   nps_submitted: event("platform", "client", false, { score: count(10) }),
   nps_dismissed: event("platform", "client", false, {}),
+  /** "Send feedback" on the error page stored a report (a repeated click stores nothing). */
+  bug_report_sent: event("platform", "server", false, {
+    source: oneOf(["error_page", "report"]),
+    described: bool(),
+    signed_in: bool(),
+  }),
 
   // --- plan and trial ------------------------------------------------------
   plan_interest_clicked: event("plan", "server", false, { plan: oneOf(PAID_PLANS), ok: bool() }),

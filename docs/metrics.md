@@ -107,6 +107,7 @@ U každé sekce: adopce (% aktivních, kteří ji použili), počet akcí, akce 
 
 ## 9. Zpětná vazba
 
+- Hlášení chyb ze stránky chyby — seznam s kódem chyby (GR-…), hledání podle kódu; událost `bug_report_sent`, kód je i v `client_error`
 - Nápady od uživatelů — seznam a stav
 - Otázka po 7 dnech používání: „Jak pravděpodobně bys Gradus doporučil?" 0–10 a volitelný komentář → NPS, rozdělení, komentáře
 - Hodnocení Jarvisových odpovědí

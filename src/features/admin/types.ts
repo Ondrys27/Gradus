@@ -92,6 +92,29 @@ export const FEATURE_REQUEST_STATUSES: readonly FeatureRequestStatus[] = [
   "declined",
 ];
 
+export const BUG_REPORT_STATUSES = ["new", "in_progress", "fixed", "cannot_reproduce"] as const;
+export type BugReportStatus = (typeof BUG_REPORT_STATUSES)[number];
+
+/** One bug report as the Feedback page lists it (bug_reports via admin_bug_reports). */
+export type BugReportRow = {
+  id: string;
+  /** Null for a report sent signed out. */
+  userId: string | null;
+  userName: string | null;
+  status: BugReportStatus;
+  code: string | null;
+  description: string | null;
+  /** The error's text after scrubbing, and Next.js's digest of a server error. */
+  message: string | null;
+  digest: string | null;
+  page: string;
+  browser: string | null;
+  device: string | null;
+  viewport: string | null;
+  version: string | null;
+  createdAt: string;
+};
+
 export type FeatureRequestRow = {
   id: string;
   userId: string;

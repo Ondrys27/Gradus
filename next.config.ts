@@ -20,6 +20,10 @@ function supabaseStoragePattern() {
 }
 
 const nextConfig: NextConfig = {
+  // The deployment's short commit for bug reports (src/lib/app-version.ts).
+  env: {
+    NEXT_PUBLIC_APP_VERSION: (process.env.VERCEL_GIT_COMMIT_SHA ?? "").slice(0, 7) || "dev",
+  },
   // A production build next to a running dev server (bun run e2e against a
   // build) needs its own folder; everything else keeps the default .next.
   distDir: process.env.NEXT_DIST_DIR || ".next",

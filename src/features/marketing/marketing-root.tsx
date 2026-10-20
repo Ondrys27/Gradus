@@ -41,7 +41,7 @@ const caveat = Caveat({
 const SITE_TIME_ZONE = "Europe/Prague";
 
 /** Texts the website's client components need; the app's texts stay on the server. */
-const CLIENT_MESSAGES = ["marketing", "plans", "topBar.account"] as const;
+const CLIENT_MESSAGES = ["marketing", "plans", "topBar.account", "errorPage"] as const;
 
 export async function marketingRootMetadata(locale: SiteLocale): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "meta" });

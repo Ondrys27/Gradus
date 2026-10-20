@@ -11,11 +11,26 @@
       "clear": "Clear",
       "title": "Choose a date",
       "close": "Close"
-    },
-    "pageError": {
-      "title": "This page ran into a problem",
-      "description": "Something went wrong while showing this page. Your data is safe; try it again.",
-      "retry": "Try again"
+    }
+  },
+  "errorPage": {
+    "title": "Sorry, something went wrong",
+    "description": "We know about the error and will look into it. Please try again.",
+    "codeLabel": "Error code",
+    "copy": "Copy",
+    "copied": "Copied",
+    "retry": "Try again",
+    "feedback": "Send feedback",
+    "feedbackLabel": "What were you doing? (optional)",
+    "feedbackPlaceholder": "A few words help, but you can send it empty too.",
+    "send": "Send",
+    "sending": "Sending…",
+    "thanks": "Thank you. Thanks to you, we now know about the error and will fix it as quickly as we can.",
+    "failed": "Sending didn’t work. Please try again in a moment.",
+    "home": {
+      "app": "Back to the dashboard",
+      "admin": "Back to the admin overview",
+      "site": "Back to the home page"
     }
   },
   "phone": {
@@ -4361,7 +4376,7 @@
     },
     "feedback": {
       "title": "Feedback",
-      "description": "Ideas, NPS and how people rate Jarvis's answers.",
+      "description": "Bug reports, ideas, NPS and how people rate Jarvis's answers.",
       "commentsTitle": "NPS comments",
       "commentsDescription": "The most recent answers that left a comment.",
       "noComments": "No comments yet.",
@@ -4378,6 +4393,35 @@
         "in_progress": "In progress",
         "done": "Done",
         "declined": "Declined"
+      },
+      "reportsTitle": "Bug reports",
+      "reportsDescription": "Sent from the error page, newest first. An error code finds a report from internal accounts too.",
+      "searchPlaceholder": "Search by error code (GR-…)",
+      "reportsEmpty": "No reports yet.",
+      "reportsNotFound": "No report with the code {code}.",
+      "reportsInvalidCode": "That doesn’t look like an error code. A code is GR- and six characters.",
+      "anonymous": "Signed-out visitor",
+      "reportMeta": "{name} · {date}",
+      "noDescription": "No description",
+      "pageLabel": "Page",
+      "browserLabel": "Browser",
+      "versionLabel": "Version",
+      "errorLabel": "Error",
+      "digestLabel": "Digest",
+      "reportStatus": {
+        "new": "New",
+        "in_progress": "In progress",
+        "fixed": "Fixed",
+        "cannot_reproduce": "Can’t reproduce"
+      },
+      "browser": {
+        "chrome": "Chrome",
+        "safari": "Safari",
+        "firefox": "Firefox",
+        "edge": "Edge",
+        "samsung": "Samsung Internet",
+        "opera": "Opera",
+        "other": "Other browser"
       }
     },
     "users": {

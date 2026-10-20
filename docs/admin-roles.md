@@ -50,6 +50,7 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | `admin_invite_accept` | pozvaný účet s aal2 | spotřebuje token a přidělí roli v jedné transakci, píše `admin_audit` |
 | `admin_require_owner` | jen uvnitř funkcí výše | bez práva EXECUTE pro klienty |
 | `admin_members`, `admin_people`, `metric_admin_users` | jen service role (server po stráži) | čtou `auth.users` |
+| `admin_bug_reports` | jen service role (server po stráži) | Zpětná vazba → Hlášení chyb, hledání podle kódu chyby; owner + admin |
 | `app_overview` | owner | v aplikaci, ne v administraci; beze změny |
 
 ## Životní cyklus pozvánky

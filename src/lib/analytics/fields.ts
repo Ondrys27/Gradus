@@ -40,6 +40,8 @@ export const field = {
         .regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,47}$/)
         .refine((value) => !LONG_NUMBER.test(value), "long number"),
     ),
+  /** The code of a caught error as the error page shows it (GR-7K3M9Q, see error-code.ts). */
+  errorCode: () => safe(z.string().regex(/^GR-[A-Z0-9]{6}$/)),
   /** An ISO code of exactly `length` capital letters (currency, country). */
   isoCode: (length: 2 | 3) => safe(z.string().regex(new RegExp(`^[A-Z]{${length}}$`))),
   /** A whole number ≥ 0. */

@@ -460,6 +460,72 @@ export type Database = {
         }
         Relationships: []
       }
+      bug_reports: {
+        Row: {
+          app_version: string | null
+          browser: string | null
+          created_at: string
+          description: string | null
+          device: string | null
+          error_code: string | null
+          error_digest: string | null
+          error_message: string | null
+          expected: string | null
+          id: string
+          ip_hash: string | null
+          kind: string
+          locale: string | null
+          page: string
+          source: string
+          status: string
+          updated_at: string
+          user_id: string | null
+          viewport: string | null
+        }
+        Insert: {
+          app_version?: string | null
+          browser?: string | null
+          created_at?: string
+          description?: string | null
+          device?: string | null
+          error_code?: string | null
+          error_digest?: string | null
+          error_message?: string | null
+          expected?: string | null
+          id?: string
+          ip_hash?: string | null
+          kind?: string
+          locale?: string | null
+          page: string
+          source?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          viewport?: string | null
+        }
+        Update: {
+          app_version?: string | null
+          browser?: string | null
+          created_at?: string
+          description?: string | null
+          device?: string | null
+          error_code?: string | null
+          error_digest?: string | null
+          error_message?: string | null
+          expected?: string | null
+          id?: string
+          ip_hash?: string | null
+          kind?: string
+          locale?: string | null
+          page?: string
+          source?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          viewport?: string | null
+        }
+        Relationships: []
+      }
       calendar_events: {
         Row: {
           actor_id: string | null
@@ -2971,6 +3037,27 @@ export type Database = {
         Args: { _code: string; _user_id: string }
         Returns: string
       }
+      admin_bug_reports: {
+        Args: { _code?: string; _include_internal?: boolean; _limit?: number }
+        Returns: {
+          app_version: string
+          browser: string
+          created_at: string
+          description: string
+          device: string
+          error_code: string
+          error_digest: string
+          error_message: string
+          id: string
+          kind: string
+          locale: string
+          page: string
+          source: string
+          status: string
+          user_id: string
+          viewport: string
+        }[]
+      }
       admin_feature_requests: {
         Args: {
           _include_internal?: boolean
@@ -3083,6 +3170,26 @@ export type Database = {
           _paid_on: string
         }
         Returns: undefined
+      }
+      bug_report_submit: {
+        Args: {
+          _app_version?: string
+          _browser?: string
+          _description?: string
+          _device?: string
+          _error_code?: string
+          _error_digest?: string
+          _error_message?: string
+          _ip_hash: string
+          _limit_anonymous?: number
+          _limit_user?: number
+          _locale?: string
+          _page: string
+          _source: string
+          _user_id: string
+          _viewport?: string
+        }
+        Returns: string
       }
       choose_path: { Args: { _path_key: string }; Returns: Json }
       count_generation_keyword: {

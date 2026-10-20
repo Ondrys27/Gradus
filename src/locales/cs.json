@@ -11,11 +11,26 @@
       "clear": "Vymazat",
       "title": "Vyberte datum",
       "close": "Zavřít"
-    },
-    "pageError": {
-      "title": "Tahle stránka narazila na problém",
-      "description": "Při zobrazení stránky se něco pokazilo. Tvoje data jsou v pořádku, zkus to znovu.",
-      "retry": "Zkusit znovu"
+    }
+  },
+  "errorPage": {
+    "title": "Omlouváme se, něco se pokazilo",
+    "description": "O chybě víme a podíváme se na ni. Zkuste to prosím znovu.",
+    "codeLabel": "Kód chyby",
+    "copy": "Kopírovat",
+    "copied": "Zkopírováno",
+    "retry": "Zkusit znovu",
+    "feedback": "Odeslat zpětnou vazbu",
+    "feedbackLabel": "Co jste zrovna dělali? (nepovinné)",
+    "feedbackPlaceholder": "Pár slov pomůže, ale odeslat to jde i prázdné.",
+    "send": "Odeslat",
+    "sending": "Odesílám…",
+    "thanks": "Děkujeme. O chybě teď díky vám víme a co nejrychleji ji vyřešíme.",
+    "failed": "Odeslání se nepovedlo. Zkuste to prosím za chvíli znovu.",
+    "home": {
+      "app": "Zpět na nástěnku",
+      "admin": "Zpět na přehled administrace",
+      "site": "Zpět na úvodní stránku"
     }
   },
   "phone": {
@@ -4361,7 +4376,7 @@
     },
     "feedback": {
       "title": "Zpětná vazba",
-      "description": "Nápady, NPS a jak lidé hodnotí Jarvisovy odpovědi.",
+      "description": "Hlášení chyb, nápady, NPS a jak lidé hodnotí Jarvisovy odpovědi.",
       "commentsTitle": "Komentáře k NPS",
       "commentsDescription": "Nejnovější odpovědi, které obsahovaly komentář.",
       "noComments": "Zatím žádné komentáře.",
@@ -4378,6 +4393,35 @@
         "in_progress": "Rozpracováno",
         "done": "Hotovo",
         "declined": "Zamítnuto"
+      },
+      "reportsTitle": "Hlášení chyb",
+      "reportsDescription": "Odeslané ze stránky chyby, nejnovější nahoře. Kód chyby najde hlášení i od interních účtů.",
+      "searchPlaceholder": "Hledat podle kódu chyby (GR-…)",
+      "reportsEmpty": "Zatím žádná hlášení.",
+      "reportsNotFound": "Žádné hlášení s kódem {code}.",
+      "reportsInvalidCode": "Tohle nevypadá jako kód chyby. Kód má tvar GR- a šest znaků.",
+      "anonymous": "Nepřihlášený návštěvník",
+      "reportMeta": "{name} · {date}",
+      "noDescription": "Bez popisu",
+      "pageLabel": "Stránka",
+      "browserLabel": "Prohlížeč",
+      "versionLabel": "Verze",
+      "errorLabel": "Chyba",
+      "digestLabel": "Digest",
+      "reportStatus": {
+        "new": "Nové",
+        "in_progress": "Řeším",
+        "fixed": "Opraveno",
+        "cannot_reproduce": "Nelze reprodukovat"
+      },
+      "browser": {
+        "chrome": "Chrome",
+        "safari": "Safari",
+        "firefox": "Firefox",
+        "edge": "Edge",
+        "samsung": "Samsung Internet",
+        "opera": "Opera",
+        "other": "Jiný prohlížeč"
       }
     },
     "users": {

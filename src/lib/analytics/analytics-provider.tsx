@@ -13,6 +13,8 @@ export const HEARTBEAT_MS = 60_000;
 export function reportClientError(
   error: unknown,
   source: "boundary" | "onerror" | "unhandledrejection",
+  /** The code the error page shows; it lets the administration find this error. */
+  code?: string,
 ): void {
   try {
     const message =
@@ -25,6 +27,7 @@ export function reportClientError(
       route: routeOf(window.location.pathname),
       source,
       message: scrubMessage(message),
+      ...(code ? { code } : {}),
     });
   } catch {
     // Reporting an error must not cause another.

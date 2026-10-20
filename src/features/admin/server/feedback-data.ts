@@ -5,7 +5,14 @@ import { metricParams } from "../view-state";
 import { breakdown, distribution, type AdminQuery } from "./metrics-data";
 import { npsScore } from "../numbers";
 import { peopleNamer } from "./people";
-import type { BreakdownData, FeatureRequestRow, FeatureRequestStatus } from "../types";
+import {
+  BUG_REPORT_STATUSES,
+  type BreakdownData,
+  type BugReportRow,
+  type BugReportStatus,
+  type FeatureRequestRow,
+  type FeatureRequestStatus,
+} from "../types";
 
 /**
  * The Feedback page's own data: ideas and NPS comments (explicit feedback
@@ -48,6 +55,42 @@ export async function loadFeatureRequests(
     title: row.title,
     description: row.description,
     status: row.status,
+    createdAt: row.created_at,
+  }));
+}
+
+function isBugReportStatus(value: string): value is BugReportStatus {
+  return (BUG_REPORT_STATUSES as readonly string[]).includes(value);
+}
+
+/**
+ * The newest bug reports, or the ones whose code begins with `code` (already
+ * normalized, GR-…). Searching by code finds internal accounts' reports too;
+ * the list itself follows the view's internal accounts switch.
+ */
+export async function loadBugReports(q: AdminQuery, code: string | null): Promise<BugReportRow[]> {
+  const { data, error } = await createAdminClient().rpc("admin_bug_reports", {
+    _code: code ?? undefined,
+    _include_internal: viewArgs(q)._include_internal,
+    _limit: 50,
+  });
+  if (error) throw new Error(`admin_bug_reports: ${error.message}`);
+  const rows = data ?? [];
+  const nameOf = await peopleNamer(rows.map((row) => row.user_id));
+  return rows.map((row) => ({
+    id: row.id,
+    userId: row.user_id,
+    userName: row.user_id ? nameOf(row.user_id) : null,
+    status: isBugReportStatus(row.status) ? row.status : "new",
+    code: row.error_code,
+    description: row.description,
+    message: row.error_message,
+    digest: row.error_digest,
+    page: row.page,
+    browser: row.browser,
+    device: row.device,
+    viewport: row.viewport,
+    version: row.app_version,
     createdAt: row.created_at,
   }));
 }
