@@ -75,7 +75,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 15.2 | architect | 2026-10-20 Chyba v aplikaci ukáže omluvu s kódem GR-XXXXXX (Kopírovat, Zkusit znovu) a tlačítkem Odeslat zpětnou vazbu, které jedním klikem založí hlášení v nové tabulce bug_reports (i bez přihlášení, limit podle IP), dohledatelné podle kódu v /admin/zpetna-vazba.
 - [x] 15.3 | architect | 2026-10-20 Poznámky: červená popelnice v seznamu (i Delete/Backspace) s potvrzením, pak sousední poznámka a „Přesunuto do koše · Zpět“ na 6 s; @ odkazy na kontakty, obchody, události a pracovníky jako čipy (aktuální název, zaniklý záznam přeškrtnutý), nová tabulka note_mentions plněná triggerem a „Zmíněno v poznámkách“ v detailech; hledání i Jarvis čtou čip jako „[kontakt: Jméno]“.
 - [x] 15.4 | architect | 2026-10-20 — Karta rozpočtu a stropy AI v administraci se přepočítávají na zvolené období a částky AI jsou vždy v USD se dvěma desetinnými místy.
-- [ ] 15.5 | architect |
+- [x] 15.5 | architect | 2026-10-20 — Tarify se upravují v administraci (/admin/tarify) jako koncept a zveřejňují tlačítkem s rozdílem a historií verzí; web, aplikace, limity i Jarvis čtou zveřejněnou verzi.
 - [ ] K15 | reviewer |
 - [ ] STOP | Konec fáze 15. Projdi: Jarvis s víc upozorněními (jedno naráz, listování). Vyvolej chybu a odešli zpětnou vazbu, najdi ji v administraci podle kódu. V poznámkách smaž poznámku popelnicí (potvrzení, Zpět), vlož @kontakt a klikni na čip, otevři kontakt a najdi „Zmíněno v poznámkách". V administraci AI přepni období na 7 dní a dnes a zkontroluj přepočet a dvě desetinná místa. V Tarifech změň cenu, ověř, že web se nezměnil, zveřejni a ověř web i /app/tarif. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [ ] 12.4 | builder | env: RESEND_API_KEY
