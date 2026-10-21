@@ -530,7 +530,6 @@ describe("every other calculation", () => {
       "achievement",
       "chapter_completed",
       "unlock_days",
-      "fakturoid_connected",
       "workers_per_owner",
       "feature_request_status",
     ]) {

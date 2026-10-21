@@ -1,6 +1,6 @@
 # Gradus
 
-Gamifikovaná aplikace pro začínající podnikatele: milníky a úkoly, pipeline obchodů, kontakty s uživatelskými tabulkami, cold calling, kalendář, finance s Fakturoidem, pracovníci a AI asistent Jarvis. Postavená na tom, že podnikání má být hra — oslavy, XP, odemykání.
+Gamifikovaná aplikace pro začínající podnikatele: milníky a úkoly, pipeline obchodů, kontakty s uživatelskými tabulkami, cold calling, kalendář, finance s fakturami, pracovníci a AI asistent Jarvis. Postavená na tom, že podnikání má být hra — oslavy, XP, odemykání.
 
 Majitel: Ondřej. **Komunikuj s ním česky.** Kód, identifikátory a commity anglicky.
 
@@ -88,6 +88,7 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - **Časovač:** úseky v `prospecting_segments`. Denní součet = úseky oříznuté na den, počítáno DB funkcí; o půlnoci nula bez jakékoliv úlohy. Nečinnost **15 minut** bez přesunu z Neoslovených: efektivní konec = min(teď, poslední aktivita + 15 min), platí i při čtení. Jen spustit / pozastavit, **žádné vynulování**. Prohlížeč do DB průběžně nezapisuje. Totéž pro `work_sessions` pracovníků.
 - **Generování kontaktů:** Places API (New) jen ze serveru, klíč nikdy do prohlížeče, minimální maska polí. Limity denně a měsíčně podle `plans`. Duplicity: `external_place_id`, telefon bez formátování, název + adresa. Google nevrací e-maily. Každé volání do `usage_events` včetně neúspěchů se zprávou od Googlu.
 - **Sdílený graf času volání:** jediná data napříč uživateli. V `call_time_stats` jen země, den, hodina, pokusy, schůzky. Políčko < 20 pokusů nezobrazovat, země < 200 nepočítat. Nikdy ukázková čísla. Cron započítá z jednoho uživatele nanejvýš 30 pokusů na hodinu a den, aby jeden účet nezkreslil graf.
+- **Faktury** jen v aplikaci: vystavení z obchodu (`create_invoice_from_deal`), Zaplaceno (`mark_invoice_paid`) zaúčtuje příjem. Žádná externí fakturace — napojení na Fakturoid bylo odstraněno; `fakturoid_connections` a `invoices.fakturoid_id` zůstávají prázdné do samostatného plánu přechodu, nepoužívat.
 
 ### Tarify
 - **Katalog v DB:** `plan_catalog_versions` (status draft | published | archived, `payload` = tři tarify solo / pro / team: název a podtitulek CS/EN, ceny CZK/EUR měsíčně a za rok, cena za pracovníka nebo null, limity, řádky karty CS/EN se `highlight`, `recommended`, `order`). Právě jedna published, nejvýš jeden draft; zveřejněná a archivní verze se nemění (`plan_catalog_versions_guard`), smazat jde jen draft. Validace stejná v `validatePlanCatalog` (`src/features/plan/catalog.ts`) i `valid_plan_catalog()`: ceny > 0 nejvýš na haléře, rok ≤ 12× měsíc, klíče neměnné, jeden štítek.
@@ -168,7 +169,7 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - Práva jsou živá: změna se pracovníkovi projeví hned bez odhlášení (Realtime na `worker_permissions` a `workers`, záloha čtením každých 30 s). Deaktivovaný pracovník je vrácen do vlastního účtu.
 - Tam, kde záleží, kdo akci udělal, je actor_id vedle user_id: `contact_activities`, `contact_table_moves`, `prospecting_segments`, `calendar_events` (actor_id), `deals.created_by`, `tasks.completed_by`. Výchozí actor = auth.uid(); klient jiného aktéra nezapíše. Majitel u aktivit a přesunů vidí avatar pracovníka.
 - Časovač je po lidech: jeden běžící úsek na (prostor, aktér). Statistiky majitel vidí celkem i po lidech, pracovník jen svoje. Odměny pracovníka (schůzka, vyhraný obchod) se řídí aktérem, ne prostorem.
-- Soukromé zůstává: profily, nastavení, XP, odemčení, Jarvisovy konverzace, nápady. Fakturoid připojuje jen majitel.
+- Soukromé zůstává: profily, nastavení, XP, odemčení, Jarvisovy konverzace, nápady.
 - Pracovník nikdy nevidí finance bez výslovného práva, nastavení a pracovníky nikdy. Ověření přes RLS s dvěma účty: `bun run verify:workspace`.
 
 ### Hra
@@ -213,7 +214,6 @@ Veřejné v `.env`, tajné v `.env.local`. Vždy udržovat `.env.example`.
 | `JARVIS_MONTHLY_BUDGET_USD` | Jen výchozí hodnota celkového měsíčního stropu Jarvise v USD (90, rezerva pod 100 USD kreditů), dokud ho majitel nenastaví v administraci (`app_settings.ai_caps`). Platné stropy a práh upozornění jsou v administraci. |
 | `RESEND_API_KEY` | E-maily |
 | `CRON_SECRET` | Ověření Vercel Cron |
-| `FAKTUROID_*` | Per uživatel, šifrovaně v DB, ne v env |
 | `NEXT_PUBLIC_BETA` | Štítek Beta v aplikaci |
 
 **Cron úlohy:** `call_time_stats` denně · koš poznámek denně · automatické platby denně · hlídání příležitostí 1× denně (10:00 UTC) · ranní shrnutí Jarvise 1× denně (5:00 UTC = 6–8 h v Česku). Běžíme na Vercel Hobby: každá úloha smí běžet nejvýš jednou denně a spouští se kdykoliv během zadané hodiny, jinak nasazení spadne. Častější běh (3× denně, každou hodinu) vrátit až po přechodu na Vercel Pro.

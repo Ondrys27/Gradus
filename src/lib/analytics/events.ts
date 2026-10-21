@@ -113,7 +113,6 @@ const SETTINGS = [
 const CRON_JOBS = [
   "call_time_stats",
   "recurring_payments",
-  "fakturoid_sync",
   "jarvis_watch",
   "jarvis_briefing",
   "analytics_retention",
@@ -443,9 +442,6 @@ export const EVENTS = {
   invoice_issued: event("finance", "client", true, {}),
   invoice_paid_marked: event("finance", "client", true, {}),
   invoice_deleted: event("finance", "client", true, {}),
-  fakturoid_connected: event("finance", "client", true, {}),
-  fakturoid_disconnected: event("finance", "client", true, {}),
-  fakturoid_synced: event("finance", "client", false, {}),
 
   // --- workers -------------------------------------------------------------
   worker_invited: event("workers", "client", true, {}),

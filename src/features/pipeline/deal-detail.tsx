@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { ComposeEmailDialog } from "@/features/email/compose-email-dialog";
 import { emailSummary } from "@/features/email/types";
-import { useInvoiceErrorText } from "@/features/finance/fakturoid/use-invoice-error";
+import { useInvoiceErrorText } from "@/features/finance/invoices/use-invoice-error";
 import { useCreateInvoiceFromDeal } from "@/features/finance/queries";
 import { MoveContactDialog } from "@/features/contacts/move-contact-dialog";
 import { useContact, useContactEntry, useContactTables } from "@/features/contacts/queries";
@@ -352,8 +352,8 @@ function EmailSection({
 }
 
 /**
- * One tap makes an open invoice from the deal's value (in Fakturoid when it is
- * connected); a second tap returns the same one.
+ * One tap makes an open invoice from the deal's value; a second tap returns
+ * the same one.
  */
 function InvoiceSection({
   deal,
@@ -384,9 +384,7 @@ function InvoiceSection({
       )}
       {invoice.isSuccess && (
         <p role="status" className="flex flex-wrap items-center gap-x-3 text-sm text-green">
-          {t(invoice.data.external ? "invoiceCreatedFakturoid" : "invoiceCreated", {
-            number: invoice.data.invoice.number,
-          })}
+          {t("invoiceCreated", { number: invoice.data.number })}
           <Link
             href="/app/finance?tab=invoices"
             className="text-violet underline-offset-4 hover:underline"

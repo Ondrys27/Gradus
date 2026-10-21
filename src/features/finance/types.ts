@@ -21,7 +21,7 @@ export const TRANSACTION_COLUMNS =
 export const RECURRING_COLUMNS =
   "id, type, amount, currency, category, description, frequency, next_due_on, due_day, last_generated_on, ends_on, is_active";
 export const INVOICE_COLUMNS =
-  "id, number, amount, currency, status, issued_on, due_on, paid_on, customer_name, contact_id, deal_id, fakturoid_id";
+  "id, number, amount, currency, status, issued_on, due_on, paid_on, customer_name, contact_id, deal_id";
 
 export type Transaction = Pick<
   Tables["transactions"]["Row"],
@@ -66,7 +66,6 @@ export type Invoice = Pick<
   | "customer_name"
   | "contact_id"
   | "deal_id"
-  | "fakturoid_id"
 >;
 
 export type TransactionType = Tables["transactions"]["Row"]["type"];

@@ -57,7 +57,7 @@ U každé sekce: adopce (% aktivních, kteří ji použili), počet akcí, akce 
 
 **Kalendář** — události podle typu, připojený Google (%), chyby synchronizace
 
-**Finance** — transakce, vystavené faktury, připojený Fakturoid (%), automatické platby
+**Finance** — transakce, vystavené faktury, automatické platby
 
 **Pracovníci** — pozvánky odeslané / přijaté / vypršelé, aktivní pracovníci, zadané a splněné úkoly, schválené výdělky
 
@@ -103,7 +103,7 @@ U každé sekce: adopce (% aktivních, kteří ji použili), počet akcí, akce 
 - Latence stránek a rout p50 a p95
 - Chyby v prohlížeči podle stránky
 - Naplánované úlohy — poslední běh, úspěch, doba
-- Integrace — chybovost Google Places, Fakturoid, Resend, Google Kalendář, Anthropic
+- Integrace — chybovost Google Places, Resend, Google Kalendář, Anthropic
 
 ## 9. Zpětná vazba
 

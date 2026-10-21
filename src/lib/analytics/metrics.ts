@@ -160,7 +160,6 @@ export const DISTRIBUTION_KINDS = [
   "achievement",
   "chapter_completed",
   "unlock_days",
-  "fakturoid_connected",
   "workers_per_owner",
   "feature_request_status",
 ] as const;
@@ -721,7 +720,6 @@ export const METRICS: readonly MetricDefinition[] = [
     S("finance"),
   ),
   metric("invoices_issued", "features", "count", ev(count("invoice_issued")), S("finance")),
-  metric("fakturoid_connected", "features", "users", dist("fakturoid_connected"), S("finance")),
   metric(
     "recurring_payments",
     "features",

@@ -39,7 +39,6 @@ import { useUrlIntent } from "@/lib/use-url-intent";
 import { cn } from "@/lib/utils";
 import { useWorkspace } from "@/features/account/workspace-queries";
 import { AppearanceSettings } from "./appearance-settings";
-import { FakturoidIntegration } from "./fakturoid-integration";
 import { GameSettings } from "./game-settings";
 import { FormatPreview, useNow } from "./format-preview";
 import { HelpSettings, JarvisSettings } from "./jarvis-settings";
@@ -348,7 +347,6 @@ export function SettingsView() {
           className="rounded-card outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           <Section title={t("integrations.title")} description={t("integrations.description")}>
-            {isOwner && <FakturoidIntegration />}
             <JarvisTest />
           </Section>
         </div>

@@ -12,17 +12,8 @@ import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { useAwardXp } from "@/features/game/queries";
 import type { DailyRow, DateRange, MonthlyRow } from "./finance-logic";
 import { PAGE_SIZE } from "./finance-logic";
-import {
-  connectFakturoidAction,
-  disconnectFakturoidAction,
-  fakturoidStatusAction,
-  issueInvoiceAction,
-  markInvoicePaidAction,
-  setMoveDealOnPaidAction,
-  syncFakturoidAction,
-} from "./fakturoid/actions";
-import { unwrap } from "./fakturoid/errors";
-import type { FakturoidConnectInput, FakturoidStatus } from "./fakturoid/schema";
+import { issueInvoiceAction, markInvoicePaidAction } from "./invoices/actions";
+import { unwrap } from "./invoices/errors";
 import type { RecurringInput, TransactionInput } from "./schemas";
 import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
@@ -47,7 +38,6 @@ export const financeKeys = {
   daily: (userId: string, range: DateRange) => ["finance", userId, "daily", range] as const,
   recurring: (userId: string) => ["finance", userId, "recurring"] as const,
   invoices: (userId: string, page: number) => ["finance", userId, "invoices", page] as const,
-  fakturoid: (userId: string) => ["finance", userId, "fakturoid"] as const,
 };
 
 /**
@@ -292,34 +282,19 @@ export function useInvoices(page: number) {
   });
 }
 
-/**
- * One tap on a deal. The server decides where the invoice is made: in Fakturoid
- * when it is connected, otherwise only in the app.
- */
+/** One tap on a deal; a second tap returns the same open invoice. */
 export function useCreateInvoiceFromDeal() {
   return useFinanceMutation(async (dealId: string) => {
-    const result = unwrap(await issueInvoiceAction(dealId));
+    const invoice = unwrap(await issueInvoiceAction(dealId));
     track("invoice_issued", {});
-    return result;
+    return invoice;
   });
 }
 
-/**
- * A Fakturoid invoice is paid there first. When that also won its deal, the
- * pipeline and Clients are refreshed and the caller can celebrate.
- */
 export function useMarkInvoicePaid() {
-  const { user } = useSession();
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => unwrap(await markInvoicePaidAction(id)),
-    onSuccess: ({ dealMoved }) => {
-      track("invoice_paid_marked", {});
-      if (!dealMoved) return;
-      void queryClient.invalidateQueries({ queryKey: ["pipeline", user.id] });
-      void queryClient.invalidateQueries({ queryKey: ["contacts", user.id] });
-    },
-    onSettled: () => invalidateFinance(queryClient, user.id),
+  return useFinanceMutation(async (id: string) => {
+    unwrap(await markInvoicePaidAction(id));
+    track("invoice_paid_marked", {});
   });
 }
 
@@ -328,64 +303,5 @@ export function useDeleteInvoice() {
     const { error } = await createClient().from("invoices").delete().eq("id", id);
     if (error) throw error;
     track("invoice_deleted", {});
-  });
-}
-
-// -----------------------------------------------------------------------------
-// Fakturoid connection
-// -----------------------------------------------------------------------------
-
-export function useFakturoidStatus() {
-  const { user } = useSession();
-  return useQuery({
-    queryKey: financeKeys.fakturoid(user.id),
-    queryFn: async (): Promise<FakturoidStatus> => unwrap(await fakturoidStatusAction()),
-    staleTime: 60_000,
-  });
-}
-
-export function useConnectFakturoid() {
-  return useFinanceMutation(async (input: FakturoidConnectInput) => {
-    const result = unwrap(await connectFakturoidAction(input));
-    track("fakturoid_connected", {});
-    return result;
-  });
-}
-
-export function useDisconnectFakturoid() {
-  return useFinanceMutation(async () => {
-    unwrap(await disconnectFakturoidAction());
-    track("fakturoid_disconnected", {});
-  });
-}
-
-export function useSetMoveDealOnPaid() {
-  const { user } = useSession();
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (value: boolean) => {
-      unwrap(await setMoveDealOnPaidAction(value));
-    },
-    // Kept in the cache right away, so the switch does not flick back while it refetches.
-    onSuccess: (_, value) =>
-      queryClient.setQueryData<FakturoidStatus>(financeKeys.fakturoid(user.id), (current) =>
-        current?.connected ? { ...current, moveDealOnPaid: value } : current,
-      ),
-  });
-}
-
-/** Pulls paid and changed invoices now instead of waiting for the daily run. */
-export function useSyncFakturoid() {
-  const { user } = useSession();
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async () => unwrap(await syncFakturoidAction()),
-    onSuccess: ({ dealsMoved }) => {
-      track("fakturoid_synced", {});
-      if (!dealsMoved) return;
-      void queryClient.invalidateQueries({ queryKey: ["pipeline", user.id] });
-      void queryClient.invalidateQueries({ queryKey: ["contacts", user.id] });
-    },
-    onSettled: () => invalidateFinance(queryClient, user.id),
   });
 }

@@ -2,8 +2,7 @@
 !.env.example
 node_modules/
 .next/
-.next-e2e/
-.next-build/
+.next-*/
 out/
 build/
 dist/

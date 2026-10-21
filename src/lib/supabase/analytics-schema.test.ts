@@ -296,7 +296,7 @@ describe("enrichment", () => {
   it("leaves system events without a person alone", async () => {
     await asServiceRole();
     const event = await one<Row>(
-      `insert into analytics_events (event, props) values ('cron_run', '{"job":"fakturoid_sync","ok":true,"duration_ms":5}')
+      `insert into analytics_events (event, props) values ('cron_run', '{"job":"recurring_payments","ok":true,"duration_ms":5}')
        returning user_id, owner_id, plan_key, session_id`,
     );
     expect(event).toEqual({ user_id: null, owner_id: null, plan_key: null, session_id: null });

@@ -376,8 +376,8 @@
         "keywords": "nastavení konfety pohyb"
       },
       "integrations": {
-        "label": "Propojení s Fakturoidem",
-        "keywords": "nastavení integrace faktury připojit"
+        "label": "Integrace",
+        "keywords": "nastavení integrace jarvis test"
       },
       "profile": {
         "label": "Profil",
@@ -883,43 +883,7 @@
     },
     "integrations": {
       "title": "Integrace",
-      "description": "Propoj služby, které už používáš.",
-      "fakturoid": {
-        "name": "Fakturoid",
-        "description": "Vystavuj faktury z obchodů rovnou ve svém účtu Fakturoid a platby se sem vrátí samy.",
-        "notConnected": "Bez Fakturoidu se faktury vedou jen v {appName}.",
-        "help": "Ve Fakturoidu otevři Nastavení → Uživatelský účet a v části API v3 zkopíruj Client ID a Client Secret. Název účtu je část adresy za app.fakturoid.cz/.",
-        "clientId": "Client ID",
-        "clientSecret": "Client Secret",
-        "slug": "Název účtu (slug)",
-        "slugPlaceholder": "mojefirma",
-        "secretHint": "Uloží se šifrovaně na serveru a už se nikdy nezobrazí.",
-        "showSecret": "Zobrazit klíč",
-        "hideSecret": "Skrýt klíč",
-        "connect": "Připojit Fakturoid",
-        "connecting": "Ověřuji u Fakturoidu…",
-        "connected": "Připojeno k účtu {slug}",
-        "connectedSince": "Připojeno {date}",
-        "lastSynced": "Naposledy synchronizováno {date}",
-        "neverSynced": "Zatím nesynchronizováno, probíhá jednou denně",
-        "lastError": "Poslední synchronizace selhala: {message}",
-        "moveDeal": "Zaplacená faktura vyhraje obchod",
-        "moveDealHint": "Když Fakturoid nahlásí fakturu z obchodu jako zaplacenou, obchod se přesune do vyhrané fáze.",
-        "sync": "Synchronizovat teď",
-        "syncing": "Synchronizuji…",
-        "disconnect": "Odpojit",
-        "disconnectTitle": "Odpojit Fakturoid?",
-        "disconnectDescription": "Už vystavené faktury zůstanou ve Fakturoidu i v {appName}, jen se sem přestanou vracet jejich platby. Nové faktury se budou vést jen v {appName}.",
-        "disconnectFailed": "Fakturoid se nepodařilo odpojit. Zkus to znovu.",
-        "saveFailed": "Nastavení se nepodařilo uložit.",
-        "cancel": "Zrušit",
-        "close": "Zavřít",
-        "errors": {
-          "required": "Vyplň to prosím.",
-          "tooLong": "Tohle je moc dlouhé.",
-          "invalidSlug": "Zadej jen název účtu, např. mojefirma."
-        }
-      },
+      "description": "Propojení s dalšími službami.",
       "jarvis": {
         "name": "Jarvis",
         "description": "Pošle Jarvisovi krátký dotaz a ukáže, jestli odpověděl, za jak dlouho a kolik to stálo.",
@@ -1513,7 +1477,6 @@
       "openInvoices": "Otevřít faktury",
       "invoiceFailed": "Fakturu se nepodařilo vytvořit.",
       "invoiceNeedsValue": "Doplň k obchodu hodnotu, ať jde vyfakturovat.",
-      "invoiceCreatedFakturoid": "Faktura {number} je vystavená ve Fakturoidu.",
       "writeEmail": "Napsat e-mail",
       "emailNeedsContact": "Přidej k obchodu kontakt, aby se mu dalo napsat.",
       "emailNeedsAddress": "Kontakt u tohoto obchodu nemá e-mailovou adresu.",
@@ -2210,16 +2173,15 @@
       "deleteFailed": "Fakturu se nepodařilo smazat.",
       "cancel": "Zrušit",
       "close": "Zavřít",
-      "fakturoid": "Fakturoid",
-      "openInFakturoid": "Otevřít fakturu {number} ve Fakturoidu",
-      "markPaidFailed": "Fakturu se nepodařilo označit jako zaplacenou.",
-      "deleteDescriptionFakturoid": "Odebrat fakturu {number} z {appName}? Ve Fakturoidu zůstane a příjem, který už se k ní zapsal, taky.",
-      "sync": "Synchronizovat s Fakturoidem",
-      "syncFailed": "Synchronizace s Fakturoidem se nepovedla.",
-      "syncDone": "{paid, plural, =0 {Synchronizováno, žádné nové platby.} one {Synchronizováno, # faktura je zaplacená.} few {Synchronizováno, # faktury jsou zaplacené.} other {Synchronizováno, # faktur je zaplacených.}}",
-      "lastSynced": "Naposledy synchronizováno s Fakturoidem {date}",
-      "neverSynced": "S Fakturoidem se zatím nesynchronizovalo",
-      "dealWon": "Faktura zaplacena, obchod vyhraný!"
+      "markPaidFailed": "Fakturu se nepodařilo označit jako zaplacenou."
+    },
+    "invoiceErrors": {
+      "forbidden": "Na tohle nemáš oprávnění. Požádej majitele o právo upravovat finance.",
+      "dealNotFound": "Obchod se nenašel.",
+      "dealValueRequired": "Aby šel obchod vyfakturovat, doplň mu hodnotu.",
+      "invoiceNotFound": "Faktura se nenašla.",
+      "readOnly": "Zkušební období skončilo. Vyber si tarif a můžeš pokračovat.",
+      "unknown": "Něco se pokazilo. Zkus to znovu."
     },
     "form": {
       "newTransaction": "Nová transakce",
@@ -2255,26 +2217,6 @@
       "previous": "Předchozí stránka",
       "next": "Další stránka",
       "position": "Strana {page} z {pages}"
-    },
-    "fakturoid": {
-      "errors": {
-        "notConnected": "Fakturoid není připojený. Připoj ho v Nastavení → Integrace.",
-        "encryptionKeyMissing": "Server nemá nastavený šifrovací klíč pro integrace, takže Fakturoid zatím nejde připojit.",
-        "invalidCredentials": "Fakturoid nepřijal Client ID a Client Secret. Zkontroluj je, případně Fakturoid v Nastavení připoj znovu.",
-        "accountNotFound": "Fakturoid tenhle název účtu nezná. Zkontroluj část adresy za app.fakturoid.cz/.",
-        "forbidden": "Fakturoid požadavek odmítl. Ověř, že je účet aktivní a uživatel smí vystavovat faktury.",
-        "validation": "Fakturoid fakturu odmítl.",
-        "rateLimited": "Fakturoid teď dostává příliš mnoho požadavků. Zkus to za minutu.",
-        "unavailable": "Fakturoid teď neodpovídá. Nic se nezměnilo, zkus to později.",
-        "contactRequired": "Fakturoid potřebuje odběratele: přidej k obchodu kontakt se jménem nebo firmou.",
-        "dealNotFound": "Obchod se nenašel.",
-        "dealValueRequired": "Aby šel obchod vyfakturovat, doplň mu hodnotu.",
-        "invoiceNotFound": "Faktura se nenašla.",
-        "saveFailed": "Fakturu se nepodařilo uložit tady, proto byla stažena i ve Fakturoidu. Zkus to znovu.",
-        "readOnly": "Zkušební období skončilo. Vyber si tarif a můžeš pokračovat.",
-        "unknown": "Něco se pokazilo. Zkus to znovu."
-      },
-      "detail": "Fakturoid píše: {detail}"
     }
   },
   "dashboard": {
@@ -3206,7 +3148,7 @@
         "label": "Co {appName} umí",
         "pipeline": {
           "title": "Každý obchod má svou fázi, částku a datum, kdy do ní přišel.",
-          "text": "Nový lead, schůzka, nabídka odeslána, záloha zaplacena. Fáze si pojmenuješ podle sebe a obchod mezi nimi přetáhneš myší. Když „Nový web pro pekárnu“ stojí v Novém leadu 28 dní, uvidíš to v přehledu dřív, než zákazník zapomene, kdo jsi. Zaplacený obchod se propíše do financí a fakturu pošleš přes Fakturoid.",
+          "text": "Nový lead, schůzka, nabídka odeslána, záloha zaplacena. Fáze si pojmenuješ podle sebe a obchod mezi nimi přetáhneš myší. Když „Nový web pro pekárnu“ stojí v Novém leadu 28 dní, uvidíš to v přehledu dřív, než zákazník zapomene, kdo jsi. Zaplacený obchod se propíše do financí a fakturu z něj vystavíš jedním klepnutím.",
           "alt": "Pipeline v aplikaci {appName}: sloupce Nový lead, Schůzka, Nabídka odeslána a Záloha zaplacena s obchody a součty",
           "notes": {
             "1": "168 000 Kč v jedné fázi, součet je hned pod názvem",
@@ -3837,10 +3779,6 @@
         "name": "Vystavené faktury",
         "description": "Faktury vystavené v aplikaci."
       },
-      "fakturoid_connected": {
-        "name": "Připojený Fakturoid",
-        "description": "Účty s připojeným Fakturoidem."
-      },
       "recurring_payments": {
         "name": "Automatické platby",
         "description": "Nově nastavené opakované platby."
@@ -4091,7 +4029,7 @@
       },
       "integration_errors": {
         "name": "Chyby integrací",
-        "description": "Neúspěšná volání podle routy nebo funkce (Places, Fakturoid, Resend, Anthropic…)."
+        "description": "Neúspěšná volání podle routy nebo funkce (Places, Resend, Anthropic…)."
       },
       "feature_requests": {
         "name": "Nápady od uživatelů",
