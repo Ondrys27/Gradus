@@ -27,7 +27,11 @@ WAIT_LIMIT=1800
 # Claude Code má jet z předplatného Max, ne z API kreditů Jarvise.
 unset ANTHROPIC_API_KEY
 
-PROMPT='Přečti soubor .claude/commands/pokracuj.md a proveď jeho kroky 1 až 8 přesně, ale jen pro JEDNU položku — první nezaškrtnutou v docs/progress.md. Krok 9 (pokračování další položkou) neprováděj. Když je první položka STOP nebo RUČNĚ, nic nedělej a skonči. Nikdy se uživatele na nic neptej, běží to bez dozoru: když něco nejde, položku nezaškrtávej, popiš proč a skonči. Na konci vypiš česky krátký přehled jako v pokracuj.md.'
+# claude -p po posledním tahu čeká na úlohy na pozadí jen 10 minut, pak je zabije
+# a položka zůstane rozdělaná. Hodina stačí i na pomalý subagent.
+export CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=3600000
+
+PROMPT='Přečti soubor .claude/commands/pokracuj.md a proveď jeho kroky 1 až 8 přesně, ale jen pro JEDNU položku — první nezaškrtnutou v docs/progress.md. Krok 9 (pokračování další položkou) neprováděj. Když je první položka STOP nebo RUČNĚ, nic nedělej a skonči. Nikdy se uživatele na nic neptej, běží to bez dozoru: když něco nejde, položku nezaškrtávej, popiš proč a skonči. Běh končí s tvým posledním tahem: subagenty spouštěj vždy v popředí (run_in_background: false) a počkej na jejich výsledek, nikdy nekonči tah, dokud práce běží na pozadí. Dev server nespouštěj na pozadí přes nástroj Bash; pro e2e ho spustí Playwright sám, a když na :3000 už běží, použij ho. Když v pracovní složce najdeš nekomitnutou rozdělanou práci na téže položce, navaž na ni. Na konci vypiš česky krátký přehled jako v pokracuj.md.'
 
 log() { echo "$(date '+%F %T')  $*" | tee -a "$LOG"; }
 
