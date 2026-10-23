@@ -357,7 +357,10 @@
   z-index: 70; /* selects, menus, popovers, date pickers */
 }
 @utility z-celebration {
-  z-index: 80; /* celebration, above everything */
+  z-index: 80; /* celebration */
+}
+@utility z-error {
+  z-index: 90; /* the error page, above everything */
 }
 
 /*

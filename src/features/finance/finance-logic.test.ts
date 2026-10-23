@@ -99,6 +99,35 @@ describe("zoom window", () => {
     expect(zoomWindow(10, { start: 0, end: 3 }, 3, 0)).toEqual({ start: 0, end: 9 });
   });
 
+  // GR-KQHYBN: the chart's own factors (+/- 1.6, wheel 1.2) made a fractional
+  // end index, rows[24.375] was undefined and the Finance page crashed.
+  it("keeps whole indices for the chart's zoom factors", () => {
+    const isWhole = (window: { start: number; end: number }) =>
+      Number.isInteger(window.start) && Number.isInteger(window.end);
+    expect(zoomWindow(31, fullWindow(31), 1 / 1.6, 0.5)).toEqual({ start: 6, end: 24 });
+    for (const length of [12, 28, 30, 31]) {
+      for (const factor of [1 / 1.6, 1.6, 1 / 1.2, 1.2]) {
+        for (const fraction of [0, 0.13, 0.5, 0.77, 1]) {
+          let window = fullWindow(length);
+          for (let step = 0; step < 6; step += 1) {
+            window = zoomWindow(length, window, factor, fraction);
+            expect(isWhole(window)).toBe(true);
+            expect(window.start).toBeGreaterThanOrEqual(0);
+            expect(window.end).toBeLessThan(length);
+          }
+        }
+      }
+    }
+  });
+
+  it("turns a window that is not a number into the full one", () => {
+    expect(clampWindow(31, { start: Number.NaN, end: 4 })).toEqual({ start: 0, end: 30 });
+    expect(clampWindow(31, { start: 2, end: Number.POSITIVE_INFINITY })).toEqual({
+      start: 0,
+      end: 30,
+    });
+  });
+
   it("pans by a number of bars and stops at the edges", () => {
     expect(panWindow(10, { start: 3, end: 7 }, 2)).toEqual({ start: 5, end: 9 });
     expect(panWindow(10, { start: 3, end: 7 }, -5)).toEqual({ start: 0, end: 4 });
@@ -115,6 +144,28 @@ describe("zoomedRange", () => {
     expect(zoomedRange("month", rows, { start: 1, end: 2 })).toEqual({
       from: "2026-09-02",
       to: "2026-09-03",
+    });
+  });
+
+  it("never fails on a window between bars or outside the rows", () => {
+    const rows = dailyChartRows(
+      Array.from({ length: 31 }, (_, index) => ({
+        day: `2026-10-${String(index + 1).padStart(2, "0")}`,
+        income: 0,
+        expense: 0,
+      })),
+    );
+    expect(zoomedRange("month", rows, { start: 5.8125, end: 24.375 })).toEqual({
+      from: "2026-10-07",
+      to: "2026-10-26",
+    });
+    expect(zoomedRange("month", rows, { start: 0, end: 40 })).toEqual({
+      from: "2026-10-01",
+      to: "2026-10-31",
+    });
+    expect(zoomedRange("month", rows, { start: Number.NaN, end: Number.NaN })).toEqual({
+      from: "2026-10-01",
+      to: "2026-10-31",
     });
   });
 

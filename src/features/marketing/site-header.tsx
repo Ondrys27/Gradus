@@ -1,12 +1,13 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { MenuIcon, XIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Logo } from "@/components/layout/logo";
 import { GuestLocaleSwitcher } from "@/features/auth/guest-locale-switcher";
+import { useCloseOnErrorScreen } from "@/features/errors/error-screen-state";
 import { APP_NAME } from "@/lib/constants";
 import { homeAnchor, localizedPath, toSiteLocale } from "@/lib/routes";
 import { lockPageScroll } from "@/lib/scroll-lock";
@@ -29,6 +30,9 @@ export function SiteHeader({ signupEnabled }: { signupEnabled: boolean }) {
   const t = useTranslations("marketing.nav");
   const locale = toSiteLocale(useLocale());
   const [menuOpen, setMenuOpen] = useState(false);
+  // An error page closes the menu (and its scroll lock).
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
+  useCloseOnErrorScreen(closeMenu);
   const [compact, setCompact] = useState(false);
   const { scrollY } = useScroll();
   useMotionValueEvent(scrollY, "change", (y) => setCompact(y > COMPACT_AFTER_PX));

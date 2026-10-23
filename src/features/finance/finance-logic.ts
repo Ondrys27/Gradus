@@ -119,11 +119,20 @@ function clampFraction(value: number): number {
   return Math.min(1, Math.max(0, value));
 }
 
-/** Keeps the window's size and start inside `[0, length)`, never smaller than two bars. */
+/**
+ * Keeps the window on whole bars inside `[0, length)`, never smaller than two
+ * bars. The zoom factors give fractional sizes, and a fractional index is no
+ * row at all: GR-KQHYBN was the Finance page crashing on `rows[24.375]`. A
+ * window that is not a number at all becomes the full one.
+ */
 export function clampWindow(length: number, window: ZoomWindow): ZoomWindow {
   if (length <= 1) return { start: 0, end: 0 };
+  if (!Number.isFinite(window.start) || !Number.isFinite(window.end)) return fullWindow(length);
   const maxIndex = length - 1;
-  const size = Math.min(maxIndex + 1, Math.max(MIN_WINDOW_SIZE, window.end - window.start + 1));
+  const size = Math.min(
+    maxIndex + 1,
+    Math.max(MIN_WINDOW_SIZE, Math.round(window.end - window.start + 1)),
+  );
   const start = Math.max(0, Math.min(Math.round(window.start), maxIndex - size + 1));
   return { start, end: start + size - 1 };
 }
@@ -142,7 +151,7 @@ export function zoomWindow(
   const size = window.end - window.start + 1;
   const at = clampFraction(fraction);
   const cursor = window.start + at * size;
-  const nextSize = Math.min(length, Math.max(MIN_WINDOW_SIZE, size * factor));
+  const nextSize = Math.min(length, Math.max(MIN_WINDOW_SIZE, Math.round(size * factor)));
   const start = cursor - at * nextSize;
   return clampWindow(length, { start, end: start + nextSize - 1 });
 }
@@ -154,9 +163,9 @@ export function panWindow(length: number, window: ZoomWindow, deltaIndex: number
 
 /** The calendar range the zoomed-in bars cover, for the totals and the transaction list. */
 export function zoomedRange(kind: ChartKind, rows: ChartRow[], window: ZoomWindow): DateRange {
-  const last = rows.length - 1;
-  const startRow = rows[Math.max(0, Math.min(window.start, last))];
-  const endRow = rows[Math.max(0, Math.min(window.end, last))];
+  const { start, end } = clampWindow(rows.length, window);
+  const startRow = rows[start];
+  const endRow = rows[end];
   const to = kind === "year" ? localToIsoDate(endOfMonth(isoDateToLocal(endRow.key))) : endRow.key;
   return { from: startRow.key, to };
 }

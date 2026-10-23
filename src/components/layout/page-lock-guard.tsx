@@ -2,10 +2,7 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { releaseStrayPageLock } from "@/lib/scroll-lock";
-
-/** Long enough for a closing dialog's exit animation and Base UI's deferred unlock. */
-const SETTLE_MS = 600;
+import { PAGE_LOCK_SETTLE_MS, releaseStrayPageLock } from "@/lib/scroll-lock";
 
 /**
  * After every page change, once things settle: if no overlay holds the scroll
@@ -15,7 +12,7 @@ const SETTLE_MS = 600;
 export function PageLockGuard() {
   const pathname = usePathname();
   useEffect(() => {
-    const timer = window.setTimeout(releaseStrayPageLock, SETTLE_MS);
+    const timer = window.setTimeout(releaseStrayPageLock, PAGE_LOCK_SETTLE_MS);
     return () => window.clearTimeout(timer);
   }, [pathname]);
   return null;

@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { FlameIcon, SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useCloseOnErrorScreen } from "@/features/errors/error-screen-state";
 import { useLevelUnseen } from "@/features/game/overview-queries";
 import { useGameState, useIsPlaying } from "@/features/game/queries";
 import { SearchIconButton, SearchTrigger } from "@/features/search/search-trigger";
@@ -39,6 +40,8 @@ export function TopBar() {
   // Tool mode (and a worker) shows no XP, level or streak; they stay stored for a return to the game.
   const showGame = useIsPlaying();
   const [levelOpen, setLevelOpen] = useState(false);
+  const closeLevel = useCallback(() => setLevelOpen(false), []);
+  useCloseOnErrorScreen(closeLevel);
   // Mounted from the first opening on, so closing can animate out.
   const [levelMounted, setLevelMounted] = useState(false);
   // A level reached and not yet looked at in the window: the pill keeps pulsing.

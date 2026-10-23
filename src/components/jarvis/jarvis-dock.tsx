@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 import { JarvisButton } from "@/components/layout/jarvis-button";
-import { useErrorScreenShown } from "@/features/errors/error-screen-state";
+import { useCloseOnErrorScreen } from "@/features/errors/error-screen-state";
 import { useJarvisSuggestions } from "@/features/jarvis/queries";
 import { useJarvisChat } from "@/features/jarvis/use-jarvis-chat";
 import { track } from "@/lib/analytics/client";
@@ -26,15 +26,15 @@ const JarvisPanel = dynamic(() => loadPanel().then((module) => module.JarvisPane
  * Unseen suggestions make the button's ring pulse; a task Jarvis marked done
  * is announced next to the button with Undo, never silently. Now and then
  * Jarvis also flies in on his own (bottom left) when he has something to say.
- * While the error page is on screen, none of it shows.
+ * While the error page is on screen, none of it shows and the panel closes.
  */
 export function JarvisDock() {
   const [open, setOpen] = useState(false);
+  const close = useCallback(() => setOpen(false), []);
   // Not on the error page; the chat keeps its state for when the page is back.
-  const errorShown = useErrorScreenShown();
+  const errorShown = useCloseOnErrorScreen(close);
   const chat = useJarvisChat();
   const suggestions = useJarvisSuggestions();
-  const close = useCallback(() => setOpen(false), []);
   const send = chat.send;
   const ask = useCallback(
     (prompt: string) => {

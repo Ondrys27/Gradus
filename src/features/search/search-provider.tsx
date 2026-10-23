@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import type { ReactNode } from "react";
+import { useCloseOnErrorScreen } from "@/features/errors/error-screen-state";
 import { track } from "@/lib/analytics/client";
 import { SearchPalette } from "./search-palette";
 
@@ -45,6 +46,9 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     if (next && !openRef.current) track("search_opened", { via: "click" });
     setOpenState(next);
   }, []);
+  // An error page closes the window (it would cover the error page's buttons).
+  const close = useCallback(() => setOpenState(false), []);
+  useCloseOnErrorScreen(close);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {

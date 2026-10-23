@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -6,7 +6,7 @@ import cs from "@/locales/cs.json";
 import en from "@/locales/en.json";
 import { ErrorScreen } from "./error-screen";
 import { isErrorCode } from "./error-code";
-import { useErrorScreenShown } from "./error-screen-state";
+import { useCloseOnErrorScreen, useErrorScreenShown } from "./error-screen-state";
 
 afterEach(cleanup);
 
@@ -122,5 +122,46 @@ describe("ErrorScreen", () => {
       </NextIntlClientProvider>,
     );
     expect(screen.getByTestId("probe").textContent).toBe("shown");
+  });
+
+  it("is the page's top layer, outside the frame it crashed in", () => {
+    renderIn(
+      "cs",
+      <div data-testid="frame" style={{ transform: "translateY(0)" }}>
+        {screenFor(new Error("boom"))}
+      </div>,
+    );
+    const layer = screen.getByTestId("error-screen");
+    expect(layer.parentElement).toBe(document.body);
+    expect(screen.getByTestId("frame").contains(layer)).toBe(false);
+    expect(layer.className).toMatch(/\bfixed\b/);
+    expect(layer.className).toMatch(/\bz-error\b/);
+    // Focus leaves whatever was focused before (an overlay that just closed).
+    expect(document.activeElement).toBe(screen.getByRole("region", { name: cs.errorPage.title }));
+  });
+
+  it("closes the overlays outside the boundary as it appears", () => {
+    function Overlay() {
+      const [open, setOpen] = useState(true);
+      const close = useCallback(() => setOpen(false), []);
+      useCloseOnErrorScreen(close);
+      return <span data-testid="overlay">{open ? "open" : "closed"}</span>;
+    }
+    const view = renderIn("cs", <Overlay />);
+    expect(screen.getByTestId("overlay").textContent).toBe("open");
+    view.rerender(
+      <NextIntlClientProvider locale="cs" messages={cs}>
+        <Overlay />
+        {screenFor(new Error("boom"))}
+      </NextIntlClientProvider>,
+    );
+    expect(screen.getByTestId("overlay").textContent).toBe("closed");
+    // It stays closed when the error page goes.
+    view.rerender(
+      <NextIntlClientProvider locale="cs" messages={cs}>
+        <Overlay />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.getByTestId("overlay").textContent).toBe("closed");
   });
 });

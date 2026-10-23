@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { Menu } from "@base-ui/react/menu";
 import { CheckIcon, LogOutIcon, SettingsIcon, UserRoundIcon } from "lucide-react";
@@ -12,6 +13,7 @@ import {
   useUpdateSettings,
   useUserSettings,
 } from "@/features/account/queries";
+import { useCloseOnErrorScreen } from "@/features/errors/error-screen-state";
 import { locales } from "@/i18n/locales";
 import { cn } from "@/lib/utils";
 
@@ -26,9 +28,12 @@ export function AccountMenu() {
   const updateSettings = useUpdateSettings();
   const signOut = useSignOut();
   const name = profile.display_name || profile.username || user.email;
+  const [open, setOpen] = useState(false);
+  const close = useCallback(() => setOpen(false), []);
+  useCloseOnErrorScreen(close);
 
   return (
-    <Menu.Root>
+    <Menu.Root open={open} onOpenChange={setOpen}>
       <Menu.Trigger
         aria-label={t("open")}
         data-tour="account"
@@ -64,7 +69,11 @@ export function AccountMenu() {
               {t("profile")}
               <UserRoundIcon aria-hidden className="size-4 text-ink-muted" />
             </Menu.LinkItem>
-            <Menu.LinkItem closeOnClick render={<Link href="/app/nastaveni" />} className={itemClass}>
+            <Menu.LinkItem
+              closeOnClick
+              render={<Link href="/app/nastaveni" />}
+              className={itemClass}
+            >
               {t("settings")}
               <SettingsIcon aria-hidden className="size-4 text-ink-muted" />
             </Menu.LinkItem>

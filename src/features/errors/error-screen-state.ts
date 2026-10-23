@@ -40,3 +40,18 @@ export function useErrorScreenShown(): boolean {
     () => false,
   );
 }
+
+/**
+ * For an overlay outside the error boundary (Jarvis's panel, the search
+ * window, a menu, a sheet): closes it as soon as an error page is shown, so
+ * nothing stays over the error page or keeps its buttons from a click.
+ * `close` must be stable (a state setter or a useCallback). Returns whether
+ * the error page is shown, for overlays that should not render meanwhile.
+ */
+export function useCloseOnErrorScreen(close: () => void): boolean {
+  const shown = useErrorScreenShown();
+  useEffect(() => {
+    if (shown) close();
+  }, [shown, close]);
+  return shown;
+}

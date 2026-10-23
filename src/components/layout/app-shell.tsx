@@ -25,7 +25,8 @@ import { TopBar } from "./top-bar";
  * reload. As one client module the shell hydrates the same way every time.
  */
 export function AppShell({ children }: { children: ReactNode }) {
-  // The error page has no Jarvis: neither the dock (it hides itself) nor the tour.
+  // The error page has no Jarvis (the dock hides itself, the tour goes) and no
+  // onboarding over it; the overlays of the frame close themselves.
   const errorShown = useErrorScreenShown();
   return (
     <SearchProvider>
@@ -42,7 +43,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <JarvisDock />
         <GameSessionStart />
         <ThemeSync />
-        <OnboardingGate />
+        {!errorShown && <OnboardingGate />}
         {!errorShown && <JarvisTour />}
         <AnalyticsProvider />
         <PageLockGuard />

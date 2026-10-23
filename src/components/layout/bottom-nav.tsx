@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
@@ -15,6 +15,7 @@ import {
 import { useTranslations } from "next-intl";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { useSignOut } from "@/features/account/queries";
+import { useCloseOnErrorScreen } from "@/features/errors/error-screen-state";
 import { cn } from "@/lib/utils";
 import { isActivePath } from "./nav-items";
 import { useNavItems, type NavItemState } from "./use-nav";
@@ -33,6 +34,8 @@ export function BottomNav() {
   const t = useTranslations("nav");
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
+  const closeMore = useCallback(() => setMoreOpen(false), []);
+  useCloseOnErrorScreen(closeMore);
   const signOut = useSignOut();
   const { primary: primaryItems, more: moreItems } = useNavItems();
   const moreActive = [...moreItems, ...accountItems].some((item) =>

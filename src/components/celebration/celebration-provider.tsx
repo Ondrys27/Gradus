@@ -11,6 +11,7 @@ import {
 } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import dynamic from "next/dynamic";
+import { useErrorScreenShown } from "@/features/errors/error-screen-state";
 import { whenIdle } from "@/lib/idle";
 
 const loadCard = () => import("./celebration-card");
@@ -52,7 +53,9 @@ export function useCelebration() {
 export function CelebrationProvider({ children }: { children: ReactNode }) {
   const [queue, setQueue] = useState<QueuedCelebration[]>([]);
   const nextId = useRef(0);
-  const current = queue[0] ?? null;
+  // While an error page is shown the celebration waits (queue kept), never over it.
+  const errorShown = useErrorScreenShown();
+  const current = errorShown ? null : (queue[0] ?? null);
 
   // Keep the last card on screen while the dialog fades out.
   const [shown, setShown] = useState<QueuedCelebration | null>(null);

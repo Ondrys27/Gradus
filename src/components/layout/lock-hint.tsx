@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, type ReactElement } from "react";
+import { useCallback, useState, type ReactElement } from "react";
 import Link from "next/link";
 import { Popover } from "@base-ui/react/popover";
 import { FlagIcon, LockIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { buttonVariants } from "@/components/ui/button";
+import { useCloseOnErrorScreen } from "@/features/errors/error-screen-state";
 import { useDefinitions } from "@/features/game/overview-queries";
 import { isLockableSection, localized, SECTION_UNLOCK_KEYS } from "@/features/game/types";
 import { formatNumber } from "@/lib/format";
@@ -89,6 +90,8 @@ export function LockedSectionPopover({
   onNavigate?: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  const close = useCallback(() => setOpen(false), []);
+  useCloseOnErrorScreen(close);
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger openOnHover={side === "right"} delay={150} render={trigger} />

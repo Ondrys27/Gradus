@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 import { admin, signIn, type Account } from "./support/accounts";
 import { expect, test, watchConsole } from "./support/fixtures";
 import { exact, text, within } from "./support/i18n";
@@ -15,6 +15,8 @@ import { totp } from "./support/totp";
 const L = "cs";
 const CRASH_PATH = "/app/test-chyby";
 const CRASH_MESSAGE = "Gradus crash test";
+/** With `?later=1` the page renders, then crashes on this window event (src/features/errors/crash-test.ts). */
+const CRASH_EVENT = "gradus:crash-test";
 
 test.use({ reducedMotion: "reduce" });
 
@@ -174,6 +176,72 @@ test("25 · a crash shows the error page, and its feedback is found by the code"
     await adminContext.close();
   }
 });
+
+/**
+ * One real click at the button's centre, after checking that nothing lies
+ * over it there: a click an overlay swallows fails here instead of being
+ * retried until it happens to land.
+ */
+async function clickOnce(page: Page, button: Locator) {
+  await expect(button).toBeVisible();
+  const box = await button.boundingBox();
+  if (!box) throw new Error("button has no box");
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  const onTop = await button.evaluate(
+    (element, point) => element.contains(document.elementFromPoint(point.x, point.y)),
+    { x, y },
+  );
+  expect(onTop, "nothing covers the button").toBe(true);
+  await page.mouse.click(x, y);
+}
+
+for (const viewport of [
+  { width: 1440, height: 900 },
+  { width: 390, height: 844 },
+]) {
+  test(`25 · with Jarvis open, the error page takes the first click (${viewport.width} px)`, async ({
+    page,
+    accounts,
+    consoleErrors,
+  }) => {
+    await page.setViewportSize(viewport);
+    const account = await accounts.create({ label: "error-overlay" });
+    await signIn(page, account);
+    await page.goto(`${CRASH_PATH}?later=1`);
+
+    // Jarvis is open when the page crashes.
+    const openJarvis = page.getByRole("button", { name: within(L, "jarvis.open") });
+    await openJarvis.click();
+    const panel = page.getByRole("dialog", { name: exact(L, "jarvis.title") });
+    await expect(panel).toBeVisible();
+    await page.evaluate((name) => window.dispatchEvent(new Event(name)), CRASH_EVENT);
+
+    // The error page is on top; Jarvis's panel and button are gone.
+    await expect(page.getByRole("heading", { name: exact(L, "errorPage.title") })).toBeVisible();
+    await expect(panel).toHaveCount(0);
+    await expect(openJarvis).toHaveCount(0);
+
+    // Copy: one click puts the code on the clipboard.
+    const code = (await page.getByTestId("error-code").textContent())?.trim() ?? "";
+    expect(code).toMatch(/^GR-[A-Z0-9]{6}$/);
+    await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+    await clickOnce(page, page.getByRole("button", { name: exact(L, "errorPage.copy") }));
+    await expect(page.getByRole("button", { name: exact(L, "errorPage.copied") })).toBeVisible();
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(code);
+
+    // Send feedback: one click opens the note.
+    await clickOnce(page, page.getByRole("button", { name: exact(L, "errorPage.feedback") }));
+    await expect(page.getByLabel(text(L, "errorPage.feedbackLabel"))).toBeVisible();
+
+    // Try again: one click brings the page back, with Jarvis's button and the panel closed.
+    await clickOnce(page, page.getByRole("button", { name: exact(L, "errorPage.retry") }));
+    await expect(page.getByRole("heading", { name: exact(L, "errorPage.title") })).toHaveCount(0);
+    await expect(openJarvis).toBeVisible();
+    await expect(panel).toHaveCount(0);
+    dropExpectedCrashErrors(consoleErrors);
+  });
+}
 
 test("25 · the crash page is not open signed out", async ({ page }) => {
   // Signed out, the app's pages send to the sign-in; nothing crashes.

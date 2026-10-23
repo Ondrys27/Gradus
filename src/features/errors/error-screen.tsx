@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import {
   CheckIcon,
   CopyIcon,
@@ -14,6 +15,7 @@ import { Label, Textarea } from "@/components/ui/input";
 import { reportClientError } from "@/lib/analytics/analytics-provider";
 import { scrubMessage } from "@/lib/analytics/scrub";
 import { APP_VERSION } from "@/lib/app-version";
+import { PAGE_LOCK_SETTLE_MS, releaseStrayPageLock } from "@/lib/scroll-lock";
 import { cn } from "@/lib/utils";
 import { errorCodeFor } from "./error-code";
 import { useMarkErrorScreen } from "./error-screen-state";
@@ -21,6 +23,8 @@ import { BUG_REPORT_DESCRIPTION_MAX, BUG_REPORT_ENDPOINT, type BugReportInput } 
 
 /** Codes already reported from this tab: the error page never sends one twice. */
 const reportedCodes = new Set<string>();
+
+const subscribeNever = () => () => {};
 
 export type ErrorHome = "app" | "admin" | "site";
 
@@ -41,6 +45,12 @@ type ErrorScreenProps = {
  * feedback (one report per code, with an optional note) and a way home.
  * The error is recorded as client_error with the same code. Jarvis stays away
  * while it is on screen.
+ *
+ * It is the top layer of the page (portalled to <body>, `z-error`, over the
+ * frame, any dialog and the celebration), and the overlays outside the error
+ * boundary close as it appears (`useCloseOnErrorScreen`). A lock a dialog of
+ * the crashed page left on <html> or <body> (no scrolling, no clicks) is
+ * cleared once things settle, so its buttons always take the first click.
  */
 export function ErrorScreen({
   error,
@@ -54,44 +64,75 @@ export function ErrorScreen({
   const code = errorCodeFor(error);
   useMarkErrorScreen();
 
+  const sectionRef = useRef<HTMLElement>(null);
+  // Rendered in place on the server, moved to <body> in the browser.
+  const inBrowser = useSyncExternalStore(
+    subscribeNever,
+    () => true,
+    () => false,
+  );
+
   useEffect(() => reportClientError(error, "boundary", code), [error, code]);
 
-  return (
-    <div className={cn("flex w-full justify-center px-0 py-10 md:py-16", className)}>
-      <section
-        aria-labelledby="error-page-title"
-        className="flex w-full max-w-lg flex-col items-center gap-5 rounded-card border border-line bg-surface px-5 py-8 text-center shadow-glow sm:px-8"
-      >
-        <div className="grid size-14 place-items-center rounded-2xl border border-pink/30 bg-pink/12 text-pink [&_svg]:size-6">
-          <TriangleAlertIcon aria-hidden />
-        </div>
-        <div className="flex flex-col gap-2">
-          <h1
-            id="error-page-title"
-            className={cn(
-              "text-xl font-semibold text-balance text-ink sm:text-2xl",
-              display && "font-display tracking-tight",
-            )}
-          >
-            {t("title")}
-          </h1>
-          <p className="text-sm text-pretty text-ink-muted">{t("description")}</p>
-        </div>
+  // Focus moves here, out of whatever overlay just closed.
+  useEffect(() => {
+    sectionRef.current?.focus({ preventScroll: true });
+  }, [inBrowser]);
 
-        <ErrorCode code={code} />
+  useEffect(() => {
+    const timer = window.setTimeout(releaseStrayPageLock, PAGE_LOCK_SETTLE_MS);
+    return () => window.clearTimeout(timer);
+  }, []);
 
-        {/* Keyed by the code: a new error starts with a fresh form. */}
-        <ErrorActions key={code} code={code} error={error} onRetry={onRetry} />
-
-        <a
-          href={homeHref}
-          className="inline-flex min-h-11 items-center text-sm text-ink-soft underline-offset-4 outline-none hover:text-ink hover:underline focus-visible:ring-3 focus-visible:ring-violet/40 mouse:min-h-8"
+  const layer = (
+    <div
+      data-testid="error-screen"
+      className={cn(
+        "fixed inset-0 z-error flex overflow-y-auto overscroll-contain bg-canvas/85 backdrop-blur-md",
+        "pt-[env(safe-area-inset-top)] pr-[max(--spacing(4),env(safe-area-inset-right))] pb-[env(safe-area-inset-bottom)] pl-[max(--spacing(4),env(safe-area-inset-left))]",
+        className,
+      )}
+    >
+      <div className="m-auto flex w-full justify-center py-10 md:py-16">
+        <section
+          ref={sectionRef}
+          tabIndex={-1}
+          aria-labelledby="error-page-title"
+          className="flex w-full max-w-lg flex-col items-center gap-5 rounded-card border border-line bg-surface px-5 py-8 text-center shadow-glow outline-none sm:px-8"
         >
-          {t(`home.${home}`)}
-        </a>
-      </section>
+          <div className="grid size-14 place-items-center rounded-2xl border border-pink/30 bg-pink/12 text-pink [&_svg]:size-6">
+            <TriangleAlertIcon aria-hidden />
+          </div>
+          <div className="flex flex-col gap-2">
+            <h1
+              id="error-page-title"
+              className={cn(
+                "text-xl font-semibold text-balance text-ink sm:text-2xl",
+                display && "font-display tracking-tight",
+              )}
+            >
+              {t("title")}
+            </h1>
+            <p className="text-sm text-pretty text-ink-muted">{t("description")}</p>
+          </div>
+
+          <ErrorCode code={code} />
+
+          {/* Keyed by the code: a new error starts with a fresh form. */}
+          <ErrorActions key={code} code={code} error={error} onRetry={onRetry} />
+
+          <a
+            href={homeHref}
+            className="inline-flex min-h-11 items-center text-sm text-ink-soft underline-offset-4 outline-none hover:text-ink hover:underline focus-visible:ring-3 focus-visible:ring-violet/40 mouse:min-h-8"
+          >
+            {t(`home.${home}`)}
+          </a>
+        </section>
+      </div>
     </div>
   );
+
+  return inBrowser ? createPortal(layer, document.body) : layer;
 }
 
 function ErrorCode({ code }: { code: string }) {

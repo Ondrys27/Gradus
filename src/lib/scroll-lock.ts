@@ -18,6 +18,9 @@ import { useEffect } from "react";
  */
 export const PAGE_LOCK_ATTRIBUTE = "data-page-scroll-locked";
 
+/** Long enough for a closing dialog's exit animation and Base UI's deferred unlock. */
+export const PAGE_LOCK_SETTLE_MS = 600;
+
 let holders = 0;
 
 function apply() {
