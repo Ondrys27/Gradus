@@ -10,7 +10,7 @@ Provádíš plán přestavby Gradusu krok za krokem. Postupuj přesně takto a n
 
 3. Když je agent `RUČNĚ`: položku nezaškrtávej. Vypiš její text a skonči.
 
-4. Když má položka požadavek `env: NÁZEV`, ověř ho výhradně příkazem `grep -c '^NÁZEV=.' .env.local`. Nikdy nevypisuj obsah `.env.local` ani žádnou hodnotu. Když výsledek je 0, položku nezaškrtávej, vysvětli uživateli česky, co je to za klíč, kde ho získat (podívej se do `docs/plan.md` na sekci „Než začneš" u dané fáze) a že ho má vložit do `.env.local`. Pak skonči.
+4. Když má položka požadavek `env: NÁZEV`, ověř ho výhradně příkazem `bun run env:check NÁZEV` (vypíše 1, když je klíč nastavený, jinak 0). `.env.local` nikdy nečti ani jinak neprohledávej a nevypisuj žádnou hodnotu. Když výsledek je 0, položku nezaškrtávej, vysvětli uživateli česky, co je to za klíč, kde ho získat (podívej se do `docs/plan.md` na sekci „Než začneš" u dané fáze) a že ho má vložit do `.env.local`. Pak skonči.
 
 5. Najdi v `docs/plan.md` sekci k ID. ID `3.8` odpovídá nadpisu začínajícímu `## Prompt 3.8`, ID `K3` nadpisu začínajícímu `## Kontrola fáze 3`. Vezmi text promptu z bloku kódu pod nadpisem, doslova, celý.
 

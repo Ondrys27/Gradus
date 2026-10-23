@@ -15,7 +15,8 @@
     "verify:workspace": "bun scripts/verify-workspace-rls.ts",
     "demo:seed": "bun scripts/demo-seed.ts",
     "screenshots": "bun scripts/screenshots.ts",
-    "metrics:backfill": "bun scripts/metrics-backfill.ts"
+    "metrics:backfill": "bun scripts/metrics-backfill.ts",
+    "env:check": "bash scripts/check-env.sh"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",
