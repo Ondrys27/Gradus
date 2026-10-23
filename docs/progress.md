@@ -78,7 +78,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 15.5 | architect | 2026-10-20 — Tarify se upravují v administraci (/admin/tarify) jako koncept a zveřejňují tlačítkem s rozdílem a historií verzí; web, aplikace, limity i Jarvis čtou zveřejněnou verzi.
 - [x] K15 | reviewer | 2026-10-20 — kontrola fáze 15: oddělená hláška nad limitem tarifu od konce zkušebního období, stabilní id dnd-kit v editoru tarifů a opravený e2e 22.
 - [x] STOP | Konec fáze 15. Projdi: Jarvis s víc upozorněními (jedno naráz, listování). Vyvolej chybu a odešli zpětnou vazbu, najdi ji v administraci podle kódu. V poznámkách smaž poznámku popelnicí (potvrzení, Zpět), vlož @kontakt a klikni na čip, otevři kontakt a najdi „Zmíněno v poznámkách". V administraci AI přepni období na 7 dní a dnes a zkontroluj přepočet a dvě desetinná místa. V Tarifech změň cenu, ověř, že web se nezměnil, zveřejni a ověř web i /app/tarif. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
-- [ ] 16.1 | architect |
+- [x] 16.1 | architect | 2026-10-23 GR-KQHYBN byl pád Financí při přiblížení grafu (zlomkový index), opraveno; obrazovka chyby je nově ve vlastní vrstvě nad vším, zavře Jarvise, ⌘K a další překryvy a její tlačítka fungují na první klik (e2e 25 a 28).
 - [ ] 16.2 | architect | env: RESEND_API_KEY
 - [ ] 16.3 | architect | env: RESEND_API_KEY
 - [ ] K16 | reviewer |
