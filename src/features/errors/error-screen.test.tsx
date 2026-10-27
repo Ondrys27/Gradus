@@ -17,6 +17,10 @@ beforeEach(() => {
   vi.stubGlobal("fetch", fetchMock);
 });
 
+/** The bug reports sent; the error's own record (/api/client-error) goes on its own. */
+const reportCalls = () =>
+  fetchMock.mock.calls.filter((call) => call[0] === "/api/bug-report");
+
 function renderIn(locale: "cs" | "en", node: ReactNode) {
   const missing: string[] = [];
   const view = render(
@@ -69,8 +73,8 @@ describe("ErrorScreen", () => {
       fireEvent.click(send);
     });
     await waitFor(() => expect(screen.getByText(cs.errorPage.thanks)).toBeTruthy());
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(reportCalls()).toHaveLength(1);
+    const [url, init] = reportCalls()[0]!;
     expect(url).toBe("/api/bug-report");
     const body = JSON.parse(init.body);
     expect(body).toMatchObject({ code, page: "/", digest: "2385967390", locale: "cs" });
@@ -81,11 +85,19 @@ describe("ErrorScreen", () => {
     cleanup();
     renderIn("cs", screenFor(error));
     expect(screen.getByText(cs.errorPage.thanks)).toBeTruthy();
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(reportCalls()).toHaveLength(1);
+    // The error itself was recorded once, under the same code.
+    const records = fetchMock.mock.calls.filter((call) => call[0] === "/api/client-error");
+    expect(records).toHaveLength(1);
+    expect(JSON.parse(records[0]![1].body)).toMatchObject({ code, source: "boundary" });
   });
 
   it("sends the note when there is one and offers a retry when sending fails", async () => {
-    fetchMock.mockResolvedValueOnce(new Response("{}", { status: 500 }));
+    fetchMock.mockImplementation(async (url: string) =>
+      url === "/api/bug-report" && reportCalls().length === 1
+        ? new Response("{}", { status: 500 })
+        : new Response(JSON.stringify({ ok: true }), { status: 200 }),
+    );
     renderIn("en", screenFor(new Error("boom")));
     fireEvent.click(screen.getByRole("button", { name: en.errorPage.feedback }));
     fireEvent.change(screen.getByLabelText(en.errorPage.feedbackLabel), {
@@ -99,8 +111,8 @@ describe("ErrorScreen", () => {
       fireEvent.click(screen.getByRole("button", { name: en.errorPage.send }));
     });
     await waitFor(() => expect(screen.getByText(en.errorPage.thanks)).toBeTruthy());
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(JSON.parse(fetchMock.mock.calls[1]![1].body).description).toBe("I saved a contact");
+    expect(reportCalls()).toHaveLength(2);
+    expect(JSON.parse(reportCalls()[1]![1].body).description).toBe("I saved a contact");
   });
 
   it("keeps Jarvis away while it is on screen", () => {

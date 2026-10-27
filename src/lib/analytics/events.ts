@@ -118,6 +118,7 @@ const CRON_JOBS = [
   "analytics_retention",
   "metrics_daily",
   "notes_trash",
+  "error_alerts",
 ] as const;
 const FILE_ERRORS = [
   "fileType",

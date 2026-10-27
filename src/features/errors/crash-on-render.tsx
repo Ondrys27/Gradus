@@ -12,7 +12,13 @@ const subscribe = () => () => {};
  * normally and throws when the window gets CRASH_TEST_EVENT, so a test can
  * open Jarvis (or anything else) before the crash, as a real one happens.
  */
-export function CrashOnRender({ later = false }: { later?: boolean }): null {
+export function CrashOnRender({
+  later = false,
+  message = CRASH_TEST_MESSAGE,
+}: {
+  later?: boolean;
+  message?: string;
+}): null {
   const inBrowser = useSyncExternalStore(
     subscribe,
     () => true,
@@ -27,6 +33,6 @@ export function CrashOnRender({ later = false }: { later?: boolean }): null {
     return () => window.removeEventListener(CRASH_TEST_EVENT, crash);
   }, [later]);
 
-  if (inBrowser && (!later || triggered)) throw new Error(CRASH_TEST_MESSAGE);
+  if (inBrowser && (!later || triggered)) throw new Error(message);
   return null;
 }

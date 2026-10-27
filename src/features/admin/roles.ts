@@ -15,6 +15,8 @@ export type OwnerOnly =
   | "editAiCaps"
   /** The plan catalog: draft, publishing, bringing back a version; an admin reads it. */
   | "editPlans"
+  /** Where the error e-mails go and how often, the test e-mail; an admin reads it. */
+  | "editErrorAlerts"
   /** Exports whose rows name people (names, e-mails, account ids). */
   | "exportPersonalData";
 

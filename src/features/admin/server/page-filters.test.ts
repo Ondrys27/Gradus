@@ -109,6 +109,7 @@ const PAGE_LOADERS: Record<AdminSectionKey, Loader[]> = {
   users: [(q) => loadUsers({ view: q.view, query: "", sort: "activity", page: 0 })],
   audit: [],
   plans: [],
+  errorAlerts: [],
   admins: [],
 };
 

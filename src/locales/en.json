@@ -2530,6 +2530,51 @@
       "cancel": "Cancel",
       "sending": "Sending…",
       "send": "Send"
+    },
+    "errorAlert": {
+      "subject": "{prefix} Error {code} · {page}",
+      "intro": "An error came up in {appName}.",
+      "code": "Code",
+      "time": "Time",
+      "timeValue": "{prague} Europe/Prague · {utc} UTC",
+      "page": "Page",
+      "action": "Action",
+      "message": "Message",
+      "stack": "Stack (first 10 lines)",
+      "user": "User",
+      "anonymous": "not signed in",
+      "unnamed": "no name",
+      "plan": "plan {plan} ({status})",
+      "internalYes": "internal: yes",
+      "internalNo": "internal: no",
+      "browser": "Browser and device",
+      "version": "Deployed version",
+      "occurrences": "Occurrences",
+      "count": "{count}× in the last 24 h",
+      "countSince": "{count}× in the last 24 h, {since}× of them since the last e-mail (the same error is e-mailed at most once every {minutes} minutes)",
+      "link": "In the administration",
+      "rules": "The same error is e-mailed at most once every {minutes} minutes, at most {perHour} e-mails an hour in total.",
+      "settings": "Change the addresses and how often in Administration → Settings → Error alerts.",
+      "overflowSubject": "{prefix} There are more errors, look in the administration",
+      "overflowIntro": "{perHour} error e-mails went out in the last hour. Further errors are still recorded and will be e-mailed again once the hourly limit eases. Look in the administration.",
+      "digestSubject": "{prefix} Error summary: {count}",
+      "digestIntro": "{count, plural, one {# error happened} other {# errors happened}} since the last summary, {errors} of them different. Each is listed once with how often it happened.",
+      "digestTimes": "{count}×",
+      "digestLast": "last at {time}, users {users}",
+      "testSubject": "{prefix} Test e-mail: error alerts",
+      "testIntro": "This is a test e-mail from the {appName} administration. If it arrived, error e-mails will reach this address.",
+      "recipients": "Addresses",
+      "settingsLink": "Settings",
+      "source": {
+        "boundary": "error page in the browser",
+        "onerror": "browser error",
+        "unhandledrejection": "unhandled browser error",
+        "render": "server page render",
+        "route": "API route",
+        "action": "server action",
+        "middleware": "middleware",
+        "cron": "scheduled job"
+      }
     }
   },
   "workers": {
@@ -4097,7 +4142,8 @@
         "users": "Users",
         "explorer": "Explorer",
         "admins": "Administrators",
-        "plans": "Plans"
+        "plans": "Plans",
+        "errorAlerts": "Error alerts"
       },
       "soon": "Soon",
       "groups": {
@@ -4418,6 +4464,26 @@
         "samsung": "Samsung Internet",
         "opera": "Opera",
         "other": "Other browser"
+      },
+      "event": {
+        "title": "Error record {code}",
+        "description": "What happened, as the app caught it. Nothing of the user's data.",
+        "time": "Time",
+        "action": "Action",
+        "user": "User",
+        "count": "In 24 h",
+        "countValue": "{count, plural, one {# occurrence} other {# occurrences}} of the same error",
+        "serverMessage": "Server message",
+        "source": {
+          "boundary": "error page in the browser",
+          "onerror": "browser error",
+          "unhandledrejection": "unhandled browser error",
+          "render": "server page render",
+          "route": "API route",
+          "action": "server action",
+          "middleware": "middleware",
+          "cron": "scheduled job"
+        }
       }
     },
     "users": {
@@ -4952,6 +5018,65 @@
         "restore": "Bring back",
         "noAuthor": "Default version or a deleted account",
         "empty": "No earlier version yet."
+      }
+    },
+    "errorAlerts": {
+      "title": "Error alerts",
+      "description": "Which addresses get an e-mail whenever any user hits an error.",
+      "cardTitle": "Error e-mails",
+      "cardDescription": "The same error is e-mailed at most once every {minutes} minutes; further occurrences are counted into the next e-mail. At most {perHour} e-mails an hour in total, then one “There are more errors”.",
+      "senderWarning": "Heads up: e-mails still go out from Resend's test address (RESEND_FROM is not set). Until RESEND_FROM has a verified domain, Resend delivers only to the Resend account's own address; other addresses get nothing.",
+      "senderNote": "E-mails are sent from {sender}. The sender's domain must be verified in Resend, otherwise Resend delivers only to the Resend account's own address.",
+      "emailsLabel": "Addresses",
+      "noEmails": "No address: error e-mails go nowhere.",
+      "addLabel": "New address",
+      "addPlaceholder": "name@company.com",
+      "addHint": "At most {max} addresses.",
+      "full": "There are {max} addresses, that is the limit. Remove one first.",
+      "add": "Add",
+      "remove": "Remove {email}",
+      "modeLabel": "How often",
+      "modes": {
+        "every": "Every error on its own",
+        "digestOption": "A summary every N minutes",
+        "digest": "A summary, at most one e-mail every {minutes} minutes"
+      },
+      "minutesLabel": "N minutes",
+      "minutesHint": "A whole number, {min}–{max}.",
+      "modeHint": {
+        "every": "Every error arrives at once in its own e-mail (with the flood rules above).",
+        "digest": "An error arrives at once only when no e-mail went out in the last {minutes} minutes. The rest are collected and arrive in a summary once a day at {hour}:00 UTC."
+      },
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved.",
+      "readOnly": "Only the owner changes these settings.",
+      "updated": "Last changed by {name}, {date}",
+      "unknownPerson": "an unknown account",
+      "errors": {
+        "emails": "An address is not valid or appears twice.",
+        "digestMinutes": "Enter a whole number of minutes from {min} to {max}.",
+        "invalid": "These values can't be saved. Check the addresses and the minutes.",
+        "forbidden": "The admin session ended or you may not do this. Sign in again.",
+        "failed": "Saving failed. Try again.",
+        "add": {
+          "invalid": "This is not a valid e-mail address.",
+          "duplicate": "This address is in the list already.",
+          "tooMany": "No more than {max} addresses."
+        }
+      },
+      "test": {
+        "button": "Send a test e-mail",
+        "sending": "Sending…",
+        "saveFirst": "Save your changes first; the test goes to the saved addresses.",
+        "sent": "The test e-mail went to {count, plural, one {# address} other {# addresses}}.",
+        "partial": "It went to only {sent} of {total} addresses. Resend answered:",
+        "errors": {
+          "noRecipients": "Add and save at least one address first.",
+          "limited": "Enough test e-mails in the last hour. Try again later.",
+          "forbidden": "The admin session ended or you may not do this. Sign in again.",
+          "failed": "The test e-mail could not be sent. Try again."
+        }
       }
     }
   }

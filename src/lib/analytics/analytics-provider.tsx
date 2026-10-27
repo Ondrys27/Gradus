@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
+import { createErrorCode } from "@/features/errors/error-code";
+import { sendClientErrorRecord } from "@/features/errors/alerts/send-client-error";
 import { flush, track } from "./client";
 import { routeOf, sectionOf } from "./routes";
 import { scrubMessage } from "./scrub";
@@ -9,13 +11,18 @@ import { scrubMessage } from "./scrub";
 /** The heartbeat's rhythm; a session counts only the minutes with one. */
 export const HEARTBEAT_MS = 60_000;
 
-/** An error the app caught (error boundary) or the window saw, without any data in it. */
+/**
+ * An error the app caught (error boundary) or the window saw, without any
+ * data in it: the client_error event, and the error's record on the server
+ * (error_events), which e-mails the owner. Both carry the same code.
+ */
 export function reportClientError(
   error: unknown,
   source: "boundary" | "onerror" | "unhandledrejection",
   /** The code the error page shows; it lets the administration find this error. */
-  code?: string,
+  code: string = createErrorCode(),
 ): void {
+  sendClientErrorRecord(error, source, code);
   try {
     const message =
       error instanceof Error
@@ -27,7 +34,7 @@ export function reportClientError(
       route: routeOf(window.location.pathname),
       source,
       message: scrubMessage(message),
-      ...(code ? { code } : {}),
+      code,
     });
   } catch {
     // Reporting an error must not cause another.

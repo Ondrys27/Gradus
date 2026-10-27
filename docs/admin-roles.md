@@ -15,6 +15,7 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | `ai-caps-actions.saveAiCaps` | owner | stropy AI; admin je vidí jen ke čtení |
 | `ai-caps-actions.saveUserAiCap` | owner | výjimky AI; admin je vidí jen ke čtení |
 | `plans-actions.savePlanDraft`, `discardPlanDraft`, `planCatalogImpact`, `publishPlanCatalog`, `restorePlanVersion` | owner | katalog tarifů; admin vidí zveřejněnou verzi a historii jen ke čtení |
+| `error-alerts-actions.saveErrorAlerts`, `sendErrorAlertsTest` | owner | adresy a režim e-mailů o chybách, zkušební e-mail; admin nastavení jen čte |
 | `export-actions.recordExport` (grafy, tabulky čísel) | owner + admin | souhrnná čísla |
 | `export-actions.recordExport` (`table.ai.top_users.csv`) | owner | jména a id uživatelů |
 | `GET /admin/audit/export` | owner | jména a id lidí v auditu; adminovi 404 |
@@ -34,6 +35,8 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | AI a Jarvis — karta stropů | owner upravuje, admin čte |
 | Detail uživatele — výjimka AI | owner upravuje, admin čte |
 | Tarify (`/admin/tarify`) | owner upravuje a zveřejňuje, admin čte zveřejněnou verzi a historii |
+| Upozornění na chyby (`/admin/upozorneni`) | owner upravuje a posílá zkušební e-mail, admin čte |
+| Zpětná vazba — karta Záznam chyby (hledání podle kódu) | owner + admin |
 | Administrátoři (`/admin/administratori`) | owner; adminovi 404, v menu chybí |
 | `/admin/prihlaseni`, `/admin/pozvanka/<token>` | kdokoli (stránka sama ověřuje heslo, roli nebo token) |
 
@@ -43,7 +46,7 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 |---|---|---|
 | `admin_session_touch` | owner + admin (aal2) | vrací i `role` |
 | `admin_session_end` | přihlášený, jen vlastní relace | |
-| `admin_set_app_setting` | owner | dřív stačila živá relace, teď `admin_require_owner()` |
+| `admin_set_app_setting` | owner | dřív stačila živá relace, teď `admin_require_owner()`; klíče `ai_caps` a `error_alerts` (audit bez adres) |
 | `admin_set_ai_user_cap` | owner | totéž |
 | `admin_invite_create` | owner | ukládá jen SHA-256 tokenu, píše `admin_audit` |
 | `admin_invite_revoke` | owner | píše `admin_audit` |
@@ -54,6 +57,7 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | `plan_catalog_impact`, `plan_overage`, `published_plan` | jen service role (server po stráži) | počty účtů a překročení limitů |
 | `admin_require_owner` | jen uvnitř funkcí výše | bez práva EXECUTE pro klienty |
 | `admin_members`, `admin_people`, `metric_admin_users` | jen service role (server po stráži) | čtou `auth.users` |
+| `error_event_record`, `error_alert_claim`, `error_alert_digest_claim`, `purge_error_events` | jen service role (server) | záznamy chyb a rozhodnutí o e-mailech, bez klientského přístupu |
 | `admin_bug_reports` | jen service role (server po stráži) | Zpětná vazba → Hlášení chyb, hledání podle kódu chyby; owner + admin |
 | `app_overview` | owner | v aplikaci, ne v administraci; beze změny |
 

@@ -2530,6 +2530,51 @@
       "cancel": "Zrušit",
       "sending": "Odesílá se…",
       "send": "Odeslat"
+    },
+    "errorAlert": {
+      "subject": "{prefix} Chyba {code} · {page}",
+      "intro": "V aplikaci {appName} vyskočila chyba.",
+      "code": "Kód",
+      "time": "Čas",
+      "timeValue": "{prague} Europe/Prague · {utc} UTC",
+      "page": "Stránka",
+      "action": "Akce",
+      "message": "Zpráva",
+      "stack": "Stack (prvních 10 řádků)",
+      "user": "Uživatel",
+      "anonymous": "nepřihlášený",
+      "unnamed": "bez jména",
+      "plan": "tarif {plan} ({status})",
+      "internalYes": "interní: ano",
+      "internalNo": "interní: ne",
+      "browser": "Prohlížeč a zařízení",
+      "version": "Verze nasazení",
+      "occurrences": "Výskyty",
+      "count": "{count}× za posledních 24 h",
+      "countSince": "{count}× za posledních 24 h, z toho {since}× od posledního e-mailu (stejná chyba chodí nejvýš jednou za {minutes} minut)",
+      "link": "V administraci",
+      "rules": "Stejná chyba přijde e-mailem nejvýš jednou za {minutes} minut, celkem nejvýš {perHour} e-mailů za hodinu.",
+      "settings": "Adresy a četnost změníš v Administraci → Nastavení → Upozornění na chyby.",
+      "overflowSubject": "{prefix} Chyb je víc, podívej se do administrace",
+      "overflowIntro": "Za poslední hodinu odešlo {perHour} e-mailů o chybách. Další chyby se ukládají dál, ale e-mailem zase přijdou, až hodinový limit opadne. Podívej se do administrace.",
+      "digestSubject": "{prefix} Souhrn chyb: {count}",
+      "digestIntro": "{count, plural, one {Od posledního souhrnu se stala # chyba} few {Od posledního souhrnu se staly # chyby} other {Od posledního souhrnu se stalo # chyb}}, různých {errors}. Každá je tu jednou s počtem výskytů.",
+      "digestTimes": "{count}×",
+      "digestLast": "naposledy {time}, uživatelů {users}",
+      "testSubject": "{prefix} Zkušební e-mail: upozornění na chyby",
+      "testIntro": "Tohle je zkušební e-mail z Administrace aplikace {appName}. Když dorazil, budou na tuhle adresu chodit e-maily o chybách.",
+      "recipients": "Adresy",
+      "settingsLink": "Nastavení",
+      "source": {
+        "boundary": "obrazovka chyby v prohlížeči",
+        "onerror": "chyba v prohlížeči",
+        "unhandledrejection": "nezachycená chyba v prohlížeči",
+        "render": "vykreslení stránky na serveru",
+        "route": "API routa",
+        "action": "serverová akce",
+        "middleware": "middleware",
+        "cron": "plánovaná úloha"
+      }
     }
   },
   "workers": {
@@ -4097,7 +4142,8 @@
         "users": "Uživatelé",
         "explorer": "Průzkumník",
         "admins": "Administrátoři",
-        "plans": "Tarify"
+        "plans": "Tarify",
+        "errorAlerts": "Upozornění na chyby"
       },
       "soon": "Brzy",
       "groups": {
@@ -4418,6 +4464,26 @@
         "samsung": "Samsung Internet",
         "opera": "Opera",
         "other": "Jiný prohlížeč"
+      },
+      "event": {
+        "title": "Záznam chyby {code}",
+        "description": "Co se stalo, jak to zachytila aplikace. Bez obsahu dat uživatele.",
+        "time": "Čas",
+        "action": "Akce",
+        "user": "Uživatel",
+        "count": "Za 24 h",
+        "countValue": "{count, plural, one {# výskyt} few {# výskyty} other {# výskytů}} stejné chyby",
+        "serverMessage": "Zpráva ze serveru",
+        "source": {
+          "boundary": "obrazovka chyby v prohlížeči",
+          "onerror": "chyba v prohlížeči",
+          "unhandledrejection": "nezachycená chyba v prohlížeči",
+          "render": "vykreslení stránky na serveru",
+          "route": "API routa",
+          "action": "serverová akce",
+          "middleware": "middleware",
+          "cron": "plánovaná úloha"
+        }
       }
     },
     "users": {
@@ -4952,6 +5018,65 @@
         "restore": "Vrátit",
         "noAuthor": "Výchozí verze nebo smazaný účet",
         "empty": "Zatím žádná dřívější verze."
+      }
+    },
+    "errorAlerts": {
+      "title": "Upozornění na chyby",
+      "description": "Na které adresy přijde e-mail, když kterémukoli uživateli vyskočí chyba.",
+      "cardTitle": "E-maily o chybách",
+      "cardDescription": "Stejná chyba přijde nejvýš jednou za {minutes} minut, další výskyty se přičtou do dalšího e-mailu. Celkem nejvýš {perHour} e-mailů za hodinu, pak jeden „Chyb je víc“.",
+      "senderWarning": "Pozor: zatím se odesílá z testovací adresy Resendu (RESEND_FROM není nastavené). Dokud RESEND_FROM nemá ověřenou doménu, Resend doručí jen na adresu účtu Resend; ostatní adresy e-mail nedostanou.",
+      "senderNote": "E-maily odcházejí z {sender}. Doména odesílatele musí být v Resendu ověřená, jinak Resend doručí jen na adresu účtu Resend.",
+      "emailsLabel": "Adresy",
+      "noEmails": "Žádná adresa: e-maily o chybách nechodí nikam.",
+      "addLabel": "Nová adresa",
+      "addPlaceholder": "jmeno@firma.cz",
+      "addHint": "Nejvýš {max} adres.",
+      "full": "Je tu {max} adres, víc nejde. Nejdřív nějakou odeber.",
+      "add": "Přidat",
+      "remove": "Odebrat {email}",
+      "modeLabel": "Jak často",
+      "modes": {
+        "every": "Každá chyba zvlášť",
+        "digestOption": "Souhrn každých N minut",
+        "digest": "Souhrn, nejvýš jeden e-mail za {minutes} minut"
+      },
+      "minutesLabel": "N minut",
+      "minutesHint": "Celé číslo {min}–{max}.",
+      "modeHint": {
+        "every": "Každá chyba přijde hned vlastním e-mailem (s pravidly proti záplavě výše).",
+        "digest": "Chyba přijde hned, jen když za posledních {minutes} minut nepřišel žádný e-mail. Ostatní se sbírají a přijdou v souhrnu jednou denně v {hour}:00 UTC."
+      },
+      "save": "Uložit",
+      "saving": "Ukládám…",
+      "saved": "Uloženo.",
+      "readOnly": "Nastavení mění jen majitel.",
+      "updated": "Naposledy změnil(a) {name}, {date}",
+      "unknownPerson": "neznámý účet",
+      "errors": {
+        "emails": "Některá adresa není platná nebo je v seznamu dvakrát.",
+        "digestMinutes": "Zadej celé číslo minut od {min} do {max}.",
+        "invalid": "Hodnoty nejdou uložit. Zkontroluj adresy a počet minut.",
+        "forbidden": "Relace administrace vypršela nebo na to nemáš právo. Přihlas se znovu.",
+        "failed": "Uložení se nepovedlo. Zkus to znovu.",
+        "add": {
+          "invalid": "Tohle není platná e-mailová adresa.",
+          "duplicate": "Tahle adresa už v seznamu je.",
+          "tooMany": "Víc než {max} adres nejde."
+        }
+      },
+      "test": {
+        "button": "Poslat zkušební e-mail",
+        "sending": "Posílám…",
+        "saveFirst": "Nejdřív ulož změny, zkušební e-mail jde na uložené adresy.",
+        "sent": "Zkušební e-mail odešel na {count, plural, one {# adresu} few {# adresy} other {# adres}}.",
+        "partial": "Odešlo jen na {sent} z {total} adres. Resend odpověděl:",
+        "errors": {
+          "noRecipients": "Nejdřív přidej a ulož aspoň jednu adresu.",
+          "limited": "Zkušebních e-mailů už bylo za poslední hodinu dost. Zkus to později.",
+          "forbidden": "Relace administrace vypršela nebo na to nemáš právo. Přihlas se znovu.",
+          "failed": "Zkušební e-mail se nepovedlo odeslat. Zkus to znovu."
+        }
       }
     }
   }

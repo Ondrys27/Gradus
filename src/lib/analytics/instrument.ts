@@ -1,5 +1,6 @@
 import "server-only";
 import { NextResponse } from "next/server";
+import { captureServerError } from "@/features/errors/alerts/server/capture";
 import { isCronRequest } from "@/lib/cron/verify";
 import type { EventProps } from "./events";
 import { track, trackLater } from "./track";
@@ -101,7 +102,8 @@ export function measure<Args extends unknown[], R>(
 
 /**
  * A scheduled job: checks CRON_SECRET, runs it, records the run with its
- * result and duration, and answers Vercel Cron.
+ * result and duration, and answers Vercel Cron. A failure is also recorded
+ * in error_events and e-mailed to the owner.
  */
 export async function runCron(
   job: CronJob,
@@ -128,6 +130,12 @@ export async function runCron(
     return NextResponse.json({ ok: true, ...body });
   } catch (error) {
     console.error(`[cron] ${job} failed`, error);
+    // The job's error is caught here, so the request does not fail: e-mail it to the owner.
+    captureServerError(error, {
+      source: "cron",
+      page: new URL(request.url).pathname,
+      action: job,
+    });
     await track(
       "cron_run",
       { job, ok: false, duration_ms: elapsed(), error_code: errorCode(error) },

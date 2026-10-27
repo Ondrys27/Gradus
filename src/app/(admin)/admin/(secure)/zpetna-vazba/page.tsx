@@ -4,13 +4,15 @@ import { getTranslations } from "next-intl/server";
 import { SearchIcon } from "lucide-react";
 import { StatusPill } from "@/components/ui/status-pill";
 import type { Tone } from "@/components/ui/tone";
-import { normalizeErrorCodeQuery } from "@/features/errors/error-code";
+import { isErrorCode, normalizeErrorCodeQuery } from "@/features/errors/error-code";
 import { formatCalendarDate, formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ADMIN_PATH } from "@/features/admin/access";
 import { logAdminAction } from "@/features/admin/server/audit";
 import { requireAdmin } from "@/features/admin/server/guard";
+import { loadErrorEvent } from "@/features/admin/server/error-alerts-data";
 import { adminQuery, safe, type AdminQuery } from "@/features/admin/server/metrics-data";
+import { peopleNamer } from "@/features/admin/server/people";
 import {
   featureRequestCounts,
   jarvisAnswerRatings,
@@ -91,6 +93,9 @@ export default async function AdminFeedbackPage({ searchParams }: Props) {
     <>
       <AdminPageHeader section="feedback" q={q} extra={search} />
       <div className="flex flex-col gap-4">
+        <Suspense fallback={null}>
+          <ErrorEventCard rawCode={rawCode} />
+        </Suspense>
         <Suspense fallback={<CardSkeleton height={240} />}>
           <BugReports q={q} rawCode={rawCode} />
         </Suspense>
@@ -114,6 +119,73 @@ const REPORT_STATUS_TONE: Record<BugReportStatus, Tone> = {
   fixed: "green",
   cannot_reproduce: "neutral",
 };
+
+/**
+ * The record of the error a full code names (error_events): what the e-mail
+ * about it said, for the link in that e-mail. Nothing when there is none.
+ */
+async function ErrorEventCard({ rawCode }: { rawCode: string }) {
+  const code = normalizeErrorCodeQuery(rawCode);
+  if (!code || !isErrorCode(code)) return null;
+  const loaded = await safe("error event", () => loadErrorEvent(code));
+  if (!loaded.ok || !loaded.data) return null;
+  const row = loaded.data;
+  const [t, tControls, nameOf] = await Promise.all([
+    getTranslations("admin.feedback"),
+    getTranslations("admin.controls"),
+    peopleNamer([row.userId]),
+  ]);
+  const device =
+    row.device && tControls.has(`segmentValues.device.${row.device}`)
+      ? tControls(`segmentValues.device.${row.device}`)
+      : null;
+  const browser =
+    row.browser && t.has(`browser.${row.browser}`) ? t(`browser.${row.browser}`) : null;
+  const source = t.has(`event.source.${row.source}`) ? t(`event.source.${row.source}`) : row.source;
+  const details: [string, string | null][] = [
+    [t("event.time"), formatDateTime(new Date(row.createdAt), ADMIN_FORMAT_SETTINGS)],
+    [t("pageLabel"), row.page],
+    [t("event.action"), [source, row.action].filter(Boolean).join(" · ")],
+    [t("errorLabel"), row.message],
+    [t("event.user"), row.userId ? nameOf(row.userId) : t("anonymous")],
+    [t("browserLabel"), [browser, device, row.viewport].filter(Boolean).join(" · ") || null],
+    [t("versionLabel"), row.version],
+    [t("digestLabel"), row.digest],
+    [t("event.count"), t("event.countValue", { count: row.dayCount })],
+  ];
+  const stack = row.server?.stack ?? row.stack;
+  return (
+    <AdminCard
+      title={t("event.title", { code: row.code })}
+      description={t("event.description")}
+      wide
+    >
+      <div className="flex flex-col gap-3" data-testid="error-event">
+        <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm">
+          {details
+            .filter(([, value]) => value)
+            .map(([label, value]) => (
+              <div key={label} className="contents">
+                <dt className="text-ink-muted">{label}</dt>
+                <dd className="min-w-0 break-words text-ink-soft">{value}</dd>
+              </div>
+            ))}
+          {row.server && (
+            <div className="contents">
+              <dt className="text-ink-muted">{t("event.serverMessage")}</dt>
+              <dd className="min-w-0 break-words text-ink-soft">{row.server.message}</dd>
+            </div>
+          )}
+        </dl>
+        {stack && (
+          <pre className="max-h-64 overflow-auto rounded-xl border border-line bg-canvas/60 px-3 py-2 font-mono text-xs whitespace-pre-wrap text-ink-soft">
+            {stack}
+          </pre>
+        )}
+      </div>
+    </AdminCard>
+  );
+}
 
 /** Bug reports from the error page, newest first, or the ones a code search finds. */
 async function BugReports({ q, rawCode }: { q: AdminQuery; rawCode: string }) {

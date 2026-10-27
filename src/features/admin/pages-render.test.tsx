@@ -54,6 +54,7 @@ vi.mock("@/features/admin/ui/retry-button", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/export-footer", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/admins-controls", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/copy-id", (load) => stubClientModule(load));
+vi.mock("@/features/admin/ui/error-alerts-form", (load) => stubClientModule(load));
 vi.mock("next/link", () => ({ default: clientStub("Link") }));
 
 // --- Session, audit and database --------------------------------------------------
@@ -266,6 +267,7 @@ const PAGES: Record<string, () => Promise<{ default: unknown }>> = {
   users: () => import("@/app/(admin)/admin/(secure)/uzivatele/page"),
   explorer: () => import("@/app/(admin)/admin/(secure)/pruzkumnik/page"),
   audit: () => import("@/app/(admin)/admin/(secure)/audit/page"),
+  errorAlerts: () => import("@/app/(admin)/admin/(secure)/upozorneni/page"),
 };
 
 let errors: string[] = [];

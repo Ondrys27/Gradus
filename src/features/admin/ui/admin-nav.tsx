@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
   ActivityIcon,
+  BellRingIcon,
   BotIcon,
   BoxesIcon,
   ChevronDownIcon,
@@ -63,6 +64,7 @@ const SECTION_ICONS: Record<AdminSectionKey, LucideIcon> = {
   explorer: CompassIcon,
   audit: ScrollTextIcon,
   plans: TagsIcon,
+  errorAlerts: BellRingIcon,
   admins: ShieldCheckIcon,
 };
 

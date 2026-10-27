@@ -1076,6 +1076,125 @@ export type Database = {
           },
         ]
       }
+      error_alert_sends: {
+        Row: {
+          created_at: string
+          event_id: string | null
+          events: number
+          failure: string | null
+          fingerprint: string | null
+          id: string
+          kind: string
+          message: Json | null
+          recipients: number
+          sent_at: string | null
+          status: string
+          transport: string
+        }
+        Insert: {
+          created_at?: string
+          event_id?: string | null
+          events?: number
+          failure?: string | null
+          fingerprint?: string | null
+          id?: string
+          kind: string
+          message?: Json | null
+          recipients?: number
+          sent_at?: string | null
+          status?: string
+          transport?: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string | null
+          events?: number
+          failure?: string | null
+          fingerprint?: string | null
+          id?: string
+          kind?: string
+          message?: Json | null
+          recipients?: number
+          sent_at?: string | null
+          status?: string
+          transport?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "error_alert_sends_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "error_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      error_events: {
+        Row: {
+          action: string | null
+          alert: string
+          app_version: string | null
+          browser: string | null
+          code: string
+          created_at: string
+          device: string | null
+          digest: string | null
+          fingerprint: string
+          id: string
+          ip_hash: string | null
+          locale: string | null
+          message: string
+          page: string
+          source: string
+          stack: string | null
+          transport: string
+          user_id: string | null
+          viewport: string | null
+        }
+        Insert: {
+          action?: string | null
+          alert?: string
+          app_version?: string | null
+          browser?: string | null
+          code: string
+          created_at?: string
+          device?: string | null
+          digest?: string | null
+          fingerprint: string
+          id?: string
+          ip_hash?: string | null
+          locale?: string | null
+          message: string
+          page: string
+          source: string
+          stack?: string | null
+          transport?: string
+          user_id?: string | null
+          viewport?: string | null
+        }
+        Update: {
+          action?: string | null
+          alert?: string
+          app_version?: string | null
+          browser?: string | null
+          code?: string
+          created_at?: string
+          device?: string | null
+          digest?: string | null
+          fingerprint?: string
+          id?: string
+          ip_hash?: string | null
+          locale?: string | null
+          message?: string
+          page?: string
+          source?: string
+          stack?: string | null
+          transport?: string
+          user_id?: string | null
+          viewport?: string | null
+        }
+        Relationships: []
+      }
       fakturoid_connections: {
         Row: {
           account_slug: string
@@ -3317,6 +3436,57 @@ export type Database = {
         }[]
       }
       current_workspace_id: { Args: never; Returns: string }
+      error_alert_claim: {
+        Args: {
+          _event_id: string
+          _fingerprint_minutes?: number
+          _hourly_limit?: number
+        }
+        Returns: {
+          day_count: number
+          decision: string
+          recipients: Json
+          send_id: string
+          since_last: number
+        }[]
+      }
+      error_alert_digest_claim: {
+        Args: { _max_groups?: number }
+        Returns: {
+          groups: Json
+          recipients: Json
+          send_id: string
+          since: string
+          total: number
+        }[]
+      }
+      error_alerts_audit: { Args: { _value: Json }; Returns: Json }
+      error_event_record: {
+        Args: {
+          _action?: string
+          _app_version?: string
+          _browser?: string
+          _code: string
+          _device?: string
+          _digest?: string
+          _fingerprint: string
+          _ip_hash?: string
+          _limit_anonymous?: number
+          _limit_user?: number
+          _locale?: string
+          _message: string
+          _page: string
+          _source: string
+          _stack?: string
+          _transport?: string
+          _user_id?: string
+          _viewport?: string
+        }
+        Returns: {
+          event_id: string
+          outcome: string
+        }[]
+      }
       evaluate_achievements: { Args: never; Returns: Json }
       fakturoid_apply_invoice: {
         Args: {
@@ -4166,6 +4336,7 @@ export type Database = {
         }[]
       }
       purge_deleted_notes: { Args: never; Returns: number }
+      purge_error_events: { Args: never; Returns: number }
       record_worker_payment: {
         Args: {
           _amount: number
@@ -4300,6 +4471,7 @@ export type Database = {
       user_today: { Args: { _user_id: string }; Returns: string }
       username_available: { Args: { _username: string }; Returns: boolean }
       valid_ai_caps: { Args: { _value: Json }; Returns: boolean }
+      valid_error_alerts: { Args: { _value: Json }; Returns: boolean }
       valid_plan_catalog: { Args: { _payload: Json }; Returns: boolean }
       work_seconds_between: {
         Args: { _from: string; _to: string; _worker_id: string }

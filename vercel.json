@@ -28,6 +28,10 @@
     {
       "path": "/api/cron/notes-trash",
       "schedule": "30 4 * * *"
+    },
+    {
+      "path": "/api/cron/error-alerts",
+      "schedule": "0 7 * * *"
     }
   ]
 }

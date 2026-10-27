@@ -42,6 +42,8 @@ export const PAGE_FILTERS: Record<AdminSectionKey, readonly AdminFilter[]> = {
   audit: [],
   // The catalog in force and its history: no period, no segments.
   plans: [],
+  // A setting: no period, no segments.
+  errorAlerts: [],
   admins: [],
 };
 
