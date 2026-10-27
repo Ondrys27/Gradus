@@ -3,8 +3,9 @@
 import { useMemo, useState } from "react";
 import { PlusIcon } from "lucide-react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { GlowCard } from "@/components/ui/glow-card";
 import { PageHeader } from "@/components/ui/page-header";
 import { KeepHeight } from "@/components/ui/keep-height";
@@ -17,11 +18,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MarkSeenOnVisit } from "@/features/game/mark-seen-on-visit";
+import { InvoiceList } from "@/features/invoices/invoice-list";
+import { NEW_INVOICE_PATH } from "@/features/invoices/types";
 import { todayIsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { useUrlIntent } from "@/lib/use-url-intent";
 import { periodRange } from "./finance-logic";
-import { InvoicesPanel } from "./invoices-panel";
 import { useCan } from "@/features/account/workspace-queries";
 import { fetchTransaction } from "./queries";
 import { RecurringFormDialog } from "./recurring-form-dialog";
@@ -86,7 +88,12 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
         title={t("title")}
         description={t("description")}
         actions={
-          tab === "invoices" || !canEdit ? null : (
+          !canEdit ? null : tab === "invoices" ? (
+            <Link href={NEW_INVOICE_PATH} className={buttonVariants()}>
+              <PlusIcon aria-hidden data-icon="inline-start" />
+              {t("actions.newInvoice")}
+            </Link>
+          ) : (
             <Button onClick={() => (tab === "recurring" ? setPayment(null) : setTransaction(null))}>
               <PlusIcon aria-hidden data-icon="inline-start" />
               {tab === "recurring" ? t("actions.newRecurring") : t("actions.newTransaction")}
@@ -146,7 +153,7 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
             onCreate={canEdit ? () => setPayment(null) : undefined}
           />
         )}
-        {tab === "invoices" && <InvoicesPanel readOnly={!canEdit} />}
+        {tab === "invoices" && <InvoiceList />}
       </KeepHeight>
 
       <TransactionFormDialog

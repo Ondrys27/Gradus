@@ -58,7 +58,7 @@ export async function loadRuleInputs(
     .toISOString()
     .slice(0, 10);
 
-  const [won, stalled, stages, overdue, milestones, followUpTable] = await Promise.all([
+  const [won, stalled, stages, overdue, milestones, followUpTable, invoices] = await Promise.all([
     client
       .from("deals")
       .select("id, title, contact:contacts(company_name, first_name, last_name)")
@@ -98,6 +98,16 @@ export async function loadRuleInputs(
       .eq("user_id", userId)
       .eq("system_key", FOLLOW_UP_TABLE)
       .maybeSingle(),
+    // Overdue from the day after the due day; RLS leaves them out for a worker without finance.
+    client
+      .from("invoices")
+      .select("id, number, customer_name, due_on")
+      .eq("user_id", userId)
+      .eq("kind", "invoice")
+      .in("status", ["open", "sent", "overdue"])
+      .lt("due_on", today)
+      .order("due_on")
+      .limit(PER_RULE_LIMIT),
   ]);
 
   const stageNames = new Map(list(stages).map((stage) => [stage.id, stage.name]));
@@ -168,6 +178,19 @@ export async function loadRuleInputs(
         : [],
     ),
     readyMilestones,
+    overdueInvoices: list(invoices).flatMap((invoice) =>
+      invoice.number && invoice.due_on
+        ? [
+            {
+              id: invoice.id,
+              number: invoice.number,
+              customer: invoice.customer_name,
+              dueOn: invoice.due_on,
+              daysLate: calendarDaysBetween(invoice.due_on, today),
+            },
+          ]
+        : [],
+    ),
   };
 }
 

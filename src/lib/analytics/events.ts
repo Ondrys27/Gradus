@@ -5,6 +5,7 @@ import { PROACTIVE_REACTIONS } from "@/features/jarvis/protocol";
 import { INDUSTRY_KEYS } from "@/features/onboarding/industries";
 import { XP_REASONS } from "@/features/game/rules";
 import { NOTE_TEMPLATE_KEYS } from "@/features/notes/templates";
+import { INVOICE_STYLES } from "@/features/invoices/types";
 import { Constants } from "@/types/database";
 import { field, isSafeField, isScrubbedTextField } from "./fields";
 import { APP_ROUTES, ANALYTICS_SECTIONS, type AnalyticsSection } from "./routes";
@@ -440,7 +441,19 @@ export const EVENTS = {
   }),
   recurring_payment_toggled: event("finance", "client", true, { active: bool() }),
   recurring_payment_deleted: event("finance", "client", true, {}),
-  invoice_issued: event("finance", "client", true, {}),
+  // Issuing, sending, paying and cancelling are recorded by the server actions.
+  invoice_issued: event("finance", "server", true, {
+    style: oneOf(INVOICE_STYLES),
+    vat_payer: bool(),
+    qr: bool(),
+    from_deal: bool(),
+    items: count(100),
+  }),
+  invoice_sent: event("finance", "server", true, { cc_self: bool() }),
+  invoice_paid: event("finance", "server", true, {}),
+  invoice_cancelled: event("finance", "server", true, {}),
+  invoice_profile_saved: event("finance", "server", true, { created: bool(), vat_payer: bool() }),
+  /** Before 16.3, from the browser; kept for the history. */
   invoice_paid_marked: event("finance", "client", true, {}),
   invoice_deleted: event("finance", "client", true, {}),
 

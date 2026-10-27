@@ -102,6 +102,14 @@ export type RuleInputs = {
     daysLate: number;
   }[];
   readyMilestones: { id: string; title: string }[];
+  /** Issued invoices past their due day and still unpaid. */
+  overdueInvoices: {
+    id: string;
+    number: string;
+    customer: string | null;
+    dueOn: string;
+    daysLate: number;
+  }[];
 };
 
 export type RuleSuggestion = {
@@ -179,6 +187,20 @@ export function ruleSuggestions(inputs: RuleInputs): RuleSuggestion[] {
         kind: "open",
         href: `/app/milniky/${milestone.id}`,
         params: { milestone: milestone.title },
+      },
+    });
+  }
+
+  // Money owed: the user decides whether and how to remind the customer.
+  for (const invoice of inputs.overdueInvoices.slice(0, PER_RULE_LIMIT)) {
+    out.push({
+      type: "overdueInvoice",
+      dedupeKey: `overdueInvoice:${invoice.id}:${invoice.dueOn}`,
+      text: `Invoice overdue: ${invoice.number}`,
+      action: {
+        kind: "open",
+        href: `/app/finance/faktury/${invoice.id}`,
+        params: { number: invoice.number, customer: invoice.customer ?? "", days: invoice.daysLate },
       },
     });
   }

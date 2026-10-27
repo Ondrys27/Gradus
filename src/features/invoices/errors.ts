@@ -5,10 +5,27 @@
  */
 export const INVOICE_ERROR_CODES = [
   "forbidden",
+  "ownerOnly",
   "dealNotFound",
   "dealValueRequired",
   "invoiceNotFound",
   "readOnly",
+  "invalid",
+  "profileRequired",
+  "customerRequired",
+  "itemsRequired",
+  "totalInvalid",
+  "dueBeforeIssue",
+  "alreadyIssued",
+  "notCancellable",
+  "notPayable",
+  "notIssued",
+  "pdfFailed",
+  "noRecipient",
+  "sendFailed",
+  "aresInvalid",
+  "aresNotFound",
+  "aresUnavailable",
   "unknown",
 ] as const;
 export type InvoiceErrorCode = (typeof INVOICE_ERROR_CODES)[number];
@@ -22,6 +39,25 @@ export class InvoiceError extends Error {
   }
 }
 
+/** Database messages and the codes they stand for; the first match wins. */
+const DATABASE_ERRORS: [string, InvoiceErrorCode][] = [
+  ["deal_not_found", "dealNotFound"],
+  ["deal_value_required", "dealValueRequired"],
+  ["invoice_not_found", "invoiceNotFound"],
+  ["invoice_profile_required", "profileRequired"],
+  ["invoice_customer_required", "customerRequired"],
+  ["invoice_items_required", "itemsRequired"],
+  ["invoice_items_invalid", "invalid"],
+  ["invoice_total_invalid", "totalInvalid"],
+  ["invoice_due_before_issue", "dueBeforeIssue"],
+  ["invoice_issued", "alreadyIssued"],
+  ["invoice_not_cancellable", "notCancellable"],
+  ["invoice_not_payable", "notPayable"],
+  ["section_access_denied", "forbidden"],
+  ["row-level security", "forbidden"],
+  ["read_only", "readOnly"],
+];
+
 /** Anything thrown on the server, turned into a result the client can show. */
 export function toFailure(error: unknown): { ok: false; error: InvoiceErrorCode } {
   if (error instanceof InvoiceError) return { ok: false, error: error.code };
@@ -30,12 +66,8 @@ export function toFailure(error: unknown): { ok: false; error: InvoiceErrorCode 
     error && typeof error === "object" && "message" in error
       ? String((error as { message: unknown }).message)
       : String(error ?? "");
-  if (message.includes("deal_not_found")) return { ok: false, error: "dealNotFound" };
-  if (message.includes("deal_value_required")) return { ok: false, error: "dealValueRequired" };
-  if (message.includes("invoice_not_found")) return { ok: false, error: "invoiceNotFound" };
-  if (message.includes("section_access_denied")) return { ok: false, error: "forbidden" };
-  if (message.includes("read_only")) return { ok: false, error: "readOnly" };
-  return { ok: false, error: "unknown" };
+  const known = DATABASE_ERRORS.find(([text]) => message.includes(text));
+  return { ok: false, error: known ? known[1] : "unknown" };
 }
 
 /** On the client: the data, or an InvoiceError the screen can name. */

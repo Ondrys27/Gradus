@@ -157,10 +157,16 @@ describe("after removing Fakturoid", () => {
     expect(
       await one(`select fakturoid_id from invoices where id = $1`, [legacyInvoice]),
     ).toEqual({ fakturoid_id: null });
+    // 16.3: an old invoice got one item from its amount and stays as issued.
+    expect(
+      await one(`select items->0->>'unit_price' as price, total::text, subtotal::text from invoices where id = $1`, [
+        legacyInvoice,
+      ]),
+    ).toEqual({ price: "5000.00", total: "5000.00", subtotal: "5000.00" });
     await asUser(owner);
-    await db.query(`update invoices set customer_name = 'Acme', due_on = current_date + 30 where id = $1`, [
-      legacyInvoice,
-    ]);
+    await expect(
+      db.query(`update invoices set customer_name = 'Acme' where id = $1`, [legacyInvoice]),
+    ).rejects.toThrow(/invoice_issued/);
     const paid = await one<{ status: string }>(`select * from mark_invoice_paid($1)`, [
       legacyInvoice,
     ]);
@@ -179,18 +185,22 @@ describe("after removing Fakturoid", () => {
     await db.query(`update invoices set fakturoid_id = 998, status = 'sent' where id = $1`, [
       local.id,
     ]);
+    // A client writes drafts only; issuing goes through issue_invoice().
     expect(
       await one(`select fakturoid_id, status::text from invoices where id = $1`, [local.id]),
-    ).toEqual({ fakturoid_id: null, status: "sent" });
+    ).toEqual({ fakturoid_id: null, status: "draft" });
     await asServer();
   });
 
   it("issues an invoice from a deal and books its income when paid", async () => {
     const deal = await newDeal(stages.offer, null, 800);
     await asUser(owner);
+    await db.query(`insert into invoice_profiles (user_id, name) values ($1, 'Owner')`, [owner]);
     const invoice = await one<{ id: string }>(`select * from create_invoice_from_deal($1)`, [deal]);
     const again = await one<{ id: string }>(`select * from create_invoice_from_deal($1)`, [deal]);
     expect(again.id).toBe(invoice.id);
+    await db.query(`update invoices set customer = '{"name": "Acme"}' where id = $1`, [invoice.id]);
+    await db.query(`select issue_invoice($1)`, [invoice.id]);
     const paid = await one<{ status: string }>(`select * from mark_invoice_paid($1)`, [invoice.id]);
     expect(paid.status).toBe("paid");
     await asServer();

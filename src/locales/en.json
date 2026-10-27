@@ -386,6 +386,10 @@
       "contactTables": {
         "label": "Edit contact tables",
         "keywords": "contacts tables fields questions columns"
+      },
+      "invoices": {
+        "label": "Invoices and supplier details",
+        "keywords": "settings invoice invoicing company ID VAT account numbering style QR payment supplier"
       }
     },
     "context": {
@@ -422,7 +426,8 @@
         "active": "Active",
         "inactive": "Inactive"
       }
-    }
+    },
+    "untitled": "Draft"
   },
   "jarvis": {
     "open": "Open Jarvis",
@@ -448,7 +453,8 @@
       "firstMilestone": "Help me set my first milestone",
       "firstDeal": "How do I land my first deal?",
       "monthFinance": "How am I doing financially this month?",
-      "startCalling": "Give me a short call script"
+      "startCalling": "Give me a short call script",
+      "overdueInvoices": "Help me chase overdue invoices"
     },
     "error": {
       "limitReached": "You've used all {limit} Jarvis messages for this month. They renew on the 1st.",
@@ -513,6 +519,10 @@
       "pathReady": {
         "text": "{count, plural, one {Your path is ready with {countFormatted} milestone. Start with “{first}”.} other {Your path is ready with {countFormatted} milestones. Start with “{first}”.}}",
         "noFirst": "{count, plural, one {Your path is ready with {countFormatted} milestone.} other {Your path is ready with {countFormatted} milestones.}}"
+      },
+      "overdueInvoice": {
+        "text": "Invoice {number} for {customer} is {days, plural, one {{daysFormatted} day} other {{daysFormatted} days}} overdue.",
+        "noCustomer": "Invoice {number} is {days, plural, one {{daysFormatted} day} other {{daysFormatted} days}} overdue."
       }
     },
     "tour": {
@@ -1000,6 +1010,10 @@
       "tour": "Guided tour",
       "tourHint": "Jarvis shows you the main parts of the app again.",
       "start": "Start the tour"
+    },
+    "invoices": {
+      "title": "Invoices",
+      "description": "Your details on invoices, numbering, style and QR payment."
     }
   },
   "milestones": {
@@ -1472,11 +1486,8 @@
       "deleteFailed": "The deal could not be deleted. Try again.",
       "cancel": "Cancel",
       "close": "Close",
-      "createInvoice": "Create invoice",
-      "invoiceCreated": "Invoice {number} is ready.",
-      "openInvoices": "Open invoices",
-      "invoiceFailed": "The invoice could not be created.",
-      "invoiceNeedsValue": "Add a value to the deal to invoice it.",
+      "createInvoice": "Issue invoice",
+      "invoiceFailed": "The invoice could not be prepared.",
       "writeEmail": "Write an e-mail",
       "emailNeedsContact": "Add a contact to this deal to e-mail them.",
       "emailNeedsAddress": "This deal's contact has no e-mail address.",
@@ -2096,7 +2107,8 @@
     },
     "actions": {
       "newTransaction": "New transaction",
-      "newRecurring": "New recurring payment"
+      "newRecurring": "New recurring payment",
+      "newInvoice": "Issue invoice"
     },
     "type": {
       "income": "Income",
@@ -2150,38 +2162,30 @@
       "ended": "Ended",
       "active": "Book “{name}” automatically"
     },
-    "invoices": {
-      "emptyTitle": "No invoices yet",
-      "emptyDescription": "Open a deal and create an invoice from it with one tap.",
-      "loadFailed": "Invoices could not be loaded.",
-      "noClient": "No client",
-      "paidOn": "Paid {date}",
-      "dueOn": "Due {date}",
-      "noDueDate": "No due date",
-      "markPaid": "Mark as paid",
-      "status": {
-        "paid": "Paid",
-        "pending": "Waiting",
-        "overdue": "Overdue",
-        "draft": "Draft",
-        "closed": "Closed"
-      },
-      "delete": "Delete",
-      "deleteLabel": "Delete invoice {number}",
-      "deleteTitle": "Delete invoice",
-      "deleteDescription": "Delete invoice {number}? Income already booked for it stays.",
-      "deleteFailed": "The invoice could not be deleted.",
-      "cancel": "Cancel",
-      "close": "Close",
-      "markPaidFailed": "The invoice could not be marked as paid."
-    },
     "invoiceErrors": {
       "forbidden": "You don't have permission for this. Ask the owner for the right to edit finance.",
       "dealNotFound": "The deal was not found.",
       "dealValueRequired": "Add a value to the deal to invoice it.",
       "invoiceNotFound": "The invoice was not found.",
       "readOnly": "Your trial has ended. Choose a plan to carry on.",
-      "unknown": "Something went wrong. Try again."
+      "unknown": "Something went wrong. Try again.",
+      "ownerOnly": "Only the account owner changes the supplier details.",
+      "invalid": "Some details are not right. Check the form.",
+      "profileRequired": "Fill in your supplier details in Settings → Invoices first.",
+      "customerRequired": "Fill in the customer.",
+      "itemsRequired": "Add at least one item with a name.",
+      "totalInvalid": "An invoice must be for more than zero.",
+      "dueBeforeIssue": "The due date cannot be before the issue date.",
+      "alreadyIssued": "The invoice is already issued and can't be changed.",
+      "notCancellable": "Only an issued, unpaid invoice can be cancelled.",
+      "notPayable": "Only an issued invoice can be marked as paid.",
+      "notIssued": "Only an issued invoice has a PDF.",
+      "pdfFailed": "The PDF could not be prepared. Try again.",
+      "noRecipient": "The customer's e-mail is missing.",
+      "sendFailed": "The e-mail could not be sent. Try again.",
+      "aresInvalid": "This company ID does not add up. Check it.",
+      "aresNotFound": "ARES does not know this company ID.",
+      "aresUnavailable": "ARES is not answering. Fill in the details by hand or try later."
     },
     "form": {
       "newTransaction": "New transaction",
@@ -5078,6 +5082,342 @@
           "failed": "The test e-mail could not be sent. Try again."
         }
       }
+    }
+  },
+  "invoices": {
+    "pageTitle": "Invoice",
+    "profile": {
+      "who": "Who invoices",
+      "name": "Name or company",
+      "nameHint": "As it should read on the invoice, e.g. “Jane Smith” or “Smith Ltd”.",
+      "companyRegNo": "Company ID",
+      "aresFill": "Fill in from ARES",
+      "aresFilled": "Filled in from ARES. Check the details and save.",
+      "vatNo": "VAT ID",
+      "vatNoHint": "Optional unless you are registered for VAT.",
+      "vatPayer": "I am registered for VAT",
+      "vatPayerHint": "Invoices then show VAT on every item and a summary per rate.",
+      "address": "Address",
+      "street": "Street and number",
+      "city": "City",
+      "postalCode": "Postcode",
+      "country": "Country",
+      "contact": "Contact on the invoice",
+      "email": "E-mail",
+      "phone": "Phone",
+      "bank": "Where you get paid",
+      "accountNumber": "Account number",
+      "accountNumberHint": "With its prefix, e.g. 19-2000145399.",
+      "bankCode": "Bank code",
+      "ibanComputed": "IBAN: {iban}",
+      "iban": "IBAN",
+      "bic": "BIC/SWIFT",
+      "invoicing": "Invoicing",
+      "dueDays": "Payment terms (days)",
+      "currency": "Default currency",
+      "prefix": "Number prefix",
+      "prefixExample": "Your next invoice will be numbered like {number}.",
+      "footer": "Footer text",
+      "footerHint": "E.g. “Not registered for VAT. Registered in the trade register.”",
+      "footerHintVat": "E.g. “Registered in the Companies Register, file C 12345.”",
+      "fixErrors": "Please fix the marked fields.",
+      "saved": "Saved"
+    },
+    "fieldErrors": {
+      "invalid": "This doesn't look right.",
+      "tooLong": "The text is too long.",
+      "nameRequired": "Enter a name.",
+      "emailInvalid": "Enter a valid e-mail.",
+      "accountInvalid": "The account number does not add up (checksum). Check it.",
+      "accountIncomplete": "Fill in both the account number and the bank code.",
+      "bankCodeInvalid": "A bank code has 4 digits.",
+      "ibanInvalid": "The IBAN does not add up. Check it.",
+      "bicInvalid": "A BIC has 8 or 11 characters.",
+      "dueDaysInvalid": "Payment terms are 0 to 365 days.",
+      "prefixInvalid": "Letters, digits and dashes only, up to 10 characters.",
+      "colorInvalid": "A colour looks like #RRGGBB.",
+      "vatNoRequired": "A VAT payer needs a VAT ID.",
+      "icoInvalid": "The company ID does not add up (check digit).",
+      "quantityInvalid": "Enter a quantity, e.g. 1 or 2.5.",
+      "priceInvalid": "Enter a price, e.g. 1,250.50.",
+      "rateInvalid": "A rate is 0 to 100 %.",
+      "variableSymbolInvalid": "A payment reference has at most 10 digits.",
+      "subjectRequired": "Enter a subject.",
+      "bodyRequired": "Write the message."
+    },
+    "setup": {
+      "title": "Before your first invoice",
+      "intro": "Every invoice says who issues it and where to pay. Fill it in once; later you'll find it in Settings → Invoices.",
+      "banner": "Fill in your supplier details before you start invoicing.",
+      "bannerWorker": "The supplier details are missing. The owner fills them in under Settings → Invoices.",
+      "open": "Fill in details",
+      "submit": "Save and continue",
+      "close": "Close"
+    },
+    "settings": {
+      "loadFailed": "The invoice details could not be loaded.",
+      "saveDetails": "Save details",
+      "lookAfterDetails": "You can set the look of your invoices once your details are saved.",
+      "styleTitle": "Invoice style",
+      "styleHint": "The style is stored with an invoice when it is issued. Invoices already issued stay as they are.",
+      "accent": "Line colour",
+      "accentPreset": "Colour {color}",
+      "accentCustom": "Custom colour",
+      "qr": "QR code for payment (QR Platba, ČBA standard)",
+      "qrHint": "Your customer scans it in their banking app and has the account, amount and reference filled in.",
+      "qrCurrency": "QR Platba works for Czech crowns only. Invoices in {currency} won't have it.",
+      "qrAccount": "Add your account number and bank code for the QR code.",
+      "lookFailed": "The change could not be saved. Try again.",
+      "thumbnail": "Sample of the {style} style"
+    },
+    "styles": {
+      "clean": {
+        "name": "Clean",
+        "description": "Typography and white space only."
+      },
+      "line": {
+        "name": "Line",
+        "description": "A band and accents in your colour."
+      },
+      "block": {
+        "name": "Block",
+        "description": "A dark header with your details."
+      },
+      "classic": {
+        "name": "Classic",
+        "description": "Ruled tables and boxes for conservative customers."
+      }
+    },
+    "list": {
+      "label": "Invoices",
+      "search": "Search invoices",
+      "searchPlaceholder": "Number or customer",
+      "filterLabel": "Status",
+      "sortLabel": "Sort",
+      "filter": {
+        "all": "All",
+        "draft": "Drafts",
+        "issued": "Issued",
+        "overdue": "Overdue",
+        "paid": "Paid",
+        "cancelled": "Cancelled"
+      },
+      "sort": {
+        "issuedDesc": "Newest",
+        "dueAsc": "By due date",
+        "totalDesc": "Highest amount",
+        "numberDesc": "By number"
+      },
+      "loadFailed": "Invoices could not be loaded.",
+      "noneFound": "Nothing found",
+      "noneFoundHint": "Try another search or status.",
+      "emptyTitle": "No invoices yet",
+      "emptyDescription": "Issue your first invoice with the button above, or create one from a deal in the pipeline.",
+      "column": {
+        "number": "Number",
+        "customer": "Customer",
+        "issued": "Issued",
+        "due": "Due",
+        "total": "Amount",
+        "status": "Status"
+      },
+      "draftNumber": "Draft",
+      "open": "Open invoice {number}",
+      "noCustomer": "No customer",
+      "dueShort": "Due",
+      "status": {
+        "draft": "Draft",
+        "issued": "Issued",
+        "overdue": "Overdue",
+        "paid": "Paid",
+        "cancelled": "Cancelled",
+        "creditNote": "Credit note"
+      }
+    },
+    "editor": {
+      "back": "Invoices",
+      "titleNew": "New invoice",
+      "titleDraft": "Draft invoice",
+      "description": "Fill in the customer and the items; the preview shows the invoice as you go.",
+      "defaultUnit": "pcs",
+      "saveDraft": "Save draft",
+      "issue": "Issue",
+      "delete": "Delete draft",
+      "saved": "The draft is saved.",
+      "contactNotSaved": "The draft is saved, but the details could not be saved to the contact.",
+      "panes": "Edit and preview",
+      "paneForm": "Edit",
+      "panePreview": "Preview",
+      "preview": "Preview",
+      "previewLabel": "Preview of the invoice",
+      "problems": {
+        "customerRequired": "Fill in the customer.",
+        "itemsInvalid": "Fix the marked items.",
+        "itemsRequired": "Every item needs a name.",
+        "totalInvalid": "An invoice must be for more than zero.",
+        "variableSymbolInvalid": "A payment reference has at most 10 digits.",
+        "dueBeforeIssue": "The due date cannot be before the issue date."
+      },
+      "issueTitle": "Issue the invoice?",
+      "issueDescription": "The invoice for {total} gets its number and can't be changed any more. It can only be corrected by cancelling it with a credit note.",
+      "issueConfirm": "Issue",
+      "deleteTitle": "Delete the draft?",
+      "deleteDescription": "The draft is deleted. It has no number yet, so nothing goes missing from the series.",
+      "deleteConfirm": "Delete",
+      "deleteFailed": "The draft could not be deleted.",
+      "cancel": "Cancel",
+      "close": "Close",
+      "customer": {
+        "title": "Customer",
+        "search": "Pick from contacts",
+        "searchPlaceholder": "Search your contacts…",
+        "results": "Contacts found",
+        "pickFailed": "The contact could not be loaded.",
+        "manual": "Or fill in the details by hand.",
+        "linked": "From contact: {name}",
+        "unlink": "Unlink the contact",
+        "name": "Name or company",
+        "companyRegNo": "Company ID",
+        "vatNo": "VAT ID",
+        "street": "Street and number",
+        "city": "City",
+        "postalCode": "Postcode",
+        "country": "Country",
+        "countryNone": "Not given",
+        "email": "E-mail",
+        "saveToContact": "Save the changes to the contact too"
+      },
+      "items": {
+        "title": "Items",
+        "unnamed": "unnamed item",
+        "add": "Add item",
+        "name": "Name",
+        "quantity": "Quantity",
+        "unit": "Unit",
+        "unitPrice": "Unit price",
+        "unitPriceNet": "Unit price excl. VAT",
+        "vatRate": "VAT",
+        "lineTotal": "Total",
+        "remove": "Remove",
+        "removeLabel": "Remove item {name}"
+      },
+      "totals": {
+        "items": "Items total",
+        "subtotal": "Excl. VAT",
+        "vat": "VAT",
+        "rounding": "Rounding",
+        "total": "Total due"
+      },
+      "details": {
+        "title": "Invoice details",
+        "issuedOn": "Issue date",
+        "taxableOn": "Date of supply",
+        "taxableHint": "Usually the same as the issue date.",
+        "dueOn": "Due date",
+        "dueHint": "{days, plural, one {# day} other {# days}} after the issue date by default.",
+        "variableSymbol": "Payment reference",
+        "variableSymbolHint": "Left empty, the invoice number is used.",
+        "variableSymbolPlaceholder": "From the invoice number",
+        "currency": "Currency",
+        "note": "Note on the invoice",
+        "noteHint": "Optional, shown below the items."
+      }
+    },
+    "detail": {
+      "back": "Invoices",
+      "title": "Invoice {number}",
+      "titleCreditNote": "Credit note {number}",
+      "download": "Download PDF",
+      "send": "Send by e-mail",
+      "markPaid": "Paid",
+      "sent": "The invoice is on its way.",
+      "previewLabel": "Invoice {number}",
+      "issuedOn": "Issued",
+      "dueOn": "Due",
+      "paidOn": "Paid",
+      "sentAt": "Sent",
+      "cancelledBy": "Cancelled by credit note",
+      "creditFor": "Credit note for invoice",
+      "frozenHint": "An issued invoice never changes. If it has a mistake, cancel it and issue a new one.",
+      "creditHint": "The credit note cancels the original invoice. Send it to the customer like an invoice.",
+      "cancel": "Cancel invoice",
+      "cancelTitle": "Cancel the invoice?",
+      "cancelDescription": "Invoice {number} gets a credit note with the next number of the series and a negative amount. The invoice stays, marked as cancelled.",
+      "cancelConfirm": "Cancel invoice",
+      "keep": "Keep it",
+      "close": "Close"
+    },
+    "send": {
+      "title": "Send the invoice by e-mail",
+      "close": "Close",
+      "to": "To",
+      "subjectLabel": "Subject",
+      "bodyLabel": "Message",
+      "attachment": "Invoice {number} is attached as a PDF.",
+      "ccSelf": "Send me a copy ({email})",
+      "cancel": "Cancel",
+      "submit": "Send",
+      "subject": "Invoice {number} – {supplier}",
+      "subjectCredit": "Credit note {number} – {supplier}",
+      "body": "Hello,\n\nplease find attached invoice {number} for {total}, due on {due}.\n\nThank you and kind regards,\n{supplier}",
+      "bodyCredit": "Hello,\n\nplease find attached credit note {number} for {total}.\n\nKind regards,\n{supplier}"
+    },
+    "page": {
+      "noAccess": "Invoices aren't available to you",
+      "noAccessHint": "Ask the owner for the right to see finance.",
+      "loadFailed": "The invoice could not be loaded.",
+      "notFound": "This invoice doesn't exist",
+      "notFoundHint": "It may have been deleted, or it belongs to another account.",
+      "backToList": "Back to invoices",
+      "readOnly": "This draft can't be edited now",
+      "readOnlyHint": "Editing invoices needs the right to edit finance."
+    },
+    "document": {
+      "titleInvoice": "Invoice",
+      "titleInvoiceVat": "Tax invoice",
+      "titleCreditNote": "Credit note",
+      "titleCreditNoteVat": "Tax credit note",
+      "number": "No.",
+      "draftNumber": "Draft",
+      "draftSymbol": "From the invoice number",
+      "creditFor": "Corrects invoice {number}",
+      "supplier": "Supplier",
+      "customer": "Customer",
+      "noCustomer": "No customer filled in yet",
+      "companyRegNo": "Company ID",
+      "vatNo": "VAT ID",
+      "vat": "VAT",
+      "notVatPayer": "Not registered for VAT",
+      "issuedOn": "Issue date",
+      "taxableOn": "Date of supply",
+      "dueOn": "Due date",
+      "paymentMethod": "Payment",
+      "bankTransfer": "Bank transfer",
+      "account": "Account number",
+      "iban": "IBAN",
+      "bic": "BIC/SWIFT",
+      "variableSymbol": "Payment reference",
+      "columnItem": "Item",
+      "columnQuantity": "Quantity",
+      "columnUnitPrice": "Unit price",
+      "columnVat": "VAT",
+      "columnTotalNet": "Net",
+      "columnTotal": "Total",
+      "noItems": "No items yet",
+      "subtotal": "Net amount",
+      "itemsTotal": "Items total",
+      "vatAt": "VAT {rate}",
+      "rounding": "Rounding",
+      "totalDue": "Amount due",
+      "creditTotal": "Total credited",
+      "vatRecap": "VAT summary",
+      "recapRate": "Rate",
+      "recapBase": "Net",
+      "recapVat": "VAT",
+      "recapTotal": "Total",
+      "note": "Note",
+      "qrCaption": "QR payment",
+      "page": "Page {page} of {pages}"
     }
   }
 }

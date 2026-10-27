@@ -38,6 +38,7 @@ import type { UserSettingsPatch } from "@/lib/user-settings";
 import { useUrlIntent } from "@/lib/use-url-intent";
 import { cn } from "@/lib/utils";
 import { useWorkspace } from "@/features/account/workspace-queries";
+import { InvoiceSettings } from "@/features/invoices/invoice-settings";
 import { AppearanceSettings } from "./appearance-settings";
 import { GameSettings } from "./game-settings";
 import { FormatPreview, useNow } from "./format-preview";
@@ -333,6 +334,20 @@ export function SettingsView() {
               />
             </SettingRow>
           </Section>
+        </StaggerItem>
+      )}
+
+      {isOwner && (
+        <StaggerItem>
+          <div
+            id="settings-invoices"
+            tabIndex={-1}
+            className="rounded-card outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            <Section title={t("invoices.title")} description={t("invoices.description")}>
+              <InvoiceSettings />
+            </Section>
+          </div>
         </StaggerItem>
       )}
 

@@ -34,6 +34,9 @@ export type UserSituation = {
   events: { title: string; startsAt: Date; allDay: boolean }[];
   prospectingSeconds: number;
   finance: { income: number; expense: number };
+  /** Issued, unpaid invoices past their due day, the oldest first. */
+  overdueInvoices: { number: string; customer: string | null; total: number; currency: string; dueOn: IsoDate }[];
+  overdueInvoicesTotal: number;
 };
 
 /** Longest title or name passed on; the model needs the gist, not the essay. */
@@ -120,6 +123,16 @@ export function describeSituation(situation: UserSituation, settings: FormatSett
   const { hours, minutes } = splitDuration(situation.prospectingSeconds);
   lines.push(`Calling time today: ${hours} h ${minutes} min.`);
 
+  if (situation.overdueInvoicesTotal) {
+    const items = situation.overdueInvoices.map(
+      (invoice) =>
+        `${quoted(invoice.number)}${invoice.customer ? ` for ${quoted(invoice.customer)}` : ""} ${formatCurrency(invoice.total, invoice.currency, settings, 2)} due ${invoice.dueOn}`,
+    );
+    lines.push(
+      `Unpaid invoices past their due date: ${items.join("; ")}${more(items.length, situation.overdueInvoicesTotal)}.`,
+    );
+  }
+
   const { income, expense } = situation.finance;
   lines.push(
     `This month: income ${money(income)}, expenses ${money(expense)}, balance ${money(income - expense)}.`,
@@ -133,6 +146,7 @@ export function suggestionsFor(situation: UserSituation, limit = 3): SuggestionK
   const keys: SuggestionKey[] = [];
   if (situation.followUpsTotal) keys.push("followUps");
   if (situation.overdueTotal) keys.push("overdueTasks");
+  if (situation.overdueInvoicesTotal) keys.push("overdueInvoices");
   if (situation.stalledDeals) keys.push("stalledDeals");
   // Late in the day, at the weekend or on a holiday the next working day is what to plan.
   const plan: SuggestionKey =

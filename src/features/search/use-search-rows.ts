@@ -118,7 +118,7 @@ export function hitHref(hit: SearchHit, settings: FormatSettings): string {
     case "transaction":
       return `/app/finance?tab=transactions&transaction=${id}`;
     case "invoice":
-      return "/app/finance?tab=invoices";
+      return `/app/finance/faktury/${id}`;
     case "worker":
       return `/app/pracovnici/${id}`;
   }
@@ -306,7 +306,8 @@ export function useSearchRows({ query, hits, history, expanded }: Args): RowGrou
             key: `${hit.kind}:${hit.id}`,
             kind: hit.kind,
             id: hit.id,
-            title: hit.title,
+            // A draft invoice has no number yet.
+            title: hit.title || t("untitled"),
             context: context(hit),
             href: hitHref(hit, settings),
             icon: KIND_ICONS[hit.kind],

@@ -12,16 +12,12 @@ import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { useAwardXp } from "@/features/game/queries";
 import type { DailyRow, DateRange, MonthlyRow } from "./finance-logic";
 import { PAGE_SIZE } from "./finance-logic";
-import { issueInvoiceAction, markInvoicePaidAction } from "./invoices/actions";
-import { unwrap } from "./invoices/errors";
 import type { RecurringInput, TransactionInput } from "./schemas";
 import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
 import {
-  INVOICE_COLUMNS,
   RECURRING_COLUMNS,
   TRANSACTION_COLUMNS,
-  type Invoice,
   type RecurringPayment,
   type Transaction,
 } from "./types";
@@ -37,7 +33,8 @@ export const financeKeys = {
   monthly: (userId: string, range: DateRange) => ["finance", userId, "monthly", range] as const,
   daily: (userId: string, range: DateRange) => ["finance", userId, "daily", range] as const,
   recurring: (userId: string) => ["finance", userId, "recurring"] as const,
-  invoices: (userId: string, page: number) => ["finance", userId, "invoices", page] as const,
+  /** Everything about invoices; invalidated with the rest of Finance. */
+  invoices: (userId: string) => ["finance", userId, "invoices"] as const,
 };
 
 /**
@@ -130,7 +127,7 @@ export function useDailyTotals(range: DateRange) {
 }
 
 /** `workspaceId` is whose books: the owner's, also for a worker with the finance right. */
-function useFinanceMutation<Variables, Result = void>(
+export function useFinanceMutation<Variables, Result = void>(
   mutationFn: (variables: Variables, workspaceId: string) => Promise<Result>,
 ) {
   const { user } = useSession();
@@ -259,49 +256,5 @@ export function useDeleteRecurring() {
     const { error } = await createClient().from("recurring_payments").delete().eq("id", id);
     if (error) throw error;
     track("recurring_payment_deleted", {});
-  });
-}
-
-export function useInvoices(page: number) {
-  const { user } = useSession();
-  const workspaceId = useWorkspaceId();
-  return useQuery({
-    queryKey: financeKeys.invoices(user.id, page),
-    placeholderData: keepPreviousData,
-    queryFn: async (): Promise<{ rows: Invoice[]; total: number }> => {
-      const { data, error, count } = await createClient()
-        .from("invoices")
-        .select(INVOICE_COLUMNS, { count: "exact" })
-        .eq("user_id", workspaceId)
-        .order("issued_on", { ascending: false, nullsFirst: false })
-        .order("number", { ascending: false })
-        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
-      if (error) throw error;
-      return { rows: data, total: count ?? data.length };
-    },
-  });
-}
-
-/** One tap on a deal; a second tap returns the same open invoice. */
-export function useCreateInvoiceFromDeal() {
-  return useFinanceMutation(async (dealId: string) => {
-    const invoice = unwrap(await issueInvoiceAction(dealId));
-    track("invoice_issued", {});
-    return invoice;
-  });
-}
-
-export function useMarkInvoicePaid() {
-  return useFinanceMutation(async (id: string) => {
-    unwrap(await markInvoicePaidAction(id));
-    track("invoice_paid_marked", {});
-  });
-}
-
-export function useDeleteInvoice() {
-  return useFinanceMutation(async (id: string) => {
-    const { error } = await createClient().from("invoices").delete().eq("id", id);
-    if (error) throw error;
-    track("invoice_deleted", {});
   });
 }

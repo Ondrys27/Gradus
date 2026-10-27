@@ -27,8 +27,12 @@ const nextConfig: NextConfig = {
   // A production build next to a running dev server (bun run e2e against a
   // build) needs its own folder; everything else keeps the default .next.
   distDir: process.env.NEXT_DIST_DIR || ".next",
-  // PDF text extraction (pdf.js inside) runs from node_modules, not bundled.
-  serverExternalPackages: ["unpdf"],
+  // PDF text extraction (pdf.js inside) and the invoice PDFs run from node_modules, not bundled.
+  serverExternalPackages: ["unpdf", "@react-pdf/renderer"],
+  // The invoice PDFs are drawn with the bundled fonts, read from disk by the routes.
+  outputFileTracingIncludes: {
+    "/api/invoices/**": ["./public/fonts/invoice/*.ttf"],
+  },
   experimental: {
     // The dev-only segment explorer wraps segments in extra nodes that shift
     // React's useId between the server HTML and the browser, so every app page

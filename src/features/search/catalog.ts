@@ -10,6 +10,7 @@ import {
   LanguagesIcon,
   PlayIcon,
   PlugIcon,
+  ReceiptTextIcon,
   SparklesIcon,
   SquareKanbanIcon,
   TableIcon,
@@ -52,6 +53,12 @@ export const SETTINGS_ENTRIES = [
   { id: "firstDayOfWeek", href: "/app/nastaveni?focus=settings-week", icon: CalendarClockIcon },
   { id: "sound", href: "/app/nastaveni?focus=settings-sound", icon: Volume2Icon },
   { id: "animations", href: "/app/nastaveni?focus=settings-animations", icon: BellRingIcon },
+  {
+    id: "invoices",
+    href: "/app/nastaveni?focus=settings-invoices",
+    icon: ReceiptTextIcon,
+    ownerOnly: true,
+  },
   {
     id: "integrations",
     href: "/app/nastaveni?focus=settings-integrations",

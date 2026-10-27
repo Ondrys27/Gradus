@@ -51,6 +51,7 @@ export const PROACTIVE_SUGGESTION_TYPES = [
   "insight",
   "stalledDeal",
   "overdueTask",
+  "overdueInvoice",
   "milestoneReady",
   "followUps",
   "pathReady",

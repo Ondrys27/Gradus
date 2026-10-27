@@ -930,6 +930,7 @@ export type Database = {
           address: string | null
           city: string | null
           company_name: string | null
+          company_reg_no: string | null
           country_code: string | null
           created_at: string
           email: string | null
@@ -946,12 +947,14 @@ export type Database = {
           tags: string[]
           updated_at: string
           user_id: string
+          vat_no: string | null
           website: string | null
         }
         Insert: {
           address?: string | null
           city?: string | null
           company_name?: string | null
+          company_reg_no?: string | null
           country_code?: string | null
           created_at?: string
           email?: string | null
@@ -968,12 +971,14 @@ export type Database = {
           tags?: string[]
           updated_at?: string
           user_id: string
+          vat_no?: string | null
           website?: string | null
         }
         Update: {
           address?: string | null
           city?: string | null
           company_name?: string | null
+          company_reg_no?: string | null
           country_code?: string | null
           created_at?: string
           email?: string | null
@@ -990,6 +995,7 @@ export type Database = {
           tags?: string[]
           updated_at?: string
           user_id?: string
+          vat_no?: string | null
           website?: string | null
         }
         Relationships: []
@@ -1285,59 +1291,225 @@ export type Database = {
         }
         Relationships: []
       }
-      invoices: {
+      invoice_counters: {
         Row: {
-          amount: number
-          contact_id: string | null
+          last_number: number
+          user_id: string
+          year: number
+        }
+        Insert: {
+          last_number: number
+          user_id: string
+          year: number
+        }
+        Update: {
+          last_number?: number
+          user_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      invoice_profiles: {
+        Row: {
+          accent_color: string
+          account_number: string | null
+          bank_code: string | null
+          bic: string | null
+          city: string | null
+          company_reg_no: string | null
+          country: string
           created_at: string
           currency: string
+          due_days: number
+          email: string | null
+          footer_text: string | null
+          iban: string | null
+          name: string
+          number_prefix: string
+          phone: string | null
+          postal_code: string | null
+          qr_enabled: boolean
+          street: string | null
+          style: string
+          updated_at: string
+          user_id: string
+          vat_no: string | null
+          vat_payer: boolean
+        }
+        Insert: {
+          accent_color?: string
+          account_number?: string | null
+          bank_code?: string | null
+          bic?: string | null
+          city?: string | null
+          company_reg_no?: string | null
+          country?: string
+          created_at?: string
+          currency?: string
+          due_days?: number
+          email?: string | null
+          footer_text?: string | null
+          iban?: string | null
+          name: string
+          number_prefix?: string
+          phone?: string | null
+          postal_code?: string | null
+          qr_enabled?: boolean
+          street?: string | null
+          style?: string
+          updated_at?: string
+          user_id: string
+          vat_no?: string | null
+          vat_payer?: boolean
+        }
+        Update: {
+          accent_color?: string
+          account_number?: string | null
+          bank_code?: string | null
+          bic?: string | null
+          city?: string | null
+          company_reg_no?: string | null
+          country?: string
+          created_at?: string
+          currency?: string
+          due_days?: number
+          email?: string | null
+          footer_text?: string | null
+          iban?: string | null
+          name?: string
+          number_prefix?: string
+          phone?: string | null
+          postal_code?: string | null
+          qr_enabled?: boolean
+          street?: string | null
+          style?: string
+          updated_at?: string
+          user_id?: string
+          vat_no?: string | null
+          vat_payer?: boolean
+        }
+        Relationships: []
+      }
+      invoices: {
+        Row: {
+          accent_color: string | null
+          amount: number
+          cancelled_at: string | null
+          contact_id: string | null
+          created_at: string
+          credited_invoice_id: string | null
+          currency: string
+          customer: Json
           customer_name: string | null
           deal_id: string | null
           due_on: string | null
           fakturoid_id: number | null
           id: string
           issued_on: string | null
-          number: string
+          items: Json
+          kind: string
+          locale: string
+          note: string | null
+          number: string | null
           paid_on: string | null
+          pdf_path: string | null
+          qr_enabled: boolean
+          rounding: number
+          sent_at: string | null
           status: Database["public"]["Enums"]["invoice_status"]
+          style: string | null
+          subtotal: number
+          supplier: Json | null
+          taxable_on: string | null
+          total: number
           updated_at: string
           user_id: string
+          variable_symbol: string | null
+          vat_mode: string
+          vat_total: number
         }
         Insert: {
+          accent_color?: string | null
           amount: number
+          cancelled_at?: string | null
           contact_id?: string | null
           created_at?: string
+          credited_invoice_id?: string | null
           currency?: string
+          customer?: Json
           customer_name?: string | null
           deal_id?: string | null
           due_on?: string | null
           fakturoid_id?: number | null
           id?: string
           issued_on?: string | null
-          number: string
+          items?: Json
+          kind?: string
+          locale?: string
+          note?: string | null
+          number?: string | null
           paid_on?: string | null
+          pdf_path?: string | null
+          qr_enabled?: boolean
+          rounding?: number
+          sent_at?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
+          style?: string | null
+          subtotal?: number
+          supplier?: Json | null
+          taxable_on?: string | null
+          total?: number
           updated_at?: string
           user_id: string
+          variable_symbol?: string | null
+          vat_mode?: string
+          vat_total?: number
         }
         Update: {
+          accent_color?: string | null
           amount?: number
+          cancelled_at?: string | null
           contact_id?: string | null
           created_at?: string
+          credited_invoice_id?: string | null
           currency?: string
+          customer?: Json
           customer_name?: string | null
           deal_id?: string | null
           due_on?: string | null
           fakturoid_id?: number | null
           id?: string
           issued_on?: string | null
-          number?: string
+          items?: Json
+          kind?: string
+          locale?: string
+          note?: string | null
+          number?: string | null
           paid_on?: string | null
+          pdf_path?: string | null
+          qr_enabled?: boolean
+          rounding?: number
+          sent_at?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
+          style?: string | null
+          subtotal?: number
+          supplier?: Json | null
+          taxable_on?: string | null
+          total?: number
           updated_at?: string
           user_id?: string
+          variable_symbol?: string | null
+          vat_mode?: string
+          vat_total?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "invoices_credited_invoice_fkey"
+            columns: ["credited_invoice_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id", "user_id"]
+          },
           {
             foreignKeyName: "invoices_contact_id_fkey"
             columns: ["contact_id", "user_id"]
@@ -3396,24 +3568,90 @@ export type Database = {
         Args: { _keyword: string }
         Returns: undefined
       }
-      create_invoice_from_deal: {
-        Args: { _deal_id: string }
+      cancel_invoice: {
+        Args: { _invoice_id: string }
         Returns: {
+          accent_color: string | null
           amount: number
+          cancelled_at: string | null
           contact_id: string | null
           created_at: string
+          credited_invoice_id: string | null
           currency: string
+          customer: Json
           customer_name: string | null
           deal_id: string | null
           due_on: string | null
           fakturoid_id: number | null
           id: string
           issued_on: string | null
-          number: string
+          items: Json
+          kind: string
+          locale: string
+          note: string | null
+          number: string | null
           paid_on: string | null
+          pdf_path: string | null
+          qr_enabled: boolean
+          rounding: number
+          sent_at: string | null
           status: Database["public"]["Enums"]["invoice_status"]
+          style: string | null
+          subtotal: number
+          supplier: Json | null
+          taxable_on: string | null
+          total: number
           updated_at: string
           user_id: string
+          variable_symbol: string | null
+          vat_mode: string
+          vat_total: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "invoices"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      create_invoice_from_deal: {
+        Args: { _deal_id: string }
+        Returns: {
+          accent_color: string | null
+          amount: number
+          cancelled_at: string | null
+          contact_id: string | null
+          created_at: string
+          credited_invoice_id: string | null
+          currency: string
+          customer: Json
+          customer_name: string | null
+          deal_id: string | null
+          due_on: string | null
+          fakturoid_id: number | null
+          id: string
+          issued_on: string | null
+          items: Json
+          kind: string
+          locale: string
+          note: string | null
+          number: string | null
+          paid_on: string | null
+          pdf_path: string | null
+          qr_enabled: boolean
+          rounding: number
+          sent_at: string | null
+          status: Database["public"]["Enums"]["invoice_status"]
+          style: string | null
+          subtotal: number
+          supplier: Json | null
+          taxable_on: string | null
+          total: number
+          updated_at: string
+          user_id: string
+          variable_symbol: string | null
+          vat_mode: string
+          vat_total: number
         }
         SetofOptions: {
           from: "*"
@@ -3670,24 +3908,96 @@ export type Database = {
         }[]
       }
       jwt_totp_at: { Args: { _claims: Json }; Returns: string }
-      mark_invoice_paid: {
+      invoice_items_valid: { Args: { _items: Json }; Returns: boolean }
+      invoice_pdf_readable: { Args: { _name: string }; Returns: boolean }
+      invoice_totals: {
+        Args: { _currency: string; _items: Json; _vat_mode: string }
+        Returns: Record<string, unknown>
+      }
+      issue_invoice: {
         Args: { _invoice_id: string }
         Returns: {
+          accent_color: string | null
           amount: number
+          cancelled_at: string | null
           contact_id: string | null
           created_at: string
+          credited_invoice_id: string | null
           currency: string
+          customer: Json
           customer_name: string | null
           deal_id: string | null
           due_on: string | null
           fakturoid_id: number | null
           id: string
           issued_on: string | null
-          number: string
+          items: Json
+          kind: string
+          locale: string
+          note: string | null
+          number: string | null
           paid_on: string | null
+          pdf_path: string | null
+          qr_enabled: boolean
+          rounding: number
+          sent_at: string | null
           status: Database["public"]["Enums"]["invoice_status"]
+          style: string | null
+          subtotal: number
+          supplier: Json | null
+          taxable_on: string | null
+          total: number
           updated_at: string
           user_id: string
+          variable_symbol: string | null
+          vat_mode: string
+          vat_total: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "invoices"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      mark_invoice_paid: {
+        Args: { _invoice_id: string }
+        Returns: {
+          accent_color: string | null
+          amount: number
+          cancelled_at: string | null
+          contact_id: string | null
+          created_at: string
+          credited_invoice_id: string | null
+          currency: string
+          customer: Json
+          customer_name: string | null
+          deal_id: string | null
+          due_on: string | null
+          fakturoid_id: number | null
+          id: string
+          issued_on: string | null
+          items: Json
+          kind: string
+          locale: string
+          note: string | null
+          number: string | null
+          paid_on: string | null
+          pdf_path: string | null
+          qr_enabled: boolean
+          rounding: number
+          sent_at: string | null
+          status: Database["public"]["Enums"]["invoice_status"]
+          style: string | null
+          subtotal: number
+          supplier: Json | null
+          taxable_on: string | null
+          total: number
+          updated_at: string
+          user_id: string
+          variable_symbol: string | null
+          vat_mode: string
+          vat_total: number
         }
         SetofOptions: {
           from: "*"

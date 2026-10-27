@@ -13,6 +13,7 @@ const EMPTY: RuleInputs = {
   stalledDeals: [],
   overdueTasks: [],
   readyMilestones: [],
+  overdueInvoices: [],
 };
 
 describe("ruleSuggestions", () => {
@@ -37,6 +38,15 @@ describe("ruleSuggestions", () => {
         { id: "k1", title: "Call", milestoneId: "m1", dueDate: "2026-09-20", daysLate: 8 },
       ],
       readyMilestones: [{ id: "m2", title: "Launch" }],
+      overdueInvoices: [
+        {
+          id: "0f4f8b6e-0000-4000-8000-000000000001",
+          number: "2026-0007",
+          customer: "Acme",
+          dueOn: "2026-09-20",
+          daysLate: 8,
+        },
+      ],
     });
 
     expect(rules.map((r) => [r.type, r.dedupeKey])).toEqual([
@@ -45,7 +55,14 @@ describe("ruleSuggestions", () => {
       ["stalledDeal", "stalledDeal:d2:2026-09-01"],
       ["overdueTask", "overdueTask:k1:2026-09-20"],
       ["milestoneReady", "milestoneReady:m2"],
+      ["overdueInvoice", "overdueInvoice:0f4f8b6e-0000-4000-8000-000000000001:2026-09-20"],
     ]);
+    // An overdue invoice opens its own page, with what the panel words it from.
+    expect(rules[5].action).toEqual({
+      kind: "open",
+      href: "/app/finance/faktury/0f4f8b6e-0000-4000-8000-000000000001",
+      params: { number: "2026-0007", customer: "Acme", days: 8 },
+    });
     expect(rules[1].action).toEqual({
       kind: "open",
       href: "/app/kontakty?table=t1",

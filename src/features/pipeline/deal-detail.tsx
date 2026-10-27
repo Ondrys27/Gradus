@@ -3,7 +3,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { FileTextIcon, MailIcon, Trash2Icon, XIcon } from "lucide-react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { Button } from "@/components/ui/button";
@@ -19,8 +19,9 @@ import {
 } from "@/components/ui/select";
 import { ComposeEmailDialog } from "@/features/email/compose-email-dialog";
 import { emailSummary } from "@/features/email/types";
-import { useInvoiceErrorText } from "@/features/finance/invoices/use-invoice-error";
-import { useCreateInvoiceFromDeal } from "@/features/finance/queries";
+import { invoicePath } from "@/features/invoices/types";
+import { useCreateInvoiceFromDeal } from "@/features/invoices/queries";
+import { useInvoiceErrorText } from "@/features/invoices/use-invoice-error";
 import { MoveContactDialog } from "@/features/contacts/move-contact-dialog";
 import { useContact, useContactEntry, useContactTables } from "@/features/contacts/queries";
 import { formatDate } from "@/lib/format";
@@ -352,8 +353,8 @@ function EmailSection({
 }
 
 /**
- * One tap makes an open invoice from the deal's value; a second tap returns
- * the same one.
+ * "Issue invoice": a draft prefilled with the deal's contact and one item of
+ * its value (or the draft the deal already has), opened in the invoice form.
  */
 function InvoiceSection({
   deal,
@@ -363,35 +364,25 @@ function InvoiceSection({
   invoice: ReturnType<typeof useCreateInvoiceFromDeal>;
 }) {
   const t = useTranslations("pipeline.detail");
+  const router = useRouter();
   const errorText = useInvoiceErrorText();
-  const hasValue = deal.value !== null && deal.value > 0;
   return (
     <section className="flex flex-col gap-2 border-t border-line pt-5">
       <Button
         type="button"
         variant="secondary"
-        disabled={!hasValue || invoice.isPending}
-        onClick={() => invoice.mutate(deal.id)}
+        disabled={invoice.isPending}
+        onClick={() =>
+          invoice.mutate(deal.id, { onSuccess: (id) => router.push(invoicePath(id)) })
+        }
       >
         <FileTextIcon aria-hidden data-icon="inline-start" />
         {t("createInvoice")}
       </Button>
-      {!hasValue && <p className="text-xs text-ink-muted">{t("invoiceNeedsValue")}</p>}
       {invoice.isError && (
         <FormAlert>
           {t("invoiceFailed")} {errorText(invoice.error)}
         </FormAlert>
-      )}
-      {invoice.isSuccess && (
-        <p role="status" className="flex flex-wrap items-center gap-x-3 text-sm text-green">
-          {t("invoiceCreated", { number: invoice.data.number })}
-          <Link
-            href="/app/finance?tab=invoices"
-            className="text-violet underline-offset-4 hover:underline"
-          >
-            {t("openInvoices")}
-          </Link>
-        </p>
       )}
     </section>
   );

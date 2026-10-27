@@ -1968,26 +1968,36 @@ describe("finance", () => {
     expect(await next("2026-09-25", "yearly", null)).toBe("2027-09-25");
   });
 
-  it("creates one numbered invoice per deal in a tap and books its payment once", async () => {
+  it("creates one draft per deal, numbers it on issue and books its payment once", async () => {
     const deal = await newDeal(stages.lead, 2500);
-    const invoice = await one<{ id: string; number: string; amount: string; status: string }>(
+    const draft = await one<{ id: string; number: string | null; amount: string; status: string }>(
       `select * from create_invoice_from_deal('${deal}')`,
     );
-    expect(invoice).toMatchObject({ amount: "2500.00", status: "open" });
-    expect(invoice.number).toMatch(/^\d{4}-\d{3}$/);
+    expect(draft).toMatchObject({ amount: "2500.00", status: "draft", number: null });
     const again = await one<{ id: string }>(`select * from create_invoice_from_deal('${deal}')`);
-    expect(again.id).toBe(invoice.id);
-    await db.query(`select mark_invoice_paid('${invoice.id}')`);
-    await db.query(`select mark_invoice_paid('${invoice.id}')`);
+    expect(again.id).toBe(draft.id);
+    await db.query(
+      `insert into invoice_profiles (user_id, name) values ($1, 'Me') on conflict (user_id) do nothing`,
+      [user],
+    );
+    await db.query(`update invoices set customer = '{"name": "Client"}' where id = $1`, [draft.id]);
+    const invoice = await one<{ number: string; status: string }>(
+      `select * from issue_invoice('${draft.id}')`,
+    );
+    expect(invoice.status).toBe("open");
+    expect(invoice.number).toMatch(/^\d{4}-\d{3,4}$/);
+    await db.query(`select mark_invoice_paid('${draft.id}')`);
+    await db.query(`select mark_invoice_paid('${draft.id}')`);
     expect(await income(deal)).toEqual([
       { source: "invoice", amount: "2500.00", needs_review: false },
     ]);
     await db.query(`update deals set stage_id = '${stages.won}' where id = '${deal}'`);
     expect(await income(deal)).toHaveLength(1);
+    // A deal without a value still gets a draft, with a price to fill in.
     const noValue = await newDeal(stages.lead, null);
-    await expect(db.query(`select create_invoice_from_deal('${noValue}')`)).rejects.toThrow(
-      /deal_value_required/,
-    );
+    expect(
+      (await one<{ total: string }>(`select * from create_invoice_from_deal('${noValue}')`)).total,
+    ).toBe("0.00");
   });
 
   it("does not run the recurring job for clients and totals only the caller's rows", async () => {

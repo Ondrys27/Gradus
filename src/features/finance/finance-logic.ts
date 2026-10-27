@@ -1,6 +1,6 @@
 import { addMonths, endOfMonth, startOfMonth, startOfYear } from "date-fns";
 import { isoDateToLocal, localToIsoDate, type IsoDate } from "@/lib/format";
-import type { InvoiceDisplayStatus, Invoice, PeriodKind } from "./types";
+import type { PeriodKind } from "./types";
 
 export type DateRange = { from: IsoDate; to: IsoDate };
 
@@ -38,23 +38,6 @@ export function chartRange(today: IsoDate): DateRange {
 /** The plain number put back into an amount field when editing. */
 export function amountToInput(amount: number): string {
   return String(amount);
-}
-
-export function displayInvoiceStatus(
-  invoice: Pick<Invoice, "status" | "due_on">,
-  today: IsoDate,
-): InvoiceDisplayStatus {
-  switch (invoice.status) {
-    case "paid":
-      return "paid";
-    case "cancelled":
-    case "uncollectible":
-      return "closed";
-    case "draft":
-      return "draft";
-    default:
-      return invoice.due_on && invoice.due_on < today ? "overdue" : "pending";
-  }
 }
 
 export type MonthlyRow = { month: string; income: number; expense: number };

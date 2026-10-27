@@ -8,6 +8,10 @@ describe("invoice errors", () => {
     expect(toFailure({ message: "invoice_not_found" }).error).toBe("invoiceNotFound");
     expect(toFailure({ message: "section_access_denied" }).error).toBe("forbidden");
     expect(toFailure({ message: "read_only" }).error).toBe("readOnly");
+    expect(toFailure({ message: "invoice_profile_required" }).error).toBe("profileRequired");
+    expect(toFailure({ message: "invoice_issued" }).error).toBe("alreadyIssued");
+    expect(toFailure({ message: "invoice_not_cancellable" }).error).toBe("notCancellable");
+    expect(toFailure({ message: "invoice_due_before_issue" }).error).toBe("dueBeforeIssue");
     expect(toFailure(new Error("boom")).error).toBe("unknown");
     expect(toFailure(new InvoiceError("forbidden")).error).toBe("forbidden");
   });

@@ -4,7 +4,6 @@ import {
   chartRange,
   clampWindow,
   dailyChartRows,
-  displayInvoiceStatus,
   fullWindow,
   monthlyChartRows,
   pageCount,
@@ -34,20 +33,6 @@ describe("periodRange", () => {
   it("charts twelve months ending with the current one", () => {
     expect(chartRange("2026-09-25")).toEqual({ from: "2025-10-01", to: "2026-09-30" });
     expect(periodRange("last12Months", "2026-09-25")).toEqual(chartRange("2026-09-25"));
-  });
-});
-
-describe("displayInvoiceStatus", () => {
-  const today = "2026-09-25";
-  it("derives overdue from the due day and leaves paid alone", () => {
-    expect(displayInvoiceStatus({ status: "open", due_on: "2026-09-24" }, today)).toBe("overdue");
-    expect(displayInvoiceStatus({ status: "sent", due_on: "2026-09-25" }, today)).toBe("pending");
-    expect(displayInvoiceStatus({ status: "open", due_on: null }, today)).toBe("pending");
-    expect(displayInvoiceStatus({ status: "paid", due_on: "2026-01-01" }, today)).toBe("paid");
-    expect(displayInvoiceStatus({ status: "cancelled", due_on: "2026-01-01" }, today)).toBe(
-      "closed",
-    );
-    expect(displayInvoiceStatus({ status: "draft", due_on: "2026-01-01" }, today)).toBe("draft");
   });
 });
 

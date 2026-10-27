@@ -18,6 +18,7 @@ const FOLLOW_UP_LIMIT = 5;
 const EVENT_LIMIT = 8;
 const STAGE_LIMIT = 30;
 const OPEN_DEAL_LIMIT = 2000;
+const INVOICE_LIMIT = 5;
 
 const FOLLOW_UP_TABLE = "follow_up";
 const FOLLOW_UP_FIELD = "follow_up_at";
@@ -53,8 +54,17 @@ export async function loadSituation(
   // Read alongside the rest; it never fails (without statistics the default hours apply).
   const timeWindow = loadTimeWindow(supabase, { timeZone, country, now });
 
-  const [milestones, overdue, stages, openDeals, followUpTable, events, prospecting, finance] =
-    await Promise.all([
+  const [
+    milestones,
+    overdue,
+    stages,
+    openDeals,
+    followUpTable,
+    events,
+    prospecting,
+    finance,
+    invoices,
+  ] = await Promise.all([
       supabase
         .from("milestones")
         .select("id, title, target_date", { count: "exact" })
@@ -100,6 +110,16 @@ export async function loadSituation(
         .limit(EVENT_LIMIT),
       supabase.rpc("prospecting_seconds_for_day", { _day: today, _timezone: timeZone }),
       supabase.rpc("finance_totals", { _from: month.from, _to: month.to }).maybeSingle(),
+      // RLS leaves them out for a worker without finance.
+      supabase
+        .from("invoices")
+        .select("number, customer_name, total, currency, due_on", { count: "exact" })
+        .eq("user_id", ws)
+        .eq("kind", "invoice")
+        .in("status", ["open", "sent", "overdue"])
+        .lt("due_on", today)
+        .order("due_on")
+        .limit(INVOICE_LIMIT),
     ]);
 
   const milestoneRows = list(milestones);
@@ -192,5 +212,19 @@ export async function loadSituation(
     })),
     prospectingSeconds: Number(must(prospecting) ?? 0),
     finance: { income: Number(totals?.income ?? 0), expense: Number(totals?.expense ?? 0) },
+    overdueInvoices: list(invoices).flatMap((invoice) =>
+      invoice.number && invoice.due_on
+        ? [
+            {
+              number: invoice.number,
+              customer: invoice.customer_name,
+              total: Number(invoice.total),
+              currency: invoice.currency,
+              dueOn: invoice.due_on,
+            },
+          ]
+        : [],
+    ),
+    overdueInvoicesTotal: invoices.count ?? 0,
   };
 }

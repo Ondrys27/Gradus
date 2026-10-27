@@ -386,6 +386,10 @@
       "contactTables": {
         "label": "Upravit tabulky kontaktů",
         "keywords": "kontakty tabulky pole otázky sloupce"
+      },
+      "invoices": {
+        "label": "Faktury a údaje dodavatele",
+        "keywords": "nastavení faktura fakturace IČO DIČ účet číslo řada styl QR platba dodavatel"
       }
     },
     "context": {
@@ -422,7 +426,8 @@
         "active": "Aktivní",
         "inactive": "Neaktivní"
       }
-    }
+    },
+    "untitled": "Koncept"
   },
   "jarvis": {
     "open": "Otevřít Jarvise",
@@ -448,7 +453,8 @@
       "firstMilestone": "Pomoz mi nastavit první milník",
       "firstDeal": "Jak získat první obchod?",
       "monthFinance": "Jak jsem na tom tento měsíc s penězi?",
-      "startCalling": "Dej mi krátký scénář hovoru"
+      "startCalling": "Dej mi krátký scénář hovoru",
+      "overdueInvoices": "Pomoz mi připomenout faktury po splatnosti"
     },
     "error": {
       "limitReached": "Všech {limit} zpráv pro Jarvise je na tento měsíc vyčerpáno. Obnoví se prvního dne dalšího měsíce.",
@@ -513,6 +519,10 @@
       "pathReady": {
         "text": "{count, plural, one {Tvoje cesta je připravená, má {countFormatted} milník. Začni milníkem „{first}“.} few {Tvoje cesta je připravená, má {countFormatted} milníky. Začni milníkem „{first}“.} other {Tvoje cesta je připravená, má {countFormatted} milníků. Začni milníkem „{first}“.}}",
         "noFirst": "{count, plural, one {Tvoje cesta je připravená, má {countFormatted} milník.} few {Tvoje cesta je připravená, má {countFormatted} milníky.} other {Tvoje cesta je připravená, má {countFormatted} milníků.}}"
+      },
+      "overdueInvoice": {
+        "text": "Faktura {number} pro {customer} je {days, plural, one {{daysFormatted} den} few {{daysFormatted} dny} other {{daysFormatted} dní}} po splatnosti.",
+        "noCustomer": "Faktura {number} je {days, plural, one {{daysFormatted} den} few {{daysFormatted} dny} other {{daysFormatted} dní}} po splatnosti."
       }
     },
     "tour": {
@@ -1000,6 +1010,10 @@
       "tour": "Provedení aplikací",
       "tourHint": "Jarvis ti znovu ukáže hlavní části aplikace.",
       "start": "Spustit provedení"
+    },
+    "invoices": {
+      "title": "Faktury",
+      "description": "Tvoje údaje na fakturách, číslování, vzhled a QR platba."
     }
   },
   "milestones": {
@@ -1472,11 +1486,8 @@
       "deleteFailed": "Obchod se nepodařilo smazat. Zkus to znovu.",
       "cancel": "Zrušit",
       "close": "Zavřít",
-      "createInvoice": "Vytvořit fakturu",
-      "invoiceCreated": "Faktura {number} je hotová.",
-      "openInvoices": "Otevřít faktury",
-      "invoiceFailed": "Fakturu se nepodařilo vytvořit.",
-      "invoiceNeedsValue": "Doplň k obchodu hodnotu, ať jde vyfakturovat.",
+      "createInvoice": "Vystavit fakturu",
+      "invoiceFailed": "Fakturu se nepodařilo připravit.",
       "writeEmail": "Napsat e-mail",
       "emailNeedsContact": "Přidej k obchodu kontakt, aby se mu dalo napsat.",
       "emailNeedsAddress": "Kontakt u tohoto obchodu nemá e-mailovou adresu.",
@@ -2096,7 +2107,8 @@
     },
     "actions": {
       "newTransaction": "Nová transakce",
-      "newRecurring": "Nová automatická platba"
+      "newRecurring": "Nová automatická platba",
+      "newInvoice": "Vystavit fakturu"
     },
     "type": {
       "income": "Příjem",
@@ -2150,38 +2162,30 @@
       "ended": "Skončila",
       "active": "Účtovat „{name}“ automaticky"
     },
-    "invoices": {
-      "emptyTitle": "Zatím žádné faktury",
-      "emptyDescription": "Otevři obchod a vytvoř z něj fakturu jedním klepnutím.",
-      "loadFailed": "Faktury se nepodařilo načíst.",
-      "noClient": "Bez klienta",
-      "paidOn": "Zaplaceno {date}",
-      "dueOn": "Splatnost {date}",
-      "noDueDate": "Bez splatnosti",
-      "markPaid": "Označit jako zaplacené",
-      "status": {
-        "paid": "Zaplaceno",
-        "pending": "Čeká",
-        "overdue": "Po splatnosti",
-        "draft": "Koncept",
-        "closed": "Uzavřeno"
-      },
-      "delete": "Smazat",
-      "deleteLabel": "Smazat fakturu {number}",
-      "deleteTitle": "Smazat fakturu",
-      "deleteDescription": "Smazat fakturu {number}? Příjem, který už je k ní zaúčtovaný, zůstane.",
-      "deleteFailed": "Fakturu se nepodařilo smazat.",
-      "cancel": "Zrušit",
-      "close": "Zavřít",
-      "markPaidFailed": "Fakturu se nepodařilo označit jako zaplacenou."
-    },
     "invoiceErrors": {
       "forbidden": "Na tohle nemáš oprávnění. Požádej majitele o právo upravovat finance.",
       "dealNotFound": "Obchod se nenašel.",
       "dealValueRequired": "Aby šel obchod vyfakturovat, doplň mu hodnotu.",
       "invoiceNotFound": "Faktura se nenašla.",
       "readOnly": "Zkušební období skončilo. Vyber si tarif a můžeš pokračovat.",
-      "unknown": "Něco se pokazilo. Zkus to znovu."
+      "unknown": "Něco se pokazilo. Zkus to znovu.",
+      "ownerOnly": "Údaje dodavatele mění jen majitel účtu.",
+      "invalid": "Některé údaje nejsou v pořádku. Zkontroluj formulář.",
+      "profileRequired": "Nejdřív vyplň údaje dodavatele v Nastavení → Faktury.",
+      "customerRequired": "Vyplň odběratele.",
+      "itemsRequired": "Přidej aspoň jednu položku s názvem.",
+      "totalInvalid": "Faktura musí být na částku vyšší než nula.",
+      "dueBeforeIssue": "Splatnost nemůže být dřív než vystavení.",
+      "alreadyIssued": "Faktura už je vystavená a nejde měnit.",
+      "notCancellable": "Stornovat jde jen vystavenou nezaplacenou fakturu.",
+      "notPayable": "Zaplacenou jde označit jen vystavenou fakturu.",
+      "notIssued": "PDF má jen vystavená faktura.",
+      "pdfFailed": "PDF se nepodařilo připravit. Zkus to znovu.",
+      "noRecipient": "Chybí e-mail odběratele.",
+      "sendFailed": "E-mail se nepodařilo odeslat. Zkus to znovu.",
+      "aresInvalid": "Tohle IČO nesedí. Zkontroluj ho.",
+      "aresNotFound": "V ARES jsme tohle IČO nenašli.",
+      "aresUnavailable": "ARES teď neodpovídá. Vyplň údaje ručně, nebo to zkus později."
     },
     "form": {
       "newTransaction": "Nová transakce",
@@ -5078,6 +5082,342 @@
           "failed": "Zkušební e-mail se nepovedlo odeslat. Zkus to znovu."
         }
       }
+    }
+  },
+  "invoices": {
+    "pageTitle": "Faktura",
+    "profile": {
+      "who": "Kdo fakturuje",
+      "name": "Název nebo jméno",
+      "nameHint": "Tak, jak má stát na faktuře, např. „Jana Nováková“ nebo „Nováková s.r.o.“.",
+      "companyRegNo": "IČO",
+      "aresFill": "Načíst z ARES",
+      "aresFilled": "Údaje jsme doplnili z ARES. Zkontroluj je a ulož.",
+      "vatNo": "DIČ",
+      "vatNoHint": "Nepovinné, pokud nejsi plátce DPH.",
+      "vatPayer": "Jsem plátce DPH",
+      "vatPayerHint": "Faktury pak ukážou DPH u každé položky a rekapitulaci podle sazeb.",
+      "address": "Adresa",
+      "street": "Ulice a číslo",
+      "city": "Město",
+      "postalCode": "PSČ",
+      "country": "Země",
+      "contact": "Kontakt na faktuře",
+      "email": "E-mail",
+      "phone": "Telefon",
+      "bank": "Kam ti mají platit",
+      "accountNumber": "Číslo účtu",
+      "accountNumberHint": "I s předčíslím, např. 19-2000145399.",
+      "bankCode": "Kód banky",
+      "ibanComputed": "IBAN: {iban}",
+      "iban": "IBAN",
+      "bic": "BIC/SWIFT",
+      "invoicing": "Fakturace",
+      "dueDays": "Splatnost (dní)",
+      "currency": "Výchozí měna",
+      "prefix": "Předpona čísla",
+      "prefixExample": "Další faktura bude mít číslo jako {number}.",
+      "footer": "Text v patičce",
+      "footerHint": "Např. „Nejsem plátce DPH. Zapsán v živnostenském rejstříku.“",
+      "footerHintVat": "Např. „Zapsáno v obchodním rejstříku vedeném Městským soudem v Praze, oddíl C, vložka 12345.“",
+      "fixErrors": "Oprav prosím označená pole.",
+      "saved": "Uloženo"
+    },
+    "fieldErrors": {
+      "invalid": "Tohle nevypadá správně.",
+      "tooLong": "Text je moc dlouhý.",
+      "nameRequired": "Vyplň název nebo jméno.",
+      "emailInvalid": "Zadej platný e-mail.",
+      "accountInvalid": "Číslo účtu nesedí (kontrolní součet). Zkontroluj ho.",
+      "accountIncomplete": "Vyplň číslo účtu i kód banky.",
+      "bankCodeInvalid": "Kód banky má 4 číslice.",
+      "ibanInvalid": "IBAN nesedí. Zkontroluj ho.",
+      "bicInvalid": "BIC má 8 nebo 11 znaků.",
+      "dueDaysInvalid": "Splatnost je 0 až 365 dní.",
+      "prefixInvalid": "Jen písmena, číslice a pomlčka, nejvýš 10 znaků.",
+      "colorInvalid": "Barva musí být ve tvaru #RRGGBB.",
+      "vatNoRequired": "Plátce DPH musí mít DIČ.",
+      "icoInvalid": "IČO nesedí (kontrolní číslice).",
+      "quantityInvalid": "Zadej počet, např. 1 nebo 2,5.",
+      "priceInvalid": "Zadej cenu, např. 1 250,50.",
+      "rateInvalid": "Sazba je 0 až 100 %.",
+      "variableSymbolInvalid": "Variabilní symbol má nejvýš 10 číslic.",
+      "subjectRequired": "Vyplň předmět.",
+      "bodyRequired": "Napiš text e-mailu."
+    },
+    "setup": {
+      "title": "Než vystavíš první fakturu",
+      "intro": "Na každé faktuře musí být, kdo ji vystavuje a kam se platí. Vyplníš to jednou, pak to najdeš v Nastavení → Faktury.",
+      "banner": "Než začneš fakturovat, vyplň svoje údaje dodavatele.",
+      "bannerWorker": "Údaje dodavatele zatím chybí. Vyplní je majitel v Nastavení → Faktury.",
+      "open": "Vyplnit údaje",
+      "submit": "Uložit a pokračovat",
+      "close": "Zavřít"
+    },
+    "settings": {
+      "loadFailed": "Údaje pro faktury se nepodařilo načíst.",
+      "saveDetails": "Uložit údaje",
+      "lookAfterDetails": "Vzhled faktur nastavíš, až uložíš svoje údaje.",
+      "styleTitle": "Vzhled faktury",
+      "styleHint": "Styl se uloží k faktuře při vystavení. Už vystavené faktury se změnou nezmění.",
+      "accent": "Barva linky",
+      "accentPreset": "Barva {color}",
+      "accentCustom": "Vlastní barva",
+      "qr": "QR kód pro platbu (QR Platba, standard ČBA)",
+      "qrHint": "Odběratel naskenuje kód v bankovní aplikaci a má vyplněný účet, částku i variabilní symbol.",
+      "qrCurrency": "QR Platba funguje jen pro koruny. Faktury v {currency} ho mít nebudou.",
+      "qrAccount": "Pro QR kód doplň číslo účtu a kód banky.",
+      "lookFailed": "Změnu se nepodařilo uložit. Zkus to znovu.",
+      "thumbnail": "Ukázka stylu {style}"
+    },
+    "styles": {
+      "clean": {
+        "name": "Čistý",
+        "description": "Jen typografie a vzduch."
+      },
+      "line": {
+        "name": "Linka",
+        "description": "Barevná linka a akcent ve tvé barvě."
+      },
+      "block": {
+        "name": "Blok",
+        "description": "Tmavá hlavička s tvými údaji."
+      },
+      "classic": {
+        "name": "Klasický",
+        "description": "Tabulky a rámečky pro konzervativní odběratele."
+      }
+    },
+    "list": {
+      "label": "Faktury",
+      "search": "Hledat ve fakturách",
+      "searchPlaceholder": "Číslo nebo odběratel",
+      "filterLabel": "Stav",
+      "sortLabel": "Řazení",
+      "filter": {
+        "all": "Všechny",
+        "draft": "Koncepty",
+        "issued": "Vystavené",
+        "overdue": "Po splatnosti",
+        "paid": "Zaplacené",
+        "cancelled": "Stornované"
+      },
+      "sort": {
+        "issuedDesc": "Nejnovější",
+        "dueAsc": "Podle splatnosti",
+        "totalDesc": "Nejvyšší částka",
+        "numberDesc": "Podle čísla"
+      },
+      "loadFailed": "Faktury se nepodařilo načíst.",
+      "noneFound": "Nic jsme nenašli",
+      "noneFoundHint": "Zkus jiné hledání nebo jiný stav.",
+      "emptyTitle": "Zatím žádné faktury",
+      "emptyDescription": "Vystav první fakturu tlačítkem nahoře, nebo ji vytvoř z obchodu v pipeline.",
+      "column": {
+        "number": "Číslo",
+        "customer": "Odběratel",
+        "issued": "Vystaveno",
+        "due": "Splatnost",
+        "total": "Částka",
+        "status": "Stav"
+      },
+      "draftNumber": "Koncept",
+      "open": "Otevřít fakturu {number}",
+      "noCustomer": "Bez odběratele",
+      "dueShort": "Splatnost",
+      "status": {
+        "draft": "Koncept",
+        "issued": "Vystavená",
+        "overdue": "Po splatnosti",
+        "paid": "Zaplacená",
+        "cancelled": "Stornovaná",
+        "creditNote": "Dobropis"
+      }
+    },
+    "editor": {
+      "back": "Faktury",
+      "titleNew": "Nová faktura",
+      "titleDraft": "Koncept faktury",
+      "description": "Vyplň odběratele a položky, vpravo hned vidíš, jak bude faktura vypadat.",
+      "defaultUnit": "ks",
+      "saveDraft": "Uložit koncept",
+      "issue": "Vystavit",
+      "delete": "Smazat koncept",
+      "saved": "Koncept je uložený.",
+      "contactNotSaved": "Koncept je uložený, ale údaje se do kontaktu uložit nepodařilo.",
+      "panes": "Úpravy a náhled",
+      "paneForm": "Úpravy",
+      "panePreview": "Náhled",
+      "preview": "Náhled",
+      "previewLabel": "Náhled faktury",
+      "problems": {
+        "customerRequired": "Vyplň odběratele.",
+        "itemsInvalid": "Oprav označené položky.",
+        "itemsRequired": "Každá položka potřebuje název.",
+        "totalInvalid": "Faktura musí být na částku vyšší než nula.",
+        "variableSymbolInvalid": "Variabilní symbol má nejvýš 10 číslic.",
+        "dueBeforeIssue": "Splatnost nemůže být dřív než vystavení."
+      },
+      "issueTitle": "Vystavit fakturu?",
+      "issueDescription": "Faktura na {total} dostane číslo a už nepůjde měnit. Opravit ji půjde jen stornem (dobropisem).",
+      "issueConfirm": "Vystavit",
+      "deleteTitle": "Smazat koncept?",
+      "deleteDescription": "Koncept se smaže. Číslo zatím nedostal, takže v řadě nic nechybí.",
+      "deleteConfirm": "Smazat",
+      "deleteFailed": "Koncept se nepodařilo smazat.",
+      "cancel": "Zrušit",
+      "close": "Zavřít",
+      "customer": {
+        "title": "Odběratel",
+        "search": "Vybrat z kontaktů",
+        "searchPlaceholder": "Hledej v kontaktech…",
+        "results": "Nalezené kontakty",
+        "pickFailed": "Kontakt se nepodařilo načíst.",
+        "manual": "Nebo vyplň údaje ručně.",
+        "linked": "Z kontaktu: {name}",
+        "unlink": "Odpojit kontakt",
+        "name": "Název nebo jméno",
+        "companyRegNo": "IČO",
+        "vatNo": "DIČ",
+        "street": "Ulice a číslo",
+        "city": "Město",
+        "postalCode": "PSČ",
+        "country": "Země",
+        "countryNone": "Neuvedeno",
+        "email": "E-mail",
+        "saveToContact": "Uložit změny i do kontaktu"
+      },
+      "items": {
+        "title": "Položky",
+        "unnamed": "položka bez názvu",
+        "add": "Přidat položku",
+        "name": "Název",
+        "quantity": "Počet",
+        "unit": "Jednotka",
+        "unitPrice": "Cena za kus",
+        "unitPriceNet": "Cena za kus bez DPH",
+        "vatRate": "DPH",
+        "lineTotal": "Celkem",
+        "remove": "Odebrat",
+        "removeLabel": "Odebrat položku {name}"
+      },
+      "totals": {
+        "items": "Součet položek",
+        "subtotal": "Bez DPH",
+        "vat": "DPH",
+        "rounding": "Zaokrouhlení",
+        "total": "Celkem k úhradě"
+      },
+      "details": {
+        "title": "Údaje faktury",
+        "issuedOn": "Datum vystavení",
+        "taxableOn": "Datum zdanitelného plnění",
+        "taxableHint": "Většinou stejné jako vystavení.",
+        "dueOn": "Splatnost",
+        "dueHint": "Výchozí je {days, plural, one {# den} few {# dny} other {# dní}} od vystavení.",
+        "variableSymbol": "Variabilní symbol",
+        "variableSymbolHint": "Když necháš prázdné, použije se číslo faktury.",
+        "variableSymbolPlaceholder": "Podle čísla faktury",
+        "currency": "Měna",
+        "note": "Poznámka na fakturu",
+        "noteHint": "Nepovinné, objeví se pod položkami."
+      }
+    },
+    "detail": {
+      "back": "Faktury",
+      "title": "Faktura {number}",
+      "titleCreditNote": "Dobropis {number}",
+      "download": "Stáhnout PDF",
+      "send": "Poslat e-mailem",
+      "markPaid": "Zaplaceno",
+      "sent": "Faktura odešla.",
+      "previewLabel": "Faktura {number}",
+      "issuedOn": "Vystaveno",
+      "dueOn": "Splatnost",
+      "paidOn": "Zaplaceno",
+      "sentAt": "Odesláno",
+      "cancelledBy": "Stornováno dobropisem",
+      "creditFor": "Dobropis k faktuře",
+      "frozenHint": "Vystavená faktura se už nemění. Když je v ní chyba, stornuj ji a vystav novou.",
+      "creditHint": "Dobropis ruší původní fakturu. Pošli ho odběrateli stejně jako fakturu.",
+      "cancel": "Stornovat",
+      "cancelTitle": "Stornovat fakturu?",
+      "cancelDescription": "K faktuře {number} vznikne dobropis s dalším číslem řady a zápornou částkou. Původní faktura zůstane, jen bude stornovaná.",
+      "cancelConfirm": "Stornovat",
+      "keep": "Nechat",
+      "close": "Zavřít"
+    },
+    "send": {
+      "title": "Poslat fakturu e-mailem",
+      "close": "Zavřít",
+      "to": "Komu",
+      "subjectLabel": "Předmět",
+      "bodyLabel": "Text",
+      "attachment": "V příloze bude faktura {number} jako PDF.",
+      "ccSelf": "Poslat kopii i mně ({email})",
+      "cancel": "Zrušit",
+      "submit": "Odeslat",
+      "subject": "Faktura {number} – {supplier}",
+      "subjectCredit": "Dobropis {number} – {supplier}",
+      "body": "Dobrý den,\n\nv příloze posílám fakturu {number} na {total} se splatností {due}.\n\nDěkuji a přeji hezký den\n{supplier}",
+      "bodyCredit": "Dobrý den,\n\nv příloze posílám dobropis {number} na {total}.\n\nS pozdravem\n{supplier}"
+    },
+    "page": {
+      "noAccess": "Faktury nemáš k dispozici",
+      "noAccessHint": "Požádej majitele o právo vidět finance.",
+      "loadFailed": "Fakturu se nepodařilo načíst.",
+      "notFound": "Tahle faktura neexistuje",
+      "notFoundHint": "Možná byla smazaná, nebo patří jinému účtu.",
+      "backToList": "Zpět na faktury",
+      "readOnly": "Koncept teď nejde upravit",
+      "readOnlyHint": "Na úpravu faktur potřebuješ právo upravovat finance."
+    },
+    "document": {
+      "titleInvoice": "Faktura",
+      "titleInvoiceVat": "Faktura – daňový doklad",
+      "titleCreditNote": "Dobropis",
+      "titleCreditNoteVat": "Opravný daňový doklad",
+      "number": "č.",
+      "draftNumber": "Koncept",
+      "draftSymbol": "Podle čísla faktury",
+      "creditFor": "Opravuje fakturu {number}",
+      "supplier": "Dodavatel",
+      "customer": "Odběratel",
+      "noCustomer": "Odběratel zatím není vyplněný",
+      "companyRegNo": "IČO",
+      "vatNo": "DIČ",
+      "vat": "DPH",
+      "notVatPayer": "Neplátce DPH",
+      "issuedOn": "Datum vystavení",
+      "taxableOn": "Datum zdanitelného plnění",
+      "dueOn": "Datum splatnosti",
+      "paymentMethod": "Forma úhrady",
+      "bankTransfer": "Bankovním převodem",
+      "account": "Číslo účtu",
+      "iban": "IBAN",
+      "bic": "BIC/SWIFT",
+      "variableSymbol": "Variabilní symbol",
+      "columnItem": "Položka",
+      "columnQuantity": "Množství",
+      "columnUnitPrice": "Cena za jednotku",
+      "columnVat": "DPH",
+      "columnTotalNet": "Bez DPH",
+      "columnTotal": "Celkem",
+      "noItems": "Zatím bez položek",
+      "subtotal": "Základ daně",
+      "itemsTotal": "Součet položek",
+      "vatAt": "DPH {rate}",
+      "rounding": "Zaokrouhlení",
+      "totalDue": "K úhradě",
+      "creditTotal": "Celkem dobropisováno",
+      "vatRecap": "Rekapitulace DPH",
+      "recapRate": "Sazba",
+      "recapBase": "Základ",
+      "recapVat": "DPH",
+      "recapTotal": "Celkem",
+      "note": "Poznámka",
+      "qrCaption": "QR Platba",
+      "page": "Strana {page} z {pages}"
     }
   }
 }

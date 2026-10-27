@@ -28,6 +28,8 @@ function situation(overrides: Partial<UserSituation> = {}): UserSituation {
     events: [],
     prospectingSeconds: 0,
     finance: { income: 0, expense: 0 },
+    overdueInvoices: [],
+    overdueInvoicesTotal: 0,
     ...overrides,
   };
 }
@@ -53,11 +55,18 @@ describe("describeSituation", () => {
         events: [{ title: "Meeting with bank", startsAt: at("10:00"), allDay: false }],
         prospectingSeconds: 4800,
         finance: { income: 50000, expense: 20000 },
+        overdueInvoices: [
+          { number: "2026-0007", customer: "Acme", total: 12100, currency: "CZK", dueOn: "2026-09-20" },
+        ],
+        overdueInvoicesTotal: 2,
       }),
       settings,
     );
 
     expect(text).toContain("Today: 2026-09-28 (Monday), time zone Europe/Prague, currency CZK.");
+    expect(text).toMatch(
+      /Unpaid invoices past their due date: "2026-0007" for "Acme" 12\s100,00\sKč due 2026-09-20 \(\+1 more\)\./,
+    );
     expect(text).toContain('"Open the shop" 3/7 tasks, target 2026-10-10 (+1 more)');
     expect(text).toContain('"Order signage" due 2026-09-27');
     expect(text).toMatch(/"Lead" 3 \(120\s000\sKč\)/);
