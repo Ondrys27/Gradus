@@ -81,7 +81,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 16.1 | architect | 2026-10-23 GR-KQHYBN byl pád Financí při přiblížení grafu (zlomkový index), opraveno; obrazovka chyby je nově ve vlastní vrstvě nad vším, zavře Jarvise, ⌘K a další překryvy a její tlačítka fungují na první klik (e2e 25 a 28).
 - [x] 16.2 | architect | env: RESEND_API_KEY — 2026-10-27 Každá zachycená chyba (prohlížeč, server, cron) se zapíše do error_events a majiteli přijde e-mail s kódem, stránkou a uživatelem bez obsahu dat, s ochranou proti záplavě a nastavením adres a režimu v /admin/upozorneni.
 - [x] 16.3 | architect | env: RESEND_API_KEY — 2026-10-30 Faktury se vystavují jen v aplikaci: průvodce údaji dodavatele (ARES), koncept s živým náhledem, vystavení s číselnou řadou v DB, storno dobropisem, Zaplaceno, PDF ve 4 stylech s QR Platbou, odeslání e-mailem a Jarvis ví o fakturách po splatnosti.
-- [ ] K16 | reviewer |
+- [x] K16 | reviewer | 2026-10-30 Kontrola fáze 16: opravena číselná řada faktur zaseknutá o stará čtyřmístná čísla (nová přidávací migrace, zatím nenahraná), telefony vyčištěné z e-mailů o chybách a graf Financí při přepnutí měsíc/rok; RLS faktur a bucketu, QR, ARES a upozornění ověřeny bez nálezu.
 - [ ] STOP | Konec fáze 16. Vyvolej chybu a zkontroluj, že ti přišel e-mail s kódem a uživatelem; v administraci přidej druhou adresu a pošli zkušební e-mail. Faktury: projdi průvodce údaji, vystav fakturu z obchodu i z Financí, zkus všechny 4 styly, stáhni PDF, zaplať testovací QR kód bankovní aplikací (nebo ho aspoň naskenuj a zkontroluj částku a VS), pošli fakturu e-mailem sám sobě, označ Zaplaceno. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [ ] 12.4 | builder | env: RESEND_API_KEY
 - [ ] 12.5 | architect | env: CRON_SECRET
