@@ -18,15 +18,25 @@ const EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}
 const QUOTED_TEXT = /(["'„“`])([^"'„“`\n]*\s[^"'„“`\n]*)(["'“”`])/g;
 /** An amount with its currency: "1 500 Kč", "€ 12.50", "120 USD". */
 const AMOUNT = /(?:(?:€|\$|£)\s?\d[\d\s.,]*)|(?:\d[\d\s.,]*\s?(?:Kč|CZK|EUR|USD|GBP|PLN|€|\$|£))/gi;
+/**
+ * A number written in groups, as a phone ("+420 777 123 456", "777-123-456")
+ * or a date is: each group alone is too short for the long-number rule.
+ */
+const GROUPED_DIGITS = /\+?\d{1,4}(?:[ .\/-]\d{2,4}){2,}/g;
 
 /**
  * An error's message as stored and e-mailed: the analytics scrub (e-mails and
- * numbers of 5+ digits out, 200 characters) plus quoted text and amounts out.
+ * numbers of 5+ digits out, 200 characters) plus quoted text, amounts and
+ * numbers written in groups (phones) out.
  */
 export function scrubErrorMessage(message: unknown): string {
   const text = typeof message === "string" ? message : String(message ?? "");
   return scrubMessage(
-    text.replace(UUID, ":id").replace(QUOTED_TEXT, "$1[text]$3").replace(AMOUNT, "[amount]"),
+    text
+      .replace(UUID, ":id")
+      .replace(QUOTED_TEXT, "$1[text]$3")
+      .replace(AMOUNT, "[amount]")
+      .replace(GROUPED_DIGITS, "[n]"),
   );
 }
 

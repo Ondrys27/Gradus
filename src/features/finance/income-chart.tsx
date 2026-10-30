@@ -196,6 +196,9 @@ export function IncomeChart({ today }: { today: IsoDate }) {
     }
   }
 
+  // The window of the previous view (a toggle, new data) is out of range until
+  // the reset effect runs; the Brush only ever gets whole bars inside the rows.
+  const brushWindow = clampWindow(rows.length, zoom);
   const windowSize = zoom.end - zoom.start + 1;
   const canZoomIn = rows.length > 0 && windowSize > 2;
   const canZoomOut = rows.length > 0 && windowSize < rows.length;
@@ -380,8 +383,8 @@ export function IncomeChart({ today }: { today: IsoDate }) {
                     dataKey="key"
                     height={BRUSH_HEIGHT}
                     travellerWidth={10}
-                    startIndex={zoom.start}
-                    endIndex={zoom.end}
+                    startIndex={brushWindow.start}
+                    endIndex={brushWindow.end}
                     stroke="var(--color-violet)"
                     fill="var(--color-surface)"
                     tickFormatter={(_, index) => label(plotRows[index]?.key ?? plotRows[0].key)}

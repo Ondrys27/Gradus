@@ -18,6 +18,12 @@ describe("scrubErrorMessage", () => {
     expect(scrubbed).toContain(":id");
   });
 
+  it("takes out phones written in groups", () => {
+    const scrubbed = scrubErrorMessage("Error: invalid phone +420 777 123 456 or 777-123-456");
+    expect(scrubbed).not.toMatch(/777|123|456/);
+    expect(scrubErrorMessage("Error: line 12 of 40")).toBe("Error: line 12 of 40");
+  });
+
   it("cuts long text and never returns an empty string", () => {
     expect(scrubErrorMessage("x".repeat(500))).toHaveLength(200);
     expect(scrubErrorMessage("")).toBe("unknown");

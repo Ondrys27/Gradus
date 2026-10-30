@@ -342,6 +342,31 @@ describe("numbering series", () => {
     expect((await issue((await draft()).id)).number).toBe(`${year}-0007`);
   });
 
+  it("continues after old numbers of any length and passes over a taken one", async () => {
+    // Another workspace with numbers kept from before (Fakturoid wrote four digits).
+    await asServer();
+    const old = (number: string) =>
+      db.query(
+        `insert into invoices (user_id, number, amount, status, issued_on) values ($1, $2, 100, 'open', current_date)`,
+        [stranger, number],
+      );
+    await old(`${year}-0001`);
+    await old(`${year}-0003`);
+    await asUser(stranger);
+    await db.query(`insert into invoice_profiles (user_id, name) values ($1, 'Petr Malý')`, [stranger]);
+    const draftOf = () =>
+      one<Invoice>(
+        `insert into invoices (user_id, number, amount, customer, items) values ($1, null, 0, $2, $3) returning *`,
+        [stranger, JSON.stringify({ name: "Acme" }), JSON.stringify([item("Web", 1, 1000)])],
+      );
+    expect((await issue((await draftOf()).id)).number).toBe(`${year}-0004`);
+    await asServer();
+    await old(`${year}-0005`);
+    await asUser(stranger);
+    expect((await issue((await draftOf()).id)).number).toBe(`${year}-0006`);
+    await asServer();
+  });
+
   it("uses the prefix and leaves QR off for another currency", async () => {
     await asUser(owner);
     await db.query(`update invoice_profiles set number_prefix = 'FV' where user_id = $1`, [owner]);
