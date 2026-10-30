@@ -120,14 +120,65 @@ describe("nps_responses", () => {
   });
 });
 
-describe("profiles.nps_asked_at", () => {
-  it("the user stamps it themselves, like seen_level", async () => {
+describe("satisfaction_responses", () => {
+  it("is written and read only by its own user, never changed afterwards", async () => {
+    const user = await createUser();
+    const other = await createUser();
+    await asUser(user);
+    await db.query(
+      `insert into satisfaction_responses (user_id, satisfaction, liked, improve) values ($1, 4, 'Mapa', null)`,
+      [user],
+    );
+    await expect(
+      db.query(`insert into satisfaction_responses (user_id, satisfaction) values ($1, 5)`, [other]),
+    ).rejects.toThrow();
+    expect(await one(`select count(*)::int as n from satisfaction_responses`)).toEqual({ n: 1 });
+    await db.query(`update satisfaction_responses set satisfaction = 1`);
+    await db.query(`delete from satisfaction_responses`);
+    expect(await one(`select satisfaction from satisfaction_responses`)).toEqual({ satisfaction: 4 });
+    await asUser(other);
+    expect(await one(`select count(*)::int as n from satisfaction_responses`)).toEqual({ n: 0 });
+    await asServer();
+  });
+
+  it("takes 1 to 5 and texts of at most 1000 characters", async () => {
     const user = await createUser();
     await asUser(user);
-    await db.query(`update profiles set nps_asked_at = now() where id = $1`, [user]);
+    for (const satisfaction of [0, 6]) {
+      await expect(
+        db.query(`insert into satisfaction_responses (user_id, satisfaction) values ($1, $2)`, [user, satisfaction]),
+      ).rejects.toThrow();
+    }
+    await expect(
+      db.query(`insert into satisfaction_responses (user_id, satisfaction, liked) values ($1, 3, $2)`, [
+        user,
+        "x".repeat(1001),
+      ]),
+    ).rejects.toThrow();
+    await expect(
+      db.query(`insert into satisfaction_responses (user_id, satisfaction, improve) values ($1, 3, '')`, [user]),
+    ).rejects.toThrow();
+    await asServer();
+  });
+});
+
+describe("profiles survey pause", () => {
+  it("the user sets the pause and the count of closes themselves", async () => {
+    const user = await createUser();
+    await asUser(user);
+    await db.query(
+      `update profiles set nps_snoozed_until = now() + interval '1 day', nps_dismiss_streak = 2 where id = $1`,
+      [user],
+    );
     expect(
-      await one(`select nps_asked_at is not null as asked from profiles where id = $1`, [user]),
-    ).toEqual({ asked: true });
+      await one(
+        `select nps_snoozed_until > now() as paused, nps_dismiss_streak as streak from profiles where id = $1`,
+        [user],
+      ),
+    ).toEqual({ paused: true, streak: 2 });
+    await expect(
+      db.query(`update profiles set nps_dismiss_streak = 4 where id = $1`, [user]),
+    ).rejects.toThrow();
     await asServer();
   });
 });

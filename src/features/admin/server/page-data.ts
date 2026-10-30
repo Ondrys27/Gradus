@@ -46,7 +46,7 @@ export function overviewTiles(q: AdminQuery): Promise<TileData[]> {
     scalarTile(q, "retention_d7", { spark: true }),
     seriesTile(q, "ai_cost", "sum", { lowerIsBetter: true }),
     scalarTile(q, "cost_per_active_user", { spark: true, lowerIsBetter: true }),
-    scalarTile(q, "nps"),
+    scalarTile(q, "satisfaction_avg"),
   ]);
 }
 

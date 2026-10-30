@@ -109,7 +109,7 @@ U každé sekce: adopce (% aktivních, kteří ji použili), počet akcí, akce 
 
 - Hlášení chyb ze stránky chyby — seznam s kódem chyby (GR-…), hledání podle kódu; událost `bug_report_sent`, kód je i v `client_error`
 - Nápady od uživatelů — seznam a stav
-- Otázka po 7 dnech používání: „Jak pravděpodobně bys Gradus doporučil?" 0–10 a volitelný komentář → NPS, rozdělení, komentáře
+- Dotazník spokojenosti na Přehledu (po 14 dnech používání, pak 30 dní po odpovědi): spokojenost 1–5, „Co se ti fakt líbí?“ a „Co vylepšit?“ → průměrná spokojenost (`satisfaction_avg`), rozdělení (`satisfaction`), odpovědi s textem. Události `satisfaction_submitted` (známka a zda je vyplněný text, nikdy text) a `satisfaction_dismissed`. Dřívější NPS (0–10) zůstává jen jako historie v `nps_responses`
 - Hodnocení Jarvisových odpovědí
 
 ## 10. Detail uživatele

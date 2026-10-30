@@ -2230,13 +2230,18 @@
       "evening": "Good evening{hasName, select, yes {, {name}} other {}}",
       "night": "Hello{hasName, select, yes {, {name}} other {}}"
     },
-    "nps": {
-      "question": "How likely would you recommend Gradus to another entrepreneur?",
-      "low": "Not likely",
-      "high": "Very likely",
-      "commentPlaceholder": "Anything you'd like to add? (optional)",
+    "satisfaction": {
+      "title": "How is {appName} working for you?",
+      "question": "Overall, how satisfied are you with {appName}?",
+      "low": "Very dissatisfied",
+      "high": "Very satisfied",
+      "scoreLabel": "{score} of 5",
+      "liked": "What do you really like about {appName}?",
+      "improve": "What should we improve?",
+      "optional": "Optional",
       "submit": "Send",
-      "close": "Close, don't ask again"
+      "close": "Close",
+      "thanks": "Thank you! We read every answer."
     },
     "summary": {
       "lead": "Today you have {list}.",
@@ -4084,9 +4089,13 @@
         "name": "Ideas from users",
         "description": "Ideas by status."
       },
-      "nps": {
-        "name": "NPS",
-        "description": "The recommendation question after 7 days; measured from step 11.5."
+      "satisfaction_avg": {
+        "name": "Average satisfaction",
+        "description": "Average of the 1–5 answers from the survey on the dashboard (after 14 days, then once a month)."
+      },
+      "satisfaction": {
+        "name": "Satisfaction",
+        "description": "How many answers gave which mark, from 1 (very dissatisfied) to 5 (very satisfied)."
       }
     }
   },
@@ -4422,11 +4431,13 @@
     },
     "feedback": {
       "title": "Feedback",
-      "description": "Bug reports, ideas, NPS and how people rate Jarvis's answers.",
-      "commentsTitle": "NPS comments",
-      "commentsDescription": "The most recent answers that left a comment.",
-      "noComments": "No comments yet.",
-      "npsScoreBadge": "Score {score}/10",
+      "description": "Bug reports, ideas, satisfaction and how people rate Jarvis's answers.",
+      "answersTitle": "Satisfaction survey answers",
+      "answersDescription": "The most recent answers where people wrote something.",
+      "noAnswers": "Nobody has written anything yet.",
+      "satisfactionBadge": "Satisfaction {score}/5",
+      "liked": "Likes",
+      "improve": "Improve",
       "ideasTitle": "Ideas",
       "ideasDescription": "Submitted through Jarvis; change the status as you triage them.",
       "emptyTitle": "No ideas yet",
@@ -4535,7 +4546,8 @@
       "activeDays30": "Active days (30 d)",
       "workers": "Workers",
       "featureRequests": "Ideas submitted",
-      "npsScore": "Last NPS score",
+      "satisfaction": "Last satisfaction",
+      "satisfactionValue": "{score} of 5",
       "aiTitle": "AI usage",
       "aiCalls": "Calls",
       "inputTokens": "Input tokens",

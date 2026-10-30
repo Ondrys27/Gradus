@@ -60,7 +60,7 @@ describe.each(["cs", "en"] as const)("admin blocks in %s", (locale) => {
         tiles={[
           { key: "signups", unit: "users", value: 12, previous: 6, spark: [1, 5, 6] },
           { key: "stickiness", unit: "ratio", value: 0.2, previous: null },
-          { key: "nps", unit: "count", value: null, pending: "11.5" },
+          { key: "satisfaction_avg", unit: "count", value: null, pending: "11.5" },
         ]}
       />,
     );

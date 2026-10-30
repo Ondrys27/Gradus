@@ -157,23 +157,23 @@ export function heat(value: number | null, max: number): number {
   return Math.min(1, 0.12 + 0.88 * (value / max));
 }
 
-// --- NPS -------------------------------------------------------------------------
+// --- Satisfaction ----------------------------------------------------------------
 
 /**
- * The Net Promoter Score from the 0–10 breakdown ("nps" metric): share of
- * promoters (9–10) minus detractors (0–6), -100 to 100. Null without answers.
+ * Average satisfaction (1–5) from the breakdown of answers by value
+ * ("satisfaction" metric). Null without answers.
  */
-export function npsScore(items: readonly { key: string; value: number | null }[]): number | null {
-  const total = items.reduce((sum, item) => sum + (item.value ?? 0), 0);
-  if (total <= 0) return null;
-  const group = (from: number, to: number) =>
-    items
-      .filter((item) => {
-        const score = Number(item.key);
-        return Number.isFinite(score) && score >= from && score <= to;
-      })
-      .reduce((sum, item) => sum + (item.value ?? 0), 0);
-  const promoters = group(9, 10);
-  const detractors = group(0, 6);
-  return ((promoters - detractors) / total) * 100;
+export function satisfactionAverage(
+  items: readonly { key: string; value: number | null }[],
+): number | null {
+  let answers = 0;
+  let total = 0;
+  for (const item of items) {
+    const score = Number(item.key);
+    const count = item.value ?? 0;
+    if (!Number.isFinite(score) || score < 1 || score > 5 || count <= 0) continue;
+    answers += count;
+    total += score * count;
+  }
+  return answers > 0 ? total / answers : null;
 }

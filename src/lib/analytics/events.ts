@@ -556,9 +556,20 @@ export const EVENTS = {
   }),
 
   // --- feedback --------------------------------------------------------------
-  /** "How likely would you recommend Gradus?", asked once after 7 days. */
+  /** The former "would you recommend" question; kept for its history, no longer sent. */
   nps_submitted: event("platform", "client", false, { score: count(10) }),
   nps_dismissed: event("platform", "client", false, {}),
+  /** Satisfaction survey on the dashboard: 1–5 and whether each text was filled in, never the text. */
+  satisfaction_submitted: event("platform", "client", false, {
+    satisfaction: count(5),
+    liked: bool(),
+    improve: bool(),
+  }),
+  /** `paused`: the third close in a row, so the survey waits a month. */
+  satisfaction_dismissed: event("platform", "client", false, {
+    streak: count(3),
+    paused: bool(),
+  }),
   /** "Send feedback" on the error page stored a report (a repeated click stores nothing). */
   bug_report_sent: event("platform", "server", false, {
     source: oneOf(["error_page", "report"]),

@@ -154,16 +154,9 @@ function TaskRing({ done, total }: { done: number; total: number }) {
               </span>
             </>
           ) : (
-            <>
-              <span className="text-lg font-bold tabular-nums text-ink">
-                <AnimatedNumber value={rate} format={{ style: "percent" }} />
-              </span>
-              <span className="text-[11px] font-medium tabular-nums text-ink-soft">
-                <AnimatedNumber value={done} />
-                <span className="text-ink-muted"> / </span>
-                <AnimatedNumber value={total} />
-              </span>
-            </>
+            <span className="text-xl font-bold tabular-nums text-ink">
+              <AnimatedNumber value={rate} format={{ style: "percent" }} />
+            </span>
           )}
         </span>
       </ProgressRing>

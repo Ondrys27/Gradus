@@ -84,7 +84,7 @@ export type UserDetail = {
   ai: { calls: number; costUsd: number; inputTokens: number; outputTokens: number };
   workers: number;
   featureRequests: number;
-  npsScore: number | null;
+  satisfaction: number | null;
 };
 
 export async function loadUserDetail(userId: string): Promise<UserDetail | null> {
@@ -122,7 +122,7 @@ export async function loadUserDetail(userId: string): Promise<UserDetail | null>
     },
     workers: num(d.workers) ?? 0,
     featureRequests: num(d.feature_requests) ?? 0,
-    npsScore: num(d.nps_score),
+    satisfaction: num(d.satisfaction),
   };
 }
 

@@ -152,6 +152,10 @@ describe("metric_admin_user_detail", () => {
     );
     await db.query(`insert into feature_requests (user_id, title) values ($1, 'Idea')`, [user]);
     await db.query(`insert into nps_responses (user_id, score) values ($1, 9)`, [user]);
+    await db.query(
+      `insert into satisfaction_responses (user_id, satisfaction, created_at) values ($1, 2, now() - interval '40 days'), ($1, 4, now())`,
+      [user],
+    );
 
     const detail = await one<{ metric_admin_user_detail: Record<string, unknown> }>(
       `select metric_admin_user_detail($1) as metric_admin_user_detail`,
@@ -161,6 +165,7 @@ describe("metric_admin_user_detail", () => {
     expect(d.plan).toBeTruthy();
     expect(d.feature_requests).toBe(1);
     expect(d.nps_score).toBe(9);
+    expect(d.satisfaction).toBe(4);
     expect(d.last_active_at).toBeTruthy();
     expect((d.ai as { calls: number }).calls).toBe(1);
     expect(Array.isArray(d.timeline)).toBe(true);
@@ -343,6 +348,28 @@ describe("administration filters (step 14.5)", () => {
     expect(await comments(today, false, {})).toEqual(["beta now", "trial now"]);
     expect(await comments(longAgo, false, { plan: "beta" })).toEqual(["beta long ago", "beta now"]);
     expect(await comments(today, true, { plan: "beta" })).toEqual(["beta now", "internal now"]);
+
+    await db.query(
+      `insert into satisfaction_responses (user_id, satisfaction, liked, improve, created_at) values
+         ($1, 5, 'beta likes', null, now()), ($2, 2, null, 'trial improve', now()),
+         ($3, 4, 'internal likes', null, now()), ($1, 3, null, null, now()),
+         ($1, 1, 'beta long ago', null, now() - interval '60 days')`,
+      [beta, trial, internal],
+    );
+    const answers = async (from: string, includeInternal: boolean, segment: Record<string, string>) =>
+      (
+        await rows<{ text: string }>(
+          `select coalesce(liked, improve) as text
+           from admin_satisfaction_responses($1::date, current_date, 'Europe/Prague', $2, $3::jsonb)`,
+          [from, includeInternal, JSON.stringify(segment)],
+        )
+      )
+        .map((r) => r.text)
+        .sort();
+    // An answer without any text (beta, 3) is not listed.
+    expect(await answers(today, false, {})).toEqual(["beta likes", "trial improve"]);
+    expect(await answers(longAgo, false, { plan: "beta" })).toEqual(["beta likes", "beta long ago"]);
+    expect(await answers(today, true, { plan: "beta" })).toEqual(["beta likes", "internal likes"]);
   });
 
   it("keeps the new functions closed to a signed-in user", async () => {
@@ -350,6 +377,7 @@ describe("administration filters (step 14.5)", () => {
     for (const sql of [
       `select * from admin_feature_requests()`,
       `select * from admin_nps_comments(current_date, current_date)`,
+      `select * from admin_satisfaction_responses(current_date, current_date)`,
       `select * from metric_trials()`,
       `select * from metric_workers(current_date, current_date)`,
       `select * from metric_admin_users('Europe/Prague', null, 'activity', 50, 0, true, '{}')`,

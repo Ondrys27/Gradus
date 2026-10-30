@@ -27,7 +27,7 @@ vi.mock("./people", () => ({ peopleNamer: async () => (id: string) => id }));
 const pd = await import("./page-data");
 const { adminQuery } = await import("./metrics-data");
 const { loadUsers } = await import("./users-data");
-const { loadFeatureRequests, loadNpsComments } = await import("./feedback-data");
+const { loadFeatureRequests, loadSatisfactionAnswers } = await import("./feedback-data");
 const { explorerChart } = await import("./explorer-data");
 const { PAGE_FILTERS } = await import("../filters");
 type AdminFilter = (typeof PAGE_FILTERS)[AdminSectionKey][number];
@@ -99,11 +99,11 @@ const PAGE_LOADERS: Record<AdminSectionKey, Loader[]> = {
   costs: [pd.costsTiles, pd.costBreakdownFields, pd.marginByPlanRows, pd.trialFields, pd.costsBreakdowns],
   health: [pd.healthTiles, pd.healthChart, pd.routeLatency, pd.pageLoad, pd.healthBreakdowns, pd.cronRuns],
   feedback: [
-    (q) => import("./feedback-data").then((m) => m.loadNpsSummary(q)),
+    (q) => import("./feedback-data").then((m) => m.loadSatisfactionSummary(q)),
     (q) => import("./feedback-data").then((m) => m.jarvisAnswerRatings(q)),
     (q) => import("./feedback-data").then((m) => m.featureRequestCounts(q)),
     (q) => loadFeatureRequests(q, null),
-    (q) => loadNpsComments(q),
+    (q) => loadSatisfactionAnswers(q),
   ],
   explorer: [(q) => explorerChart(q, { event: "app_opened", calc: "count", prop: null, grain: "day" })],
   users: [(q) => loadUsers({ view: q.view, query: "", sort: "activity", page: 0 })],

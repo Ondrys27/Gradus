@@ -18,8 +18,8 @@ import {
   jarvisAnswerRatings,
   loadBugReports,
   loadFeatureRequests,
-  loadNpsComments,
-  loadNpsSummary,
+  loadSatisfactionAnswers,
+  loadSatisfactionSummary,
 } from "@/features/admin/server/feedback-data";
 import { ADMIN_FORMAT_SETTINGS } from "@/features/admin/format-metric";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
@@ -99,8 +99,8 @@ export default async function AdminFeedbackPage({ searchParams }: Props) {
         <Suspense fallback={<CardSkeleton height={240} />}>
           <BugReports q={q} rawCode={rawCode} />
         </Suspense>
-        <Suspense fallback={<FiguresSkeleton count={1} />}>
-          <Nps q={q} />
+        <Suspense fallback={<FiguresSkeleton count={2} />}>
+          <Satisfaction q={q} />
         </Suspense>
         <Suspense fallback={<GridSkeleton count={2} height={200} />}>
           <Voices q={q} />
@@ -297,41 +297,63 @@ function BugReportItem({
   );
 }
 
-async function Nps({ q }: { q: AdminQuery }) {
-  const loaded = await safe("nps summary", () => loadNpsSummary(q));
+async function Satisfaction({ q }: { q: AdminQuery }) {
+  const loaded = await safe("satisfaction summary", () => loadSatisfactionSummary(q));
   return (
     <Show loaded={loaded}>
-      {(summary) => <Figures tiles={[{ key: "nps", unit: "count", value: summary.score }]} />}
+      {(summary) => (
+        <Figures
+          tiles={[
+            { key: "satisfaction_avg", unit: "count", value: summary.average },
+            { key: "satisfaction", unit: "count", value: summary.responses },
+          ]}
+        />
+      )}
     </Show>
   );
 }
 
-/** What people wrote: the NPS comments, and how they rate Jarvis's answers. */
+/** What people wrote in the satisfaction survey, its spread, and how they rate Jarvis's answers. */
 async function Voices({ q }: { q: AdminQuery }) {
-  const [comments, ratings, t, tItems] = await Promise.all([
-    safe("nps comments", () => loadNpsComments(q)),
+  const [answers, summary, ratings, t, tSpread, tRatings] = await Promise.all([
+    safe("satisfaction answers", () => loadSatisfactionAnswers(q)),
+    safe("satisfaction spread", () => loadSatisfactionSummary(q)),
     safe("jarvis answer ratings", () => jarvisAnswerRatings(q)),
     getTranslations("admin.feedback"),
+    getTranslations("metrics.items.satisfaction"),
     getTranslations("metrics.items.jarvis_answer_ratings"),
   ]);
   return (
     <BlockGrid>
-      <AdminCard title={t("commentsTitle")} description={t("commentsDescription")}>
-        <Show loaded={comments}>
+      <AdminCard title={t("answersTitle")} description={t("answersDescription")} wide>
+        <Show loaded={answers}>
           {(rows) =>
             rows.length === 0 ? (
-              <AdminEmpty hint={t("noComments")} />
+              <AdminEmpty hint={t("noAnswers")} />
             ) : (
-              <ul className="flex max-h-96 flex-col gap-2 overflow-y-auto">
+              <ul className="flex max-h-[32rem] flex-col gap-2 overflow-y-auto">
                 {rows.map((row, index) => (
-                  <li key={index} className="rounded-xl border border-line px-3.5 py-2.5">
-                    <div className="mb-1 flex items-center justify-between gap-2 text-xs text-ink-muted">
-                      <span>{t("npsScoreBadge", { score: row.score })}</span>
+                  <li key={index} className="flex flex-col gap-1.5 rounded-xl border border-line px-3.5 py-2.5">
+                    <div className="flex items-center justify-between gap-2 text-xs text-ink-muted">
+                      <span>
+                        {t("satisfactionBadge", { score: row.satisfaction })} · {row.userName}
+                      </span>
                       <span>
                         {formatCalendarDate(row.createdAt.slice(0, 10), ADMIN_FORMAT_SETTINGS)}
                       </span>
                     </div>
-                    <p className="text-sm text-ink">{row.comment}</p>
+                    {row.liked && (
+                      <p className="text-sm text-ink">
+                        <span className="text-ink-muted">{t("liked")}: </span>
+                        {row.liked}
+                      </p>
+                    )}
+                    {row.improve && (
+                      <p className="text-sm text-ink">
+                        <span className="text-ink-muted">{t("improve")}: </span>
+                        {row.improve}
+                      </p>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -339,7 +361,10 @@ async function Voices({ q }: { q: AdminQuery }) {
           }
         </Show>
       </AdminCard>
-      <AdminCard title={tItems("name")} description={tItems("description")}>
+      <AdminCard title={tSpread("name")} description={tSpread("description")}>
+        <Show loaded={summary}>{(data) => <BreakdownList data={data.distribution} />}</Show>
+      </AdminCard>
+      <AdminCard title={tRatings("name")} description={tRatings("description")}>
         <Show loaded={ratings}>{(data) => <BreakdownList data={data} />}</Show>
       </AdminCard>
     </BlockGrid>

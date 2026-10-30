@@ -80,7 +80,14 @@ export default async function AdminUserDetailPage({ params }: Props) {
             <Fact label={t("activeDays30")} value={count(detail.activeDays30)} />
             <Fact label={t("workers")} value={count(detail.workers)} />
             <Fact label={t("featureRequests")} value={count(detail.featureRequests)} />
-            <Fact label={t("npsScore")} value={detail.npsScore === null ? "–" : count(detail.npsScore)} />
+            <Fact
+              label={t("satisfaction")}
+              value={
+                detail.satisfaction === null
+                  ? "–"
+                  : t("satisfactionValue", { score: count(detail.satisfaction) })
+              }
+            />
             <Fact label={t("columns.internal")} value={detail.isInternal ? t("yes") : t("no")} />
           </dl>
 

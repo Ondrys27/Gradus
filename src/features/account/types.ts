@@ -20,11 +20,12 @@ export type Profile = Pick<
   | "seen_level"
   | "tour_completed_at"
   | "notes_intro_seen_at"
-  | "nps_asked_at"
+  | "nps_snoozed_until"
+  | "nps_dismiss_streak"
 >;
 
 export const PROFILE_COLUMNS =
-  "id, username, display_name, avatar_url, industry, created_at, onboarding_completed_at, mode, path_key, seen_level, tour_completed_at, notes_intro_seen_at, nps_asked_at" as const;
+  "id, username, display_name, avatar_url, industry, created_at, onboarding_completed_at, mode, path_key, seen_level, tour_completed_at, notes_intro_seen_at, nps_snoozed_until, nps_dismiss_streak" as const;
 
 /** Section of the owner's app a worker may be given, and what they may do there. */
 export type WorkerAccess = { view: boolean; edit: boolean };

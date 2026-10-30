@@ -136,7 +136,8 @@ export type ProfilePatch = Partial<
     | "onboarding_completed_at"
     | "tour_completed_at"
     | "notes_intro_seen_at"
-    | "nps_asked_at"
+    | "nps_snoozed_until"
+    | "nps_dismiss_streak"
   >
 >;
 

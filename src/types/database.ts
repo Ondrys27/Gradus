@@ -2254,6 +2254,8 @@ export type Database = {
           mode: string
           notes_intro_seen_at: string | null
           nps_asked_at: string | null
+          nps_dismiss_streak: number
+          nps_snoozed_until: string | null
           onboarding_completed_at: string | null
           path_key: string | null
           seen_level: number
@@ -2271,6 +2273,8 @@ export type Database = {
           mode?: string
           notes_intro_seen_at?: string | null
           nps_asked_at?: string | null
+          nps_dismiss_streak?: number
+          nps_snoozed_until?: string | null
           onboarding_completed_at?: string | null
           path_key?: string | null
           seen_level?: number
@@ -2288,6 +2292,8 @@ export type Database = {
           mode?: string
           notes_intro_seen_at?: string | null
           nps_asked_at?: string | null
+          nps_dismiss_streak?: number
+          nps_snoozed_until?: string | null
           onboarding_completed_at?: string | null
           path_key?: string | null
           seen_level?: number
@@ -2477,6 +2483,33 @@ export type Database = {
           created_at?: string
           id?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      satisfaction_responses: {
+        Row: {
+          created_at: string
+          id: string
+          improve: string | null
+          liked: string | null
+          satisfaction: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          improve?: string | null
+          liked?: string | null
+          satisfaction: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          improve?: string | null
+          liked?: string | null
+          satisfaction?: number
           user_id?: string
         }
         Relationships: []
@@ -3507,6 +3540,23 @@ export type Database = {
         Returns: undefined
       }
       admin_require_owner: { Args: never; Returns: undefined }
+      admin_satisfaction_responses: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _limit?: number
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          created_at: string
+          improve: string
+          liked: string
+          satisfaction: number
+          user_id: string
+        }[]
+      }
       admin_session_end: { Args: never; Returns: undefined }
       admin_session_touch: { Args: { _activity?: boolean }; Returns: Json }
       admin_set_ai_user_cap: {

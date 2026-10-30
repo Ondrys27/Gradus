@@ -2230,13 +2230,18 @@
       "evening": "Dobrý večer{hasName, select, yes {, {name}} other {}}",
       "night": "Ahoj{hasName, select, yes {, {name}} other {}}"
     },
-    "nps": {
-      "question": "Jak pravděpodobně bys Gradus doporučil jinému podnikateli?",
-      "low": "Nepravděpodobné",
-      "high": "Velmi pravděpodobné",
-      "commentPlaceholder": "Chceš něco doplnit? (nepovinné)",
+    "satisfaction": {
+      "title": "Jak se ti s {appName} pracuje?",
+      "question": "Jak jsi s {appName} celkově spokojený?",
+      "low": "Velmi nespokojený",
+      "high": "Velmi spokojený",
+      "scoreLabel": "{score} z 5",
+      "liked": "Co se ti na {appName} fakt líbí?",
+      "improve": "Co bychom měli vylepšit?",
+      "optional": "Nepovinné",
       "submit": "Odeslat",
-      "close": "Zavřít, už se neptat"
+      "close": "Zavřít",
+      "thanks": "Díky! Každou odpověď čteme."
     },
     "summary": {
       "lead": "Dnes máš {list}.",
@@ -4084,9 +4089,13 @@
         "name": "Nápady od uživatelů",
         "description": "Nápady podle stavu."
       },
-      "nps": {
-        "name": "NPS",
-        "description": "Otázka na doporučení po 7 dnech; měří se od kroku 11.5."
+      "satisfaction_avg": {
+        "name": "Průměrná spokojenost",
+        "description": "Průměr odpovědí 1–5 z dotazníku na Přehledu (po 14 dnech, pak jednou za měsíc)."
+      },
+      "satisfaction": {
+        "name": "Spokojenost",
+        "description": "Kolik odpovědí dalo jakou známku od 1 (velmi nespokojený) do 5 (velmi spokojený)."
       }
     }
   },
@@ -4422,11 +4431,13 @@
     },
     "feedback": {
       "title": "Zpětná vazba",
-      "description": "Hlášení chyb, nápady, NPS a jak lidé hodnotí Jarvisovy odpovědi.",
-      "commentsTitle": "Komentáře k NPS",
-      "commentsDescription": "Nejnovější odpovědi, které obsahovaly komentář.",
-      "noComments": "Zatím žádné komentáře.",
-      "npsScoreBadge": "Skóre {score}/10",
+      "description": "Hlášení chyb, nápady, spokojenost a jak lidé hodnotí Jarvisovy odpovědi.",
+      "answersTitle": "Odpovědi z dotazníku spokojenosti",
+      "answersDescription": "Nejnovější odpovědi, ve kterých lidé něco napsali.",
+      "noAnswers": "Zatím nikdo nic nenapsal.",
+      "satisfactionBadge": "Spokojenost {score}/5",
+      "liked": "Líbí se",
+      "improve": "Vylepšit",
       "ideasTitle": "Nápady",
       "ideasDescription": "Odeslané přes Jarvise; stav měň podle toho, jak je zpracováváš.",
       "emptyTitle": "Zatím žádné nápady",
@@ -4535,7 +4546,8 @@
       "activeDays30": "Aktivní dny (30 dní)",
       "workers": "Pracovníci",
       "featureRequests": "Odeslané nápady",
-      "npsScore": "Poslední skóre NPS",
+      "satisfaction": "Poslední spokojenost",
+      "satisfactionValue": "{score} z 5",
       "aiTitle": "Spotřeba AI",
       "aiCalls": "Volání",
       "inputTokens": "Vstupní tokeny",
