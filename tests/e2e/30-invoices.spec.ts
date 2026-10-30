@@ -82,7 +82,8 @@ test("30 · supplier guide → invoice from a deal → PDF → paid → income i
   const { text: pdfText } = await extractText(await getDocumentProxy(bytes), { mergePages: true });
   expect(pdfText).toContain(number);
   expect(spaces(pdfText)).toContain("24 000,00 Kč");
-  expect(pdfText).not.toMatch(/gradus/i);
+  // No word about the app anywhere; the test customer's own address does not count.
+  expect(pdfText.replace(/\S+@gradus\.local/gi, "")).not.toMatch(/gradus/i);
   const { data: stored } = await db.from("invoices").select("pdf_path, status").eq("id", invoiceId).single();
   expect(stored).toEqual({ pdf_path: `${account.id}/${invoiceId}.pdf`, status: "open" });
 

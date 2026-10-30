@@ -1504,13 +1504,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "invoices_credited_invoice_fkey"
-            columns: ["credited_invoice_id", "user_id"]
-            isOneToOne: false
-            referencedRelation: "invoices"
-            referencedColumns: ["id", "user_id"]
-          },
-          {
             foreignKeyName: "invoices_contact_id_fkey"
             columns: ["contact_id", "user_id"]
             isOneToOne: false
@@ -1522,6 +1515,13 @@ export type Database = {
             columns: ["contact_id", "user_id"]
             isOneToOne: false
             referencedRelation: "contacts"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "invoices_credited_invoice_fkey"
+            columns: ["credited_invoice_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
             referencedColumns: ["id", "user_id"]
           },
           {
@@ -3563,11 +3563,6 @@ export type Database = {
         }
         Returns: string
       }
-      choose_path: { Args: { _path_key: string }; Returns: Json }
-      count_generation_keyword: {
-        Args: { _keyword: string }
-        Returns: undefined
-      }
       cancel_invoice: {
         Args: { _invoice_id: string }
         Returns: {
@@ -3613,6 +3608,11 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      choose_path: { Args: { _path_key: string }; Returns: Json }
+      count_generation_keyword: {
+        Args: { _keyword: string }
+        Returns: undefined
       }
       create_invoice_from_deal: {
         Args: { _deal_id: string }
@@ -3853,8 +3853,66 @@ export type Database = {
         Args: { _locale?: string; _user_id: string }
         Returns: undefined
       }
+      invoice_items_valid: { Args: { _items: Json }; Returns: boolean }
+      invoice_pdf_readable: { Args: { _name: string }; Returns: boolean }
+      invoice_supplier_snapshot: {
+        Args: {
+          _profile: Database["public"]["Tables"]["invoice_profiles"]["Row"]
+        }
+        Returns: Json
+      }
+      invoice_totals: {
+        Args: { _currency: string; _items: Json; _vat_mode: string }
+        Returns: Record<string, unknown>
+      }
       is_client_request: { Args: never; Returns: boolean }
       is_internal_account: { Args: { _user_id: string }; Returns: boolean }
+      issue_invoice: {
+        Args: { _invoice_id: string }
+        Returns: {
+          accent_color: string | null
+          amount: number
+          cancelled_at: string | null
+          contact_id: string | null
+          created_at: string
+          credited_invoice_id: string | null
+          currency: string
+          customer: Json
+          customer_name: string | null
+          deal_id: string | null
+          due_on: string | null
+          fakturoid_id: number | null
+          id: string
+          issued_on: string | null
+          items: Json
+          kind: string
+          locale: string
+          note: string | null
+          number: string | null
+          paid_on: string | null
+          pdf_path: string | null
+          qr_enabled: boolean
+          rounding: number
+          sent_at: string | null
+          status: Database["public"]["Enums"]["invoice_status"]
+          style: string | null
+          subtotal: number
+          supplier: Json | null
+          taxable_on: string | null
+          total: number
+          updated_at: string
+          user_id: string
+          variable_symbol: string | null
+          vat_mode: string
+          vat_total: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "invoices"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       jarvis_briefing_candidates: {
         Args: { _limit: number; _now: string }
         Returns: {
@@ -3908,58 +3966,6 @@ export type Database = {
         }[]
       }
       jwt_totp_at: { Args: { _claims: Json }; Returns: string }
-      invoice_items_valid: { Args: { _items: Json }; Returns: boolean }
-      invoice_pdf_readable: { Args: { _name: string }; Returns: boolean }
-      invoice_totals: {
-        Args: { _currency: string; _items: Json; _vat_mode: string }
-        Returns: Record<string, unknown>
-      }
-      issue_invoice: {
-        Args: { _invoice_id: string }
-        Returns: {
-          accent_color: string | null
-          amount: number
-          cancelled_at: string | null
-          contact_id: string | null
-          created_at: string
-          credited_invoice_id: string | null
-          currency: string
-          customer: Json
-          customer_name: string | null
-          deal_id: string | null
-          due_on: string | null
-          fakturoid_id: number | null
-          id: string
-          issued_on: string | null
-          items: Json
-          kind: string
-          locale: string
-          note: string | null
-          number: string | null
-          paid_on: string | null
-          pdf_path: string | null
-          qr_enabled: boolean
-          rounding: number
-          sent_at: string | null
-          status: Database["public"]["Enums"]["invoice_status"]
-          style: string | null
-          subtotal: number
-          supplier: Json | null
-          taxable_on: string | null
-          total: number
-          updated_at: string
-          user_id: string
-          variable_symbol: string | null
-          vat_mode: string
-          vat_total: number
-        }
-        SetofOptions: {
-          from: "*"
-          to: "invoices"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
       mark_invoice_paid: {
         Args: { _invoice_id: string }
         Returns: {
@@ -4511,6 +4517,10 @@ export type Database = {
       }
       my_worker_ids: { Args: never; Returns: string[] }
       new_invite_code: { Args: never; Returns: string }
+      next_invoice_number: {
+        Args: { _issued_on: string; _ws: string }
+        Returns: string
+      }
       normalize_phone: { Args: { _phone: string }; Returns: string }
       pause_prospecting: {
         Args: never
@@ -4692,6 +4702,7 @@ export type Database = {
         Returns: undefined
       }
       replace_reward_rules: { Args: { _rules: Json }; Returns: number }
+      require_invoice_editor: { Args: never; Returns: string }
       revoke_pending_rewards: {
         Args: {
           _source_ref: string
