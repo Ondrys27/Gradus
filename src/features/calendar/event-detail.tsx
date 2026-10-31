@@ -38,6 +38,9 @@ export function EventDetail({ event, onClose, onEdit, readOnly = false }: Props)
 
   if (!current) return null;
   const item = toEventItem(current, settings.timeZone);
+  // A deal's delivery date is changed in the deal only.
+  const fromDeal = current.source === "deal_deadline";
+  const editable = !readOnly && !fromDeal;
 
   let when: string;
   if (item.allDay) {
@@ -82,6 +85,7 @@ export function EventDetail({ event, onClose, onEdit, readOnly = false }: Props)
             {current.source === "contact_move" && (
               <StatusPill tone="neutral">{t("detail.fromMove")}</StatusPill>
             )}
+            {fromDeal && <StatusPill tone="neutral">{t("detail.fromDeal")}</StatusPill>}
           </div>
           <h3 className="text-xl font-semibold break-words text-ink">{current.title}</h3>
           <p className="flex items-start gap-2 text-sm text-ink-soft">
@@ -119,8 +123,9 @@ export function EventDetail({ event, onClose, onEdit, readOnly = false }: Props)
               )}
             </ul>
           )}
+          {fromDeal && <p className="text-sm text-ink-muted">{t("detail.fromDealHint")}</p>}
           <MentionedInNotes kind="event" id={current.id} onOpenNote={onClose} />
-          {!readOnly && (
+          {editable && (
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
               <Button type="button" variant="destructive" onClick={() => setConfirming(true)}>
                 <Trash2Icon aria-hidden data-icon="inline-start" />

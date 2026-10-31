@@ -119,5 +119,6 @@ test("32 · task from a deal → in Tasks → filter Today → done with a note 
     .getByRole("region", { name: t("pipeline.detail.history") });
   await expect(history.getByText(t("crmTasks.history.done"), { exact: true })).toBeVisible();
   await expect(history.getByText(note, { exact: true })).toBeVisible();
-  await expect(history.getByText(title, { exact: true })).toBeVisible();
+  // Once when it was made, once when it was done.
+  await expect(history.getByText(title, { exact: true })).toHaveCount(2);
 });

@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { DatePicker } from "@/components/ui/date-picker";
 import { fieldA11y, FormField } from "@/components/ui/form-field";
-import { Input, Textarea } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -16,7 +16,7 @@ import { CURRENCIES, currencyName } from "@/lib/format";
 import { useLocale } from "next-intl";
 import { ContactPicker } from "./contact-picker";
 import type { DealDraft } from "./deal-draft";
-import { DESCRIPTION_MAX, REASON_MAX, TITLE_MAX, type PipelineErrorKey } from "./schemas";
+import { TITLE_MAX, type PipelineErrorKey } from "./schemas";
 import type { Stage } from "./types";
 
 type Props = {
@@ -25,19 +25,12 @@ type Props = {
   draft: DealDraft;
   onChange: (patch: Partial<DealDraft>) => void;
   errors: Partial<Record<string, PipelineErrorKey>>;
-  /** Present in the create form; the detail changes the stage through its own control. */
-  stages?: Stage[];
-  showLostReason?: boolean;
+  stages: Stage[];
 };
 
-export function DealFormFields({
-  idPrefix,
-  draft,
-  onChange,
-  errors,
-  stages,
-  showLostReason,
-}: Props) {
+/** The fields of a new deal; the detail edits a deal field by field (deal-detail.tsx). */
+
+export function DealFormFields({ idPrefix, draft, onChange, errors, stages }: Props) {
   const t = useTranslations("pipeline");
   const locale = useLocale();
 
@@ -50,7 +43,7 @@ export function DealFormFields({
     [locale],
   );
   const stageItems = useMemo(
-    () => (stages ?? []).map((stage) => ({ value: stage.id, label: stage.name })),
+    () => stages.map((stage) => ({ value: stage.id, label: stage.name })),
     [stages],
   );
 
@@ -67,7 +60,7 @@ export function DealFormFields({
           value={draft.title}
           maxLength={TITLE_MAX + 20}
           placeholder={t("form.namePlaceholder")}
-          autoFocus={!!stages}
+          autoFocus
           onChange={(event) => onChange({ title: event.target.value })}
         />
       </FormField>
@@ -107,7 +100,7 @@ export function DealFormFields({
           </Select>
         </FormField>
       </div>
-      <div className={stages ? "grid gap-4 sm:grid-cols-2" : undefined}>
+      <div className="grid gap-4 sm:grid-cols-2">
         <FormField id={`${idPrefix}-close`} label={t("form.closeDate")}>
           <DatePicker
             id={`${idPrefix}-close`}
@@ -116,56 +109,25 @@ export function DealFormFields({
             placeholder={t("form.closeDatePlaceholder")}
           />
         </FormField>
-        {stages && (
-          <FormField id={`${idPrefix}-stage`} label={t("form.stage")} error={err("stage_id")}>
-            <Select
-              value={draft.stageId}
-              items={stageItems}
-              onValueChange={(next) => next && onChange({ stageId: next })}
-            >
-              <SelectTrigger id={`${idPrefix}-stage`}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {stageItems.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FormField>
-        )}
+        <FormField id={`${idPrefix}-stage`} label={t("form.stage")} error={err("stage_id")}>
+          <Select
+            value={draft.stageId}
+            items={stageItems}
+            onValueChange={(next) => next && onChange({ stageId: next })}
+          >
+            <SelectTrigger id={`${idPrefix}-stage`}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {stageItems.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FormField>
       </div>
-      {!stages && (
-        <FormField
-          id={`${idPrefix}-description`}
-          label={t("detail.notes")}
-          error={err("description")}
-        >
-          <Textarea
-            {...fieldA11y(`${idPrefix}-description`, err("description"))}
-            value={draft.description}
-            maxLength={DESCRIPTION_MAX + 100}
-            placeholder={t("detail.notesPlaceholder")}
-            onChange={(event) => onChange({ description: event.target.value })}
-          />
-        </FormField>
-      )}
-      {showLostReason && (
-        <FormField
-          id={`${idPrefix}-reason`}
-          label={t("detail.lostReason")}
-          error={err("lost_reason")}
-        >
-          <Textarea
-            {...fieldA11y(`${idPrefix}-reason`, err("lost_reason"))}
-            value={draft.lostReason}
-            maxLength={REASON_MAX + 50}
-            onChange={(event) => onChange({ lostReason: event.target.value })}
-          />
-        </FormField>
-      )}
     </>
   );
 }

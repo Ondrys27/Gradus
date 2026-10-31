@@ -1360,7 +1360,8 @@
     "belongsTo": "Patří k:",
     "belongsToKind": {
       "task": "Úkol {title}",
-      "milestone": "Milník {title}"
+      "milestone": "Milník {title}",
+      "deal": "Obchod {title}"
     },
     "picker": {
       "search": "Hledat v poznámkách",
@@ -1481,11 +1482,8 @@
       "notes": "Poznámka",
       "notesPlaceholder": "Cokoliv, co stojí za zapamatování",
       "lostReason": "Proč se obchod nepovedl",
-      "save": "Uložit změny",
-      "saved": "Uloženo",
       "saveFailed": "Změny se nepodařilo uložit. Zkus to znovu.",
-      "history": "Historie komunikace",
-      "historyEmpty": "Tady se objeví hovory, e-maily a schůzky s tímto kontaktem.",
+      "history": "Historie",
       "delete": "Smazat obchod",
       "deleteTitle": "Smazat tento obchod?",
       "deleteDescription": "Obchod „{title}“ se nenávratně smaže. Kontakt zůstane.",
@@ -1499,7 +1497,18 @@
       "emailNeedsAddress": "Kontakt u tohoto obchodu nemá e-mailovou adresu.",
       "emailSent": "E-mail byl odeslán.",
       "moveToEmailSent": "Přesunout do „Odeslán e-mail“",
-      "dismissEmailSent": "Teď ne"
+      "dismissEmailSent": "Teď ne",
+      "sections": "Části obchodu",
+      "tabs": {
+        "overview": "Přehled",
+        "contacts": "Kontakty",
+        "tasks": "Úkoly",
+        "history": "Historie"
+      },
+      "assignee": "Pracovník",
+      "deadline": "Datum realizace (deadline)",
+      "deadlineHint": "Ukáže se v kalendáři jako celodenní událost.",
+      "created": "Vytvořeno"
     },
     "lost": {
       "title": "Označit jako ztracený",
@@ -1564,7 +1573,8 @@
       "reasonTooLong": "Důvod je příliš dlouhý.",
       "stageRequired": "Vyber fázi.",
       "nameRequired": "Pojmenuj fázi.",
-      "nameTooLong": "Název je příliš dlouhý."
+      "nameTooLong": "Název je příliš dlouhý.",
+      "contactNoteTooLong": "Vejdi se do 200 znaků."
     },
     "a11y": {
       "instructions": "Mezerníkem zvedni, šipkami přesuň, mezerníkem pusť a klávesou Escape zruš.",
@@ -1572,6 +1582,47 @@
       "over": "{name} je nad {target}.",
       "dropped": "{name} bylo puštěno na {target}.",
       "cancelled": "Přesun zrušen."
+    },
+    "contacts": {
+      "title": "Kontakty",
+      "add": "Přidat kontakt",
+      "primary": "Hlavní",
+      "makePrimary": "Nastavit {name} jako hlavní kontakt",
+      "remove": "Odebrat {name} z obchodu",
+      "editNote": "Role nebo poznámka u {name}",
+      "addNote": "Přidat roli nebo poznámku",
+      "pick": "Kontakt",
+      "note": "Role nebo poznámka",
+      "notePlaceholder": "např. rozhoduje, fakturace, řeším s ním web",
+      "confirm": "Přidat k obchodu",
+      "cancel": "Zrušit",
+      "empty": "Obchod zatím nemá kontakt.",
+      "already": "Tenhle kontakt už u obchodu je.",
+      "failed": "Nepovedlo se to uložit. Zkus to znovu.",
+      "loadFailed": "Kontakty se nepodařilo načíst.",
+      "noteTooLong": "Vejdi se do 200 znaků.",
+      "hidden": "Kontakt"
+    },
+    "timeline": {
+      "loadFailed": "Historii se nepodařilo načíst.",
+      "none": "—",
+      "created": "Obchod založen",
+      "stage": "Fáze: {from} → {to}",
+      "won": "Vyhráno",
+      "lost": "Prohráno",
+      "lostReason": "Důvod: {reason}",
+      "value": "Částka: {from} → {to}",
+      "closeDate": "Očekávané uzavření: {from} → {to}",
+      "contactAdded": "Přidán kontakt: {name}",
+      "someContact": "kontakt",
+      "taskCreated": "Úkol založen",
+      "taskDone": "Úkol hotový",
+      "invoice": {
+        "issued": "Faktura {number} vystavena",
+        "sent": "Faktura {number} odeslána",
+        "paid": "Faktura {number} zaplacena",
+        "cancelled": "Faktura {number} stornována"
+      }
     }
   },
   "crmTasks": {
@@ -2231,7 +2282,9 @@
       "allDay": "Celý den",
       "fromMove": "Vznikla přesunem kontaktu",
       "edit": "Upravit",
-      "delete": "Smazat"
+      "delete": "Smazat",
+      "fromDeal": "Datum realizace obchodu",
+      "fromDealHint": "Mění se jen v obchodu; otevři obchod a posuň ho tam."
     },
     "delete": {
       "title": "Smazat tuto událost?",

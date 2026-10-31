@@ -6,7 +6,7 @@ import {
   type DealInput,
   type PipelineErrorKey,
 } from "./schemas";
-import type { Deal, DealContact } from "./types";
+import type { DealContact } from "./types";
 
 /** What the deal form holds while it is being edited: text as typed, the contact as a whole. */
 export type DealDraft = {
@@ -34,19 +34,6 @@ export function emptyDraft(stageId: string, currency: string): DealDraft {
     stageId,
     description: "",
     lostReason: "",
-  };
-}
-
-export function draftFromDeal(deal: Deal): DealDraft {
-  return {
-    title: deal.title,
-    contact: deal.contact,
-    value: deal.value === null ? "" : String(Number(deal.value)).replace(".", ","),
-    currency: deal.currency,
-    closeDate: deal.expected_close_date,
-    stageId: deal.stage_id,
-    description: deal.description ?? "",
-    lostReason: deal.lost_reason ?? "",
   };
 }
 

@@ -39,6 +39,7 @@ import {
   type TimeRange,
 } from "./calendar-logic";
 import { canEditTask } from "@/features/crm-tasks/access";
+import { dealHref } from "@/features/crm-tasks/types";
 import { useCalendarTasks, useMoveTask } from "@/features/crm-tasks/queries";
 import { useTaskDialogs } from "@/features/crm-tasks/use-task-dialogs";
 import { EventDetail } from "./event-detail";
@@ -183,7 +184,10 @@ export function CalendarView() {
   function openItem(item: CalendarItem) {
     if (item.type === "mirror") router.push(item.mirror.href);
     else if (item.type === "task") taskDialogs.open(item.task);
-    else setOpenEventId(item.event.id);
+    // A deal's delivery date belongs to the deal: it opens the deal, never an editor.
+    else if (item.event.source === "deal_deadline" && item.event.deal_id) {
+      router.push(dealHref(item.event.deal_id));
+    } else setOpenEventId(item.event.id);
   }
 
   /** A dragged event gets its new range; a dragged task only a new due moment. */
@@ -197,7 +201,7 @@ export function CalendarView() {
       );
       return;
     }
-    if (!canEdit) return;
+    if (!canEdit || item.event.source === "deal_deadline") return;
     update.mutate({ id: item.event.id, patch: range }, { onError: () => setChangeFailed(true) });
   }
 

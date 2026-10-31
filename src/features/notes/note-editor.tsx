@@ -68,7 +68,7 @@ function Backlinks({ noteId }: { noteId: string }) {
       {items.map((item) => (
         <Link
           key={item.linkId}
-          href={`/app/milniky/${item.milestoneId}`}
+          href={item.href}
           className="inline-flex min-h-8 items-center rounded-md font-medium text-ink-soft underline decoration-line underline-offset-2 hover:text-ink"
           aria-label={t(`belongsToKind.${item.kind}`, { title: item.title })}
         >

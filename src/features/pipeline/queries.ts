@@ -7,14 +7,28 @@ import { invalidateFinance } from "@/features/finance/queries";
 import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
 import { applyMove, nextDealPosition, reorderStages, sortStages } from "./board-logic";
-import type { DealInput, StageInput } from "./schemas";
+import {
+  dealPatchSchema,
+  type DealInput,
+  type DealPatch,
+  type DealPatchField,
+  type StageInput,
+} from "./schemas";
 import {
   DEAL_ACTIVITY_COLUMNS,
   DEAL_COLUMNS,
+  DEAL_CONTACT_COLUMNS,
+  DEAL_EVENT_COLUMNS,
+  DEAL_INVOICE_COLUMNS,
+  DEAL_MEETING_COLUMNS,
   STAGE_COLUMNS,
   type Deal,
   type DealActivity,
   type DealContact,
+  type DealContactLink,
+  type DealEventRow,
+  type DealInvoice,
+  type DealMeeting,
   type Stage,
 } from "./types";
 
@@ -27,6 +41,11 @@ const CLOSED_DEAL_LIMIT = 500;
 const STAGE_LIMIT = 50;
 const CONTACT_SUGGESTIONS = 8;
 const DEAL_ACTIVITY_LIMIT = 200;
+/** A deal has a handful of contacts and a few dozen changes; these only bound the reads. */
+const DEAL_CONTACT_LIMIT = 50;
+const DEAL_EVENT_LIMIT = 200;
+const DEAL_MEETING_LIMIT = 100;
+const DEAL_INVOICE_LIMIT = 50;
 
 /**
  * A deal won or un-won moves its contact in or out of Clients, and deals show in
@@ -42,6 +61,16 @@ export const pipelineKeys = {
   contacts: (userId: string, term: string) => ["pipeline", userId, "contacts", term] as const,
   dealActivities: (userId: string, dealId: string) =>
     ["pipeline", userId, "deal-activities", dealId] as const,
+  /** Everything the detail of one deal reads besides the deal itself. */
+  deal: (userId: string, dealId: string) => ["pipeline", userId, "deal", dealId] as const,
+  dealContacts: (userId: string, dealId: string) =>
+    ["pipeline", userId, "deal", dealId, "contacts"] as const,
+  dealEvents: (userId: string, dealId: string) =>
+    ["pipeline", userId, "deal", dealId, "events"] as const,
+  dealMeetings: (userId: string, dealId: string) =>
+    ["pipeline", userId, "deal", dealId, "meetings"] as const,
+  dealInvoices: (userId: string, dealId: string) =>
+    ["pipeline", userId, "deal", dealId, "invoices"] as const,
 };
 
 export function useStages() {
@@ -175,27 +204,45 @@ export function useCreateDeal() {
   });
 }
 
-/** Edits everything but the stage; the stage only changes through `useMoveDeal`. */
-export function useUpdateDeal(id: string) {
+/**
+ * Saves one change from the deal detail (a field at a time). The stage only
+ * changes through `useMoveDeal`, the contacts through the deal's contacts.
+ * The database logs the change for the history and moves the last activity;
+ * a delivery date also moves its calendar event.
+ */
+export function usePatchDeal(id: string) {
   const { user } = useSession();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: DealInput) => {
+    mutationFn: async (patch: DealPatch) => {
+      const clean = dealPatchSchema.parse(patch);
+      // An emptied text is no text.
+      const row = {
+        ...clean,
+        ...(clean.description !== undefined ? { description: clean.description || null } : {}),
+        ...(clean.lost_reason !== undefined ? { lost_reason: clean.lost_reason || null } : {}),
+      };
       const { data, error } = await createClient()
         .from("deals")
-        .update({ ...toDealRow(input), lost_reason: input.lost_reason || null })
+        .update(row)
         .eq("id", id)
         .select(DEAL_COLUMNS)
         .single();
       if (error) throw error;
       return data;
     },
-    onSuccess: (row) => {
-      track("deal_updated", {});
+    onSuccess: (row, patch) => {
+      for (const field of Object.keys(patch) as DealPatchField[]) {
+        track("deal_updated", { field });
+      }
       queryClient.setQueryData<Deal[]>(pipelineKeys.deals(user.id), (deals) =>
         deals?.map((deal) => (deal.id === row.id ? row : deal)),
       );
-      void invalidateContacts(queryClient, user.id);
+      void queryClient.invalidateQueries({ queryKey: pipelineKeys.deal(user.id, id) });
+      if ("deadline_date" in patch || "title" in patch) {
+        void queryClient.invalidateQueries({ queryKey: ["calendar", user.id] });
+      }
+      if ("title" in patch) void invalidateContacts(queryClient, user.id);
     },
   });
 }
@@ -430,6 +477,185 @@ export function useRemoveStage() {
         queryClient.invalidateQueries({ queryKey: pipelineKeys.deals(user.id) }),
         invalidateContacts(queryClient, user.id),
       ]),
+  });
+}
+
+// --- The deal detail ----------------------------------------------------------
+
+/** The deal's contacts, the primary one first, then in the order they were added. */
+export function useDealContacts(dealId: string) {
+  const { user } = useSession();
+  const workspaceId = useWorkspaceId();
+  return useQuery({
+    queryKey: pipelineKeys.dealContacts(user.id, dealId),
+    queryFn: async (): Promise<DealContactLink[]> => {
+      const { data, error } = await createClient()
+        .from("deal_contacts")
+        .select(DEAL_CONTACT_COLUMNS)
+        .eq("user_id", workspaceId)
+        .eq("deal_id", dealId)
+        .order("is_primary", { ascending: false })
+        .order("position")
+        .limit(DEAL_CONTACT_LIMIT);
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+/** What the database logged about the deal (stage, value, Close Date), newest first. */
+export function useDealEvents(dealId: string) {
+  const { user } = useSession();
+  const workspaceId = useWorkspaceId();
+  return useQuery({
+    queryKey: pipelineKeys.dealEvents(user.id, dealId),
+    queryFn: async (): Promise<DealEventRow[]> => {
+      const { data, error } = await createClient()
+        .from("deal_events")
+        .select(DEAL_EVENT_COLUMNS)
+        .eq("user_id", workspaceId)
+        .eq("deal_id", dealId)
+        .order("occurred_at", { ascending: false })
+        .limit(DEAL_EVENT_LIMIT);
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+/**
+ * Meetings and other appointments linked to the deal, without its own
+ * deadline event. Empty for an account that may not see the calendar.
+ */
+export function useDealMeetings(dealId: string, enabled: boolean) {
+  const { user } = useSession();
+  const workspaceId = useWorkspaceId();
+  return useQuery({
+    queryKey: pipelineKeys.dealMeetings(user.id, dealId),
+    enabled,
+    queryFn: async (): Promise<DealMeeting[]> => {
+      const { data, error } = await createClient()
+        .from("calendar_events")
+        .select(DEAL_MEETING_COLUMNS)
+        .eq("user_id", workspaceId)
+        .eq("deal_id", dealId)
+        .neq("source", "deal_deadline")
+        .order("starts_at", { ascending: false })
+        .limit(DEAL_MEETING_LIMIT);
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+/** The deal's invoices for its history; only with the right to see finance. */
+export function useDealInvoices(dealId: string, enabled: boolean) {
+  const { user } = useSession();
+  const workspaceId = useWorkspaceId();
+  return useQuery({
+    queryKey: pipelineKeys.dealInvoices(user.id, dealId),
+    enabled,
+    queryFn: async (): Promise<DealInvoice[]> => {
+      const { data, error } = await createClient()
+        .from("invoices")
+        .select(DEAL_INVOICE_COLUMNS)
+        .eq("user_id", workspaceId)
+        .eq("deal_id", dealId)
+        .order("created_at", { ascending: false })
+        .limit(DEAL_INVOICE_LIMIT);
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+/**
+ * After a change of the deal's contacts: the list, the history, and the board
+ * (the primary contact is the deal's contact, and a won deal's contact is a client).
+ */
+function invalidateDealContacts(
+  queryClient: ReturnType<typeof useQueryClient>,
+  userId: string,
+  dealId: string,
+) {
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: pipelineKeys.deal(userId, dealId) }),
+    queryClient.invalidateQueries({ queryKey: pipelineKeys.deals(userId) }),
+    invalidateContacts(queryClient, userId),
+  ]);
+}
+
+/** Adds a contact to the deal; the first one becomes its primary contact (the database decides). */
+export function useAddDealContact(dealId: string) {
+  const { user } = useSession();
+  const workspaceId = useWorkspaceId();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      contactId,
+      note,
+    }: {
+      contactId: string;
+      note: string;
+      created: boolean;
+    }) => {
+      const { data, error } = await createClient()
+        .from("deal_contacts")
+        .insert({
+          user_id: workspaceId,
+          deal_id: dealId,
+          contact_id: contactId,
+          note: note || null,
+        })
+        .select("is_primary")
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (row, { note, created }) => {
+      track("deal_contact_added", {
+        primary: row.is_primary,
+        created_new: created,
+        has_note: note.length > 0,
+      });
+    },
+    onSettled: () => invalidateDealContacts(queryClient, user.id, dealId),
+  });
+}
+
+/** The note of a contact on the deal, or making it the primary contact. */
+export function useUpdateDealContact(dealId: string) {
+  const { user } = useSession();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      patch,
+    }: {
+      id: string;
+      patch: { note: string | null } | { is_primary: true };
+    }) => {
+      const { error } = await createClient().from("deal_contacts").update(patch).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_result, { patch }) => {
+      track("deal_contact_updated", { what: "note" in patch ? "note" : "primary" });
+    },
+    onSettled: () => invalidateDealContacts(queryClient, user.id, dealId),
+  });
+}
+
+/** Takes a contact off the deal (the contact stays); the next one becomes primary if needed. */
+export function useRemoveDealContact(dealId: string) {
+  const { user } = useSession();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id }: { id: string; primary: boolean }) => {
+      const { error } = await createClient().from("deal_contacts").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_result, { primary }) => track("deal_contact_removed", { primary }),
+    onSettled: () => invalidateDealContacts(queryClient, user.id, dealId),
   });
 }
 

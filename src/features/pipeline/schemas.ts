@@ -3,6 +3,8 @@ import { CURRENCIES } from "@/lib/format";
 
 export const TITLE_MAX = 120;
 export const DESCRIPTION_MAX = 2000;
+/** deal_contacts.note: a role or a word about the person on this deal. */
+export const CONTACT_NOTE_MAX = 200;
 export const REASON_MAX = 500;
 export const STAGE_NAME_MAX = 40;
 /** numeric(14, 2) in the database */
@@ -17,7 +19,8 @@ export type PipelineErrorKey =
   | "reasonTooLong"
   | "stageRequired"
   | "nameRequired"
-  | "nameTooLong";
+  | "nameTooLong"
+  | "contactNoteTooLong";
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
@@ -44,6 +47,30 @@ export const dealSchema = z.object({
   lost_reason: z.string().trim().max(REASON_MAX, "reasonTooLong"),
 });
 export type DealInput = z.infer<typeof dealSchema>;
+
+/**
+ * One change saved from the deal detail, field by field. The stage changes
+ * only through a move (useMoveDeal), the contacts through deal_contacts.
+ */
+export const dealPatchSchema = dealSchema
+  .pick({
+    title: true,
+    value: true,
+    currency: true,
+    expected_close_date: true,
+    description: true,
+    lost_reason: true,
+  })
+  .extend({
+    deadline_date: isoDate.nullable(),
+    assignee_id: z.string().uuid(),
+  })
+  .partial();
+export type DealPatch = z.infer<typeof dealPatchSchema>;
+/** The fields a patch names, for analytics (never the values). */
+export type DealPatchField = keyof DealPatch;
+
+export const contactNoteSchema = z.string().trim().max(CONTACT_NOTE_MAX, "contactNoteTooLong");
 
 export const stageSchema = z.object({
   name: z.string().trim().min(1, "nameRequired").max(STAGE_NAME_MAX, "nameTooLong"),

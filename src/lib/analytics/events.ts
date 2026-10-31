@@ -290,7 +290,7 @@ export const EVENTS = {
   /** A new note: empty (button, ⌘N) or from one of the prepared outlines. */
   note_created: event("notes", "client", true, {
     source: oneOf(["blank", "template"]),
-    where: oneOf(["list", "empty_state", "shortcut", "task", "milestone", "jarvis"]),
+    where: oneOf(["list", "empty_state", "shortcut", "task", "milestone", "deal", "jarvis"]),
   }),
   /** Which prepared outline was used, and whether the industry from onboarding shaped it. */
   note_template_used: event("notes", "client", true, {
@@ -304,11 +304,13 @@ export const EVENTS = {
   }),
   /** A note tied to a task or a milestone: an existing one, or a new one written from it. */
   note_linked: event("notes", "client", true, {
-    target: oneOf(["task", "milestone"]),
+    target: oneOf(["task", "milestone", "deal"]),
     how: oneOf(["attach", "write"]),
     template: optional(oneOf(NOTE_TEMPLATE_KEYS)),
   }),
-  note_unlinked: event("notes", "client", false, { target: oneOf(["task", "milestone"]) }),
+  note_unlinked: event("notes", "client", false, {
+    target: oneOf(["task", "milestone", "deal"]),
+  }),
   /** A contact, deal, event or worker linked in a note's text with @ (or "Link to…"). */
   note_mention_added: event("notes", "client", true, {
     target: oneOf(["contact", "deal", "event", "worker"]),
@@ -327,7 +329,21 @@ export const EVENTS = {
     value: optional(number()),
     has_contact: bool(),
   }),
-  deal_updated: event("pipeline", "client", true, {}),
+  /** One field saved in the deal detail (which one, never its value). */
+  deal_updated: event("pipeline", "client", true, {
+    field: optional(
+      oneOf([
+        "title",
+        "value",
+        "currency",
+        "expected_close_date",
+        "deadline_date",
+        "assignee_id",
+        "description",
+        "lost_reason",
+      ]),
+    ),
+  }),
   deal_moved: event("pipeline", "client", true, {
     from_position: count(1000),
     to_position: count(1000),
@@ -347,6 +363,14 @@ export const EVENTS = {
     has_reason: bool(),
   }),
   deal_deleted: event("pipeline", "client", true, {}),
+  /** Another contact on a deal: picked or made on the spot, with a role note or not. */
+  deal_contact_added: event("pipeline", "client", true, {
+    primary: bool(),
+    created_new: bool(),
+    has_note: bool(),
+  }),
+  deal_contact_updated: event("pipeline", "client", true, { what: oneOf(["note", "primary"]) }),
+  deal_contact_removed: event("pipeline", "client", true, { primary: bool() }),
   pipeline_stage_edited: event("pipeline", "client", true, {
     action: oneOf(["create", "rename", "reorder", "remove", "deposit"]),
   }),

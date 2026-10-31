@@ -1079,16 +1079,118 @@ export type Database = {
           },
         ]
       }
+      deal_contacts: {
+        Row: {
+          contact_id: string
+          created_at: string
+          created_by: string | null
+          deal_id: string
+          id: string
+          is_primary: boolean
+          note: string | null
+          position: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          created_by?: string | null
+          deal_id: string
+          id?: string
+          is_primary?: boolean
+          note?: string | null
+          position?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          created_by?: string | null
+          deal_id?: string
+          id?: string
+          is_primary?: boolean
+          note?: string | null
+          position?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_contacts_contact_fkey"
+            columns: ["contact_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "contact_list"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "deal_contacts_contact_fkey"
+            columns: ["contact_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "deal_contacts_deal_fkey"
+            columns: ["deal_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
+      deal_events: {
+        Row: {
+          actor_id: string | null
+          deal_id: string
+          id: string
+          kind: string
+          occurred_at: string
+          payload: Json
+          user_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          deal_id: string
+          id?: string
+          kind: string
+          occurred_at?: string
+          payload?: Json
+          user_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          deal_id?: string
+          id?: string
+          kind?: string
+          occurred_at?: string
+          payload?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_events_deal_fkey"
+            columns: ["deal_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
       deals: {
         Row: {
+          assignee_id: string | null
           contact_id: string | null
           created_at: string
           created_by: string | null
           currency: string
+          deadline_date: string | null
           description: string | null
           entered_stage_at: string
           expected_close_date: string | null
           id: string
+          last_activity_at: string
           lost_at: string | null
           lost_reason: string | null
           position: number
@@ -1100,14 +1202,17 @@ export type Database = {
           won_at: string | null
         }
         Insert: {
+          assignee_id?: string | null
           contact_id?: string | null
           created_at?: string
           created_by?: string | null
           currency?: string
+          deadline_date?: string | null
           description?: string | null
           entered_stage_at?: string
           expected_close_date?: string | null
           id?: string
+          last_activity_at?: string
           lost_at?: string | null
           lost_reason?: string | null
           position?: number
@@ -1119,14 +1224,17 @@ export type Database = {
           won_at?: string | null
         }
         Update: {
+          assignee_id?: string | null
           contact_id?: string | null
           created_at?: string
           created_by?: string | null
           currency?: string
+          deadline_date?: string | null
           description?: string | null
           entered_stage_at?: string
           expected_close_date?: string | null
           id?: string
+          last_activity_at?: string
           lost_at?: string | null
           lost_reason?: string | null
           position?: number
@@ -1939,6 +2047,7 @@ export type Database = {
       note_links: {
         Row: {
           created_at: string
+          deal_id: string | null
           id: string
           milestone_id: string | null
           note_id: string
@@ -1947,6 +2056,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deal_id?: string | null
           id?: string
           milestone_id?: string | null
           note_id: string
@@ -1955,6 +2065,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deal_id?: string | null
           id?: string
           milestone_id?: string | null
           note_id?: string
@@ -1962,6 +2073,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "note_links_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "note_links_milestone_id_fkey"
             columns: ["milestone_id"]

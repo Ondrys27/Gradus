@@ -12,15 +12,18 @@ import { getNoteSaver, useCreateNote } from "./queries";
 import { isNoteTemplateKey, workNoteDoc, type NoteTemplateKey } from "./templates";
 
 /**
- * Notes tied to tasks and milestones (note_links). Notes are private, so a
- * link joins two rows of the same account: only an owner's own tasks and
- * milestones can have notes; a worker never sees this.
+ * Notes tied to tasks, milestones and deals (note_links). Notes are private,
+ * so a link joins two rows of the same account: only an owner's own tasks,
+ * milestones and deals can have notes; a worker never sees this.
  */
 
 /** A note belongs to one of these; a task knows its milestone for the way back. */
 export type WorkTarget =
   | { kind: "task"; id: string; milestoneId: string }
-  | { kind: "milestone"; id: string };
+  | { kind: "milestone"; id: string }
+  | { kind: "deal"; id: string };
+
+const TARGET_COLUMN = { task: "task_id", milestone: "milestone_id", deal: "deal_id" } as const;
 
 export type LinkedNote = {
   linkId: string;
@@ -32,9 +35,10 @@ export type LinkedNote = {
 
 export type NoteBacklink = {
   linkId: string;
-  kind: "task" | "milestone";
+  kind: WorkTarget["kind"];
   title: string;
-  milestoneId: string;
+  /** Where the link leads: the milestone (of the task) or the deal. */
+  href: string;
 };
 
 /** A task or milestone has a handful of notes, a note a handful of links. */
@@ -61,7 +65,7 @@ export function useLinkedNotes(target: WorkTarget, enabled = true) {
   return useQuery({
     queryKey: noteLinkKeys.target(user.id, target.kind, target.id),
     queryFn: async (): Promise<LinkedNote[]> => {
-      const column = target.kind === "task" ? "task_id" : "milestone_id";
+      const column = TARGET_COLUMN[target.kind];
       const { data, error } = await createClient()
         .from("note_links")
         .select("id, note:notes(id, title, preview, updated_at, deleted_at)")
@@ -96,16 +100,39 @@ export function useNoteBacklinks(noteId: string) {
     queryFn: async (): Promise<NoteBacklink[]> => {
       const { data, error } = await createClient()
         .from("note_links")
-        .select("id, task:tasks(id, title, milestone_id), milestone:milestones(id, title)")
+        .select(
+          "id, task:tasks(id, title, milestone_id), milestone:milestones(id, title), deal:deals(id, title)",
+        )
         .eq("user_id", user.id)
         .eq("note_id", noteId)
         .order("created_at")
         .limit(LINK_LIMIT);
       if (error) throw error;
-      return data.flatMap(({ id, task, milestone }): NoteBacklink[] => {
-        if (task) return [{ linkId: id, kind: "task", title: task.title, milestoneId: task.milestone_id }];
+      return data.flatMap(({ id, task, milestone, deal }): NoteBacklink[] => {
+        if (task) {
+          return [
+            {
+              linkId: id,
+              kind: "task",
+              title: task.title,
+              href: `/app/milniky/${task.milestone_id}`,
+            },
+          ];
+        }
         if (milestone) {
-          return [{ linkId: id, kind: "milestone", title: milestone.title, milestoneId: milestone.id }];
+          return [
+            {
+              linkId: id,
+              kind: "milestone",
+              title: milestone.title,
+              href: `/app/milniky/${milestone.id}`,
+            },
+          ];
+        }
+        if (deal) {
+          return [
+            { linkId: id, kind: "deal", title: deal.title, href: `/app/pipeline?deal=${deal.id}` },
+          ];
         }
         return [];
       });
@@ -151,6 +178,7 @@ function insertLink(noteId: string, target: WorkTarget) {
       note_id: noteId,
       task_id: target.kind === "task" ? target.id : null,
       milestone_id: target.kind === "milestone" ? target.id : null,
+      deal_id: target.kind === "deal" ? target.id : null,
     });
 }
 

@@ -1360,7 +1360,8 @@
     "belongsTo": "Belongs to:",
     "belongsToKind": {
       "task": "Task {title}",
-      "milestone": "Milestone {title}"
+      "milestone": "Milestone {title}",
+      "deal": "Deal {title}"
     },
     "picker": {
       "search": "Search notes",
@@ -1464,7 +1465,7 @@
       "contactCreateFailed": "The contact could not be created. Try again.",
       "amount": "Amount",
       "currency": "Currency",
-      "closeDate": "Expected close",
+      "closeDate": "Close Date",
       "closeDatePlaceholder": "Pick a date",
       "stage": "Stage",
       "create": "Create deal",
@@ -1481,11 +1482,8 @@
       "notes": "Note",
       "notesPlaceholder": "Anything worth remembering about this deal",
       "lostReason": "Why it was lost",
-      "save": "Save changes",
-      "saved": "Saved",
       "saveFailed": "The changes could not be saved. Try again.",
-      "history": "Communication history",
-      "historyEmpty": "Calls, e-mails and meetings with this contact will show up here.",
+      "history": "History",
       "delete": "Delete deal",
       "deleteTitle": "Delete this deal?",
       "deleteDescription": "“{title}” will be deleted for good. The contact stays.",
@@ -1499,7 +1497,18 @@
       "emailNeedsAddress": "This deal's contact has no e-mail address.",
       "emailSent": "The e-mail was sent.",
       "moveToEmailSent": "Move to “Email sent”",
-      "dismissEmailSent": "Not now"
+      "dismissEmailSent": "Not now",
+      "sections": "Deal sections",
+      "tabs": {
+        "overview": "Overview",
+        "contacts": "Contacts",
+        "tasks": "Tasks",
+        "history": "History"
+      },
+      "assignee": "Worker",
+      "deadline": "Delivery date (deadline)",
+      "deadlineHint": "Shows in the calendar as an all-day event.",
+      "created": "Created"
     },
     "lost": {
       "title": "Mark as lost",
@@ -1564,7 +1573,8 @@
       "reasonTooLong": "The reason is too long.",
       "stageRequired": "Choose a stage.",
       "nameRequired": "Give the stage a name.",
-      "nameTooLong": "The name is too long."
+      "nameTooLong": "The name is too long.",
+      "contactNoteTooLong": "Keep it under 200 characters."
     },
     "a11y": {
       "instructions": "Press space to pick up, the arrow keys to move, space to drop and escape to cancel.",
@@ -1572,6 +1582,47 @@
       "over": "{name} is over {target}.",
       "dropped": "{name} was dropped on {target}.",
       "cancelled": "Move cancelled."
+    },
+    "contacts": {
+      "title": "Contacts",
+      "add": "Add contact",
+      "primary": "Primary",
+      "makePrimary": "Make {name} the primary contact",
+      "remove": "Remove {name} from the deal",
+      "editNote": "Role or note for {name}",
+      "addNote": "Add a role or note",
+      "pick": "Contact",
+      "note": "Role or note",
+      "notePlaceholder": "e.g. decides, invoicing, handles the website",
+      "confirm": "Add to deal",
+      "cancel": "Cancel",
+      "empty": "No contact on this deal yet.",
+      "already": "This contact is already on the deal.",
+      "failed": "That didn't save. Try again.",
+      "loadFailed": "Contacts couldn't be loaded.",
+      "noteTooLong": "Keep it under 200 characters.",
+      "hidden": "Contact"
+    },
+    "timeline": {
+      "loadFailed": "The history couldn't be loaded.",
+      "none": "—",
+      "created": "Deal created",
+      "stage": "Stage: {from} → {to}",
+      "won": "Won",
+      "lost": "Lost",
+      "lostReason": "Reason: {reason}",
+      "value": "Value: {from} → {to}",
+      "closeDate": "Close Date: {from} → {to}",
+      "contactAdded": "Contact added: {name}",
+      "someContact": "a contact",
+      "taskCreated": "Task created",
+      "taskDone": "Task done",
+      "invoice": {
+        "issued": "Invoice {number} issued",
+        "sent": "Invoice {number} sent",
+        "paid": "Invoice {number} paid",
+        "cancelled": "Invoice {number} cancelled"
+      }
     }
   },
   "crmTasks": {
@@ -2192,7 +2243,7 @@
     "mirrors": {
       "label": "Show from other sections",
       "tasks": "Milestone tasks",
-      "deals": "Expected deal closings",
+      "deals": "Close Date of deals",
       "crmTasks": "Deal and contact tasks"
     },
     "more": "+{count} more",
@@ -2231,7 +2282,9 @@
       "allDay": "All day",
       "fromMove": "Booked by moving a contact",
       "edit": "Edit",
-      "delete": "Delete"
+      "delete": "Delete",
+      "fromDeal": "Deal delivery date",
+      "fromDealHint": "It changes with the deal; open the deal to move it."
     },
     "delete": {
       "title": "Delete this event?",

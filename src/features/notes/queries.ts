@@ -350,7 +350,7 @@ export function useRestoreUnsavedNotes(notes: NoteListItem[] | undefined) {
 
 export type CreateNoteInput = {
   draft: NoteDraft;
-  where: "list" | "empty_state" | "shortcut" | "task" | "milestone" | "jarvis";
+  where: "list" | "empty_state" | "shortcut" | "task" | "milestone" | "deal" | "jarvis";
   template?: { key: NoteTemplateKey; industry: IndustryKey | null };
 };
 

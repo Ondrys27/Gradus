@@ -13,7 +13,8 @@ import type { DealContact } from "./types";
 type Props = {
   id: string;
   value: DealContact | null;
-  onChange: (contact: DealContact | null) => void;
+  /** `created` is true for a contact made here from the name typed in. */
+  onChange: (contact: DealContact | null, created?: boolean) => void;
 };
 
 /** Finds an existing contact as you type, or creates one from the name typed in. */
@@ -52,7 +53,7 @@ export function ContactPicker({ id, value, onChange }: Props) {
   async function createFromName() {
     setFailed(false);
     try {
-      onChange(await create.mutateAsync(name));
+      onChange(await create.mutateAsync(name), true);
       setTerm("");
     } catch {
       setFailed(true);

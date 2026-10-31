@@ -1247,8 +1247,15 @@ describe("clients follow won deals", () => {
     expect(await tableOf(first)).toBe("unreached");
     expect(await tableOf(next)).toBe("clients");
 
+    // The previous contact stays on the deal (deal_contacts, 17.2): deleting the
+    // client hands the deal back to it, and with the won deal it is a client now.
     await db.query(`delete from contacts where id = $1`, [next]);
     expect(await tableOf(next)).toBeUndefined();
+    expect((await one(`select contact_id from deals where id = $1`, [deal])).contact_id).toBe(first);
+    expect(await tableOf(first)).toBe("clients");
+
+    // Without another contact the deal is left with none.
+    await db.query(`delete from contacts where id = $1`, [first]);
     expect((await one(`select contact_id from deals where id = $1`, [deal])).contact_id).toBeNull();
     await asServer();
   });
