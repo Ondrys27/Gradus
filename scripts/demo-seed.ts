@@ -397,9 +397,14 @@ async function seedPipeline(userId: string, contactIds: string[]) {
     .select("id, system_key")
     .eq("user_id", userId);
   if (error) throw error;
-  const stageId = (key: string) => must(stages?.find((s) => s.system_key === key)?.id, `stage ${key}`);
+  // A space made since 17.3 has a draft-offer stage instead of the deposit one; an older one the reverse.
+  const find = (key: string) => stages?.find((s) => s.system_key === key)?.id;
+  const stageId = (key: string) =>
+    key === "offer_draft"
+      ? must(find("offer_draft") ?? find("deposit_paid"), `stage ${key}`)
+      : must(find(key), `stage ${key}`);
 
-  // lead ×4, meeting ×3, offer ×3, deposit_paid ×2, won ×1, lost ×1
+  // lead ×4, meeting ×3, offer_draft ×2, offer ×3, won ×1, lost ×1
   const plan: { stage: string; value: number; contact?: string; lost?: boolean }[] = [
     { stage: "lead", value: 18000 },
     { stage: "lead", value: 42000 },
@@ -411,8 +416,8 @@ async function seedPipeline(userId: string, contactIds: string[]) {
     { stage: "offer", value: 76000, contact: contactIds[7] },
     { stage: "offer", value: 33000, contact: contactIds[9] },
     { stage: "offer", value: 21000 },
-    { stage: "deposit_paid", value: 120000, contact: contactIds[11] },
-    { stage: "deposit_paid", value: 48000, contact: contactIds[13] },
+    { stage: "offer_draft", value: 120000, contact: contactIds[11] },
+    { stage: "offer_draft", value: 48000, contact: contactIds[13] },
     { stage: "won", value: 95000, contact: contactIds[0] },
     { stage: "lost", value: 36000, contact: contactIds[4], lost: true },
   ];

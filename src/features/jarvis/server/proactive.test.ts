@@ -5,7 +5,8 @@ import type Anthropic from "@anthropic-ai/sdk";
 vi.mock("server-only", () => ({}));
 
 const { answersBlock, loadProactive, reactToProactive, toCandidate } = await import("./proactive");
-const { briefingContext, briefingIsEmpty, briefUser } = await import("./briefing");
+const { BRIEFING_INSTRUCTIONS, briefingContext, briefingIsEmpty, briefUser } =
+  await import("./briefing");
 const { proposedTasks } = await import("./watch");
 const { suggestionNotBefore } = await import("./suggestions");
 const { timeWindow } = await import("../time-window");
@@ -481,7 +482,34 @@ describe("morning brief", () => {
     followUps: 0,
     stalled: [],
     dayPlan: "Today is a working day. Best times for calls and meetings: 08:00–12:00.",
+    onFire: null,
   };
+  const clear = {
+    closePast: { count: 0, top: [] },
+    overdueTasks: { count: 0, top: [] },
+    noTask: { count: 0, top: [] },
+  };
+
+  it("starts with what is on fire in the pipeline, and an all-clear pipeline alone says nothing", () => {
+    expect(briefingIsEmpty({ ...empty, onFire: clear })).toBe(true);
+    const burning = {
+      ...empty,
+      onFire: {
+        ...clear,
+        closePast: {
+          count: 1,
+          top: [{ title: "Web pro pekárnu", closeDate: "2026-10-02", days: 1 }],
+        },
+      },
+    };
+    expect(briefingIsEmpty(burning)).toBe(false);
+    const context = briefingContext(burning);
+    expect(context).toContain(
+      '<on_fire>Pipeline health (goal is zero everywhere): 1 open deal(s) past their Close Date ("Web pro pekárnu" Close Date 2026-10-02).</on_fire>',
+    );
+    expect(context.indexOf("<on_fire>")).toBeLessThan(context.indexOf("<yesterday>"));
+    expect(BRIEFING_INSTRUCTIONS).toMatch(/1\. Start with what is on fire/);
+  });
 
   it("has nothing to say on an empty day, and quotes the user's data otherwise", () => {
     expect(briefingIsEmpty(empty)).toBe(true);

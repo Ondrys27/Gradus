@@ -8,6 +8,7 @@ import {
   type FormatSettings,
   type IsoDate,
 } from "@/lib/format";
+import { digestIsClear, type HealthDigest } from "@/features/pipeline/health";
 import type { SuggestionKey } from "./protocol";
 import { describeTimeWindow, type TimeWindow } from "./time-window";
 
@@ -36,7 +37,13 @@ export type UserSituation = {
   prospectingSeconds: number;
   finance: { income: number; expense: number };
   /** Issued, unpaid invoices past their due day, the oldest first. */
-  overdueInvoices: { number: string; customer: string | null; total: number; currency: string; dueOn: IsoDate }[];
+  overdueInvoices: {
+    number: string;
+    customer: string | null;
+    total: number;
+    currency: string;
+    dueOn: IsoDate;
+  }[];
   overdueInvoicesTotal: number;
   /**
    * The user's own sales tasks (Úkoly) past their due moment, the oldest
@@ -46,6 +53,12 @@ export type UserSituation = {
   overdueCrmTasksTotal: number;
   /** Their open sales tasks still due later today. */
   crmTasksDueToday: number;
+  /**
+   * The three tiles above the pipeline (what is wrong, the goal is zero):
+   * Close Date passed, overdue tasks of deals, open deals without a task.
+   * A worker's are only their own; null when they could not be read.
+   */
+  pipelineHealth: HealthDigest | null;
 };
 
 /** Longest title or name passed on; the model needs the gist, not the essay. */
@@ -63,6 +76,41 @@ function quoted(value: string): string {
 
 function more(shown: number, total: number): string {
   return total > shown ? ` (+${total - shown} more)` : "";
+}
+
+/**
+ * The pipeline tiles in one line for the model, with a few deals of each.
+ * Used by the situation summary and the morning brief alike.
+ */
+export function describePipelineHealth(digest: HealthDigest, settings?: FormatSettings): string {
+  // Without the user's formats (the morning brief) a date stays ISO, like the rest of its data.
+  const date = (day: IsoDate) => (settings ? formatDate(isoDateToLocal(day), settings) : day);
+  if (digestIsClear(digest)) {
+    return "Pipeline health (goal is zero everywhere): all clear — no open deal past its Close Date, no overdue task on a deal, every open deal has an open task.";
+  }
+  const parts: string[] = [];
+  const { closePast, overdueTasks, noTask } = digest;
+  if (closePast.count) {
+    const items = closePast.top.map(
+      (deal) => `${quoted(deal.title)} Close Date ${date(deal.closeDate)}`,
+    );
+    parts.push(
+      `${closePast.count} open deal(s) past their Close Date (${items.join("; ")}${more(items.length, closePast.count)})`,
+    );
+  }
+  if (overdueTasks.count) {
+    const items = overdueTasks.top.map(
+      (deal) => `${quoted(deal.title)} ${deal.tasks} task(s), the oldest ${deal.days} day(s) late`,
+    );
+    parts.push(`${overdueTasks.count} overdue task(s) on deals (${items.join("; ")})`);
+  }
+  if (noTask.count) {
+    const items = noTask.top.map((deal) => `${quoted(deal.title)} for ${deal.days} day(s)`);
+    parts.push(
+      `${noTask.count} open deal(s) without any open task (${items.join("; ")}${more(items.length, noTask.count)})`,
+    );
+  }
+  return `Pipeline health (goal is zero everywhere): ${parts.join("; ")}.`;
 }
 
 /**
@@ -108,6 +156,10 @@ export function describeSituation(situation: UserSituation, settings: FormatSett
     lines.push(`Open deals by stage: ${items.join("; ")}.${stalled}`);
   } else {
     lines.push("Open deals: none.");
+  }
+
+  if (situation.pipelineHealth) {
+    lines.push(describePipelineHealth(situation.pipelineHealth, settings));
   }
 
   if (situation.followUpsTotal) {

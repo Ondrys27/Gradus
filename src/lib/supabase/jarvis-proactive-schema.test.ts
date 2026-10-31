@@ -121,6 +121,23 @@ describe("jarvis_suggestions proactive columns", () => {
     ).rejects.toThrow();
   });
 
+  it("accepts every rule suggestion type the app writes", async () => {
+    const { RULE_TYPES } = await import("@/features/jarvis/suggestion-types");
+    const user = await createUser();
+    for (const type of RULE_TYPES) {
+      await db.query(
+        `insert into jarvis_suggestions (user_id, kind, type, text) values ($1, 'suggestion', $2, 'x')`,
+        [user, type],
+      );
+    }
+    await expect(
+      db.query(
+        `insert into jarvis_suggestions (user_id, kind, type, text) values ($1, 'suggestion', 'madeUp', 'x')`,
+        [user],
+      ),
+    ).rejects.toThrow();
+  });
+
   it("lets the client stamp seen and dismissed only, never the new server columns", async () => {
     const user = await createUser();
     const id = await suggestion(user, "question");

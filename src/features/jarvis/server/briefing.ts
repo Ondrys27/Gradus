@@ -4,7 +4,10 @@ import { dayRangeToInstants } from "@/features/calendar/calendar-logic";
 import { APP_NAME } from "@/lib/constants";
 import { instantToZonedParts, todayIsoDate, type FormatSettings } from "@/lib/format";
 import { toFormatSettings, USER_SETTINGS_COLUMNS } from "@/lib/user-settings";
+import { digestIsClear, type HealthDigest } from "@/features/pipeline/health";
+import { loadHealthDigest } from "@/features/pipeline/health-data";
 import type { Database, Json } from "@/types/database";
+import { describePipelineHealth } from "../situation";
 import type { SuggestionAction } from "../suggestions";
 import { describeDayPlan } from "../time-window";
 import { streamModel, type ModelClient } from "./model";
@@ -32,6 +35,11 @@ export type BriefingData = {
   events: { title: string; time: string | null }[];
   followUps: number;
   stalled: { title: string; stage: string; days: number }[];
+  /**
+   * What burns in the pipeline (the three tiles); the brief starts with it.
+   * Null when it could not be read; the brief is written without it.
+   */
+  onFire: HealthDigest | null;
 };
 
 /** Nothing happened yesterday and nothing waits today: no brief, no model call. */
@@ -42,7 +50,8 @@ export function briefingIsEmpty(data: BriefingData): boolean {
     data.overdue.length === 0 &&
     data.events.length === 0 &&
     data.followUps === 0 &&
-    data.stalled.length === 0
+    data.stalled.length === 0 &&
+    (data.onFire === null || digestIsClear(data.onFire))
   );
 }
 
@@ -76,7 +85,7 @@ export async function loadBriefingData(
   const yesterdayRange = dayRangeToInstants(yesterday, yesterday, settings.timeZone);
   const todayRange = dayRangeToInstants(today, today, settings.timeZone);
 
-  const [changes, rules, due, events, window] = await Promise.all([
+  const [changes, rules, due, events, window, onFire] = await Promise.all([
     loadChanges(admin, userId, yesterdayRange.from),
     loadRuleInputs(admin, userId, settings, now),
     admin
@@ -96,6 +105,11 @@ export async function loadBriefingData(
       .order("starts_at")
       .limit(LIST_LIMIT),
     loadTimeWindow(admin, { timeZone: settings.timeZone, country, now }),
+    // The user's own space, whole (the admin client, filtered by the user id).
+    loadHealthDigest(admin, userId, null, settings, now).catch((error) => {
+      console.error("briefing pipeline health failed", error);
+      return null;
+    }),
   ]);
 
   return {
@@ -117,15 +131,16 @@ export async function loadBriefingData(
       stage: deal.stageName,
       days: deal.days,
     })),
+    onFire,
   };
 }
 
 export const BRIEFING_INSTRUCTIONS = `You are Jarvis, the assistant inside ${APP_NAME}, a business app for new entrepreneurs. Every morning you write the user a very short brief that appears in a small speech bubble.
 
 Write at most three short lines, each one sentence, plain text, no list markers, no greeting, no sign-off, no emoji:
-1. What happened yesterday, in a few words (skip this line if nothing happened).
+1. Start with what is on fire, from <on_fire>: deals past their Close Date, overdue tasks on deals, open deals without any task, with the numbers and the most pressing deal by name. The goal is zero everywhere. Skip this line when <on_fire> says all clear or nothing.
 2. What waits today: meetings with their time, tasks due, contacts to follow up. Plan it by <day_plan>: calls and meetings in its best times; on a day off nothing that needs other people today (say when instead, from <day_plan>), only preparation.
-3. One thing you noticed that the user is likely to miss, with names and numbers from the data, for example a deal that has been stuck in one stage for many days. Pick the single most useful one. Skip this line when nothing stands out; never make something up.
+3. What happened yesterday in a few words, or one thing you noticed that the user is likely to miss (for example a deal stuck in one stage for many days) — whichever is more useful. Skip this line when there is nothing; never make something up.
 
 Rules:
 - Write in the language given in <user>. Speak to the user directly, warm but matter-of-fact.
@@ -161,6 +176,7 @@ export function briefingContext(data: BriefingData): string {
   );
 
   return `<user>Language: ${data.locale}. Today: ${data.today}.</user>
+<on_fire>${data.onFire ? describePipelineHealth(data.onFire) : "nothing"}</on_fire>
 <day_plan>${data.dayPlan}</day_plan>
 <yesterday>
 ${yesterday.join("\n") || "nothing"}

@@ -85,7 +85,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] STOP | Konec fáze 16. Vyvolej chybu a zkontroluj, že ti přišel e-mail s kódem a uživatelem; v administraci přidej druhou adresu a pošli zkušební e-mail. Faktury: projdi průvodce údaji, vystav fakturu z obchodu i z Financí, zkus všechny 4 styly, stáhni PDF, zaplať testovací QR kód bankovní aplikací (nebo ho aspoň naskenuj a zkontroluj částku a VS), pošli fakturu e-mailem sám sobě, označ Zaplaceno. Co nesedí, napiš Claude Code rovnou, pak /pokracuj. · přeskočeno nočním během 2026-10-31, zkontroluj ručně (.noc/zkontroluj.md)
 - [x] 17.1 | architect | 2026-10-31 Obchodní úkoly u obchodů a kontaktů (termín s časem, trvání, kdo, Hotovo s poznámkou v historii) se sekcí Úkoly s filtry v adrese, v kalendáři i u Jarvise; opraveno hledání sekce Úkoly v ⌘K a dva nestabilní e2e testy.
 - [x] 17.2 | architect | 2026-10-31 Detail obchodu je velké okno uprostřed (na telefonu záložky) s hlavičkou včetně Close Date, pracovníka a Data realizace s událostí v kalendáři, víc kontakty s rolí, úkoly, poznámkami a historií obchodu.
-- [ ] 17.3 | architect |
+- [x] 17.3 | architect | 2026-10-31 Nad pipeline i na nástěnce tři dlaždice „co hoří" (Close Date v minulosti, úkoly po termínu, obchody bez úkolu) se seznamem obchodů, který otevře detail k nápravě; filtry pipeline v adrese; nové prostory mají fáze Nový lead · Schůzka · Koncept nabídky · Nabídka odeslána · Vyhráno · Ztraceno; Jarvis má dlaždice v souhrnu a ranní shrnutí jimi začíná. Opravena chyba ze 17.1: návrh Jarvise na úkol po termínu padal na omezení DB (500).
 - [ ] 17.4 | architect |
 - [ ] 17.5 | architect |
 - [ ] K17 | reviewer |

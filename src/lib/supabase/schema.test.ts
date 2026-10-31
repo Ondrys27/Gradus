@@ -1881,6 +1881,9 @@ describe("finance", () => {
         )
       ).map((r) => [r.system_key, r.id]),
     );
+    // A new space has no deposit stage (17.3); the draft-offer stage carries the mark here.
+    await db.query(`select set_deposit_stage('${stages.offer_draft}')`);
+    stages.deposit_paid = stages.offer_draft;
   });
   afterAll(asServer);
 

@@ -1623,6 +1623,82 @@
         "paid": "Faktura {number} zaplacena",
         "cancelled": "Faktura {number} stornována"
       }
+    },
+    "health": {
+      "label": "Co hoří",
+      "ok": "V pořádku",
+      "tiles": {
+        "closePast": {
+          "label": "Uzavření v minulosti",
+          "hint": "Posuň datum nebo obchod uzavři"
+        },
+        "overdueTasks": {
+          "label": "Úkoly po termínu",
+          "hint": "Dodělej je nebo přeplánuj"
+        },
+        "noTask": {
+          "label": "Obchody bez úkolu",
+          "hint": "Naplánuj další krok"
+        }
+      },
+      "toggle": "{label}: {count}",
+      "listEmpty": "Nic tu není. Přesně tak to má být.",
+      "row": {
+        "closePast": "Uzavření {date}",
+        "overdueTasks": "{tasks, plural, one {úkol} few {{tasksFormatted} úkoly} many {{tasksFormatted} úkolu} other {{tasksFormatted} úkolů}} po termínu {days, plural, =0 {od dneška} one {{formatted} den} few {{formatted} dny} many {{formatted} dne} other {{formatted} dní}}",
+        "noTask": "bez úkolu {days, plural, =0 {od dneška} one {{formatted} den} few {{formatted} dny} many {{formatted} dne} other {{formatted} dní}}",
+        "open": "Otevřít obchod {title}",
+        "noContact": "Bez kontaktu"
+      },
+      "loadFailed": "Nepodařilo se načíst, co hoří.",
+      "retry": "Zkusit znovu",
+      "close": "Zavřít",
+      "openInPipeline": "{label}: {count}. Otevřít v pipeline"
+    },
+    "filters": {
+      "button": "Filtry",
+      "buttonActive": "Filtry ({count})",
+      "close": "Očekávané uzavření",
+      "anyClose": "Kdykoli",
+      "closeValues": {
+        "past": "V minulosti",
+        "thisWeek": "Tento týden",
+        "thisMonth": "Tento měsíc",
+        "custom": "Vlastní rozsah"
+      },
+      "created": "Vytvořeno",
+      "idle": "Poslední aktivita",
+      "anyIdle": "Kdykoli",
+      "idleValues": {
+        "d7": "Bez změny přes 7 dní",
+        "d14": "Bez změny přes 14 dní",
+        "d30": "Bez změny přes 30 dní",
+        "custom": "Vlastní rozsah"
+      },
+      "tasks": "Úkoly",
+      "anyTasks": "Cokoli",
+      "taskValues": {
+        "open": "Má otevřený úkol",
+        "none": "Nemá otevřený úkol",
+        "overdue": "Má úkol po termínu"
+      },
+      "who": "Pracovník",
+      "anyone": "Kdokoli",
+      "me": "Já",
+      "contact": "Kontakt",
+      "contactPlaceholder": "Hledat kontakt",
+      "contactResults": "Nalezené kontakty",
+      "contactNone": "Žádný kontakt nenalezen",
+      "amount": "Částka",
+      "from": "Od",
+      "to": "Do",
+      "range": "Vlastní rozsah",
+      "rangeFrom": "od {date}",
+      "rangeTo": "do {date}",
+      "activeLabel": "Aktivní filtry",
+      "remove": "Odebrat filtr {filter}",
+      "clear": "Zrušit filtry",
+      "shown": "Zobrazeno {shown} z {total, plural, one {{totalFormatted} obchodu} few {{totalFormatted} obchodů} many {{totalFormatted} obchodu} other {{totalFormatted} obchodů}}"
     }
   },
   "crmTasks": {

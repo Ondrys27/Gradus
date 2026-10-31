@@ -33,6 +33,7 @@ function situation(overrides: Partial<UserSituation> = {}): UserSituation {
     overdueCrmTasks: [],
     overdueCrmTasksTotal: 0,
     crmTasksDueToday: 0,
+    pipelineHealth: null,
     ...overrides,
   };
 }
@@ -59,7 +60,13 @@ describe("describeSituation", () => {
         prospectingSeconds: 4800,
         finance: { income: 50000, expense: 20000 },
         overdueInvoices: [
-          { number: "2026-0007", customer: "Acme", total: 12100, currency: "CZK", dueOn: "2026-09-20" },
+          {
+            number: "2026-0007",
+            customer: "Acme",
+            total: 12100,
+            currency: "CZK",
+            dueOn: "2026-09-20",
+          },
         ],
         overdueInvoicesTotal: 2,
       }),
@@ -187,7 +194,11 @@ describe("sales tasks in the situation", () => {
     const text = describeSituation(
       situation({
         overdueCrmTasks: [
-          { title: "Zavolat kvůli nabídce", dueAt: at("15:00", "2026-09-27"), target: "Pekárna Novák" },
+          {
+            title: "Zavolat kvůli nabídce",
+            dueAt: at("15:00", "2026-09-27"),
+            target: "Pekárna Novák",
+          },
           { title: "Poslat ceník", dueAt: at("09:30"), target: null },
         ],
         overdueCrmTasksTotal: 4,
@@ -215,5 +226,42 @@ describe("sales tasks in the situation", () => {
       }),
     );
     expect(keys.slice(0, 2)).toEqual(["overdueCrmTasks", "overdueTasks"]);
+  });
+});
+
+describe("pipeline health in the situation", () => {
+  const clear = {
+    closePast: { count: 0, top: [] },
+    overdueTasks: { count: 0, top: [] },
+    noTask: { count: 0, top: [] },
+  };
+
+  it("lists what is wrong in the pipeline with a few deals of each tile", () => {
+    const text = describeSituation(
+      situation({
+        pipelineHealth: {
+          closePast: {
+            count: 4,
+            top: [
+              { title: "Web pro pekárnu", closeDate: "2026-09-12", days: 16 },
+              { title: "Logo", closeDate: "2026-09-20", days: 8 },
+            ],
+          },
+          overdueTasks: { count: 2, top: [{ title: "Eshop", tasks: 2, days: 3 }] },
+          noTask: { count: 1, top: [{ title: "Kavárna", days: 9 }] },
+        },
+      }),
+      settings,
+    );
+    expect(text).toContain(
+      'Pipeline health (goal is zero everywhere): 4 open deal(s) past their Close Date ("Web pro pekárnu" Close Date 12. 9. 2026; "Logo" Close Date 20. 9. 2026 (+2 more)); 2 overdue task(s) on deals ("Eshop" 2 task(s), the oldest 3 day(s) late); 1 open deal(s) without any open task ("Kavárna" for 9 day(s)).',
+    );
+  });
+
+  it("says all is clear when every tile is zero, and nothing when it could not be read", () => {
+    expect(describeSituation(situation({ pipelineHealth: clear }), settings)).toContain(
+      "Pipeline health (goal is zero everywhere): all clear",
+    );
+    expect(describeSituation(situation(), settings)).not.toContain("Pipeline health");
   });
 });

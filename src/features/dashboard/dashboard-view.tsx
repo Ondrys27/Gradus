@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Stagger, StaggerItem } from "@/components/ui/stagger";
 import { useProfile } from "@/features/account/queries";
+import { DashboardPipelineHealth } from "@/features/pipeline/dashboard-health";
 import { formatList, formatNumber } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { daySummaryParts, greetingPart } from "./dashboard-logic";
@@ -57,6 +58,8 @@ export function DashboardView() {
           {overview.pending ? <Skeleton className="h-6 w-72 max-w-full" /> : summary}
         </div>
       </header>
+
+      <DashboardPipelineHealth />
 
       <SatisfactionCard />
 

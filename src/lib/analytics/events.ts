@@ -375,6 +375,17 @@ export const EVENTS = {
     action: oneOf(["create", "rename", "reorder", "remove", "deposit"]),
   }),
   reengage_filter_used: event("pipeline", "client", false, { enabled: bool() }),
+  /** A filter set above the board (which one, never its value) and how many are on now. */
+  pipeline_filtered: event("pipeline", "client", false, {
+    filter: oneOf(["close", "created", "idle", "tasks", "who", "contact", "amount"]),
+    active: count(10),
+  }),
+  /** A tile of what is wrong opened, above the board or on the dashboard, with its number. */
+  pipeline_health_opened: event("pipeline", "client", false, {
+    tile: oneOf(["closePast", "overdueTasks", "noTask"]),
+    from: oneOf(["pipeline", "dashboard"]),
+    count: count(100_000),
+  }),
 
   // --- contacts ------------------------------------------------------------
   contact_created: event("contacts", "client", true, {

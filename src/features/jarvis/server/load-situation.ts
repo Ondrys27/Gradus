@@ -4,6 +4,7 @@ import { dayRangeToInstants } from "@/features/calendar/calendar-logic";
 import { contactName } from "@/features/contacts/types";
 import { stalledCutoff } from "@/features/dashboard/dashboard-logic";
 import { periodRange } from "@/features/finance/finance-logic";
+import { loadHealthDigest } from "@/features/pipeline/health-data";
 import { todayIsoDate, type FormatSettings } from "@/lib/format";
 import type { Database } from "@/types/database";
 import type { UserSituation } from "../situation";
@@ -56,6 +57,15 @@ export async function loadSituation(
   const ws = workspaceId ?? "";
   // Read alongside the rest; it never fails (without statistics the default hours apply).
   const timeWindow = loadTimeWindow(supabase, { timeZone, country, now });
+
+  // The pipeline tiles: a worker counts only their own deals and tasks. They never fail the rest.
+  const healthScope = assigneeId && assigneeId !== ws ? assigneeId : null;
+  const pipelineHealth = loadHealthDigest(supabase, ws, healthScope, settings, now).catch(
+    (error) => {
+      console.error("jarvis pipeline health failed", error);
+      return null;
+    },
+  );
 
   const [
     milestones,
@@ -264,6 +274,7 @@ export async function loadSituation(
     })),
     overdueCrmTasksTotal: crmOverdue.count ?? 0,
     crmTasksDueToday: crmToday.count ?? 0,
+    pipelineHealth: await pipelineHealth,
   };
 }
 

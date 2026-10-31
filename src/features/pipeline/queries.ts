@@ -7,6 +7,7 @@ import { invalidateFinance } from "@/features/finance/queries";
 import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
 import { applyMove, nextDealPosition, reorderStages, sortStages } from "./board-logic";
+import { fetchDealTaskSignals, type DealTaskSignals } from "./health-data";
 import {
   dealPatchSchema,
   type DealInput,
@@ -71,7 +72,20 @@ export const pipelineKeys = {
     ["pipeline", userId, "deal", dealId, "meetings"] as const,
   dealInvoices: (userId: string, dealId: string) =>
     ["pipeline", userId, "deal", dealId, "invoices"] as const,
+  /** One deal read by its id, when the board does not hold it (an old won or lost one). */
+  dealRow: (userId: string, dealId: string) => ["pipeline", userId, "deal", dealId, "row"] as const,
+  /** Deals a contact is on, for the contact filter. */
+  contactDeals: (userId: string, contactId: string) =>
+    ["pipeline", userId, "contact-deals", contactId] as const,
+  /**
+   * The open tasks of deals and the last finished one, for the tiles and the
+   * task filters. Under "crmTasks", so every task change reads them again.
+   */
+  dealSignals: (userId: string) => ["crmTasks", userId, "dealSignals"] as const,
 };
+
+/** Deals a contact is on in any role; the deal_contacts of one contact are few. */
+const CONTACT_DEAL_LIMIT = 500;
 
 export function useStages() {
   const { user } = useSession();
@@ -121,6 +135,60 @@ export function useDeals() {
       return [...open.data, ...closed.data].sort((a, b) =>
         b.created_at.localeCompare(a.created_at),
       );
+    },
+  });
+}
+
+/** The open tasks of every deal and when each open deal last had one finished. */
+export function useDealTaskSignals(enabled = true) {
+  const { user } = useSession();
+  const workspaceId = useWorkspaceId();
+  return useQuery({
+    queryKey: pipelineKeys.dealSignals(user.id),
+    enabled,
+    queryFn: (): Promise<DealTaskSignals> => fetchDealTaskSignals(createClient(), workspaceId),
+  });
+}
+
+/** The deals a contact is on (primary or added), for the contact filter of the board. */
+export function useContactDealIds(contactId: string | null) {
+  const { user } = useSession();
+  const workspaceId = useWorkspaceId();
+  return useQuery({
+    queryKey: pipelineKeys.contactDeals(user.id, contactId ?? ""),
+    enabled: Boolean(contactId),
+    queryFn: async (): Promise<Set<string>> => {
+      const { data, error } = await createClient()
+        .from("deal_contacts")
+        .select("deal_id")
+        .eq("user_id", workspaceId)
+        .eq("contact_id", contactId!)
+        .limit(CONTACT_DEAL_LIMIT);
+      if (error) throw error;
+      return new Set(data.map((row) => row.deal_id));
+    },
+  });
+}
+
+/**
+ * One deal by its id, for a deal the board does not hold (an old won or lost
+ * deal whose task is overdue). Saving it reads it again.
+ */
+export function useDealRow(id: string | null, enabled: boolean) {
+  const { user } = useSession();
+  const workspaceId = useWorkspaceId();
+  return useQuery({
+    queryKey: pipelineKeys.dealRow(user.id, id ?? ""),
+    enabled: enabled && Boolean(id),
+    queryFn: async (): Promise<Deal | null> => {
+      const { data, error } = await createClient()
+        .from("deals")
+        .select(DEAL_COLUMNS)
+        .eq("user_id", workspaceId)
+        .eq("id", id!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
     },
   });
 }
@@ -262,6 +330,8 @@ export function useDeleteDeal() {
         deals?.filter((deal) => deal.id !== id),
       );
       void invalidateContacts(queryClient, user.id);
+      // Tasks only on this deal went with it.
+      void queryClient.invalidateQueries({ queryKey: ["crmTasks", user.id] });
     },
   });
 }
@@ -314,10 +384,14 @@ export function useMoveDeal() {
     onError: (_error, _variables, context) => {
       if (context?.previous) queryClient.setQueryData(key, context.previous);
     },
-    onSettled: () => {
+    onSettled: (_data, _error, { deal }) => {
+      // A deal opened beyond the board (an old won or lost one) is read again too.
+      void queryClient.invalidateQueries({ queryKey: pipelineKeys.dealRow(user.id, deal.id) });
       if (queryClient.isMutating({ mutationKey: ["pipeline", "move"] }) > 1) return;
       void queryClient.invalidateQueries({ queryKey: key });
       void invalidateContacts(queryClient, user.id);
+      // An open deal again counts the days without a task from its last finished one.
+      void queryClient.invalidateQueries({ queryKey: pipelineKeys.dealSignals(user.id) });
       // The database books a deposit or the rest of the deal, or flags what it booked.
       void invalidateFinance(queryClient, user.id);
       // A won deal is one of Jarvis's instant triggers.

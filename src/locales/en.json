@@ -1623,6 +1623,82 @@
         "paid": "Invoice {number} paid",
         "cancelled": "Invoice {number} cancelled"
       }
+    },
+    "health": {
+      "label": "What needs attention",
+      "ok": "All clear",
+      "tiles": {
+        "closePast": {
+          "label": "Close Date in the past",
+          "hint": "Move the date or close the deal"
+        },
+        "overdueTasks": {
+          "label": "Overdue tasks",
+          "hint": "Finish them or plan them again"
+        },
+        "noTask": {
+          "label": "Deals without a task",
+          "hint": "Plan the next step"
+        }
+      },
+      "toggle": "{label}: {count}",
+      "listEmpty": "Nothing here. That is exactly how it should be.",
+      "row": {
+        "closePast": "Close Date {date}",
+        "overdueTasks": "{tasks, plural, one {task} other {{tasksFormatted} tasks}} overdue {days, plural, =0 {since today} one {for {formatted} day} other {for {formatted} days}}",
+        "noTask": "no task {days, plural, =0 {since today} one {for {formatted} day} other {for {formatted} days}}",
+        "open": "Open deal {title}",
+        "noContact": "No contact"
+      },
+      "loadFailed": "Could not load what needs attention.",
+      "retry": "Try again",
+      "close": "Close",
+      "openInPipeline": "{label}: {count}. Open in the pipeline"
+    },
+    "filters": {
+      "button": "Filters",
+      "buttonActive": "Filters ({count})",
+      "close": "Close Date",
+      "anyClose": "Any time",
+      "closeValues": {
+        "past": "In the past",
+        "thisWeek": "This week",
+        "thisMonth": "This month",
+        "custom": "Custom range"
+      },
+      "created": "Created",
+      "idle": "Last activity",
+      "anyIdle": "Any time",
+      "idleValues": {
+        "d7": "No change for over 7 days",
+        "d14": "No change for over 14 days",
+        "d30": "No change for over 30 days",
+        "custom": "Custom range"
+      },
+      "tasks": "Tasks",
+      "anyTasks": "Any",
+      "taskValues": {
+        "open": "Has an open task",
+        "none": "No open task",
+        "overdue": "Has an overdue task"
+      },
+      "who": "Worker",
+      "anyone": "Anyone",
+      "me": "Me",
+      "contact": "Contact",
+      "contactPlaceholder": "Search contacts",
+      "contactResults": "Contacts found",
+      "contactNone": "No contact found",
+      "amount": "Amount",
+      "from": "From",
+      "to": "To",
+      "range": "Custom range",
+      "rangeFrom": "from {date}",
+      "rangeTo": "until {date}",
+      "activeLabel": "Active filters",
+      "remove": "Remove filter {filter}",
+      "clear": "Clear filters",
+      "shown": "{shown} of {total, plural, one {{totalFormatted} deal} other {{totalFormatted} deals}} shown"
     }
   },
   "crmTasks": {

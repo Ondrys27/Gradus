@@ -3933,6 +3933,13 @@ export type Database = {
         }[]
       }
       current_workspace_id: { Args: never; Returns: string }
+      deal_tasks_last_done: {
+        Args: { _workspace: string }
+        Returns: {
+          deal_id: string
+          last_done_at: string
+        }[]
+      }
       error_alert_claim: {
         Args: {
           _event_id: string

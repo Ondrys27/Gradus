@@ -13,13 +13,39 @@ import { useUserSettings } from "@/features/account/queries";
 import { MeetingSurveyDialog, type SurveyTarget } from "@/features/dashboard/meeting-survey-dialog";
 import { offersMeetingSurvey } from "@/features/dashboard/survey-trigger";
 import { useAwardXp, useGameCelebrate } from "@/features/game/queries";
+import { useSession } from "@/features/account/queries";
+import { useMinuteClock } from "@/features/crm-tasks/use-task-dialogs";
+import { track } from "@/lib/analytics/client";
+import { useFormatSettings } from "@/lib/use-format-settings";
 import { useUrlIntent } from "@/lib/use-url-intent";
 import { Board } from "./board";
 import { groupDealsByStage, moveKind, reorderStages, sortStages } from "./board-logic";
 import { DealDetail } from "./deal-detail";
+import { DealFilterBar } from "./deal-filter-bar";
+import {
+  activeDealFilters,
+  countDealTasks,
+  dealFiltersToSearch,
+  filterDeals,
+  parseDealFilters,
+  type DealFilterKey,
+  type DealFilters,
+} from "./filters";
+import { isHealthTile, type HealthTile } from "./health";
+import { PipelineHealthPanel } from "./health-tiles";
 import { DealFormDialog } from "./deal-form-dialog";
 import { LostReasonDialog } from "./lost-reason-dialog";
-import { useDeals, useMoveDeal, useRenameStage, useReorderStages, useStages } from "./queries";
+import {
+  useContactDealIds,
+  useDealRow,
+  useDealTaskSignals,
+  useDeals,
+  useMoveDeal,
+  useRenameStage,
+  useReorderStages,
+  useStages,
+} from "./queries";
+import { usePipelineHealth } from "./use-pipeline-health";
 import { AddStageDialog, RemoveStageDialog } from "./stage-dialogs";
 import { useCan } from "@/features/account/workspace-queries";
 import type { Deal, Stage } from "./types";
@@ -45,8 +71,17 @@ export function PipelineView() {
   const [removing, setRemoving] = useState<Stage | null>(null);
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const search = searchParams.toString();
+  /** Filters and the open tile live in the address; other parameters stay as they are. */
+  function replaceSearch(change: (params: URLSearchParams) => void) {
+    const params = new URLSearchParams(search);
+    change(params);
+    const text = params.toString();
+    router.replace(text ? `${pathname}?${text}` : pathname, { scroll: false });
+  }
   // The calendar links to a deal as /pipeline?deal=<id>; the panel opens on it.
-  const requestedDeal = useSearchParams().get("deal");
+  const requestedDeal = searchParams.get("deal");
   const [openId, setOpenId] = useState<string | null>(requestedDeal);
   // The search can ask for another deal while the board is already open.
   const [seenRequest, setSeenRequest] = useState(requestedDeal);
@@ -67,10 +102,62 @@ export function PipelineView() {
   const stages = useMemo(() => sortStages(stagesQuery.data ?? []), [stagesQuery.data]);
   const deals = useMemo(() => dealsQuery.data ?? [], [dealsQuery.data]);
 
-  // Each lost stage's column filters its own deals; every column always gets the full list.
-  const dealsByStage = useMemo(() => groupDealsByStage(stages, deals), [stages, deals]);
+  const { user } = useSession();
+  const formatSettings = useFormatSettings();
+  const now = useMinuteClock();
+  const filters = useMemo(() => parseDealFilters(new URLSearchParams(search)), [search]);
+  const filtering = activeDealFilters(filters).length > 0;
+  const signals = useDealTaskSignals();
+  const contactDeals = useContactDealIds(filters.contact);
+  const taskCounts = useMemo(
+    () => countDealTasks(signals.data?.tasks ?? [], now),
+    [signals.data, now],
+  );
+  const shownDeals = useMemo(
+    () =>
+      filterDeals(deals, filters, {
+        now,
+        settings: formatSettings,
+        userId: user.id,
+        tasks: taskCounts,
+        contactDeals: contactDeals.data ?? null,
+      }),
+    [deals, filters, now, formatSettings, user.id, taskCounts, contactDeals.data],
+  );
 
-  const openDeal = deals.find((deal) => deal.id === openId) ?? null;
+  // Each lost stage's column filters its own deals on top of the filters above the board.
+  const dealsByStage = useMemo(() => groupDealsByStage(stages, shownDeals), [stages, shownDeals]);
+
+  const health = usePipelineHealth();
+  const tileParam = searchParams.get("tile");
+  const expandedTile: HealthTile | null = isHealthTile(tileParam) ? tileParam : null;
+
+  function expandTile(tile: HealthTile | null) {
+    if (tile && health.health) {
+      track("pipeline_health_opened", {
+        tile,
+        from: "pipeline",
+        count: health.health[tile].count,
+      });
+    }
+    replaceSearch((params) => {
+      if (tile) params.set("tile", tile);
+      else params.delete("tile");
+    });
+  }
+
+  function changeFilters(next: DealFilters, changed: DealFilterKey | null) {
+    if (changed) {
+      track("pipeline_filtered", { filter: changed, active: activeDealFilters(next).length });
+    }
+    const text = dealFiltersToSearch(next, new URLSearchParams(search));
+    router.replace(`${pathname}${text}`, { scroll: false });
+  }
+
+  // A deal opened from a tile may be an old won or lost one the board does not hold.
+  const boardDeal = deals.find((deal) => deal.id === openId) ?? null;
+  const fallback = useDealRow(openId, !boardDeal && !dealsQuery.isPending);
+  const openDeal = boardDeal ?? (openId ? (fallback.data ?? null) : null);
 
   function celebrateWon(deal: Deal) {
     const celebration = (xp?: number) => ({
@@ -162,6 +249,29 @@ export function PipelineView() {
 
       {notice && <FormAlert>{t(`notices.${notice}`)}</FormAlert>}
 
+      {!failed && (
+        <PipelineHealthPanel
+          health={health.health}
+          pending={health.pending}
+          failed={health.failed}
+          onRetry={health.retry}
+          stages={stages}
+          expanded={expandedTile}
+          onExpand={expandTile}
+          onOpenDeal={setOpenId}
+          dealOpen={openDeal !== null}
+        />
+      )}
+
+      {!loading && !failed && deals.length > 0 && (
+        <DealFilterBar
+          filters={filters}
+          onChange={changeFilters}
+          shown={filtering ? shownDeals.length : deals.length}
+          total={deals.length}
+        />
+      )}
+
       {loading ? (
         <div className="flex gap-3 overflow-hidden">
           {[0, 1, 2].map((key) => (
@@ -243,7 +353,7 @@ export function PipelineView() {
         stages={stages}
         onClose={() => {
           setOpenId(null);
-          if (requestedDeal) router.replace(pathname, { scroll: false });
+          if (requestedDeal) replaceSearch((params) => params.delete("deal"));
         }}
         onRequestMove={requestMove}
       />
