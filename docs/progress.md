@@ -83,7 +83,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 16.3 | architect | env: RESEND_API_KEY — 2026-10-30 Faktury se vystavují jen v aplikaci: průvodce údaji dodavatele (ARES), koncept s živým náhledem, vystavení s číselnou řadou v DB, storno dobropisem, Zaplaceno, PDF ve 4 stylech s QR Platbou, odeslání e-mailem a Jarvis ví o fakturách po splatnosti.
 - [x] K16 | reviewer | 2026-10-30 Kontrola fáze 16: opravena číselná řada faktur zaseknutá o stará čtyřmístná čísla (nová přidávací migrace, zatím nenahraná), telefony vyčištěné z e-mailů o chybách a graf Financí při přepnutí měsíc/rok; RLS faktur a bucketu, QR, ARES a upozornění ověřeny bez nálezu.
 - [x] STOP | Konec fáze 16. Vyvolej chybu a zkontroluj, že ti přišel e-mail s kódem a uživatelem; v administraci přidej druhou adresu a pošli zkušební e-mail. Faktury: projdi průvodce údaji, vystav fakturu z obchodu i z Financí, zkus všechny 4 styly, stáhni PDF, zaplať testovací QR kód bankovní aplikací (nebo ho aspoň naskenuj a zkontroluj částku a VS), pošli fakturu e-mailem sám sobě, označ Zaplaceno. Co nesedí, napiš Claude Code rovnou, pak /pokracuj. · přeskočeno nočním během 2026-10-31, zkontroluj ručně (.noc/zkontroluj.md)
-- [ ] 17.1 | architect |
+- [x] 17.1 | architect | 2026-10-31 Obchodní úkoly u obchodů a kontaktů (termín s časem, trvání, kdo, Hotovo s poznámkou v historii) se sekcí Úkoly s filtry v adrese, v kalendáři i u Jarvise; opraveno hledání sekce Úkoly v ⌘K a dva nestabilní e2e testy.
 - [ ] 17.2 | architect |
 - [ ] 17.3 | architect |
 - [ ] 17.4 | architect |
