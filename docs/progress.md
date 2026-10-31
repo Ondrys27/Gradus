@@ -83,6 +83,13 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 16.3 | architect | env: RESEND_API_KEY — 2026-10-30 Faktury se vystavují jen v aplikaci: průvodce údaji dodavatele (ARES), koncept s živým náhledem, vystavení s číselnou řadou v DB, storno dobropisem, Zaplaceno, PDF ve 4 stylech s QR Platbou, odeslání e-mailem a Jarvis ví o fakturách po splatnosti.
 - [x] K16 | reviewer | 2026-10-30 Kontrola fáze 16: opravena číselná řada faktur zaseknutá o stará čtyřmístná čísla (nová přidávací migrace, zatím nenahraná), telefony vyčištěné z e-mailů o chybách a graf Financí při přepnutí měsíc/rok; RLS faktur a bucketu, QR, ARES a upozornění ověřeny bez nálezu.
 - [ ] STOP | Konec fáze 16. Vyvolej chybu a zkontroluj, že ti přišel e-mail s kódem a uživatelem; v administraci přidej druhou adresu a pošli zkušební e-mail. Faktury: projdi průvodce údaji, vystav fakturu z obchodu i z Financí, zkus všechny 4 styly, stáhni PDF, zaplať testovací QR kód bankovní aplikací (nebo ho aspoň naskenuj a zkontroluj částku a VS), pošli fakturu e-mailem sám sobě, označ Zaplaceno. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
+- [ ] 17.1 | architect |
+- [ ] 17.2 | architect |
+- [ ] 17.3 | architect |
+- [ ] 17.4 | architect |
+- [ ] 17.5 | architect |
+- [ ] K17 | reviewer |
+- [ ] STOP | Konec fáze 17. Projdi s Vášou: založ obchod z Cold Callingu, otevři nový detail obchodu, přidej druhý kontakt s poznámkou, zadej deadline a najdi ho v kalendáři, založ tři úkoly s různými termíny a trváním, jeden označ Hotovo s poznámkou. V sekci Úkoly zkus filtry Dnes, Po termínu a Trvání do 30 min. Nad pipeline rozklikni každou dlaždici a naprav jeden obchod, ať zezelená; totéž na nástěnce. V kontaktu otevři sekci Obchody. V milnících přesuň úkol pod jiný v mapě i v seznamu. Přepni do EN a zkontroluj „Close Date". Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [ ] 12.4 | builder | env: RESEND_API_KEY
 - [ ] 12.5 | architect | env: CRON_SECRET
 - [ ] K12 | reviewer |
