@@ -9,9 +9,17 @@ import { useFreshOnOpen } from "@/features/milestones/use-fresh-on-open";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { defaultCurrency, emptyDraft, validateDraft, type DealDraft } from "./deal-draft";
 import { DealFormFields } from "./deal-form-fields";
-import { useCreateDeal } from "./queries";
+import { useCreateDeal, type DealSource } from "./queries";
 import type { PipelineErrorKey } from "./schemas";
-import type { Deal, Stage } from "./types";
+import type { Deal, DealContact, Stage } from "./types";
+
+/** What a new deal starts with when it is made from somewhere (a contact, Cold Calling). */
+export type DealFormInitial = {
+  title?: string;
+  contact?: DealContact | null;
+  /** Null: whoever makes it looks after it. */
+  assigneeId?: string | null;
+};
 
 type Props = {
   open: boolean;
@@ -20,9 +28,22 @@ type Props = {
   /** The stage preselected: the column whose plus was pressed, else the first one. */
   stageId: string | null;
   onCreated: (deal: Deal, stage: Stage) => void;
+  initial?: DealFormInitial;
+  /** Shows who looks after the deal (prefilled from `initial.assigneeId`). */
+  showAssignee?: boolean;
+  source?: DealSource;
 };
 
-export function DealFormDialog({ open, onOpenChange, stages, stageId, onCreated }: Props) {
+export function DealFormDialog({
+  open,
+  onOpenChange,
+  stages,
+  stageId,
+  onCreated,
+  initial,
+  showAssignee,
+  source,
+}: Props) {
   const t = useTranslations("pipeline.form");
   const generation = useFreshOnOpen(open);
 
@@ -34,36 +55,61 @@ export function DealFormDialog({ open, onOpenChange, stages, stageId, onCreated 
       closeLabel={t("close")}
       className="w-[min(100vw-32px,520px)]"
     >
-      <CreateFields
+      <NewDealForm
         key={generation}
         stages={stages}
         stageId={stageId}
-        onDone={() => onOpenChange(false)}
-        onCreated={onCreated}
+        initial={initial}
+        showAssignee={showAssignee}
+        source={source}
+        onCancel={() => onOpenChange(false)}
+        onCreated={(deal, stage) => {
+          onOpenChange(false);
+          if (stage) onCreated(deal, stage);
+        }}
       />
     </ResponsiveDialog>
   );
 }
 
-function CreateFields({
+/**
+ * The form of a new deal, also used inside another dialog (moving a contact in
+ * Cold Calling). `afterCreate` runs before `onCreated`, while the button still
+ * says it is saving; its failure does not undo the deal.
+ */
+export function NewDealForm({
   stages,
   stageId,
-  onDone,
+  initial,
+  showAssignee = false,
+  source = "pipeline",
+  afterCreate,
+  onCancel,
   onCreated,
+  cancelLabel,
 }: {
   stages: Stage[];
   stageId: string | null;
-  onDone: () => void;
-  onCreated: (deal: Deal, stage: Stage) => void;
+  initial?: DealFormInitial;
+  showAssignee?: boolean;
+  source?: DealSource;
+  afterCreate?: (deal: Deal) => Promise<unknown>;
+  onCancel: () => void;
+  onCreated: (deal: Deal, stage: Stage | undefined) => void;
+  cancelLabel?: string;
 }) {
   const t = useTranslations("pipeline.form");
   const settings = useFormatSettings();
   const create = useCreateDeal();
-  const [draft, setDraft] = useState<DealDraft>(() =>
-    emptyDraft(stageId ?? stages[0]?.id ?? "", defaultCurrency(settings.currency)),
-  );
+  const [draft, setDraft] = useState<DealDraft>(() => ({
+    ...emptyDraft(stageId ?? stages[0]?.id ?? "", defaultCurrency(settings.currency)),
+    title: initial?.title ?? "",
+    contact: initial?.contact ?? null,
+    assigneeId: initial?.assigneeId ?? null,
+  }));
   const [errors, setErrors] = useState<Partial<Record<string, PipelineErrorKey>>>({});
   const [failed, setFailed] = useState(false);
+  const [finishing, setFinishing] = useState(false);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -74,14 +120,22 @@ function CreateFields({
       return;
     }
     setErrors({});
+    let deal: Deal;
     try {
-      const deal = await create.mutateAsync(result.data);
-      const stage = stages.find((item) => item.id === deal.stage_id);
-      onDone();
-      if (stage) onCreated(deal, stage);
+      deal = await create.mutateAsync({ ...result.data, source });
     } catch {
       setFailed(true);
+      return;
     }
+    if (afterCreate) {
+      setFinishing(true);
+      await afterCreate(deal).catch(() => undefined);
+      setFinishing(false);
+    }
+    onCreated(
+      deal,
+      stages.find((item) => item.id === deal.stage_id),
+    );
   }
 
   return (
@@ -91,14 +145,15 @@ function CreateFields({
         draft={draft}
         errors={errors}
         stages={stages}
+        showAssignee={showAssignee}
         onChange={(patch) => setDraft((current) => ({ ...current, ...patch }))}
       />
       {failed && <FormAlert>{t("saveFailed")}</FormAlert>}
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <Button type="button" variant="ghost" onClick={onDone}>
-          {t("cancel")}
+        <Button type="button" variant="ghost" onClick={onCancel}>
+          {cancelLabel ?? t("cancel")}
         </Button>
-        <Button type="submit" disabled={create.isPending}>
+        <Button type="submit" disabled={create.isPending || finishing}>
           {t("create")}
         </Button>
       </div>

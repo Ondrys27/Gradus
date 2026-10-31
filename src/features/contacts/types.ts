@@ -13,8 +13,12 @@ export const FIELD_COLUMNS =
   "id, table_id, label, type, required, options, default_value, depends_on_field_id, depends_on_value, position, system_key";
 export const ACTIVITY_COLUMNS =
   "id, contact_id, deal_id, type, content, occurred_at, created_at, actor_id";
+/**
+ * The deals a contact is on, primary or added (deal_contacts holds both: the
+ * database keeps deals.contact_id in it as the primary row).
+ */
 export const CONTACT_DEAL_COLUMNS =
-  "id, title, value, currency, won_at, lost_at, stage:pipeline_stages(id, name, color)";
+  "is_primary, deal:deals(id, title, value, currency, expected_close_date, assignee_id, last_activity_at, won_at, lost_at, created_at, stage:pipeline_stages(id, name, color, is_won, is_lost))";
 
 type ListRow = Views["contact_list"]["Row"];
 
@@ -86,8 +90,24 @@ export const MANUAL_ACTIVITY_TYPES = ["call", "email", "meeting", "sms", "note"]
 
 export type ContactDeal = Pick<
   Tables["deals"]["Row"],
-  "id" | "title" | "value" | "currency" | "won_at" | "lost_at"
-> & { stage: { id: string; name: string; color: string } | null };
+  | "id"
+  | "title"
+  | "value"
+  | "currency"
+  | "expected_close_date"
+  | "assignee_id"
+  | "last_activity_at"
+  | "won_at"
+  | "lost_at"
+  | "created_at"
+> & {
+  stage: { id: string; name: string; color: string; is_won: boolean; is_lost: boolean } | null;
+  /** The contact is the deal's primary contact (else one added to it). */
+  isPrimary: boolean;
+};
+
+/** The open deal a contact in Cold Calling already has, linked from its row. */
+export type ContactOpenDeal = { id: string; title: string };
 
 /** Colours a table can have. Design tones, never hexes. */
 export const TABLE_TONES = ["violet", "teal", "gold", "green", "pink", "neutral"] as const;

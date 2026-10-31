@@ -14,6 +14,9 @@ import {
 } from "@/components/ui/select";
 import { CURRENCIES, currencyName } from "@/lib/format";
 import { useLocale } from "next-intl";
+import { useSession } from "@/features/account/queries";
+import { useAssignees } from "@/features/crm-tasks/queries";
+import { useAssigneeName } from "@/features/crm-tasks/use-assignee-name";
 import { ContactPicker } from "./contact-picker";
 import type { DealDraft } from "./deal-draft";
 import { TITLE_MAX, type PipelineErrorKey } from "./schemas";
@@ -26,11 +29,20 @@ type Props = {
   onChange: (patch: Partial<DealDraft>) => void;
   errors: Partial<Record<string, PipelineErrorKey>>;
   stages: Stage[];
+  /** Who looks after the deal; hidden on the board, where it is always whoever makes it. */
+  showAssignee?: boolean;
 };
 
 /** The fields of a new deal; the detail edits a deal field by field (deal-detail.tsx). */
 
-export function DealFormFields({ idPrefix, draft, onChange, errors, stages }: Props) {
+export function DealFormFields({
+  idPrefix,
+  draft,
+  onChange,
+  errors,
+  stages,
+  showAssignee = false,
+}: Props) {
   const t = useTranslations("pipeline");
   const locale = useLocale();
 
@@ -128,6 +140,56 @@ export function DealFormFields({ idPrefix, draft, onChange, errors, stages }: Pr
           </Select>
         </FormField>
       </div>
+      {showAssignee && (
+        <FormField id={`${idPrefix}-assignee`} label={t("detail.assignee")}>
+          <AssigneeSelect
+            id={`${idPrefix}-assignee`}
+            value={draft.assigneeId}
+            onChange={(assigneeId) => onChange({ assigneeId })}
+          />
+        </FormField>
+      )}
     </>
+  );
+}
+
+/** The owner or an active worker of the space; null stands for the one making the deal. */
+function AssigneeSelect({
+  id,
+  value,
+  onChange,
+}: {
+  id: string;
+  value: string | null;
+  onChange: (assigneeId: string) => void;
+}) {
+  const { user } = useSession();
+  const assignees = useAssignees();
+  const nameOf = useAssigneeName();
+  const current = value ?? user.id;
+  const items = useMemo(() => {
+    const list = (assignees.data ?? []).map((person) => ({
+      value: person.userId,
+      label: nameOf(person.userId),
+    }));
+    if (!list.some((item) => item.value === current)) {
+      list.unshift({ value: current, label: nameOf(current) });
+    }
+    return list;
+  }, [assignees.data, nameOf, current]);
+
+  return (
+    <Select value={current} items={items} onValueChange={(next) => next && onChange(next)}>
+      <SelectTrigger id={id}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {items.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }

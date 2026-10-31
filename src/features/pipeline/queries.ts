@@ -221,8 +221,12 @@ function toDealRow(input: DealInput) {
     currency: input.currency,
     expected_close_date: input.expected_close_date,
     description: input.description || null,
+    ...(input.assignee_id ? { assignee_id: input.assignee_id } : {}),
   };
 }
+
+/** Where the new-deal form was opened, for analytics. */
+export type DealSource = "pipeline" | "contact" | "cold_calling";
 
 /** New deals start last in their stage. The database stamps entered_stage_at and won_at. */
 export function useCreateDeal() {
@@ -230,7 +234,7 @@ export function useCreateDeal() {
   const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: DealInput) => {
+    mutationFn: async (input: DealInput & { source?: DealSource }) => {
       const deals = queryClient.getQueryData<Deal[]>(pipelineKeys.deals(user.id)) ?? [];
       const { data, error } = await createClient()
         .from("deals")
@@ -245,11 +249,12 @@ export function useCreateDeal() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (row) => {
+    onSuccess: (row, input) => {
       track("deal_created", {
         currency: row.currency,
         ...(row.value !== null ? { value: row.value } : {}),
         has_contact: row.contact_id !== null,
+        from: input.source ?? "pipeline",
       });
       // Created straight into a won stage is a win too.
       const stage = queryClient
@@ -311,6 +316,30 @@ export function usePatchDeal(id: string) {
         void queryClient.invalidateQueries({ queryKey: ["calendar", user.id] });
       }
       if ("title" in patch) void invalidateContacts(queryClient, user.id);
+    },
+  });
+}
+
+/**
+ * A deal made right after a contact was booked for a meeting takes that meeting
+ * (the database finds it), so the deal's history shows it. Null: nothing to take.
+ */
+export function useLinkBookedMeeting() {
+  const { user } = useSession();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (dealId: string): Promise<string | null> => {
+      const { data, error } = await createClient().rpc("link_deal_to_booked_meeting", {
+        _deal_id: dealId,
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (eventId, dealId) => {
+      if (!eventId) return;
+      void queryClient.invalidateQueries({ queryKey: pipelineKeys.deal(user.id, dealId) });
+      void queryClient.invalidateQueries({ queryKey: pipelineKeys.deals(user.id) });
+      void queryClient.invalidateQueries({ queryKey: ["calendar", user.id] });
     },
   });
 }

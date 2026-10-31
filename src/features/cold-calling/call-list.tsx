@@ -1,11 +1,17 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { GlobeIcon, PhoneIcon } from "lucide-react";
+import Link from "next/link";
+import { BriefcaseBusinessIcon, GlobeIcon, PhoneIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useUserSettings } from "@/features/account/queries";
 import { websiteHref } from "@/features/contacts/schemas";
-import { contactName, contactPerson, type ContactListItem } from "@/features/contacts/types";
+import {
+  contactName,
+  contactPerson,
+  type ContactListItem,
+  type ContactOpenDeal,
+} from "@/features/contacts/types";
 import { formatPhone, telHref } from "@/lib/phone";
 import { cn } from "@/lib/utils";
 
@@ -13,10 +19,12 @@ type Props = {
   contacts: ContactListItem[];
   openId: string | null;
   onOpen: (contact: ContactListItem) => void;
+  /** The open deal of a contact, linked from its row so it is not made twice. */
+  deals: Record<string, ContactOpenDeal>;
 };
 
 /** Company, a phone that dials on tap and the website. A contact moved away slides out. */
-export function CallList({ contacts, openId, onOpen }: Props) {
+export function CallList({ contacts, openId, onOpen, deals }: Props) {
   const t = useTranslations("coldCalling.list");
   const country = useUserSettings().country_code;
   return (
@@ -25,6 +33,7 @@ export function CallList({ contacts, openId, onOpen }: Props) {
         {contacts.map((contact) => {
           const name = contactName(contact);
           const detail = [contactPerson(contact), contact.city].filter(Boolean).join(" · ");
+          const deal = deals[contact.id];
           return (
             <motion.li
               key={contact.id}
@@ -43,6 +52,17 @@ export function CallList({ contacts, openId, onOpen }: Props) {
                 <span className="truncate font-medium text-ink">{name}</span>
                 {detail && <span className="truncate text-xs text-ink-muted">{detail}</span>}
               </button>
+              {deal && (
+                <Link
+                  href={`/app/pipeline?deal=${deal.id}`}
+                  aria-label={t("deal", { title: deal.title })}
+                  title={deal.title}
+                  className="relative inline-flex min-h-11 min-w-11 max-w-40 shrink-0 items-center justify-center gap-1.5 rounded-full border border-violet/30 px-3 text-xs font-medium text-violet outline-none hover:bg-violet/10 focus-visible:ring-3 focus-visible:ring-violet/40"
+                >
+                  <BriefcaseBusinessIcon aria-hidden className="size-4 shrink-0" />
+                  <span className="hidden truncate sm:inline">{t("dealShort")}</span>
+                </Link>
+              )}
               {/* Above the row button so a tap dials instead of opening the panel. */}
               {contact.phone && (
                 <a

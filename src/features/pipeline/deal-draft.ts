@@ -18,6 +18,8 @@ export type DealDraft = {
   stageId: string;
   description: string;
   lostReason: string;
+  /** Null: whoever makes the deal looks after it. */
+  assigneeId: string | null;
 };
 
 export function defaultCurrency(userCurrency: string): string {
@@ -34,6 +36,7 @@ export function emptyDraft(stageId: string, currency: string): DealDraft {
     stageId,
     description: "",
     lostReason: "",
+    assigneeId: null,
   };
 }
 
@@ -50,6 +53,7 @@ export function validateDraft(draft: DealDraft): DraftResult {
     stage_id: draft.stageId,
     description: draft.description,
     lost_reason: draft.lostReason,
+    assignee_id: draft.assigneeId,
   });
   return parsed.success
     ? { ok: true, data: parsed.data }

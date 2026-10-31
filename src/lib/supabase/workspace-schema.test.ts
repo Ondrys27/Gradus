@@ -225,7 +225,7 @@ describe("row level security in the shared space", () => {
     await asUser(worker);
     expect(await count(`select 1 from contacts where id = $1`, [ownerContact])).toBe(1);
     expect(await count(`select 1 from contact_list where id = $1`, [ownerContact])).toBe(1);
-    expect(await count(`select 1 from contact_tables where user_id = $1`, [owner])).toBe(7);
+    expect(await count(`select 1 from contact_tables where user_id = $1`, [owner])).toBe(8);
 
     await grant({ cold_calling: "view" });
     await asUser(worker);

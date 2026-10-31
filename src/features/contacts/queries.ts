@@ -26,14 +26,19 @@ import {
   type Contact,
   type ContactDeal,
   type ContactListItem,
+  type ContactOpenDeal,
   type ContactTable,
 } from "./types";
+import { newestOpenDealByContact, sortContactDeals } from "@/features/pipeline/contact-deals";
 
 export const PAGE_SIZE = 50;
 /** A user has a handful of tables; this only bounds the query. */
 const TABLE_LIMIT = 50;
 const ACTIVITY_LIMIT = 200;
-const DEAL_LIMIT = 50;
+/** Deals one contact is on, open and closed; a contact has a handful. */
+const DEAL_LIMIT = 200;
+/** Open deals of one page of contacts. */
+const OPEN_DEAL_LIMIT = 500;
 const DUPLICATE_LIMIT = 5;
 /** Won deals for one page of clients. */
 const WON_DEAL_LIMIT = 2000;
@@ -52,6 +57,8 @@ export const contactKeys = {
   entry: (userId: string, id: string) => ["contacts", userId, "entry", id] as const,
   activities: (userId: string, id: string) => ["contacts", userId, "activities", id] as const,
   deals: (userId: string, id: string) => ["contacts", userId, "deals", id] as const,
+  /** Under "contacts", so making, moving or deleting a deal reads them again. */
+  openDeals: (userId: string, ids: string[]) => ["contacts", userId, "open-deals", ids] as const,
   duplicates: (userId: string, phone: string | null, email: string | null, exclude?: string) =>
     ["contacts", userId, "duplicates", phone, email, exclude ?? null] as const,
 };
@@ -229,22 +236,68 @@ export function useActivities(id: string) {
   });
 }
 
-export function useContactDeals(id: string) {
+/**
+ * Every deal the contact is on, primary or added, open and closed (its
+ * history). Empty for an account that may not see the pipeline.
+ */
+export function useContactDeals(id: string, enabled = true) {
   const { user } = useSession();
   const workspaceId = useWorkspaceId();
   return useQuery({
     queryKey: contactKeys.deals(user.id, id),
+    enabled,
     queryFn: async (): Promise<ContactDeal[]> => {
       const { data, error } = await createClient()
-        .from("deals")
+        .from("deal_contacts")
         .select(CONTACT_DEAL_COLUMNS)
         .eq("user_id", workspaceId)
         .eq("contact_id", id)
         .order("created_at", { ascending: false })
         .limit(DEAL_LIMIT);
       if (error) throw error;
-      return data;
+      return sortContactDeals(
+        data.flatMap((row) => (row.deal ? [{ ...row.deal, isPrimary: row.is_primary }] : [])),
+      );
     },
+  });
+}
+
+async function fetchOpenDeals(
+  workspaceId: string,
+  contactIds: string[],
+): Promise<Record<string, ContactOpenDeal>> {
+  const { data, error } = await createClient()
+    .from("deal_contacts")
+    .select("contact_id, deal:deals!inner(id, title, created_at)")
+    .eq("user_id", workspaceId)
+    .in("contact_id", contactIds)
+    .is("deal.won_at", null)
+    .is("deal.lost_at", null)
+    .limit(OPEN_DEAL_LIMIT);
+  if (error) throw error;
+  return newestOpenDealByContact(data);
+}
+
+/**
+ * The open deal of each contact on screen, for the link in its Cold Calling row.
+ * One query per page of the list, like the won deals in Clients.
+ */
+export function useOpenDeals(pages: string[][], enabled: boolean) {
+  const { user } = useSession();
+  const workspaceId = useWorkspaceId();
+  return useQueries({
+    queries: pages.map((ids) => ({
+      queryKey: contactKeys.openDeals(user.id, ids),
+      enabled: enabled && ids.length > 0,
+      queryFn: () => fetchOpenDeals(workspaceId, ids),
+    })),
+    combine: (results: UseQueryResult<Record<string, ContactOpenDeal>>[]) => ({
+      deals: Object.assign({}, ...results.map((result) => result.data ?? {})) as Record<
+        string,
+        ContactOpenDeal
+      >,
+      pending: enabled && results.some((result) => result.isPending),
+    }),
   });
 }
 

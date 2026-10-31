@@ -37,9 +37,10 @@ import { useFormatSettings } from "@/lib/use-format-settings";
 import type { UserSettingsPatch } from "@/lib/user-settings";
 import { useUrlIntent } from "@/lib/use-url-intent";
 import { cn } from "@/lib/utils";
-import { useWorkspace } from "@/features/account/workspace-queries";
+import { useCan, useWorkspace } from "@/features/account/workspace-queries";
 import { InvoiceSettings } from "@/features/invoices/invoice-settings";
 import { AppearanceSettings } from "./appearance-settings";
+import { ColdCallingDealStageSelect } from "./cold-calling-settings";
 import { GameSettings } from "./game-settings";
 import { FormatPreview, useNow } from "./format-preview";
 import { HelpSettings, JarvisSettings } from "./jarvis-settings";
@@ -58,6 +59,9 @@ export function SettingsView() {
   const isOwner = useWorkspace().role === "owner";
   // Workers have no game of their own; the owner picks the mode and the path.
   const { worker } = useSession();
+  // Deals from Cold Calling: whoever calls and may make deals picks where they land.
+  const canMakeDeals = useCan("pipeline", "edit");
+  const canCall = useCan("cold_calling", "view");
   const uiLocale = useLocale();
   const settings = useUserSettings();
   const format = useFormatSettings();
@@ -332,6 +336,20 @@ export function SettingsView() {
                 value={settings.reengage_after_months}
                 onChange={(months) => save({ reengage_after_months: months })}
               />
+            </SettingRow>
+          </Section>
+        </StaggerItem>
+      )}
+
+      {canMakeDeals && canCall && (
+        <StaggerItem>
+          <Section title={t("coldCalling.title")} description={t("coldCalling.description")}>
+            <SettingRow
+              id="settings-cold-calling-stage"
+              label={t("coldCalling.dealStage")}
+              hint={t("coldCalling.dealStageHint")}
+            >
+              <ColdCallingDealStageSelect id="settings-cold-calling-stage" save={save} />
             </SettingRow>
           </Section>
         </StaggerItem>

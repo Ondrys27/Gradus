@@ -1020,6 +1020,13 @@
     "invoices": {
       "title": "Invoices",
       "description": "Your details on invoices, numbering, style and QR payment."
+    },
+    "coldCalling": {
+      "title": "Cold Calling",
+      "description": "How a deal is created from a call.",
+      "dealStage": "Stage of a new deal",
+      "dealStageHint": "The pipeline stage a deal created from Cold Calling lands in.",
+      "firstStage": "First stage ({name})"
     }
   },
   "milestones": {
@@ -1699,6 +1706,11 @@
       "remove": "Remove filter {filter}",
       "clear": "Clear filters",
       "shown": "{shown} of {total, plural, one {{totalFormatted} deal} other {{totalFormatted} deals}} shown"
+    },
+    "fromContact": {
+      "loadFailed": "The pipeline stages could not be loaded. Try again.",
+      "noStages": "The pipeline has no open stage. Add one in Pipeline.",
+      "cancel": "Cancel"
     }
   },
   "crmTasks": {
@@ -1981,7 +1993,20 @@
       "title": "Deals",
       "openPipeline": "Pipeline",
       "empty": "No deals with this contact yet.",
-      "loadFailed": "Deals could not be loaded."
+      "loadFailed": "Deals could not be loaded.",
+      "newDeal": "New deal",
+      "summary": {
+        "label": "Deals summary",
+        "open": "Open",
+        "openValue": "Open value",
+        "won": "Won in total"
+      },
+      "closeDate": "Close Date {date}",
+      "lastActivity": "Activity {when}",
+      "wonOn": "Won {date}",
+      "lostOn": "Lost {date}",
+      "open": "Open deal {title}",
+      "assignee": "Assignee: {name}"
     },
     "activity": {
       "title": "Activity history",
@@ -2105,7 +2130,13 @@
       "saveFailed": "The change could not be saved. Try again.",
       "reorderFailed": "The new order could not be saved. Try again.",
       "loadFailed": "Tables could not be loaded. Check your connection and try again.",
-      "retry": "Try again"
+      "retry": "Try again",
+      "interestedOffer": {
+        "title": "New table: Interested",
+        "description": "For contacts who want to hear more but have no meeting yet. It asks what they are interested in and when to follow up, and Cold Calling can create a deal from it right away.",
+        "add": "Add table",
+        "failed": "The table could not be added. Try again."
+      }
     },
     "move": {
       "open": "Move to",
@@ -2129,7 +2160,15 @@
       "moveFailed": "The contact could not be moved. Check your connection and try again.",
       "loadFailed": "The questions could not be loaded. Try again.",
       "moved": "Moved to “{name}”.",
-      "movedWithMeeting": "Moved to “{name}” and the meeting is in your calendar."
+      "movedWithMeeting": "Moved to “{name}” and the meeting is in your calendar.",
+      "dealOffer": {
+        "moved": "Moved to “{name}”.",
+        "movedWithMeeting": "Moved to “{name}”, the meeting is in the calendar.",
+        "question": "Create a deal for it right away? It goes to the pipeline with the contact.",
+        "create": "Create deal",
+        "later": "Not now",
+        "questionMeeting": "Create a deal for it right away? It goes to the pipeline with the meeting in its history."
+      }
     },
     "generate": {
       "title": "Generate contacts",
@@ -2203,7 +2242,10 @@
       "emptyTitle": "Nobody left to call here",
       "emptyDescription": "Add contacts or generate new ones in Contacts; they land in Unreached.",
       "loadMore": "Show more",
-      "loadingMore": "Loading…"
+      "loadingMore": "Loading…",
+      "deal": "Deal: {title}",
+      "dealShort": "Deal",
+      "dealCreated": "The deal “{title}” is in the pipeline."
     },
     "panel": {
       "title": "Contact",
@@ -2213,7 +2255,9 @@
       "noPhone": "No phone number.",
       "move": "Move to",
       "notes": "Note",
-      "openDetail": "Open full detail"
+      "openDetail": "Open full detail",
+      "deal": "Deal",
+      "createDeal": "Create deal"
     },
     "timer": {
       "title": "Time on the phone today",

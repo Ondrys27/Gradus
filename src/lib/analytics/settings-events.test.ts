@@ -27,6 +27,17 @@ describe("settingsEvents", () => {
       expect(parseEvent("settings_changed", props, "client").ok).toBe(true);
   });
 
+  it("says whether a Cold Calling deal stage was picked, never which one", () => {
+    const picked = settingsEvents({
+      cold_calling_deal_stage_id: "8f0e7a52-3c1b-4f7e-9a51-0d6c2b9e4a10",
+    });
+    expect(picked).toEqual([{ setting: "cold_calling_deal_stage", enabled: true }]);
+    expect(settingsEvents({ cold_calling_deal_stage_id: null })).toEqual([
+      { setting: "cold_calling_deal_stage", enabled: false },
+    ]);
+    expect(parseEvent("settings_changed", picked[0]!, "client").ok).toBe(true);
+  });
+
   it("ignores columns that are not settings people choose", () => {
     expect(settingsEvents({ updated_at: "2026-10-08T00:00:00Z" })).toEqual([]);
   });

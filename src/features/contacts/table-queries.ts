@@ -124,6 +124,27 @@ export function useReorderTables() {
   });
 }
 
+/**
+ * Adds the offered table "Klient má zájem" with its questions, in its place
+ * among the tables (the database names it and sets its key, once per space).
+ */
+export function useAddInterestedTable() {
+  const { user } = useSession();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await createClient().rpc("add_interested_contact_table");
+      if (error) throw error;
+      track("contact_table_edited", { action: "add_interested" });
+    },
+    onSettled: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: contactKeys.tables(user.id) }),
+        queryClient.invalidateQueries({ queryKey: fieldKeys.all(user.id) }),
+      ]),
+  });
+}
+
 /** Contacts of the table move to `moveTo` inside the database function, then the table goes. */
 export function useRemoveTable() {
   const { user } = useSession();

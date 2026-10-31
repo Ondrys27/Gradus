@@ -3050,6 +3050,7 @@ export type Database = {
       user_settings: {
         Row: {
           animations_enabled: boolean
+          cold_calling_deal_stage_id: string | null
           country_code: string
           created_at: string
           currency: string
@@ -3075,6 +3076,7 @@ export type Database = {
         }
         Insert: {
           animations_enabled?: boolean
+          cold_calling_deal_stage_id?: string | null
           country_code?: string
           created_at?: string
           currency?: string
@@ -3100,6 +3102,7 @@ export type Database = {
         }
         Update: {
           animations_enabled?: boolean
+          cold_calling_deal_stage_id?: string | null
           country_code?: string
           created_at?: string
           currency?: string
@@ -3123,7 +3126,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_settings_cold_calling_deal_stage_id_fkey"
+            columns: ["cold_calling_deal_stage_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       waitlist: {
         Row: {
@@ -3623,6 +3634,7 @@ export type Database = {
         Args: { _code: string; _user_id: string }
         Returns: string
       }
+      add_interested_contact_table: { Args: never; Returns: string }
       admin_bug_reports: {
         Args: { _code?: string; _include_internal?: boolean; _limit?: number }
         Returns: {
@@ -3857,6 +3869,11 @@ export type Database = {
         }
       }
       choose_path: { Args: { _path_key: string }; Returns: Json }
+      contact_tables_add_interested: {
+        Args: { _cs: boolean; _ws: string }
+        Returns: string
+      }
+      contact_tables_untouched: { Args: { _ws: string }; Returns: boolean }
       count_generation_keyword: {
         Args: { _keyword: string }
         Returns: undefined
@@ -4236,6 +4253,10 @@ export type Database = {
         }[]
       }
       jwt_totp_at: { Args: { _claims: Json }; Returns: string }
+      link_deal_to_booked_meeting: {
+        Args: { _deal_id: string }
+        Returns: string
+      }
       mark_invoice_paid: {
         Args: { _invoice_id: string }
         Returns: {

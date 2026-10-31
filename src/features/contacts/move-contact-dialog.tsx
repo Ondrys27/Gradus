@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
-import { ArrowLeftIcon, ChevronRightIcon } from "lucide-react";
+import { useMemo, useRef, useState, type FormEvent } from "react";
+import { ArrowLeftIcon, BriefcaseBusinessIcon, ChevronRightIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -13,6 +13,9 @@ import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toneFill } from "@/components/ui/tone";
 import { useAwardXp } from "@/features/game/queries";
+import { offersDeal } from "@/features/pipeline/contact-deals";
+import { NewDealFromContactForm } from "@/features/pipeline/new-deal-from-contact";
+import type { DealContact } from "@/features/pipeline/types";
 import { useFreshOnOpen } from "@/features/milestones/use-fresh-on-open";
 import { track } from "@/lib/analytics/client";
 import { instantToZonedParts, todayIsoDate, zonedWallClockToInstant } from "@/lib/format";
@@ -31,7 +34,12 @@ import { useMoveContact } from "./queries";
 import { useFields } from "./table-queries";
 import { MEETING_FIELD_KEY, tableTone, type ContactField, type ContactTable } from "./types";
 
-export type MoveResult = { table: ContactTable; meetingBooked: boolean };
+export type MoveResult = {
+  table: ContactTable;
+  meetingBooked: boolean;
+  /** The deal made right after the move (Cold Calling offers one), if any. */
+  deal?: { id: string; title: string };
+};
 
 type Props = {
   open: boolean;
@@ -44,6 +52,11 @@ type Props = {
   targetSystemKey?: string;
   /** Answers to prefill by the question's system_key, e.g. the e-mail just sent. */
   prefillBySystemKey?: Record<string, string>;
+  /**
+   * The contact, when a deal may be made for it right after a move into a
+   * table that offers one (Cold Calling). Absent: no offer.
+   */
+  dealContact?: DealContact;
 };
 
 export function MoveContactDialog({
@@ -55,13 +68,24 @@ export function MoveContactDialog({
   onMoved,
   targetSystemKey,
   prefillBySystemKey,
+  dealContact,
 }: Props) {
   const t = useTranslations("contacts.move");
   const generation = useFreshOnOpen(open);
+  // A move that offers a deal is reported only when the dialog closes: in Cold
+  // Calling the report opens the next contact, which would close this dialog.
+  const pending = useRef<MoveResult | null>(null);
+  function changeOpen(next: boolean) {
+    onOpenChange(next);
+    if (next || !pending.current) return;
+    const result = pending.current;
+    pending.current = null;
+    onMoved(result);
+  }
   return (
     <ResponsiveDialog
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={changeOpen}
       title={t("title")}
       closeLabel={t("close")}
       className="w-[min(100vw-32px,520px)]"
@@ -76,8 +100,12 @@ export function MoveContactDialog({
         )}
         targetSystemKey={targetSystemKey}
         prefillBySystemKey={prefillBySystemKey}
-        onDone={() => onOpenChange(false)}
+        dealContact={dealContact}
+        onDone={() => changeOpen(false)}
         onMoved={onMoved}
+        onHold={(result) => {
+          pending.current = result;
+        }}
       />
     </ResponsiveDialog>
   );
@@ -89,22 +117,42 @@ function MoveSteps({
   targets,
   targetSystemKey,
   prefillBySystemKey,
+  dealContact,
   onDone,
   onMoved,
+  onHold,
 }: {
   contactId: string;
   from: ContactTable | null;
   targets: ContactTable[];
   targetSystemKey?: string;
   prefillBySystemKey?: Record<string, string>;
+  dealContact?: DealContact;
   onDone: () => void;
   onMoved: (result: MoveResult) => void;
+  /** Keeps the result until the dialog closes (see MoveContactDialog). */
+  onHold: (result: MoveResult) => void;
 }) {
   const t = useTranslations("contacts.move");
   const fieldsQuery = useFields();
   const [target, setTarget] = useState<ContactTable | null>(
     () => targets.find((table) => table.system_key === targetSystemKey) ?? null,
   );
+  const [offer, setOffer] = useState<MoveResult | null>(null);
+
+  if (offer && dealContact) {
+    return (
+      <DealOffer
+        contact={dealContact}
+        result={offer}
+        onDone={onDone}
+        onCreated={(deal) => {
+          onHold({ ...offer, deal: { id: deal.id, title: deal.title } });
+          onDone();
+        }}
+      />
+    );
+  }
 
   if (target && fieldsQuery.data) {
     const fields = fieldsQuery.data.filter((field) => field.table_id === target.id);
@@ -118,7 +166,16 @@ function MoveSteps({
         prefillBySystemKey={prefillBySystemKey}
         onBack={() => setTarget(null)}
         onDone={onDone}
-        onMoved={onMoved}
+        onMoved={(result) => {
+          if (dealContact && offersDeal(result.table.system_key)) {
+            // The dialog stays open with the offer; the move is reported when it closes.
+            onHold(result);
+            setOffer(result);
+            return;
+          }
+          onDone();
+          onMoved(result);
+        }}
       />
     );
   }
@@ -204,7 +261,6 @@ function AnswerForm({
         (field) => field.system_key === MEETING_FIELD_KEY && field.id in toSave,
       );
       trackMove(from, table, shown, toSave, meetingBooked);
-      onDone();
       onMoved({ table, meetingBooked });
       // Quiet, small reward for every move; no confetti, just a bit of XP. The
       // server finds the move (and the meeting it booked) it has not paid for yet.
@@ -261,11 +317,66 @@ function AnswerForm({
   );
 }
 
+/**
+ * After a move into Domluvená schůzka or Klient má zájem: one tap makes the
+ * deal (prefilled from the contact), and it takes the meeting just booked.
+ */
+function DealOffer({
+  contact,
+  result,
+  onDone,
+  onCreated,
+}: {
+  contact: DealContact;
+  result: MoveResult;
+  onDone: () => void;
+  onCreated: (deal: { id: string; title: string }) => void;
+}) {
+  const t = useTranslations("contacts.move.dealOffer");
+  const [making, setMaking] = useState(false);
+
+  if (making) {
+    return (
+      <NewDealFromContactForm
+        contact={contact}
+        source="cold_calling"
+        linkMeeting={result.meetingBooked}
+        cancelLabel={t("later")}
+        onCancel={onDone}
+        onCreated={onCreated}
+      />
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <FormAlert tone="success">
+        {result.meetingBooked
+          ? t("movedWithMeeting", { name: result.table.name })
+          : t("moved", { name: result.table.name })}
+      </FormAlert>
+      <p className="text-sm text-ink-soft">
+        {t(result.meetingBooked ? "questionMeeting" : "question")}
+      </p>
+      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <Button type="button" variant="ghost" onClick={onDone}>
+          {t("later")}
+        </Button>
+        <Button type="button" autoFocus onClick={() => setMaking(true)}>
+          <BriefcaseBusinessIcon aria-hidden data-icon="inline-start" />
+          {t("create")}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 const TABLE_KEYS = [
   "unreached",
   "no_answer",
   "failed",
   "meeting_scheduled",
+  "interested",
   "email_sent",
   "follow_up",
   "clients",

@@ -70,6 +70,10 @@ export function settingsEvents(patch: Partial<UserSettings>): SettingEvent[] {
       case "daily_call_goal":
         events.push({ setting: "daily_call_goal", ...code(value) });
         break;
+      // A stage id says nothing to analytics; only whether one was picked.
+      case "cold_calling_deal_stage_id":
+        events.push({ setting: "cold_calling_deal_stage", enabled: value !== null });
+        break;
     }
   }
   return events;

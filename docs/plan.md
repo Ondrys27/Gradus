@@ -3347,3 +3347,11 @@ Zkontroluj fázi 17 podle CLAUDE.md:
 - migrace jen přidávací, bun run lint, test, build a e2e projdou.
 ```
 
+
+---
+
+## Později
+
+Věci domluvené na později; `/pokracuj` je neprovádí, přijdou jako samostatný prompt.
+
+- **Automatické zakládání obchodů z tabulek kontaktů** (odloženo v 17.4): pravidlo „co spadne do tabulky X, založí obchod ve fázi Y“. Váša i Ondřej se shodli, že ruční tlačítko „Založit obchod“ (Cold Calling, přesun do Domluvená schůzka / Klient má zájem, detail kontaktu) pochopí každý a automatika přijde, až bude tutoriál.

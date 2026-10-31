@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -11,10 +11,11 @@ import {
   MapPinIcon,
   PencilIcon,
   PhoneIcon,
+  PlusIcon,
   Trash2Icon,
   UsersIcon,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -24,12 +25,27 @@ import { GlowCard } from "@/components/ui/glow-card";
 import { Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusPill } from "@/components/ui/status-pill";
-import { formatCalendarDate, formatCurrency, formatDate, formatDateTime } from "@/lib/format";
+import {
+  formatCalendarDate,
+  formatCurrency,
+  formatDate,
+  formatDateTime,
+  formatNumber,
+  formatRelativeTime,
+} from "@/lib/format";
 import { formatPhone, telHref } from "@/lib/phone";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { useUserSettings } from "@/features/account/queries";
 import { stageTone } from "@/features/pipeline/types";
+import {
+  dealOutcome,
+  summarizeContactDeals,
+  type CurrencyTotal,
+} from "@/features/pipeline/contact-deals";
+import { NewDealFromContactDialog } from "@/features/pipeline/new-deal-from-contact";
+import { useAssigneeName } from "@/features/crm-tasks/use-assignee-name";
+import { useMinuteClock } from "@/features/crm-tasks/use-task-dialogs";
 import { ComposeEmailDialog } from "@/features/email/compose-email-dialog";
 import { emailSummary } from "@/features/email/types";
 import { MentionedInNotes } from "@/features/notes/mentioned-in-notes";
@@ -115,6 +131,8 @@ function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNo
   } | null>(null);
   const remove = useDeleteContact(contact.id);
   const canEdit = useCan("contacts", "edit");
+  // Deals live in the pipeline; without the right to see it the card has nothing to show.
+  const canSeeDeals = useCan("pipeline", "view");
   const entry = useContactEntry(contact.id).data;
   const tables = useContactTables().data ?? [];
   const name = contactName(contact);
@@ -218,7 +236,7 @@ function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNo
             />
           </GlowCard>
           <NotesCard contact={contact} readOnly={!canEdit} />
-          <DealsCard contactId={contact.id} />
+          {canSeeDeals && <DealsCard contact={contact} />}
           <MentionedInNotes kind="contact" id={contact.id} card />
           {canEdit && (
             <Button variant="destructive" className="self-start" onClick={() => setDeleting(true)}>
@@ -499,18 +517,43 @@ function NotesCard({ contact, readOnly }: { contact: Contact; readOnly: boolean 
   );
 }
 
-function DealsCard({ contactId }: { contactId: string }) {
+function DealsCard({ contact }: { contact: Contact }) {
   const t = useTranslations("contacts.deals");
   const settings = useFormatSettings();
-  const deals = useContactDeals(contactId);
+  const locale = useLocale();
+  const now = useMinuteClock();
+  const nameOf = useAssigneeName();
+  const canCreate = useCan("pipeline", "edit");
+  const deals = useContactDeals(contact.id);
+  const [creating, setCreating] = useState(false);
+  const summary = useMemo(() => summarizeContactDeals(deals.data ?? []), [deals.data]);
+  const money = (totals: CurrencyTotal[]) =>
+    totals.length === 0
+      ? formatCurrency(0, settings.currency, settings)
+      : totals.map((item) => formatCurrency(item.total, item.currency, settings)).join(" + ");
 
   return (
-    <GlowCard interactive={false} className="flex flex-col gap-3">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="micro-label">{t("title")}</h2>
-        <Link href="/app/pipeline" className={buttonVariants({ variant: "ghost", size: "sm" })}>
-          {t("openPipeline")}
-        </Link>
+    <GlowCard
+      interactive={false}
+      role="region"
+      aria-labelledby="contact-deals-title"
+      className="flex flex-col gap-3"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 id="contact-deals-title" className="micro-label">
+          {t("title")}
+        </h2>
+        <div className="flex flex-wrap gap-1">
+          <Link href="/app/pipeline" className={buttonVariants({ variant: "ghost", size: "sm" })}>
+            {t("openPipeline")}
+          </Link>
+          {canCreate && (
+            <Button size="sm" variant="outline" onClick={() => setCreating(true)}>
+              <PlusIcon aria-hidden data-icon="inline-start" />
+              {t("newDeal")}
+            </Button>
+          )}
+        </div>
       </div>
       {deals.isPending ? (
         <Skeleton className="h-12 rounded-xl" />
@@ -519,25 +562,104 @@ function DealsCard({ contactId }: { contactId: string }) {
       ) : deals.data.length === 0 ? (
         <p className="text-sm text-ink-muted">{t("empty")}</p>
       ) : (
-        <ul className="flex flex-col">
-          {deals.data.map((deal) => (
-            <li
-              key={deal.id}
-              className="flex items-center gap-3 border-b border-line/60 py-2.5 last:border-b-0"
-            >
-              <span className="min-w-0 flex-1 truncate text-sm text-ink">{deal.title}</span>
-              {deal.value !== null && (
-                <span className="text-sm text-ink-soft tabular-nums">
-                  {formatCurrency(Number(deal.value), deal.currency, settings)}
-                </span>
-              )}
-              {deal.stage && (
-                <StatusPill tone={stageTone(deal.stage.color)}>{deal.stage.name}</StatusPill>
-              )}
-            </li>
-          ))}
-        </ul>
+        <>
+          <dl className="grid grid-cols-3 gap-2" aria-label={t("summary.label")}>
+            <SummaryItem
+              label={t("summary.open")}
+              value={formatNumber(summary.openCount, {}, settings)}
+            />
+            <SummaryItem label={t("summary.openValue")} value={money(summary.openValue)} />
+            <SummaryItem label={t("summary.won")} value={money(summary.wonValue)} tone="green" />
+          </dl>
+          <ul className="flex flex-col">
+            {deals.data.map((deal) => {
+              const outcome = dealOutcome(deal);
+              const details = [
+                deal.expected_close_date &&
+                  t("closeDate", { date: formatCalendarDate(deal.expected_close_date, settings) }),
+                t("assignee", { name: nameOf(deal.assignee_id) }),
+                t("lastActivity", {
+                  when: formatRelativeTime(new Date(deal.last_activity_at), now, locale),
+                }),
+              ].filter(Boolean);
+              return (
+                <li key={deal.id} className="border-b border-line/60 last:border-b-0">
+                  <Link
+                    href={`/app/pipeline?deal=${deal.id}`}
+                    aria-label={t("open", { title: deal.title })}
+                    className="flex min-h-14 flex-col gap-1.5 rounded-lg px-1 py-2.5 outline-none hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:ring-3 focus-visible:ring-violet/40 sm:flex-row sm:items-center sm:gap-3"
+                  >
+                    <span className="flex min-w-0 flex-1 flex-col gap-1">
+                      <span className="truncate text-sm font-medium text-ink">{deal.title}</span>
+                      <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-muted">
+                        {outcome ? (
+                          <StatusPill tone={outcome.kind === "won" ? "green" : "pink"} dot>
+                            {t(outcome.kind === "won" ? "wonOn" : "lostOn", {
+                              date: formatDate(new Date(outcome.at), settings),
+                            })}
+                          </StatusPill>
+                        ) : (
+                          deal.stage && (
+                            <StatusPill tone={stageTone(deal.stage.color)} dot>
+                              {deal.stage.name}
+                            </StatusPill>
+                          )
+                        )}
+                        {details.map((detail) => (
+                          <span key={detail as string}>{detail}</span>
+                        ))}
+                      </span>
+                    </span>
+                    {deal.value !== null && (
+                      <span className="shrink-0 text-sm text-ink-soft tabular-nums">
+                        {formatCurrency(Number(deal.value), deal.currency, settings)}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      )}
+      {canCreate && (
+        <NewDealFromContactDialog
+          open={creating}
+          onOpenChange={setCreating}
+          contact={{
+            id: contact.id,
+            company_name: contact.company_name,
+            first_name: contact.first_name,
+            last_name: contact.last_name,
+          }}
+          source="contact"
+          onCreated={() => undefined}
+        />
       )}
     </GlowCard>
+  );
+}
+
+function SummaryItem({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone?: "green";
+}) {
+  return (
+    <div className="flex min-w-0 flex-col gap-0.5 rounded-xl border border-line/60 px-3 py-2">
+      <dt className="text-xs break-words text-ink-muted">{label}</dt>
+      <dd
+        className={cn(
+          "text-sm font-semibold break-words tabular-nums",
+          tone === "green" ? "text-green" : "text-ink",
+        )}
+      >
+        {value}
+      </dd>
+    </div>
   );
 }

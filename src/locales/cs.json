@@ -1020,6 +1020,13 @@
     "invoices": {
       "title": "Faktury",
       "description": "Tvoje údaje na fakturách, číslování, vzhled a QR platba."
+    },
+    "coldCalling": {
+      "title": "Cold Calling",
+      "description": "Jak se zakládá obchod z volání.",
+      "dealStage": "Fáze nového obchodu",
+      "dealStageHint": "Do které fáze pipeline spadne obchod založený z Cold Callingu.",
+      "firstStage": "První fáze ({name})"
     }
   },
   "milestones": {
@@ -1699,6 +1706,11 @@
       "remove": "Odebrat filtr {filter}",
       "clear": "Zrušit filtry",
       "shown": "Zobrazeno {shown} z {total, plural, one {{totalFormatted} obchodu} few {{totalFormatted} obchodů} many {{totalFormatted} obchodu} other {{totalFormatted} obchodů}}"
+    },
+    "fromContact": {
+      "loadFailed": "Fáze pipeline se nepodařilo načíst. Zkus to znovu.",
+      "noStages": "Pipeline nemá žádnou otevřenou fázi. Přidej ji v Pipeline.",
+      "cancel": "Zrušit"
     }
   },
   "crmTasks": {
@@ -1981,7 +1993,20 @@
       "title": "Obchody",
       "openPipeline": "Pipeline",
       "empty": "S tímto kontaktem zatím nemáš žádný obchod.",
-      "loadFailed": "Obchody se nepodařilo načíst."
+      "loadFailed": "Obchody se nepodařilo načíst.",
+      "newDeal": "Nový obchod",
+      "summary": {
+        "label": "Souhrn obchodů",
+        "open": "Otevřené",
+        "openValue": "Hodnota otevřených",
+        "won": "Vyhráno celkem"
+      },
+      "closeDate": "Uzavření {date}",
+      "lastActivity": "Aktivita {when}",
+      "wonOn": "Vyhráno {date}",
+      "lostOn": "Ztraceno {date}",
+      "open": "Otevřít obchod {title}",
+      "assignee": "Pracovník: {name}"
     },
     "activity": {
       "title": "Historie aktivit",
@@ -2105,7 +2130,13 @@
       "saveFailed": "Změnu se nepodařilo uložit. Zkus to znovu.",
       "reorderFailed": "Nové pořadí se nepodařilo uložit. Zkus to znovu.",
       "loadFailed": "Tabulky se nepodařilo načíst. Zkontroluj připojení a zkus to znovu.",
-      "retry": "Zkusit znovu"
+      "retry": "Zkusit znovu",
+      "interestedOffer": {
+        "title": "Nová tabulka: Klient má zájem",
+        "description": "Pro kontakty, které o tebe stojí, ale schůzka ještě není. Zeptá se, o co mají zájem a kdy se ozvat, a z Cold Callingu z ní jde rovnou založit obchod.",
+        "add": "Přidat tabulku",
+        "failed": "Tabulku se nepodařilo přidat. Zkus to znovu."
+      }
     },
     "move": {
       "open": "Přesunout do",
@@ -2129,7 +2160,15 @@
       "moveFailed": "Kontakt se nepodařilo přesunout. Zkontroluj připojení a zkus to znovu.",
       "loadFailed": "Otázky se nepodařilo načíst. Zkus to znovu.",
       "moved": "Přesunuto do „{name}“.",
-      "movedWithMeeting": "Přesunuto do „{name}“ a schůzka je v kalendáři."
+      "movedWithMeeting": "Přesunuto do „{name}“ a schůzka je v kalendáři.",
+      "dealOffer": {
+        "moved": "Přesunuto do „{name}“.",
+        "movedWithMeeting": "Přesunuto do „{name}“, schůzka je v kalendáři.",
+        "question": "Založit k tomu rovnou obchod? Bude v pipeline i s kontaktem.",
+        "create": "Založit obchod",
+        "later": "Teď ne",
+        "questionMeeting": "Založit k tomu rovnou obchod? Bude v pipeline i se schůzkou v historii."
+      }
     },
     "generate": {
       "title": "Generovat kontakty",
@@ -2203,7 +2242,10 @@
       "emptyTitle": "Tady už není komu volat",
       "emptyDescription": "Přidej nebo vygeneruj kontakty v sekci Kontakty, padají do Neoslovených.",
       "loadMore": "Zobrazit další",
-      "loadingMore": "Načítám…"
+      "loadingMore": "Načítám…",
+      "deal": "Obchod: {title}",
+      "dealShort": "Obchod",
+      "dealCreated": "Obchod „{title}“ je v pipeline."
     },
     "panel": {
       "title": "Kontakt",
@@ -2213,7 +2255,9 @@
       "noPhone": "Bez telefonu.",
       "move": "Přesunout do",
       "notes": "Poznámka",
-      "openDetail": "Otevřít celý detail"
+      "openDetail": "Otevřít celý detail",
+      "deal": "Obchod",
+      "createDeal": "Založit obchod"
     },
     "timer": {
       "title": "Dnes na telefonu",

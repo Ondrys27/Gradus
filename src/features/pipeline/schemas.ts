@@ -45,6 +45,8 @@ export const dealSchema = z.object({
   stage_id: z.string().uuid("stageRequired"),
   description: z.string().trim().max(DESCRIPTION_MAX, "descriptionTooLong"),
   lost_reason: z.string().trim().max(REASON_MAX, "reasonTooLong"),
+  /** Who looks after it; without one the database gives it to whoever made it. */
+  assignee_id: z.string().uuid().nullable().optional(),
 });
 export type DealInput = z.infer<typeof dealSchema>;
 

@@ -11,7 +11,13 @@ import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { MoveResult } from "@/features/contacts/move-contact-dialog";
-import { useContactList, useContactTables, useTableCounts } from "@/features/contacts/queries";
+import {
+  useContactList,
+  useContactTables,
+  useOpenDeals,
+  useTableCounts,
+} from "@/features/contacts/queries";
+import { useCan } from "@/features/account/workspace-queries";
 import { TableSwitcher } from "@/features/contacts/table-switcher";
 import { MarkSeenOnVisit } from "@/features/game/mark-seen-on-visit";
 import { CallWindowNotice } from "@/features/jarvis/call-window";
@@ -46,6 +52,11 @@ export function ColdCallingView() {
 
   const listQuery = useContactList({ term: debounced, tableId: tableId ?? null });
   const contacts = useMemo(() => listQuery.data?.pages.flat() ?? [], [listQuery.data]);
+  const pageIds = useMemo(
+    () => (listQuery.data?.pages ?? []).map((page) => page.map((contact) => contact.id)),
+    [listQuery.data],
+  );
+  const openDeals = useOpenDeals(pageIds, useCan("pipeline", "view")).deals;
   const pending = tablesQuery.isPending || !tableId || listQuery.isPending;
 
   /** The moved contact slides out of the list and the next one opens, so calling goes on. */
@@ -97,6 +108,7 @@ export function ColdCallingView() {
               (moved.meetingBooked
                 ? t("list.movedWithMeeting", { name: moved.table.name })
                 : t("list.moved", { name: moved.table.name }))}
+            {moved?.deal && ` ${t("list.dealCreated", { title: moved.deal.title })}`}
           </p>
 
           {pending ? (
@@ -119,6 +131,7 @@ export function ColdCallingView() {
                 contacts={contacts}
                 openId={openId}
                 onOpen={(contact) => setOpenId(contact.id)}
+                deals={openDeals}
               />
               {listQuery.hasNextPage && (
                 <Button

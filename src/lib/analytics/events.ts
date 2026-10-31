@@ -73,6 +73,7 @@ const CONTACT_TABLE_KEYS = [
   "no_answer",
   "failed",
   "meeting_scheduled",
+  "interested",
   "email_sent",
   "follow_up",
   "clients",
@@ -110,6 +111,7 @@ const SETTINGS = [
   "jarvis_quiet_hours",
   "reengage_months",
   "daily_call_goal",
+  "cold_calling_deal_stage",
 ] as const;
 const CRON_JOBS = [
   "call_time_stats",
@@ -328,6 +330,8 @@ export const EVENTS = {
     currency: isoCode(3),
     value: optional(number()),
     has_contact: bool(),
+    /** Where the new-deal form was opened: the board, a contact's detail, Cold Calling. */
+    from: optional(oneOf(["pipeline", "contact", "cold_calling"])),
   }),
   /** One field saved in the deal detail (which one, never its value). */
   deal_updated: event("pipeline", "client", true, {
@@ -415,7 +419,8 @@ export const EVENTS = {
     match: oneOf(["phone", "email", "both"]),
   }),
   contact_table_edited: event("contacts", "client", true, {
-    action: oneOf(["create", "update", "reorder", "remove"]),
+    /** add_interested: the offered table "Klient má zájem" added from the editor. */
+    action: oneOf(["create", "update", "reorder", "remove", "add_interested"]),
   }),
   contact_field_edited: event("contacts", "client", true, {
     action: oneOf(["create", "update", "reorder", "remove"]),

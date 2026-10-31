@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   ArrowLeftIcon,
   ChevronDownIcon,
+  LightbulbIcon,
   LockIcon,
   PencilIcon,
   PlusIcon,
@@ -33,6 +34,7 @@ import { TABLE_NAME_MAX } from "./schemas";
 import { SortableList } from "./sortable-list";
 import { AddTableDialog, RemoveTableDialog, TableColorPicker } from "./table-dialogs";
 import {
+  useAddInterestedTable,
   useDeleteField,
   useFields,
   useReorderFields,
@@ -140,6 +142,10 @@ function Editor() {
         />
       )}
 
+      {tablesQuery.data && !tables.some((table) => table.system_key === "interested") && (
+        <InterestedTableOffer />
+      )}
+
       <AddTableDialog open={adding} onOpenChange={setAdding} />
       <RemoveTableDialog
         table={removing}
@@ -153,6 +159,39 @@ function Editor() {
         onClose={() => setFieldTarget(null)}
       />
     </div>
+  );
+}
+
+/**
+ * A space without "Klient má zájem" (tables of its own, or the table removed)
+ * gets it offered here rather than slipped in among tables someone arranged.
+ */
+function InterestedTableOffer() {
+  const t = useTranslations("contacts.tableEditor.interestedOffer");
+  const add = useAddInterestedTable();
+  return (
+    <section
+      aria-labelledby="interested-offer-title"
+      className="flex flex-col gap-3 rounded-card border border-dashed border-teal/40 bg-teal/5 p-4 sm:flex-row sm:items-center sm:gap-4"
+    >
+      <LightbulbIcon aria-hidden className="size-5 shrink-0 text-teal" />
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <h2 id="interested-offer-title" className="text-sm font-semibold text-ink">
+          {t("title")}
+        </h2>
+        <p className="text-sm text-ink-soft">{t("description")}</p>
+        {add.isError && <FormAlert>{t("failed")}</FormAlert>}
+      </div>
+      <Button
+        variant="outline"
+        className="self-start sm:self-center"
+        disabled={add.isPending}
+        onClick={() => add.mutate()}
+      >
+        <PlusIcon aria-hidden data-icon="inline-start" />
+        {t("add")}
+      </Button>
+    </section>
   );
 }
 

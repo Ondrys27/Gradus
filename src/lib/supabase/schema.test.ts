@@ -103,7 +103,7 @@ afterAll(async () => {
 });
 
 describe("initialize_user", () => {
-  it("creates profile, settings, subscription, six stages and seven tables", async () => {
+  it("creates profile, settings, subscription, six stages and eight tables", async () => {
     expect(await count(`select 1 from profiles where id = $1`, [owner])).toBe(1);
     expect((await one(`select locale from user_settings where user_id = $1`, [owner])).locale).toBe(
       "cs",
@@ -112,7 +112,7 @@ describe("initialize_user", () => {
       (await one(`select plan_key from subscriptions where user_id = $1`, [owner])).plan_key,
     ).toBe("beta");
     expect(await count(`select 1 from pipeline_stages where user_id = $1`, [owner])).toBe(6);
-    expect(await count(`select 1 from contact_tables where user_id = $1`, [owner])).toBe(7);
+    expect(await count(`select 1 from contact_tables where user_id = $1`, [owner])).toBe(8);
   });
 
   it("makes the first account owner and the next ones user", async () => {
@@ -127,7 +127,7 @@ describe("initialize_user", () => {
   it("is idempotent", async () => {
     await db.exec(`select initialize_user('${owner}', 'cs')`);
     expect(await count(`select 1 from user_roles where user_id = $1`, [owner])).toBe(1);
-    expect(await count(`select 1 from contact_tables where user_id = $1`, [owner])).toBe(7);
+    expect(await count(`select 1 from contact_tables where user_id = $1`, [owner])).toBe(8);
   });
 
   it("seeds dependent questions for the unsuccessful table", async () => {
@@ -149,7 +149,7 @@ describe("initialize_user", () => {
 describe("row level security", () => {
   it("shows a user only their own rows", async () => {
     await asUser(second);
-    expect(await count(`select 1 from contact_tables`)).toBe(7);
+    expect(await count(`select 1 from contact_tables`)).toBe(8);
     expect(await count(`select 1 from contact_tables where user_id = $1`, [owner])).toBe(0);
     await asServer();
   });
@@ -1396,7 +1396,9 @@ describe("moving a contact", () => {
     );
     const list = await rows<{ id: string; key: string }>(
       `select f.id, coalesce(f.system_key, t.system_key || ':' || coalesce(f.depends_on_value, f.label)) as key
-       from contact_table_fields f join contact_tables t on t.id = f.table_id`,
+       from contact_table_fields f join contact_tables t on t.id = f.table_id
+       -- Its questions share system keys with Follow up; the tests here use the older tables.
+       where t.system_key is distinct from 'interested'`,
     );
     fields = Object.fromEntries(list.map((r) => [r.key, r.id]));
     await asServer();

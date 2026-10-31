@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRightLeftIcon,
+  BriefcaseBusinessIcon,
   ExternalLinkIcon,
   GlobeIcon,
   MailIcon,
@@ -18,7 +19,8 @@ import { CurrentTableCard } from "@/features/contacts/contact-detail";
 import { useUserSettings } from "@/features/account/queries";
 import { useCan } from "@/features/account/workspace-queries";
 import { MoveContactDialog, type MoveResult } from "@/features/contacts/move-contact-dialog";
-import { useContact, useContactEntry } from "@/features/contacts/queries";
+import { useContact, useContactEntry, useOpenDeals } from "@/features/contacts/queries";
+import { NewDealFromContactDialog } from "@/features/pipeline/new-deal-from-contact";
 import { websiteHref } from "@/features/contacts/schemas";
 import { contactName, contactPerson, type ContactTable } from "@/features/contacts/types";
 import { formatPhone, telHref } from "@/lib/phone";
@@ -67,7 +69,13 @@ function PanelBody({
   const contact = useContact(contactId);
   const entry = useContactEntry(contactId).data;
   const [moving, setMoving] = useState(false);
+  const [makingDeal, setMakingDeal] = useState(false);
   const canMove = useCan("cold_calling", "edit");
+  const canSeeDeals = useCan("pipeline", "view");
+  const canMakeDeal = useCan("pipeline", "edit");
+  const ids = useMemo(() => [[contactId]], [contactId]);
+  const openDeals = useOpenDeals(ids, canSeeDeals);
+  const deal = openDeals.deals[contactId];
   // The full detail lives under Contacts, which is a section of its own.
   const canOpenDetail = useCan("contacts", "view");
 
@@ -84,6 +92,12 @@ function PanelBody({
 
   const data = contact.data;
   const person = contactPerson(data);
+  const dealContact = {
+    id: data.id,
+    company_name: data.company_name,
+    first_name: data.first_name,
+    last_name: data.last_name,
+  };
   const address = [data.address, data.city].filter(Boolean).join(", ");
   const row = "flex items-center gap-3 text-sm text-ink-soft [&_svg]:size-4 [&_svg]:shrink-0";
 
@@ -119,6 +133,28 @@ function PanelBody({
           </Button>
         )}
       </div>
+
+      {deal ? (
+        <Link
+          href={`/app/pipeline?deal=${deal.id}`}
+          className="flex min-h-11 items-center gap-3 rounded-xl border border-violet/30 px-4 py-2 text-sm text-ink outline-none hover:bg-violet/10 focus-visible:ring-3 focus-visible:ring-violet/40"
+        >
+          <BriefcaseBusinessIcon aria-hidden className="size-4 shrink-0 text-violet" />
+          <span className="flex min-w-0 flex-1 flex-col">
+            <span className="text-xs text-ink-muted">{t("deal")}</span>
+            <span className="truncate font-medium">{deal.title}</span>
+          </span>
+        </Link>
+      ) : (
+        // Offered only once it is known that the contact has no open deal yet.
+        canMakeDeal &&
+        !openDeals.pending && (
+          <Button variant="outline" onClick={() => setMakingDeal(true)}>
+            <BriefcaseBusinessIcon aria-hidden data-icon="inline-start" />
+            {t("createDeal")}
+          </Button>
+        )
+      )}
 
       <div className="flex flex-col gap-3">
         {data.website && (
@@ -175,8 +211,20 @@ function PanelBody({
         contactId={contactId}
         currentTableId={entry?.table_id ?? null}
         tables={tables}
+        dealContact={canMakeDeal && !deal && !openDeals.pending ? dealContact : undefined}
         onMoved={(result) => onMoved(contactId, result)}
       />
+      {canMakeDeal && (
+        <NewDealFromContactDialog
+          open={makingDeal}
+          onOpenChange={setMakingDeal}
+          contact={dealContact}
+          source="cold_calling"
+          // A contact booked for a meeting earlier: the deal takes that meeting.
+          linkMeeting
+          onCreated={() => undefined}
+        />
+      )}
     </div>
   );
 }
