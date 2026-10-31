@@ -8,6 +8,12 @@
 # Spuštění z kořene projektu (Mac zapojený do nabíječky, víko otevřené):
 #   caffeinate -i bash scripts/noc.sh
 #
+# Zastávky (STOP) jsou jen připomínky k ručnímu otestování. Když chceš, aby
+# noční běh jel přes ně dál a nechal ti je na ráno:
+#   caffeinate -i bash scripts/noc.sh --bez-zastavek
+# Přeskočené zastávky se zaškrtnou s poznámkou a sepíšou do .noc/zkontroluj.md.
+# Položky RUČNĚ zastaví běh vždy.
+#
 # Potřebuje Claude Code 2.1.259 nebo novější (claude update).
 # Oprávnění: režim auto — Claude Code se na nic neptá, riskantní kroky
 # sám odmítne a pravidla deny z .claude/settings.json platí dál.
@@ -15,6 +21,8 @@
 # Průběh: .noc/<datum>.log  (ráno stačí otevřít; složka se necommituje)
 
 cd "$(dirname "$0")/.." || exit 1
+SKIP_STOPS=0
+[ "$1" = "--bez-zastavek" ] && SKIP_STOPS=1
 mkdir -p .noc
 grep -qx '.noc/' .gitignore || echo '.noc/' >> .gitignore
 LOG=".noc/$(date +%F_%H%M).log"
@@ -47,8 +55,24 @@ while [ "$done_items" -lt "$MAX_ITEMS" ]; do
   next="$(first_open)"
   if [ -z "$next" ]; then log "Hotovo, v plánu nic nezbývá."; break; fi
   case "$next" in
-    "- [ ] STOP"*|*"| RUČNĚ |"*)
+    "- [ ] STOP"*)
+      if [ "$SKIP_STOPS" = 1 ]; then
+        log "Přeskakuji zastávku, nechávám ti ji na ráno."
+        printf -- '- [ ] %s\n' "${next#- \[ \] STOP | }" >> .noc/zkontroluj.md
+        python3 - "$next" <<'PYEOF'
+import sys, io, datetime
+line = sys.argv[1]
+p = "docs/progress.md"
+s = io.open(p, encoding="utf-8").read()
+new = line.replace("- [ ] STOP", "- [x] STOP", 1) + " · přeskočeno nočním během " + datetime.date.today().isoformat() + ", zkontroluj ručně (.noc/zkontroluj.md)"
+io.open(p, "w", encoding="utf-8").write(s.replace(line, new, 1))
+PYEOF
+        git add docs/progress.md && git commit -qm "Skip manual stop in overnight run" && git push -q
+        continue
+      fi
       log "Zastávka, dál jen s tebou:"; log "$next"; break ;;
+    *"| RUČNĚ |"*)
+      log "Ruční krok, dál jen s tebou:"; log "$next"; break ;;
   esac
 
   log "Spouštím: $next"
@@ -82,3 +106,4 @@ while [ "$done_items" -lt "$MAX_ITEMS" ]; do
 done
 
 log "Konec nočního běhu. Hotových položek: $done_items."
+[ -s .noc/zkontroluj.md ] && log "Přeskočené zastávky k ruční kontrole jsou v .noc/zkontroluj.md."
