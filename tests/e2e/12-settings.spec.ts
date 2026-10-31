@@ -38,6 +38,18 @@ async function savedSettings(userId: string) {
   return data;
 }
 
+/**
+ * Finance over the last three months. The transaction is dated today in UTC,
+ * which in the account's time zone (later Tokyo) can already be the next
+ * month; "this month" would then rightly hide it.
+ */
+async function openFinance(page: Page) {
+  await openApp(page, "/app/finance");
+  await page.locator("#finance-period").click();
+  await page.getByRole("option", { name: t("finance.period.last3Months") }).click();
+  await expect(page.locator("#finance-period")).toContainText(t("finance.period.last3Months"));
+}
+
 test("12 · settings: language, currency and time zone take effect", async ({ page, accounts }) => {
   const account = await accounts.create({ label: "settings" });
   await asUser(account, async (client) => {
@@ -52,7 +64,7 @@ test("12 · settings: language, currency and time zone take effect", async ({ pa
   });
   await signIn(page, account);
 
-  await openApp(page, "/app/finance");
+  await openFinance(page);
   const row = page.locator("main li, main tr").filter({ hasText: "E2E Konzultace" }).first();
   await expect(row).toContainText("Kč");
 
@@ -78,7 +90,7 @@ test("12 · settings: language, currency and time zone take effect", async ({ pa
     .toBeLessThanOrEqual(1);
 
   // A stored amount keeps its own currency (nothing is converted) …
-  await openApp(page, "/app/finance");
+  await openFinance(page);
   await expect(row).toContainText("Kč");
   // … while a new deal starts in the new one.
   await openApp(page, "/app/pipeline");

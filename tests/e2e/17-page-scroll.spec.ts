@@ -18,8 +18,35 @@ async function lockState(page: Page) {
   }));
 }
 
+/**
+ * Waits until the page has stopped moving. Chrome animates a wheel scroll, and
+ * an animation still running when the test scrolls to the top or follows a
+ * link carries on from there (it is shifted, not cancelled): the page ended
+ * up a few dozen pixels down without anything in the app scrolling it.
+ */
+async function scrollSettled(page: Page) {
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        let last = window.scrollY;
+        let still = 0;
+        const tick = () => {
+          if (window.scrollY === last) still += 1;
+          else {
+            still = 0;
+            last = window.scrollY;
+          }
+          if (still >= 10) resolve();
+          else requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }),
+  );
+}
+
 /** Scrolls with the mouse wheel over the page heading and expects the page to move. */
 async function expectPageScrolls(page: Page, label: string) {
+  await scrollSettled(page);
   await page.evaluate(() => window.scrollTo(0, 0));
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
   const heading = page.locator("h1.page-title");
@@ -31,6 +58,7 @@ async function expectPageScrolls(page: Page, label: string) {
   await expect
     .poll(() => page.evaluate(() => window.scrollY), { message: `${label}: ${JSON.stringify(state)}` })
     .toBeGreaterThan(100);
+  await scrollSettled(page);
 }
 
 /** Enough milestones that the list is taller than the window. */

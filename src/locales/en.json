@@ -332,7 +332,7 @@
       "calendar": "events meetings schedule",
       "finance": "money income expenses invoices transactions",
       "workers": "team employees staff rewards",
-      "myTasks": "tasks to do",
+      "tasks": "tasks to do follow-up due overdue deals contacts",
       "myRewards": "earnings payments"
     },
     "settingsItems": {
