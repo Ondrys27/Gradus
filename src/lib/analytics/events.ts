@@ -457,6 +457,24 @@ export const EVENTS = {
   invoice_paid_marked: event("finance", "client", true, {}),
   invoice_deleted: event("finance", "client", true, {}),
 
+  // --- sales tasks (Úkoly) ---------------------------------------------------
+  // Lengths and delays in minutes; never a title, a note or who it is for.
+  crm_task_created: event("pipeline", "client", true, {
+    from: oneOf(["deal", "contact", "tasks"]),
+    duration: count(1440),
+    assigned_to_other: bool(),
+    has_deal: bool(),
+    has_contact: bool(),
+  }),
+  crm_task_updated: event("pipeline", "client", true, { via: oneOf(["form", "calendar"]) }),
+  crm_task_completed: event("pipeline", "client", true, {
+    duration: count(1440),
+    delay_minutes: number(),
+    has_note: bool(),
+  }),
+  crm_task_reopened: event("pipeline", "client", true, {}),
+  crm_task_deleted: event("pipeline", "client", true, {}),
+
   // --- workers -------------------------------------------------------------
   worker_invited: event("workers", "client", true, {}),
   worker_invite_renewed: event("workers", "client", true, {}),

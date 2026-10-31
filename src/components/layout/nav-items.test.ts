@@ -26,14 +26,17 @@ describe("isActivePath", () => {
 });
 
 describe("navigation", () => {
-  it("has nine sections, four of them in the phone bar", () => {
-    expect(navItems).toHaveLength(9);
+  it("has ten sections, four of them in the phone bar", () => {
+    expect(navItems).toHaveLength(10);
     expect(navItems.map((item) => item.key).slice(0, 3)).toEqual([
       "dashboard",
       "milestones",
       "notes",
     ]);
     expect(bottomNavKeys).toHaveLength(4);
+    // Tasks follow the pipeline.
+    const keys = navItems.map((item) => item.key);
+    expect(keys[keys.indexOf("pipeline") + 1]).toBe("tasks");
     expect(bottomNavKeys.every((key) => navItems.some((item) => item.key === key))).toBe(true);
   });
 });
@@ -50,11 +53,11 @@ describe("worker navigation", () => {
   it("gives a worker their own three sections plus the ones they may see", () => {
     expect(navItemsFor(worker).map((item) => item.key)).toEqual([
       "dashboard",
-      "myTasks",
+      "tasks",
       "myRewards",
       "pipeline",
     ]);
-    expect(bottomNavKeysFor(worker)).toEqual(["dashboard", "myTasks", "myRewards"]);
+    expect(bottomNavKeysFor(worker)).toEqual(["dashboard", "tasks", "myRewards"]);
   });
 
   it("opens the calendar only with the right to see it", () => {
@@ -79,7 +82,9 @@ describe("worker navigation", () => {
     expect(isPathAllowed("/app/poznamky", null)).toBe(true);
     expect(isPathAllowed("/app/nastaveni", worker)).toBe(true);
     expect(isPathAllowed("/app/tarif", worker)).toBe(true);
-    expect(isPathAllowed("/app/ukoly", null)).toBe(false);
+    // Tasks: one section for both; the old address of the worker's tasks redirects there.
+    expect(isPathAllowed("/app/ukoly-crm", null)).toBe(true);
+    expect(isPathAllowed("/app/ukoly-crm", worker)).toBe(true);
     expect(isPathAllowed("/app/odmeny", null)).toBe(false);
     expect(isPathAllowed("/app/pracovnici/odmeny", null)).toBe(true);
   });

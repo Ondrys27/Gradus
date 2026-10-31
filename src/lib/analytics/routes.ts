@@ -43,6 +43,7 @@ const ROUTE_SECTIONS = {
   "/app/pracovnici/[id]": "workers",
   "/app/pracovnici/odmeny": "workers",
   "/app/ukoly": "workers",
+  "/app/ukoly-crm": "pipeline",
   "/app/odmeny": "workers",
   "/app/nastaveni": "settings",
   "/app/profil": "account",

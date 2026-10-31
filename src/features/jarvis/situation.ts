@@ -1,5 +1,6 @@
 import {
   formatCurrency,
+  formatDate,
   formatTime,
   formatWeekdayLong,
   isoDateToLocal,
@@ -37,6 +38,14 @@ export type UserSituation = {
   /** Issued, unpaid invoices past their due day, the oldest first. */
   overdueInvoices: { number: string; customer: string | null; total: number; currency: string; dueOn: IsoDate }[];
   overdueInvoicesTotal: number;
+  /**
+   * The user's own sales tasks (Úkoly) past their due moment, the oldest
+   * first, with the deal or contact they belong to.
+   */
+  overdueCrmTasks: { title: string; dueAt: Date; target: string | null }[];
+  overdueCrmTasksTotal: number;
+  /** Their open sales tasks still due later today. */
+  crmTasksDueToday: number;
 };
 
 /** Longest title or name passed on; the model needs the gist, not the essay. */
@@ -133,6 +142,19 @@ export function describeSituation(situation: UserSituation, settings: FormatSett
     );
   }
 
+  if (situation.overdueCrmTasksTotal) {
+    const items = situation.overdueCrmTasks.map((task) => {
+      const due = `${formatDate(task.dueAt, settings)} ${formatTime(task.dueAt, settings)}`;
+      return `${quoted(task.title)}${task.target ? ` for ${quoted(task.target)}` : ""} due ${due}`;
+    });
+    lines.push(
+      `Your sales tasks past their due time: ${items.join("; ")}${more(items.length, situation.overdueCrmTasksTotal)}.`,
+    );
+  }
+  if (situation.crmTasksDueToday) {
+    lines.push(`Your sales tasks still due today: ${situation.crmTasksDueToday}.`);
+  }
+
   const { income, expense } = situation.finance;
   lines.push(
     `This month: income ${money(income)}, expenses ${money(expense)}, balance ${money(income - expense)}.`,
@@ -145,6 +167,7 @@ export function describeSituation(situation: UserSituation, settings: FormatSett
 export function suggestionsFor(situation: UserSituation, limit = 3): SuggestionKey[] {
   const keys: SuggestionKey[] = [];
   if (situation.followUpsTotal) keys.push("followUps");
+  if (situation.overdueCrmTasksTotal) keys.push("overdueCrmTasks");
   if (situation.overdueTotal) keys.push("overdueTasks");
   if (situation.overdueInvoicesTotal) keys.push("overdueInvoices");
   if (situation.stalledDeals) keys.push("stalledDeals");

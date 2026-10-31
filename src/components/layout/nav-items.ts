@@ -20,11 +20,11 @@ export type NavKey =
   | "notes"
   | "contacts"
   | "pipeline"
+  | "tasks"
   | "coldCalling"
   | "calendar"
   | "finance"
   | "workers"
-  | "myTasks"
   | "myRewards";
 
 export type NavItem = { key: NavKey; href: string; icon: LucideIcon };
@@ -35,6 +35,7 @@ export const navItems: NavItem[] = [
   { key: "notes", href: "/app/poznamky", icon: NotebookPenIcon },
   { key: "contacts", href: "/app/kontakty", icon: ContactRoundIcon },
   { key: "pipeline", href: "/app/pipeline", icon: SquareKanbanIcon },
+  { key: "tasks", href: "/app/ukoly-crm", icon: ListChecksIcon },
   { key: "coldCalling", href: "/app/cold-calling", icon: PhoneCallIcon },
   { key: "calendar", href: "/app/kalendar", icon: CalendarDaysIcon },
   { key: "finance", href: "/app/finance", icon: WalletIcon },
@@ -44,9 +45,8 @@ export const navItems: NavItem[] = [
 /** Sections that get their own slot in the phone bottom bar; the rest live under "More". */
 export const bottomNavKeys: NavKey[] = ["dashboard", "milestones", "pipeline", "calendar"];
 
-/** Only a worker has these: the tasks their owner gave them and what they earned. */
+/** Only a worker has this: what they earned. */
 export const workerOnlyItems: NavItem[] = [
-  { key: "myTasks", href: "/app/ukoly", icon: ListChecksIcon },
   { key: "myRewards", href: "/app/odmeny", icon: CoinsIcon },
 ];
 
@@ -67,10 +67,14 @@ export type WorkerNavAccess = {
   permissions: Partial<Record<string, { view: boolean; edit: boolean }>>;
 } | null;
 
-const WORKER_BASE: NavKey[] = ["dashboard", "myTasks", "myRewards"];
+/**
+ * Every worker has Tasks: the ones given to them (sales tasks and tasks from
+ * the owner) are theirs whatever sections they may see.
+ */
+const WORKER_BASE: NavKey[] = ["dashboard", "tasks", "myRewards"];
 
 /**
- * The sidebar of an account. An owner gets the nine sections; a worker gets
+ * The sidebar of an account. An owner gets the ten sections; a worker gets
  * their own Dashboard, Tasks and Rewards, then every section the owner lets
  * them see. Workers, notes and settings of the owner are never among them.
  */

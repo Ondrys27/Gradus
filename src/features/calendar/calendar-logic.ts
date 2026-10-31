@@ -8,6 +8,7 @@ import {
   type IsoDate,
   type WeekStart,
 } from "@/lib/format";
+import type { CrmTask } from "@/features/crm-tasks/types";
 import type {
   CalendarEvent,
   CalendarItem,
@@ -16,6 +17,8 @@ import type {
   EventKind,
   MirrorItem,
   MirrorCalendarItem,
+  TaskCalendarItem,
+  TimedItem,
 } from "./types";
 
 export const DEFAULT_VIEW: CalendarView = "month";
@@ -171,12 +174,39 @@ export function toMirrorItem(mirror: MirrorItem): MirrorCalendarItem {
   };
 }
 
+/**
+ * A sales task with a time sits at its due moment for its length. Overdue is
+ * read from `now`, so a task due at 15:00 turns red at 15:01.
+ */
+export function toTaskItem(task: CrmTask, timeZone: string, now: Date): TaskCalendarItem {
+  const startMs = new Date(task.due_at).getTime();
+  const endMs = startMs + Math.max(1, task.duration_minutes) * MINUTE_MS;
+  const first = instantToZonedParts(new Date(startMs), timeZone).date;
+  const last = instantToZonedParts(new Date(endMs - 1), timeZone).date;
+  const overdue = task.status === "open" && startMs < now.getTime();
+  return {
+    type: "task",
+    key: `crmTask:${task.id}`,
+    title: task.title,
+    tone: overdue ? "pink" : "violet",
+    allDay: false,
+    firstDay: first,
+    lastDay: last < first ? first : last,
+    task,
+    overdue,
+    startMs,
+    endMs,
+  };
+}
+
+const TYPE_ORDER: Record<CalendarItem["type"], number> = { event: 0, task: 1, mirror: 2 };
+
 function compareItems(a: CalendarItem, b: CalendarItem): number {
   if (a.allDay !== b.allDay) return a.allDay ? -1 : 1;
-  if (a.type === "event" && b.type === "event" && a.startMs !== b.startMs) {
+  if (a.type !== "mirror" && b.type !== "mirror" && a.startMs !== b.startMs) {
     return a.startMs - b.startMs;
   }
-  if (a.type !== b.type) return a.type === "event" ? -1 : 1;
+  if (a.type !== b.type) return TYPE_ORDER[a.type] - TYPE_ORDER[b.type];
   return a.title.localeCompare(b.title);
 }
 
@@ -198,7 +228,7 @@ export function dotsForDay(items: CalendarItem[]): {
   more: boolean;
 } {
   return {
-    tones: items.slice(0, 3).map((item) => ({ tone: item.tone, mirror: item.type === "mirror" })),
+    tones: items.slice(0, 3).map((item) => ({ tone: item.tone, mirror: item.type !== "event" })),
     more: items.length > 3,
   };
 }
@@ -208,7 +238,7 @@ export function dotsForDay(items: CalendarItem[]): {
 // ---------------------------------------------------------------------------
 
 export type PositionedItem = {
-  item: EventItem;
+  item: TimedItem;
   /** Minutes from midnight of the shown day. */
   top: number;
   height: number;
@@ -227,7 +257,7 @@ function minuteOnDay(instantMs: number, day: IsoDate, timeZone: string) {
 /** Places the timed items of one day side by side where they overlap. */
 export function layoutDay(items: CalendarItem[], day: IsoDate, timeZone: string): PositionedItem[] {
   const boxes = items
-    .filter((item): item is EventItem => item.type === "event" && !item.allDay)
+    .filter((item): item is TimedItem => item.type !== "mirror" && !item.allDay)
     .map((item) => {
       const start = minuteOnDay(item.startMs, day, timeZone);
       let end = minuteOnDay(item.endMs, day, timeZone);
@@ -298,9 +328,9 @@ export function rangeFromDrag(
   };
 }
 
-/** Moves a timed event to a new day and start minute, keeping its length. */
+/** Moves a timed event (or a task) to a new day and start minute, keeping its length. */
 export function movedRange(
-  item: EventItem,
+  item: TimedItem,
   day: IsoDate,
   startMin: number,
   timeZone: string,
@@ -315,7 +345,7 @@ export function movedRange(
 
 /** Drags the end of a timed event; the end stays at least one step after the start. */
 export function resizedRange(
-  item: EventItem,
+  item: TimedItem,
   day: IsoDate,
   endMin: number,
   timeZone: string,

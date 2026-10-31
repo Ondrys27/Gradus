@@ -207,6 +207,7 @@
     "notes": "Poznámky",
     "contacts": "Kontakty",
     "pipeline": "Pipeline",
+    "tasks": "Úkoly",
     "coldCalling": "Cold Calling",
     "calendar": "Kalendář",
     "finance": "Finance",
@@ -449,6 +450,7 @@
       "followUps": "Komu se mám dnes ozvat?",
       "stalledDeals": "Které obchody stojí a co s nimi?",
       "overdueTasks": "Pomoz mi dohnat úkoly po termínu",
+      "overdueCrmTasks": "Co s úkoly u obchodů po termínu?",
       "nextMilestoneStep": "Jaký je další krok u mého milníku?",
       "firstMilestone": "Pomoz mi nastavit první milník",
       "firstDeal": "Jak získat první obchod?",
@@ -523,6 +525,10 @@
       "overdueInvoice": {
         "text": "Faktura {number} pro {customer} je {days, plural, one {{daysFormatted} den} few {{daysFormatted} dny} other {{daysFormatted} dní}} po splatnosti.",
         "noCustomer": "Faktura {number} je {days, plural, one {{daysFormatted} den} few {{daysFormatted} dny} other {{daysFormatted} dní}} po splatnosti."
+      },
+      "overdueCrmTask": {
+        "text": "Úkol „{task}“ u {target} je po termínu.",
+        "noTarget": "Úkol „{task}“ je po termínu."
       }
     },
     "tour": {
@@ -1568,6 +1574,186 @@
       "cancelled": "Přesun zrušen."
     }
   },
+  "crmTasks": {
+    "title": "Úkoly",
+    "description": "Co je potřeba udělat u obchodů a kontaktů. Nahoře to, co hoří.",
+    "workerDescription": "Úkoly u obchodů a kontaktů i úkoly od vedoucího na jednom místě. Nahoře to, co hoří.",
+    "new": "Nový úkol",
+    "loadFailed": "Úkoly se nepodařilo načíst. Zkus obnovit stránku.",
+    "limited": "Zobrazuje se prvních {count} otevřených úkolů. Zbytek najdeš přes filtry.",
+    "empty": {
+      "title": "Zatím žádné úkoly",
+      "description": "Úkol založíš u obchodu nebo kontaktu, nebo tady tlačítkem Nový úkol."
+    },
+    "emptyFiltered": {
+      "title": "Filtrům nic neodpovídá",
+      "description": "Zkus jiný termín nebo filtry zruš."
+    },
+    "groups": {
+      "overdue": "Po termínu",
+      "today": "Dnes",
+      "tomorrow": "Zítra",
+      "thisWeek": "Tento týden",
+      "later": "Později",
+      "done": "Hotové"
+    },
+    "quick": {
+      "label": "Rychlý výběr",
+      "all": "Vše",
+      "open": "Otevřené",
+      "overdue": "Po termínu",
+      "today": "Dnes"
+    },
+    "filters": {
+      "button": "Filtry",
+      "buttonActive": "Filtry ({count})",
+      "due": "Termín",
+      "who": "Kdo",
+      "status": "Stav",
+      "duration": "Trvání",
+      "target": "Obchod nebo kontakt",
+      "targetPlaceholder": "Hledat obchod nebo kontakt",
+      "deal": "Obchod",
+      "contact": "Kontakt",
+      "range": "Vlastní rozsah",
+      "anyDue": "Kdykoli",
+      "anyone": "Kdokoli",
+      "me": "Já",
+      "anyDuration": "Jakékoli",
+      "dueValues": {
+        "overdue": "Po termínu",
+        "today": "Dnes",
+        "tomorrow": "Zítra",
+        "thisWeek": "Tento týden",
+        "nextWeek": "Příští týden",
+        "custom": "Vlastní rozsah"
+      },
+      "statusValues": {
+        "open": "Otevřené",
+        "done": "Hotové",
+        "all": "Vše"
+      },
+      "durationValues": {
+        "le15": "Do 15 min",
+        "le30": "Do 30 min",
+        "le60": "Do 60 min",
+        "gt60": "Nad 60 min"
+      },
+      "activeLabel": "Použité filtry",
+      "remove": "Odebrat filtr {filter}",
+      "clear": "Zrušit filtry"
+    },
+    "row": {
+      "complete": "Označit „{title}“ jako hotové",
+      "reopen": "Vrátit „{title}“ mezi otevřené",
+      "open": "Otevřít úkol {title}",
+      "due": "{date} · {relative}",
+      "dueDay": "do {date}",
+      "overdue": "Po termínu",
+      "minutes": "{count} min",
+      "completedOn": "Hotovo {date}"
+    },
+    "origin": {
+      "crm": "Obchod",
+      "owner": "Od vedoucího"
+    },
+    "who": {
+      "me": "Já",
+      "nobody": "Nikdo",
+      "someone": "Bývalý člen týmu",
+      "owner": "Majitel"
+    },
+    "form": {
+      "newTitle": "Nový úkol",
+      "editTitle": "Upravit úkol",
+      "close": "Zavřít",
+      "title": "Název",
+      "titlePlaceholder": "Např. Zavolat kvůli nabídce",
+      "titleHint": "Enter úkol rovnou uloží, zbytek má výchozí hodnoty.",
+      "target": "U čeho",
+      "targetPlaceholder": "Hledat obchod nebo kontakt",
+      "targetRemove": "Odebrat {name}",
+      "targetNone": "Nic nenalezeno.",
+      "kindDeal": "Obchod",
+      "kindContact": "Kontakt",
+      "due": "Do kdy",
+      "time": "Čas",
+      "quickLabel": "Rychlá volba termínu",
+      "quick": {
+        "today": "Dnes",
+        "tomorrow": "Zítra",
+        "nextWeek": "Za týden"
+      },
+      "duration": "Jak dlouho",
+      "minutes": "{count} min",
+      "custom": "Vlastní",
+      "customMinutes": "Počet minut",
+      "assignee": "Kdo",
+      "description": "Popis",
+      "saveFailed": "Úkol se nepodařilo uložit. Zkus to znovu.",
+      "cancel": "Zrušit",
+      "save": "Uložit",
+      "create": "Přidat úkol"
+    },
+    "errors": {
+      "titleRequired": "Napiš, co je potřeba udělat.",
+      "titleTooLong": "Název je moc dlouhý, nejvýš 200 znaků.",
+      "descriptionTooLong": "Popis je moc dlouhý, nejvýš 5 000 znaků.",
+      "dueRequired": "Vyber, do kdy má být úkol hotový.",
+      "durationInvalid": "Délka musí být 1 až 1 440 minut.",
+      "targetRequired": "Vyber obchod nebo kontakt, ke kterému úkol patří."
+    },
+    "complete": {
+      "title": "Hotovo",
+      "close": "Zavřít",
+      "lead": "Úkol „{title}“ bude hotový. Chceš k němu něco poznamenat?",
+      "note": "Poznámka (nepovinná)",
+      "hint": "Objeví se v historii obchodu a kontaktu.",
+      "placeholder": "Volal jsem s klientkou, pošle podklady v pondělí",
+      "failed": "Úkol se nepodařilo označit. Zkus to znovu.",
+      "cancel": "Zrušit",
+      "confirm": "Hotovo"
+    },
+    "detail": {
+      "title": "Úkol",
+      "close": "Zavřít",
+      "statusOpen": "Otevřený",
+      "statusDone": "Hotový",
+      "due": "Do kdy",
+      "duration": "Jak dlouho",
+      "assignee": "Kdo",
+      "deal": "Obchod",
+      "contact": "Kontakt",
+      "description": "Popis",
+      "noDescription": "Bez popisu.",
+      "history": "Historie",
+      "historyCreated": "Založeno · {name}",
+      "historyDone": "Hotovo · {name}",
+      "openDeal": "Otevřít obchod",
+      "openContact": "Otevřít kontakt",
+      "edit": "Upravit",
+      "markDone": "Hotovo",
+      "reopen": "Vrátit mezi otevřené",
+      "reopenFailed": "Úkol se nepodařilo vrátit. Zkus to znovu.",
+      "delete": "Smazat",
+      "deleteTitle": "Smazat úkol?",
+      "deleteDescription": "Úkol „{title}“ zmizí i z historie obchodu a kontaktu.",
+      "deleteFailed": "Úkol se nepodařilo smazat. Zkus to znovu.",
+      "cancel": "Zrušit"
+    },
+    "section": {
+      "title": "Úkoly",
+      "add": "Přidat úkol",
+      "loadFailed": "Úkoly se nepodařilo načíst.",
+      "empty": "Zatím žádný otevřený úkol.",
+      "done": "Hotové ({count})",
+      "reopenFailed": "Úkol se nepodařilo změnit. Zkus to znovu.",
+      "showInTasks": "Zobrazit v Úkolech"
+    },
+    "history": {
+      "done": "Úkol hotový"
+    }
+  },
   "contacts": {
     "description": "Všichni, se kterými pracuješ, roztřídění do vlastních tabulek.",
     "loadFailed": "Kontakty se nepodařilo načíst. Zkontroluj připojení a zkus to znovu.",
@@ -2006,7 +2192,8 @@
     "mirrors": {
       "label": "Zobrazit z jiných sekcí",
       "tasks": "Úkoly z milníků",
-      "deals": "Očekávaná uzavření obchodů"
+      "deals": "Očekávaná uzavření obchodů",
+      "crmTasks": "Úkoly obchodů a kontaktů"
     },
     "more": "+{count} dalších",
     "allDayShort": "Celý den",

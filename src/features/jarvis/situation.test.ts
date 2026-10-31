@@ -30,6 +30,9 @@ function situation(overrides: Partial<UserSituation> = {}): UserSituation {
     finance: { income: 0, expense: 0 },
     overdueInvoices: [],
     overdueInvoicesTotal: 0,
+    overdueCrmTasks: [],
+    overdueCrmTasksTotal: 0,
+    crmTasksDueToday: 0,
     ...overrides,
   };
 }
@@ -176,5 +179,41 @@ describe("suggestionsFor", () => {
     );
     expect(new Set(keys).size).toBe(keys.length);
     expect(keys[0]).toBe("planDay");
+  });
+});
+
+describe("sales tasks in the situation", () => {
+  it("lists the user's overdue sales tasks with when they were due and what for", () => {
+    const text = describeSituation(
+      situation({
+        overdueCrmTasks: [
+          { title: "Zavolat kvůli nabídce", dueAt: at("15:00", "2026-09-27"), target: "Pekárna Novák" },
+          { title: "Poslat ceník", dueAt: at("09:30"), target: null },
+        ],
+        overdueCrmTasksTotal: 4,
+        crmTasksDueToday: 2,
+      }),
+      settings,
+    );
+    expect(text).toContain(
+      'Your sales tasks past their due time: "Zavolat kvůli nabídce" for "Pekárna Novák" due 27. 9. 2026 15:00; "Poslat ceník" due 28. 9. 2026 09:30 (+2 more).',
+    );
+    expect(text).toContain("Your sales tasks still due today: 2.");
+  });
+
+  it("says nothing about sales tasks when none are late or due", () => {
+    expect(describeSituation(situation(), settings)).not.toContain("sales tasks");
+  });
+
+  it("offers the overdue tasks chip before the milestone tasks", () => {
+    const keys = suggestionsFor(
+      situation({
+        overdueCrmTasks: [{ title: "Zavolat", dueAt: at("08:00"), target: null }],
+        overdueCrmTasksTotal: 1,
+        overdueTasks: [{ title: "Order signage", dueDate: "2026-09-27" }],
+        overdueTotal: 1,
+      }),
+    );
+    expect(keys.slice(0, 2)).toEqual(["overdueCrmTasks", "overdueTasks"]);
   });
 });

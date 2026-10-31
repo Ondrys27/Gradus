@@ -6,7 +6,7 @@ import { createAccount, deleteAccount, deleteLeftoverAccounts } from "./accounts
 const WARM_ROUTES = [
   "/app",
   "/app/milniky",
-  "/app/ukoly",
+  "/app/ukoly-crm",
   "/app/kontakty",
   "/app/pipeline",
   "/app/cold-calling",

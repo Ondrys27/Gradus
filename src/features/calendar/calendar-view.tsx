@@ -8,6 +8,7 @@ import {
   HandshakeIcon,
   ListChecksIcon,
   PlusIcon,
+  SquareCheckBigIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -33,13 +34,17 @@ import {
   shiftCursor,
   toEventItem,
   toMirrorItem,
+  toTaskItem,
   viewDays,
   type TimeRange,
 } from "./calendar-logic";
+import { canEditTask } from "@/features/crm-tasks/access";
+import { useCalendarTasks, useMoveTask } from "@/features/crm-tasks/queries";
+import { useTaskDialogs } from "@/features/crm-tasks/use-task-dialogs";
 import { EventDetail } from "./event-detail";
 import { EventFormDialog, type NewEventStart } from "./event-form-dialog";
 import { MonthView } from "./month-view";
-import { useCan } from "@/features/account/workspace-queries";
+import { useCan, useWorkspace } from "@/features/account/workspace-queries";
 import { useCalendarEvents, useMirrors, useUpdateEvent } from "./queries";
 import { TimeGrid } from "./time-grid";
 import {
@@ -47,8 +52,8 @@ import {
   type CalendarEvent,
   type CalendarItem,
   type CalendarView,
-  type EventItem,
   type MirrorPrefs,
+  type TimedItem,
 } from "./types";
 import { DEFAULT_MIRRORS, loadMirrors, loadView, saveMirrors, saveView } from "./view-preference";
 import { WeekList } from "./week-list";
@@ -84,6 +89,9 @@ export function CalendarView() {
   const now = useNow(30_000);
   const today = todayIsoDate(settings, now);
   const update = useUpdateEvent();
+  const moveTask = useMoveTask();
+  const workspace = useWorkspace();
+  const taskDialogs = useTaskDialogs(now);
   // Without the right to edit, the calendar is to look at; RLS refuses changes anyway.
   const canEdit = useCan("calendar", "edit");
 
@@ -128,14 +136,31 @@ export function CalendarView() {
 
   const eventsQuery = useCalendarEvents(firstDay, lastDay, settings.timeZone, ready);
   const mirrorsQuery = useMirrors(firstDay, lastDay, mirrors, ready);
+  const tasksQuery = useCalendarTasks(
+    firstDay,
+    lastDay,
+    settings.timeZone,
+    ready && mirrors.crmTasks,
+  );
 
   const items = useMemo(() => {
     const list: CalendarItem[] = [
       ...(eventsQuery.data ?? []).map((event) => toEventItem(event, settings.timeZone)),
       ...(mirrorsQuery.data ?? []).map(toMirrorItem),
+      ...(mirrors.crmTasks ? (tasksQuery.data ?? []) : []).map((task) =>
+        toTaskItem(task, settings.timeZone, now),
+      ),
     ];
     return itemsByDay(list, days);
-  }, [eventsQuery.data, mirrorsQuery.data, days, settings.timeZone]);
+  }, [
+    eventsQuery.data,
+    mirrorsQuery.data,
+    tasksQuery.data,
+    mirrors.crmTasks,
+    days,
+    settings.timeZone,
+    now,
+  ]);
 
   const openEvent = (eventsQuery.data ?? []).find((event) => event.id === openEventId) ?? null;
 
@@ -157,11 +182,22 @@ export function CalendarView() {
 
   function openItem(item: CalendarItem) {
     if (item.type === "mirror") router.push(item.mirror.href);
+    else if (item.type === "task") taskDialogs.open(item.task);
     else setOpenEventId(item.event.id);
   }
 
-  function changeEvent(item: EventItem, range: TimeRange) {
+  /** A dragged event gets its new range; a dragged task only a new due moment. */
+  function changeItem(item: TimedItem, range: TimeRange) {
     setChangeFailed(false);
+    if (item.type === "task") {
+      if (!canEditTask(workspace, item.task)) return;
+      moveTask.mutate(
+        { id: item.task.id, dueAt: range.starts_at },
+        { onError: () => setChangeFailed(true) },
+      );
+      return;
+    }
+    if (!canEdit) return;
     update.mutate({ id: item.event.id, patch: range }, { onError: () => setChangeFailed(true) });
   }
 
@@ -179,7 +215,7 @@ export function CalendarView() {
         ? `${formatCalendarDate(firstDay, settings)} – ${formatCalendarDate(lastDay, settings)}`
         : `${weekdayName(date.getDay(), locale)} ${formatCalendarDate(cursor, settings)}`;
 
-  const failed = eventsQuery.isError || mirrorsQuery.isError;
+  const failed = eventsQuery.isError || mirrorsQuery.isError || tasksQuery.isError;
 
   return (
     <div className="flex flex-col gap-5">
@@ -264,6 +300,14 @@ export function CalendarView() {
         >
           {t("mirrors.deals")}
         </MirrorToggle>
+        <MirrorToggle
+          pressed={mirrors.crmTasks}
+          tone="violet"
+          onToggle={() => toggleMirror("crmTasks")}
+          icon={<SquareCheckBigIcon aria-hidden className="size-4" />}
+        >
+          {t("mirrors.crmTasks")}
+        </MirrorToggle>
       </div>
 
       {(failed || changeFailed) && (
@@ -302,9 +346,10 @@ export function CalendarView() {
           onPickDay={view === "week" ? pickDay : undefined}
           onOpenItem={openItem}
           onCreate={(day, range) => canEdit && setForm({ event: null, start: { day, range } })}
-          onChangeEvent={canEdit ? changeEvent : () => {}}
+          onChangeEvent={changeItem}
         />
       )}
+      {taskDialogs.dialogs}
 
       <EventDetail
         event={openEvent}
@@ -325,6 +370,12 @@ export function CalendarView() {
   );
 }
 
+const TOGGLE_TONE = {
+  teal: "border-teal/60 bg-teal/10 text-teal",
+  gold: "border-gold/60 bg-gold/10 text-gold",
+  violet: "border-violet/60 bg-violet/10 text-violet",
+} as const;
+
 function MirrorToggle({
   pressed,
   tone,
@@ -333,7 +384,7 @@ function MirrorToggle({
   children,
 }: {
   pressed: boolean;
-  tone: "teal" | "gold";
+  tone: "teal" | "gold" | "violet";
   onToggle: () => void;
   icon: ReactNode;
   children: ReactNode;
@@ -345,11 +396,7 @@ function MirrorToggle({
       onClick={onToggle}
       className={cn(
         "inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-dashed px-4 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 mouse:h-9",
-        pressed
-          ? tone === "teal"
-            ? "border-teal/60 bg-teal/10 text-teal"
-            : "border-gold/60 bg-gold/10 text-gold"
-          : "border-line text-ink-muted hover:text-ink",
+        pressed ? TOGGLE_TONE[tone] : "border-line text-ink-muted hover:text-ink",
       )}
     >
       {icon}

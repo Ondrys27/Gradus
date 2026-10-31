@@ -355,6 +355,23 @@ export function formatEditedAt(
     : formatDate(instant, settings);
 }
 
+/**
+ * How far an instant is from now in the UI language, next to the exact date:
+ * "in 3 hours", "2 days ago" / "za 3 hodiny", "před 2 dny". Minutes under an
+ * hour, hours under a day, then days; months only past six weeks.
+ */
+export function formatRelativeTime(instant: Date, now: Date, uiLocale: string): string {
+  const diff = instant.getTime() - now.getTime();
+  const minutes = Math.round(diff / 60_000);
+  const format = new Intl.RelativeTimeFormat(uiLocale, { numeric: "always" });
+  if (Math.abs(minutes) < 60) return format.format(minutes, "minute");
+  const hours = Math.round(diff / 3_600_000);
+  if (Math.abs(hours) < 24) return format.format(hours, "hour");
+  const days = Math.round(diff / 86_400_000);
+  if (Math.abs(days) < 45) return format.format(days, "day");
+  return format.format(Math.round(days / 30), "month");
+}
+
 /** Full weekday name in the UI language, e.g. "Monday" / "pondělí". */
 export function formatWeekdayLong(date: Date, uiLocale: string): string {
   return new Intl.DateTimeFormat(uiLocale, { weekday: "long" }).format(date);

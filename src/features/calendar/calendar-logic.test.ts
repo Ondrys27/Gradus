@@ -12,10 +12,12 @@ import {
   snapMinutes,
   toEventItem,
   toMirrorItem,
+  toTaskItem,
   viewDays,
 } from "./calendar-logic";
 import type { CalendarEvent } from "./types";
 import { parseMirrors, parseView } from "./view-preference";
+import type { CrmTask } from "@/features/crm-tasks/types";
 
 const PRAGUE = "Europe/Prague";
 
@@ -203,7 +205,9 @@ describe("layoutDay", () => {
     const b = at("b", "2026-09-25T08:30:00.000Z", "2026-09-25T09:00:00.000Z"); // 10:30–11:00
     const c = at("c", "2026-09-25T10:00:00.000Z", "2026-09-25T11:00:00.000Z"); // 12:00–13:00
     const laid = layoutDay([a, b, c], "2026-09-25", PRAGUE);
-    const by = Object.fromEntries(laid.map((entry) => [entry.item.event.id, entry]));
+    const by = Object.fromEntries(
+      laid.map((entry) => [entry.item.key.replace("event:", ""), entry]),
+    );
     expect(by.a).toMatchObject({ top: 600, height: 90, column: 0, columns: 2 });
     expect(by.b).toMatchObject({ column: 1, columns: 2 });
     expect(by.c).toMatchObject({ top: 720, column: 0, columns: 1 });
@@ -274,8 +278,54 @@ describe("remembered choices", () => {
     expect(parseView(null)).toBe("month");
     expect(parseView("year")).toBe("month");
     expect(parseView("week")).toBe("week");
-    expect(parseMirrors(null)).toEqual({ tasks: true, deals: true });
-    expect(parseMirrors("nonsense")).toEqual({ tasks: true, deals: true });
-    expect(parseMirrors('{"tasks":false}')).toEqual({ tasks: false, deals: true });
+    expect(parseMirrors(null)).toEqual({ tasks: true, deals: true, crmTasks: true });
+    expect(parseMirrors("nonsense")).toEqual({ tasks: true, deals: true, crmTasks: true });
+    expect(parseMirrors('{"tasks":false}')).toEqual({ tasks: false, deals: true, crmTasks: true });
+    expect(parseMirrors('{"crmTasks":false}')).toMatchObject({ crmTasks: false });
+  });
+});
+
+describe("sales tasks in the calendar", () => {
+  const task: CrmTask = {
+    id: "t1",
+    title: "Zavolat kvůli nabídce",
+    description: null,
+    due_at: "2026-09-25T13:00:00.000Z", // 15:00 in Prague
+    duration_minutes: 30,
+    assignee_id: null,
+    deal_id: "d1",
+    contact_id: null,
+    status: "open",
+    completed_at: null,
+    completed_by: null,
+    completion_note: null,
+    created_by: null,
+    created_at: "2026-09-20T08:00:00.000Z",
+    deal: { id: "d1", title: "Web" },
+    contact: null,
+  };
+
+  it("draws a task at its due moment for its length, red from the minute after", () => {
+    const item = toTaskItem(task, PRAGUE, new Date("2026-09-25T13:00:00.000Z"));
+    expect(item).toMatchObject({
+      type: "task",
+      allDay: false,
+      firstDay: "2026-09-25",
+      tone: "violet",
+      overdue: false,
+    });
+    expect(item.endMs - item.startMs).toBe(30 * 60_000);
+    expect(toTaskItem(task, PRAGUE, new Date("2026-09-25T13:01:00.000Z"))).toMatchObject({
+      tone: "pink",
+      overdue: true,
+    });
+    expect(layoutDay([item], "2026-09-25", PRAGUE)[0]).toMatchObject({ top: 900, height: 30 });
+  });
+
+  it("moves a task to a new day and time; only its start counts", () => {
+    const item = toTaskItem(task, PRAGUE, new Date("2026-09-24T08:00:00.000Z"));
+    expect(movedRange(item, "2026-09-26", 9 * 60, PRAGUE).starts_at).toBe(
+      "2026-09-26T07:00:00.000Z",
+    );
   });
 });

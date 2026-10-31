@@ -171,7 +171,7 @@ export function TourOverlay({
   // a named target (a milestone to start with) shows in the bubble instead.
   const firstAction =
     step.key === "workerFinish"
-      ? { label: t("action.openTasks"), href: "/app/ukoly", target: null }
+      ? { label: t("action.openTasks"), href: "/app/ukoly-crm", target: null }
       : firstMilestone.data
         ? {
             label: t("action.openFirstTask"),

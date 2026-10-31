@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   calendarDaysBetween,
   isAppHref,
+  reachesPeople,
   ruleSuggestions,
   suggestionActionSchema,
   type RuleInputs,
@@ -14,6 +15,7 @@ const EMPTY: RuleInputs = {
   overdueTasks: [],
   readyMilestones: [],
   overdueInvoices: [],
+  overdueCrmTasks: [],
 };
 
 describe("ruleSuggestions", () => {
@@ -47,6 +49,7 @@ describe("ruleSuggestions", () => {
           daysLate: 8,
         },
       ],
+      overdueCrmTasks: [],
     });
 
     expect(rules.map((r) => [r.type, r.dedupeKey])).toEqual([
@@ -114,5 +117,43 @@ describe("suggestion actions", () => {
   it("counts calendar days", () => {
     expect(calendarDaysBetween("2026-09-20", "2026-09-28")).toBe(8);
     expect(calendarDaysBetween("2026-10-24", "2026-10-26")).toBe(2);
+  });
+});
+
+describe("overdue sales tasks", () => {
+  const task = {
+    id: "0f4f8b6e-0000-4000-8000-0000000000c1",
+    title: "Zavolat Novákovi kvůli nabídce",
+    target: "Pekárna Novák",
+    dueAt: "2026-09-28T13:00:00.000Z",
+  };
+
+  it("opens the task in Tasks, once per due moment", () => {
+    const [rule] = ruleSuggestions({ ...EMPTY, overdueCrmTasks: [task] });
+    expect(rule).toMatchObject({
+      type: "overdueCrmTask",
+      dedupeKey: `overdueCrmTask:${task.id}:${task.dueAt}`,
+      action: {
+        kind: "open",
+        href: `/app/ukoly-crm?task=${task.id}`,
+        params: { task: task.title, target: "Pekárna Novák" },
+      },
+    });
+    expect(isAppHref(`/app/ukoly-crm?task=${task.id}`)).toBe(true);
+    const [moved] = ruleSuggestions({
+      ...EMPTY,
+      overdueCrmTasks: [{ ...task, dueAt: "2026-09-29T07:00:00.000Z" }],
+    });
+    expect(moved.dedupeKey).not.toBe(rule.dedupeKey);
+  });
+
+  it("waits for the time window only when the task means calling or meeting someone", () => {
+    const [call] = ruleSuggestions({ ...EMPTY, overdueCrmTasks: [task] });
+    const [prepare] = ruleSuggestions({
+      ...EMPTY,
+      overdueCrmTasks: [{ ...task, title: "Připravit ceník" }],
+    });
+    expect(reachesPeople(call.type, undefined, call.text)).toBe(true);
+    expect(reachesPeople(prepare.type, undefined, prepare.text)).toBe(false);
   });
 });

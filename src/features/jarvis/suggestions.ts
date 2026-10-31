@@ -35,6 +35,7 @@ export const APP_PATHS = [
   "/app/cold-calling",
   "/app/kalendar",
   "/app/finance",
+  "/app/ukoly-crm",
 ] as const;
 
 export function isAppHref(href: string): boolean {
@@ -109,6 +110,14 @@ export type RuleInputs = {
     customer: string | null;
     dueOn: string;
     daysLate: number;
+  }[];
+  /** The user's own sales tasks past their due moment, oldest first. */
+  overdueCrmTasks: {
+    id: string;
+    title: string;
+    /** The deal or contact it belongs to, when the user may see it. */
+    target: string | null;
+    dueAt: string;
   }[];
 };
 
@@ -201,6 +210,22 @@ export function ruleSuggestions(inputs: RuleInputs): RuleSuggestion[] {
         kind: "open",
         href: `/app/finance/faktury/${invoice.id}`,
         params: { number: invoice.number, customer: invoice.customer ?? "", days: invoice.daysLate },
+      },
+    });
+  }
+
+  // A task given to the user, due and not done. A call in it waits for the
+  // time window (reachesPeople), the rest is offered at once.
+  for (const task of inputs.overdueCrmTasks.slice(0, PER_RULE_LIMIT)) {
+    out.push({
+      type: "overdueCrmTask",
+      // Moving the due moment makes it a new event.
+      dedupeKey: `overdueCrmTask:${task.id}:${task.dueAt}`,
+      text: `Task overdue: ${task.title}`,
+      action: {
+        kind: "open",
+        href: `/app/ukoly-crm?task=${task.id}`,
+        params: { task: task.title, target: task.target ?? "" },
       },
     });
   }

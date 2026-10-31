@@ -1,6 +1,7 @@
 import type { Tone } from "@/components/ui/tone";
 import type { IsoDate } from "@/lib/format";
 import type { Database } from "@/types/database";
+import type { CrmTask } from "@/features/crm-tasks/types";
 
 type Tables = Database["public"]["Tables"];
 
@@ -75,6 +76,23 @@ export type MirrorCalendarItem = ItemBase & {
   allDay: true;
 };
 
-export type CalendarItem = EventItem | MirrorCalendarItem;
+/**
+ * A sales task with a time: drawn at its due moment for its length, outlined
+ * (not filled) so it never passes for a meeting. Moving it changes when it is
+ * due; its length is changed in the task itself.
+ */
+export type TaskCalendarItem = ItemBase & {
+  type: "task";
+  task: CrmTask;
+  allDay: false;
+  overdue: boolean;
+  startMs: number;
+  endMs: number;
+};
 
-export type MirrorPrefs = { tasks: boolean; deals: boolean };
+/** Items that sit on the time axis and can be dragged. */
+export type TimedItem = EventItem | TaskCalendarItem;
+
+export type CalendarItem = EventItem | MirrorCalendarItem | TaskCalendarItem;
+
+export type MirrorPrefs = { tasks: boolean; deals: boolean; crmTasks: boolean };

@@ -84,7 +84,7 @@ export function WorkerDashboard() {
             {t("openTasks", { count: openTasks.data?.length ?? 0 })}
           </p>
           <Link
-            href="/app/ukoly"
+            href="/app/ukoly-crm"
             className={buttonVariants({ variant: "outline", className: "mt-auto self-start" })}
           >
             {t("toTasks")}

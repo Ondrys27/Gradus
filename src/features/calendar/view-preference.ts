@@ -5,7 +5,7 @@ import { CALENDAR_VIEWS, type CalendarView, type MirrorPrefs } from "./types";
 const VIEW_KEY = "gradus.calendar.view";
 const MIRRORS_KEY = "gradus.calendar.mirrors";
 
-export const DEFAULT_MIRRORS: MirrorPrefs = { tasks: true, deals: true };
+export const DEFAULT_MIRRORS: MirrorPrefs = { tasks: true, deals: true, crmTasks: true };
 
 export function parseView(value: string | null): CalendarView {
   return (CALENDAR_VIEWS as readonly string[]).includes(value ?? "")
@@ -19,6 +19,7 @@ export function parseMirrors(value: string | null): MirrorPrefs {
     return {
       tasks: typeof parsed?.tasks === "boolean" ? parsed.tasks : DEFAULT_MIRRORS.tasks,
       deals: typeof parsed?.deals === "boolean" ? parsed.deals : DEFAULT_MIRRORS.deals,
+      crmTasks: typeof parsed?.crmTasks === "boolean" ? parsed.crmTasks : DEFAULT_MIRRORS.crmTasks,
     };
   } catch {
     return DEFAULT_MIRRORS;

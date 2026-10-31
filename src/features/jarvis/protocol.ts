@@ -124,6 +124,7 @@ export const SUGGESTION_KEYS = [
   "followUps",
   "stalledDeals",
   "overdueTasks",
+  "overdueCrmTasks",
   "overdueInvoices",
   "nextMilestoneStep",
   "firstMilestone",

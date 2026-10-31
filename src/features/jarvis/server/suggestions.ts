@@ -58,57 +58,81 @@ export async function loadRuleInputs(
     .toISOString()
     .slice(0, 10);
 
-  const [won, stalled, stages, overdue, milestones, followUpTable, invoices] = await Promise.all([
-    client
-      .from("deals")
-      .select("id, title, contact:contacts(company_name, first_name, last_name)")
-      .eq("user_id", userId)
-      .gte("won_at", subDays(now, WON_RECENT_DAYS).toISOString())
-      .order("won_at", { ascending: false })
-      .limit(PER_RULE_LIMIT),
-    client
-      .from("deals")
-      .select("id, title, stage_id, entered_stage_at")
-      .eq("user_id", userId)
-      .is("won_at", null)
-      .is("lost_at", null)
-      .lt("entered_stage_at", stalledCutoff(now))
-      .order("entered_stage_at")
-      .limit(PER_RULE_LIMIT),
-    client.from("pipeline_stages").select("id, name").eq("user_id", userId).limit(50),
-    client
-      .from("tasks")
-      .select("id, title, milestone_id, due_date, milestones!inner(status)")
-      .eq("user_id", userId)
-      .neq("status", "done")
-      .lt("due_date", overdueBefore)
-      .eq("milestones.status", "active")
-      .order("due_date")
-      .limit(PER_RULE_LIMIT),
-    client
-      .from("milestones")
-      .select("id, title")
+  // A worker's tasks count only in a space they still work in.
+  const spaces = list(
+    await client
+      .from("workers")
+      .select("owner_id")
       .eq("user_id", userId)
       .eq("status", "active")
-      .order("position")
-      .limit(ACTIVE_MILESTONE_LIMIT),
-    client
-      .from("contact_tables")
-      .select("id, contact_table_fields(id, system_key)")
-      .eq("user_id", userId)
-      .eq("system_key", FOLLOW_UP_TABLE)
-      .maybeSingle(),
-    // Overdue from the day after the due day; RLS leaves them out for a worker without finance.
-    client
-      .from("invoices")
-      .select("id, number, customer_name, due_on")
-      .eq("user_id", userId)
-      .eq("kind", "invoice")
-      .in("status", ["open", "sent", "overdue"])
-      .lt("due_on", today)
-      .order("due_on")
-      .limit(PER_RULE_LIMIT),
-  ]);
+      .limit(5),
+  );
+  const ownSpaces = [userId, ...spaces.map((space) => space.owner_id)];
+
+  const [won, stalled, stages, overdue, milestones, followUpTable, invoices, crmTasks] =
+    await Promise.all([
+      client
+        .from("deals")
+        .select("id, title, contact:contacts(company_name, first_name, last_name)")
+        .eq("user_id", userId)
+        .gte("won_at", subDays(now, WON_RECENT_DAYS).toISOString())
+        .order("won_at", { ascending: false })
+        .limit(PER_RULE_LIMIT),
+      client
+        .from("deals")
+        .select("id, title, stage_id, entered_stage_at")
+        .eq("user_id", userId)
+        .is("won_at", null)
+        .is("lost_at", null)
+        .lt("entered_stage_at", stalledCutoff(now))
+        .order("entered_stage_at")
+        .limit(PER_RULE_LIMIT),
+      client.from("pipeline_stages").select("id, name").eq("user_id", userId).limit(50),
+      client
+        .from("tasks")
+        .select("id, title, milestone_id, due_date, milestones!inner(status)")
+        .eq("user_id", userId)
+        .neq("status", "done")
+        .lt("due_date", overdueBefore)
+        .eq("milestones.status", "active")
+        .order("due_date")
+        .limit(PER_RULE_LIMIT),
+      client
+        .from("milestones")
+        .select("id, title")
+        .eq("user_id", userId)
+        .eq("status", "active")
+        .order("position")
+        .limit(ACTIVE_MILESTONE_LIMIT),
+      client
+        .from("contact_tables")
+        .select("id, contact_table_fields(id, system_key)")
+        .eq("user_id", userId)
+        .eq("system_key", FOLLOW_UP_TABLE)
+        .maybeSingle(),
+      // Overdue from the day after the due day; RLS leaves them out for a worker without finance.
+      client
+        .from("invoices")
+        .select("id, number, customer_name, due_on")
+        .eq("user_id", userId)
+        .eq("kind", "invoice")
+        .in("status", ["open", "sent", "overdue"])
+        .lt("due_on", today)
+        .order("due_on")
+        .limit(PER_RULE_LIMIT),
+      // The user's own sales tasks, overdue to the minute.
+      client
+        .from("crm_tasks")
+        .select(
+          "id, title, due_at, deal:deals(title), contact:contacts(company_name, first_name, last_name)",
+        )
+        .eq("assignee_id", userId)
+        .in("user_id", ownSpaces)
+        .eq("status", "open")
+        .lt("due_at", now.toISOString())
+        .order("due_at")
+        .limit(PER_RULE_LIMIT),
+    ]);
 
   const stageNames = new Map(list(stages).map((stage) => [stage.id, stage.name]));
   const activeMilestones = list(milestones);
@@ -191,6 +215,12 @@ export async function loadRuleInputs(
           ]
         : [],
     ),
+    overdueCrmTasks: list(crmTasks).map((task) => ({
+      id: task.id,
+      title: task.title,
+      target: task.deal?.title ?? (task.contact ? contactName(task.contact) : null),
+      dueAt: task.due_at,
+    })),
   };
 }
 

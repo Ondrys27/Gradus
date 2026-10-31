@@ -207,6 +207,7 @@
     "notes": "Notes",
     "contacts": "Contacts",
     "pipeline": "Pipeline",
+    "tasks": "Tasks",
     "coldCalling": "Cold Calling",
     "calendar": "Calendar",
     "finance": "Finance",
@@ -449,6 +450,7 @@
       "followUps": "Who should I follow up with today?",
       "stalledDeals": "Which deals are stuck and what should I do?",
       "overdueTasks": "Help me catch up on overdue tasks",
+      "overdueCrmTasks": "What about my overdue deal tasks?",
       "nextMilestoneStep": "What's the next step on my milestone?",
       "firstMilestone": "Help me set my first milestone",
       "firstDeal": "How do I land my first deal?",
@@ -523,6 +525,10 @@
       "overdueInvoice": {
         "text": "Invoice {number} for {customer} is {days, plural, one {{daysFormatted} day} other {{daysFormatted} days}} overdue.",
         "noCustomer": "Invoice {number} is {days, plural, one {{daysFormatted} day} other {{daysFormatted} days}} overdue."
+      },
+      "overdueCrmTask": {
+        "text": "“{task}” for {target} is past its due time.",
+        "noTarget": "“{task}” is past its due time."
       }
     },
     "tour": {
@@ -1568,6 +1574,186 @@
       "cancelled": "Move cancelled."
     }
   },
+  "crmTasks": {
+    "title": "Tasks",
+    "description": "What needs doing for your deals and contacts. What's burning comes first.",
+    "workerDescription": "Tasks for deals and contacts and tasks from your team lead in one place. What's burning comes first.",
+    "new": "New task",
+    "loadFailed": "Tasks couldn't be loaded. Try refreshing the page.",
+    "limited": "Showing the first {count} open tasks. Use the filters to find the rest.",
+    "empty": {
+      "title": "No tasks yet",
+      "description": "Add a task from a deal or a contact, or here with New task."
+    },
+    "emptyFiltered": {
+      "title": "Nothing matches the filters",
+      "description": "Try another due date or clear the filters."
+    },
+    "groups": {
+      "overdue": "Overdue",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "thisWeek": "This week",
+      "later": "Later",
+      "done": "Done"
+    },
+    "quick": {
+      "label": "Quick view",
+      "all": "All",
+      "open": "Open",
+      "overdue": "Overdue",
+      "today": "Today"
+    },
+    "filters": {
+      "button": "Filters",
+      "buttonActive": "Filters ({count})",
+      "due": "Due",
+      "who": "Who",
+      "status": "Status",
+      "duration": "Duration",
+      "target": "Deal or contact",
+      "targetPlaceholder": "Search deals and contacts",
+      "deal": "Deal",
+      "contact": "Contact",
+      "range": "Custom range",
+      "anyDue": "Any time",
+      "anyone": "Anyone",
+      "me": "Me",
+      "anyDuration": "Any",
+      "dueValues": {
+        "overdue": "Overdue",
+        "today": "Today",
+        "tomorrow": "Tomorrow",
+        "thisWeek": "This week",
+        "nextWeek": "Next week",
+        "custom": "Custom range"
+      },
+      "statusValues": {
+        "open": "Open",
+        "done": "Done",
+        "all": "All"
+      },
+      "durationValues": {
+        "le15": "Up to 15 min",
+        "le30": "Up to 30 min",
+        "le60": "Up to 60 min",
+        "gt60": "Over 60 min"
+      },
+      "activeLabel": "Active filters",
+      "remove": "Remove filter {filter}",
+      "clear": "Clear filters"
+    },
+    "row": {
+      "complete": "Mark “{title}” as done",
+      "reopen": "Move “{title}” back to open",
+      "open": "Open task {title}",
+      "due": "{date} · {relative}",
+      "dueDay": "by {date}",
+      "overdue": "Overdue",
+      "minutes": "{count} min",
+      "completedOn": "Done {date}"
+    },
+    "origin": {
+      "crm": "Deal",
+      "owner": "From your team lead"
+    },
+    "who": {
+      "me": "Me",
+      "nobody": "Nobody",
+      "someone": "Former team member",
+      "owner": "Owner"
+    },
+    "form": {
+      "newTitle": "New task",
+      "editTitle": "Edit task",
+      "close": "Close",
+      "title": "Title",
+      "titlePlaceholder": "E.g. Call about the offer",
+      "titleHint": "Enter saves the task right away; everything else has a default.",
+      "target": "For",
+      "targetPlaceholder": "Search deals and contacts",
+      "targetRemove": "Remove {name}",
+      "targetNone": "Nothing found.",
+      "kindDeal": "Deal",
+      "kindContact": "Contact",
+      "due": "Due",
+      "time": "Time",
+      "quickLabel": "Quick due date",
+      "quick": {
+        "today": "Today",
+        "tomorrow": "Tomorrow",
+        "nextWeek": "In a week"
+      },
+      "duration": "How long",
+      "minutes": "{count} min",
+      "custom": "Custom",
+      "customMinutes": "Minutes",
+      "assignee": "Who",
+      "description": "Description",
+      "saveFailed": "The task couldn't be saved. Try again.",
+      "cancel": "Cancel",
+      "save": "Save",
+      "create": "Add task"
+    },
+    "errors": {
+      "titleRequired": "Write what needs doing.",
+      "titleTooLong": "The title is too long, 200 characters at most.",
+      "descriptionTooLong": "The description is too long, 5,000 characters at most.",
+      "dueRequired": "Pick when the task is due.",
+      "durationInvalid": "The length must be 1 to 1,440 minutes.",
+      "targetRequired": "Pick the deal or contact the task belongs to."
+    },
+    "complete": {
+      "title": "Done",
+      "close": "Close",
+      "lead": "“{title}” will be done. Anything to note about it?",
+      "note": "Note (optional)",
+      "hint": "It shows in the history of the deal and the contact.",
+      "placeholder": "Called the client, she'll send the documents on Monday",
+      "failed": "The task couldn't be marked done. Try again.",
+      "cancel": "Cancel",
+      "confirm": "Done"
+    },
+    "detail": {
+      "title": "Task",
+      "close": "Close",
+      "statusOpen": "Open",
+      "statusDone": "Done",
+      "due": "Due",
+      "duration": "How long",
+      "assignee": "Who",
+      "deal": "Deal",
+      "contact": "Contact",
+      "description": "Description",
+      "noDescription": "No description.",
+      "history": "History",
+      "historyCreated": "Created · {name}",
+      "historyDone": "Done · {name}",
+      "openDeal": "Open deal",
+      "openContact": "Open contact",
+      "edit": "Edit",
+      "markDone": "Done",
+      "reopen": "Move back to open",
+      "reopenFailed": "The task couldn't be reopened. Try again.",
+      "delete": "Delete",
+      "deleteTitle": "Delete the task?",
+      "deleteDescription": "“{title}” also disappears from the history of the deal and the contact.",
+      "deleteFailed": "The task couldn't be deleted. Try again.",
+      "cancel": "Cancel"
+    },
+    "section": {
+      "title": "Tasks",
+      "add": "Add task",
+      "loadFailed": "Tasks couldn't be loaded.",
+      "empty": "No open tasks yet.",
+      "done": "Done ({count})",
+      "reopenFailed": "The task couldn't be changed. Try again.",
+      "showInTasks": "Show in Tasks"
+    },
+    "history": {
+      "done": "Task done"
+    }
+  },
   "contacts": {
     "description": "Everyone you work with, sorted into your own tables.",
     "loadFailed": "Contacts could not be loaded. Check your connection and try again.",
@@ -2006,7 +2192,8 @@
     "mirrors": {
       "label": "Show from other sections",
       "tasks": "Milestone tasks",
-      "deals": "Expected deal closings"
+      "deals": "Expected deal closings",
+      "crmTasks": "Deal and contact tasks"
     },
     "more": "+{count} more",
     "allDayShort": "All day",

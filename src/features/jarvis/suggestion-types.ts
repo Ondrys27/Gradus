@@ -9,6 +9,7 @@ export const RULE_TYPES = [
   "overdueTask",
   "milestoneReady",
   "overdueInvoice",
+  "overdueCrmTask",
 ] as const;
 export type RuleType = (typeof RULE_TYPES)[number];
 export type SuggestionType = RuleType | "taskCompleted" | "insight" | "pathReady";
@@ -24,10 +25,12 @@ const REACH_WORDS =
 /**
  * Whether a suggestion means reaching other people now (a call, a meeting),
  * which only makes sense inside the time window. Follow-ups always do; an
- * insight says so itself (`people` in its payload), older ones by their words.
+ * insight says so itself (`people` in its payload), older ones by their words;
+ * an overdue sales task by the words of its title ("Zavolat Novákovi").
  */
 export function reachesPeople(type: string, people: boolean | undefined, text: string): boolean {
   if (type === "followUps") return true;
+  if (type === "overdueCrmTask") return REACH_WORDS.test(text);
   if (type !== "insight") return false;
   return people ?? REACH_WORDS.test(text);
 }

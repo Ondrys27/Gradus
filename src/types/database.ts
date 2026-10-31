@@ -1000,6 +1000,85 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_tasks: {
+        Row: {
+          assignee_id: string | null
+          completed_at: string | null
+          completed_by: string | null
+          completion_note: string | null
+          contact_id: string | null
+          created_at: string
+          created_by: string | null
+          deal_id: string | null
+          description: string | null
+          due_at: string
+          duration_minutes: number
+          id: string
+          status: Database["public"]["Enums"]["crm_task_status"]
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assignee_id?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          completion_note?: string | null
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deal_id?: string | null
+          description?: string | null
+          due_at: string
+          duration_minutes?: number
+          id?: string
+          status?: Database["public"]["Enums"]["crm_task_status"]
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assignee_id?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          completion_note?: string | null
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deal_id?: string | null
+          description?: string | null
+          due_at?: string
+          duration_minutes?: number
+          id?: string
+          status?: Database["public"]["Enums"]["crm_task_status"]
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_tasks_contact_fkey"
+            columns: ["contact_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "contact_list"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "crm_tasks_contact_fkey"
+            columns: ["contact_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "crm_tasks_deal_fkey"
+            columns: ["deal_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
       deals: {
         Row: {
           contact_id: string | null
@@ -3723,6 +3802,18 @@ export type Database = {
           trial_ends_at: string
         }[]
       }
+      crm_task_assignees: {
+        Args: never
+        Returns: {
+          is_owner: boolean
+          name: string
+          user_id: string
+        }[]
+      }
+      crm_task_editable: {
+        Args: { _contact: string; _deal: string; _owner: string }
+        Returns: boolean
+      }
       current_workspace_id: { Args: never; Returns: string }
       error_alert_claim: {
         Args: {
@@ -3917,6 +4008,10 @@ export type Database = {
       }
       is_client_request: { Args: never; Returns: boolean }
       is_internal_account: { Args: { _user_id: string }; Returns: boolean }
+      is_workspace_member: {
+        Args: { _owner: string; _user: string }
+        Returns: boolean
+      }
       issue_invoice: {
         Args: { _invoice_id: string }
         Returns: {
@@ -4943,6 +5038,7 @@ export type Database = {
         | "select"
         | "boolean"
       contact_source: "manual" | "generated" | "import"
+      crm_task_status: "open" | "done"
       earning_status: "pending" | "approved" | "paid"
       feature_request_status:
         | "new"
@@ -5147,6 +5243,7 @@ export const Constants = {
         "boolean",
       ],
       contact_source: ["manual", "generated", "import"],
+      crm_task_status: ["open", "done"],
       earning_status: ["pending", "approved", "paid"],
       feature_request_status: [
         "new",

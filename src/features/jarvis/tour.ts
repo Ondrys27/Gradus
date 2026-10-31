@@ -29,7 +29,7 @@ export function tourSteps(options: { worker: boolean; playing: boolean }): TourS
   if (options.worker) {
     return [
       { key: "workerDashboard", target: "nav-dashboard" },
-      { key: "workerTasks", target: "nav-myTasks" },
+      { key: "workerTasks", target: "nav-tasks" },
       { key: "jarvis", target: "jarvis" },
       { key: "settings", target: "account" },
       { key: "workerFinish", target: null },

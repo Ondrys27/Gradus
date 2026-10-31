@@ -34,8 +34,8 @@ import {
   type TimeRange,
 } from "./calendar-logic";
 import { DayNumber } from "./day-number";
-import { blockTone, ItemChip } from "./item-chip";
-import type { CalendarItem, EventItem } from "./types";
+import { itemClass, ItemChip, MirrorIcon } from "./item-chip";
+import type { CalendarItem, TimedItem } from "./types";
 
 const GUTTER = "3.5rem";
 /** A finger has to hold this long on an event before it is picked up. */
@@ -45,8 +45,8 @@ const TOUCH_CANCEL_PX = 8;
 
 type Drag =
   | { mode: "create"; day: IsoDate; anchor: number; current: number }
-  | { mode: "move"; item: EventItem; day: IsoDate; startMin: number; grab: number }
-  | { mode: "resize"; item: EventItem; day: IsoDate; endMin: number };
+  | { mode: "move"; item: TimedItem; day: IsoDate; startMin: number; grab: number }
+  | { mode: "resize"; item: TimedItem; day: IsoDate; endMin: number };
 
 type Props = {
   days: IsoDate[];
@@ -57,7 +57,8 @@ type Props = {
   onPickDay?: (day: IsoDate) => void;
   onOpenItem: (item: CalendarItem) => void;
   onCreate: (day: IsoDate, range: TimeRange) => void;
-  onChangeEvent: (item: EventItem, range: TimeRange) => void;
+  /** A dragged event gets the new range; a dragged task only the new start. */
+  onChangeEvent: (item: TimedItem, range: TimeRange) => void;
 };
 
 export function TimeGrid({
@@ -506,19 +507,23 @@ function Block({ entry, hourPx, lifted, onOpen, onStart }: BlockProps) {
         onContextMenu={(event) => event.preventDefault()}
         className={cn(
           "relative flex size-full cursor-pointer flex-col items-start overflow-hidden rounded-lg border py-1 pr-1.5 pl-2.5 text-left text-xs outline-none [-webkit-touch-callout:none] focus-visible:ring-2 focus-visible:ring-ring/60",
-          blockTone[item.tone],
+          itemClass(item),
           lifted && "shadow-popover ring-2 ring-white/40",
         )}
       >
         <span aria-hidden className={cn("absolute inset-y-0 left-0 w-1", toneFill[item.tone])} />
-        <span className="w-full truncate font-semibold">{item.title}</span>
+        <span className="flex w-full min-w-0 items-center gap-1">
+          <MirrorIcon item={item} />
+          <span className="truncate font-semibold">{item.title}</span>
+        </span>
         {px >= 40 && (
           <span className="w-full truncate opacity-80 tabular-nums">
             {formatTime(start, settings)} – {formatTime(end, settings)}
           </span>
         )}
       </button>
-      {onStart && (
+      {/* A task's length is changed in the task; only events are stretched here. */}
+      {onStart && item.type === "event" && (
         <span
           aria-hidden
           onPointerDown={(event) => onStart(event, "resize")}

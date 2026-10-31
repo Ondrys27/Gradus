@@ -1,6 +1,6 @@
 "use client";
 
-import { HandshakeIcon, ListChecksIcon } from "lucide-react";
+import { HandshakeIcon, ListChecksIcon, SquareCheckBigIcon } from "lucide-react";
 import type { Tone } from "@/components/ui/tone";
 import { formatTime } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
@@ -27,13 +27,30 @@ export const mirrorTone: Record<Tone, string> = {
   pink: "border-dashed border-pink/60 text-pink",
 };
 
+/** Sales tasks: outlined like mirrors, on a light wash so they read as something to do. */
+export const taskTone: Record<Tone, string> = {
+  neutral: "border-dashed border-line-strong bg-surface-hover/40 text-ink",
+  violet: "border-dashed border-violet/60 bg-violet/10 text-ink",
+  teal: "border-dashed border-teal/60 bg-teal/10 text-ink",
+  gold: "border-dashed border-gold/60 bg-gold/10 text-ink",
+  green: "border-dashed border-green/60 bg-green/10 text-ink",
+  pink: "border-dashed border-pink/60 bg-pink/10 text-ink",
+};
+
 export function itemClass(item: CalendarItem): string {
-  return item.type === "mirror" ? mirrorTone[item.tone] : blockTone[item.tone];
+  if (item.type === "mirror") return mirrorTone[item.tone];
+  if (item.type === "task") return taskTone[item.tone];
+  return blockTone[item.tone];
 }
 
 export function MirrorIcon({ item, className }: { item: CalendarItem; className?: string }) {
-  if (item.type !== "mirror") return null;
-  const Icon = item.mirror.source === "task" ? ListChecksIcon : HandshakeIcon;
+  if (item.type === "event") return null;
+  const Icon =
+    item.type === "task"
+      ? SquareCheckBigIcon
+      : item.mirror.source === "task"
+        ? ListChecksIcon
+        : HandshakeIcon;
   return <Icon aria-hidden className={cn("size-3.5 shrink-0", className)} />;
 }
 
@@ -49,7 +66,7 @@ type Props = {
 export function ItemChip({ item, onOpen, showTime, className }: Props) {
   const settings = useFormatSettings();
   const time =
-    showTime && item.type === "event" && !item.allDay
+    showTime && item.type !== "mirror" && !item.allDay
       ? formatTime(new Date(item.startMs), settings)
       : null;
   return (

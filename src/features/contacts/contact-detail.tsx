@@ -34,6 +34,7 @@ import { ComposeEmailDialog } from "@/features/email/compose-email-dialog";
 import { emailSummary } from "@/features/email/types";
 import { MentionedInNotes } from "@/features/notes/mentioned-in-notes";
 import { ActivityPanel } from "./activity-panel";
+import { TargetTasks } from "@/features/crm-tasks/target-tasks";
 import { ContactFormDialog } from "./contact-form-dialog";
 import { byPosition, fieldOptions } from "./field-logic";
 import { useCan } from "@/features/account/workspace-queries";
@@ -201,6 +202,21 @@ function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNo
             onWriteEmail={canEdit ? () => setComposing(true) : undefined}
           />
           <CurrentTableCard contactId={contact.id} />
+          <GlowCard interactive={false}>
+            <TargetTasks
+              kind="contact"
+              id={contact.id}
+              target={{
+                deal: null,
+                contact: {
+                  id: contact.id,
+                  company_name: contact.company_name,
+                  first_name: contact.first_name,
+                  last_name: contact.last_name,
+                },
+              }}
+            />
+          </GlowCard>
           <NotesCard contact={contact} readOnly={!canEdit} />
           <DealsCard contactId={contact.id} />
           <MentionedInNotes kind="contact" id={contact.id} card />

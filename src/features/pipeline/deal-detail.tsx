@@ -35,6 +35,7 @@ import { useDeleteDeal, useUpdateDeal } from "./queries";
 import type { PipelineErrorKey } from "./schemas";
 import type { Deal, Stage } from "./types";
 import { MentionedInNotes } from "@/features/notes/mentioned-in-notes";
+import { TargetTasks } from "@/features/crm-tasks/target-tasks";
 
 /** Never a real contact; keeps a uuid column happy when the deal has none. */
 const NIL_CONTACT_ID = "00000000-0000-0000-0000-000000000000";
@@ -257,6 +258,13 @@ function DetailBody({
           </div>
         </FormAlert>
       )}
+
+      <TargetTasks
+        kind="deal"
+        id={deal.id}
+        target={{ deal: { id: deal.id, title: deal.title }, contact: deal.contact }}
+        className="border-t border-line pt-5"
+      />
 
       <section
         aria-labelledby="deal-history"

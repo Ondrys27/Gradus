@@ -20,6 +20,7 @@ import { FormField } from "@/components/ui/form-field";
 import { Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ActorAvatar } from "@/features/account/members";
+import { TaskHistoryItem, useFinishedTasks } from "@/features/crm-tasks/history";
 import { useCanContacts } from "@/features/account/workspace-queries";
 import { formatDateTime } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
@@ -44,6 +45,8 @@ export function ActivityPanel({ contactId }: { contactId: string }) {
   const t = useTranslations("contacts.activity");
   const settings = useFormatSettings();
   const activities = useActivities(contactId);
+  // Finished tasks of the contact with their notes join the history by date.
+  const finished = useFinishedTasks("contact", contactId);
   const remove = useDeleteActivity(contactId);
   const canEdit = useCanContacts("edit");
   const [adding, setAdding] = useState(false);
@@ -63,53 +66,63 @@ export function ActivityPanel({ contactId }: { contactId: string }) {
 
       {adding && <ActivityForm contactId={contactId} onDone={() => setAdding(false)} />}
 
-      {activities.isPending ? (
+      {activities.isPending || finished === undefined ? (
         <Skeleton className="h-24 rounded-xl" />
       ) : activities.isError ? (
         <FormAlert>{t("loadFailed")}</FormAlert>
-      ) : activities.data.length === 0 ? (
+      ) : activities.data.length === 0 && finished.length === 0 ? (
         <p className="flex items-center gap-2 rounded-xl border border-dashed border-line px-3 py-4 text-sm text-ink-muted">
           <HistoryIcon aria-hidden className="size-4 shrink-0" />
           {t("empty")}
         </p>
       ) : (
         <ol className="flex flex-col">
-          {activities.data.map((activity) => {
-            const Icon = ICONS[activity.type];
-            return (
-              <li
-                key={activity.id}
-                className="group flex gap-3 border-b border-line/60 py-3 last:border-b-0"
-              >
-                <span className="grid size-9 shrink-0 place-items-center rounded-full border border-line bg-surface-hover text-ink-soft">
-                  <Icon aria-hidden className="size-4" />
-                </span>
-                <div className="flex min-w-0 flex-1 flex-col gap-1">
-                  <p className="flex flex-wrap items-center gap-x-2 text-sm">
-                    <span className="font-medium text-ink">{t(`types.${activity.type}`)}</span>
-                    <ActorAvatar actorId={activity.actor_id} className="size-5" />
-                    <time dateTime={activity.occurred_at} className="text-xs text-ink-muted">
-                      {formatDateTime(new Date(activity.occurred_at), settings)}
-                    </time>
-                  </p>
-                  {activity.content && (
-                    <p className="text-sm whitespace-pre-line text-ink-soft">{activity.content}</p>
+          {[
+            ...activities.data.map((activity) => ({ at: activity.occurred_at, activity })),
+            ...finished.map((task) => ({ at: task.completed_at!, task })),
+          ]
+            .sort((a, b) => Date.parse(b.at) - Date.parse(a.at))
+            .map((entry) => {
+              if ("task" in entry)
+                return <TaskHistoryItem key={`task:${entry.task.id}`} task={entry.task} />;
+              const { activity } = entry;
+              const Icon = ICONS[activity.type];
+              return (
+                <li
+                  key={activity.id}
+                  className="group flex gap-3 border-b border-line/60 py-3 last:border-b-0"
+                >
+                  <span className="grid size-9 shrink-0 place-items-center rounded-full border border-line bg-surface-hover text-ink-soft">
+                    <Icon aria-hidden className="size-4" />
+                  </span>
+                  <div className="flex min-w-0 flex-1 flex-col gap-1">
+                    <p className="flex flex-wrap items-center gap-x-2 text-sm">
+                      <span className="font-medium text-ink">{t(`types.${activity.type}`)}</span>
+                      <ActorAvatar actorId={activity.actor_id} className="size-5" />
+                      <time dateTime={activity.occurred_at} className="text-xs text-ink-muted">
+                        {formatDateTime(new Date(activity.occurred_at), settings)}
+                      </time>
+                    </p>
+                    {activity.content && (
+                      <p className="text-sm whitespace-pre-line text-ink-soft">
+                        {activity.content}
+                      </p>
+                    )}
+                  </div>
+                  {activity.type !== "move" && canEdit && (
+                    <button
+                      type="button"
+                      aria-label={t("delete")}
+                      disabled={remove.isPending}
+                      onClick={() => remove.mutate(activity.id)}
+                      className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-full text-ink-muted outline-none hover:text-pink focus-visible:ring-3 focus-visible:ring-pink/40 mouse:size-8"
+                    >
+                      <Trash2Icon aria-hidden className="size-4" />
+                    </button>
                   )}
-                </div>
-                {activity.type !== "move" && canEdit && (
-                  <button
-                    type="button"
-                    aria-label={t("delete")}
-                    disabled={remove.isPending}
-                    onClick={() => remove.mutate(activity.id)}
-                    className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-full text-ink-muted outline-none hover:text-pink focus-visible:ring-3 focus-visible:ring-pink/40 mouse:size-8"
-                  >
-                    <Trash2Icon aria-hidden className="size-4" />
-                  </button>
-                )}
-              </li>
-            );
-          })}
+                </li>
+              );
+            })}
         </ol>
       )}
       {remove.isError && <FormAlert>{t("deleteFailed")}</FormAlert>}

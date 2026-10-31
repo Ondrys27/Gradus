@@ -69,7 +69,7 @@ export function WeekList({ days, today, items, onPickDay, onOpenItem, onSwipe }:
                   >
                     <MirrorIcon item={item} className="size-4" />
                     <span className="shrink-0 text-xs tabular-nums opacity-80">
-                      {item.type === "event" && !item.allDay
+                      {item.type !== "mirror" && !item.allDay
                         ? formatTime(new Date(item.startMs), settings)
                         : t("allDayShort")}
                     </span>

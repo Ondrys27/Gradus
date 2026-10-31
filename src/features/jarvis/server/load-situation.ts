@@ -19,6 +19,7 @@ const EVENT_LIMIT = 8;
 const STAGE_LIMIT = 30;
 const OPEN_DEAL_LIMIT = 2000;
 const INVOICE_LIMIT = 5;
+const CRM_TASK_LIMIT = 5;
 
 const FOLLOW_UP_TABLE = "follow_up";
 const FOLLOW_UP_FIELD = "follow_up_at";
@@ -43,6 +44,8 @@ export async function loadSituation(
   settings: FormatSettings,
   country: string | null,
   now: Date = new Date(),
+  /** Whose sales tasks count as "yours"; without it, every task the account may see. */
+  assigneeId: string | null = null,
 ): Promise<UserSituation> {
   const today = todayIsoDate(settings, now);
   const { timeZone } = settings;
@@ -64,6 +67,8 @@ export async function loadSituation(
     prospecting,
     finance,
     invoices,
+    crmOverdue,
+    crmToday,
   ] = await Promise.all([
       supabase
         .from("milestones")
@@ -120,6 +125,31 @@ export async function loadSituation(
         .lt("due_on", today)
         .order("due_on")
         .limit(INVOICE_LIMIT),
+      // Overdue to the minute: due before now and still open.
+      mine(
+        supabase
+          .from("crm_tasks")
+          .select(
+            "title, due_at, deal:deals(title), contact:contacts(company_name, first_name, last_name)",
+            { count: "exact" },
+          )
+          .eq("user_id", ws)
+          .eq("status", "open")
+          .lt("due_at", now.toISOString()),
+        assigneeId,
+      )
+        .order("due_at")
+        .limit(CRM_TASK_LIMIT),
+      mine(
+        supabase
+          .from("crm_tasks")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", ws)
+          .eq("status", "open")
+          .gte("due_at", now.toISOString())
+          .lt("due_at", day.to),
+        assigneeId,
+      ),
     ]);
 
   const milestoneRows = list(milestones);
@@ -180,6 +210,7 @@ export async function loadSituation(
   }
 
   const totals = must(finance);
+  if (crmToday.error) throw crmToday.error;
 
   return {
     today,
@@ -226,5 +257,20 @@ export async function loadSituation(
         : [],
     ),
     overdueInvoicesTotal: invoices.count ?? 0,
+    overdueCrmTasks: list(crmOverdue).map((task) => ({
+      title: task.title,
+      dueAt: new Date(task.due_at),
+      target: task.deal?.title ?? (task.contact ? contactName(task.contact) : null),
+    })),
+    overdueCrmTasksTotal: crmOverdue.count ?? 0,
+    crmTasksDueToday: crmToday.count ?? 0,
   };
+}
+
+/** Only the tasks given to this account, when one is named. */
+function mine<Q extends { eq: (column: "assignee_id", value: string) => Q }>(
+  query: Q,
+  assigneeId: string | null,
+): Q {
+  return assigneeId ? query.eq("assignee_id", assigneeId) : query;
 }
