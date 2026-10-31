@@ -21,7 +21,9 @@
       "Bash(supabase migration:*)",
       "Bash(grep:*)",
       "Bash(ls:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(bun run db:migrate)",
+      "Bash(bun run db:types)"
     ],
     "deny": [
       "Read(./.env.local)",

@@ -3789,6 +3789,18 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      crm_task_assignees: {
+        Args: never
+        Returns: {
+          is_owner: boolean
+          name: string
+          user_id: string
+        }[]
+      }
+      crm_task_editable: {
+        Args: { _contact: string; _deal: string; _owner: string }
+        Returns: boolean
+      }
       current_plan: {
         Args: { _user_id: string }
         Returns: {
@@ -3801,18 +3813,6 @@ export type Database = {
           status: string
           trial_ends_at: string
         }[]
-      }
-      crm_task_assignees: {
-        Args: never
-        Returns: {
-          is_owner: boolean
-          name: string
-          user_id: string
-        }[]
-      }
-      crm_task_editable: {
-        Args: { _contact: string; _deal: string; _owner: string }
-        Returns: boolean
       }
       current_workspace_id: { Args: never; Returns: string }
       error_alert_claim: {
