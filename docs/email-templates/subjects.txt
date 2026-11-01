@@ -1,0 +1,14 @@
+Confirm signup
+{{ $en := false }}{{ with .Data.locale }}{{ if eq . "en" }}{{ $en = true }}{{ end }}{{ end }}{{ if $en }}Confirm your Gradus e-mail{{ else }}Gradus: potvrď svůj e-mail{{ end }}
+cs: Gradus: potvrď svůj e-mail
+en: Confirm your Gradus e-mail
+
+Reset Password
+{{ $en := false }}{{ with .Data.locale }}{{ if eq . "en" }}{{ $en = true }}{{ end }}{{ end }}{{ if $en }}Reset your Gradus password{{ else }}Gradus: obnova hesla{{ end }}
+cs: Gradus: obnova hesla
+en: Reset your Gradus password
+
+Change Email Address
+{{ $en := false }}{{ with .Data.locale }}{{ if eq . "en" }}{{ $en = true }}{{ end }}{{ end }}{{ if $en }}Confirm your new Gradus e-mail{{ else }}Gradus: potvrď změnu e-mailu{{ end }}
+cs: Gradus: potvrď změnu e-mailu
+en: Confirm your new Gradus e-mail

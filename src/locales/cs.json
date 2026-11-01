@@ -773,7 +773,17 @@
       "rateLimited": "Příliš mnoho pokusů. Chvíli počkejte a zkuste to znovu.",
       "linkExpired": "Platnost odkazu vypršela nebo už byl použit. Požádejte o nový.",
       "generic": "Něco se pokazilo. Zkuste to prosím znovu.",
-      "inviteEmailMismatch": "Použij e-mail, na který přišla pozvánka."
+      "inviteEmailMismatch": "Použij e-mail, na který přišla pozvánka.",
+      "emailNotConfirmed": "E-mail zatím není potvrzený. Klikněte na odkaz, který jsme vám poslali, nebo si pošlete nový."
+    },
+    "confirm": {
+      "title": "Zkontrolujte e-mail",
+      "sent": "Poslali jsme odkaz na {email}. Klikněte na něj a účet se aktivuje.",
+      "hint": "Nic nepřišlo? Podívejte se do spamu, nebo si odkaz pošlete znovu.",
+      "resend": "Poslat odkaz znovu",
+      "resent": "Odkaz je na cestě. Zkontrolujte schránku.",
+      "expired": "Odkaz pro potvrzení vypršel nebo už byl použitý. Přihlaste se a případně si pošlete nový.",
+      "toLogin": "Přejít na přihlášení"
     }
   },
   "profile": {
@@ -2994,6 +3004,35 @@
       "what3": "Podle tvé zkušenosti aplikaci tvarujeme, takže nám řekni, co funguje a co ne.",
       "report": "Problém nebo nápad nahlásíš v nabídce u avatara přes „Nahlásit problém“ (na telefonu Více → Nahlásit problém), nebo zkratkou Ctrl+Shift+B (na Macu ⌘⇧B). Stačí pár slov, technické údaje doplníme sami.",
       "open": "Otevřít {appName}"
+    },
+    "auth": {
+      "tagline": "Podnikání jako hra",
+      "fallback": "Tlačítko nefunguje? Zkopíruj tento odkaz do prohlížeče:",
+      "footer": "Tenhle e-mail poslal {appName} automaticky, neodpovídej na něj.",
+      "confirmSignup": {
+        "subject": "{appName}: potvrď svůj e-mail",
+        "preheader": "Jeden klik a můžeš začít.",
+        "heading": "Potvrď svůj e-mail",
+        "body": "Ještě jeden krok a můžeš začít. Potvrď, že tahle adresa patří tobě, a {appName} tě pustí dovnitř.",
+        "button": "Potvrdit e-mail",
+        "ignore": "Pokud sis účet {appName} nezakládal, e-mail klidně ignoruj. Bez potvrzení se k účtu nikdo nedostane."
+      },
+      "resetPassword": {
+        "subject": "{appName}: obnova hesla",
+        "preheader": "Odkaz na nové heslo platí hodinu.",
+        "heading": "Nastav si nové heslo",
+        "body": "Přišla žádost o obnovení hesla k tvému účtu {appName}. Odkaz platí hodinu a jde použít jen jednou.",
+        "button": "Nastavit nové heslo",
+        "ignore": "Pokud jsi o obnovu nežádal, e-mail ignoruj. Tvoje heslo zůstává beze změny."
+      },
+      "changeEmail": {
+        "subject": "{appName}: potvrď změnu e-mailu",
+        "preheader": "Potvrď novou adresu svého účtu.",
+        "heading": "Potvrď změnu e-mailu",
+        "body": "U tvého účtu {appName} se mění e-mail z {oldEmail} na {newEmail}. Potvrď to tlačítkem níže.",
+        "button": "Potvrdit změnu",
+        "ignore": "Pokud jsi změnu nežádal, e-mail ignoruj a napiš nám. Adresa účtu zůstane stejná."
+      }
     }
   },
   "workers": {

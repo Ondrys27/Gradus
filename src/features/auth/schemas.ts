@@ -23,6 +23,7 @@ export type AuthErrorKey =
   | "wrongCurrentPassword"
   | "rateLimited"
   | "linkExpired"
+  | "emailNotConfirmed"
   | "generic";
 
 const email = z.string().trim().toLowerCase().email("invalidEmail");
@@ -84,6 +85,8 @@ export function authErrorKey(error: { code?: string; status?: number } | null): 
       return "emailTaken";
     case "weak_password":
       return "weakPassword";
+    case "email_not_confirmed":
+      return "emailNotConfirmed";
     case "same_password":
       return "samePassword";
     case "over_request_rate_limit":

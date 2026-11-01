@@ -1,0 +1,95 @@
+{{ $en := false }}{{ with .Data.locale }}{{ if eq . "en" }}{{ $en = true }}{{ end }}{{ end }}{{ if $en }}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="supported-color-schemes" content="dark">
+<title>Confirm your new Gradus e-mail</title>
+</head>
+<body style="margin:0;padding:0;background-color:#070B1F;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">Confirm the new address of your account.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#070B1F;">
+<tr>
+<td align="center" style="padding:40px 16px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;">
+<tr>
+<td style="padding:0 4px 20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<span style="font-size:22px;font-weight:800;letter-spacing:-0.02em;color:#FFFFFF;">Gradus</span><span style="font-size:22px;font-weight:800;color:#2FE3C8;">.</span>
+<span style="font-size:13px;color:#8892BE;padding-left:8px;">Business as a game</span>
+</td>
+</tr>
+<tr>
+<td style="background-color:#0D1234;border:1px solid #2A3468;border-radius:20px;padding:36px 32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<div style="height:4px;width:56px;border-radius:4px;background-color:#7C5CFF;background-image:linear-gradient(90deg,#7C5CFF,#2FE3C8);margin:0 0 24px;"></div>
+<h1 style="margin:0 0 12px;font-size:24px;line-height:1.25;font-weight:700;color:#FFFFFF;">Confirm the e-mail change</h1>
+<p style="margin:0 0 28px;font-size:16px;line-height:1.6;color:#AEB8DE;">The e-mail of your Gradus account is changing from {{ .Email }} to {{ .NewEmail }}. Confirm it with the button below.</p>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td style="border-radius:12px;background-color:#7C5CFF;">
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email_change&amp;next=/app" style="display:inline-block;padding:14px 26px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:12px;">Confirm the change</a>
+</td>
+</tr>
+</table>
+<p style="margin:28px 0 6px;font-size:13px;line-height:1.5;color:#8892BE;">Button not working? Copy this link into your browser:</p>
+<p style="margin:0 0 24px;font-size:13px;line-height:1.5;word-break:break-all;"><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email_change&amp;next=/app" style="color:#2FE3C8;text-decoration:underline;">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email_change&amp;next=/app</a></p>
+<p style="margin:0;padding-top:20px;border-top:1px solid #2A3468;font-size:13px;line-height:1.5;color:#8892BE;">If you didn't ask for this change, ignore this e-mail and let us know. The account keeps its address.</p>
+</td>
+</tr>
+<tr>
+<td style="padding:20px 4px 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;line-height:1.5;color:#8892BE;">Gradus sent this e-mail automatically, please don't reply.</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>
+{{ else }}<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="supported-color-schemes" content="dark">
+<title>Gradus: potvrď změnu e-mailu</title>
+</head>
+<body style="margin:0;padding:0;background-color:#070B1F;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">Potvrď novou adresu svého účtu.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#070B1F;">
+<tr>
+<td align="center" style="padding:40px 16px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;">
+<tr>
+<td style="padding:0 4px 20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<span style="font-size:22px;font-weight:800;letter-spacing:-0.02em;color:#FFFFFF;">Gradus</span><span style="font-size:22px;font-weight:800;color:#2FE3C8;">.</span>
+<span style="font-size:13px;color:#8892BE;padding-left:8px;">Podnikání jako hra</span>
+</td>
+</tr>
+<tr>
+<td style="background-color:#0D1234;border:1px solid #2A3468;border-radius:20px;padding:36px 32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<div style="height:4px;width:56px;border-radius:4px;background-color:#7C5CFF;background-image:linear-gradient(90deg,#7C5CFF,#2FE3C8);margin:0 0 24px;"></div>
+<h1 style="margin:0 0 12px;font-size:24px;line-height:1.25;font-weight:700;color:#FFFFFF;">Potvrď změnu e-mailu</h1>
+<p style="margin:0 0 28px;font-size:16px;line-height:1.6;color:#AEB8DE;">U tvého účtu Gradus se mění e-mail z {{ .Email }} na {{ .NewEmail }}. Potvrď to tlačítkem níže.</p>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td style="border-radius:12px;background-color:#7C5CFF;">
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email_change&amp;next=/app" style="display:inline-block;padding:14px 26px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:12px;">Potvrdit změnu</a>
+</td>
+</tr>
+</table>
+<p style="margin:28px 0 6px;font-size:13px;line-height:1.5;color:#8892BE;">Tlačítko nefunguje? Zkopíruj tento odkaz do prohlížeče:</p>
+<p style="margin:0 0 24px;font-size:13px;line-height:1.5;word-break:break-all;"><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email_change&amp;next=/app" style="color:#2FE3C8;text-decoration:underline;">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email_change&amp;next=/app</a></p>
+<p style="margin:0;padding-top:20px;border-top:1px solid #2A3468;font-size:13px;line-height:1.5;color:#8892BE;">Pokud jsi změnu nežádal, e-mail ignoruj a napiš nám. Adresa účtu zůstane stejná.</p>
+</td>
+</tr>
+<tr>
+<td style="padding:20px 4px 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;line-height:1.5;color:#8892BE;">Tenhle e-mail poslal Gradus automaticky, neodpovídej na něj.</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>
+{{ end }}

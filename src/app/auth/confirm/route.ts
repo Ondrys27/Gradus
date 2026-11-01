@@ -5,7 +5,8 @@ import { legacyRedirectTarget, localizedPath, pageForPath } from "@/lib/routes";
 import { createClient } from "@/lib/supabase/server";
 
 /**
- * Landing point for links in Supabase e-mails (password recovery for now).
+ * Landing point for links in Supabase e-mails: password recovery, sign-up
+ * confirmation (`type=email`) and e-mail change (`type=email_change`).
  * Handles both the token-hash link, which works in any browser, and the PKCE
  * code, which only works in the browser that asked for the e-mail.
  */
@@ -30,10 +31,12 @@ export async function GET(request: NextRequest) {
     ok = !(await supabase.auth.exchangeCodeForSession(code)).error;
   }
 
+  // A used or expired confirmation link says so on the sign-in page, which
+  // offers a new one when the account is still unconfirmed.
   const target = ok
     ? next
     : recovery
       ? `${localizedPath("forgotPassword", locale)}?expired=1`
-      : loginPath(locale);
+      : `${loginPath(locale)}?confirm=expired`;
   return NextResponse.redirect(new URL(target, request.url));
 }

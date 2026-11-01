@@ -22,6 +22,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { isPublicSignupEnabled } from "@/lib/signup";
 import { inviteEmailMatches, isValidInviteCode } from "./invite-code";
+import { isEmailConfirmationRequired } from "./email-confirmation";
 import { decideSignup } from "./signup-mode";
 import { findOpenWorkerInvite, type OpenWorkerInvite } from "./worker-invite";
 import {
@@ -61,6 +62,7 @@ export async function signIn(_prev: FormState, formData: FormData): Promise<Form
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
+  // An unconfirmed account gets "emailNotConfirmed" and the form offers a new link.
   if (error || !data.user) return { error: authErrorKey(error), values };
 
   await syncLocaleFromSettings(data.user.id);
@@ -76,7 +78,9 @@ export async function signIn(_prev: FormState, formData: FormData): Promise<Form
  * invite code (beta or a worker invite) the account gets beta; without one,
  * and only when PUBLIC_SIGNUP_ENABLED is on, a 14-day trial, which the
  * database starts for every new account by itself.
- * E-mail confirmation is off for the beta; turn it on before launch.
+ * E-mail confirmation follows Supabase's own switch (isEmailConfirmationRequired):
+ * when it is on, the account is created unconfirmed, Supabase sends the
+ * confirmation e-mail and the form says to check the inbox instead of signing in.
  */
 export async function signUp(_prev: FormState, formData: FormData): Promise<FormState> {
   const parsed = signUpSchema.safeParse(Object.fromEntries(formData));
@@ -115,10 +119,11 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
 
   const locale = await getLocale();
   const admin = createAdminClient();
+  const confirmEmail = await isEmailConfirmationRequired();
   const { data: created, error: createError } = await admin.auth.admin.createUser({
     email: parsed.data.email,
     password: parsed.data.password,
-    email_confirm: true,
+    email_confirm: !confirmEmail,
     user_metadata: { locale },
   });
   if (createError || !created.user) {
@@ -195,6 +200,14 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
     });
   }
 
+  await setLocaleCookie(locale);
+  if (confirmEmail) {
+    // A failed send only shows in the log: the sign-in page offers a new link.
+    const sent = await sendConfirmationEmail(parsed.data.email);
+    if (!sent.ok) console.error("[auth] confirmation e-mail failed", sent.error);
+    return { success: true, values: { email: parsed.data.email } };
+  }
+
   const supabase = await createClient();
   const { error: signInError } = await supabase.auth.signInWithPassword({
     email: parsed.data.email,
@@ -202,9 +215,37 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
   });
   if (signInError) redirect(loginPath(locale));
 
-  await setLocaleCookie(locale);
   // Replace: Back from the wizard that follows must not return to the form.
   redirect(HOME_PATH, RedirectType.replace);
+}
+
+/** Supabase's "Confirm signup" e-mail; its link lands on /auth/confirm and then in the app. */
+async function sendConfirmationEmail(email: string) {
+  const supabase = await createClient();
+  const origin = await siteOrigin();
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email,
+    options: { emailRedirectTo: `${origin}/auth/confirm?next=${encodeURIComponent(HOME_PATH)}` },
+  });
+  return error ? { ok: false as const, error } : { ok: true as const };
+}
+
+/**
+ * A new confirmation link. Always reports success (except a rate limit) so the
+ * form cannot be used to find out who has an account.
+ */
+export async function resendConfirmation(_prev: FormState, formData: FormData): Promise<FormState> {
+  const parsed = forgotPasswordSchema.safeParse(Object.fromEntries(formData));
+  const values = { email: String(formData.get("email") ?? "") };
+  if (!parsed.success) return { fieldErrors: fieldErrorsFrom(parsed.error), values };
+  const sent = await sendConfirmationEmail(parsed.data.email);
+  if (!sent.ok) {
+    const key = authErrorKey(sent.error);
+    if (key === "rateLimited") return { error: key, values };
+    console.error("[auth] resend confirmation failed", sent.error);
+  }
+  return { success: true, values };
 }
 
 /** Always reports success so the form cannot be used to find out who has an account. */

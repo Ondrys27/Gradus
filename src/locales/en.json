@@ -773,7 +773,17 @@
       "rateLimited": "Too many attempts. Wait a moment and try again.",
       "linkExpired": "The link has expired or was already used. Ask for a new one.",
       "generic": "Something went wrong. Please try again.",
-      "inviteEmailMismatch": "Use the e-mail address the invite was sent for."
+      "inviteEmailMismatch": "Use the e-mail address the invite was sent for.",
+      "emailNotConfirmed": "Your e-mail isn't confirmed yet. Click the link we sent you, or get a new one."
+    },
+    "confirm": {
+      "title": "Check your e-mail",
+      "sent": "We sent a link to {email}. Click it to activate your account.",
+      "hint": "Nothing arrived? Check your spam folder, or send the link again.",
+      "resend": "Send the link again",
+      "resent": "The link is on its way. Check your inbox.",
+      "expired": "The confirmation link has expired or was already used. Sign in and get a new one if needed.",
+      "toLogin": "Go to sign in"
     }
   },
   "profile": {
@@ -2994,6 +3004,35 @@
       "what3": "Your experience is what we are shaping the app by, so tell us what works and what doesn’t.",
       "report": "To report a problem or an idea, open the menu under your avatar and choose “Report a problem” (on a phone: More → Report a problem), or press Ctrl+Shift+B (⌘⇧B on a Mac). A few words are enough, we add the technical details ourselves.",
       "open": "Open {appName}"
+    },
+    "auth": {
+      "tagline": "Business as a game",
+      "fallback": "Button not working? Copy this link into your browser:",
+      "footer": "{appName} sent this e-mail automatically, please don't reply.",
+      "confirmSignup": {
+        "subject": "Confirm your {appName} e-mail",
+        "preheader": "One click and you're in.",
+        "heading": "Confirm your e-mail",
+        "body": "One more step and you can start. Confirm that this address is yours and {appName} lets you in.",
+        "button": "Confirm e-mail",
+        "ignore": "If you didn't sign up for {appName}, just ignore this e-mail. Nobody gets into the account without confirming it."
+      },
+      "resetPassword": {
+        "subject": "Reset your {appName} password",
+        "preheader": "The link to a new password is valid for an hour.",
+        "heading": "Set a new password",
+        "body": "Someone asked to reset the password of your {appName} account. The link is valid for an hour and works only once.",
+        "button": "Set a new password",
+        "ignore": "If you didn't ask for a reset, ignore this e-mail. Your password stays the same."
+      },
+      "changeEmail": {
+        "subject": "Confirm your new {appName} e-mail",
+        "preheader": "Confirm the new address of your account.",
+        "heading": "Confirm the e-mail change",
+        "body": "The e-mail of your {appName} account is changing from {oldEmail} to {newEmail}. Confirm it with the button below.",
+        "button": "Confirm the change",
+        "ignore": "If you didn't ask for this change, ignore this e-mail and let us know. The account keeps its address."
+      }
     }
   },
   "workers": {

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { browserTimeZone } from "@/lib/region";
 import { signUp } from "./actions";
+import { CheckEmail } from "./resend-confirmation";
 import { PASSWORD_MIN, type FormState } from "./schemas";
 import { SubmitButton } from "./submit-button";
 
@@ -34,6 +35,9 @@ export function RegisterForm({
   // The browser's zone seeds the account's time zone, country and formats.
   const [timeZone, setTimeZone] = useState("");
   useEffect(() => setTimeZone(browserTimeZone()), []);
+
+  // E-mail confirmation is on: the account waits for the link from the inbox.
+  if (state.success && state.values?.email) return <CheckEmail email={state.values.email} />;
 
   return (
     <form action={action} className="flex flex-col gap-4" noValidate>
