@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import Link from "next/link";
 import { Menu } from "@base-ui/react/menu";
-import { CheckIcon, LogOutIcon, SettingsIcon, UserRoundIcon } from "lucide-react";
+import { CheckIcon, FlagIcon, LogOutIcon, SettingsIcon, UserRoundIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
 import {
@@ -14,6 +14,8 @@ import {
   useUserSettings,
 } from "@/features/account/queries";
 import { useCloseOnErrorScreen } from "@/features/errors/error-screen-state";
+import { useReportProblem } from "@/features/feedback/report-provider";
+import { useIsMac } from "@/lib/use-is-mac";
 import { locales } from "@/i18n/locales";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +28,8 @@ export function AccountMenu() {
   const profile = useProfile();
   const settings = useUserSettings();
   const updateSettings = useUpdateSettings();
+  const report = useReportProblem();
+  const isMac = useIsMac();
   const signOut = useSignOut();
   const name = profile.display_name || profile.username || user.email;
   const [open, setOpen] = useState(false);
@@ -77,6 +81,22 @@ export function AccountMenu() {
               {t("settings")}
               <SettingsIcon aria-hidden className="size-4 text-ink-muted" />
             </Menu.LinkItem>
+
+            <Menu.Separator className="my-1.5 h-px bg-line" />
+
+            <Menu.Item
+              closeOnClick
+              onClick={() => report.open("account_menu")}
+              className={itemClass}
+            >
+              <span className="flex min-w-0 flex-col">
+                {t("report")}
+                <span className="hidden mouse:inline text-xs text-ink-muted">
+                  {isMac ? t("reportShortcutMac") : t("reportShortcut")}
+                </span>
+              </span>
+              <FlagIcon aria-hidden className="size-4 text-ink-muted" />
+            </Menu.Item>
 
             <Menu.Separator className="my-1.5 h-px bg-line" />
 

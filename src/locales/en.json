@@ -227,7 +227,9 @@
       "openPath": "Show the path"
     },
     "justUnlocked": "Just unlocked",
-    "lockedLabel": "{section} (locked)"
+    "lockedLabel": "{section} (locked)",
+    "beta": "Beta",
+    "report": "Report a problem"
   },
   "topBar": {
     "home": "Go to dashboard",
@@ -253,7 +255,10 @@
       "languageCodes": {
         "en": "EN",
         "cs": "CS"
-      }
+      },
+      "report": "Report a problem",
+      "reportShortcut": "Ctrl+Shift+B",
+      "reportShortcutMac": "⌘⇧B"
     }
   },
   "search": {
@@ -664,7 +669,8 @@
       "tomorrow": "tomorrow {time}",
       "day": "{day} {time}",
       "suggestionLater": "Better {when}: people mostly don't pick up now."
-    }
+    },
+    "reportProblem": "Report a problem"
   },
   "celebration": {
     "continue": "Continue",
@@ -2955,6 +2961,39 @@
         "middleware": "middleware",
         "cron": "scheduled job"
       }
+    },
+    "bugReport": {
+      "kind": {
+        "bug": "Bug",
+        "idea": "Idea",
+        "confusing": "Confusing"
+      },
+      "intro": "A new report in {appName}: {kind}.",
+      "from": "From",
+      "what": "What happened",
+      "expected": "Expected",
+      "page": "Page",
+      "browser": "Browser · language · version",
+      "extras": "Attached: {count, plural, =0 {no console errors} one {# console error} other {# console errors}}{screenshot, select, 1 {, a screenshot} other {}}.",
+      "open": "Open the report",
+      "subject": "{prefix} {kind}: {summary}"
+    },
+    "bugFixed": {
+      "subject": "Your report in {appName} is fixed",
+      "hello": "Hi,",
+      "body": "thank you for reporting the problem — we looked into it and it is fixed now. Reports like yours are how {appName} gets better during the beta.",
+      "open": "Open {appName}"
+    },
+    "welcomeBeta": {
+      "subject": "Welcome to the {appName} beta",
+      "hello": "Hi,",
+      "helloNamed": "Hi {name},",
+      "thanks": "thank you for joining the {appName} beta. It means a lot that you try it out with us.",
+      "what1": "{appName} is a young app and you are among the first people using it.",
+      "what2": "That means something may break, look odd or be missing, and things will change from week to week.",
+      "what3": "Your experience is what we are shaping the app by, so tell us what works and what doesn’t.",
+      "report": "To report a problem or an idea, open the menu under your avatar and choose “Report a problem” (on a phone: More → Report a problem), or press Ctrl+Shift+B (⌘⇧B on a Mac). A few words are enough, we add the technical details ourselves.",
+      "open": "Open {appName}"
     }
   },
   "workers": {
@@ -4870,6 +4909,47 @@
           "middleware": "middleware",
           "cron": "scheduled job"
         }
+      },
+      "tabs": "Feedback sections",
+      "tab": {
+        "overview": "Overview",
+        "reports": "Reports"
+      },
+      "reportStatusLabel": "Report status",
+      "fixedNotice": "The author gets a short thank-you e-mail (once).",
+      "reportKind": {
+        "bug": "Bug",
+        "idea": "Idea",
+        "confusing": "Confusing"
+      },
+      "reportSource": {
+        "report": "Report a problem",
+        "error_page": "Error page"
+      },
+      "filter": {
+        "status": "Status",
+        "kind": "Type",
+        "source": "From",
+        "all": "All",
+        "apply": "Filter"
+      },
+      "openReport": "Open the detail",
+      "detailTitle": "Report",
+      "detailMissing": "This report no longer exists.",
+      "detail": {
+        "kind": "Type",
+        "source": "From",
+        "from": "Author",
+        "sent": "Sent",
+        "language": "Language",
+        "code": "Error code",
+        "what": "What happened",
+        "expected": "Expected",
+        "console": "Console errors ({count})",
+        "consoleEmpty": "None were recorded.",
+        "screenshot": "Screenshot",
+        "screenshotGone": "The screenshot could not be loaded.",
+        "screenshotOwnerOnly": "A screenshot is attached; only the owner can see it."
       }
     },
     "users": {
@@ -5802,5 +5882,36 @@
       "qrCaption": "QR payment",
       "page": "Page {page} of {pages}"
     }
+  },
+  "feedback": {
+    "title": "Report a problem",
+    "close": "Close",
+    "kindLabel": "What is it?",
+    "kind": {
+      "bug": "Bug",
+      "idea": "Idea",
+      "confusing": "Confusing"
+    },
+    "whatLabel": "What happened?",
+    "whatPlaceholder": {
+      "bug": "Describe what went wrong, in a few words.",
+      "idea": "Describe what you would like {appName} to do.",
+      "confusing": "Describe what was unclear to you."
+    },
+    "whatRequired": "Tell us in a few words what happened.",
+    "expectedLabel": "What did you expect? (optional)",
+    "expectedPlaceholder": "What should have happened instead?",
+    "screenshotAttach": "Attach a screenshot",
+    "screenshotCapturing": "Taking the screenshot…",
+    "screenshotRemove": "Remove the screenshot",
+    "screenshotAlt": "Screenshot that will be sent with the report",
+    "screenshotFailed": "The screenshot didn’t work in this browser. You can send the report without it.",
+    "autoAttached": "These are sent with it: the page address, your browser, window size, language, the app version and the last 20 errors from the browser console (shortened and cleaned of e-mails and long numbers). Nothing of your data.",
+    "cancel": "Cancel",
+    "send": "Send",
+    "sending": "Sending…",
+    "failed": "Sending didn’t work. Please try again in a moment.",
+    "limited": "You have sent a lot of reports in the last hour. Please try again a bit later.",
+    "thanks": "Thank you, the report is on its way to us. We read every one."
   }
 }

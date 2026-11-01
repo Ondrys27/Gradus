@@ -95,9 +95,25 @@ export const FEATURE_REQUEST_STATUSES: readonly FeatureRequestStatus[] = [
 export const BUG_REPORT_STATUSES = ["new", "in_progress", "fixed", "cannot_reproduce"] as const;
 export type BugReportStatus = (typeof BUG_REPORT_STATUSES)[number];
 
-/** One bug report as the Feedback page lists it (bug_reports via admin_bug_reports). */
+export const BUG_REPORT_KINDS = ["bug", "idea", "confusing"] as const;
+export type BugReportKind = (typeof BUG_REPORT_KINDS)[number];
+export const BUG_REPORT_SOURCES = ["report", "error_page"] as const;
+export type BugReportSource = (typeof BUG_REPORT_SOURCES)[number];
+
+/** One line of the console a report carries (scrubbed by the server). */
+export type BugReportConsoleLine = { at: string; kind: string; message: string };
+
+/** One bug report as the Feedback page lists it (bug_reports via admin_bug_report_list). */
 export type BugReportRow = {
   id: string;
+  kind: BugReportKind;
+  source: BugReportSource;
+  expected: string | null;
+  consoleErrors: BugReportConsoleLine[];
+  /** Path in the private bucket; the image itself is shown to the owner only. */
+  screenshotPath: string | null;
+  locale: string | null;
+  updatedAt: string;
   /** Null for a report sent signed out. */
   userId: string | null;
   userName: string | null;

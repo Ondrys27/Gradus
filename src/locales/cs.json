@@ -227,7 +227,9 @@
       "openPath": "Zobrazit cestu"
     },
     "justUnlocked": "Nově odemčeno",
-    "lockedLabel": "{section} (zamčeno)"
+    "lockedLabel": "{section} (zamčeno)",
+    "beta": "Beta",
+    "report": "Nahlásit problém"
   },
   "topBar": {
     "home": "Přejít na přehled",
@@ -253,7 +255,10 @@
       "languageCodes": {
         "en": "EN",
         "cs": "CS"
-      }
+      },
+      "report": "Nahlásit problém",
+      "reportShortcut": "Ctrl+Shift+B",
+      "reportShortcutMac": "⌘⇧B"
     }
   },
   "search": {
@@ -664,7 +669,8 @@
       "tomorrow": "zítra {time}",
       "day": "{day} {time}",
       "suggestionLater": "Hodí se až {when}, teď to lidé většinou nezvedají."
-    }
+    },
+    "reportProblem": "Nahlásit problém"
   },
   "celebration": {
     "continue": "Pokračovat",
@@ -2955,6 +2961,39 @@
         "middleware": "middleware",
         "cron": "plánovaná úloha"
       }
+    },
+    "bugReport": {
+      "kind": {
+        "bug": "Chyba",
+        "idea": "Nápad",
+        "confusing": "Něco je matoucí"
+      },
+      "intro": "Nové hlášení v {appName}: {kind}.",
+      "from": "Od",
+      "what": "Co se stalo",
+      "expected": "Čekal",
+      "page": "Stránka",
+      "browser": "Prohlížeč · jazyk · verze",
+      "extras": "Přiloženo: {count, plural, =0 {žádné chyby z konzole} one {# chyba z konzole} few {# chyby z konzole} other {# chyb z konzole}}{screenshot, select, 1 {, snímek obrazovky} other {}}.",
+      "open": "Otevřít hlášení",
+      "subject": "{prefix} {kind}: {summary}"
+    },
+    "bugFixed": {
+      "subject": "Tvoje hlášení v {appName} je opravené",
+      "hello": "Ahoj,",
+      "body": "děkujeme, že jsi problém nahlásil — podívali jsme se na něj a je opravený. Právě díky hlášením, jako je tvoje, se {appName} v betě zlepšuje.",
+      "open": "Otevřít {appName}"
+    },
+    "welcomeBeta": {
+      "subject": "Vítej v betě {appName}",
+      "hello": "Ahoj,",
+      "helloNamed": "Ahoj {name},",
+      "thanks": "děkujeme, že ses přidal k betě {appName}. Moc si vážíme toho, že to s námi zkoušíš.",
+      "what1": "{appName} je mladá aplikace a ty patříš mezi první, kdo ji používají.",
+      "what2": "Může se tedy stát, že něco spadne, bude vypadat divně nebo bude chybět, a věci se budou z týdne na týden měnit.",
+      "what3": "Podle tvé zkušenosti aplikaci tvarujeme, takže nám řekni, co funguje a co ne.",
+      "report": "Problém nebo nápad nahlásíš v nabídce u avatara přes „Nahlásit problém“ (na telefonu Více → Nahlásit problém), nebo zkratkou Ctrl+Shift+B (na Macu ⌘⇧B). Stačí pár slov, technické údaje doplníme sami.",
+      "open": "Otevřít {appName}"
     }
   },
   "workers": {
@@ -4870,6 +4909,47 @@
           "middleware": "middleware",
           "cron": "plánovaná úloha"
         }
+      },
+      "tabs": "Části zpětné vazby",
+      "tab": {
+        "overview": "Přehled",
+        "reports": "Hlášení"
+      },
+      "reportStatusLabel": "Stav hlášení",
+      "fixedNotice": "Autor dostane krátký e-mail s poděkováním (jednou).",
+      "reportKind": {
+        "bug": "Chyba",
+        "idea": "Nápad",
+        "confusing": "Matoucí"
+      },
+      "reportSource": {
+        "report": "Nahlásit problém",
+        "error_page": "Stránka chyby"
+      },
+      "filter": {
+        "status": "Stav",
+        "kind": "Typ",
+        "source": "Odkud",
+        "all": "Vše",
+        "apply": "Filtrovat"
+      },
+      "openReport": "Otevřít detail",
+      "detailTitle": "Hlášení",
+      "detailMissing": "Tohle hlášení už neexistuje.",
+      "detail": {
+        "kind": "Typ",
+        "source": "Odkud",
+        "from": "Autor",
+        "sent": "Odesláno",
+        "language": "Jazyk",
+        "code": "Kód chyby",
+        "what": "Co se stalo",
+        "expected": "Čekal",
+        "console": "Chyby z konzole ({count})",
+        "consoleEmpty": "Žádné se nezachytily.",
+        "screenshot": "Snímek obrazovky",
+        "screenshotGone": "Snímek se nepodařilo načíst.",
+        "screenshotOwnerOnly": "Snímek je přiložený, vidí ho jen majitel."
       }
     },
     "users": {
@@ -5802,5 +5882,36 @@
       "qrCaption": "QR Platba",
       "page": "Strana {page} z {pages}"
     }
+  },
+  "feedback": {
+    "title": "Nahlásit problém",
+    "close": "Zavřít",
+    "kindLabel": "O co jde?",
+    "kind": {
+      "bug": "Chyba",
+      "idea": "Nápad",
+      "confusing": "Něco je matoucí"
+    },
+    "whatLabel": "Co se stalo?",
+    "whatPlaceholder": {
+      "bug": "Popiš pár slovy, co se pokazilo.",
+      "idea": "Popiš, co by {appName} mohl umět.",
+      "confusing": "Popiš, co ti nebylo jasné."
+    },
+    "whatRequired": "Napiš pár slovy, co se stalo.",
+    "expectedLabel": "Co jsi čekal? (nepovinné)",
+    "expectedPlaceholder": "Co se mělo stát místo toho?",
+    "screenshotAttach": "Přiložit snímek",
+    "screenshotCapturing": "Pořizuji snímek…",
+    "screenshotRemove": "Odebrat snímek",
+    "screenshotAlt": "Snímek obrazovky, který se odešle s hlášením",
+    "screenshotFailed": "Snímek se v tomhle prohlížeči nepodařilo pořídit. Hlášení můžeš poslat i bez něj.",
+    "autoAttached": "Automaticky se přiloží: adresa stránky, prohlížeč, velikost okna, jazyk, verze aplikace a posledních 20 chyb z konzole prohlížeče (zkrácené a zbavené e-mailů a dlouhých čísel). Nic z tvých dat.",
+    "cancel": "Zrušit",
+    "send": "Odeslat",
+    "sending": "Odesílám…",
+    "failed": "Odeslání se nepovedlo. Zkus to prosím za chvíli znovu.",
+    "limited": "Za poslední hodinu jsi poslal hodně hlášení. Zkus to prosím o něco později.",
+    "thanks": "Děkujeme, hlášení k nám letí. Čteme každé."
   }
 }

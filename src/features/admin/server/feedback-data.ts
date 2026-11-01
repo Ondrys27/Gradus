@@ -6,9 +6,13 @@ import { breakdown, distribution, type AdminQuery } from "./metrics-data";
 import { satisfactionAverage } from "../numbers";
 import { peopleNamer } from "./people";
 import {
+  BUG_REPORT_KINDS,
   BUG_REPORT_STATUSES,
   type BreakdownData,
+  type BugReportConsoleLine,
+  type BugReportKind,
   type BugReportRow,
+  type BugReportSource,
   type BugReportStatus,
   type FeatureRequestRow,
   type FeatureRequestStatus,
@@ -64,36 +68,104 @@ function isBugReportStatus(value: string): value is BugReportStatus {
   return (BUG_REPORT_STATUSES as readonly string[]).includes(value);
 }
 
-/**
- * The newest bug reports, or the ones whose code begins with `code` (already
- * normalized, GR-…). Searching by code finds internal accounts' reports too;
- * the list itself follows the view's internal accounts switch.
- */
-export async function loadBugReports(q: AdminQuery, code: string | null): Promise<BugReportRow[]> {
-  const { data, error } = await createAdminClient().rpc("admin_bug_reports", {
-    _code: code ?? undefined,
-    _include_internal: viewArgs(q)._include_internal,
-    _limit: 50,
+function isKind(value: string): value is BugReportKind {
+  return (BUG_REPORT_KINDS as readonly string[]).includes(value);
+}
+
+function consoleLines(value: unknown): BugReportConsoleLine[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const { at, kind, message } = item as Record<string, unknown>;
+    return typeof message === "string"
+      ? [
+          {
+            at: typeof at === "string" ? at : "",
+            kind: typeof kind === "string" ? kind : "",
+            message,
+          },
+        ]
+      : [];
   });
-  if (error) throw new Error(`admin_bug_reports: ${error.message}`);
+}
+
+export type BugReportFilters = {
+  status: BugReportStatus | null;
+  kind: BugReportKind | null;
+  source: BugReportSource | null;
+};
+
+type ListArgs = BugReportFilters & { code?: string | null; id?: string | null; limit?: number };
+
+async function listBugReports(q: AdminQuery, args: ListArgs): Promise<BugReportRow[]> {
+  const { data, error } = await createAdminClient().rpc("admin_bug_report_list", {
+    _code: args.code ?? undefined,
+    _id: args.id ?? undefined,
+    _status: args.status ?? undefined,
+    _kind: args.kind ?? undefined,
+    _source: args.source ?? undefined,
+    _include_internal: viewArgs(q)._include_internal,
+    _limit: args.limit ?? 100,
+  });
+  if (error) throw new Error(`admin_bug_report_list: ${error.message}`);
   const rows = data ?? [];
   const nameOf = await peopleNamer(rows.map((row) => row.user_id));
   return rows.map((row) => ({
     id: row.id,
     userId: row.user_id,
     userName: row.user_id ? nameOf(row.user_id) : null,
+    kind: isKind(row.kind) ? row.kind : "bug",
+    source: row.source === "report" ? "report" : "error_page",
     status: isBugReportStatus(row.status) ? row.status : "new",
     code: row.error_code,
     description: row.description,
+    expected: row.expected,
     message: row.error_message,
     digest: row.error_digest,
     page: row.page,
     browser: row.browser,
     device: row.device,
     viewport: row.viewport,
+    locale: row.locale,
     version: row.app_version,
+    consoleErrors: consoleLines(row.console_errors),
+    screenshotPath: row.screenshot_path,
     createdAt: row.created_at,
+    updatedAt: row.updated_at,
   }));
+}
+
+/**
+ * The newest bug reports with the filters, or the ones whose code begins with
+ * `code` (already normalized, GR-…). Searching by code finds internal
+ * accounts' reports too; the list itself follows the view's internal accounts switch.
+ */
+export async function loadBugReports(
+  q: AdminQuery,
+  code: string | null,
+  filters: BugReportFilters = { status: null, kind: null, source: null },
+): Promise<BugReportRow[]> {
+  return listBugReports(q, { ...filters, code, limit: 100 });
+}
+
+/** One report by id, whoever sent it; null when there is none. */
+export async function loadBugReport(q: AdminQuery, id: string): Promise<BugReportRow | null> {
+  const rows = await listBugReports(q, { status: null, kind: null, source: null, id, limit: 1 });
+  return rows[0] ?? null;
+}
+
+/** How many reports wait for a first look (status new), of the accounts in the view. */
+export async function countNewBugReports(q: AdminQuery): Promise<number> {
+  const rows = await listBugReports(q, { status: "new", kind: null, source: null, limit: 200 });
+  return rows.length;
+}
+
+/** A link to a report's screenshot that works for two minutes; the bucket is private. */
+export async function reportScreenshotUrl(path: string): Promise<string | null> {
+  const { data, error } = await createAdminClient()
+    .storage.from("bug-screenshots")
+    .createSignedUrl(path, 120);
+  return error ? null : data.signedUrl;
 }
 
 export type SatisfactionAnswer = {

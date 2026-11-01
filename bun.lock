@@ -10,7 +10,7 @@
         "@dnd-kit/core": "^6.3.1",
         "@dnd-kit/sortable": "^10.0.0",
         "@dnd-kit/utilities": "^3.2.2",
-        "@react-pdf/renderer": "4.9.0",
+        "@react-pdf/renderer": "^4.9.0",
         "@supabase/ssr": "^0.12.7",
         "@supabase/supabase-js": "^2.117.1",
         "@tanstack/react-query": "^5.103.2",
@@ -27,6 +27,7 @@
         "date-fns": "^4.4.0",
         "fflate": "^0.8.3",
         "framer-motion": "^13.4.2",
+        "html-to-image": "^1.11.13",
         "libphonenumber-js": "^1.13.14",
         "lucide-react": "^1.47.0",
         "next": "15.5.26",
@@ -40,7 +41,7 @@
         "sharp": "^0.35.5",
         "tw-animate-css": "^1.4.0",
         "unpdf": "^1.8.1",
-        "uqr": "0.1.3",
+        "uqr": "^0.1.3",
         "zod": "^4.6.5",
       },
       "devDependencies": {
@@ -1146,6 +1147,8 @@
     "hsl-to-rgb-for-reals": ["hsl-to-rgb-for-reals@1.1.1", "", {}, "sha512-LgOWAkrN0rFaQpfdWBQlv/VhkOxb5AsBjk6NQVx4yEzWS923T07X0M1Y0VNko2H52HeSpZrZNNMJ0aFqsdVzQg=="],
 
     "html-encoding-sniffer": ["html-encoding-sniffer@7.0.0", "", { "dependencies": { "@exodus/bytes": "^1.15.1" } }, "sha512-UikN5yr7xsCDAq87Or5or0PAlD3HJJOKVzM05az588WnpDJ4Ux7a2A53Qi6gofGg2/EtvF/H4hCi/TXfCW4Y6w=="],
+
+    "html-to-image": ["html-to-image@1.11.13", "", {}, "sha512-cuOPoI7WApyhBElTTb9oqsawRvZ0rHhaHwghRLlTuffoD1B2aDemlCruLeZrUIIdvG7gs9xeELEPm6PhuASqrg=="],
 
     "http-errors": ["http-errors@2.0.1", "", { "dependencies": { "depd": "~2.0.0", "inherits": "~2.0.4", "setprototypeof": "~1.2.0", "statuses": "~2.0.2", "toidentifier": "~1.0.1" } }, "sha512-4FbRdAX+bSdmo4AUFuS0WNiPz8NgFt+r8ThgNWmlrjQjt1Q7ZR9+zTlce2859x4KSXrwIsaeTqDoKQmtP8pLmQ=="],
 

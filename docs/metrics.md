@@ -108,6 +108,7 @@ U každé sekce: adopce (% aktivních, kteří ji použili), počet akcí, akce 
 ## 9. Zpětná vazba
 
 - Hlášení chyb ze stránky chyby — seznam s kódem chyby (GR-…), hledání podle kódu; událost `bug_report_sent`, kód je i v `client_error`
+- Hlášení od testerů (dialog Nahlásit problém) — záložka Hlášení: seznam s filtry (stav, typ, odkud), detail s konzolí a snímkem, změna stavu. Události `bug_report_opened` (odkud: nabídka, panel Více, Jarvis, zkratka), `bug_report_sent` (typ, snímek, počet řádků konzole), `bug_report_status_changed` (stav, zda šel e-mail autorovi), `welcome_email_sent` (uvítací e-mail po registraci s pozvánkou); nikdy texty
 - Nápady od uživatelů — seznam a stav
 - Dotazník spokojenosti na Přehledu (po 14 dnech používání, pak 30 dní po odpovědi): spokojenost 1–5, „Co se ti fakt líbí?“ a „Co vylepšit?“ → průměrná spokojenost (`satisfaction_avg`), rozdělení (`satisfaction`), odpovědi s textem. Události `satisfaction_submitted` (známka a zda je vyplněný text, nikdy text) a `satisfaction_dismissed`. Dřívější NPS (0–10) zůstává jen jako historie v `nps_responses`
 - Hodnocení Jarvisových odpovědí

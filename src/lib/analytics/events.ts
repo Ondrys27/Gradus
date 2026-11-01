@@ -634,12 +634,30 @@ export const EVENTS = {
     streak: count(3),
     paused: bool(),
   }),
-  /** "Send feedback" on the error page stored a report (a repeated click stores nothing). */
+  /**
+   * A report was stored: "Send feedback" on the error page (a repeated click
+   * stores nothing) or the "Report a problem" dialog (its kind, whether a
+   * screenshot came with it, how many console lines).
+   */
   bug_report_sent: event("platform", "server", false, {
     source: oneOf(["error_page", "report"]),
     described: bool(),
     signed_in: bool(),
+    kind: optional(oneOf(["bug", "idea", "confusing"])),
+    screenshot: optional(bool()),
+    console_errors: optional(count(20)),
   }),
+  /** The "Report a problem" dialog opened, and from where. */
+  bug_report_opened: event("platform", "client", false, {
+    via: oneOf(["account_menu", "more_panel", "jarvis", "shortcut"]),
+  }),
+  /** The administration moved a report to another status. */
+  bug_report_status_changed: event("platform", "server", false, {
+    status: oneOf(["new", "in_progress", "fixed", "cannot_reproduce"]),
+    notified: bool(),
+  }),
+  /** The welcome e-mail to a tester with an invitation went out (or failed). */
+  welcome_email_sent: event("platform", "server", false, { ok: bool() }),
 
   // --- plan and trial ------------------------------------------------------
   plan_interest_clicked: event("plan", "server", false, { plan: oneOf(PAID_PLANS), ok: bool() }),

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   EllipsisIcon,
+  FlagIcon,
   LockIcon,
   LogOutIcon,
   SettingsIcon,
@@ -16,6 +17,7 @@ import { useTranslations } from "next-intl";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { useSignOut } from "@/features/account/queries";
 import { useCloseOnErrorScreen } from "@/features/errors/error-screen-state";
+import { useReportProblem } from "@/features/feedback/report-provider";
 import { cn } from "@/lib/utils";
 import { isActivePath } from "./nav-items";
 import { useNavItems, type NavItemState } from "./use-nav";
@@ -37,6 +39,7 @@ export function BottomNav() {
   const closeMore = useCallback(() => setMoreOpen(false), []);
   useCloseOnErrorScreen(closeMore);
   const signOut = useSignOut();
+  const report = useReportProblem();
   const { primary: primaryItems, more: moreItems } = useNavItems();
   const moreActive = [...moreItems, ...accountItems].some((item) =>
     isActivePath(pathname, item.href),
@@ -154,6 +157,19 @@ export function BottomNav() {
               </li>
             );
           })}
+          <li>
+            <button
+              type="button"
+              onClick={() => {
+                setMoreOpen(false);
+                report.open("more_panel");
+              }}
+              className="flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-xl px-3 text-[15px] font-medium text-ink-soft outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <FlagIcon aria-hidden className="size-5" />
+              {t("report")}
+            </button>
+          </li>
           <li>
             <button
               type="button"

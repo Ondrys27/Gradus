@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { SearchIcon } from "lucide-react";
 import { StatusPill } from "@/components/ui/status-pill";
+import { AdminViewLink } from "@/features/admin/ui/admin-view";
+import { ReportStatusSelect } from "@/features/admin/ui/report-status";
 import type { Tone } from "@/components/ui/tone";
 import { isErrorCode, normalizeErrorCodeQuery } from "@/features/errors/error-code";
 import { formatCalendarDate, formatDateTime } from "@/lib/format";
@@ -14,9 +16,13 @@ import { loadErrorEvent } from "@/features/admin/server/error-alerts-data";
 import { adminQuery, safe, type AdminQuery } from "@/features/admin/server/metrics-data";
 import { peopleNamer } from "@/features/admin/server/people";
 import {
+  countNewBugReports,
   featureRequestCounts,
   jarvisAnswerRatings,
+  loadBugReport,
   loadBugReports,
+  reportScreenshotUrl,
+  type BugReportFilters,
   loadFeatureRequests,
   loadSatisfactionAnswers,
   loadSatisfactionSummary,
@@ -34,13 +40,18 @@ import {
 import { BreakdownList } from "@/features/admin/ui/data-blocks";
 import { FeatureRequestRowView } from "@/features/admin/ui/feature-request-row";
 import { Figures } from "@/features/admin/ui/metric-tile";
-import { parseAdminView, serializeAdminView } from "@/features/admin/view-state";
+import { parseAdminView, serializeAdminView, viewQuery } from "@/features/admin/view-state";
 import {
+  BUG_REPORT_KINDS,
+  BUG_REPORT_SOURCES,
+  BUG_REPORT_STATUSES,
   FEATURE_REQUEST_STATUSES,
+  type BugReportKind,
   type BugReportRow,
   type BugReportStatus,
   type FeatureRequestStatus,
 } from "@/features/admin/types";
+import type { AdminRole } from "@/features/admin/roles";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.feedback");
@@ -53,16 +64,34 @@ function isStatus(value: string | undefined): value is FeatureRequestStatus {
   return (FEATURE_REQUEST_STATUSES as readonly string[]).includes(value ?? "");
 }
 
+function pick<T extends string>(values: readonly T[], raw: string | undefined): T | null {
+  return values.includes(raw as T) ? (raw as T) : null;
+}
+
+const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
+
 export default async function AdminFeedbackPage({ searchParams }: Props) {
   const context = await requireAdmin();
   await logAdminAction(context, "view", "feedback");
   const params = await searchParams;
   const q = adminQuery(params, "feedback");
-  const rawStatus = Array.isArray(params.status) ? params.status[0] : params.status;
+  const rawStatus = first(params.status);
   const status = isStatus(rawStatus) ? rawStatus : null;
-  const rawCode = (Array.isArray(params.code) ? params.code[0] : params.code)?.trim() ?? "";
+  const rawCode = first(params.code)?.trim() ?? "";
+  // A search by error code is a search among the reports.
+  const tab: "overview" | "reports" =
+    first(params.tab) === "reports" || rawCode ? "reports" : "overview";
+  const filters: BugReportFilters = {
+    status: pick(BUG_REPORT_STATUSES, first(params.reportStatus)),
+    kind: pick(BUG_REPORT_KINDS, first(params.kind)),
+    source: pick(BUG_REPORT_SOURCES, first(params.source)),
+  };
+  const rawReport = first(params.report);
+  const reportId = rawReport && /^[0-9a-f-]{36}$/i.test(rawReport) ? rawReport : null;
   const kept = serializeAdminView(parseAdminView(params));
+  const query = viewQuery(parseAdminView(params));
   const t = await getTranslations("admin.feedback");
+  const newReports = await safe("new bug reports", () => countNewBugReports(q));
 
   // The search for an error code sits in the sticky bar (`/` jumps to it).
   const search = (
@@ -89,25 +118,82 @@ export default async function AdminFeedbackPage({ searchParams }: Props) {
     </form>
   );
 
+  const waiting = newReports.ok ? newReports.data : 0;
+  const tabs = (
+    <nav aria-label={t("tabs")} className="flex gap-1">
+      {(["overview", "reports"] as const).map((value) => {
+        const active = value === tab;
+        return (
+          <AdminViewLink
+            key={value}
+            href={`${ADMIN_PATH}/zpetna-vazba${value === "reports" ? "?tab=reports" : ""}${
+              query ? `${value === "reports" ? "&" : "?"}${query.slice(1)}` : ""
+            }`}
+            aria-current={active ? "page" : undefined}
+            className={cn(
+              "flex h-10 shrink-0 items-center gap-1.5 border-b-2 px-2.5 text-sm whitespace-nowrap outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:h-8",
+              active
+                ? "border-violet font-medium text-ink"
+                : "border-transparent text-ink-soft hover:text-ink",
+            )}
+          >
+            {t(`tab.${value}`)}
+            {value === "reports" && waiting > 0 && (
+              <span className="rounded-full bg-pink/20 px-1.5 text-xs text-pink">{waiting}</span>
+            )}
+          </AdminViewLink>
+        );
+      })}
+    </nav>
+  );
+
   return (
     <>
-      <AdminPageHeader section="feedback" q={q} extra={search} />
+      <AdminPageHeader
+        section="feedback"
+        q={q}
+        extra={
+          <div className="flex flex-col gap-2">
+            {search}
+            {tabs}
+          </div>
+        }
+      />
       <div className="flex flex-col gap-4">
-        <Suspense fallback={null}>
-          <ErrorEventCard rawCode={rawCode} />
-        </Suspense>
-        <Suspense fallback={<CardSkeleton height={240} />}>
-          <BugReports q={q} rawCode={rawCode} />
-        </Suspense>
-        <Suspense fallback={<FiguresSkeleton count={2} />}>
-          <Satisfaction q={q} />
-        </Suspense>
-        <Suspense fallback={<GridSkeleton count={2} height={200} />}>
-          <Voices q={q} />
-        </Suspense>
-        <Suspense fallback={<CardSkeleton height={320} />}>
-          <Ideas q={q} status={status} />
-        </Suspense>
+        {tab === "reports" ? (
+          <>
+            <Suspense fallback={null}>
+              <ErrorEventCard rawCode={rawCode} />
+            </Suspense>
+            {reportId && (
+              <Suspense fallback={<CardSkeleton height={320} />}>
+                <ReportDetail q={q} id={reportId} role={context.role} />
+              </Suspense>
+            )}
+            <Suspense fallback={<CardSkeleton height={240} />}>
+              <BugReports
+                q={q}
+                rawCode={rawCode}
+                filters={filters}
+                selected={reportId}
+                query={query}
+                kept={[...kept]}
+              />
+            </Suspense>
+          </>
+        ) : (
+          <>
+            <Suspense fallback={<FiguresSkeleton count={2} />}>
+              <Satisfaction q={q} />
+            </Suspense>
+            <Suspense fallback={<GridSkeleton count={2} height={200} />}>
+              <Voices q={q} />
+            </Suspense>
+            <Suspense fallback={<CardSkeleton height={320} />}>
+              <Ideas q={q} status={status} />
+            </Suspense>
+          </>
+        )}
       </div>
     </>
   );
@@ -187,12 +273,46 @@ async function ErrorEventCard({ rawCode }: { rawCode: string }) {
   );
 }
 
-/** Bug reports from the error page, newest first, or the ones a code search finds. */
-async function BugReports({ q, rawCode }: { q: AdminQuery; rawCode: string }) {
+const KIND_TONE: Record<BugReportKind, Tone> = { bug: "pink", idea: "teal", confusing: "gold" };
+
+function reportsHref(
+  query: string,
+  filters: BugReportFilters,
+  rawCode: string,
+  report?: string,
+): string {
+  const parts = ["tab=reports"];
+  if (rawCode) parts.push(`code=${encodeURIComponent(rawCode)}`);
+  if (filters.status) parts.push(`reportStatus=${filters.status}`);
+  if (filters.kind) parts.push(`kind=${filters.kind}`);
+  if (filters.source) parts.push(`source=${filters.source}`);
+  if (report) parts.push(`report=${report}`);
+  return `${ADMIN_PATH}/zpetna-vazba?${parts.join("&")}${query ? `&${query.slice(1)}` : ""}`;
+}
+
+const selectClass =
+  "h-10 rounded-lg border border-line bg-canvas px-2 text-sm text-ink outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:h-9";
+
+/** Bug reports, newest first, with filters, or the ones a code search finds. */
+async function BugReports({
+  q,
+  rawCode,
+  filters,
+  selected,
+  query,
+  kept,
+}: {
+  q: AdminQuery;
+  rawCode: string;
+  filters: BugReportFilters;
+  selected: string | null;
+  query: string;
+  kept: [string, string][];
+}) {
   const code = normalizeErrorCodeQuery(rawCode);
   const invalid = Boolean(rawCode) && !code;
   const [rows, t, tControls] = await Promise.all([
-    invalid ? null : safe("bug reports", () => loadBugReports(q, code)),
+    invalid ? null : safe("bug reports", () => loadBugReports(q, code, filters)),
     getTranslations("admin.feedback"),
     getTranslations("admin.controls"),
   ]);
@@ -205,6 +325,56 @@ async function BugReports({ q, rawCode }: { q: AdminQuery; rawCode: string }) {
 
   return (
     <AdminCard title={t("reportsTitle")} description={t("reportsDescription")} wide>
+      <form
+        action={`${ADMIN_PATH}/zpetna-vazba`}
+        className="mb-3 flex flex-wrap items-end gap-2"
+        data-testid="report-filters"
+      >
+        <input type="hidden" name="tab" value="reports" />
+        {rawCode && <input type="hidden" name="code" value={rawCode} />}
+        {kept.map(([key, value]) => (
+          <input key={key} type="hidden" name={key} value={value} />
+        ))}
+        <label className="flex flex-col gap-1 text-xs text-ink-muted">
+          {t("filter.status")}
+          <select name="reportStatus" defaultValue={filters.status ?? ""} className={selectClass}>
+            <option value="">{t("filter.all")}</option>
+            {BUG_REPORT_STATUSES.map((value) => (
+              <option key={value} value={value}>
+                {t(`reportStatus.${value}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1 text-xs text-ink-muted">
+          {t("filter.kind")}
+          <select name="kind" defaultValue={filters.kind ?? ""} className={selectClass}>
+            <option value="">{t("filter.all")}</option>
+            {BUG_REPORT_KINDS.map((value) => (
+              <option key={value} value={value}>
+                {t(`reportKind.${value}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1 text-xs text-ink-muted">
+          {t("filter.source")}
+          <select name="source" defaultValue={filters.source ?? ""} className={selectClass}>
+            <option value="">{t("filter.all")}</option>
+            {BUG_REPORT_SOURCES.map((value) => (
+              <option key={value} value={value}>
+                {t(`reportSource.${value}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button
+          type="submit"
+          className="h-10 cursor-pointer rounded-lg border border-line bg-surface px-3 text-sm text-ink outline-none hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-violet/40 mouse:h-9"
+        >
+          {t("filter.apply")}
+        </button>
+      </form>
       {rows === null ? (
         <AdminEmpty hint={t("reportsInvalidCode")} />
       ) : (
@@ -220,7 +390,11 @@ async function BugReports({ q, rawCode }: { q: AdminQuery; rawCode: string }) {
                   <BugReportItem
                     key={row.id}
                     row={row}
+                    selected={row.id === selected}
+                    href={reportsHref(query, filters, rawCode, row.id)}
                     statusLabel={t(`reportStatus.${row.status}`)}
+                    kindLabel={t(`reportKind.${row.kind}`)}
+                    openLabel={t("openReport")}
                     meta={t("reportMeta", {
                       name: row.userName ?? t("anonymous"),
                       date: formatDateTime(new Date(row.createdAt), ADMIN_FORMAT_SETTINGS),
@@ -249,14 +423,22 @@ async function BugReports({ q, rawCode }: { q: AdminQuery; rawCode: string }) {
 
 function BugReportItem({
   row,
+  selected,
+  href,
   statusLabel,
+  kindLabel,
+  openLabel,
   meta,
   noDescription,
   labels,
   browser,
 }: {
   row: BugReportRow;
+  selected: boolean;
+  href: string;
   statusLabel: string;
+  kindLabel: string;
+  openLabel: string;
   meta: string;
   noDescription: string;
   labels: Record<"page" | "browser" | "version" | "error" | "digest", string>;
@@ -270,11 +452,21 @@ function BugReportItem({
     [labels.digest, row.digest],
   ];
   return (
-    <li className="flex flex-col gap-1.5 rounded-xl border border-line px-3.5 py-3">
+    <li
+      className={cn(
+        "flex flex-col gap-1.5 rounded-xl border px-3.5 py-3",
+        selected ? "border-violet/60 bg-violet/10" : "border-line",
+      )}
+    >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <code className="font-mono text-sm font-semibold text-ink select-all">
-          {row.code ?? "–"}
-        </code>
+        <div className="flex items-center gap-2">
+          <StatusPill tone={KIND_TONE[row.kind]} className="h-5 px-2">
+            {kindLabel}
+          </StatusPill>
+          {row.code && (
+            <code className="font-mono text-sm font-semibold text-ink select-all">{row.code}</code>
+          )}
+        </div>
         <StatusPill tone={REPORT_STATUS_TONE[row.status]} className="h-5 px-2">
           {statusLabel}
         </StatusPill>
@@ -292,8 +484,130 @@ function BugReportItem({
             </div>
           ))}
       </dl>
-      <p className="text-xs text-ink-muted">{meta}</p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs text-ink-muted">{meta}</p>
+        <AdminViewLink
+          href={href}
+          className="inline-flex h-10 items-center text-xs text-violet underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-violet/40 mouse:h-7"
+        >
+          {openLabel}
+        </AdminViewLink>
+      </div>
     </li>
+  );
+}
+
+/** One report in full: the text, the technical data, the console and (the owner) the screenshot. */
+async function ReportDetail({ q, id, role }: { q: AdminQuery; id: string; role: AdminRole }) {
+  const loaded = await safe("bug report", () => loadBugReport(q, id));
+  const [t, tControls] = await Promise.all([
+    getTranslations("admin.feedback"),
+    getTranslations("admin.controls"),
+  ]);
+  if (!loaded.ok) {
+    return (
+      <AdminCard title={t("detailTitle")} wide>
+        <Show loaded={loaded}>{() => null}</Show>
+      </AdminCard>
+    );
+  }
+  const row = loaded.data;
+  if (!row) {
+    return (
+      <AdminCard title={t("detailTitle")} wide>
+        <AdminEmpty hint={t("detailMissing")} />
+      </AdminCard>
+    );
+  }
+  // The picture is the owner's and the author's: an admin sees only that there is one.
+  const shot =
+    row.screenshotPath && role === "owner" ? await reportScreenshotUrl(row.screenshotPath) : null;
+  const nameOf = await peopleNamer([row.userId]);
+  const device =
+    row.device && tControls.has(`segmentValues.device.${row.device}`)
+      ? tControls(`segmentValues.device.${row.device}`)
+      : null;
+  const browser =
+    row.browser && t.has(`browser.${row.browser}`) ? t(`browser.${row.browser}`) : null;
+  const details: [string, string | null][] = [
+    [t("detail.kind"), t(`reportKind.${row.kind}`)],
+    [t("detail.source"), t(`reportSource.${row.source}`)],
+    [t("detail.from"), row.userId ? nameOf(row.userId) : t("anonymous")],
+    [t("detail.sent"), formatDateTime(new Date(row.createdAt), ADMIN_FORMAT_SETTINGS)],
+    [t("pageLabel"), row.page],
+    [t("browserLabel"), [browser, device, row.viewport].filter(Boolean).join(" · ") || null],
+    [t("detail.language"), row.locale],
+    [t("versionLabel"), row.version],
+    [t("errorLabel"), row.message],
+    [t("digestLabel"), row.digest],
+    [t("detail.code"), row.code],
+  ];
+  return (
+    <AdminCard title={t("detailTitle")} description={row.code ?? undefined} wide>
+      <div className="flex flex-col gap-4" data-testid="report-detail">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex min-w-0 flex-1 flex-col gap-3">
+            <div>
+              <p className="micro-label">{t("detail.what")}</p>
+              <p className="text-sm whitespace-pre-wrap text-ink">
+                {row.description ?? t("noDescription")}
+              </p>
+            </div>
+            {row.expected && (
+              <div>
+                <p className="micro-label">{t("detail.expected")}</p>
+                <p className="text-sm whitespace-pre-wrap text-ink">{row.expected}</p>
+              </div>
+            )}
+          </div>
+          <ReportStatusSelect id={row.id} status={row.status} />
+        </div>
+        <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm">
+          {details
+            .filter(([, value]) => value)
+            .map(([label, value]) => (
+              <div key={label} className="contents">
+                <dt className="text-ink-muted">{label}</dt>
+                <dd className="min-w-0 break-words text-ink-soft">{value}</dd>
+              </div>
+            ))}
+        </dl>
+        <div>
+          <p className="micro-label">{t("detail.console", { count: row.consoleErrors.length })}</p>
+          {row.consoleErrors.length === 0 ? (
+            <p className="text-sm text-ink-muted">{t("detail.consoleEmpty")}</p>
+          ) : (
+            <pre
+              data-testid="report-console"
+              className="max-h-64 overflow-auto rounded-xl border border-line bg-canvas/60 px-3 py-2 font-mono text-xs whitespace-pre-wrap text-ink-soft"
+            >
+              {row.consoleErrors
+                .map((line) => `${line.at.slice(11, 19)} [${line.kind}] ${line.message}`)
+                .join("\n")}
+            </pre>
+          )}
+        </div>
+        {row.screenshotPath && (
+          <div>
+            <p className="micro-label">{t("detail.screenshot")}</p>
+            {shot ? (
+              // A signed link to the person's own screen: next/image has nothing to optimise.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={shot}
+                alt={t("detail.screenshot")}
+                data-testid="report-screenshot"
+                className="mt-1 max-h-[32rem] w-full rounded-xl border border-line object-contain object-top"
+              />
+            ) : (
+              <p className="text-sm text-ink-muted">
+                {role === "owner" ? t("detail.screenshotGone") : t("detail.screenshotOwnerOnly")}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+    </AdminCard>
   );
 }
 
@@ -333,7 +647,10 @@ async function Voices({ q }: { q: AdminQuery }) {
             ) : (
               <ul className="flex max-h-[32rem] flex-col gap-2 overflow-y-auto">
                 {rows.map((row, index) => (
-                  <li key={index} className="flex flex-col gap-1.5 rounded-xl border border-line px-3.5 py-2.5">
+                  <li
+                    key={index}
+                    className="flex flex-col gap-1.5 rounded-xl border border-line px-3.5 py-2.5"
+                  >
                     <div className="flex items-center justify-between gap-2 text-xs text-ink-muted">
                       <span>
                         {t("satisfactionBadge", { score: row.satisfaction })} · {row.userName}

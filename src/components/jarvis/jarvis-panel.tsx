@@ -16,6 +16,7 @@ import {
   ArrowUpIcon,
   FileSpreadsheetIcon,
   FileTextIcon,
+  FlagIcon,
   ImageIcon,
   PaperclipIcon,
   SquarePenIcon,
@@ -26,6 +27,7 @@ import {
 } from "lucide-react";
 import { Jarvis } from "@/components/jarvis/jarvis";
 import { NoticePager, NoticeSlide, queueKeyDown } from "@/components/jarvis/notice-queue";
+import { useReportProblem } from "@/features/feedback/report-provider";
 import { SaveAnswerToNotes } from "@/features/notes/save-answer";
 import { SuggestionCard, useSuggestionActions } from "@/components/jarvis/suggestion-card";
 import {
@@ -63,6 +65,7 @@ type JarvisPanelProps = {
 export function JarvisPanel({ chat, onClose }: JarvisPanelProps) {
   const t = useTranslations("jarvis");
   const settings = useFormatSettings();
+  const report = useReportProblem();
   const reduceMotion = useReducedMotionSafe();
   const isPhone = useIsPhone();
   const conversation = useJarvisConversation(true);
@@ -242,6 +245,15 @@ export function JarvisPanel({ chat, onClose }: JarvisPanelProps) {
           className="grid size-11 place-items-center rounded-full text-ink-soft outline-none transition-colors hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-teal/50 disabled:opacity-40"
         >
           <SquarePenIcon aria-hidden className="size-5" />
+        </button>
+        <button
+          type="button"
+          onClick={() => report.open("jarvis")}
+          aria-label={t("reportProblem")}
+          title={t("reportProblem")}
+          className="grid size-11 place-items-center rounded-full text-ink-soft outline-none transition-colors hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-teal/50"
+        >
+          <FlagIcon aria-hidden className="size-5" />
         </button>
         <button
           type="button"

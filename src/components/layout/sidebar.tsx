@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { isActivePath } from "./nav-items";
 import { useNavItems, type NavItemState } from "./use-nav";
 import { LockedSectionPopover } from "./lock-hint";
+import { BetaBadge } from "./beta-badge";
 import { Logo } from "./logo";
 import { useReducedMotionSafe } from "@/lib/use-media-query";
 
@@ -30,6 +31,7 @@ export function Sidebar() {
         <span className="hidden text-lg font-bold tracking-tight text-ink lg:inline">
           {APP_NAME}
         </span>
+        <BetaBadge className="hidden lg:inline-flex" />
       </Link>
 
       <nav aria-label={t("label")} className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-2">
@@ -120,4 +122,3 @@ function FreshDot() {
     />
   );
 }
-

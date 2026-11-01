@@ -37,6 +37,7 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | Tarify (`/admin/tarify`) | owner upravuje a zveřejňuje, admin čte zveřejněnou verzi a historii |
 | Upozornění na chyby (`/admin/upozorneni`) | owner upravuje a posílá zkušební e-mail, admin čte |
 | Zpětná vazba — karta Záznam chyby (hledání podle kódu) | owner + admin |
+| Zpětná vazba → Hlášení (seznam, filtry, detail, změna stavu) | owner + admin; snímek obrazovky ve detailu jen owner (adminovi se ukáže jen, že je přiložen) |
 | Administrátoři (`/admin/administratori`) | owner; adminovi 404, v menu chybí |
 | `/admin/prihlaseni`, `/admin/pozvanka/<token>` | kdokoli (stránka sama ověřuje heslo, roli nebo token) |
 
@@ -58,6 +59,8 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | `admin_require_owner` | jen uvnitř funkcí výše | bez práva EXECUTE pro klienty |
 | `admin_members`, `admin_people`, `metric_admin_users` | jen service role (server po stráži) | čtou `auth.users` |
 | `error_event_record`, `error_alert_claim`, `error_alert_digest_claim`, `purge_error_events` | jen service role (server) | záznamy chyb a rozhodnutí o e-mailech, bez klientského přístupu |
+| `admin_bug_report_list`, `admin_bug_report_set_status` | jen service role (server po stráži) | Zpětná vazba → Hlášení: seznam s filtry a detail; změna stavu (`feedback.report`), při prvním „Opraveno“ vrátí autora pro e-mail s poděkováním; owner + admin |
+| `bug_report_create` | jen service role (server) | hlášení z dialogu Nahlásit problém, hodinový limit na účet |
 | `admin_bug_reports` | jen service role (server po stráži) | Zpětná vazba → Hlášení chyb, hledání podle kódu chyby; owner + admin |
 | `app_overview` | owner | v aplikaci, ne v administraci; beze změny |
 

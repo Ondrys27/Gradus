@@ -15,6 +15,8 @@ import {
   isValidTimeZone,
   regionFormats,
 } from "@/lib/region";
+import { runInBackground } from "@/features/errors/alerts/server/background";
+import { mailWelcomeBeta } from "@/features/feedback/server/notify";
 import { siteOrigin } from "@/lib/site-origin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -180,6 +182,18 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
 
   await track("account_registered", { method: decision.kind }, { userId, admin });
   if (decision.kind === "worker") await track("worker_invite_accepted", {}, { userId, admin });
+  // A tester with an invitation gets a welcome e-mail; a failure only shows in the log.
+  if (decision.kind === "beta" || decision.kind === "worker") {
+    const origin = await siteOrigin().catch(() => null);
+    runInBackground("welcome-email", async () => {
+      const ok = await mailWelcomeBeta(parsed.data.email, {
+        name: parsed.data.displayName || null,
+        origin,
+        locale,
+      });
+      await track("welcome_email_sent", { ok }, { userId, admin });
+    });
+  }
 
   const supabase = await createClient();
   const { error: signInError } = await supabase.auth.signInWithPassword({

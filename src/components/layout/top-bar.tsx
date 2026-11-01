@@ -15,6 +15,7 @@ import { formatNumber } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { AccountMenu } from "./account-menu";
+import { BetaBadge } from "./beta-badge";
 import { Logo } from "./logo";
 import { useReducedMotionSafe } from "@/lib/use-media-query";
 
@@ -77,6 +78,7 @@ export function TopBar() {
         >
           <Logo />
         </Link>
+        <BetaBadge className="-ml-1 md:hidden" />
 
         <div aria-hidden className="hidden md:block" />
         <SearchTrigger className="hidden md:flex" />

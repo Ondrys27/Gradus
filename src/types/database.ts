@@ -464,6 +464,7 @@ export type Database = {
         Row: {
           app_version: string | null
           browser: string | null
+          console_errors: Json
           created_at: string
           description: string | null
           device: string | null
@@ -471,11 +472,13 @@ export type Database = {
           error_digest: string | null
           error_message: string | null
           expected: string | null
+          fixed_notified_at: string | null
           id: string
           ip_hash: string | null
           kind: string
           locale: string | null
           page: string
+          screenshot_path: string | null
           source: string
           status: string
           updated_at: string
@@ -485,6 +488,7 @@ export type Database = {
         Insert: {
           app_version?: string | null
           browser?: string | null
+          console_errors?: Json
           created_at?: string
           description?: string | null
           device?: string | null
@@ -492,11 +496,13 @@ export type Database = {
           error_digest?: string | null
           error_message?: string | null
           expected?: string | null
+          fixed_notified_at?: string | null
           id?: string
           ip_hash?: string | null
           kind?: string
           locale?: string | null
           page: string
+          screenshot_path?: string | null
           source?: string
           status?: string
           updated_at?: string
@@ -506,6 +512,7 @@ export type Database = {
         Update: {
           app_version?: string | null
           browser?: string | null
+          console_errors?: Json
           created_at?: string
           description?: string | null
           device?: string | null
@@ -513,11 +520,13 @@ export type Database = {
           error_digest?: string | null
           error_message?: string | null
           expected?: string | null
+          fixed_notified_at?: string | null
           id?: string
           ip_hash?: string | null
           kind?: string
           locale?: string | null
           page?: string
+          screenshot_path?: string | null
           source?: string
           status?: string
           updated_at?: string
@@ -3635,6 +3644,43 @@ export type Database = {
         Returns: string
       }
       add_interested_contact_table: { Args: never; Returns: string }
+      admin_bug_report_list: {
+        Args: {
+          _code?: string
+          _id?: string
+          _include_internal?: boolean
+          _kind?: string
+          _limit?: number
+          _source?: string
+          _status?: string
+        }
+        Returns: {
+          app_version: string
+          browser: string
+          console_errors: Json
+          created_at: string
+          description: string
+          device: string
+          error_code: string
+          error_digest: string
+          error_message: string
+          expected: string
+          id: string
+          kind: string
+          locale: string
+          page: string
+          screenshot_path: string
+          source: string
+          status: string
+          updated_at: string
+          user_id: string
+          viewport: string
+        }[]
+      }
+      admin_bug_report_set_status: {
+        Args: { _id: string; _status: string }
+        Returns: string
+      }
       admin_bug_reports: {
         Args: { _code?: string; _include_internal?: boolean; _limit?: number }
         Returns: {
@@ -3801,6 +3847,23 @@ export type Database = {
           _paid_on: string
         }
         Returns: undefined
+      }
+      bug_report_create: {
+        Args: {
+          _app_version?: string
+          _browser?: string
+          _console_errors?: Json
+          _description: string
+          _device?: string
+          _expected?: string
+          _kind: string
+          _limit_user?: number
+          _locale?: string
+          _page: string
+          _user_id: string
+          _viewport?: string
+        }
+        Returns: string
       }
       bug_report_submit: {
         Args: {
