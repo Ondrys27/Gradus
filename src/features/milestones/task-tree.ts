@@ -137,41 +137,6 @@ export function nextPosition(tasks: Task[], parentId: string | null): number {
   return siblings.length ? Math.max(...siblings.map((task) => task.position)) + 1 : 0;
 }
 
-export type PositionChange = { id: string; position: number };
-
-/** Moves one sibling next to another; returns the new list and only the positions that changed. */
-export function reorderSiblings(
-  tasks: Task[],
-  activeId: string,
-  overId: string,
-): { tasks: Task[]; changes: PositionChange[] } {
-  const active = tasks.find((task) => task.id === activeId);
-  const over = tasks.find((task) => task.id === overId);
-  if (!active || !over || active.parent_task_id !== over.parent_task_id || activeId === overId) {
-    return { tasks, changes: [] };
-  }
-
-  const siblings = tasks
-    .filter((task) => task.parent_task_id === active.parent_task_id)
-    .sort((a, b) => a.position - b.position);
-  const from = siblings.findIndex((task) => task.id === activeId);
-  const to = siblings.findIndex((task) => task.id === overId);
-  siblings.splice(to, 0, siblings.splice(from, 1)[0]);
-
-  const positions = new Map(siblings.map((task, index) => [task.id, index]));
-  const changes = siblings
-    .filter((task, index) => task.position !== index)
-    .map((task) => ({ id: task.id, position: positions.get(task.id)! }));
-  return {
-    tasks: tasks
-      .map((task) =>
-        positions.has(task.id) ? { ...task, position: positions.get(task.id)! } : task,
-      )
-      .sort((a, b) => a.position - b.position),
-    changes,
-  };
-}
-
 /** Open milestones first by nearest target date (undated last), finished ones dimmed at the end. */
 export function sortMilestones(milestones: MilestoneWithCounts[]): MilestoneWithCounts[] {
   const open = (m: MilestoneWithCounts) => (m.status === "completed" ? 1 : 0);
@@ -195,9 +160,279 @@ export function taskDepth(tasks: Pick<Task, "id" | "parent_task_id">[], taskId: 
   let depth = 0;
   let parent = byId.get(taskId)?.parent_task_id ?? null;
   // The guard stops a broken cycle from looping forever.
-  while (parent && depth < 100) {
+  while (parent && depth < MAX_TASK_LEVELS) {
     depth += 1;
     parent = byId.get(parent)?.parent_task_id ?? null;
   }
   return depth;
+}
+
+// ---------------------------------------------------------------------------
+// Moving tasks: the map, the list and the keyboard all end in move_task() in
+// the database, which follows the same rules and has the last word.
+// ---------------------------------------------------------------------------
+
+/**
+ * How many levels the tasks of a milestone may have; a top-level task is on
+ * level 1. Tasks nest to any depth in practice, the limit only keeps a tree
+ * finite. The database (tasks_tree_guard) holds the same number.
+ */
+export const MAX_TASK_LEVELS = 100;
+
+/** Where a task goes: under a parent (null = the milestone itself), at an index among its new siblings. */
+export type MoveTarget = { parentId: string | null; index: number };
+
+export type MoveError = "notFound" | "cycle" | "tooDeep";
+
+export type MovePlan =
+  | {
+      ok: true;
+      /** False when the task would land where it already is. */
+      changed: boolean;
+      tasks: Task[];
+      /** Where the task was, for undo. */
+      from: MoveTarget;
+    }
+  | { ok: false; error: MoveError };
+
+/** Direct children of a parent (null = top level) in their order. */
+export function siblingsOf<T extends Pick<Task, "parent_task_id" | "position">>(
+  tasks: T[],
+  parentId: string | null,
+): T[] {
+  // A stable sort keeps the database's tie-break (created_at) for equal positions.
+  return tasks
+    .filter((task) => task.parent_task_id === parentId)
+    .sort((a, b) => a.position - b.position);
+}
+
+/** How many levels reach below a task: 0 for a task without subtasks. */
+export function subtreeHeight(
+  tasks: Pick<Task, "id" | "parent_task_id">[],
+  taskId: string,
+): number {
+  const children = new Map<string, string[]>();
+  for (const task of tasks) {
+    if (!task.parent_task_id) continue;
+    const list = children.get(task.parent_task_id) ?? [];
+    list.push(task.id);
+    children.set(task.parent_task_id, list);
+  }
+  let height = 0;
+  let level = [taskId];
+  const seen = new Set(level);
+  while (level.length > 0 && height <= MAX_TASK_LEVELS) {
+    const next = level.flatMap((id) => children.get(id) ?? []).filter((id) => !seen.has(id));
+    if (next.length === 0) break;
+    next.forEach((id) => seen.add(id));
+    height += 1;
+    level = next;
+  }
+  return height;
+}
+
+/**
+ * Moves a task, with everything below it, under a new parent at an index
+ * among its new siblings, as move_task() does: positions of the new and the old
+ * siblings are renumbered from 0, a task never goes under itself or its own
+ * subtask, the tree stays within `maxLevels`, and an open task under a done
+ * parent reopens it and its done ancestors. Nothing is ever completed by a move.
+ */
+export function planMove(
+  tasks: Task[],
+  taskId: string,
+  target: MoveTarget,
+  maxLevels: number = MAX_TASK_LEVELS,
+): MovePlan {
+  const task = tasks.find((item) => item.id === taskId);
+  if (!task) return { ok: false, error: "notFound" };
+  const { parentId } = target;
+  if (parentId !== null) {
+    const parent = tasks.find((item) => item.id === parentId);
+    if (!parent || parent.milestone_id !== task.milestone_id)
+      return { ok: false, error: "notFound" };
+    if (subtreeIds(tasks, taskId).has(parentId)) return { ok: false, error: "cycle" };
+  }
+  const level = parentId === null ? 1 : taskDepth(tasks, parentId) + 2;
+  if (level + subtreeHeight(tasks, taskId) > maxLevels) return { ok: false, error: "tooDeep" };
+
+  const oldSiblings = siblingsOf(tasks, task.parent_task_id);
+  const from: MoveTarget = {
+    parentId: task.parent_task_id,
+    index: oldSiblings.findIndex((item) => item.id === taskId),
+  };
+  const siblings = siblingsOf(tasks, parentId).filter((item) => item.id !== taskId);
+  const index = Math.min(Math.max(Math.trunc(target.index) || 0, 0), siblings.length);
+  if (parentId === task.parent_task_id && index === from.index) {
+    return { ok: true, changed: false, tasks, from };
+  }
+
+  const positions = new Map<string, number>();
+  siblings.splice(index, 0, task);
+  siblings.forEach((item, position) => positions.set(item.id, position));
+  if (parentId !== task.parent_task_id) {
+    oldSiblings
+      .filter((item) => item.id !== taskId)
+      .forEach((item, position) => positions.set(item.id, position));
+  }
+
+  const moved = tasks.map((item) => {
+    const position = positions.get(item.id);
+    if (item.id === taskId) return { ...item, parent_task_id: parentId, position: position! };
+    return position === undefined || position === item.position ? item : { ...item, position };
+  });
+  return {
+    ok: true,
+    changed: true,
+    tasks: reopenAncestors(moved, taskId).sort((a, b) => a.position - b.position),
+    from,
+  };
+}
+
+export type MoveDirection = "up" | "down" | "left" | "right";
+
+/**
+ * ⌘/Ctrl + arrows on a selected task: ↑/↓ swap it with the sibling above or
+ * below, ← makes it a sibling of its parent (right after it), → a subtask of
+ * the sibling above (at the end). Null when there is nowhere to go.
+ */
+export function keyboardTarget(
+  tasks: Task[],
+  taskId: string,
+  direction: MoveDirection,
+): MoveTarget | null {
+  const task = tasks.find((item) => item.id === taskId);
+  if (!task) return null;
+  const siblings = siblingsOf(tasks, task.parent_task_id);
+  const index = siblings.findIndex((item) => item.id === taskId);
+  switch (direction) {
+    case "up":
+      return index > 0 ? { parentId: task.parent_task_id, index: index - 1 } : null;
+    case "down":
+      return index < siblings.length - 1
+        ? { parentId: task.parent_task_id, index: index + 1 }
+        : null;
+    case "left": {
+      const parent = tasks.find((item) => item.id === task.parent_task_id);
+      if (!parent) return null;
+      const parentIndex = siblingsOf(tasks, parent.parent_task_id).findIndex(
+        (item) => item.id === parent.id,
+      );
+      return { parentId: parent.parent_task_id, index: parentIndex + 1 };
+    }
+    case "right": {
+      const above = siblings[index - 1];
+      return above ? { parentId: above.id, index: siblingsOf(tasks, above.id).length } : null;
+    }
+  }
+}
+
+/** One visible row of the list. */
+export type FlatTask = {
+  task: Task;
+  /** 0 for a top-level task. */
+  depth: number;
+  parentId: string | null;
+  childCount: number;
+  /** Has subtasks that are not shown. */
+  collapsed: boolean;
+};
+
+/** The tree as visible rows, top to bottom; nothing below a collapsed task. */
+export function flattenTree(nodes: TaskNode[], collapsed: ReadonlySet<string>): FlatTask[] {
+  const rows: FlatTask[] = [];
+  const walk = (list: TaskNode[], depth: number) => {
+    for (const node of list) {
+      const hidden = collapsed.has(node.task.id) && node.children.length > 0;
+      rows.push({
+        task: node.task,
+        depth,
+        parentId: node.task.parent_task_id,
+        childCount: node.children.length,
+        collapsed: hidden,
+      });
+      if (!hidden) walk(node.children, depth + 1);
+    }
+  };
+  walk(nodes, 0);
+  return rows;
+}
+
+/**
+ * Where a row dragged in the list lands: among the visible rows by where it
+ * is over, one level per `indent` px of sideways drag (as in Things or
+ * Todoist), within what the rows above and below allow. `rows` are the
+ * visible rows without anything below the dragged one.
+ */
+export function projectListDrop(
+  rows: FlatTask[],
+  activeId: string,
+  overId: string,
+  offsetX: number,
+  indent: number,
+): { depth: number; target: MoveTarget } | null {
+  const activeIndex = rows.findIndex((row) => row.task.id === activeId);
+  const overIndex = rows.findIndex((row) => row.task.id === overId);
+  if (activeIndex < 0 || overIndex < 0) return null;
+  const active = rows[activeIndex];
+  const moved = [...rows];
+  moved.splice(overIndex, 0, moved.splice(activeIndex, 1)[0]);
+  const above = moved[overIndex - 1];
+  const below = moved[overIndex + 1];
+
+  const wanted = active.depth + Math.round(offsetX / indent);
+  const deepest = above ? above.depth + 1 : 0;
+  const shallowest = below ? below.depth : 0;
+  const depth = Math.min(Math.max(wanted, shallowest), deepest);
+
+  let parentId: string | null;
+  if (depth === 0 || !above) parentId = null;
+  else if (depth === above.depth) parentId = above.parentId;
+  else if (depth > above.depth) parentId = above.task.id;
+  else {
+    parentId =
+      moved
+        .slice(0, overIndex)
+        .reverse()
+        .find((row) => row.depth === depth)?.parentId ?? null;
+  }
+
+  // Under a collapsed task it goes after the subtasks that are not shown.
+  const index =
+    above && parentId === above.task.id && above.collapsed
+      ? above.childCount
+      : moved.slice(0, overIndex).filter((row) => row.parentId === parentId).length;
+  return { depth, target: { parentId, index } };
+}
+
+/** Where a node dragged in the map is over another node. */
+export type MapDropZone = "before" | "inside" | "after";
+
+/** The upper and the lower quarter of a node put the task next to it, the middle under it. */
+export function mapDropZone(rect: { top: number; height: number }, y: number): MapDropZone {
+  const share = rect.height > 0 ? (y - rect.top) / rect.height : 0.5;
+  if (share < 0.25) return "before";
+  if (share > 0.75) return "after";
+  return "inside";
+}
+
+/**
+ * The target of a drop in the map: on the milestone (`overId` null) = level 1
+ * at the end, inside a task = its last subtask, before or after a task = its
+ * sibling right there.
+ */
+export function mapDropTarget(
+  tasks: Task[],
+  activeId: string,
+  overId: string | null,
+  zone: MapDropZone,
+): MoveTarget | null {
+  const others = (parentId: string | null) =>
+    siblingsOf(tasks, parentId).filter((task) => task.id !== activeId);
+  if (overId === null) return { parentId: null, index: others(null).length };
+  const over = tasks.find((task) => task.id === overId);
+  if (!over || overId === activeId) return null;
+  if (zone === "inside") return { parentId: overId, index: others(overId).length };
+  const index = others(over.parent_task_id).findIndex((task) => task.id === overId);
+  return { parentId: over.parent_task_id, index: zone === "before" ? index : index + 1 };
 }

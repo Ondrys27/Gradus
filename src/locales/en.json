@@ -1150,7 +1150,7 @@
         "confirm": "Delete task",
         "cancel": "Keep it"
       },
-      "reorder": "Drag to reorder “{title}”",
+      "reorder": "Drag “{title}” somewhere else (also under another task)",
       "collapse": "Collapse subtasks",
       "expand": "Expand subtasks",
       "subtasks": "{count, plural, one {# subtask} other {# subtasks}}",
@@ -1179,7 +1179,10 @@
       },
       "errors": {
         "openSubtasks": "Finish all subtasks first, then you can tick this task.",
-        "saveFailed": "Could not save your change. It was undone, please try again."
+        "saveFailed": "Could not save your change. It was undone, please try again.",
+        "tooDeep": "Tasks cannot nest that deep (at most {max} levels). The task stayed where it was.",
+        "cycle": "A task cannot move under its own subtask.",
+        "readOnly": "Your trial has ended. Choose a plan to carry on."
       },
       "view": {
         "label": "Show tasks as",
@@ -1198,7 +1201,15 @@
       "overdueDays": "{days, plural, one {# day overdue} other {# days overdue}}",
       "writeNote": "Write in notes: {title}",
       "writeNoteMenu": "Write in notes",
-      "writeNoteFailed": "The note could not be created. Try again in a moment."
+      "writeNoteFailed": "The note could not be created. Try again in a moment.",
+      "move": {
+        "listInstructions": "Press Space to pick a task up, move it with ↑/↓, press Space to drop it and Escape to cancel. Change its level by dragging sideways or with ⌘ or Ctrl and ←/→, its order with ⌘ or Ctrl and ↑/↓. ⌘ or Ctrl + Z undoes the last move.",
+        "mapInstructions": "Drag a task onto another task (it becomes its subtask), between tasks (changes the order) or onto the milestone (top level). On a phone, press and hold it first. Keys: ⌘ or Ctrl with ←/→ changes the level, with ↑/↓ the order; ⌘ or Ctrl + Z undoes the last move.",
+        "pickedUp": "Picked up: {title}.",
+        "over": "{title} is over {target}.",
+        "dropped": "{title} was moved.",
+        "cancelled": "Move cancelled."
+      }
     },
     "map": {
       "label": "Task map",

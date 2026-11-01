@@ -1,8 +1,10 @@
 "use client";
 
+import type { KeyboardEvent } from "react";
 import { Menu } from "@base-ui/react/menu";
-import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { motion } from "framer-motion";
 import {
   ChevronDownIcon,
   EllipsisIcon,
@@ -17,11 +19,12 @@ import { useTranslations } from "next-intl";
 import { formatCalendarDate, isoDateToLocal, todayIsoDate } from "@/lib/format";
 import type { NoteTemplateKey } from "@/features/notes/templates";
 import { useFormatSettings } from "@/lib/use-format-settings";
+import { useReducedMotionSafe } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
 import { TaskCheckbox } from "./task-checkbox";
 import { taskVisualState } from "./task-status";
 import { TaskStatePill } from "./task-status-ui";
-import { openSubtasks, type TaskNode } from "./task-tree";
+import { openSubtasks, type FlatTask, type MoveDirection } from "./task-tree";
 import type { Task } from "./types";
 
 export type TaskHandlers = {
@@ -32,7 +35,9 @@ export type TaskHandlers = {
   onAddSubtask: (task: Task) => void;
   onEdit: (task: Task) => void;
   onDelete: (task: Task) => void;
-  /** Without the right to edit milestones: no ticking, reordering or menu. */
+  /** ⌘/Ctrl + arrows on a row: ←/→ level, ↑/↓ order. */
+  onKeyMove: (task: Task, direction: MoveDirection) => void;
+  /** Without the right to edit milestones: no ticking, moving or menu. */
   readOnly?: boolean;
   /** Path steps whose result is a text, with the key of their note outline. */
   noteTemplates?: Readonly<Record<string, NoteTemplateKey>>;
@@ -40,26 +45,40 @@ export type TaskHandlers = {
   onWriteNote?: (task: Task) => void;
 };
 
-/** One level of siblings; every level is its own sortable list. */
-export function TaskGroup({ nodes, handlers }: { nodes: TaskNode[]; handlers: TaskHandlers }) {
-  return (
-    <SortableContext
-      items={nodes.map((node) => node.task.id)}
-      strategy={verticalListSortingStrategy}
-    >
-      <ul className="flex flex-col">
-        {nodes.map((node) => (
-          <TaskRow key={node.task.id} node={node} handlers={handlers} />
-        ))}
-      </ul>
-    </SortableContext>
-  );
+const ARROWS: Record<string, MoveDirection> = {
+  ArrowUp: "up",
+  ArrowDown: "down",
+  ArrowLeft: "left",
+  ArrowRight: "right",
+};
+
+type KeyLike = Pick<KeyboardEvent, "key" | "metaKey" | "ctrlKey" | "altKey" | "shiftKey">;
+
+/** The direction of ⌘/Ctrl + an arrow, or null for any other key. */
+export function moveDirectionOf(event: KeyLike): MoveDirection | null {
+  if (!(event.metaKey || event.ctrlKey) || event.altKey || event.shiftKey) return null;
+  return ARROWS[event.key] ?? null;
 }
 
-function TaskRow({ node, handlers }: { node: TaskNode; handlers: TaskHandlers }) {
+const MOVE = { duration: 0.32, ease: [0.16, 1, 0.3, 1] } as const;
+
+type RowProps = {
+  row: FlatTask;
+  /** The level the row is drawn on: while dragged, where it would land. */
+  depth: number;
+  /** Px per level. */
+  indent: number;
+  handlers: TaskHandlers;
+  /** Any row is being dragged: no layout animation meanwhile. */
+  dragging: boolean;
+};
+
+/** One task of the list, indented by its level; dragged by the grip on the left. */
+export function TaskRow({ row, depth, indent, handlers, dragging }: RowProps) {
   const t = useTranslations("milestones.tasks");
   const settings = useFormatSettings();
-  const { task, children } = node;
+  const reduceMotion = useReducedMotionSafe();
+  const { task, childCount } = row;
   const {
     attributes,
     listeners,
@@ -68,7 +87,7 @@ function TaskRow({ node, handlers }: { node: TaskNode; handlers: TaskHandlers })
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: task.id, data: { parentId: task.parent_task_id } });
+  } = useSortable({ id: task.id, disabled: handlers.readOnly });
 
   const done = task.status === "done";
   const remaining = openSubtasks(handlers.tasks, task.id);
@@ -81,13 +100,42 @@ function TaskRow({ node, handlers }: { node: TaskNode; handlers: TaskHandlers })
     : 0;
   const wayOverdue = overdue && daysOverdue > 3;
 
+  function onKeyDown(event: KeyboardEvent) {
+    if (handlers.readOnly || isDragging) return;
+    const direction = moveDirectionOf(event);
+    if (!direction) return;
+    event.preventDefault();
+    event.stopPropagation();
+    handlers.onKeyMove(task, direction);
+  }
+
   return (
     <li
       ref={setNodeRef}
-      style={{ transform: CSS.Translate.toString(transform), transition }}
-      className={cn("relative", isDragging && "z-10 opacity-70")}
+      data-task-row={task.id}
+      data-depth={depth}
+      style={{ transform: CSS.Translate.toString(transform && { ...transform, x: 0 }), transition }}
+      className={cn("relative", isDragging && "z-10")}
+      onKeyDown={onKeyDown}
     >
-      <div className="flex min-h-11 items-center gap-1 rounded-xl pr-1 hover:bg-surface-hover">
+      {/* One guide per level above, where the nested groups used to draw theirs. */}
+      {Array.from({ length: depth }, (_, level) => (
+        <span
+          key={level}
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 w-px bg-line/60"
+          style={{ left: level * indent + indent / 2 }}
+        />
+      ))}
+      <motion.div
+        layout={dragging || reduceMotion ? false : "position"}
+        transition={MOVE}
+        style={{ marginLeft: depth * indent }}
+        className={cn(
+          "flex min-h-11 items-center gap-1 rounded-xl pr-1 hover:bg-surface-hover",
+          isDragging && "bg-surface-hover opacity-80 shadow-glow ring-1 ring-violet/50",
+        )}
+      >
         {handlers.readOnly ? (
           <span aria-hidden className="size-3 shrink-0" />
         ) : (
@@ -95,6 +143,8 @@ function TaskRow({ node, handlers }: { node: TaskNode; handlers: TaskHandlers })
             type="button"
             ref={setActivatorNodeRef}
             aria-label={t("reorder", { title: task.title })}
+            aria-keyshortcuts="Meta+ArrowUp Meta+ArrowDown Meta+ArrowLeft Meta+ArrowRight Control+ArrowUp Control+ArrowDown Control+ArrowLeft Control+ArrowRight"
+            data-testid="task-drag-handle"
             className="grid size-11 shrink-0 cursor-grab touch-none place-items-center rounded-lg text-ink-muted outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40 active:cursor-grabbing mouse:size-8"
             {...attributes}
             {...listeners}
@@ -121,7 +171,7 @@ function TaskRow({ node, handlers }: { node: TaskNode; handlers: TaskHandlers })
           >
             {task.title}
           </span>
-          {(inProgress || task.due_date || children.length > 0) && (
+          {(inProgress || task.due_date || childCount > 0) && (
             <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-muted">
               {inProgress && <TaskStatePill state="in_progress" />}
               {task.due_date && (
@@ -131,7 +181,7 @@ function TaskRow({ node, handlers }: { node: TaskNode; handlers: TaskHandlers })
                   })}
                 </span>
               )}
-              {children.length > 0 && <span>{t("subtasks", { count: children.length })}</span>}
+              {childCount > 0 && <span>{t("subtasks", { count: childCount })}</span>}
             </span>
           )}
           {wayOverdue && (
@@ -154,7 +204,7 @@ function TaskRow({ node, handlers }: { node: TaskNode; handlers: TaskHandlers })
           </button>
         )}
 
-        {children.length > 0 && (
+        {childCount > 0 && (
           <button
             type="button"
             aria-expanded={expanded}
@@ -173,13 +223,7 @@ function TaskRow({ node, handlers }: { node: TaskNode; handlers: TaskHandlers })
         )}
 
         {!handlers.readOnly && <TaskMenu task={task} handlers={handlers} />}
-      </div>
-
-      {children.length > 0 && expanded && (
-        <div className="ml-4 border-l border-line/60 pl-1 sm:ml-7">
-          <TaskGroup nodes={children} handlers={handlers} />
-        </div>
-      )}
+      </motion.div>
     </li>
   );
 }

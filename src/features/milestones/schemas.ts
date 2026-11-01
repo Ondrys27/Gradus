@@ -41,3 +41,36 @@ export function fieldErrors(error: z.ZodError): Partial<Record<string, Milestone
   }
   return result;
 }
+
+/** How a move was made, for analytics. */
+export const MOVE_VIAS = ["map", "list", "keyboard", "undo"] as const;
+export type MoveVia = (typeof MOVE_VIAS)[number];
+
+/** moveTaskAction: the task, its new parent (null = level 1) and its index among the new siblings. */
+export const moveTaskSchema = z.object({
+  taskId: z.uuid(),
+  parentId: z.uuid().nullable(),
+  position: z.number().int().min(0).max(10_000),
+  via: z.enum(MOVE_VIAS),
+  /** Where it lands (0 = level 1) and whether its level changed, for analytics only. */
+  depth: z.number().int().min(0).max(100),
+  levelChanged: z.boolean(),
+});
+export type MoveTaskInput = z.infer<typeof moveTaskSchema>;
+
+export type MoveTaskFailure =
+  "invalid" | "cycle" | "tooDeep" | "notFound" | "forbidden" | "readOnly" | "unknown";
+export type MoveTaskResult = { ok: true } | { ok: false; error: MoveTaskFailure };
+
+/** The code of a move_task() failure, from the exception it raised. */
+export function moveTaskFailure(error: { message?: string } | null | undefined): MoveTaskFailure {
+  const message = error?.message ?? "";
+  if (message.includes("task_move_cycle")) return "cycle";
+  if (message.includes("task_too_deep")) return "tooDeep";
+  if (message.includes("task_not_found") || message.includes("task_parent_invalid")) {
+    return "notFound";
+  }
+  if (message.includes("read_only")) return "readOnly";
+  if (message.includes("forbidden") || message.includes("not_authenticated")) return "forbidden";
+  return "unknown";
+}

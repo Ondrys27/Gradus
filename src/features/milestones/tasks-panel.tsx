@@ -1,16 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, type FormEvent } from "react";
-import {
-  closestCenter,
-  DndContext,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from "@dnd-kit/core";
-import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ListChecksIcon, ListTreeIcon, NetworkIcon, PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -24,12 +14,26 @@ import { useCan } from "@/features/account/workspace-queries";
 import { useAwardXp } from "@/features/game/queries";
 import { useNotesInWork, useTaskNoteTemplates } from "@/features/notes/link-queries";
 import { useWriteAndOpen } from "@/features/notes/work-notes";
-import { useCreateTask, useDeleteTask, useReorderTasks, useSetTaskStatus } from "./queries";
-import { TITLE_MAX } from "./schemas";
+import {
+  MoveTaskError,
+  useCreateTask,
+  useDeleteTask,
+  useMoveTask,
+  useSetTaskStatus,
+} from "./queries";
+import { TITLE_MAX, type MoveVia } from "./schemas";
 import { TaskFormDialog, type TaskFormMode } from "./task-form-dialog";
+import { TaskList } from "./task-list";
 import { TaskMap } from "./task-map";
-import { TaskGroup, type TaskHandlers } from "./task-row";
-import { buildTree, openSubtasks, reorderSiblings } from "./task-tree";
+import { type TaskHandlers } from "./task-row";
+import {
+  keyboardTarget,
+  MAX_TASK_LEVELS,
+  openSubtasks,
+  planMove,
+  type MoveError,
+  type MoveTarget,
+} from "./task-tree";
 import { useTaskView, type TaskView } from "./task-view-preference";
 import type { Milestone, Task } from "./types";
 import { useViewTracking } from "@/lib/analytics/use-view-tracking";
@@ -45,7 +49,7 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
   const setStatus = useSetTaskStatus(milestoneId);
   const create = useCreateTask(milestoneId);
   const remove = useDeleteTask(milestoneId);
-  const reorder = useReorderTasks(milestoneId);
+  const move = useMoveTask(milestoneId);
   const awardXp = useAwardXp();
   const canEdit = useCan("milestones", "edit");
   const notesInWork = useNotesInWork();
@@ -62,11 +66,8 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
   const [quickTitle, setQuickTitle] = useState("");
   const quickRef = useRef<HTMLInputElement>(null);
 
-  const tree = useMemo(() => buildTree(tasks), [tasks]);
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
+  /** The last move of this visit, for ⌘/Ctrl + Z. */
+  const lastMove = useRef<{ taskId: string; from: MoveTarget } | null>(null);
 
   function report(cause: unknown) {
     const message =
@@ -77,6 +78,68 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
         : t("errors.saveFailed"),
     );
   }
+
+  function moveMessage(error: MoveError | MoveTaskError["code"]) {
+    if (error === "tooDeep") return t("errors.tooDeep", { max: MAX_TASK_LEVELS });
+    if (error === "cycle") return t("errors.cycle");
+    if (error === "readOnly") return t("errors.readOnly");
+    return t("errors.saveFailed");
+  }
+
+  /**
+   * Every move (map, list, keyboard, undo) goes through here: the same rules
+   * first (a move that breaks them stays undone with a short message), then the
+   * cache at once and moveTaskAction in the background.
+   */
+  function moveTask(taskId: string, target: MoveTarget, via: MoveVia) {
+    if (!canEdit) return;
+    const plan = planMove(tasks, taskId, target);
+    if (!plan.ok) {
+      setError(moveMessage(plan.error));
+      return;
+    }
+    if (!plan.changed) return;
+    setError(null);
+    lastMove.current = via === "undo" ? null : { taskId, from: plan.from };
+    move.mutate(
+      { taskId, target, via },
+      {
+        onError: (cause) => {
+          lastMove.current = null;
+          setError(moveMessage(cause instanceof MoveTaskError ? cause.code : "unknown"));
+        },
+      },
+    );
+  }
+
+  // ⌘/Ctrl + Z takes the last move back, unless the user is typing or in a dialog.
+  const undoRef = useRef<() => void>(() => {});
+  useEffect(() => {
+    undoRef.current = () => {
+      const last = lastMove.current;
+      if (last) moveTask(last.taskId, last.from, "undo");
+    };
+  });
+  useEffect(() => {
+    if (!canEdit) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() !== "z" || !(event.metaKey || event.ctrlKey)) return;
+      if (event.shiftKey || event.altKey || event.defaultPrevented || !lastMove.current) return;
+      const target = event.target as HTMLElement | null;
+      if (
+        target?.closest("input, textarea, select, [contenteditable='true'], [contenteditable='']")
+      ) {
+        return;
+      }
+      if (document.querySelector("[role='dialog'][data-open], [role='alertdialog'][data-open]")) {
+        return;
+      }
+      event.preventDefault();
+      undoRef.current();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [canEdit]);
 
   const handlers: TaskHandlers = {
     tasks,
@@ -106,6 +169,10 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
     },
     onAddSubtask: (task) => setForm({ open: true, mode: { kind: "create", parent: task } }),
     onEdit: (task) => setForm({ open: true, mode: { kind: "edit", task } }),
+    onKeyMove: (task, direction) => {
+      const target = keyboardTarget(tasks, task.id, direction);
+      if (target) moveTask(task.id, target, "keyboard");
+    },
     readOnly: !canEdit,
     noteTemplates: noteTemplates.data,
     onWriteNote:
@@ -126,16 +193,6 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
       }
     },
   };
-
-  function onDragEnd({ active, over }: DragEndEvent) {
-    if (!over || active.id === over.id) return;
-    const activeId = String(active.id);
-    const overId = String(over.id);
-    const { changes } = reorderSiblings(tasks, activeId, overId);
-    if (changes.length === 0) return;
-    setError(null);
-    reorder.mutate({ activeId, overId, changes }, { onError: report });
-  }
 
   function quickAdd(event: FormEvent) {
     event.preventDefault();
@@ -167,6 +224,7 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
           onOpen={handlers.onEdit}
           onToggleDone={handlers.onToggleDone}
           onAddChild={(parent) => setForm({ open: true, mode: { kind: "create", parent } })}
+          onMove={canEdit ? moveTask : undefined}
           readOnly={!canEdit}
         />
       ) : tasks.length === 0 ? (
@@ -183,13 +241,10 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
           }
         />
       ) : (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={canEdit ? onDragEnd : undefined}
-        >
-          <TaskGroup nodes={tree} handlers={handlers} />
-        </DndContext>
+        <TaskList
+          handlers={handlers}
+          onMove={(taskId, target) => moveTask(taskId, target, "list")}
+        />
       )}
 
       {canEdit && (

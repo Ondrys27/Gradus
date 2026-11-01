@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type MouseEvent, type PointerEvent } from "react";
+import { useRef, useState, type MouseEvent, type PointerEvent, type TouchEvent } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeftIcon, FlagIcon, PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -20,7 +20,9 @@ const cardBase =
 /** A tap that moved further than this was a pan, not a tap. */
 const TAP_SLOP = 8;
 
-const stop = (event: MouseEvent | PointerEvent) => event.stopPropagation();
+const stop = (event: MouseEvent | PointerEvent | TouchEvent) => event.stopPropagation();
+/** Controls on a node never start dragging it (the map's drag sensors listen to these). */
+const keepFromDrag = { onMouseDown: stop, onTouchStart: stop } as const;
 
 /** Small round control on a node; the ::after keeps the touch target at 44 px. */
 const miniButton =
@@ -101,7 +103,7 @@ export function TaskMapNode({
         />
       )}
 
-      <span className="mt-0.5 flex shrink-0" onClick={stop} onPointerDown={stop}>
+      <span className="mt-0.5 flex shrink-0" onClick={stop} onPointerDown={stop} {...keepFromDrag}>
         <TaskCheckbox
           title={task.title}
           done={done}
@@ -131,6 +133,7 @@ export function TaskMapNode({
       {onAddChild && (
         <button
           type="button"
+          {...keepFromDrag}
           onClick={(event) => {
             event.stopPropagation();
             onAddChild();
@@ -153,6 +156,7 @@ export function TaskMapNode({
             onToggleCollapsed();
           }}
           onPointerDown={stop}
+          {...keepFromDrag}
           aria-expanded={!collapsed}
           aria-label={collapsed ? t("map.expand", { count: hiddenCount }) : t("map.collapse")}
           className={cn(
@@ -167,6 +171,47 @@ export function TaskMapNode({
           )}
         </button>
       )}
+    </div>
+  );
+}
+
+type DragPreviewProps = {
+  task: Task;
+  /** Everything below the task, which moves with it. */
+  below: number;
+  /** The map's zoom, so the floating copy is as large as the node. */
+  scale: number;
+};
+
+/** The floating copy of a task while it is dragged on the map. */
+export function TaskMapDragPreview({ task, below, scale }: DragPreviewProps) {
+  const settings = useFormatSettings();
+  const state = taskVisualState(task, 0);
+  return (
+    <div style={{ transform: `scale(${scale})`, transformOrigin: "top left" }} className="w-max">
+      <div
+        className={cn(
+          cardBase,
+          taskCardClass[state === "in_progress" ? "todo" : state],
+          "cursor-grabbing border-violet/70 shadow-glow-strong motion-safe:rotate-2",
+        )}
+      >
+        <span
+          aria-hidden
+          className={cn(
+            "mt-1 size-4 shrink-0 rounded-full border-2",
+            task.status === "done" ? "border-teal bg-teal" : "border-line-strong",
+          )}
+        />
+        <span className="min-w-0 flex-1 text-sm leading-snug [overflow-wrap:anywhere] text-ink">
+          {task.title}
+        </span>
+        {below > 0 && (
+          <span className="grid h-6 min-w-6 place-items-center rounded-full border border-violet bg-canvas-deep px-1 text-[11px] font-semibold text-ink tabular-nums">
+            {`+${formatNumber(below, {}, settings)}`}
+          </span>
+        )}
+      </div>
     </div>
   );
 }

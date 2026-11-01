@@ -1150,7 +1150,7 @@
         "confirm": "Smazat úkol",
         "cancel": "Ponechat"
       },
-      "reorder": "Přetažením změníš pořadí úkolu „{title}“",
+      "reorder": "Přetáhni úkol „{title}“ jinam (i pod jiný úkol)",
       "collapse": "Sbalit podúkoly",
       "expand": "Rozbalit podúkoly",
       "subtasks": "{count, plural, one {# podúkol} few {# podúkoly} many {# podúkolu} other {# podúkolů}}",
@@ -1179,7 +1179,10 @@
       },
       "errors": {
         "openSubtasks": "Nejdřív dokonči všechny podúkoly, pak půjde úkol odškrtnout.",
-        "saveFailed": "Změnu se nepodařilo uložit. Vrátila se zpět, zkus to znovu."
+        "saveFailed": "Změnu se nepodařilo uložit. Vrátila se zpět, zkus to znovu.",
+        "tooDeep": "Tak hluboko úkoly vnořit nejde (nejvýš {max} úrovní). Úkol zůstal na místě.",
+        "cycle": "Úkol nejde přesunout pod jeho vlastní podúkol.",
+        "readOnly": "Zkušební období skončilo. Vyber si tarif a můžeš pokračovat."
       },
       "view": {
         "label": "Zobrazit úkoly jako",
@@ -1198,7 +1201,15 @@
       "overdueDays": "{days, plural, one {# den po lhůtě} few {# dny po lhůtě} many {# dne po lhůtě} other {# dní po lhůtě}}",
       "writeNote": "Zapsat do poznámek: {title}",
       "writeNoteMenu": "Zapsat do poznámek",
-      "writeNoteFailed": "Poznámku se nepovedlo založit. Zkus to za chvíli znovu."
+      "writeNoteFailed": "Poznámku se nepovedlo založit. Zkus to za chvíli znovu.",
+      "move": {
+        "listInstructions": "Mezerníkem úkol zvedni, šipkami ↑/↓ přesuň, mezerníkem pusť a klávesou Escape zruš. Úroveň změníš vodorovným tažením nebo ⌘ či Ctrl se šipkami ←/→, pořadí ⌘ či Ctrl se šipkami ↑/↓. ⌘ či Ctrl + Z vrátí poslední přesun.",
+        "mapInstructions": "Úkol přetáhni na jiný úkol (stane se jeho podúkolem), mezi úkoly (změní pořadí) nebo na milník (první úroveň). Na telefonu ho nejdřív podrž. Klávesy: ⌘ či Ctrl se šipkami ←/→ mění úroveň, ↑/↓ pořadí; ⌘ či Ctrl + Z vrátí poslední přesun.",
+        "pickedUp": "Zvednuto: {title}.",
+        "over": "{title} je nad {target}.",
+        "dropped": "{title} je přesunutý.",
+        "cancelled": "Přesun zrušen."
+      }
     },
     "map": {
       "label": "Mapa úkolů",

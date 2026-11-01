@@ -35,6 +35,7 @@ import {
   edgePath,
   fitView,
   layoutTree,
+  MAP_DRAG_NODE,
   type Box,
   type MapBranch,
   type MapLayout,
@@ -85,6 +86,14 @@ type Props = {
   renderNode: (id: string, state: TreeMapNodeState) => ReactNode;
   /** Drawn in the top-left corner over the map, e.g. a legend. */
   overlay?: ReactNode;
+  /**
+   * Wraps every visible node (never the measuring twin), e.g. to drag it. A
+   * wrapper marked `data-map-drag` with the class MAP_DRAG_NODE is a drag
+   * handle: the map never pans from it, by mouse or by finger.
+   */
+  wrapNode?: (id: string, node: ReactNode) => ReactNode;
+  /** While a node is being dragged the map neither pans nor zooms. */
+  locked?: boolean;
 };
 
 const noop = () => {};
@@ -101,7 +110,15 @@ function shift(box: Box): Box {
  * overlay on the same instance, not the Fullscreen API, which iOS lacks.
  * Used by the task map and the reward editor.
  */
-export function TreeMap({ tree, label, contentKey, renderNode, overlay }: Props) {
+export function TreeMap({
+  tree,
+  label,
+  contentKey,
+  renderNode,
+  overlay,
+  wrapNode,
+  locked = false,
+}: Props) {
   const t = useTranslations("treeMap");
   const instanceId = useId();
   const reduceMotion = useReducedMotionSafe() ?? false;
@@ -305,7 +322,8 @@ export function TreeMap({ tree, label, contentKey, renderNode, overlay }: Props)
     if (!element || touchPans) return;
     const onTouchStart = (event: TouchEvent) => {
       if (event.touches.length !== 1) return;
-      if ((event.target as Element).closest("[data-map-ui]")) return;
+      // Controls, and nodes that are dragged by a long press, keep their touches.
+      if ((event.target as Element).closest("[data-map-ui], [data-map-drag]")) return;
       event.stopPropagation();
     };
     element.addEventListener("touchstart", onTouchStart, { capture: true, passive: true });
@@ -455,6 +473,8 @@ export function TreeMap({ tree, label, contentKey, renderNode, overlay }: Props)
     >
       <TransformWrapper
         ref={transformRef}
+        disabled={locked}
+        panning={{ excluded: [MAP_DRAG_NODE] }}
         minScale={MIN_SCALE}
         maxScale={MAX_SCALE}
         limitToBounds={false}
@@ -585,7 +605,9 @@ export function TreeMap({ tree, label, contentKey, renderNode, overlay }: Props)
                             }
                       }
                     >
-                      {renderNode(id, stateOf(id))}
+                      {wrapNode
+                        ? wrapNode(id, renderNode(id, stateOf(id)))
+                        : renderNode(id, stateOf(id))}
                     </motion.div>
                   );
                 })}

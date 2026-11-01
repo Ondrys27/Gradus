@@ -13,16 +13,17 @@ import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { JarvisJobError, postJarvisJob } from "@/features/jarvis/queries";
 import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
-import type { MilestoneInput, TaskInput } from "./schemas";
+import { moveTaskAction } from "./actions";
+import type { MilestoneInput, MoveTaskFailure, MoveVia, TaskInput } from "./schemas";
 import {
   applyStatusChange,
   nextPosition,
+  planMove,
   reopenAncestors,
   reopenedMilestone,
-  reorderSiblings,
   subtreeIds,
   taskDepth,
-  type PositionChange,
+  type MoveTarget,
 } from "./task-tree";
 import {
   MILESTONE_COLUMNS,
@@ -315,6 +316,8 @@ function useTaskMutation<V, R = unknown>(
     mutationFn: (variables: V) => Promise<R>;
     apply?: (tasks: Task[], variables: V) => Task[];
     onSuccess?: (result: R, variables: V, tasks: Task[]) => Task[];
+    /** Mutations of one scope reach the server one after another, in order. */
+    scope?: string;
   },
 ) {
   const { user } = useSession();
@@ -326,6 +329,7 @@ function useTaskMutation<V, R = unknown>(
   return useMutation({
     mutationKey: milestoneKeys.taskMutation(milestoneId),
     mutationFn: options.mutationFn,
+    scope: options.scope ? { id: `${options.scope}:${milestoneId}` } : undefined,
     onMutate: async (variables: V) => {
       await queryClient.cancelQueries({ queryKey: key });
       const previous = queryClient.getQueryData<Task[]>(key);
@@ -452,22 +456,46 @@ export function useDeleteTask(milestoneId: string) {
   });
 }
 
-/** Saves only the positions that changed; the caller computes them with `reorderSiblings`. */
-export function useReorderTasks(milestoneId: string) {
-  return useTaskMutation<{ activeId: string; overId: string; changes: PositionChange[] }>(
-    milestoneId,
-    {
-      mutationFn: async ({ changes }) => {
-        const results = await Promise.all(
-          changes.map(({ id, position }) =>
-            createClient().from("tasks").update({ position }).eq("id", id),
-          ),
-        );
-        const failed = results.find((result) => result.error);
-        if (failed?.error) throw failed.error;
-        track("tasks_reordered", {});
-      },
-      apply: (tasks, { activeId, overId }) => reorderSiblings(tasks, activeId, overId).tasks,
+export class MoveTaskError extends Error {
+  constructor(readonly code: MoveTaskFailure) {
+    super(`move_task: ${code}`);
+    this.name = "MoveTaskError";
+  }
+}
+
+export type MoveRequest = { taskId: string; target: MoveTarget; via: MoveVia };
+
+/**
+ * Moves a task (with its subtree) through moveTaskAction, the same for the map,
+ * the list and the keyboard. The cache moves at once by the same rules
+ * (planMove) and goes back on a failure; the caller checks the plan first.
+ */
+export function useMoveTask(milestoneId: string) {
+  // Where the task lands and whether its level changes, noted when the cache moves.
+  const levels = useRef(new Map<string, { depth: number; changed: boolean }>());
+  return useTaskMutation<MoveRequest>(milestoneId, {
+    mutationFn: async ({ taskId, target, via }) => {
+      const level = levels.current.get(taskId);
+      levels.current.delete(taskId);
+      const result = await moveTaskAction({
+        taskId,
+        parentId: target.parentId,
+        position: target.index,
+        via,
+        depth: Math.min(level?.depth ?? 0, 100),
+        levelChanged: level?.changed ?? false,
+      });
+      if (!result.ok) throw new MoveTaskError(result.error);
     },
-  );
+    // Quick moves in a row (⌘↓ ⌘↓) reach the database in the order they were made.
+    scope: "move-task",
+    apply: (tasks, { taskId, target }) => {
+      const plan = planMove(tasks, taskId, target);
+      if (!plan.ok) return tasks;
+      const depthOf = (parentId: string | null) => (parentId ? taskDepth(tasks, parentId) + 1 : 0);
+      const depth = depthOf(target.parentId);
+      levels.current.set(taskId, { depth, changed: depth !== depthOf(plan.from.parentId) });
+      return plan.tasks;
+    },
+  });
 }

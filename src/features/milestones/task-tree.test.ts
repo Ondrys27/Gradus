@@ -8,7 +8,6 @@ import {
   progressOf,
   reopenAncestors,
   reopenedMilestone,
-  reorderSiblings,
   sortMilestones,
   subtreeIds,
 } from "./task-tree";
@@ -204,29 +203,6 @@ describe("subtreeIds", () => {
       task("d"),
     ];
     expect([...subtreeIds(tasks, "a")].sort()).toEqual(["a", "b", "c"]);
-  });
-});
-
-describe("reorderSiblings", () => {
-  const tasks = [
-    task("a", { position: 0 }),
-    task("b", { position: 1 }),
-    task("c", { position: 2 }),
-    task("x", { parent_task_id: "a", position: 0 }),
-  ];
-
-  it("moves within siblings and reports only changed positions", () => {
-    const { tasks: next, changes } = reorderSiblings(tasks, "c", "a");
-    expect(next.filter((t) => !t.parent_task_id).map((t) => t.id)).toEqual(["c", "a", "b"]);
-    expect(changes).toEqual([
-      { id: "c", position: 0 },
-      { id: "a", position: 1 },
-      { id: "b", position: 2 },
-    ]);
-  });
-
-  it("ignores moves between different parents", () => {
-    expect(reorderSiblings(tasks, "x", "b").changes).toEqual([]);
   });
 });
 

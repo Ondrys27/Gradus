@@ -4806,6 +4806,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      move_task: {
+        Args: { _parent_id: string; _position: number; _task_id: string }
+        Returns: undefined
+      }
       my_worker_ids: { Args: never; Returns: string[] }
       new_invite_code: { Args: never; Returns: string }
       next_invoice_number: {

@@ -11,6 +11,8 @@ export type MapLayout = {
 export type View = { x: number; y: number; scale: number };
 
 export const COLUMN_GAP = 72;
+/** Class of a node wrapper the map never pans from: a drag handle (TreeMap `wrapNode`). */
+export const MAP_DRAG_NODE = "map-drag-node";
 export const ROW_GAP = 16;
 
 /** Everything below a branch, however deep. Shown on a collapsed node. */

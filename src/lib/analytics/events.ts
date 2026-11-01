@@ -282,6 +282,12 @@ export const EVENTS = {
   task_reopened: event("milestones", "client", true, { where: oneOf(["milestone", "dashboard"]) }),
   task_deleted: event("milestones", "client", true, { removed: count(10_000) }),
   tasks_reordered: event("milestones", "client", true, {}),
+  /** A task moved under another task, to another level or place (move_task, map or list). */
+  task_moved: event("milestones", "server", true, {
+    via: oneOf(["map", "list", "keyboard", "undo"]),
+    depth: count(100),
+    level_changed: bool(),
+  }),
   view_selected: event("milestones", "client", false, {
     screen: oneOf(["milestones", "tasks"]),
     view: oneOf(["list", "map", "path"]),
