@@ -3643,9 +3643,9 @@
       "pricingTitle": "Ceník",
       "pricingDescription": "Solo, Pro a Tým. Každý tarif začíná 14 dny zdarma, bez platební karty. Ceny bez DPH.",
       "termsTitle": "Obchodní podmínky",
-      "termsDescription": "Obchodní podmínky služby {appName}. Text připravujeme s právníkem.",
+      "termsDescription": "Podmínky uzavřené bety {appName}: zdarma, bez záruky, s tvými daty a zpětnou vazbou.",
       "privacyTitle": "Ochrana osobních údajů",
-      "privacyDescription": "Jak {appName} zachází s tvými údaji. Text připravujeme s právníkem.",
+      "privacyDescription": "Jak {appName} během bety zachází s tvými údaji: co ukládáme, proč, kdo je zpracovává a jaká máš práva.",
       "waitlistTitle": "Čekací listina",
       "ogAlt": "{appName}: Každý den víš, co udělat. A chce se ti to."
     },
@@ -3793,26 +3793,31 @@
       "subtitle": "Solo pro jednoho, Pro s rozborem schůzek a synchronizací kalendáře, Tým s pracovníky a jejich právy. Všechny tarify začínají 14 dny zdarma, bez karty. Ceny jsou bez DPH."
     },
     "legal": {
-      "soon": "Připravujeme",
-      "soonText": "Text pro nás připravuje právník. Do té doby se nás klidně zeptej na cokoliv, co potřebuješ vědět.",
+      "betaNotice": "Verze pro betu, před spuštěním projde revizí právníka",
+      "betaNoticeText": "Tento text platí pro uzavřenou betu {appName}. Před veřejným spuštěním ho zkontroluje právník a o změnách dáme vědět.",
       "heading": "{number}. {title}",
-      "sectionSoon": "Text doplníme.",
+      "missing": "[DOPLNIT]",
       "sections": {
         "terms": {
-          "intro": "Úvodní ustanovení",
-          "account": "Registrace a účet",
-          "trial": "Zkušební období",
-          "pricing": "Cena a platby",
-          "use": "Používání služby",
+          "intro": "Úvod a provozovatel",
+          "beta": "Uzavřená beta",
+          "account": "Účet",
+          "warranty": "Bez záruky",
+          "data": "Tvoje data a zálohy",
+          "feedback": "Zpětná vazba",
+          "use": "Pravidla používání",
           "liability": "Odpovědnost",
-          "termination": "Zrušení a ukončení",
-          "final": "Závěrečná ustanovení"
+          "termination": "Zrušení účtu a konec bety",
+          "changes": "Změny podmínek",
+          "law": "Rozhodné právo",
+          "contact": "Kontakt"
         },
         "privacy": {
           "controller": "Kdo údaje zpracovává",
           "data": "Jaké údaje zpracováváme",
           "purpose": "Proč a na jakém základě",
           "usage": "Měření používání",
+          "ai": "Umělá inteligence",
           "processors": "Komu údaje předáváme",
           "retention": "Jak dlouho je uchováváme",
           "rights": "Tvoje práva",
@@ -3821,11 +3826,106 @@
         }
       },
       "bodies": {
+        "terms": {
+          "intro": {
+            "p1": "Tyto podmínky upravují používání aplikace {appName} během uzavřené bety. Aplikaci provozuje {name}, IČO {companyId}, se sídlem {address} (dále „my“).",
+            "p2": "{appName} je webová aplikace pro začínající podnikatele: milníky a úkoly, obchody, kontakty, cold calling, kalendář, finance s fakturami, pracovníci a AI asistent Jarvis. Založením účtu s těmito podmínkami souhlasíš."
+          },
+          "beta": {
+            "p1": "Beta je uzavřená: účet založíš jen s pozvánkou od nás nebo od majitele týmu, ve kterém budeš pracovat.",
+            "p2": "Během bety je {appName} zdarma. Nic neplatíš a nic se ti automaticky nezpoplatní. Pokud po betě zavedeme placené tarify, předem ti napíšeme a pokračovat budeš, jen když budeš chtít."
+          },
+          "account": {
+            "p1": "Účet je osobní. Uváděj pravdivé údaje, heslo nikomu nedávej a dej nám vědět, pokud máš podezření, že se k účtu dostal někdo cizí. Za činnost ve svém účtu odpovídáš ty.",
+            "p2": "Majitel účtu může přizvat pracovníky a určit, které části aplikace uvidí. Za to, komu přístup dá, odpovídá majitel."
+          },
+          "warranty": {
+            "p1": "Beta je zkušební verze. Poskytujeme ji tak, jak je, bez jakékoli záruky funkčnosti, dostupnosti nebo vhodnosti pro konkrétní účel.",
+            "p2": "Aplikace se bude často měnit: funkce můžeme přidávat, upravovat i odebírat, a to i bez předchozího upozornění. Občas může být nedostupná kvůli údržbě nebo chybě."
+          },
+          "data": {
+            "p1": "Data, která do aplikace vložíš, jsou tvoje. Používáme je jen k tomu, aby ti aplikace fungovala, jak popisují zásady ochrany osobních údajů.",
+            "p2": "Při chybě v betě může dojít ke ztrátě nebo poškození dat. Důležité věci si proto zálohuj: kopii všech dat stáhneš kdykoli v aplikaci v Nastavení → Účet → Exportovat moje data.",
+            "p3": "Pokud do aplikace vkládáš osobní údaje jiných lidí (například kontakty), odpovídáš za to, že k tomu máš právní důvod. My je pro tebe zpracováváme jen k tomu, aby ti aplikace fungovala."
+          },
+          "feedback": {
+            "p1": "Testeři nám pomáhají aplikaci vylepšovat: hlásí chyby, nejasnosti a nápady, nejlépe přes „Nahlásit problém“ v aplikaci. Hlášení může obsahovat technické údaje o prohlížeči a snímek obrazovky, pokud ho přiložíš.",
+            "p2": "Zpětnou vazbu můžeme volně použít ke zlepšení {appName}, bez nároku na odměnu. Účast v betě je dobrovolná."
+          },
+          "use": {
+            "p1": "Aplikaci používej v souladu se zákony. Zejména ji nepoužívej k rozesílání nevyžádaných sdělení, k obtěžování lidí ani ke zpracování osobních údajů bez právního důvodu.",
+            "p2": "Nezkoušej obcházet zabezpečení, získat přístup k cizím datům, aplikaci přetěžovat ani ji automaticky vytěžovat. Při porušení pravidel můžeme přístup omezit nebo zrušit."
+          },
+          "liability": {
+            "p1": "V rozsahu, který zákon dovoluje, neodpovídáme za ušlý zisk, ztrátu dat ani jiné nepřímé škody vzniklé používáním bety. Tím nejsou dotčena práva, která ti zákon zaručuje a která nelze omezit.",
+            "p2": "Doporučení Jarvise a další výstupy umělé inteligence mohou být nepřesné. Rozhodnutí o svém podnikání děláš ty."
+          },
+          "termination": {
+            "p1": "Účet můžeš kdykoli zrušit sám v Nastavení → Účet → Smazat účet. Smažou se tím všechna tvoje data.",
+            "p2": "Betu můžeme ukončit nebo omezit. Pokud to půjde, dáme ti vědět aspoň 14 dní předem, abys mohl data stáhnout. Při závažném porušení podmínek můžeme přístup ukončit hned."
+          },
+          "changes": {
+            "p1": "Podmínky můžeme během bety měnit. O podstatných změnách tě informujeme e-mailem nebo v aplikaci. Pokud se změnou nesouhlasíš, můžeš účet zrušit."
+          },
+          "law": {
+            "p1": "Tyto podmínky se řídí právem České republiky. Spory budou řešit příslušné soudy České republiky; tím nejsou dotčena práva spotřebitelů podle předpisů země jejich bydliště.",
+            "p2": "Spotřebitel může využít i mimosoudní řešení sporů u České obchodní inspekce (www.coi.cz)."
+          },
+          "contact": {
+            "p1": "S čímkoli se na nás obrať na {email}."
+          }
+        },
         "privacy": {
+          "controller": {
+            "p1": "Správcem osobních údajů je {name}, IČO {companyId}, se sídlem {address}, e-mail {email}.",
+            "p2": "Tyto zásady platí pro aplikaci {appName} a její web během uzavřené bety."
+          },
+          "data": {
+            "p1": "Údaje účtu: e-mail, jméno, heslo (jen jako bezpečný otisk, nikdy čitelně), profilová fotka, jazyk, časové pásmo a další nastavení.",
+            "p2": "Obsah, který do aplikace vložíš: milníky, úkoly, kontakty, obchody, události, finance, faktury, poznámky, soubory a zprávy Jarvisovi. U osobních údajů tvých kontaktů jsi správcem ty a my je pro tebe zpracováváme jako zpracovatel.",
+            "p3": "Údaje o používání a technické údaje: jaké obrazovky a akce v aplikaci používáš, typ zařízení a prohlížeče a záznamy chyb. U přihlášení do administrace ukládáme jen zkrácenou IP adresu.",
+            "p4": "Hlášení problémů: tvůj popis, technické údaje o prohlížeči, poslední chybové hlášky aplikace a snímek obrazovky, pokud ho přiložíš."
+          },
+          "purpose": {
+            "p1": "Abychom ti mohli aplikaci poskytovat podle podmínek (plnění smlouvy): účet a přihlášení, ukládání tvých dat, e-maily k účtu (třeba obnova hesla), Jarvis a generování kontaktů.",
+            "p2": "Z oprávněného zájmu: zabezpečení, hledání a opravy chyb, měření používání a vylepšování aplikace.",
+            "p3": "Se souhlasem: čekací listina. E-mail tam máme, dokud souhlas neodvoláš; nepotvrzenou přihlášku mažeme po 30 dnech."
+          },
           "usage": {
             "p1": "Abychom věděli, které části {appName} pomáhají a co je potřeba zlepšit, zaznamenáváme, jak se aplikace používá: které obrazovky otevřeš, jaké akce uděláš (třeba založení milníku nebo přesun kontaktu), jak dlouho v aplikaci jsi, z jakého typu zařízení a jaké chyby nastaly.",
             "p2": "Ukládáme jen typy akcí, počty, časy a stavy, nikdy obsah: žádná jména, telefony, e-maily, názvy firem, obchodů ani úkolů a žádné zprávy Jarvisovi. Záznamy jsou spojené s tvým účtem, vidí je jen provozovatel {appName} a nepoužíváme k tomu žádné sledovací cookies ani služby třetích stran.",
-            "p3": "Záznamy o používání a relacích se automaticky mažou po 13 měsících. Smazáním účtu zmizí hned."
+            "p3": "Záznamy o používání a relacích se automaticky mažou po 13 měsících. Po smazání účtu zůstanou jen anonymně, bez vazby na tebe."
+          },
+          "ai": {
+            "p1": "Když použiješ Jarvise, pošleme tvou zprávu a potřebný kontext z tvých dat (například souhrn situace, poznámky nebo přiložený soubor) společnosti Anthropic, která provozuje jazykový model. Stejně tak u ranního shrnutí a návrhů, které Jarvis připravuje sám.",
+            "p2": "Anthropic údaje poslané přes API nepoužívá k trénování svých modelů a uchovává je jen omezenou dobu podle svých obchodních podmínek. Ani my tvoje data k trénování umělé inteligence nepoužíváme.",
+            "p3": "Při generování kontaktů posíláme do Google Maps Platform jen hledaný obor a místo, žádné tvoje údaje."
+          },
+          "processors": {
+            "p1": "Údaje za nás zpracovávají tito zpracovatelé, každý jen v rozsahu, který pro svou práci potřebuje:",
+            "p2": "Supabase: databáze, přihlašování a úložiště souborů. Data jsou uložená v EU (Irsko).",
+            "p3": "Vercel: provoz webu a aplikace. Serverová část běží v EU (Frankfurt), statické části webu se doručují přes celosvětovou síť.",
+            "p4": "Anthropic: jazykový model pro Jarvise. USA.",
+            "p5": "Google Maps Platform: vyhledávání firem při generování kontaktů. Google, celosvětově včetně USA.",
+            "p6": "Resend: odesílání e-mailů (obnova hesla, faktury, oznámení). USA.",
+            "p7": "Předávání do USA probíhá na základě rámce EU–USA pro ochranu osobních údajů (Data Privacy Framework) nebo standardních smluvních doložek Evropské komise. Údaje neprodáváme a nikomu dalšímu je nepředáváme, pokud to nevyžaduje zákon."
+          },
+          "retention": {
+            "p1": "Údaje účtu a tvůj obsah uchováváme, dokud máš účet. Smazáním účtu v aplikaci se hned smažou, včetně nahraných souborů; ze záloh databáze zmizí do {backupDays} dní.",
+            "p2": "Záznamy o používání, relace a záznamy chyb mažeme automaticky po 13 měsících. Po smazání účtu zůstanou záznamy o používání jen anonymně, bez vazby na tebe.",
+            "p3": "Smazané poznámky jsou 30 dní v koši, potom se smažou natrvalo."
+          },
+          "rights": {
+            "p1": "Máš právo na přístup ke svým údajům, jejich opravu, výmaz, omezení zpracování a přenositelnost a právo vznést námitku proti zpracování z oprávněného zájmu. Souhlas můžeš kdykoli odvolat.",
+            "p2": "Přímo v aplikaci: kopii všech svých dat stáhneš v Nastavení → Účet → Exportovat moje data (ZIP s tabulkami CSV) a účet se všemi daty smažeš v Nastavení → Účet → Smazat účet. Údaje účtu opravíš v Profilu a v Nastavení.",
+            "p3": "Ostatní práva uplatníš e-mailem na {email}, odpovíme nejpozději do 30 dní. Máš také právo podat stížnost u Úřadu pro ochranu osobních údajů (www.uoou.cz)."
+          },
+          "cookies": {
+            "p1": "Používáme jen nezbytné cookies: přihlášení do aplikace a administrace a zvolený jazyk. Žádné reklamní ani sledovací cookies a žádné analytické služby třetích stran.",
+            "p2": "Aplikace si v prohlížeči ukládá rozepsané poznámky a podobné pomocné údaje, aby se ti neztratily."
+          },
+          "contact": {
+            "p1": "S dotazy k osobním údajům se obrať na {email}."
           }
         }
       }

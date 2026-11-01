@@ -1,25 +1,43 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { legalOperator } from "@/config/legal";
 import { APP_NAME } from "@/lib/constants";
 import type { SiteLocale } from "@/lib/routes";
 import { pageMetadata } from "./seo";
 
 export type LegalKind = "terms" | "privacy";
 
-/** Section headings of each document; the texts come from the lawyer. */
-const SECTIONS: Record<LegalKind, readonly string[]> = {
-  terms: ["intro", "account", "trial", "pricing", "use", "liability", "termination", "final"],
-  privacy: [
-    "controller",
-    "data",
-    "purpose",
-    "usage",
-    "processors",
-    "retention",
-    "rights",
-    "cookies",
-    "contact",
-  ],
+/**
+ * The beta texts: each section of a document with its paragraph keys under
+ * `marketing.legal.bodies.<kind>.<section>`. A lawyer reviews them before launch.
+ */
+export const LEGAL_SECTIONS: Record<LegalKind, Record<string, readonly string[]>> = {
+  terms: {
+    intro: ["p1", "p2"],
+    beta: ["p1", "p2"],
+    account: ["p1", "p2"],
+    warranty: ["p1", "p2"],
+    data: ["p1", "p2", "p3"],
+    feedback: ["p1", "p2"],
+    use: ["p1", "p2"],
+    liability: ["p1", "p2"],
+    termination: ["p1", "p2"],
+    changes: ["p1"],
+    law: ["p1", "p2"],
+    contact: ["p1"],
+  },
+  privacy: {
+    controller: ["p1", "p2"],
+    data: ["p1", "p2", "p3", "p4"],
+    purpose: ["p1", "p2", "p3"],
+    usage: ["p1", "p2", "p3"],
+    ai: ["p1", "p2", "p3"],
+    processors: ["p1", "p2", "p3", "p4", "p5", "p6", "p7"],
+    retention: ["p1", "p2", "p3"],
+    rights: ["p1", "p2", "p3"],
+    cookies: ["p1", "p2"],
+    contact: ["p1"],
+  },
 };
 
 export async function legalMetadata(locale: SiteLocale, kind: LegalKind): Promise<Metadata> {
@@ -33,20 +51,28 @@ export async function legalMetadata(locale: SiteLocale, kind: LegalKind): Promis
 }
 
 /**
- * Sections whose text is already final, as paragraph keys under
- * `marketing.legal.bodies.<kind>.<section>`; the rest wait for the lawyer.
+ * Terms and privacy for the closed beta, with a visible note that a lawyer
+ * reviews them before launch. The operator comes from the configuration
+ * (config/legal.ts); whatever is missing shows as [DOPLNIT].
  */
-const BODIES: Partial<Record<LegalKind, Record<string, readonly string[]>>> = {
-  privacy: { usage: ["p1", "p2", "p3"] },
-};
-
-/** Terms and privacy until the lawyer's texts arrive: the headings and a clear notice. */
 export async function LegalPage({ locale, kind }: { locale: SiteLocale; kind: LegalKind }) {
   setRequestLocale(locale);
   const [t, tMeta] = await Promise.all([
     getTranslations({ locale, namespace: "marketing.legal" }),
     getTranslations({ locale, namespace: "marketing.meta" }),
   ]);
+  const operator = legalOperator();
+  const missing = t("missing");
+  const values = {
+    appName: APP_NAME,
+    name: operator.name ?? missing,
+    companyId: operator.companyId ?? missing,
+    address: operator.address ?? missing,
+    email: operator.email ?? missing,
+    backupDays: missing,
+  };
+  // Keys come from LEGAL_SECTIONS; a test checks each one exists in both languages.
+  const text = t as unknown as (key: string, values?: Record<string, string>) => string;
   return (
     <article className="mx-auto flex w-full max-w-2xl flex-col gap-10 px-4 py-16 md:py-24">
       <header className="flex flex-col gap-6">
@@ -54,33 +80,26 @@ export async function LegalPage({ locale, kind }: { locale: SiteLocale; kind: Le
           {tMeta(`${kind}Title`)}
         </h1>
         <div role="note" className="rounded-card border border-gold/40 bg-gold/10 p-5">
-          <p className="font-semibold text-gold">{t("soon")}</p>
-          <p className="mt-1 text-ink-soft">{t("soonText")}</p>
+          <p className="font-semibold text-gold">{t("betaNotice")}</p>
+          <p className="mt-1 text-ink-soft">{t("betaNoticeText", { appName: APP_NAME })}</p>
         </div>
       </header>
       <ol className="flex flex-col gap-8">
-        {SECTIONS[kind].map((section, index) => {
-          const paragraphs = BODIES[kind]?.[section];
-          return (
-            <li key={section} id={section} className="flex scroll-mt-24 flex-col gap-2">
-              <h2 className="text-xl font-semibold text-ink">
-                {t("heading", {
-                  number: String(index + 1),
-                  title: t(`sections.${kind}.${section}`),
-                })}
-              </h2>
-              {paragraphs ? (
-                paragraphs.map((key) => (
-                  <p key={key} className="text-ink-soft">
-                    {t(`bodies.${kind}.${section}.${key}`, { appName: APP_NAME })}
-                  </p>
-                ))
-              ) : (
-                <p className="text-ink-muted">{t("sectionSoon")}</p>
-              )}
-            </li>
-          );
-        })}
+        {Object.entries(LEGAL_SECTIONS[kind]).map(([section, paragraphs], index) => (
+          <li key={section} id={section} className="flex scroll-mt-24 flex-col gap-2">
+            <h2 className="text-xl font-semibold text-ink">
+              {t("heading", {
+                number: String(index + 1),
+                title: text(`sections.${kind}.${section}`),
+              })}
+            </h2>
+            {paragraphs.map((key) => (
+              <p key={key} className="text-ink-soft">
+                {text(`bodies.${kind}.${section}.${key}`, values)}
+              </p>
+            ))}
+          </li>
+        ))}
       </ol>
     </article>
   );
