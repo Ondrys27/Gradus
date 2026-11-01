@@ -22,6 +22,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { isPublicSignupEnabled } from "@/lib/signup";
 import { inviteEmailMatches, isValidInviteCode } from "./invite-code";
+import { isE2eTestAccount } from "./e2e-account";
 import { isEmailConfirmationRequired } from "./email-confirmation";
 import { decideSignup } from "./signup-mode";
 import { findOpenWorkerInvite, type OpenWorkerInvite } from "./worker-invite";
@@ -119,7 +120,9 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
 
   const locale = await getLocale();
   const admin = createAdminClient();
-  const confirmEmail = await isEmailConfirmationRequired();
+  // The tests' own accounts have no inbox; outside production they start confirmed.
+  const confirmEmail =
+    !isE2eTestAccount(parsed.data.email) && (await isEmailConfirmationRequired());
   const { data: created, error: createError } = await admin.auth.admin.createUser({
     email: parsed.data.email,
     password: parsed.data.password,

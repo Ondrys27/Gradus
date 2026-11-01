@@ -260,6 +260,24 @@ export type Database = {
           },
         ]
       }
+      ai_usage_retired: {
+        Row: {
+          cost_usd: number
+          created_at: string
+          usage_id: string
+        }
+        Insert: {
+          cost_usd?: number
+          created_at: string
+          usage_id: string
+        }
+        Update: {
+          cost_usd?: number
+          created_at?: string
+          usage_id?: string
+        }
+        Relationships: []
+      }
       ai_user_caps: {
         Row: {
           blocked: boolean

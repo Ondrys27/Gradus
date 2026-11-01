@@ -140,6 +140,22 @@ describe("e-mail confirmation", () => {
     expect(deleteUser).not.toHaveBeenCalled();
   });
 
+  it("confirms the end-to-end tests' accounts at once outside production", async () => {
+    confirmationRequired.mockResolvedValue(true);
+    const e2e = { ...person, email: "e2e-register-game-ab12@gradus.local" };
+    await expect(signUp({}, form({ ...e2e, inviteCode: "beta-2026" }))).rejects.toThrow(
+      "redirect:/app",
+    );
+    expect(createUser).toHaveBeenCalledWith(expect.objectContaining({ email_confirm: true }));
+    expect(resend).not.toHaveBeenCalled();
+
+    createUser.mockClear();
+    vi.stubEnv("VERCEL_ENV", "production");
+    const state = await signUp({}, form({ ...e2e, inviteCode: "beta-2026" }));
+    expect(state.success).toBe(true);
+    expect(createUser).toHaveBeenCalledWith(expect.objectContaining({ email_confirm: false }));
+  });
+
   it("keeps the account when the confirmation e-mail fails; a new link can be sent", async () => {
     confirmationRequired.mockResolvedValue(true);
     resend.mockResolvedValue({ error: { code: "unexpected_failure", status: 500 } });

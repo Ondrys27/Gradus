@@ -186,7 +186,10 @@ export async function postJarvisJob<T>(
     });
     const json = (await response.json().catch(() => null)) as
       ({ ok: true } & T) | { ok: false; code: JobError } | null;
-    return json ?? { ok: false, code: "unknown" };
+    // Anything else (a refused session, a server error page) reads as one known code.
+    if (json?.ok === true) return json;
+    if (json?.ok === false && typeof json.code === "string") return json;
+    return { ok: false, code: "unknown" };
   } catch {
     return { ok: false, code: "network" };
   }

@@ -106,9 +106,17 @@ export type AiUsageEntry = {
   error?: string | null;
 };
 
-/** One row per model call, written right when the call ends, failures included. */
+/** Postgres: a foreign key points at a row that is gone. */
+const MISSING_REFERENCE = "23503";
+
+/**
+ * One row per model call, written right when the call ends, failures included.
+ * When the conversation was deleted meanwhile the row goes without it; when
+ * the whole account was deleted meanwhile only the cost stays, in
+ * ai_usage_retired, so Jarvis's monthly budget still counts the call.
+ */
 export async function logAiUsage(admin: Client, entry: AiUsageEntry): Promise<void> {
-  const { error } = await admin.from("ai_usage").insert({
+  const row = {
     user_id: entry.userId,
     conversation_id: entry.conversationId,
     purpose: entry.feature,
@@ -121,7 +129,18 @@ export async function logAiUsage(admin: Client, entry: AiUsageEntry): Promise<vo
     duration_ms: Math.round(entry.durationMs),
     success: !entry.error,
     error: entry.error ? entry.error.slice(0, 1000) : null,
-  });
+  };
+  let { error } = await admin.from("ai_usage").insert(row);
+  if (error?.code === MISSING_REFERENCE && row.conversation_id) {
+    ({ error } = await admin.from("ai_usage").insert({ ...row, conversation_id: null }));
+  }
+  if (error?.code === MISSING_REFERENCE) {
+    ({ error } = await admin.from("ai_usage_retired").insert({
+      usage_id: crypto.randomUUID(),
+      created_at: new Date().toISOString(),
+      cost_usd: row.cost_usd,
+    }));
+  }
   // A lost log line must not hide the answer from the user; it shows in the server log.
   if (error) console.error("ai_usage insert failed", error);
 }

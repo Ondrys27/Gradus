@@ -7,6 +7,9 @@ import type { Json } from "@/types/database";
 
 export const runtime = "nodejs";
 
+/** Postgres foreign key violation: the user of the session no longer exists. */
+const ACCOUNT_GONE = "23503";
+
 /**
  * Batches of events from the browser (fetch, or sendBeacon when the page is
  * hidden) and the once-a-minute heartbeat. The user is the session's, never
@@ -74,7 +77,13 @@ export async function POST(request: Request) {
     });
     return NextResponse.json(result.body, { status: result.status });
   } catch (error) {
-    console.error("[analytics] /api/t failed", (error as { code?: string })?.code ?? "unknown");
+    const code = (error as { code?: string })?.code ?? "unknown";
+    // The account was deleted while its page was still open (its session cookie
+    // outlives it): the last events have nobody to belong to and are dropped.
+    if (code === ACCOUNT_GONE) {
+      return NextResponse.json({ accepted: 0, rejected: 0, limited: 0 }, { status: 200 });
+    }
+    console.error("[analytics] /api/t failed", code);
     return NextResponse.json({ error: "failed" }, { status: 500 });
   }
 }

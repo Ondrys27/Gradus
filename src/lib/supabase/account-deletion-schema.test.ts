@@ -283,11 +283,30 @@ describe("deleting an account", () => {
   it("removes every row of the account and nothing of anyone else", async () => {
     await asServer();
     const others = [appOwner, boss, worker];
+    await db.query(
+      `insert into ai_usage (user_id, purpose, model, cost_usd) values ($1, 'chat', 'm', 0.25), ($1, 'chat', 'm', 0.5), ($2, 'chat', 'm', 1)`,
+      [solo, boss],
+    );
+    const spend = async () => {
+      await asServiceRole();
+      const row = await one<{ cost_usd: string; calls: string }>(
+        `select * from public.jarvis_month_spend(date_trunc('month', now()))`,
+      );
+      const range = await one<{ cost_usd: string; calls: string }>(
+        `select * from public.jarvis_range_spend(now() - interval '1 day', now() + interval '1 day')`,
+      );
+      await asServer();
+      return [Number(row.cost_usd), Number(row.calls), Number(range.cost_usd), Number(range.calls)];
+    };
+    const spendBefore = await spend();
+    expect(spendBefore).toEqual([1.75, 3, 1.75, 3]);
     const before = await footprint(others);
     const eventsBefore = await count(`select 1 from analytics_events`);
     expect(await count(`select 1 from deals where user_id = $1`, [solo])).toBeGreaterThan(0);
 
     await asServiceRole();
+    await db.query(`select public.account_prepare_deletion($1)`, [solo]);
+    // A retry after a failed deletion counts nothing twice.
     await db.query(`select public.account_prepare_deletion($1)`, [solo]);
     await asServer();
     await db.query(`delete from auth.users where id = $1`, [solo]);
@@ -299,6 +318,9 @@ describe("deleting an account", () => {
     }
     // The usage analytics stay, without the person.
     expect(await count(`select 1 from analytics_events`)).toBe(eventsBefore);
+    // Jarvis's budget still counts what the account spent: the credits are gone.
+    expect(await count(`select 1 from ai_usage where user_id = $1`, [solo])).toBe(0);
+    expect(await spend()).toEqual(spendBefore);
   });
 
   it("keeps what a worker made in the owner's workspace and retires the worker record", async () => {
@@ -311,10 +333,15 @@ describe("deleting an account", () => {
       await count(`select 1 from deals where user_id = $1 and created_by = $2`, [boss, worker]),
     ).toBe(1);
 
+    const before = await footprint([boss, appOwner]);
+
     await asServiceRole();
     await db.query(`select public.account_prepare_deletion($1)`, [worker]);
     await asServer();
     await db.query(`delete from auth.users where id = $1`, [worker]);
+
+    // Every row of the boss and the app owner is still there.
+    expect(await footprint([boss, appOwner])).toEqual(before);
 
     expect(await count(`select 1 from deals where user_id = $1`, [boss])).toBe(bossDeals);
     expect(await count(`select 1 from contact_activities where user_id = $1`, [boss])).toBe(
