@@ -15,9 +15,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string; confirm?: string }>;
+  searchParams: Promise<{ next?: string; confirm?: string; deleted?: string }>;
 }) {
-  const { next, confirm } = await searchParams;
+  const { next, confirm, deleted } = await searchParams;
   const [t, locale] = await Promise.all([getTranslations("auth.login"), getLocale()]);
 
   return (
@@ -32,7 +32,7 @@ export default async function LoginPage({
         ),
       })}
     >
-      <LoginForm next={next} confirmExpired={confirm === "expired"} />
+      <LoginForm next={next} confirmExpired={confirm === "expired"} deleted={deleted === "1"} />
     </AuthCard>
   );
 }

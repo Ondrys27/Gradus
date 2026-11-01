@@ -17,9 +17,12 @@ import { SubmitButton } from "./submit-button";
 export function LoginForm({
   next,
   confirmExpired = false,
+  deleted = false,
 }: {
   next?: string;
   confirmExpired?: boolean;
+  /** Arrived right after deleting the account. */
+  deleted?: boolean;
 }) {
   const t = useTranslations("auth");
   const locale = useLocale();
@@ -34,6 +37,7 @@ export function LoginForm({
       <form action={action} className="flex flex-col gap-4" noValidate>
         {next && <input type="hidden" name="next" value={next} />}
         {confirmExpired && !state.error && <FormAlert>{t("confirm.expired")}</FormAlert>}
+        {deleted && !state.error && <FormAlert tone="success">{t("login.deleted")}</FormAlert>}
         <FormField id="login-email" label={t("fields.email")} error={err("email")}>
           <Input
             {...fieldA11y("login-email", err("email"))}

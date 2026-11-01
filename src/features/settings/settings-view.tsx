@@ -39,6 +39,7 @@ import { useUrlIntent } from "@/lib/use-url-intent";
 import { cn } from "@/lib/utils";
 import { useCan, useWorkspace } from "@/features/account/workspace-queries";
 import { InvoiceSettings } from "@/features/invoices/invoice-settings";
+import { AccountSettings } from "./account-settings";
 import { AppearanceSettings } from "./appearance-settings";
 import { ColdCallingDealStageSelect } from "./cold-calling-settings";
 import { GameSettings } from "./game-settings";
@@ -389,6 +390,18 @@ export function SettingsView() {
         <Section title={t("help.title")} description={t("help.description")}>
           <HelpSettings />
         </Section>
+      </StaggerItem>
+
+      <StaggerItem>
+        <div
+          id="settings-account"
+          tabIndex={-1}
+          className="rounded-card outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        >
+          <Section title={t("account.title")} description={t("account.description")}>
+            <AccountSettings />
+          </Section>
+        </div>
       </StaggerItem>
     </Stagger>
   );

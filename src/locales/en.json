@@ -728,7 +728,8 @@
       "forgot": "Forgot password?",
       "submit": "Sign in",
       "noAccount": "Have an invite code? <link>Create an account</link>",
-      "noAccountPublic": "No account yet? <link>Try free for 14 days</link>"
+      "noAccountPublic": "No account yet? <link>Try free for 14 days</link>",
+      "deleted": "The account and all its data have been deleted."
     },
     "register": {
       "title": "Create your account",
@@ -1043,6 +1044,37 @@
       "dealStage": "Stage of a new deal",
       "dealStageHint": "The pipeline stage a deal created from Cold Calling lands in.",
       "firstStage": "First stage ({name})"
+    },
+    "account": {
+      "title": "Account",
+      "description": "A copy of your data, and deleting the account.",
+      "export": {
+        "label": "Export my data",
+        "hint": "A ZIP of CSV tables: milestones, tasks, contacts, deals, events, transactions, invoices, notes and settings.",
+        "hintWorker": "A ZIP of CSV tables of your own account. The data of the team you work in belongs to its owner and is not in the export.",
+        "action": "Download ZIP"
+      },
+      "delete": {
+        "label": "Delete account",
+        "hint": "Deletes the account, all data and uploaded files for good. This can't be undone.",
+        "action": "Delete account",
+        "title": "Delete the account for good?",
+        "point1": "All your data is deleted: milestones, tasks, contacts, deals, events, finances, invoices, notes, conversations with Jarvis and uploaded files.",
+        "pointWorker": "What you created in the owner's team stays with the owner.",
+        "point2": "Usage statistics of the app stay only anonymously, with no link to you.",
+        "point3": "Deleting can't be undone. If you want to keep the data, download it first.",
+        "emailLabel": "To confirm, type the account's e-mail: {email}",
+        "confirm": "Delete account for good",
+        "cancel": "Cancel",
+        "close": "Close",
+        "openWorkers": "Open Workers",
+        "errors": {
+          "emailMismatch": "The e-mail doesn't match the account's e-mail.",
+          "active_workers": "Deactivate your workers first, so nobody loses access without warning. Then the account can be deleted.",
+          "app_owner": "The account of the app's owner can't be deleted.",
+          "generic": "The account couldn't be deleted. Please try again."
+        }
+      }
     }
   },
   "milestones": {

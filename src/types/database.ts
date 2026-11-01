@@ -3643,6 +3643,15 @@ export type Database = {
         Args: { _code: string; _user_id: string }
         Returns: string
       }
+      account_deletion_blockers: { Args: { _user: string }; Returns: string[] }
+      account_prepare_deletion: { Args: { _user: string }; Returns: undefined }
+      account_storage_objects: {
+        Args: { _user: string }
+        Returns: {
+          bucket_id: string
+          name: string
+        }[]
+      }
       add_interested_contact_table: { Args: never; Returns: string }
       admin_bug_report_list: {
         Args: {

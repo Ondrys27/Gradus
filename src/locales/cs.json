@@ -728,7 +728,8 @@
       "forgot": "Zapomenuté heslo?",
       "submit": "Přihlásit se",
       "noAccount": "Máte pozvánkový kód? <link>Vytvořit účet</link>",
-      "noAccountPublic": "Ještě nemáte účet? <link>Vyzkoušet 14 dní zdarma</link>"
+      "noAccountPublic": "Ještě nemáte účet? <link>Vyzkoušet 14 dní zdarma</link>",
+      "deleted": "Účet i všechna jeho data jsou smazané."
     },
     "register": {
       "title": "Vytvořte si účet",
@@ -1043,6 +1044,37 @@
       "dealStage": "Fáze nového obchodu",
       "dealStageHint": "Do které fáze pipeline spadne obchod založený z Cold Callingu.",
       "firstStage": "První fáze ({name})"
+    },
+    "account": {
+      "title": "Účet",
+      "description": "Kopie tvých dat a smazání účtu.",
+      "export": {
+        "label": "Exportovat moje data",
+        "hint": "ZIP s tabulkami CSV: milníky, úkoly, kontakty, obchody, události, transakce, faktury, poznámky a nastavení.",
+        "hintWorker": "ZIP s tabulkami CSV tvého vlastního účtu. Data týmu, ve kterém pracuješ, patří majiteli a v exportu nejsou.",
+        "action": "Stáhnout ZIP"
+      },
+      "delete": {
+        "label": "Smazat účet",
+        "hint": "Natrvalo smaže účet, všechna data i nahrané soubory. Nejde to vrátit.",
+        "action": "Smazat účet",
+        "title": "Smazat účet natrvalo?",
+        "point1": "Smažou se všechna tvoje data: milníky, úkoly, kontakty, obchody, události, finance, faktury, poznámky, rozhovory s Jarvisem i nahrané soubory.",
+        "pointWorker": "Co jsi vytvořil v týmu majitele, zůstane jemu.",
+        "point2": "Statistiky používání aplikace zůstanou jen anonymně, bez vazby na tebe.",
+        "point3": "Smazání nejde vrátit. Pokud chceš data mít, nejdřív si je stáhni.",
+        "emailLabel": "Pro potvrzení napiš e-mail účtu: {email}",
+        "confirm": "Smazat účet natrvalo",
+        "cancel": "Zrušit",
+        "close": "Zavřít",
+        "openWorkers": "Otevřít Pracovníky",
+        "errors": {
+          "emailMismatch": "E-mail nesouhlasí s e-mailem účtu.",
+          "active_workers": "Nejdřív deaktivuj své pracovníky, ať nikdo nepřijde o přístup bez varování. Pak půjde účet smazat.",
+          "app_owner": "Účet majitele aplikace smazat nejde.",
+          "generic": "Účet se nepodařilo smazat. Zkus to prosím znovu."
+        }
+      }
     }
   },
   "milestones": {
