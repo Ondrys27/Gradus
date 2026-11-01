@@ -287,6 +287,9 @@ export function usePatchDeal(id: string) {
   const { user } = useSession();
   const queryClient = useQueryClient();
   return useMutation({
+    // One save of a deal at a time, in order: two quick changes of a date never
+    // land the other way round (the board and the calendar end on the last one).
+    scope: { id: `deal-patch:${id}` },
     mutationFn: async (patch: DealPatch) => {
       const clean = dealPatchSchema.parse(patch);
       // An emptied text is no text.

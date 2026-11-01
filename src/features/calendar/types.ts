@@ -45,7 +45,7 @@ export type MirrorItem = {
   id: string;
   source: MirrorSource;
   title: string;
-  /** Calendar day of the due date or expected close. */
+  /** Calendar day of the due date or the Close Date. */
   date: IsoDate;
   /** Where the source lives; opened on click. */
   href: string;

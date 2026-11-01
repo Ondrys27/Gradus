@@ -60,7 +60,7 @@ export function useCalendarEvents(
   });
 }
 
-/** Tasks with a due date and deals with an expected close in the shown days. */
+/** Tasks with a due date and deals with a Close Date in the shown days. */
 export function useMirrors(
   firstDay: IsoDate,
   lastDay: IsoDate,

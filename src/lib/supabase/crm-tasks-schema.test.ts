@@ -267,13 +267,14 @@ describe("crm tasks: who sees and changes them", () => {
     const deal = await addDeal(owner, "Tajný obchod");
     const task = await as(owner, () => insertTask(owner, { deal: deal.id }));
     expect((await visibleTasks(stranger)).map((r) => r.id)).not.toContain(task.id);
-    // Refused either way: the stranger is no one to give it to, and not of the space.
+    // Refused either way: the stranger may not see the deal, is no one to give it to,
+    // and is not of the space.
     await expect(as(stranger, () => insertTask(owner, { deal: deal.id }))).rejects.toThrow(
-      /row-level security|crm_task_assignee_outside/,
+      /row-level security|crm_task_assignee_outside|crm_task_deal_hidden/,
     );
     await expect(
       as(stranger, () => insertTask(owner, { deal: deal.id, assignee: owner })),
-    ).rejects.toThrow(/row-level security|crm_task_assignee_outside/);
+    ).rejects.toThrow(/row-level security|crm_task_assignee_outside|crm_task_deal_hidden/);
     const changed = await as(stranger, () =>
       rows(`update crm_tasks set title = 'x' where id = $1 returning id`, [task.id]),
     );
@@ -342,7 +343,7 @@ describe("crm tasks: who sees and changes them", () => {
     );
     expect(deleted).toHaveLength(0);
     await expect(as(doer, () => insertTask(owner, { deal: deal.id }))).rejects.toThrow(
-      /row-level security/,
+      /row-level security|crm_task_deal_hidden/,
     );
   });
 
@@ -356,6 +357,34 @@ describe("crm tasks: who sees and changes them", () => {
     expect(seen).not.toContain(dealTask.id);
     const created = await as(contactsWorker, () => insertTask(owner, { contact: contact.id }));
     expect(created.created_by).toBe(contactsWorker);
+  });
+
+  it("ties a task to a deal only for someone who may see the pipeline", async () => {
+    const contact = await addContact(owner, "Kontakt s obchodem");
+    const deal = await addDeal(owner, "Skrytý obchod", contact.id);
+    // Contacts only: neither a new task nor an existing one gets onto the deal…
+    await expect(
+      as(contactsWorker, () => insertTask(owner, { deal: deal.id, contact: contact.id })),
+    ).rejects.toThrow(/crm_task_deal_hidden/);
+    const own = await as(contactsWorker, () => insertTask(owner, { contact: contact.id }));
+    await expect(
+      as(contactsWorker, () =>
+        rows(`update crm_tasks set deal_id = $2 where id = $1`, [own.id, deal.id]),
+      ),
+    ).rejects.toThrow(/crm_task_deal_hidden/);
+    // …but a task already on the deal (made by the owner) stays editable through its contact.
+    const both = await as(owner, () => insertTask(owner, { deal: deal.id, contact: contact.id }));
+    await as(contactsWorker, () =>
+      rows(`update crm_tasks set title = 'Přejmenováno' where id = $1`, [both.id]),
+    );
+    expect((await one<Task>(`select * from crm_tasks where id = $1`, [both.id])).title).toBe(
+      "Přejmenováno",
+    );
+    // The pipeline editor ties the deal with its contact.
+    const fromDeal = await as(editor, () =>
+      insertTask(owner, { deal: deal.id, contact: contact.id }),
+    );
+    expect(fromDeal.deal_id).toBe(deal.id);
   });
 
   it("names the people of the space for the picker, to the owner and to a worker", async () => {

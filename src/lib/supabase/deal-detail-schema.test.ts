@@ -496,6 +496,28 @@ describe("deal: who looks after it and when it last moved", () => {
       await as(owner, () => rows(sql));
       expect(await last(), sql).toBeGreaterThan(Date.parse(past));
     }
+    // A task of the contact tied to the deal later shows in its history, so it counts.
+    const { id: later } = await as(owner, () =>
+      one<{ id: string }>(
+        `insert into crm_tasks (user_id, title, due_at, contact_id) values ($1, 'Poslat nabídku', now(), $2) returning id`,
+        [owner, anna],
+      ),
+    );
+    await reset();
+    await as(owner, () =>
+      rows(`update crm_tasks set deal_id = $2 where id = $1`, [later, deal.id]),
+    );
+    expect(await last()).toBeGreaterThan(Date.parse(past));
+    // Saving the task's form again (same deal, same state) is not activity.
+    await reset();
+    await as(owner, () =>
+      rows(
+        `update crm_tasks set title = 'Poslat nabídku znovu', deal_id = $2, status = 'open' where id = $1`,
+        [later, deal.id],
+      ),
+    );
+    expect(await last()).toBe(Date.parse(past));
+
     const petr = await addContact(owner, "Petr");
     await reset();
     await as(owner, () =>
