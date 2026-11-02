@@ -43,7 +43,7 @@ export function fieldErrors(error: z.ZodError): Partial<Record<string, Milestone
 }
 
 /** How a move was made, for analytics. */
-export const MOVE_VIAS = ["map", "list", "keyboard", "undo"] as const;
+export const MOVE_VIAS = ["map", "list", "keyboard", "menu", "undo"] as const;
 export type MoveVia = (typeof MOVE_VIAS)[number];
 
 /** moveTaskAction: the task, its new parent (null = level 1) and its index among the new siblings. */

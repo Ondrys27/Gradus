@@ -358,51 +358,121 @@ export function flattenTree(nodes: TaskNode[], collapsed: ReadonlySet<string>): 
   return rows;
 }
 
+/** A visible row of the list with where it is drawn: px from the top of the list. */
+export type ListRowBox = FlatTask & { top: number; height: number };
+
 /**
- * Where a row dragged in the list lands: among the visible rows by where it
- * is over, one level per `indent` px of sideways drag (as in Things or
- * Todoist), within what the rows above and below allow. `rows` are the
- * visible rows without anything below the dragged one.
+ * Where a task dragged in the list would land: under a row (the middle of a
+ * row, like a drop on a node of the map) or at a line between rows, drawn
+ * `y` px from the top of the list and indented to `depth`. `valid` says
+ * whether the move keeps the rules (planMove); a drop that does not is refused.
  */
-export function projectListDrop(
-  rows: FlatTask[],
+export type ListDrop =
+  | { kind: "inside"; overId: string; depth: number; target: MoveTarget; valid: boolean }
+  | { kind: "line"; y: number; depth: number; target: MoveTarget; valid: boolean };
+
+/** The share of a row at its top and its bottom that means "next to it"; the rest means "under it". */
+export const LIST_DROP_EDGE = 0.3;
+
+/** How far above the first or below the last row a drop still counts, px. */
+export const LIST_DROP_REACH = 48;
+
+/** Whole levels from a sideways drag: a level as soon as it passes half an indent, either way. */
+export function levelsFromOffset(offsetX: number, indent: number): number {
+  if (!(indent > 0) || !Number.isFinite(offsetX)) return 0;
+  const levels = Math.floor(Math.abs(offsetX) / indent + 0.5);
+  return offsetX < 0 && levels > 0 ? -levels : levels;
+}
+
+/**
+ * The drop under the pointer while a task is dragged in the list. `rows` are
+ * the visible rows top to bottom, the dragged one included and nothing below it
+ * (its subtree travels with it). The pointer is `y` px from the top of the list
+ * and `offsetX` px sideways from where the drag started.
+ *
+ * - the middle of a row: the task becomes its last subtask, collapsed or not;
+ * - the top or the bottom edge of a row, or the dragged row itself: a line
+ *   between the rows; the vertical place picks the gap, the sideways drag the
+ *   level (from the task's own level, a level per indent with a threshold of
+ *   half an indent), kept between the row below and one deeper than the row
+ *   above, so it can go several levels at once. The parent is the nearest row
+ *   above on the level just above, the index counts its subtasks above the line.
+ */
+export function listDropAt(
+  tasks: Task[],
+  rows: ListRowBox[],
   activeId: string,
-  overId: string,
-  offsetX: number,
+  pointer: { y: number; offsetX: number },
   indent: number,
-): { depth: number; target: MoveTarget } | null {
+  maxLevels: number = MAX_TASK_LEVELS,
+): ListDrop | null {
   const activeIndex = rows.findIndex((row) => row.task.id === activeId);
-  const overIndex = rows.findIndex((row) => row.task.id === overId);
-  if (activeIndex < 0 || overIndex < 0) return null;
+  if (activeIndex < 0) return null;
   const active = rows[activeIndex];
-  const moved = [...rows];
-  moved.splice(overIndex, 0, moved.splice(activeIndex, 1)[0]);
-  const above = moved[overIndex - 1];
-  const below = moved[overIndex + 1];
+  const first = rows[0];
+  const last = rows[rows.length - 1];
+  const { y } = pointer;
+  if (y < first.top - LIST_DROP_REACH || y > last.top + last.height + LIST_DROP_REACH) {
+    return null;
+  }
+  const valid = (target: MoveTarget) => planMove(tasks, activeId, target, maxLevels).ok;
 
-  const wanted = active.depth + Math.round(offsetX / indent);
-  const deepest = above ? above.depth + 1 : 0;
-  const shallowest = below ? below.depth : 0;
-  const depth = Math.min(Math.max(wanted, shallowest), deepest);
-
-  let parentId: string | null;
-  if (depth === 0 || !above) parentId = null;
-  else if (depth === above.depth) parentId = above.parentId;
-  else if (depth > above.depth) parentId = above.task.id;
+  // The gap among the other rows: gap k sits right above others[k].
+  const others = rows.filter((_, index) => index !== activeIndex);
+  let gap: number;
+  const index = rows.findIndex((row) => y < row.top + row.height);
+  if (index < 0) gap = others.length;
+  else if (index === activeIndex) gap = activeIndex;
   else {
-    parentId =
-      moved
-        .slice(0, overIndex)
-        .reverse()
-        .find((row) => row.depth === depth)?.parentId ?? null;
+    const row = rows[index];
+    const share = row.height > 0 ? (y - row.top) / row.height : 0.5;
+    const before = index < activeIndex ? index : index - 1;
+    if (share < LIST_DROP_EDGE) gap = before;
+    else if (share > 1 - LIST_DROP_EDGE) gap = before + 1;
+    else {
+      const target = {
+        parentId: row.task.id,
+        index: tasks.filter((task) => task.parent_task_id === row.task.id && task.id !== activeId)
+          .length,
+      };
+      return {
+        kind: "inside",
+        overId: row.task.id,
+        depth: row.depth + 1,
+        target,
+        valid: valid(target),
+      };
+    }
   }
 
+  const above = others[gap - 1];
+  const below = others[gap];
+  const deepest = above ? above.depth + 1 : 0;
+  const shallowest = below ? Math.min(below.depth, deepest) : 0;
+  const wanted = active.depth + levelsFromOffset(pointer.offsetX, indent);
+  const depth = Math.min(Math.max(wanted, shallowest), deepest);
+
+  let parent: ListRowBox | undefined;
+  if (depth > 0) {
+    for (let row = gap - 1; row >= 0 && !parent; row -= 1) {
+      if (others[row].depth === depth - 1) parent = others[row];
+    }
+  }
+  const parentId = parent?.task.id ?? null;
   // Under a collapsed task it goes after the subtasks that are not shown.
-  const index =
-    above && parentId === above.task.id && above.collapsed
-      ? above.childCount
-      : moved.slice(0, overIndex).filter((row) => row.parentId === parentId).length;
-  return { depth, target: { parentId, index } };
+  const at = parent?.collapsed
+    ? parent.childCount
+    : others.slice(0, gap).filter((row) => row.parentId === parentId).length;
+  const target = { parentId, index: at };
+
+  // Between two rows; on the dragged row itself, across its middle.
+  const lineY =
+    gap === activeIndex
+      ? active.top + active.height / 2
+      : above
+        ? above.top + above.height
+        : (below?.top ?? 0);
+  return { kind: "line", y: lineY, depth, target, valid: valid(target) };
 }
 
 /** Where a node dragged in the map is over another node. */

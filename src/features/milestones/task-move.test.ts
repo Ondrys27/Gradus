@@ -6,10 +6,12 @@ import {
   mapDropTarget,
   mapDropZone,
   MAX_TASK_LEVELS,
+  levelsFromOffset,
+  listDropAt,
   planMove,
-  projectListDrop,
   siblingsOf,
   subtreeHeight,
+  type ListRowBox,
   type MovePlan,
 } from "./task-tree";
 import type { Task } from "./types";
@@ -203,9 +205,28 @@ describe("keyboardTarget", () => {
   });
 });
 
-describe("list drop projection", () => {
+describe("list drop", () => {
   const INDENT = 28;
+  const ROW = 44;
   const rows = (collapsed: string[] = []) => flattenTree(buildTree(tree()), new Set(collapsed));
+  /** The rows during a drag of `activeId`: its subtree travels with it, 44 px each. */
+  const boxes = (activeId: string, collapsed: string[] = []): ListRowBox[] =>
+    rows([...collapsed, activeId]).map((row, index) => ({ ...row, top: index * ROW, height: ROW }));
+  /** The pointer at a share of the n-th visible row. */
+  const at = (row: number, share: number, offsetX = 0) => ({ y: (row + share) * ROW, offsetX });
+  const drop = (
+    activeId: string,
+    pointer: { y: number; offsetX: number },
+    options: { collapsed?: string[]; tasks?: Task[]; maxLevels?: number } = {},
+  ) =>
+    listDropAt(
+      options.tasks ?? tree(),
+      boxes(activeId, options.collapsed),
+      activeId,
+      pointer,
+      INDENT,
+      options.maxLevels,
+    );
 
   it("flattens the visible tree with depths", () => {
     expect(rows().map((r) => `${r.task.id}@${r.depth}`)).toEqual([
@@ -219,47 +240,139 @@ describe("list drop projection", () => {
     expect(rows(["a"]).map((r) => r.task.id)).toEqual(["a", "b", "c"]);
   });
 
-  it("drags straight down: same level, new place", () => {
-    // c over b, no sideways move: c goes before b at the top level.
-    expect(projectListDrop(rows(), "c", "b", 0, INDENT)).toEqual({
+  it("counts a level once the sideways drag passes half an indent, both ways", () => {
+    expect(levelsFromOffset(13, INDENT)).toBe(0);
+    expect(levelsFromOffset(14, INDENT)).toBe(1);
+    expect(levelsFromOffset(-14, INDENT)).toBe(-1);
+    expect(levelsFromOffset(-13, INDENT)).toBe(0);
+    expect(levelsFromOffset(42, INDENT)).toBe(2);
+    expect(levelsFromOffset(-70, INDENT)).toBe(-3);
+    expect(levelsFromOffset(50, 0)).toBe(0);
+  });
+
+  it("drops onto the middle of a row: the last subtask of that task", () => {
+    // Rows while c is dragged: a, a1, a1x, a2, b, c.
+    expect(drop("c", at(2, 0.5))).toEqual({
+      kind: "inside",
+      overId: "a1x",
+      depth: 3,
+      target: { parentId: "a1x", index: 0 },
+      valid: true,
+    });
+    expect(drop("c", at(0, 0.5))).toMatchObject({
+      kind: "inside",
+      target: { parentId: "a", index: 2 },
+    });
+  });
+
+  it("drops onto a collapsed task: after the subtasks that are not shown", () => {
+    // Rows while c is dragged with a collapsed: a, b, c.
+    expect(drop("c", at(0, 0.5), { collapsed: ["a"] })).toMatchObject({
+      kind: "inside",
+      overId: "a",
+      target: { parentId: "a", index: 2 },
+    });
+  });
+
+  it("the edge of a row is a line between rows, on the task's own level", () => {
+    // c over the top edge of b: before b at the top level.
+    expect(drop("c", at(4, 0.1))).toEqual({
+      kind: "line",
+      y: 4 * ROW,
       depth: 0,
+      target: { parentId: null, index: 1 },
+      valid: true,
+    });
+    // The bottom edge of a2 is the same gap.
+    expect(drop("c", at(3, 0.9))).toMatchObject({
+      y: 4 * ROW,
       target: { parentId: null, index: 1 },
     });
   });
 
-  it("drags right: becomes a subtask of the row above", () => {
-    expect(projectListDrop(rows(), "b", "b", INDENT, INDENT)).toEqual({
+  it("picks the level from the sideways drag, several levels at once", () => {
+    // c (level 0) at the gap between a2 (1) and b (0): may be 0, 1 or 2.
+    expect(drop("c", at(4, 0.1, INDENT))).toMatchObject({
       depth: 1,
       target: { parentId: "a", index: 2 },
     });
-    // Never deeper than one level below the row above (a2 on level 2).
-    expect(projectListDrop(rows(), "b", "b", INDENT * 5, INDENT)).toEqual({
+    expect(drop("c", at(4, 0.1, INDENT * 2))).toMatchObject({
       depth: 2,
       target: { parentId: "a2", index: 0 },
     });
+    // Never deeper than one level below the row above.
+    expect(drop("c", at(4, 0.1, INDENT * 9))).toMatchObject({ depth: 2 });
+    // Between a1x (2) and a2 (1): two levels deeper than c in one drag.
+    expect(drop("c", at(3, 0.1, INDENT * 2))).toMatchObject({
+      depth: 2,
+      target: { parentId: "a1", index: 1 },
+    });
+    // Three levels deeper, as a subtask of a1x.
+    expect(drop("c", at(3, 0.1, INDENT * 3))).toMatchObject({
+      depth: 3,
+      target: { parentId: "a1x", index: 0 },
+    });
   });
 
-  it("drags left: leaves its parent", () => {
-    // Without anything under it, a2 may go up to level 1 right after a.
-    expect(projectListDrop(rows(), "a2", "a2", -INDENT, INDENT)).toEqual({
+  it("keeps the level between the row below and the row above", () => {
+    // c dragged left at the gap above a1 (level 1) cannot get shallower than a1.
+    expect(drop("c", at(1, 0.1, -INDENT * 4))).toMatchObject({
+      depth: 1,
+      target: { parentId: "a", index: 0 },
+    });
+  });
+
+  it("on the dragged row itself: a sideways drag changes only the level", () => {
+    // a2 (level 1) dragged left in place goes to level 1 right after a.
+    expect(drop("a2", at(3, 0.5, -INDENT))).toEqual({
+      kind: "line",
+      y: 3.5 * ROW,
+      depth: 0,
+      target: { parentId: null, index: 1 },
+      valid: true,
+    });
+    // Without a sideways drag it stays where it is.
+    const still = drop("a2", at(3, 0.5));
+    expect(still).toMatchObject({ depth: 1, target: { parentId: "a", index: 1 } });
+    expect(planMove(tree(), "a2", still!.target)).toMatchObject({ ok: true, changed: false });
+  });
+
+  it("a dragged subtree is one row: a1 left in place stays under a while a2 is below", () => {
+    // Rows while a1 is dragged: a, a1, a2, b, c.
+    expect(drop("a1", at(1, 0.5, -INDENT))).toMatchObject({
+      depth: 1,
+      target: { parentId: "a", index: 0 },
+    });
+    // Moved below a2, it can leave a.
+    expect(drop("a1", at(3, 0.1, -INDENT))).toMatchObject({
       depth: 0,
       target: { parentId: null, index: 1 },
     });
   });
 
-  it("cannot leave a level while the row below still sits deeper", () => {
-    // a1 dragged (its subtask hidden meanwhile) to the left: a2 below is still
-    // a subtask of a, so a1 has to stay one too.
-    const visible = rows().filter((r) => r.task.id !== "a1x");
-    expect(projectListDrop(visible, "a1", "a1", -INDENT, INDENT)?.depth).toBe(1);
+  it("the top and the bottom of the list", () => {
+    expect(drop("b", at(0, 0.1))).toMatchObject({ y: 0, target: { parentId: null, index: 0 } });
+    expect(drop("a", at(-0.5, 0))).toMatchObject({
+      target: { parentId: null, index: 0 },
+    });
+    // Rows while a is dragged: a, b, c. Below the last row: the end of level 1.
+    expect(drop("a", { y: 3 * ROW + 20, offsetX: 0 })).toMatchObject({
+      y: 3 * ROW,
+      target: { parentId: null, index: 2 },
+    });
+    // Far away from the list: no drop.
+    expect(drop("a", { y: 3 * ROW + 200, offsetX: 0 })).toBeNull();
+    expect(drop("a", { y: -200, offsetX: 0 })).toBeNull();
   });
 
-  it("goes after the hidden subtasks of a collapsed task", () => {
-    const visible = rows(["a"]);
-    expect(projectListDrop(visible, "b", "b", INDENT, INDENT)).toEqual({
-      depth: 1,
-      target: { parentId: "a", index: 2 },
+  it("marks a drop that would take the subtree too deep as not allowed", () => {
+    // a with its two levels below onto a1x (level 3) needs 6 levels.
+    const result = drop("c", at(2, 0.5), {
+      tasks: [...tree(), task("c1", { parent_task_id: "c" }), task("c2", { parent_task_id: "c1" })],
+      maxLevels: 5,
     });
+    expect(result).toMatchObject({ kind: "inside", overId: "a1x", valid: false });
+    expect(drop("c", at(2, 0.5), { maxLevels: 4 })).toMatchObject({ valid: true });
   });
 });
 

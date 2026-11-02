@@ -1198,7 +1198,6 @@
         "confirm": "Delete task",
         "cancel": "Keep it"
       },
-      "reorder": "Drag “{title}” somewhere else (also under another task)",
       "collapse": "Collapse subtasks",
       "expand": "Expand subtasks",
       "subtasks": "{count, plural, one {# subtask} other {# subtasks}}",
@@ -1251,12 +1250,23 @@
       "writeNoteMenu": "Write in notes",
       "writeNoteFailed": "The note could not be created. Try again in a moment.",
       "move": {
-        "listInstructions": "Press Space to pick a task up, move it with ↑/↓, press Space to drop it and Escape to cancel. Change its level by dragging sideways or with ⌘ or Ctrl and ←/→, its order with ⌘ or Ctrl and ↑/↓. ⌘ or Ctrl + Z undoes the last move.",
+        "listInstructions": "Drag a task (on a phone, press and hold it first): onto the middle of another task it becomes its subtask, between tasks it changes the order, sideways it changes the level. Without a mouse: Move… in the task's menu, or ⌘ or Ctrl with ←/→ for the level and ↑/↓ for the order. ⌘ or Ctrl + Z undoes the last move.",
         "mapInstructions": "Drag a task onto another task (it becomes its subtask), between tasks (changes the order) or onto the milestone (top level). On a phone, press and hold it first. Keys: ⌘ or Ctrl with ←/→ changes the level, with ↑/↓ the order; ⌘ or Ctrl + Z undoes the last move.",
         "pickedUp": "Picked up: {title}.",
         "over": "{title} is over {target}.",
         "dropped": "{title} was moved.",
         "cancelled": "Move cancelled."
+      },
+      "moveMenu": "Move…",
+      "moveDialog": {
+        "title": "Move “{title}”",
+        "parent": "Under",
+        "root": "{title} (top level)",
+        "position": "Place among the others",
+        "first": "At the top",
+        "after": "After “{title}”",
+        "submit": "Move",
+        "cancel": "Cancel"
       }
     },
     "map": {

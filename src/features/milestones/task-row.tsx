@@ -1,14 +1,14 @@
 "use client";
 
-import type { KeyboardEvent } from "react";
+import type { KeyboardEvent, SyntheticEvent } from "react";
 import { Menu } from "@base-ui/react/menu";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { useDraggable } from "@dnd-kit/core";
 import { motion } from "framer-motion";
 import {
   ChevronDownIcon,
   EllipsisIcon,
   GripVerticalIcon,
+  MoveIcon,
   NotebookPenIcon,
   PencilIcon,
   PlusIcon,
@@ -37,6 +37,8 @@ export type TaskHandlers = {
   onDelete: (task: Task) => void;
   /** ⌘/Ctrl + arrows on a row: ←/→ level, ↑/↓ order. */
   onKeyMove: (task: Task, direction: MoveDirection) => void;
+  /** "Move…" in the menu: pick the new parent and place without a mouse. */
+  onMoveMenu: (task: Task) => void;
   /** Without the right to edit milestones: no ticking, moving or menu. */
   readOnly?: boolean;
   /** Path steps whose result is a text, with the key of their note outline. */
@@ -71,23 +73,37 @@ type RowProps = {
   handlers: TaskHandlers;
   /** Any row is being dragged: no layout animation meanwhile. */
   dragging: boolean;
+  /** This is the dragged row: it stays as a faint placeholder while its card travels. */
+  placeholder?: boolean;
+  /** The dragged task would become this one's last subtask; "invalid" when the rules refuse it. */
+  dropInside?: "ok" | "invalid" | null;
 };
 
-/** One task of the list, indented by its level; dragged by the grip on the left. */
-export function TaskRow({ row, depth, indent, handlers, dragging }: RowProps) {
+/** Only events that start on the row itself, not in a menu it opened (portals bubble in React). */
+const ownEvent = (event: SyntheticEvent) =>
+  event.currentTarget.contains(event.target as Node | null);
+
+/**
+ * One task of the list, indented by its level. The whole row can be dragged
+ * (after a long press on a phone); the grip on the left shows it.
+ */
+export function TaskRow({
+  row,
+  depth,
+  indent,
+  handlers,
+  dragging,
+  placeholder = false,
+  dropInside = null,
+}: RowProps) {
   const t = useTranslations("milestones.tasks");
   const settings = useFormatSettings();
   const reduceMotion = useReducedMotionSafe();
   const { task, childCount } = row;
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    setActivatorNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: task.id, disabled: handlers.readOnly });
+  const { attributes, listeners, setNodeRef } = useDraggable({
+    id: task.id,
+    disabled: handlers.readOnly,
+  });
 
   const done = task.status === "done";
   const remaining = openSubtasks(handlers.tasks, task.id);
@@ -101,7 +117,7 @@ export function TaskRow({ row, depth, indent, handlers, dragging }: RowProps) {
   const wayOverdue = overdue && daysOverdue > 3;
 
   function onKeyDown(event: KeyboardEvent) {
-    if (handlers.readOnly || isDragging) return;
+    if (handlers.readOnly || dragging) return;
     const direction = moveDirectionOf(event);
     if (!direction) return;
     event.preventDefault();
@@ -111,11 +127,10 @@ export function TaskRow({ row, depth, indent, handlers, dragging }: RowProps) {
 
   return (
     <li
-      ref={setNodeRef}
       data-task-row={task.id}
       data-depth={depth}
-      style={{ transform: CSS.Translate.toString(transform && { ...transform, x: 0 }), transition }}
-      className={cn("relative", isDragging && "z-10")}
+      data-drop-inside={dropInside ?? undefined}
+      className="relative"
       onKeyDown={onKeyDown}
     >
       {/* One guide per level above, where the nested groups used to draw theirs. */}
@@ -128,29 +143,35 @@ export function TaskRow({ row, depth, indent, handlers, dragging }: RowProps) {
         />
       ))}
       <motion.div
+        ref={setNodeRef}
         layout={dragging || reduceMotion ? false : "position"}
         transition={MOVE}
         style={{ marginLeft: depth * indent }}
         className={cn(
-          "flex min-h-11 items-center gap-1 rounded-xl pr-1 hover:bg-surface-hover",
-          isDragging && "bg-surface-hover opacity-80 shadow-glow ring-1 ring-violet/50",
+          "flex min-h-11 items-center gap-1 rounded-xl pr-1 transition-[opacity,box-shadow] duration-150 hover:bg-surface-hover motion-reduce:transition-none",
+          !handlers.readOnly &&
+            "cursor-grab touch-manipulation select-none [-webkit-touch-callout:none]",
+          placeholder && "opacity-40 outline-1 outline-line-strong outline-dashed",
+          dropInside === "ok" && "bg-gold/10 ring-2 ring-gold",
+          dropInside === "invalid" && "cursor-not-allowed opacity-50 ring-2 ring-line-strong",
         )}
+        onMouseDown={(event) => {
+          if (ownEvent(event)) listeners?.onMouseDown?.(event);
+        }}
+        onTouchStart={(event) => {
+          if (ownEvent(event)) listeners?.onTouchStart?.(event);
+        }}
       >
         {handlers.readOnly ? (
           <span aria-hidden className="size-3 shrink-0" />
         ) : (
-          <button
-            type="button"
-            ref={setActivatorNodeRef}
-            aria-label={t("reorder", { title: task.title })}
-            aria-keyshortcuts="Meta+ArrowUp Meta+ArrowDown Meta+ArrowLeft Meta+ArrowRight Control+ArrowUp Control+ArrowDown Control+ArrowLeft Control+ArrowRight"
+          <span
+            aria-hidden
             data-testid="task-drag-handle"
-            className="grid size-11 shrink-0 cursor-grab touch-none place-items-center rounded-lg text-ink-muted outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40 active:cursor-grabbing mouse:size-8"
-            {...attributes}
-            {...listeners}
+            className="grid size-11 shrink-0 place-items-center rounded-lg text-ink-muted mouse:size-8"
           >
-            <GripVerticalIcon aria-hidden className="size-4" />
-          </button>
+            <GripVerticalIcon className="size-4" />
+          </span>
         )}
 
         <TaskCheckbox
@@ -222,13 +243,22 @@ export function TaskRow({ row, depth, indent, handlers, dragging }: RowProps) {
           </button>
         )}
 
-        {!handlers.readOnly && <TaskMenu task={task} handlers={handlers} />}
+        {!handlers.readOnly && (
+          <TaskMenu task={task} handlers={handlers} describedBy={attributes["aria-describedby"]} />
+        )}
       </motion.div>
     </li>
   );
 }
 
-function TaskMenu({ task, handlers }: { task: Task; handlers: TaskHandlers }) {
+type MenuProps = {
+  task: Task;
+  handlers: TaskHandlers;
+  /** The instructions for moving with a pointer or the keyboard. */
+  describedBy?: string;
+};
+
+function TaskMenu({ task, handlers, describedBy }: MenuProps) {
   const t = useTranslations("milestones.tasks");
   const itemClass =
     "flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg px-3 text-[15px] text-ink-soft outline-none select-none data-highlighted:bg-surface-hover data-highlighted:text-ink mouse:min-h-9 [&_svg]:size-4";
@@ -237,6 +267,8 @@ function TaskMenu({ task, handlers }: { task: Task; handlers: TaskHandlers }) {
     <Menu.Root>
       <Menu.Trigger
         aria-label={t("actions", { title: task.title })}
+        aria-describedby={describedBy}
+        aria-keyshortcuts="Meta+ArrowUp Meta+ArrowDown Meta+ArrowLeft Meta+ArrowRight Control+ArrowUp Control+ArrowDown Control+ArrowLeft Control+ArrowRight"
         className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-lg text-ink-muted outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40 mouse:size-8"
       >
         <EllipsisIcon aria-hidden className="size-4" />
@@ -251,6 +283,10 @@ function TaskMenu({ task, handlers }: { task: Task; handlers: TaskHandlers }) {
             <Menu.Item className={itemClass} onClick={() => handlers.onEdit(task)}>
               <PencilIcon aria-hidden />
               {t("edit")}
+            </Menu.Item>
+            <Menu.Item className={itemClass} onClick={() => handlers.onMoveMenu(task)}>
+              <MoveIcon aria-hidden />
+              {t("moveMenu")}
             </Menu.Item>
             {handlers.onWriteNote && (
               <Menu.Item className={itemClass} onClick={() => handlers.onWriteNote?.(task)}>
@@ -269,5 +305,39 @@ function TaskMenu({ task, handlers }: { task: Task; handlers: TaskHandlers }) {
         </Menu.Positioner>
       </Menu.Portal>
     </Menu.Root>
+  );
+}
+
+/** The dragged task as one card, carrying everything below it. */
+export function TaskDragCard({ task, below }: { task: Task; below: number }) {
+  const t = useTranslations("milestones.tasks");
+  // Narrower than a row, so the row it is over still shows that it lights up.
+  return (
+    <div
+      data-testid="task-drag-card"
+      className="flex min-h-11 w-max max-w-[min(100%,20rem)] cursor-grabbing items-center gap-2 rounded-xl border border-violet/70 bg-surface/95 px-3 shadow-glow-strong motion-safe:rotate-1"
+    >
+      <GripVerticalIcon aria-hidden className="size-4 shrink-0 text-ink-muted" />
+      <span
+        aria-hidden
+        className={cn(
+          "size-4 shrink-0 rounded-full border-2",
+          task.status === "done" ? "border-teal bg-teal" : "border-line-strong",
+        )}
+      />
+      <span
+        className={cn(
+          "min-w-0 flex-1 truncate text-[15px] text-ink",
+          task.status === "done" && "text-ink-muted line-through",
+        )}
+      >
+        {task.title}
+      </span>
+      {below > 0 && (
+        <span className="shrink-0 rounded-full border border-violet bg-canvas-deep px-2 py-0.5 text-xs font-semibold text-ink">
+          {t("subtasks", { count: below })}
+        </span>
+      )}
+    </div>
   );
 }

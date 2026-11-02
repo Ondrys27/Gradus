@@ -146,3 +146,128 @@ test("36 · move a task under another in the map → the list shows it nested �
     })
     .toBe(true);
 });
+
+/**
+ * 18.1: in the list, task X is dragged onto the middle of a subtask three rows
+ * further down and becomes its subtask, two levels deeper than it was; the map
+ * agrees; the Move… menu takes it back to the top of level 1.
+ */
+test("36 · list: drop a task onto a row three rows down, two levels deeper → the map agrees → back with Move…", async ({
+  page,
+  accounts,
+}) => {
+  const account = await accounts.create({ label: "task-move-list" });
+  const db = admin();
+  const milestoneTitle = "E2E Přesuny v seznamu";
+  const { data: milestone, error: milestoneError } = await db
+    .from("milestones")
+    .insert({ user_id: account.id, title: milestoneTitle, position: 0 })
+    .select("id")
+    .single();
+  if (milestoneError) throw milestoneError;
+  const ids: Record<string, string> = {};
+  const insert = async (title: string, position: number, parent?: string) => {
+    const { data, error } = await db
+      .from("tasks")
+      .insert({
+        user_id: account.id,
+        milestone_id: milestone.id,
+        parent_task_id: parent ? ids[parent] : null,
+        title,
+        position,
+      })
+      .select("id")
+      .single();
+    if (error) throw error;
+    ids[title] = data.id;
+  };
+  // X · A · ├ A1 · └ A2
+  await insert("Úkol X", 0);
+  await insert("Úkol A", 1);
+  await insert("Podúkol A1", 0, "Úkol A");
+  await insert("Podúkol A2", 1, "Úkol A");
+
+  const placeOf = async (title: string) => {
+    const { data, error } = await db
+      .from("tasks")
+      .select("parent_task_id, position")
+      .eq("id", ids[title])
+      .single();
+    if (error) throw error;
+    return data;
+  };
+
+  await signIn(page, account);
+  await openApp(page, `/app/milniky/${milestone.id}`);
+  await page.getByRole("button", { name: exact(L, "milestones.tasks.view.list") }).click();
+  const row = (title: string) => page.locator(`[data-task-row="${ids[title]}"]`);
+  await expect(row("Podúkol A2")).toHaveAttribute("data-depth", "1");
+  await expect(row("Úkol X")).toHaveAttribute("data-depth", "0");
+
+  // Drag X by its grip onto the middle of A2, three rows down: A2 lights up.
+  const handle = row("Úkol X").getByTestId("task-drag-handle");
+  const start = await centre(handle);
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(start.x + 8, start.y + 2, { steps: 4 });
+  await expect(page.getByTestId("task-drag-card")).toBeVisible();
+  const target = await centre(row("Podúkol A2"));
+  await page.mouse.move(target.x, target.y, { steps: 16 });
+  await expect(row("Podúkol A2")).toHaveAttribute("data-drop-inside", "ok");
+  await page.mouse.up();
+
+  await expect
+    .poll(async () => (await placeOf("Úkol X")).parent_task_id, { message: "X is under A2" })
+    .toBe(ids["Podúkol A2"]);
+  await expect(row("Úkol X")).toHaveAttribute("data-depth", "2");
+  const order = await page
+    .locator("[data-task-row]")
+    .evaluateAll((rows) => rows.map((element) => element.getAttribute("data-task-row")));
+  expect(order).toEqual([ids["Úkol A"], ids["Podúkol A1"], ids["Podúkol A2"], ids["Úkol X"]]);
+
+  // The map agrees: X one column right of A2, A2 one right of A.
+  await page.getByRole("button", { name: exact(L, "milestones.tasks.view.map") }).click();
+  const map = page.getByRole("region", { name: t("milestones.map.label") });
+  const node = (title: string) =>
+    map.getByRole("button", { name: t("milestones.map.open", { title }) });
+  await expect(node("Úkol X")).toBeVisible();
+  await expect
+    .poll(async () => {
+      const [a, a2, x] = await Promise.all(
+        ["Úkol A", "Podúkol A2", "Úkol X"].map((title) =>
+          node(title).locator("xpath=ancestor::*[@data-map-drag][1]").boundingBox(),
+        ),
+      );
+      return Boolean(a && a2 && x && a2.x > a.x + a.width && x.x > a2.x + a2.width);
+    })
+    .toBe(true);
+
+  // Back in the list through the menu: Move… → the milestone → at the top.
+  await page.getByRole("button", { name: exact(L, "milestones.tasks.view.list") }).click();
+  await page
+    .getByRole("button", { name: t("milestones.tasks.actions", { title: "Úkol X" }) })
+    .click();
+  await page.getByRole("menuitem", { name: exact(L, "milestones.tasks.moveMenu") }).click();
+  const dialog = page.getByRole("dialog", {
+    name: t("milestones.tasks.moveDialog.title", { title: "Úkol X" }),
+  });
+  await expect(dialog).toBeVisible();
+  const rootLabel = t("milestones.tasks.moveDialog.root", { title: milestoneTitle });
+  await dialog.getByText(rootLabel, { exact: true }).click();
+  await expect(dialog.getByRole("radio", { name: rootLabel })).toBeChecked();
+  await dialog.getByTestId("move-position").click();
+  await page.getByRole("option", { name: t("milestones.tasks.moveDialog.first") }).click();
+  await dialog
+    .getByRole("button", { name: exact(L, "milestones.tasks.moveDialog.submit") })
+    .click();
+  await expect(dialog).toBeHidden();
+
+  await expect
+    .poll(async () => placeOf("Úkol X"), { message: "X is first on level 1" })
+    .toEqual({ parent_task_id: null, position: 0 });
+  await expect(row("Úkol X")).toHaveAttribute("data-depth", "0");
+  const top = await page
+    .locator("[data-task-row][data-depth='0']")
+    .evaluateAll((rows) => rows.map((element) => element.getAttribute("data-task-row")));
+  expect(top).toEqual([ids["Úkol X"], ids["Úkol A"]]);
+});

@@ -291,7 +291,7 @@ export const EVENTS = {
   tasks_reordered: event("milestones", "client", true, {}),
   /** A task moved under another task, to another level or place (move_task, map or list). */
   task_moved: event("milestones", "server", true, {
-    via: oneOf(["map", "list", "keyboard", "undo"]),
+    via: oneOf(["map", "list", "keyboard", "menu", "undo"]),
     depth: count(100),
     level_changed: bool(),
   }),

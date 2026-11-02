@@ -23,6 +23,7 @@ import {
 } from "./queries";
 import { TITLE_MAX, type MoveVia } from "./schemas";
 import { TaskFormDialog, type TaskFormMode } from "./task-form-dialog";
+import { MoveTaskDialog } from "./move-task-dialog";
 import { TaskList } from "./task-list";
 import { TaskMap } from "./task-map";
 import { type TaskHandlers } from "./task-row";
@@ -63,6 +64,7 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
     mode: { kind: "create", parent: null },
   });
   const [deleting, setDeleting] = useState<{ task: Task; open: boolean } | null>(null);
+  const [moving, setMoving] = useState<{ task: Task; open: boolean } | null>(null);
   const [quickTitle, setQuickTitle] = useState("");
   const quickRef = useRef<HTMLInputElement>(null);
 
@@ -173,6 +175,7 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
       const target = keyboardTarget(tasks, task.id, direction);
       if (target) moveTask(task.id, target, "keyboard");
     },
+    onMoveMenu: (task) => setMoving({ task, open: true }),
     readOnly: !canEdit,
     noteTemplates: noteTemplates.data,
     onWriteNote:
@@ -269,6 +272,15 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
         milestoneId={milestoneId}
         tasks={tasks}
         mode={form.mode}
+      />
+
+      <MoveTaskDialog
+        open={moving?.open ?? false}
+        onOpenChange={(open) => setMoving((current) => current && { ...current, open })}
+        milestoneTitle={milestone.title}
+        tasks={tasks}
+        task={moving?.task ?? null}
+        onMove={(taskId, target) => moveTask(taskId, target, "menu")}
       />
 
       {deleting && (

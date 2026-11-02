@@ -1198,7 +1198,6 @@
         "confirm": "Smazat úkol",
         "cancel": "Ponechat"
       },
-      "reorder": "Přetáhni úkol „{title}“ jinam (i pod jiný úkol)",
       "collapse": "Sbalit podúkoly",
       "expand": "Rozbalit podúkoly",
       "subtasks": "{count, plural, one {# podúkol} few {# podúkoly} many {# podúkolu} other {# podúkolů}}",
@@ -1251,12 +1250,23 @@
       "writeNoteMenu": "Zapsat do poznámek",
       "writeNoteFailed": "Poznámku se nepovedlo založit. Zkus to za chvíli znovu.",
       "move": {
-        "listInstructions": "Mezerníkem úkol zvedni, šipkami ↑/↓ přesuň, mezerníkem pusť a klávesou Escape zruš. Úroveň změníš vodorovným tažením nebo ⌘ či Ctrl se šipkami ←/→, pořadí ⌘ či Ctrl se šipkami ↑/↓. ⌘ či Ctrl + Z vrátí poslední přesun.",
+        "listInstructions": "Úkol přetáhni (na telefonu ho nejdřív podrž): na střed jiného úkolu se stane jeho podúkolem, mezi úkoly změní pořadí a tažením do stran úroveň. Bez myši: v nabídce úkolu Přesunout…, nebo ⌘ či Ctrl se šipkami ←/→ pro úroveň a ↑/↓ pro pořadí. ⌘ či Ctrl + Z vrátí poslední přesun.",
         "mapInstructions": "Úkol přetáhni na jiný úkol (stane se jeho podúkolem), mezi úkoly (změní pořadí) nebo na milník (první úroveň). Na telefonu ho nejdřív podrž. Klávesy: ⌘ či Ctrl se šipkami ←/→ mění úroveň, ↑/↓ pořadí; ⌘ či Ctrl + Z vrátí poslední přesun.",
         "pickedUp": "Zvednuto: {title}.",
         "over": "{title} je nad {target}.",
         "dropped": "{title} je přesunutý.",
         "cancelled": "Přesun zrušen."
+      },
+      "moveMenu": "Přesunout…",
+      "moveDialog": {
+        "title": "Přesunout „{title}“",
+        "parent": "Pod co",
+        "root": "{title} (první úroveň)",
+        "position": "Kam mezi ostatní",
+        "first": "Na začátek",
+        "after": "Za „{title}“",
+        "submit": "Přesunout",
+        "cancel": "Zrušit"
       }
     },
     "map": {
