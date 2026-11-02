@@ -97,6 +97,7 @@ U každé sekce: adopce (% aktivních, kteří ji použili), počet akcí, akce 
 - Náklad na aktivního uživatele za měsíc, podle plánu
 - Odhad marže proti ceníku
 - Zkušební období — běžící, končící tento týden, vypršelá, klepnutí na „Mám zájem", převod
+- Předplatné — změny tarifu podle cílového tarifu (`subscription_change_requested`), zrušení podle důvodu (`subscription_cancelled`)
 
 ## 8. Technické zdraví
 

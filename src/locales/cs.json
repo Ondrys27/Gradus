@@ -1101,6 +1101,11 @@
           "generic": "Účet se nepodařilo smazat. Zkus to prosím znovu."
         }
       }
+    },
+    "subscription": {
+      "title": "Předplatné",
+      "description": "Tvůj tarif, platby a fakturační údaje.",
+      "open": "Spravovat předplatné"
     }
   },
   "milestones": {
@@ -4041,21 +4046,6 @@
       "rewards": "Systém odměn",
       "teamStats": "Týmové statistiky"
     },
-    "page": {
-      "title": "Tarif",
-      "description": "Platby spouštíme brzy. Dej nám vědět, o který tarif máš zájem, a ozveme se ti.",
-      "interest": "Mám zájem",
-      "interestSent": "Díky, ozveme se ti.",
-      "interestError": "Zprávu se nepodařilo odeslat. Zkus to prosím znovu.",
-      "current": "Teď máš",
-      "status": {
-        "trialing": "Zkušební období tarifu {plan} do {date}",
-        "expired": "Zkušební období skončilo {date}",
-        "overLimit": "Tarif {plan} · nad limitem tarifu, jen pro čtení",
-        "active": "Tarif {plan}",
-        "beta": "Beta bez časového omezení"
-      }
-    },
     "interestEmail": {
       "subject": "{appName}: zájem o tarif {plan}",
       "intro": "Uživatel má zájem o tarif {plan}.",
@@ -4670,6 +4660,14 @@
         "name": "Mám zájem",
         "description": "Uživatelé, kteří klepli na zájem o plán."
       },
+      "subscription_changes": {
+        "name": "Změny tarifu",
+        "description": "Uživatelé, kteří si v Předplatném vybrali jiný tarif, podle cílového tarifu."
+      },
+      "subscription_cancellations": {
+        "name": "Zrušení předplatného",
+        "description": "Zrušení ke konci období podle důvodu."
+      },
       "errors": {
         "name": "Chyby",
         "description": "Chyby serverových rout, úloh a prohlížeče za den."
@@ -5278,7 +5276,61 @@
       "changesTitle": "Změny účtu",
       "changesDescription": "Co mění, jak se účet počítá a kolik za něj Jarvis smí utratit. Každá změna se zapíše do auditu.",
       "internalTitle": "Interní účet",
-      "internalDescription": "Interní účet (majitel, demo, testy) se do metrik nepočítá, dokud ho ovládání nezapne."
+      "internalDescription": "Interní účet (majitel, demo, testy) se do metrik nepočítá, dokud ho ovládání nezapne.",
+      "subscription": {
+        "title": "Předplatné",
+        "description": "Tarif, období a stav účtu. Dokud nejsou platby, nastavuje je majitel ručně.",
+        "plan": "Tarif",
+        "billing": "Období",
+        "status": "Stav",
+        "periodEnd": "Konec období",
+        "trialEnds": "Zkušební do",
+        "cancel": "Zrušeno ke konci období",
+        "cancelReason": "Důvod zrušení",
+        "cancelNote": "Poznámka k zrušení",
+        "scheduled": "Naplánovaná změna",
+        "none": "–",
+        "scheduledValue": "{plan} · {billing} od {date}",
+        "noSubscription": "Účet nemá předplatné (platí výchozí tarif).",
+        "statuses": {
+          "trialing": "Zkušební",
+          "active": "Aktivní",
+          "past_due": "Po splatnosti",
+          "cancelled": "Zrušeno",
+          "expired": "Vypršelo"
+        },
+        "form": {
+          "planLabel": "Tarif",
+          "billingLabel": "Období",
+          "statusLabel": "Stav",
+          "periodEndLabel": "Konec období (do konce dne)",
+          "periodEndHint": "U zkušebního období je to i jeho konec. Prázdné = bez konce.",
+          "cancelLabel": "Zrušit ke konci období",
+          "save": "Uložit předplatné",
+          "noChanges": "Není co ukládat, předplatné je stejné.",
+          "confirmTitle": "Změnit předplatné tohoto účtu?",
+          "confirmDescription": "{from} → {to}. Naplánovaná změna uživatele se zruší.",
+          "confirm": "Změnit předplatné",
+          "cancel": "Zpět",
+          "close": "Zavřít",
+          "saved": "Uloženo.",
+          "summary": "{plan} · {billing} · {status}{end}",
+          "summaryEnd": " do {date}",
+          "errors": {
+            "invalid": "Tahle kombinace nejde (zkušební období a zrušení potřebují konec období).",
+            "forbidden": "Relace administrace skončila. Přihlas se znovu.",
+            "failed": "Změnu se nepodařilo uložit. Zkus to znovu."
+          }
+        },
+        "reasons": {
+          "too_expensive": "Je to pro mě moc drahé",
+          "missing_features": "Chybí mi nějaká funkce",
+          "not_using": "Nepoužívám to",
+          "switching": "Přecházím jinam",
+          "temporary": "Jen na čas, vrátím se",
+          "other": "Něco jiného"
+        }
+      }
     },
     "explorer": {
       "title": "Průzkumník",
@@ -5692,6 +5744,16 @@
         "restore": "Vrátit",
         "noAuthor": "Výchozí verze nebo smazaný účet",
         "empty": "Zatím žádná dřívější verze."
+      },
+      "counts": {
+        "title": "Účty na tarifech",
+        "description": "Bez interních účtů. Vypršelé nejsou v počtu účtů.",
+        "plan": "Tarif",
+        "accounts": "Účty",
+        "trialing": "Ve zkušebním",
+        "cancelling": "Zrušené ke konci",
+        "expired": "Vypršelé",
+        "empty": "Zatím žádné účty."
       }
     },
     "errorAlerts": {
@@ -6120,5 +6182,142 @@
     "failed": "Odeslání se nepovedlo. Zkus to prosím za chvíli znovu.",
     "limited": "Za poslední hodinu jsi poslal hodně hlášení. Zkus to prosím o něco později.",
     "thanks": "Děkujeme, hlášení k nám letí. Čteme každé."
+  },
+  "subscription": {
+    "title": "Předplatné",
+    "description": "Tvůj tarif, jeho změna nebo zrušení, platby a fakturační údaje.",
+    "backToSettings": "Zpět do nastavení",
+    "workerTitle": "Předplatné spravuje majitel",
+    "workerText": "Tarif a platby tohoto prostoru řeší jeho majitel.",
+    "loadFailed": "Předplatné se teď nepodařilo načíst. Zkus to za chvíli znovu.",
+    "noGateway": "Platby zatím nespouštíme. Změny zapíšeme a ozveme se ti dřív, než se cokoli zaplatí.",
+    "current": {
+      "title": "Aktuální tarif",
+      "price": "Cena",
+      "period": "Období",
+      "nextPayment": "Další platba",
+      "noNextPayment": "Žádná",
+      "nextPaymentValue": "{amount} dne {date}",
+      "perMonth": "{price} / měsíc",
+      "perYear": "{price} / rok",
+      "perWorker": "+ {price} za pracovníka",
+      "betaText": "Během bety máš všechno zdarma a bez časového omezení. Tarif si vybereš, až spustíme platby.",
+      "scheduled": "Od {date}: {plan} · {billing}",
+      "cancelScheduled": "Zrušit změnu"
+    },
+    "status": {
+      "beta": "Beta zdarma",
+      "trialing": "Zkušební do {date}",
+      "active": "Aktivní",
+      "pastDue": "Platba se nezdařila",
+      "ending": "Končí dne {date}",
+      "expired": "Skončilo {date}",
+      "expiredNoDate": "Skončilo"
+    },
+    "actions": {
+      "change": "Změnit tarif",
+      "cancel": "Zrušit předplatné",
+      "resume": "Obnovit předplatné"
+    },
+    "notices": {
+      "immediate": "Hotovo, máš tarif {plan}.",
+      "scheduled": "Změna na {plan} je naplánovaná na {date}.",
+      "unscheduled": "Naplánovaná změna je zrušená.",
+      "cancelled": "Předplatné je zrušené k {date}. Do té doby funguje všechno jako teď.",
+      "resumed": "Předplatné běží dál."
+    },
+    "change": {
+      "title": "Změnit tarif",
+      "close": "Zavřít",
+      "footnote": "Ceny jsou bez DPH. Vyšší tarif platí hned, nižší od konce současného období.",
+      "currentPlan": "Současný tarif",
+      "choose": "Vybrat",
+      "confirmTitle": "Potvrdit změnu",
+      "from": "Teď",
+      "to": "Nově",
+      "immediate": "Změna platí hned.",
+      "scheduled": "Změna začne platit {date}, na konci současného období. Do té doby máš všechno jako teď.",
+      "trialImmediate": "Změna platí hned, zkušební období běží dál do {date}.",
+      "overTitle": "Co se do tarifu {plan} nevejde",
+      "overLoading": "Zjišťuju, co máš v účtu…",
+      "overFailed": "Nepodařilo se zjistit, co máš v účtu. Limity tarifu najdeš na jeho kartě.",
+      "overNone": "Všechno, co máš, se do tarifu {plan} vejde.",
+      "over": {
+        "workers": "Pracovníci: máš {used}, tarif dovoluje {allowed}",
+        "storage_mb": "Úložiště: máš {used} MB, tarif dovoluje {allowed} MB",
+        "monthly_contacts": "Vygenerované kontakty tento měsíc: {used}, tarif dovoluje {allowed}",
+        "ai_calls": "Odpovědi Jarvise tento měsíc: {used}, tarif dovoluje {allowed}",
+        "ai_files": "Soubory pro Jarvise tento měsíc: {used}, tarif dovoluje {allowed}"
+      },
+      "locksNote": "Nad limitem pracovníků nebo úložiště bude účet od další půlnoci jen pro čtení, dokud se do limitu nevejdeš. Nic se nesmaže.",
+      "monthlyNote": "Nad měsíčním limitem už tento měsíc nic nového nepřibude.",
+      "back": "Zpět",
+      "confirm": "Potvrdit změnu"
+    },
+    "cancel": {
+      "title": "Zrušit předplatné",
+      "close": "Zavřít",
+      "text": "Předplatné poběží do {date}. Potom bude účet jen pro čtení: všechno uvidíš, nic nového nezaložíš. Data se nesmažou a do té doby můžeš předplatné obnovit.",
+      "reasonLabel": "Proč odcházíš?",
+      "reasons": {
+        "too_expensive": "Je to pro mě moc drahé",
+        "missing_features": "Chybí mi nějaká funkce",
+        "not_using": "Nepoužívám to",
+        "switching": "Přecházím jinam",
+        "temporary": "Jen na čas, vrátím se",
+        "other": "Něco jiného"
+      },
+      "noteLabel": "Chceš nám k tomu něco říct?",
+      "noteHint": "Nepovinné. Přečte si to jen náš tým.",
+      "keep": "Ponechat předplatné",
+      "confirm": "Zrušit předplatné"
+    },
+    "payments": {
+      "title": "Historie plateb",
+      "description": "Platby předplatného a doklady k nim.",
+      "loadFailed": "Platby se teď nepodařilo načíst.",
+      "empty": "Zatím žádné platby",
+      "emptyHint": "Platby zatím nespouštíme. Jakmile začneš platit, uvidíš je tady.",
+      "date": "Datum",
+      "amount": "Částka",
+      "status": "Stav",
+      "receipt": "Doklad",
+      "download": "Stáhnout doklad",
+      "receiptsSoon": "Doklady budou dostupné po spuštění plateb",
+      "statuses": {
+        "paid": "Zaplaceno",
+        "failed": "Nezdařilo se",
+        "refunded": "Vráceno"
+      }
+    },
+    "billing": {
+      "title": "Fakturační údaje",
+      "description": "Na koho budou vystavené doklady za předplatné.",
+      "loadFailed": "Fakturační údaje se teď nepodařilo načíst.",
+      "prefilled": "Předvyplněno z tvých údajů na fakturách. Zkontroluj je a ulož.",
+      "name": "Jméno nebo firma",
+      "companyRegNo": "IČO",
+      "vatNo": "DIČ",
+      "street": "Ulice a číslo",
+      "city": "Město",
+      "postalCode": "PSČ",
+      "country": "Země",
+      "email": "E-mail pro doklady",
+      "save": "Uložit údaje",
+      "saved": "Uloženo"
+    },
+    "errors": {
+      "ownerOnly": "Předplatné spravuje majitel prostoru.",
+      "invalid": "Něco v údajích nesedí. Zkontroluj je a zkus to znovu.",
+      "notAllowed": "U tvého tarifu to takhle nejde. Napiš nám a domluvíme se.",
+      "cancelPending": "Předplatné je zrušené. Nejdřív ho obnov, potom můžeš změnit tarif.",
+      "expired": "Předplatné už skončilo.",
+      "unknown": "Něco se nepovedlo. Zkus to za chvíli znovu.",
+      "reasonRequired": "Vyber, proč odcházíš.",
+      "nameRequired": "Vyplň jméno nebo firmu.",
+      "tooLong": "Text je moc dlouhý.",
+      "emailInvalid": "Tohle nevypadá jako e-mail.",
+      "countryInvalid": "Vyber zemi."
+    }
   }
 }

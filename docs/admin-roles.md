@@ -15,6 +15,7 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | `ai-caps-actions.saveAiCaps` | owner | stropy AI; admin je vidí jen ke čtení |
 | `ai-caps-actions.saveUserAiCap` | owner | výjimky AI; admin je vidí jen ke čtení |
 | `plans-actions.savePlanDraft`, `discardPlanDraft`, `planCatalogImpact`, `publishPlanCatalog`, `restorePlanVersion` | owner | katalog tarifů; admin vidí zveřejněnou verzi a historii jen ke čtení |
+| `subscription-actions.saveUserSubscription` | owner | předplatné účtu ručně (tarif, období, stav, konec, zrušení); admin ho vidí jen ke čtení |
 | `error-alerts-actions.saveErrorAlerts`, `sendErrorAlertsTest` | owner | adresy a režim e-mailů o chybách, zkušební e-mail; admin nastavení jen čte |
 | `export-actions.recordExport` (grafy, tabulky čísel) | owner + admin | souhrnná čísla |
 | `export-actions.recordExport` (`table.ai.top_users.csv`) | owner | jména a id uživatelů |
@@ -34,6 +35,8 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | Přehled, Růst, Aktivace, Retence, Funkce, Hra, Náklady, Zdraví, Zpětná vazba, Uživatelé, Průzkumník, Audit | owner + admin |
 | AI a Jarvis — karta stropů | owner upravuje, admin čte |
 | Detail uživatele — výjimka AI | owner upravuje, admin čte |
+| Detail uživatele — Předplatné | owner upravuje, admin čte |
+| Tarify — Účty na tarifech | owner + admin |
 | Tarify (`/admin/tarify`) | owner upravuje a zveřejňuje, admin čte zveřejněnou verzi a historii |
 | Upozornění na chyby (`/admin/upozorneni`) | owner upravuje a posílá zkušební e-mail, admin čte |
 | Zpětná vazba — karta Záznam chyby (hledání podle kódu) | owner + admin |
@@ -56,6 +59,8 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | `admin_invite_accept` | pozvaný účet s aal2 | spotřebuje token a přidělí roli v jedné transakci, píše `admin_audit` |
 | `admin_plan_catalog_save_draft`, `_discard_draft`, `_publish`, `_restore` | owner | katalog tarifů, advisory lock, píše `admin_audit` (`settings.plans`, `settings.plans.draft`) |
 | `plan_catalog_impact`, `plan_overage`, `published_plan` | jen service role (server po stráži) | počty účtů a překročení limitů |
+| `admin_subscription_set` | owner | předplatné účtu ručně, zruší naplánovanou změnu, píše `admin_audit` (`users.subscription`, z čeho na co) |
+| `admin_plan_user_counts` | jen service role (server po stráži) | účty na tarifech bez interních |
 | `admin_require_owner` | jen uvnitř funkcí výše | bez práva EXECUTE pro klienty |
 | `admin_members`, `admin_people`, `metric_admin_users` | jen service role (server po stráži) | čtou `auth.users` |
 | `error_event_record`, `error_alert_claim`, `error_alert_digest_claim`, `purge_error_events` | jen service role (server) | záznamy chyb a rozhodnutí o e-mailech, bez klientského přístupu |

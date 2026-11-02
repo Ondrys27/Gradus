@@ -1,14 +1,7 @@
-import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
-import { getPublishedPlans } from "@/features/plan/catalog-server";
-import { PlanPage } from "@/features/plan/plan-page";
+import { redirect } from "next/navigation";
+import { PLAN_PATH } from "@/lib/routes";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("plans.page");
-  return { title: t("title") };
-}
-
-/** The plans of the published catalog, the same the website shows. */
-export default async function TarifPage() {
-  return <PlanPage plans={await getPublishedPlans()} />;
+/** The plan page moved into Settings → Subscription; old links land there. */
+export default function TarifPage() {
+  redirect(PLAN_PATH);
 }

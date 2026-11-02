@@ -46,6 +46,7 @@ const ROUTE_SECTIONS = {
   "/app/ukoly-crm": "pipeline",
   "/app/odmeny": "workers",
   "/app/nastaveni": "settings",
+  "/app/nastaveni/predplatne": "plan",
   "/app/profil": "account",
   "/app/tarif": "plan",
   other: "platform",

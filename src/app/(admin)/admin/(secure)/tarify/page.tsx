@@ -4,6 +4,9 @@ import { logAdminAction } from "@/features/admin/server/audit";
 import { requireAdmin } from "@/features/admin/server/guard";
 import { peopleNamer } from "@/features/admin/server/people";
 import { loadCatalogVersions, type CatalogVersion } from "@/features/admin/server/plans-data";
+import { loadPlanUserCounts, type PlanUserCount } from "@/features/admin/server/subscription-data";
+import { ADMIN_FORMAT_SETTINGS } from "@/features/admin/format-metric";
+import { formatNumber } from "@/lib/format";
 import { adminCan } from "@/features/admin/roles";
 import { AdminCard } from "@/features/admin/ui/blocks";
 import { AdminPageBar } from "@/features/admin/ui/page-bar";
@@ -34,7 +37,12 @@ export default async function AdminPlansPage() {
   await logAdminAction(context, "view", "plans");
   const canEdit = adminCan(context.role, "editPlans");
 
-  const [versions, t] = await Promise.all([loadCatalogVersions(), getTranslations("admin.plans")]);
+  const [versions, counts, t, tControls] = await Promise.all([
+    loadCatalogVersions(),
+    loadPlanUserCounts(),
+    getTranslations("admin.plans"),
+    getTranslations("admin.controls"),
+  ]);
   const nameOf = await peopleNamer(
     [versions.published, ...versions.history].map((version) => version.publishedBy),
   );
@@ -64,6 +72,15 @@ export default async function AdminPlansPage() {
             <PlansPreview catalog={versions.published.catalog} messages={PREVIEW_MESSAGES} />
           </AdminCard>
         )}
+        <AdminCard title={t("counts.title")} description={t("counts.description")}>
+          <PlanCounts
+            counts={counts}
+            t={t}
+            planLabel={(key) =>
+              tControls.has(`segmentValues.plan.${key}`) ? tControls(`segmentValues.plan.${key}`) : key
+            }
+          />
+        </AdminCard>
         <AdminCard title={t("history.title")} description={t("history.description")}>
           <PlansHistory
             current={toHistory(versions.published)}
@@ -73,5 +90,49 @@ export default async function AdminPlansPage() {
         </AdminCard>
       </div>
     </>
+  );
+}
+
+/** Beta first, then the catalog's plans, then anything else. */
+const PLAN_ORDER = ["beta", "solo", "pro", "team"];
+
+function PlanCounts({
+  counts,
+  t,
+  planLabel,
+}: {
+  counts: PlanUserCount[];
+  t: Awaited<ReturnType<typeof getTranslations<"admin.plans">>>;
+  planLabel: (key: string) => string;
+}) {
+  if (counts.length === 0) return <p className="text-sm text-ink-muted">{t("counts.empty")}</p>;
+  const n = (value: number) => formatNumber(value, {}, ADMIN_FORMAT_SETTINGS);
+  const rank = (key: string) => (PLAN_ORDER.includes(key) ? PLAN_ORDER.indexOf(key) : PLAN_ORDER.length);
+  const rows = [...counts].sort((a, b) => rank(a.planKey) - rank(b.planKey));
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm" data-testid="admin-plan-counts">
+        <thead>
+          <tr className="text-left text-xs text-ink-muted">
+            <th className="py-2 pr-4 font-medium">{t("counts.plan")}</th>
+            <th className="py-2 pr-4 text-right font-medium">{t("counts.accounts")}</th>
+            <th className="py-2 pr-4 text-right font-medium">{t("counts.trialing")}</th>
+            <th className="py-2 pr-4 text-right font-medium">{t("counts.cancelling")}</th>
+            <th className="py-2 text-right font-medium">{t("counts.expired")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.planKey} className="border-t border-line/60">
+              <td className="py-2 pr-4 text-ink">{planLabel(row.planKey)}</td>
+              <td className="py-2 pr-4 text-right font-semibold text-ink tabular-nums">{n(row.accounts)}</td>
+              <td className="py-2 pr-4 text-right text-ink-soft tabular-nums">{n(row.trialing)}</td>
+              <td className="py-2 pr-4 text-right text-ink-soft tabular-nums">{n(row.cancelling)}</td>
+              <td className="py-2 text-right text-ink-soft tabular-nums">{n(row.expired)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

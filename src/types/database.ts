@@ -478,6 +478,48 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_profiles: {
+        Row: {
+          city: string | null
+          company_reg_no: string | null
+          country: string
+          created_at: string
+          email: string | null
+          name: string
+          postal_code: string | null
+          street: string | null
+          updated_at: string
+          user_id: string
+          vat_no: string | null
+        }
+        Insert: {
+          city?: string | null
+          company_reg_no?: string | null
+          country?: string
+          created_at?: string
+          email?: string | null
+          name: string
+          postal_code?: string | null
+          street?: string | null
+          updated_at?: string
+          user_id: string
+          vat_no?: string | null
+        }
+        Update: {
+          city?: string | null
+          company_reg_no?: string | null
+          country?: string
+          created_at?: string
+          email?: string | null
+          name?: string
+          postal_code?: string | null
+          street?: string | null
+          updated_at?: string
+          user_id?: string
+          vat_no?: string | null
+        }
+        Relationships: []
+      }
       bug_reports: {
         Row: {
           app_version: string | null
@@ -2356,6 +2398,56 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          invoice_url: string | null
+          paid_at: string
+          provider: string | null
+          provider_ref: string | null
+          status: string
+          subscription_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency: string
+          id?: string
+          invoice_url?: string | null
+          paid_at?: string
+          provider?: string | null
+          provider_ref?: string | null
+          status: string
+          subscription_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          invoice_url?: string | null
+          paid_at?: string
+          provider?: string | null
+          provider_ref?: string | null
+          status?: string
+          subscription_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pipeline_stages: {
         Row: {
           color: string
@@ -2743,33 +2835,63 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          billing: string
+          cancel_at_period_end: boolean
+          cancel_note: string | null
+          cancel_reason: string | null
+          cancel_requested_at: string | null
           created_at: string
           current_period_end: string | null
           current_period_start: string
           id: string
           plan_key: string
+          provider: string | null
+          provider_ref: string | null
+          scheduled_at: string | null
+          scheduled_billing: string | null
+          scheduled_plan_key: string | null
           status: Database["public"]["Enums"]["subscription_status"]
           trial_ends_at: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          billing?: string
+          cancel_at_period_end?: boolean
+          cancel_note?: string | null
+          cancel_reason?: string | null
+          cancel_requested_at?: string | null
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string
           id?: string
           plan_key: string
+          provider?: string | null
+          provider_ref?: string | null
+          scheduled_at?: string | null
+          scheduled_billing?: string | null
+          scheduled_plan_key?: string | null
           status?: Database["public"]["Enums"]["subscription_status"]
           trial_ends_at?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          billing?: string
+          cancel_at_period_end?: boolean
+          cancel_note?: string | null
+          cancel_reason?: string | null
+          cancel_requested_at?: string | null
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string
           id?: string
           plan_key?: string
+          provider?: string | null
+          provider_ref?: string | null
+          scheduled_at?: string | null
+          scheduled_billing?: string | null
+          scheduled_plan_key?: string | null
           status?: Database["public"]["Enums"]["subscription_status"]
           trial_ends_at?: string | null
           updated_at?: string
@@ -2779,6 +2901,13 @@ export type Database = {
           {
             foreignKeyName: "subscriptions_plan_key_fkey"
             columns: ["plan_key"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "subscriptions_scheduled_plan_key_fkey"
+            columns: ["scheduled_plan_key"]
             isOneToOne: false
             referencedRelation: "plans"
             referencedColumns: ["key"]
@@ -3820,6 +3949,16 @@ export type Database = {
         Args: { _ip_hash?: string; _payload: Json }
         Returns: string
       }
+      admin_plan_user_counts: {
+        Args: never
+        Returns: {
+          accounts: number
+          cancelling: number
+          expired: number
+          plan_key: string
+          trialing: number
+        }[]
+      }
       admin_remove: {
         Args: { _ip_hash?: string; _user_id: string }
         Returns: undefined
@@ -3855,6 +3994,18 @@ export type Database = {
       }
       admin_set_app_setting: {
         Args: { _ip_hash?: string; _key: string; _value: Json }
+        Returns: Json
+      }
+      admin_subscription_set: {
+        Args: {
+          _billing: string
+          _cancel_at_period_end: boolean
+          _ip_hash?: string
+          _period_end: string
+          _plan_key: string
+          _status: string
+          _user_id: string
+        }
         Returns: Json
       }
       analytics_take_quota: {
@@ -5170,6 +5321,31 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      subscription_cancel: {
+        Args: { _note?: string; _reason: string; _user_id: string }
+        Returns: Json
+      }
+      subscription_expired: {
+        Args: {
+          _cancel_at_period_end: boolean
+          _period_end: string
+          _status: Database["public"]["Enums"]["subscription_status"]
+          _trial_ends_at: string
+        }
+        Returns: boolean
+      }
+      subscription_request_change: {
+        Args: { _billing: string; _plan_key: string; _user_id: string }
+        Returns: Json
+      }
+      subscription_resume: { Args: { _user_id: string }; Returns: Json }
+      subscription_usage: {
+        Args: { _owner: string }
+        Returns: {
+          storage_bytes: number
+          workers: number
+        }[]
       }
       theme_available: { Args: { _theme: string }; Returns: boolean }
       timer_idle_interval: { Args: never; Returns: string }

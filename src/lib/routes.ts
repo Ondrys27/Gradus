@@ -13,8 +13,8 @@ export const DEFAULT_SITE_LOCALE: SiteLocale = "cs";
 
 /** The dashboard; where the app lands after sign-in. */
 export const APP_HOME_PATH = "/app";
-/** Choosing a plan after or during the trial. */
-export const PLAN_PATH = "/app/tarif";
+/** Settings → Subscription: the plan, choosing another one, cancelling, payments. */
+export const PLAN_PATH = "/app/nastaveni/predplatne";
 
 /** Public pages and sign-in pages with their address in each language. */
 export const LOCALIZED_PAGES = {

@@ -585,7 +585,11 @@ export const trialFields = (q: AdminQuery) =>
   );
 
 export function costsBreakdowns(q: AdminQuery): Promise<BreakdownData[]> {
-  return autoBreakdowns(q, ["plan_interest"]);
+  return autoBreakdowns(q, [
+    "plan_interest",
+    "subscription_changes",
+    "subscription_cancellations",
+  ]);
 }
 
 // --- Technical health ----------------------------------------------------------------

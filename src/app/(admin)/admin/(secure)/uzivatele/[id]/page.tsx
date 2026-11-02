@@ -9,6 +9,9 @@ import { requireAdmin } from "@/features/admin/server/guard";
 import { adminCan } from "@/features/admin/roles";
 import { loadUserDetail } from "@/features/admin/server/users-data";
 import { loadUserAiCap } from "@/features/admin/server/ai-caps-data";
+import { loadUserSubscription } from "@/features/admin/server/subscription-data";
+import { periodEndDate } from "@/features/admin/subscription-form";
+import { UserSubscriptionForm } from "@/features/admin/ui/user-subscription-form";
 import { peopleNamer } from "@/features/admin/server/people";
 import { CopyId } from "@/features/admin/ui/copy-id";
 import { remainingUsd, userCapModeOf } from "@/features/jarvis/caps";
@@ -39,15 +42,17 @@ export default async function AdminUserDetailPage({ params }: Props) {
   if (!z.uuid().safeParse(id).success) notFound();
   await logAdminAction(context, "view", "users.detail");
 
-  const [detail, nameOf, aiCap, t, tControls, tItems, tIndustry, tUnits] = await Promise.all([
+  const [detail, nameOf, aiCap, subscription, t, tControls, tItems, tIndustry, tUnits, tBilling] = await Promise.all([
     loadUserDetail(id),
     peopleNamer([id]),
     loadUserAiCap(id),
+    loadUserSubscription(id),
     getTranslations("admin.users"),
     getTranslations("admin.controls"),
     getTranslations("metrics.items"),
     getTranslations("onboarding.industry.industries"),
     getTranslations("admin.units"),
+    getTranslations("plans.billing"),
   ]);
   if (!detail) notFound();
 
@@ -149,6 +154,39 @@ export default async function AdminUserDetailPage({ params }: Props) {
               <InternalToggle userId={id} value={detail.isInternal} />
             </AdminCard>
 
+            <AdminCard title={t("subscription.title")} description={t("subscription.description")} wide>
+              <SubscriptionFacts
+                subscription={subscription}
+                planLabel={(key) => label(tControls, "plan", key)}
+                billingLabel={(key) => tBilling(key)}
+                t={t}
+              />
+              {adminCan(context.role, "editSubscriptions") && (
+                <UserSubscriptionForm
+                  userId={id}
+                  planLabels={Object.fromEntries(
+                    ["beta", "solo", "pro", "team"].map((key) => [key, label(tControls, "plan", key)]),
+                  )}
+                  saved={{
+                    planKey: (["beta", "solo", "pro", "team"] as const).find(
+                      (key) => key === subscription?.planKey,
+                    ) ?? "beta",
+                    billing: subscription?.billing ?? "monthly",
+                    status: subscription?.status ?? "active",
+                    periodEnd: periodEndDate(
+                      subscription
+                        ? subscription.status === "trialing"
+                          ? subscription.trialEndsAt
+                          : subscription.periodEnd
+                        : null,
+                      SETTINGS.timeZone,
+                    ),
+                    cancelAtPeriodEnd: subscription?.cancelAtPeriodEnd ?? false,
+                  }}
+                />
+              )}
+            </AdminCard>
+
             <AdminCard title={t("aiCap.title")} description={t("aiCap.description")}>
               <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <Field label={t("aiCap.spent")} value={formatMetricValue(aiCap.spentUsd, "usd", tUnits)} />
@@ -188,6 +226,59 @@ export default async function AdminUserDetailPage({ params }: Props) {
         </PageSection>
       </div>
     </>
+  );
+}
+
+function SubscriptionFacts({
+  subscription,
+  planLabel,
+  billingLabel,
+  t,
+}: {
+  subscription: Awaited<ReturnType<typeof loadUserSubscription>>;
+  planLabel: (key: string) => string;
+  billingLabel: (key: "monthly" | "yearly") => string;
+  t: Awaited<ReturnType<typeof getTranslations<"admin.users">>>;
+}) {
+  if (!subscription) return <AdminEmpty hint={t("subscription.noSubscription")} />;
+  const date = (at: string | null) => (at ? formatDateTime(new Date(at), SETTINGS) : t("subscription.none"));
+  const status = subscription.expired ? "expired" : subscription.status;
+  return (
+    <dl className="grid grid-cols-2 gap-x-4 gap-y-3 md:grid-cols-4" data-testid="admin-subscription">
+      <Field label={t("subscription.plan")} value={planLabel(subscription.planKey)} />
+      <Field label={t("subscription.billing")} value={billingLabel(subscription.billing)} />
+      <Field label={t("subscription.status")} value={t(`subscription.statuses.${status}`)} />
+      <Field label={t("subscription.periodEnd")} value={date(subscription.periodEnd)} />
+      {subscription.trialEndsAt && (
+        <Field label={t("subscription.trialEnds")} value={date(subscription.trialEndsAt)} />
+      )}
+      <Field
+        label={t("subscription.cancel")}
+        value={subscription.cancelAtPeriodEnd ? t("yes") : t("no")}
+      />
+      {subscription.cancelReason && (
+        <Field
+          label={t("subscription.cancelReason")}
+          value={t(`subscription.reasons.${subscription.cancelReason}`)}
+        />
+      )}
+      {subscription.scheduled && (
+        <Field
+          label={t("subscription.scheduled")}
+          value={t("subscription.scheduledValue", {
+            plan: planLabel(subscription.scheduled.planKey),
+            billing: billingLabel(subscription.scheduled.billing),
+            date: date(subscription.scheduled.at),
+          })}
+        />
+      )}
+      {subscription.cancelNote && (
+        <div className="col-span-2 flex min-w-0 flex-col gap-0.5 md:col-span-4">
+          <dt className="text-xs text-ink-muted">{t("subscription.cancelNote")}</dt>
+          <dd className="text-sm whitespace-pre-line text-ink-soft">{subscription.cancelNote}</dd>
+        </div>
+      )}
+    </dl>
   );
 }
 

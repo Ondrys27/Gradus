@@ -169,10 +169,12 @@ describe("sign-up", () => {
     await expect(db.query(`select grant_beta_plan($1)`, [user])).rejects.toThrow(
       /permission denied/,
     );
-    await db.query(
-      `update subscriptions set trial_ends_at = now() + interval '10 years' where user_id = $1`,
-      [user],
-    );
+    await expect(
+      db.query(
+        `update subscriptions set trial_ends_at = now() + interval '10 years' where user_id = $1`,
+        [user],
+      ),
+    ).rejects.toThrow(/permission denied/);
     await asServer();
     const plan = await planOf(user);
     const days = (Date.parse(plan.trial_ends_at!) - Date.now()) / 86_400_000;

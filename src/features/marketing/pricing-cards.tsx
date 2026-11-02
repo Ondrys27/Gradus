@@ -29,19 +29,23 @@ export function PricingCards({
   action,
   footnote,
   flat = false,
+  initialBilling = "monthly",
 }: {
   plans: readonly CatalogPlan[];
   currency: PriceCurrency;
   formatSettings: FormatSettings;
-  action: (plan: CatalogPlan) => ReactNode;
+  /** The button of a card; `billing` is the period the visitor picked above the cards. */
+  action: (plan: CatalogPlan, billing: Billing) => ReactNode;
   /** Replaces the default line under the cards (trial and VAT). */
   footnote?: ReactNode;
   /** No glow under the cards (the website, which has one light only). */
   flat?: boolean;
+  /** The period selected when the cards appear. */
+  initialBilling?: Billing;
 }) {
   const t = useTranslations("plans");
   const locale = useLocale();
-  const [billing, setBilling] = useState<Billing>("monthly");
+  const [billing, setBilling] = useState<Billing>(initialBilling);
   const money = (value: number) =>
     formatCurrency(value, currency, formatSettings, Number.isInteger(value) ? 0 : 2);
   const count = (value: number) => formatNumber(value, {}, formatSettings);
@@ -137,7 +141,7 @@ export function PricingCards({
                 </li>
               ))}
             </ul>
-            {action(plan)}
+            {action(plan, billing)}
           </article>
         ))}
       </div>

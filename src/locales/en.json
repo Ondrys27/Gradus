@@ -1101,6 +1101,11 @@
           "generic": "The account couldn't be deleted. Please try again."
         }
       }
+    },
+    "subscription": {
+      "title": "Subscription",
+      "description": "Your plan, payments and billing details.",
+      "open": "Manage subscription"
     }
   },
   "milestones": {
@@ -4041,21 +4046,6 @@
       "rewards": "Reward system",
       "teamStats": "Team statistics"
     },
-    "page": {
-      "title": "Plan",
-      "description": "Payments are coming soon. Tell us which plan you're interested in and we'll get in touch.",
-      "interest": "I'm interested",
-      "interestSent": "Thanks, we'll be in touch.",
-      "interestError": "The message couldn't be sent. Please try again.",
-      "current": "You have",
-      "status": {
-        "trialing": "{plan} trial until {date}",
-        "expired": "The trial ended on {date}",
-        "overLimit": "{plan} plan · over its limits, read-only",
-        "active": "{plan} plan",
-        "beta": "Beta with no time limit"
-      }
-    },
     "interestEmail": {
       "subject": "{appName}: interest in the {plan} plan",
       "intro": "A user is interested in the {plan} plan.",
@@ -4670,6 +4660,14 @@
         "name": "Interested",
         "description": "Users who tapped interest in a plan."
       },
+      "subscription_changes": {
+        "name": "Plan changes",
+        "description": "Users who chose another plan in Subscription, by the plan chosen."
+      },
+      "subscription_cancellations": {
+        "name": "Cancellations",
+        "description": "Cancellations for the end of the period, by reason."
+      },
       "errors": {
         "name": "Errors",
         "description": "Errors of server routes, jobs and the browser per day."
@@ -5278,7 +5276,61 @@
       "changesTitle": "Changes to the account",
       "changesDescription": "What changes how this account is counted or what Jarvis may spend for it. Each change is written to the audit.",
       "internalTitle": "Internal account",
-      "internalDescription": "An internal account (the owner, demo, tests) is left out of every metric unless the controls include it."
+      "internalDescription": "An internal account (the owner, demo, tests) is left out of every metric unless the controls include it.",
+      "subscription": {
+        "title": "Subscription",
+        "description": "The account's plan, billing period and state. Until payments exist, the owner sets them by hand.",
+        "plan": "Plan",
+        "billing": "Billing",
+        "status": "Status",
+        "periodEnd": "Period ends",
+        "trialEnds": "Trial until",
+        "cancel": "Cancelled for the period's end",
+        "cancelReason": "Cancellation reason",
+        "cancelNote": "Cancellation note",
+        "scheduled": "Scheduled change",
+        "none": "–",
+        "scheduledValue": "{plan} · {billing} from {date}",
+        "noSubscription": "The account has no subscription (the default plan applies).",
+        "statuses": {
+          "trialing": "Trial",
+          "active": "Active",
+          "past_due": "Past due",
+          "cancelled": "Cancelled",
+          "expired": "Expired"
+        },
+        "form": {
+          "planLabel": "Plan",
+          "billingLabel": "Billing",
+          "statusLabel": "Status",
+          "periodEndLabel": "Period ends (end of the day)",
+          "periodEndHint": "For a trial this is also its end. Empty = open-ended.",
+          "cancelLabel": "Cancel at the end of the period",
+          "save": "Save subscription",
+          "noChanges": "Nothing to save, the subscription is the same.",
+          "confirmTitle": "Change this account's subscription?",
+          "confirmDescription": "{from} → {to}. The user's scheduled change is dropped.",
+          "confirm": "Change subscription",
+          "cancel": "Back",
+          "close": "Close",
+          "saved": "Saved.",
+          "summary": "{plan} · {billing} · {status}{end}",
+          "summaryEnd": " until {date}",
+          "errors": {
+            "invalid": "That combination is not possible (a trial and a cancellation need a period end).",
+            "forbidden": "The admin session has ended. Sign in again.",
+            "failed": "The change could not be saved. Try again."
+          }
+        },
+        "reasons": {
+          "too_expensive": "It is too expensive for me",
+          "missing_features": "A feature I need is missing",
+          "not_using": "I don't use it",
+          "switching": "I'm moving to something else",
+          "temporary": "Only for a while, I'll be back",
+          "other": "Something else"
+        }
+      }
     },
     "explorer": {
       "title": "Explorer",
@@ -5692,6 +5744,16 @@
         "restore": "Bring back",
         "noAuthor": "Default version or a deleted account",
         "empty": "No earlier version yet."
+      },
+      "counts": {
+        "title": "Accounts per plan",
+        "description": "Internal accounts left out. Expired ones are not in the accounts count.",
+        "plan": "Plan",
+        "accounts": "Accounts",
+        "trialing": "On trial",
+        "cancelling": "Cancelling",
+        "expired": "Expired",
+        "empty": "No accounts yet."
       }
     },
     "errorAlerts": {
@@ -6120,5 +6182,142 @@
     "failed": "Sending didn’t work. Please try again in a moment.",
     "limited": "You have sent a lot of reports in the last hour. Please try again a bit later.",
     "thanks": "Thank you, the report is on its way to us. We read every one."
+  },
+  "subscription": {
+    "title": "Subscription",
+    "description": "Your plan, changing or cancelling it, payments and billing details.",
+    "backToSettings": "Back to settings",
+    "workerTitle": "The owner manages the subscription",
+    "workerText": "The plan and payments of this workspace are its owner's.",
+    "loadFailed": "The subscription could not be loaded right now. Try again in a moment.",
+    "noGateway": "Payments are not live yet. We record your changes and get in touch before anything is charged.",
+    "current": {
+      "title": "Current plan",
+      "price": "Price",
+      "period": "Billing",
+      "nextPayment": "Next payment",
+      "noNextPayment": "None",
+      "nextPaymentValue": "{amount} on {date}",
+      "perMonth": "{price} / month",
+      "perYear": "{price} / year",
+      "perWorker": "+ {price} per worker",
+      "betaText": "During the beta everything is free with no time limit. You will choose a plan once payments go live.",
+      "scheduled": "From {date}: {plan} · {billing}",
+      "cancelScheduled": "Cancel the change"
+    },
+    "status": {
+      "beta": "Free beta",
+      "trialing": "Trial until {date}",
+      "active": "Active",
+      "pastDue": "Payment failed",
+      "ending": "Ends on {date}",
+      "expired": "Ended {date}",
+      "expiredNoDate": "Ended"
+    },
+    "actions": {
+      "change": "Change plan",
+      "cancel": "Cancel subscription",
+      "resume": "Resume subscription"
+    },
+    "notices": {
+      "immediate": "Done, you are on {plan}.",
+      "scheduled": "The change to {plan} is scheduled for {date}.",
+      "unscheduled": "The scheduled change is cancelled.",
+      "cancelled": "Your subscription is cancelled as of {date}. Until then everything works as now.",
+      "resumed": "Your subscription goes on."
+    },
+    "change": {
+      "title": "Change plan",
+      "close": "Close",
+      "footnote": "Prices exclude VAT. A bigger plan applies now, a smaller one from the end of the current period.",
+      "currentPlan": "Current plan",
+      "choose": "Choose",
+      "confirmTitle": "Confirm the change",
+      "from": "Now",
+      "to": "New",
+      "immediate": "The change applies now.",
+      "scheduled": "The change applies on {date}, at the end of the current period. Until then you keep everything you have.",
+      "trialImmediate": "The change applies now; your trial goes on until {date}.",
+      "overTitle": "What {plan} would not hold",
+      "overLoading": "Checking what your account holds…",
+      "overFailed": "Could not check what your account holds. The plan's limits are on its card.",
+      "overNone": "Everything you have fits into {plan}.",
+      "over": {
+        "workers": "Workers: you have {used}, the plan allows {allowed}",
+        "storage_mb": "Storage: you use {used} MB, the plan allows {allowed} MB",
+        "monthly_contacts": "Contacts generated this month: {used}, the plan allows {allowed}",
+        "ai_calls": "Jarvis answers this month: {used}, the plan allows {allowed}",
+        "ai_files": "Files for Jarvis this month: {used}, the plan allows {allowed}"
+      },
+      "locksNote": "Over the workers or storage limit your account becomes read-only from the next midnight until you are within it. Nothing is deleted.",
+      "monthlyNote": "Over a monthly limit nothing new is added this month.",
+      "back": "Back",
+      "confirm": "Confirm the change"
+    },
+    "cancel": {
+      "title": "Cancel subscription",
+      "close": "Close",
+      "text": "Your subscription runs until {date}. After that the account is read-only: you see everything but cannot create anything new. Nothing is deleted, and until then you can resume it.",
+      "reasonLabel": "Why are you leaving?",
+      "reasons": {
+        "too_expensive": "It is too expensive for me",
+        "missing_features": "A feature I need is missing",
+        "not_using": "I don't use it",
+        "switching": "I'm moving to something else",
+        "temporary": "Only for a while, I'll be back",
+        "other": "Something else"
+      },
+      "noteLabel": "Anything you would like to tell us?",
+      "noteHint": "Optional. Only our team reads it.",
+      "keep": "Keep subscription",
+      "confirm": "Cancel subscription"
+    },
+    "payments": {
+      "title": "Payment history",
+      "description": "Payments of your subscription and their receipts.",
+      "loadFailed": "The payments could not be loaded right now.",
+      "empty": "No payments yet",
+      "emptyHint": "Payments are not live yet. Once you pay, they show up here.",
+      "date": "Date",
+      "amount": "Amount",
+      "status": "Status",
+      "receipt": "Receipt",
+      "download": "Download receipt",
+      "receiptsSoon": "Receipts will be available once payments go live",
+      "statuses": {
+        "paid": "Paid",
+        "failed": "Failed",
+        "refunded": "Refunded"
+      }
+    },
+    "billing": {
+      "title": "Billing details",
+      "description": "Who the receipts of your subscription are made out to.",
+      "loadFailed": "The billing details could not be loaded right now.",
+      "prefilled": "Filled in from your invoice details. Check them and save.",
+      "name": "Name or company",
+      "companyRegNo": "Company ID",
+      "vatNo": "VAT ID",
+      "street": "Street and number",
+      "city": "City",
+      "postalCode": "Postal code",
+      "country": "Country",
+      "email": "E-mail for receipts",
+      "save": "Save details",
+      "saved": "Saved"
+    },
+    "errors": {
+      "ownerOnly": "The workspace owner manages the subscription.",
+      "invalid": "Something in the details is off. Check them and try again.",
+      "notAllowed": "That is not possible on your plan. Write to us and we will sort it out.",
+      "cancelPending": "Your subscription is cancelled. Resume it first, then you can change the plan.",
+      "expired": "The subscription has already ended.",
+      "unknown": "Something went wrong. Try again in a moment.",
+      "reasonRequired": "Pick why you are leaving.",
+      "nameRequired": "Fill in a name or company.",
+      "tooLong": "The text is too long.",
+      "emailInvalid": "That does not look like an e-mail.",
+      "countryInvalid": "Pick a country."
+    }
   }
 }

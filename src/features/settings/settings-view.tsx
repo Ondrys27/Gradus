@@ -1,9 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { AlertCircleIcon, CheckIcon, LoaderCircleIcon, LocateFixedIcon } from "lucide-react";
+import Link from "next/link";
+import {
+  AlertCircleIcon,
+  CheckIcon,
+  CreditCardIcon,
+  LoaderCircleIcon,
+  LocateFixedIcon,
+} from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { GlowCard } from "@/components/ui/glow-card";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
@@ -35,6 +42,7 @@ import {
 import { browserTimeZone, COUNTRY_CODES, countryFromTimeZone } from "@/lib/region";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import type { UserSettingsPatch } from "@/lib/user-settings";
+import { PLAN_PATH } from "@/lib/routes";
 import { useUrlIntent } from "@/lib/use-url-intent";
 import { cn } from "@/lib/utils";
 import { useCan, useWorkspace } from "@/features/account/workspace-queries";
@@ -391,6 +399,21 @@ export function SettingsView() {
           <HelpSettings />
         </Section>
       </StaggerItem>
+
+      {isOwner && (
+        <StaggerItem>
+          <Section title={t("subscription.title")} description={t("subscription.description")}>
+            <Link
+              id="settings-subscription"
+              href={PLAN_PATH}
+              className={cn(buttonVariants({ variant: "secondary" }), "self-start")}
+            >
+              <CreditCardIcon aria-hidden />
+              {t("subscription.open")}
+            </Link>
+          </Section>
+        </StaggerItem>
+      )}
 
       <StaggerItem>
         <div

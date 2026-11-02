@@ -1,6 +1,13 @@
 import type { CatalogPlan, PlanLimits } from "@/config/pricing";
-import { featureText, planText, sortedPlans } from "@/features/plan/catalog";
+import { featureText, planName, planText, sortedPlans } from "@/features/plan/catalog";
+import {
+  displayStatus,
+  nextPayment,
+  periodEndOf,
+  type Subscription,
+} from "@/features/subscription/state";
 import { APP_NAME } from "@/lib/constants";
+import { todayIsoDate, type FormatSettings } from "@/lib/format";
 
 const limit = (value: number | null) => (value === null ? "no limit" : String(value));
 /** Card texts come from the administration; they stay plain text inside the block. */
@@ -20,7 +27,12 @@ function limitsLine(limits: PlanLimits): string {
  * the chat context, card texts in the interface language. Read on every
  * chat, so a published change is what Jarvis says from the next message.
  */
-export function describePlans(plans: readonly CatalogPlan[], locale: string): string {
+export function describePlans(
+  plans: readonly CatalogPlan[],
+  locale: string,
+  /** What the user has, from describeSubscription(); left out when unknown. */
+  own: string | null = null,
+): string {
   const lines = sortedPlans(plans).map((plan) => {
     const prices =
       `${plan.monthly.CZK} CZK or ${plan.monthly.EUR} EUR a month, ` +
@@ -39,8 +51,66 @@ export function describePlans(plans: readonly CatalogPlan[], locale: string): st
   });
   return [
     "<plans>",
-    `The plans of ${APP_NAME} as published now, prices without VAT. For plans and prices use only these; the user compares them and says they are interested on the Plan page.`,
+    `The plans of ${APP_NAME} as published now, prices without VAT. For plans and prices use only these; the user compares, changes or cancels their plan in Settings → Subscription.`,
     ...lines,
+    ...(own ? [own] : []),
     "</plans>",
   ].join("\n");
+}
+
+/** The user is a worker: the plan is the workspace owner's, not theirs to manage. */
+export const WORKER_SUBSCRIPTION_LINE =
+  "The user's own plan: none to manage; they work in their owner's workspace, whose plan the owner handles.";
+
+/**
+ * What the user has now, for the <plans> block: the plan, the billing period
+ * and the state with its dates in the user's zone (when the trial ends, when
+ * a cancelled subscription stops), a scheduled change. Computed from the row
+ * at the moment of the chat, never stored. Payments are not live yet.
+ */
+export function describeSubscription(
+  sub: Subscription | null,
+  plans: readonly CatalogPlan[],
+  settings: FormatSettings,
+  now: Date = new Date(),
+): string | null {
+  if (!sub) return null;
+  const day = (at: string | null) => (at ? todayIsoDate(settings, new Date(at)) : "unknown");
+  const name = (key: string) => plain(planName(plans, key, "en") ?? (key === "beta" ? "Beta" : key));
+  const status = displayStatus(sub, now);
+  if (status === "beta") {
+    return "The user's own plan: the free beta, open-ended, no payment; plans start once payments go live.";
+  }
+  const end = periodEndOf(sub);
+  const parts = [`The user's own plan: ${name(sub.planKey)}, billed ${sub.billing}.`];
+  switch (status) {
+    case "trialing": {
+      const days = end ? Math.max(0, Math.ceil((Date.parse(end) - now.getTime()) / 86_400_000)) : null;
+      parts.push(
+        `Free trial until ${day(end)}${days === null ? "" : ` (${days} ${days === 1 ? "day" : "days"} left)`}; after it the workspace is read-only (nothing deleted) until a plan is active.`,
+      );
+      break;
+    }
+    case "ending":
+      parts.push(`Cancelled by the user: it runs until ${day(end)}, then the workspace is read-only (nothing deleted); they can resume it until then.`);
+      break;
+    case "expired":
+      parts.push(`Ended on ${day(end ?? sub.trialEndsAt)}: the workspace is read-only, the data is kept, until a plan is active again.`);
+      break;
+    case "pastDue":
+      parts.push("The last payment failed.");
+      break;
+    default:
+      parts.push("Active.");
+  }
+  if (sub.scheduled && status !== "expired") {
+    parts.push(`Scheduled change: ${name(sub.scheduled.planKey)}, billed ${sub.scheduled.billing}, from ${day(sub.scheduled.at)}.`);
+  }
+  const next = nextPayment(sub, now);
+  parts.push(
+    next
+      ? `Next payment due ${day(next.at)}; payments are not live yet, so nothing is charged.`
+      : "Payments are not live yet; nothing is charged.",
+  );
+  return parts.join(" ");
 }

@@ -885,6 +885,18 @@ export const METRICS: readonly MetricDefinition[] = [
   metric("margin_by_plan", "costs", "table", { kind: "cost", measure: "margin_by_plan" }),
   metric("trials", "costs", "table", fn("metric_trials")),
   metric("plan_interest", "costs", "users", split("plan", users("plan_interest_clicked"))),
+  metric(
+    "subscription_changes",
+    "costs",
+    "users",
+    split("to_plan", users("subscription_change_requested")),
+  ),
+  metric(
+    "subscription_cancellations",
+    "costs",
+    "count",
+    split("reason", count("subscription_cancelled")),
+  ),
 
   // --- 8. Technical health ---------------------------------------------------
   metric("errors", "health", "count", daily("errors")),

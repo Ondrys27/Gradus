@@ -6,6 +6,7 @@ import { INDUSTRY_KEYS } from "@/features/onboarding/industries";
 import { XP_REASONS } from "@/features/game/rules";
 import { NOTE_TEMPLATE_KEYS } from "@/features/notes/templates";
 import { INVOICE_STYLES } from "@/features/invoices/types";
+import { BILLINGS, CANCEL_REASONS } from "@/features/subscription/state";
 import { Constants } from "@/types/database";
 import { field, isSafeField, isScrubbedTextField } from "./fields";
 import { APP_ROUTES, ANALYTICS_SECTIONS, type AnalyticsSection } from "./routes";
@@ -668,6 +669,27 @@ export const EVENTS = {
 
   // --- plan and trial ------------------------------------------------------
   plan_interest_clicked: event("plan", "server", false, { plan: oneOf(PAID_PLANS), ok: bool() }),
+  /**
+   * Settings → Subscription: another plan or billing period was asked for.
+   * Up applies now, down at the end of the period, the current plan drops a
+   * scheduled change (`when: none`). No gateway yet: nothing was charged.
+   */
+  subscription_change_requested: event("plan", "server", false, {
+    from_plan: oneOf(PAID_PLANS),
+    to_plan: oneOf(PAID_PLANS),
+    billing: oneOf(BILLINGS),
+    direction: oneOf(["upgrade", "downgrade", "same"]),
+    when: oneOf(["immediate", "scheduled", "none"]),
+    trialing: bool(),
+  }),
+  /** The subscription was cancelled for the end of its period; the reason as a key, never its text. */
+  subscription_cancelled: event("plan", "server", false, {
+    plan: oneOf(PAID_PLANS),
+    billing: oneOf(BILLINGS),
+    reason: oneOf(CANCEL_REASONS),
+    with_note: bool(),
+    trialing: bool(),
+  }),
   trial_notice_shown: event("plan", "client", false, {
     days_left: count(1000),
     expired: bool(),

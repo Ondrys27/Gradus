@@ -24,6 +24,7 @@ import {
   type PingResult,
 } from "@/features/jarvis/protocol";
 import { describePlans } from "@/features/jarvis/plans-context";
+import { loadSubscriptionLine } from "@/features/jarvis/server/subscription";
 import { describeSituation, suggestionsFor } from "@/features/jarvis/situation";
 import type { SuggestionsResponse } from "@/features/jarvis/suggestions";
 import {
@@ -660,8 +661,14 @@ async function chat(ctx: Context, body: unknown, request: Request) {
       console.error("jarvis notes failed", error);
       return "";
     }),
-    // The published plan catalog; getPublishedPlans() falls back to the seed itself.
-    getPublishedPlans().then((catalog) => describePlans(catalog, locale)),
+    // The published plan catalog (getPublishedPlans() falls back to the seed itself) and what the user has.
+    getPublishedPlans().then(async (catalog) => {
+      const own = await loadSubscriptionLine(supabase, userId, catalog, settings).catch((error) => {
+        console.error("jarvis subscription failed", error);
+        return null;
+      });
+      return describePlans(catalog, locale, own);
+    }),
   ]);
   if (history.error) throw history.error;
   const rows = history.data.reverse();
