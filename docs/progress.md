@@ -95,7 +95,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] K12 | reviewer | 2026-11-01 Kontrola fáze 12: smazání účtu už nesnižuje útratu Jarvise (ai_usage_retired), e2e účty se obejdou bez potvrzení e-mailu, /api/t nepadá na smazaném účtu a nový e2e test hlídá konzoli na celém webu.
 - [x] STOP | Ruční krok před pozváním dalších testerů. 1) Supabase → Authentication: napoj SMTP na Resend podle docs/supabase-email.md, vlož šablony z docs/email-templates/ a zapni potvrzování e-mailu. 2) Kup doménu, pokud ještě nemáš, ověř ji v Resendu (RESEND_FROM) a přidej ji na Vercel. 3) V /podminky a /soukromi doplň místa [DOPLNIT]. Pak /pokracuj. · přeskočeno nočním během 2026-11-01, zkontroluj ručně (.noc/zkontroluj.md)
 - [x] 18.1 | architect | 2026-11-02 — Tažení v seznamu úkolů přenáší celý podstrom, ukazuje vkládací linku s úrovní podle vodorovného posunu, umí pustit na řádek (podúkol, rozbalení po 600 ms) a nabídku „Přesunout…“ se stromem, vše přes moveTask.
-- [ ] 18.2 | architect | env: ANTHROPIC_API_KEY
+- [x] 18.2 | architect | env: ANTHROPIC_API_KEY — 2026-11-02: Jarvis ukazuje živý souhrn dne při prvním příchodu a má nové frekvence (2 h, 6 h, denně, týdně, měsíčně) s týdenní a měsíční šablonou.
 - [ ] 18.3 | architect |
 - [ ] 18.4 | designer |
 - [ ] K18 | reviewer |
