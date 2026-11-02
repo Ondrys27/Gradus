@@ -94,6 +94,12 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 12.5 | architect | env: CRON_SECRET — 2026-11-01: dokumentace a test cron úloh, návod a šablony e-mailů pro Resend SMTP, export dat a smazání účtu v Nastavení → Účet a betové právní texty CS/EN.
 - [x] K12 | reviewer | 2026-11-01 Kontrola fáze 12: smazání účtu už nesnižuje útratu Jarvise (ai_usage_retired), e2e účty se obejdou bez potvrzení e-mailu, /api/t nepadá na smazaném účtu a nový e2e test hlídá konzoli na celém webu.
 - [x] STOP | Ruční krok před pozváním dalších testerů. 1) Supabase → Authentication: napoj SMTP na Resend podle docs/supabase-email.md, vlož šablony z docs/email-templates/ a zapni potvrzování e-mailu. 2) Kup doménu, pokud ještě nemáš, ověř ji v Resendu (RESEND_FROM) a přidej ji na Vercel. 3) V /podminky a /soukromi doplň místa [DOPLNIT]. Pak /pokracuj. · přeskočeno nočním během 2026-11-01, zkontroluj ručně (.noc/zkontroluj.md)
+- [ ] 18.1 | architect |
+- [ ] 18.2 | architect | env: ANTHROPIC_API_KEY
+- [ ] 18.3 | architect |
+- [ ] 18.4 | designer |
+- [ ] K18 | reviewer |
+- [ ] STOP | Konec fáze 18. Projdi: v seznamu úkolů přesuň úkol pod jiný o dvě úrovně hloub a ověř mapu. Nastav Jarvise na „jednou denně", odhlas se a přihlas — musí vyskočit souhrn; podruhé už ne. Projdi nové Nastavení na počítači i telefonu, zkus hledání, v Předplatném naplánuj změnu tarifu, zruš a obnov. V administraci AI vyzkoušej test připojení. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [ ] 7.1 | RUČNĚ | Aplikace běží na Vercel Hobby a každý push na main se nasadí sám. Až budeš mít doménu: nastav ji ve Vercelu, změň NEXT_PUBLIC_SITE_URL ve Vercelu, uprav Site URL a Redirect URLs v Supabase → URL Configuration a dej Redeploy. Projdi produkci v anonymním okně a pak tuhle položku zaškrtni ručně.
 
 ## Odloženo
