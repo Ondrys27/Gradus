@@ -4,15 +4,19 @@ import type Anthropic from "@anthropic-ai/sdk";
 
 vi.mock("server-only", () => ({}));
 
-const { answersBlock, loadProactive, reactToProactive, toCandidate } = await import("./proactive");
+const { answersBlock, loadProactive, loadSummary, reactToProactive, toCandidate } = await import(
+  "./proactive"
+);
 const {
   BRIEFING_INSTRUCTIONS,
+  WEEK_SUMMARY_INSTRUCTIONS,
   briefingContext,
   briefingFacts,
   briefingIsEmpty,
   briefingStale,
   briefUser,
-  freshenBriefing,
+  resolveSummary,
+  summaryLinks,
 } = await import("./briefing");
 const { proposedTasks } = await import("./watch");
 const { suggestionNotBefore } = await import("./suggestions");
@@ -72,7 +76,7 @@ const MILESTONE = "22222222-2222-4222-8222-222222222222";
 const settingsRow = {
   timezone: "Europe/Prague",
   jarvis_proactive: true,
-  jarvis_frequency: "often",
+  jarvis_frequency: "every_2h",
   jarvis_quiet_from: null,
   jarvis_quiet_to: null,
 } as never;
@@ -158,10 +162,10 @@ describe("calls and meetings outside the time window", () => {
 });
 
 describe("loadProactive", () => {
-  it("says when to ask again while the 4 hours are not over, and reads nothing else", async () => {
+  it("says when to ask again while the 2 hours are not over, and reads nothing else", async () => {
     const supabase = fakeDb({
       workers: { data: [] },
-      jarvis_suggestions: { data: [{ shown_at: "2026-10-03T08:00:00Z" }] },
+      jarvis_suggestions: { data: [{ shown_at: "2026-10-03T09:00:00Z" }] },
     });
     const result = await loadProactive({
       supabase: supabase.db,
@@ -170,7 +174,7 @@ describe("loadProactive", () => {
       row: settingsRow,
       now: NOW,
     });
-    expect(result).toEqual({ items: [], retryAt: "2026-10-03T12:00:00.000Z" });
+    expect(result).toEqual({ items: [], retryAt: "2026-10-03T11:00:00.000Z" });
     expect(supabase.calls.some((c) => c.table === "rpc:prospecting_status")).toBe(false);
   });
 
@@ -206,6 +210,20 @@ describe("loadProactive", () => {
       now: NOW,
     });
     expect(off.calls).toHaveLength(0);
+
+    // Once a day, week or month: the summary alone, nothing read in between.
+    for (const frequency of ["daily", "weekly", "monthly"]) {
+      const summaryOnly = fakeDb();
+      const result = await loadProactive({
+        supabase: summaryOnly.db,
+        admin: fakeDb().db,
+        userId: USER,
+        row: { ...(settingsRow as object), jarvis_frequency: frequency } as never,
+        now: NOW,
+      });
+      expect(result.items).toEqual([]);
+      expect(summaryOnly.calls).toHaveLength(0);
+    }
   });
 
   it("asks a question when there is nothing else, and never a third one in a week", async () => {
@@ -272,7 +290,7 @@ describe("loadProactive queue", () => {
     created_at: created,
   });
 
-  it("brings everything worth saying, briefing first, then the most urgent, and asks no question", async () => {
+  it("brings everything worth saying, the most urgent first, never the brief, and asks no question", async () => {
     const rows = [
       suggestion("insight-new", "insight", "2026-10-03T09:00:00Z"),
       suggestion("overdue", "overdueTask", "2026-10-02T09:00:00Z"),
@@ -297,7 +315,6 @@ describe("loadProactive queue", () => {
       now: NOW,
     });
     expect(result.items.map((item) => item.id)).toEqual([
-      "brief",
       "overdue",
       "ready",
       "insight-new",
@@ -472,28 +489,37 @@ describe("proposedTasks", () => {
   });
 });
 
+const EMPTY_DAY = {
+  period: "day" as const,
+  locale: "cs",
+  today: "2026-10-03",
+  yesterday: {
+    deals: [],
+    tasksDone: [],
+    tasksAdded: [],
+    moves: [],
+    milestonesAdded: [],
+    milestonesCompleted: [],
+    eventsAdded: [],
+  },
+  dueToday: [],
+  overdue: [],
+  events: [],
+  crmTasks: { overdue: 0, dueToday: 0, top: [] },
+  invoices: { overdue: 0, top: [] },
+  followUps: 0,
+  followUpTableId: null,
+  stalled: [],
+  dayPlan: "Today is a working day. Best times for calls and meetings: 08:00–12:00.",
+  onFire: null,
+  results: null,
+  plan: null,
+  facts: [],
+  singleOverdueInvoiceId: null,
+};
+
 describe("morning brief", () => {
-  const empty = {
-    locale: "cs",
-    today: "2026-10-03",
-    yesterday: {
-      deals: [],
-      tasksDone: [],
-      tasksAdded: [],
-      moves: [],
-      milestonesAdded: [],
-      milestonesCompleted: [],
-      eventsAdded: [],
-    },
-    dueToday: [],
-    overdue: [],
-    events: [],
-    followUps: 0,
-    stalled: [],
-    dayPlan: "Today is a working day. Best times for calls and meetings: 08:00–12:00.",
-    onFire: null,
-    facts: [],
-  };
+  const empty = EMPTY_DAY;
   const clear = {
     closePast: { count: 0, top: [] },
     overdueTasks: { count: 0, top: [] },
@@ -536,6 +562,26 @@ describe("morning brief", () => {
     );
   });
 
+  it("tells about overdue sales tasks and invoices past due", () => {
+    const late = {
+      ...empty,
+      crmTasks: {
+        overdue: 2,
+        dueToday: 1,
+        top: [
+          { title: "Zavolat", target: "Pekárna", overdue: true },
+          { title: "Nabídka", target: null, overdue: false },
+        ],
+      },
+      invoices: { overdue: 1, top: [{ number: "2026-0003", customer: "Pekárna", daysLate: 4 }] },
+    };
+    expect(briefingIsEmpty(late)).toBe(false);
+    const context = briefingContext(late);
+    expect(context).toContain('- 2 sales task(s) overdue: "Zavolat" (for "Pekárna")');
+    expect(context).toContain('- 1 sales task(s) still due today: "Nabídka"');
+    expect(context).toContain('- 1 invoice(s) past due: "2026-0003" to "Pekárna" 4 day(s) late');
+  });
+
   it("calls no model and writes nothing on a quiet day", async () => {
     const stream = vi.fn();
     const admin = fakeDb({ user_settings: { data: null } });
@@ -558,42 +604,148 @@ describe("morning brief", () => {
   });
 });
 
-describe("the brief right before it shows", () => {
-  const BRIEF = "33333333-3333-4333-8333-333333333333";
-  const DEAL = "44444444-4444-4444-8444-444444444444";
-  const TASK = "55555555-5555-4555-8555-555555555555";
+describe("the week's and month's summary", () => {
+  const results = {
+    from: "2026-09-28",
+    to: "2026-10-04",
+    tasksDone: 4,
+    crmTasksDone: 3,
+    dealsWon: 1,
+    wonTitles: ["Web pro pekárnu"],
+    dealsLost: 0,
+    meetings: 2,
+    contactsMoved: 12,
+    milestonesCompleted: [],
+    invoicesPaid: 1,
+  };
+  const plan = {
+    from: "2026-10-05",
+    to: "2026-10-11",
+    crmTasks: { count: 2, top: [{ id: "c1", title: "Follow-up", target: "Aura" }] },
+    tasks: { count: 0, top: [] },
+    events: { count: 1, top: [{ id: "e1", title: "Schůzka", day: "2026-10-07" }] },
+  };
+  const week = { ...EMPTY_DAY, period: "week" as const, today: "2026-10-05", results, plan };
 
-  /** A model that writes one line, as the SDK streams it. */
-  function writer(text: string) {
-    const stream = vi.fn(() =>
-      (async function* () {
-        yield {
-          type: "message_start",
-          message: { usage: { input_tokens: 10, output_tokens: 1 } },
-        };
-        yield { type: "content_block_delta", index: 0, delta: { type: "text_delta", text } };
-        yield {
-          type: "message_delta",
-          delta: { stop_reason: "end_turn", stop_sequence: null },
-          usage: { output_tokens: 5 },
-        };
-      })(),
-    );
-    return { client: { messages: { stream } } as unknown as Pick<Anthropic, "messages">, stream };
-  }
+  it("writes from last week's numbers, what is stuck and this week's plan", () => {
+    expect(briefingIsEmpty(week)).toBe(false);
+    const context = briefingContext(week);
+    expect(context).toContain('<results period="last week, 2026-09-28 to 2026-10-04">');
+    expect(context).toContain('- Deals won: 1 ("Web pro pekárnu")');
+    expect(context).toContain('- 2 sales task(s) due: "Follow-up" (for "Aura")');
+    expect(context).toContain('- 1 event(s): "Schůzka" on 2026-10-07');
+    expect(context).toContain("This week: 2026-10-05 to 2026-10-11.");
+    expect(context).not.toContain("<yesterday>");
+    expect(WEEK_SUMMARY_INSTRUCTIONS).toMatch(/what went well last week/);
+    expect(WEEK_SUMMARY_INSTRUCTIONS).toMatch(/Three things for this week/);
+  });
 
-  /** The admin client the brief is read with: a task due today, or nothing at all. */
-  const data = (dueToday: boolean) =>
-    fakeDb({
-      "rpc:current_plan": { data: [{ ai_calls_limit: 300, file_uploads_limit: 0, read_only: false }] },
-      tasks: (call) =>
-        dueToday && has(call, "select", "id, title") ? { data: [{ id: TASK, title: "Call" }] } : {},
+  it("is empty only when the last week brought nothing and nothing waits", () => {
+    const quiet = {
+      ...week,
+      results: { ...results, tasksDone: 0, crmTasksDone: 0, dealsWon: 0, wonTitles: [], meetings: 0, contactsMoved: 0, invoicesPaid: 0 },
+      plan: { ...plan, crmTasks: { count: 0, top: [] }, events: { count: 0, top: [] } },
+    };
+    expect(briefingIsEmpty(quiet)).toBe(true);
+  });
+
+  it("links to this week's tasks and events instead of today's", () => {
+    const links = summaryLinks({ ...week, crmTasks: { overdue: 1, dueToday: 3, top: [] } });
+    expect(links.map((link) => link.key)).toEqual(["overdueCrmTasks", "periodCrmTasks", "events"]);
+    expect(links[1]).toEqual({
+      key: "periodCrmTasks",
+      count: 2,
+      href: "/app/ukoly-crm?due=thisWeek&status=open",
     });
-  const update = (calls: Call[]) =>
-    op(
-      calls.find((c) => c.table === "jarvis_suggestions" && op(c, "update")),
-      "update",
-    )?.[0];
+    const month = summaryLinks({ ...week, period: "month" });
+    expect(month[0]?.href).toBe(
+      "/app/ukoly-crm?due=custom&status=open&from=2026-10-05&to=2026-10-11",
+    );
+  });
+});
+
+describe("summary links", () => {
+  it("counts only what is there, most pressing first, with a link into the app", () => {
+    const links = summaryLinks({
+      ...EMPTY_DAY,
+      crmTasks: { overdue: 2, dueToday: 1, top: [] },
+      invoices: { overdue: 1, top: [] },
+      singleOverdueInvoiceId: "77777777-7777-4777-8777-777777777777",
+      events: [{ title: "Schůzka", time: "10:00" }],
+      onFire: {
+        closePast: { count: 0, top: [] },
+        overdueTasks: { count: 0, top: [] },
+        noTask: { count: 3, top: [] },
+      },
+    });
+    expect(links).toEqual([
+      { key: "overdueCrmTasks", count: 2, href: "/app/ukoly-crm?due=overdue&status=open" },
+      { key: "noTask", count: 3, href: "/app/pipeline?tile=noTask" },
+      {
+        key: "overdueInvoices",
+        count: 1,
+        href: "/app/finance/faktury/77777777-7777-4777-8777-777777777777",
+      },
+      { key: "todayCrmTasks", count: 1, href: "/app/ukoly-crm?due=today" },
+      { key: "events", count: 1, href: "/app/kalendar" },
+    ]);
+    expect(summaryLinks(EMPTY_DAY)).toEqual([]);
+  });
+});
+
+const BRIEF = "33333333-3333-4333-8333-333333333333";
+const DEAL = "44444444-4444-4444-8444-444444444444";
+const TASK = "55555555-5555-4555-8555-555555555555";
+
+/** A model that writes one line, as the SDK streams it. */
+function writer(text: string) {
+  const stream = vi.fn(() =>
+    (async function* () {
+      yield {
+        type: "message_start",
+        message: { usage: { input_tokens: 10, output_tokens: 1 } },
+      };
+      yield { type: "content_block_delta", index: 0, delta: { type: "text_delta", text } };
+      yield {
+        type: "message_delta",
+        delta: { stop_reason: "end_turn", stop_sequence: null },
+        usage: { output_tokens: 5 },
+      };
+    })(),
+  );
+  return { client: { messages: { stream } } as unknown as Pick<Anthropic, "messages">, stream };
+}
+
+/**
+ * The admin client a summary is read with: a task due today (or nothing at
+ * all), and today's stored brief as given.
+ */
+const data = (dueToday: boolean, stored: Record<string, unknown> | null = null) =>
+  fakeDb({
+    "rpc:current_plan": { data: [{ ai_calls_limit: 300, file_uploads_limit: 0, read_only: false }] },
+    tasks: (call) =>
+      dueToday && has(call, "select", "id, title") ? { data: [{ id: TASK, title: "Call" }] } : {},
+    jarvis_suggestions: (call) =>
+      has(call, "select", "id, text, payload")
+        ? { data: stored }
+        : op(call, "upsert")
+          ? { data: { id: BRIEF } }
+          : {},
+  });
+const upserted = (calls: Call[]) =>
+  op(
+    calls.find((c) => c.table === "jarvis_suggestions" && op(c, "upsert")),
+    "upsert",
+  )?.[0];
+
+describe("the summary at the first arrival", () => {
+  const brief = (facts: string[] | undefined, period?: string) => ({
+    id: BRIEF,
+    text: "Call is due today.",
+    payload: { date: "2026-10-03", ...(period ? { period } : {}), ...(facts ? { facts } : {}) },
+  });
+  const resolve = (admin: ReturnType<typeof fakeDb>, client: ReturnType<typeof writer>["client"] | null, period: "day" | "week" = "day") =>
+    resolveSummary({ client, admin: admin.db, userId: USER, row: settingsRow, period, now: NOW });
 
   it("keeps one key per thing the brief can state, sorted and once", () => {
     const deal = { id: DEAL, title: "Web", days: 3 };
@@ -608,11 +760,15 @@ describe("the brief right before it shows", () => {
         eventIds: ["e1"],
         stalledDealIds: [DEAL],
         followUps: 2,
+        crmTaskIds: ["c1"],
+        invoiceIds: ["i1"],
       }),
     ).toEqual([
       `closePast:${DEAL}`,
+      "crmTask:c1",
       "event:e1",
       "followUps",
+      "invoice:i1",
       `noTask:${DEAL}`,
       `stalled:${DEAL}`,
       `task:${TASK}`,
@@ -627,129 +783,169 @@ describe("the brief right before it shows", () => {
     expect(briefingStale(undefined, [])).toBe(true);
   });
 
-  it("shows a brief built on no facts as it is, without reading anything", async () => {
-    const admin = fakeDb();
-    const text = await freshenBriefing({
-      client: null,
-      admin: admin.db,
-      userId: USER,
-      row: settingsRow,
-      id: BRIEF,
-      text: "Yesterday you won a deal.",
-      facts: [],
-      now: NOW,
-    });
-    expect(text).toBe("Yesterday you won a deal.");
-    expect(admin.calls).toHaveLength(0);
-  });
-
-  it("shows it unchanged while everything it says still holds", async () => {
+  it("uses the cron's brief while everything it says still holds, without a model call", async () => {
     const { client, stream } = writer("unused");
-    const text = await freshenBriefing({
-      client,
-      admin: data(true).db,
-      userId: USER,
-      row: settingsRow,
+    const admin = data(true, brief([`task:${TASK}`]));
+    expect(await resolve(admin, client)).toEqual({
+      status: "ready",
       id: BRIEF,
       text: "Call is due today.",
-      facts: [`task:${TASK}`],
-      now: NOW,
+      links: [],
     });
-    expect(text).toBe("Call is due today.");
     expect(stream).not.toHaveBeenCalled();
-  });
-
-  it("retires it when nothing is left to say, without a model call", async () => {
-    const { client, stream } = writer("unused");
-    const admin = data(false);
-    const text = await freshenBriefing({
-      client,
-      admin: admin.db,
-      userId: USER,
-      row: settingsRow,
-      id: BRIEF,
-      text: "Web has no task.",
-      facts: [`noTask:${DEAL}`],
-      now: NOW,
-    });
-    expect(text).toBeNull();
-    expect(stream).not.toHaveBeenCalled();
-    expect(update(admin.calls)).toEqual({ dismissed_at: NOW.toISOString() });
+    expect(upserted(admin.calls)).toBeUndefined();
   });
 
   it("writes it again from the data now when something it says is gone, and stores it", async () => {
-    const { client, stream } = writer("Call is due today.");
-    const admin = data(true);
-    const text = await freshenBriefing({
-      client,
-      admin: admin.db,
-      userId: USER,
-      row: settingsRow,
-      id: BRIEF,
-      text: "Web has no task.",
-      facts: [`noTask:${DEAL}`],
-      now: NOW,
-    });
-    expect(text).toBe("Call is due today.");
+    const { client, stream } = writer("Call is due today, and nothing else.");
+    const admin = data(true, brief([`noTask:${DEAL}`]));
+    const result = await resolve(admin, client);
+    expect(result).toMatchObject({ status: "ready", id: BRIEF, text: "Call is due today, and nothing else." });
     expect(stream).toHaveBeenCalledOnce();
-    expect(update(admin.calls)).toEqual({
-      text: "Call is due today.",
-      payload: { date: "2026-10-03", facts: [`task:${TASK}`] },
+    expect(upserted(admin.calls)).toMatchObject({
+      user_id: USER,
+      kind: "briefing",
+      dedupe_key: "briefing:2026-10-03",
+      dismissed_at: null,
+      payload: { date: "2026-10-03", period: "day", facts: [`task:${TASK}`] },
     });
+  });
+
+  it("writes a week's summary when today's brief is only about the day", async () => {
+    const { client, stream } = writer("Last week: one deal won.");
+    const admin = data(true, brief([`task:${TASK}`], "day"));
+    const result = await resolve(admin, client, "week");
+    expect(result).toMatchObject({ status: "ready", text: "Last week: one deal won." });
+    expect(stream).toHaveBeenCalledOnce();
+    expect(upserted(admin.calls)).toMatchObject({ payload: { period: "week" } });
+    // The week's summary is asked for as such (mocked model, real prompt).
+    const params = (stream.mock.calls[0] as unknown[])[0] as { messages: { content: string }[] };
+    expect(params.messages.at(-1)?.content).toBe("Write this week's summary.");
+  });
+
+  it("says nothing on an empty day, without a model call", async () => {
+    const { client, stream } = writer("unused");
+    expect(await resolve(data(false), client)).toEqual({ status: "empty" });
+    expect(stream).not.toHaveBeenCalled();
   });
 
   it("stays silent rather than say something untrue when it cannot write", async () => {
-    const admin = data(true);
-    const text = await freshenBriefing({
-      client: null,
+    const admin = data(true, brief(undefined));
+    expect(await resolve(admin, null)).toEqual({ status: "unavailable" });
+    expect(upserted(admin.calls)).toBeUndefined();
+  });
+});
+
+describe("loadSummary", () => {
+  const profile = (patch: Record<string, unknown> = {}) => ({
+    onboarding_completed_at: "2026-09-20T08:00:00Z",
+    tour_completed_at: "2026-09-20T08:10:00Z",
+    last_daily_brief_on: "2026-10-02",
+    ...patch,
+  });
+  const supabase = (patch: Record<string, unknown> = {}, running = false) =>
+    fakeDb({
+      workers: { data: [] },
+      unlocks: { data: [] },
+      profiles: (call) =>
+        has(call, "select", "mode") ? { data: { mode: "tool" } } : { data: profile(patch) },
+      "rpc:prospecting_status": { data: [{ running }] },
+    });
+  const load = (
+    client: ReturnType<typeof supabase>,
+    admin: ReturnType<typeof fakeDb>,
+    row: object = settingsRow as object,
+    model: ReturnType<typeof writer>["client"] | null = null,
+  ) =>
+    loadSummary({
+      supabase: client.db,
       admin: admin.db,
       userId: USER,
-      row: settingsRow,
-      id: BRIEF,
-      text: "Web has no task.",
-      facts: undefined,
+      row: row as never,
+      client: model,
       now: NOW,
     });
-    expect(text).toBeNull();
-    expect(update(admin.calls)).toBeUndefined();
+  const settled = (calls: Call[]) =>
+    op(
+      calls.find((c) => c.table === "profiles" && op(c, "update")),
+      "update",
+    )?.[0];
+
+  it("shows today's summary at the first arrival, from the data now", async () => {
+    const { client } = writer("Call is due today.");
+    const admin = data(true);
+    const result = await load(supabase(), admin, settingsRow as object, client);
+    expect(result).toEqual({
+      status: "show",
+      item: { id: BRIEF, period: "day", text: "Call is due today.", links: [] },
+    });
+    // Settled only once it is on screen (the "shown" reaction).
+    expect(settled(admin.calls)).toBeUndefined();
   });
 
-  it("works the rules out again and leaves an untrue brief unsaid in the bubble", async () => {
-    const rows = [
-      {
-        id: BRIEF,
-        kind: "briefing",
-        type: "briefing",
-        text: "Web has no task.",
-        action: { kind: "open", href: "/app" },
-        payload: { date: "2026-10-03", facts: [`noTask:${DEAL}`] },
-        created_at: "2026-10-03T04:00:00Z",
-      },
-    ];
+  it("says nothing once shown today, on the onboarding's day, or when switched off", async () => {
+    const shown = fakeDb();
+    expect(await load(supabase({ last_daily_brief_on: "2026-10-03" }), shown)).toEqual({
+      status: "none",
+    });
+    expect(shown.calls).toHaveLength(0);
+    expect(
+      await load(supabase({ onboarding_completed_at: "2026-10-03T06:00:00Z" }), fakeDb()),
+    ).toEqual({ status: "none" });
+    const off = supabase();
+    expect(
+      await load(off, fakeDb(), { ...(settingsRow as object), jarvis_proactive: false }),
+    ).toEqual({ status: "none" });
+    expect(off.calls).toHaveLength(0);
+    const worker = fakeDb({ workers: { data: [{ id: "w" }] } });
+    expect(await load(worker as ReturnType<typeof supabase>, fakeDb())).toEqual({ status: "none" });
+  });
+
+  it("waits for the next page in quiet hours, during the tour and while the timer runs", async () => {
+    // 12:00 in Prague.
+    const quiet = { ...(settingsRow as object), jarvis_quiet_from: 11, jarvis_quiet_to: 13 };
+    expect(await load(supabase(), fakeDb(), quiet)).toEqual({ status: "wait" });
+    expect(await load(supabase({ tour_completed_at: null }), fakeDb())).toEqual({ status: "wait" });
+    expect(await load(supabase({}, true), fakeDb())).toEqual({ status: "wait" });
+  });
+
+  it("settles a quiet day with nothing said and no model call", async () => {
+    const { client, stream } = writer("unused");
+    const admin = data(false);
+    expect(await load(supabase(), admin, settingsRow as object, client)).toEqual({ status: "none" });
+    expect(stream).not.toHaveBeenCalled();
+    expect(settled(admin.calls)).toEqual({ last_daily_brief_on: "2026-10-03" });
+  });
+
+  it("gives a weekly user the week's summary", async () => {
+    const { client } = writer("Your week.");
+    const weekly = { ...(settingsRow as object), jarvis_frequency: "weekly" };
+    const result = await load(
+      supabase({ last_daily_brief_on: "2026-09-21" }),
+      data(true),
+      weekly,
+      client,
+    );
+    expect(result).toMatchObject({ status: "show", item: { period: "week", text: "Your week." } });
+  });
+
+  it("settles the day when the summary comes on screen", async () => {
     const admin = fakeDb();
-    const result = await loadProactive({
+    await reactToProactive({
       supabase: fakeDb({
-        workers: { data: [] },
-        unlocks: { data: [] },
-        profiles: { data: { mode: "tool" } },
-        "rpc:prospecting_status": { data: [{ running: false }] },
-        jarvis_suggestions: (call) =>
-          has(call, "select", "shown_at") || has(call, "eq", "kind", "question")
-            ? { data: [] }
-            : { data: rows },
+        jarvis_suggestions: {
+          data: { id: BRIEF, kind: "briefing", type: "briefing", payload: {}, dismissed_at: null, answered_at: null },
+        },
       }).db,
       admin: admin.db,
       userId: USER,
       row: settingsRow,
-      client: null,
+      id: BRIEF,
+      reaction: "shown",
       now: NOW,
     });
-    expect(result.items.some((item) => item.id === BRIEF)).toBe(false);
-    // The solved rule suggestions are retired before anything is picked.
-    const retired = admin.calls.find(
-      (c) => c.table === "jarvis_suggestions" && op(c, "update") && op(c, "in"),
-    );
-    expect(op(retired, "update")?.[0]).toHaveProperty("dismissed_at");
-    expect(op(retired, "in")?.[0]).toBe("type");
+    expect(settled(admin.calls)).toEqual({ last_daily_brief_on: "2026-10-03" });
+    const update = admin.calls.find((c) => c.table === "profiles");
+    expect(op(update, "eq")).toEqual(["id", USER]);
   });
 });

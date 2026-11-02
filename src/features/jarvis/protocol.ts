@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { MAX_FILES_PER_MESSAGE, type FileKind } from "./files";
-import type { ProactiveKind } from "./proactive";
+import type { ProactiveKind, SummaryPeriod } from "./proactive";
 import type { SuggestionAction } from "./suggestions";
 
 /** Longest message a user can send; the panel stops typing there too. */
@@ -163,6 +163,43 @@ export type ProactiveResponse = {
   /** When asking again makes sense (e.g. the 4-hour gap ends); null = the usual interval. */
   retryAt: string | null;
 };
+
+/**
+ * What a summary links to, one row each, counted from the data at the moment
+ * it is shown (never from what the text says). The label is
+ * `jarvis.summary.links.<key>` with the count.
+ */
+export const SUMMARY_LINK_KEYS = [
+  "overdueCrmTasks",
+  "todayCrmTasks",
+  "periodCrmTasks",
+  "overdueTasks",
+  "events",
+  "closePast",
+  "overdueDealTasks",
+  "noTask",
+  "overdueInvoices",
+  "followUps",
+] as const;
+export type SummaryLinkKey = (typeof SUMMARY_LINK_KEYS)[number];
+export type SummaryLink = { key: SummaryLinkKey; count: number; href: string };
+
+/** The summary at the first arrival of the day, week or month (GET /api/jarvis?view=summary). */
+export type SummaryItem = {
+  /** Its row in jarvis_suggestions (kind briefing): the reactions go there. */
+  id: string;
+  period: SummaryPeriod;
+  text: string;
+  links: SummaryLink[];
+};
+
+export type SummaryResponse =
+  /** Show it now; the bubble reports "shown", which settles the period. */
+  | { status: "show"; item: SummaryItem }
+  /** Not now (quiet hours, the call timer): ask again on the next page. */
+  | { status: "wait" }
+  /** Nothing to show in this period (already shown, nothing to say, off): stop asking. */
+  | { status: "none" };
 
 /** POST /api/jarvis { kind: "milestoneReview" } and { kind: "salesAnalysis" } */
 export type JobResult<T> =

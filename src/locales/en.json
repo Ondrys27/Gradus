@@ -644,6 +644,28 @@
         }
       }
     },
+    "summary": {
+      "heading": {
+        "day": "Your day",
+        "week": "Your week",
+        "month": "Your month"
+      },
+      "thanks": "Thanks",
+      "close": "Close",
+      "linksLabel": "What needs you",
+      "links": {
+        "overdueCrmTasks": "My overdue tasks",
+        "todayCrmTasks": "Tasks for today",
+        "periodCrmTasks": "{period, select, week {Tasks this week} other {Tasks this month}}",
+        "overdueTasks": "Overdue milestone tasks",
+        "events": "{period, select, day {Events today} week {Events this week} other {Events this month}}",
+        "closePast": "Close Date in the past",
+        "overdueDealTasks": "Overdue deal tasks",
+        "noTask": "Deals without a task",
+        "overdueInvoices": "Overdue invoices",
+        "followUps": "Contacts to follow up"
+      }
+    },
     "queue": {
       "label": "Jarvis's notices",
       "position": "{current} of {total}",
@@ -1008,17 +1030,21 @@
       "title": "Jarvis",
       "description": "When Jarvis speaks up on his own. The chat in the corner always works.",
       "proactive": "Jarvis speaks up",
-      "proactiveHint": "Now and then he flies in with a morning brief, a suggestion or a question. Never while the call timer runs.",
+      "proactiveHint": "On your first visit of the day he flies in with a summary; with Often or Now and then also with a suggestion or a question in between. Never while the call timer runs.",
       "frequency": "How often",
       "frequencies": {
-        "often": "Often",
-        "sometimes": "Now and then",
-        "briefing_only": "Brief only"
+        "every_2h": "Often",
+        "every_6h": "Now and then",
+        "daily": "Once a day",
+        "weekly": "Once a week",
+        "monthly": "Once a month"
       },
       "frequencyHint": {
-        "often": "At most once every 4 hours.",
-        "sometimes": "At most once every 12 hours.",
-        "briefing_only": "Only the morning brief, no suggestions or questions."
+        "every_2h": "A summary on your first visit of the day, and suggestions in between at most every 2 hours.",
+        "every_6h": "A summary on your first visit of the day, and suggestions in between at most every 6 hours.",
+        "daily": "Only the summary of the day on your first visit. Suggestions wait in Jarvis's panel.",
+        "weekly": "Only the summary of the week on your first visit of the week: last week's numbers and a plan for this one. Suggestions wait in the panel.",
+        "monthly": "Only the summary of the month on your first visit of the month. Suggestions wait in the panel."
       },
       "quiet": {
         "title": "Quiet hours",

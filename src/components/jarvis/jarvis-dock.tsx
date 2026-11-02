@@ -11,6 +11,7 @@ import { track } from "@/lib/analytics/client";
 import { whenIdle } from "@/lib/idle";
 import { AutoActionNotice } from "./auto-action-notice";
 import { NotesIntro } from "./notes-intro";
+import { DaySummary } from "./day-summary";
 import { ProactiveJarvis } from "./proactive-jarvis";
 
 const loadPanel = () => import("./jarvis-panel");
@@ -74,6 +75,7 @@ export function JarvisDock() {
         onClick={() => setOpen((value) => !value)}
       />
       <AnimatePresence>{open && <JarvisPanel chat={chat} onClose={close} />}</AnimatePresence>
+      <DaySummary panelOpen={open} />
       <ProactiveJarvis panelOpen={open} onAsk={ask} />
       <NotesIntro panelOpen={open} />
     </>

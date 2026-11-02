@@ -20,7 +20,7 @@ Všechny úlohy spouští Vercel Cron podle `vercel.json`. Běžíme na **Vercel
 | Automatické platby | `/api/cron/recurring-payments` | `0 3 * * *` | 4:00 | Zaúčtuje splatné opakované platby (`post_due_recurring_payments`) — jedna transakce na splatný den v pásmu uživatele, takže dvojí běh nic nezaúčtuje dvakrát. |
 | Úklid analytiky | `/api/cron/analytics-retention` | `15 4 * * *` | 5:15 | Smaže události, relace, záznamy využití a statistiky klíčových slov starší než 13 měsíců (`purge_analytics`). |
 | Koš poznámek | `/api/cron/notes-trash` | `30 4 * * *` | 5:30 | Natrvalo smaže poznámky, které jsou v koši 30 dní (`purge_deleted_notes`). |
-| Ranní shrnutí Jarvise | `/api/jarvis?task=briefing` | `0 5 * * *` | 6:00 (v létě 7:00) | Napíše ranní shrnutí (Sonnet) uživatelům, kterým je v jejich pásmu 6–10 h. Prázdný den = žádné volání modelu. Po vyčerpání rozpočtu AI se nepíše. |
+| Ranní shrnutí Jarvise | `/api/jarvis?task=briefing` | `0 5 * * *` | 6:00 (v létě 7:00) | Napíše ranní shrnutí (Sonnet) uživatelům, kterým je v jejich pásmu 6–10 h a souhrn je podle frekvence dnes na řadě (denně; týdně první den týdne; měsíčně 1.), ne v den onboardingu a ne když ho dnes už vyřídil první příchod. Prázdný den = žádné volání modelu. Po vyčerpání rozpočtu AI se nepíše. |
 | Chyby: souhrn a úklid | `/api/cron/error-alerts` | `0 7 * * *` | 8:00 | V režimu souhrnu pošle jeden e-mail s chybami, které čekaly; smaže záznamy chyb starší než 13 měsíců (`purge_error_events`). |
 | Hlídání příležitostí (noční analýza) | `/api/jarvis?task=watch` | `0 10 * * *` | 11:00 | Dávková kontrola příležitostí pro všechny účty: zapíše návrhy do `jarvis_suggestions`. Po vyčerpání rozpočtu AI běží jen z pravidel bez modelu. Když není co říct, nic nezapíše. |
 

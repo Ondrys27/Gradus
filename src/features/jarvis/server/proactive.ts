@@ -7,7 +7,8 @@ import { toFormatSettings, type UserSettings } from "@/lib/user-settings";
 import { track } from "@/lib/analytics/track";
 import type { Database, Json } from "@/types/database";
 import {
-  isJarvisFrequency,
+  inQuietHours,
+  localHour,
   nextAllowedAt,
   orderProactive,
   PROACTIVE_KINDS,
@@ -16,12 +17,21 @@ import {
   questionAllowed,
   serverBlock,
   snoozeUntil,
+  speaksBetweenSummaries,
   SUGGESTION_FRESH_DAYS,
+  summaryDue,
+  summaryPeriodOf,
+  toJarvisFrequency,
   type ProactiveCandidate,
   type ProactiveKind,
   type ProactiveSettings,
 } from "../proactive";
-import type { ProactiveItem, ProactiveReaction, ProactiveResponse } from "../protocol";
+import type {
+  ProactiveItem,
+  ProactiveReaction,
+  ProactiveResponse,
+  SummaryResponse,
+} from "../protocol";
 import {
   answerForModel,
   nextQuestion,
@@ -31,7 +41,7 @@ import {
 } from "../questions";
 import { reachesPeople, suggestionActionSchema, type SuggestionAction } from "../suggestions";
 import type { TimeWindow } from "../time-window";
-import { freshenBriefing } from "./briefing";
+import { resolveSummary } from "./briefing";
 import type { ModelClient } from "./model";
 import { loadRuleInputs, syncRuleSuggestions } from "./suggestions";
 import { loadTimeWindow } from "./time-window";
@@ -54,9 +64,8 @@ const payloadSchema = z
     milestoneTitle: z.string().optional(),
     question: z.string().optional(),
     answer: z.string().optional(),
+    /** The day a brief was written for (yyyy-MM-dd). */
     date: z.string().optional(),
-    /** What a brief was written from (briefingFacts). */
-    facts: z.array(z.string()).optional(),
     /** The suggestion means reaching people (a call, a meeting). */
     people: z.boolean().optional(),
   })
@@ -67,7 +76,7 @@ export function proactiveSettingsOf(row: UserSettings | null | undefined): Proac
   const format = toFormatSettings(row);
   return {
     enabled: row?.jarvis_proactive ?? true,
-    frequency: row && isJarvisFrequency(row.jarvis_frequency) ? row.jarvis_frequency : "sometimes",
+    frequency: toJarvisFrequency(row?.jarvis_frequency),
     quietFrom: row?.jarvis_quiet_from ?? null,
     quietTo: row?.jarvis_quiet_to ?? null,
     timeZone: format.timeZone,
@@ -106,14 +115,14 @@ export function toCandidate(
     if (window && !window.open && reachesPeople(row.type, payload.people, row.text)) return null;
   } else if (kind === "question") {
     if (!payload.question || !questionByKey(payload.question)) return null;
-  } else if (kind !== "briefing") {
+  } else {
+    // The brief belongs to the summary at the first arrival (loadSummary).
     return null;
   }
   return {
     kind,
     type: row.type,
     createdAt: row.created_at,
-    briefingDate: kind === "briefing" ? (payload.date ?? null) : null,
     item: {
       id: row.id,
       kind,
@@ -127,7 +136,7 @@ export function toCandidate(
   };
 }
 
-async function isWorker(supabase: Client, userId: string): Promise<boolean> {
+export async function isWorker(supabase: Client, userId: string): Promise<boolean> {
   const { data, error } = await supabase
     .from("workers")
     .select("id")
@@ -138,8 +147,8 @@ async function isWorker(supabase: Client, userId: string): Promise<boolean> {
   return data.length > 0;
 }
 
-/** The morning brief: always in tool mode, from level 5 in game mode. */
-async function briefingUnlocked(supabase: Client, userId: string): Promise<boolean> {
+/** The brief (the summary): always in tool mode, from level 5 in game mode. */
+export async function briefingUnlocked(supabase: Client, userId: string): Promise<boolean> {
   const [profile, unlock] = await Promise.all([
     supabase.from("profiles").select("mode").eq("id", userId).maybeSingle(),
     supabase
@@ -206,11 +215,12 @@ async function ensureQuestion(
 }
 
 /**
- * GET /api/jarvis?view=proactive: what is worth saying now, in the order the
- * card shows it (most urgent first), or nothing. The bubble shows it right
- * away, so this is the last look before Jarvis speaks: the rules are worked
- * out again from the data now (what is solved goes) and the brief is checked
- * against what it was written from (freshenBriefing).
+ * GET /api/jarvis?view=proactive: what is worth saying now between the
+ * summaries (suggestions, a question), in the order the card shows it (most
+ * urgent first), or nothing. Only with "every 2 / 6 hours"; the other
+ * frequencies have the summary alone (loadSummary). The bubble shows it
+ * right away, so this is the last look before Jarvis speaks: the rules are
+ * worked out again from the data now and what is solved goes.
  * Reads with the user's own client (RLS), writes with the admin client for
  * this user only.
  */
@@ -219,15 +229,14 @@ export async function loadProactive(args: {
   admin: Client;
   userId: string;
   row: UserSettings | null;
-  /** For writing a brief again when it is no longer true; null = such a brief stays unsaid. */
-  client?: ModelClient | null;
   now?: Date;
 }): Promise<ProactiveResponse> {
   const { supabase, admin, userId } = args;
   const now = args.now ?? new Date();
   const none: ProactiveResponse = { items: [], retryAt: null };
   const settings = proactiveSettingsOf(args.row);
-  if (!settings.enabled) return none;
+  // Switched off, or the summary alone: nothing between the summaries.
+  if (!settings.enabled || !speaksBetweenSummaries(settings.frequency)) return none;
   // A worker has the owner's environment, not Jarvis's own initiative.
   if (await isWorker(supabase, userId)) return none;
 
@@ -254,18 +263,18 @@ export async function loadProactive(args: {
   await syncRuleSuggestions(admin, userId, await loadRuleInputs(supabase, userId, format, now));
 
   const nowIso = now.toISOString();
-  const [rows, unlocked, window] = await Promise.all([
+  const [rows, window] = await Promise.all([
     supabase
       .from("jarvis_suggestions")
       .select("id, kind, type, text, action, payload, created_at")
       .eq("user_id", userId)
+      .neq("kind", "briefing")
       .is("dismissed_at", null)
       .is("answered_at", null)
       .or(`shown_at.is.null,snoozed_until.lte."${nowIso}"`)
       .gte("created_at", subDays(now, CANDIDATE_DAYS).toISOString())
       .order("created_at", { ascending: false })
       .limit(CANDIDATE_LIMIT),
-    briefingUnlocked(supabase, userId),
     loadTimeWindow(supabase, {
       timeZone: settings.timeZone,
       country: args.row?.country_code ?? null,
@@ -275,37 +284,96 @@ export async function loadProactive(args: {
   if (rows.error) throw rows.error;
 
   const today = todayIsoDate(format, now);
-  const options = { frequency: settings.frequency, today, briefingUnlocked: unlocked };
+  const options = { frequency: settings.frequency };
   const candidates = rows.data.flatMap((row) => toCandidate(row, now, window) ?? []);
   let queue = orderProactive(candidates, options).slice(0, PROACTIVE_QUEUE_LIMIT);
 
-  const brief = queue.find((candidate) => candidate.kind === "briefing");
-  if (brief) {
-    const stored = rows.data.find((row) => row.id === brief.item.id);
-    const text = await freshenBriefing({
-      client: args.client ?? null,
-      admin,
-      userId,
-      row: args.row,
-      id: brief.item.id,
-      text: brief.item.text,
-      facts: stored ? payloadSchema.parse(stored.payload).facts : undefined,
-      now,
-    });
-    queue =
-      text === null
-        ? queue.filter((candidate) => candidate !== brief)
-        : queue.map((candidate) =>
-            candidate === brief ? { ...brief, item: { ...brief.item, text } } : candidate,
-          );
-  }
-
-  if (!queue.length && settings.frequency !== "briefing_only") {
+  if (!queue.length) {
     const question = await ensureQuestion(supabase, admin, userId, today, now);
     const candidate = question ? toCandidate(question, now, window) : null;
     if (candidate) queue = orderProactive([candidate], options);
   }
   return { items: queue.map((candidate) => candidate.item), retryAt: null };
+}
+
+/** The summary of this period was shown, or there was nothing to say: not again until the next one. */
+async function settleSummary(admin: Client, userId: string, day: string) {
+  const { error } = await admin
+    .from("profiles")
+    .update({ last_daily_brief_on: day })
+    .eq("id", userId);
+  if (error) throw error;
+}
+
+/**
+ * GET /api/jarvis?view=summary: the summary at the first arrival of the day
+ * (week, month by the frequency) in the user's zone, from the data now.
+ * Nothing when Jarvis is off, for a worker, on the onboarding's day, or once
+ * it was shown in this period; "wait" in quiet hours, during the tour and
+ * while the call timer runs (the browser asks again on the next page).
+ * The facts are checked against the database right here (resolveSummary),
+ * so what the bubble says is true when it shows. A quiet period settles
+ * with nothing said. Reads with the user's own client, writes with the
+ * admin client for this user only.
+ */
+export async function loadSummary(args: {
+  supabase: Client;
+  admin: Client;
+  userId: string;
+  row: UserSettings | null;
+  client: ModelClient | null;
+  now?: Date;
+}): Promise<SummaryResponse> {
+  const { supabase, admin, userId } = args;
+  const now = args.now ?? new Date();
+  const none: SummaryResponse = { status: "none" };
+  const settings = proactiveSettingsOf(args.row);
+  if (!settings.enabled) return none;
+  if (await isWorker(supabase, userId)) return none;
+
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("onboarding_completed_at, tour_completed_at, last_daily_brief_on")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!profile) return none;
+  const format = toFormatSettings(args.row);
+  const due = summaryDue({
+    now,
+    timeZone: format.timeZone,
+    weekStartsOn: format.weekStartsOn,
+    frequency: settings.frequency,
+    enabled: settings.enabled,
+    onboardingCompletedAt: profile.onboarding_completed_at,
+    lastSummaryOn: profile.last_daily_brief_on,
+  });
+  if (!due) return none;
+  // The tour is the welcome; the summary waits for the page after it.
+  if (!profile.tour_completed_at) return { status: "wait" };
+  if (inQuietHours(localHour(now, settings.timeZone), settings.quietFrom, settings.quietTo)) {
+    return { status: "wait" };
+  }
+  if (await timerRunning(supabase, settings.timeZone)) return { status: "wait" };
+  if (!(await briefingUnlocked(supabase, userId))) return none;
+
+  const summary = await resolveSummary({
+    client: args.client,
+    admin,
+    userId,
+    row: args.row,
+    period: summaryPeriodOf(settings.frequency),
+    now,
+  });
+  if (summary.status === "empty") {
+    await settleSummary(admin, userId, due.today);
+    return none;
+  }
+  if (summary.status === "unavailable") return none;
+  return {
+    status: "show",
+    item: { id: summary.id, period: due.period, text: summary.text, links: summary.links },
+  };
 }
 
 export type ReactionResult =
@@ -422,6 +490,10 @@ export async function reactToProactive(args: {
     .eq("id", row.id)
     .eq("user_id", userId);
   if (updateError) throw updateError;
+  // The summary on screen settles its period: the next arrival today says nothing.
+  if (reaction === "shown" && row.kind === "briefing") {
+    await settleSummary(admin, userId, todayIsoDate(toFormatSettings(args.row), now));
+  }
 
   await logProactiveEvent(admin, userId, {
     reaction,

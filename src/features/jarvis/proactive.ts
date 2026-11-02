@@ -4,6 +4,7 @@ import {
   todayIsoDate,
   toZonedWallClock,
   zonedWallClockToInstant,
+  type IsoDate,
 } from "@/lib/format";
 
 /**
@@ -12,7 +13,10 @@ import {
  * about dialogs, the timer and the page). No zod here: the browser loads it.
  *
  * The rules (CLAUDE.md → Jarvis):
- * - at most one appearance per session and never sooner than 4 hours after the last
+ * - the summary of the day (week, month) at the first arrival of that period,
+ *   right after the page loads (summaryDue)
+ * - besides it, with "every 2 / 6 hours" only: at most one appearance per
+ *   session and never sooner than the frequency's gap after the last
  *   (one appearance carries a queue; its card shows one notice at a time)
  * - never while the call timer runs or a dialog is open
  * - never within 30 seconds of a page loading
@@ -24,21 +28,46 @@ import {
 export const PROACTIVE_KINDS = ["briefing", "suggestion", "question"] as const;
 export type ProactiveKind = (typeof PROACTIVE_KINDS)[number];
 
-export const JARVIS_FREQUENCIES = ["often", "sometimes", "briefing_only"] as const;
+export const JARVIS_FREQUENCIES = ["every_2h", "every_6h", "daily", "weekly", "monthly"] as const;
 export type JarvisFrequency = (typeof JARVIS_FREQUENCIES)[number];
+export const DEFAULT_JARVIS_FREQUENCY: JarvisFrequency = "every_6h";
+
+/** The values before step 18.2; the database maps them too (an old tab may still send one). */
+const LEGACY_FREQUENCIES: Record<string, JarvisFrequency> = {
+  often: "every_2h",
+  sometimes: "every_6h",
+  briefing_only: "daily",
+};
 
 export function isJarvisFrequency(value: string): value is JarvisFrequency {
   return (JARVIS_FREQUENCIES as readonly string[]).includes(value);
 }
 
-/** The floor of every frequency: never two appearances within 4 hours. */
-export const MIN_GAP_HOURS = 4;
-/** Hours between two appearances per frequency; never below the floor. */
-export const GAP_HOURS: Record<JarvisFrequency, number> = {
-  often: MIN_GAP_HOURS,
-  sometimes: 12,
-  briefing_only: MIN_GAP_HOURS,
+/** A stored value as one of today's frequencies; anything unknown is the default. */
+export function toJarvisFrequency(value: string | null | undefined): JarvisFrequency {
+  if (value && isJarvisFrequency(value)) return value;
+  return (value && LEGACY_FREQUENCIES[value]) || DEFAULT_JARVIS_FREQUENCY;
+}
+
+/** The floor of every frequency: never two appearances within 2 hours. */
+export const MIN_GAP_HOURS = 2;
+/**
+ * Hours between two appearances besides the summary. Null: Jarvis brings up
+ * nothing on his own but the summary (once a day, week or month).
+ */
+export const GAP_HOURS: Record<JarvisFrequency, number | null> = {
+  every_2h: MIN_GAP_HOURS,
+  every_6h: 6,
+  daily: null,
+  weekly: null,
+  monthly: null,
 };
+
+/** Whether Jarvis speaks up between the summaries (suggestions and questions). */
+export function speaksBetweenSummaries(frequency: JarvisFrequency): boolean {
+  return GAP_HOURS[frequency] !== null;
+}
+
 /** A page has to settle this long before Jarvis appears, so he never startles. */
 export const PAGE_SETTLE_MS = 30_000;
 /** Questions Jarvis may ask in seven days. */
@@ -83,13 +112,13 @@ export function inQuietHours(hour: number, from: number | null, to: number | nul
 /** The first instant after the last appearance at which Jarvis may appear again. */
 export function nextAllowedAt(lastShownAt: string | null, frequency: JarvisFrequency): number {
   if (!lastShownAt) return 0;
-  const gap = Math.max(MIN_GAP_HOURS, GAP_HOURS[frequency]);
+  const gap = Math.max(MIN_GAP_HOURS, GAP_HOURS[frequency] ?? 0);
   return Date.parse(lastShownAt) + gap * HOUR_MS;
 }
 
-export type ServerBlock = "disabled" | "quiet" | "tooSoon";
+export type ServerBlock = "disabled" | "summaryOnly" | "quiet" | "tooSoon";
 
-/** What the server can check on its own: the switch, quiet hours and the gap. */
+/** What the server can check on its own: the switch, the frequency, quiet hours and the gap. */
 export function serverBlock(input: {
   now: Date;
   settings: ProactiveSettings;
@@ -97,6 +126,7 @@ export function serverBlock(input: {
 }): ServerBlock | null {
   const { now, settings } = input;
   if (!settings.enabled) return "disabled";
+  if (!speaksBetweenSummaries(settings.frequency)) return "summaryOnly";
   if (inQuietHours(localHour(now, settings.timeZone), settings.quietFrom, settings.quietTo)) {
     return "quiet";
   }
@@ -154,46 +184,37 @@ export function notesIntroDue(input: {
  */
 export const NOTES_INTRO_SETTLE_MS = 4_000;
 
-/** Briefing only: no suggestions, no questions. */
-export function kindsFor(frequency: JarvisFrequency): ProactiveKind[] {
-  return frequency === "briefing_only" ? ["briefing"] : [...PROACTIVE_KINDS];
-}
-
 export type ProactiveCandidate = {
   kind: ProactiveKind;
   /** A suggestion's type, for its urgency; the other kinds have none of their own. */
   type?: string;
   createdAt: string;
-  /** The day a briefing is about (yyyy-MM-dd); null for the other kinds. */
-  briefingDate: string | null;
 };
 
-const PRIORITY: Record<ProactiveKind, number> = { briefing: 0, suggestion: 1, question: 2 };
+/**
+ * What one appearance between the summaries may carry: suggestions and
+ * questions. The brief is the summary's (summaryDue), never part of it.
+ */
+const QUEUE_PRIORITY: Partial<Record<ProactiveKind, number>> = { suggestion: 0, question: 1 };
 
 /** The longest queue one appearance carries; the card shows one notice of it at a time. */
 export const PROACTIVE_QUEUE_LIMIT = 10;
 
 /**
- * What is worth saying now, in the order the card shows it: today's
- * briefing first (only when the account has it), then the suggestions, the
- * most urgent and then the newest first, then a question. Empty when there
- * is nothing; Jarvis never comes just to say hello.
+ * What is worth saying now, in the order the card shows it: the suggestions,
+ * the most urgent and then the newest first, then a question. Empty when
+ * there is nothing or the frequency is a summary only; Jarvis never comes
+ * just to say hello.
  */
 export function orderProactive<T extends ProactiveCandidate>(
   candidates: readonly T[],
-  options: { frequency: JarvisFrequency; today: string; briefingUnlocked: boolean },
+  options: { frequency: JarvisFrequency },
 ): T[] {
-  const kinds = new Set(kindsFor(options.frequency));
-  const eligible = candidates.filter((item) => {
-    if (!kinds.has(item.kind)) return false;
-    if (item.kind === "briefing") {
-      return options.briefingUnlocked && item.briefingDate === options.today;
-    }
-    return true;
-  });
+  if (!speaksBetweenSummaries(options.frequency)) return [];
+  const eligible = candidates.filter((item) => QUEUE_PRIORITY[item.kind] !== undefined);
   return eligible.sort(
     (a, b) =>
-      PRIORITY[a.kind] - PRIORITY[b.kind] ||
+      QUEUE_PRIORITY[a.kind]! - QUEUE_PRIORITY[b.kind]! ||
       (a.kind === "suggestion" ? urgencyOf(a.type ?? "") - urgencyOf(b.type ?? "") : 0) ||
       Date.parse(b.createdAt) - Date.parse(a.createdAt),
   );
@@ -202,9 +223,90 @@ export function orderProactive<T extends ProactiveCandidate>(
 /** The first thing of the queue, or null when there is nothing to say. */
 export function pickProactive<T extends ProactiveCandidate>(
   candidates: readonly T[],
-  options: { frequency: JarvisFrequency; today: string; briefingUnlocked: boolean },
+  options: { frequency: JarvisFrequency },
 ): T | null {
   return orderProactive(candidates, options)[0] ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// The summary at the first arrival of the day, week or month
+// ---------------------------------------------------------------------------
+
+export const SUMMARY_PERIODS = ["day", "week", "month"] as const;
+export type SummaryPeriod = (typeof SUMMARY_PERIODS)[number];
+
+/** Every frequency gets a summary; "weekly" and "monthly" one per week or month. */
+export function summaryPeriodOf(frequency: JarvisFrequency): SummaryPeriod {
+  if (frequency === "weekly") return "week";
+  if (frequency === "monthly") return "month";
+  return "day";
+}
+
+/**
+ * The summary waits this long after a page loads: the page is drawn, then he
+ * flies in. Far shorter than PAGE_SETTLE_MS: coming in is the moment for it.
+ */
+export const SUMMARY_SETTLE_MS = 1_500;
+
+function shiftDay(day: IsoDate, days: number): IsoDate {
+  return new Date(Date.parse(`${day}T00:00:00Z`) + days * 24 * HOUR_MS).toISOString().slice(0, 10);
+}
+
+/** The first day of the day, week (by the user's week start, 0 = Sunday) or month `day` is in. */
+export function periodStartOf(day: IsoDate, period: SummaryPeriod, weekStartsOn: number): IsoDate {
+  if (period === "day") return day;
+  if (period === "month") return `${day.slice(0, 7)}-01`;
+  const weekday = new Date(`${day}T00:00:00Z`).getUTCDay();
+  return shiftDay(day, -((weekday - weekStartsOn + 7) % 7));
+}
+
+/** The first day of the period before the one starting on `start`. */
+export function previousPeriodStart(start: IsoDate, period: SummaryPeriod): IsoDate {
+  if (period === "day") return shiftDay(start, -1);
+  if (period === "week") return shiftDay(start, -7);
+  return `${shiftDay(start, -1).slice(0, 7)}-01`;
+}
+
+/** The first day after the period starting on `start`. */
+export function nextPeriodStart(start: IsoDate, period: SummaryPeriod): IsoDate {
+  if (period === "day") return shiftDay(start, 1);
+  if (period === "week") return shiftDay(start, 7);
+  return `${shiftDay(`${start.slice(0, 7)}-28`, 4).slice(0, 7)}-01`;
+}
+
+export type SummaryDue = {
+  period: SummaryPeriod;
+  /** Today in the user's zone. */
+  today: IsoDate;
+  /** The first day of the period the summary is about. */
+  start: IsoDate;
+};
+
+/**
+ * Whether this arrival is the first of the summary's period (day, week or
+ * month in the user's zone and week), so the summary is due now. Never when
+ * Jarvis is switched off, before the onboarding is done, or on the day it was
+ * done (a new account has its welcome; the first summary comes the next
+ * day). `lastSummaryOn` is profiles.last_daily_brief_on: the day the summary
+ * was last shown, or settled with nothing to say.
+ */
+export function summaryDue(input: {
+  now: Date;
+  timeZone: string;
+  weekStartsOn: number;
+  frequency: JarvisFrequency;
+  enabled: boolean;
+  onboardingCompletedAt: string | null;
+  lastSummaryOn: IsoDate | null;
+}): SummaryDue | null {
+  if (!input.enabled || !input.onboardingCompletedAt) return null;
+  const zone = { ...DEFAULT_FORMAT_SETTINGS, timeZone: input.timeZone };
+  const today = todayIsoDate(zone, input.now);
+  if (todayIsoDate(zone, new Date(input.onboardingCompletedAt)) >= today) return null;
+  const period = summaryPeriodOf(input.frequency);
+  const start = periodStartOf(today, period, input.weekStartsOn);
+  if (input.lastSummaryOn && input.lastSummaryOn >= start) return null;
+  return { period, today, start };
 }
 
 /** "Later": the start of the next day in the user's zone. */

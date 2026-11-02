@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
-import type { ProactiveRequest, ProactiveResponse } from "./protocol";
+import type { ProactiveRequest, ProactiveResponse, SummaryResponse } from "./protocol";
 import { jarvisKeys } from "./queries";
 
 const ENDPOINT = "/api/jarvis";
@@ -15,6 +15,20 @@ export async function fetchProactive(): Promise<ProactiveResponse> {
     return (await response.json()) as ProactiveResponse;
   } catch {
     return { items: [], retryAt: null };
+  }
+}
+
+/**
+ * The summary at the first arrival, when it is due. A failed request waits
+ * for the next page, like quiet hours.
+ */
+export async function fetchSummary(): Promise<SummaryResponse> {
+  try {
+    const response = await fetch(`${ENDPOINT}?view=summary`, { cache: "no-store" });
+    if (!response.ok) return { status: "wait" };
+    return (await response.json()) as SummaryResponse;
+  } catch {
+    return { status: "wait" };
   }
 }
 

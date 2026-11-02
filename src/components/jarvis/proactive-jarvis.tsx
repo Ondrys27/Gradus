@@ -12,7 +12,7 @@ import { useProfile, useSession, useUserSettings } from "@/features/account/quer
 import { coldCallingKeys } from "@/features/cold-calling/timer-queries";
 import type { TimerReading } from "@/features/cold-calling/timer-logic";
 import { jarvisOverlay, useJarvisOverlay } from "@/features/jarvis/overlay-store";
-import { clientBlock } from "@/features/jarvis/proactive";
+import { clientBlock, speaksBetweenSummaries, toJarvisFrequency } from "@/features/jarvis/proactive";
 import { fetchProactive, useProactiveReaction } from "@/features/jarvis/proactive-queries";
 import type { ProactiveItem } from "@/features/jarvis/protocol";
 import { ANSWER_MAX, questionByKey } from "@/features/jarvis/questions";
@@ -49,9 +49,9 @@ function dialogOpen(): boolean {
 }
 
 /**
- * Jarvis speaking up on his own: he flies into the bottom-left corner of the
- * content (the bottom-right belongs to his button) with what he has to say:
- * the morning brief, suggestions, a question. One card, one notice at a
+ * Jarvis speaking up on his own between the summaries: he flies into the
+ * bottom-left corner of the content (the bottom-right belongs to his button)
+ * with what he has to say: suggestions, a question. One card, one notice at a
  * time, the most urgent first; "2 of 5" with ‹ › (arrow keys, a swipe on a
  * phone) skips without losing anything, Close and a done action take the
  * notice out and the next one takes its place. Only when the rules allow it
@@ -71,12 +71,17 @@ export function ProactiveJarvis({
   const queryClient = useQueryClient();
   const pathname = usePathname();
   const tourActive = useJarvisOverlay((state) => state.tourActive);
+  const summaryOpen = useJarvisOverlay((state) => state.summaryOpen);
   const shownThisSession = useJarvisOverlay((state) => state.proactiveShown);
   const reaction = useProactiveReaction();
   const [items, setItems] = useState<ProactiveItem[]>([]);
   const queue = useNoticeQueue(items);
   const besidePanel = useMediaQuery(BESIDE_PANEL_QUERY);
-  const visible = items.length > 0 && !(panelOpen && !besidePanel);
+  const visible = items.length > 0 && !(panelOpen && !besidePanel) && !summaryOpen;
+  useEffect(() => {
+    jarvisOverlay.setNoticeOpen("proactive", visible);
+  }, [visible]);
+  useEffect(() => () => jarvisOverlay.setNoticeOpen("proactive", false), []);
 
   // The 30 seconds count from every page change, not only from the first load.
   const pageSince = useRef(Date.now());
@@ -84,13 +89,15 @@ export function ProactiveJarvis({
     pageSince.current = Date.now();
   }, [pathname]);
 
+  // With a summary-only frequency nothing comes between the summaries (DaySummary).
   const enabled =
     !worker &&
     settings.jarvis_proactive &&
+    speaksBetweenSummaries(toJarvisFrequency(settings.jarvis_frequency)) &&
     !!profile.onboarding_completed_at &&
     !!profile.tour_completed_at;
 
-  const busy = panelOpen || tourActive;
+  const busy = panelOpen || tourActive || summaryOpen;
   const state = useRef({ busy, shownThisSession });
   state.current = { busy, shownThisSession };
   const nextCheck = useRef(0);

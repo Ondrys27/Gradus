@@ -644,6 +644,28 @@
         }
       }
     },
+    "summary": {
+      "heading": {
+        "day": "Tvůj den",
+        "week": "Tvůj týden",
+        "month": "Tvůj měsíc"
+      },
+      "thanks": "Díky",
+      "close": "Zavřít",
+      "linksLabel": "Co na tebe čeká",
+      "links": {
+        "overdueCrmTasks": "Moje úkoly po termínu",
+        "todayCrmTasks": "Úkoly na dnešek",
+        "periodCrmTasks": "{period, select, week {Úkoly na tento týden} other {Úkoly na tento měsíc}}",
+        "overdueTasks": "Úkoly milníků po termínu",
+        "events": "{period, select, day {Dnešní události} week {Události tento týden} other {Události tento měsíc}}",
+        "closePast": "Uzavření v minulosti",
+        "overdueDealTasks": "Úkoly obchodů po termínu",
+        "noTask": "Obchody bez úkolu",
+        "overdueInvoices": "Faktury po splatnosti",
+        "followUps": "Komu se ozvat"
+      }
+    },
     "queue": {
       "label": "Upozornění Jarvise",
       "position": "{current} z {total}",
@@ -1008,17 +1030,21 @@
       "title": "Jarvis",
       "description": "Kdy se Jarvis ozve sám od sebe. Chat v rohu funguje vždycky.",
       "proactive": "Jarvis se ozývá sám",
-      "proactiveHint": "Občas přiletí s ranním shrnutím, návrhem nebo otázkou. Nikdy, když běží časovač volání.",
+      "proactiveHint": "Při prvním příchodu dne přiletí se souhrnem, u Často a Občas i mezi tím s návrhem nebo otázkou. Nikdy, když běží časovač volání.",
       "frequency": "Jak často",
       "frequencies": {
-        "often": "Často",
-        "sometimes": "Občas",
-        "briefing_only": "Jen shrnutí"
+        "every_2h": "Často",
+        "every_6h": "Občas",
+        "daily": "Jednou denně",
+        "weekly": "Jednou týdně",
+        "monthly": "Jednou měsíčně"
       },
       "frequencyHint": {
-        "often": "Nejvýš jednou za 4 hodiny.",
-        "sometimes": "Nejvýš jednou za 12 hodin.",
-        "briefing_only": "Jen ranní shrnutí, žádné návrhy ani otázky."
+        "every_2h": "Souhrn při prvním příchodu dne a mezi tím návrhy nejvýš jednou za 2 hodiny.",
+        "every_6h": "Souhrn při prvním příchodu dne a mezi tím návrhy nejvýš jednou za 6 hodin.",
+        "daily": "Jen souhrn dne při prvním příchodu. Návrhy počkají v panelu Jarvise.",
+        "weekly": "Jen souhrn týdne při prvním příchodu v týdnu: čísla za minulý týden a plán na tento. Návrhy počkají v panelu.",
+        "monthly": "Jen souhrn měsíce při prvním příchodu v měsíci. Návrhy počkají v panelu."
       },
       "quiet": {
         "title": "Tichý režim",

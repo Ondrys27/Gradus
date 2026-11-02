@@ -36,6 +36,7 @@ export function NotesIntro({ panelOpen }: { panelOpen: boolean }) {
   const queryClient = useQueryClient();
   const updateProfile = useUpdateProfile();
   const tourActive = useJarvisOverlay((state) => state.tourActive);
+  const summaryOpen = useJarvisOverlay((state) => state.summaryOpen);
   const shownThisSession = useJarvisOverlay((state) => state.proactiveShown);
   const [visible, setVisible] = useState(false);
 
@@ -46,7 +47,11 @@ export function NotesIntro({ panelOpen }: { panelOpen: boolean }) {
     notesIntroSeenAt: profile.notes_intro_seen_at,
   });
 
-  const busy = panelOpen || tourActive;
+  const busy = panelOpen || tourActive || summaryOpen;
+  useEffect(() => {
+    jarvisOverlay.setNoticeOpen("notesIntro", visible);
+  }, [visible]);
+  useEffect(() => () => jarvisOverlay.setNoticeOpen("notesIntro", false), []);
   const state = useRef({ busy });
   state.current = { busy };
 

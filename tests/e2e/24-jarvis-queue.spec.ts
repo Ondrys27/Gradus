@@ -91,7 +91,7 @@ test("24 · Jarvis flies in with one card for three notices", async ({ page, acc
     .from("user_settings")
     .update({
       jarvis_proactive: true,
-      jarvis_frequency: "often",
+      jarvis_frequency: "every_2h",
       jarvis_quiet_from: null,
       jarvis_quiet_to: null,
     })

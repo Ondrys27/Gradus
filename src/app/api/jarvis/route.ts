@@ -39,10 +39,15 @@ import { loadSituation } from "@/features/jarvis/server/load-situation";
 import { reviewMilestone } from "@/features/jarvis/server/milestone-review";
 import { createAnthropic, streamModel } from "@/features/jarvis/server/model";
 import { loadMilestoneNotes, loadNotesContext } from "@/features/jarvis/server/notes";
-import { e2eEchoClient, wantsE2eEcho } from "@/features/jarvis/server/e2e-model";
+import {
+  E2E_ECHO_SUMMARY,
+  e2eEchoClient,
+  wantsE2eEcho,
+} from "@/features/jarvis/server/e2e-model";
 import {
   loadAnswersBlock,
   loadProactive,
+  loadSummary,
   reactToProactive,
 } from "@/features/jarvis/server/proactive";
 import { runRewardSetup } from "@/features/jarvis/server/reward-setup";
@@ -135,7 +140,8 @@ async function logNotConfigured(ctx: Context, feature: JarvisFeature) {
  * - `?task=watch`: the opportunity watch, run by Vercel Cron with CRON_SECRET.
  * - `?task=briefing`: the morning briefs (hourly, each user at 6 a.m. their time), Cron only.
  * - `?view=suggestions`: the instant triggers, then the open suggestions.
- * - `?view=proactive`: what Jarvis would bring up on his own now (a queue, most urgent first), or nothing.
+ * - `?view=proactive`: what Jarvis would bring up on his own now between the summaries (a queue, most urgent first), or nothing.
+ * - `?view=summary`: the summary at the first arrival of the day, week or month, or nothing.
  * - otherwise: calls and files left this month and the chips for the situation.
  */
 export const GET = instrumentRoute("api.jarvis.get", async (request: Request) => {
@@ -153,8 +159,16 @@ export const GET = instrumentRoute("api.jarvis.get", async (request: Request) =>
   }
 
   if (params.get("view") === "proactive") {
-    // A brief that is no longer true is written again on the spot (budget guard included).
-    const body = await loadProactive({ ...ctx, client: createAnthropic(ctx.admin) });
+    const body = await loadProactive(ctx);
+    return NextResponse.json(body, { headers: { "Cache-Control": "no-store" } });
+  }
+
+  if (params.get("view") === "summary") {
+    // Written on the spot when today's brief is missing or no longer true (budget guard included).
+    const client = wantsE2eEcho(request.headers, ctx.email, E2E_ECHO_SUMMARY)
+      ? e2eEchoClient(ctx.admin, E2E_ECHO_SUMMARY)
+      : createAnthropic(ctx.admin);
+    const body = await loadSummary({ ...ctx, client });
     return NextResponse.json(body, { headers: { "Cache-Control": "no-store" } });
   }
 

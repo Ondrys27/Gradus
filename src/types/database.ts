@@ -2475,6 +2475,7 @@ export type Database = {
           id: string
           industry: string | null
           is_internal: boolean
+          last_daily_brief_on: string | null
           mode: string
           notes_intro_seen_at: string | null
           nps_asked_at: string | null
@@ -2494,6 +2495,7 @@ export type Database = {
           id: string
           industry?: string | null
           is_internal?: boolean
+          last_daily_brief_on?: string | null
           mode?: string
           notes_intro_seen_at?: string | null
           nps_asked_at?: string | null
@@ -2513,6 +2515,7 @@ export type Database = {
           id?: string
           industry?: string | null
           is_internal?: boolean
+          last_daily_brief_on?: string | null
           mode?: string
           notes_intro_seen_at?: string | null
           nps_asked_at?: string | null

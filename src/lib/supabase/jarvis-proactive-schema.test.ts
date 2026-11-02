@@ -194,9 +194,15 @@ describe("settings and tour", () => {
         `select jarvis_proactive, jarvis_frequency, jarvis_quiet_from from user_settings where user_id = $1`,
         [user],
       ),
-    ).toEqual({ jarvis_proactive: true, jarvis_frequency: "sometimes", jarvis_quiet_from: null });
+    ).toEqual({ jarvis_proactive: true, jarvis_frequency: "every_6h", jarvis_quiet_from: null });
+    for (const frequency of ["every_2h", "daily", "weekly", "monthly"]) {
+      await db.query(`update user_settings set jarvis_frequency = $2 where user_id = $1`, [
+        user,
+        frequency,
+      ]);
+    }
     await db.query(
-      `update user_settings set jarvis_frequency = 'often', jarvis_quiet_from = 22, jarvis_quiet_to = 7 where user_id = $1`,
+      `update user_settings set jarvis_frequency = 'every_2h', jarvis_quiet_from = 22, jarvis_quiet_to = 7 where user_id = $1`,
       [user],
     );
     for (const set of [
@@ -217,23 +223,59 @@ describe("settings and tour", () => {
   });
 });
 
+describe("frequencies and the arrival summary (step 18.2)", () => {
+  it("maps the old frequencies to the new ones, also when an old tab still sends them", async () => {
+    const user = await createUser();
+    await asUser(user);
+    for (const [old, now] of [
+      ["often", "every_2h"],
+      ["sometimes", "every_6h"],
+      ["briefing_only", "daily"],
+    ]) {
+      await db.query(`update user_settings set jarvis_frequency = $2 where user_id = $1`, [
+        user,
+        old,
+      ]);
+      expect(
+        await one(`select jarvis_frequency from user_settings where user_id = $1`, [user]),
+      ).toEqual({ jarvis_frequency: now });
+    }
+    await asServer();
+  });
+
+  it("keeps the day of the last summary server-only", async () => {
+    const user = await createUser();
+    await asUser(user);
+    await expect(
+      db.query(`update profiles set last_daily_brief_on = '2026-11-02' where id = $1`, [user]),
+    ).rejects.toThrow(/summary_is_server_only/);
+    // The rest of the profile stays the user's own.
+    await db.query(`update profiles set tour_completed_at = now() where id = $1`, [user]);
+    await asServer();
+    await db.query(`update profiles set last_daily_brief_on = '2026-11-02' where id = $1`, [user]);
+    expect(
+      await one(`select last_daily_brief_on::text as day from profiles where id = $1`, [user]),
+    ).toEqual({ day: "2026-11-02" });
+  });
+});
+
 describe("jarvis_briefing_candidates", () => {
   async function readyUser(timezone: string, mode: "game" | "tool" = "tool") {
     const user = await createUser();
-    await db.query(`update profiles set onboarding_completed_at = now(), mode = $2 where id = $1`, [
-      user,
-      mode,
-    ]);
+    await db.query(
+      `update profiles set onboarding_completed_at = '2026-06-01T08:00:00Z', mode = $2 where id = $1`,
+      [user, mode],
+    );
     await db.query(`update user_settings set timezone = $2 where user_id = $1`, [user, timezone]);
     await db.query(`insert into milestones (user_id, title) values ($1, 'Active')`, [user]);
     return user;
   }
-  // 05:30 UTC = 07:30 in Prague (summer time), 01:30 in New York.
+  // 05:30 UTC = 07:30 in Prague (summer time), 01:30 in New York. A Wednesday, the 1st.
   const now = "2026-07-01T05:30:00Z";
-  const candidates = async () =>
+  const candidates = async (at = now) =>
     (
       await rows<{ user_id: string }>(`select user_id from jarvis_briefing_candidates($1, 1000)`, [
-        now,
+        at,
       ])
     ).map((r) => r.user_id);
 
@@ -263,6 +305,54 @@ describe("jarvis_briefing_candidates", () => {
     expect(picked).toContain(prague);
     expect(picked).toContain(unlockedGame);
     for (const user of [newYork, lockedGame, off, done, idle]) expect(picked).not.toContain(user);
+  });
+
+  it("writes by the frequency: every day, a week's first day, a month's first day", async () => {
+    const daily = await readyUser("Europe/Prague");
+    await db.query(`update user_settings set jarvis_frequency = 'daily' where user_id = $1`, [daily]);
+    const weeklySaturday = await readyUser("Europe/Prague");
+    const weeklyMonday = await readyUser("Europe/Prague");
+    await db.query(
+      `update user_settings set jarvis_frequency = 'weekly', first_day_of_week = 6 where user_id = $1`,
+      [weeklySaturday],
+    );
+    await db.query(
+      `update user_settings set jarvis_frequency = 'weekly', first_day_of_week = 1 where user_id = $1`,
+      [weeklyMonday],
+    );
+    const monthly = await readyUser("Europe/Prague");
+    await db.query(`update user_settings set jarvis_frequency = 'monthly' where user_id = $1`, [
+      monthly,
+    ]);
+    const pick = async (at: string) => {
+      const picked = await candidates(at);
+      return [daily, weeklySaturday, weeklyMonday, monthly].map((user) => picked.includes(user));
+    };
+
+    // Wednesday the 1st, Saturday the 4th, Monday the 6th.
+    expect(await pick("2026-07-01T05:30:00Z")).toEqual([true, false, false, true]);
+    expect(await pick("2026-07-04T05:30:00Z")).toEqual([true, true, false, false]);
+    expect(await pick("2026-07-06T05:30:00Z")).toEqual([true, false, true, false]);
+  });
+
+  it("leaves out the onboarding's day and a day the first arrival already settled", async () => {
+    const fresh = await readyUser("Europe/Prague");
+    await db.query(
+      `update profiles set onboarding_completed_at = '2026-07-01T04:00:00Z' where id = $1`,
+      [fresh],
+    );
+    const settled = await readyUser("Europe/Prague");
+    await db.query(`update profiles set last_daily_brief_on = '2026-07-01' where id = $1`, [
+      settled,
+    ]);
+    const yesterday = await readyUser("Europe/Prague");
+    await db.query(`update profiles set last_daily_brief_on = '2026-06-30' where id = $1`, [
+      yesterday,
+    ]);
+    const picked = await candidates();
+    expect(picked).toContain(yesterday);
+    expect(picked).not.toContain(fresh);
+    expect(picked).not.toContain(settled);
   });
 
   it("skips a broken time zone instead of failing the whole run", async () => {

@@ -14,7 +14,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useUserSettings } from "@/features/account/queries";
 import { jarvisOverlay } from "@/features/jarvis/overlay-store";
-import { isJarvisFrequency, JARVIS_FREQUENCIES } from "@/features/jarvis/proactive";
+import { JARVIS_FREQUENCIES, toJarvisFrequency } from "@/features/jarvis/proactive";
 import { formatIsoTime } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import type { UserSettingsPatch } from "@/lib/user-settings";
@@ -48,18 +48,26 @@ function Row({
   );
 }
 
+/** The two frequencies with suggestions in between share the first row, the summaries the second. */
+const SPAN: Record<(typeof JARVIS_FREQUENCIES)[number], string> = {
+  every_2h: "col-span-3",
+  every_6h: "col-span-3",
+  daily: "col-span-2",
+  weekly: "col-span-2",
+  monthly: "col-span-2",
+};
+
 /**
- * Settings → Jarvis: whether he speaks up on his own, how often (often /
- * now and then / the morning brief only) and quiet hours in the user's zone.
+ * Settings → Jarvis: whether he speaks up on his own, how often (every 2 or
+ * 6 hours besides the summary of the day, or only a summary once a day,
+ * week or month) and quiet hours in the user's zone.
  */
 export function JarvisSettings({ save }: { save: (patch: UserSettingsPatch) => void }) {
   const t = useTranslations("settings.jarvis");
   const settings = useUserSettings();
   const format = useFormatSettings();
   const on = settings.jarvis_proactive;
-  const frequency = isJarvisFrequency(settings.jarvis_frequency)
-    ? settings.jarvis_frequency
-    : "sometimes";
+  const frequency = toJarvisFrequency(settings.jarvis_frequency);
   const quiet = settings.jarvis_quiet_from !== null && settings.jarvis_quiet_to !== null;
 
   const hourItems = useMemo(
@@ -115,7 +123,7 @@ export function JarvisSettings({ save }: { save: (patch: UserSettingsPatch) => v
           role="radiogroup"
           aria-label={t("frequency")}
           tabIndex={-1}
-          className="grid grid-cols-3 gap-2 rounded-xl outline-none"
+          className="grid grid-cols-6 gap-2 rounded-xl outline-none"
         >
           {JARVIS_FREQUENCIES.map((value) => {
             const checked = frequency === value;
@@ -128,7 +136,8 @@ export function JarvisSettings({ save }: { save: (patch: UserSettingsPatch) => v
                 disabled={!on}
                 onClick={() => !checked && save({ jarvis_frequency: value })}
                 className={cn(
-                  "flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-2 text-center text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50",
+                  "flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-2 py-1.5 text-center text-sm leading-tight font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50",
+                  SPAN[value],
                   checked
                     ? "border-violet/60 bg-violet/15 text-ink"
                     : "border-line bg-canvas-deep/60 text-ink-soft hover:border-line-strong",
