@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { dayRangeToInstants } from "@/features/calendar/calendar-logic";
 import { APP_NAME } from "@/lib/constants";
 import { instantToZonedParts, todayIsoDate, type FormatSettings } from "@/lib/format";
-import { toFormatSettings, USER_SETTINGS_COLUMNS } from "@/lib/user-settings";
+import { toFormatSettings, USER_SETTINGS_COLUMNS, type UserSettings } from "@/lib/user-settings";
 import { digestIsClear, type HealthDigest } from "@/features/pipeline/health";
 import { loadHealthDigest } from "@/features/pipeline/health-data";
 import type { Database, Json } from "@/types/database";
@@ -40,7 +40,44 @@ export type BriefingData = {
    * Null when it could not be read; the brief is written without it.
    */
   onFire: HealthDigest | null;
+  /** What the brief is written from, as keys (briefingFacts); stored with it. */
+  facts: string[];
 };
+
+/**
+ * The things a brief can state as a problem or as today's agenda, one key
+ * each (a deal without a task, a task due, an event). A brief stays true as
+ * long as all of them still hold; new ones only make it incomplete.
+ */
+export function briefingFacts(parts: {
+  onFire: HealthDigest | null;
+  taskIds: readonly string[];
+  eventIds: readonly string[];
+  stalledDealIds: readonly string[];
+  followUps: number;
+}): string[] {
+  const keys = [
+    ...(parts.onFire?.closePast.top.map((deal) => `closePast:${deal.id}`) ?? []),
+    ...(parts.onFire?.overdueTasks.top.map((deal) => `overdueDeal:${deal.id}`) ?? []),
+    ...(parts.onFire?.noTask.top.map((deal) => `noTask:${deal.id}`) ?? []),
+    ...parts.taskIds.map((id) => `task:${id}`),
+    ...parts.eventIds.map((id) => `event:${id}`),
+    ...parts.stalledDealIds.map((id) => `stalled:${id}`),
+    ...(parts.followUps > 0 ? ["followUps"] : []),
+  ];
+  return [...new Set(keys)].sort();
+}
+
+/**
+ * Whether a stored brief says something that is no longer so: one of its
+ * facts is gone (the deal got a task, the task is done). A brief stored
+ * without facts (written before they were kept) counts as gone too.
+ */
+export function briefingStale(stored: readonly string[] | undefined, fresh: readonly string[]) {
+  if (!stored) return true;
+  const now = new Set(fresh);
+  return stored.some((fact) => !now.has(fact));
+}
 
 /** Nothing happened yesterday and nothing waits today: no brief, no model call. */
 export function briefingIsEmpty(data: BriefingData): boolean {
@@ -90,7 +127,7 @@ export async function loadBriefingData(
     loadRuleInputs(admin, userId, settings, now),
     admin
       .from("tasks")
-      .select("title")
+      .select("id, title")
       .eq("user_id", userId)
       .neq("status", "done")
       .eq("due_date", today)
@@ -98,7 +135,7 @@ export async function loadBriefingData(
       .limit(LIST_LIMIT),
     admin
       .from("calendar_events")
-      .select("title, starts_at, all_day")
+      .select("id, title, starts_at, all_day")
       .eq("user_id", userId)
       .gte("starts_at", todayRange.from)
       .lt("starts_at", todayRange.to)
@@ -112,14 +149,16 @@ export async function loadBriefingData(
     }),
   ]);
 
+  const dueRows = must(due);
+  const eventRows = must(events);
   return {
     locale,
     today,
     dayPlan: describeDayPlan(window, settings),
     yesterday: changes,
-    dueToday: must(due).map((task) => task.title),
+    dueToday: dueRows.map((task) => task.title),
     overdue: rules.overdueTasks.map((task) => ({ title: task.title, daysLate: task.daysLate })),
-    events: must(events).map((event) => ({
+    events: eventRows.map((event) => ({
       title: event.title,
       time: event.all_day
         ? null
@@ -132,6 +171,13 @@ export async function loadBriefingData(
       days: deal.days,
     })),
     onFire,
+    facts: briefingFacts({
+      onFire,
+      taskIds: [...dueRows.map((task) => task.id), ...rules.overdueTasks.map((task) => task.id)],
+      eventIds: eventRows.map((event) => event.id),
+      stalledDealIds: rules.stalledDeals.map((deal) => deal.id),
+      followUps: rules.followUps.total,
+    }),
   };
 }
 
@@ -191,6 +237,56 @@ ${noticed.join("\n") || "nothing"}
 
 export type BriefingOutcome = "written" | "empty" | "skipped" | "failed";
 
+async function settingsOf(admin: Client, userId: string): Promise<UserSettings | null> {
+  const { data: row, error } = await admin
+    .from("user_settings")
+    .select(USER_SETTINGS_COLUMNS)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  return row;
+}
+
+function loadFor(admin: Client, userId: string, row: UserSettings | null, now: Date) {
+  return loadBriefingData(
+    admin,
+    userId,
+    toFormatSettings(row),
+    row?.locale ?? "en",
+    now,
+    row?.country_code ?? null,
+  );
+}
+
+/** Sonnet writes the brief from the data (measured in ai_usage); skipped at the AI limit, failed without a text. */
+async function writeBrief(args: {
+  client: ModelClient;
+  admin: Client;
+  userId: string;
+  row: UserSettings | null;
+  data: BriefingData;
+  now: Date;
+}): Promise<{ text: string } | "skipped" | "failed"> {
+  const { admin, userId } = args;
+  const usage = await loadAiUsage(admin, admin, userId, toFormatSettings(args.row), args.now);
+  if (limitReached(usage)) return "skipped";
+
+  const result = await streamModel({
+    client: args.client,
+    userId,
+    feature: "briefing",
+    instructions: BRIEFING_INSTRUCTIONS,
+    context: briefingContext(args.data),
+    messages: [{ role: "user", content: "Write this morning's brief." }],
+    log: (entry) => logAiUsage(admin, { ...entry, userId, conversationId: null }),
+  });
+  if (!result.ok) return "failed";
+  const text = result.text.trim().slice(0, BRIEFING_MAX);
+  return text ? { text } : "failed";
+}
+
+const briefingPayload = (data: BriefingData) => ({ date: data.today, facts: data.facts });
+
 /** One user's brief: data, Sonnet (measured in ai_usage), then one row for the bubble. */
 export async function briefUser(args: {
   client: ModelClient;
@@ -199,38 +295,12 @@ export async function briefUser(args: {
   now: Date;
 }): Promise<BriefingOutcome> {
   const { admin, userId, now } = args;
-  const { data: row, error } = await admin
-    .from("user_settings")
-    .select(USER_SETTINGS_COLUMNS)
-    .eq("user_id", userId)
-    .maybeSingle();
-  if (error) throw error;
-  const settings = toFormatSettings(row);
-  const data = await loadBriefingData(
-    admin,
-    userId,
-    settings,
-    row?.locale ?? "en",
-    now,
-    row?.country_code ?? null,
-  );
+  const row = await settingsOf(admin, userId);
+  const data = await loadFor(admin, userId, row, now);
   if (briefingIsEmpty(data)) return "empty";
 
-  const usage = await loadAiUsage(admin, admin, userId, settings, now);
-  if (limitReached(usage)) return "skipped";
-
-  const result = await streamModel({
-    client: args.client,
-    userId,
-    feature: "briefing",
-    instructions: BRIEFING_INSTRUCTIONS,
-    context: briefingContext(data),
-    messages: [{ role: "user", content: "Write this morning's brief." }],
-    log: (entry) => logAiUsage(admin, { ...entry, userId, conversationId: null }),
-  });
-  if (!result.ok) return "failed";
-  const text = result.text.trim().slice(0, BRIEFING_MAX);
-  if (!text) return "failed";
+  const written = await writeBrief({ client: args.client, admin, userId, row, data, now });
+  if (typeof written === "string") return written;
 
   const action: SuggestionAction = { kind: "open", href: "/app" };
   const { error: insertError } = await admin.from("jarvis_suggestions").upsert(
@@ -238,15 +308,63 @@ export async function briefUser(args: {
       user_id: userId,
       kind: "briefing",
       type: "briefing",
-      text,
+      text: written.text,
       action: action as unknown as Json,
-      payload: { date: data.today },
+      payload: briefingPayload(data),
       dedupe_key: briefingDedupeKey(data.today),
     },
     { onConflict: "user_id,dedupe_key", ignoreDuplicates: true },
   );
   if (insertError) throw insertError;
   return "written";
+}
+
+/**
+ * A stored brief right before the bubble shows it. Its facts are checked
+ * against the data now: still true = shown as written; something it says is
+ * gone = written again from today's data and stored; nothing left to say =
+ * retired. When it cannot be written again (no key, budget, an error), it
+ * is not shown: silence over an untrue sentence. Admin client, this user only.
+ */
+export async function freshenBriefing(args: {
+  client: ModelClient | null;
+  admin: Client;
+  userId: string;
+  row: UserSettings | null;
+  id: string;
+  text: string;
+  /** The facts stored with it; undefined for a brief written before they were kept. */
+  facts: readonly string[] | undefined;
+  now?: Date;
+}): Promise<string | null> {
+  const { admin, userId } = args;
+  const now = args.now ?? new Date();
+  // A brief built on no facts (only yesterday's news) cannot turn untrue.
+  if (args.facts && args.facts.length === 0) return args.text;
+
+  const data = await loadFor(admin, userId, args.row, now);
+  if (!briefingStale(args.facts, data.facts)) return args.text;
+
+  if (briefingIsEmpty(data)) {
+    const { error } = await admin
+      .from("jarvis_suggestions")
+      .update({ dismissed_at: now.toISOString() })
+      .eq("id", args.id)
+      .eq("user_id", userId);
+    if (error) throw error;
+    return null;
+  }
+  if (!args.client) return null;
+  const written = await writeBrief({ client: args.client, admin, userId, row: args.row, data, now });
+  if (typeof written === "string") return null;
+
+  const { error } = await admin
+    .from("jarvis_suggestions")
+    .update({ text: written.text, payload: briefingPayload(data) })
+    .eq("id", args.id)
+    .eq("user_id", userId);
+  if (error) throw error;
+  return written.text;
 }
 
 /**

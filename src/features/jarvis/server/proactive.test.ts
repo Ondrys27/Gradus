@@ -5,8 +5,15 @@ import type Anthropic from "@anthropic-ai/sdk";
 vi.mock("server-only", () => ({}));
 
 const { answersBlock, loadProactive, reactToProactive, toCandidate } = await import("./proactive");
-const { BRIEFING_INSTRUCTIONS, briefingContext, briefingIsEmpty, briefUser } =
-  await import("./briefing");
+const {
+  BRIEFING_INSTRUCTIONS,
+  briefingContext,
+  briefingFacts,
+  briefingIsEmpty,
+  briefingStale,
+  briefUser,
+  freshenBriefing,
+} = await import("./briefing");
 const { proposedTasks } = await import("./watch");
 const { suggestionNotBefore } = await import("./suggestions");
 const { timeWindow } = await import("../time-window");
@@ -231,7 +238,8 @@ describe("loadProactive", () => {
     });
     expect(asked.items).toHaveLength(1);
     expect(asked.items[0]).toMatchObject({ kind: "question", questionKey: "monthlyGoal" });
-    expect(op(admin.calls[0], "upsert")?.[0]).toMatchObject({
+    const upsert = admin.calls.find((c) => op(c, "upsert"));
+    expect(op(upsert, "upsert")?.[0]).toMatchObject({
       user_id: USER,
       kind: "question",
       dedupe_key: "question:monthlyGoal:2026-10",
@@ -249,7 +257,7 @@ describe("loadProactive", () => {
       now: NOW,
     });
     expect(twoThisWeek.items).toEqual([]);
-    expect(full.calls).toHaveLength(0);
+    expect(full.calls.some((c) => op(c, "upsert"))).toBe(false);
   });
 });
 
@@ -260,7 +268,7 @@ describe("loadProactive queue", () => {
     type,
     text: `About ${id}`,
     action: { kind: "ask", prompt: "" },
-    payload: kind === "briefing" ? { date: "2026-10-03" } : { people: false },
+    payload: kind === "briefing" ? { date: "2026-10-03", facts: [] } : { people: false },
     created_at: created,
   });
 
@@ -296,7 +304,8 @@ describe("loadProactive queue", () => {
       "insight-old",
     ]);
     expect(result.retryAt).toBeNull();
-    expect(admin.calls).toHaveLength(0);
+    // Nothing asked, nothing rewritten; only the rules worked out again.
+    expect(admin.calls.some((c) => op(c, "upsert"))).toBe(false);
   });
 
   it("carries at most ten notices", async () => {
@@ -483,6 +492,7 @@ describe("morning brief", () => {
     stalled: [],
     dayPlan: "Today is a working day. Best times for calls and meetings: 08:00–12:00.",
     onFire: null,
+    facts: [],
   };
   const clear = {
     closePast: { count: 0, top: [] },
@@ -498,7 +508,7 @@ describe("morning brief", () => {
         ...clear,
         closePast: {
           count: 1,
-          top: [{ title: "Web pro pekárnu", closeDate: "2026-10-02", days: 1 }],
+          top: [{ id: "d1", title: "Web pro pekárnu", closeDate: "2026-10-02", days: 1 }],
         },
       },
     };
@@ -545,5 +555,201 @@ describe("morning brief", () => {
         call.ops.some(([n, a]) => n === "eq" && OWN.includes(a[0] as string) && a[1] !== undefined),
       ).toBe(true);
     }
+  });
+});
+
+describe("the brief right before it shows", () => {
+  const BRIEF = "33333333-3333-4333-8333-333333333333";
+  const DEAL = "44444444-4444-4444-8444-444444444444";
+  const TASK = "55555555-5555-4555-8555-555555555555";
+
+  /** A model that writes one line, as the SDK streams it. */
+  function writer(text: string) {
+    const stream = vi.fn(() =>
+      (async function* () {
+        yield {
+          type: "message_start",
+          message: { usage: { input_tokens: 10, output_tokens: 1 } },
+        };
+        yield { type: "content_block_delta", index: 0, delta: { type: "text_delta", text } };
+        yield {
+          type: "message_delta",
+          delta: { stop_reason: "end_turn", stop_sequence: null },
+          usage: { output_tokens: 5 },
+        };
+      })(),
+    );
+    return { client: { messages: { stream } } as unknown as Pick<Anthropic, "messages">, stream };
+  }
+
+  /** The admin client the brief is read with: a task due today, or nothing at all. */
+  const data = (dueToday: boolean) =>
+    fakeDb({
+      "rpc:current_plan": { data: [{ ai_calls_limit: 300, file_uploads_limit: 0, read_only: false }] },
+      tasks: (call) =>
+        dueToday && has(call, "select", "id, title") ? { data: [{ id: TASK, title: "Call" }] } : {},
+    });
+  const update = (calls: Call[]) =>
+    op(
+      calls.find((c) => c.table === "jarvis_suggestions" && op(c, "update")),
+      "update",
+    )?.[0];
+
+  it("keeps one key per thing the brief can state, sorted and once", () => {
+    const deal = { id: DEAL, title: "Web", days: 3 };
+    expect(
+      briefingFacts({
+        onFire: {
+          closePast: { count: 1, top: [{ ...deal, closeDate: "2026-10-01" }] },
+          overdueTasks: { count: 0, top: [] },
+          noTask: { count: 1, top: [deal] },
+        },
+        taskIds: [TASK, TASK],
+        eventIds: ["e1"],
+        stalledDealIds: [DEAL],
+        followUps: 2,
+      }),
+    ).toEqual([
+      `closePast:${DEAL}`,
+      "event:e1",
+      "followUps",
+      `noTask:${DEAL}`,
+      `stalled:${DEAL}`,
+      `task:${TASK}`,
+    ]);
+  });
+
+  it("is untrue once one of its facts is gone, not when a new one comes", () => {
+    expect(briefingStale([`noTask:${DEAL}`], [])).toBe(true);
+    expect(briefingStale([`noTask:${DEAL}`], [`noTask:${DEAL}`, `task:${TASK}`])).toBe(false);
+    expect(briefingStale([], [`task:${TASK}`])).toBe(false);
+    // Written before facts were kept: cannot be trusted.
+    expect(briefingStale(undefined, [])).toBe(true);
+  });
+
+  it("shows a brief built on no facts as it is, without reading anything", async () => {
+    const admin = fakeDb();
+    const text = await freshenBriefing({
+      client: null,
+      admin: admin.db,
+      userId: USER,
+      row: settingsRow,
+      id: BRIEF,
+      text: "Yesterday you won a deal.",
+      facts: [],
+      now: NOW,
+    });
+    expect(text).toBe("Yesterday you won a deal.");
+    expect(admin.calls).toHaveLength(0);
+  });
+
+  it("shows it unchanged while everything it says still holds", async () => {
+    const { client, stream } = writer("unused");
+    const text = await freshenBriefing({
+      client,
+      admin: data(true).db,
+      userId: USER,
+      row: settingsRow,
+      id: BRIEF,
+      text: "Call is due today.",
+      facts: [`task:${TASK}`],
+      now: NOW,
+    });
+    expect(text).toBe("Call is due today.");
+    expect(stream).not.toHaveBeenCalled();
+  });
+
+  it("retires it when nothing is left to say, without a model call", async () => {
+    const { client, stream } = writer("unused");
+    const admin = data(false);
+    const text = await freshenBriefing({
+      client,
+      admin: admin.db,
+      userId: USER,
+      row: settingsRow,
+      id: BRIEF,
+      text: "Web has no task.",
+      facts: [`noTask:${DEAL}`],
+      now: NOW,
+    });
+    expect(text).toBeNull();
+    expect(stream).not.toHaveBeenCalled();
+    expect(update(admin.calls)).toEqual({ dismissed_at: NOW.toISOString() });
+  });
+
+  it("writes it again from the data now when something it says is gone, and stores it", async () => {
+    const { client, stream } = writer("Call is due today.");
+    const admin = data(true);
+    const text = await freshenBriefing({
+      client,
+      admin: admin.db,
+      userId: USER,
+      row: settingsRow,
+      id: BRIEF,
+      text: "Web has no task.",
+      facts: [`noTask:${DEAL}`],
+      now: NOW,
+    });
+    expect(text).toBe("Call is due today.");
+    expect(stream).toHaveBeenCalledOnce();
+    expect(update(admin.calls)).toEqual({
+      text: "Call is due today.",
+      payload: { date: "2026-10-03", facts: [`task:${TASK}`] },
+    });
+  });
+
+  it("stays silent rather than say something untrue when it cannot write", async () => {
+    const admin = data(true);
+    const text = await freshenBriefing({
+      client: null,
+      admin: admin.db,
+      userId: USER,
+      row: settingsRow,
+      id: BRIEF,
+      text: "Web has no task.",
+      facts: undefined,
+      now: NOW,
+    });
+    expect(text).toBeNull();
+    expect(update(admin.calls)).toBeUndefined();
+  });
+
+  it("works the rules out again and leaves an untrue brief unsaid in the bubble", async () => {
+    const rows = [
+      {
+        id: BRIEF,
+        kind: "briefing",
+        type: "briefing",
+        text: "Web has no task.",
+        action: { kind: "open", href: "/app" },
+        payload: { date: "2026-10-03", facts: [`noTask:${DEAL}`] },
+        created_at: "2026-10-03T04:00:00Z",
+      },
+    ];
+    const admin = fakeDb();
+    const result = await loadProactive({
+      supabase: fakeDb({
+        workers: { data: [] },
+        unlocks: { data: [] },
+        profiles: { data: { mode: "tool" } },
+        "rpc:prospecting_status": { data: [{ running: false }] },
+        jarvis_suggestions: (call) =>
+          has(call, "select", "shown_at") || has(call, "eq", "kind", "question")
+            ? { data: [] }
+            : { data: rows },
+      }).db,
+      admin: admin.db,
+      userId: USER,
+      row: settingsRow,
+      client: null,
+      now: NOW,
+    });
+    expect(result.items.some((item) => item.id === BRIEF)).toBe(false);
+    // The solved rule suggestions are retired before anything is picked.
+    const retired = admin.calls.find(
+      (c) => c.table === "jarvis_suggestions" && op(c, "update") && op(c, "in"),
+    );
+    expect(op(retired, "update")?.[0]).toHaveProperty("dismissed_at");
+    expect(op(retired, "in")?.[0]).toBe("type");
   });
 });

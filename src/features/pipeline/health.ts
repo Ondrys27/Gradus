@@ -183,11 +183,17 @@ export function healthIsClear(health: PipelineHealth): boolean {
   return HEALTH_TILES.every((tile) => health[tile].count === 0);
 }
 
-/** A few deals of each tile for Jarvis: names, days and dates, nothing more. */
+/**
+ * A few deals of each tile for Jarvis: names, days and dates, nothing more.
+ * The id is never shown to the model; it tells later whether the deal still burns.
+ */
 export type HealthDigest = {
-  closePast: { count: number; top: { title: string; closeDate: IsoDate; days: number }[] };
-  overdueTasks: { count: number; top: { title: string; tasks: number; days: number }[] };
-  noTask: { count: number; top: { title: string; days: number }[] };
+  closePast: {
+    count: number;
+    top: { id: string; title: string; closeDate: IsoDate; days: number }[];
+  };
+  overdueTasks: { count: number; top: { id: string; title: string; tasks: number; days: number }[] };
+  noTask: { count: number; top: { id: string; title: string; days: number }[] };
 };
 
 export function digestHealth(health: PipelineHealth, limit = 3): HealthDigest {
@@ -197,6 +203,7 @@ export function digestHealth(health: PipelineHealth, limit = 3): HealthDigest {
     closePast: {
       count: health.closePast.count,
       top: top(health.closePast.rows, (row: ClosePastRow) => ({
+        id: row.deal.id,
         title: row.deal.title,
         closeDate: row.closeDate,
         days: row.days,
@@ -205,6 +212,7 @@ export function digestHealth(health: PipelineHealth, limit = 3): HealthDigest {
     overdueTasks: {
       count: health.overdueTasks.count,
       top: top(health.overdueTasks.rows, (row: OverdueRow) => ({
+        id: row.deal.id,
         title: row.deal.title,
         tasks: row.tasks,
         days: row.days,
@@ -212,7 +220,11 @@ export function digestHealth(health: PipelineHealth, limit = 3): HealthDigest {
     },
     noTask: {
       count: health.noTask.count,
-      top: top(health.noTask.rows, (row: NoTaskRow) => ({ title: row.deal.title, days: row.days })),
+      top: top(health.noTask.rows, (row: NoTaskRow) => ({
+        id: row.deal.id,
+        title: row.deal.title,
+        days: row.days,
+      })),
     },
   };
 }

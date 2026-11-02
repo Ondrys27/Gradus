@@ -153,7 +153,8 @@ export const GET = instrumentRoute("api.jarvis.get", async (request: Request) =>
   }
 
   if (params.get("view") === "proactive") {
-    const body = await loadProactive(ctx);
+    // A brief that is no longer true is written again on the spot (budget guard included).
+    const body = await loadProactive({ ...ctx, client: createAnthropic(ctx.admin) });
     return NextResponse.json(body, { headers: { "Cache-Control": "no-store" } });
   }
 

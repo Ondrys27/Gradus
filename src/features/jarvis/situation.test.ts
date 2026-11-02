@@ -243,12 +243,12 @@ describe("pipeline health in the situation", () => {
           closePast: {
             count: 4,
             top: [
-              { title: "Web pro pekárnu", closeDate: "2026-09-12", days: 16 },
-              { title: "Logo", closeDate: "2026-09-20", days: 8 },
+              { id: "d1", title: "Web pro pekárnu", closeDate: "2026-09-12", days: 16 },
+              { id: "d2", title: "Logo", closeDate: "2026-09-20", days: 8 },
             ],
           },
-          overdueTasks: { count: 2, top: [{ title: "Eshop", tasks: 2, days: 3 }] },
-          noTask: { count: 1, top: [{ title: "Kavárna", days: 9 }] },
+          overdueTasks: { count: 2, top: [{ id: "d3", title: "Eshop", tasks: 2, days: 3 }] },
+          noTask: { count: 1, top: [{ id: "d4", title: "Kavárna", days: 9 }] },
         },
       }),
       settings,

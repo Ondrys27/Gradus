@@ -31,6 +31,9 @@ import {
 } from "../questions";
 import { reachesPeople, suggestionActionSchema, type SuggestionAction } from "../suggestions";
 import type { TimeWindow } from "../time-window";
+import { freshenBriefing } from "./briefing";
+import type { ModelClient } from "./model";
+import { loadRuleInputs, syncRuleSuggestions } from "./suggestions";
 import { loadTimeWindow } from "./time-window";
 
 type Client = SupabaseClient<Database>;
@@ -52,6 +55,8 @@ const payloadSchema = z
     question: z.string().optional(),
     answer: z.string().optional(),
     date: z.string().optional(),
+    /** What a brief was written from (briefingFacts). */
+    facts: z.array(z.string()).optional(),
     /** The suggestion means reaching people (a call, a meeting). */
     people: z.boolean().optional(),
   })
@@ -202,15 +207,20 @@ async function ensureQuestion(
 
 /**
  * GET /api/jarvis?view=proactive: what is worth saying now, in the order the
- * card shows it (most urgent first), or nothing.
- * Reads with the user's own client (RLS), writes a new question with the
- * admin client for this user only.
+ * card shows it (most urgent first), or nothing. The bubble shows it right
+ * away, so this is the last look before Jarvis speaks: the rules are worked
+ * out again from the data now (what is solved goes) and the brief is checked
+ * against what it was written from (freshenBriefing).
+ * Reads with the user's own client (RLS), writes with the admin client for
+ * this user only.
  */
 export async function loadProactive(args: {
   supabase: Client;
   admin: Client;
   userId: string;
   row: UserSettings | null;
+  /** For writing a brief again when it is no longer true; null = such a brief stays unsaid. */
+  client?: ModelClient | null;
   now?: Date;
 }): Promise<ProactiveResponse> {
   const { supabase, admin, userId } = args;
@@ -240,6 +250,9 @@ export async function loadProactive(args: {
   if (block) return none;
   if (await timerRunning(supabase, settings.timeZone)) return none;
 
+  const format = toFormatSettings(args.row);
+  await syncRuleSuggestions(admin, userId, await loadRuleInputs(supabase, userId, format, now));
+
   const nowIso = now.toISOString();
   const [rows, unlocked, window] = await Promise.all([
     supabase
@@ -261,10 +274,31 @@ export async function loadProactive(args: {
   ]);
   if (rows.error) throw rows.error;
 
-  const today = todayIsoDate(toFormatSettings(args.row), now);
+  const today = todayIsoDate(format, now);
   const options = { frequency: settings.frequency, today, briefingUnlocked: unlocked };
   const candidates = rows.data.flatMap((row) => toCandidate(row, now, window) ?? []);
   let queue = orderProactive(candidates, options).slice(0, PROACTIVE_QUEUE_LIMIT);
+
+  const brief = queue.find((candidate) => candidate.kind === "briefing");
+  if (brief) {
+    const stored = rows.data.find((row) => row.id === brief.item.id);
+    const text = await freshenBriefing({
+      client: args.client ?? null,
+      admin,
+      userId,
+      row: args.row,
+      id: brief.item.id,
+      text: brief.item.text,
+      facts: stored ? payloadSchema.parse(stored.payload).facts : undefined,
+      now,
+    });
+    queue =
+      text === null
+        ? queue.filter((candidate) => candidate !== brief)
+        : queue.map((candidate) =>
+            candidate === brief ? { ...brief, item: { ...brief.item, text } } : candidate,
+          );
+  }
 
   if (!queue.length && settings.frequency !== "briefing_only") {
     const question = await ensureQuestion(supabase, admin, userId, today, now);

@@ -155,6 +155,7 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - Soubory: PDF, PNG, JPG, TXT, CSV, DOCX, XLSX; 10 MB; 3 na zprávu; typ podle obsahu.
 - **Průvodce** po onboardingu (pracovník dostane zkrácený): postava 140 u prvku s atributem `data-tour`, zbytek ztmavne, spotlight s měkkými okraji, Další / Přeskočit, tečky. Dokončení i přeskočení zapíše `profiles.tour_completed_at`; znovu z Nastavení → Nápověda.
 - **Proaktivní ozvání** jen z `jarvis_suggestions` (`kind` briefing | suggestion | question, `payload`, `shown_at`, `answered_at`, `snoozed_until`). Píše jen server přes `/api/jarvis`, klient smí jen `seen_at`/`dismissed_at`. Postava přilétá do levého dolního rohu obsahu s bublinou; zobrazení i každá reakce jdou do `usage_events` (`jarvis_proactive`).
+- **Před ukázáním bubliny se ověří aktuální stav** (`loadProactive`): pravidlové návrhy se přepočítají z dat (vyřešené odejdou) a ranní shrnutí se porovná s fakty, ze kterých vzniklo (`payload.facts`, `briefingFacts`). Když některý už neplatí, shrnutí se přepíše z dnešních dat (Sonnet, `briefing`, měřeno v `ai_usage`); když už není co říct, stáhne se; když přepsat nejde, neukáže se. Nikdy neříct, co už není pravda.
 - **Pravidla, ať neotravuje:**
   - nejvýš jedno proaktivní zobrazení za relaci a ne dřív než 4 hodiny po předchozím (frekvence Občas = 12 hodin)
   - nikdy, když běží časovač volání nebo je otevřený dialog (ani průvodce, onboarding, panel Jarvise)
