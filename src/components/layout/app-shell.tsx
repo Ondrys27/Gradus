@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { JarvisDock } from "@/components/jarvis/jarvis-dock";
 import { JarvisTour } from "@/components/jarvis/jarvis-tour";
+import { useUserSettings } from "@/features/account/queries";
 import { useErrorScreenShown } from "@/features/errors/error-screen-state";
 import { GameSessionStart } from "@/features/game/game-session-start";
 import { ReportProvider } from "@/features/feedback/report-provider";
@@ -29,10 +30,17 @@ export function AppShell({ children }: { children: ReactNode }) {
   // The error page has no Jarvis (the dock hides itself, the tour goes) and no
   // onboarding over it; the overlays of the frame close themselves.
   const errorShown = useErrorScreenShown();
+  // Seeded from the server with the rest of the settings, so the first HTML
+  // already has the width the user left the menu at.
+  const sidebarCollapsed = useUserSettings().sidebar_collapsed;
   return (
     <SearchProvider>
       <ReportProvider>
-        <div className="min-h-dvh md:pl-[calc(--spacing(19)+env(safe-area-inset-left))] lg:pl-[calc(--spacing(60)+env(safe-area-inset-left))]">
+        <div
+          data-app-shell=""
+          data-sidebar={sidebarCollapsed ? "collapsed" : "expanded"}
+          className="min-h-dvh pl-(--app-sidebar-width) transition-[padding-left] duration-200 ease-out motion-reduce:transition-none"
+        >
           <Sidebar />
           <div className="flex min-h-dvh min-w-0 flex-col">
             <TopBar />

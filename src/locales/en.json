@@ -229,7 +229,13 @@
     "justUnlocked": "Just unlocked",
     "lockedLabel": "{section} (locked)",
     "beta": "Beta",
-    "report": "Report a problem"
+    "report": "Report a problem",
+    "sidebar": {
+      "collapse": "Collapse menu",
+      "expand": "Expand menu",
+      "shortcut": "Ctrl+B",
+      "shortcutMac": "⌘B"
+    }
   },
   "topBar": {
     "home": "Go to dashboard",

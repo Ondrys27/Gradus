@@ -38,6 +38,15 @@ describe("settingsEvents", () => {
     expect(parseEvent("settings_changed", picked[0]!, "client").ok).toBe(true);
   });
 
+  it("tracks the sidebar collapsing as a switch", () => {
+    const collapsed = settingsEvents({ sidebar_collapsed: true });
+    expect(collapsed).toEqual([{ setting: "sidebar_collapsed", enabled: true }]);
+    expect(settingsEvents({ sidebar_collapsed: false })).toEqual([
+      { setting: "sidebar_collapsed", enabled: false },
+    ]);
+    expect(parseEvent("settings_changed", collapsed[0]!, "client").ok).toBe(true);
+  });
+
   it("ignores columns that are not settings people choose", () => {
     expect(settingsEvents({ updated_at: "2026-10-08T00:00:00Z" })).toEqual([]);
   });

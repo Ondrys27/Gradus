@@ -74,6 +74,9 @@ export function settingsEvents(patch: Partial<UserSettings>): SettingEvent[] {
       case "cold_calling_deal_stage_id":
         events.push({ setting: "cold_calling_deal_stage", enabled: value !== null });
         break;
+      case "sidebar_collapsed":
+        events.push({ setting: "sidebar_collapsed", enabled: value === true });
+        break;
     }
   }
   return events;

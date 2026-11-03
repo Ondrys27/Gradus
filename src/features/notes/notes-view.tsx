@@ -302,7 +302,7 @@ export function NotesView() {
     <div
       role="status"
       data-testid="notes-undo"
-      className="fixed bottom-[calc(12px+64px+12px+env(safe-area-inset-bottom))] left-[max(16px,env(safe-area-inset-left))] z-nav flex w-[min(360px,calc(100vw-32px))] items-center justify-between gap-3 rounded-2xl border border-line-strong bg-surface py-1.5 pr-1.5 pl-4 text-sm text-ink-soft shadow-popover md:bottom-[max(24px,env(safe-area-inset-bottom))] md:left-[calc(--spacing(19)+env(safe-area-inset-left)+24px)] lg:left-[calc(--spacing(60)+env(safe-area-inset-left)+32px)]"
+      className="fixed bottom-[calc(12px+64px+12px+env(safe-area-inset-bottom))] left-[max(16px,env(safe-area-inset-left))] z-nav flex w-[min(360px,calc(100vw-32px))] items-center justify-between gap-3 rounded-2xl border border-line-strong bg-surface py-1.5 pr-1.5 pl-4 text-sm text-ink-soft shadow-popover md:bottom-[max(24px,env(safe-area-inset-bottom))] md:left-[calc(var(--app-sidebar-width,0px)+24px)] lg:left-[calc(var(--app-sidebar-width,0px)+32px)]"
     >
       <span className="flex items-center gap-2">
         <Trash2Icon aria-hidden className="size-4 shrink-0 text-ink-muted" />

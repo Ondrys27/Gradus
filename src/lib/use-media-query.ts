@@ -22,6 +22,13 @@ export function useIsPhone(): boolean {
   return useMediaQuery(PHONE_QUERY);
 }
 
+/** Tailwind's `lg` breakpoint (1024 px): the full sidebar, which the user may collapse. */
+export const WIDE_QUERY = "(min-width: 64rem)";
+
+export function useIsWide(): boolean {
+  return useMediaQuery(WIDE_QUERY);
+}
+
 export const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
 /**

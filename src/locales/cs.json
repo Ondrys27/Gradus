@@ -229,7 +229,13 @@
     "justUnlocked": "Nově odemčeno",
     "lockedLabel": "{section} (zamčeno)",
     "beta": "Beta",
-    "report": "Nahlásit problém"
+    "report": "Nahlásit problém",
+    "sidebar": {
+      "collapse": "Sbalit menu",
+      "expand": "Rozbalit menu",
+      "shortcut": "Ctrl+B",
+      "shortcutMac": "⌘B"
+    }
   },
   "topBar": {
     "home": "Přejít na přehled",

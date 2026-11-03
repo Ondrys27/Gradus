@@ -113,6 +113,7 @@ const SETTINGS = [
   "reengage_months",
   "daily_call_goal",
   "cold_calling_deal_stage",
+  "sidebar_collapsed",
 ] as const;
 const CRON_JOBS = [
   "call_time_stats",

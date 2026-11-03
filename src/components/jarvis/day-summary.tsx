@@ -162,7 +162,7 @@ function SummaryCallout({ item, onDone }: { item: SummaryItem; onDone: () => voi
       initial={reduceMotion ? { opacity: 0 } : { opacity: 1 }}
       animate={{ opacity: 1 }}
       exit={reduceMotion ? { opacity: 0 } : { opacity: 1, transition: { duration: 0.8 } }}
-      className="pointer-events-auto absolute bottom-[calc(12px+64px+12px+env(safe-area-inset-bottom))] left-[max(16px,env(safe-area-inset-left))] flex w-[min(380px,calc(100vw-32px))] flex-col-reverse items-start gap-1 md:bottom-[max(24px,env(safe-area-inset-bottom))] md:left-[calc(--spacing(19)+env(safe-area-inset-left)+24px)] md:w-auto md:flex-row md:items-end md:gap-2 lg:left-[calc(--spacing(60)+env(safe-area-inset-left)+32px)]"
+      className="pointer-events-auto absolute bottom-[calc(12px+64px+12px+env(safe-area-inset-bottom))] left-[max(16px,env(safe-area-inset-left))] flex w-[min(380px,calc(100vw-32px))] flex-col-reverse items-start gap-1 md:bottom-[max(24px,env(safe-area-inset-bottom))] md:left-[calc(var(--app-sidebar-width,0px)+24px)] md:w-auto md:flex-row md:items-end md:gap-2 lg:left-[calc(var(--app-sidebar-width,0px)+32px)]"
     >
       <Jarvis size={JARVIS_SIZES.bubble} state={pose} enterFrom="left" />
       <motion.div

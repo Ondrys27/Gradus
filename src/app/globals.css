@@ -340,6 +340,28 @@
 }
 
 /*
+ * Width of the app's left menu, for the shell's padding and for whatever
+ * sits at the bottom left of the content (Jarvis's bubbles, the notes undo
+ * toast). Phones have none; from md an icon rail; from lg the full menu, or
+ * the rail again when the user collapsed it (`data-sidebar` on the shell,
+ * from user_settings.sidebar_collapsed, already in the server HTML).
+ */
+[data-app-shell] {
+  --app-sidebar-width: 0px;
+  @variant md {
+    --app-sidebar-width: calc(var(--spacing) * 19 + env(safe-area-inset-left));
+  }
+  @variant lg {
+    --app-sidebar-width: calc(var(--spacing) * 60 + env(safe-area-inset-left));
+  }
+}
+[data-app-shell][data-sidebar="collapsed"] {
+  @variant lg {
+    --app-sidebar-width: calc(var(--spacing) * 19 + env(safe-area-inset-left));
+  }
+}
+
+/*
  * Stacking layers. Every fixed or portalled surface uses one of these, never a
  * raw number, so the order holds everywhere: floating menus, selects and date
  * pickers sit above every dialog, sheet and the onboarding takeover.
