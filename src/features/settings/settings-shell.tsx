@@ -292,14 +292,29 @@ function useSettingsFocus() {
   const reduceMotion = useReducedMotionSafe();
   const focus = params.get("focus");
   const handled = useRef<string | null>(null);
+  // The lit row outlives the effect: dropping `?focus=` re-runs it, and that
+  // must not cancel the timer that turns the highlight off again.
+  const lit = useRef<{ row: HTMLElement; timer: number } | null>(null);
+
+  useEffect(
+    () => () => {
+      if (!lit.current) return;
+      window.clearTimeout(lit.current.timer);
+      lit.current.row.removeAttribute("data-settings-highlight");
+    },
+    [],
+  );
 
   useEffect(() => {
-    if (!focus || !/^settings-[a-z-]+$/.test(focus)) return;
+    if (!focus || !/^settings-[a-z-]+$/.test(focus)) {
+      // Handled and dropped: the same link followed again lights it up again.
+      handled.current = null;
+      return;
+    }
     const key = `${pathname}?${focus}`;
     if (handled.current === key) return;
     let tries = 0;
     let timer: number | undefined;
-    let clear: number | undefined;
     const attempt = () => {
       const target = document.getElementById(focus);
       if (!target) {
@@ -310,17 +325,24 @@ function useSettingsFocus() {
       const row = target.closest<HTMLElement>("[data-setting-row]") ?? target;
       target.scrollIntoView({ block: "center", behavior: reduceMotion ? "auto" : "smooth" });
       target.focus({ preventScroll: true });
+      if (lit.current) {
+        window.clearTimeout(lit.current.timer);
+        lit.current.row.removeAttribute("data-settings-highlight");
+      }
       row.setAttribute("data-settings-highlight", "");
-      clear = window.setTimeout(() => row.removeAttribute("data-settings-highlight"), HIGHLIGHT_MS);
+      lit.current = {
+        row,
+        timer: window.setTimeout(() => {
+          row.removeAttribute("data-settings-highlight");
+          lit.current = null;
+        }, HIGHLIGHT_MS),
+      };
       const next = new URLSearchParams(params);
       next.delete("focus");
       const rest = next.toString();
       router.replace(rest ? `${pathname}?${rest}` : pathname, { scroll: false });
     };
     attempt();
-    return () => {
-      window.clearTimeout(timer);
-      window.clearTimeout(clear);
-    };
+    return () => window.clearTimeout(timer);
   }, [focus, params, pathname, router, reduceMotion]);
 }

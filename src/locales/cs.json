@@ -518,7 +518,7 @@
         },
         "settings": {
           "title": "Nastavení",
-          "text": "Jazyk, formáty, témata a jak často se ozývám najdeš v nabídce účtu. V části Nápověda si tohle provedení pustíš znovu."
+          "text": "Jazyk, formáty, témata a jak často se ozývám najdeš v nabídce účtu. V Nastavení → Jarvis → Nápověda si tohle provedení pustíš znovu."
         },
         "finish": {
           "title": "Jdeme na to",
@@ -2742,7 +2742,7 @@
       "unknown": "Něco se pokazilo. Zkus to znovu.",
       "ownerOnly": "Údaje dodavatele mění jen majitel účtu.",
       "invalid": "Některé údaje nejsou v pořádku. Zkontroluj formulář.",
-      "profileRequired": "Nejdřív vyplň údaje dodavatele v Nastavení → Faktury.",
+      "profileRequired": "Nejdřív vyplň údaje dodavatele v Nastavení → Práce → Faktury.",
       "customerRequired": "Vyplň odběratele.",
       "itemsRequired": "Přidej aspoň jednu položku s názvem.",
       "totalInvalid": "Faktura musí být na částku vyšší než nula.",
@@ -3667,7 +3667,7 @@
         "removed": "odebráno"
       },
       "emptyTitle": "Zatím žádná cesta",
-      "emptyDescription": "Vyber cestu v Nastavení → Hra a její milníky se ukážou tady."
+      "emptyDescription": "Vyber cestu v Nastavení → Práce → Hra a její milníky se ukážou tady."
     }
   },
   "onboarding": {
@@ -3767,7 +3767,7 @@
     "mode": {
       "title": "Jak chceš {appName} používat?",
       "description": "Hraj ho jako hru, nebo ho měj jako obyčejný nástroj.",
-      "changeLater": "Přepnout jde kdykoliv v Nastavení → Hra.",
+      "changeLater": "Přepnout jde kdykoliv v Nastavení → Práce → Hra.",
       "game": {
         "title": "Hrát hru",
         "description": "Cesta milníků, úrovně a odměny. Sekce se odemykají, jak postupuješ."
@@ -3997,7 +3997,7 @@
           },
           "data": {
             "p1": "Data, která do aplikace vložíš, jsou tvoje. Používáme je jen k tomu, aby ti aplikace fungovala, jak popisují zásady ochrany osobních údajů.",
-            "p2": "Při chybě v betě může dojít ke ztrátě nebo poškození dat. Důležité věci si proto zálohuj: kopii všech dat stáhneš kdykoli v aplikaci v Nastavení → Účet → Exportovat moje data.",
+            "p2": "Při chybě v betě může dojít ke ztrátě nebo poškození dat. Důležité věci si proto zálohuj: kopii všech dat stáhneš kdykoli v aplikaci v Nastavení → Soukromí a data → Exportovat moje data.",
             "p3": "Pokud do aplikace vkládáš osobní údaje jiných lidí (například kontakty), odpovídáš za to, že k tomu máš právní důvod. My je pro tebe zpracováváme jen k tomu, aby ti aplikace fungovala."
           },
           "feedback": {
@@ -4013,7 +4013,7 @@
             "p2": "Doporučení Jarvise a další výstupy umělé inteligence mohou být nepřesné. Rozhodnutí o svém podnikání děláš ty."
           },
           "termination": {
-            "p1": "Účet můžeš kdykoli zrušit sám v Nastavení → Účet → Smazat účet. Smažou se tím všechna tvoje data.",
+            "p1": "Účet můžeš kdykoli zrušit sám v Nastavení → Soukromí a data → Smazat účet. Smažou se tím všechna tvoje data.",
             "p2": "Betu můžeme ukončit nebo omezit. Pokud to půjde, dáme ti vědět aspoň 14 dní předem, abys mohl data stáhnout. Při závažném porušení podmínek můžeme přístup ukončit hned."
           },
           "changes": {
@@ -4069,7 +4069,7 @@
           },
           "rights": {
             "p1": "Máš právo na přístup ke svým údajům, jejich opravu, výmaz, omezení zpracování a přenositelnost a právo vznést námitku proti zpracování z oprávněného zájmu. Souhlas můžeš kdykoli odvolat.",
-            "p2": "Přímo v aplikaci: kopii všech svých dat stáhneš v Nastavení → Účet → Exportovat moje data (ZIP s tabulkami CSV) a účet se všemi daty smažeš v Nastavení → Účet → Smazat účet. Údaje účtu opravíš v Profilu a v Nastavení.",
+            "p2": "Přímo v aplikaci: kopii všech svých dat stáhneš v Nastavení → Soukromí a data → Exportovat moje data (ZIP s tabulkami CSV) a účet se všemi daty smažeš v Nastavení → Soukromí a data → Smazat účet. Údaje účtu opravíš v Nastavení → Účet.",
             "p3": "Ostatní práva uplatníš e-mailem na {email}, odpovíme nejpozději do 30 dní. Máš také právo podat stížnost u Úřadu pro ochranu osobních údajů (www.uoou.cz)."
           },
           "cookies": {
@@ -6002,9 +6002,9 @@
     },
     "setup": {
       "title": "Než vystavíš první fakturu",
-      "intro": "Na každé faktuře musí být, kdo ji vystavuje a kam se platí. Vyplníš to jednou, pak to najdeš v Nastavení → Faktury.",
+      "intro": "Na každé faktuře musí být, kdo ji vystavuje a kam se platí. Vyplníš to jednou, pak to najdeš v Nastavení → Práce → Faktury.",
       "banner": "Než začneš fakturovat, vyplň svoje údaje dodavatele.",
-      "bannerWorker": "Údaje dodavatele zatím chybí. Vyplní je majitel v Nastavení → Faktury.",
+      "bannerWorker": "Údaje dodavatele zatím chybí. Vyplní je majitel v Nastavení → Práce → Faktury.",
       "open": "Vyplnit údaje",
       "submit": "Uložit a pokračovat",
       "close": "Zavřít"

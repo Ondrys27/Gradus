@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { adminAccessFor, adminNotFound } from "@/features/admin/server/guard";
 import { toModelMessages, type StoredMessage } from "@/features/jarvis/history";
 import {
   costUsd,
@@ -293,15 +294,19 @@ async function proactive(ctx: Context, body: unknown) {
   return NextResponse.json({ ok: true, created: result.created });
 }
 
-const PING_QUESTION = "This is a connection test from the settings. Reply with one short sentence.";
+const PING_QUESTION = "This is a connection test from the administration. Reply with one short sentence.";
 
 /**
- * Settings → Integrations → "Test Jarvis": one short question on the chat's
- * model through the same streaming call, with the time and price it took.
- * Nothing is saved besides the ai_usage row every call writes.
+ * Administration → AI and Jarvis → "Test the connection": one short question
+ * on the chat's model through the same streaming call, with the time and
+ * price it took. Only the owner with a live admin session and aal2 may spend
+ * it; anyone else gets the same 404 as an unknown address. Nothing is saved
+ * besides the ai_usage row every call writes.
  */
 async function ping(ctx: Context, body: unknown) {
   if (!pingRequestSchema.safeParse(body).success) return jobError("unknown", 400);
+  const access = await adminAccessFor("testJarvis");
+  if (!access || access.userId !== ctx.userId) return adminNotFound();
   const { supabase, admin, userId, settings } = ctx;
   const respond = (result: PingResult, status = 200) => NextResponse.json(result, { status });
 

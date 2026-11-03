@@ -85,7 +85,9 @@ export function ProfileFields() {
   async function commitUsername() {
     if (availability === "unchanged") return;
     // Not sendable: an invalid or taken name stays in the field with its message.
-    if (availability === "invalid" || availability === "taken" || availability === "checking") return;
+    // A name still being checked is sent anyway (leaving the field right after
+    // typing must not drop it); the unique index answers "taken" just the same.
+    if (availability === "invalid" || availability === "taken") return;
     setUsernameSaveError(null);
     const next = username || null;
     let taken = false;

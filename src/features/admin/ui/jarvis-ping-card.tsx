@@ -6,12 +6,10 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import type { PingResult } from "@/features/jarvis/protocol";
-import { formatCurrency, formatNumber } from "@/lib/format";
+import { formatNumber, formatUsd } from "@/lib/format";
 import { ADMIN_FORMAT_SETTINGS } from "../format-metric";
 
 const ENDPOINT = "/api/jarvis";
-/** Four decimals: a short question costs a fraction of a cent. */
-const COST_DECIMALS = 4;
 
 /**
  * Administration → AI and Jarvis → Test the connection: one short question
@@ -70,9 +68,7 @@ function Outcome({ result }: { result: PingResult }) {
         <p className="font-medium">{t("ok")}</p>
         <p className="text-ink-soft">
           {t("duration", { seconds: seconds(result.durationMs) })} ·{" "}
-          {t("cost", {
-            cost: formatCurrency(result.costUsd, "USD", ADMIN_FORMAT_SETTINGS, COST_DECIMALS),
-          })}{" "}
+          {t("cost", { cost: formatUsd(result.costUsd, ADMIN_FORMAT_SETTINGS) })}{" "}
           · {t("model", { model: result.model })}
         </p>
       </FormAlert>

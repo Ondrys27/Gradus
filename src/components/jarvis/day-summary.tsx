@@ -10,6 +10,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useProfile, useSession, useUserSettings } from "@/features/account/queries";
 import { coldCallingKeys } from "@/features/cold-calling/timer-queries";
+import { settingsHref } from "@/features/settings/groups";
 import type { TimerReading } from "@/features/cold-calling/timer-logic";
 import { jarvisOverlay, useJarvisOverlay } from "@/features/jarvis/overlay-store";
 import { clientBlock, SUMMARY_SETTLE_MS } from "@/features/jarvis/proactive";
@@ -22,7 +23,7 @@ import { Jarvis, JARVIS_SIZES, type JarvisState } from "./jarvis";
 import { SpeechBubble, TypedText } from "./speech-bubble";
 
 /** Settings → Jarvis, landing on "how often" and lighting it up. */
-const JARVIS_FREQUENCY_SETTING = "/app/nastaveni/jarvis?focus=settings-jarvis-frequency";
+const JARVIS_FREQUENCY_SETTING = settingsHref("jarvisFrequency");
 
 /** As beside the proactive card: narrower, the summary steps aside while the chat is open. */
 const BESIDE_PANEL_QUERY = "(min-width: 1220px)";
@@ -191,7 +192,7 @@ function SummaryCallout({ item, onDone }: { item: SummaryItem; onDone: () => voi
             <Link
               href={JARVIS_FREQUENCY_SETTING}
               onClick={close}
-              className="inline-flex min-h-8 items-center px-1 text-xs text-ink-muted underline-offset-4 outline-none hover:text-ink hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="inline-flex min-h-11 items-center px-1 text-xs text-ink-muted underline-offset-4 mouse:min-h-8 outline-none hover:text-ink hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               {t("settings")}
             </Link>

@@ -7,6 +7,7 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { GlowCard } from "@/components/ui/glow-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserSettings } from "@/features/account/queries";
+import { settingsHref } from "@/features/settings/groups";
 import {
   countryName,
   formatIsoTime,
@@ -70,7 +71,7 @@ export function BestTimeCard() {
         <p className="text-sm text-ink-soft">
           {t.rich("noCountry", {
             link: (chunks) => (
-              <Link href="/app/nastaveni" className="text-violet underline underline-offset-4">
+              <Link href={settingsHref("country")} className="text-violet underline underline-offset-4">
                 {chunks}
               </Link>
             ),

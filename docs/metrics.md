@@ -20,7 +20,7 @@ Závazný seznam toho, co se měří a jak. Každá metrika odsud musí mít def
 - Noví vs. vracející se aktivní
 - Rozdělení podle plánu, režimu, oboru, jazyka, země, zařízení, prohlížeče
 - Pracovníci — počet, aktivní, průměr na majitele
-- Smazané účty a exporty dat (Nastavení → Účet) — `account_deleted` (počet smazaných souborů, bez uživatele: analytika smazaného účtu zůstává anonymně), `account_data_exported` (počet tabulek a řádků)
+- Smazané účty a exporty dat (Nastavení → Soukromí a data) — `account_deleted` (počet smazaných souborů, bez uživatele: analytika smazaného účtu zůstává anonymně), `account_data_exported` (počet tabulek a řádků)
 
 ## 2. Aktivace
 

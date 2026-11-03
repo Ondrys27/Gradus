@@ -518,7 +518,7 @@
         },
         "settings": {
           "title": "Settings",
-          "text": "Language, formats, themes and how often I speak up are in your account menu. Under Help you can run this tour again."
+          "text": "Language, formats, themes and how often I speak up are in your account menu. Under Settings → Jarvis → Help you can run this tour again."
         },
         "finish": {
           "title": "Let's go",
@@ -2742,7 +2742,7 @@
       "unknown": "Something went wrong. Try again.",
       "ownerOnly": "Only the account owner changes the supplier details.",
       "invalid": "Some details are not right. Check the form.",
-      "profileRequired": "Fill in your supplier details in Settings → Invoices first.",
+      "profileRequired": "Fill in your supplier details in Settings → Work → Invoices first.",
       "customerRequired": "Fill in the customer.",
       "itemsRequired": "Add at least one item with a name.",
       "totalInvalid": "An invoice must be for more than zero.",
@@ -3667,7 +3667,7 @@
         "removed": "removed"
       },
       "emptyTitle": "No path yet",
-      "emptyDescription": "Pick a path in Settings → Game and its milestones show up here."
+      "emptyDescription": "Pick a path in Settings → Work → Game and its milestones show up here."
     }
   },
   "onboarding": {
@@ -3767,7 +3767,7 @@
     "mode": {
       "title": "How do you want to use {appName}?",
       "description": "Play it as a game, or keep it a plain tool.",
-      "changeLater": "You can switch any time in Settings → Game.",
+      "changeLater": "You can switch any time in Settings → Work → Game.",
       "game": {
         "title": "Play the game",
         "description": "A path of milestones, levels and rewards. Sections open as you progress."
@@ -3997,7 +3997,7 @@
           },
           "data": {
             "p1": "The data you put into the app is yours. We use it only to make the app work for you, as described in the privacy policy.",
-            "p2": "An error in the beta may lose or damage data. Back up what matters: you can download a copy of all your data at any time in the app under Settings → Account → Export my data.",
+            "p2": "An error in the beta may lose or damage data. Back up what matters: you can download a copy of all your data at any time in the app under Settings → Privacy and data → Export my data.",
             "p3": "If you put other people's personal data into the app (contacts, for example), you are responsible for having a legal basis for it. We process it for you only to make the app work."
           },
           "feedback": {
@@ -4013,7 +4013,7 @@
             "p2": "Jarvis's recommendations and other output of artificial intelligence may be inaccurate. Decisions about your business are yours."
           },
           "termination": {
-            "p1": "You can close your account at any time yourself under Settings → Account → Delete account. This deletes all your data.",
+            "p1": "You can close your account at any time yourself under Settings → Privacy and data → Delete account. This deletes all your data.",
             "p2": "We may end or limit the beta. Where possible, we will tell you at least 14 days in advance so you can download your data. In case of a serious breach of these terms we may end access at once."
           },
           "changes": {
@@ -4069,7 +4069,7 @@
           },
           "rights": {
             "p1": "You have the right to access your data, have it corrected or erased, restrict its processing, take it elsewhere, and object to processing based on legitimate interest. You can withdraw consent at any time.",
-            "p2": "Right in the app: download a copy of all your data under Settings → Account → Export my data (a ZIP of CSV tables), and delete your account with all its data under Settings → Account → Delete account. Correct your account details in Profile and Settings.",
+            "p2": "Right in the app: download a copy of all your data under Settings → Privacy and data → Export my data (a ZIP of CSV tables), and delete your account with all its data under Settings → Privacy and data → Delete account. Correct your account details in Settings → Account.",
             "p3": "Exercise your other rights by e-mail at {email}; we will answer within 30 days. You also have the right to lodge a complaint with the Czech Office for Personal Data Protection (www.uoou.cz)."
           },
           "cookies": {
@@ -6002,9 +6002,9 @@
     },
     "setup": {
       "title": "Before your first invoice",
-      "intro": "Every invoice says who issues it and where to pay. Fill it in once; later you'll find it in Settings → Invoices.",
+      "intro": "Every invoice says who issues it and where to pay. Fill it in once; later you'll find it in Settings → Work → Invoices.",
       "banner": "Fill in your supplier details before you start invoicing.",
-      "bannerWorker": "The supplier details are missing. The owner fills them in under Settings → Invoices.",
+      "bannerWorker": "The supplier details are missing. The owner fills them in under Settings → Work → Invoices.",
       "open": "Fill in details",
       "submit": "Save and continue",
       "close": "Close"

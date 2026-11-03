@@ -114,6 +114,11 @@ export function settingsItemHref(item: SettingsItemDef): string {
   return `${settingsGroupPath(item.group)}?focus=${item.target}`;
 }
 
+/** The deep link of one setting by its id, for links from elsewhere in the app. */
+export function settingsHref(id: SettingsItemId): string {
+  return settingsItemHref(SETTINGS_ITEMS.find((item) => item.id === id)!);
+}
+
 export type SettingsViewer = { owner: boolean; worker: boolean; caller: boolean };
 
 export function settingsAudienceAllows(who: SettingsAudience, viewer: SettingsViewer): boolean {

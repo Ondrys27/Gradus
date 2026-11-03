@@ -175,7 +175,7 @@ export const EVENTS = {
   signed_in: event("account", "server", false, {}),
   signed_out: event("account", "client", false, {}),
   waitlist_joined: event("account", "server", false, { locale: oneOf(["cs", "en"]) }),
-  /** Settings → Account → Export my data: how many tables and rows went into the ZIP. */
+  /** Settings → Privacy and data → Export my data: how many tables and rows went into the ZIP. */
   account_data_exported: event("account", "server", false, {
     tables: count(100),
     rows: count(),
