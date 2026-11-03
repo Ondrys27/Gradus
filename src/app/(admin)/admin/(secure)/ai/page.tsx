@@ -27,6 +27,7 @@ import { loadAiCaps } from "@/features/jarvis/server/caps";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AdminChart } from "@/features/admin/ui/admin-chart";
 import { AiCapsForm } from "@/features/admin/ui/ai-caps-form";
+import { JarvisPingCard } from "@/features/admin/ui/jarvis-ping-card";
 import { BudgetCard } from "@/features/admin/ui/budget-card";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
 import {
@@ -82,6 +83,8 @@ export default async function AdminAiPage({ searchParams }: Props) {
         <Suspense fallback={<CardSkeleton height={260} />}>
           <Caps q={q} readOnly={!adminCan(context.role, "editAiCaps")} />
         </Suspense>
+        {/* One paid call to the model: only the owner may spend it. */}
+        {adminCan(context.role, "testJarvis") && <ConnectionTest />}
       </div>
     </>
   );
@@ -162,6 +165,15 @@ async function Caps({ q, readOnly }: { q: AdminQuery; readOnly: boolean }) {
         </Show>
       </AdminCard>
     </PageSection>
+  );
+}
+
+async function ConnectionTest() {
+  const t = await getTranslations("admin.ai.connection");
+  return (
+    <AdminCard title={t("title")} description={t("description")}>
+      <JarvisPingCard />
+    </AdminCard>
   );
 }
 

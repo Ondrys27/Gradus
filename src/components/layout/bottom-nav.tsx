@@ -24,7 +24,7 @@ import { useNavItems, type NavItemState } from "./use-nav";
 import { LockedSectionPopover } from "./lock-hint";
 import { useReducedMotionSafe } from "@/lib/use-media-query";
 const accountItems = [
-  { key: "profile", href: "/app/profil", icon: UserRoundIcon },
+  { key: "profile", href: "/app/nastaveni/ucet", icon: UserRoundIcon },
   { key: "settings", href: "/app/nastaveni", icon: SettingsIcon },
 ] as const;
 

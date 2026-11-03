@@ -1,10 +1,10 @@
 "use client";
 
-import { useActionState, useEffect, useState, type ReactNode } from "react";
+import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
-import { DownloadIcon, LoaderCircleIcon, Trash2Icon } from "lucide-react";
+import { LoaderCircleIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { fieldA11y, FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
@@ -13,78 +13,21 @@ import { deleteAccountAction, type DeleteAccountState } from "@/features/account
 import { useSession } from "@/features/account/queries";
 import { sameEmail } from "@/features/account/same-email";
 import { loginPath } from "@/lib/auth/routes";
-import { cn } from "@/lib/utils";
 
-const EXPORT_URL = "/api/account/export";
 const WORKERS_PATH = "/app/pracovnici";
 
 /**
- * Settings → Account: download a copy of the account's data, or delete the
- * account for good after typing its e-mail. The server decides; this only
- * explains and asks.
+ * Settings → Privacy and data: delete the account for good after typing its
+ * e-mail. The server decides; this only explains and asks.
  */
-export function AccountSettings() {
-  const t = useTranslations("settings.account");
-  const { worker } = useSession();
-  const [deleting, setDeleting] = useState(false);
-
-  return (
-    <div className="flex flex-col divide-y divide-line/60">
-      <Row
-        label={t("export.label")}
-        hint={worker ? t("export.hintWorker") : t("export.hint")}
-        action={
-          <a
-            id="settings-account-export"
-            href={EXPORT_URL}
-            download
-            className={cn(buttonVariants({ variant: "secondary" }), "self-start md:self-auto")}
-          >
-            <DownloadIcon aria-hidden />
-            {t("export.action")}
-          </a>
-        }
-      />
-      <Row
-        label={t("delete.label")}
-        hint={t("delete.hint")}
-        action={
-          <Button
-            id="settings-account-delete"
-            variant="destructive"
-            className="self-start md:self-auto"
-            onClick={() => setDeleting(true)}
-          >
-            <Trash2Icon aria-hidden />
-            {t("delete.action")}
-          </Button>
-        }
-      />
-      <DeleteAccountDialog open={deleting} onOpenChange={setDeleting} />
-    </div>
-  );
-}
-
-function Row({ label, hint, action }: { label: string; hint: string; action: ReactNode }) {
-  return (
-    <div className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 md:flex-row md:items-center md:justify-between md:gap-6">
-      <div className="flex min-w-0 flex-col gap-1">
-        <p className="text-[15px] font-medium text-ink">{label}</p>
-        <p className="text-xs text-ink-muted">{hint}</p>
-      </div>
-      {action}
-    </div>
-  );
-}
-
-function DeleteAccountDialog({
+export function DeleteAccountDialog({
   open,
   onOpenChange,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const t = useTranslations("settings.account.delete");
+  const t = useTranslations("settings.data.delete");
   const locale = useLocale();
   const { user, worker } = useSession();
   const [typed, setTyped] = useState("");

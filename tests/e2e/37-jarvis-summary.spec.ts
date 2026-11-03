@@ -94,7 +94,7 @@ test("37 · Jarvis's summary comes at the first arrival of the day, and only the
 
   // Settings → Jarvis: once a day.
   await signIn(page, account);
-  await openApp(page, "/app/nastaveni");
+  await openApp(page, "/app/nastaveni/jarvis");
   await page.getByRole("radio", { name: exact(L, "settings.jarvis.frequencies.daily") }).click();
   await expect.poll(() => frequencyOf(account)).toBe("daily");
 

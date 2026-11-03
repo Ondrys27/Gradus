@@ -40,7 +40,7 @@ test("35 · cold calling → meeting → create deal in the chosen stage → pip
   await dismissCelebrationsAutomatically(page, L);
 
   // Settings → Cold Calling: deals from calls land in the meeting stage.
-  await openApp(page, "/app/nastaveni");
+  await openApp(page, "/app/nastaveni/prace");
   await page.locator("#settings-cold-calling-stage").click();
   await page.getByRole("option", { name: chosen.name, exact: true }).click();
   await expect

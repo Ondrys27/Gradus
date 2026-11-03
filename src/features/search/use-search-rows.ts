@@ -21,6 +21,8 @@ import {
 import { useTranslations } from "next-intl";
 import { useNavItems } from "@/components/layout/use-nav";
 import { useSession, useUserSettings } from "@/features/account/queries";
+import { settingsAudienceAllows, settingsGroupDef } from "@/features/settings/groups";
+import { useSettingsViewer } from "@/features/settings/use-visible-settings";
 import {
   formatCalendarDate,
   formatCurrency,
@@ -136,6 +138,8 @@ type Args = {
 export function useSearchRows({ query, hits, history, expanded }: Args): RowGroup[] {
   const t = useTranslations("search");
   const tNav = useTranslations("nav");
+  const tSettings = useTranslations("settings");
+  const viewer = useSettingsViewer();
   const settings = useFormatSettings();
   const { worker } = useSession();
   const userCountry = useUserSettings().country_code;
@@ -344,18 +348,21 @@ export function useSearchRows({ query, hits, history, expanded }: Args): RowGrou
         ),
       )
       .filter((row) => row.rank > 0);
-    const settingsRows = SETTINGS_ENTRIES.filter(
-      (entry) => !(worker && "ownerOnly" in entry && entry.ownerOnly),
+    const settingsRows = SETTINGS_ENTRIES.filter((entry) =>
+      "item" in entry ? settingsAudienceAllows(entry.item.who, viewer) : !(worker && entry.ownerOnly),
     )
       .map((entry) => {
-        const label = t(`settingsItems.${entry.id}.label`);
-        const group = "group" in entry ? entry.group : null;
-        const where =
-          group === "account"
-            ? t("context.account")
-            : group === "contacts"
-              ? tNav("contacts")
-              : t("context.settings");
+        const inSettings = "item" in entry;
+        const label = inSettings
+          ? tSettings(`items.${entry.id}.label`)
+          : t(`settingsItems.${entry.id}.label`);
+        // "Settings › Appearance and formats", so the hit says where it leads.
+        const where = inSettings
+          ? `${t("context.settings")} › ${tSettings(`groups.${entry.item.group}.title`)}`
+          : tNav("contacts");
+        const keywords = inSettings
+          ? tSettings(`items.${entry.id}.keywords`)
+          : t(`settingsItems.${entry.id}.keywords`);
         return score(
           {
             key: `setting:${entry.id}`,
@@ -364,11 +371,11 @@ export function useSearchRows({ query, hits, history, expanded }: Args): RowGrou
             title: label,
             context: where,
             href: entry.href,
-            icon: entry.icon,
+            icon: inSettings ? settingsGroupDef(entry.item.group).icon : entry.icon,
             rank: 0,
           },
           label,
-          `${where} ${t(`settingsItems.${entry.id}.keywords`)}`,
+          `${where} ${keywords}`,
         );
       })
       .filter((row) => row.rank > 0);
@@ -395,5 +402,5 @@ export function useSearchRows({ query, hits, history, expanded }: Args): RowGrou
         items: settingsRows.sort(byRank).slice(0, GROUP_SIZE),
       },
     ]).map(({ key, label, showAll, items }) => ({ key, label, showAll, rows: items }));
-  }, [query, hits, history, expanded, navItems, worker, t, tNav, settings, userCountry]);
+  }, [query, hits, history, expanded, navItems, worker, viewer, t, tNav, tSettings, settings, userCountry]);
 }

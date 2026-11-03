@@ -34,6 +34,7 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 |---|---|
 | Přehled, Růst, Aktivace, Retence, Funkce, Hra, Náklady, Zdraví, Zpětná vazba, Uživatelé, Průzkumník, Audit | owner + admin |
 | AI a Jarvis — karta stropů | owner upravuje, admin čte |
+| AI a Jarvis — karta Vyzkoušet připojení (jedno volání modelu přes `/api/jarvis`, `kind: ping`) | owner; adminovi se neukáže |
 | Detail uživatele — výjimka AI | owner upravuje, admin čte |
 | Detail uživatele — Předplatné | owner upravuje, admin čte |
 | Tarify — Účty na tarifech | owner + admin |

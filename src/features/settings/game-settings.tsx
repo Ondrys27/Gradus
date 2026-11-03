@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckIcon, Gamepad2Icon, WrenchIcon } from "lucide-react";
+import { Gamepad2Icon, WrenchIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
@@ -12,13 +12,13 @@ import { useChoosePath, useSetGameMode } from "@/features/game/queries";
 import { localized, type GameMode } from "@/features/game/types";
 import { GameIcon } from "@/features/game/unlock-icon";
 import { APP_NAME } from "@/lib/constants";
-import { cn } from "@/lib/utils";
+import { ChoiceGrid, ChoiceTile, SettingRow, SettingsSection } from "./ui";
 
 type Pending = { kind: "mode"; mode: GameMode } | { kind: "path"; pathKey: string };
 
 /**
- * Settings → Game: play the game or just use the app, and which path. Every
- * switch first says what will happen.
+ * Settings → Work → Game: play the game or just use the app, and which path.
+ * Both have consequences, so each switch first says what will happen.
  */
 export function GameSettings() {
   const t = useTranslations("settings.game");
@@ -49,77 +49,37 @@ export function GameSettings() {
     pending?.kind === "path" ? paths.data?.find((path) => path.key === pending.pathKey) : undefined;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div role="radiogroup" aria-label={t("modeLabel")} className="grid gap-3 sm:grid-cols-2">
-        {(["game", "tool"] as const).map((key) => {
-          const checked = mode === key;
-          const Icon = key === "game" ? Gamepad2Icon : WrenchIcon;
-          return (
-            <button
+    <SettingsSection title={t("title")} description={t("description")}>
+      <SettingRow id="settings-mode" label={t("modeLabel")} group layout="stack">
+        <ChoiceGrid id="settings-mode" label={t("modeLabel")} columns={2}>
+          {(["game", "tool"] as const).map((key) => (
+            <ChoiceTile
               key={key}
-              id={key === "game" ? "settings-mode" : undefined}
-              type="button"
-              role="radio"
-              aria-checked={checked}
-              onClick={() => {
-                if (!checked) ask({ kind: "mode", mode: key });
-              }}
-              className={cn(
-                "flex min-h-20 cursor-pointer items-start gap-3 rounded-xl border p-4 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-                checked
-                  ? "border-violet/60 bg-violet/15 shadow-glow"
-                  : "border-line bg-canvas-deep/60 hover:border-line-strong",
-              )}
-            >
-              <Icon
-                aria-hidden
-                className={cn("mt-0.5 size-5 shrink-0", checked ? "text-violet" : "text-ink-muted")}
-              />
-              <span className="flex min-w-0 flex-1 flex-col gap-1">
-                <span className="text-[15px] font-semibold text-ink">
-                  {t(`modes.${key}.title`)}
-                </span>
-                <span className="text-xs text-ink-soft">{t(`modes.${key}.description`)}</span>
-              </span>
-              {checked && <CheckIcon aria-hidden className="size-4 shrink-0 text-violet" />}
-            </button>
-          );
-        })}
-      </div>
+              checked={mode === key}
+              onSelect={() => ask({ kind: "mode", mode: key })}
+              icon={key === "game" ? <Gamepad2Icon aria-hidden className="size-4" /> : <WrenchIcon aria-hidden className="size-4" />}
+              title={t(`modes.${key}.title`)}
+              description={t(`modes.${key}.description`)}
+              className="items-start py-3"
+            />
+          ))}
+        </ChoiceGrid>
+      </SettingRow>
 
       {mode === "game" && (
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-col gap-1">
-            <h3 className="text-[15px] font-medium text-ink">{t("pathLabel")}</h3>
-            <p className="text-xs text-ink-muted">{t("pathHint")}</p>
-          </div>
-          <div role="radiogroup" aria-label={t("pathLabel")} className="grid gap-2 sm:grid-cols-3">
-            {(paths.data ?? []).map((path) => {
-              const checked = profile.path_key === path.key;
-              return (
-                <button
-                  key={path.key}
-                  type="button"
-                  role="radio"
-                  aria-checked={checked}
-                  onClick={() => {
-                    if (!checked) ask({ kind: "path", pathKey: path.key });
-                  }}
-                  className={cn(
-                    "flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 text-left text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-                    checked
-                      ? "border-violet/60 bg-violet/15 text-ink shadow-glow"
-                      : "border-line bg-canvas-deep/60 text-ink-soft hover:border-line-strong",
-                  )}
-                >
-                  <GameIcon name={path.icon} className="size-5 shrink-0 text-violet" />
-                  <span className="min-w-0 flex-1">{localized(path.name, locale)}</span>
-                  {checked && <CheckIcon aria-hidden className="size-4 shrink-0 text-violet" />}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <SettingRow id="settings-path" label={t("pathLabel")} hint={t("pathHint")} group layout="stack">
+          <ChoiceGrid id="settings-path" label={t("pathLabel")} columns={2}>
+            {(paths.data ?? []).map((path) => (
+              <ChoiceTile
+                key={path.key}
+                checked={profile.path_key === path.key}
+                onSelect={() => ask({ kind: "path", pathKey: path.key })}
+                icon={<GameIcon name={path.icon} className="size-4" />}
+                title={localized(path.name, locale)}
+              />
+            ))}
+          </ChoiceGrid>
+        </SettingRow>
       )}
 
       <ResponsiveDialog
@@ -164,6 +124,6 @@ export function GameSettings() {
           </div>
         </div>
       </ResponsiveDialog>
-    </div>
+    </SettingsSection>
   );
 }

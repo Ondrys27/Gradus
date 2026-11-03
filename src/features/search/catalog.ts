@@ -1,25 +1,15 @@
 import {
-  BellRingIcon,
-  CalendarClockIcon,
   CalendarPlusIcon,
-  Clock3Icon,
-  CoinsIcon,
   FlagIcon,
-  GlobeIcon,
-  HashIcon,
-  LanguagesIcon,
   PlayIcon,
-  PlugIcon,
-  ReceiptTextIcon,
   SparklesIcon,
   SquareKanbanIcon,
   TableIcon,
   UserPlusIcon,
-  UserRoundIcon,
-  Volume2Icon,
   type LucideIcon,
 } from "lucide-react";
 import type { NavKey } from "@/components/layout/nav-items";
+import { SETTINGS_ITEMS, settingsItemHref, type SettingsItemDef } from "@/features/settings/groups";
 
 /** Quick actions: each opens its section with a one-off request the page carries out. */
 export const QUICK_ACTIONS = [
@@ -39,33 +29,12 @@ export const QUICK_ACTIONS = [
 export type QuickActionId = (typeof QUICK_ACTIONS)[number]["id"];
 
 /**
- * Places in Settings and the account. A settings entry points at its control
- * (`focus` is the element id), so "currency settings" lands on the currency picker.
+ * Places in Settings and the account. The settings themselves come from the
+ * settings catalog (one entry there is enough); each points at its control, so
+ * "currency settings" lands on the currency picker and lights it up.
  */
 export const SETTINGS_ENTRIES = [
-  { id: "language", href: "/app/nastaveni?focus=settings-language", icon: LanguagesIcon },
-  { id: "country", href: "/app/nastaveni?focus=settings-country", icon: GlobeIcon },
-  { id: "timeZone", href: "/app/nastaveni?focus=settings-timezone", icon: Clock3Icon },
-  { id: "currency", href: "/app/nastaveni?focus=settings-currency", icon: CoinsIcon },
-  { id: "dateFormat", href: "/app/nastaveni?focus=settings-date", icon: CalendarClockIcon },
-  { id: "timeFormat", href: "/app/nastaveni?focus=settings-time", icon: Clock3Icon },
-  { id: "numberFormat", href: "/app/nastaveni?focus=settings-number", icon: HashIcon },
-  { id: "firstDayOfWeek", href: "/app/nastaveni?focus=settings-week", icon: CalendarClockIcon },
-  { id: "sound", href: "/app/nastaveni?focus=settings-sound", icon: Volume2Icon },
-  { id: "animations", href: "/app/nastaveni?focus=settings-animations", icon: BellRingIcon },
-  {
-    id: "invoices",
-    href: "/app/nastaveni?focus=settings-invoices",
-    icon: ReceiptTextIcon,
-    ownerOnly: true,
-  },
-  {
-    id: "integrations",
-    href: "/app/nastaveni?focus=settings-integrations",
-    icon: PlugIcon,
-    ownerOnly: true,
-  },
-  { id: "profile", href: "/app/profil", icon: UserRoundIcon, group: "account" },
+  ...SETTINGS_ITEMS.map((item) => ({ id: item.id, item, href: settingsItemHref(item) })),
   {
     id: "contactTables",
     href: "/app/kontakty/tabulky",
@@ -73,12 +42,9 @@ export const SETTINGS_ENTRIES = [
     ownerOnly: true,
     group: "contacts",
   },
-] as const satisfies readonly {
-  id: string;
-  href: string;
-  icon: LucideIcon;
-  ownerOnly?: boolean;
-  group?: "account" | "contacts";
-}[];
+] as const satisfies readonly (
+  | { id: string; href: string; item: SettingsItemDef }
+  | { id: string; href: string; icon: LucideIcon; ownerOnly?: boolean; group: "contacts" }
+)[];
 
 export type SettingsEntryId = (typeof SETTINGS_ENTRIES)[number]["id"];

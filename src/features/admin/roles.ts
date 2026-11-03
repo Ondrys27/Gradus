@@ -13,6 +13,8 @@ export type OwnerOnly =
   | "manageAdmins"
   /** AI caps and per-user exceptions; an admin reads them. */
   | "editAiCaps"
+  /** The connection test of Jarvis (one paid model call); an admin does not see it. */
+  | "testJarvis"
   /** The plan catalog: draft, publishing, bringing back a version; an admin reads it. */
   | "editPlans"
   /** An account's subscription set by hand (until payments exist); an admin reads it. */

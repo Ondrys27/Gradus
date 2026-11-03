@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import { ChevronRightIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useProfile, useSession, useUserSettings } from "@/features/account/queries";
 import { coldCallingKeys } from "@/features/cold-calling/timer-queries";
@@ -19,6 +20,9 @@ import { useFormatSettings } from "@/lib/use-format-settings";
 import { useIsPhone, useMediaQuery, useReducedMotionSafe } from "@/lib/use-media-query";
 import { Jarvis, JARVIS_SIZES, type JarvisState } from "./jarvis";
 import { SpeechBubble, TypedText } from "./speech-bubble";
+
+/** Settings → Jarvis, landing on "how often" and lighting it up. */
+const JARVIS_FREQUENCY_SETTING = "/app/nastaveni/jarvis?focus=settings-jarvis-frequency";
 
 /** As beside the proactive card: narrower, the summary steps aside while the chat is open. */
 const BESIDE_PANEL_QUERY = "(min-width: 1220px)";
@@ -180,10 +184,17 @@ function SummaryCallout({ item, onDone }: { item: SummaryItem; onDone: () => voi
           </p>
           <TypedText text={item.text} />
           {item.links.length > 0 && <SummaryLinks item={item} onOpen={open} />}
-          <div className="mt-3 flex items-center gap-2">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <Button size="sm" onClick={close}>
               {t("thanks")}
             </Button>
+            <Link
+              href={JARVIS_FREQUENCY_SETTING}
+              onClick={close}
+              className="inline-flex min-h-8 items-center px-1 text-xs text-ink-muted underline-offset-4 outline-none hover:text-ink hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              {t("settings")}
+            </Link>
           </div>
         </SpeechBubble>
       </motion.div>

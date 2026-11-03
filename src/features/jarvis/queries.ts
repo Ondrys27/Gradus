@@ -13,7 +13,6 @@ import type {
   ChatEvent,
   ChatRequest,
   JarvisOverview,
-  PingResult,
   Rating,
 } from "./protocol";
 import type { Suggestion, SuggestionsResponse } from "./suggestions";
@@ -193,35 +192,6 @@ export async function postJarvisJob<T>(
   } catch {
     return { ok: false, code: "network" };
   }
-}
-
-/**
- * Settings → Integrations: one short question to /api/jarvis. Never throws; a
- * refused or broken answer comes back as a code the settings can show.
- */
-export function usePingJarvis() {
-  const { user } = useSession();
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (): Promise<PingResult> => {
-      let response: Response;
-      try {
-        response = await fetch(ENDPOINT, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ kind: "ping" }),
-        });
-      } catch {
-        return { ok: false, code: "network", durationMs: null };
-      }
-      const body = (await response.json().catch(() => null)) as PingResult | null;
-      return body && typeof body.ok === "boolean"
-        ? body
-        : { ok: false, code: "unknown", durationMs: null };
-    },
-    // A successful test uses one call of the month; the panel's counter follows.
-    onSettled: () => queryClient.invalidateQueries({ queryKey: jarvisKeys.overview(user.id) }),
-  });
 }
 
 // ---------------------------------------------------------------------------

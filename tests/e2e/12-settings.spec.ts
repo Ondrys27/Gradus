@@ -69,7 +69,7 @@ test("12 · settings: language, currency and time zone take effect", async ({ pa
   await expect(row).toContainText("Kč");
 
   // Currency: only the display changes.
-  await openApp(page, "/app/nastaveni");
+  await openApp(page, "/app/nastaveni/vzhled");
   await expect(previewValue(page, t("settings.preview.amount"))).toContainText("Kč");
   await page.locator("#settings-currency").click();
   await page.getByRole("option", { name: /^EUR/ }).click();
@@ -100,17 +100,17 @@ test("12 · settings: language, currency and time zone take effect", async ({ pa
   await dealForm.getByRole("button", { name: exact(L, "pipeline.form.cancel") }).click();
 
   // Language: the whole app switches to English.
-  await openApp(page, "/app/nastaveni");
+  await openApp(page, "/app/nastaveni/ucet");
   await page
     .getByRole("radiogroup", { name: t("settings.language.title") })
     .getByRole("radio", { name: text(L, "settings.language.options.en") })
     .click();
-  await expect(page.getByRole("heading", { level: 1, name: text("en", "settings.title") })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: text("en", "settings.groups.account.title") })).toBeVisible();
   await expect(mainNav(page, "en").getByRole("link", { name: text("en", "nav.finance") })).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect.poll(async () => (await savedSettings(account.id))?.locale).toBe("en");
 
   // And it stays English after a reload.
   await page.reload();
-  await expect(page.getByRole("heading", { level: 1, name: text("en", "settings.title") })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: text("en", "settings.groups.account.title") })).toBeVisible();
 });

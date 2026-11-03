@@ -423,6 +423,29 @@
   color: var(--color-ink-muted);
 }
 
+/* A setting a deep link landed on: a violet ring that fades (stays, without motion). */
+[data-settings-highlight] {
+  outline: 2px solid var(--color-violet);
+  outline-offset: 6px;
+  animation: settings-highlight 2.2s ease-out forwards;
+}
+
+@keyframes settings-highlight {
+  0%,
+  60% {
+    outline-color: var(--color-violet);
+  }
+  100% {
+    outline-color: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-settings-highlight] {
+    animation: none;
+  }
+}
+
 @utility stat-number {
   font-size: clamp(32px, 2rem + 0.5vw, 40px);
   line-height: 1.05;

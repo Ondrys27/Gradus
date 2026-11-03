@@ -341,61 +341,9 @@
       "myRewards": "earnings payments"
     },
     "settingsItems": {
-      "language": {
-        "label": "Language",
-        "keywords": "settings locale english czech"
-      },
-      "country": {
-        "label": "Country",
-        "keywords": "settings region phone prefix"
-      },
-      "timeZone": {
-        "label": "Time zone",
-        "keywords": "settings timezone clock hours"
-      },
-      "currency": {
-        "label": "Currency",
-        "keywords": "settings money currency symbol"
-      },
-      "dateFormat": {
-        "label": "Date format",
-        "keywords": "settings dates"
-      },
-      "timeFormat": {
-        "label": "Time format",
-        "keywords": "settings 24-hour 12-hour clock"
-      },
-      "numberFormat": {
-        "label": "Number format",
-        "keywords": "settings decimals separators"
-      },
-      "firstDayOfWeek": {
-        "label": "First day of the week",
-        "keywords": "settings monday sunday week start"
-      },
-      "sound": {
-        "label": "Sound",
-        "keywords": "settings audio mute celebrations"
-      },
-      "animations": {
-        "label": "Animations",
-        "keywords": "settings confetti motion"
-      },
-      "integrations": {
-        "label": "Integrations",
-        "keywords": "settings integrations jarvis test"
-      },
-      "profile": {
-        "label": "Profile",
-        "keywords": "account name photo avatar industry"
-      },
       "contactTables": {
         "label": "Edit contact tables",
         "keywords": "contacts tables fields questions columns"
-      },
-      "invoices": {
-        "label": "Invoices and supplier details",
-        "keywords": "settings invoice invoicing company ID VAT account numbering style QR payment supplier"
       }
     },
     "context": {
@@ -664,7 +612,8 @@
         "noTask": "Deals without a task",
         "overdueInvoices": "Overdue invoices",
         "followUps": "Contacts to follow up"
-      }
+      },
+      "settings": "Set how often"
     },
     "queue": {
       "label": "Jarvis's notices",
@@ -810,11 +759,6 @@
     }
   },
   "profile": {
-    "title": "Profile",
-    "description": "How you appear in the app and how you sign in.",
-    "roles": {
-      "owner": "Owner"
-    },
     "avatar": {
       "title": "Profile photo",
       "upload": "Upload photo",
@@ -853,11 +797,7 @@
         "checkFailed": "Availability could not be checked right now."
       },
       "email": "E-mail",
-      "emailHint": "The e-mail you sign in with.",
-      "save": "Save changes",
-      "saving": "Saving…",
-      "saved": "Saved",
-      "saveFailed": "Changes could not be saved. Please try again."
+      "emailHint": "The e-mail you sign in with."
     },
     "password": {
       "title": "Password",
@@ -874,12 +814,11 @@
   },
   "settings": {
     "title": "Settings",
-    "description": "Language, region and how numbers, dates and times look.",
+    "description": "Account, Jarvis, appearance, work and data in one place.",
     "status": {
       "saving": "Saving…",
-      "saved": "All changes saved",
-      "failed": "Could not save, the change was undone",
-      "auto": "Changes save automatically"
+      "saved": "Saved",
+      "failed": "Could not save"
     },
     "language": {
       "title": "Language",
@@ -887,7 +826,8 @@
       "options": {
         "en": "English",
         "cs": "Čeština"
-      }
+      },
+      "label": "App language"
     },
     "region": {
       "title": "Region and formats",
@@ -936,24 +876,8 @@
       "dateTime": "Date and time",
       "week": "Week"
     },
-    "integrations": {
-      "title": "Integrations",
-      "description": "Connections to other services.",
-      "jarvis": {
-        "name": "Jarvis",
-        "description": "Sends Jarvis a short question and shows whether it answered, how long it took and what it cost.",
-        "test": "Test Jarvis",
-        "testing": "Asking Jarvis…",
-        "ok": "Jarvis answered",
-        "duration": "In {seconds} s",
-        "cost": "Cost {cost}",
-        "model": "Model {model}",
-        "failed": "Jarvis didn't answer",
-        "failedAfter": "The error came after {seconds} s."
-      }
-    },
     "gameplay": {
-      "title": "Gamification",
+      "title": "Sound and animations",
       "description": "Celebrations, sounds and the XP pill in the top bar.",
       "sound": "Sound",
       "soundHint": "A short chime for celebrations like a won deal or a finished milestone.",
@@ -1014,7 +938,7 @@
     },
     "appearance": {
       "title": "Appearance",
-      "description": "The colour theme of the whole app. In the game, themes open with levels.",
+      "description": "The colour theme of the whole app, and the little joys of big moments.",
       "themes": {
         "gradus": "{appName}",
         "midnight": "Midnight",
@@ -1024,10 +948,11 @@
         "light": "Light"
       },
       "level": "Level {level}",
-      "locked": "Locked"
+      "locked": "Locked",
+      "theme": "Theme"
     },
     "jarvis": {
-      "title": "Jarvis",
+      "title": "On his own",
       "description": "When Jarvis speaks up on his own. The chat in the corner always works.",
       "proactive": "Jarvis speaks up",
       "proactiveHint": "On your first visit of the day he flies in with a summary; with Often or Now and then also with a suggestion or a question in between. Never while the call timer runs.",
@@ -1050,7 +975,8 @@
         "title": "Quiet hours",
         "hint": "Jarvis stays silent in these hours. Times are in your time zone.",
         "from": "From",
-        "to": "To"
+        "to": "To",
+        "hours": "From when to when"
       }
     },
     "help": {
@@ -1072,13 +998,203 @@
       "firstStage": "First stage ({name})"
     },
     "account": {
-      "title": "Account",
-      "description": "A copy of your data, and deleting the account.",
+      "profileTitle": "Profile",
+      "signInTitle": "Signing in",
+      "emailHint": "The e-mail you sign in with. It can't be changed yet.",
+      "passwordHint": "From now on you sign in with the new password.",
+      "sessionTitle": "Session",
+      "signOut": {
+        "label": "Sign out",
+        "hint": "On this device. You'll sign in again next time.",
+        "action": "Sign out"
+      }
+    },
+    "menuLabel": "Settings groups",
+    "back": "Settings",
+    "search": {
+      "label": "Search settings",
+      "placeholder": "Search settings…",
+      "clear": "Clear search",
+      "empty": "No setting matches.",
+      "results": "Search results"
+    },
+    "groups": {
+      "account": {
+        "title": "Account",
+        "description": "Photo, name, e-mail, password, language and signing out."
+      },
+      "subscription": {
+        "title": "Subscription",
+        "description": "Plan, payments and billing details."
+      },
+      "jarvis": {
+        "title": "Jarvis",
+        "description": "When he speaks up on his own, how often and when he stays quiet."
+      },
+      "appearance": {
+        "title": "Appearance and formats",
+        "description": "Theme, sounds, currency, date, time and time zone."
+      },
+      "work": {
+        "title": "Work",
+        "description": "Game and path, pipeline, Cold Calling and invoices."
+      },
+      "privacy": {
+        "title": "Privacy and data",
+        "description": "A copy of your data, the terms and deleting the account."
+      }
+    },
+    "items": {
+      "avatar": {
+        "label": "Profile photo",
+        "keywords": "account profile picture avatar"
+      },
+      "displayName": {
+        "label": "Display name",
+        "keywords": "account profile name"
+      },
+      "username": {
+        "label": "Username",
+        "keywords": "account profile handle"
+      },
+      "email": {
+        "label": "E-mail",
+        "keywords": "account sign in address"
+      },
+      "language": {
+        "label": "Language",
+        "keywords": "locale english czech"
+      },
+      "password": {
+        "label": "Change password",
+        "keywords": "account sign in security"
+      },
+      "signOut": {
+        "label": "Sign out",
+        "keywords": "account log out"
+      },
+      "plan": {
+        "label": "Plan",
+        "keywords": "subscription payment change plan cancel"
+      },
+      "payments": {
+        "label": "Payment history",
+        "keywords": "subscription payments receipts"
+      },
+      "billing": {
+        "label": "Billing details",
+        "keywords": "subscription company address"
+      },
+      "jarvisProactive": {
+        "label": "Jarvis speaks up",
+        "keywords": "assistant summary suggestions proactive"
+      },
+      "jarvisFrequency": {
+        "label": "How often Jarvis speaks up",
+        "keywords": "assistant frequency summary daily weekly monthly"
+      },
+      "jarvisQuiet": {
+        "label": "Jarvis's quiet hours",
+        "keywords": "assistant silent night"
+      },
+      "tour": {
+        "label": "Guided tour",
+        "keywords": "help walkthrough"
+      },
+      "theme": {
+        "label": "Theme",
+        "keywords": "appearance colours dark light"
+      },
+      "sound": {
+        "label": "Sound",
+        "keywords": "sounds mute celebrations"
+      },
+      "animations": {
+        "label": "Animations",
+        "keywords": "confetti motion"
+      },
+      "country": {
+        "label": "Country",
+        "keywords": "region phone prefix"
+      },
+      "timeZone": {
+        "label": "Time zone",
+        "keywords": "timezone clock hours"
+      },
+      "currency": {
+        "label": "Currency",
+        "keywords": "money symbol"
+      },
+      "dateFormat": {
+        "label": "Date format",
+        "keywords": "dates"
+      },
+      "timeFormat": {
+        "label": "Time format",
+        "keywords": "24-hour 12-hour clock"
+      },
+      "numberFormat": {
+        "label": "Number format",
+        "keywords": "decimals separators"
+      },
+      "firstDayOfWeek": {
+        "label": "First day of the week",
+        "keywords": "monday sunday week calendar"
+      },
+      "gameMode": {
+        "label": "Game mode",
+        "keywords": "game tool XP levels"
+      },
+      "path": {
+        "label": "Path",
+        "keywords": "game field milestones"
+      },
+      "reengage": {
+        "label": "Offer to approach again after",
+        "keywords": "pipeline lost deals re-engage months"
+      },
+      "coldCallingStage": {
+        "label": "Stage of a new deal",
+        "keywords": "cold calling pipeline calls deal"
+      },
+      "invoices": {
+        "label": "Invoices and supplier details",
+        "keywords": "invoice invoicing company id vat account number style QR payment supplier"
+      },
       "export": {
+        "label": "Export my data",
+        "keywords": "privacy data download ZIP CSV backup"
+      },
+      "legal": {
+        "label": "Terms and privacy",
+        "keywords": "legal personal data GDPR"
+      },
+      "deleteAccount": {
+        "label": "Delete account",
+        "keywords": "privacy close account remove"
+      }
+    },
+    "work": {
+      "nothing": "Nothing to set here yet. The owner can open Cold Calling and the pipeline to you."
+    },
+    "data": {
+      "export": {
+        "title": "Your data",
         "label": "Export my data",
         "hint": "A ZIP of CSV tables: milestones, tasks, contacts, deals, events, transactions, invoices, notes and settings.",
         "hintWorker": "A ZIP of CSV tables of your own account. The data of the team you work in belongs to its owner and is not in the export.",
         "action": "Download ZIP"
+      },
+      "legal": {
+        "title": "Terms and privacy",
+        "description": "What applies between us and how we handle data.",
+        "label": "Documents",
+        "terms": "Terms",
+        "privacy": "Privacy"
+      },
+      "danger": {
+        "title": "Danger zone",
+        "description": "What happens here can't be undone."
       },
       "delete": {
         "label": "Delete account",
@@ -1101,11 +1217,6 @@
           "generic": "The account couldn't be deleted. Please try again."
         }
       }
-    },
-    "subscription": {
-      "title": "Subscription",
-      "description": "Your plan, payments and billing details.",
-      "open": "Manage subscription"
     }
   },
   "milestones": {
@@ -5009,6 +5120,18 @@
         "90d": "over 90 days",
         "12m": "over 12 months",
         "custom": "{from} – {to}"
+      },
+      "connection": {
+        "title": "Test the connection",
+        "description": "Sends Jarvis a short question and shows whether it answered, how long it took and what it cost. It counts towards the spend.",
+        "test": "Test the connection",
+        "testing": "Asking Jarvis…",
+        "ok": "Jarvis answered",
+        "duration": "In {seconds} s",
+        "cost": "Cost {cost}",
+        "model": "Model {model}",
+        "failed": "Jarvis didn't answer",
+        "failedAfter": "The error came after {seconds} s."
       }
     },
     "game": {

@@ -5,7 +5,7 @@ import { sameEmail } from "../same-email";
 
 type Client = SupabaseClient<Database>;
 
-/** Why the account was not deleted; translation keys under settings.account.delete.errors. */
+/** Why the account was not deleted; translation keys under settings.data.delete.errors. */
 export type DeleteAccountError = "emailMismatch" | "app_owner" | "active_workers" | "generic";
 export type DeleteAccountResult =
   { ok: true; files: number } | { ok: false; error: DeleteAccountError };

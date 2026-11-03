@@ -341,61 +341,9 @@
       "myRewards": "výdělky platby odměny"
     },
     "settingsItems": {
-      "language": {
-        "label": "Jazyk",
-        "keywords": "nastavení jazyk čeština angličtina"
-      },
-      "country": {
-        "label": "Země",
-        "keywords": "nastavení region stát předvolba"
-      },
-      "timeZone": {
-        "label": "Časové pásmo",
-        "keywords": "nastavení pásmo čas hodiny"
-      },
-      "currency": {
-        "label": "Měna",
-        "keywords": "nastavení peníze koruny měny"
-      },
-      "dateFormat": {
-        "label": "Formát data",
-        "keywords": "nastavení datum"
-      },
-      "timeFormat": {
-        "label": "Formát času",
-        "keywords": "nastavení čas 24hodinový 12hodinový"
-      },
-      "numberFormat": {
-        "label": "Formát čísel",
-        "keywords": "nastavení desetinná čárka oddělovač"
-      },
-      "firstDayOfWeek": {
-        "label": "První den týdne",
-        "keywords": "nastavení pondělí neděle týden"
-      },
-      "sound": {
-        "label": "Zvuk",
-        "keywords": "nastavení zvuky ztlumit oslavy"
-      },
-      "animations": {
-        "label": "Animace",
-        "keywords": "nastavení konfety pohyb"
-      },
-      "integrations": {
-        "label": "Integrace",
-        "keywords": "nastavení integrace jarvis test"
-      },
-      "profile": {
-        "label": "Profil",
-        "keywords": "účet jméno fotka obor"
-      },
       "contactTables": {
         "label": "Upravit tabulky kontaktů",
         "keywords": "kontakty tabulky pole otázky sloupce"
-      },
-      "invoices": {
-        "label": "Faktury a údaje dodavatele",
-        "keywords": "nastavení faktura fakturace IČO DIČ účet číslo řada styl QR platba dodavatel"
       }
     },
     "context": {
@@ -664,7 +612,8 @@
         "noTask": "Obchody bez úkolu",
         "overdueInvoices": "Faktury po splatnosti",
         "followUps": "Komu se ozvat"
-      }
+      },
+      "settings": "Nastavit, jak často"
     },
     "queue": {
       "label": "Upozornění Jarvise",
@@ -810,11 +759,6 @@
     }
   },
   "profile": {
-    "title": "Profil",
-    "description": "Jak se zobrazujete v aplikaci a jak se přihlašujete.",
-    "roles": {
-      "owner": "Vlastník"
-    },
     "avatar": {
       "title": "Profilová fotka",
       "upload": "Nahrát fotku",
@@ -853,11 +797,7 @@
         "checkFailed": "Dostupnost se teď nepodařilo ověřit."
       },
       "email": "E-mail",
-      "emailHint": "E-mail, kterým se přihlašujete.",
-      "save": "Uložit změny",
-      "saving": "Ukládám…",
-      "saved": "Uloženo",
-      "saveFailed": "Změny se nepodařilo uložit. Zkuste to prosím znovu."
+      "emailHint": "E-mail, kterým se přihlašujete."
     },
     "password": {
       "title": "Heslo",
@@ -874,12 +814,11 @@
   },
   "settings": {
     "title": "Nastavení",
-    "description": "Jazyk, region a podoba čísel, dat a časů.",
+    "description": "Účet, Jarvis, vzhled, práce a data na jednom místě.",
     "status": {
       "saving": "Ukládám…",
-      "saved": "Vše uloženo",
-      "failed": "Uložení se nezdařilo, změna byla vrácena",
-      "auto": "Změny se ukládají samy"
+      "saved": "Uloženo",
+      "failed": "Nepodařilo se uložit"
     },
     "language": {
       "title": "Jazyk",
@@ -887,7 +826,8 @@
       "options": {
         "en": "English",
         "cs": "Čeština"
-      }
+      },
+      "label": "Jazyk aplikace"
     },
     "region": {
       "title": "Region a formáty",
@@ -936,24 +876,8 @@
       "dateTime": "Datum a čas",
       "week": "Týden"
     },
-    "integrations": {
-      "title": "Integrace",
-      "description": "Propojení s dalšími službami.",
-      "jarvis": {
-        "name": "Jarvis",
-        "description": "Pošle Jarvisovi krátký dotaz a ukáže, jestli odpověděl, za jak dlouho a kolik to stálo.",
-        "test": "Otestovat Jarvise",
-        "testing": "Ptám se Jarvise…",
-        "ok": "Jarvis odpověděl",
-        "duration": "Za {seconds} s",
-        "cost": "Stálo to {cost}",
-        "model": "Model {model}",
-        "failed": "Jarvis neodpověděl",
-        "failedAfter": "Chyba přišla za {seconds} s."
-      }
-    },
     "gameplay": {
-      "title": "Hratelnost",
+      "title": "Zvuk a animace",
       "description": "Oslavy, zvuky a pilulka XP v horní liště.",
       "sound": "Zvuk",
       "soundHint": "Krátký tón u oslav jako vyhraný obchod nebo dokončený milník.",
@@ -1014,7 +938,7 @@
     },
     "appearance": {
       "title": "Vzhled",
-      "description": "Barevné téma celé aplikace. Ve hře se témata odemykají s úrovněmi.",
+      "description": "Barevné téma celé aplikace a drobné radosti u velkých okamžiků.",
       "themes": {
         "gradus": "{appName}",
         "midnight": "Půlnoc",
@@ -1024,10 +948,11 @@
         "light": "Světlé"
       },
       "level": "Úroveň {level}",
-      "locked": "Zamčeno"
+      "locked": "Zamčeno",
+      "theme": "Téma"
     },
     "jarvis": {
-      "title": "Jarvis",
+      "title": "Sám od sebe",
       "description": "Kdy se Jarvis ozve sám od sebe. Chat v rohu funguje vždycky.",
       "proactive": "Jarvis se ozývá sám",
       "proactiveHint": "Při prvním příchodu dne přiletí se souhrnem, u Často a Občas i mezi tím s návrhem nebo otázkou. Nikdy, když běží časovač volání.",
@@ -1050,7 +975,8 @@
         "title": "Tichý režim",
         "hint": "V tyhle hodiny Jarvis mlčí. Časy jsou ve tvém časovém pásmu.",
         "from": "Od",
-        "to": "Do"
+        "to": "Do",
+        "hours": "Od kdy do kdy"
       }
     },
     "help": {
@@ -1072,13 +998,203 @@
       "firstStage": "První fáze ({name})"
     },
     "account": {
-      "title": "Účet",
-      "description": "Kopie tvých dat a smazání účtu.",
+      "profileTitle": "Profil",
+      "signInTitle": "Přihlášení",
+      "emailHint": "E-mail, kterým se přihlašuješ. Změnit ho zatím nejde.",
+      "passwordHint": "Od teď se přihlásíš novým heslem.",
+      "sessionTitle": "Relace",
+      "signOut": {
+        "label": "Odhlásit se",
+        "hint": "Na tomhle zařízení. Příště se přihlásíš znovu.",
+        "action": "Odhlásit se"
+      }
+    },
+    "menuLabel": "Skupiny nastavení",
+    "back": "Nastavení",
+    "search": {
+      "label": "Hledat v nastavení",
+      "placeholder": "Hledat v nastavení…",
+      "clear": "Vymazat hledání",
+      "empty": "Žádné nastavení neodpovídá.",
+      "results": "Výsledky hledání"
+    },
+    "groups": {
+      "account": {
+        "title": "Účet",
+        "description": "Fotka, jméno, e-mail, heslo, jazyk a odhlášení."
+      },
+      "subscription": {
+        "title": "Předplatné",
+        "description": "Tarif, platby a fakturační údaje."
+      },
+      "jarvis": {
+        "title": "Jarvis",
+        "description": "Kdy se ozve sám, jak často a kdy mlčí."
+      },
+      "appearance": {
+        "title": "Vzhled a formáty",
+        "description": "Téma, zvuky, měna, datum, čas a časové pásmo."
+      },
+      "work": {
+        "title": "Práce",
+        "description": "Hra a cesta, pipeline, Cold Calling a faktury."
+      },
+      "privacy": {
+        "title": "Soukromí a data",
+        "description": "Kopie dat, podmínky a smazání účtu."
+      }
+    },
+    "items": {
+      "avatar": {
+        "label": "Profilová fotka",
+        "keywords": "účet profil fotka avatar obrázek"
+      },
+      "displayName": {
+        "label": "Zobrazované jméno",
+        "keywords": "účet profil jméno"
+      },
+      "username": {
+        "label": "Uživatelské jméno",
+        "keywords": "účet profil přezdívka"
+      },
+      "email": {
+        "label": "E-mail",
+        "keywords": "účet přihlášení adresa"
+      },
+      "language": {
+        "label": "Jazyk",
+        "keywords": "čeština angličtina english"
+      },
+      "password": {
+        "label": "Změna hesla",
+        "keywords": "účet přihlášení zabezpečení"
+      },
+      "signOut": {
+        "label": "Odhlásit se",
+        "keywords": "účet odhlášení"
+      },
+      "plan": {
+        "label": "Tarif",
+        "keywords": "předplatné platba změna tarifu zrušit"
+      },
+      "payments": {
+        "label": "Historie plateb",
+        "keywords": "předplatné platby doklady"
+      },
+      "billing": {
+        "label": "Fakturační údaje",
+        "keywords": "předplatné firma IČO DIČ adresa"
+      },
+      "jarvisProactive": {
+        "label": "Jarvis se ozývá sám",
+        "keywords": "asistent souhrn návrhy proaktivní"
+      },
+      "jarvisFrequency": {
+        "label": "Jak často se Jarvis ozývá",
+        "keywords": "asistent frekvence souhrn denně týdně měsíčně"
+      },
+      "jarvisQuiet": {
+        "label": "Tichý režim Jarvise",
+        "keywords": "asistent tiché hodiny noc"
+      },
+      "tour": {
+        "label": "Provedení aplikací",
+        "keywords": "nápověda průvodce tour"
+      },
+      "theme": {
+        "label": "Téma",
+        "keywords": "vzhled barvy tmavé světlé"
+      },
+      "sound": {
+        "label": "Zvuk",
+        "keywords": "zvuky ztlumit oslavy"
+      },
+      "animations": {
+        "label": "Animace",
+        "keywords": "konfety pohyb"
+      },
+      "country": {
+        "label": "Země",
+        "keywords": "region stát předvolba"
+      },
+      "timeZone": {
+        "label": "Časové pásmo",
+        "keywords": "pásmo čas hodiny"
+      },
+      "currency": {
+        "label": "Měna",
+        "keywords": "peníze koruny eura měny"
+      },
+      "dateFormat": {
+        "label": "Formát data",
+        "keywords": "datum"
+      },
+      "timeFormat": {
+        "label": "Formát času",
+        "keywords": "čas 24hodinový 12hodinový"
+      },
+      "numberFormat": {
+        "label": "Formát čísel",
+        "keywords": "desetinná čárka oddělovač"
+      },
+      "firstDayOfWeek": {
+        "label": "První den týdne",
+        "keywords": "pondělí neděle týden kalendář"
+      },
+      "gameMode": {
+        "label": "Režim hry",
+        "keywords": "hra nástroj XP úrovně"
+      },
+      "path": {
+        "label": "Cesta",
+        "keywords": "hra obor milníky"
+      },
+      "reengage": {
+        "label": "Nabídnout nové oslovení po",
+        "keywords": "pipeline ztracené obchody znovu oslovit měsíce"
+      },
+      "coldCallingStage": {
+        "label": "Fáze nového obchodu",
+        "keywords": "cold calling pipeline volání obchod"
+      },
+      "invoices": {
+        "label": "Faktury a údaje dodavatele",
+        "keywords": "faktura fakturace IČO DIČ účet číslo řada styl QR platba dodavatel"
+      },
       "export": {
+        "label": "Exportovat moje data",
+        "keywords": "soukromí data stáhnout ZIP CSV záloha"
+      },
+      "legal": {
+        "label": "Podmínky a soukromí",
+        "keywords": "právní ochrana osobních údajů GDPR"
+      },
+      "deleteAccount": {
+        "label": "Smazat účet",
+        "keywords": "soukromí zrušit účet odstranit"
+      }
+    },
+    "work": {
+      "nothing": "Tady zatím není co nastavovat. Majitel ti může otevřít Cold Calling a pipeline."
+    },
+    "data": {
+      "export": {
+        "title": "Tvoje data",
         "label": "Exportovat moje data",
         "hint": "ZIP s tabulkami CSV: milníky, úkoly, kontakty, obchody, události, transakce, faktury, poznámky a nastavení.",
         "hintWorker": "ZIP s tabulkami CSV tvého vlastního účtu. Data týmu, ve kterém pracuješ, patří majiteli a v exportu nejsou.",
         "action": "Stáhnout ZIP"
+      },
+      "legal": {
+        "title": "Podmínky a soukromí",
+        "description": "Co platí mezi námi a jak s daty zacházíme.",
+        "label": "Dokumenty",
+        "terms": "Podmínky",
+        "privacy": "Soukromí"
+      },
+      "danger": {
+        "title": "Nebezpečná zóna",
+        "description": "Co se tady udělá, nejde vrátit."
       },
       "delete": {
         "label": "Smazat účet",
@@ -1101,11 +1217,6 @@
           "generic": "Účet se nepodařilo smazat. Zkus to prosím znovu."
         }
       }
-    },
-    "subscription": {
-      "title": "Předplatné",
-      "description": "Tvůj tarif, platby a fakturační údaje.",
-      "open": "Spravovat předplatné"
     }
   },
   "milestones": {
@@ -5009,6 +5120,18 @@
         "90d": "za 90 dní",
         "12m": "za 12 měsíců",
         "custom": "za {from} – {to}"
+      },
+      "connection": {
+        "title": "Vyzkoušet připojení",
+        "description": "Pošle Jarvisovi krátký dotaz a ukáže, jestli odpověděl, za jak dlouho a kolik to stálo. Počítá se do útraty.",
+        "test": "Vyzkoušet připojení",
+        "testing": "Ptám se Jarvise…",
+        "ok": "Jarvis odpověděl",
+        "duration": "Za {seconds} s",
+        "cost": "Stálo to {cost}",
+        "model": "Model {model}",
+        "failed": "Jarvis neodpověděl",
+        "failedAfter": "Chyba přišla za {seconds} s."
       }
     },
     "game": {

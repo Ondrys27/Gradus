@@ -1,20 +1,20 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import Link from "next/link";
-import { ArrowLeftIcon, CalendarClockIcon, InfoIcon } from "lucide-react";
+import { CalendarClockIcon, InfoIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormAlert } from "@/components/ui/form-alert";
 import { GlowCard } from "@/components/ui/glow-card";
-import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusPill } from "@/components/ui/status-pill";
 import type { Tone } from "@/components/ui/tone";
 import { isPaidPlanKey, priceCurrencyFor, type PlanCatalog } from "@/config/pricing";
 import { useSession, useUserSettings } from "@/features/account/queries";
+import { AppOverview } from "@/features/plan/app-overview";
 import { planName } from "@/features/plan/catalog";
+import { SettingsPage } from "@/features/settings/ui";
 import { formatDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { BillingDetailsForm } from "./billing-details-form";
@@ -34,8 +34,6 @@ import {
   periodEndOf,
   type DisplayStatus,
 } from "./state";
-
-export const SETTINGS_PATH = "/app/nastaveni";
 
 const STATUS_TONE: Record<DisplayStatus, Tone> = {
   beta: "violet",
@@ -57,34 +55,27 @@ export type SubscriptionNotice = { tone: "success" | "error"; text: string } | n
  */
 export function SubscriptionPage({ plans }: { plans: PlanCatalog }) {
   const t = useTranslations("subscription");
-  const { worker } = useSession();
-  const header = (
-    <PageHeader
-      title={t("title")}
-      description={t("description")}
-      actions={
-        <Link href={SETTINGS_PATH} className={buttonVariants({ variant: "ghost" })}>
-          <ArrowLeftIcon aria-hidden />
-          {t("backToSettings")}
-        </Link>
-      }
-    />
-  );
-  if (worker) {
-    return (
-      <div className="flex flex-col gap-6">
-        {header}
-        <EmptyState title={t("workerTitle")} description={t("workerText")} />
-      </div>
-    );
-  }
+  const { worker, roles } = useSession();
   return (
-    <div className="flex flex-col gap-6">
-      {header}
-      <CurrentPlan plans={plans} />
-      <PaymentHistory />
-      <BillingDetailsForm />
-    </div>
+    <SettingsPage title={t("title")} description={t("description")}>
+      {worker ? (
+        <EmptyState title={t("workerTitle")} description={t("workerText")} />
+      ) : (
+        <>
+          <div id="settings-plan" tabIndex={-1} data-setting-row className="rounded-card outline-none">
+            <CurrentPlan plans={plans} />
+          </div>
+          <div id="settings-payments" tabIndex={-1} data-setting-row className="rounded-card outline-none">
+            <PaymentHistory />
+          </div>
+          <div id="settings-billing" tabIndex={-1} data-setting-row className="rounded-card outline-none">
+            <BillingDetailsForm />
+          </div>
+          {/* The app's own owner also sees how the accounts of the app are doing. */}
+          {roles.includes("owner") && <AppOverview />}
+        </>
+      )}
+    </SettingsPage>
   );
 }
 

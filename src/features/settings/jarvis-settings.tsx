@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
-import { CheckIcon, CompassIcon } from "lucide-react";
+import { useMemo } from "react";
+import { CompassIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,60 +12,56 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { useUserSettings } from "@/features/account/queries";
+import { useSession, useUserSettings } from "@/features/account/queries";
 import { jarvisOverlay } from "@/features/jarvis/overlay-store";
 import { JARVIS_FREQUENCIES, toJarvisFrequency } from "@/features/jarvis/proactive";
 import { formatIsoTime } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
-import type { UserSettingsPatch } from "@/lib/user-settings";
-import { cn } from "@/lib/utils";
+import { useSettingsSave } from "./save-state";
+import { ActionRow, ChoiceGrid, ChoiceTile, SettingRow, SettingsPage, SettingsSection } from "./ui";
 
 /** Quiet hours offered when the user turns them on. */
 const DEFAULT_QUIET = { from: 21, to: 8 } as const;
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 
-function Row({
-  id,
-  label,
-  hint,
-  children,
-}: {
-  id: string;
-  label: string;
-  hint?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 md:flex-row md:items-center md:justify-between md:gap-6">
-      <div className="flex min-w-0 flex-col gap-1">
-        <label htmlFor={id} className="text-[15px] font-medium text-ink">
-          {label}
-        </label>
-        {hint && <p className="text-xs text-ink-muted">{hint}</p>}
-      </div>
-      <div className="w-full shrink-0 md:w-80">{children}</div>
-    </div>
-  );
-}
-
-/** The two frequencies with suggestions in between share the first row, the summaries the second. */
-const SPAN: Record<(typeof JARVIS_FREQUENCIES)[number], string> = {
-  every_2h: "col-span-3",
-  every_6h: "col-span-3",
-  daily: "col-span-2",
-  weekly: "col-span-2",
-  monthly: "col-span-2",
-};
-
 /**
  * Settings → Jarvis: whether he speaks up on his own, how often (every 2 or
  * 6 hours besides the summary of the day, or only a summary once a day,
- * week or month) and quiet hours in the user's zone.
+ * week or month), quiet hours in the user's zone, and the guided tour again.
+ * A worker has no Jarvis of their own; they get the tour.
  */
-export function JarvisSettings({ save }: { save: (patch: UserSettingsPatch) => void }) {
+export function JarvisView() {
+  const t = useTranslations("settings");
+  const { worker } = useSession();
+  return (
+    <SettingsPage title={t("groups.jarvis.title")} description={t("groups.jarvis.description")}>
+      {!worker && <ProactiveSection />}
+      <SettingsSection title={t("help.title")} description={t("help.description")}>
+        <ActionRow
+          id="settings-help-tour"
+          label={t("help.tour")}
+          hint={t("help.tourHint")}
+          action={
+            <Button
+              id="settings-help-tour"
+              variant="secondary"
+              onClick={() => jarvisOverlay.requestTour()}
+            >
+              <CompassIcon aria-hidden />
+              {t("help.start")}
+            </Button>
+          }
+        />
+      </SettingsSection>
+    </SettingsPage>
+  );
+}
+
+function ProactiveSection() {
   const t = useTranslations("settings.jarvis");
   const settings = useUserSettings();
   const format = useFormatSettings();
+  const { save } = useSettingsSave();
   const on = settings.jarvis_proactive;
   const frequency = toJarvisFrequency(settings.jarvis_frequency);
   const quiet = settings.jarvis_quiet_from !== null && settings.jarvis_quiet_to !== null;
@@ -80,79 +76,77 @@ export function JarvisSettings({ save }: { save: (patch: UserSettingsPatch) => v
   );
 
   const hourSelect = (id: string, value: number, other: number, field: "from" | "to") => (
-    <Select
-      value={String(value)}
-      items={hourItems}
-      disabled={!on}
-      onValueChange={(next) => {
-        const hour = Number(next);
-        if (!Number.isInteger(hour) || hour === value || hour === other) return;
-        save(field === "from" ? { jarvis_quiet_from: hour } : { jarvis_quiet_to: hour });
-      }}
-    >
-      <SelectTrigger id={id} aria-label={t(`quiet.${field}`)}>
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent className="max-h-[min(var(--available-height),320px)]">
-        {hourItems.map((item) => (
-          <SelectItem key={item.value} value={item.value} disabled={Number(item.value) === other}>
-            {item.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <label className="flex min-w-0 flex-1 flex-col gap-1">
+      <span className="text-xs text-ink-muted">{t(`quiet.${field}`)}</span>
+      <Select
+        value={String(value)}
+        items={hourItems}
+        disabled={!on}
+        onValueChange={(next) => {
+          const hour = Number(next);
+          if (!Number.isInteger(hour) || hour === value || hour === other) return;
+          save(field === "from" ? { jarvis_quiet_from: hour } : { jarvis_quiet_to: hour });
+        }}
+      >
+        <SelectTrigger id={id} aria-label={t(`quiet.${field}`)}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent className="max-h-[min(var(--available-height),320px)]">
+          {hourItems.map((item) => (
+            <SelectItem key={item.value} value={item.value} disabled={Number(item.value) === other}>
+              {item.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </label>
   );
 
   return (
-    <div className="flex flex-col divide-y divide-line/60">
-      <Row id="settings-jarvis-proactive" label={t("proactive")} hint={t("proactiveHint")}>
-        <Switch
-          id="settings-jarvis-proactive"
-          checked={on}
-          onCheckedChange={(checked) => save({ jarvis_proactive: checked })}
-        />
-      </Row>
+    <SettingsSection title={t("title")} description={t("description")}>
+      <SettingRow
+        id="settings-jarvis-proactive"
+        label={t("proactive")}
+        hint={t("proactiveHint")}
+        fields={["jarvis_proactive"]}
+      >
+        <div className="flex md:justify-end">
+          <Switch
+            id="settings-jarvis-proactive"
+            checked={on}
+            onCheckedChange={(checked) => save({ jarvis_proactive: checked })}
+          />
+        </div>
+      </SettingRow>
 
-      <Row
+      <SettingRow
         id="settings-jarvis-frequency"
         label={t("frequency")}
         hint={t(`frequencyHint.${frequency}`)}
+        fields={["jarvis_frequency"]}
+        group
+        layout="stack"
       >
-        <div
-          id="settings-jarvis-frequency"
-          role="radiogroup"
-          aria-label={t("frequency")}
-          tabIndex={-1}
-          className="grid grid-cols-6 gap-2 rounded-xl outline-none"
-        >
-          {JARVIS_FREQUENCIES.map((value) => {
-            const checked = frequency === value;
-            return (
-              <button
-                key={value}
-                type="button"
-                role="radio"
-                aria-checked={checked}
-                disabled={!on}
-                onClick={() => !checked && save({ jarvis_frequency: value })}
-                className={cn(
-                  "flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-2 py-1.5 text-center text-sm leading-tight font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50",
-                  SPAN[value],
-                  checked
-                    ? "border-violet/60 bg-violet/15 text-ink"
-                    : "border-line bg-canvas-deep/60 text-ink-soft hover:border-line-strong",
-                )}
-              >
-                {checked && <CheckIcon aria-hidden className="size-3.5 shrink-0 text-violet" />}
-                {t(`frequencies.${value}`)}
-              </button>
-            );
-          })}
-        </div>
-      </Row>
+        <ChoiceGrid id="settings-jarvis-frequency" label={t("frequency")} columns={3}>
+          {JARVIS_FREQUENCIES.map((value) => (
+            <ChoiceTile
+              key={value}
+              checked={frequency === value}
+              disabled={!on}
+              onSelect={() => save({ jarvis_frequency: value })}
+              title={t(`frequencies.${value}`)}
+            />
+          ))}
+        </ChoiceGrid>
+      </SettingRow>
 
-      <Row id="settings-jarvis-quiet" label={t("quiet.title")} hint={t("quiet.hint")}>
-        <div className="flex flex-col gap-3">
+      <SettingRow
+        id="settings-jarvis-quiet"
+        label={t("quiet.title")}
+        hint={t("quiet.hint")}
+        fields={["jarvis_quiet_from", "jarvis_quiet_to"]}
+      >
+        <div className="flex md:justify-end">
           <Switch
             id="settings-jarvis-quiet"
             checked={quiet}
@@ -165,46 +159,26 @@ export function JarvisSettings({ save }: { save: (patch: UserSettingsPatch) => v
               )
             }
           />
-          {quiet && (
-            <div className="grid grid-cols-2 gap-2">
-              {hourSelect(
-                "settings-jarvis-quiet-from",
-                settings.jarvis_quiet_from!,
-                settings.jarvis_quiet_to!,
-                "from",
-              )}
-              {hourSelect(
-                "settings-jarvis-quiet-to",
-                settings.jarvis_quiet_to!,
-                settings.jarvis_quiet_from!,
-                "to",
-              )}
-            </div>
-          )}
         </div>
-      </Row>
-    </div>
-  );
-}
-
-/** Settings → Help: the guided tour again, from the dashboard. */
-export function HelpSettings() {
-  const t = useTranslations("settings.help");
-  return (
-    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-6">
-      <div className="flex min-w-0 flex-col gap-1">
-        <p className="text-[15px] font-medium text-ink">{t("tour")}</p>
-        <p className="text-xs text-ink-muted">{t("tourHint")}</p>
-      </div>
-      <Button
-        id="settings-help-tour"
-        variant="secondary"
-        className="self-start md:self-auto"
-        onClick={() => jarvisOverlay.requestTour()}
-      >
-        <CompassIcon aria-hidden />
-        {t("start")}
-      </Button>
-    </div>
+      </SettingRow>
+      {quiet && (
+        <SettingRow id="settings-jarvis-quiet-from" label={t("quiet.hours")} group>
+          <div className="flex gap-2">
+            {hourSelect(
+              "settings-jarvis-quiet-from",
+              settings.jarvis_quiet_from!,
+              settings.jarvis_quiet_to!,
+              "from",
+            )}
+            {hourSelect(
+              "settings-jarvis-quiet-to",
+              settings.jarvis_quiet_to!,
+              settings.jarvis_quiet_from!,
+              "to",
+            )}
+          </div>
+        </SettingRow>
+      )}
+    </SettingsSection>
   );
 }

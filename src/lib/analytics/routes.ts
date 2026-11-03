@@ -46,8 +46,12 @@ const ROUTE_SECTIONS = {
   "/app/ukoly-crm": "pipeline",
   "/app/odmeny": "workers",
   "/app/nastaveni": "settings",
+  "/app/nastaveni/ucet": "settings",
+  "/app/nastaveni/jarvis": "settings",
+  "/app/nastaveni/vzhled": "settings",
+  "/app/nastaveni/prace": "settings",
+  "/app/nastaveni/soukromi": "settings",
   "/app/nastaveni/predplatne": "plan",
-  "/app/profil": "account",
   "/app/tarif": "plan",
   other: "platform",
 } as const satisfies Record<string, AnalyticsSection>;

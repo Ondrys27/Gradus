@@ -45,6 +45,7 @@ vi.mock("@/features/admin/ui/explorer-controls", (load) => stubClientModule(load
 vi.mock("@/features/admin/ui/admin-controls", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/internal-toggle", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/ai-caps-form", (load) => stubClientModule(load));
+vi.mock("@/features/admin/ui/jarvis-ping-card", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/user-ai-cap-form", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/feature-request-row", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/report-status", (load) => stubClientModule(load));
