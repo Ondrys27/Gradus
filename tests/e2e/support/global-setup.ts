@@ -12,7 +12,7 @@ const WARM_ROUTES = [
   "/app/cold-calling",
   "/app/kalendar",
   "/app/finance",
-  "/app/pracovnici",
+  "/app/firma",
   "/app/nastaveni",
 ];
 

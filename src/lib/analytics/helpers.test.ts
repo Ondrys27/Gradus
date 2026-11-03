@@ -24,7 +24,7 @@ describe("routeOf", () => {
       "/app/kontakty/[id]",
     );
     expect(routeOf("/app/kontakty/tabulky")).toBe("/app/kontakty/tabulky");
-    expect(routeOf("/app/pracovnici/odmeny/")).toBe("/app/pracovnici/odmeny");
+    expect(routeOf("/app/firma/odmeny/")).toBe("/app/firma/odmeny");
     expect(routeOf("/app/milniky/abc?x=1")).toBe("/app/milniky/[id]");
   });
 

@@ -10,7 +10,7 @@ describe("mentionHref", () => {
   it("opens each record where its detail lives", () => {
     expect(mentionHref("contact", ID, settings)).toBe(`/app/kontakty/${ID}`);
     expect(mentionHref("deal", ID, settings)).toBe(`/app/pipeline?deal=${ID}`);
-    expect(mentionHref("worker", ID, settings)).toBe(`/app/pracovnici/${ID}`);
+    expect(mentionHref("worker", ID, settings)).toBe(`/app/firma/${ID}`);
   });
 
   it("opens an event on its day in the user's time zone", () => {

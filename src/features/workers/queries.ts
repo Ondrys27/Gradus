@@ -257,27 +257,53 @@ function trackPermissions(draft: PermissionDraft) {
   });
 }
 
-/** Worker, permissions and invite in one go; the database picks the invite code. */
+/**
+ * Worker, permissions, place in the company (manager, groups) and invite in
+ * one go; the database picks the invite code and refuses a manager of
+ * another owner.
+ */
 export function useCreateWorker() {
   const { user } = useSession();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { worker: WorkerInput; permissions: PermissionDraft }) => {
+    mutationFn: async (input: {
+      worker: WorkerInput;
+      permissions: PermissionDraft;
+      /** Null = right under the owner. */
+      managerId?: string | null;
+      groupIds?: string[];
+    }) => {
       const supabase = createClient();
+      const groupIds = input.groupIds ?? [];
       const { data: worker, error } = await supabase
         .from("workers")
-        .insert({ ...input.worker, owner_id: user.id })
+        .insert({ ...input.worker, owner_id: user.id, manager_id: input.managerId ?? null })
         .select(WORKER_COLUMNS)
         .single();
       if (error) throw error;
       await savePermissions(user.id, worker.id, input.permissions);
+      if (groupIds.length > 0) {
+        const { error: groupError } = await supabase
+          .from("worker_group_members")
+          .insert(
+            groupIds.map((groupId) => ({
+              group_id: groupId,
+              worker_id: worker.id,
+              owner_id: user.id,
+            })),
+          );
+        if (groupError) throw groupError;
+      }
       const { data: invite, error: inviteError } = await supabase
         .from("worker_invites")
         .insert({ owner_id: user.id, worker_id: worker.id, email: worker.email })
         .select(INVITE_COLUMNS)
         .single();
       if (inviteError) throw inviteError;
-      track("worker_invited", {});
+      track("worker_invited", {
+        with_manager: Boolean(input.managerId),
+        groups: Math.min(groupIds.length, 200),
+      });
       trackPermissions(input.permissions);
       return { worker, invite };
     },

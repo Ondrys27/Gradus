@@ -15,6 +15,8 @@ export const DEFAULT_SITE_LOCALE: SiteLocale = "cs";
 export const APP_HOME_PATH = "/app";
 /** Settings → Subscription: the plan, choosing another one, cancelling, payments. */
 export const PLAN_PATH = "/app/nastaveni/predplatne";
+/** Company: the people of the firm as a tree, their groups, invites and rewards. */
+export const COMPANY_PATH = "/app/firma";
 
 /** Public pages and sign-in pages with their address in each language. */
 export const LOCALIZED_PAGES = {
@@ -99,8 +101,10 @@ export const LEGACY_REDIRECTS: readonly (readonly [from: string, to: string])[] 
   ["/calendar", "/app/kalendar"],
   ["/finance", "/app/finance"],
   ["/profile", "/app/nastaveni/ucet"],
-  ["/workers/rewards", "/app/pracovnici/odmeny"],
-  ["/workers", "/app/pracovnici"],
+  ["/workers/rewards", "/app/firma/odmeny"],
+  ["/workers", "/app/firma"],
+  // Workers became Company (19.2); a worker's page and the rewards keep their place.
+  ["/app/pracovnici", "/app/firma"],
   ["/rewards", "/app/odmeny"],
   ["/settings", "/app/nastaveni"],
   // The profile moved into Settings → Account.

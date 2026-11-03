@@ -25,6 +25,7 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { Segmented } from "@/features/finance/segmented";
 import { formatNumber, splitDuration, todayIsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
+import { COMPANY_PATH } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { EarningsPanel } from "./earnings-panel";
 import { InviteCard } from "./invite-card";
@@ -73,7 +74,7 @@ export function WorkerDetail({ workerId }: { workerId: string }) {
   });
 
   const back = (
-    <Link href="/app/pracovnici" className={backLinkClass}>
+    <Link href={COMPANY_PATH} className={backLinkClass}>
       <ArrowLeftIcon aria-hidden data-icon="inline-start" />
       {t("back")}
     </Link>

@@ -14,7 +14,7 @@ import { useSession } from "@/features/account/queries";
 import { sameEmail } from "@/features/account/same-email";
 import { loginPath } from "@/lib/auth/routes";
 
-const WORKERS_PATH = "/app/pracovnici";
+const WORKERS_PATH = "/app/firma";
 
 /**
  * Settings → Privacy and data: delete the account for good after typing its

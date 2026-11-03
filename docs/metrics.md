@@ -60,7 +60,7 @@ U každé sekce: adopce (% aktivních, kteří ji použili), počet akcí, akce 
 
 **Finance** — transakce, vystavené faktury, automatické platby
 
-**Pracovníci** — pozvánky odeslané / přijaté / vypršelé, aktivní pracovníci, zadané a splněné úkoly, schválené výdělky
+**Správa firmy** (dříve Pracovníci, sekce `workers`) — pozvánky odeslané / přijaté / vypršelé (`worker_invited` nese, zda má nadřízeného a kolik skupin), aktivní pracovníci, zadané a splněné úkoly, schválené výdělky; přesuny ve stromu (`worker_moved`: odkud — seznam / mapa / nabídka, hloubka, přímo pod majitele), skupiny založené / upravené / smazané (`worker_group_created` / `_updated` / `_deleted`, jen počty členů), volba seznam / mapa (`view_selected` s `screen = company`)
 
 **Vyhledávání** — hledání, otevřené výsledky, míra hledání bez výsledku, ⌘K vs. kliknutí, použité rychlé akce
 

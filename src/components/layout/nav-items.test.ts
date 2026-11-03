@@ -56,6 +56,7 @@ describe("worker navigation", () => {
       "tasks",
       "myRewards",
       "pipeline",
+      "workers",
     ]);
     expect(bottomNavKeysFor(worker)).toEqual(["dashboard", "tasks", "myRewards"]);
   });
@@ -75,7 +76,10 @@ describe("worker navigation", () => {
   it("closes sections outside the sidebar, never profile or settings", () => {
     expect(isPathAllowed("/app/pipeline/abc", worker)).toBe(true);
     expect(isPathAllowed("/app/finance", worker)).toBe(false);
-    expect(isPathAllowed("/app/pracovnici", worker)).toBe(false);
+    // Company with their own branch, never a worker's page or the reward system.
+    expect(isPathAllowed("/app/firma", worker)).toBe(true);
+    expect(isPathAllowed("/app/firma/abc", worker)).toBe(false);
+    expect(isPathAllowed("/app/firma/odmeny", worker)).toBe(false);
     expect(isPathAllowed("/app/milniky", worker)).toBe(false);
     // The owner's notes stay private, whatever the worker may see.
     expect(isPathAllowed("/app/poznamky", worker)).toBe(false);
@@ -86,6 +90,7 @@ describe("worker navigation", () => {
     expect(isPathAllowed("/app/ukoly-crm", null)).toBe(true);
     expect(isPathAllowed("/app/ukoly-crm", worker)).toBe(true);
     expect(isPathAllowed("/app/odmeny", null)).toBe(false);
-    expect(isPathAllowed("/app/pracovnici/odmeny", null)).toBe(true);
+    expect(isPathAllowed("/app/firma/odmeny", null)).toBe(true);
+    expect(isPathAllowed("/app/firma/abc", null)).toBe(true);
   });
 });

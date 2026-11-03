@@ -31,7 +31,9 @@ describe("legacy redirects", () => {
     expect(legacyRedirectTarget("/dashboard")).toBe("/app");
     expect(legacyRedirectTarget("/milestones/42")).toBe("/app/milniky/42");
     expect(legacyRedirectTarget("/contacts/tables")).toBe("/app/kontakty/tabulky");
-    expect(legacyRedirectTarget("/workers/rewards")).toBe("/app/pracovnici/odmeny");
+    expect(legacyRedirectTarget("/workers/rewards")).toBe("/app/firma/odmeny");
+    expect(legacyRedirectTarget("/app/pracovnici")).toBe("/app/firma");
+    expect(legacyRedirectTarget("/app/pracovnici/abc")).toBe("/app/firma/abc");
     expect(legacyRedirectTarget("/register")).toBe("/en/register");
     expect(legacyRedirectTarget("/milestonesx")).toBeNull();
   });

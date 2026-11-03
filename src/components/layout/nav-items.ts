@@ -1,4 +1,5 @@
 import {
+  Building2Icon,
   CalendarDaysIcon,
   CoinsIcon,
   ContactRoundIcon,
@@ -8,11 +9,10 @@ import {
   NotebookPenIcon,
   PhoneCallIcon,
   SquareKanbanIcon,
-  UsersRoundIcon,
   WalletIcon,
   type LucideIcon,
 } from "lucide-react";
-import { APP_HOME_PATH } from "@/lib/routes";
+import { APP_HOME_PATH, COMPANY_PATH } from "@/lib/routes";
 
 export type NavKey =
   | "dashboard"
@@ -39,7 +39,8 @@ export const navItems: NavItem[] = [
   { key: "coldCalling", href: "/app/cold-calling", icon: PhoneCallIcon },
   { key: "calendar", href: "/app/kalendar", icon: CalendarDaysIcon },
   { key: "finance", href: "/app/finance", icon: WalletIcon },
-  { key: "workers", href: "/app/pracovnici", icon: UsersRoundIcon },
+  // Company (the workers section): the people of the firm, groups, invites and rewards.
+  { key: "workers", href: COMPANY_PATH, icon: Building2Icon },
 ];
 
 /** Sections that get their own slot in the phone bottom bar; the rest live under "More". */
@@ -72,11 +73,14 @@ export type WorkerNavAccess = {
  * the owner) are theirs whatever sections they may see.
  */
 const WORKER_BASE: NavKey[] = ["dashboard", "tasks", "myRewards"];
+/** A worker's Company shows their own branch, read only; it comes last, under "More" on a phone. */
+const WORKER_END: NavKey[] = ["workers"];
 
 /**
  * The sidebar of an account. An owner gets the ten sections; a worker gets
  * their own Dashboard, Tasks and Rewards, then every section the owner lets
- * them see. Workers, notes and settings of the owner are never among them.
+ * them see, and Company with their own branch. Notes and settings of the
+ * owner are never among them.
  */
 export function navItemsFor(access: WorkerNavAccess): NavItem[] {
   if (!access) return navItems;
@@ -84,7 +88,7 @@ export function navItemsFor(access: WorkerNavAccess): NavItem[] {
   const allowed = PERMISSION_SECTIONS.filter(
     ({ section }) => access.permissions[section]?.view,
   ).map(({ key }) => key);
-  return [...WORKER_BASE, ...allowed].map((key) => byKey.get(key)!);
+  return [...WORKER_BASE, ...allowed, ...WORKER_END].map((key) => byKey.get(key)!);
 }
 
 export function bottomNavKeysFor(access: WorkerNavAccess): NavKey[] {
@@ -99,6 +103,11 @@ export function isPathAllowed(pathname: string, access: WorkerNavAccess): boolea
   const all = [...navItems, ...workerOnlyItems];
   const section = all.find((item) => isActivePath(pathname, item.href));
   if (!section) return true;
+  // A worker has Company itself (their branch); a worker's page and the reward
+  // system belong to the owner.
+  if (access && section.key === "workers" && pathname.replace(/\/+$/, "") !== COMPANY_PATH) {
+    return false;
+  }
   return navItemsFor(access).some((item) => item.key === section.key);
 }
 

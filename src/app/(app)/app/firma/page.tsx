@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { WorkersView } from "@/features/workers/workers-view";
+import { CompanyView } from "@/features/workers/company/company-view";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("nav");
   return { title: t("workers") };
 }
 
-export default function WorkersPage() {
-  return <WorkersView />;
+export default function CompanyPage() {
+  return <CompanyView />;
 }

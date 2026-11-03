@@ -211,7 +211,7 @@
     "coldCalling": "Cold Calling",
     "calendar": "Calendar",
     "finance": "Finance",
-    "workers": "Workers",
+    "workers": "Company",
     "more": "More",
     "close": "Close",
     "profile": "Profile",
@@ -681,8 +681,8 @@
       "emptyDescription": "Meetings and deadlines you plan will appear here."
     },
     "workers": {
-      "description": "The people who work with you and their hours.",
-      "emptyTitle": "No workers yet",
+      "description": "The people of your company as a tree, their groups, invites and rewards.",
+      "emptyTitle": "It is just you so far",
       "emptyDescription": "Invite your first worker to share tasks and track their time."
     }
   },
@@ -1215,7 +1215,7 @@
         "confirm": "Delete account for good",
         "cancel": "Cancel",
         "close": "Close",
-        "openWorkers": "Open Workers",
+        "openWorkers": "Open Company",
         "errors": {
           "emailMismatch": "The e-mail doesn't match the account's e-mail.",
           "active_workers": "Deactivate your workers first, so nobody loses access without warning. Then the account can be deleted.",
@@ -3226,11 +3226,11 @@
     }
   },
   "workers": {
-    "add": "Add worker",
+    "add": "Invite worker",
     "rewardSystem": "Reward system",
-    "loadFailed": "Workers could not be loaded. Try again.",
+    "loadFailed": "The company could not be loaded. Try again.",
     "statsFailed": "This month's numbers could not be loaded.",
-    "back": "Workers",
+    "back": "Company",
     "card": {
       "noJobTitle": "No role set",
       "invited": "Waiting to sign up",
@@ -3244,7 +3244,7 @@
       "duration": "{hours} h {minutes} min"
     },
     "form": {
-      "newTitle": "Add worker",
+      "newTitle": "Invite worker",
       "editTitle": "Edit worker",
       "inviteReady": "Invite ready",
       "name": "Name",
@@ -3438,7 +3438,7 @@
     "rewards": {
       "title": "Reward system",
       "description": "Triggers are what your workers do, rules how much it pays. Jarvis turns it into rules and explains them; nothing runs until you confirm.",
-      "back": "Workers",
+      "back": "Company",
       "askAi": "Let AI set it up",
       "aiWorking": "Jarvis is reading…",
       "withoutAi": "Set up without AI",
@@ -3561,6 +3561,129 @@
       "amountInvalid": "Enter an amount above zero.",
       "noteTooLong": "The note is too long.",
       "dateRequired": "Pick a date."
+    },
+    "company": {
+      "tabs": {
+        "label": "Parts of Company",
+        "people": "People",
+        "groups": "Groups",
+        "rewards": "Rewards and payouts"
+      },
+      "view": {
+        "label": "Show the company as",
+        "list": "List",
+        "map": "Map"
+      },
+      "filter": {
+        "label": "Filter by group",
+        "all": "All groups"
+      },
+      "you": "you",
+      "ownerRole": "Owner",
+      "status": {
+        "active": "Active",
+        "invited": "Invited",
+        "inactive": "Ended"
+      },
+      "openTasks": "{count, plural, one {{shown} open task} other {{shown} open tasks}}",
+      "openDeals": "{count, plural, one {{shown} open deal} other {{shown} open deals}}",
+      "team": "{count, plural, one {team of {shown}} other {team of {shown}}}",
+      "expand": "Expand team: {name}",
+      "collapse": "Collapse team: {name}",
+      "open": "Open: {name}",
+      "actions": "Actions: {name}",
+      "moveMenu": "Move under…",
+      "openMenu": "Open details",
+      "list": {
+        "label": "People in the company"
+      },
+      "map": {
+        "label": "Company map"
+      },
+      "move": {
+        "pickedUp": "Picked up {name}.",
+        "over": "{name} over: {target}.",
+        "dropped": "{name} moved.",
+        "cancelled": "Move cancelled.",
+        "instructions": "Drag a worker onto their new manager (on a phone, press and hold first). Their whole team goes along."
+      },
+      "moveDialog": {
+        "title": "Move under… ({name})",
+        "description": "Pick the new manager. The whole team below this worker goes along.",
+        "owner": "Right under you",
+        "current": "now",
+        "confirm": "Move",
+        "cancel": "Cancel",
+        "close": "Close"
+      },
+      "errors": {
+        "cycle": "A worker cannot be under themself or under anyone of their own team.",
+        "readOnly": "The company does not change in read-only mode.",
+        "saveFailed": "Saving failed. Try again.",
+        "nameTaken": "A group with this name already exists.",
+        "loadFailed": "The company could not be loaded. Try again."
+      },
+      "empty": {
+        "title": "It is just you so far",
+        "description": "Invite your first worker. You pick their manager and groups right away."
+      },
+      "filteredEmpty": "Nobody is in this group yet.",
+      "workerNote": "You see your branch: you and the people below you. The owner can change it.",
+      "groups": {
+        "description": "Groups bring people together across the tree, like Sales or the Brno branch. A worker can be in as many groups as you like, or in none.",
+        "add": "New group",
+        "emptyTitle": "No groups yet",
+        "emptyDescription": "Create your first group and add people to it. Then filter the list and the map by it.",
+        "members": "{count, plural, one {{shown} member} other {{shown} members}}",
+        "edit": "Edit group: {name}",
+        "delete": "Delete group: {name}",
+        "show": "Show in the tree",
+        "deleteTitle": "Delete the group “{name}”?",
+        "deleteDescription": "The memberships end; the workers stay in the company as they are.",
+        "deleteConfirm": "Delete group",
+        "cancel": "Cancel",
+        "close": "Close",
+        "deleteFailed": "The group could not be deleted. Try again."
+      },
+      "groupForm": {
+        "newTitle": "New group",
+        "editTitle": "Edit group",
+        "name": "Name",
+        "namePlaceholder": "e.g. Sales",
+        "color": "Colour",
+        "description": "Description",
+        "descriptionPlaceholder": "What the group is for (optional)",
+        "members": "Members",
+        "noWorkers": "Invite workers first, then add them here.",
+        "create": "Create group",
+        "save": "Save",
+        "cancel": "Cancel",
+        "close": "Close",
+        "errors": {
+          "nameRequired": "Enter a name.",
+          "nameTooLong": "The name is too long.",
+          "descriptionTooLong": "The description is too long."
+        }
+      },
+      "colors": {
+        "violet": "Violet",
+        "teal": "Teal",
+        "gold": "Gold",
+        "green": "Green",
+        "pink": "Pink",
+        "neutral": "Grey"
+      },
+      "rewards": {
+        "description": "Time worked, earnings and what waits for approval this month. Details, payouts and time are on each worker's page.",
+        "system": "Reward system",
+        "empty": "Once you invite workers, their rewards and payouts show here."
+      },
+      "invite": {
+        "manager": "Manager",
+        "managerOwner": "Right under you",
+        "groups": "Groups",
+        "groupsHint": "Optional, you can change it any time."
+      }
     }
   },
   "game": {
@@ -5354,7 +5477,7 @@
         "cold_calling": "Cold calling",
         "calendar": "Calendar",
         "finance": "Finance",
-        "workers": "Workers",
+        "workers": "Company",
         "search": "Search",
         "email": "E-mail",
         "settings": "Settings",

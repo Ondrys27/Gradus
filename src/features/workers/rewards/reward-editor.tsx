@@ -13,6 +13,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Stagger, StaggerItem } from "@/components/ui/stagger";
 import { JarvisJobError } from "@/features/jarvis/queries";
+import { COMPANY_PATH } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { useWorkers } from "../queries";
 import { BranchDialog, LeafDialog } from "./reward-dialogs";
@@ -142,7 +143,7 @@ export function RewardEditor() {
     <Stagger className="flex flex-col gap-6">
       <StaggerItem>
         <Link
-          href="/app/pracovnici"
+          href={`${COMPANY_PATH}?tab=rewards`}
           className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "self-start")}
         >
           <ArrowLeftIcon aria-hidden data-icon="inline-start" />

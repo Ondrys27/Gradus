@@ -59,7 +59,7 @@ export function mentionHref(
       return date ? `/app/kalendar?event=${safe}&date=${date}` : `/app/kalendar?event=${safe}`;
     }
     case "worker":
-      return `/app/pracovnici/${safe}`;
+      return `/app/firma/${safe}`;
   }
 }
 

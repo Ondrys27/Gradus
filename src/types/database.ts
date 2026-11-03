@@ -3474,6 +3474,75 @@ export type Database = {
           },
         ]
       }
+      worker_group_members: {
+        Row: {
+          created_at: string
+          group_id: string
+          owner_id: string
+          worker_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          owner_id?: string
+          worker_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          owner_id?: string
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worker_group_members_group_id_owner_id_fkey"
+            columns: ["group_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "worker_groups"
+            referencedColumns: ["id", "owner_id"]
+          },
+          {
+            foreignKeyName: "worker_group_members_worker_id_owner_id_fkey"
+            columns: ["worker_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
+      worker_groups: {
+        Row: {
+          color: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          owner_id: string
+          position: number
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          owner_id?: string
+          position?: number
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          owner_id?: string
+          position?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       worker_invites: {
         Row: {
           accepted_at: string | null
@@ -3672,6 +3741,7 @@ export type Database = {
           email: string | null
           id: string
           job_title: string | null
+          manager_id: string | null
           name: string
           owner_id: string
           phone: string | null
@@ -3684,6 +3754,7 @@ export type Database = {
           email?: string | null
           id?: string
           job_title?: string | null
+          manager_id?: string | null
           name: string
           owner_id: string
           phone?: string | null
@@ -3696,6 +3767,7 @@ export type Database = {
           email?: string | null
           id?: string
           job_title?: string | null
+          manager_id?: string | null
           name?: string
           owner_id?: string
           phone?: string | null
@@ -3703,7 +3775,15 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "workers_manager_fk"
+            columns: ["manager_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
       }
       xp_events: {
         Row: {
@@ -4116,6 +4196,34 @@ export type Database = {
         }
       }
       choose_path: { Args: { _path_key: string }; Returns: Json }
+      company_groups: {
+        Args: never
+        Returns: {
+          color: string
+          description: string
+          id: string
+          member_count: number
+          name: string
+          position: number
+        }[]
+      }
+      company_tree: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          display_name: string
+          group_ids: string[]
+          id: string
+          job_title: string
+          manager_id: string
+          name: string
+          open_deals: number
+          open_tasks: number
+          status: Database["public"]["Enums"]["worker_status"]
+          user_id: string
+        }[]
+      }
+      company_visible_worker_ids: { Args: never; Returns: string[] }
       contact_tables_add_interested: {
         Args: { _cs: boolean; _ws: string }
         Returns: string

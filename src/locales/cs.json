@@ -211,7 +211,7 @@
     "coldCalling": "Cold Calling",
     "calendar": "Kalendář",
     "finance": "Finance",
-    "workers": "Pracovníci",
+    "workers": "Správa firmy",
     "more": "Více",
     "close": "Zavřít",
     "profile": "Profil",
@@ -681,8 +681,8 @@
       "emptyDescription": "Naplánované schůzky a termíny se objeví tady."
     },
     "workers": {
-      "description": "Lidé, kteří s tebou pracují, a jejich hodiny.",
-      "emptyTitle": "Zatím žádní pracovníci",
+      "description": "Lidé ve firmě jako strom, jejich skupiny, pozvánky a odměny.",
+      "emptyTitle": "Ve firmě jsi zatím sám",
       "emptyDescription": "Pozvi prvního pracovníka a sdílej s ním úkoly a čas."
     }
   },
@@ -1215,7 +1215,7 @@
         "confirm": "Smazat účet natrvalo",
         "cancel": "Zrušit",
         "close": "Zavřít",
-        "openWorkers": "Otevřít Pracovníky",
+        "openWorkers": "Otevřít Správu firmy",
         "errors": {
           "emailMismatch": "E-mail nesouhlasí s e-mailem účtu.",
           "active_workers": "Nejdřív deaktivuj své pracovníky, ať nikdo nepřijde o přístup bez varování. Pak půjde účet smazat.",
@@ -3226,11 +3226,11 @@
     }
   },
   "workers": {
-    "add": "Přidat pracovníka",
+    "add": "Pozvat pracovníka",
     "rewardSystem": "Systém odměn",
-    "loadFailed": "Pracovníky se nepodařilo načíst. Zkus to znovu.",
+    "loadFailed": "Firmu se nepodařilo načíst. Zkus to znovu.",
     "statsFailed": "Čísla za tento měsíc se nepodařilo načíst.",
-    "back": "Pracovníci",
+    "back": "Správa firmy",
     "card": {
       "noJobTitle": "Bez role",
       "invited": "Čeká na registraci",
@@ -3244,7 +3244,7 @@
       "duration": "{hours} h {minutes} min"
     },
     "form": {
-      "newTitle": "Přidat pracovníka",
+      "newTitle": "Pozvat pracovníka",
       "editTitle": "Upravit pracovníka",
       "inviteReady": "Pozvánka je připravená",
       "name": "Jméno",
@@ -3438,7 +3438,7 @@
     "rewards": {
       "title": "Systém odměn",
       "description": "Spouštěče jsou to, co pracovníci dělají, pravidla kolik za to dostanou. Jarvis z toho udělá pravidla a vysvětlí je; nic neběží, dokud nepotvrdíš.",
-      "back": "Pracovníci",
+      "back": "Správa firmy",
       "askAi": "Nechat AI nastavit",
       "aiWorking": "Jarvis čte…",
       "withoutAi": "Nastavit bez AI",
@@ -3561,6 +3561,129 @@
       "amountInvalid": "Zadej částku větší než nula.",
       "noteTooLong": "Poznámka je moc dlouhá.",
       "dateRequired": "Vyber datum."
+    },
+    "company": {
+      "tabs": {
+        "label": "Části Správy firmy",
+        "people": "Lidé",
+        "groups": "Skupiny",
+        "rewards": "Odměny a výplaty"
+      },
+      "view": {
+        "label": "Zobrazit firmu jako",
+        "list": "Seznam",
+        "map": "Mapa"
+      },
+      "filter": {
+        "label": "Filtrovat podle skupiny",
+        "all": "Všechny skupiny"
+      },
+      "you": "ty",
+      "ownerRole": "Majitel",
+      "status": {
+        "active": "Aktivní",
+        "invited": "Pozvaný",
+        "inactive": "Ukončený"
+      },
+      "openTasks": "{count, plural, one {{shown} otevřený úkol} few {{shown} otevřené úkoly} many {{shown} otevřeného úkolu} other {{shown} otevřených úkolů}}",
+      "openDeals": "{count, plural, one {{shown} otevřený obchod} few {{shown} otevřené obchody} many {{shown} otevřeného obchodu} other {{shown} otevřených obchodů}}",
+      "team": "{count, plural, one {tým {shown} člověk} few {tým {shown} lidé} many {tým {shown} lidí} other {tým {shown} lidí}}",
+      "expand": "Rozbalit tým: {name}",
+      "collapse": "Sbalit tým: {name}",
+      "open": "Otevřít: {name}",
+      "actions": "Akce: {name}",
+      "moveMenu": "Přesunout pod…",
+      "openMenu": "Otevřít detail",
+      "list": {
+        "label": "Lidé ve firmě"
+      },
+      "map": {
+        "label": "Mapa firmy"
+      },
+      "move": {
+        "pickedUp": "{name} zvednutý.",
+        "over": "{name} nad: {target}.",
+        "dropped": "{name} přesunutý.",
+        "cancelled": "Přesun zrušený.",
+        "instructions": "Pracovníka přetáhni na nového nadřízeného (na telefonu ho nejdřív podrž). Celý jeho tým jde s ním."
+      },
+      "moveDialog": {
+        "title": "Přesunout pod… ({name})",
+        "description": "Vyber nového nadřízeného. Celý tým pod tímto pracovníkem jde s ním.",
+        "owner": "Přímo pod tebou",
+        "current": "teď",
+        "confirm": "Přesunout",
+        "cancel": "Zrušit",
+        "close": "Zavřít"
+      },
+      "errors": {
+        "cycle": "Pracovník nemůže být pod sebou ani pod někým ze svého týmu.",
+        "readOnly": "V režimu jen pro čtení se firma nemění.",
+        "saveFailed": "Uložení se nepovedlo. Zkus to znovu.",
+        "nameTaken": "Skupina s tímhle názvem už existuje.",
+        "loadFailed": "Firmu se nepodařilo načíst. Zkus to znovu."
+      },
+      "empty": {
+        "title": "Ve firmě jsi zatím sám",
+        "description": "Pozvi prvního pracovníka. Rovnou mu vybereš nadřízeného i skupiny."
+      },
+      "filteredEmpty": "V této skupině zatím nikdo není.",
+      "workerNote": "Vidíš svou větev: sebe a lidi pod sebou. Měnit ji může majitel.",
+      "groups": {
+        "description": "Skupiny spojují lidi napříč stromem, třeba Obchod nebo Pobočka Brno. Pracovník může být v kolika skupinách chceš, nebo v žádné.",
+        "add": "Nová skupina",
+        "emptyTitle": "Zatím žádné skupiny",
+        "emptyDescription": "Založ první skupinu a přidej do ní lidi. Pak podle ní vyfiltruješ seznam i mapu.",
+        "members": "{count, plural, one {{shown} člen} few {{shown} členové} many {{shown} člena} other {{shown} členů}}",
+        "edit": "Upravit skupinu: {name}",
+        "delete": "Smazat skupinu: {name}",
+        "show": "Ukázat ve stromu",
+        "deleteTitle": "Smazat skupinu „{name}“?",
+        "deleteDescription": "Členství ve skupině zanikne, pracovníci zůstanou ve firmě beze změny.",
+        "deleteConfirm": "Smazat skupinu",
+        "cancel": "Zrušit",
+        "close": "Zavřít",
+        "deleteFailed": "Skupinu se nepodařilo smazat. Zkus to znovu."
+      },
+      "groupForm": {
+        "newTitle": "Nová skupina",
+        "editTitle": "Upravit skupinu",
+        "name": "Název",
+        "namePlaceholder": "např. Obchod",
+        "color": "Barva",
+        "description": "Popis",
+        "descriptionPlaceholder": "K čemu skupina je (nepovinné)",
+        "members": "Členové",
+        "noWorkers": "Nejdřív pozvi pracovníky, pak je sem přidáš.",
+        "create": "Založit skupinu",
+        "save": "Uložit",
+        "cancel": "Zrušit",
+        "close": "Zavřít",
+        "errors": {
+          "nameRequired": "Zadej název.",
+          "nameTooLong": "Název je moc dlouhý.",
+          "descriptionTooLong": "Popis je moc dlouhý."
+        }
+      },
+      "colors": {
+        "violet": "Fialová",
+        "teal": "Tyrkysová",
+        "gold": "Zlatá",
+        "green": "Zelená",
+        "pink": "Růžová",
+        "neutral": "Šedá"
+      },
+      "rewards": {
+        "description": "Odpracovaný čas, výdělky a co čeká na schválení za tento měsíc. Podrobnosti, výplaty a čas jsou v detailu pracovníka.",
+        "system": "Systém odměn",
+        "empty": "Až pozveš pracovníky, uvidíš tu jejich odměny a výplaty."
+      },
+      "invite": {
+        "manager": "Nadřízený",
+        "managerOwner": "Přímo pod tebou",
+        "groups": "Skupiny",
+        "groupsHint": "Nepovinné, jde to kdykoli změnit."
+      }
     }
   },
   "game": {
@@ -5354,7 +5477,7 @@
         "cold_calling": "Cold Calling",
         "calendar": "Kalendář",
         "finance": "Finance",
-        "workers": "Pracovníci",
+        "workers": "Správa firmy",
         "search": "Vyhledávání",
         "email": "E-mail",
         "settings": "Nastavení",

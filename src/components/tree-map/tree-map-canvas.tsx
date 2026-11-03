@@ -39,6 +39,7 @@ import {
   type Box,
   type MapBranch,
   type MapLayout,
+  type Orientation,
   type Size,
 } from "./tree-map-layout";
 import {
@@ -94,6 +95,8 @@ type Props = {
   wrapNode?: (id: string, node: ReactNode) => ReactNode;
   /** While a node is being dragged the map neither pans nor zooms. */
   locked?: boolean;
+  /** Root on the left (default) or on top, like an organisation chart. */
+  orientation?: Orientation;
 };
 
 const noop = () => {};
@@ -103,12 +106,13 @@ function shift(box: Box): Box {
 }
 
 /**
- * A horizontal tree: the root on the left, branches to the right. Nodes are
+ * A tree: the root on the left and branches to the right, or (vertical) the
+ * root on top and branches below. Nodes are
  * measured in a hidden layer that never animates, laid out from those sizes,
  * then drawn (and animated) in the visible layer. Edges come in two layers: a
  * solid line and a travelling shine on the same geometry. Full screen is an
  * overlay on the same instance, not the Fullscreen API, which iOS lacks.
- * Used by the task map and the reward editor.
+ * Used by the task map, the reward editor and the company map.
  */
 export function TreeMap({
   tree,
@@ -118,6 +122,7 @@ export function TreeMap({
   overlay,
   wrapNode,
   locked = false,
+  orientation = "horizontal",
 }: Props) {
   const t = useTranslations("treeMap");
   const instanceId = useId();
@@ -137,7 +142,10 @@ export function TreeMap({
   const transitioning = useRef(false);
   const needsCentre = useRef(true);
 
-  const layout = useMemo(() => layoutTree(tree, sizes, collapsed), [tree, sizes, collapsed]);
+  const layout = useMemo(
+    () => layoutTree(tree, sizes, collapsed, orientation),
+    [tree, sizes, collapsed, orientation],
+  );
 
   // A node added a moment ago is measured before paint; until then the last layout stays.
   const [shown, setShown] = useState<MapLayout | null>(null);
@@ -339,9 +347,11 @@ export function TreeMap({
       const view = fitView(
         { width: current.width + CANVAS_PAD * 2, height: current.height + CANVAS_PAD * 2 },
         viewport,
-        root.y + CANVAS_PAD + root.height / 2,
+        orientation === "vertical"
+          ? root.x + CANVAS_PAD + root.width / 2
+          : root.y + CANVAS_PAD + root.height / 2,
         // The whole tree, however small it gets; otherwise small but still readable.
-        fitAll ? { minScale: MIN_SCALE } : undefined,
+        fitAll ? { minScale: MIN_SCALE, orientation } : { orientation },
       );
       zoom.current.target = view.scale;
       void api.setTransform(
@@ -352,7 +362,7 @@ export function TreeMap({
         "easeOutCubic",
       );
     },
-    [current, viewport, tree.id, reduceMotion, stopZoom],
+    [current, viewport, tree.id, reduceMotion, stopZoom, orientation],
   );
 
   // First view, and again after switching full screen.
@@ -516,7 +526,7 @@ export function TreeMap({
                     const from = shift(current.boxes.get(parentId)!);
                     const to = shift(current.boxes.get(childId)!);
                     const isNew = !known.current.has(childId);
-                    const length = edgeLength(from, to);
+                    const length = edgeLength(from, to, undefined, orientation);
                     const geometryId = `${edgePrefix}-${childId}`;
                     return (
                       <motion.g
@@ -527,8 +537,8 @@ export function TreeMap({
                         <defs>
                           <motion.path
                             id={geometryId}
-                            initial={isNew ? { d: collapsedEdgePath(from) } : false}
-                            animate={{ d: edgePath(from, to) }}
+                            initial={isNew ? { d: collapsedEdgePath(from, orientation) } : false}
+                            animate={{ d: edgePath(from, to, orientation) }}
                             transition={
                               reduceMotion
                                 ? { duration: 0 }
@@ -578,12 +588,19 @@ export function TreeMap({
                     ? false
                     : intro || !parentBox || reduceMotion
                       ? { x: box.x, y: box.y, opacity: 0, scale: reduceMotion ? 1 : 0.9 }
-                      : {
-                          x: parentBox.x + parentBox.width - box.width / 2,
-                          y: parentBox.y + parentBox.height / 2 - box.height / 2 - 16,
-                          opacity: 0,
-                          scale: 0.4,
-                        };
+                      : orientation === "vertical"
+                        ? {
+                            x: parentBox.x + parentBox.width / 2 - box.width / 2,
+                            y: parentBox.y + parentBox.height - box.height / 2 + 16,
+                            opacity: 0,
+                            scale: 0.4,
+                          }
+                        : {
+                            x: parentBox.x + parentBox.width - box.width / 2,
+                            y: parentBox.y + parentBox.height / 2 - box.height / 2 - 16,
+                            opacity: 0,
+                            scale: 0.4,
+                          };
                   const delay = intro && !reduceMotion ? box.depth * INTRO_STAGGER : 0;
 
                   return (

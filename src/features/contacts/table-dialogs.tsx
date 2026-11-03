@@ -14,9 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toneFill } from "@/components/ui/tone";
+import { TonePicker } from "@/components/ui/tone-picker";
 import { useFreshOnOpen } from "@/features/milestones/use-fresh-on-open";
-import { cn } from "@/lib/utils";
 import { fieldErrors, TABLE_NAME_MAX, tableSchema, type ContactErrorKey } from "./schemas";
 import { useCreateTable, useRemoveTable } from "./table-queries";
 import { TABLE_TONES, tableTone, type ContactTable } from "./types";
@@ -34,28 +33,14 @@ export function TableColorPicker({
   label: string;
 }) {
   const t = useTranslations("contacts.tableEditor.colors");
-  const current = tableTone(value);
   return (
-    <fieldset>
-      <legend className="mb-2 text-sm font-medium text-ink-soft">{label}</legend>
-      <div className="flex flex-wrap gap-2">
-        {TABLE_TONES.map((tone) => (
-          <button
-            key={tone}
-            type="button"
-            aria-pressed={current === tone}
-            aria-label={t(tone)}
-            onClick={() => onChange(tone)}
-            className={cn(
-              "grid size-11 cursor-pointer place-items-center rounded-full border outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:size-9",
-              current === tone ? "border-ink" : "border-line",
-            )}
-          >
-            <span className={cn("size-5 rounded-full", toneFill[tone])} />
-          </button>
-        ))}
-      </div>
-    </fieldset>
+    <TonePicker
+      tones={TABLE_TONES}
+      value={tableTone(value)}
+      onChange={onChange}
+      label={label}
+      labelOf={(tone) => t(tone)}
+    />
   );
 }
 

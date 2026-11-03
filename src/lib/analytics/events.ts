@@ -298,7 +298,7 @@ export const EVENTS = {
     level_changed: bool(),
   }),
   view_selected: event("milestones", "client", false, {
-    screen: oneOf(["milestones", "tasks"]),
+    screen: oneOf(["milestones", "tasks", "company"]),
     view: oneOf(["list", "map", "path"]),
     initial: bool(),
   }),
@@ -530,8 +530,11 @@ export const EVENTS = {
   crm_task_reopened: event("pipeline", "client", true, {}),
   crm_task_deleted: event("pipeline", "client", true, {}),
 
-  // --- workers -------------------------------------------------------------
-  worker_invited: event("workers", "client", true, {}),
+  // --- company (the workers section) ---------------------------------------
+  worker_invited: event("workers", "client", true, {
+    with_manager: optional(bool()),
+    groups: optional(count(200)),
+  }),
   worker_invite_renewed: event("workers", "client", true, {}),
   worker_invite_accepted: event("workers", "server", false, {}),
   worker_updated: event("workers", "client", true, {}),
@@ -553,6 +556,18 @@ export const EVENTS = {
   work_timer_started: event("workers", "client", true, {}),
   work_timer_paused: event("workers", "client", true, { found_idle: bool() }),
   reward_rules_confirmed: event("workers", "client", true, { rules: count(1000) }),
+  /** A worker put under another manager (or right under the owner), their branch along. */
+  worker_moved: event("workers", "client", true, {
+    via: oneOf(["list", "map", "menu"]),
+    depth: count(100),
+    to_owner: bool(),
+  }),
+  worker_group_created: event("workers", "client", true, { members: count(500) }),
+  worker_group_updated: event("workers", "client", true, {
+    added: count(500),
+    removed: count(500),
+  }),
+  worker_group_deleted: event("workers", "client", true, { members: count(500) }),
 
   // --- search --------------------------------------------------------------
   search_opened: event("search", "client", false, { via: oneOf(["shortcut", "click"]) }),

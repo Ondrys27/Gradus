@@ -122,7 +122,7 @@ export function hitHref(hit: SearchHit, settings: FormatSettings): string {
     case "invoice":
       return `/app/finance/faktury/${id}`;
     case "worker":
-      return `/app/pracovnici/${id}`;
+      return `/app/firma/${id}`;
   }
 }
 

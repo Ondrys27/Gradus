@@ -9,6 +9,7 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusPill } from "@/components/ui/status-pill";
 import { formatCurrency, formatNumber, splitDuration } from "@/lib/format";
+import { COMPANY_PATH } from "@/lib/routes";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { taskProgress } from "./logic";
 import type { Worker, WorkerMonthStats, WorkerProfile } from "./types";
@@ -29,7 +30,7 @@ export function WorkerCard({ worker, profile, stats }: Props) {
 
   return (
     <Link
-      href={`/app/pracovnici/${worker.id}`}
+      href={`${COMPANY_PATH}/${worker.id}`}
       className="block rounded-card outline-none focus-visible:ring-3 focus-visible:ring-violet/40"
     >
       <GlowCard className="flex h-full flex-col gap-4">
