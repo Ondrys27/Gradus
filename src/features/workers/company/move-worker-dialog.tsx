@@ -84,7 +84,14 @@ function Picker({
   onCancel: () => void;
 }) {
   const t = useTranslations("workers.company.moveDialog");
-  const choices = useMemo(() => managerChoices(people, worker.id), [people, worker.id]);
+  // Nobody goes under a person who left the company.
+  const choices = useMemo(
+    () =>
+      managerChoices(people, worker.id).filter(
+        (choice) => !choice.person || choice.person.status !== "inactive",
+      ),
+    [people, worker.id],
+  );
   const current = worker.managerId ?? OWNER_ROOT;
   const [picked, setPicked] = useState<string>(current);
 

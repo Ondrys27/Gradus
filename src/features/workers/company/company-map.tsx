@@ -10,7 +10,6 @@ import {
   type TouchEvent,
 } from "react";
 import { createPortal } from "react-dom";
-import { useRouter } from "next/navigation";
 import {
   DndContext,
   DragOverlay,
@@ -30,7 +29,6 @@ import { TreeMap } from "@/components/tree-map/tree-map";
 import { MAP_DRAG_NODE, type MapBranch } from "@/components/tree-map/tree-map-layout";
 import { Avatar } from "@/components/ui/avatar";
 import { formatNumber } from "@/lib/format";
-import { COMPANY_PATH } from "@/lib/routes";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { useReducedMotionSafe } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
@@ -73,9 +71,9 @@ export function CompanyMap({
   viewer,
   canEdit,
   onMove,
+  onOpen,
 }: Omit<CompanyViewProps, "onMoveMenu">) {
   const t = useTranslations("workers.company");
-  const router = useRouter();
   const reduceMotion = useReducedMotionSafe();
   const inBrowser = useSyncExternalStore(
     subscribeNever,
@@ -137,8 +135,8 @@ export function CompanyMap({
   }
 
   function open(person: CompanyPerson) {
-    if (justDragged.current || viewer.kind !== "owner") return;
-    router.push(`${COMPANY_PATH}/${person.id}`);
+    if (justDragged.current) return;
+    onOpen(person);
   }
 
   const map = (
@@ -204,7 +202,7 @@ export function CompanyMap({
             you={isViewer(viewer, id)}
             faint={context?.has(id) ?? false}
             root={id === root.id}
-            onOpen={state.measuring || viewer.kind !== "owner" ? undefined : () => open(person)}
+            onOpen={state.measuring ? undefined : () => open(person)}
           >
             {toggle}
           </PersonCard>
@@ -320,7 +318,7 @@ function PersonCard({
   you: boolean;
   faint: boolean;
   root: boolean;
-  /** Absent in the measuring layer and for a worker, who only looks. */
+  /** Absent in the measuring layer. */
   onOpen?: () => void;
   children?: ReactNode;
 }) {

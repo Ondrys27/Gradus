@@ -43,9 +43,9 @@ import {
 } from "./table-queries";
 import { MEETING_FIELD_KEY, tableTone, type ContactField, type ContactTable } from "./types";
 
-/** Editing the tables needs the right to edit contacts; without it the page sends you back. */
+/** Editing the tables needs the right to update contacts; without it the page sends you back. */
 export function TablesEditor() {
-  const canEdit = useCan("contacts", "edit");
+  const canEdit = useCan("contacts", "update");
   const router = useRouter();
   useEffect(() => {
     if (!canEdit) router.replace("/app/kontakty");

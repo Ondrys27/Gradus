@@ -9,6 +9,7 @@ import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { contactLabel } from "./board-logic";
 import { useContactSearch, useCreateContact } from "./queries";
 import type { DealContact } from "./types";
+import { useCan } from "@/features/account/workspace-queries";
 
 type Props = {
   id: string;
@@ -24,6 +25,7 @@ export function ContactPicker({ id, value, onChange }: Props) {
   const debounced = useDebouncedValue(term.trim(), 250);
   const search = useContactSearch(debounced);
   const create = useCreateContact();
+  const canCreate = useCan("contacts", "create");
   const [failed, setFailed] = useState(false);
 
   if (value) {
@@ -89,7 +91,7 @@ export function ContactPicker({ id, value, onChange }: Props) {
               </button>
             </li>
           ))}
-          {settled && !exact && (
+          {settled && !exact && canCreate && (
             <li>
               <button
                 type="button"

@@ -3260,23 +3260,92 @@
       "saveFailed": "Saving failed. Try again."
     },
     "permissions": {
-      "title": "What they can do",
-      "hint": "Their own dashboard, tasks and rewards are always there. Your settings and workers never are.",
-      "liveHint": "Every switch applies at once — they see the change without signing out.",
-      "presets": {
-        "label": "Role",
-        "caller": "Caller",
-        "sales": "Sales",
+      "title": "What they may do",
+      "hint": "Their own dashboard and account are always theirs. Your notes and settings never are.",
+      "liveHint": "Every switch applies at once — the worker sees the change without signing out.",
+      "ownHint": "This is what the owner allows you. Only they can change it.",
+      "endedHint": "This person has left the company; the rights no longer apply.",
+      "templates": {
+        "label": "Template",
+        "sales": "Salesperson",
         "assistant": "Assistant",
+        "accountant": "Accountant",
+        "all": "Everything",
         "custom": "Custom"
       },
-      "section": "Section",
-      "view": "Sees",
-      "edit": "Edits",
+      "sections": {
+        "invoices": "Invoices"
+      },
+      "fixed": {
+        "dashboard": "A worker always has their own dashboard.",
+        "notes": "Notes are private; they never see yours.",
+        "settings": "Settings are yours alone; they manage their own account.",
+        "always": "Always",
+        "never": "Never"
+      },
+      "expand": "{section}: show detailed rights",
+      "collapse": "{section}: hide detailed rights",
+      "granted": "Sees the section · {count} of {total} rights",
+      "hidden": "Does not see the section",
       "viewSection": "{section}: sees",
-      "editSection": "{section}: edits",
-      "financeHint": "Off unless you turn it on.",
-      "loadFailed": "Could not load their rights. Try again in a moment.",
+      "actionOf": "{section}: {action}",
+      "actions": {
+        "milestones": {
+          "update": "Edit milestones and tasks"
+        },
+        "contacts": {
+          "create": "Create",
+          "update": "Edit",
+          "delete": "Delete",
+          "export": "Export",
+          "generate": "Generate contacts"
+        },
+        "pipeline": {
+          "see_amounts": "See amounts",
+          "create": "Create deals",
+          "update": "Edit details",
+          "change_stage": "Change stage",
+          "change_amount": "Change amount",
+          "delete": "Delete"
+        },
+        "tasks": {
+          "create": "Create",
+          "update": "Edit",
+          "assign_others": "Assign to others",
+          "delete": "Delete"
+        },
+        "cold_calling": {
+          "call": "Call (timer and moves)",
+          "view_others_stats": "See others' statistics"
+        },
+        "calendar": {
+          "create": "Create events",
+          "update": "Edit and delete"
+        },
+        "finance": {
+          "summaries": "See summaries",
+          "write": "Record income and expenses"
+        },
+        "invoices": {
+          "issue": "Issue, send and cancel"
+        },
+        "company": {
+          "update": "Edit people in their part of the company"
+        }
+      },
+      "scope": {
+        "records": {
+          "label": "Scope",
+          "all": "All",
+          "own": "Only their own"
+        },
+        "company": {
+          "label": "Who they see",
+          "all": "Whole company",
+          "own": "Their branch"
+        }
+      },
+      "loadFailed": "Rights could not be loaded. Try again in a moment.",
       "saveFailed": "The change was not saved. Try again."
     },
     "invite": {
@@ -3683,6 +3752,213 @@
         "managerOwner": "Right under you",
         "groups": "Groups",
         "groupsHint": "Optional, you can change it any time."
+      }
+    },
+    "dashboard": {
+      "overview": {
+        "horizon": {
+          "label": "Period",
+          "week": "Week",
+          "month": "Month",
+          "quarter": "Quarter",
+          "year": "Year",
+          "custom": "Custom",
+          "from": "From",
+          "to": "To"
+        },
+        "stats": {
+          "openTasks": "Open tasks",
+          "overdue": "Overdue",
+          "openDeals": "Open deals",
+          "won": "Won in period"
+        },
+        "tasksChart": {
+          "title": "Tasks done over time",
+          "onTime": "Done on time",
+          "late": "Done late",
+          "missed": "Missed",
+          "empty": "No done or missed tasks in this period."
+        },
+        "dealsChart": {
+          "title": "Deals in care and how they ended",
+          "won": "Won",
+          "lost": "Lost",
+          "opened": "New",
+          "empty": "Nothing happened to deals in care in this period."
+        },
+        "valueChart": {
+          "title": "Value of won deals ({currency})",
+          "series": "Won",
+          "empty": "No value won in this period.",
+          "onlyCurrency": "Only deals in {currency} are added up; currencies are never converted.",
+          "otherCurrencies": "{count, plural, one {# won deal in another currency is} other {# won deals in other currencies are}} left out; only {currency} is added up."
+        },
+        "noAccount": "The invite has not been accepted yet; deals and sales tasks appear once the worker has an account.",
+        "loadFailed": "The overview could not be loaded. Try again."
+      },
+      "work": {
+        "deals": {
+          "title": "Deals in care",
+          "empty": "No deals in their care.",
+          "noAccount": "The invite has not been accepted yet, so no deals yet.",
+          "closeDate": "Close Date {date}",
+          "noCloseDate": "No Close Date",
+          "loadFailed": "The deals could not be loaded."
+        },
+        "tasks": {
+          "title": "Tasks",
+          "open": "Open",
+          "history": "History",
+          "openEmpty": "No open tasks.",
+          "historyEmpty": "No done tasks in this period.",
+          "due": "Due {date}",
+          "noDue": "No due date",
+          "origin": {
+            "crm": "Sales task",
+            "owner": "From the owner"
+          },
+          "outcome": {
+            "onTime": "Done on time",
+            "late": "Done late",
+            "missed": "Missed",
+            "open": "Open"
+          },
+          "filter": {
+            "outcome": "Result",
+            "allOutcomes": "All results",
+            "period": "Period"
+          },
+          "period": {
+            "month": "Last month",
+            "quarter": "Last quarter",
+            "year": "Last year"
+          },
+          "loadFailed": "The tasks could not be loaded."
+        }
+      },
+      "documents": {
+        "title": "Documents",
+        "drop": "Drop files here",
+        "hint": "PDF, images and Office documents, up to 20 MB each.",
+        "upload": "Upload file",
+        "uploading": "{count, plural, one {Uploading # file…} other {Uploading # files…}}",
+        "readOnlyNote": "The owner manages the documents; you can download them.",
+        "empty": "No documents yet.",
+        "meta": "{size} · {date} · {name}",
+        "sizeKb": "{size} kB",
+        "sizeMb": "{size} MB",
+        "download": "Download {name}",
+        "rename": "Rename {name}",
+        "renameLabel": "Document name",
+        "delete": "Delete {name}",
+        "deleteTitle": "Delete document?",
+        "deleteDescription": "The document “{name}” will be deleted for good.",
+        "deleteConfirm": "Delete",
+        "cancel": "Cancel",
+        "errors": {
+          "tooLarge": "The file is larger than 20 MB or empty.",
+          "wrongType": "This type of file can't be uploaded. Use a PDF, an image or an Office document.",
+          "uploadFailed": "The upload failed. Try again.",
+          "readOnly": "The workspace is read-only, documents can't be changed now.",
+          "saveFailed": "That didn't work. Try again.",
+          "loadFailed": "The documents could not be loaded."
+        }
+      },
+      "title": "Worker",
+      "close": "Close",
+      "sections": "Dashboard sections",
+      "loadFailed": "The worker could not be loaded. Try again.",
+      "notFoundTitle": "Worker not found",
+      "notFoundDescription": "They may be outside your part of the company, or the link is wrong.",
+      "tabs": {
+        "overview": "Overview",
+        "rights": "Rights",
+        "work": "Deals and tasks",
+        "documents": "Documents",
+        "team": "Team",
+        "rewards": "Rewards"
+      },
+      "you": "you",
+      "since": "In the company since {date}",
+      "assignTask": "Assign a task",
+      "fields": {
+        "firstName": "First name",
+        "lastName": "Last name",
+        "jobTitle": "Position",
+        "jobTitlePlaceholder": "Position, e.g. Sales"
+      },
+      "photo": {
+        "cropTitle": "Photo: {name}"
+      },
+      "info": {
+        "email": "Email",
+        "emailPlaceholder": "name@company.com",
+        "phone": "Phone",
+        "none": "Not given",
+        "description": "Description",
+        "addDescription": "Add a description",
+        "editDescription": "Edit",
+        "descriptionPlaceholder": "What they do, what they are good at, what to ask them…",
+        "descriptionEmpty": "No description yet.",
+        "markdownHint": "**bold**, *italic*, - bullets and links https://… Saved when you leave the field."
+      },
+      "groups": {
+        "title": "Groups",
+        "manage": "Manage groups",
+        "none": "In no group",
+        "add": "Add to a group",
+        "remove": "Remove from group {group}",
+        "noGroupsYet": "You have no groups yet."
+      },
+      "team": {
+        "manager": "Manager",
+        "underYou": "Right under you",
+        "underOwner": "Right under the owner or outside your view",
+        "direct": "{count, plural, =0 {Direct reports} other {Direct reports · {shown}}}",
+        "branch": "Whole branch · {shown}",
+        "emptyTitle": "Nobody reports to them",
+        "empty": "Move people under them in Company.",
+        "open": "Open: {name}",
+        "loadFailed": "The team could not be loaded."
+      },
+      "remove": {
+        "zoneTitle": "Remove from the company",
+        "zoneDescription": "Access ends at once. The data stays and they show under the Ended filter.",
+        "button": "Remove from the company",
+        "title": "Remove {name} from the company?",
+        "description": "They lose access immediately. Their deals, tasks and history stay; the people below them move under their manager.",
+        "impactFailed": "Could not find out what they look after.",
+        "nothingInCare": "They look after no open deals or tasks.",
+        "deals": "{count, plural, one {{shown} open deal} other {{shown} open deals}}",
+        "crmTasks": "{count, plural, one {{shown} open deal or contact task} other {{shown} open deal and contact tasks}}",
+        "workerTasks": "{count, plural, one {{shown} task from you} other {{shown} tasks from you}}",
+        "handTo": "Hand them over to",
+        "toOwner": "{name} (owner)",
+        "you": "You",
+        "toNobody": "Nobody, leave them as they are",
+        "workerTasksStay": "Tasks from you can only go to another worker; with the owner they stay with the person who left.",
+        "readOnlyHint": "In read-only mode nothing can be handed over, but you can still remove the worker.",
+        "cancel": "Cancel",
+        "confirm": "Remove from the company"
+      },
+      "statusFilter": {
+        "label": "Filter by status",
+        "current": "Active and invited",
+        "all": "Everyone",
+        "active": "Active",
+        "invited": "Invited",
+        "ended": "Ended"
+      },
+      "errors": {
+        "accessDenied": "You cannot change this.",
+        "readOnly": "The account is read only; the change cannot be saved.",
+        "phoneInvalid": "The phone does not look like a valid number.",
+        "emailInvalid": "The email does not look right.",
+        "tooLong": "The text is too long.",
+        "nameRequired": "The name cannot be left empty.",
+        "photoInvalid": "The photo could not be saved.",
+        "assigneeOutside": "Deals cannot be handed to this person.",
+        "saveFailed": "The change was not saved. Try again."
       }
     }
   },

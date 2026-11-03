@@ -43,7 +43,7 @@ export function InvoiceDetail({
   const tList = useTranslations("invoices.list");
   const tFailure = useTranslations("finance.invoiceErrors");
   const settings = useFormatSettings();
-  const canEdit = useCan("finance", "edit");
+  const canEdit = useCan("invoices", "issue");
   const download = useDownloadInvoicePdf();
   const markPaid = useMarkInvoicePaid();
   const cancel = useCancelInvoice();
@@ -80,11 +80,16 @@ export function InvoiceDetail({
   );
   const doc = useInvoiceDocument(input);
   const failure = download.error ?? markPaid.error ?? cancel.error;
-  const title = credit ? t("titleCreditNote", { number: invoice.number ?? "" }) : t("title", { number: invoice.number ?? "" });
+  const title = credit
+    ? t("titleCreditNote", { number: invoice.number ?? "" })
+    : t("title", { number: invoice.number ?? "" });
 
   return (
     <div className="flex flex-col gap-6">
-      <Link href={INVOICES_PATH} className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "-ml-2.5 self-start")}>
+      <Link
+        href={INVOICES_PATH}
+        className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "-ml-2.5 self-start")}
+      >
         <ArrowLeftIcon aria-hidden data-icon="inline-start" />
         {t("back")}
       </Link>
@@ -114,7 +119,11 @@ export function InvoiceDetail({
               </Button>
             )}
             {canEdit && unpaid && (
-              <Button type="button" disabled={markPaid.isPending} onClick={() => markPaid.mutate(invoice.id)}>
+              <Button
+                type="button"
+                disabled={markPaid.isPending}
+                onClick={() => markPaid.mutate(invoice.id)}
+              >
                 <CheckIcon aria-hidden data-icon="inline-start" />
                 {t("markPaid")}
               </Button>
@@ -129,9 +138,14 @@ export function InvoiceDetail({
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
-        {doc && <InvoicePaper doc={doc} label={t("previewLabel", { number: invoice.number ?? "" })} />}
+        {doc && (
+          <InvoicePaper doc={doc} label={t("previewLabel", { number: invoice.number ?? "" })} />
+        )}
         <aside className="flex flex-col gap-4 rounded-card border border-line bg-surface p-4 text-sm">
-          <Fact label={t("issuedOn")} value={invoice.issued_on ? formatCalendarDate(invoice.issued_on, settings) : "—"} />
+          <Fact
+            label={t("issuedOn")}
+            value={invoice.issued_on ? formatCalendarDate(invoice.issued_on, settings) : "—"}
+          />
           {!credit && (
             <Fact
               label={t("dueOn")}
@@ -139,12 +153,19 @@ export function InvoiceDetail({
               alert={status === "overdue"}
             />
           )}
-          {invoice.paid_on && <Fact label={t("paidOn")} value={formatCalendarDate(invoice.paid_on, settings)} />}
-          {invoice.sent_at && <Fact label={t("sentAt")} value={formatDateTime(new Date(invoice.sent_at), settings)} />}
+          {invoice.paid_on && (
+            <Fact label={t("paidOn")} value={formatCalendarDate(invoice.paid_on, settings)} />
+          )}
+          {invoice.sent_at && (
+            <Fact label={t("sentAt")} value={formatDateTime(new Date(invoice.sent_at), settings)} />
+          )}
           {invoice.creditNote && (
             <p className="text-ink-soft">
               {t("cancelledBy")}{" "}
-              <Link href={invoicePath(invoice.creditNote.id)} className="text-violet underline-offset-4 hover:underline">
+              <Link
+                href={invoicePath(invoice.creditNote.id)}
+                className="text-violet underline-offset-4 hover:underline"
+              >
                 {invoice.creditNote.number}
               </Link>
             </p>
@@ -152,14 +173,22 @@ export function InvoiceDetail({
           {credit && invoice.credited_invoice_id && (
             <p className="text-ink-soft">
               {t("creditFor")}{" "}
-              <Link href={invoicePath(invoice.credited_invoice_id)} className="text-violet underline-offset-4 hover:underline">
+              <Link
+                href={invoicePath(invoice.credited_invoice_id)}
+                className="text-violet underline-offset-4 hover:underline"
+              >
                 {invoice.creditedNumber}
               </Link>
             </p>
           )}
           <p className="text-xs text-ink-muted">{credit ? t("creditHint") : t("frozenHint")}</p>
           {canEdit && unpaid && (
-            <Button type="button" variant="ghost" className="self-start text-pink" onClick={() => setConfirmCancel(true)}>
+            <Button
+              type="button"
+              variant="ghost"
+              className="self-start text-pink"
+              onClick={() => setConfirmCancel(true)}
+            >
               <BanIcon aria-hidden data-icon="inline-start" />
               {t("cancel")}
             </Button>
@@ -199,7 +228,9 @@ function Fact({ label, value, alert }: { label: string; value: string; alert?: b
   return (
     <div className="flex items-baseline justify-between gap-3">
       <span className="text-ink-muted">{label}</span>
-      <span className={cn("font-medium tabular-nums", alert ? "text-pink" : "text-ink")}>{value}</span>
+      <span className={cn("font-medium tabular-nums", alert ? "text-pink" : "text-ink")}>
+        {value}
+      </span>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import type { PermissionGrants } from "@/features/workers/permissions-catalog";
 import type { Database } from "@/types/database";
 import type { PlanSnapshot } from "@/features/plan/plan";
 import type { UserSettings } from "@/lib/user-settings";
@@ -36,8 +37,8 @@ export type WorkerAccount = {
   ownerId: string;
   name: string;
   jobTitle: string | null;
-  /** Keyed by app_section; a missing section is not allowed. */
-  permissions: Partial<Record<Database["public"]["Enums"]["app_section"], WorkerAccess>>;
+  /** The fine rights (worker_permission_grants); a missing action is not allowed. */
+  grants: PermissionGrants;
 };
 
 /** Everything the app needs about the account, loaded once when the app starts. */

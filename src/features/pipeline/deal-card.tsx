@@ -6,6 +6,7 @@ import { CalendarIcon, RotateCcwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
 import { StatusPill } from "@/components/ui/status-pill";
+import { useCan } from "@/features/account/workspace-queries";
 import { formatCalendarDate, formatCurrency } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,7 @@ type BodyProps = {
 export function DealCardBody({ deal, relaunchable, muted, className }: BodyProps) {
   const t = useTranslations("pipeline.card");
   const settings = useFormatSettings();
+  const seeAmounts = useCan("pipeline", "see_amounts");
   const contact = contactLabel(deal.contact);
 
   return (
@@ -36,7 +38,7 @@ export function DealCardBody({ deal, relaunchable, muted, className }: BodyProps
     >
       <div className="flex items-start justify-between gap-2">
         <span className="min-w-0 text-sm font-semibold break-words text-ink">{deal.title}</span>
-        {deal.value !== null && (
+        {seeAmounts && deal.value !== null && (
           <span className="shrink-0 text-sm font-semibold text-ink-soft tabular-nums">
             {formatCurrency(Number(deal.value), deal.currency, settings)}
           </span>

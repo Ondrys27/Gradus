@@ -6,7 +6,7 @@ import type { CrmTask } from "@/features/crm-tasks/types";
 type Tables = Database["public"]["Tables"];
 
 export const EVENT_COLUMNS =
-  "id, title, description, kind, starts_at, ends_at, all_day, contact_id, deal_id, source, contact:contacts(id, company_name, first_name, last_name), deal:deals(id, title)";
+  "id, title, description, kind, starts_at, ends_at, all_day, contact_id, deal_id, source, actor_id, contact:contacts(id, company_name, first_name, last_name), deal:deals(id, title)";
 
 export type CalendarEventRow = Pick<
   Tables["calendar_events"]["Row"],
@@ -20,6 +20,7 @@ export type CalendarEventRow = Pick<
   | "contact_id"
   | "deal_id"
   | "source"
+  | "actor_id"
 >;
 
 export type EventContact = Pick<

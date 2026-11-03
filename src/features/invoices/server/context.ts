@@ -1,5 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { serverCan } from "@/features/account/server/permissions";
 import { isWorkspaceReadOnly } from "@/features/plan/server";
 import { createClient } from "@/lib/supabase/server";
 import { toFormatSettings, USER_SETTINGS_COLUMNS } from "@/lib/user-settings";
@@ -28,15 +29,16 @@ export async function invoiceContext(): Promise<InvoiceContext | null> {
   return { supabase, userId, workspaceId, email };
 }
 
-/** The owner always; a worker with the right to edit finance. Never in a read-only workspace. */
+/**
+ * The owner always; a worker with the right to issue invoices (drafts, issue,
+ * send, paid, cancel). Never in a read-only workspace.
+ */
 export async function requireEditFinance(ctx: InvoiceContext) {
   if (ctx.workspaceId !== ctx.userId) {
-    const { data, error } = await ctx.supabase.rpc("has_section_access", {
-      _owner: ctx.workspaceId,
-      _section: "finance",
-      _level: "edit",
-    });
-    if (error || !data) throw new InvoiceError("forbidden");
+    const allowed = await serverCan(ctx.supabase, ctx.workspaceId, "invoices", "issue").catch(
+      () => false,
+    );
+    if (!allowed) throw new InvoiceError("forbidden");
   }
   if (await isWorkspaceReadOnly(ctx.supabase, ctx.workspaceId)) {
     throw new InvoiceError("readOnly");

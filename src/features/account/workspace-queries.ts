@@ -6,21 +6,26 @@ import { createClient } from "@/lib/supabase/client";
 import { usePlan } from "@/features/plan/queries";
 import { useSession } from "./queries";
 import {
-  canAccess,
+  GRANT_ROWS_LIMIT,
+  grantsFromRows,
+  type GrantAction,
+  type GrantSection,
+  type PermissionGrants,
+} from "@/features/workers/permissions-catalog";
+import {
+  can,
   canAccessContacts,
-  cleanPermissions,
-  samePermissions,
+  cleanGrants,
+  sameGrants,
   workspaceFor,
   type AccessLevel,
   type Workspace,
-  type WorkspacePermissions,
-  type WorkspaceSection,
 } from "./workspace";
 
 /** How often a worker's rights are read again when the live channel is quiet. */
 const ACCESS_REFRESH_MS = 30_000;
 
-export type WorkerAccessState = { active: boolean; permissions: WorkspacePermissions };
+export type WorkerAccessState = { active: boolean; grants: PermissionGrants };
 
 export const workspaceKeys = {
   access: (userId: string, workerId: string) =>
@@ -30,24 +35,17 @@ export const workspaceKeys = {
 /** The worker's record and rights as they are right now; RLS returns only their own. */
 export async function fetchWorkerAccess(workerId: string): Promise<WorkerAccessState> {
   const supabase = createClient();
-  const [worker, permissions] = await Promise.all([
+  const [worker, grants] = await Promise.all([
     supabase.from("workers").select("status").eq("id", workerId).maybeSingle(),
     supabase
-      .from("worker_permissions")
-      .select("section, can_view, can_edit")
+      .from("worker_permission_grants")
+      .select("section, action, allowed")
       .eq("worker_id", workerId)
-      .limit(20),
+      .limit(GRANT_ROWS_LIMIT),
   ]);
   if (worker.error) throw worker.error;
-  if (permissions.error) throw permissions.error;
-  return {
-    active: worker.data?.status === "active",
-    permissions: cleanPermissions(
-      Object.fromEntries(
-        permissions.data.map((row) => [row.section, { view: row.can_view, edit: row.can_edit }]),
-      ),
-    ),
-  };
+  if (grants.error) throw grants.error;
+  return { active: worker.data?.status === "active", grants: grantsFromRows(grants.data) };
 }
 
 /**
@@ -62,7 +60,7 @@ function useWorkerAccess() {
     queryFn: () => fetchWorkerAccess(worker!.id),
     enabled: Boolean(worker),
     initialData: worker
-      ? { active: true, permissions: cleanPermissions(worker.permissions) }
+      ? { active: true, grants: cleanGrants(worker.grants) }
       : undefined,
     initialDataUpdatedAt: 0,
     refetchInterval: ACCESS_REFRESH_MS,
@@ -79,10 +77,10 @@ export function useWorkspace(): Workspace {
   const { user, worker } = useSession();
   const access = useWorkerAccess();
   const { readOnly } = usePlan();
-  const permissions = access.data?.permissions;
+  const grants = access.data?.grants;
   return useMemo(
-    () => workspaceFor(user.id, worker, permissions, readOnly),
-    [user.id, worker, permissions, readOnly],
+    () => workspaceFor(user.id, worker, grants, readOnly),
+    [user.id, worker, grants, readOnly],
   );
 }
 
@@ -91,10 +89,15 @@ export function useWorkspaceId(): string {
   return useWorkspace().id;
 }
 
-/** Whether the account may do this in the section; hides actions it may not. */
-export function useCan(section: WorkspaceSection, level: AccessLevel): boolean {
+/**
+ * Whether the account may do this; hides what it may not (the database
+ * enforces it anyway). "view" / "edit" of the six older sections are the
+ * section as a whole, any other action the fine right of the catalog
+ * (src/features/workers/permissions-catalog.ts), e.g. useCan("pipeline", "change_stage").
+ */
+export function useCan<S extends GrantSection>(section: S, action: GrantAction<S> | "edit"): boolean {
   const workspace = useWorkspace();
-  return canAccess(workspace, section, level);
+  return can(workspace, section, action);
 }
 
 /** Contacts and cold calling share their tables, so either right opens them. */
@@ -115,7 +118,7 @@ export function WorkspaceSync() {
   const { user, worker } = useSession();
   const queryClient = useQueryClient();
   const access = useWorkerAccess();
-  const previous = useRef<WorkspacePermissions | null>(null);
+  const previous = useRef<PermissionGrants | null>(null);
   const workerId = worker?.id;
 
   useEffect(() => {
@@ -131,6 +134,16 @@ export function WorkspaceSync() {
           event: "*",
           schema: "public",
           table: "worker_permissions",
+          filter: `worker_id=eq.${workerId}`,
+        },
+        refresh,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "worker_permission_grants",
           filter: `worker_id=eq.${workerId}`,
         },
         refresh,
@@ -153,13 +166,13 @@ export function WorkspaceSync() {
       window.location.reload();
       return;
     }
-    if (previous.current && !samePermissions(previous.current, state.permissions)) {
+    if (previous.current && !sameGrants(previous.current, state.grants)) {
       // Everything a section shows may have appeared or gone.
       void queryClient.invalidateQueries({
         predicate: (query) => query.queryKey[0] !== "account",
       });
     }
-    previous.current = state.permissions;
+    previous.current = state.grants;
   }, [state, queryClient]);
 
   return null;

@@ -1,13 +1,8 @@
-import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
-import { WorkerDetail } from "@/features/workers/worker-detail";
+import { redirect } from "next/navigation";
+import { COMPANY_PATH } from "@/lib/routes";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("nav");
-  return { title: t("workers") };
-}
-
+/** A person's page is now their dashboard in Company: the old address opens it there. */
 export default async function WorkerPage({ params }: { params: Promise<{ workerId: string }> }) {
   const { workerId } = await params;
-  return <WorkerDetail workerId={workerId} />;
+  redirect(`${COMPANY_PATH}?worker=${encodeURIComponent(workerId)}`);
 }

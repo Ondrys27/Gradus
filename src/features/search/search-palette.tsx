@@ -90,7 +90,7 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
   });
 
   // Offering a new contact makes sense only to someone who may add one.
-  const canCreateContact = useCan("contacts", "edit");
+  const canCreateContact = useCan("contacts", "create");
   const createRow: Row | null = useMemo(() => {
     const tidy = tidyQuery(query);
     if (!tidy || expanded || !canCreateContact) return null;

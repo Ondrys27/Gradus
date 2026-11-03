@@ -9,7 +9,6 @@ import {
   type SyntheticEvent,
 } from "react";
 import { createPortal } from "react-dom";
-import Link from "next/link";
 import { Menu } from "@base-ui/react/menu";
 import {
   DndContext,
@@ -34,7 +33,6 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
-import { COMPANY_PATH } from "@/lib/routes";
 import { useMediaQuery, useReducedMotionSafe } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
 import { formatNumber } from "@/lib/format";
@@ -69,6 +67,8 @@ export type CompanyViewProps = {
   /** The new manager: a worker's id, or null for right under the owner. */
   onMove: (workerId: string, managerId: string | null, via: "list" | "map") => void;
   onMoveMenu: (person: CompanyPerson) => void;
+  /** Opens the person's dashboard. */
+  onOpen: (person: CompanyPerson) => void;
 };
 
 /** Px per level, capped so a deep tree still fits a phone. */
@@ -101,6 +101,7 @@ export function CompanyList({
   canEdit,
   onMove,
   onMoveMenu,
+  onOpen,
 }: CompanyViewProps) {
   const t = useTranslations("workers.company");
   const wide = useMediaQuery("(min-width: 640px)");
@@ -203,6 +204,7 @@ export function CompanyList({
             justDragged={justDragged}
             onToggle={() => toggle(row.node.id)}
             onMoveMenu={onMoveMenu}
+            onOpen={onOpen}
           />
         ))}
       </ul>
@@ -229,6 +231,7 @@ type RowProps = {
   justDragged: RefObject<boolean>;
   onToggle: () => void;
   onMoveMenu: (person: CompanyPerson) => void;
+  onOpen: (person: CompanyPerson) => void;
 };
 
 function CompanyListRow({
@@ -243,6 +246,7 @@ function CompanyListRow({
   justDragged,
   onToggle,
   onMoveMenu,
+  onOpen,
 }: RowProps) {
   const t = useTranslations("workers.company");
   const tCard = useTranslations("workers.card");
@@ -257,7 +261,7 @@ function CompanyListRow({
   const name = person?.name ?? (viewer.kind === "owner" ? viewer.name : "");
   const avatar =
     person?.avatarUrl ?? (viewer.kind === "owner" && !person ? viewer.avatarUrl : null);
-  const opensDetail = viewer.kind === "owner" && person;
+  const opensDetail = Boolean(person);
   const hasChildren = node.children.length > 0 || collapsed;
 
   const title = (
@@ -336,17 +340,17 @@ function CompanyListRow({
         <Avatar src={avatar} name={name} className="size-9" />
 
         <div className="flex min-w-0 flex-1 flex-col gap-0.5 py-2 pl-1.5">
-          {opensDetail ? (
-            <Link
-              href={`${COMPANY_PATH}/${node.id}`}
-              draggable={false}
-              onClick={(event) => {
-                if (justDragged.current) event.preventDefault();
+          {opensDetail && person ? (
+            <button
+              type="button"
+              data-testid="company-open-person"
+              onClick={() => {
+                if (!justDragged.current) onOpen(person);
               }}
-              className="min-w-0 rounded outline-none hover:underline focus-visible:ring-3 focus-visible:ring-violet/40"
+              className="min-w-0 cursor-pointer self-start rounded text-left outline-none hover:underline focus-visible:ring-3 focus-visible:ring-violet/40"
             >
               {title}
-            </Link>
+            </button>
           ) : (
             title
           )}
@@ -386,6 +390,7 @@ function CompanyListRow({
             person={person}
             describedBy={draggable.attributes["aria-describedby"]}
             onMoveMenu={onMoveMenu}
+            onOpen={onOpen}
           />
         )}
       </div>
@@ -397,10 +402,12 @@ function RowMenu({
   person,
   describedBy,
   onMoveMenu,
+  onOpen,
 }: {
   person: CompanyPerson;
   describedBy?: string;
   onMoveMenu: (person: CompanyPerson) => void;
+  onOpen: (person: CompanyPerson) => void;
 }) {
   const t = useTranslations("workers.company");
   const itemClass =
@@ -421,14 +428,10 @@ function RowMenu({
               <MoveIcon aria-hidden />
               {t("moveMenu")}
             </Menu.Item>
-            <Menu.LinkItem
-              closeOnClick
-              render={<Link href={`${COMPANY_PATH}/${person.id}`} />}
-              className={itemClass}
-            >
+            <Menu.Item className={itemClass} onClick={() => onOpen(person)}>
               <ExternalLinkIcon aria-hidden />
               {t("openMenu")}
-            </Menu.LinkItem>
+            </Menu.Item>
           </Menu.Popup>
         </Menu.Positioner>
       </Menu.Portal>

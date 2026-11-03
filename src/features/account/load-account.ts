@@ -1,5 +1,6 @@
 import "server-only";
 import { toPlanSnapshot } from "@/features/plan/plan";
+import { GRANT_ROWS_LIMIT, grantsFromRows } from "@/features/workers/permissions-catalog";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { USER_SETTINGS_COLUMNS } from "@/lib/user-settings";
@@ -47,20 +48,19 @@ export async function loadAccount(): Promise<AccountSnapshot | null> {
 
   let worker: WorkerAccount | null = null;
   if (workerRow.data) {
-    // RLS returns only this worker's own permissions.
-    const { data: permissions, error } = await supabase
-      .from("worker_permissions")
-      .select("section, can_view, can_edit")
-      .eq("worker_id", workerRow.data.id);
+    // RLS returns only this worker's own rights.
+    const { data: grants, error } = await supabase
+      .from("worker_permission_grants")
+      .select("section, action, allowed")
+      .eq("worker_id", workerRow.data.id)
+      .limit(GRANT_ROWS_LIMIT);
     if (error) throw error;
     worker = {
       id: workerRow.data.id,
       ownerId: workerRow.data.owner_id,
       name: workerRow.data.name,
       jobTitle: workerRow.data.job_title,
-      permissions: Object.fromEntries(
-        permissions.map((row) => [row.section, { view: row.can_view, edit: row.can_edit }]),
-      ),
+      grants: grantsFromRows(grants),
     };
   }
 

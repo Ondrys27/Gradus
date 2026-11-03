@@ -18,6 +18,7 @@ import { track } from "@/lib/analytics/track";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { toFormatSettings, USER_SETTINGS_COLUMNS } from "@/lib/user-settings";
+import { serverCan } from "@/features/account/server/permissions";
 
 export const runtime = "nodejs";
 /** Three Google pages and three database calls fit easily. */
@@ -55,10 +56,10 @@ async function context() {
   };
 }
 
-/** The owner always may; a worker needs contacts or cold calling at this level. */
+/** The owner always may; a worker needs contacts or cold calling to read what is left. */
 async function mayUseContacts(
   ctx: NonNullable<Awaited<ReturnType<typeof context>>>,
-  level: "view" | "edit",
+  level: "view",
 ) {
   if (ctx.workspaceId === ctx.userId) return true;
   const checks = await Promise.all(
@@ -92,7 +93,11 @@ export const GET = instrumentRoute("api.generateContacts.get", async () => {
 export const POST = instrumentRoute("api.generateContacts.post", async (request: Request) => {
   const ctx = await context();
   if (!ctx) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  if (!(await mayUseContacts(ctx, "edit"))) {
+  // Generating is a right of its own (contacts.generate), not every editor's.
+  if (
+    ctx.workspaceId !== ctx.userId &&
+    !(await serverCan(ctx.supabase, ctx.workspaceId, "contacts", "generate").catch(() => false))
+  ) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 

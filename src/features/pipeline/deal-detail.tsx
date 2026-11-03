@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { StatusPill } from "@/components/ui/status-pill";
 import { toneFill } from "@/components/ui/tone";
-import { useCan, useCanContacts } from "@/features/account/workspace-queries";
+import { useCan, useWorkspace } from "@/features/account/workspace-queries";
 import { TargetTasks } from "@/features/crm-tasks/target-tasks";
 import { useAssignees } from "@/features/crm-tasks/queries";
 import { useAssigneeName } from "@/features/crm-tasks/use-assignee-name";
@@ -130,8 +130,9 @@ function DetailBody({
 }) {
   const t = useTranslations("pipeline.detail");
   const patch = usePatchDeal(deal.id);
-  // Read-only without the right to edit (or after the trial); RLS decides anyway.
-  const canEdit = useCan("pipeline", "edit");
+  // Read-only without the right to update the deal (or after the trial); RLS decides anyway.
+  // Stage and amount have their own rights (DealHeader, DealProperties).
+  const canEdit = useCan("pipeline", "update");
   const [tab, setTab] = useState<Tab>("overview");
   const save = (change: DealPatch) => patch.mutate(change);
 
@@ -268,6 +269,7 @@ function DealHeader({
 }) {
   const t = useTranslations("pipeline.detail");
   const settings = useFormatSettings();
+  const canMove = useCan("pipeline", "change_stage");
   const stage = stages.find((item) => item.id === deal.stage_id);
   return (
     <div className="flex flex-col gap-2">
@@ -277,7 +279,7 @@ function DealHeader({
           <StageSelect
             deal={deal}
             stages={stages}
-            canEdit={canEdit}
+            canEdit={canMove}
             onRequestMove={onRequestMove}
             compact
           />
@@ -447,6 +449,9 @@ function DealProperties({
   const t = useTranslations("pipeline");
   const settings = useFormatSettings();
   const nameOf = useAssigneeName();
+  const canMove = useCan("pipeline", "change_stage");
+  const canChangeAmount = useCan("pipeline", "change_amount");
+  const seeAmounts = useCan("pipeline", "see_amounts");
 
   return (
     <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-3">
@@ -455,14 +460,16 @@ function DealProperties({
           <StageSelect
             deal={deal}
             stages={stages}
-            canEdit={canEdit}
+            canEdit={canMove}
             onRequestMove={onRequestMove}
           />
         </Property>
       )}
-      <Property label={t("form.amount")} htmlFor="deal-value">
-        <ValueField deal={deal} canEdit={canEdit} onSave={onSave} />
-      </Property>
+      {seeAmounts && (
+        <Property label={t("form.amount")} htmlFor="deal-value">
+          <ValueField deal={deal} canEdit={canChangeAmount} onSave={onSave} />
+        </Property>
+      )}
       <Property label={t("detail.assignee")} htmlFor="deal-assignee">
         <AssigneeField deal={deal} canEdit={canEdit} onSave={onSave} />
       </Property>
@@ -614,18 +621,23 @@ function AssigneeField({
 }) {
   const assignees = useAssignees();
   const nameOf = useAssigneeName();
+  const { userId } = useWorkspace();
+  // Without "all deals" a worker hands a deal only to themself; given away, it would leave their sight.
+  const viewAll = useCan("pipeline", "view_all");
   const value = deal.assignee_id ?? "";
   const items = useMemo(() => {
-    const list = (assignees.data ?? []).map((person) => ({
-      value: person.userId,
-      label: nameOf(person.userId),
-    }));
+    const list = (assignees.data ?? [])
+      .filter((person) => viewAll || person.userId === userId)
+      .map((person) => ({
+        value: person.userId,
+        label: nameOf(person.userId),
+      }));
     // Whoever has it stays offered, even after leaving the space.
     if (value && !list.some((item) => item.value === value)) {
       list.push({ value, label: nameOf(value) });
     }
     return list;
-  }, [assignees.data, nameOf, value]);
+  }, [assignees.data, nameOf, value, viewAll, userId]);
 
   return (
     <Select
@@ -734,9 +746,12 @@ function DealActions({ deal, onClose }: { deal: Deal; onClose: () => void }) {
   const errorText = useInvoiceErrorText();
   const remove = useDeleteDeal();
   const invoice = useCreateInvoiceFromDeal();
-  const canEdit = useCan("pipeline", "edit");
-  const canInvoice = useCan("finance", "edit");
-  const canEmail = useCanContacts("edit") && canEdit;
+  const canUpdate = useCan("pipeline", "update");
+  const canDelete = useCan("pipeline", "delete");
+  const canInvoice = useCan("invoices", "issue");
+  const canUpdateContacts = useCan("contacts", "update");
+  const canCall = useCan("cold_calling", "call");
+  const canEmail = (canUpdateContacts || canCall) && canUpdate;
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [composing, setComposing] = useState(false);
   const [justSent, setJustSent] = useState<{ subject: string; body: string } | null>(null);
@@ -747,7 +762,7 @@ function DealActions({ deal, onClose }: { deal: Deal; onClose: () => void }) {
   const contactEntry = useContactEntry(deal.contact?.id ?? NIL_CONTACT_ID).data;
   const contactEmail = useContact(deal.contact?.id ?? NIL_CONTACT_ID).data?.email ?? null;
 
-  if (!canInvoice && !canEmail && !canEdit) return null;
+  if (!canInvoice && !canEmail && !canDelete) return null;
 
   async function confirmDelete() {
     try {
@@ -813,7 +828,7 @@ function DealActions({ deal, onClose }: { deal: Deal; onClose: () => void }) {
         </FormAlert>
       )}
 
-      {canEdit && (
+      {canDelete && (
         <Button
           type="button"
           variant="ghost"

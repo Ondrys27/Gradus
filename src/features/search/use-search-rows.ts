@@ -34,6 +34,7 @@ import {
 } from "@/lib/format";
 import { formatPhone } from "@/lib/phone";
 import { useFormatSettings } from "@/lib/use-format-settings";
+import { useCan } from "@/features/account/workspace-queries";
 import { QUICK_ACTIONS, SETTINGS_ENTRIES } from "./catalog";
 import type { SearchHistory, SearchHit } from "./queries";
 import {
@@ -144,6 +145,7 @@ export function useSearchRows({ query, hits, history, expanded }: Args): RowGrou
   const { worker } = useSession();
   const userCountry = useUserSettings().country_code;
   const { items: navItems } = useNavItems();
+  const seeAmounts = useCan("pipeline", "see_amounts");
 
   return useMemo(() => {
     const tidy = tidyQuery(query);
@@ -226,7 +228,9 @@ export function useSearchRows({ query, hits, history, expanded }: Args): RowGrou
           const value = num(d.value);
           return join(
             text(d.stage),
-            value !== null ? formatCurrency(value, text(d.currency) ?? undefined, settings) : null,
+            value !== null && seeAmounts
+              ? formatCurrency(value, text(d.currency) ?? undefined, settings)
+              : null,
             text(d.contact),
           );
         }
@@ -247,7 +251,9 @@ export function useSearchRows({ query, hits, history, expanded }: Args): RowGrou
         case "note": {
           const updated = text(d.updatedAt);
           return join(
-            updated ? t("context.edited", { date: formatEditedAt(new Date(updated), settings) }) : null,
+            updated
+              ? t("context.edited", { date: formatEditedAt(new Date(updated), settings) })
+              : null,
             text(d.preview),
           );
         }
@@ -349,7 +355,9 @@ export function useSearchRows({ query, hits, history, expanded }: Args): RowGrou
       )
       .filter((row) => row.rank > 0);
     const settingsRows = SETTINGS_ENTRIES.filter((entry) =>
-      "item" in entry ? settingsAudienceAllows(entry.item.who, viewer) : !(worker && entry.ownerOnly),
+      "item" in entry
+        ? settingsAudienceAllows(entry.item.who, viewer)
+        : !(worker && entry.ownerOnly),
     )
       .map((entry) => {
         const inSettings = "item" in entry;
@@ -402,5 +410,19 @@ export function useSearchRows({ query, hits, history, expanded }: Args): RowGrou
         items: settingsRows.sort(byRank).slice(0, GROUP_SIZE),
       },
     ]).map(({ key, label, showAll, items }) => ({ key, label, showAll, rows: items }));
-  }, [query, hits, history, expanded, navItems, worker, viewer, t, tNav, tSettings, settings, userCountry]);
+  }, [
+    query,
+    hits,
+    history,
+    expanded,
+    navItems,
+    worker,
+    viewer,
+    t,
+    tNav,
+    tSettings,
+    settings,
+    userCountry,
+    seeAmounts,
+  ]);
 }

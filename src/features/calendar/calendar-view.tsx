@@ -37,6 +37,7 @@ import {
   toTaskItem,
   viewDays,
   type TimeRange,
+  canEditEvent,
 } from "./calendar-logic";
 import { canEditTask } from "@/features/crm-tasks/access";
 import { dealHref } from "@/features/crm-tasks/types";
@@ -93,8 +94,18 @@ export function CalendarView() {
   const moveTask = useMoveTask();
   const workspace = useWorkspace();
   const taskDialogs = useTaskDialogs(now);
-  // Without the right to edit, the calendar is to look at; RLS refuses changes anyway.
-  const canEdit = useCan("calendar", "edit");
+  // New events need "create"; changing one "update" (others' only with "all events").
+  // What may not happen is hidden; RLS refuses it anyway.
+  const canCreate = useCan("calendar", "create");
+  const canUpdate = useCan("calendar", "update");
+  const canSeeAll = useCan("calendar", "view_all");
+  const eventEditable = (event: CalendarEvent) =>
+    canEditEvent(event, {
+      owner: workspace.role === "owner",
+      update: canUpdate,
+      viewAll: canSeeAll,
+      userId: workspace.userId,
+    });
 
   const [view, setView] = useState<CalendarView>("month");
   const [mirrors, setMirrors] = useState<MirrorPrefs>(DEFAULT_MIRRORS);
@@ -125,7 +136,7 @@ export function CalendarView() {
     ["date"],
   );
   useUrlIntent("new", (value) => {
-    if (value === "event" && canEdit) setForm({ event: null, start: null });
+    if (value === "event" && canCreate) setForm({ event: null, start: null });
   });
 
   const days = useMemo(
@@ -201,7 +212,7 @@ export function CalendarView() {
       );
       return;
     }
-    if (!canEdit || item.event.source === "deal_deadline") return;
+    if (!eventEditable(item.event)) return;
     update.mutate({ id: item.event.id, patch: range }, { onError: () => setChangeFailed(true) });
   }
 
@@ -228,7 +239,7 @@ export function CalendarView() {
         title={tNav("calendar")}
         description={t("description")}
         actions={
-          canEdit && (
+          canCreate && (
             <Button onClick={() => setForm({ event: null, start: { day: defaultDay() } })}>
               <PlusIcon aria-hidden data-icon="inline-start" />
               {t("actions.add")}
@@ -349,7 +360,7 @@ export function CalendarView() {
           items={items}
           onPickDay={view === "week" ? pickDay : undefined}
           onOpenItem={openItem}
-          onCreate={(day, range) => canEdit && setForm({ event: null, start: { day, range } })}
+          onCreate={(day, range) => canCreate && setForm({ event: null, start: { day, range } })}
           onChangeEvent={changeItem}
         />
       )}
@@ -358,7 +369,7 @@ export function CalendarView() {
       <EventDetail
         event={openEvent}
         onClose={() => setOpenEventId(null)}
-        readOnly={!canEdit}
+        readOnly={!openEvent || !eventEditable(openEvent)}
         onEdit={(event) => {
           setOpenEventId(null);
           setForm({ event, start: null });

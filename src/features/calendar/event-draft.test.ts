@@ -56,6 +56,7 @@ describe("event draft", () => {
       contact_id: null,
       deal_id: null,
       source: "manual",
+      actor_id: null,
       contact: null,
       deal: null,
     } satisfies CalendarEvent;

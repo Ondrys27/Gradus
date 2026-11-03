@@ -62,8 +62,10 @@ export function PipelineView() {
   const move = useMoveDeal();
   const rename = useRenameStage();
   const reorder = useReorderStages();
-  // Without the right to edit, adding, moving and stage changes are hidden; RLS refuses them anyway.
-  const canEdit = useCan("pipeline", "edit");
+  // Each action needs its own right; what may not happen is hidden (the database refuses it anyway).
+  const canCreate = useCan("pipeline", "create");
+  const canMove = useCan("pipeline", "change_stage");
+  const canManageStages = useCan("pipeline", "update");
 
   const [editing, setEditing] = useState(false);
   const [creating, setCreating] = useState<{ stageId: string | null } | null>(null);
@@ -90,7 +92,7 @@ export function PipelineView() {
     if (requestedDeal) setOpenId(requestedDeal);
   }
   useUrlIntent("new", (value) => {
-    if (value !== "deal" || !canEdit) return;
+    if (value !== "deal" || !canCreate) return;
     if (stagesQuery.isPending) return false;
     if (stagesQuery.data?.length) setCreating({ stageId: null });
   });
@@ -197,6 +199,7 @@ export function PipelineView() {
 
   /** Every way of changing a stage (drag, detail) passes here. Lost asks for a reason first. */
   function requestMove(deal: Deal, stage: Stage) {
+    if (!canMove) return;
     const kind = moveKind(deal, stage);
     if (kind === "none") return;
     if (kind === "lost") {
@@ -212,32 +215,43 @@ export function PipelineView() {
     setLostStage(null);
   }
 
-  const headerActions = !canEdit ? null : editing ? (
-    <Button onClick={() => setEditing(false)}>
-      <CheckIcon aria-hidden data-icon="inline-start" />
-      {t("actions.doneEditing")}
-    </Button>
-  ) : (
-    <>
-      <Button variant="outline" disabled={stages.length === 0} onClick={() => setEditing(true)}>
-        <PencilIcon aria-hidden data-icon="inline-start" />
-        {t("actions.editStages")}
+  const headerActions =
+    !canCreate && !canManageStages ? null : editing && canManageStages ? (
+      <Button onClick={() => setEditing(false)}>
+        <CheckIcon aria-hidden data-icon="inline-start" />
+        {t("actions.doneEditing")}
       </Button>
-      <Button
-        variant="outline"
-        size="icon"
-        aria-label={t("actions.addStage")}
-        title={t("actions.addStage")}
-        onClick={() => setAddingStage(true)}
-      >
-        <PlusIcon aria-hidden />
-      </Button>
-      <Button disabled={stages.length === 0} onClick={() => setCreating({ stageId: null })}>
-        <PlusIcon aria-hidden data-icon="inline-start" />
-        {t("actions.newDeal")}
-      </Button>
-    </>
-  );
+    ) : (
+      <>
+        {canManageStages && (
+          <>
+            <Button
+              variant="outline"
+              disabled={stages.length === 0}
+              onClick={() => setEditing(true)}
+            >
+              <PencilIcon aria-hidden data-icon="inline-start" />
+              {t("actions.editStages")}
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              aria-label={t("actions.addStage")}
+              title={t("actions.addStage")}
+              onClick={() => setAddingStage(true)}
+            >
+              <PlusIcon aria-hidden />
+            </Button>
+          </>
+        )}
+        {canCreate && (
+          <Button disabled={stages.length === 0} onClick={() => setCreating({ stageId: null })}>
+            <PlusIcon aria-hidden data-icon="inline-start" />
+            {t("actions.newDeal")}
+          </Button>
+        )}
+      </>
+    );
 
   const loading = stagesQuery.isPending || dealsQuery.isPending;
   const failed = stagesQuery.isError || dealsQuery.isError;
@@ -302,7 +316,7 @@ export function PipelineView() {
               title={t("empty.title")}
               description={t("empty.description")}
               action={
-                canEdit && (
+                canCreate && (
                   <Button onClick={() => setCreating({ stageId: null })}>
                     <PlusIcon aria-hidden data-icon="inline-start" />
                     {t("empty.action")}
@@ -314,11 +328,11 @@ export function PipelineView() {
           <Board
             stages={stages}
             dealsByStage={dealsByStage}
-            editing={editing && canEdit}
-            readOnly={!canEdit}
+            editing={editing && canManageStages}
+            readOnly={!canMove}
             reengageAfterMonths={settings.reengage_after_months}
             onAddStage={() => setAddingStage(true)}
-            onAddDeal={(stage) => setCreating({ stageId: stage.id })}
+            onAddDeal={canCreate ? (stage) => setCreating({ stageId: stage.id }) : null}
             onOpenDeal={(deal) => setOpenId(deal.id)}
             onMoveDeal={requestMove}
             onReorderStages={(activeId, overId) =>

@@ -66,6 +66,8 @@ export type PermissionSection = (typeof PERMISSION_SECTIONS)[number]["section"];
 /** What the signed-in worker may open; null for an owner's own account. */
 export type WorkerNavAccess = {
   permissions: Partial<Record<string, { view: boolean; edit: boolean }>>;
+  /** Company (their branch) is on unless the owner switched it off. */
+  company?: boolean;
 } | null;
 
 /**
@@ -88,7 +90,8 @@ export function navItemsFor(access: WorkerNavAccess): NavItem[] {
   const allowed = PERMISSION_SECTIONS.filter(
     ({ section }) => access.permissions[section]?.view,
   ).map(({ key }) => key);
-  return [...WORKER_BASE, ...allowed, ...WORKER_END].map((key) => byKey.get(key)!);
+  const end = access.company === false ? [] : WORKER_END;
+  return [...WORKER_BASE, ...allowed, ...end].map((key) => byKey.get(key)!);
 }
 
 export function bottomNavKeysFor(access: WorkerNavAccess): NavKey[] {

@@ -130,7 +130,11 @@ function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNo
     body: string;
   } | null>(null);
   const remove = useDeleteContact(contact.id);
-  const canEdit = useCan("contacts", "edit");
+  // Changing and moving a contact: contacts "update", or calling it (cold calling).
+  const canUpdate = useCan("contacts", "update");
+  const canCall = useCan("cold_calling", "call");
+  const canEdit = canUpdate || canCall;
+  const canDelete = useCan("contacts", "delete");
   // Deals live in the pipeline; without the right to see it the card has nothing to show.
   const canSeeDeals = useCan("pipeline", "view");
   const entry = useContactEntry(contact.id).data;
@@ -238,7 +242,7 @@ function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNo
           <NotesCard contact={contact} readOnly={!canEdit} />
           {canSeeDeals && <DealsCard contact={contact} />}
           <MentionedInNotes kind="contact" id={contact.id} card />
-          {canEdit && (
+          {canDelete && (
             <Button variant="destructive" className="self-start" onClick={() => setDeleting(true)}>
               <Trash2Icon aria-hidden data-icon="inline-start" />
               {t("detail.delete")}
@@ -523,7 +527,8 @@ function DealsCard({ contact }: { contact: Contact }) {
   const locale = useLocale();
   const now = useMinuteClock();
   const nameOf = useAssigneeName();
-  const canCreate = useCan("pipeline", "edit");
+  const canCreate = useCan("pipeline", "create");
+  const seeAmounts = useCan("pipeline", "see_amounts");
   const deals = useContactDeals(contact.id);
   const [creating, setCreating] = useState(false);
   const summary = useMemo(() => summarizeContactDeals(deals.data ?? []), [deals.data]);
@@ -563,13 +568,24 @@ function DealsCard({ contact }: { contact: Contact }) {
         <p className="text-sm text-ink-muted">{t("empty")}</p>
       ) : (
         <>
-          <dl className="grid grid-cols-3 gap-2" aria-label={t("summary.label")}>
+          <dl
+            className={cn("grid gap-2", seeAmounts ? "grid-cols-3" : "grid-cols-1")}
+            aria-label={t("summary.label")}
+          >
             <SummaryItem
               label={t("summary.open")}
               value={formatNumber(summary.openCount, {}, settings)}
             />
-            <SummaryItem label={t("summary.openValue")} value={money(summary.openValue)} />
-            <SummaryItem label={t("summary.won")} value={money(summary.wonValue)} tone="green" />
+            {seeAmounts && (
+              <>
+                <SummaryItem label={t("summary.openValue")} value={money(summary.openValue)} />
+                <SummaryItem
+                  label={t("summary.won")}
+                  value={money(summary.wonValue)}
+                  tone="green"
+                />
+              </>
+            )}
           </dl>
           <ul className="flex flex-col">
             {deals.data.map((deal) => {
@@ -610,7 +626,7 @@ function DealsCard({ contact }: { contact: Contact }) {
                         ))}
                       </span>
                     </span>
-                    {deal.value !== null && (
+                    {seeAmounts && deal.value !== null && (
                       <span className="shrink-0 text-sm text-ink-soft tabular-nums">
                         {formatCurrency(Number(deal.value), deal.currency, settings)}
                       </span>
@@ -640,15 +656,7 @@ function DealsCard({ contact }: { contact: Contact }) {
   );
 }
 
-function SummaryItem({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string;
-  tone?: "green";
-}) {
+function SummaryItem({ label, value, tone }: { label: string; value: string; tone?: "green" }) {
   return (
     <div className="flex min-w-0 flex-col gap-0.5 rounded-xl border border-line/60 px-3 py-2">
       <dt className="text-xs break-words text-ink-muted">{label}</dt>

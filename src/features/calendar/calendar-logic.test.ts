@@ -14,6 +14,7 @@ import {
   toMirrorItem,
   toTaskItem,
   viewDays,
+  canEditEvent,
 } from "./calendar-logic";
 import type { CalendarEvent } from "./types";
 import { parseMirrors, parseView } from "./view-preference";
@@ -33,6 +34,7 @@ function event(overrides: Partial<CalendarEvent> = {}): CalendarEvent {
     contact_id: null,
     deal_id: null,
     source: "manual",
+    actor_id: null,
     contact: null,
     deal: null,
     ...overrides,
@@ -327,5 +329,31 @@ describe("sales tasks in the calendar", () => {
     expect(movedRange(item, "2026-09-26", 9 * 60, PRAGUE).starts_at).toBe(
       "2026-09-26T07:00:00.000Z",
     );
+  });
+});
+
+describe("canEditEvent (mirrors the calendar policies)", () => {
+  const me = "u-me";
+  const access = { owner: false, update: true, viewAll: false, userId: me };
+  it("lets a worker change their own events, others' only with all events", () => {
+    expect(canEditEvent({ source: "manual", actor_id: me }, access)).toBe(true);
+    expect(canEditEvent({ source: "manual", actor_id: "u-other" }, access)).toBe(false);
+    expect(
+      canEditEvent({ source: "manual", actor_id: "u-other" }, { ...access, viewAll: true }),
+    ).toBe(true);
+    expect(canEditEvent({ source: "manual", actor_id: me }, { ...access, update: false })).toBe(
+      false,
+    );
+  });
+  it("never edits a deal's delivery date and follows the owner's read-only state", () => {
+    expect(
+      canEditEvent({ source: "deal_deadline", actor_id: me }, { ...access, owner: true }),
+    ).toBe(false);
+    expect(canEditEvent({ source: "manual", actor_id: null }, { ...access, owner: true })).toBe(
+      true,
+    );
+    expect(
+      canEditEvent({ source: "manual", actor_id: null }, { ...access, owner: true, update: false }),
+    ).toBe(false);
   });
 });

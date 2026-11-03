@@ -14,7 +14,7 @@ import { FormField } from "@/components/ui/form-field";
 import { Input, Textarea } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
 import { useUserSettings } from "@/features/account/queries";
-import { useWorkspace } from "@/features/account/workspace-queries";
+import { useCan, useWorkspace } from "@/features/account/workspace-queries";
 import { SortableList } from "@/features/contacts/sortable-list";
 import { Segmented } from "@/features/finance/segmented";
 import { contactLabel } from "@/features/pipeline/board-logic";
@@ -46,7 +46,14 @@ import { errorCodeOf } from "./errors";
 import { useDeleteDraft, useIssueInvoice, useSaveInvoiceDraft } from "./queries";
 import { SimpleSelect } from "./simple-select";
 import { computeInvoiceTotals, lineTotal } from "./totals";
-import { CZ_VAT_RATES, invoicePath, supplierFromProfile, type InvoiceParty, type InvoiceProfile, type InvoiceRecord } from "./types";
+import {
+  CZ_VAT_RATES,
+  invoicePath,
+  supplierFromProfile,
+  type InvoiceParty,
+  type InvoiceProfile,
+  type InvoiceRecord,
+} from "./types";
 
 export const INVOICES_PATH = "/app/finance?tab=invoices";
 
@@ -145,9 +152,11 @@ export function InvoiceEditor({
     const found: string[] = [];
     if (!draft.customer.name.trim()) found.push("customerRequired");
     if (Object.keys(parsed.errors).length) found.push("itemsInvalid");
-    if (!parsed.items.length || parsed.items.some((item) => !item.name)) found.push("itemsRequired");
+    if (!parsed.items.length || parsed.items.some((item) => !item.name))
+      found.push("itemsRequired");
     if (totals.total <= 0) found.push("totalInvalid");
-    if (draft.variableSymbol && !/^\d{1,10}$/.test(draft.variableSymbol)) found.push("variableSymbolInvalid");
+    if (draft.variableSymbol && !/^\d{1,10}$/.test(draft.variableSymbol))
+      found.push("variableSymbolInvalid");
     if (draft.dueOn < draft.issuedOn) found.push("dueBeforeIssue");
     return found;
   }
@@ -196,7 +205,9 @@ export function InvoiceEditor({
         <SortableList
           items={draft.items}
           nameOf={(item) => item.name || t("items.unnamed")}
-          onReorder={(activeId, overId) => update({ items: moveItem(draft.items, activeId, overId) })}
+          onReorder={(activeId, overId) =>
+            update({ items: moveItem(draft.items, activeId, overId) })
+          }
           renderItem={(item, handle) => (
             <ItemRow
               item={item}
@@ -204,7 +215,14 @@ export function InvoiceEditor({
               vat={vatMode === "vat"}
               czechRates={czechRates}
               errors={parsed.errors[item.id] ?? {}}
-              total={money(lineTotal(parsed.items.find((line) => line.id === item.id) ?? { quantity: 0, unit_price: 0 }))}
+              total={money(
+                lineTotal(
+                  parsed.items.find((line) => line.id === item.id) ?? {
+                    quantity: 0,
+                    unit_price: 0,
+                  },
+                ),
+              )}
               canRemove={draft.items.length > 1}
               onChange={(patch) => updateItem(item.id, patch)}
               onRemove={() => update({ items: draft.items.filter((line) => line.id !== item.id) })}
@@ -216,16 +234,26 @@ export function InvoiceEditor({
           variant="secondary"
           className="self-start"
           onClick={() =>
-            update({ items: [...draft.items, newItem(t("defaultUnit"), defaultVatRate(profile), decimalComma)] })
+            update({
+              items: [
+                ...draft.items,
+                newItem(t("defaultUnit"), defaultVatRate(profile), decimalComma),
+              ],
+            })
           }
         >
           <PlusIcon aria-hidden data-icon="inline-start" />
           {t("items.add")}
         </Button>
         <dl className="ml-auto flex w-full max-w-xs flex-col gap-1.5 border-t border-line pt-3 text-sm">
-          <TotalRow label={vatMode === "vat" ? t("totals.subtotal") : t("totals.items")} value={money(totals.subtotal)} />
+          <TotalRow
+            label={vatMode === "vat" ? t("totals.subtotal") : t("totals.items")}
+            value={money(totals.subtotal)}
+          />
           {vatMode === "vat" && <TotalRow label={t("totals.vat")} value={money(totals.vatTotal)} />}
-          {totals.rounding !== 0 && <TotalRow label={t("totals.rounding")} value={money(totals.rounding)} />}
+          {totals.rounding !== 0 && (
+            <TotalRow label={t("totals.rounding")} value={money(totals.rounding)} />
+          )}
           <TotalRow label={t("totals.total")} value={money(totals.total)} strong />
         </dl>
       </Card>
@@ -246,7 +274,11 @@ export function InvoiceEditor({
             />
           </FormField>
           {vatMode === "vat" && (
-            <FormField id="invoice-taxable" label={t("details.taxableOn")} hint={t("details.taxableHint")}>
+            <FormField
+              id="invoice-taxable"
+              label={t("details.taxableOn")}
+              hint={t("details.taxableHint")}
+            >
               <DatePicker
                 id="invoice-taxable"
                 value={draft.taxableOn ?? draft.issuedOn}
@@ -254,28 +286,41 @@ export function InvoiceEditor({
               />
             </FormField>
           )}
-          <FormField id="invoice-due" label={t("details.dueOn")} hint={t("details.dueHint", { days: profile.due_days })}>
+          <FormField
+            id="invoice-due"
+            label={t("details.dueOn")}
+            hint={t("details.dueHint", { days: profile.due_days })}
+          >
             <DatePicker
               id="invoice-due"
               value={draft.dueOn}
               onValueChange={(value) => value && update({ dueOn: value, dueTouched: true })}
             />
           </FormField>
-          <FormField id="invoice-vs" label={t("details.variableSymbol")} hint={t("details.variableSymbolHint")}>
+          <FormField
+            id="invoice-vs"
+            label={t("details.variableSymbol")}
+            hint={t("details.variableSymbolHint")}
+          >
             <Input
               id="invoice-vs"
               value={draft.variableSymbol}
               inputMode="numeric"
               maxLength={10}
               placeholder={t("details.variableSymbolPlaceholder")}
-              onChange={(event) => update({ variableSymbol: event.target.value.replace(/\D/g, "") })}
+              onChange={(event) =>
+                update({ variableSymbol: event.target.value.replace(/\D/g, "") })
+              }
             />
           </FormField>
           <FormField id="invoice-currency" label={t("details.currency")}>
             <SimpleSelect
               id="invoice-currency"
               value={draft.currency}
-              options={[...new Set([...CURRENCIES, draft.currency])].map((code) => ({ value: code, label: code }))}
+              options={[...new Set([...CURRENCIES, draft.currency])].map((code) => ({
+                value: code,
+                label: code,
+              }))}
               onChange={(value) => update({ currency: value })}
             />
           </FormField>
@@ -302,7 +347,10 @@ export function InvoiceEditor({
 
   return (
     <div className="flex flex-col gap-6">
-      <Link href={INVOICES_PATH} className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "-ml-2.5 self-start")}>
+      <Link
+        href={INVOICES_PATH}
+        className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "-ml-2.5 self-start")}
+      >
         <ArrowLeftIcon aria-hidden data-icon="inline-start" />
         {t("back")}
       </Link>
@@ -322,7 +370,12 @@ export function InvoiceEditor({
                 <Trash2Icon aria-hidden />
               </Button>
             )}
-            <Button type="button" variant="secondary" disabled={busy} onClick={() => void saveDraft()}>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={busy}
+              onClick={() => void saveDraft()}
+            >
               {t("saveDraft")}
             </Button>
             <Button
@@ -342,7 +395,9 @@ export function InvoiceEditor({
 
       <div aria-live="polite" className="flex flex-col gap-2 empty:hidden">
         {savedAt === "saved" && <p className="text-sm text-green">{t("saved")}</p>}
-        {savedAt === "contactNotSaved" && <p className="text-sm text-gold">{t("contactNotSaved")}</p>}
+        {savedAt === "contactNotSaved" && (
+          <p className="text-sm text-gold">{t("contactNotSaved")}</p>
+        )}
         {problems.length > 0 && (
           <FormAlert>
             <ul className="flex flex-col gap-1">
@@ -369,7 +424,9 @@ export function InvoiceEditor({
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start">
         <div className={cn(pane === "preview" && "max-lg:hidden")}>{form}</div>
-        <div className={cn("lg:sticky lg:top-6", pane === "form" && "max-lg:hidden")}>{preview}</div>
+        <div className={cn("lg:sticky lg:top-6", pane === "form" && "max-lg:hidden")}>
+          {preview}
+        </div>
       </div>
 
       <ConfirmDialog
@@ -413,9 +470,16 @@ function Card({ title, children }: { title: string; children: ReactNode }) {
 
 function TotalRow({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
-    <div className={cn("flex items-baseline justify-between gap-4", strong && "border-t border-line pt-2")}>
+    <div
+      className={cn(
+        "flex items-baseline justify-between gap-4",
+        strong && "border-t border-line pt-2",
+      )}
+    >
       <dt className={strong ? "font-semibold text-ink" : "text-ink-soft"}>{label}</dt>
-      <dd className={cn("tabular-nums", strong ? "text-lg font-semibold text-ink" : "text-ink")}>{value}</dd>
+      <dd className={cn("tabular-nums", strong ? "text-lg font-semibold text-ink" : "text-ink")}>
+        {value}
+      </dd>
     </div>
   );
 }
@@ -441,12 +505,14 @@ function CustomerFields({
   const [term, setTerm] = useState("");
   const debounced = useDebouncedValue(term.trim(), 250);
   const search = useContactSearch(debounced);
+  // Saving the details back on the contact needs the right to update contacts.
+  const canUpdateContact = useCan("contacts", "update");
   const [pickFailed, setPickFailed] = useState(false);
   const countries = useMemo(
     () => [
       { value: "", label: t("countryNone") },
-      ...COUNTRY_CODES.map((code) => ({ value: code, label: countryName(code, uiLocale) })).sort((a, b) =>
-        a.label.localeCompare(b.label, uiLocale),
+      ...COUNTRY_CODES.map((code) => ({ value: code, label: countryName(code, uiLocale) })).sort(
+        (a, b) => a.label.localeCompare(b.label, uiLocale),
       ),
     ],
     [t, uiLocale],
@@ -498,7 +564,10 @@ function CustomerFields({
       ) : (
         <div className="flex flex-col gap-2">
           <div className="relative">
-            <SearchIcon aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-muted" />
+            <SearchIcon
+              aria-hidden
+              className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-muted"
+            />
             <Input
               value={term}
               aria-label={t("search")}
@@ -509,7 +578,10 @@ function CustomerFields({
             />
           </div>
           {results.length > 0 && (
-            <ul aria-label={t("results")} className="flex flex-col overflow-hidden rounded-xl border border-line">
+            <ul
+              aria-label={t("results")}
+              className="flex flex-col overflow-hidden rounded-xl border border-line"
+            >
               {results.map((contact) => (
                 <li key={contact.id}>
                   <button
@@ -549,9 +621,12 @@ function CustomerFields({
         </FormField>
         {field("email", t("email"), { type: "email", autoComplete: "email" })}
       </div>
-      {draft.contactId && (
+      {draft.contactId && canUpdateContact && (
         <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-ink">
-          <Checkbox checked={draft.saveToContact} onCheckedChange={(checked) => onSaveToContact(checked === true)} />
+          <Checkbox
+            checked={draft.saveToContact}
+            onCheckedChange={(checked) => onSaveToContact(checked === true)}
+          />
           {t("saveToContact")}
         </label>
       )}
@@ -583,7 +658,8 @@ function ItemRow({
   const t = useTranslations("invoices.editor.items");
   const tErrors = useTranslations("invoices.fieldErrors");
   const id = (field: string) => `invoice-item-${item.id}-${field}`;
-  const errorOf = (key: keyof typeof errors) => (errors[key] ? tErrors(errors[key] as never) : undefined);
+  const errorOf = (key: keyof typeof errors) =>
+    errors[key] ? tErrors(errors[key] as never) : undefined;
   const rateOptions = CZ_VAT_RATES.map((rate) => ({ value: String(rate), label: `${rate} %` }));
 
   return (
@@ -591,17 +667,41 @@ function ItemRow({
       <div className="pt-7">{handle}</div>
       <div className="flex min-w-0 flex-1 flex-col gap-3">
         <FormField id={id("name")} label={t("name")}>
-          <Input id={id("name")} value={item.name} maxLength={200} onChange={(event) => onChange({ name: event.target.value })} />
+          <Input
+            id={id("name")}
+            value={item.name}
+            maxLength={200}
+            onChange={(event) => onChange({ name: event.target.value })}
+          />
         </FormField>
         <div className={cn("grid gap-3", vat ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3")}>
           <FormField id={id("quantity")} label={t("quantity")} error={errorOf("quantity")}>
-            <Input id={id("quantity")} value={item.quantity} inputMode="decimal" onChange={(event) => onChange({ quantity: event.target.value })} />
+            <Input
+              id={id("quantity")}
+              value={item.quantity}
+              inputMode="decimal"
+              onChange={(event) => onChange({ quantity: event.target.value })}
+            />
           </FormField>
           <FormField id={id("unit")} label={t("unit")}>
-            <Input id={id("unit")} value={item.unit} maxLength={20} onChange={(event) => onChange({ unit: event.target.value })} />
+            <Input
+              id={id("unit")}
+              value={item.unit}
+              maxLength={20}
+              onChange={(event) => onChange({ unit: event.target.value })}
+            />
           </FormField>
-          <FormField id={id("price")} label={vat ? t("unitPriceNet") : t("unitPrice")} error={errorOf("unit_price")}>
-            <Input id={id("price")} value={item.unit_price} inputMode="decimal" onChange={(event) => onChange({ unit_price: event.target.value })} />
+          <FormField
+            id={id("price")}
+            label={vat ? t("unitPriceNet") : t("unitPrice")}
+            error={errorOf("unit_price")}
+          >
+            <Input
+              id={id("price")}
+              value={item.unit_price}
+              inputMode="decimal"
+              onChange={(event) => onChange({ unit_price: event.target.value })}
+            />
           </FormField>
           {vat && (
             <FormField id={id("vat")} label={t("vatRate")} error={errorOf("vat_rate")}>
@@ -613,7 +713,12 @@ function ItemRow({
                   onChange={(value) => onChange({ vat_rate: value })}
                 />
               ) : (
-                <Input id={id("vat")} value={item.vat_rate} inputMode="decimal" onChange={(event) => onChange({ vat_rate: event.target.value })} />
+                <Input
+                  id={id("vat")}
+                  value={item.vat_rate}
+                  inputMode="decimal"
+                  onChange={(event) => onChange({ vat_rate: event.target.value })}
+                />
               )}
             </FormField>
           )}
@@ -623,7 +728,13 @@ function ItemRow({
             {t("lineTotal")} <span className="font-semibold text-ink tabular-nums">{total}</span>
           </span>
           {canRemove && (
-            <Button type="button" variant="ghost" size="sm" onClick={onRemove} aria-label={t("removeLabel", { name: item.name || t("unnamed") })}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onRemove}
+              aria-label={t("removeLabel", { name: item.name || t("unnamed") })}
+            >
               <Trash2Icon aria-hidden data-icon="inline-start" />
               {t("remove")}
             </Button>

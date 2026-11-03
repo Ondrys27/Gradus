@@ -32,6 +32,8 @@ import {
   type QuickDue,
   type TaskErrorKey,
 } from "./logic";
+import { useWorkspace } from "@/features/account/workspace-queries";
+import { canAssignOthers } from "./access";
 import { useAssignees, useCreateTask, useUpdateTask } from "./queries";
 import { TargetPicker } from "./target-picker";
 import type { CrmTask, TaskOrigin, TaskTarget } from "./types";
@@ -90,6 +92,7 @@ function Fields({
   const tErrors = useTranslations("crmTasks.errors");
   const settings = useFormatSettings();
   const { user } = useSession();
+  const workspace = useWorkspace();
   const assignees = useAssignees();
   const nameOf = useAssigneeName();
   const create = useCreateTask(origin);
@@ -114,17 +117,21 @@ function Fields({
   const locked = !task && origin !== "tasks";
   const err = (key: string) => (errors[key] ? tErrors(errors[key]) : undefined);
 
+  // Without "assign to others" a worker gives tasks only to themself (the database refuses the rest).
+  const assignOthers = canAssignOthers(workspace);
   const people = useMemo(() => {
-    const list = (assignees.data ?? []).map((person) => ({
-      value: person.userId,
-      label: nameOf(person.userId),
-    }));
+    const list = (assignees.data ?? [])
+      .filter((person) => assignOthers || person.userId === user.id)
+      .map((person) => ({
+        value: person.userId,
+        label: nameOf(person.userId),
+      }));
     // The current choice stays offered even when the person left the space.
     if (!list.some((item) => item.value === assignee)) {
       list.push({ value: assignee, label: nameOf(assignee) });
     }
     return list;
-  }, [assignees.data, assignee, nameOf]);
+  }, [assignees.data, assignee, nameOf, assignOthers, user.id]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();

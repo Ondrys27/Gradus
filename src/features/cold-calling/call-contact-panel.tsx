@@ -70,9 +70,9 @@ function PanelBody({
   const entry = useContactEntry(contactId).data;
   const [moving, setMoving] = useState(false);
   const [makingDeal, setMakingDeal] = useState(false);
-  const canMove = useCan("cold_calling", "edit");
+  const canMove = useCan("cold_calling", "call");
   const canSeeDeals = useCan("pipeline", "view");
-  const canMakeDeal = useCan("pipeline", "edit");
+  const canMakeDeal = useCan("pipeline", "create");
   const ids = useMemo(() => [[contactId]], [contactId]);
   const openDeals = useOpenDeals(ids, canSeeDeals);
   const deal = openDeals.deals[contactId];

@@ -13,18 +13,21 @@ import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import {
-  PAGE_SIZE,
-  permissionRows,
-  type PaymentInput,
-  type PermissionDraft,
-  type WorkerInput,
-  type WorkerTaskInput,
-} from "./logic";
+  GRANT_ROWS_LIMIT,
+  grantCounts,
+  grantRows,
+  grantsFromRows,
+  legacyAccess,
+  LEGACY_SOURCES,
+  type LegacySection,
+  type PermissionGrants,
+  type PermissionTemplate,
+} from "./permissions-catalog";
+import { PAGE_SIZE, type PaymentInput, type WorkerInput, type WorkerTaskInput } from "./logic";
 import {
   EARNING_COLUMNS,
   INVITE_COLUMNS,
   PAYMENT_COLUMNS,
-  PERMISSION_COLUMNS,
   WORKER_COLUMNS,
   WORKER_TASK_COLUMNS,
   type Earning,
@@ -35,7 +38,6 @@ import {
   type WorkerBalance,
   type WorkerInvite,
   type WorkerMonthStats,
-  type WorkerPermission,
   type WorkerProfile,
   type WorkerTask,
   type WorkSession,
@@ -192,53 +194,65 @@ export function useWorkerInvite(workerId: string, enabled = true) {
   });
 }
 
-export function useWorkerPermissions(workerId: string) {
+/** A worker's fine rights (worker_permission_grants), missing rows read as the defaults. */
+export function useWorkerGrants(workerId: string, enabled = true) {
   const { user } = useSession();
   return useQuery({
     queryKey: workerKeys.permissions(user.id, workerId),
-    queryFn: async (): Promise<WorkerPermission[]> => {
+    enabled,
+    queryFn: async (): Promise<PermissionGrants> => {
       const { data, error } = await createClient()
-        .from("worker_permissions")
-        .select(PERMISSION_COLUMNS)
-        .eq("worker_id", workerId);
+        .from("worker_permission_grants")
+        .select("section, action, allowed")
+        .eq("worker_id", workerId)
+        .limit(GRANT_ROWS_LIMIT);
       if (error) throw error;
-      return data;
+      return grantsFromRows(data);
     },
   });
 }
 
-async function savePermissions(ownerId: string, workerId: string, draft: PermissionDraft) {
+/** Every right of the catalog as a row, so nothing is left to a default. */
+async function saveGrants(ownerId: string, workerId: string, grants: PermissionGrants) {
   const { error } = await createClient()
-    .from("worker_permissions")
+    .from("worker_permission_grants")
     .upsert(
-      permissionRows(draft).map((row) => ({ ...row, owner_id: ownerId, worker_id: workerId })),
-      { onConflict: "worker_id,section" },
+      grantRows(grants).map((row) => ({ ...row, owner_id: ownerId, worker_id: workerId })),
+      { onConflict: "worker_id,section,action" },
     );
   if (error) throw error;
 }
 
 /**
- * Saves the matrix as it is switched. The screen shows the change at once and
- * goes back if the save fails; the worker's app hears it live (Realtime) and
- * the database applies it to their very next query.
+ * Saves the rights as they are switched. The screen shows the change at once
+ * and goes back if the save fails; the worker's app hears it live (Realtime)
+ * and the database applies it to their very next query.
  */
-export function useSaveWorkerPermissions(workerId: string) {
+export function useSaveWorkerGrants(workerId: string) {
   const { user } = useSession();
   const queryClient = useQueryClient();
   const key = workerKeys.permissions(user.id, workerId);
   return useMutation({
     mutationKey: ["workers", "permissions", workerId],
-    mutationFn: async (draft: PermissionDraft) => {
-      await savePermissions(user.id, workerId, draft);
-      trackPermissions(draft);
+    mutationFn: async ({
+      grants,
+      template,
+    }: {
+      grants: PermissionGrants;
+      /** Set when one click of a template filled them. */
+      template?: PermissionTemplate;
+    }) => {
+      await saveGrants(user.id, workerId, grants);
+      trackGrants(grants);
+      if (template) track("worker_permission_template_applied", { template });
     },
-    onMutate: async (draft) => {
+    onMutate: async ({ grants }) => {
       await queryClient.cancelQueries({ queryKey: key });
-      const previous = queryClient.getQueryData<WorkerPermission[]>(key);
-      queryClient.setQueryData<WorkerPermission[]>(key, permissionRows(draft));
+      const previous = queryClient.getQueryData<PermissionGrants>(key);
+      queryClient.setQueryData<PermissionGrants>(key, grants);
       return { previous };
     },
-    onError: (_error, _draft, context) => {
+    onError: (_error, _input, context) => {
       if (context?.previous) queryClient.setQueryData(key, context.previous);
     },
     onSettled: () => {
@@ -248,12 +262,13 @@ export function useSaveWorkerPermissions(workerId: string) {
   });
 }
 
-/** How many sections a worker may see and edit, never which person. */
-function trackPermissions(draft: PermissionDraft) {
-  const levels = Object.values(draft);
+/** How many sections a worker may see and how many they may change, never which person. */
+function trackGrants(grants: PermissionGrants) {
+  const sections = Object.keys(LEGACY_SOURCES) as LegacySection[];
+  const access = sections.map((section) => legacyAccess(grants, section));
   track("worker_permissions_saved", {
-    view_sections: levels.filter((level) => level !== "none").length,
-    edit_sections: levels.filter((level) => level === "edit").length,
+    view_sections: Math.min(grantCounts(grants).sections, 20),
+    edit_sections: access.filter((level) => level.edit).length,
   });
 }
 
@@ -268,7 +283,7 @@ export function useCreateWorker() {
   return useMutation({
     mutationFn: async (input: {
       worker: WorkerInput;
-      permissions: PermissionDraft;
+      grants: PermissionGrants;
       /** Null = right under the owner. */
       managerId?: string | null;
       groupIds?: string[];
@@ -281,17 +296,15 @@ export function useCreateWorker() {
         .select(WORKER_COLUMNS)
         .single();
       if (error) throw error;
-      await savePermissions(user.id, worker.id, input.permissions);
+      await saveGrants(user.id, worker.id, input.grants);
       if (groupIds.length > 0) {
-        const { error: groupError } = await supabase
-          .from("worker_group_members")
-          .insert(
-            groupIds.map((groupId) => ({
-              group_id: groupId,
-              worker_id: worker.id,
-              owner_id: user.id,
-            })),
-          );
+        const { error: groupError } = await supabase.from("worker_group_members").insert(
+          groupIds.map((groupId) => ({
+            group_id: groupId,
+            worker_id: worker.id,
+            owner_id: user.id,
+          })),
+        );
         if (groupError) throw groupError;
       }
       const { data: invite, error: inviteError } = await supabase
@@ -304,7 +317,7 @@ export function useCreateWorker() {
         with_manager: Boolean(input.managerId),
         groups: Math.min(groupIds.length, 200),
       });
-      trackPermissions(input.permissions);
+      trackGrants(input.grants);
       return { worker, invite };
     },
     onSettled: () => invalidateAll(queryClient, user.id),
@@ -315,16 +328,16 @@ export function useUpdateWorker(workerId: string) {
   const { user } = useSession();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { worker: WorkerInput; permissions?: PermissionDraft }) => {
+    mutationFn: async (input: { worker: WorkerInput; grants?: PermissionGrants }) => {
       const { error } = await createClient()
         .from("workers")
         .update(input.worker)
         .eq("id", workerId)
         .eq("owner_id", user.id);
       if (error) throw error;
-      if (input.permissions) await savePermissions(user.id, workerId, input.permissions);
+      if (input.grants) await saveGrants(user.id, workerId, input.grants);
       track("worker_updated", {});
-      if (input.permissions) trackPermissions(input.permissions);
+      if (input.grants) trackGrants(input.grants);
     },
     onSettled: () => invalidateAll(queryClient, user.id),
   });

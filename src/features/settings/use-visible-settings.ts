@@ -15,7 +15,7 @@ import {
 export function useSettingsViewer(): SettingsViewer {
   const owner = useWorkspace().role === "owner";
   const { worker } = useSession();
-  const canMakeDeals = useCan("pipeline", "edit");
+  const canMakeDeals = useCan("pipeline", "create");
   const canCall = useCan("cold_calling", "view");
   return useMemo(
     () => ({ owner, worker: Boolean(worker), caller: canMakeDeals && canCall }),

@@ -12,7 +12,7 @@ const WORKER = "00000000-0000-4000-8000-000000000002";
 /** What the database returns for the worker's own record and rights. */
 let remote: {
   status: string;
-  permissions: { section: string; can_view: boolean; can_edit: boolean }[];
+  grants: { section: string; action: string; allowed: boolean }[];
 };
 
 vi.mock("@/lib/supabase/client", () => {
@@ -22,8 +22,8 @@ vi.mock("@/lib/supabase/client", () => {
       eq: () => builder,
       limit: () =>
         Promise.resolve(
-          table === "worker_permissions"
-            ? { data: remote.permissions, error: null }
+          table === "worker_permission_grants"
+            ? { data: remote.grants, error: null }
             : { data: null, error: null },
         ),
       maybeSingle: () => Promise.resolve({ data: { status: remote.status }, error: null }),
@@ -62,9 +62,9 @@ const caller: WorkerAccount = {
   ownerId: OWNER,
   name: "Pepa",
   jobTitle: null,
-  permissions: {
-    contacts: { view: true, edit: true },
-    cold_calling: { view: true, edit: true },
+  grants: {
+    contacts: ["view", "create", "update"],
+    cold_calling: ["view", "call"],
   },
 };
 
@@ -74,9 +74,11 @@ beforeEach(() => {
   client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   remote = {
     status: "active",
-    permissions: [
-      { section: "contacts", can_view: true, can_edit: true },
-      { section: "cold_calling", can_view: true, can_edit: true },
+    grants: [
+      { section: "contacts", action: "view", allowed: true },
+      { section: "contacts", action: "create", allowed: true },
+      { section: "cold_calling", action: "view", allowed: true },
+      { section: "cold_calling", action: "call", allowed: true },
     ],
   };
 });
@@ -100,6 +102,8 @@ describe("useWorkspace", () => {
       () => ({
         workspace: useWorkspace(),
         contacts: useCan("contacts", "edit"),
+        create: useCan("contacts", "create"),
+        remove: useCan("contacts", "delete"),
         finance: useCan("finance", "view"),
       }),
       { wrapper: wrapper(caller, client) },
@@ -111,6 +115,8 @@ describe("useWorkspace", () => {
       workerId: "worker-1",
     });
     expect(result.current.contacts).toBe(true);
+    expect(result.current.create).toBe(true);
+    expect(result.current.remove).toBe(false);
     expect(result.current.finance).toBe(false);
   });
 
@@ -121,7 +127,7 @@ describe("useWorkspace", () => {
     expect(result.current).toBe(true);
 
     // The owner takes contacts away; the next read (live channel, focus or interval) sees it.
-    remote.permissions = [{ section: "contacts", can_view: false, can_edit: false }];
+    remote.grants = [{ section: "contacts", action: "view", allowed: false }];
     await act(() =>
       client.invalidateQueries({ queryKey: workspaceKeys.access(WORKER, "worker-1") }),
     );

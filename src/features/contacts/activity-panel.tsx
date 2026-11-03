@@ -21,7 +21,7 @@ import { Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ActorAvatar } from "@/features/account/members";
 import { TaskHistoryItem, useFinishedTasks } from "@/features/crm-tasks/history";
-import { useCanContacts } from "@/features/account/workspace-queries";
+import { useCan } from "@/features/account/workspace-queries";
 import { formatDateTime } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
@@ -48,7 +48,10 @@ export function ActivityPanel({ contactId }: { contactId: string }) {
   // Finished tasks of the contact with their notes join the history by date.
   const finished = useFinishedTasks("contact", contactId);
   const remove = useDeleteActivity(contactId);
-  const canEdit = useCanContacts("edit");
+  // Logging calls and notes: contacts "update" or calling (cold calling).
+  const canUpdate = useCan("contacts", "update");
+  const canCall = useCan("cold_calling", "call");
+  const canEdit = canUpdate || canCall;
   const [adding, setAdding] = useState(false);
 
   return (

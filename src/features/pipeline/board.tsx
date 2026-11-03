@@ -32,9 +32,10 @@ type Props = {
   editing: boolean;
   /** From Settings → Pipeline; a lost deal older than this may be approached again. */
   reengageAfterMonths: number;
-  /** Without the right to edit, deals cannot be added or dragged. */
+  /** Without the right to move deals between stages, cards cannot be dragged. */
   readOnly?: boolean;
-  onAddDeal: (stage: Stage) => void;
+  /** Null without the right to create deals: no "+" in the columns. */
+  onAddDeal: ((stage: Stage) => void) | null;
   onOpenDeal: (deal: Deal) => void;
   onMoveDeal: (deal: Deal, stage: Stage) => void;
   onReorderStages: (activeId: string, overId: string) => void;
@@ -151,7 +152,7 @@ export function Board({
               dragDealsEnabled={!isPhone && !readOnly}
               isLastStage={stages.length === 1}
               reengageAfterMonths={reengageAfterMonths}
-              onAddDeal={readOnly ? undefined : onAddDeal}
+              onAddDeal={onAddDeal ?? undefined}
               onOpenDeal={onOpenDeal}
               onRename={onRenameStage}
               onRemove={onRemoveStage}

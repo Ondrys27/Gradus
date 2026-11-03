@@ -31,6 +31,10 @@ import {
   type Summary,
 } from "./stats-logic";
 import { useDailyMeetings, useDailySeconds } from "./stats-queries";
+import { canDo } from "@/features/account/workspace";
+import { useWorkspace } from "@/features/account/workspace-queries";
+import { useAssignees } from "@/features/crm-tasks/queries";
+import { useAssigneeName } from "@/features/crm-tasks/use-assignee-name";
 
 const KINDS: PeriodKind[] = ["week", "month", "year"];
 
@@ -40,9 +44,28 @@ export function StatsCard() {
   const locale = useLocale();
   const settings = useFormatSettings();
   const [period, setPeriod] = useState<Period>({ kind: "week", offset: 0 });
-  // The owner sees the whole space or one person; a worker only ever themself.
+  // The owner (and a worker allowed to see the others' statistics) sees the
+  // whole space or one person; any other worker only ever themself.
   const [actor, setActor] = useState<string | null>(null);
   const members = useWorkspaceMembers();
+  const workspace = useWorkspace();
+  const { user } = useSession();
+  const seesOthers =
+    workspace.role === "worker" && canDo(workspace, "cold_calling", "view_others_stats");
+  const assignees = useAssignees();
+  const nameOf = useAssigneeName();
+  const people = useMemo<WorkspaceMember[] | null>(() => {
+    if (workspace.role === "owner") return members.data ? [...members.data.values()] : null;
+    if (!seesOthers || !assignees.data) return null;
+    return assignees.data
+      .filter((person) => person.userId !== user.id)
+      .map((person) => ({
+        userId: person.userId,
+        workerId: person.userId,
+        name: nameOf(person.userId),
+        avatarUrl: null,
+      }));
+  }, [workspace.role, members.data, seesOthers, assignees.data, user.id, nameOf]);
   const today = todayIsoDate(settings);
   const range = useMemo(
     () => periodRange(period, today, settings.weekStartsOn),
@@ -110,8 +133,8 @@ export function StatsCard() {
         <p className="text-sm text-ink-soft" aria-live="polite">
           {rangeLabel(period.kind, range, locale, settings)}
         </p>
-        {members.data && members.data.size > 0 && (
-          <PersonPicker members={[...members.data.values()]} value={actor} onChange={setActor} />
+        {people && people.length > 0 && (
+          <PersonPicker members={people} value={actor} onChange={setActor} />
         )}
       </div>
 

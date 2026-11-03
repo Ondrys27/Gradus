@@ -3261,21 +3261,90 @@
     },
     "permissions": {
       "title": "Co může dělat",
-      "hint": "Vlastní přehled, úkoly a odměny má vždy. Tvoje nastavení a pracovníky nikdy.",
+      "hint": "Svůj přehled a vlastní účet má vždy. Tvoje poznámky a nastavení nikdy.",
       "liveHint": "Každý přepínač platí hned — pracovník změnu uvidí bez odhlášení.",
-      "presets": {
-        "label": "Role",
-        "caller": "Caller",
+      "ownHint": "Tohle ti povolil majitel. Změnit to může jen on.",
+      "endedHint": "Pracovník už ve firmě není, práva se neuplatní.",
+      "templates": {
+        "label": "Šablona",
         "sales": "Obchodník",
         "assistant": "Asistent",
+        "accountant": "Účetní",
+        "all": "Vše",
         "custom": "Vlastní"
       },
-      "section": "Sekce",
-      "view": "Vidí",
-      "edit": "Upravuje",
+      "sections": {
+        "invoices": "Faktury"
+      },
+      "fixed": {
+        "dashboard": "Svůj přehled má pracovník vždy.",
+        "notes": "Poznámky jsou soukromé, tvoje nikdy neuvidí.",
+        "settings": "Nastavení je jen tvoje; svůj účet si spravuje sám.",
+        "always": "Vždy",
+        "never": "Nikdy"
+      },
+      "expand": "{section}: ukázat podrobná práva",
+      "collapse": "{section}: skrýt podrobná práva",
+      "granted": "Vidí sekci · {count} z {total} práv",
+      "hidden": "Sekci nevidí",
       "viewSection": "{section}: vidí",
-      "editSection": "{section}: upravuje",
-      "financeHint": "Vypnuté, dokud je nezapneš.",
+      "actionOf": "{section}: {action}",
+      "actions": {
+        "milestones": {
+          "update": "Upravovat milníky a úkoly"
+        },
+        "contacts": {
+          "create": "Zakládat",
+          "update": "Upravovat",
+          "delete": "Mazat",
+          "export": "Exportovat",
+          "generate": "Generovat kontakty"
+        },
+        "pipeline": {
+          "see_amounts": "Vidět částky",
+          "create": "Zakládat obchody",
+          "update": "Upravovat údaje",
+          "change_stage": "Měnit fázi",
+          "change_amount": "Měnit částku",
+          "delete": "Mazat"
+        },
+        "tasks": {
+          "create": "Zakládat",
+          "update": "Upravovat",
+          "assign_others": "Přiřazovat jiným",
+          "delete": "Mazat"
+        },
+        "cold_calling": {
+          "call": "Volat (časovač a přesuny)",
+          "view_others_stats": "Vidět statistiky ostatních"
+        },
+        "calendar": {
+          "create": "Zakládat události",
+          "update": "Upravovat a mazat"
+        },
+        "finance": {
+          "summaries": "Vidět souhrny",
+          "write": "Zapisovat příjmy a výdaje"
+        },
+        "invoices": {
+          "issue": "Vystavovat, posílat a stornovat"
+        },
+        "company": {
+          "update": "Upravovat lidi ve své části firmy"
+        }
+      },
+      "scope": {
+        "records": {
+          "label": "Rozsah",
+          "all": "Vše",
+          "own": "Jen své"
+        },
+        "company": {
+          "label": "Koho vidí",
+          "all": "Celá firma",
+          "own": "Svoje větev"
+        }
+      },
       "loadFailed": "Práva se nepodařilo načíst. Zkus to za chvíli.",
       "saveFailed": "Změna se neuložila. Zkus to znovu."
     },
@@ -3683,6 +3752,213 @@
         "managerOwner": "Přímo pod tebou",
         "groups": "Skupiny",
         "groupsHint": "Nepovinné, jde to kdykoli změnit."
+      }
+    },
+    "dashboard": {
+      "overview": {
+        "horizon": {
+          "label": "Období",
+          "week": "Týden",
+          "month": "Měsíc",
+          "quarter": "Kvartál",
+          "year": "Rok",
+          "custom": "Vlastní",
+          "from": "Od",
+          "to": "Do"
+        },
+        "stats": {
+          "openTasks": "Otevřené úkoly",
+          "overdue": "Po termínu",
+          "openDeals": "Otevřené obchody",
+          "won": "Vyhráno za období"
+        },
+        "tasksChart": {
+          "title": "Splněné úkoly v čase",
+          "onTime": "Splněno v termínu",
+          "late": "Splněno po termínu",
+          "missed": "Nesplněno",
+          "empty": "Za toto období žádné splněné ani propadlé úkoly."
+        },
+        "dealsChart": {
+          "title": "Obchody v péči a jak dopadly",
+          "won": "Vyhráno",
+          "lost": "Ztraceno",
+          "opened": "Nové",
+          "empty": "Za toto období se u obchodů v péči nic nestalo."
+        },
+        "valueChart": {
+          "title": "Hodnota vyhraných obchodů ({currency})",
+          "series": "Vyhráno",
+          "empty": "Za toto období žádná vyhraná hodnota.",
+          "onlyCurrency": "Sčítají se jen obchody v {currency}, měny se nepřevádějí.",
+          "otherCurrencies": "{count, plural, one {# vyhraný obchod v jiné měně není} few {# vyhrané obchody v jiné měně nejsou} other {# vyhraných obchodů v jiné měně není}} v součtu, sčítá se jen {currency}."
+        },
+        "noAccount": "Pozvánka ještě není přijatá, obchody a úkoly obchodů přibydou, až si pracovník založí účet.",
+        "loadFailed": "Přehled se nepodařilo načíst. Zkus to znovu."
+      },
+      "work": {
+        "deals": {
+          "title": "Obchody v péči",
+          "empty": "Nemá v péči žádný obchod.",
+          "noAccount": "Pozvánka ještě není přijatá, obchody zatím nemá.",
+          "closeDate": "Uzavření {date}",
+          "noCloseDate": "Bez data uzavření",
+          "loadFailed": "Obchody se nepodařilo načíst."
+        },
+        "tasks": {
+          "title": "Úkoly",
+          "open": "Otevřené",
+          "history": "Historie",
+          "openEmpty": "Žádné otevřené úkoly.",
+          "historyEmpty": "Za toto období žádné hotové úkoly.",
+          "due": "Termín {date}",
+          "noDue": "Bez termínu",
+          "origin": {
+            "crm": "Úkol obchodu",
+            "owner": "Od majitele"
+          },
+          "outcome": {
+            "onTime": "Splněno v termínu",
+            "late": "Splněno po termínu",
+            "missed": "Nesplněno",
+            "open": "Otevřený"
+          },
+          "filter": {
+            "outcome": "Výsledek",
+            "allOutcomes": "Všechny výsledky",
+            "period": "Období"
+          },
+          "period": {
+            "month": "Poslední měsíc",
+            "quarter": "Poslední kvartál",
+            "year": "Poslední rok"
+          },
+          "loadFailed": "Úkoly se nepodařilo načíst."
+        }
+      },
+      "documents": {
+        "title": "Dokumenty",
+        "drop": "Přetáhni soubory sem",
+        "hint": "PDF, obrázky a dokumenty Office, nejvýš 20 MB na soubor.",
+        "upload": "Nahrát soubor",
+        "uploading": "{count, plural, one {Nahrávám # soubor…} few {Nahrávám # soubory…} other {Nahrávám # souborů…}}",
+        "readOnlyNote": "Dokumenty spravuje majitel, ty si je můžeš stáhnout.",
+        "empty": "Zatím tu nejsou žádné dokumenty.",
+        "meta": "{size} · {date} · {name}",
+        "sizeKb": "{size} kB",
+        "sizeMb": "{size} MB",
+        "download": "Stáhnout {name}",
+        "rename": "Přejmenovat {name}",
+        "renameLabel": "Název dokumentu",
+        "delete": "Smazat {name}",
+        "deleteTitle": "Smazat dokument?",
+        "deleteDescription": "Dokument „{name}“ se smaže natrvalo.",
+        "deleteConfirm": "Smazat",
+        "cancel": "Zrušit",
+        "errors": {
+          "tooLarge": "Soubor je větší než 20 MB nebo je prázdný.",
+          "wrongType": "Tenhle typ souboru nejde nahrát. Použij PDF, obrázek nebo dokument Office.",
+          "uploadFailed": "Nahrání se nepovedlo. Zkus to znovu.",
+          "readOnly": "Prostor je jen pro čtení, dokumenty teď nejde měnit.",
+          "saveFailed": "Nepovedlo se to. Zkus to znovu.",
+          "loadFailed": "Dokumenty se nepodařilo načíst."
+        }
+      },
+      "title": "Pracovník",
+      "close": "Zavřít",
+      "sections": "Části dashboardu",
+      "loadFailed": "Pracovníka se nepodařilo načíst. Zkus to znovu.",
+      "notFoundTitle": "Pracovník nenalezen",
+      "notFoundDescription": "Možná je mimo tvou část firmy, nebo je odkaz špatně.",
+      "tabs": {
+        "overview": "Přehled",
+        "rights": "Práva",
+        "work": "Obchody a úkoly",
+        "documents": "Dokumenty",
+        "team": "Tým",
+        "rewards": "Odměny"
+      },
+      "you": "ty",
+      "since": "Ve firmě od {date}",
+      "assignTask": "Zadat úkol",
+      "fields": {
+        "firstName": "Jméno",
+        "lastName": "Příjmení",
+        "jobTitle": "Pozice",
+        "jobTitlePlaceholder": "Pozice, např. Obchodník"
+      },
+      "photo": {
+        "cropTitle": "Fotka: {name}"
+      },
+      "info": {
+        "email": "E-mail",
+        "emailPlaceholder": "jmeno@firma.cz",
+        "phone": "Telefon",
+        "none": "Neuvedeno",
+        "description": "Popis",
+        "addDescription": "Přidat popis",
+        "editDescription": "Upravit",
+        "descriptionPlaceholder": "Co dělá, v čem je dobrý, na co se ho ptát…",
+        "descriptionEmpty": "Zatím bez popisu.",
+        "markdownHint": "**tučně**, *kurzívou*, - odrážky a odkazy https://… Uloží se, když pole opustíš."
+      },
+      "groups": {
+        "title": "Skupiny",
+        "manage": "Spravovat skupiny",
+        "none": "V žádné skupině",
+        "add": "Přidat do skupiny",
+        "remove": "Odebrat ze skupiny {group}",
+        "noGroupsYet": "Zatím nemáš žádné skupiny."
+      },
+      "team": {
+        "manager": "Nadřízený",
+        "underYou": "Přímo pod tebou",
+        "underOwner": "Přímo pod majitelem nebo mimo tvůj pohled",
+        "direct": "{count, plural, =0 {Přímí podřízení} other {Přímí podřízení · {shown}}}",
+        "branch": "Celá větev · {shown}",
+        "emptyTitle": "Nikdo pod ním není",
+        "empty": "Podřízené přidáš přesunem ve Správě firmy.",
+        "open": "Otevřít: {name}",
+        "loadFailed": "Tým se nepodařilo načíst."
+      },
+      "remove": {
+        "zoneTitle": "Odstranit z firmy",
+        "zoneDescription": "Přístup skončí hned. Data zůstanou a pracovník bude ve filtru Ukončení.",
+        "button": "Odstranit z firmy",
+        "title": "Odstranit {name} z firmy?",
+        "description": "Pracovník ztratí přístup okamžitě. Jeho obchody, úkoly a historie zůstanou, podřízení přejdou pod jeho nadřízeného.",
+        "impactFailed": "Nepodařilo se zjistit, co má v péči.",
+        "nothingInCare": "Nemá v péči žádné otevřené obchody ani úkoly.",
+        "deals": "{count, plural, one {{shown} otevřený obchod} few {{shown} otevřené obchody} other {{shown} otevřených obchodů}}",
+        "crmTasks": "{count, plural, one {{shown} otevřený úkol obchodu nebo kontaktu} few {{shown} otevřené úkoly obchodů a kontaktů} other {{shown} otevřených úkolů obchodů a kontaktů}}",
+        "workerTasks": "{count, plural, one {{shown} úkol od tebe} few {{shown} úkoly od tebe} other {{shown} úkolů od tebe}}",
+        "handTo": "Komu je předat",
+        "toOwner": "{name} (majitel)",
+        "you": "Ty",
+        "toNobody": "Nikomu, nechat jak jsou",
+        "workerTasksStay": "Úkoly od tebe jdou jen jinému pracovníkovi; u majitele zůstanou ukončenému.",
+        "readOnlyHint": "V režimu jen pro čtení nejde nic předat, pracovníka ale odstranit můžeš.",
+        "cancel": "Zrušit",
+        "confirm": "Odstranit z firmy"
+      },
+      "statusFilter": {
+        "label": "Filtrovat podle stavu",
+        "current": "Aktivní a pozvaní",
+        "all": "Všichni",
+        "active": "Aktivní",
+        "invited": "Pozvaní",
+        "ended": "Ukončení"
+      },
+      "errors": {
+        "accessDenied": "Tohle změnit nemůžeš.",
+        "readOnly": "Účet je jen pro čtení, změnu nejde uložit.",
+        "phoneInvalid": "Telefon nevypadá jako platné číslo.",
+        "emailInvalid": "E-mail nevypadá správně.",
+        "tooLong": "Text je moc dlouhý.",
+        "nameRequired": "Jméno nemůže zůstat prázdné.",
+        "photoInvalid": "Fotku se nepodařilo uložit.",
+        "assigneeOutside": "Tomuhle člověku nejde obchody předat.",
+        "saveFailed": "Změna se neuložila. Zkus to znovu."
       }
     }
   },

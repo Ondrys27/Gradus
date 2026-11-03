@@ -32,7 +32,7 @@ export function TimerCard() {
   const reading = useTimerReading();
   const action = useTimerAction();
   // Only someone who may work the list runs a timer; the database checks it too.
-  const canRun = useCan("cold_calling", "edit");
+  const canRun = useCan("cold_calling", "call");
   const record = useProspectingRecord();
   const awardXp = useAwardXp();
   // The day a record was last celebrated: once a day is enough, later pauses only extend it.

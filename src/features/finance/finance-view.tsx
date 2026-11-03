@@ -24,7 +24,8 @@ import { todayIsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { useUrlIntent } from "@/lib/use-url-intent";
 import { periodRange } from "./finance-logic";
-import { useCan } from "@/features/account/workspace-queries";
+import { canDo } from "@/features/account/workspace";
+import { useWorkspace } from "@/features/account/workspace-queries";
 import { fetchTransaction } from "./queries";
 import { RecurringFormDialog } from "./recurring-form-dialog";
 import { RecurringPanel } from "./recurring-panel";
@@ -54,13 +55,25 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
   const t = useTranslations("finance");
   const settings = useFormatSettings();
   const today = todayIsoDate(settings);
-  const [tab, setTab] = useState<FinanceTab>(initialTab);
+  const [requestedTab, setTab] = useState<FinanceTab>(initialTab);
   const [period, setPeriod] = useState<PeriodKind>("thisMonth");
   const [transaction, setTransaction] = useState<Editing<Transaction>>(undefined);
   const [payment, setPayment] = useState<Editing<RecurringPayment>>(undefined);
   const range = useMemo(() => periodRange(period, today), [period, today]);
+  // Finance opens with finance or invoices; inside, each part has its own right.
+  const workspace = useWorkspace();
+  const canSeeMoney = canDo(workspace, "finance", "view");
+  const canSeeSummaries = canDo(workspace, "finance", "summaries");
+  const canSeeInvoices = canDo(workspace, "invoices", "view");
   // A worker with finance only to look at gets no add, edit or delete.
-  const canEdit = useCan("finance", "edit");
+  const canEdit = canDo(workspace, "finance", "write");
+  const canIssue = canDo(workspace, "invoices", "issue");
+  const allowedTabs = FINANCE_TABS.filter((value) =>
+    value === "invoices" ? canSeeInvoices : canSeeMoney,
+  );
+  const tab: FinanceTab = allowedTabs.includes(requestedTab)
+    ? requestedTab
+    : (allowedTabs[0] ?? requestedTab);
 
   // A link to another tab while Finance is open (e.g. from the search) switches to it.
   const [seenTab, setSeenTab] = useState(initialTab);
@@ -79,7 +92,7 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
   });
 
   const periodItems = PERIOD_KINDS.map((value) => ({ value, label: t(`period.${value}`) }));
-  const tabs = FINANCE_TABS.map((value) => ({ value, label: t(`tabs.${value}`) }));
+  const tabs = allowedTabs.map((value) => ({ value, label: t(`tabs.${value}`) }));
 
   return (
     <div className="flex flex-col gap-6">
@@ -88,12 +101,14 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
         title={t("title")}
         description={t("description")}
         actions={
-          !canEdit ? null : tab === "invoices" ? (
-            <Link href={NEW_INVOICE_PATH} className={buttonVariants()}>
-              <PlusIcon aria-hidden data-icon="inline-start" />
-              {t("actions.newInvoice")}
-            </Link>
-          ) : (
+          tab === "invoices" ? (
+            canIssue && (
+              <Link href={NEW_INVOICE_PATH} className={buttonVariants()}>
+                <PlusIcon aria-hidden data-icon="inline-start" />
+                {t("actions.newInvoice")}
+              </Link>
+            )
+          ) : !canEdit ? null : (
             <Button onClick={() => (tab === "recurring" ? setPayment(null) : setTransaction(null))}>
               <PlusIcon aria-hidden data-icon="inline-start" />
               {tab === "recurring" ? t("actions.newRecurring") : t("actions.newTransaction")}
@@ -102,34 +117,40 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
         }
       />
 
-      <div className="flex flex-col gap-2 sm:max-w-xs">
-        <label htmlFor="finance-period" className="text-sm font-medium text-ink-soft">
-          {t("period.label")}
-        </label>
-        <Select
-          value={period}
-          items={periodItems}
-          onValueChange={(next) => {
-            if (PERIOD_KINDS.includes(next as PeriodKind)) setPeriod(next as PeriodKind);
-          }}
-        >
-          <SelectTrigger id="finance-period">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {periodItems.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {canSeeMoney && (
+        <div className="flex flex-col gap-2 sm:max-w-xs">
+          <label htmlFor="finance-period" className="text-sm font-medium text-ink-soft">
+            {t("period.label")}
+          </label>
+          <Select
+            value={period}
+            items={periodItems}
+            onValueChange={(next) => {
+              if (PERIOD_KINDS.includes(next as PeriodKind)) setPeriod(next as PeriodKind);
+            }}
+          >
+            <SelectTrigger id="finance-period">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {periodItems.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
-      <SummaryTiles range={range} />
-      <GlowCard interactive={false}>
-        <IncomeChart today={today} />
-      </GlowCard>
+      {canSeeSummaries && (
+        <>
+          <SummaryTiles range={range} />
+          <GlowCard interactive={false}>
+            <IncomeChart today={today} />
+          </GlowCard>
+        </>
+      )}
 
       <Segmented
         label={t("tabs.label")}

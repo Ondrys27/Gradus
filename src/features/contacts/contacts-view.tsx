@@ -46,19 +46,21 @@ export function ContactsView() {
   const [creating, setCreating] = useState(false);
   const [prefill, setPrefill] = useState<Partial<ContactDraft> | undefined>(undefined);
   const [generating, setGenerating] = useState(false);
-  // Without the right to edit, adding and changing is hidden; RLS refuses it anyway.
-  const canEdit = useCan("contacts", "edit");
+  // Each action has its own right; what may not happen is hidden (RLS refuses it anyway).
+  const canCreate = useCan("contacts", "create");
+  const canGenerate = useCan("contacts", "generate");
+  const canEditTables = useCan("contacts", "update");
 
   // The search opens a new contact (with what was typed) or contact generation here.
   useUrlIntent(
     "new",
     (value, params) => {
-      if (!canEdit) return;
       if (value === "contact") {
+        if (!canCreate) return;
         setPrefill(contactDraftFromText(params.get("name") ?? ""));
         setCreating(true);
       } else if (value === "generate") {
-        setGenerating(true);
+        if (canGenerate) setGenerating(true);
       }
     },
     ["name"],
@@ -105,25 +107,34 @@ export function ContactsView() {
         title={tNav("contacts")}
         description={t("description")}
         actions={
-          canEdit && (
+          (canCreate || canGenerate || canEditTables) && (
             <>
-              <Link href="/app/kontakty/tabulky" className={buttonVariants({ variant: "outline" })}>
-                <PencilIcon aria-hidden data-icon="inline-start" />
-                {t("actions.editTables")}
-              </Link>
-              <Button variant="outline" onClick={() => setGenerating(true)}>
-                <SparklesIcon aria-hidden data-icon="inline-start" />
-                {t("actions.generate")}
-              </Button>
-              <Button
-                onClick={() => {
-                  setPrefill(undefined);
-                  setCreating(true);
-                }}
-              >
-                <PlusIcon aria-hidden data-icon="inline-start" />
-                {t("actions.newContact")}
-              </Button>
+              {canEditTables && (
+                <Link
+                  href="/app/kontakty/tabulky"
+                  className={buttonVariants({ variant: "outline" })}
+                >
+                  <PencilIcon aria-hidden data-icon="inline-start" />
+                  {t("actions.editTables")}
+                </Link>
+              )}
+              {canGenerate && (
+                <Button variant="outline" onClick={() => setGenerating(true)}>
+                  <SparklesIcon aria-hidden data-icon="inline-start" />
+                  {t("actions.generate")}
+                </Button>
+              )}
+              {canCreate && (
+                <Button
+                  onClick={() => {
+                    setPrefill(undefined);
+                    setCreating(true);
+                  }}
+                >
+                  <PlusIcon aria-hidden data-icon="inline-start" />
+                  {t("actions.newContact")}
+                </Button>
+              )}
             </>
           )
         }
@@ -195,7 +206,7 @@ export function ContactsView() {
             title={t("empty.title")}
             description={t("empty.description")}
             action={
-              canEdit && (
+              canCreate && (
                 <Button
                   onClick={() => {
                     setPrefill(undefined);
@@ -263,9 +274,10 @@ export function ContactsView() {
 function ClientDeals({ contact, deals }: { contact: ContactListItem; deals: WonDealsByContact }) {
   const t = useTranslations("contacts.tables");
   const settings = useFormatSettings();
+  const seeAmounts = useCan("pipeline", "see_amounts");
   const own = deals[contact.id];
   if (!own) return <Skeleton className="h-4 w-20" />;
-  const totals = sumByCurrency(own)
+  const totals = (seeAmounts ? sumByCurrency(own) : [])
     .map(({ currency, total }) => formatCurrency(total, currency, settings))
     .join(" + ");
   return (

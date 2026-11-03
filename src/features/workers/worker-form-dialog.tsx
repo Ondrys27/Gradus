@@ -21,15 +21,8 @@ import { cn } from "@/lib/utils";
 import { useCompanyGroups, useCompanyTree } from "./company/queries";
 import { managerChoices, OWNER_ROOT, type CompanyGroup } from "./company/tree";
 import { InviteCard } from "./invite-card";
-import {
-  emptyPermissions,
-  JOB_TITLE_MAX,
-  NAME_MAX,
-  validate,
-  workerSchema,
-  type PermissionDraft,
-  type WorkerErrorKey,
-} from "./logic";
+import { JOB_TITLE_MAX, NAME_MAX, validate, workerSchema, type WorkerErrorKey } from "./logic";
+import { grantsFromRows, type PermissionGrants } from "./permissions-catalog";
 import { PermissionsEditor } from "./permissions-editor";
 import { useCreateWorker, useUpdateWorker } from "./queries";
 import type { Worker, WorkerInvite } from "./types";
@@ -39,7 +32,7 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   /** Editing this worker, or adding a new one when null. */
   worker: Worker | null;
-  permissions?: PermissionDraft;
+  permissions?: PermissionGrants;
   /** A new worker starts under this manager (null = right under the owner). */
   defaultManagerId?: string | null;
 };
@@ -103,7 +96,7 @@ function Fields({
   onSaved,
 }: {
   worker: Worker | null;
-  permissions?: PermissionDraft;
+  permissions?: PermissionGrants;
   defaultManagerId: string | null;
   onCancel: () => void;
   onCreated: (result: { name: string; invite: WorkerInvite }) => void;
@@ -116,8 +109,9 @@ function Fields({
   const [name, setName] = useState(worker?.name ?? "");
   const [email, setEmail] = useState(worker?.email ?? "");
   const [jobTitle, setJobTitle] = useState(worker?.job_title ?? "");
-  const [permissions, setPermissions] = useState<PermissionDraft>(
-    () => initialPermissions ?? emptyPermissions(),
+  // Without a choice a new worker has their own tasks and branch only.
+  const [permissions, setPermissions] = useState<PermissionGrants>(
+    () => initialPermissions ?? grantsFromRows([]),
   );
   const [managerId, setManagerId] = useState<string>(defaultManagerId ?? OWNER_ROOT);
   const [groupIds, setGroupIds] = useState<ReadonlySet<string>>(() => new Set());
@@ -143,7 +137,7 @@ function Fields({
       } else {
         const { worker: saved, invite } = await create.mutateAsync({
           worker: result.data,
-          permissions,
+          grants: permissions,
           managerId: managerId === OWNER_ROOT ? null : managerId,
           groupIds: [...groupIds],
         });
@@ -199,7 +193,9 @@ function Fields({
           onGroupsChange={setGroupIds}
         />
       )}
-      {!worker && <PermissionsEditor value={permissions} onChange={setPermissions} />}
+      {!worker && (
+        <PermissionsEditor value={permissions} onChange={(next) => setPermissions(next)} />
+      )}
       {failed && <FormAlert>{t("saveFailed")}</FormAlert>}
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button type="button" variant="ghost" onClick={onCancel}>
@@ -231,12 +227,14 @@ function PlaceInCompany({
   // Everyone can be a manager of a worker who does not exist yet.
   const managers = useMemo(
     () =>
-      managerChoices(people.data ?? [], "").map((choice) => ({
-        value: choice.id,
-        label: choice.person
-          ? `${"\u2002".repeat(Math.max(choice.depth - 1, 0))}${choice.person.name}`
-          : t("managerOwner"),
-      })),
+      managerChoices(people.data ?? [], "")
+        .filter((choice) => !choice.person || choice.person.status !== "inactive")
+        .map((choice) => ({
+          value: choice.id,
+          label: choice.person
+            ? `${"\u2002".repeat(Math.max(choice.depth - 1, 0))}${choice.person.name}`
+            : t("managerOwner"),
+        })),
     [people.data, t],
   );
 

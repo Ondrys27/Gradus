@@ -1,16 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   amountFromInput,
-  emptyPermissions,
   inviteState,
   inviteUrl,
   monthStartOf,
   paymentSchema,
-  permissionRows,
-  permissionsFromRows,
-  presetOf,
-  presetPermissions,
-  toggleAccess,
   taskProgress,
   validate,
   workerSchema,
@@ -43,72 +37,6 @@ describe("months and invites", () => {
     expect(
       inviteState({ expires_at: "2026-09-01T00:00:00Z", accepted_at: "2026-08-30T10:00:00Z" }, now),
     ).toBe("accepted");
-  });
-});
-
-describe("permissions", () => {
-  it("stores a row per section, so a closed section is stored as closed", () => {
-    const draft = { ...emptyPermissions(), pipeline: "edit" as const, contacts: "view" as const };
-    const rows = permissionRows(draft);
-    expect(rows).toHaveLength(6);
-    expect(rows.find((row) => row.section === "pipeline")).toEqual({
-      section: "pipeline",
-      can_view: true,
-      can_edit: true,
-    });
-    expect(rows.find((row) => row.section === "finance")).toEqual({
-      section: "finance",
-      can_view: false,
-      can_edit: false,
-    });
-    expect(permissionsFromRows(rows)).toEqual(draft);
-  });
-
-  it("ignores sections that cannot be given to a worker", () => {
-    expect(permissionsFromRows([{ section: "workers", can_view: true, can_edit: true }])).toEqual(
-      emptyPermissions(),
-    );
-  });
-
-  it("fills the matrix from a role, finance always off", () => {
-    expect(presetPermissions("caller")).toEqual({
-      ...emptyPermissions(),
-      contacts: "edit",
-      cold_calling: "edit",
-    });
-    expect(presetPermissions("sales")).toEqual({
-      ...emptyPermissions(),
-      contacts: "edit",
-      cold_calling: "edit",
-      pipeline: "edit",
-      calendar: "edit",
-    });
-    expect(presetPermissions("assistant")).toEqual({
-      ...emptyPermissions(),
-      milestones: "edit",
-      calendar: "edit",
-      contacts: "view",
-    });
-    for (const preset of ["caller", "sales", "assistant"] as const) {
-      expect(presetPermissions(preset).finance).toBe("none");
-    }
-  });
-
-  it("recognises a role and reads any change as custom", () => {
-    const caller = presetPermissions("caller");
-    expect(presetOf(caller)).toBe("caller");
-    expect(presetOf(toggleAccess(caller, "finance", "view", true))).toBe("custom");
-    expect(presetOf(emptyPermissions())).toBe("custom");
-  });
-
-  it("keeps edit inside view when a switch flips", () => {
-    const draft = emptyPermissions();
-    expect(toggleAccess(draft, "pipeline", "edit", true).pipeline).toBe("edit");
-    expect(toggleAccess(draft, "pipeline", "view", true).pipeline).toBe("view");
-    const editing = { ...draft, pipeline: "edit" as const };
-    expect(toggleAccess(editing, "pipeline", "view", false).pipeline).toBe("none");
-    expect(toggleAccess(editing, "pipeline", "edit", false).pipeline).toBe("view");
-    expect(toggleAccess(draft, "pipeline", "edit", false).pipeline).toBe("none");
   });
 });
 

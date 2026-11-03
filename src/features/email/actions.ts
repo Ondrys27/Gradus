@@ -4,6 +4,7 @@ import { z } from "zod";
 import { measure } from "@/lib/analytics/instrument";
 import { sendEmail } from "@/lib/email/resend";
 import { isWorkspaceReadOnly } from "@/features/plan/server";
+import { serverCan } from "@/features/account/server/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { EmailError, toFailure, type ActionResult } from "./errors";
 import { ATTACHMENTS_BUCKET, bodyToHtml, isOwnEmailUploadPath, prepareAttachment } from "./service";
@@ -39,17 +40,12 @@ async function session() {
   const { data: workspaceId, error } = await supabase.rpc("current_workspace_id");
   if (error || !workspaceId) return null;
   if (workspaceId !== userId) {
-    // A worker writes to the contact's history only with edit rights to contacts or cold calling.
-    const checks = await Promise.all(
-      (["contacts", "cold_calling"] as const).map((section) =>
-        supabase.rpc("has_section_access", {
-          _owner: workspaceId,
-          _section: section,
-          _level: "edit",
-        }),
-      ),
-    );
-    if (!checks.some((check) => check.data === true)) return null;
+    // A worker writes to the contact's history only when they may update contacts or call them.
+    const checks = await Promise.all([
+      serverCan(supabase, workspaceId, "contacts", "update"),
+      serverCan(supabase, workspaceId, "cold_calling", "call"),
+    ]);
+    if (!checks.some(Boolean)) return null;
   }
   return { supabase, userId, workspaceId };
 }

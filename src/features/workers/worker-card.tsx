@@ -30,7 +30,7 @@ export function WorkerCard({ worker, profile, stats }: Props) {
 
   return (
     <Link
-      href={`${COMPANY_PATH}/${worker.id}`}
+      href={`${COMPANY_PATH}?worker=${worker.id}`}
       className="block rounded-card outline-none focus-visible:ring-3 focus-visible:ring-violet/40"
     >
       <GlowCard className="flex h-full flex-col gap-4">

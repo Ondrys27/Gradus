@@ -21,6 +21,7 @@ import { ContactPicker } from "./contact-picker";
 import type { DealDraft } from "./deal-draft";
 import { TITLE_MAX, type PipelineErrorKey } from "./schemas";
 import type { Stage } from "./types";
+import { useCan } from "@/features/account/workspace-queries";
 
 type Props = {
   /** Distinguishes the ids when two forms can be on screen. */
@@ -59,6 +60,8 @@ export function DealFormFields({
     [stages],
   );
 
+  // Without the right to see amounts the deal is made without one.
+  const seeAmounts = useCan("pipeline", "see_amounts");
   const err = (key: string) => {
     const code = errors[key];
     return code ? t(`errors.${code}`) : undefined;
@@ -83,35 +86,37 @@ export function DealFormFields({
           onChange={(contact) => onChange({ contact })}
         />
       </FormField>
-      <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
-        <FormField id={`${idPrefix}-value`} label={t("form.amount")} error={err("value")}>
-          <Input
-            {...fieldA11y(`${idPrefix}-value`, err("value"))}
-            value={draft.value}
-            inputMode="decimal"
-            placeholder="0"
-            onChange={(event) => onChange({ value: event.target.value })}
-          />
-        </FormField>
-        <FormField id={`${idPrefix}-currency`} label={t("form.currency")} className="sm:w-44">
-          <Select
-            value={draft.currency}
-            items={currencies}
-            onValueChange={(next) => next && onChange({ currency: next })}
-          >
-            <SelectTrigger id={`${idPrefix}-currency`}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {currencies.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </FormField>
-      </div>
+      {seeAmounts && (
+        <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
+          <FormField id={`${idPrefix}-value`} label={t("form.amount")} error={err("value")}>
+            <Input
+              {...fieldA11y(`${idPrefix}-value`, err("value"))}
+              value={draft.value}
+              inputMode="decimal"
+              placeholder="0"
+              onChange={(event) => onChange({ value: event.target.value })}
+            />
+          </FormField>
+          <FormField id={`${idPrefix}-currency`} label={t("form.currency")} className="sm:w-44">
+            <Select
+              value={draft.currency}
+              items={currencies}
+              onValueChange={(next) => next && onChange({ currency: next })}
+            >
+              <SelectTrigger id={`${idPrefix}-currency`}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {currencies.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormField>
+        </div>
+      )}
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField id={`${idPrefix}-close`} label={t("form.closeDate")}>
           <DatePicker
@@ -166,17 +171,21 @@ function AssigneeSelect({
   const { user } = useSession();
   const assignees = useAssignees();
   const nameOf = useAssigneeName();
+  // Without "all deals" the deal stays the maker's own, or it would leave their sight.
+  const viewAll = useCan("pipeline", "view_all");
   const current = value ?? user.id;
   const items = useMemo(() => {
-    const list = (assignees.data ?? []).map((person) => ({
-      value: person.userId,
-      label: nameOf(person.userId),
-    }));
+    const list = (assignees.data ?? [])
+      .filter((person) => viewAll || person.userId === user.id)
+      .map((person) => ({
+        value: person.userId,
+        label: nameOf(person.userId),
+      }));
     if (!list.some((item) => item.value === current)) {
       list.unshift({ value: current, label: nameOf(current) });
     }
     return list;
-  }, [assignees.data, nameOf, current]);
+  }, [assignees.data, nameOf, current, viewAll, user.id]);
 
   return (
     <Select value={current} items={items} onValueChange={(next) => next && onChange(next)}>

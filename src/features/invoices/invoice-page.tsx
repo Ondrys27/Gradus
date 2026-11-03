@@ -19,8 +19,8 @@ import { InvoiceSetupGate } from "./setup-wizard";
  */
 export function InvoicePage({ id }: { id: string | null }) {
   const t = useTranslations("invoices.page");
-  const canEdit = useCan("finance", "edit");
-  const canView = useCan("finance", "view");
+  const canEdit = useCan("invoices", "issue");
+  const canView = useCan("invoices", "view");
   const profile = useInvoiceProfile();
   const invoice = useInvoice(id);
 
@@ -49,7 +49,8 @@ export function InvoicePage({ id }: { id: string | null }) {
   }
 
   const record = invoice.data ?? null;
-  if (record && record.status !== "draft") return <InvoiceDetail invoice={record} profile={profile.data} />;
+  if (record && record.status !== "draft")
+    return <InvoiceDetail invoice={record} profile={profile.data} />;
   if (!canEdit) return <EmptyState title={t("readOnly")} description={t("readOnlyHint")} />;
   if (!profile.data) return <InvoiceSetupGate />;
   return <InvoiceEditor key={record?.id ?? "new"} record={record} profile={profile.data} />;

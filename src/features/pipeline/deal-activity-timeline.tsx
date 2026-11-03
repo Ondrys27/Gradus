@@ -62,7 +62,7 @@ export function DealActivityTimeline({ deal }: { deal: Deal }) {
   const t = useTranslations("pipeline.timeline");
   const settings = useFormatSettings();
   const canCalendar = useCan("calendar", "view");
-  const canFinance = useCan("finance", "view");
+  const canFinance = useCan("invoices", "view");
   const events = useDealEvents(deal.id);
   const contacts = useDealContacts(deal.id);
   const tasks = useTargetTasks("deal", deal.id);
@@ -134,8 +134,10 @@ function TimelineItem({
   const tActivity = useTranslations("contacts.activity");
   const tCalendar = useTranslations("calendar");
   const dash = t("none");
+  // Without the right to see amounts a change of value says only that it changed.
+  const seeAmounts = useCan("pipeline", "see_amounts");
   const money = (value: number | null, currency: string) =>
-    value === null ? dash : formatCurrency(value, currency, settings);
+    value === null || !seeAmounts ? dash : formatCurrency(value, currency, settings);
   const date = (value: string | null) => (value ? formatCalendarDate(value, settings) : dash);
 
   let icon: LucideIcon;

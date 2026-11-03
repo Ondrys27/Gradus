@@ -37,7 +37,15 @@ import {
   useMoveWorker,
   type CompanyError,
 } from "./queries";
-import { companySearchString, parseCompanySearch, type CompanyTab } from "./search";
+import { WorkerDashboard } from "../dashboard/worker-dashboard";
+import {
+  companySearchString,
+  matchesStatus,
+  parseCompanySearch,
+  STATUS_FILTERS,
+  type CompanySearch,
+  type StatusFilter,
+} from "./search";
 import {
   buildCompanyTree,
   groupFilter,
@@ -77,12 +85,15 @@ export function CompanyView() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const search = searchParams.toString();
-  const { tab: requestedTab, group: requestedGroup } = useMemo(
-    () => parseCompanySearch(new URLSearchParams(search)),
-    [search],
-  );
-  const tab: CompanyTab = isOwner ? requestedTab : "people";
-  function replaceSearch(next: { tab?: CompanyTab; group?: string | null }) {
+  const {
+    tab: requestedTab,
+    group: requestedGroup,
+    status,
+    worker: openWorker,
+    workerTab,
+  } = useMemo(() => parseCompanySearch(new URLSearchParams(search)), [search]);
+  const tab = isOwner ? requestedTab : "people";
+  function replaceSearch(next: Partial<CompanySearch>) {
     const text = companySearchString(new URLSearchParams(search), next);
     router.replace(text ? `${pathname}?${text}` : pathname, { scroll: false });
   }
@@ -144,6 +155,9 @@ export function CompanyView() {
             groups={groups.data}
             groupId={requestedGroup}
             onGroupChange={(group) => replaceSearch({ group })}
+            status={status}
+            onStatusChange={(next) => replaceSearch({ status: next })}
+            onOpen={(person) => replaceSearch({ worker: person.id, workerTab: "overview" })}
             viewer={viewer}
             canEdit={canEdit}
             onInvite={canEdit ? () => setInviting(true) : undefined}
@@ -162,6 +176,15 @@ export function CompanyView() {
       </StaggerItem>
 
       {canEdit && <WorkerFormDialog open={inviting} onOpenChange={setInviting} worker={null} />}
+      <WorkerDashboard
+        workerId={openWorker}
+        tab={workerTab}
+        onTabChange={(next) => replaceSearch({ workerTab: next })}
+        onClose={() => replaceSearch({ worker: null })}
+        onOpenWorker={(id) => replaceSearch({ worker: id, workerTab: "overview" })}
+        onOpenDeal={(dealId) => router.push(`/app/pipeline?deal=${encodeURIComponent(dealId)}`)}
+        onShowGroups={() => replaceSearch({ worker: null, tab: "groups" })}
+      />
     </Stagger>
   );
 }
@@ -172,6 +195,9 @@ function CompanyPeople({
   groups,
   groupId,
   onGroupChange,
+  status,
+  onStatusChange,
+  onOpen,
   viewer,
   canEdit,
   onInvite,
@@ -181,6 +207,9 @@ function CompanyPeople({
   groups: ReturnType<typeof useCompanyGroups>["data"];
   groupId: string | null;
   onGroupChange: (groupId: string | null) => void;
+  status: StatusFilter;
+  onStatusChange: (status: StatusFilter) => void;
+  onOpen: (person: CompanyPerson) => void;
   viewer: CompanyViewer;
   canEdit: boolean;
   onInvite?: () => void;
@@ -203,12 +232,16 @@ function CompanyPeople({
 
   const shown = useMemo(() => {
     if (!people) return null;
-    const tree = buildCompanyTree(people, rootId);
-    const filter = groupFilter(people, activeGroup);
-    if (!filter) return { root: tree, context: null, matches: people.length };
+    // Ended people only through the status filter; the viewer's own row always stays.
+    const listed = people.filter(
+      (person) => person.id === rootId || matchesStatus(person.status, status),
+    );
+    const tree = buildCompanyTree(listed, rootId);
+    const filter = groupFilter(listed, activeGroup);
+    if (!filter) return { root: tree, context: null, matches: listed.length };
     const keep = new Set([...filter.members, ...filter.context]);
     return { root: pruneTree(tree, keep), context: filter.context, matches: filter.members.size };
-  }, [people, rootId, activeGroup]);
+  }, [people, rootId, activeGroup, status]);
 
   function moveWorker(workerId: string, managerId: string | null, via: "list" | "map" | "menu") {
     if (!people || !canEdit) return;
@@ -266,6 +299,7 @@ function CompanyPeople({
     viewer,
     canEdit,
     onMove: moveWorker,
+    onOpen,
   };
 
   return (
@@ -302,11 +336,17 @@ function CompanyPeople({
         ) : (
           <span />
         )}
-        <LayoutSwitch value={layout} onChange={setLayout} />
+        <div className="flex flex-wrap items-center gap-2">
+          <StatusSelect value={status} onChange={onStatusChange} />
+          <LayoutSwitch value={layout} onChange={setLayout} />
+        </div>
       </div>
 
       {viewer.kind === "worker" && <p className="text-sm text-ink-muted">{tc("workerNote")}</p>}
       {error && <FormAlert>{tc(`errors.${error}`)}</FormAlert>}
+      {status !== "current" && shown.matches === 0 && !activeGroup && (
+        <p className="text-sm text-ink-muted">{tc("filteredEmpty")}</p>
+      )}
       {activeGroup && shown.matches === 0 && (
         <p className="text-sm text-ink-muted">{tc("filteredEmpty")}</p>
       )}
@@ -331,6 +371,46 @@ function CompanyPeople({
         />
       )}
     </div>
+  );
+}
+
+function StatusSelect({
+  value,
+  onChange,
+}: {
+  value: StatusFilter;
+  onChange: (value: StatusFilter) => void;
+}) {
+  const t = useTranslations("workers.dashboard.statusFilter");
+  const options = STATUS_FILTERS.map((option) => ({ value: option, label: t(option) }));
+  return (
+    <>
+      <span id="company-status-filter" className="sr-only">
+        {t("label")}
+      </span>
+      <Select
+        value={value}
+        items={options}
+        onValueChange={(next) => {
+          if (typeof next === "string") onChange(next as StatusFilter);
+        }}
+      >
+        <SelectTrigger
+          aria-labelledby="company-status-filter"
+          data-testid="company-status-filter"
+          className="min-w-36"
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </>
   );
 }
 

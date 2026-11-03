@@ -22,7 +22,7 @@ import { useWorkspace } from "@/features/account/workspace-queries";
 import { contactName } from "@/features/contacts/types";
 import { formatDateTime, formatNumber, formatRelativeTime } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
-import { canEditTask, canTickTask } from "./access";
+import { canDeleteTask, canEditTask, canTickTask } from "./access";
 import { isOverdue } from "./logic";
 import { useDeleteTask, useReopenTask } from "./queries";
 import { crmTiming } from "./timing";
@@ -93,6 +93,7 @@ function Body({
   const due = new Date(task.due_at);
   const canEdit = canEditTask(workspace, task);
   const canTick = canTickTask(workspace, task);
+  const canDelete = canDeleteTask(workspace, task);
 
   async function confirmDelete() {
     try {
@@ -211,9 +212,9 @@ function Body({
       )}
 
       {reopen.isError && <FormAlert>{t("reopenFailed")}</FormAlert>}
-      {(canTick || canEdit) && (
+      {(canTick || canEdit || canDelete) && (
         <div className="flex flex-col-reverse gap-2 border-t border-line pt-4 sm:flex-row sm:flex-wrap sm:justify-end">
-          {canEdit && (
+          {canDelete && (
             <Button
               type="button"
               variant="destructive"

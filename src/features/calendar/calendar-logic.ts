@@ -355,3 +355,17 @@ export function resizedRange(
   const end = Math.max(earliest, instantAt(day, Math.min(DAY_MIN, endMin), timeZone).getTime());
   return { starts_at: start.toISOString(), ends_at: new Date(end).toISOString() };
 }
+
+/**
+ * Whether the signed-in account may change or delete this event (mirrors the
+ * calendar policies): the owner any; a worker with "update" their own events,
+ * others' only with "all events" too. A deal's delivery date never.
+ */
+export function canEditEvent(
+  event: Pick<CalendarEvent, "source" | "actor_id">,
+  access: { owner: boolean; update: boolean; viewAll: boolean; userId: string },
+): boolean {
+  if (event.source === "deal_deadline") return false;
+  if (access.owner) return access.update;
+  return access.update && (access.viewAll || event.actor_id === access.userId);
+}

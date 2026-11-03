@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { useSession } from "@/features/account/queries";
+import { canDo } from "@/features/account/workspace";
 import { useWorkspace } from "@/features/account/workspace-queries";
 import { useLocale } from "next-intl";
 import { useGameState } from "@/features/game/queries";
@@ -26,7 +27,10 @@ export type NavItemState = NavItem & {
 export function useNavAccess(): WorkerNavAccess {
   const workspace = useWorkspace();
   return useMemo(
-    () => (workspace.role === "worker" ? { permissions: workspace.permissions } : null),
+    () =>
+      workspace.role === "worker"
+        ? { permissions: workspace.permissions, company: canDo(workspace, "company", "view") }
+        : null,
     [workspace],
   );
 }

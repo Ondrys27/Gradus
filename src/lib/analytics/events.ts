@@ -568,6 +568,40 @@ export const EVENTS = {
     removed: count(500),
   }),
   worker_group_deleted: event("workers", "client", true, { members: count(500) }),
+  /** The dashboard of a person opened (who looks: the owner, the person, another worker). */
+  worker_dashboard_opened: event("workers", "client", false, {
+    tab: oneOf(["overview", "rights", "work", "documents", "team", "rewards"]),
+    viewer: oneOf(["owner", "self", "other"]),
+  }),
+  /** Details of a person changed in place; which kind of field, never its value. */
+  worker_profile_updated: event("workers", "client", true, {
+    field: oneOf([
+      "first_name",
+      "last_name",
+      "email",
+      "phone",
+      "job_title",
+      "description",
+      "photo",
+      "groups",
+    ]),
+    by: oneOf(["owner", "self", "other"]),
+  }),
+  worker_permission_template_applied: event("workers", "client", true, {
+    template: oneOf(["sales", "assistant", "accountant", "all"]),
+  }),
+  worker_document_uploaded: event("workers", "client", true, {
+    kind: oneOf(["pdf", "image", "office", "text"]),
+    size_kb: count(20_480),
+  }),
+  worker_document_renamed: event("workers", "client", true, {}),
+  worker_document_deleted: event("workers", "client", true, {}),
+  /** A worker removed from the company, with how much was handed over and to whom. */
+  worker_removed: event("workers", "client", true, {
+    deals: count(10_000),
+    tasks: count(10_000),
+    to: oneOf(["owner", "worker", "nobody"]),
+  }),
 
   // --- search --------------------------------------------------------------
   search_opened: event("search", "client", false, { via: oneOf(["shortcut", "click"]) }),

@@ -3375,6 +3375,53 @@ export type Database = {
           },
         ]
       }
+      worker_documents: {
+        Row: {
+          created_at: string
+          id: string
+          mime: string
+          name: string
+          owner_id: string
+          path: string
+          size: number
+          updated_at: string
+          uploaded_by: string | null
+          worker_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mime: string
+          name: string
+          owner_id: string
+          path: string
+          size: number
+          updated_at?: string
+          uploaded_by?: string | null
+          worker_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mime?: string
+          name?: string
+          owner_id?: string
+          path?: string
+          size?: number
+          updated_at?: string
+          uploaded_by?: string | null
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worker_documents_worker_id_owner_id_fkey"
+            columns: ["worker_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
       worker_earnings: {
         Row: {
           amount: number
@@ -3644,6 +3691,47 @@ export type Database = {
           },
         ]
       }
+      worker_permission_grants: {
+        Row: {
+          action: string
+          allowed: boolean
+          created_at: string
+          id: string
+          owner_id: string
+          section: string
+          updated_at: string
+          worker_id: string
+        }
+        Insert: {
+          action: string
+          allowed?: boolean
+          created_at?: string
+          id?: string
+          owner_id?: string
+          section: string
+          updated_at?: string
+          worker_id: string
+        }
+        Update: {
+          action?: string
+          allowed?: boolean
+          created_at?: string
+          id?: string
+          owner_id?: string
+          section?: string
+          updated_at?: string
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worker_permission_grants_worker_id_owner_id_fkey"
+            columns: ["worker_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
       worker_permissions: {
         Row: {
           can_edit: boolean
@@ -3737,10 +3825,14 @@ export type Database = {
       }
       workers: {
         Row: {
+          avatar_url: string | null
           created_at: string
+          description: string | null
           email: string | null
+          first_name: string | null
           id: string
           job_title: string | null
+          last_name: string | null
           manager_id: string | null
           name: string
           owner_id: string
@@ -3750,10 +3842,14 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
+          description?: string | null
           email?: string | null
+          first_name?: string | null
           id?: string
           job_title?: string | null
+          last_name?: string | null
           manager_id?: string | null
           name: string
           owner_id: string
@@ -3763,10 +3859,14 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
+          description?: string | null
           email?: string | null
+          first_name?: string | null
           id?: string
           job_title?: string | null
+          last_name?: string | null
           manager_id?: string | null
           name?: string
           owner_id?: string
@@ -4196,6 +4296,10 @@ export type Database = {
         }
       }
       choose_path: { Args: { _path_key: string }; Returns: Json }
+      company_can_edit_worker: {
+        Args: { _worker_id: string }
+        Returns: boolean
+      }
       company_groups: {
         Args: never
         Returns: {
@@ -4206,6 +4310,18 @@ export type Database = {
           name: string
           position: number
         }[]
+      }
+      company_remove_worker: {
+        Args: { _assignee?: string; _worker_id: string }
+        Returns: {
+          crm_tasks: number
+          deals: number
+          worker_tasks: number
+        }[]
+      }
+      company_set_group_member: {
+        Args: { _group_id: string; _member: boolean; _worker_id: string }
+        Returns: undefined
       }
       company_tree: {
         Args: never
@@ -4223,7 +4339,39 @@ export type Database = {
           user_id: string
         }[]
       }
+      company_update_worker: {
+        Args: { _patch: Json; _worker_id: string }
+        Returns: undefined
+      }
       company_visible_worker_ids: { Args: never; Returns: string[] }
+      company_worker: {
+        Args: { _worker_id: string }
+        Returns: {
+          avatar_url: string
+          can_edit: boolean
+          created_at: string
+          description: string
+          email: string
+          first_name: string
+          id: string
+          is_self: boolean
+          job_title: string
+          last_name: string
+          manager_id: string
+          name: string
+          phone: string
+          status: Database["public"]["Enums"]["worker_status"]
+          user_id: string
+        }[]
+      }
+      company_worker_impact: {
+        Args: { _worker_id: string }
+        Returns: {
+          open_crm_tasks: number
+          open_deals: number
+          open_worker_tasks: number
+        }[]
+      }
       contact_tables_add_interested: {
         Args: { _cs: boolean; _ws: string }
         Returns: string
@@ -4288,6 +4436,10 @@ export type Database = {
         }[]
       }
       crm_task_editable: {
+        Args: { _contact: string; _deal: string; _owner: string }
+        Returns: boolean
+      }
+      crm_task_target_visible: {
         Args: { _contact: string; _deal: string; _owner: string }
         Returns: boolean
       }
@@ -4462,6 +4614,10 @@ export type Database = {
           _worker_id: string
         }
         Returns: number
+      }
+      has_permission: {
+        Args: { _action: string; _owner: string; _section: string }
+        Returns: boolean
       }
       has_role: {
         Args: {
@@ -5211,6 +5367,22 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      permission_action_valid: {
+        Args: { _action: string; _section: string }
+        Returns: boolean
+      }
+      permission_catalog: {
+        Args: never
+        Returns: {
+          action: string
+          kind: string
+          section: string
+        }[]
+      }
+      permission_default: {
+        Args: { _action: string; _section: string }
+        Returns: boolean
+      }
       phone_calling_code: { Args: { _country: string }; Returns: string }
       phone_to_e164: {
         Args: { _country: string; _phone: string }
@@ -5498,6 +5670,7 @@ export type Database = {
           worker_id: string
         }[]
       }
+      worker_avatar_writable: { Args: { _name: string }; Returns: boolean }
       worker_balance: {
         Args: { _worker_id: string }
         Returns: {
@@ -5506,6 +5679,15 @@ export type Database = {
           paid_out: number
           pending: number
         }[]
+      }
+      worker_document_object_access: {
+        Args: { _name: string; _write: boolean }
+        Returns: boolean
+      }
+      worker_documents_own: { Args: { _worker_id: string }; Returns: boolean }
+      worker_grant: {
+        Args: { _action: string; _section: string; _worker_id: string }
+        Returns: boolean
       }
       worker_month_stats: {
         Args: { _month_start: string; _timezone: string }
@@ -5519,6 +5701,10 @@ export type Database = {
           worker_id: string
         }[]
       }
+      worker_permissions_derive: {
+        Args: { _worker_id: string }
+        Returns: undefined
+      }
       worker_sessions: {
         Args: { _before: string; _limit: number; _worker_id: string }
         Returns: {
@@ -5528,6 +5714,10 @@ export type Database = {
           running: boolean
           started_at: string
         }[]
+      }
+      worker_tasks_grants_from_sections: {
+        Args: { _worker_id: string }
+        Returns: undefined
       }
       workspace_over_limit: { Args: { _owner: string }; Returns: boolean }
       workspace_read_only: { Args: { _owner: string }; Returns: boolean }

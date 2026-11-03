@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { toneFill } from "@/components/ui/tone";
 import { track } from "@/lib/analytics/client";
+import { useCan } from "@/features/account/workspace-queries";
 import { formatCurrency } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
@@ -55,6 +56,7 @@ export function StageColumn({
 }: Props) {
   const t = useTranslations("pipeline");
   const settings = useFormatSettings();
+  const seeAmounts = useCan("pipeline", "see_amounts");
   const reduceMotion = useReducedMotionSafe();
   const {
     setNodeRef,
@@ -141,7 +143,8 @@ export function StageColumn({
           ) : null}
         </div>
         <p className="min-h-4 truncate text-xs text-ink-muted tabular-nums">
-          {totals.map((sum) => formatCurrency(sum.total, sum.currency, settings)).join(" · ")}
+          {seeAmounts &&
+            totals.map((sum) => formatCurrency(sum.total, sum.currency, settings)).join(" · ")}
         </p>
         {editing && isLastStage && <p className="text-xs text-ink-muted">{t("stage.lastStage")}</p>}
         {editing && !stage.is_won && !stage.is_lost && <DepositControl stage={stage} />}
@@ -215,6 +218,7 @@ export function AddStageCard({ onClick }: { onClick: () => void }) {
 export function StageDragPreview({ stage, deals }: { stage: Stage; deals: Deal[] }) {
   const t = useTranslations("pipeline");
   const settings = useFormatSettings();
+  const seeAmounts = useCan("pipeline", "see_amounts");
   const totals = sumByCurrency(deals);
   const preview = deals.slice(0, 3);
 
@@ -239,7 +243,8 @@ export function StageDragPreview({ stage, deals }: { stage: Stage; deals: Deal[]
           </span>
         </div>
         <p className="min-h-4 truncate text-xs text-ink-muted tabular-nums">
-          {totals.map((sum) => formatCurrency(sum.total, sum.currency, settings)).join(" · ")}
+          {seeAmounts &&
+            totals.map((sum) => formatCurrency(sum.total, sum.currency, settings)).join(" · ")}
         </p>
       </header>
       {preview.length > 0 && (
