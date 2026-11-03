@@ -100,6 +100,12 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 18.4 | designer | 2026-11-03 Nastavení přestavěné na šest skupin s levým menu, hledáním, ukládáním na místě a odkazy přímo na položku; test Jarvise přesunutý do administrace AI.
 - [x] K18 | reviewer | — 2026-11-03: Kontrola fáze 18: test Jarvise jen pro majitele, property test přesunů v seznamu a mapě, opravené hluboké odkazy a ukládání v Nastavení.
 - [x] STOP | Konec fáze 18. Projdi: v seznamu úkolů přesuň úkol pod jiný o dvě úrovně hloub a ověř mapu. Nastav Jarvise na „jednou denně", odhlas se a přihlas — musí vyskočit souhrn; podruhé už ne. Projdi nové Nastavení na počítači i telefonu, zkus hledání, v Předplatném naplánuj změnu tarifu, zruš a obnov. V administraci AI vyzkoušej test připojení. Co nesedí, napiš Claude Code rovnou, pak /pokracuj. · přeskočeno nočním během 2026-11-03, zkontroluj ručně (.noc/zkontroluj.md)
+- [ ] 19.1 | architect |
+- [ ] 19.2 | architect |
+- [ ] 19.3 | architect |
+- [ ] 19.4 | architect | env: RESEND_API_KEY
+- [ ] K19 | reviewer |
+- [ ] STOP | Konec fáze 19. Sbal menu ⌘B a obnov stránku. Ve Správě firmy pozvi dva pracovníky (druhý pod prvního), přepni seznam/mapa, přesuň tažením, založ skupinu. Otevři dashboard pracovníka: změň foto, dej šablonu Obchodník, nahraj dokument, podívej se na grafy s různým horizontem. Přihlas se jako pracovník a ověř, co vidí. Ve Zprávách si napiš ve dvou prohlížečích v přímé i skupinové konverzaci, zkus @zmínku, přílohu a smazání zprávy. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [ ] 7.1 | RUČNĚ | Aplikace běží na Vercel Hobby a každý push na main se nasadí sám. Až budeš mít doménu: nastav ji ve Vercelu, změň NEXT_PUBLIC_SITE_URL ve Vercelu, uprav Site URL a Redirect URLs v Supabase → URL Configuration a dej Redeploy. Projdi produkci v anonymním okně a pak tuhle položku zaškrtni ručně.
 
 ## Odloženo
