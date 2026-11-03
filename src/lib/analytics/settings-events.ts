@@ -77,6 +77,12 @@ export function settingsEvents(patch: Partial<UserSettings>): SettingEvent[] {
       case "sidebar_collapsed":
         events.push({ setting: "sidebar_collapsed", enabled: value === true });
         break;
+      case "chat_email_notifications":
+        events.push({ setting: "chat_email", enabled: value === true });
+        break;
+      case "chat_sound":
+        events.push({ setting: "chat_sound", enabled: value === true });
+        break;
     }
   }
   return events;

@@ -92,3 +92,13 @@ export const SECTION_UNLOCK_KEYS: Record<LockableSection, string> = {
 export function isLockableSection(key: string): key is LockableSection {
   return key in SECTION_UNLOCK_KEYS;
 }
+
+/**
+ * The section whose lock a menu item shares: its own, or for Messages the
+ * one of Company (the chat is between the people of the firm). Null for
+ * items that are never locked.
+ */
+export function lockSectionOf(key: string): LockableSection | null {
+  if (key === "messages") return "workers";
+  return isLockableSection(key) ? key : null;
+}

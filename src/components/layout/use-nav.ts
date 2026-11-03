@@ -5,8 +5,9 @@ import { useSession } from "@/features/account/queries";
 import { canDo } from "@/features/account/workspace";
 import { useWorkspace } from "@/features/account/workspace-queries";
 import { useLocale } from "next-intl";
+import { useChatUnread } from "@/features/chat/queries";
 import { useGameState } from "@/features/game/queries";
-import { isLockableSection, localized, SECTION_UNLOCK_KEYS } from "@/features/game/types";
+import { localized, lockSectionOf, SECTION_UNLOCK_KEYS } from "@/features/game/types";
 import { bottomNavKeysFor, navItemsFor, type NavItem, type WorkerNavAccess } from "./nav-items";
 
 /** What opens a locked section: a milestone of the path (by its title) or a level. */
@@ -21,6 +22,8 @@ export type NavItemState = NavItem & {
   /** Unlocked but not opened yet: glows in the sidebar until the section is visited. */
   fresh: boolean;
   lockHint: LockHint | null;
+  /** Unread messages (Messages only); 0 shows nothing. */
+  badge: number;
 };
 
 /** What the signed-in account may open; a worker's rights are live, so a change shows at once. */
@@ -45,20 +48,23 @@ export function useNavItems() {
   const { worker } = useSession();
   const game = useGameState();
   const locale = useLocale();
+  const unread = useChatUnread();
 
   return useMemo(() => {
     const items = navItemsFor(access);
     const bottomKeys = bottomNavKeysFor(access);
     const playing = game.data?.mode === "game";
     const withState: NavItemState[] = items.map((item) => {
+      const lockSection = lockSectionOf(item.key);
       const unlockKey =
-        !worker && playing && isLockableSection(item.key) ? SECTION_UNLOCK_KEYS[item.key] : null;
+        !worker && playing && lockSection ? SECTION_UNLOCK_KEYS[lockSection] : null;
       const section = unlockKey
         ? game.data?.sections.find((row) => row.key === unlockKey)
         : undefined;
       // Unknown while loading reads as unlocked, matching the app's rule that
       // page chrome never waits on a network read.
-      if (!section) return { ...item, locked: false, fresh: false, lockHint: null };
+      const badge = item.key === "messages" ? unread : 0;
+      if (!section) return { ...item, locked: false, fresh: false, lockHint: null, badge };
       const title = section.milestone?.title ?? localized(section.templateTitle, locale);
       const lockHint: LockHint = title
         ? { kind: "milestone", title, milestoneId: section.milestone?.id ?? null }
@@ -70,6 +76,7 @@ export function useNavItems() {
         locked: !section.unlocked,
         fresh: section.unlocked && !!section.unlockedAt && !section.seenAt,
         lockHint: section.unlocked ? null : lockHint,
+        badge: section.unlocked ? badge : 0,
       };
     });
     return {
@@ -77,5 +84,5 @@ export function useNavItems() {
       primary: withState.filter((item) => bottomKeys.includes(item.key)),
       more: withState.filter((item) => !bottomKeys.includes(item.key)),
     };
-  }, [access, worker, game.data, locale]);
+  }, [access, worker, game.data, locale, unread]);
 }

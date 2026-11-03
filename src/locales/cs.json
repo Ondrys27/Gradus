@@ -235,7 +235,9 @@
       "expand": "Rozbalit menu",
       "shortcut": "Ctrl+B",
       "shortcutMac": "⌘B"
-    }
+    },
+    "messages": "Zprávy",
+    "unread": "{count, plural, one {# nepřečtená zpráva} few {# nepřečtené zprávy} other {# nepřečtených zpráv}}"
   },
   "topBar": {
     "home": "Přejít na přehled",
@@ -344,7 +346,8 @@
       "finance": "peníze příjmy výdaje faktury transakce",
       "workers": "tým zaměstnanci brigádníci odměny",
       "tasks": "úkoly udělat termín po termínu obchody kontakty",
-      "myRewards": "výdělky platby odměny"
+      "myRewards": "výdělky platby odměny",
+      "messages": "zprávy chat konverzace skupiny přímé zprávy tým psát"
     },
     "settingsItems": {
       "contactTables": {
@@ -1035,7 +1038,7 @@
       },
       "jarvis": {
         "title": "Jarvis",
-        "description": "Kdy se ozve sám, jak často a kdy mlčí."
+        "description": "Kdy se ozve sám, jak často, kdy mlčí a upozornění na zprávy."
       },
       "appearance": {
         "title": "Vzhled a formáty",
@@ -1178,6 +1181,14 @@
       "deleteAccount": {
         "label": "Smazat účet",
         "keywords": "soukromí zrušit účet odstranit"
+      },
+      "chatEmail": {
+        "label": "E-mail o nových zprávách",
+        "keywords": "zprávy chat oznámení upozornění e-mail zmínka"
+      },
+      "chatSound": {
+        "label": "Zvuk nové zprávy",
+        "keywords": "zprávy chat zvuk oznámení"
       }
     },
     "work": {
@@ -1223,6 +1234,14 @@
           "generic": "Účet se nepodařilo smazat. Zkus to prosím znovu."
         }
       }
+    },
+    "chat": {
+      "title": "Zprávy",
+      "description": "Kdy tě upozorníme na nové zprávy od lidí ve firmě.",
+      "email": "E-mail, když nejsi v aplikaci",
+      "emailHint": "Při přímé zprávě nebo zmínce, když jsi aspoň 10 minut pryč. Souhrn nejvýš jednou za hodinu, bez obsahu zpráv.",
+      "sound": "Zvuk nové zprávy",
+      "soundHint": "Krátký tón, když přijde zpráva mimo otevřenou konverzaci. Platí, jen když máš zapnuté zvuky ve Vzhledu."
     }
   },
   "milestones": {
@@ -3223,6 +3242,17 @@
         "button": "Potvrdit změnu",
         "ignore": "Pokud jsi změnu nežádal, e-mail ignoruj a napiš nám. Adresa účtu zůstane stejná."
       }
+    },
+    "chat": {
+      "subject": "Nové zprávy v aplikaci {appName}",
+      "intro": "V aplikaci {appName} na tebe čekají zprávy:",
+      "direct": "{name}: {messages, plural, one {# zpráva} few {# zprávy} other {# zpráv}}",
+      "directWithMentions": "{name}: {messages, plural, one {# zpráva} few {# zprávy} other {# zpráv}}, z toho {mentions, plural, one {# zmínka} few {# zmínky} other {# zmínek}}",
+      "group": "Skupina {name}: {mentions, plural, one {# zmínka o tobě} few {# zmínky o tobě} other {# zmínek o tobě}}",
+      "outro": "Co v nich stojí, najdeš jen v aplikaci.",
+      "open": "Otevřít Zprávy",
+      "turnOff": "Vypnout tato upozornění",
+      "someone": "Někdo"
     }
   },
   "workers": {
@@ -5759,7 +5789,8 @@
         "settings": "Nastavení",
         "jarvis": "Jarvis",
         "game": "Hra",
-        "plan": "Tarif"
+        "plan": "Tarif",
+        "messages": "Zprávy"
       },
       "aiCap": {
         "title": "Limit AI",
@@ -6846,6 +6877,123 @@
       "tooLong": "Text je moc dlouhý.",
       "emailInvalid": "Tohle nevypadá jako e-mail.",
       "countryInvalid": "Vyber zemi."
+    }
+  },
+  "messages": {
+    "title": "Zprávy",
+    "owner": "Majitel",
+    "formerMember": "Bývalý člen",
+    "group": "Skupina",
+    "deleted": "Zpráva smazána",
+    "edited": "upraveno",
+    "sending": "Odesílá se",
+    "failed": "Neodesláno",
+    "read": "Přečteno",
+    "delivered": "Doručeno",
+    "readBy": "Přečetlo {count} z {total}",
+    "readCount": "přečteno {count}",
+    "replyMissing": "Původní zpráva tu není",
+    "attachmentCount": "{count, plural, one {# příloha} few {# přílohy} other {# příloh}}",
+    "sizeKb": "{size} kB",
+    "sizeMb": "{size} MB",
+    "fileTrashed": "V koši po roce bez otevření",
+    "today": "Dnes",
+    "yesterday": "Včera",
+    "messagesLabel": "Zprávy konverzace",
+    "loadingOlder": "Načítám starší zprávy…",
+    "unreadDivider": "Nepřečtené",
+    "muted": "Ztlumeno",
+    "pinned": "Připnuto",
+    "mentionedYou": "Někdo tě zmínil",
+    "unreadCount": "{count, plural, one {# nepřečtená} few {# nepřečtené} other {# nepřečtených}}",
+    "back": "Zpět na konverzace",
+    "memberCount": "{count, plural, one {{formatted} člen} few {{formatted} členové} other {{formatted} členů}}",
+    "invitedPeer": "Ještě nepřijal pozvánku, zprávy počkají",
+    "removedPeer": "Už ve firmě není",
+    "readOnlyNotice": "Účet je jen pro čtení: zprávy jde číst, ne psát.",
+    "archivedNotice": "Skupina byla smazána. Konverzace zůstává jen pro čtení.",
+    "peerGone": "Tenhle člověk už ve firmě není, psát mu nejde.",
+    "loadFailed": "Zprávy se nepodařilo načíst. Zkus to za chvíli znovu.",
+    "loading": "Načítám…",
+    "emptyConversation": "Zatím tu nic není. Napiš první zprávu.",
+    "deleteTitle": "Smazat zprávu?",
+    "deleteDescription": "Zpráva zmizí všem v konverzaci, zůstane jen „Zpráva smazána“.",
+    "deleteOthers": "Mažeš zprávu někoho jiného. Zmizí všem v konverzaci, zůstane jen „Zpráva smazána“.",
+    "cancel": "Zrušit",
+    "close": "Zavřít",
+    "search": "Hledat v konverzacích",
+    "searchPlaceholder": "Hledat lidi a skupiny…",
+    "clearSearch": "Vymazat hledání",
+    "conversations": "Konverzace",
+    "people": "Lidé",
+    "noMessages": "Zatím bez zpráv",
+    "youWrote": "Ty: {text}",
+    "startConversation": "Napsat zprávu",
+    "noResults": "Nic tomu neodpovídá.",
+    "emptyOwner": "Konverzace vzniknou se skupinami ve Správě firmy a s první zprávou někomu z lidí.",
+    "emptyWorker": "Zatím tu nejsou žádné konverzace.",
+    "nobodyTitle": "Zatím tu nikdo není",
+    "nobodyOwner": "Pozvi lidi do firmy. Každá skupina ve Správě firmy má svůj chat a každému můžeš napsat i napřímo.",
+    "nobodyWorker": "Ve firmě zatím není nikdo další.",
+    "openCompany": "Otevřít Správu firmy",
+    "pickConversation": "Vyber konverzaci vlevo, nebo napiš někomu z lidí.",
+    "actions": {
+      "label": "Možnosti zprávy",
+      "reply": "Odpovědět",
+      "edit": "Upravit",
+      "delete": "Smazat",
+      "retry": "Zkusit znovu",
+      "discard": "Zahodit"
+    },
+    "composer": {
+      "label": "Zpráva",
+      "placeholder": "Napiš zprávu…",
+      "send": "Odeslat",
+      "save": "Uložit úpravu",
+      "attach": "Přiložit soubor",
+      "files": "Přílohy",
+      "removeFile": "Odebrat {name}",
+      "mentionList": "Zmínit člena",
+      "editing": "Úprava zprávy",
+      "replyingTo": "Odpověď pro {name}",
+      "cancelEdit": "Zrušit úpravu",
+      "cancelReply": "Zrušit odpověď",
+      "tooMany": "Najednou jde poslat nejvýš {count} souborů.",
+      "badType": "Soubor „{name}“ poslat nejde, tenhle typ zprávy neberou.",
+      "tooLarge": "Soubor „{name}“ je větší než {size} MB.",
+      "length": "{count} / {max}"
+    },
+    "menu": {
+      "label": "Možnosti konverzace",
+      "pin": "Připnout",
+      "unpin": "Odepnout",
+      "mute": "Ztlumit",
+      "unmute": "Zrušit ztlumení",
+      "muteAll": "Ztišit pro všechny",
+      "unmuteAll": "Zrušit ztišení pro všechny",
+      "export": "Stáhnout jako CSV"
+    },
+    "record": {
+      "open": {
+        "deal": "Otevřít obchod",
+        "contact": "Otevřít kontakt",
+        "task": "Otevřít úkol"
+      },
+      "kind": {
+        "deal": "Obchod",
+        "contact": "Kontakt",
+        "task": "Úkol"
+      }
+    },
+    "export": {
+      "time": "Čas",
+      "sender": "Odesílatel",
+      "text": "Zpráva",
+      "files": "Přílohy",
+      "edited": "Upraveno",
+      "deleted": "Smazáno",
+      "yes": "ano",
+      "filePrefix": "zpravy"
     }
   }
 }

@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { isActivePath } from "./nav-items";
 import { useNavItems, type NavItemState } from "./use-nav";
 import { LockedSectionPopover } from "./lock-hint";
+import { NavBadge } from "./nav-badge";
 import { useReducedMotionSafe } from "@/lib/use-media-query";
 const accountItems = [
   { key: "profile", href: "/app/nastaveni/ucet", icon: UserRoundIcon },
@@ -63,6 +64,7 @@ export function BottomNav() {
               label={t(item.key)}
               active={isActivePath(pathname, item.href)}
               fresh={item.fresh}
+              badge={item.badge}
             />
           ),
         )}
@@ -70,6 +72,7 @@ export function BottomNav() {
           icon={EllipsisIcon}
           label={t("more")}
           active={moreActive}
+          badge={moreItems.reduce((sum, item) => sum + item.badge, 0)}
           onClick={() => setMoreOpen(true)}
         />
       </nav>
@@ -122,6 +125,7 @@ export function BottomNav() {
                 >
                   <span className="relative inline-block">
                     <item.icon aria-hidden className={cn("size-5", active && "text-violet")} />
+                    <NavBadge count={item.badge} />
                     {item.fresh && (
                       <span
                         aria-hidden
@@ -186,9 +190,15 @@ export function BottomNav() {
   );
 }
 
-type ItemProps = { icon: LucideIcon; label: string; active: boolean; fresh?: boolean };
+type ItemProps = {
+  icon: LucideIcon;
+  label: string;
+  active: boolean;
+  fresh?: boolean;
+  badge?: number;
+};
 
-function ItemBody({ icon: Icon, label, active, fresh }: ItemProps) {
+function ItemBody({ icon: Icon, label, active, fresh, badge = 0 }: ItemProps) {
   const reduceMotion = useReducedMotionSafe();
   return (
     <>
@@ -209,6 +219,7 @@ function ItemBody({ icon: Icon, label, active, fresh }: ItemProps) {
       )}
       <span className="relative inline-block">
         <Icon aria-hidden className={cn("size-5", active ? "text-violet" : undefined)} />
+        <NavBadge count={badge} />
         {fresh && (
           <span
             aria-hidden

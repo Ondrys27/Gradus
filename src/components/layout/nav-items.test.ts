@@ -26,14 +26,15 @@ describe("isActivePath", () => {
 });
 
 describe("navigation", () => {
-  it("has ten sections, four of them in the phone bar", () => {
-    expect(navItems).toHaveLength(10);
+  it("has eleven sections, five of them in the phone bar", () => {
+    expect(navItems).toHaveLength(11);
     expect(navItems.map((item) => item.key).slice(0, 3)).toEqual([
       "dashboard",
       "milestones",
       "notes",
     ]);
-    expect(bottomNavKeys).toHaveLength(4);
+    expect(bottomNavKeys).toHaveLength(5);
+    expect(bottomNavKeys).toContain("messages");
     // Tasks follow the pipeline.
     const keys = navItems.map((item) => item.key);
     expect(keys[keys.indexOf("pipeline") + 1]).toBe("tasks");
@@ -50,15 +51,17 @@ describe("worker navigation", () => {
     },
   };
 
-  it("gives a worker their own three sections plus the ones they may see", () => {
+  it("gives a worker their own four sections plus the ones they may see", () => {
     expect(navItemsFor(worker).map((item) => item.key)).toEqual([
       "dashboard",
       "tasks",
+      "messages",
       "myRewards",
       "pipeline",
       "workers",
     ]);
-    expect(bottomNavKeysFor(worker)).toEqual(["dashboard", "tasks", "myRewards"]);
+    expect(bottomNavKeysFor(worker)).toEqual(["dashboard", "tasks", "messages", "myRewards"]);
+    expect(isPathAllowed("/app/zpravy", worker)).toBe(true);
   });
 
   it("opens the calendar only with the right to see it", () => {

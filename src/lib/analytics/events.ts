@@ -114,6 +114,8 @@ const SETTINGS = [
   "daily_call_goal",
   "cold_calling_deal_stage",
   "sidebar_collapsed",
+  "chat_email",
+  "chat_sound",
 ] as const;
 const CRON_JOBS = [
   "call_time_stats",
@@ -124,6 +126,7 @@ const CRON_JOBS = [
   "metrics_daily",
   "notes_trash",
   "error_alerts",
+  "chat_attachments",
 ] as const;
 const FILE_ERRORS = [
   "fileType",
@@ -601,6 +604,35 @@ export const EVENTS = {
     deals: count(10_000),
     tasks: count(10_000),
     to: oneOf(["owner", "worker", "nobody"]),
+  }),
+
+  // --- messages ------------------------------------------------------------
+  /** A message of Messages, recorded by the server: where, and how many files and mentions. */
+  chat_message_sent: event("messages", "server", true, {
+    kind: oneOf(["group", "direct"]),
+    files: count(5),
+    mentions: count(100),
+    reply: bool(),
+  }),
+  chat_message_edited: event("messages", "client", true, { kind: oneOf(["group", "direct"]) }),
+  /** A message deleted by its sender, or by the owner of the space. */
+  chat_message_deleted: event("messages", "client", true, {
+    kind: oneOf(["group", "direct"]),
+    by: oneOf(["sender", "owner"]),
+  }),
+  /** A conversation silenced or let speak again, for oneself or (the owner) for everyone. */
+  chat_conversation_muted: event("messages", "client", false, {
+    muted: bool(),
+    scope: oneOf(["me", "all"]),
+  }),
+  chat_conversation_exported: event("messages", "server", false, {
+    kind: oneOf(["group", "direct"]),
+    messages: count(20_000),
+  }),
+  /** The e-mail about direct messages and mentions to a member who was away. */
+  chat_email_sent: event("messages", "server", false, {
+    conversations: count(20),
+    mentions: count(10_000),
   }),
 
   // --- search --------------------------------------------------------------

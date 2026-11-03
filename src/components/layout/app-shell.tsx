@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { JarvisDock } from "@/components/jarvis/jarvis-dock";
 import { JarvisTour } from "@/components/jarvis/jarvis-tour";
 import { useUserSettings } from "@/features/account/queries";
+import { ChatSync } from "@/features/chat/chat-sync";
 import { useErrorScreenShown } from "@/features/errors/error-screen-state";
 import { GameSessionStart } from "@/features/game/game-session-start";
 import { ReportProvider } from "@/features/feedback/report-provider";
@@ -56,6 +57,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           {!errorShown && <OnboardingGate />}
           {!errorShown && <JarvisTour />}
           <AnalyticsProvider />
+          <ChatSync />
           <PageLockGuard />
         </div>
       </ReportProvider>

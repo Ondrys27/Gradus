@@ -5,6 +5,7 @@ import {
   ContactRoundIcon,
   ListChecksIcon,
   LayoutDashboardIcon,
+  MessageCircleIcon,
   MilestoneIcon,
   NotebookPenIcon,
   PhoneCallIcon,
@@ -25,6 +26,7 @@ export type NavKey =
   | "calendar"
   | "finance"
   | "workers"
+  | "messages"
   | "myRewards";
 
 export type NavItem = { key: NavKey; href: string; icon: LucideIcon };
@@ -39,12 +41,14 @@ export const navItems: NavItem[] = [
   { key: "coldCalling", href: "/app/cold-calling", icon: PhoneCallIcon },
   { key: "calendar", href: "/app/kalendar", icon: CalendarDaysIcon },
   { key: "finance", href: "/app/finance", icon: WalletIcon },
+  // Messages: the company chat (groups and people), with the unread count.
+  { key: "messages", href: "/app/zpravy", icon: MessageCircleIcon },
   // Company (the workers section): the people of the firm, groups, invites and rewards.
   { key: "workers", href: COMPANY_PATH, icon: Building2Icon },
 ];
 
 /** Sections that get their own slot in the phone bottom bar; the rest live under "More". */
-export const bottomNavKeys: NavKey[] = ["dashboard", "milestones", "pipeline", "calendar"];
+export const bottomNavKeys: NavKey[] = ["dashboard", "milestones", "pipeline", "calendar", "messages"];
 
 /** Only a worker has this: what they earned. */
 export const workerOnlyItems: NavItem[] = [
@@ -72,16 +76,17 @@ export type WorkerNavAccess = {
 
 /**
  * Every worker has Tasks: the ones given to them (sales tasks and tasks from
- * the owner) are theirs whatever sections they may see.
+ * the owner) are theirs whatever sections they may see. Messages too: the
+ * company chat is for everybody of the firm.
  */
-const WORKER_BASE: NavKey[] = ["dashboard", "tasks", "myRewards"];
+const WORKER_BASE: NavKey[] = ["dashboard", "tasks", "messages", "myRewards"];
 /** A worker's Company shows their own branch, read only; it comes last, under "More" on a phone. */
 const WORKER_END: NavKey[] = ["workers"];
 
 /**
- * The sidebar of an account. An owner gets the ten sections; a worker gets
- * their own Dashboard, Tasks and Rewards, then every section the owner lets
- * them see, and Company with their own branch. Notes and settings of the
+ * The sidebar of an account. An owner gets the eleven sections; a worker gets
+ * their own Dashboard, Tasks, Messages and Rewards, then every section the
+ * owner lets them see, and Company with their own branch. Notes and settings of the
  * owner are never among them.
  */
 export function navItemsFor(access: WorkerNavAccess): NavItem[] {

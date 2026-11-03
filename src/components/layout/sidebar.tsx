@@ -14,6 +14,7 @@ import { isActivePath } from "./nav-items";
 import { useNavItems, type NavItemState } from "./use-nav";
 import { LockedSectionPopover } from "./lock-hint";
 import { BetaBadge } from "./beta-badge";
+import { NavBadge } from "./nav-badge";
 import { Logo } from "./logo";
 import { isSidebarShortcut, isTypingTarget } from "./sidebar-shortcut";
 import { useIsMac } from "@/lib/use-is-mac";
@@ -102,6 +103,7 @@ export function Sidebar() {
                   <span className="relative shrink-0">
                     <item.icon aria-hidden className={cn("size-5", active ? "text-violet" : undefined)} />
                     {item.fresh && <FreshDot />}
+                    <NavBadge count={item.badge} />
                   </span>
                   <span className={cn("relative hidden truncate", !collapsed && "lg:inline")}>
                     {t(item.key)}

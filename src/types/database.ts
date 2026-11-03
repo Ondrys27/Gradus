@@ -714,6 +714,174 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_attachment_files: {
+        Row: {
+          created_at: string
+          last_opened_at: string | null
+          message_id: string
+          owner_id: string
+          path: string
+          size: number
+          trashed_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          last_opened_at?: string | null
+          message_id: string
+          owner_id: string
+          path: string
+          size: number
+          trashed_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          last_opened_at?: string | null
+          message_id?: string
+          owner_id?: string
+          path?: string
+          size?: number
+          trashed_at?: string | null
+        }
+        Relationships: []
+      }
+      chat_channels: {
+        Row: {
+          archived_at: string | null
+          color: string | null
+          created_at: string
+          direct_key: string | null
+          group_id: string | null
+          id: string
+          kind: string
+          muted_all: boolean
+          name: string | null
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          color?: string | null
+          created_at?: string
+          direct_key?: string | null
+          group_id?: string | null
+          id?: string
+          kind: string
+          muted_all?: boolean
+          name?: string | null
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          color?: string | null
+          created_at?: string
+          direct_key?: string | null
+          group_id?: string | null
+          id?: string
+          kind?: string
+          muted_all?: boolean
+          name?: string | null
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      chat_email_log: {
+        Row: {
+          last_sent_at: string
+          user_id: string
+        }
+        Insert: {
+          last_sent_at?: string
+          user_id: string
+        }
+        Update: {
+          last_sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      chat_members: {
+        Row: {
+          channel_id: string
+          created_at: string
+          last_read_at: string | null
+          member: string | null
+          muted: boolean
+          owner_id: string
+          pinned_at: string | null
+          worker_id: string | null
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          last_read_at?: string | null
+          member?: string | null
+          muted?: boolean
+          owner_id: string
+          pinned_at?: string | null
+          worker_id?: string | null
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          last_read_at?: string | null
+          member?: string | null
+          muted?: boolean
+          owner_id?: string
+          pinned_at?: string | null
+          worker_id?: string | null
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          attachments: Json
+          body: string
+          channel_id: string
+          created_at: string
+          deleted_at: string | null
+          edited_at: string | null
+          id: string
+          owner_id: string
+          reply_to_id: string | null
+          sender: string | null
+          sender_is_owner: boolean
+          sender_user_id: string | null
+          sender_worker_id: string | null
+        }
+        Insert: {
+          attachments?: Json
+          body?: string
+          channel_id: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          owner_id: string
+          reply_to_id?: string | null
+          sender?: string | null
+          sender_is_owner?: boolean
+          sender_user_id?: string | null
+          sender_worker_id?: string | null
+        }
+        Update: {
+          attachments?: Json
+          body?: string
+          channel_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          owner_id?: string
+          reply_to_id?: string | null
+          sender?: string | null
+          sender_is_owner?: boolean
+          sender_user_id?: string | null
+          sender_worker_id?: string | null
+        }
+        Relationships: []
+      }
       contact_activities: {
         Row: {
           actor_id: string | null
@@ -3209,6 +3377,8 @@ export type Database = {
       user_settings: {
         Row: {
           animations_enabled: boolean
+          chat_email_notifications: boolean
+          chat_sound: boolean
           cold_calling_deal_stage_id: string | null
           country_code: string
           created_at: string
@@ -3236,6 +3406,8 @@ export type Database = {
         }
         Insert: {
           animations_enabled?: boolean
+          chat_email_notifications?: boolean
+          chat_sound?: boolean
           cold_calling_deal_stage_id?: string | null
           country_code?: string
           created_at?: string
@@ -3263,6 +3435,8 @@ export type Database = {
         }
         Update: {
           animations_enabled?: boolean
+          chat_email_notifications?: boolean
+          chat_sound?: boolean
           cold_calling_deal_stage_id?: string | null
           country_code?: string
           created_at?: string
@@ -4294,6 +4468,113 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      chat_attachment_opened: { Args: { _path: string }; Returns: undefined }
+      chat_attachment_readable: { Args: { _name: string }; Returns: boolean }
+      chat_attachment_uploadable: { Args: { _name: string }; Returns: boolean }
+      chat_attachments_due: {
+        Args: { _limit?: number }
+        Returns: {
+          action: string
+          path: string
+        }[]
+      }
+      chat_attachments_mark: {
+        Args: { _action: string; _paths: string[] }
+        Returns: number
+      }
+      chat_attachments_valid: {
+        Args: { _items: Json; _message: string; _owner: string }
+        Returns: boolean
+      }
+      chat_direct_peer_gone: { Args: { _channel: string }; Returns: boolean }
+      chat_email_claim: {
+        Args: { _idle_minutes?: number; _user: string }
+        Returns: boolean
+      }
+      chat_email_digest: {
+        Args: { _user: string }
+        Returns: {
+          channel_id: string
+          kind: string
+          mentions: number
+          messages: number
+          name: string
+          owner_id: string
+          peer: string
+        }[]
+      }
+      chat_is_member: { Args: { _channel: string }; Returns: boolean }
+      chat_mark_read: {
+        Args: { _channel: string; _until?: string }
+        Returns: string
+      }
+      chat_member_names: {
+        Args: { _members: string[]; _owner: string }
+        Returns: {
+          member: string
+          name: string
+        }[]
+      }
+      chat_member_token: { Args: { _owner: string }; Returns: string }
+      chat_open_direct: { Args: { _to: string }; Returns: string }
+      chat_orphan_uploads: {
+        Args: { _limit?: number }
+        Returns: {
+          path: string
+        }[]
+      }
+      chat_overview: {
+        Args: never
+        Returns: {
+          archived: boolean
+          color: string
+          created_at: string
+          group_id: string
+          id: string
+          kind: string
+          last_at: string
+          last_attachments: number
+          last_body: string
+          last_deleted: boolean
+          last_id: string
+          last_read_at: string
+          last_sender: string
+          member_count: number
+          mentioned: boolean
+          muted: boolean
+          muted_all: boolean
+          name: string
+          peer: string
+          pinned_at: string
+          unread: number
+        }[]
+      }
+      chat_people: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          has_account: boolean
+          is_owner: boolean
+          job_title: string
+          member: string
+          name: string
+          status: Database["public"]["Enums"]["worker_status"]
+        }[]
+      }
+      chat_set_member_flags: {
+        Args: { _channel: string; _muted?: boolean; _pinned?: boolean }
+        Returns: undefined
+      }
+      chat_set_muted_all: {
+        Args: { _channel: string; _muted: boolean }
+        Returns: undefined
+      }
+      chat_trashed_files: {
+        Args: { _paths: string[] }
+        Returns: {
+          path: string
+        }[]
       }
       choose_path: { Args: { _path_key: string }; Returns: Json }
       company_can_edit_worker: {

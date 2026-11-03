@@ -235,7 +235,9 @@
       "expand": "Expand menu",
       "shortcut": "Ctrl+B",
       "shortcutMac": "⌘B"
-    }
+    },
+    "messages": "Messages",
+    "unread": "{count, plural, one {# unread message} other {# unread messages}}"
   },
   "topBar": {
     "home": "Go to dashboard",
@@ -344,7 +346,8 @@
       "finance": "money income expenses invoices transactions",
       "workers": "team employees staff rewards",
       "tasks": "tasks to do follow-up due overdue deals contacts",
-      "myRewards": "earnings payments"
+      "myRewards": "earnings payments",
+      "messages": "messages chat conversations groups direct team write"
     },
     "settingsItems": {
       "contactTables": {
@@ -1035,7 +1038,7 @@
       },
       "jarvis": {
         "title": "Jarvis",
-        "description": "When he speaks up on his own, how often and when he stays quiet."
+        "description": "When he speaks up, how often, when he stays quiet, and message notifications."
       },
       "appearance": {
         "title": "Appearance and formats",
@@ -1178,6 +1181,14 @@
       "deleteAccount": {
         "label": "Delete account",
         "keywords": "privacy close account remove"
+      },
+      "chatEmail": {
+        "label": "E-mail about new messages",
+        "keywords": "messages chat notifications alerts email mention"
+      },
+      "chatSound": {
+        "label": "Sound of a new message",
+        "keywords": "messages chat sound notifications"
       }
     },
     "work": {
@@ -1223,6 +1234,14 @@
           "generic": "The account couldn't be deleted. Please try again."
         }
       }
+    },
+    "chat": {
+      "title": "Messages",
+      "description": "When we let you know about new messages from people of the company.",
+      "email": "E-mail when you are not in the app",
+      "emailHint": "For a direct message or a mention, when you have been away for at least 10 minutes. A summary at most once an hour, without the messages' content.",
+      "sound": "Sound of a new message",
+      "soundHint": "A short tone when a message arrives outside the open conversation. Only with sounds on in Appearance."
     }
   },
   "milestones": {
@@ -3223,6 +3242,17 @@
         "button": "Confirm the change",
         "ignore": "If you didn't ask for this change, ignore this e-mail and let us know. The account keeps its address."
       }
+    },
+    "chat": {
+      "subject": "New messages in {appName}",
+      "intro": "Messages are waiting for you in {appName}:",
+      "direct": "{name}: {messages, plural, one {# message} other {# messages}}",
+      "directWithMentions": "{name}: {messages, plural, one {# message} other {# messages}}, {mentions, plural, one {# mention} other {# mentions}} among them",
+      "group": "Group {name}: {mentions, plural, one {# mention of you} other {# mentions of you}}",
+      "outro": "What they say is only in the app.",
+      "open": "Open Messages",
+      "turnOff": "Turn these notifications off",
+      "someone": "Someone"
     }
   },
   "workers": {
@@ -5759,7 +5789,8 @@
         "settings": "Settings",
         "jarvis": "Jarvis",
         "game": "Game",
-        "plan": "Plan"
+        "plan": "Plan",
+        "messages": "Messages"
       },
       "aiCap": {
         "title": "AI limit",
@@ -6846,6 +6877,123 @@
       "tooLong": "The text is too long.",
       "emailInvalid": "That does not look like an e-mail.",
       "countryInvalid": "Pick a country."
+    }
+  },
+  "messages": {
+    "title": "Messages",
+    "owner": "Owner",
+    "formerMember": "Former member",
+    "group": "Group",
+    "deleted": "Message deleted",
+    "edited": "edited",
+    "sending": "Sending",
+    "failed": "Not sent",
+    "read": "Read",
+    "delivered": "Delivered",
+    "readBy": "Read by {count} of {total}",
+    "readCount": "read {count}",
+    "replyMissing": "The original message is not here",
+    "attachmentCount": "{count, plural, one {# attachment} other {# attachments}}",
+    "sizeKb": "{size} kB",
+    "sizeMb": "{size} MB",
+    "fileTrashed": "In the trash after a year unopened",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "messagesLabel": "Messages of the conversation",
+    "loadingOlder": "Loading older messages…",
+    "unreadDivider": "Unread",
+    "muted": "Muted",
+    "pinned": "Pinned",
+    "mentionedYou": "Someone mentioned you",
+    "unreadCount": "{count, plural, one {# unread} other {# unread}}",
+    "back": "Back to conversations",
+    "memberCount": "{count, plural, one {{formatted} member} other {{formatted} members}}",
+    "invitedPeer": "Has not accepted the invite yet, messages will wait",
+    "removedPeer": "No longer in the company",
+    "readOnlyNotice": "The account is read only: you can read messages, not write them.",
+    "archivedNotice": "The group was deleted. The conversation stays read only.",
+    "peerGone": "This person is no longer in the company, you cannot write to them.",
+    "loadFailed": "The messages could not be loaded. Try again in a moment.",
+    "loading": "Loading…",
+    "emptyConversation": "Nothing here yet. Write the first message.",
+    "deleteTitle": "Delete the message?",
+    "deleteDescription": "The message disappears for everyone in the conversation, only “Message deleted” stays.",
+    "deleteOthers": "You are deleting someone else's message. It disappears for everyone in the conversation, only “Message deleted” stays.",
+    "cancel": "Cancel",
+    "close": "Close",
+    "search": "Search conversations",
+    "searchPlaceholder": "Search people and groups…",
+    "clearSearch": "Clear search",
+    "conversations": "Conversations",
+    "people": "People",
+    "noMessages": "No messages yet",
+    "youWrote": "You: {text}",
+    "startConversation": "Write a message",
+    "noResults": "Nothing matches.",
+    "emptyOwner": "Conversations come with the groups in Company and with a first message to someone.",
+    "emptyWorker": "No conversations yet.",
+    "nobodyTitle": "Nobody here yet",
+    "nobodyOwner": "Invite people to your company. Every group in Company has its own chat, and you can write to anyone directly.",
+    "nobodyWorker": "There is nobody else in the company yet.",
+    "openCompany": "Open Company",
+    "pickConversation": "Pick a conversation on the left, or write to someone.",
+    "actions": {
+      "label": "Message options",
+      "reply": "Reply",
+      "edit": "Edit",
+      "delete": "Delete",
+      "retry": "Try again",
+      "discard": "Discard"
+    },
+    "composer": {
+      "label": "Message",
+      "placeholder": "Write a message…",
+      "send": "Send",
+      "save": "Save the edit",
+      "attach": "Attach a file",
+      "files": "Attachments",
+      "removeFile": "Remove {name}",
+      "mentionList": "Mention a member",
+      "editing": "Editing the message",
+      "replyingTo": "Reply to {name}",
+      "cancelEdit": "Cancel the edit",
+      "cancelReply": "Cancel the reply",
+      "tooMany": "At most {count} files can go at once.",
+      "badType": "“{name}” cannot be sent, messages do not take this type of file.",
+      "tooLarge": "“{name}” is larger than {size} MB.",
+      "length": "{count} / {max}"
+    },
+    "menu": {
+      "label": "Conversation options",
+      "pin": "Pin",
+      "unpin": "Unpin",
+      "mute": "Mute",
+      "unmute": "Unmute",
+      "muteAll": "Silence for everyone",
+      "unmuteAll": "Stop silencing for everyone",
+      "export": "Download as CSV"
+    },
+    "record": {
+      "open": {
+        "deal": "Open the deal",
+        "contact": "Open the contact",
+        "task": "Open the task"
+      },
+      "kind": {
+        "deal": "Deal",
+        "contact": "Contact",
+        "task": "Task"
+      }
+    },
+    "export": {
+      "time": "Time",
+      "sender": "Sender",
+      "text": "Message",
+      "files": "Attachments",
+      "edited": "Edited",
+      "deleted": "Deleted",
+      "yes": "yes",
+      "filePrefix": "messages"
     }
   }
 }

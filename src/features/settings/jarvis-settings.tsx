@@ -27,8 +27,9 @@ const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 /**
  * Settings → Jarvis: whether he speaks up on his own, how often (every 2 or
  * 6 hours besides the summary of the day, or only a summary once a day,
- * week or month), quiet hours in the user's zone, and the guided tour again.
- * A worker has no Jarvis of their own; they get the tour.
+ * week or month), quiet hours in the user's zone, the notifications of
+ * Messages (e-mail when away, sound) and the guided tour again. A worker has
+ * no Jarvis of their own; they get the notifications and the tour.
  */
 export function JarvisView() {
   const t = useTranslations("settings");
@@ -36,6 +37,7 @@ export function JarvisView() {
   return (
     <SettingsPage title={t("groups.jarvis.title")} description={t("groups.jarvis.description")}>
       {!worker && <ProactiveSection />}
+      <MessagesSection />
       <SettingsSection title={t("help.title")} description={t("help.description")}>
         <ActionRow
           id="settings-help-tour"
@@ -179,6 +181,45 @@ function ProactiveSection() {
           </div>
         </SettingRow>
       )}
+    </SettingsSection>
+  );
+}
+
+/** Messages: an e-mail about direct messages and mentions while away, and the sound of a new one. */
+function MessagesSection() {
+  const t = useTranslations("settings.chat");
+  const settings = useUserSettings();
+  const { save } = useSettingsSave();
+  return (
+    <SettingsSection title={t("title")} description={t("description")}>
+      <SettingRow
+        id="settings-chat-email"
+        label={t("email")}
+        hint={t("emailHint")}
+        fields={["chat_email_notifications"]}
+      >
+        <div className="flex md:justify-end">
+          <Switch
+            id="settings-chat-email"
+            checked={settings.chat_email_notifications}
+            onCheckedChange={(checked) => save({ chat_email_notifications: checked })}
+          />
+        </div>
+      </SettingRow>
+      <SettingRow
+        id="settings-chat-sound"
+        label={t("sound")}
+        hint={t("soundHint")}
+        fields={["chat_sound"]}
+      >
+        <div className="flex md:justify-end">
+          <Switch
+            id="settings-chat-sound"
+            checked={settings.chat_sound}
+            onCheckedChange={(checked) => save({ chat_sound: checked })}
+          />
+        </div>
+      </SettingRow>
     </SettingsSection>
   );
 }

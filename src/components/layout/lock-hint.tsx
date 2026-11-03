@@ -8,7 +8,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { buttonVariants } from "@/components/ui/button";
 import { useCloseOnErrorScreen } from "@/features/errors/error-screen-state";
 import { useDefinitions } from "@/features/game/overview-queries";
-import { isLockableSection, localized, SECTION_UNLOCK_KEYS } from "@/features/game/types";
+import { localized, lockSectionOf, SECTION_UNLOCK_KEYS } from "@/features/game/types";
 import { formatNumber } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
@@ -32,8 +32,9 @@ function LockedSectionCard({ item, onNavigate }: { item: NavItemState; onNavigat
   const t = useTranslations("nav");
   const locale = useLocale();
   const definitions = useDefinitions();
-  const definition = isLockableSection(item.key)
-    ? definitions.data?.unlocks.get(SECTION_UNLOCK_KEYS[item.key])
+  const lockSection = lockSectionOf(item.key);
+  const definition = lockSection
+    ? definitions.data?.unlocks.get(SECTION_UNLOCK_KEYS[lockSection])
     : undefined;
   const hint = item.lockHint;
   const href =

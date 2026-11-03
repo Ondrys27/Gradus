@@ -86,6 +86,8 @@ export const SETTINGS_ITEMS: readonly SettingsItemDef[] = [
   { id: "jarvisProactive", group: "jarvis", target: "settings-jarvis-proactive", who: "notWorker" },
   { id: "jarvisFrequency", group: "jarvis", target: "settings-jarvis-frequency", who: "notWorker" },
   { id: "jarvisQuiet", group: "jarvis", target: "settings-jarvis-quiet", who: "notWorker" },
+  { id: "chatEmail", group: "jarvis", target: "settings-chat-email", who: "all" },
+  { id: "chatSound", group: "jarvis", target: "settings-chat-sound", who: "all" },
   { id: "tour", group: "jarvis", target: "settings-help-tour", who: "all" },
   { id: "theme", group: "appearance", target: "settings-theme", who: "all" },
   { id: "sound", group: "appearance", target: "settings-sound", who: "all" },
