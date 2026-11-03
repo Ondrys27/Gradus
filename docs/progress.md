@@ -101,7 +101,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] K18 | reviewer | — 2026-11-03: Kontrola fáze 18: test Jarvise jen pro majitele, property test přesunů v seznamu a mapě, opravené hluboké odkazy a ukládání v Nastavení.
 - [x] STOP | Konec fáze 18. Projdi: v seznamu úkolů přesuň úkol pod jiný o dvě úrovně hloub a ověř mapu. Nastav Jarvise na „jednou denně", odhlas se a přihlas — musí vyskočit souhrn; podruhé už ne. Projdi nové Nastavení na počítači i telefonu, zkus hledání, v Předplatném naplánuj změnu tarifu, zruš a obnov. V administraci AI vyzkoušej test připojení. Co nesedí, napiš Claude Code rovnou, pak /pokracuj. · přeskočeno nočním během 2026-11-03, zkontroluj ručně (.noc/zkontroluj.md)
 - [x] 19.1 | architect | 2026-11-03 — Levé menu jde na lg+ sbalit na ikony tlačítkem nebo ⌘/Ctrl+B, s tooltipy, volbou v user_settings.sidebar_collapsed vykreslenou už ze serveru a e2e testem.
-- [ ] 19.2 | architect |
+- [x] 19.2 | architect | 2026-11-03 — Pracovníci jsou teď Správa firmy (/app/firma) s hierarchií workers.manager_id bez cyklů, seznamem i mapou s přesunem tažením, skupinami a záložkou Odměny a výplaty.
 - [ ] 19.3 | architect |
 - [ ] 19.4 | architect | env: RESEND_API_KEY
 - [ ] K19 | reviewer |
