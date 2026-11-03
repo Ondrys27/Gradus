@@ -98,7 +98,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 18.2 | architect | env: ANTHROPIC_API_KEY — 2026-11-02: Jarvis ukazuje živý souhrn dne při prvním příchodu a má nové frekvence (2 h, 6 h, denně, týdně, měsíčně) s týdenní a měsíční šablonou.
 - [x] 18.3 | architect | 2026-11-03 — Nastavení → Předplatné s kartou tarifu, změnou tarifu (vyšší hned, nižší ke konci období), zrušením a obnovením, historií plateb a fakturačními údaji nad novými tabulkami subscriptions a payments, připravené na zapojení platební brány.
 - [x] 18.4 | designer | 2026-11-03 Nastavení přestavěné na šest skupin s levým menu, hledáním, ukládáním na místě a odkazy přímo na položku; test Jarvise přesunutý do administrace AI.
-- [ ] K18 | reviewer |
+- [x] K18 | reviewer | — 2026-11-03: Kontrola fáze 18: test Jarvise jen pro majitele, property test přesunů v seznamu a mapě, opravené hluboké odkazy a ukládání v Nastavení.
 - [ ] STOP | Konec fáze 18. Projdi: v seznamu úkolů přesuň úkol pod jiný o dvě úrovně hloub a ověř mapu. Nastav Jarvise na „jednou denně", odhlas se a přihlas — musí vyskočit souhrn; podruhé už ne. Projdi nové Nastavení na počítači i telefonu, zkus hledání, v Předplatném naplánuj změnu tarifu, zruš a obnov. V administraci AI vyzkoušej test připojení. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [ ] 7.1 | RUČNĚ | Aplikace běží na Vercel Hobby a každý push na main se nasadí sám. Až budeš mít doménu: nastav ji ve Vercelu, změň NEXT_PUBLIC_SITE_URL ve Vercelu, uprav Site URL a Redirect URLs v Supabase → URL Configuration a dej Redeploy. Projdi produkci v anonymním okně a pak tuhle položku zaškrtni ručně.
 
