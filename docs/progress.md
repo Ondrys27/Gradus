@@ -104,7 +104,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 19.2 | architect | 2026-11-03 — Pracovníci jsou teď Správa firmy (/app/firma) s hierarchií workers.manager_id bez cyklů, seznamem i mapou s přesunem tažením, skupinami a záložkou Odměny a výplaty.
 - [x] 19.3 | architect | 2026-11-03 — Dashboard pracovníka v okně (?worker=) se záložkami Přehled, Práva, Obchody a úkoly, Dokumenty, Tým a Odměny; jemná práva worker_permission_grants s převodem dnešních práv, restriktivními pravidly a šablonami; dokumenty v soukromém bucketu; odstranění z firmy s předáním obchodů a úkolů.
 - [x] 19.4 | architect | 2026-11-04 — Zprávy: skupinové konverzace podle skupin pracovníků a přímé zprávy, přílohy v soukromém bucketu, živě přes Realtime, odznak nepřečtených, @zmínky, odpovědi, e-mail při nepřítomnosti, ztišení a export CSV pro majitele.
-- [ ] K19 | reviewer |
+- [x] K19 | reviewer | 2026-11-04 — Kontrola fáze 19: hledání a Jarvis pracovníkovi bez „vidět částky“ neukážou částky obchodů, transakce a faktury hledá jen s jemnými právy financí a faktur, rozepsaná zpráva se při přepnutí konverzace neztratí.
 - [ ] STOP | Konec fáze 19. Sbal menu ⌘B a obnov stránku. Ve Správě firmy pozvi dva pracovníky (druhý pod prvního), přepni seznam/mapa, přesuň tažením, založ skupinu. Otevři dashboard pracovníka: změň foto, dej šablonu Obchodník, nahraj dokument, podívej se na grafy s různým horizontem. Přihlas se jako pracovník a ověř, co vidí. Ve Zprávách si napiš ve dvou prohlížečích v přímé i skupinové konverzaci, zkus @zmínku, přílohu a smazání zprávy. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [ ] 20.1 | architect | env: ANTHROPIC_API_KEY
 - [ ] 20.2 | architect |
