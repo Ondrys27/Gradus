@@ -742,7 +742,15 @@ export type Database = {
           size?: number
           trashed_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "chat_attachment_files_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       chat_channels: {
         Row: {
@@ -784,7 +792,15 @@ export type Database = {
           owner_id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "chat_channels_group_id_owner_id_fkey"
+            columns: ["group_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "worker_groups"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
       }
       chat_email_log: {
         Row: {
@@ -806,7 +822,7 @@ export type Database = {
           channel_id: string
           created_at: string
           last_read_at: string | null
-          member: string | null
+          member: string
           muted: boolean
           owner_id: string
           pinned_at: string | null
@@ -816,7 +832,7 @@ export type Database = {
           channel_id: string
           created_at?: string
           last_read_at?: string | null
-          member?: string | null
+          member?: string
           muted?: boolean
           owner_id: string
           pinned_at?: string | null
@@ -826,13 +842,28 @@ export type Database = {
           channel_id?: string
           created_at?: string
           last_read_at?: string | null
-          member?: string | null
+          member?: string
           muted?: boolean
           owner_id?: string
           pinned_at?: string | null
           worker_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "chat_members_channel_id_owner_id_fkey"
+            columns: ["channel_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "chat_channels"
+            referencedColumns: ["id", "owner_id"]
+          },
+          {
+            foreignKeyName: "chat_members_worker_id_owner_id_fkey"
+            columns: ["worker_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
       }
       chat_messages: {
         Row: {
@@ -880,7 +911,29 @@ export type Database = {
           sender_user_id?: string | null
           sender_worker_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_channel_id_owner_id_fkey"
+            columns: ["channel_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "chat_channels"
+            referencedColumns: ["id", "owner_id"]
+          },
+          {
+            foreignKeyName: "chat_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_sender_worker_id_owner_id_fkey"
+            columns: ["sender_worker_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
       }
       contact_activities: {
         Row: {

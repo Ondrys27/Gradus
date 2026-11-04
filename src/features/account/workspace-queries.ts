@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, realtimeTopic, subscribeSignedIn } from "@/lib/supabase/client";
 import { usePlan } from "@/features/plan/queries";
 import { useSession } from "./queries";
 import {
@@ -127,7 +127,7 @@ export function WorkspaceSync() {
     const key = workspaceKeys.access(user.id, workerId);
     const refresh = () => void queryClient.invalidateQueries({ queryKey: key });
     const channel = supabase
-      .channel(`worker-access-${workerId}`)
+      .channel(realtimeTopic(`worker-access-${workerId}`))
       .on(
         "postgres_changes",
         {
@@ -152,11 +152,8 @@ export function WorkspaceSync() {
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "workers", filter: `id=eq.${workerId}` },
         refresh,
-      )
-      .subscribe();
-    return () => {
-      void supabase.removeChannel(channel);
-    };
+      );
+    return subscribeSignedIn(supabase, channel);
   }, [queryClient, user.id, workerId]);
 
   const state = access.data;

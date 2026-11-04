@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { useSession, useUserSettings } from "@/features/account/queries";
 import { isSoundEnabled } from "@/lib/sound-preference";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, realtimeTopic, subscribeSignedIn } from "@/lib/supabase/client";
 import { isSilenced, mentionsIn, titleWithUnread } from "./logic";
 import { afterFailure, dueItems, type OutboxItem } from "./outbox";
 import {
@@ -56,7 +56,7 @@ export function ChatSync() {
       }, 250);
     };
     const channel = supabase
-      .channel(`chat-${space}-${me}`)
+      .channel(realtimeTopic(`chat-${space}-${me}`))
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "chat_messages", filter: `owner_id=eq.${space}` },
@@ -90,11 +90,11 @@ export function ChatSync() {
         "postgres_changes",
         { event: "*", schema: "public", table: "chat_channels", filter: `owner_id=eq.${space}` },
         refreshOverview,
-      )
-      .subscribe();
+      );
+    const unsubscribe = subscribeSignedIn(supabase, channel);
     return () => {
       if (refresh) clearTimeout(refresh);
-      void supabase.removeChannel(channel);
+      unsubscribe();
     };
   }, [client, me, space, user.id]);
 

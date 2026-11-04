@@ -74,6 +74,7 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - Admin klient obchází RLS — jen v serverovém kódu, vždy filtrovat podle `userId` ze session.
 - **Co jde spočítat, se neukládá:** postup milníku, poslední kontakt, příslušnost do Klientů, denní součty časovače, XP úroveň.
 - Dotazy vždy stránkovat nebo omezit na zobrazené období. Žádné `select *` na velkých tabulkách.
+- **Realtime** jen přes `subscribeSignedIn` a `realtimeTopic` (`src/lib/supabase/client.ts`): odběr připojený dřív, než je načtená relace, Realtime ověří jako anon a tiše odmítne; stejný název kanálu vrátí kanál, který úklid efektu právě ruší.
 - **Zkušební období:** registrace z webu = plan pro, status trialing, 14 dní, bez karty. Po expiraci režim jen pro čtení vynucený na serveru, data se nemažou. Pozvánka = plan beta bez expirace.
   - Trial zakládá DB trigger každému novému účtu (kromě úplně prvního); server pak účtu s pozvánkou (beta kód i pozvánka pracovníka) zavolá `grant_beta_plan`, při chybě účet smaže. Klient do `subscriptions` nezapíše.
   - Plán a stav jen přes `current_plan(user_id)` (plán, status včetně `expired`, `read_only`, limity). Expirace se počítá, neukládá. Po expiraci jsou limity generování a AI 0.

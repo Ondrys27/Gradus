@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -109,6 +110,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
   const [dismissedAt, setDismissedAt] = useState<number | null>(null);
   const field = useRef<HTMLTextAreaElement>(null);
   const picker = useRef<HTMLInputElement>(null);
+  const pendingCaret = useRef<number | null>(null);
 
   useImperativeHandle(ref, () => ({ focus: () => field.current?.focus() }), []);
 
@@ -173,13 +175,20 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
       setText(next.text);
       setMentions((list) => [...list.filter((item) => item.member !== member), { member, label }]);
       setCaret(next.caret);
-      requestAnimationFrame(() => {
-        field.current?.focus();
-        field.current?.setSelectionRange(next.caret, next.caret);
-      });
+      pendingCaret.current = next.caret;
     },
     [query, text, caret],
   );
+
+  // The caret goes behind the inserted mention right after the render, before
+  // the next key press (a frame later would pull it back from typed text).
+  useLayoutEffect(() => {
+    const at = pendingCaret.current;
+    if (at === null || !field.current) return;
+    pendingCaret.current = null;
+    field.current.focus();
+    field.current.setSelectionRange(at, at);
+  }, [text]);
 
   const body = encodeMentions(text, mentions);
   const tooLong = body.length > CHAT_BODY_MAX;
