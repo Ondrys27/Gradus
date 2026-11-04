@@ -156,6 +156,7 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - **Textové kroky cest** mají `path_tasks.note_template` (klíč šablony); úkol ho čte přes `template_id`, nic se nekopíruje. U nich je „Zapsat do poznámek" hlavní tlačítko (i ikona v řádku úkolu) a poznámka dostane osnovu šablony. Nový krok cesty, jehož výstupem je text, dostane note_template.
 
 ### Jarvis
+- **Zdroj pravdy o tom, kdy se Jarvis sám ozve, co říká a jak mluví, je `docs/jarvis-pravidla.md`.** Změna chování = změna dokumentu. Majitel mění v Administraci → AI a Jarvis → Pravidla (`app_settings.jarvis_rules`, `src/features/jarvis/rules.ts`, čtení s cache 30 s přes `loadJarvisRules`, zápis jen `admin_set_app_setting` s aal2 a `admin_audit`): přepínač u každého proaktivního typu a u otázek, minimální rozestup, otázek týdně, stáří návrhu, prodleva po načtení (výchozí = konstanty v `proactive.ts`) a Pokyny pro Jarvise (≤ 2 000 znaků) s tlačítkem Vyzkoušet (`kind: rulesTest`). Pokyny jdou do systémového promptu chatu a souhrnů přes `withOwnerInstructions` (povaha → pokyny majitele → `SAFETY_RULES` s výslovnou předností).
 - **Jedna route `/api/jarvis` pro všechna volání modelu.** Nikdy z prohlížeče, nikdy jinou cestou.
 - Anthropic SDK, `ANTHROPIC_API_KEY`. Streamovat. Systémový prompt cachovat.
 - Routing: Haiku rutina a klasifikace, Sonnet rozhovor a hodnocení, Opus velké rozbory.

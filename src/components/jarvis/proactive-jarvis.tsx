@@ -12,7 +12,12 @@ import { useProfile, useSession, useUserSettings } from "@/features/account/quer
 import { coldCallingKeys } from "@/features/cold-calling/timer-queries";
 import type { TimerReading } from "@/features/cold-calling/timer-logic";
 import { jarvisOverlay, useJarvisOverlay } from "@/features/jarvis/overlay-store";
-import { clientBlock, speaksBetweenSummaries, toJarvisFrequency } from "@/features/jarvis/proactive";
+import {
+  clientBlock,
+  PAGE_SETTLE_MS,
+  speaksBetweenSummaries,
+  toJarvisFrequency,
+} from "@/features/jarvis/proactive";
 import { fetchProactive, useProactiveReaction } from "@/features/jarvis/proactive-queries";
 import type { ProactiveItem } from "@/features/jarvis/protocol";
 import { ANSWER_MAX, questionByKey } from "@/features/jarvis/questions";
@@ -43,6 +48,12 @@ const CONFIRM_MS = 1_400;
  * when the chat closes.
  */
 const BESIDE_PANEL_QUERY = "(min-width: 1220px)";
+
+/**
+ * How long a page must settle, as the server last said (the administration's
+ * rules); until the first answer the default. Kept for the whole visit.
+ */
+let settleMs = PAGE_SETTLE_MS;
 
 function dialogOpen(): boolean {
   return document.querySelector('[role="dialog"], [role="alertdialog"]') !== null;
@@ -83,7 +94,7 @@ export function ProactiveJarvis({
   }, [visible]);
   useEffect(() => () => jarvisOverlay.setNoticeOpen("proactive", false), []);
 
-  // The 30 seconds count from every page change, not only from the first load.
+  // The settling (30 seconds by default) counts from every page change, not only from the first load.
   const pageSince = useRef(Date.now());
   useEffect(() => {
     pageSince.current = Date.now();
@@ -113,6 +124,7 @@ export function ProactiveJarvis({
       dialogOpen: dialogOpen(),
       busy: state.current.busy,
       visible: document.visibilityState === "visible",
+      settleMs,
     });
   }, [queryClient, user.id]);
 
@@ -123,13 +135,17 @@ export function ProactiveJarvis({
       fetching.current = true;
       try {
         const response = await fetchProactive();
+        if (typeof response.settleMs === "number") settleMs = response.settleMs;
         nextCheck.current = response.retryAt
           ? Date.parse(response.retryAt)
           : Date.now() + RECHECK_MS;
         if (!response.items.length) return;
-        // The moment may have passed while asking (a dialog opened, the panel too).
-        if (blocked()) {
-          nextCheck.current = Date.now() + RETRY_MS;
+        // The moment may have passed while asking (a dialog opened, the panel too),
+        // or the rules ask for a longer settling than the default it waited for.
+        const reason = blocked();
+        if (reason) {
+          nextCheck.current =
+            reason === "settling" ? pageSince.current + settleMs : Date.now() + RETRY_MS;
           return;
         }
         // One appearance carries the whole queue; the card shows one notice at a time.

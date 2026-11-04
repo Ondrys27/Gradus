@@ -14,6 +14,8 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | `mutations.setFeatureRequestStatus` | owner + admin | třídění zpětné vazby |
 | `ai-caps-actions.saveAiCaps` | owner | stropy AI; admin je vidí jen ke čtení |
 | `ai-caps-actions.saveUserAiCap` | owner | výjimky AI; admin je vidí jen ke čtení |
+| `jarvis-rules-actions.saveJarvisRules` | owner | pravidla Jarvise (přepínače typů a otázek, časování, Pokyny pro Jarvise); admin je vidí jen ke čtení |
+| `POST /api/jarvis` `kind: rulesTest` | owner (aal2, živá relace) | „Vyzkoušet“ u pravidel, jedno placené volání modelu; ostatním 404 |
 | `plans-actions.savePlanDraft`, `discardPlanDraft`, `planCatalogImpact`, `publishPlanCatalog`, `restorePlanVersion` | owner | katalog tarifů; admin vidí zveřejněnou verzi a historii jen ke čtení |
 | `subscription-actions.saveUserSubscription` | owner | předplatné účtu ručně (tarif, období, stav, konec, zrušení); admin ho vidí jen ke čtení |
 | `error-alerts-actions.saveErrorAlerts`, `sendErrorAlertsTest` | owner | adresy a režim e-mailů o chybách, zkušební e-mail; admin nastavení jen čte |
@@ -35,6 +37,7 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | Přehled, Růst, Aktivace, Retence, Funkce, Hra, Náklady, Zdraví, Zpětná vazba, Uživatelé, Průzkumník, Audit | owner + admin |
 | AI a Jarvis — karta stropů | owner upravuje, admin čte |
 | AI a Jarvis — karta Vyzkoušet připojení (jedno volání modelu přes `/api/jarvis`, `kind: ping`) | owner; adminovi se neukáže |
+| AI a Jarvis → Pravidla (`/admin/ai?tab=rules`) | owner upravuje, admin čte; „Vyzkoušet“ (`kind: rulesTest`) jen owner, adminovi se neukáže |
 | Detail uživatele — výjimka AI | owner upravuje, admin čte |
 | Detail uživatele — Předplatné | owner upravuje, admin čte |
 | Tarify — Účty na tarifech | owner + admin |
@@ -51,7 +54,7 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 |---|---|---|
 | `admin_session_touch` | owner + admin (aal2) | vrací i `role` |
 | `admin_session_end` | přihlášený, jen vlastní relace | |
-| `admin_set_app_setting` | owner | dřív stačila živá relace, teď `admin_require_owner()`; klíče `ai_caps` a `error_alerts` (audit bez adres) |
+| `admin_set_app_setting` | owner | dřív stačila živá relace, teď `admin_require_owner()`; klíče `ai_caps`, `error_alerts` (audit bez adres) a `jarvis_rules` (`valid_jarvis_rules()`, audit z → na) |
 | `admin_set_ai_user_cap` | owner | totéž |
 | `admin_invite_create` | owner | ukládá jen SHA-256 tokenu, píše `admin_audit` |
 | `admin_invite_revoke` | owner | píše `admin_audit` |

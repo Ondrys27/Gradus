@@ -21,6 +21,9 @@ import {
  * - never while the call timer runs or a dialog is open
  * - never within 30 seconds of a page loading
  * - Later = the next day; Close = never this one again
+ * - the owner's rules from the administration (ProactiveRules) may make the
+ *   gap longer, the settling longer or shorter, switch types and questions off
+ * The full description for people is docs/jarvis-pravidla.md.
  * - the user's switch, frequency and quiet hours
  * - nothing to say, nothing shown
  */
@@ -86,6 +89,60 @@ export const PROACTIVE_SUGGESTION_TYPES = [
   "followUps",
   "pathReady",
 ] as const;
+export type ProactiveSuggestionType = (typeof PROACTIVE_SUGGESTION_TYPES)[number];
+
+/**
+ * The rules of speaking up that the owner of the app may change in the
+ * administration (app_settings 'jarvis_rules', see rules.ts and
+ * docs/jarvis-pravidla.md). The defaults are the constants above; every
+ * function here takes the rules in force and falls back to them.
+ */
+export type ProactiveRules = {
+  /** The floor of the gap between two appearances, in hours (never below MIN_GAP_HOURS). */
+  minGapHours: number;
+  /** Questions Jarvis may ask in seven days. */
+  questionsPerWeek: number;
+  /** A suggestion older than this many days is not brought up any more. */
+  suggestionFreshDays: number;
+  /** How long a page must settle before Jarvis appears, in milliseconds. */
+  pageSettleMs: number;
+  /** Which suggestion types may be brought up on his own (the panel lists them all). */
+  suggestionTypes: Record<ProactiveSuggestionType, boolean>;
+  /** Whether Jarvis asks his questions at all. */
+  questions: boolean;
+};
+
+export const DEFAULT_PROACTIVE_RULES: ProactiveRules = {
+  minGapHours: MIN_GAP_HOURS,
+  questionsPerWeek: QUESTIONS_PER_WEEK,
+  suggestionFreshDays: SUGGESTION_FRESH_DAYS,
+  pageSettleMs: PAGE_SETTLE_MS,
+  suggestionTypes: Object.fromEntries(
+    PROACTIVE_SUGGESTION_TYPES.map((type) => [type, true]),
+  ) as Record<ProactiveSuggestionType, boolean>,
+  questions: true,
+};
+
+/** Whether a suggestion type may be brought up on his own under these rules. */
+export function proactiveTypeEnabled(
+  type: string,
+  rules: ProactiveRules = DEFAULT_PROACTIVE_RULES,
+): boolean {
+  return (
+    (PROACTIVE_SUGGESTION_TYPES as readonly string[]).includes(type) &&
+    rules.suggestionTypes[type as ProactiveSuggestionType] !== false
+  );
+}
+
+/** Hours between two appearances for a frequency, never below the rules' floor; null = the summary only. */
+export function gapHoursOf(
+  frequency: JarvisFrequency,
+  rules: ProactiveRules = DEFAULT_PROACTIVE_RULES,
+): number | null {
+  const gap = GAP_HOURS[frequency];
+  if (gap === null) return null;
+  return Math.max(MIN_GAP_HOURS, rules.minGapHours, gap);
+}
 
 const HOUR_MS = 3_600_000;
 
@@ -110,9 +167,13 @@ export function inQuietHours(hour: number, from: number | null, to: number | nul
 }
 
 /** The first instant after the last appearance at which Jarvis may appear again. */
-export function nextAllowedAt(lastShownAt: string | null, frequency: JarvisFrequency): number {
+export function nextAllowedAt(
+  lastShownAt: string | null,
+  frequency: JarvisFrequency,
+  rules: ProactiveRules = DEFAULT_PROACTIVE_RULES,
+): number {
   if (!lastShownAt) return 0;
-  const gap = Math.max(MIN_GAP_HOURS, GAP_HOURS[frequency] ?? 0);
+  const gap = gapHoursOf(frequency, rules) ?? Math.max(MIN_GAP_HOURS, rules.minGapHours);
   return Date.parse(lastShownAt) + gap * HOUR_MS;
 }
 
@@ -123,6 +184,7 @@ export function serverBlock(input: {
   now: Date;
   settings: ProactiveSettings;
   lastShownAt: string | null;
+  rules?: ProactiveRules;
 }): ServerBlock | null {
   const { now, settings } = input;
   if (!settings.enabled) return "disabled";
@@ -130,7 +192,9 @@ export function serverBlock(input: {
   if (inQuietHours(localHour(now, settings.timeZone), settings.quietFrom, settings.quietTo)) {
     return "quiet";
   }
-  if (now.getTime() < nextAllowedAt(input.lastShownAt, settings.frequency)) return "tooSoon";
+  if (now.getTime() < nextAllowedAt(input.lastShownAt, settings.frequency, input.rules)) {
+    return "tooSoon";
+  }
   return null;
 }
 
@@ -146,7 +210,7 @@ export function clientBlock(input: {
   dialogOpen: boolean;
   busy: boolean;
   visible: boolean;
-  /** How long a page must settle; Jarvis's own rule unless a caller needs less. */
+  /** How long a page must settle: the rules' delay (PAGE_SETTLE_MS by default) or a caller's own. */
   settleMs?: number;
 }): ClientBlock | null {
   if (input.shownThisSession) return "session";
@@ -316,7 +380,10 @@ export function snoozeUntil(now: Date, timeZone: string): Date {
   return zonedWallClockToInstant(next, "00:00", timeZone);
 }
 
-/** Whether a question may be asked: fewer than two in the last seven days. */
-export function questionAllowed(askedThisWeek: number): boolean {
-  return askedThisWeek < QUESTIONS_PER_WEEK;
+/** Whether a question may be asked: questions are on and fewer than the week's limit were asked in seven days. */
+export function questionAllowed(
+  askedThisWeek: number,
+  rules: ProactiveRules = DEFAULT_PROACTIVE_RULES,
+): boolean {
+  return rules.questions && askedThisWeek < rules.questionsPerWeek;
 }

@@ -8,7 +8,13 @@ import {
   modelFor,
   type JarvisFeature,
 } from "@/features/jarvis/models";
-import { featureRequestNote, situationBlock } from "@/features/jarvis/prompt";
+import {
+  featureRequestNote,
+  JARVIS_PERSONA,
+  situationBlock,
+  withOwnerInstructions,
+} from "@/features/jarvis/prompt";
+import { normalizeInstructions, OWNER_INSTRUCTIONS_MAX } from "@/features/jarvis/rules";
 import {
   chatRequestSchema,
   emailReplyRequestSchema,
@@ -17,12 +23,14 @@ import {
   proactiveRequestSchema,
   rateMessageRequestSchema,
   rewardSetupRequestSchema,
+  rulesTestRequestSchema,
   salesAnalysisRequestSchema,
   type ChatErrorCode,
   type ChatEvent,
   type FileErrorCode,
   type JarvisOverview,
   type PingResult,
+  type RulesTestResult,
 } from "@/features/jarvis/protocol";
 import { describePlans } from "@/features/jarvis/plans-context";
 import { loadSubscriptionLine } from "@/features/jarvis/server/subscription";
@@ -53,6 +61,7 @@ import {
   reactToProactive,
 } from "@/features/jarvis/server/proactive";
 import { runRewardSetup } from "@/features/jarvis/server/reward-setup";
+import { loadJarvisRules } from "@/features/jarvis/server/rules";
 import { maySeeDealAmounts, runSalesAnalysis } from "@/features/jarvis/server/sales-analysis";
 import { leafCount, rewardTreeSchema } from "@/features/workers/rewards/reward-tree";
 import { refreshSuggestions } from "@/features/jarvis/server/suggestions";
@@ -247,6 +256,7 @@ export const POST = instrumentRoute("api.jarvis.post", async (request: Request) 
   if (kind === "rewardSetup") return rewardSetup(ctx, body);
   if (kind === "emailReply") return emailReply(ctx, body);
   if (kind === "ping") return ping(ctx, body);
+  if (kind === "rulesTest") return rulesTest(ctx, body);
   if (kind === "proactive") return proactive(ctx, body);
   if (kind === "rateMessage") return rateMessage(ctx, body);
   return chat(ctx, body, request);
@@ -334,6 +344,64 @@ async function ping(ctx: Context, body: unknown) {
   if (!result.ok) return respond({ ok: false, code: result.code, durationMs }, 502);
   return respond({
     ok: true,
+    durationMs,
+    costUsd: costUsd(result.model, result.tokens),
+    model: result.model,
+  });
+}
+
+/** What the rules' test says around the owner's message: there is no user data in it. */
+const RULES_TEST_CONTEXT = situationBlock(
+  "This is a test from the administration: the app's owner is trying the instructions. There is no user data in this conversation; answer as you would a user, and do not make up their data.",
+  "the language of the message",
+);
+
+/**
+ * Administration → AI and Jarvis → Rules → "Try it": the owner's message to
+ * Jarvis's chat persona with the instructions as they stand in the form,
+ * placed exactly as the chat places the saved ones (withOwnerInstructions),
+ * and the answer back. Same gate as the connection test: only the owner
+ * with a live admin session and aal2, anyone else the 404 of an unknown
+ * address. One paid call, written to ai_usage as "ping"; nothing else saved.
+ */
+async function rulesTest(ctx: Context, body: unknown) {
+  const parsed = rulesTestRequestSchema.safeParse(body);
+  if (!parsed.success) return jobError("unknown", 400);
+  const access = await adminAccessFor("testJarvis");
+  if (!access || access.userId !== ctx.userId) return adminNotFound();
+  const { supabase, admin, userId, settings } = ctx;
+  const respond = (result: RulesTestResult, status = 200) => NextResponse.json(result, { status });
+
+  const instructions = normalizeInstructions(parsed.data.instructions);
+  if (instructions.length > OWNER_INSTRUCTIONS_MAX) {
+    return respond({ ok: false, code: "invalid", durationMs: null }, 400);
+  }
+  const usage = await loadAiUsage(supabase, admin, userId, settings);
+  if (limitReached(usage)) {
+    limitHit(ctx, "ping");
+    return respond({ ok: false, code: "limitReached", durationMs: null }, 429);
+  }
+  const client = createAnthropic(ctx.admin);
+  if (!client) {
+    await logNotConfigured(ctx, "ping");
+    return respond({ ok: false, code: "notConfigured", durationMs: null }, 503);
+  }
+
+  const started = Date.now();
+  const result = await streamModel({
+    client,
+    userId,
+    feature: "ping",
+    instructions: withOwnerInstructions(JARVIS_PERSONA, instructions),
+    context: RULES_TEST_CONTEXT,
+    messages: [{ role: "user", content: parsed.data.message }],
+    log: (entry) => logAiUsage(admin, { ...entry, userId, conversationId: null }),
+  });
+  const durationMs = Date.now() - started;
+  if (!result.ok) return respond({ ok: false, code: result.code, durationMs }, 502);
+  return respond({
+    ok: true,
+    text: result.text,
     durationMs,
     costUsd: costUsd(result.model, result.tokens),
     model: result.model,
@@ -630,7 +698,7 @@ async function chat(ctx: Context, body: unknown, request: Request) {
     },
   );
 
-  const [history, situation, idea, answers, notes, plans] = await Promise.all([
+  const [history, situation, idea, answers, notes, plans, rules] = await Promise.all([
     supabase
       .from("jarvis_messages")
       .select("id, role, content")
@@ -675,6 +743,8 @@ async function chat(ctx: Context, body: unknown, request: Request) {
       });
       return describePlans(catalog, locale, own);
     }),
+    // The owner's instructions from the administration (cached 30 s; defaults on a failed read).
+    loadJarvisRules(admin),
   ]);
   if (history.error) throw history.error;
   const rows = history.data.reverse();
@@ -723,6 +793,7 @@ async function chat(ctx: Context, body: unknown, request: Request) {
           client,
           userId,
           feature: "chat",
+          instructions: withOwnerInstructions(JARVIS_PERSONA, rules.instructions),
           context: situationBlock(situation, locale) + extra,
           messages,
           onText: (text) => send({ type: "delta", text }),

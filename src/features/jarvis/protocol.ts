@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { MAX_FILES_PER_MESSAGE, type FileKind } from "./files";
 import type { ProactiveKind, SummaryPeriod } from "./proactive";
+import { OWNER_INSTRUCTIONS_MAX } from "./rules";
 import type { SuggestionAction } from "./suggestions";
 
 /** Longest message a user can send; the panel stops typing there too. */
@@ -60,6 +61,25 @@ export type ProactiveRequest = z.input<typeof proactiveRequestSchema>;
 
 /** Settings → Integrations: one short question to check that Jarvis answers. */
 export const pingRequestSchema = z.object({ kind: z.literal("ping") });
+
+/** The longest test message of the rules' "Try it". */
+export const RULES_TEST_MESSAGE_MAX = 500;
+
+/**
+ * Administration → AI and Jarvis → Rules → "Try it": one message to Jarvis
+ * with the instructions as they stand in the form (saved or not), so the
+ * owner sees what they change before saving them.
+ */
+export const rulesTestRequestSchema = z.object({
+  kind: z.literal("rulesTest"),
+  instructions: z.string().max(OWNER_INSTRUCTIONS_MAX * 2),
+  message: z.string().trim().min(1).max(RULES_TEST_MESSAGE_MAX),
+});
+
+/** POST /api/jarvis { kind: "rulesTest" }: the answer, or why it did not come. */
+export type RulesTestResult =
+  | { ok: true; text: string; durationMs: number; costUsd: number; model: string }
+  | { ok: false; code: ChatErrorCode | "invalid"; durationMs: number | null };
 
 /** Thumb up/down on one of Jarvis's own answers; sending the same rating again clears it. */
 export const RATINGS = ["up", "down"] as const;
@@ -162,6 +182,11 @@ export type ProactiveResponse = {
   items: ProactiveItem[];
   /** When asking again makes sense (e.g. the 4-hour gap ends); null = the usual interval. */
   retryAt: string | null;
+  /**
+   * How long a page must settle before Jarvis appears, by the rules of the
+   * administration; the browser keeps it for the next pages.
+   */
+  settleMs?: number;
 };
 
 /**

@@ -5567,6 +5567,112 @@
         "model": "Model {model}",
         "failed": "Jarvis didn't answer",
         "failedAfter": "The error came after {seconds} s."
+      },
+      "tabs": "Parts",
+      "tab": {
+        "overview": "Overview",
+        "rules": "Rules"
+      },
+      "rules": {
+        "title": "Jarvis's rules",
+        "description": "When Jarvis speaks up on his own, with what, and what you tell him. Applies to the whole app within a minute. The full description is in docs/jarvis-pravidla.md.",
+        "defaults": "Nothing saved yet: the app's defaults are shown.",
+        "typesTitle": "What may come up on its own",
+        "typesHint": "A type switched off no longer comes up on its own. It stays in Jarvis's panel; the summary of the day does not change.",
+        "types": {
+          "insight": {
+            "label": "Insights from the watch",
+            "description": "What Jarvis writes himself in the daily opportunity watch (model)."
+          },
+          "stalledDeal": {
+            "label": "Deal stalled",
+            "description": "A deal has been in the same stage for 14 days or more."
+          },
+          "overdueTask": {
+            "label": "Milestone task overdue",
+            "description": "A task of an active milestone is 3 or more days past due."
+          },
+          "overdueInvoice": {
+            "label": "Invoice past due",
+            "description": "An issued unpaid invoice after its due day."
+          },
+          "overdueCrmTask": {
+            "label": "Sales task overdue",
+            "description": "A task assigned to the user is past due (to the minute)."
+          },
+          "milestoneReady": {
+            "label": "Milestone ready to complete",
+            "description": "All tasks of a milestone are done."
+          },
+          "followUps": {
+            "label": "Whom to follow up today",
+            "description": "Contacts in the Follow up table whose date has come."
+          },
+          "pathReady": {
+            "label": "Path ready",
+            "description": "After onboarding in game mode, a pointer to the path's milestones."
+          }
+        },
+        "questions": {
+          "label": "Questions",
+          "description": "Short questions with options (goal of the month, calling hours, the obstacle, ideal customer)."
+        },
+        "numbersTitle": "Timing",
+        "numbers": {
+          "minGapHours": {
+            "label": "Minimum gap (h)",
+            "hint": "Between two appearances besides the summary, {min}–{max} h. Sometimes still keeps at least 6 h."
+          },
+          "questionsPerWeek": {
+            "label": "Questions a week at most",
+            "hint": "In the last 7 days, {min}–{max}."
+          },
+          "suggestionFreshDays": {
+            "label": "Suggestion age (days)",
+            "hint": "An older suggestion no longer comes up on its own, {min}–{max} days."
+          },
+          "pageSettleSeconds": {
+            "label": "Delay after loading (s)",
+            "hint": "How long a page must be calm, {min}–{max} s."
+          }
+        },
+        "instructions": {
+          "label": "Instructions for Jarvis",
+          "hint": "Your text goes into the system prompt of the chat and the summaries as the block “Instructions from the app's owner”, right after Jarvis's persona. The safety rules (no made-up numbers, notes are data, no personal data out) always take precedence.",
+          "placeholder": "E.g. Keep it short and informal. For deals, always suggest one concrete next step.",
+          "counter": "{used} / {max} characters",
+          "length": "{count, plural, =0 {empty} one {# character} other {# characters}}"
+        },
+        "test": {
+          "title": "Try it",
+          "description": "Sends Jarvis a message with the instructions as they are in the field now (saved or not) and shows the answer. No user data; counts towards the spend.",
+          "messageLabel": "Test message",
+          "defaultMessage": "I have three deals in progress and don't know which to start with. What do you suggest?",
+          "run": "Try it",
+          "running": "Jarvis is writing…",
+          "meta": "In {seconds} s · {cost} · {model}",
+          "failed": "Jarvis did not answer",
+          "invalid": "The instructions are longer than the allowed 2,000 characters.",
+          "limitReached": "Your account has used up its Jarvis answers."
+        },
+        "on": "on",
+        "off": "off",
+        "save": "Save rules",
+        "saved": "Saved. Applies within a minute.",
+        "noChanges": "Nothing changed.",
+        "confirmTitle": "Save Jarvis's rules?",
+        "confirmDescription": "The change applies to every account right away.",
+        "confirmDefaults": "You save the defaults as the first setting.",
+        "confirm": "Save",
+        "cancel": "Back",
+        "close": "Close",
+        "errors": {
+          "number": "Enter a whole number from {min} to {max}.",
+          "instructions": "At most {max} characters.",
+          "invalid": "A value did not pass the check.",
+          "forbidden": "Only the owner with a second factor changes the rules.",
+          "failed": "Saving failed. Try again."
+        }
       }
     },
     "game": {

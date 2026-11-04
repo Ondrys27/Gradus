@@ -5974,6 +5974,7 @@ export type Database = {
       username_available: { Args: { _username: string }; Returns: boolean }
       valid_ai_caps: { Args: { _value: Json }; Returns: boolean }
       valid_error_alerts: { Args: { _value: Json }; Returns: boolean }
+      valid_jarvis_rules: { Args: { _value: Json }; Returns: boolean }
       valid_plan_catalog: { Args: { _payload: Json }; Returns: boolean }
       work_seconds_between: {
         Args: { _from: string; _to: string; _worker_id: string }

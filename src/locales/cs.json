@@ -5567,6 +5567,112 @@
         "model": "Model {model}",
         "failed": "Jarvis neodpověděl",
         "failedAfter": "Chyba přišla za {seconds} s."
+      },
+      "tabs": "Části",
+      "tab": {
+        "overview": "Přehled",
+        "rules": "Pravidla"
+      },
+      "rules": {
+        "title": "Pravidla Jarvise",
+        "description": "Kdy Jarvis sám vyskočí, s čím a co mu říkáš ty. Platí pro celou aplikaci a projeví se do minuty. Celý popis je v docs/jarvis-pravidla.md.",
+        "defaults": "Zatím nic uloženého: ukazují se výchozí hodnoty aplikace.",
+        "typesTitle": "Co smí sám vyskočit",
+        "typesHint": "Vypnutý typ už sám nevyskočí. V panelu Jarvise zůstává dál, souhrn dne se nemění.",
+        "types": {
+          "insight": {
+            "label": "Postřehy z hlídání",
+            "description": "Co Jarvis sám napíše při denním hlídání příležitostí (model)."
+          },
+          "stalledDeal": {
+            "label": "Obchod stojí",
+            "description": "Obchod je ve stejné fázi 14 dní a déle."
+          },
+          "overdueTask": {
+            "label": "Úkol milníku po termínu",
+            "description": "Úkol aktivního milníku je 3 a více dní po termínu."
+          },
+          "overdueInvoice": {
+            "label": "Faktura po splatnosti",
+            "description": "Vystavená nezaplacená faktura po dni splatnosti."
+          },
+          "overdueCrmTask": {
+            "label": "Obchodní úkol po termínu",
+            "description": "Úkol přiřazený uživateli je po termínu (na minutu)."
+          },
+          "milestoneReady": {
+            "label": "Milník připravený k dokončení",
+            "description": "Všechny úkoly milníku jsou hotové."
+          },
+          "followUps": {
+            "label": "Komu se dnes ozvat",
+            "description": "Kontakty v tabulce Ozvat se, kterým dnes nastal termín."
+          },
+          "pathReady": {
+            "label": "Cesta je připravená",
+            "description": "Po onboardingu v herním režimu odkaz na milníky cesty."
+          }
+        },
+        "questions": {
+          "label": "Otázky",
+          "description": "Krátké otázky s možnostmi (cíl měsíce, hodiny volání, co brzdí, ideální zákazník)."
+        },
+        "numbersTitle": "Časování",
+        "numbers": {
+          "minGapHours": {
+            "label": "Minimální rozestup (h)",
+            "hint": "Mezi dvěma vyskočeními mimo souhrn, {min}–{max} h. Občas dál drží aspoň 6 h."
+          },
+          "questionsPerWeek": {
+            "label": "Otázek týdně nejvýš",
+            "hint": "Za posledních 7 dní, {min}–{max}."
+          },
+          "suggestionFreshDays": {
+            "label": "Stáří návrhu (dny)",
+            "hint": "Starší návrh už sám nevyskočí, {min}–{max} dní."
+          },
+          "pageSettleSeconds": {
+            "label": "Prodleva po načtení (s)",
+            "hint": "Jak dlouho musí být stránka v klidu, {min}–{max} s."
+          }
+        },
+        "instructions": {
+          "label": "Pokyny pro Jarvise",
+          "hint": "Tvůj text jde do systémového promptu chatu i souhrnů jako blok „Pokyny majitele aplikace“ hned za povahu Jarvise. Bezpečnostní pravidla (nevymýšlet čísla, poznámky jsou data, žádné osobní údaje ven) mají vždy přednost.",
+          "placeholder": "Např. Mluv stručně a tykej. U obchodů vždy navrhni jeden konkrétní další krok.",
+          "counter": "{used} / {max} znaků",
+          "length": "{count, plural, =0 {prázdné} one {# znak} few {# znaky} other {# znaků}}"
+        },
+        "test": {
+          "title": "Vyzkoušet",
+          "description": "Pošle Jarvisovi zprávu s pokyny tak, jak jsou teď v poli (i neuložené), a ukáže odpověď. Bez dat uživatele, počítá se do útraty.",
+          "messageLabel": "Testovací zpráva",
+          "defaultMessage": "Mám tři rozjednané obchody a nevím, kterým začít. Co mi radíš?",
+          "run": "Vyzkoušet",
+          "running": "Jarvis píše…",
+          "meta": "Za {seconds} s · {cost} · {model}",
+          "failed": "Jarvis neodpověděl",
+          "invalid": "Pokyny jsou delší než povolených 2 000 znaků.",
+          "limitReached": "Tvůj účet má vyčerpaný limit odpovědí Jarvise."
+        },
+        "on": "zapnuto",
+        "off": "vypnuto",
+        "save": "Uložit pravidla",
+        "saved": "Uloženo. Projeví se do minuty.",
+        "noChanges": "Nic se nezměnilo.",
+        "confirmTitle": "Uložit pravidla Jarvise?",
+        "confirmDescription": "Změna platí hned pro všechny účty.",
+        "confirmDefaults": "Uložíš výchozí hodnoty jako první nastavení.",
+        "confirm": "Uložit",
+        "cancel": "Zpět",
+        "close": "Zavřít",
+        "errors": {
+          "number": "Zadej celé číslo od {min} do {max}.",
+          "instructions": "Nejvýš {max} znaků.",
+          "invalid": "Některá hodnota neprošla kontrolou.",
+          "forbidden": "Pravidla mění jen majitel s ověřením druhým faktorem.",
+          "failed": "Uložení se nepovedlo. Zkus to znovu."
+        }
       }
     },
     "game": {

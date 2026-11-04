@@ -19,11 +19,13 @@ import {
   SUMMARY_PERIODS,
   type SummaryPeriod,
 } from "../proactive";
+import { withOwnerInstructions } from "../prompt";
 import type { SummaryLink } from "../protocol";
 import { describePipelineHealth } from "../situation";
 import { isAppHref, type SuggestionAction } from "../suggestions";
 import { describeDayPlan } from "../time-window";
 import { streamModel, type ModelClient } from "./model";
+import { loadJarvisRules } from "./rules";
 import { loadRuleInputs } from "./suggestions";
 import { loadTimeWindow } from "./time-window";
 import { limitReached, loadAiUsage, logAiUsage } from "./usage";
@@ -801,11 +803,13 @@ async function writeBrief(args: {
   if (limitReached(usage)) return "skipped";
 
   const writing = WRITING[args.data.period];
+  // The owner's instructions from the administration apply to the summaries as to the chat.
+  const rules = await loadJarvisRules(admin);
   const result = await streamModel({
     client: args.client,
     userId,
     feature: "briefing",
-    instructions: writing.instructions,
+    instructions: withOwnerInstructions(writing.instructions, rules.instructions),
     context: briefingContext(args.data),
     messages: [{ role: "user", content: writing.ask }],
     log: (entry) => logAiUsage(admin, { ...entry, userId, conversationId: null }),

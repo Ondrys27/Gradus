@@ -13,19 +13,20 @@ import {
   orderProactive,
   PROACTIVE_KINDS,
   PROACTIVE_QUEUE_LIMIT,
-  PROACTIVE_SUGGESTION_TYPES,
+  proactiveTypeEnabled,
   questionAllowed,
   serverBlock,
   snoozeUntil,
   speaksBetweenSummaries,
-  SUGGESTION_FRESH_DAYS,
   summaryDue,
   summaryPeriodOf,
   toJarvisFrequency,
   type ProactiveCandidate,
   type ProactiveKind,
+  type ProactiveRules,
   type ProactiveSettings,
 } from "../proactive";
+import { DEFAULT_JARVIS_RULES } from "../rules";
 import type {
   ProactiveItem,
   ProactiveReaction,
@@ -43,6 +44,7 @@ import { reachesPeople, suggestionActionSchema, type SuggestionAction } from "..
 import type { TimeWindow } from "../time-window";
 import { resolveSummary } from "./briefing";
 import type { ModelClient } from "./model";
+import { loadJarvisRules } from "./rules";
 import { loadRuleInputs, syncRuleSuggestions } from "./suggestions";
 import { loadTimeWindow } from "./time-window";
 
@@ -98,22 +100,25 @@ type Candidate = ProactiveCandidate & { item: ProactiveItem };
 /**
  * A stored row as the bubble shows it, or null when it is not fit to show.
  * A call or meeting is never brought up outside the time window; it waits in
- * the panel with the next time and comes up once the window opens.
+ * the panel with the next time and comes up once the window opens. A type
+ * or the questions switched off in the administration never come up.
  */
 export function toCandidate(
   row: Row,
   now: Date,
   window: TimeWindow | null = null,
+  rules: ProactiveRules = DEFAULT_JARVIS_RULES,
 ): Candidate | null {
   const action = suggestionActionSchema.safeParse(row.action);
   if (!action.success) return null;
   const kind = row.kind as ProactiveKind;
   const payload: Payload = payloadSchema.parse(row.payload);
   if (kind === "suggestion") {
-    if (!(PROACTIVE_SUGGESTION_TYPES as readonly string[]).includes(row.type)) return null;
-    if (new Date(row.created_at) < subDays(now, SUGGESTION_FRESH_DAYS)) return null;
+    if (!proactiveTypeEnabled(row.type, rules)) return null;
+    if (new Date(row.created_at) < subDays(now, rules.suggestionFreshDays)) return null;
     if (window && !window.open && reachesPeople(row.type, payload.people, row.text)) return null;
   } else if (kind === "question") {
+    if (!rules.questions) return null;
     if (!payload.question || !questionByKey(payload.question)) return null;
   } else {
     // The brief belongs to the summary at the first arrival (loadSummary).
@@ -170,8 +175,9 @@ async function timerRunning(supabase: Client, timeZone: string): Promise<boolean
 }
 
 /**
- * Adds the next question when none is waiting and fewer than two were asked
- * this week. Returns its row, or null. Admin client, always this user.
+ * Adds the next question when none is waiting, questions are on and fewer
+ * than the week's limit (two by default) were asked in seven days. Returns
+ * its row, or null. Admin client, always this user.
  */
 async function ensureQuestion(
   supabase: Client,
@@ -179,7 +185,9 @@ async function ensureQuestion(
   userId: string,
   today: string,
   now: Date,
+  rules: ProactiveRules,
 ): Promise<Row | null> {
+  if (!questionAllowed(0, rules)) return null;
   const { data: asked, error } = await supabase
     .from("jarvis_suggestions")
     .select("dedupe_key, created_at")
@@ -190,7 +198,7 @@ async function ensureQuestion(
   if (error) throw error;
   const weekAgo = subDays(now, 7);
   const thisWeek = asked.filter((row) => new Date(row.created_at) >= weekAgo).length;
-  if (!questionAllowed(thisWeek)) return null;
+  if (!questionAllowed(thisWeek, rules)) return null;
 
   const question = nextQuestion(new Set(asked.map((row) => row.dedupe_key ?? "")), today);
   if (!question) return null;
@@ -221,6 +229,9 @@ async function ensureQuestion(
  * frequencies have the summary alone (loadSummary). The bubble shows it
  * right away, so this is the last look before Jarvis speaks: the rules are
  * worked out again from the data now and what is solved goes.
+ * The owner's rules from the administration (loadJarvisRules) decide the
+ * gap, the freshness, the types and the questions; the page's settling time
+ * goes back to the browser with every answer.
  * Reads with the user's own client (RLS), writes with the admin client for
  * this user only.
  */
@@ -230,10 +241,13 @@ export async function loadProactive(args: {
   userId: string;
   row: UserSettings | null;
   now?: Date;
+  /** The rules in force; read from the administration's setting when left out. */
+  rules?: ProactiveRules;
 }): Promise<ProactiveResponse> {
   const { supabase, admin, userId } = args;
   const now = args.now ?? new Date();
-  const none: ProactiveResponse = { items: [], retryAt: null };
+  const rules = args.rules ?? (await loadJarvisRules(admin));
+  const none: ProactiveResponse = { items: [], retryAt: null, settleMs: rules.pageSettleMs };
   const settings = proactiveSettingsOf(args.row);
   // Switched off, or the summary alone: nothing between the summaries.
   if (!settings.enabled || !speaksBetweenSummaries(settings.frequency)) return none;
@@ -249,11 +263,11 @@ export async function loadProactive(args: {
     .limit(1);
   if (error) throw error;
   const lastShownAt = last[0]?.shown_at ?? null;
-  const block = serverBlock({ now, settings, lastShownAt });
+  const block = serverBlock({ now, settings, lastShownAt, rules });
   if (block === "tooSoon") {
     return {
-      items: [],
-      retryAt: new Date(nextAllowedAt(lastShownAt, settings.frequency)).toISOString(),
+      ...none,
+      retryAt: new Date(nextAllowedAt(lastShownAt, settings.frequency, rules)).toISOString(),
     };
   }
   if (block) return none;
@@ -285,15 +299,15 @@ export async function loadProactive(args: {
 
   const today = todayIsoDate(format, now);
   const options = { frequency: settings.frequency };
-  const candidates = rows.data.flatMap((row) => toCandidate(row, now, window) ?? []);
+  const candidates = rows.data.flatMap((row) => toCandidate(row, now, window, rules) ?? []);
   let queue = orderProactive(candidates, options).slice(0, PROACTIVE_QUEUE_LIMIT);
 
   if (!queue.length) {
-    const question = await ensureQuestion(supabase, admin, userId, today, now);
-    const candidate = question ? toCandidate(question, now, window) : null;
+    const question = await ensureQuestion(supabase, admin, userId, today, now, rules);
+    const candidate = question ? toCandidate(question, now, window, rules) : null;
     if (candidate) queue = orderProactive([candidate], options);
   }
-  return { items: queue.map((candidate) => candidate.item), retryAt: null };
+  return { ...none, items: queue.map((candidate) => candidate.item) };
 }
 
 /** The summary of this period was shown, or there was nothing to say: not again until the next one. */

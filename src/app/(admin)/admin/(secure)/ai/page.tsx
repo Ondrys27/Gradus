@@ -24,6 +24,12 @@ import { loadAiCapsOverview, loadPeriodSpend } from "@/features/admin/server/ai-
 import { budgetPeriod, describePeriod } from "@/features/admin/ai-budget-period";
 import { loadBudget } from "@/features/jarvis/server/budget";
 import { loadAiCaps } from "@/features/jarvis/server/caps";
+import { loadJarvisRules } from "@/features/jarvis/server/rules";
+import { toJarvisRulesForm } from "@/features/jarvis/rules";
+import { AdminViewLink } from "@/features/admin/ui/admin-view";
+import { JarvisRulesForm } from "@/features/admin/ui/jarvis-rules-form";
+import { viewQuery, parseAdminView } from "@/features/admin/view-state";
+import { cn } from "@/lib/utils";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AdminChart } from "@/features/admin/ui/admin-chart";
 import { AiCapsForm } from "@/features/admin/ui/ai-caps-form";
@@ -53,14 +59,62 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 
 const count = (value: number | null) => formatNumber(value ?? 0, {}, ADMIN_FORMAT_SETTINGS);
 
+const AI_TABS = ["overview", "rules"] as const;
+type AiTab = (typeof AI_TABS)[number];
+
+const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
+
 export default async function AdminAiPage({ searchParams }: Props) {
   const context = await requireAdmin();
-  await logAdminAction(context, "view", "ai");
-  const q = adminQuery(await searchParams, "ai");
+  const params = await searchParams;
+  const tab: AiTab = first(params.tab) === "rules" ? "rules" : "overview";
+  await logAdminAction(context, "view", tab === "rules" ? "ai.rules" : "ai");
+  const q = adminQuery(params, "ai");
+  const query = viewQuery(parseAdminView(params));
+  const t = await getTranslations("admin.ai");
+
+  // The overview (numbers, budget, caps) and Jarvis's rules, as two tabs in the address.
+  const tabs = (
+    <nav aria-label={t("tabs")} className="flex gap-1">
+      {AI_TABS.map((value) => {
+        const active = value === tab;
+        const search = [value === "rules" ? "tab=rules" : "", query.slice(1)].filter(Boolean).join("&");
+        return (
+          <AdminViewLink
+            key={value}
+            href={`${ADMIN_PATH}/ai${search ? `?${search}` : ""}`}
+            aria-current={active ? "page" : undefined}
+            className={cn(
+              "flex h-10 shrink-0 items-center gap-1.5 border-b-2 px-2.5 text-sm whitespace-nowrap outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:h-8",
+              active
+                ? "border-violet font-medium text-ink"
+                : "border-transparent text-ink-soft hover:text-ink",
+            )}
+          >
+            {t(`tab.${value}`)}
+          </AdminViewLink>
+        );
+      })}
+    </nav>
+  );
+
+  if (tab === "rules") {
+    return (
+      <>
+        <AdminPageHeader section="ai" q={q} extra={tabs} />
+        <Suspense fallback={<CardSkeleton height={520} />}>
+          <Rules
+            readOnly={!adminCan(context.role, "editJarvisRules")}
+            canTest={adminCan(context.role, "testJarvis")}
+          />
+        </Suspense>
+      </>
+    );
+  }
 
   return (
     <>
-      <AdminPageHeader section="ai" q={q} />
+      <AdminPageHeader section="ai" q={q} extra={tabs} />
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-4">
           <Suspense fallback={<FiguresSkeleton more={1} />}>
@@ -165,6 +219,32 @@ async function Caps({ q, readOnly }: { q: AdminQuery; readOnly: boolean }) {
         </Show>
       </AdminCard>
     </PageSection>
+  );
+}
+
+/**
+ * Jarvis's rules: the switches of what he brings up on his own, the numbers
+ * of the timing and the owner's instructions (docs/jarvis-pravidla.md).
+ * Read fresh here; the app reads them with a 30-second cache.
+ */
+async function Rules({ readOnly, canTest }: { readOnly: boolean; canTest: boolean }) {
+  const [loaded, t] = await Promise.all([
+    safe("jarvis rules", () => loadJarvisRules(createAdminClient(), { fresh: true })),
+    getTranslations("admin.ai.rules"),
+  ]);
+  return (
+    <AdminCard title={t("title")} description={t("description")} id="pravidla">
+      <Show loaded={loaded}>
+        {(rules) => (
+          <JarvisRulesForm
+            saved={toJarvisRulesForm(rules)}
+            fromDefaults={rules.source === "default"}
+            readOnly={readOnly}
+            canTest={canTest && !readOnly}
+          />
+        )}
+      </Show>
+    </AdminCard>
   );
 }
 

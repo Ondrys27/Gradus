@@ -174,7 +174,7 @@ describe("loadProactive", () => {
       row: settingsRow,
       now: NOW,
     });
-    expect(result).toEqual({ items: [], retryAt: "2026-10-03T11:00:00.000Z" });
+    expect(result).toEqual({ items: [], retryAt: "2026-10-03T11:00:00.000Z", settleMs: 30_000 });
     expect(supabase.calls.some((c) => c.table === "rpc:prospecting_status")).toBe(false);
   });
 
@@ -947,5 +947,109 @@ describe("loadSummary", () => {
     expect(settled(admin.calls)).toEqual({ last_daily_brief_on: "2026-10-03" });
     const update = admin.calls.find((c) => c.table === "profiles");
     expect(op(update, "eq")).toEqual(["id", USER]);
+  });
+});
+
+const { clearJarvisRulesCache } = await import("./rules");
+const { SAFETY_RULES } = await import("../prompt");
+
+describe("the owner's rules from the administration", () => {
+  const stored = (patch: Record<string, unknown> = {}) => ({
+    suggestion_types: { insight: false },
+    questions: false,
+    min_gap_hours: 4,
+    questions_per_week: 2,
+    suggestion_fresh_days: 1,
+    page_settle_seconds: 90,
+    instructions: "Tykej a buď stručný.",
+    ...patch,
+  });
+
+  it("win over the constants: a longer gap and the page's settling", async () => {
+    clearJarvisRulesCache();
+    const result = await loadProactive({
+      supabase: fakeDb({
+        workers: { data: [] },
+        jarvis_suggestions: { data: [{ shown_at: "2026-10-03T07:00:00Z" }] },
+      }).db,
+      admin: fakeDb({ app_settings: { data: { value: stored() } } }).db,
+      userId: USER,
+      row: settingsRow,
+      now: NOW,
+    });
+    // Shown at 7:00, every 2 hours by the user's frequency, but at least 4 by the owner's rules.
+    expect(result).toEqual({ items: [], retryAt: "2026-10-03T11:00:00.000Z", settleMs: 90_000 });
+    clearJarvisRulesCache();
+  });
+
+  it("leave out a switched-off type, older suggestions and the questions", async () => {
+    clearJarvisRulesCache();
+    const rows = [
+      { id: "i", kind: "suggestion", type: "insight", text: "x", action: { kind: "ask", prompt: "" }, payload: {}, created_at: "2026-10-03T09:00:00Z" },
+      { id: "fresh", kind: "suggestion", type: "overdueTask", text: "x", action: { kind: "ask", prompt: "" }, payload: {}, created_at: "2026-10-03T08:00:00Z" },
+      { id: "old", kind: "suggestion", type: "overdueTask", text: "x", action: { kind: "ask", prompt: "" }, payload: {}, created_at: "2026-10-01T08:00:00Z" },
+    ];
+    const supabase = fakeDb({
+      workers: { data: [] },
+      unlocks: { data: [] },
+      profiles: { data: { mode: "tool" } },
+      "rpc:prospecting_status": { data: [{ running: false }] },
+      jarvis_suggestions: (call) =>
+        has(call, "select", "shown_at") ? { data: [] } : { data: rows },
+    });
+    const admin = fakeDb({ app_settings: { data: { value: stored() } } });
+    const result = await loadProactive({
+      supabase: supabase.db,
+      admin: admin.db,
+      userId: USER,
+      row: settingsRow,
+      now: NOW,
+    });
+    expect(result.items.map((item) => item.id)).toEqual(["fresh"]);
+
+    // Nothing left and the questions off: no question is written either.
+    clearJarvisRulesCache();
+    const empty = fakeDb({
+      workers: { data: [] },
+      "rpc:prospecting_status": { data: [{ running: false }] },
+      jarvis_suggestions: { data: [] },
+    });
+    const quiet = fakeDb({ app_settings: { data: { value: stored() } } });
+    const none = await loadProactive({
+      supabase: empty.db,
+      admin: quiet.db,
+      userId: USER,
+      row: settingsRow,
+      now: NOW,
+    });
+    expect(none.items).toEqual([]);
+    expect(quiet.calls.some((c) => op(c, "upsert"))).toBe(false);
+    clearJarvisRulesCache();
+  });
+
+  it("put the owner's instructions into the summary after its own and before the safety rules", async () => {
+    clearJarvisRulesCache();
+    const { client, stream } = writer("Call is due today.");
+    const admin = fakeDb({
+      "rpc:current_plan": { data: [{ ai_calls_limit: 300, file_uploads_limit: 0, read_only: false }] },
+      app_settings: { data: { value: stored() } },
+      tasks: (call) =>
+        has(call, "select", "id, title") ? { data: [{ id: TASK, title: "Call" }] } : {},
+      jarvis_suggestions: (call) =>
+        has(call, "select", "id, text, payload")
+          ? { data: null }
+          : op(call, "upsert")
+            ? { data: { id: BRIEF } }
+            : {},
+    });
+    await resolveSummary({ client, admin: admin.db, userId: USER, row: settingsRow, period: "day", now: NOW });
+    const params = (stream.mock.calls[0] as unknown[])[0] as { system: { text: string }[] };
+    const system = params.system[0]!.text;
+    expect(system.startsWith(BRIEFING_INSTRUCTIONS)).toBe(true);
+    const owner = system.indexOf("Tykej a buď stručný.");
+    expect(owner).toBeGreaterThan(BRIEFING_INSTRUCTIONS.length);
+    expect(system.indexOf(SAFETY_RULES)).toBeGreaterThan(owner);
+    expect(system.endsWith(SAFETY_RULES)).toBe(true);
+    clearJarvisRulesCache();
   });
 });

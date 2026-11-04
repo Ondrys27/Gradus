@@ -46,6 +46,7 @@ vi.mock("@/features/admin/ui/admin-controls", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/internal-toggle", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/ai-caps-form", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/jarvis-ping-card", (load) => stubClientModule(load));
+vi.mock("@/features/admin/ui/jarvis-rules-form", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/user-ai-cap-form", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/feature-request-row", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/report-status", (load) => stubClientModule(load));
@@ -315,6 +316,13 @@ describe.each(["cs", "en"] as const)("admin pages in %s", (language) => {
       const result = await renderPage(PAGES.features, { tab });
       expect(result.problems, tab).toEqual([]);
     }
+    expect(missing).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  it("ai renders the rules tab", async () => {
+    const result = await renderPage(PAGES.ai, { tab: "rules" });
+    expect(result.problems).toEqual([]);
     expect(missing).toEqual([]);
     expect(errors).toEqual([]);
   });
