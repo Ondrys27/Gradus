@@ -4,6 +4,7 @@ import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "rea
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useLocale, useTranslations } from "next-intl";
 import { formatCalendarDate, formatWeekdayLong, isoDateToLocal, todayIsoDate } from "@/lib/format";
+import { addDaysIso } from "@/features/calendar/calendar-logic";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { messageRows, readCount, canDeleteMessage, canEditMessage } from "./logic";
 import { MessageBubble, type BubbleActions } from "./message-bubble";
@@ -122,7 +123,7 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(funct
   }, [firstIndex, hasOlder, loadingOlder, onLoadOlder]);
 
   const today = todayIsoDate(settings);
-  const yesterday = todayIsoDate(settings, new Date(Date.now() - 86_400_000));
+  const yesterday = addDaysIso(today, -1);
   const dayLabel = (day: string) => {
     if (day === today) return t("today");
     if (day === yesterday) return t("yesterday");

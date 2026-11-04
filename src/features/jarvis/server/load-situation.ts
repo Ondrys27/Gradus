@@ -5,6 +5,7 @@ import { contactName } from "@/features/contacts/types";
 import { stalledCutoff } from "@/features/dashboard/dashboard-logic";
 import { periodRange } from "@/features/finance/finance-logic";
 import { loadHealthDigest } from "@/features/pipeline/health-data";
+import { serverCan } from "@/features/account/server/permissions";
 import { todayIsoDate, type FormatSettings } from "@/lib/format";
 import type { Database } from "@/types/database";
 import type { UserSituation } from "../situation";
@@ -55,6 +56,17 @@ export async function loadSituation(
   const { data: workspaceId, error: workspaceError } = await supabase.rpc("current_workspace_id");
   if (workspaceError) throw workspaceError;
   const ws = workspaceId ?? "";
+  // A worker sees amounts and finance summaries only with those rights; RLS
+  // cannot hide a column, so the summary leaves them out (the owner always may).
+  const owner = Boolean(ws) && assigneeId === ws;
+  const rights = owner
+    ? Promise.resolve([true, true] as const)
+    : ws
+      ? Promise.all([
+          serverCan(supabase, ws, "pipeline", "see_amounts").catch(() => false),
+          serverCan(supabase, ws, "finance", "summaries").catch(() => false),
+        ])
+      : Promise.resolve([false, false] as const);
   // Read alongside the rest; it never fails (without statistics the default hours apply).
   const timeWindow = loadTimeWindow(supabase, { timeZone, country, now });
 
@@ -221,6 +233,7 @@ export async function loadSituation(
 
   const totals = must(finance);
   if (crmToday.error) throw crmToday.error;
+  const [seeAmounts, seeFinance] = await rights;
 
   return {
     today,
@@ -241,7 +254,7 @@ export async function loadSituation(
       .map((stage) => ({
         name: stage.name,
         open: perStage.get(stage.id)?.open ?? 0,
-        value: perStage.get(stage.id)?.value ?? 0,
+        value: seeAmounts ? (perStage.get(stage.id)?.value ?? 0) : 0,
       })),
     stalledDeals,
     followUps,
@@ -252,7 +265,9 @@ export async function loadSituation(
       allDay: e.all_day,
     })),
     prospectingSeconds: Number(must(prospecting) ?? 0),
-    finance: { income: Number(totals?.income ?? 0), expense: Number(totals?.expense ?? 0) },
+    finance: seeFinance
+      ? { income: Number(totals?.income ?? 0), expense: Number(totals?.expense ?? 0) }
+      : null,
     overdueInvoices: list(invoices).flatMap((invoice) =>
       invoice.number && invoice.due_on
         ? [

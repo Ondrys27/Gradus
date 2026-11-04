@@ -39,6 +39,11 @@ function situation(overrides: Partial<UserSituation> = {}): UserSituation {
 }
 
 describe("describeSituation", () => {
+  it("leaves the month's money out for a worker without finance summaries", () => {
+    expect(describeSituation(situation(), settings)).toContain("This month: income");
+    expect(describeSituation(situation({ finance: null }), settings)).not.toContain("This month");
+  });
+
   it("writes the whole picture compactly in the user's zone and formats", () => {
     const text = describeSituation(
       situation({

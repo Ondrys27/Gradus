@@ -442,6 +442,48 @@ describe("contacts, tasks, calendar, finance", () => {
   });
 });
 
+describe("search keeps to the fine rights", () => {
+  it("finds deals by their value and shows it only with 'see amounts'", async () => {
+    await grant(sellerId, { pipeline: ["view", "view_all"] });
+    const stage = await firstStage(owner);
+    const deal = await one<{ id: string }>(
+      `insert into deals (user_id, stage_id, title, value, assignee_id)
+       values ($1, $2, 'Quiet number', 987654, $1) returning id`,
+      [owner, stage.id],
+    );
+    const byAmount = () =>
+      rows<{ id: string }>(`select id from search_matches('deal', '', '{}', '987654', 10)`);
+    const viaSearch = () =>
+      rows<{ id: string; data: { value: number | null } }>(
+        `select id, data from global_search('Quiet number', '{}', 987654, array['deal'])`,
+      );
+
+    expect(await as(seller, byAmount)).toEqual([]);
+    const hidden = await as(seller, viaSearch);
+    expect(hidden.map((r) => r.id)).toEqual([deal.id]);
+    expect(hidden[0]!.data.value).toBeNull();
+
+    await grant(sellerId, { pipeline: ["view", "view_all", "see_amounts"] });
+    expect((await as(seller, byAmount)).map((r) => r.id)).toEqual([deal.id]);
+    expect(Number((await as(seller, viaSearch))[0]!.data.value)).toBe(987654);
+    expect((await as(owner, byAmount)).map((r) => r.id)).toEqual([deal.id]);
+  });
+
+  it("finds transactions only with finance 'view', invoices only with invoices 'view'", async () => {
+    await db.query(
+      `insert into transactions (user_id, amount, occurred_on, type, description)
+       values ($1, 100, current_date, 'income', 'Searchable rent')`,
+      [owner],
+    );
+    const found = () =>
+      rows(`select id from search_matches('transaction', 'searchable rent', '{}', null, 10)`);
+    await grant(helperId, { invoices: ["view"] });
+    expect(await as(helper, found)).toEqual([]);
+    await grant(helperId, { finance: ["view"] });
+    expect((await as(helper, found)).length).toBe(1);
+  });
+});
+
 describe("company", () => {
   it("shows a worker their branch, everyone with 'see everyone', nothing without Company", async () => {
     await grant(managerId, { company: ["view"] });

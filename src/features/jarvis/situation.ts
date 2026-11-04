@@ -35,7 +35,8 @@ export type UserSituation = {
   followUpsTotal: number;
   events: { title: string; startsAt: Date; allDay: boolean }[];
   prospectingSeconds: number;
-  finance: { income: number; expense: number };
+  /** This month's totals; null for a worker without the right to see finance summaries. */
+  finance: { income: number; expense: number } | null;
   /** Issued, unpaid invoices past their due day, the oldest first. */
   overdueInvoices: {
     number: string;
@@ -207,10 +208,12 @@ export function describeSituation(situation: UserSituation, settings: FormatSett
     lines.push(`Your sales tasks still due today: ${situation.crmTasksDueToday}.`);
   }
 
-  const { income, expense } = situation.finance;
-  lines.push(
-    `This month: income ${money(income)}, expenses ${money(expense)}, balance ${money(income - expense)}.`,
-  );
+  if (situation.finance) {
+    const { income, expense } = situation.finance;
+    lines.push(
+      `This month: income ${money(income)}, expenses ${money(expense)}, balance ${money(income - expense)}.`,
+    );
+  }
 
   return lines.join("\n");
 }

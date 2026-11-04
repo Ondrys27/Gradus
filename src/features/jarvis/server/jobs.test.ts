@@ -307,6 +307,7 @@ describe("sales analysis", () => {
       admin: fakeDb().db,
       userId: "u",
       locale: "cs",
+      seeAmounts: true,
       log: log(),
     });
     expect(result).toEqual({ ok: false, code: "locked" });
@@ -329,6 +330,7 @@ describe("sales analysis", () => {
       admin: admin.db,
       userId: "user-1",
       locale: "cs",
+      seeAmounts: true,
       log: log(),
     });
     expect(result).toMatchObject({ ok: true, analysis: { id: "a1" } });
@@ -336,12 +338,35 @@ describe("sales analysis", () => {
     const system = calls[0].system as Anthropic.TextBlockParam[];
     expect(system[1].text).toContain('won="2" lost="2"');
     expect(system[1].text).toContain('lost reason "Too expensive"');
+    expect(system[1].text).toContain("value 1000 CZK");
     // Unknown answer keys are dropped before they reach the model.
     expect(system[1].text).not.toContain("nonsense");
     expect(op(admin.calls[0], "insert")?.[0]).toEqual({
       user_id: "user-1",
       content: "What works: ...",
     });
+  });
+
+  it("leaves the deal values out without 'see amounts'", async () => {
+    const { client, calls } = fakeModel("What works: ...");
+    const user = fakeDb({
+      meeting_surveys: { data: Array.from({ length: 5 }, () => survey("won")) },
+    });
+    const admin = fakeDb({
+      sales_analyses: { data: { id: "a1", content: "What works: ...", created_at: "now" } },
+    });
+    await runSalesAnalysis({
+      client,
+      supabase: user.db,
+      admin: admin.db,
+      userId: "user-1",
+      locale: "cs",
+      seeAmounts: false,
+      log: log(),
+    });
+    const system = calls[0].system as Anthropic.TextBlockParam[];
+    expect(system[1].text).toContain('deal "Acme"');
+    expect(system[1].text).not.toContain("value 1000");
   });
 
   it("describes surveys compactly", () => {

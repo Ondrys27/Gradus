@@ -53,7 +53,7 @@ import {
   reactToProactive,
 } from "@/features/jarvis/server/proactive";
 import { runRewardSetup } from "@/features/jarvis/server/reward-setup";
-import { runSalesAnalysis } from "@/features/jarvis/server/sales-analysis";
+import { maySeeDealAmounts, runSalesAnalysis } from "@/features/jarvis/server/sales-analysis";
 import { leafCount, rewardTreeSchema } from "@/features/workers/rewards/reward-tree";
 import { refreshSuggestions } from "@/features/jarvis/server/suggestions";
 import {
@@ -414,6 +414,7 @@ async function salesAnalysis(ctx: Context, body: unknown) {
     admin,
     userId,
     locale,
+    seeAmounts: await maySeeDealAmounts(supabase, userId),
     log: (entry) => logAiUsage(admin, { ...entry, userId, conversationId: null }),
   });
   if (!result.ok) return jobError(result.code, result.code === "locked" ? 403 : 502);

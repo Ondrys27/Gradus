@@ -62,6 +62,19 @@ const DRAFT_PREFIX = "gradus.chat.draft.";
 
 type Draft = { text: string; mentions: ComposerMention[] };
 
+/** Writes the pending draft (an empty one removes the key) and forgets it. */
+function saveDraft(unsaved: { current: { key: string; draft: Draft } | null }) {
+  const pending = unsaved.current;
+  if (!pending) return;
+  unsaved.current = null;
+  try {
+    if (pending.draft.text.trim()) localStorage.setItem(pending.key, JSON.stringify(pending.draft));
+    else localStorage.removeItem(pending.key);
+  } catch {
+    // Storage blocked: the draft lives while the page does.
+  }
+}
+
 function readDraft(key: string): Draft {
   try {
     const raw = localStorage.getItem(key);
@@ -131,18 +144,26 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draftKey, editing?.id]);
 
+  // The draft not written yet: saved 300 ms after the last key, and at once
+  // when the conversation changes, the composer goes or the tab is hidden, so
+  // the last words typed are never lost.
+  const unsaved = useRef<{ key: string; draft: Draft } | null>(null);
   useEffect(() => {
     if (editing) return;
-    const timer = window.setTimeout(() => {
-      try {
-        if (text.trim()) localStorage.setItem(draftKey, JSON.stringify({ text, mentions }));
-        else localStorage.removeItem(draftKey);
-      } catch {
-        // Storage blocked: the draft lives while the page does.
-      }
-    }, 300);
+    unsaved.current = { key: draftKey, draft: { text, mentions } };
+    const timer = window.setTimeout(() => saveDraft(unsaved), 300);
     return () => window.clearTimeout(timer);
   }, [text, mentions, draftKey, editing]);
+  useEffect(() => {
+    const flush = () => saveDraft(unsaved);
+    window.addEventListener("pagehide", flush);
+    document.addEventListener("visibilitychange", flush);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      document.removeEventListener("visibilitychange", flush);
+      flush();
+    };
+  }, [draftKey]);
 
   // The field grows with the text up to a third of the screen.
   useEffect(() => {

@@ -79,7 +79,18 @@ export function ChatSync() {
         "postgres_changes",
         { event: "*", schema: "public", table: "chat_members", filter: `owner_id=eq.${space}` },
         (payload) => {
-          const row = (payload.new ?? payload.old) as { channel_id?: string } | null;
+          const deleted = payload.eventType === "DELETE";
+          const row = (deleted ? payload.old : payload.new) as { channel_id?: string } | null;
+          // Realtime cannot check the policies of a deleted row nor filter it:
+          // every space hears every removal. Only one of our conversations counts.
+          if (
+            deleted &&
+            !client
+              .getQueryData<ChatChannel[]>(chatKeys.overview(user.id, space))
+              ?.some((item) => item.id === row?.channel_id)
+          ) {
+            return;
+          }
           if (row?.channel_id) {
             void client.invalidateQueries({ queryKey: chatKeys.members(user.id, row.channel_id) });
           }

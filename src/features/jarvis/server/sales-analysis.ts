@@ -1,5 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { serverCan } from "@/features/account/server/permissions";
 import type { Database } from "@/types/database";
 import { cleanAnswers } from "../../dashboard/survey-questions";
 import { SALES_ANALYSIS_MIN_SURVEYS } from "../protocol";
@@ -32,8 +33,25 @@ function outcomeOf(deal: {
   return "open";
 }
 
-/** Surveys with the result of their deal, read with the user's own client (RLS). */
-export async function loadSurveysForAnalysis(supabase: Client): Promise<SurveyForAnalysis[]> {
+/**
+ * Whether the account may see deal amounts in its space (the owner always; a
+ * worker with pipeline "see amounts"). RLS cannot hide a column.
+ */
+export async function maySeeDealAmounts(supabase: Client, userId: string): Promise<boolean> {
+  const { data: workspaceId } = await supabase.rpc("current_workspace_id");
+  if (!workspaceId) return false;
+  if (workspaceId === userId) return true;
+  return serverCan(supabase, workspaceId, "pipeline", "see_amounts").catch(() => false);
+}
+
+/**
+ * Surveys with the result of their deal, read with the user's own client
+ * (RLS). Without `seeAmounts` the deals come without their value.
+ */
+export async function loadSurveysForAnalysis(
+  supabase: Client,
+  seeAmounts: boolean,
+): Promise<SurveyForAnalysis[]> {
   const { data, error } = await supabase
     .from("meeting_surveys")
     .select(
@@ -48,7 +66,7 @@ export async function loadSurveysForAnalysis(supabase: Client): Promise<SurveyFo
     deal: row.deal
       ? {
           title: row.deal.title,
-          value: row.deal.value === null ? null : Number(row.deal.value),
+          value: row.deal.value === null || !seeAmounts ? null : Number(row.deal.value),
           currency: row.deal.currency,
           outcome: outcomeOf(row.deal),
           stage: row.deal.stage?.name ?? null,
@@ -100,9 +118,11 @@ export async function runSalesAnalysis(args: {
   admin: Client;
   userId: string;
   locale: string;
+  /** maySeeDealAmounts(): a worker without "see amounts" gives the model no values. */
+  seeAmounts: boolean;
   log: ModelCall["log"];
 }) {
-  const surveys = await loadSurveysForAnalysis(args.supabase);
+  const surveys = await loadSurveysForAnalysis(args.supabase, args.seeAmounts);
   if (surveys.length < SALES_ANALYSIS_MIN_SURVEYS)
     return { ok: false as const, code: "locked" as const };
 
