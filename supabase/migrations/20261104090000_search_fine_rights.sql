@@ -9,6 +9,10 @@
 --   20260930140000_global_search.sql; signatures and grants unchanged.
 -- =============================================================================
 
+-- Loads pg_trgm in this session, so its threshold below is a known parameter
+-- (an unknown placeholder may not be set by a non-superuser).
+select extensions.similarity('', '');
+
 CREATE OR REPLACE FUNCTION public.search_matches(_kind text, _q text, _phones text[], _amount_digits text, _limit integer)
  RETURNS TABLE(id uuid, rank real)
  LANGUAGE plpgsql
