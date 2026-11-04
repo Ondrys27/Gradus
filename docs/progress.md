@@ -106,6 +106,13 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 19.4 | architect | 2026-11-04 — Zprávy: skupinové konverzace podle skupin pracovníků a přímé zprávy, přílohy v soukromém bucketu, živě přes Realtime, odznak nepřečtených, @zmínky, odpovědi, e-mail při nepřítomnosti, ztišení a export CSV pro majitele.
 - [ ] K19 | reviewer |
 - [ ] STOP | Konec fáze 19. Sbal menu ⌘B a obnov stránku. Ve Správě firmy pozvi dva pracovníky (druhý pod prvního), přepni seznam/mapa, přesuň tažením, založ skupinu. Otevři dashboard pracovníka: změň foto, dej šablonu Obchodník, nahraj dokument, podívej se na grafy s různým horizontem. Přihlas se jako pracovník a ověř, co vidí. Ve Zprávách si napiš ve dvou prohlížečích v přímé i skupinové konverzaci, zkus @zmínku, přílohu a smazání zprávy. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
+- [ ] 20.1 | architect | env: ANTHROPIC_API_KEY
+- [ ] 20.2 | architect |
+- [ ] 20.3 | architect |
+- [ ] 20.4 | architect |
+- [ ] 20.5 | designer |
+- [ ] K20 | reviewer |
+- [ ] STOP | Konec fáze 20. Přečti si docs/jarvis-pravidla.md a v administraci → AI a Jarvis → Pravidla napiš Jarvisovi své pokyny, vyzkoušej je. V milníku importuj mapu z MindNode (export do OPML) a exportuj Markdown. V poznámkách založ myšlenkovou mapu, zkus Tab/Enter a tažení, nech si od Jarvise navrhnout větve. Založ nový účet a projdi rychlou ukázku; pak v Nastavení spusť úplný tutoriál a projdi ho celý, na konci smaž ukázková data. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [ ] 7.1 | RUČNĚ | Aplikace běží na Vercel Hobby a každý push na main se nasadí sám. Až budeš mít doménu: nastav ji ve Vercelu, změň NEXT_PUBLIC_SITE_URL ve Vercelu, uprav Site URL a Redirect URLs v Supabase → URL Configuration a dej Redeploy. Projdi produkci v anonymním okně a pak tuhle položku zaškrtni ručně.
 
 ## Odloženo
