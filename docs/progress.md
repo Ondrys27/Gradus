@@ -113,6 +113,13 @@ Formát: `- [ ] ID | agent | požadavek`
 - [ ] 20.5 | designer |
 - [ ] K20 | reviewer |
 - [ ] STOP | Konec fáze 20. Přečti si docs/jarvis-pravidla.md a v administraci → AI a Jarvis → Pravidla napiš Jarvisovi své pokyny, vyzkoušej je. V milníku importuj mapu z MindNode (export do OPML) a exportuj Markdown. V poznámkách založ myšlenkovou mapu, zkus Tab/Enter a tažení, nech si od Jarvise navrhnout větve. Založ nový účet a projdi rychlou ukázku; pak v Nastavení spusť úplný tutoriál a projdi ho celý, na konci smaž ukázková data. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
+- [ ] 22.1 | architect | env: RESEND_API_KEY
+- [ ] 22.2 | architect |
+- [ ] 22.3 | architect |
+- [ ] 22.4 | architect |
+- [ ] 22.5 | architect | env: RESEND_API_KEY
+- [ ] K22 | reviewer |
+- [ ] STOP | Konec fáze 22. Pošli Vášovi docs/funkce.md. V administraci najdi Vášu podle e-mailu a pošli mu reset hesla. Založ promo kód VASA50 a zaregistruj se s ním v anonymním okně. Pozvi Vášu do své firmy přes jeho krátké ID, on pozvánku přijme a přepne se mezi svou a tvou firmou; zkontroluj, že se data nemíchají a že v Předplatném je za něj 0 Kč. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [ ] 7.1 | RUČNĚ | Aplikace běží na Vercel Hobby a každý push na main se nasadí sám. Až budeš mít doménu: nastav ji ve Vercelu, změň NEXT_PUBLIC_SITE_URL ve Vercelu, uprav Site URL a Redirect URLs v Supabase → URL Configuration a dej Redeploy. Projdi produkci v anonymním okně a pak tuhle položku zaškrtni ručně.
 
 ## Odloženo
