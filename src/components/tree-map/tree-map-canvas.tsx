@@ -97,6 +97,13 @@ type Props = {
   locked?: boolean;
   /** Root on the left (default) or on top, like an organisation chart. */
   orientation?: Orientation;
+  /**
+   * A new value (not undefined) fits the whole tree into view as soon as every
+   * node of the current tree is measured (after an import), then calls
+   * `onAligned`. Undefined never aligns, so a map shown later starts as usual.
+   */
+  alignKey?: unknown;
+  onAligned?: () => void;
 };
 
 const noop = () => {};
@@ -123,6 +130,8 @@ export function TreeMap({
   wrapNode,
   locked = false,
   orientation = "horizontal",
+  alignKey,
+  onAligned,
 }: Props) {
   const t = useTranslations("treeMap");
   const instanceId = useId();
@@ -374,6 +383,15 @@ export function TreeMap({
     centredOnce.current = true;
   }, [current, viewport, centre]);
 
+  // Aligning on request waits for the layout of the tree as it is now, not the last one shown.
+  const alignedKey = useRef<unknown>(undefined);
+  useEffect(() => {
+    if (alignKey === undefined || alignKey === alignedKey.current || !layout || !viewport) return;
+    alignedKey.current = alignKey;
+    centre(300, true);
+    onAligned?.();
+  }, [alignKey, layout, viewport, centre, onAligned]);
+
   // Full screen switch: a short fade on the same element, then measure the new viewport.
   const switched = useRef(false);
   useEffect(() => {
@@ -509,6 +527,7 @@ export function TreeMap({
         <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
           {current && (
             <div
+              data-map-canvas
               className="relative"
               style={{
                 width: current.width + CANVAS_PAD * 2,

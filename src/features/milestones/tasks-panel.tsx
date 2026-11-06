@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { ListChecksIcon, ListTreeIcon, NetworkIcon, PlusIcon } from "lucide-react";
+import { FileUpIcon, ListChecksIcon, ListTreeIcon, NetworkIcon, PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -38,12 +38,16 @@ import {
 import { useTaskView, type TaskView } from "./task-view-preference";
 import type { Milestone, Task } from "./types";
 import { useViewTracking } from "@/lib/analytics/use-view-tracking";
+import { useUrlIntent } from "@/lib/use-url-intent";
+import { MapExportMenu } from "./map-export-menu";
+import { MapImportDialog } from "./map-import-dialog";
 
 type TaskFormState = { open: boolean; mode: TaskFormMode };
 
 /** The tasks of one milestone as a sortable list or a map, with quick add and task dialogs. */
 export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: Task[] }) {
   const t = useTranslations("milestones.tasks");
+  const tio = useTranslations("milestones.mapIo");
   const milestoneId = milestone.id;
   const [view, setView] = useTaskView();
   useViewTracking("tasks", view);
@@ -67,6 +71,23 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
   const [moving, setMoving] = useState<{ task: Task; open: boolean } | null>(null);
   const [quickTitle, setQuickTitle] = useState("");
   const quickRef = useRef<HTMLInputElement>(null);
+  const viewRef = useRef<HTMLDivElement>(null);
+  const [importing, setImporting] = useState<{ open: boolean; file: File | null }>({
+    open: false,
+    file: null,
+  });
+  /** After an import the map fits itself into view with the milestone selected. */
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [alignKey, setAlignKey] = useState<number | undefined>(undefined);
+
+  function showImported() {
+    setView("map");
+    setSelectedId(milestoneId);
+    setAlignKey((key) => (key ?? 0) + 1);
+  }
+
+  // A milestone made from an import opens on its map.
+  useUrlIntent("imported", () => showImported());
 
   /** The last move of this visit, for ⌘/Ctrl + Z. */
   const lastMove = useRef<{ taskId: string; from: MoveTarget } | null>(null);
@@ -212,43 +233,71 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
 
   return (
     <GlowCard interactive={false} className="flex flex-col gap-4 p-4 sm:p-5">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="micro-label">{t("heading")}</h2>
-        <ViewSwitch view={view} onChange={setView} />
+        <div className="flex items-center gap-2">
+          {canEdit && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setImporting({ open: true, file: null })}
+              className="min-w-11 rounded-xl px-3 text-sm mouse:h-8"
+            >
+              <FileUpIcon aria-hidden data-icon="inline-start" />
+              <span className="max-sm:sr-only">{tio("importButton")}</span>
+            </Button>
+          )}
+          <MapExportMenu
+            milestone={milestone}
+            tasks={tasks}
+            view={view}
+            mapContainer={() => viewRef.current}
+            showMap={() => setView("map")}
+            onFailed={() => setError(tio("export.failed"))}
+          />
+          <ViewSwitch view={view} onChange={setView} />
+        </div>
       </div>
 
       {error && <FormAlert>{error}</FormAlert>}
       {writeNote.failed && <FormAlert>{t("writeNoteFailed")}</FormAlert>}
 
-      {view === "map" ? (
-        <TaskMap
-          milestone={milestone}
-          tasks={tasks}
-          onOpen={handlers.onEdit}
-          onToggleDone={handlers.onToggleDone}
-          onAddChild={(parent) => setForm({ open: true, mode: { kind: "create", parent } })}
-          onMove={canEdit ? moveTask : undefined}
-          readOnly={!canEdit}
-        />
-      ) : tasks.length === 0 ? (
-        <EmptyState
-          icon={<ListChecksIcon />}
-          title={t("emptyTitle")}
-          description={t("emptyDescription")}
-          action={
-            canEdit && (
-              <Button variant="outline" onClick={() => quickRef.current?.focus()}>
-                {t("emptyAction")}
-              </Button>
-            )
-          }
-        />
-      ) : (
-        <TaskList
-          handlers={handlers}
-          onMove={(taskId, target) => moveTask(taskId, target, "list")}
-        />
-      )}
+      <div ref={viewRef} className="contents">
+        {view === "map" ? (
+          <TaskMap
+            milestone={milestone}
+            tasks={tasks}
+            onOpen={handlers.onEdit}
+            onToggleDone={handlers.onToggleDone}
+            onAddChild={(parent) => setForm({ open: true, mode: { kind: "create", parent } })}
+            onMove={canEdit ? moveTask : undefined}
+            readOnly={!canEdit}
+            selectedId={selectedId}
+            onSelectedChange={setSelectedId}
+            alignKey={alignKey}
+            onAligned={() => setAlignKey(undefined)}
+            onFileDrop={canEdit ? (file) => setImporting({ open: true, file }) : undefined}
+          />
+        ) : tasks.length === 0 ? (
+          <EmptyState
+            icon={<ListChecksIcon />}
+            title={t("emptyTitle")}
+            description={t("emptyDescription")}
+            action={
+              canEdit && (
+                <Button variant="outline" onClick={() => quickRef.current?.focus()}>
+                  {t("emptyAction")}
+                </Button>
+              )
+            }
+          />
+        ) : (
+          <TaskList
+            handlers={handlers}
+            onMove={(taskId, target) => moveTask(taskId, target, "list")}
+          />
+        )}
+      </div>
 
       {canEdit && (
         <form onSubmit={quickAdd} className="flex items-center gap-2">
@@ -264,6 +313,16 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
             <PlusIcon aria-hidden />
           </Button>
         </form>
+      )}
+
+      {canEdit && (
+        <MapImportDialog
+          open={importing.open}
+          onOpenChange={(open) => setImporting((current) => ({ ...current, open }))}
+          target={{ kind: "milestone", milestone, tasks }}
+          initialFile={importing.file}
+          onImported={showImported}
+        />
       )}
 
       <TaskFormDialog

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FlagIcon, ListIcon, MapIcon, PlusIcon } from "lucide-react";
+import { FileUpIcon, FlagIcon, ListIcon, MapIcon, PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -14,6 +14,7 @@ import { useCan } from "@/features/account/workspace-queries";
 import { PathMap } from "@/features/game/path-map";
 import { useGameState, useIsPlaying } from "@/features/game/queries";
 import { MilestoneCard } from "./milestone-card";
+import { MapImportDialog } from "./map-import-dialog";
 import { MilestoneFormDialog } from "./milestone-form-dialog";
 import { useMilestones } from "./queries";
 import { sortMilestones } from "./task-tree";
@@ -31,6 +32,7 @@ export function MilestonesView() {
   const { data, isPending, isError, refetch } = useMilestones();
   const [filter, setFilter] = useState<Filter>("all");
   const [creating, setCreating] = useState(false);
+  const [importing, setImporting] = useState(false);
   const canEdit = useCan("milestones", "edit");
   useUrlIntent("new", (value) => {
     if (value === "milestone" && canEdit) setCreating(true);
@@ -52,10 +54,16 @@ export function MilestonesView() {
   );
 
   const newButton = canEdit && (
-    <Button onClick={() => setCreating(true)}>
-      <PlusIcon aria-hidden data-icon="inline-start" />
-      {t("actions.new")}
-    </Button>
+    <div className="flex flex-wrap gap-2">
+      <Button variant="outline" onClick={() => setImporting(true)}>
+        <FileUpIcon aria-hidden data-icon="inline-start" />
+        {t("actions.import")}
+      </Button>
+      <Button onClick={() => setCreating(true)}>
+        <PlusIcon aria-hidden data-icon="inline-start" />
+        {t("actions.new")}
+      </Button>
+    </div>
   );
 
   return (
@@ -160,6 +168,10 @@ export function MilestonesView() {
             </div>
           )}
         </>
+      )}
+
+      {canEdit && (
+        <MapImportDialog open={importing} onOpenChange={setImporting} target={{ kind: "new" }} />
       )}
 
       <MilestoneFormDialog

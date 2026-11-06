@@ -44,7 +44,7 @@ Závazný seznam toho, co se měří a jak. Každá metrika odsud musí mít def
 
 U každé sekce: adopce (% aktivních, kteří ji použili), počet akcí, akce na uživatele, trend.
 
-**Milníky** — vytvořené (z kapitoly / vlastní), dokončené, míra a medián doby dokončení, úkoly a podúkoly vytvořené a splněné, hloubka stromu, podíl pohledů Seznam / Mapa / Cesta, vyplněná odměna (%), vyžádané AI hodnocení
+**Milníky** — vytvořené (z kapitoly / vlastní), dokončené, míra a medián doby dokončení, úkoly a podúkoly vytvořené a splněné, hloubka stromu, podíl pohledů Seznam / Mapa / Cesta, vyplněná odměna (%), vyžádané AI hodnocení, importy myšlenkových map (`mindmap_imported`: formát, počet uzlů, přidat / nahradit / nový milník, zploštění) a exporty (`mindmap_exported`: formát, z mapy / ze seznamu / záloha)
 
 **Poznámky** — založené (prázdné / ze šablony, podle klíče šablony a oboru, odkud: seznam, úkol, milník, Jarvis), smazané, uživatelé s aspoň jednou poznámkou, propojení s úkoly a milníky (připojená / zapsaná, podle šablony), uložené odpovědi Jarvise (nová / připojená), představení Poznámek Jarvisem (zobrazeno / otevřeno / zavřeno), smazání podle místa (otevřená poznámka / popelnice v seznamu / klávesa), odkazy na záznamy v textu (kontakt / obchod / událost / pracovník, napsáním @ / tlačítkem) a jejich otevření z čipu (z `note_created`, `note_template_used`, `note_deleted`, `note_linked`, `note_unlinked`, `note_saved_from_jarvis`, `note_mention_added`, `note_mention_opened`, `jarvis_notes_intro`; nikdy názvy ani obsah)
 

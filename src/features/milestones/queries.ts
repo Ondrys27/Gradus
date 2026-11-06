@@ -12,8 +12,10 @@ import { useSession } from "@/features/account/queries";
 import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { JarvisJobError, postJarvisJob } from "@/features/jarvis/queries";
 import { track } from "@/lib/analytics/client";
+import type { MindMapFormat, MindMapParseResult, MindMapTree } from "@/lib/mindmap/formats";
 import { createClient } from "@/lib/supabase/client";
 import { moveTaskAction } from "./actions";
+import { MILESTONE_TASK_LIMIT, planImport, type ImportRow } from "./map-io";
 import type { MilestoneInput, MoveTaskFailure, MoveVia, TaskInput } from "./schemas";
 import {
   applyStatusChange,
@@ -38,7 +40,7 @@ import {
 /** A person has a handful of milestones; this only bounds the query. */
 const MILESTONE_LIMIT = 200;
 /** Tasks of one milestone, subtasks included; this only bounds the query. */
-const TASK_LIMIT = 2000;
+const TASK_LIMIT = MILESTONE_TASK_LIMIT;
 
 export const milestoneKeys = {
   all: (userId: string) => ["milestones", userId] as const,
@@ -496,6 +498,172 @@ export function useMoveTask(milestoneId: string) {
       const depth = depthOf(target.parentId);
       levels.current.set(taskId, { depth, changed: depth !== depthOf(plan.from.parentId) });
       return plan.tasks;
+    },
+  });
+}
+
+// -----------------------------------------------------------------------------
+// Mind map import
+
+/** Rows per insert of an import, and ids per delete (they travel in the address). */
+const IMPORT_CHUNK = 500;
+const DELETE_CHUNK = 100;
+
+type Supabase = ReturnType<typeof createClient>;
+
+/** Reads a mind map file on the server (/api/mindmap/parse): the tree, or why not. */
+export async function parseMindMapUpload(file: File): Promise<MindMapParseResult> {
+  const body = new FormData();
+  body.append("file", file);
+  const response = await fetch("/api/mindmap/parse", { method: "POST", body });
+  if (response.status === 413) return { ok: false, error: "tooLarge" };
+  if (!response.ok) throw new Error(`mindmap parse: ${response.status}`);
+  return (await response.json()) as MindMapParseResult;
+}
+
+async function deleteTasks(supabase: Supabase, ids: string[]) {
+  for (let index = 0; index < ids.length; index += DELETE_CHUNK) {
+    const { error } = await supabase
+      .from("tasks")
+      .delete()
+      .in("id", ids.slice(index, index + DELETE_CHUNK));
+    if (error) throw error;
+  }
+}
+
+/**
+ * Inserts an import level by level (parents exist before their children; a
+ * done parent only ever gets done children, so the database's rules hold at
+ * every step), through RLS like any task the user adds. If a step fails, the
+ * tasks already added go again: deleting the first level takes everything
+ * below it along.
+ */
+async function insertImport(
+  supabase: Supabase,
+  workspaceId: string,
+  milestoneId: string,
+  rows: ImportRow[],
+) {
+  const levels = new Map<number, ImportRow[]>();
+  for (const row of rows) levels.set(row.level, [...(levels.get(row.level) ?? []), row]);
+  const top = rows.filter((row) => row.level === 1).map((row) => row.id);
+  try {
+    for (const level of [...levels.keys()].sort((a, b) => a - b)) {
+      const list = levels.get(level)!;
+      for (let index = 0; index < list.length; index += IMPORT_CHUNK) {
+        const { error } = await supabase.from("tasks").insert(
+          list.slice(index, index + IMPORT_CHUNK).map((row) => ({
+            id: row.id,
+            user_id: workspaceId,
+            milestone_id: milestoneId,
+            parent_task_id: row.parent_task_id,
+            title: row.title,
+            status: row.status,
+            position: row.position,
+          })),
+        );
+        if (error) throw error;
+      }
+    }
+  } catch (error) {
+    await deleteTasks(supabase, top).catch(() => undefined);
+    throw error;
+  }
+}
+
+export type ImportTasksInput = {
+  items: MindMapTree;
+  format: MindMapFormat;
+  /** Replaces the milestone's tasks: the new ones go in first, then the old ones are deleted. */
+  replace: boolean;
+  flattened: boolean;
+};
+
+/** Imports a mind map into a milestone; resolves once the new tasks are in the cache. */
+export function useImportTasks(milestoneId: string) {
+  const { user } = useSession();
+  const workspaceId = useWorkspaceId();
+  const queryClient = useQueryClient();
+  return useTaskMutation<ImportTasksInput, number>(milestoneId, {
+    mutationFn: async ({ items, format, replace, flattened }) => {
+      const key = milestoneKeys.tasks(user.id, milestoneId);
+      const tasks = queryClient.getQueryData<Task[]>(key) ?? [];
+      const old = replace ? siblingsOfRoot(tasks) : [];
+      const rows = planImport(items, {
+        startPosition: replace ? 0 : nextPosition(tasks, null),
+        newId: () => crypto.randomUUID(),
+      });
+      const supabase = createClient();
+      await insertImport(supabase, workspaceId, milestoneId, rows);
+      if (old.length) await deleteTasks(supabase, old);
+      track("mindmap_imported", {
+        format,
+        nodes: Math.min(rows.length, 5000),
+        mode: replace ? "replace" : "append",
+        flattened,
+      });
+      // The map aligns on the new tree, so it is read before this resolves.
+      await queryClient.invalidateQueries({ queryKey: key });
+      return rows.length;
+    },
+  });
+}
+
+function siblingsOfRoot(tasks: Task[]): string[] {
+  return tasks.filter((task) => task.parent_task_id === null).map((task) => task.id);
+}
+
+/**
+ * A new milestone straight from a mind map: the milestone, then its tasks.
+ * If the tasks can not be added the milestone goes again. Jarvis reviews it
+ * once the tasks are in, like every new milestone.
+ */
+export function useCreateMilestoneFromImport() {
+  const { user } = useSession();
+  const workspaceId = useWorkspaceId();
+  const queryClient = useQueryClient();
+  const review = useReviewMilestone();
+  return useMutation({
+    mutationFn: async ({
+      title,
+      items,
+      format,
+      flattened,
+    }: Omit<ImportTasksInput, "replace"> & { title: string }) => {
+      const supabase = createClient();
+      const list = queryClient.getQueryData<MilestoneWithCounts[]>(milestoneKeys.list(user.id));
+      const position = list?.length ? Math.max(...list.map((m) => m.position)) + 1 : 0;
+      const { data: milestone, error } = await supabase
+        .from("milestones")
+        .insert({ title, category: "work", user_id: workspaceId, position })
+        .select(MILESTONE_COLUMNS)
+        .single();
+      if (error) throw error;
+      const rows = planImport(items, { startPosition: 0, newId: () => crypto.randomUUID() });
+      try {
+        await insertImport(supabase, workspaceId, milestone.id, rows);
+      } catch (cause) {
+        await supabase.from("milestones").delete().eq("id", milestone.id);
+        throw cause;
+      }
+      track("milestone_created", {
+        where: "import",
+        category: milestone.category,
+        has_reward: false,
+        has_target_date: false,
+      });
+      track("mindmap_imported", {
+        format,
+        nodes: Math.min(rows.length, 5000),
+        mode: "new",
+        flattened,
+      });
+      return milestone;
+    },
+    onSuccess: (row) => {
+      queryClient.setQueryData(milestoneKeys.detail(user.id, row.id), row);
+      review.mutate(row.id);
+      return queryClient.invalidateQueries({ queryKey: milestoneKeys.list(user.id) });
     },
   });
 }

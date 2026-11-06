@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { differenceInCalendarDays } from "date-fns";
 import { useTranslations } from "next-intl";
+import { moveDirectionOf } from "@/components/mindmap/mind-map-tree";
 import { formatCalendarDate, isoDateToLocal, todayIsoDate } from "@/lib/format";
 import type { NoteTemplateKey } from "@/features/notes/templates";
 import { useFormatSettings } from "@/lib/use-format-settings";
@@ -47,20 +48,8 @@ export type TaskHandlers = {
   onWriteNote?: (task: Task) => void;
 };
 
-const ARROWS: Record<string, MoveDirection> = {
-  ArrowUp: "up",
-  ArrowDown: "down",
-  ArrowLeft: "left",
-  ArrowRight: "right",
-};
-
-type KeyLike = Pick<KeyboardEvent, "key" | "metaKey" | "ctrlKey" | "altKey" | "shiftKey">;
-
-/** The direction of ⌘/Ctrl + an arrow, or null for any other key. */
-export function moveDirectionOf(event: KeyLike): MoveDirection | null {
-  if (!(event.metaKey || event.ctrlKey) || event.altKey || event.shiftKey) return null;
-  return ARROWS[event.key] ?? null;
-}
+/** The direction of ⌘/Ctrl + an arrow, or null for any other key; the same as in the map. */
+export { moveDirectionOf };
 
 const MOVE = { duration: 0.32, ease: [0.16, 1, 0.3, 1] } as const;
 

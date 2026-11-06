@@ -1,3 +1,4 @@
+import { mapDropZone, type MapDropZone } from "@/components/mindmap/mind-map-tree";
 import type { Milestone, MilestoneWithCounts, Task, TaskStatus } from "./types";
 
 export type TaskNode = { task: Task; children: TaskNode[] };
@@ -475,16 +476,8 @@ export function listDropAt(
   return { kind: "line", y: lineY, depth, target, valid: valid(target) };
 }
 
-/** Where a node dragged in the map is over another node. */
-export type MapDropZone = "before" | "inside" | "after";
-
-/** The upper and the lower quarter of a node put the task next to it, the middle under it. */
-export function mapDropZone(rect: { top: number; height: number }, y: number): MapDropZone {
-  const share = rect.height > 0 ? (y - rect.top) / rect.height : 0.5;
-  if (share < 0.25) return "before";
-  if (share > 0.75) return "after";
-  return "inside";
-}
+/** Where a node dragged in the map is over another node; the rule is the mind map's own. */
+export { mapDropZone, type MapDropZone };
 
 /**
  * The target of a drop in the map: on the milestone (`overId` null) = level 1

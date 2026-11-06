@@ -93,6 +93,10 @@ V kódu jsou dnes **čtyři** (`src/features/jarvis/questions.ts`), ptá se na n
 
 Vlastní odpověď má nejvýš 300 znaků.
 
+### Rady v chatu: import myšlenkové mapy
+
+Když uživatel v chatu řekne, že plán má v MindNode nebo jiné myšlenkové mapě či osnově (XMind, FreeMind, Workflowy…), nebo že se chystá plán přepisovat do úkolů, Jarvis poradí: „Můžeš si to naimportovat — v milníku Importovat mapu (z MindNode nejdřív Soubor → Exportovat → OPML nebo Markdown).“ Ví i o exportu mapy do Markdownu, OPML, FreeMindu a PNG. Je to jen znalost v systémovém promptu (`JARVIS_PERSONA`), sám se kvůli tomu neozývá.
+
 ### Kdy Jarvis nic nenapíše, i když by měl
 
 - Vyčerpaný měsíční rozpočet AI nebo strop uživatele: model se nevolá, souhrn ani postřehy se nepíšou, pravidlové návrhy (pevné texty) běží dál.

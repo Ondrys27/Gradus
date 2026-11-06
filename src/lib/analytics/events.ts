@@ -5,6 +5,8 @@ import { PROACTIVE_REACTIONS } from "@/features/jarvis/protocol";
 import { INDUSTRY_KEYS } from "@/features/onboarding/industries";
 import { XP_REASONS } from "@/features/game/rules";
 import { NOTE_TEMPLATE_KEYS } from "@/features/notes/templates";
+import { EXPORT_FORMATS, IMPORT_MODES } from "@/features/milestones/map-io";
+import { MINDMAP_FORMATS } from "@/lib/mindmap/formats";
 import { INVOICE_STYLES } from "@/features/invoices/types";
 import { BILLINGS, CANCEL_REASONS } from "@/features/subscription/state";
 import { Constants } from "@/types/database";
@@ -263,7 +265,7 @@ export const EVENTS = {
 
   // --- milestones and tasks ------------------------------------------------
   milestone_created: event("milestones", "client", true, {
-    where: oneOf(["form", "onboarding"]),
+    where: oneOf(["form", "onboarding", "import"]),
     category: oneOf(["work", "personal"]),
     has_reward: bool(),
     has_target_date: bool(),
@@ -299,6 +301,18 @@ export const EVENTS = {
     via: oneOf(["map", "list", "keyboard", "menu", "undo"]),
     depth: count(100),
     level_changed: bool(),
+  }),
+  /** A mind map file turned into tasks: into a milestone (append / replace) or a new one. */
+  mindmap_imported: event("milestones", "client", true, {
+    format: oneOf(MINDMAP_FORMATS),
+    nodes: count(5000),
+    mode: oneOf(IMPORT_MODES),
+    flattened: bool(),
+  }),
+  /** The task map downloaded; `backup` = before replacing the tasks with an import. */
+  mindmap_exported: event("milestones", "client", false, {
+    format: oneOf(EXPORT_FORMATS),
+    from: oneOf(["map", "list", "backup"]),
   }),
   view_selected: event("milestones", "client", false, {
     screen: oneOf(["milestones", "tasks", "company"]),

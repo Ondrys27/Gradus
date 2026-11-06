@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<opml version="2.0">
+  <head>
+    <ownerEmail>tester@example.com</ownerEmail>
+  </head>
+  <body>
+    <outline text="Zavolat dodavateli" _complete="true" />
+    <outline text="Připravit nabídku">
+      <outline text="Ceník" _complete="true" />
+      <outline text="Reference" />
+    </outline>
+    <outline text="Poslat fakturu" />
+  </body>
+</opml>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="2.0">
+  <head>
+    <title>Spustit e-shop</title>
+    <expansionState>0,1</expansionState>
+  </head>
+  <body>
+    <outline text="Spustit e-shop">
+      <outline text="Produkty">
+        <outline text="Vybrat dodavatele" _status="checked"/>
+        <outline text="Nafotit produkty">
+          <outline text="Pozadí a světlo" _status="checked"/>
+          <outline text="Úprava fotek"/>
+        </outline>
+      </outline>
+      <outline text="Web &amp; doména">
+        <outline text="Koupit doménu" _status="checked"/>
+        <outline text="Vybrat šablonu" _note="Něco jednoduchého"/>
+      </outline>
+      <outline text="Marketing"/>
+    </outline>
+  </body>
+</opml>

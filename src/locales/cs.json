@@ -1256,7 +1256,8 @@
       "completeLocked": "{count, plural, one {Zbývá # úkol} few {Zbývají # úkoly} many {Zbývá # úkolu} other {Zbývá # úkolů}}",
       "completeEmpty": "Přidej první úkol",
       "completeLockedHint": "Milník půjde dokončit, až budou hotové všechny úkoly.",
-      "completeEmptyHint": "Milník potřebuje aspoň jeden úkol, než ho půjde dokončit."
+      "completeEmptyHint": "Milník potřebuje aspoň jeden úkol, než ho půjde dokončit.",
+      "import": "Importovat mapu"
     },
     "filter": {
       "label": "Filtr podle kategorie",
@@ -1447,6 +1448,78 @@
       "legend": "Legenda",
       "legendShow": "Zobrazit legendu",
       "legendHide": "Skrýt legendu"
+    },
+    "mapIo": {
+      "importButton": "Importovat mapu",
+      "importTitle": "Importovat myšlenkovou mapu",
+      "importNewTitle": "Nový milník z myšlenkové mapy",
+      "dropOnMap": "Pusť soubor a naimportuj mapu",
+      "pick": "Vybrat soubor",
+      "pickHint": "Přetáhni sem soubor s mapou nebo ho vyber. OPML, FreeMind / Freeplane (.mm), XMind, Markdown nebo text s odsazením, nejvýš 2 MB.",
+      "fileLabel": "Soubor s mapou",
+      "reading": "Načítám soubor…",
+      "otherFile": "Jiný soubor",
+      "help": {
+        "title": "Jak dostat mapu z jiné aplikace",
+        "mindnode": "MindNode: Soubor → Exportovat (File → Export) → OPML nebo Markdown, a vzniklý soubor nahraj sem. Balíček .mindnode přímo načíst nejde.",
+        "xmind": "XMind: soubor .xmind nahraj rovnou.",
+        "freemind": "FreeMind a Freeplane: soubor .mm nahraj rovnou.",
+        "outliner": "Workflowy, OmniOutliner, Dynalist a další: export do OPML.",
+        "text": "Markdown nebo text: každá úroveň odsazená o 2 nebo 4 mezery nebo tabulátor, hotové položky jako [x]."
+      },
+      "format": {
+        "markdown": "Markdown",
+        "opml": "OPML",
+        "freemind": "FreeMind",
+        "xmind": "XMind",
+        "text": "text"
+      },
+      "preview": "Náhled",
+      "summary": "{tasks, plural, one {# úkol} few {# úkoly} many {# úkolu} other {# úkolů}} · {depth, plural, one {# úroveň} few {# úrovně} many {# úrovně} other {# úrovní}}",
+      "summaryDone": "{count, plural, one {# hotový} few {# hotové} many {# hotového} other {# hotových}}",
+      "rootIsMilestone": "Střed mapy „{title}“ odpovídá milníku, úkoly jsou pod ním.",
+      "more": "… a {count, plural, one {# další} few {# další} many {# dalšího} other {# dalších}}",
+      "tooDeep": "Mapa má {depth} úrovní, milník jich unese nejvýš {max}.",
+      "flattenLabel": "Zploštit od úrovně",
+      "flattenHint": "Hlubší položky se přesunou na tuto úroveň, nic se neztratí.",
+      "titleLabel": "Název milníku",
+      "mode": {
+        "label": "Úkoly, které už v milníku jsou",
+        "append": "Přidat k existujícím",
+        "replace": "Nahradit"
+      },
+      "replaceWarning": "{count, plural, one {Současný # úkol se smaže} few {Současné # úkoly se smažou} many {Současného # úkolu se smaže} other {Současných # úkolů se smaže}}. Nejdřív se ti stáhne záloha v Markdownu.",
+      "submit": "{count, plural, one {Importovat # úkol} few {Importovat # úkoly} many {Importovat # úkolu} other {Importovat # úkolů}}",
+      "submitReplace": "Stáhnout zálohu a nahradit",
+      "submitNew": "Založit milník",
+      "importing": "Importuji…",
+      "cancel": "Zrušit",
+      "close": "Zavřít",
+      "errors": {
+        "tooLarge": "Soubor je větší než 2 MB.",
+        "empty": "V souboru není nic, co by šlo naimportovat.",
+        "unsupported": "Tenhle typ souboru neumím přečíst. Zkus OPML, FreeMind, XMind, Markdown nebo text.",
+        "unreadable": "Soubor se nepodařilo přečíst. Je celý a ve správném formátu?",
+        "unsafe": "Soubor obsahuje části, které z bezpečnostních důvodů nečtu.",
+        "tooManyNodes": "Mapa je moc velká, najednou jde přečíst nejvýš 5 000 položek.",
+        "mindnodePackage": "Balíček MindNode přímo načíst nejde. V MindNode dej Soubor → Exportovat → OPML nebo Markdown a nahraj ten soubor.",
+        "tooMany": "Najednou jde importovat nejvýš {max} úkolů.",
+        "milestoneFull": "Milník by měl víc než {max} úkolů. Zvol Nahradit, nebo mapu naimportuj jako nový milník.",
+        "readOnly": "Účet je teď jen pro čtení, import nejde uložit.",
+        "saveFailed": "Import se nepodařilo uložit, nic se nezměnilo. Zkus to znovu.",
+        "network": "Soubor se nepodařilo odeslat ke zpracování. Zkus to znovu."
+      },
+      "export": {
+        "button": "Exportovat",
+        "label": "Exportovat mapu",
+        "markdown": "Markdown (.md)",
+        "opml": "OPML (.opml)",
+        "freemind": "FreeMind (.mm)",
+        "png": "Obrázek PNG",
+        "failed": "Export se nepovedl, zkus to znovu."
+      },
+      "fileFallback": "mapa",
+      "backupSuffix": "záloha"
     },
     "celebration": {
       "title": "Milník splněn!",

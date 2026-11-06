@@ -1256,7 +1256,8 @@
       "completeLocked": "{count, plural, one {# task left} other {# tasks left}}",
       "completeEmpty": "Add the first task",
       "completeLockedHint": "The milestone can be completed once every task is done.",
-      "completeEmptyHint": "A milestone needs at least one task before it can be completed."
+      "completeEmptyHint": "A milestone needs at least one task before it can be completed.",
+      "import": "Import map"
     },
     "filter": {
       "label": "Filter by category",
@@ -1447,6 +1448,78 @@
       "legend": "Legend",
       "legendShow": "Show the legend",
       "legendHide": "Hide the legend"
+    },
+    "mapIo": {
+      "importButton": "Import map",
+      "importTitle": "Import a mind map",
+      "importNewTitle": "New milestone from a mind map",
+      "dropOnMap": "Drop the file to import the map",
+      "pick": "Choose file",
+      "pickHint": "Drag a mind map file here or choose one. OPML, FreeMind / Freeplane (.mm), XMind, Markdown or indented text, up to 2 MB.",
+      "fileLabel": "Mind map file",
+      "reading": "Reading the file…",
+      "otherFile": "Another file",
+      "help": {
+        "title": "How to get a map out of another app",
+        "mindnode": "MindNode: File → Export → OPML or Markdown, then upload that file here. A .mindnode package can't be read directly.",
+        "xmind": "XMind: upload the .xmind file as it is.",
+        "freemind": "FreeMind and Freeplane: upload the .mm file as it is.",
+        "outliner": "Workflowy, OmniOutliner, Dynalist and others: export to OPML.",
+        "text": "Markdown or text: indent each level by 2 or 4 spaces or a tab, mark done items with [x]."
+      },
+      "format": {
+        "markdown": "Markdown",
+        "opml": "OPML",
+        "freemind": "FreeMind",
+        "xmind": "XMind",
+        "text": "text"
+      },
+      "preview": "Preview",
+      "summary": "{tasks, plural, one {# task} other {# tasks}} · {depth, plural, one {# level} other {# levels}}",
+      "summaryDone": "{count} done",
+      "rootIsMilestone": "The map's central topic “{title}” is the milestone; the tasks go under it.",
+      "more": "… and {count} more",
+      "tooDeep": "The map has {depth} levels; a milestone holds at most {max}.",
+      "flattenLabel": "Flatten from level",
+      "flattenHint": "Deeper items move up to this level; nothing is lost.",
+      "titleLabel": "Milestone name",
+      "mode": {
+        "label": "Tasks already in the milestone",
+        "append": "Add to them",
+        "replace": "Replace"
+      },
+      "replaceWarning": "{count, plural, one {The current task will be deleted} other {The current # tasks will be deleted}}. A Markdown backup downloads first.",
+      "submit": "{count, plural, one {Import # task} other {Import # tasks}}",
+      "submitReplace": "Download backup and replace",
+      "submitNew": "Create milestone",
+      "importing": "Importing…",
+      "cancel": "Cancel",
+      "close": "Close",
+      "errors": {
+        "tooLarge": "The file is larger than 2 MB.",
+        "empty": "There's nothing in the file to import.",
+        "unsupported": "I can't read this type of file. Try OPML, FreeMind, XMind, Markdown or text.",
+        "unreadable": "The file couldn't be read. Is it complete and in the right format?",
+        "unsafe": "The file contains parts I don't read for security reasons.",
+        "tooManyNodes": "The map is too big; at most 5,000 items can be read at once.",
+        "mindnodePackage": "A MindNode package can't be read directly. In MindNode choose File → Export → OPML or Markdown and upload that file.",
+        "tooMany": "At most {max} tasks can be imported at once.",
+        "milestoneFull": "The milestone would have more than {max} tasks. Choose Replace, or import the map as a new milestone.",
+        "readOnly": "The account is read-only right now; the import can't be saved.",
+        "saveFailed": "The import couldn't be saved and nothing changed. Please try again.",
+        "network": "The file couldn't be sent for reading. Please try again."
+      },
+      "export": {
+        "button": "Export",
+        "label": "Export map",
+        "markdown": "Markdown (.md)",
+        "opml": "OPML (.opml)",
+        "freemind": "FreeMind (.mm)",
+        "png": "PNG image",
+        "failed": "The export didn't work. Please try again."
+      },
+      "fileFallback": "map",
+      "backupSuffix": "backup"
     },
     "celebration": {
       "title": "Milestone completed!",

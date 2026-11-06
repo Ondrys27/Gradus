@@ -1,0 +1,10 @@
+Spustit e-shop
+	Produkty
+		[x] Vybrat dodavatele
+		Nafotit produkty
+			☑ Pozadí a světlo
+			☐ Úprava fotek
+	Web a doména
+		• ✓ Koupit doménu
+		• Vybrat šablonu
+	Marketing
