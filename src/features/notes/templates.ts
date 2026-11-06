@@ -7,6 +7,7 @@
  */
 import type { IndustryKey } from "@/features/onboarding/industries";
 import { draftFromDoc, type DocNode, type NoteDraft } from "./document";
+import { mapDraft, newMapDoc } from "./mindmap/map-doc";
 
 export const NOTE_TEMPLATE_KEYS = [
   "idealCustomer",
@@ -20,6 +21,19 @@ export type NoteTemplateKey = (typeof NOTE_TEMPLATE_KEYS)[number];
 export const TEMPLATE_QUESTIONS = {
   idealCustomer: ["who", "problem", "today", "where", "decides"],
   offer: ["what", "outcome", "different", "main", "later"],
+  pricing: ["items", "basis", "margin", "discounts", "compare"],
+  competition: ["who", "strong", "weak", "prices", "edge"],
+  salesScript: ["opening", "questions", "pitch", "objections", "close"],
+} as const satisfies Record<NoteTemplateKey, readonly string[]>;
+
+/**
+ * The same templates as a mind map: the title in the centre and a few
+ * branches to fill in (`notes.templates.<key>.map.<branch>`), e.g. the ideal
+ * customer as Who · Problems · Where to find them · Objections.
+ */
+export const MAP_TEMPLATE_BRANCHES = {
+  idealCustomer: ["who", "problems", "where", "objections"],
+  offer: ["what", "forWhom", "outcome", "different", "later"],
   pricing: ["items", "basis", "margin", "discounts", "compare"],
   competition: ["who", "strong", "weak", "prices", "edge"],
   salesScript: ["opening", "questions", "pitch", "objections", "close"],
@@ -92,4 +106,10 @@ export function templateDraft(
   t: TemplateTranslator,
 ): NoteDraft {
   return draftFromDoc(templateDoc(key, industry, t));
+}
+
+/** A prepared note as a mind map: the template's title in the centre, its branches around. */
+export function templateMapDraft(key: NoteTemplateKey, t: TemplateTranslator): NoteDraft {
+  const branches = MAP_TEMPLATE_BRANCHES[key].map((branch) => t(`${key}.map.${branch}`));
+  return mapDraft(newMapDoc(t(`${key}.title`), branches));
 }

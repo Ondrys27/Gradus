@@ -25,7 +25,19 @@ export async function loadNotesContext(
     _body_chars: NOTES_CONTEXT_MAX_CHARS,
   });
   if (error) throw error;
-  return describeNotes(data ?? [], settings);
+  const rows = data ?? [];
+  // Which of them are mind maps (their text is the map's indented outline).
+  const ids = rows.map((row) => row.id);
+  let maps = new Set<string>();
+  if (ids.length > 0) {
+    const kinds = await supabase.from("notes").select("id").in("id", ids).eq("kind", "mindmap");
+    if (kinds.error) throw kinds.error;
+    maps = new Set(kinds.data.map((row) => row.id));
+  }
+  return describeNotes(
+    rows.map((row) => ({ ...row, kind: maps.has(row.id) ? ("mindmap" as const) : ("text" as const) })),
+    settings,
+  );
 }
 
 /**

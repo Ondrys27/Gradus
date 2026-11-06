@@ -4,6 +4,7 @@ import {
   describeLinkedNotes,
   describeNotes,
   MENTIONS_HINT,
+  MINDMAP_HINT,
   neutralizeNoteText,
   NOTES_CONTEXT_MAX_CHARS,
   TRUNCATED_MARK,
@@ -26,6 +27,22 @@ function row(patch: Partial<JarvisNoteRow> & { title: string }): JarvisNoteRow {
 }
 
 describe("describeNotes", () => {
+  it("gives a mind map as its indented outline and says how to read it", () => {
+    const outline = "Konkurence\n  Kavárna U Rohu\n    Ceny\n  Pekárna Paul";
+    const block = describeNotes(
+      [row({ title: "Konkurence", kind: "mindmap", pinned: true, body: outline }), row({ title: "Ceník" })],
+      settings,
+    );
+    expect(block).toContain(MINDMAP_HINT);
+    expect(block).toContain('- "Konkurence" (mind map), edited');
+    expect(block).toContain('<note title="Konkurence" kind="mind map"');
+    expect(block).toContain(outline);
+    expect(block).toMatch(/^<user_notes>/);
+
+    // Without a map the hint is not spent.
+    expect(describeNotes([row({ title: "Ceník", body: "x" })], settings)).not.toContain(MINDMAP_HINT);
+  });
+
   it("says nothing when there are no notes", () => {
     expect(describeNotes([], settings)).toBe("");
   });

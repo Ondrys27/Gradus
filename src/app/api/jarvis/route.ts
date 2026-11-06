@@ -19,6 +19,7 @@ import {
   chatRequestSchema,
   emailReplyRequestSchema,
   milestoneReviewRequestSchema,
+  noteMapSuggestRequestSchema,
   pingRequestSchema,
   proactiveRequestSchema,
   rateMessageRequestSchema,
@@ -61,6 +62,9 @@ import {
   reactToProactive,
 } from "@/features/jarvis/server/proactive";
 import { runRewardSetup } from "@/features/jarvis/server/reward-setup";
+import { runNoteMapSuggest } from "@/features/jarvis/server/note-map-suggest";
+import { noteContentOf, noteKindOf } from "@/features/notes/mindmap/note-row";
+import { isMapDoc } from "@/features/notes/mindmap/map-doc";
 import { loadJarvisRules } from "@/features/jarvis/server/rules";
 import { maySeeDealAmounts, runSalesAnalysis } from "@/features/jarvis/server/sales-analysis";
 import { leafCount, rewardTreeSchema } from "@/features/workers/rewards/reward-tree";
@@ -254,6 +258,7 @@ export const POST = instrumentRoute("api.jarvis.post", async (request: Request) 
   if (kind === "milestoneReview") return milestoneReview(ctx, body);
   if (kind === "salesAnalysis") return salesAnalysis(ctx, body);
   if (kind === "rewardSetup") return rewardSetup(ctx, body);
+  if (kind === "noteMapSuggest") return noteMapSuggest(ctx, body);
   if (kind === "emailReply") return emailReply(ctx, body);
   if (kind === "ping") return ping(ctx, body);
   if (kind === "rulesTest") return rulesTest(ctx, body);
@@ -530,6 +535,61 @@ async function rewardSetup(ctx: Context, body: unknown) {
   });
   if (!result.ok) return jobError(result.code, 502);
   return NextResponse.json({ ok: true, proposal: result.proposal });
+}
+
+/**
+ * Sonnet suggests branches under one node of the user's mind map note
+ * ("fill in my competitors map"). The map is read here with the user's own
+ * client, so RLS keeps it to their own notes; the client saves its edits
+ * first. Nothing is written: the branches go back to the map, grey, until
+ * the user accepts or deletes them.
+ */
+async function noteMapSuggest(ctx: Context, body: unknown) {
+  const parsed = noteMapSuggestRequestSchema.safeParse(body);
+  if (!parsed.success) return jobError("unknown", 400);
+  const { supabase, admin, userId, settings, locale } = ctx;
+
+  const { data: note, error } = await supabase
+    .from("notes")
+    .select("kind, content")
+    .eq("id", parsed.data.noteId)
+    .eq("user_id", userId)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (error) throw error;
+  const kind = noteKindOf(note?.kind);
+  const doc = note ? noteContentOf(kind, note.content) : null;
+  if (!doc || !isMapDoc(doc)) return jobError("notFound", 404);
+
+  const usage = await loadAiUsage(supabase, admin, userId, settings);
+  if (limitReached(usage)) {
+    limitHit(ctx, "note_map_suggest");
+    return jobError("limitReached", 429);
+  }
+  const client = createAnthropic(ctx.admin);
+  if (!client) {
+    await logNotConfigured(ctx, "note_map_suggest");
+    return jobError("notConfigured", 503);
+  }
+
+  const result = await runNoteMapSuggest({
+    client,
+    userId,
+    doc,
+    nodeId: parsed.data.nodeId,
+    request: parsed.data.request ?? "",
+    locale,
+    log: (entry) => logAiUsage(admin, { ...entry, userId, conversationId: null }),
+  });
+  if (!result.ok) {
+    return jobError(result.code, result.code === "notFound" ? 404 : result.code === "empty" ? 422 : 502);
+  }
+  await track(
+    "note_map_suggested",
+    { branches: result.branches.length, with_request: Boolean(parsed.data.request?.trim()) },
+    { userId, admin },
+  );
+  return NextResponse.json({ ok: true, branches: result.branches });
 }
 
 /**

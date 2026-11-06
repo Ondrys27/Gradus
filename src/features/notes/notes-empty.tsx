@@ -2,6 +2,7 @@
 
 import {
   MessageSquareQuoteIcon,
+  NetworkIcon,
   PackageIcon,
   PlusIcon,
   SquarePenIcon,
@@ -12,6 +13,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import type { NoteKind } from "./mindmap/map-doc";
 import { NOTE_TEMPLATE_KEYS, type NoteTemplateKey } from "./templates";
 
 const TEMPLATE_ICONS: Record<NoteTemplateKey, LucideIcon> = {
@@ -24,12 +26,12 @@ const TEMPLATE_ICONS: Record<NoteTemplateKey, LucideIcon> = {
 
 type Props = {
   readOnly: boolean;
-  onTemplate: (key: NoteTemplateKey) => void;
-  onBlank: () => void;
+  onTemplate: (key: NoteTemplateKey, kind: NoteKind) => void;
+  onBlank: (kind: NoteKind) => void;
   onOpenTrash: () => void;
 };
 
-/** No notes yet: five prepared outlines, one tap each, or a blank page. */
+/** No notes yet: five prepared outlines (as text or as a mind map), or a blank page or map. */
 export function NotesEmpty({ readOnly, onTemplate, onBlank, onOpenTrash }: Props) {
   const t = useTranslations("notes");
   return (
@@ -47,13 +49,13 @@ export function NotesEmpty({ readOnly, onTemplate, onBlank, onOpenTrash }: Props
             const Icon = TEMPLATE_ICONS[key];
             const title = t(`templates.${key}.title`);
             return (
-              <li key={key}>
+              <li key={key} className="flex items-center gap-1">
                 <button
                   type="button"
-                  onClick={() => onTemplate(key)}
+                  onClick={() => onTemplate(key, "text")}
                   aria-label={t("empty.useTemplate", { title })}
                   data-template={key}
-                  className="group flex min-h-16 w-full items-center gap-4 rounded-xl px-2 py-3 text-left transition-colors hover:bg-surface/60 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+                  className="group flex min-h-16 min-w-0 flex-1 items-center gap-4 rounded-xl px-2 py-3 text-left transition-colors hover:bg-surface/60 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
                 >
                   <Icon aria-hidden className="size-5 shrink-0 text-violet" />
                   <span className="flex min-w-0 flex-1 flex-col">
@@ -67,6 +69,16 @@ export function NotesEmpty({ readOnly, onTemplate, onBlank, onOpenTrash }: Props
                     className="size-5 shrink-0 text-ink-muted transition-colors group-hover:text-ink"
                   />
                 </button>
+                <button
+                  type="button"
+                  onClick={() => onTemplate(key, "mindmap")}
+                  aria-label={t("empty.useTemplateMap", { title })}
+                  title={t("empty.useTemplateMap", { title })}
+                  data-template-map={key}
+                  className="grid size-11 shrink-0 place-items-center rounded-xl text-ink-muted transition-colors hover:bg-surface/60 hover:text-teal focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+                >
+                  <NetworkIcon aria-hidden className="size-5" />
+                </button>
               </li>
             );
           })}
@@ -75,14 +87,25 @@ export function NotesEmpty({ readOnly, onTemplate, onBlank, onOpenTrash }: Props
 
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
         {!readOnly && (
-          <button
-            type="button"
-            onClick={onBlank}
-            className="flex min-h-11 items-center gap-2 font-semibold text-violet"
-          >
-            <SquarePenIcon className="size-4" />
-            {t("empty.blank")}
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={() => onBlank("text")}
+              className="flex min-h-11 items-center gap-2 font-semibold text-violet"
+            >
+              <SquarePenIcon className="size-4" />
+              {t("empty.blank")}
+            </button>
+            <button
+              type="button"
+              onClick={() => onBlank("mindmap")}
+              data-testid="note-empty-map"
+              className="flex min-h-11 items-center gap-2 font-semibold text-teal"
+            >
+              <NetworkIcon className="size-4" />
+              {t("empty.blankMap")}
+            </button>
+          </>
         )}
         <button
           type="button"

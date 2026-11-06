@@ -4,7 +4,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { ChevronLeftIcon, PinIcon, PinOffIcon, SquarePenIcon, Trash2Icon, Undo2Icon } from "lucide-react";
+import { Menu } from "@base-ui/react/menu";
+import {
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  FileUpIcon,
+  NetworkIcon,
+  PinIcon,
+  PinOffIcon,
+  SquarePenIcon,
+  Trash2Icon,
+  Undo2Icon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -16,10 +27,16 @@ import { industryKeyOf, type IndustryKey } from "@/features/onboarding/industrie
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { useIsPhone } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
-import { draftFromDoc, EMPTY_DOC, isBlank } from "./document";
+import { track } from "@/lib/analytics/client";
+import { countNodes } from "@/lib/mindmap/formats";
+import { draftFromDoc, EMPTY_DOC, isBlank, type NoteDraft } from "./document";
+import { useMentionText } from "./mention-queries";
+import { mindTreeToMap } from "./mindmap/convert";
+import { NoteMapImportDialog, type NoteImport } from "./mindmap/map-import-dialog";
+import { mapDraft, newMapDoc, type NoteKind } from "./mindmap/map-doc";
 import { NotesEmpty } from "./notes-empty";
 import { NotesList } from "./notes-list";
-import { neighbourAfterRemoval, orderBySearch } from "./notes-logic";
+import { neighbourAfterRemoval, newNoteShortcutOf, orderBySearch } from "./notes-logic";
 import { NotesTrash } from "./notes-trash";
 import {
   noteKeys,
@@ -33,10 +50,11 @@ import {
   useRemoveBlankNote,
   useRestoreNote,
   useRestoreUnsavedNotes,
+  applyDraftToCache,
   type NoteDetail,
   type NoteListItem,
 } from "./queries";
-import { templateDraft, type NoteTemplateKey } from "./templates";
+import { templateDraft, templateMapDraft, type NoteTemplateKey } from "./templates";
 
 const UNDO_MS = 6000;
 
@@ -56,15 +74,11 @@ const NoteEditor = dynamic(() => import("./note-editor").then((m) => m.NoteEdito
   loading: EditorSkeleton,
 });
 
-/** ⌘N / Ctrl+N where the browser lets the page have it, ⌥N / Alt+N everywhere. */
-export function isNewNoteShortcut(
-  event: Pick<KeyboardEvent, "key" | "code" | "metaKey" | "ctrlKey" | "altKey" | "shiftKey">,
-): boolean {
-  if (event.shiftKey) return false;
-  const plain = event.key.toLowerCase() === "n" || event.code === "KeyN";
-  if ((event.metaKey || event.ctrlKey) && !event.altKey) return plain;
-  return event.altKey && !event.metaKey && !event.ctrlKey && event.code === "KeyN";
-}
+/** A map note: the shared mind map loads only once one is open. */
+const MapNoteEditor = dynamic(
+  () => import("./mindmap/map-note-editor").then((m) => m.MapNoteEditor),
+  { ssr: false, loading: EditorSkeleton },
+);
 
 export function NotesView() {
   const t = useTranslations("notes");
@@ -77,6 +91,8 @@ export function NotesView() {
   const { readOnly } = useWorkspace();
   const profile = useProfile();
   const saver = useNoteSaver();
+  const mentionText = useMentionText();
+  const [importOpen, setImportOpen] = useState(false);
 
   const notes = useNotes();
   useRestoreUnsavedNotes(notes.data);
@@ -172,32 +188,84 @@ export function NotesView() {
     };
   }, []);
 
-  const newNote = useCallback(
-    (where: "list" | "empty_state" | "shortcut", template?: NoteTemplateKey) => {
-      if (readOnly) return;
-      const draft = template
-        ? templateDraft(template, industry, (key) => t(`templates.${key}` as "templates.pricing.title"))
-        : draftFromDoc(EMPTY_DOC);
-      const id = createNote({
-        draft,
-        where,
-        template: template ? { key: template, industry: industry === "other" ? null : industry } : undefined,
-      });
+  /** Opens a note just made (the list, the editor and the address follow it). */
+  const openNew = useCallback(
+    (id: string) => {
       setJustCreated(id);
       setTrashOpen(false);
       setQuery("");
       select(id);
     },
-    [createNote, industry, readOnly, select, t],
+    [select],
+  );
+
+  const newNote = useCallback(
+    (
+      where: "list" | "empty_state" | "shortcut",
+      template?: NoteTemplateKey,
+      kind: NoteKind = "text",
+    ) => {
+      if (readOnly) return;
+      const tt = (key: string) => t(`templates.${key}` as "templates.pricing.title");
+      const draft = template
+        ? kind === "mindmap"
+          ? templateMapDraft(template, tt)
+          : templateDraft(template, industry, tt)
+        : kind === "mindmap"
+          ? mapDraft(newMapDoc())
+          : draftFromDoc(EMPTY_DOC);
+      const id = createNote({
+        draft,
+        where,
+        template: template
+          ? { key: template, industry: kind === "mindmap" || industry === "other" ? null : industry }
+          : undefined,
+      });
+      openNew(id);
+    },
+    [createNote, industry, openNew, readOnly, t],
+  );
+
+  /** A note turned into the other kind: in place, or next to the original as a new note. */
+  const convertNote = useCallback(
+    (id: string, draft: NoteDraft, how: "replace" | "new") => {
+      if (readOnly) return;
+      if (how === "new") {
+        openNew(createNote({ draft, where: "convert", source: "convert" }));
+        return;
+      }
+      saver.edit(id, draft);
+      applyDraftToCache(queryClient, user.id, id, draft);
+      void saver.flush(id);
+    },
+    [createNote, openNew, queryClient, readOnly, saver, user.id],
+  );
+
+  /** "Import map" in the list: a new map note from the file. */
+  const importNew = useCallback(
+    (result: NoteImport) => {
+      const fallback = result.fileName.replace(/\.[^.]+$/, "");
+      const draft = mapDraft(mindTreeToMap(result.tree, fallback), { mentionText });
+      openNew(createNote({ draft, where: "list", source: "import" }));
+      track("mindmap_imported", {
+        format: result.format,
+        nodes: Math.min(countNodes(result.tree), 5000),
+        mode: "new",
+        flattened: false,
+        target: "note",
+      });
+    },
+    [createNote, mentionText, openNew],
   );
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (!isNewNoteShortcut(event) || readOnly) return;
+      const kind = newNoteShortcutOf(event);
+      if (!kind || readOnly) return;
       // Not over a dialog, the search window or the onboarding.
       if (document.querySelector("[role=dialog], [role=alertdialog]")) return;
       event.preventDefault();
-      newNote("shortcut");
+      newNote("shortcut", undefined, kind);
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -282,15 +350,29 @@ export function NotesView() {
     ) : null;
 
   const editorPane = detail ? (
-    <NoteEditor
-      key={detail.id}
-      note={detail}
-      readOnly={readOnly}
-      autoFocus={detail.id === justCreated}
-      isPhone={isPhone}
-      actions={actions}
-      back={back}
-    />
+    detail.kind === "mindmap" ? (
+      <MapNoteEditor
+        key={`${detail.id}:mindmap`}
+        note={detail}
+        readOnly={readOnly}
+        autoFocus={detail.id === justCreated}
+        isPhone={isPhone}
+        actions={actions}
+        back={back}
+        onConvert={(draft, how) => convertNote(detail.id, draft, how)}
+      />
+    ) : (
+      <NoteEditor
+        key={`${detail.id}:text`}
+        note={detail}
+        readOnly={readOnly}
+        autoFocus={detail.id === justCreated}
+        isPhone={isPhone}
+        actions={actions}
+        back={back}
+        onConvert={(draft, how) => convertNote(detail.id, draft, how)}
+      />
+    )
   ) : selectedId && note.isPending ? (
     <EditorSkeleton />
   ) : (
@@ -368,11 +450,55 @@ export function NotesView() {
     />
   );
 
+  const menuItem =
+    "flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg px-3 text-[15px] text-ink-soft outline-none select-none data-highlighted:bg-surface-hover data-highlighted:text-ink mouse:min-h-9 [&_svg]:size-4";
   const newButton = !readOnly && (
-    <Button onClick={() => newNote("list")} title={t("newHint")} data-testid="note-new">
-      <SquarePenIcon />
-      {t("new")}
-    </Button>
+    <div className="flex items-center">
+      <Button
+        onClick={() => newNote("list")}
+        title={t("newHint")}
+        data-testid="note-new"
+        className="rounded-r-none"
+      >
+        <SquarePenIcon />
+        {t("new")}
+      </Button>
+      <Menu.Root>
+        <Menu.Trigger
+          aria-label={t("newKind.label")}
+          title={t("newKind.label")}
+          data-testid="note-new-menu"
+          className="grid h-11 w-10 cursor-pointer place-items-center rounded-r-xl border-l border-canvas/30 bg-primary text-primary-foreground outline-none hover:bg-primary/90 focus-visible:ring-3 focus-visible:ring-ring/50 mouse:h-10 mouse:w-9"
+        >
+          <ChevronDownIcon aria-hidden className="size-4" />
+        </Menu.Trigger>
+        <Menu.Portal>
+          <Menu.Positioner sideOffset={6} align="end" className="z-popover">
+            <Menu.Popup className="min-w-60 rounded-xl border border-line-strong bg-surface p-1.5 shadow-popover outline-none">
+              <Menu.Item className={menuItem} onClick={() => newNote("list")} data-testid="note-new-text">
+                <SquarePenIcon aria-hidden />
+                <span className="flex-1">{t("newKind.text")}</span>
+                <kbd className="text-xs text-ink-muted">⌘N</kbd>
+              </Menu.Item>
+              <Menu.Item
+                className={menuItem}
+                onClick={() => newNote("list", undefined, "mindmap")}
+                data-testid="note-new-map"
+              >
+                <NetworkIcon aria-hidden />
+                <span className="flex-1">{t("newKind.mindmap")}</span>
+                <kbd className="text-xs text-ink-muted">⌘⇧N</kbd>
+              </Menu.Item>
+              <Menu.Separator className="my-1 h-px bg-line" />
+              <Menu.Item className={menuItem} onClick={() => setImportOpen(true)} data-testid="note-new-import">
+                <FileUpIcon aria-hidden />
+                {t("newKind.import")}
+              </Menu.Item>
+            </Menu.Popup>
+          </Menu.Positioner>
+        </Menu.Portal>
+      </Menu.Root>
+    </div>
   );
 
   return (
@@ -383,8 +509,8 @@ export function NotesView() {
       {empty && !trashOpen ? (
         <NotesEmpty
           readOnly={readOnly}
-          onTemplate={(key) => newNote("empty_state", key)}
-          onBlank={() => newNote("empty_state")}
+          onTemplate={(key, kind) => newNote("empty_state", key, kind)}
+          onBlank={(kind) => newNote("empty_state", undefined, kind)}
           onOpenTrash={() => setTrashOpen(true)}
         />
       ) : isPhone ? (
@@ -413,6 +539,12 @@ export function NotesView() {
       )}
       {undoBar}
       {confirmDialog}
+      <NoteMapImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        existing={null}
+        onImport={importNew}
+      />
     </div>
   );
 }

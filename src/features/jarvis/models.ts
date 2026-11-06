@@ -30,6 +30,7 @@ export const JARVIS_FEATURES = [
   "email_reply",
   "ping",
   "briefing",
+  "note_map_suggest",
 ] as const;
 export type JarvisFeature = (typeof JARVIS_FEATURES)[number];
 
@@ -48,6 +49,8 @@ const ROUTES: Record<JarvisFeature, JarvisModel> = {
   ping: JARVIS_MODELS.sonnet,
   // The morning brief picks the one thing worth noticing: worth a conversation model.
   briefing: JARVIS_MODELS.sonnet,
+  // Branches for the user's own mind map: ideas worth a conversation model.
+  note_map_suggest: JARVIS_MODELS.sonnet,
   analysis: JARVIS_MODELS.opus,
 };
 

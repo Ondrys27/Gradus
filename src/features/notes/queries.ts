@@ -19,6 +19,9 @@ import {
   type NoteDraft,
 } from "./document";
 import { useMentionText } from "./mention-queries";
+import { appendTextToMap } from "./mindmap/convert";
+import { isMapDoc, mapDraft, sanitizeMapDoc, type MapDoc, type NoteKind } from "./mindmap/map-doc";
+import { noteContentOf, noteKindOf } from "./mindmap/note-row";
 import { NoteSaver, type BackupEntry, type DraftBackup } from "./note-saver";
 import { sortNotes, TRASH_DAYS } from "./notes-logic";
 import type { NoteTemplateKey } from "./templates";
@@ -32,18 +35,21 @@ export const SEARCH_LIMIT = 50;
 /** Sent with { id, content } when a note's text was changed outside its editor. */
 export const NOTE_REPLACED_EVENT = "gradus:note-replaced";
 
-export const NOTE_LIST_COLUMNS = "id, title, preview, pinned, created_at, updated_at" as const;
+export const NOTE_LIST_COLUMNS = "id, kind, title, preview, pinned, created_at, updated_at" as const;
 const NOTE_DETAIL_COLUMNS = `${NOTE_LIST_COLUMNS}, content, content_text` as const;
 
 export type NoteListItem = {
   id: string;
+  /** Text, or a mind map (the content is then a MapDoc). */
+  kind: NoteKind;
   title: string;
   preview: string | null;
   pinned: boolean;
   created_at: string;
   updated_at: string;
 };
-export type NoteDetail = NoteListItem & { content: DocNode; content_text: string };
+export type NoteDetail = NoteListItem & { content: DocNode | MapDoc; content_text: string };
+
 export type TrashedNote = { id: string; title: string; preview: string | null; deleted_at: string };
 export type NoteSearchHit = { id: string; title: string; rank: number };
 
@@ -94,6 +100,7 @@ function localBackup(userId: string): DraftBackup {
 async function saveNote(userId: string, id: string, draft: NoteDraft): Promise<void> {
   const supabase = createClient();
   const text = {
+    kind: draft.kind ?? "text",
     title: draft.title,
     content: draft.content as never,
     content_text: draft.content_text,
@@ -164,6 +171,7 @@ export function applyDraftToCache(
     ?.find((note) => note.id === id);
   queryClient.setQueryData<NoteDetail | null>(noteKeys.detail(userId, id), (old) => ({
     id,
+    kind: draft.kind ?? "text",
     pinned: old?.pinned ?? listed?.pinned ?? false,
     created_at: old?.created_at ?? listed?.created_at ?? at,
     title: draft.title,
@@ -179,6 +187,7 @@ export function applyDraftToCache(
             note.id === id
               ? {
                   ...note,
+                  kind: draft.kind ?? "text",
                   title: draft.title,
                   preview: previewFromText(draft.content_text),
                   updated_at: at,
@@ -217,10 +226,16 @@ export function useNotes() {
         queryClient.getQueryData<NoteListItem[]>(noteKeys.list(user.id)) ?? []
       ).filter((note) => !onServer.has(note.id) && saver.unsavedDraft(note.id));
       return sortNotes([
-        ...data.map((note) => {
+        ...data.map((row) => {
+          const note: NoteListItem = { ...row, kind: noteKindOf(row.kind) };
           const draft = saver.unsavedDraft(note.id);
           return draft
-            ? { ...note, title: draft.title, preview: previewFromText(draft.content_text) }
+            ? {
+                ...note,
+                kind: draft.kind ?? "text",
+                title: draft.title,
+                preview: previewFromText(draft.content_text),
+              }
             : note;
         }),
         ...notYetSaved,
@@ -246,9 +261,11 @@ export function useNote(id: string | null) {
       if (error && error.code !== "22P02") throw error;
       if (!data) return null;
       const draft = getNoteSaver(user.id).latestDraft(data.id);
+      const kind = draft ? (draft.kind ?? "text") : noteKindOf(data.kind);
       return {
         ...data,
-        content: (draft?.content ?? data.content) as DocNode,
+        kind,
+        content: noteContentOf(kind, draft?.content ?? data.content),
         content_text: draft?.content_text ?? data.content_text,
         title: draft?.title ?? data.title,
       };
@@ -326,6 +343,7 @@ export function useRestoreUnsavedNotes(notes: NoteListItem[] | undefined) {
             ...(list ?? []),
             {
               id,
+              kind: entry.draft.kind ?? "text",
               title: entry.draft.title,
               preview: previewFromText(entry.draft.content_text),
               pinned: false,
@@ -350,8 +368,18 @@ export function useRestoreUnsavedNotes(notes: NoteListItem[] | undefined) {
 
 export type CreateNoteInput = {
   draft: NoteDraft;
-  where: "list" | "empty_state" | "shortcut" | "task" | "milestone" | "deal" | "jarvis";
+  where:
+    | "list"
+    | "empty_state"
+    | "shortcut"
+    | "task"
+    | "milestone"
+    | "deal"
+    | "jarvis"
+    | "convert";
   template?: { key: NoteTemplateKey; industry: IndustryKey | null };
+  /** A note made from a file or from another note; by default blank or template. */
+  source?: "import" | "convert";
 };
 
 /**
@@ -366,6 +394,7 @@ export function useCreateNote() {
     const now = new Date().toISOString();
     const note: NoteDetail = {
       id,
+      kind: input.draft.kind ?? "text",
       title: input.draft.title,
       preview: previewFromText(input.draft.content_text),
       pinned: false,
@@ -381,11 +410,17 @@ export function useCreateNote() {
     const saver = getNoteSaver(user.id);
     saver.edit(id, input.draft);
     void saver.flush(id);
-    track("note_created", { source: input.template ? "template" : "blank", where: input.where });
+    const kind = input.draft.kind ?? "text";
+    track("note_created", {
+      source: input.source ?? (input.template ? "template" : "blank"),
+      where: input.where,
+      kind,
+    });
     if (input.template) {
       track("note_template_used", {
         template: input.template.key,
         industry: input.template.industry ?? undefined,
+        kind,
       });
     }
     return id;
@@ -527,23 +562,37 @@ export function useAppendToNote() {
   const queryClient = useQueryClient();
   const mentionText = useMentionText();
   return useMutation({
-    mutationFn: async ({ id, heading, blocks }: { id: string; heading: string; blocks: DocNode[] }) => {
+    mutationFn: async ({
+      id,
+      heading,
+      blocks,
+      text,
+    }: {
+      id: string;
+      heading: string;
+      blocks: DocNode[];
+      /** The answer as plain text, for a map note. */
+      text: string;
+    }) => {
       const saver = getNoteSaver(user.id);
       let content = saver.latestDraft(id)?.content;
       if (!content) {
         const { data, error } = await createClient()
           .from("notes")
-          .select("content")
+          .select("kind, content")
           .eq("user_id", user.id)
           .eq("id", id)
           .is("deleted_at", null)
           .maybeSingle();
         if (error) throw error;
         if (!data) throw new Error("note_not_found");
-        content = data.content as DocNode;
+        content = noteContentOf(noteKindOf(data.kind), data.content);
       }
-      const next = appendToDoc(content, heading, blocks);
-      const draft = draftFromDoc(next, { mentionText });
+      // A map gets the answer as a new branch, a text note at its end.
+      const next = isMapDoc(content)
+        ? appendTextToMap(sanitizeMapDoc(content), heading, text)
+        : appendToDoc(content as DocNode, heading, blocks);
+      const draft = isMapDoc(next) ? mapDraft(next, { mentionText }) : draftFromDoc(next, { mentionText });
       saver.edit(id, draft);
       applyDraftToCache(queryClient, user.id, id, draft);
       window.dispatchEvent(new CustomEvent(NOTE_REPLACED_EVENT, { detail: { id, content: next } }));

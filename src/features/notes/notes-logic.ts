@@ -1,3 +1,4 @@
+import type { NoteKind } from "./mindmap/map-doc";
 /**
  * Pure rules of the notes list: order, groups, search results and the trash.
  */
@@ -48,4 +49,24 @@ export function neighbourAfterRemoval<T extends { id: string }>(
   const index = notes.findIndex((note) => note.id === removedId);
   if (index < 0) return notes[0] ?? null;
   return notes[index + 1] ?? notes[index - 1] ?? null;
+}
+
+/**
+ * ⌘N / Ctrl+N a text note, ⌘⇧N / Ctrl+Shift+N a mind map, where the browser
+ * lets the page have them; ⌥N / ⌥⇧N (Alt) everywhere.
+ */
+export function newNoteShortcutOf(
+  event: Pick<KeyboardEvent, "key" | "code" | "metaKey" | "ctrlKey" | "altKey" | "shiftKey">,
+): NoteKind | null {
+  const isN = event.key.toLowerCase() === "n" || event.code === "KeyN";
+  const kind: NoteKind = event.shiftKey ? "mindmap" : "text";
+  if ((event.metaKey || event.ctrlKey) && !event.altKey) return isN ? kind : null;
+  return event.altKey && !event.metaKey && !event.ctrlKey && event.code === "KeyN" ? kind : null;
+}
+
+/** ⌘N / Ctrl+N (⌥N): a new text note. */
+export function isNewNoteShortcut(
+  event: Pick<KeyboardEvent, "key" | "code" | "metaKey" | "ctrlKey" | "altKey" | "shiftKey">,
+): boolean {
+  return newNoteShortcutOf(event) === "text";
 }

@@ -1537,7 +1537,7 @@
     "searchLabel": "Search notes",
     "clearSearch": "Clear search",
     "new": "New note",
-    "newHint": "New note (⌘N or ⌥N)",
+    "newHint": "New note (⌘N or ⌥N), mind map ⌘⇧N",
     "untitled": "New note",
     "noText": "No additional text",
     "pinnedGroup": "Pinned",
@@ -1576,7 +1576,9 @@
       "title": "Everything about your business in one place",
       "text": "Write down who your customer is, what you sell and for how much. Start from a prepared outline with questions, or with a blank page.",
       "blank": "Blank note",
-      "useTemplate": "Create “{title}”"
+      "useTemplate": "Create “{title}”",
+      "useTemplateMap": "Create “{title}” as a mind map",
+      "blankMap": "Blank mind map"
     },
     "editor": {
       "label": "Note text",
@@ -1618,6 +1620,12 @@
           "trades": "Households or companies? How far do you travel?",
           "freelanceIt": "How big are the companies, and what technologies do they use?",
           "agency": "How big are the companies, in which fields, and what is their marketing budget?"
+        },
+        "map": {
+          "who": "Who",
+          "problems": "Problems",
+          "where": "Where to find them",
+          "objections": "Objections"
         }
       },
       "offer": {
@@ -1629,6 +1637,13 @@
           "different": "What makes you different from the others?",
           "main": "Which offer is the main one, and which are extras?",
           "later": "What would you like to add later?"
+        },
+        "map": {
+          "what": "What I sell",
+          "forWhom": "For whom",
+          "outcome": "What the customer gets",
+          "different": "How I am different",
+          "later": "What comes later"
         }
       },
       "pricing": {
@@ -1648,6 +1663,13 @@
           "trades": "How do you charge for material, travel and an hour of work?",
           "freelanceIt": "Hourly rate or a project price? How do you handle changes to the brief?",
           "agency": "Monthly retainer or one-off projects?"
+        },
+        "map": {
+          "items": "Items and prices",
+          "basis": "How I set the price",
+          "margin": "Costs and margin",
+          "discounts": "Discounts and bundles",
+          "compare": "Compared with competitors"
         }
       },
       "competition": {
@@ -1659,6 +1681,13 @@
           "weak": "Where are they weak, or what do customers miss?",
           "prices": "What are their prices?",
           "edge": "Why should a customer choose you?"
+        },
+        "map": {
+          "who": "Who they are",
+          "strong": "What they do well",
+          "weak": "Weak spots",
+          "prices": "Prices",
+          "edge": "My edge"
         }
       },
       "salesScript": {
@@ -1670,6 +1699,13 @@
           "pitch": "Your offer in one or two sentences",
           "objections": "The most common objections and your answers",
           "close": "Close: what next step will you suggest (meeting, demo, quote)?"
+        },
+        "map": {
+          "opening": "Opening",
+          "questions": "Questions",
+          "pitch": "Offer",
+          "objections": "Objections and answers",
+          "close": "Next step"
         }
       }
     },
@@ -1733,6 +1769,146 @@
     },
     "mentioned": {
       "title": "Mentioned in notes"
+    },
+    "newKind": {
+      "label": "What kind of note",
+      "text": "Text",
+      "mindmap": "Mind map",
+      "import": "Import map…"
+    },
+    "kind": {
+      "text": "Text",
+      "mindmap": "Mind map"
+    },
+    "map": {
+      "label": "Mind map",
+      "toolbar": "Map editing",
+      "menu": "More for this note",
+      "nodeActions": "Selected node",
+      "hint": "Double click or Enter edits the text · Tab adds a child · Enter while typing adds the next one · Backspace deletes an empty node · arrows select · ⌘ with arrows moves · ⌘Z undoes",
+      "rootPlaceholder": "Centre of the map",
+      "nodePlaceholder": "New node",
+      "titleLabel": "Node text",
+      "expand": "Expand ({count, plural, one {# hidden node} other {# hidden nodes}})",
+      "collapse": "Collapse",
+      "dragBelow": "{count, plural, one {and {formatted} node below} other {and {formatted} nodes below}}",
+      "undo": "Undo (⌘Z)",
+      "redo": "Redo (⌘⇧Z)",
+      "addChild": "Add a child node (Tab)",
+      "addSibling": "Add a sibling (Enter)",
+      "editDetails": "Edit node: text, note, link, colour",
+      "deleteNode": "Delete the node and its branch",
+      "full": "The map is full: one note holds at most {max} nodes.",
+      "exportLabel": "Export",
+      "export": {
+        "markdown": "Markdown (.md)",
+        "opml": "OPML",
+        "freemind": "FreeMind (.mm)",
+        "png": "PNG image"
+      },
+      "exportFailed": "The export did not work. Try again.",
+      "toText": "Turn into text…",
+      "toMap": "Show as a map…",
+      "move": {
+        "pickedUp": "Picked up: {title}.",
+        "over": "{title} is over {target}.",
+        "dropped": "{title} was moved.",
+        "cancelled": "Move cancelled.",
+        "instructions": "Drag a node onto another (it becomes its child), between nodes (changes the order) or onto the centre. On a phone, press and hold it first. Keys: ⌘ or Ctrl with ←/→ changes the level, ↑/↓ the order."
+      },
+      "suggestions": {
+        "banner": "Jarvis suggested {count, plural, one {# branch} other {# branches}}. Keep the grey nodes or delete them.",
+        "acceptAll": "Keep all",
+        "rejectAll": "Delete all",
+        "accept": "Keep",
+        "reject": "Delete",
+        "acceptOne": "Keep the suggestion “{title}”",
+        "rejectOne": "Delete the suggestion “{title}”",
+        "added": "Jarvis added {count, plural, one {# suggestion} other {# suggestions}}."
+      },
+      "suggest": {
+        "button": "Suggest branches (Jarvis)",
+        "title": "Jarvis suggests branches",
+        "close": "Close",
+        "intro": "Jarvis adds new branches under “{title}”. They show grey, and you keep or delete each.",
+        "untitledNode": "untitled",
+        "requestLabel": "What to add",
+        "requestHint": "Optional. Jarvis sees the whole map.",
+        "requestPlaceholder": "For example: fill in my competitors map",
+        "note": "Jarvis never writes into a note on his own; suggestions are only an offer.",
+        "cancel": "Cancel",
+        "submit": "Suggest",
+        "thinking": "Jarvis is thinking…",
+        "errors": {
+          "limitReached": "Jarvis's messages for this month are used up. They renew on the first day of next month.",
+          "empty": "Jarvis has nothing new to suggest right now. Try saying what to add.",
+          "notFound": "The node or the note could not be found. Reload the page and try again."
+        }
+      },
+      "details": {
+        "title": "Map node",
+        "close": "Close",
+        "rootLabel": "Centre of the map (the note's title)",
+        "textLabel": "Text",
+        "noteLabel": "Note",
+        "noteHint": "Small text under the node.",
+        "linkLabel": "Link",
+        "linkMode": {
+          "none": "None",
+          "url": "Web address",
+          "record": "Contact, deal…"
+        },
+        "urlLabel": "Address",
+        "urlInvalid": "This is not a valid web address.",
+        "recordRemove": "Remove the link",
+        "recordSearch": "Search a contact, deal, event or worker",
+        "searching": "Searching…",
+        "noResults": "Nothing found.",
+        "colorLabel": "Branch colour",
+        "colorAuto": "By branch",
+        "color": {
+          "violet": "Violet",
+          "teal": "Teal",
+          "gold": "Gold",
+          "green": "Green",
+          "orange": "Orange",
+          "pink": "Pink"
+        },
+        "cancel": "Cancel",
+        "save": "Save"
+      },
+      "import": {
+        "title": "Import a map into the note",
+        "titleNew": "New note from a mind map",
+        "close": "Close",
+        "summary": "{nodes, plural, one {# node} other {# nodes}} · {depth, plural, one {# level} other {# levels}}",
+        "flattened": "Anything deeper than {max} levels is flattened; nothing is lost.",
+        "modeLabel": "What is in the map already",
+        "mode": {
+          "append": "Add to the centre",
+          "replace": "Replace"
+        },
+        "replaceWarning": "The current branches are replaced. ⌘Z brings them back if you change your mind.",
+        "tooMany": "That does not fit into one note: it holds at most {max} nodes.",
+        "cancel": "Cancel",
+        "submit": "{count, plural, one {Import # node} other {Import # nodes}}",
+        "submitReplace": "Replace the map",
+        "submitNew": "Create the note"
+      },
+      "convert": {
+        "cancel": "Cancel",
+        "asNew": "As a new note",
+        "mindmap": {
+          "title": "Show as a mind map",
+          "text": "The first line becomes the centre, headings and bullets become branches. This cannot be undone: text formatting (bold, links inside the text) is lost. As a new note, the text stays as it is.",
+          "replace": "Turn into a map"
+        },
+        "text": {
+          "title": "Turn the map into text",
+          "text": "The centre becomes the heading and the branches bullets under it. This cannot be undone: branch colours go, and Jarvis's suggestions nobody kept are not converted. As a new note, the map stays as it is.",
+          "replace": "Turn into text"
+        }
+      }
     }
   },
   "pipeline": {

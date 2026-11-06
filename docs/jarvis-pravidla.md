@@ -97,6 +97,10 @@ Vlastní odpověď má nejvýš 300 znaků.
 
 Když uživatel v chatu řekne, že plán má v MindNode nebo jiné myšlenkové mapě či osnově (XMind, FreeMind, Workflowy…), nebo že se chystá plán přepisovat do úkolů, Jarvis poradí: „Můžeš si to naimportovat — v milníku Importovat mapu (z MindNode nejdřív Soubor → Exportovat → OPML nebo Markdown).“ Ví i o exportu mapy do Markdownu, OPML, FreeMindu a PNG. Je to jen znalost v systémovém promptu (`JARVIS_PERSONA`), sám se kvůli tomu neozývá.
 
+### Na požádání: větve do myšlenkové mapy v poznámce
+
+Poznámka může být myšlenková mapa. Když uživatel v mapě vybere uzel a dá „Navrhnout větve“ (s nepovinným „co má doplnit“, třeba „doplň mi mapu konkurence“), Jarvis (Sonnet, `kind: noteMapSuggest`, měřeno v `ai_usage` jako `note_map_suggest`) dostane celou mapu jako odsazený text s označeným uzlem a vrátí 3–8 krátkých větví, nanejvýš se 4 podvětvemi. Nevymýšlí jména firem, lidí ani čísla. Návrhy se v mapě ukážou šedě a uživatel každou ponechá, nebo smaže (i všechny najednou). Do poznámky Jarvis nic nezapíše sám; v chatu na „doplň mi mapu“ dá nápady a poradí tohle tlačítko. Mapu v kontextu chatu dostává jako odsazený text v `<user_notes>` s označením `kind="mind map"`.
+
 ### Kdy Jarvis nic nenapíše, i když by měl
 
 - Vyčerpaný měsíční rozpočet AI nebo strop uživatele: model se nevolá, souhrn ani postřehy se nepíšou, pravidlové návrhy (pevné texty) běží dál.
@@ -127,7 +131,7 @@ Modely: Haiku na rutinu (postřehy, třídění nápadů), Sonnet na rozhovor, s
 
 ## d) Co se nikdy nestane
 
-- **Nepíše do poznámek sám.** Do Poznámek se z Jarvise ukládá jen tlačítkem „Uložit do poznámek“ u odpovědi.
+- **Nepíše do poznámek sám.** Do Poznámek se z Jarvise ukládá jen tlačítkem „Uložit do poznámek“ u odpovědi (do mapy jako nová větev); navržené větve mapy jsou šedé, dokud je uživatel neponechá.
 - **Nečte chat** (Zprávy mezi lidmi ve firmě) ani jeho přílohy.
 - **Nevolá a neplánuje lidi mimo pracovní okno** jako něco „na teď“; mimo okno nabízí přípravu.
 - **Nedokončí milník.** Jen ukáže, že je připravený.

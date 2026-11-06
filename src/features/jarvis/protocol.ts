@@ -37,6 +37,14 @@ export const rewardSetupRequestSchema = z.object({
   kind: z.literal("rewardSetup"),
   tree: z.unknown(),
 });
+/** Branches for one node of a mind map note; the route reads the map itself with the user's client. */
+export const NOTE_MAP_REQUEST_MAX = 300;
+export const noteMapSuggestRequestSchema = z.object({
+  kind: z.literal("noteMapSuggest"),
+  noteId: z.uuid(),
+  nodeId: z.string().min(1).max(64),
+  request: z.string().max(NOTE_MAP_REQUEST_MAX).optional(),
+});
 /** Longest received e-mail Jarvis reads to draft a reply. */
 export const RECEIVED_EMAIL_MAX = 8000;
 export const emailReplyRequestSchema = z.object({

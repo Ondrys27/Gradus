@@ -1,6 +1,6 @@
 "use client";
 
-import { PinIcon, SearchIcon, Trash2Icon, XIcon } from "lucide-react";
+import { FileTextIcon, NetworkIcon, PinIcon, SearchIcon, Trash2Icon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatEditedAt } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
@@ -61,6 +61,15 @@ function NoteRow({
         )}
       >
         <span className="flex items-center gap-1.5">
+          {note.kind === "mindmap" ? (
+            <NetworkIcon
+              aria-label={t("kind.mindmap")}
+              data-testid="note-kind-mindmap"
+              className="size-3.5 shrink-0 text-teal"
+            />
+          ) : (
+            <FileTextIcon aria-label={t("kind.text")} className="size-3.5 shrink-0 text-ink-muted" />
+          )}
           {note.pinned && <PinIcon aria-label={t("pinnedLabel")} className="size-3 shrink-0 text-gold" />}
           <span className={cn("truncate font-semibold", note.title ? "text-ink" : "text-ink-muted")}>
             {title}

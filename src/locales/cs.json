@@ -1537,7 +1537,7 @@
     "searchLabel": "Hledat v poznámkách",
     "clearSearch": "Vymazat hledání",
     "new": "Nová poznámka",
-    "newHint": "Nová poznámka (⌘N nebo ⌥N)",
+    "newHint": "Nová poznámka (⌘N nebo ⌥N), myšlenková mapa ⌘⇧N",
     "untitled": "Nová poznámka",
     "noText": "Žádný další text",
     "pinnedGroup": "Připnuté",
@@ -1576,7 +1576,9 @@
       "title": "Podklady k podnikání na jednom místě",
       "text": "Zapiš si, kdo je tvůj zákazník, co prodáváš a za kolik. Začni předpřipravenou osnovou s otázkami, nebo prázdnou stránkou.",
       "blank": "Prázdná poznámka",
-      "useTemplate": "Založit „{title}“"
+      "useTemplate": "Založit „{title}“",
+      "useTemplateMap": "Založit „{title}“ jako myšlenkovou mapu",
+      "blankMap": "Prázdná myšlenková mapa"
     },
     "editor": {
       "label": "Text poznámky",
@@ -1618,6 +1620,12 @@
           "trades": "Domácnosti, nebo firmy? Jak daleko za zakázkou jezdíš?",
           "freelanceIt": "Jak velké firmy a s jakými technologiemi?",
           "agency": "Jak velké firmy, z jakých oborů a s jakým rozpočtem na marketing?"
+        },
+        "map": {
+          "who": "Kdo",
+          "problems": "Problémy",
+          "where": "Kde ho najdu",
+          "objections": "Námitky"
         }
       },
       "offer": {
@@ -1629,6 +1637,13 @@
           "different": "Čím se lišíš od ostatních?",
           "main": "Která nabídka je hlavní a která doplňková?",
           "later": "Co chceš přidat později?"
+        },
+        "map": {
+          "what": "Co prodávám",
+          "forWhom": "Pro koho",
+          "outcome": "Výsledek pro zákazníka",
+          "different": "Čím se liším",
+          "later": "Co přidám později"
         }
       },
       "pricing": {
@@ -1648,6 +1663,13 @@
           "trades": "Jak účtuješ materiál, dopravu a hodinu práce?",
           "freelanceIt": "Hodinová sazba, nebo cena za projekt? Jak řešíš změny zadání?",
           "agency": "Měsíční paušál, nebo jednorázové projekty?"
+        },
+        "map": {
+          "items": "Položky a ceny",
+          "basis": "Jak cenu počítám",
+          "margin": "Náklady a marže",
+          "discounts": "Slevy a balíčky",
+          "compare": "Srovnání s konkurencí"
         }
       },
       "competition": {
@@ -1659,6 +1681,13 @@
           "weak": "Kde mají slabiny nebo co zákazníkům chybí?",
           "prices": "Jaké mají ceny?",
           "edge": "Proč by si zákazník měl vybrat tebe?"
+        },
+        "map": {
+          "who": "Kdo to je",
+          "strong": "V čem jsou dobří",
+          "weak": "Slabiny",
+          "prices": "Ceny",
+          "edge": "Moje výhoda"
         }
       },
       "salesScript": {
@@ -1670,6 +1699,13 @@
           "pitch": "Tvoje nabídka v jedné až dvou větách",
           "objections": "Nejčastější námitky a tvoje odpovědi",
           "close": "Závěr: jaký další krok navrhneš (schůzka, ukázka, nabídka)?"
+        },
+        "map": {
+          "opening": "Úvod",
+          "questions": "Otázky",
+          "pitch": "Nabídka",
+          "objections": "Námitky a odpovědi",
+          "close": "Další krok"
         }
       }
     },
@@ -1733,6 +1769,146 @@
     },
     "mentioned": {
       "title": "Zmíněno v poznámkách"
+    },
+    "newKind": {
+      "label": "Jaká nová poznámka",
+      "text": "Text",
+      "mindmap": "Myšlenková mapa",
+      "import": "Importovat mapu…"
+    },
+    "kind": {
+      "text": "Text",
+      "mindmap": "Myšlenková mapa"
+    },
+    "map": {
+      "label": "Myšlenková mapa",
+      "toolbar": "Úpravy mapy",
+      "menu": "Další možnosti poznámky",
+      "nodeActions": "Vybraný uzel",
+      "hint": "Dvojklik nebo Enter upraví text · Tab přidá podřízený uzel · Enter při psaní přidá další · Backspace smaže prázdný uzel · šipky vybírají · ⌘ se šipkami přesouvá · ⌘Z vrátí krok",
+      "rootPlaceholder": "Střed mapy",
+      "nodePlaceholder": "Nový uzel",
+      "titleLabel": "Text uzlu",
+      "expand": "Rozbalit ({count, plural, one {# skrytý uzel} few {# skryté uzly} many {# skrytého uzlu} other {# skrytých uzlů}})",
+      "collapse": "Sbalit",
+      "dragBelow": "{count, plural, one {a {formatted} uzel pod ním} few {a {formatted} uzly pod ním} many {a {formatted} uzlu pod ním} other {a {formatted} uzlů pod ním}}",
+      "undo": "Zpět (⌘Z)",
+      "redo": "Vpřed (⌘⇧Z)",
+      "addChild": "Přidat podřízený uzel (Tab)",
+      "addSibling": "Přidat sourozence (Enter)",
+      "editDetails": "Upravit uzel: text, poznámka, odkaz, barva",
+      "deleteNode": "Smazat uzel i s větví",
+      "full": "Mapa je plná, jedna poznámka unese nejvýš {max} uzlů.",
+      "exportLabel": "Exportovat",
+      "export": {
+        "markdown": "Markdown (.md)",
+        "opml": "OPML",
+        "freemind": "FreeMind (.mm)",
+        "png": "Obrázek PNG"
+      },
+      "exportFailed": "Export se nepodařil. Zkus to znovu.",
+      "toText": "Převést na text…",
+      "toMap": "Zobrazit jako mapu…",
+      "move": {
+        "pickedUp": "Zvednuto: {title}.",
+        "over": "{title} je nad {target}.",
+        "dropped": "{title} je přesunuto.",
+        "cancelled": "Přesun zrušen.",
+        "instructions": "Přetáhni uzel na jiný (stane se jeho podřízeným), mezi uzly (změní pořadí) nebo na střed mapy. Na telefonu ho nejdřív podrž. Klávesy: ⌘ nebo Ctrl se šipkami ←/→ mění úroveň, ↑/↓ pořadí."
+      },
+      "suggestions": {
+        "banner": "Jarvis navrhl {count, plural, one {# větev} few {# větve} many {# větve} other {# větví}}. Šedé uzly si nech, nebo je smaž.",
+        "acceptAll": "Ponechat vše",
+        "rejectAll": "Smazat vše",
+        "accept": "Ponechat",
+        "reject": "Smazat",
+        "acceptOne": "Ponechat návrh „{title}“",
+        "rejectOne": "Smazat návrh „{title}“",
+        "added": "Jarvis přidal {count, plural, one {# návrh} few {# návrhy} many {# návrhu} other {# návrhů}}."
+      },
+      "suggest": {
+        "button": "Navrhnout větve (Jarvis)",
+        "title": "Jarvis navrhne větve",
+        "close": "Zavřít",
+        "intro": "Jarvis přidá pod uzel „{title}“ nové větve. Uvidíš je šedě a každou si necháš, nebo smažeš.",
+        "untitledNode": "bez názvu",
+        "requestLabel": "Co má doplnit",
+        "requestHint": "Nepovinné. Jarvis vidí celou mapu.",
+        "requestPlaceholder": "Třeba: doplň mi mapu konkurence",
+        "note": "Jarvis do poznámky nic nezapíše sám, návrhy jsou jen nabídka.",
+        "cancel": "Zrušit",
+        "submit": "Navrhnout",
+        "thinking": "Jarvis přemýšlí…",
+        "errors": {
+          "limitReached": "Zprávy pro Jarvise jsou na tento měsíc vyčerpané. Obnoví se prvního dne dalšího měsíce.",
+          "empty": "Jarvis teď nic nového nenavrhl. Zkus napsat, co má doplnit.",
+          "notFound": "Uzel ani poznámku se nepodařilo najít. Obnov stránku a zkus to znovu."
+        }
+      },
+      "details": {
+        "title": "Uzel mapy",
+        "close": "Zavřít",
+        "rootLabel": "Střed mapy (název poznámky)",
+        "textLabel": "Text",
+        "noteLabel": "Poznámka",
+        "noteHint": "Malý text pod uzlem.",
+        "linkLabel": "Odkaz",
+        "linkMode": {
+          "none": "Žádný",
+          "url": "Webová adresa",
+          "record": "Kontakt, obchod…"
+        },
+        "urlLabel": "Adresa",
+        "urlInvalid": "Tohle není platná webová adresa.",
+        "recordRemove": "Odebrat odkaz",
+        "recordSearch": "Hledej kontakt, obchod, událost nebo pracovníka",
+        "searching": "Hledám…",
+        "noResults": "Nic jsem nenašel.",
+        "colorLabel": "Barva větve",
+        "colorAuto": "Podle větve",
+        "color": {
+          "violet": "Fialová",
+          "teal": "Tyrkysová",
+          "gold": "Zlatá",
+          "green": "Zelená",
+          "orange": "Oranžová",
+          "pink": "Růžová"
+        },
+        "cancel": "Zrušit",
+        "save": "Uložit"
+      },
+      "import": {
+        "title": "Importovat mapu do poznámky",
+        "titleNew": "Nová poznámka z myšlenkové mapy",
+        "close": "Zavřít",
+        "summary": "{nodes, plural, one {# uzel} few {# uzly} many {# uzlu} other {# uzlů}} · {depth, plural, one {# úroveň} few {# úrovně} many {# úrovně} other {# úrovní}}",
+        "flattened": "Hlubší než {max} úrovní se zploští, nic se neztratí.",
+        "modeLabel": "Co s tím, co v mapě už je",
+        "mode": {
+          "append": "Přidat ke středu",
+          "replace": "Nahradit"
+        },
+        "replaceWarning": "Současné větve se nahradí. Když si to rozmyslíš, vrátí je ⌘Z.",
+        "tooMany": "Tolik se do jedné poznámky nevejde, unese nejvýš {max} uzlů.",
+        "cancel": "Zrušit",
+        "submit": "{count, plural, one {Importovat # uzel} few {Importovat # uzly} many {Importovat # uzlu} other {Importovat # uzlů}}",
+        "submitReplace": "Nahradit mapu",
+        "submitNew": "Založit poznámku"
+      },
+      "convert": {
+        "cancel": "Zrušit",
+        "asNew": "Jako novou poznámku",
+        "mindmap": {
+          "title": "Zobrazit jako myšlenkovou mapu",
+          "text": "První řádek bude střed mapy, nadpisy a odrážky se stanou větvemi. Převod je nevratný: formátování textu (tučné, odkazy v textu) se ztratí. Jako nová poznámka zůstane text, jak je.",
+          "replace": "Převést na mapu"
+        },
+        "text": {
+          "title": "Převést mapu na text",
+          "text": "Střed mapy bude nadpis a větve odrážky pod ním. Převod je nevratný: barvy větví zmizí a nepřijaté návrhy Jarvise se nepřevedou. Jako nová poznámka zůstane mapa, jak je.",
+          "replace": "Převést na text"
+        }
+      }
     }
   },
   "pipeline": {

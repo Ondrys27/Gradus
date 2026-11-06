@@ -5,6 +5,7 @@ import { PROACTIVE_REACTIONS } from "@/features/jarvis/protocol";
 import { INDUSTRY_KEYS } from "@/features/onboarding/industries";
 import { XP_REASONS } from "@/features/game/rules";
 import { NOTE_TEMPLATE_KEYS } from "@/features/notes/templates";
+import { NOTE_KINDS } from "@/features/notes/mindmap/map-doc";
 import { EXPORT_FORMATS, IMPORT_MODES } from "@/features/milestones/map-io";
 import { MINDMAP_FORMATS } from "@/lib/mindmap/formats";
 import { INVOICE_STYLES } from "@/features/invoices/types";
@@ -308,11 +309,13 @@ export const EVENTS = {
     nodes: count(5000),
     mode: oneOf(IMPORT_MODES),
     flattened: bool(),
+    /** Into a milestone's tasks (default) or a mind map note (new = a new note). */
+    target: optional(oneOf(["milestone", "note"])),
   }),
   /** The task map downloaded; `backup` = before replacing the tasks with an import. */
   mindmap_exported: event("milestones", "client", false, {
     format: oneOf(EXPORT_FORMATS),
-    from: oneOf(["map", "list", "backup"]),
+    from: oneOf(["map", "list", "backup", "note", "text_note"]),
   }),
   view_selected: event("milestones", "client", false, {
     screen: oneOf(["milestones", "tasks", "company"]),
@@ -323,13 +326,41 @@ export const EVENTS = {
   // --- notes ---------------------------------------------------------------
   /** A new note: empty (button, ⌘N) or from one of the prepared outlines. */
   note_created: event("notes", "client", true, {
-    source: oneOf(["blank", "template"]),
-    where: oneOf(["list", "empty_state", "shortcut", "task", "milestone", "deal", "jarvis"]),
+    source: oneOf(["blank", "template", "import", "convert"]),
+    where: oneOf([
+      "list",
+      "empty_state",
+      "shortcut",
+      "task",
+      "milestone",
+      "deal",
+      "jarvis",
+      "convert",
+    ]),
+    kind: optional(oneOf(NOTE_KINDS)),
   }),
   /** Which prepared outline was used, and whether the industry from onboarding shaped it. */
   note_template_used: event("notes", "client", true, {
     template: oneOf(NOTE_TEMPLATE_KEYS),
     industry: optional(oneOf(INDUSTRY_KEYS)),
+    kind: optional(oneOf(NOTE_KINDS)),
+  }),
+  /** A text note shown as a mind map or a map turned into text: in place, or as a new note. */
+  note_converted: event("notes", "client", true, {
+    to: oneOf(NOTE_KINDS),
+    how: oneOf(["replace", "new"]),
+    nodes: count(5000),
+  }),
+  /** Jarvis suggested branches for a map note on request (written by /api/jarvis). */
+  note_map_suggested: event("notes", "server", true, {
+    branches: count(50),
+    with_request: bool(),
+  }),
+  /** What the user did with Jarvis's suggested branches: kept or deleted, one or all. */
+  note_map_suggestion_resolved: event("notes", "client", true, {
+    action: oneOf(["accept", "reject"]),
+    scope: oneOf(["one", "all"]),
+    nodes: count(200),
   }),
   /** Moved to the trash (it can still be restored for 30 days). */
   note_deleted: event("notes", "client", true, {

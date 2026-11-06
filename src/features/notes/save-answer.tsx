@@ -60,7 +60,7 @@ export function SaveAnswerToNotes({ text }: { text: string }) {
   function addTo(id: string) {
     setFailed(false);
     append.mutate(
-      { id, heading, blocks: blocksFromPlainText(text) },
+      { id, heading, blocks: blocksFromPlainText(text), text },
       {
         onSuccess: () => {
           track("note_saved_from_jarvis", { mode: "append" });

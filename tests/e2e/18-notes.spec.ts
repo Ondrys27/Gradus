@@ -19,7 +19,7 @@ test("18 · notes: template, writing, reload, search, trash and restore", async 
 
   // No notes yet: five prepared outlines, one click each.
   const templates = page.getByTestId("note-templates");
-  await expect(templates.getByRole("button")).toHaveCount(5);
+  await expect(templates.locator("[data-template]")).toHaveCount(5);
   await templates
     .getByRole("button", {
       name: exact(L, "notes.empty.useTemplate", { title: t("notes.templates.pricing.title") }),

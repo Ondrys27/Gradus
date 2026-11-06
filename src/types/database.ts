@@ -2435,6 +2435,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           id: string
+          kind: string
           pinned: boolean
           preview: string | null
           search_vector: unknown
@@ -2448,6 +2449,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id?: string
+          kind?: string
           pinned?: boolean
           preview?: string | null
           search_vector?: unknown
@@ -2461,6 +2463,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id?: string
+          kind?: string
           pinned?: boolean
           preview?: string | null
           search_vector?: unknown

@@ -8,12 +8,19 @@ import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { Placeholder } from "@tiptap/extensions";
+import { FileCodeIcon, FileTextIcon, NetworkIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { track } from "@/lib/analytics/client";
+import { countNodes } from "@/lib/mindmap/formats";
 import { useSession } from "@/features/account/queries";
 import { formatDateTime } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
-import { draftFromDoc, type DocNode } from "./document";
+import { draftFromDoc, type DocNode, type NoteDraft } from "./document";
+import { ConvertDialog } from "./mindmap/convert-dialog";
+import { mapToMindTree, textDocToMap } from "./mindmap/convert";
+import { mapDraft } from "./mindmap/map-doc";
+import { downloadTree, NoteMenu, TEXT_EXPORTS, type TextExport } from "./mindmap/note-menu";
 import { EditorToolbar, LINK_SHORTCUT_EVENT } from "./editor-toolbar";
 import { isAllowedLink } from "./links";
 import { useNoteBacklinks } from "./link-queries";
@@ -54,10 +61,12 @@ type Props = {
   actions: React.ReactNode;
   /** The phone's way back to the list. */
   back: React.ReactNode;
+  /** The note as a mind map: in place (it becomes a map) or as a new note. */
+  onConvert?: (draft: NoteDraft, how: "replace" | "new") => void;
 };
 
 /** What the note belongs to, quietly above its text, each with a link back. */
-function Backlinks({ noteId }: { noteId: string }) {
+export function Backlinks({ noteId }: { noteId: string }) {
   const t = useTranslations("notes");
   const links = useNoteBacklinks(noteId);
   const items = links.data ?? [];
@@ -132,8 +141,11 @@ export function SaveStatus({ noteId }: { noteId: string }) {
   );
 }
 
-export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back }: Props) {
+export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back, onConvert }: Props) {
   const t = useTranslations("notes");
+  const tMap = useTranslations("notes.map");
+  const tio = useTranslations("milestones.mapIo");
+  const [converting, setConverting] = useState(false);
   const { user } = useSession();
   const queryClient = useQueryClient();
   const saver = useNoteSaver();
@@ -241,12 +253,73 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back }
 
   const showToolbar = !!editor && !readOnly;
 
+  /** The text as it is now (the editor's, or the stored one before it loads), as a map. */
+  const asMap = () =>
+    textDocToMap((editor?.getJSON() as DocNode | undefined) ?? (note.content as DocNode), note.title);
+
+  function exportAs(format: TextExport) {
+    downloadTree(format, mapToMindTree(asMap()), tio("fileFallback"));
+    track("mindmap_exported", { format, from: "text_note" });
+  }
+
+  function convert(how: "replace" | "new") {
+    setConverting(false);
+    const map = asMap();
+    track("note_converted", {
+      to: "mindmap",
+      how,
+      nodes: Math.min(countNodes(mapToMindTree(map)), 5000),
+    });
+    onConvert?.(mapDraft(map, { mentionText }), how);
+  }
+
+  const moreMenu = (
+    <NoteMenu
+      label={tMap("menu")}
+      groups={[
+        ...(onConvert && !readOnly
+          ? [
+              {
+                items: [
+                  {
+                    key: "toMap",
+                    label: tMap("toMap"),
+                    icon: <NetworkIcon aria-hidden />,
+                    onSelect: () => setConverting(true),
+                    testId: "note-to-map",
+                  },
+                ],
+              },
+            ]
+          : []),
+        {
+          label: tMap("exportLabel"),
+          items: TEXT_EXPORTS.map((format) => ({
+            key: format,
+            label: tMap(`export.${format}`),
+            icon:
+              format === "markdown" ? (
+                <FileTextIcon aria-hidden />
+              ) : format === "opml" ? (
+                <FileCodeIcon aria-hidden />
+              ) : (
+                <NetworkIcon aria-hidden />
+              ),
+            onSelect: () => exportAs(format),
+            testId: `note-export-${format}`,
+          })),
+        },
+      ]}
+    />
+  );
+
   return (
     <div className="flex min-h-full flex-col">
       {isPhone ? (
         <div className="sticky top-0 z-10 flex items-center gap-1 bg-canvas px-4 pt-[max(4px,env(safe-area-inset-top))] pb-1">
           {back}
           <span className="flex-1" />
+          {moreMenu}
           {actions}
         </div>
       ) : (
@@ -260,7 +333,10 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back }
           ) : (
             <span className="flex-1" />
           )}
-          <div className="flex shrink-0 items-center">{actions}</div>
+          <div className="flex shrink-0 items-center">
+            {moreMenu}
+            {actions}
+          </div>
         </div>
       )}
 
@@ -289,6 +365,11 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back }
           />
         </div>
       )}
+      <ConvertDialog
+        to={converting ? "mindmap" : null}
+        onClose={() => setConverting(false)}
+        onConvert={convert}
+      />
     </div>
   );
 }

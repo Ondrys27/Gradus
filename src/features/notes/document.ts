@@ -1,4 +1,5 @@
 import { mentionAttrsOf, mentionPlainText, type MentionTextFn } from "./mentions";
+import type { MapDoc, NoteKind } from "./mindmap/map-doc";
 
 /**
  * The editor's document (Tiptap / ProseMirror JSON) and what is derived from
@@ -15,10 +16,15 @@ export type DocNode = {
 };
 
 export type NoteDraft = {
+  /** A text note (the editor's document) or a mind map; absent = text (drafts kept before maps). */
+  kind?: NoteKind;
   title: string;
-  content: DocNode;
+  content: DocNode | MapDoc;
   content_text: string;
 };
+
+/** A text note's draft: the editor's document. */
+export type TextDraft = NoteDraft & { kind: "text"; content: DocNode };
 
 /**
  * Mirrors the check constraints of public.notes. The database allows 400 kB of
@@ -107,9 +113,9 @@ export function titleFromText(text: string): string {
 }
 
 /** Everything the database stores for a document. */
-export function draftFromDoc(doc: DocNode, options: TextOptions = {}): NoteDraft {
+export function draftFromDoc(doc: DocNode, options: TextOptions = {}): TextDraft {
   const text = extractText(doc, options).slice(0, NOTE_LIMITS.contentText);
-  return { title: titleFromText(text), content: doc, content_text: text };
+  return { kind: "text", title: titleFromText(text), content: doc, content_text: text };
 }
 
 /** The text under the title, as the list shows it (the database computes the same). */
