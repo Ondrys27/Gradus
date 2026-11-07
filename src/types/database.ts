@@ -4299,6 +4299,7 @@ export type Database = {
           viewport: string
         }[]
       }
+      admin_email_taken: { Args: { _email: string }; Returns: boolean }
       admin_feature_requests: {
         Args: {
           _include_internal?: boolean
@@ -4446,7 +4447,6 @@ export type Database = {
         }
         Returns: Json
       }
-      admin_email_taken: { Args: { _email: string }; Returns: boolean }
       admin_user_sign_out: { Args: { _user_id: string }; Returns: number }
       analytics_take_quota: {
         Args: { _limit: number; _units: number; _user_id: string }
