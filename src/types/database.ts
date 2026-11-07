@@ -5999,7 +5999,9 @@ export type Database = {
         Returns: string
       }
       tutorial_delete_demo: { Args: never; Returns: Json }
+      tutorial_instant: { Args: { _value: Json }; Returns: string }
       tutorial_seed_demo: { Args: { _payload: Json }; Returns: Json }
+      tutorial_text: { Args: { _max: number; _value: Json }; Returns: string }
       user_today: { Args: { _user_id: string }; Returns: string }
       username_available: { Args: { _username: string }; Returns: boolean }
       valid_ai_caps: { Args: { _value: Json }; Returns: boolean }
