@@ -281,12 +281,13 @@ export function TutorialHost() {
           onClose={closeChoice}
         />
       )}
-      {phase === "resume" && state && (
+      {phase === "resume" && state && state.mode !== "none" && (
         <TutorialResume
+          mode={state.mode}
           stepTitle={resumeStep ? t(`steps.${resumeStep.key}.title`) : null}
           pending={ending}
           onResume={() => setPhase("running")}
-          onEnd={() => void end("abandoned", null)}
+          onEnd={(demo) => void end("abandoned", demo)}
         />
       )}
       {phase === "running" && state && state.mode !== "none" && steps.length > 0 && (

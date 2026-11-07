@@ -172,12 +172,15 @@ test("17 · milestones scroll right after onboarding and Jarvis's tour", async (
   const tour = page.locator("[data-tutorial-overlay] [role=dialog]");
   await expect(tour).toBeVisible({ timeout: 30_000 });
   const nextStep = tour.getByRole("button", { name: exact(L, "tutorial.next") });
+  const openFirstTask = tour.getByRole("button", { name: exact(L, "tutorial.action.openFirstTask") });
   for (let step = 0; step < 30; step += 1) {
-    if (!(await nextStep.isVisible())) break;
+    // The step that fades out is inert; wait for the next one to come in.
+    await expect(nextStep.or(openFirstTask)).toBeVisible();
+    if (await openFirstTask.isVisible()) break;
     await nextStep.click();
   }
   // The last step's action goes straight to the milestones.
-  await tour.getByRole("button", { name: exact(L, "tutorial.action.openFirstTask") }).click();
+  await openFirstTask.click();
   await expect(page.locator("[data-tutorial-overlay]")).toHaveCount(0);
   await expect(page).toHaveURL(/\/app\/milniky/);
   await dismissCelebrationsAutomatically(page, L);

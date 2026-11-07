@@ -11,7 +11,7 @@ import {
   type RefObject,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useIsPresent } from "framer-motion";
 import { CheckIcon, LightbulbIcon, LockIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Jarvis, JARVIS_SIZES, type JarvisState } from "@/components/jarvis/jarvis";
@@ -279,19 +279,34 @@ function LookLayer(props: LayerProps) {
               exit={{ opacity: 0 }}
               transition={fade}
             >
-              <StepBody
-                {...props}
-                values={values}
-                titleId={titleId}
-                passed
-                confirming={confirming}
-                setConfirming={setConfirming}
-                primaryRef={primaryRef}
-              />
+              <WhilePresent>
+                <StepBody
+                  {...props}
+                  values={values}
+                  titleId={titleId}
+                  passed
+                  confirming={confirming}
+                  setConfirming={setConfirming}
+                  primaryRef={primaryRef}
+                />
+              </WhilePresent>
             </motion.div>
           </AnimatePresence>
         </SpeechBubble>
       </motion.div>
+    </div>
+  );
+}
+
+/**
+ * The step that is fading out is neither pressable nor announced: a press on
+ * its Next while the next step comes in would act on a step already left.
+ */
+function WhilePresent({ children }: { children: ReactNode }) {
+  const present = useIsPresent();
+  return (
+    <div inert={!present || undefined} aria-hidden={!present || undefined}>
+      {children}
     </div>
   );
 }

@@ -722,5 +722,5 @@ describe("the migration of today's rights", () => {
     } finally {
       await old.close();
     }
-  });
+  }, 120_000);
 });

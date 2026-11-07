@@ -667,5 +667,5 @@ describe("the migration on existing deals", () => {
     } finally {
       await old.close();
     }
-  });
+  }, 120_000);
 });

@@ -167,9 +167,11 @@ export async function loadRuleInputs(
     const dueAt = `answers->>${fieldId}`;
     const { data, error, count } = await client
       .from("contact_table_entries")
-      .select("contact:contacts(company_name, first_name, last_name)", { count: "exact" })
+      .select("contact:contacts!inner(company_name, first_name, last_name)", { count: "exact" })
       .eq("user_id", userId)
       .eq("table_id", table.id)
+      // A sample contact of the tutorial moved here is no one to call back.
+      .eq("contact.is_demo", false)
       .lt(dueAt, day.to)
       .order(dueAt)
       .limit(1);
