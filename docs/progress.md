@@ -113,7 +113,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 20.5 | designer | 2026-11-07 — Tutoriál je radost projít: Jarvis letí k prvku a reaguje na splněný krok, linka kapitol místo „krok 7 z 31“, texty o uživatelově oboru se zvýrazněným slovesem, karty volby s náhledem, bublina na telefonu nikdy přes tlačítko akce.
 - [x] K20 | reviewer | 2026-11-07 — Kontrola fáze 20: pokyny majitele výslovně nepřebijí bezpečnostní pravidla, mizející krok tutoriálu nejde kliknout, ukončení obnoveného tutoriálu se ptá na ukázková data a ukázky nejsou v návrzích „zavolej“.
 - [x] STOP | Konec fáze 20. Přečti si docs/jarvis-pravidla.md a v administraci → AI a Jarvis → Pravidla napiš Jarvisovi své pokyny, vyzkoušej je. V milníku importuj mapu z MindNode (export do OPML) a exportuj Markdown. V poznámkách založ myšlenkovou mapu, zkus Tab/Enter a tažení, nech si od Jarvise navrhnout větve. Založ nový účet a projdi rychlou ukázku; pak v Nastavení spusť úplný tutoriál a projdi ho celý, na konci smaž ukázková data. Co nesedí, napiš Claude Code rovnou, pak /pokracuj. · přeskočeno nočním během 2026-11-07, zkontroluj ručně (.noc/zkontroluj.md)
-- [ ] 22.1 | architect | env: RESEND_API_KEY
+- [x] 22.1 | architect | env: RESEND_API_KEY — 2026-11-07: Podpora v administraci: hledání účtu podle části e-mailu, reset hesla, nový potvrzovací odkaz, změna e-mailu a ukončení všech přihlášení, vše s důvodem v auditu.
 - [ ] 22.2 | architect |
 - [ ] 22.3 | architect |
 - [ ] 22.4 | architect |
