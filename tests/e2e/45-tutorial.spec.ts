@@ -91,19 +91,25 @@ test("45 · quick look: every section with Next, stored as finished", async ({ p
   };
   for (const [index, key] of keys.entries()) {
     await expect(stepTitle(page, key)).toBeVisible({ timeout: 15_000 });
-    await expect(overlay(page)).toContainText(
-      t("tutorial.progress", { step: index + 1, total: keys.length }),
+    await expect(overlay(page)).toHaveAttribute("data-tutorial-step", key);
+    await expect(overlay(page).locator("[data-tutorial-rail]")).toHaveAttribute(
+      "aria-valuenow",
+      /^\d+$/,
     );
     if (where[key]) await expect(page).toHaveURL(where[key]);
     if (key === "pipeline") {
       // Reloaded in the middle: it goes straight on at the same step.
-      await expect.poll(async () => (await tutorialOf(account.id))?.tutorial).toMatchObject({ step: "pipeline" });
+      await expect
+        .poll(async () => (await tutorialOf(account.id))?.tutorial)
+        .toMatchObject({ step: "pipeline" });
       await page.reload();
       await expect(stepTitle(page, "pipeline")).toBeVisible({ timeout: 30_000 });
     }
     if (index < keys.length - 1) await nextButton(page).click();
   }
-  await overlay(page).getByRole("button", { name: exact(L, "tutorial.done") }).click();
+  await overlay(page)
+    .getByRole("button", { name: exact(L, "tutorial.done") })
+    .click();
   await expect(overlay(page)).toHaveCount(0);
 
   await expect
@@ -128,15 +134,17 @@ test("45 · full tutorial up to the deal; deleting the samples leaves nothing ma
   await startFromSettings(page);
   await chooseTutorial(page, "full");
 
-  await expect.poll(() => sampleCounts(account.id), { timeout: 20_000 }).toEqual({
-    contacts: 3,
-    deals: 1,
-    milestones: 1,
-    tasks: 5,
-    crm_tasks: 2,
-    calendar_events: 1,
-    notes: 1,
-  });
+  await expect
+    .poll(() => sampleCounts(account.id), { timeout: 20_000 })
+    .toEqual({
+      contacts: 3,
+      deals: 1,
+      milestones: 1,
+      tasks: 5,
+      crm_tasks: 2,
+      calendar_events: 1,
+      notes: 1,
+    });
 
   await expect(stepTitle(page, "welcome")).toBeVisible({ timeout: 15_000 });
   await nextButton(page).click();
@@ -150,7 +158,10 @@ test("45 · full tutorial up to the deal; deleting the samples leaves nothing ma
   // Hands-on: Next stays locked until the milestone exists.
   await expect(stepTitle(page, "milestoneCreate")).toBeVisible();
   await expect(nextButton(page)).toBeDisabled();
-  await page.getByRole("button", { name: exact(L, "milestones.actions.new") }).first().click();
+  await page
+    .getByRole("button", { name: exact(L, "milestones.actions.new") })
+    .first()
+    .click();
   const form = page.getByRole("dialog", { name: t("milestones.form.createTitle") });
   await form.locator("#milestone-title").fill("E2E Moje první zakázka");
   await form.getByRole("button", { name: exact(L, "milestones.form.create") }).click();
@@ -222,21 +233,25 @@ test("45 · full tutorial up to the deal; deleting the samples leaves nothing ma
     .toMatchObject({ mode: "full", step: "dealFromContact" });
 
   // End here and delete the samples.
-  await overlay(page).getByRole("button", { name: exact(L, "tutorial.end") }).click();
+  await overlay(page)
+    .getByRole("button", { name: exact(L, "tutorial.end") })
+    .click();
   await overlay(page)
     .getByRole("button", { name: exact(L, "tutorial.endConfirm.delete") })
     .click();
   await expect(overlay(page)).toHaveCount(0);
 
-  await expect.poll(() => sampleCounts(account.id), { timeout: 20_000 }).toEqual({
-    contacts: 0,
-    deals: 0,
-    milestones: 0,
-    tasks: 0,
-    crm_tasks: 0,
-    calendar_events: 0,
-    notes: 0,
-  });
+  await expect
+    .poll(() => sampleCounts(account.id), { timeout: 20_000 })
+    .toEqual({
+      contacts: 0,
+      deals: 0,
+      milestones: 0,
+      tasks: 0,
+      crm_tasks: 0,
+      calendar_events: 0,
+      notes: 0,
+    });
   const db = admin();
   const own = await db.from("deals").select("id").eq("id", deal.data!.id);
   expect(own.data).toHaveLength(1);

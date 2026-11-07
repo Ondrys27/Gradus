@@ -11,24 +11,32 @@ import {
   type RefObject,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { CheckIcon, LightbulbIcon, LockIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Jarvis, JARVIS_SIZES, type JarvisState } from "@/components/jarvis/jarvis";
-import { SpeechBubble, TypedText, type BubbleTail } from "@/components/jarvis/speech-bubble";
+import { SpeechBubble, type BubbleTail } from "@/components/jarvis/speech-bubble";
 import { useTargetBox, useViewport } from "@/components/jarvis/tour-overlay";
 import { Button } from "@/components/ui/button";
-import { placeCallout, type Size } from "@/features/jarvis/tour";
+import { placeCallout, type Box, type Size } from "@/features/jarvis/tour";
 import { usePageScrollLock } from "@/lib/scroll-lock";
 import { useIsPhone, useReducedMotionSafe } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
 import { canAdvance, highlightOf, hintDue, navigationFor, type PlannedStep } from "./engine";
+import { companionPlacement, phoneBubbleEnd, reactionIndex } from "./presentation";
 import { useStepCheck } from "./queries";
+import { useStepValues, type StepValues } from "./step-values";
+import { TutorialRail } from "./tutorial-rail";
+import { Reaction, StepText } from "./tutorial-text";
 import type { DemoResolution, RunningMode } from "./types";
 
 const CHARACTER = JARVIS_SIZES.bubble;
+/** Jarvis next to the element of a hands-on step. */
+const COMPANION = 72;
 /** Room around the lit element. */
 const SPOT_PADDING = 8;
+/** How many short reactions the translations hold (`tutorial.reactions`). */
+const REACTIONS = 5;
 
 export type FirstAction = { label: string; href: string; target: string | null };
 
@@ -68,17 +76,20 @@ function useIdleSince(key: string, enabled: boolean) {
 
 /**
  * The tutorial on screen. A look step dims the page and lights the element
- * Jarvis talks about, with him next to it (as the former tour); a hands-on
- * step leaves the page free to use: only a ring around the element and his
- * bubble at the edge (below dialogs and sheets, so it never covers what the
- * user fills in), whose Next unlocks once the check passes. Every step can be
- * skipped, the tutorial ended at any time.
+ * Jarvis talks about, with him flying over to it; a hands-on step leaves the
+ * page free to use: a ring around the element with Jarvis standing next to
+ * it, and his bubble at the edge (below dialogs and sheets, so it never
+ * covers what the user fills in; on a phone at the end of the screen away
+ * from the element), whose Next unlocks with a short reaction once the
+ * check passes. A thin rail of chapters along the top says how far it is.
+ * Every step can be skipped, the tutorial ended at any time.
  */
 export function TutorialOverlay(props: OverlayProps) {
   const { steps, index, onMove } = props;
   const step = steps[Math.min(index, steps.length - 1)]!;
   const router = useRouter();
   const pathname = usePathname();
+  const values = useStepValues();
 
   // A step opens its section when it begins; afterwards the user may go anywhere.
   const opened = useRef<string | null>(null);
@@ -94,26 +105,40 @@ export function TutorialOverlay(props: OverlayProps) {
   const skip = useCallback(() => onMove(index + 1, "skip"), [onMove, index]);
 
   return step.action === "look" ? (
-    <LookLayer {...props} step={step} onNext={next} onSkip={skip} />
+    <LookLayer {...props} step={step} values={values} onNext={next} onSkip={skip} />
   ) : (
-    <DoLayer {...props} step={step} passed={passed} onNext={next} onSkip={skip} />
+    <DoLayer {...props} step={step} values={values} passed={passed} onNext={next} onSkip={skip} />
   );
 }
 
 type LayerProps = OverlayProps & {
   step: PlannedStep;
+  values: StepValues;
   onNext: () => void;
   onSkip: () => void;
 };
 
+/**
+ * The element's box, held over a page change: while the next page renders
+ * and the element is not there yet, Jarvis stays where he was instead of
+ * jumping to the middle and back.
+ */
+function useHeldBox(box: Box | null, hasTargets: boolean): Box | null {
+  const held = useRef<Box | null>(null);
+  if (box) held.current = box;
+  return box ?? (hasTargets ? held.current : null);
+}
+
 function LookLayer(props: LayerProps) {
-  const { step, steps, index } = props;
+  const { step, steps, index, values } = props;
   const reduceMotion = useReducedMotionSafe();
   const isPhone = useIsPhone();
   const viewport = useViewport();
   const maskId = `tutorial-mask-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const titleId = `${maskId}-title`;
-  const box = useTargetBox(highlightOf(step));
+  const targets = highlightOf(step);
+  const box = useTargetBox(targets);
+  const anchor = useHeldBox(box, targets.length > 0);
   const last = index >= steps.length - 1;
   const [confirming, setConfirming] = useState(false);
   useEffect(() => setConfirming(false), [step.key]);
@@ -137,7 +162,7 @@ function LookLayer(props: LayerProps) {
     return () => observer.disconnect();
   }, []);
 
-  const placement = placeCallout(box, callout, viewport, CHARACTER);
+  const placement = placeCallout(anchor, callout, viewport, CHARACTER);
   const primaryRef = useRef<HTMLButtonElement>(null);
   useEffect(() => primaryRef.current?.focus({ preventScroll: true }), [index, confirming]);
 
@@ -174,9 +199,15 @@ function LookLayer(props: LayerProps) {
   const fly = reduceMotion
     ? { duration: 0 }
     : ({ type: "spring", stiffness: 140, damping: 20, mass: 0.9 } as const);
+  const fade = reduceMotion ? { duration: 0 } : { duration: 0.22, ease: "easeOut" as const };
 
   return (
-    <div className="fixed inset-0 z-takeover" data-jarvis-tour="" data-tutorial-overlay="look">
+    <div
+      className="fixed inset-0 z-takeover"
+      data-jarvis-tour=""
+      data-tutorial-overlay="look"
+      data-tutorial-step={step.key}
+    >
       <svg aria-hidden className="absolute inset-0 size-full">
         <defs>
           <filter id={`${maskId}-soft`} x="-50%" y="-50%" width="200%" height="200%">
@@ -209,6 +240,7 @@ function LookLayer(props: LayerProps) {
           />
         )}
       </svg>
+      <TutorialRail steps={steps} index={index} names />
 
       <motion.div
         ref={calloutRef}
@@ -239,14 +271,25 @@ function LookLayer(props: LayerProps) {
           />
         </div>
         <SpeechBubble tail={tail} className="w-full md:w-[320px]">
-          <StepBody
-            {...props}
-            titleId={titleId}
-            passed
-            confirming={confirming}
-            setConfirming={setConfirming}
-            primaryRef={primaryRef}
-          />
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={confirming ? `${step.key}:end` : step.key}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={fade}
+            >
+              <StepBody
+                {...props}
+                values={values}
+                titleId={titleId}
+                passed
+                confirming={confirming}
+                setConfirming={setConfirming}
+                primaryRef={primaryRef}
+              />
+            </motion.div>
+          </AnimatePresence>
         </SpeechBubble>
       </motion.div>
     </div>
@@ -254,9 +297,11 @@ function LookLayer(props: LayerProps) {
 }
 
 function DoLayer(props: LayerProps & { passed: boolean }) {
-  const { step, passed } = props;
+  const { step, steps, index, passed } = props;
   const t = useTranslations("tutorial");
   const box = useTargetBox(highlightOf(step));
+  const viewport = useViewport();
+  const isPhone = useIsPhone();
   const reduceMotion = useReducedMotionSafe();
   const titleId = `tutorial-step-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const [confirming, setConfirming] = useState(false);
@@ -266,6 +311,15 @@ function DoLayer(props: LayerProps & { passed: boolean }) {
     setCollapsed(false);
   }, [step.key]);
   const primaryRef = useRef<HTMLButtonElement>(null);
+
+  const spring = reduceMotion
+    ? { duration: 0 }
+    : ({ type: "spring", stiffness: 160, damping: 22 } as const);
+  // On a phone the bubble takes the end of the screen the element is not on; the top keeps clear of the rail.
+  const end = phoneBubbleEnd(box, viewport);
+  // On a larger screen Jarvis stands next to the element itself; the bubble then has no head.
+  const companion = !isPhone && box ? companionPlacement(box, viewport, COMPANION) : null;
+  const jarvisState: JarvisState = passed ? "happy" : "pointing";
 
   return (
     <>
@@ -280,28 +334,46 @@ function DoLayer(props: LayerProps & { passed: boolean }) {
             width: box.width + SPOT_PADDING * 2,
             height: box.height + SPOT_PADDING * 2,
           }}
-          transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 160, damping: 22 }}
+          transition={spring}
           className={cn(
-            "pointer-events-none fixed z-nav rounded-2xl border-2 border-teal/70 shadow-[0_0_0_4px] shadow-teal/15",
+            "pointer-events-none fixed z-nav rounded-2xl border-2 shadow-[0_0_0_4px] transition-colors duration-300",
+            passed ? "border-green/80 shadow-green/15" : "border-teal/70 shadow-teal/15",
             !passed && !reduceMotion && "animate-pulse",
           )}
         />
+      )}
+      {companion && (
+        <motion.div
+          aria-hidden
+          data-capture-ignore=""
+          className="pointer-events-none fixed z-nav"
+          initial={false}
+          animate={{ top: companion.top, left: companion.left }}
+          transition={spring}
+        >
+          <Jarvis size={COMPANION} state={jarvisState} direction={companion.direction} />
+        </motion.div>
       )}
       <section
         aria-labelledby={titleId}
         data-jarvis-tour=""
         data-tutorial-overlay="do"
+        data-tutorial-step={step.key}
         data-capture-ignore=""
         className={cn(
-          "fixed z-nav flex items-start gap-2",
-          // Phone: at the top, clear of the bottom bar and the sheets; larger screens: bottom left of the content.
-          "inset-x-2 top-[calc(env(safe-area-inset-top)+8px)]",
-          "md:inset-x-auto md:top-auto md:bottom-6 md:left-[calc(var(--app-sidebar-width)+24px)] md:w-[380px]",
+          "fixed z-nav flex items-end gap-2",
+          "inset-x-2 md:inset-x-auto md:bottom-6 md:left-[calc(var(--app-sidebar-width)+24px)] md:w-[380px]",
+          end === "top"
+            ? "top-[calc(env(safe-area-inset-top)+36px)] md:top-auto"
+            : "bottom-[calc(env(safe-area-inset-bottom)+76px)]",
         )}
       >
-        <div className="hidden shrink-0 md:block">
-          <Jarvis size={56} state={passed ? "happy" : "pointing"} variant="head" />
-        </div>
+        <TutorialRail steps={steps} index={index} />
+        {!companion && !isPhone && (
+          <div className="shrink-0">
+            <Jarvis size={56} state={jarvisState} variant="head" />
+          </div>
+        )}
         <div className="min-w-0 flex-1 rounded-2xl border border-line-strong bg-surface/95 p-3 shadow-popover backdrop-blur-md">
           {collapsed ? (
             <button
@@ -327,6 +399,7 @@ function DoLayer(props: LayerProps & { passed: boolean }) {
               setConfirming={setConfirming}
               primaryRef={primaryRef}
               onCollapse={() => setCollapsed(true)}
+              head={isPhone ? <Jarvis size={40} state={jarvisState} variant="head" /> : undefined}
             />
           )}
         </div>
@@ -340,6 +413,7 @@ function StepBody({
   step,
   steps,
   index,
+  values,
   passed,
   onNext,
   onSkip,
@@ -351,6 +425,7 @@ function StepBody({
   setConfirming,
   primaryRef,
   onCollapse,
+  head,
 }: LayerProps & {
   passed: boolean;
   titleId: string;
@@ -358,6 +433,8 @@ function StepBody({
   setConfirming: (value: boolean) => void;
   primaryRef: RefObject<HTMLButtonElement | null>;
   onCollapse?: () => void;
+  /** Jarvis's head in the header row (a phone, where there is no room beside the bubble). */
+  head?: ReactNode;
 }) {
   const t = useTranslations("tutorial");
   const last = index >= steps.length - 1;
@@ -380,10 +457,16 @@ function StepBody({
 
   const header = (
     <div className="mb-1 flex items-center justify-between gap-2">
-      <p className="text-xs text-ink-muted">
-        {t(`chapters.${step.chapter}`)} ·{" "}
-        {t("progress", { step: index + 1, total: steps.length })}
-      </p>
+      <div className="flex items-center gap-2">
+        {head && (
+          <div aria-hidden className="-my-2 -ml-1 shrink-0">
+            {head}
+          </div>
+        )}
+        <p className="text-[11px] font-medium tracking-wide text-ink-muted uppercase">
+          {t(`chapters.${step.chapter}`)}
+        </p>
+      </div>
       {onCollapse && (
         <button
           type="button"
@@ -402,11 +485,7 @@ function StepBody({
       <h2 id={titleId} className="mb-1 text-sm font-semibold text-teal">
         {t(`steps.${step.key}.title`)}
       </h2>
-      {step.action === "look" ? (
-        <TypedText key={step.key} text={t(step.jarvisSays)} />
-      ) : (
-        <p className="text-[15px] leading-relaxed text-ink">{t(step.jarvisSays)}</p>
-      )}
+      <StepText key={step.key} text={t(step.jarvisSays, values)} typed={step.action === "look"} />
       {step.locked && (
         <p className="mt-2 flex items-start gap-1.5 text-sm text-ink-muted">
           <LockIcon aria-hidden className="mt-0.5 size-3.5 shrink-0" />
@@ -415,14 +494,11 @@ function StepBody({
       )}
       {step.action === "do" &&
         (passed ? (
-          <p role="status" className="mt-2 flex items-center gap-1.5 text-sm font-semibold text-green">
-            <CheckIcon aria-hidden className="size-4" />
-            {t("checkPassed")}
-          </p>
+          <Reaction text={t(`reactions.${reactionIndex(step.key, REACTIONS)}`)} />
         ) : showHint ? (
           <p role="status" className="mt-2 flex items-start gap-1.5 text-sm text-gold">
             <LightbulbIcon aria-hidden className="mt-0.5 size-4 shrink-0" />
-            {t(step.hint)}
+            {t(step.hint, values)}
           </p>
         ) : null)}
 
@@ -443,12 +519,7 @@ function StepBody({
             {t("end")}
           </Button>
         )}
-        {!last && step.skippable && step.action === "do" && !passed && (
-          <Button variant="ghost" size="sm" onClick={onSkip}>
-            {t("skipStep")}
-          </Button>
-        )}
-        {!last && step.action === "look" && (
+        {!last && step.skippable && !(step.action === "do" && passed) && (
           <Button variant="ghost" size="sm" onClick={onSkip}>
             {t("skipStep")}
           </Button>
@@ -458,6 +529,7 @@ function StepBody({
           size="sm"
           disabled={pending || (last ? mode === "full" && !demo : !canAdvance(step, passed))}
           onClick={() => (last ? onEnd("finished", demo) : onNext())}
+          className={cn(step.action === "do" && passed && "shadow-[0_0_16px] shadow-violet/50")}
         >
           {last ? t("done") : t("next")}
         </Button>

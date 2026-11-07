@@ -110,7 +110,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 20.2 | architect | 2026-11-06 — Mapa úkolů stojí na společné komponentě MindMap; do milníku jde importovat myšlenkovou mapu (OPML, FreeMind, XMind, Markdown, text) s náhledem a zálohou při nahrazení, i jako nový milník, a mapu exportovat do Markdownu, OPML, FreeMindu a PNG.
 - [x] 20.3 | architect | 2026-11-07 — Poznámka může být myšlenková mapa: psaní Tab/Enter, tažení s podstromem, uzly s poznámkou, barvou a odkazem, převod text ↔ mapa, import a export, Jarvis navrhne větve.
 - [x] 20.4 | architect | 2026-11-07 — Tutoriál od Jarvise: po oslavě volba Přeskočit / Rychlá ukázka / Úplný tutoriál s ukázkovými daty (is_demo), které jdou na konci smazat a nepočítají se do XP, metrik ani Jarvise.
-- [ ] 20.5 | designer |
+- [x] 20.5 | designer | 2026-11-07 — Tutoriál je radost projít: Jarvis letí k prvku a reaguje na splněný krok, linka kapitol místo „krok 7 z 31“, texty o uživatelově oboru se zvýrazněným slovesem, karty volby s náhledem, bublina na telefonu nikdy přes tlačítko akce.
 - [ ] K20 | reviewer |
 - [ ] STOP | Konec fáze 20. Přečti si docs/jarvis-pravidla.md a v administraci → AI a Jarvis → Pravidla napiš Jarvisovi své pokyny, vyzkoušej je. V milníku importuj mapu z MindNode (export do OPML) a exportuj Markdown. V poznámkách založ myšlenkovou mapu, zkus Tab/Enter a tažení, nech si od Jarvise navrhnout větve. Založ nový účet a projdi rychlou ukázku; pak v Nastavení spusť úplný tutoriál a projdi ho celý, na konci smaž ukázková data. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [ ] 22.1 | architect | env: RESEND_API_KEY

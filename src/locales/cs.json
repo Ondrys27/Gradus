@@ -7328,9 +7328,7 @@
     "done": "Hotovo",
     "expand": "Zobrazit",
     "collapse": "Skrýt",
-    "progress": "Krok {step} z {total}",
     "locked": "Tahle část se ti odemkne postupem v cestě. Až se tak stane, vyzkoušíš si ji.",
-    "checkPassed": "Splněno. Můžeš pokračovat.",
     "firstStep": "Tvůj první skutečný krok:",
     "firstStepTarget": "„{milestone}“",
     "action": {
@@ -7472,66 +7470,78 @@
     "choice": {
       "title": "Jak chceš začít?",
       "close": "Zavřít",
-      "intro": "Můžu ti aplikaci ukázat. Vyber si, kolik času na to chceš dát.",
+      "intro": "Můžu ti aplikaci ukázat. Vyber, kolik času na to dnes máš.",
       "minutes": "≈ {minutes} min",
+      "recommended": "Doporučuji",
+      "learnTitle": "Co budeš umět",
       "preparing": "Připravuji ukázková data…",
       "failed": "Nepodařilo se to spustit. Zkus to prosím znovu.",
       "none": {
-        "title": "Přeskočit",
-        "text": "Pustíš se do toho sám. Tutoriál si spustíš kdykoliv v Nastavení → Jarvis.",
-        "gain": "Hned k práci"
+        "title": "Přeskočit a pustit se do toho sám",
+        "text": "Tutoriál si pustíš kdykoliv v Nastavení → Jarvis."
       },
       "quick": {
         "title": "Rychlá ukázka",
-        "text": "Provedu tě všemi částmi aplikace. Jen se díváš, nic nezakládáš.",
-        "gain": "Víš, kde co najdeš"
+        "text": "Provedu tě celou aplikací. Ty se jen díváš, nic nezakládáš.",
+        "learn": {
+          "0": "Kde co najdeš",
+          "1": "Co za tebe hlídám",
+          "2": "Jak a kdy se ozvu"
+        },
+        "previewAlt": "Náhled rychlé ukázky: zvýrazněná položka v menu a Jarvis, který na ni ukazuje"
       },
       "full": {
         "title": "Úplný tutoriál",
-        "text": "Všechno si vyzkoušíš sám na ukázkových datech: milník, kontakt, obchod, fakturu i otázku na mě.",
-        "gain": "Umíš to hned používat · XP za dokončení"
+        "text": "Všechno si vyzkoušíš sám na ukázkových datech, která pak smažeš.",
+        "learn": {
+          "0": "Milník, úkol a poznámka",
+          "1": "Kontakt, obchod a Close Date",
+          "2": "Koncept faktury a otázka na mě"
+        },
+        "gain": "XP za dokončení",
+        "previewAlt": "Náhled úplného tutoriálu: seznam úkolů, ve kterém odškrtáváš splněné"
       }
     },
     "steps": {
       "dashboard": {
         "title": "Nástěnka",
-        "text": "Tady začíná tvůj den: dnešní úkoly, komu zavolat, obchody a příjem za měsíc. Cokoliv najdeš přes ⌘K nebo Ctrl+K."
+        "text": "Tady začíná každý den: úkoly, komu zavolat a kolik jsi tenhle měsíc vydělal. Cokoliv najdeš přes ⌘K nebo Ctrl+K."
       },
       "milestones": {
         "title": "Milníky a mapa",
-        "text": "Velké cíle rozdělené na úkoly. Každý milník má i myšlenkovou mapu, kde úkoly přesouváš tažením."
+        "text": "Velké cíle rozdělené na úkoly, třeba „{milestone}“. Každý milník má i mapu, ve které úkoly přesouváš tažením."
       },
       "notes": {
         "title": "Poznámky",
-        "text": "Podklady k podnikání na jednom místě: ideální zákazník, ceník, prodejní skript. Z poznámek vycházím, když mi píšeš."
+        "text": "Podklady k podnikání na jednom místě: komu v oboru {branch} prodáváš, ceník, prodejní skript. Vycházím z nich, když mi píšeš."
       },
       "contacts": {
         "title": "Kontakty a Cold Calling",
-        "text": "Kontakty žijí ve tvých tabulkách. V Cold Callingu je obvoláváš a přesouváš dál, třeba do Schůzek."
+        "text": "Lidé, které chceš oslovit, žijí ve tvých tabulkách. V Cold Callingu je obvoláš a posuneš dál, třeba do Schůzek."
       },
       "pipeline": {
         "title": "Pipeline a dlaždice",
-        "text": "Obchody po fázích. Dlaždice nahoře hlídají, co hoří: cíl je všude nula."
+        "text": "Každá zakázka v oboru {branch} tu má svou fázi. Dlaždice nahoře hlídají, co hoří: cíl je všude nula."
       },
       "tasks": {
         "title": "Úkoly",
-        "text": "Úkoly k obchodům a kontaktům s termínem a časem. Po termínu svítí červeně."
+        "text": "Úkoly k obchodům a lidem, s termínem a časem. Po termínu svítí červeně."
       },
       "calendar": {
         "title": "Kalendář",
-        "text": "Schůzky, termíny a úkoly na jednom místě, ve tvém časovém pásmu."
+        "text": "Schůzky, termíny a úkoly na jednom místě, ve tvém čase."
       },
       "finance": {
         "title": "Finance a faktury",
-        "text": "Příjmy, výdaje a pravidelné platby. Faktury vystavíš přímo tady, i s QR platbou."
+        "text": "Příjmy, výdaje a pravidelné platby. Fakturu za hotovou práci vystavíš přímo tady, i s QR platbou."
       },
       "company": {
         "title": "Správa firmy",
-        "text": "Pozvi pracovníky, nastav jim práva a sleduj, jak se jim daří."
+        "text": "Až vezmeš prvního člověka, pozveš ho tady a nastavíš mu, co smí vidět."
       },
       "messages": {
         "title": "Zprávy",
-        "text": "Chat uvnitř firmy: skupiny i přímé zprávy s pracovníky."
+        "text": "Chat uvnitř firmy: skupiny i přímé zprávy s lidmi, které pozveš."
       },
       "jarvis": {
         "title": "To jsem já",
@@ -7539,19 +7549,19 @@
       },
       "level": {
         "title": "Úroveň a série",
-        "text": "Každý opravdový krok ti přinese XP. Klepni na úroveň a uvidíš, co tě čeká."
+        "text": "Každý skutečný krok ti přinese XP. Klepni na úroveň a uvidíš, co tě čeká."
       },
       "settings": {
         "title": "Nastavení",
-        "text": "Jazyk, formáty, témata a jak často se ozývám najdeš v nabídce účtu. Tutoriál si tam pustíš znovu."
+        "text": "Jazyk, formáty, téma a jak často se ozývám najdeš v nabídce účtu. Tutoriál si tam pustíš znovu."
       },
       "finish": {
         "title": "Jdeme na to",
-        "text": "To je pro začátek všechno. Teď už naostro."
+        "text": "To je pro začátek všechno. Teď naostro: tvoje první zakázka v oboru {branch} čeká."
       },
       "workerDashboard": {
         "title": "Tvoje nástěnka",
-        "text": "Tady vidíš svůj den na jeden pohled: úkoly, odpracovaný čas a co sis vydělal."
+        "text": "Tvůj den na jeden pohled: úkoly, odpracovaný čas a co sis vydělal."
       },
       "workerTasks": {
         "title": "Tvoje úkoly",
@@ -7563,98 +7573,98 @@
       },
       "welcome": {
         "title": "Vyzkoušíme si to",
-        "text": "Do tvého prostoru jsem přidal ukázková data se štítkem „ukázka“: tři kontakty, obchod, milník, úkoly, schůzku a poznámku. Na nich si všechno vyzkoušíš."
+        "text": "Přidal jsem ti ukázková data se štítkem „ukázka“: tři lidi z oboru {branch}, zakázku, milník a poznámku. Nic z toho není naostro, klidně to rozbij."
       },
       "milestonesLook": {
         "title": "Ukázkový milník",
-        "text": "Tady je milník s úkoly, který jsem ti připravil. Hotové úkoly posouvají milník k cíli."
+        "text": "Tohle je ukázkový milník s úkoly. Každý hotový úkol ho posune blíž k cíli."
       },
       "milestoneCreate": {
         "title": "Založ milník",
-        "text": "Založ si vlastní milník tlačítkem Nový milník. Stačí název, třeba „První tři zákazníci“.",
+        "text": "**Založ** vlastní milník tlačítkem Nový milník, třeba „{milestone}“. Stačí název.",
         "hint": "Tlačítko Nový milník je nahoře vpravo. Napiš název a ulož."
       },
       "taskAdd": {
         "title": "Přidej úkol",
-        "text": "Otevři milník a přidej do něj úkol. Napiš ho do pole pod seznamem a stiskni Enter.",
-        "hint": "Klepni na milník, pak do pole „Přidat úkol“ napiš třeba „Zavolat dodavateli“."
+        "text": "**Otevři** svůj milník a **přidej** první úkol, třeba „{task}“. Napiš ho do pole pod seznamem a stiskni Enter.",
+        "hint": "Klepni na milník, pak piš do pole „Přidat úkol“ a stiskni Enter."
       },
       "taskMove": {
         "title": "Přesuň úkol v mapě",
-        "text": "Přepni na mapu a přetáhni úkol pod jiný. Na počítači to jde i přes ⌘ nebo Ctrl a šipky.",
+        "text": "**Přepni** na mapu a **přetáhni** úkol pod jiný. Na počítači to jde i přes ⌘ nebo Ctrl a šipky.",
         "hint": "Přepínač Seznam / Mapa je nad úkoly. Chyť úkol a pusť ho na jiný."
       },
       "noteWrite": {
-        "title": "Zapiš si do poznámek",
-        "text": "Otevři ukázkovou poznámku Ideální zákazník a doplň do ní větu, nebo založ novou poznámku.",
-        "hint": "Klepni na poznámku v seznamu a piš. Ukládá se samo."
+        "title": "Zapiš si to",
+        "text": "**Otevři** poznámku Ideální zákazník a **dopiš** větu o tom, komu v oboru {branch} prodáváš. Ukládá se sama.",
+        "hint": "Klepni na poznámku v seznamu a piš. Nic nemusíš ukládat."
       },
       "contactsLook": {
         "title": "Kontakty",
-        "text": "Tři ukázkové kontakty už tu jsou. Každý kontakt je vždy v jedné tabulce."
+        "text": "Tři ukázkoví lidé už tu jsou, {contact} je první z nich. Každý kontakt je vždy v jedné tabulce."
       },
       "contactCreate": {
         "title": "Založ kontakt",
-        "text": "Přidej kontakt tlačítkem Nový kontakt, nebo si nech pár kontaktů vygenerovat.",
+        "text": "**Přidej** někoho, koho chceš oslovit, tlačítkem Nový kontakt. Stačí jméno nebo firma.",
         "hint": "Tlačítko Nový kontakt je nahoře. Stačí jméno nebo firma."
       },
       "coldCallingLook": {
         "title": "Cold Calling",
-        "text": "Tady obvoláváš kontakty z tabulky Neoslovení. Časovač počítá, kolik jsi dnes volal."
+        "text": "Tady obvoláváš lidi z tabulky Neoslovení. Časovač počítá, kolik jsi dnes volal."
       },
       "coldCallingMove": {
         "title": "Přesuň kontakt",
-        "text": "Vyber kontakt a přesuň ho do další tabulky, třeba do Schůzek. Odpovíš na pár otázek a je to.",
+        "text": "**Přesuň** {contact} do další tabulky, třeba do Schůzek. Odpovíš na pár otázek a je to.",
         "hint": "U kontaktu klepni na přesun a vyber cílovou tabulku."
       },
       "dealFromContact": {
         "title": "Založ z něj obchod",
-        "text": "Z kontaktu založ obchod: v detailu kontaktu nebo při přesunu do Schůzek.",
+        "text": "**Založ** z kontaktu obchod: v detailu kontaktu, nebo rovnou při přesunu do Schůzek.",
         "hint": "Otevři kontakt a klepni na Nový obchod."
       },
       "pipelineLook": {
         "title": "Pipeline",
-        "text": "Tvůj obchod je v první fázi. Ukázkový obchod má Close Date v minulosti, schválně."
+        "text": "Tvůj obchod stojí v první fázi. Ukázkový „{deal}“ má Close Date v minulosti, schválně."
       },
       "dealCloseDate": {
         "title": "Dej obchodu Close Date",
-        "text": "Otevři svůj obchod a vyplň Close Date, tedy kdy čekáš uzavření.",
+        "text": "**Otevři** svůj obchod a **vyplň** Close Date, tedy kdy čekáš podpis.",
         "hint": "Klepni na kartu obchodu a v Přehledu nastav Close Date."
       },
       "dealTask": {
         "title": "Přidej obchodu úkol",
-        "text": "V detailu obchodu přidej úkol, třeba „Poslat nabídku“. Obchod bez úkolu by svítil v dlaždicích.",
+        "text": "**Přidej** obchodu úkol, třeba „Poslat nabídku“. Obchod bez úkolu by svítil v dlaždicích.",
         "hint": "V detailu obchodu otevři Úkoly a klepni na Nový úkol."
       },
       "healthTiles": {
         "title": "Co hoří",
-        "text": "Dlaždice ukazují jen špatné věci: Close Date v minulosti, úkoly po termínu a obchody bez úkolu. Klepni na dlaždici a uvidíš které."
+        "text": "Dlaždice ukazují jen to, co hoří: Close Date v minulosti, úkoly po termínu a obchody bez úkolu. Klepni na dlaždici a uvidíš které."
       },
       "tasksLook": {
         "title": "Úkoly",
-        "text": "Všechny úkoly obchodů a kontaktů podle termínu: po termínu, dnes, zítra a dál."
+        "text": "Všechny úkoly k obchodům a lidem podle termínu: po termínu, dnes, zítra a dál."
       },
       "taskComplete": {
         "title": "Odškrtni úkol",
-        "text": "Odškrtni jeden úkol jako hotový. Můžeš k němu napsat poznámku, uvidíš ji v historii obchodu.",
+        "text": "**Odškrtni** jeden úkol jako hotový. Poznámku k němu pak uvidíš v historii obchodu.",
         "hint": "Klepni na kolečko vlevo u úkolu."
       },
       "calendarLook": {
         "title": "Kalendář",
-        "text": "Ukázková schůzka je v kalendáři. Úkoly s termínem tu vidíš čárkovaně."
+        "text": "Ukázková schůzka už je v kalendáři. Úkoly s termínem tu vidíš čárkovaně."
       },
       "financeLook": {
         "title": "Finance",
-        "text": "Příjmy a výdaje po měsících a pravidelné platby. Faktury mají vlastní záložku."
+        "text": "Příjmy a výdaje po měsících, pravidelné platby. Faktury mají vlastní záložku."
       },
       "invoiceDraft": {
         "title": "Zkušební faktura",
-        "text": "Založ fakturu jako koncept a podívej se na náhled. Nevystavuj ji ani neposílej, koncept nic nestojí a číselnou řadu nepoužije.",
+        "text": "**Založ** fakturu jako koncept a **podívej se** na náhled. Nevystavuj ji: koncept nic nestojí a číselnou řadu nepoužije.",
         "hint": "Na záložce Faktury klepni na Nová faktura. Napoprvé tě provedu údaji dodavatele."
       },
       "companyLook": {
         "title": "Správa firmy",
-        "text": "Až budeš mít pracovníky, pozveš je tady a nastavíš jim, co smí vidět."
+        "text": "Až vezmeš prvního člověka, pozveš ho tady a nastavíš mu, co smí vidět."
       },
       "messagesLook": {
         "title": "Zprávy",
@@ -7662,18 +7672,29 @@
       },
       "jarvisAsk": {
         "title": "Zeptej se mě",
-        "text": "Otevři mě v rohu a zeptej se na něco z poznámky, třeba „Kdo je můj ideální zákazník?“.",
+        "text": "**Otevři** mě v rohu a **zeptej se** na něco z poznámky, třeba „Kdo je můj ideální zákazník?“.",
         "hint": "Klepni na mě vpravo dole a napiš otázku."
       },
       "jarvisFrequency": {
         "title": "Jak často se ozývat",
-        "text": "Vyber, jak často se mám sám ozvat: často, občas, nebo jen souhrnem jednou denně, týdně či měsíčně.",
+        "text": "**Vyber**, jak často se mám sám ozvat: často, občas, nebo jen souhrnem jednou denně, týdně či měsíčně.",
         "hint": "Klepni na jednu z možností u Frekvence."
       },
       "settingsLook": {
         "title": "Nastavení",
         "text": "Jazyk, formáty, téma a další najdeš v nabídce účtu."
       }
+    },
+    "rail": {
+      "label": "Postup tutoriálem",
+      "chapter": "Kapitola {current} z {total}: {name}"
+    },
+    "reactions": {
+      "0": "Přesně tak.",
+      "1": "Paráda, jde ti to.",
+      "2": "A je to.",
+      "3": "Vidíš? Nic těžkého.",
+      "4": "Jedeš dál."
     }
   }
 }

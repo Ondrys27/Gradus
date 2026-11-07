@@ -7328,9 +7328,7 @@
     "done": "Done",
     "expand": "Show",
     "collapse": "Hide",
-    "progress": "Step {step} of {total}",
     "locked": "This part unlocks as you go along your path. Once it does, you can try it.",
-    "checkPassed": "Done. You can go on.",
     "firstStep": "Your first real step:",
     "firstStepTarget": "“{milestone}”",
     "action": {
@@ -7472,50 +7470,62 @@
     "choice": {
       "title": "How do you want to start?",
       "close": "Close",
-      "intro": "I can show you around. Pick how much time you want to give it.",
+      "intro": "I can show you around. Pick how much time you have today.",
       "minutes": "≈ {minutes} min",
+      "recommended": "My pick",
+      "learnTitle": "What you'll be able to do",
       "preparing": "Preparing the sample data…",
       "failed": "It couldn't start. Please try again.",
       "none": {
-        "title": "Skip",
-        "text": "Dive in on your own. You can start the tutorial any time in Settings → Jarvis.",
-        "gain": "Straight to work"
+        "title": "Skip and dive in on your own",
+        "text": "You can start the tutorial any time in Settings → Jarvis."
       },
       "quick": {
         "title": "Quick look",
-        "text": "I'll walk you through every part of the app. You just watch, nothing gets created.",
-        "gain": "You know where everything is"
+        "text": "I'll walk you through the whole app. You just watch, nothing gets created.",
+        "learn": {
+          "0": "Where everything is",
+          "1": "What I watch for you",
+          "2": "How and when I speak up"
+        },
+        "previewAlt": "Preview of the quick look: a lit menu item and Jarvis pointing at it"
       },
       "full": {
         "title": "Full tutorial",
-        "text": "Try everything yourself on sample data: a milestone, a contact, a deal, an invoice and a question for me.",
-        "gain": "Ready to use it right away · XP when you finish"
+        "text": "Try everything yourself on sample data you can delete afterwards.",
+        "learn": {
+          "0": "A milestone, a task and a note",
+          "1": "A contact, a deal and its Close Date",
+          "2": "An invoice draft and a question for me"
+        },
+        "gain": "XP when you finish",
+        "previewAlt": "Preview of the full tutorial: a task list where you tick off what's done"
       }
     },
     "steps": {
       "dashboard": {
         "title": "Dashboard",
-        "text": "Your day starts here: today's tasks, who to call back, deals and this month's income. Find anything with ⌘K or Ctrl+K."
+        "text": "Every day starts here: tasks, who to call and what you've earned this month. Find anything with ⌘K or Ctrl+K."
       },
       "milestones": {
         "title": "Milestones and the map",
-        "text": "Big goals broken into tasks. Every milestone has a mind map too, where you drag tasks around."
+        "text": "Big goals broken into tasks, like “{milestone}”. Every milestone has a map too, where you drag tasks around."
       },
       "notes": {
         "title": "Notes",
-        "text": "Everything about your business in one place: ideal customer, prices, sales script. I read them when you talk to me."
+        "text": "Everything about your business in one place: who you sell to in {branch}, your prices, your sales script. I read them when you talk to me."
       },
       "contacts": {
         "title": "Contacts and Cold Calling",
-        "text": "Contacts live in your own tables. In Cold Calling you call them and move them on, for example to Meetings."
+        "text": "The people you want to reach live in your own tables. In Cold Calling you call them and move them on, for example to Meetings."
       },
       "pipeline": {
         "title": "Pipeline and tiles",
-        "text": "Deals by stage. The tiles at the top watch what's on fire: the goal is zero everywhere."
+        "text": "Every {branch} job has its stage here. The tiles at the top watch what's on fire: the goal is zero everywhere."
       },
       "tasks": {
         "title": "Tasks",
-        "text": "Tasks for deals and contacts, with a date and time. Overdue ones turn red."
+        "text": "Tasks for deals and people, with a date and time. Overdue ones turn red."
       },
       "calendar": {
         "title": "Calendar",
@@ -7523,15 +7533,15 @@
       },
       "finance": {
         "title": "Finance and invoices",
-        "text": "Income, expenses and recurring payments. Issue invoices right here, with a QR payment."
+        "text": "Income, expenses and recurring payments. Invoice finished work right here, with a QR payment."
       },
       "company": {
         "title": "Company",
-        "text": "Invite workers, set what they may do and see how they're doing."
+        "text": "Once you take on your first person, invite them here and set what they may see."
       },
       "messages": {
         "title": "Messages",
-        "text": "The company chat: groups and direct messages with your workers."
+        "text": "The chat inside your company: groups and direct messages with the people you invite."
       },
       "jarvis": {
         "title": "That's me",
@@ -7547,7 +7557,7 @@
       },
       "finish": {
         "title": "Let's go",
-        "text": "That's all for a start. Now for real."
+        "text": "That's all for a start. Now for real: your first {branch} job is waiting."
       },
       "workerDashboard": {
         "title": "Your dashboard",
@@ -7563,67 +7573,67 @@
       },
       "welcome": {
         "title": "Let's try it",
-        "text": "I've added sample data to your space, labelled “sample”: three contacts, a deal, a milestone, tasks, a meeting and a note. You'll try everything on it."
+        "text": "I've added sample data labelled “sample”: three people from {branch}, a job, a milestone and a note. None of it is real, so go ahead and break it."
       },
       "milestonesLook": {
         "title": "A sample milestone",
-        "text": "Here's a milestone with tasks I prepared for you. Finished tasks move a milestone towards its goal."
+        "text": "This is a sample milestone with tasks. Every finished task moves it closer to its goal."
       },
       "milestoneCreate": {
         "title": "Create a milestone",
-        "text": "Create your own milestone with New milestone. A name is enough, like “First three customers”.",
+        "text": "**Create** your own milestone with New milestone, like “{milestone}”. A name is enough.",
         "hint": "New milestone is at the top right. Type a name and save."
       },
       "taskAdd": {
         "title": "Add a task",
-        "text": "Open a milestone and add a task to it. Type it into the field below the list and press Enter.",
-        "hint": "Tap a milestone, then type something like “Call the supplier” into “Add a task”."
+        "text": "**Open** your milestone and **add** its first task, like “{task}”. Type it into the field below the list and press Enter.",
+        "hint": "Tap the milestone, then type into “Add a task” and press Enter."
       },
       "taskMove": {
         "title": "Move a task in the map",
-        "text": "Switch to the map and drag a task under another one. On a computer ⌘ or Ctrl with the arrow keys works too.",
+        "text": "**Switch** to the map and **drag** a task under another one. On a computer ⌘ or Ctrl with the arrow keys works too.",
         "hint": "The List / Map switch is above the tasks. Grab a task and drop it on another."
       },
       "noteWrite": {
         "title": "Write it down",
-        "text": "Open the sample note Ideal customer and add a sentence, or start a new note.",
-        "hint": "Tap the note in the list and type. It saves by itself."
+        "text": "**Open** the note Ideal customer and **add** a sentence about who you sell to in {branch}. It saves by itself.",
+        "hint": "Tap the note in the list and type. Nothing to save."
       },
       "contactsLook": {
         "title": "Contacts",
-        "text": "Three sample contacts are already here. Every contact is always in exactly one table."
+        "text": "Three sample people are already here, {contact} is the first of them. Every contact is always in exactly one table."
       },
       "contactCreate": {
         "title": "Add a contact",
-        "text": "Add a contact with New contact, or let me generate a few for you.",
+        "text": "**Add** someone you want to reach with New contact. A name or a company is enough.",
         "hint": "New contact is at the top. A name or a company is enough."
       },
       "coldCallingLook": {
         "title": "Cold Calling",
-        "text": "Here you call the contacts from Not contacted. The timer counts how long you've called today."
+        "text": "Here you call the people from Not contacted. The timer counts how long you've called today."
       },
       "coldCallingMove": {
         "title": "Move a contact",
-        "text": "Pick a contact and move it to the next table, for example Meetings. Answer a few questions and that's it.",
+        "text": "**Move** {contact} to the next table, for example Meetings. Answer a few questions and that's it.",
         "hint": "Tap move on a contact and choose where it goes."
       },
       "dealFromContact": {
         "title": "Make it a deal",
-        "text": "Create a deal from a contact: in the contact's detail, or when moving it to Meetings.",
+        "text": "**Create** a deal from the contact: in the contact's detail, or right when moving it to Meetings.",
         "hint": "Open a contact and tap New deal."
       },
       "pipelineLook": {
         "title": "Pipeline",
-        "text": "Your deal is in the first stage. The sample deal has a Close Date in the past, on purpose."
+        "text": "Your deal sits in the first stage. The sample “{deal}” has a Close Date in the past, on purpose."
       },
       "dealCloseDate": {
         "title": "Give the deal a Close Date",
-        "text": "Open your deal and fill in the Close Date, when you expect to close it.",
+        "text": "**Open** your deal and **fill in** the Close Date, when you expect the signature.",
         "hint": "Tap the deal's card and set the Close Date in Overview."
       },
       "dealTask": {
         "title": "Give the deal a task",
-        "text": "Add a task in the deal's detail, like “Send the offer”. A deal without a task would light up a tile.",
+        "text": "**Add** a task to the deal, like “Send the offer”. A deal without a task would light up a tile.",
         "hint": "In the deal's detail open Tasks and tap New task."
       },
       "healthTiles": {
@@ -7632,16 +7642,16 @@
       },
       "tasksLook": {
         "title": "Tasks",
-        "text": "Every task of your deals and contacts by date: overdue, today, tomorrow and later."
+        "text": "Every task of your deals and people by date: overdue, today, tomorrow and later."
       },
       "taskComplete": {
         "title": "Tick a task off",
-        "text": "Mark one task as done. You can add a note, and it shows in the deal's history.",
+        "text": "**Tick** one task off as done. Its note then shows in the deal's history.",
         "hint": "Tap the circle to the left of a task."
       },
       "calendarLook": {
         "title": "Calendar",
-        "text": "The sample meeting is in the calendar. Tasks with a date show as dashed items."
+        "text": "The sample meeting is already in the calendar. Tasks with a date show as dashed items."
       },
       "financeLook": {
         "title": "Finance",
@@ -7649,12 +7659,12 @@
       },
       "invoiceDraft": {
         "title": "A practice invoice",
-        "text": "Create an invoice as a draft and look at the preview. Don't issue or send it: a draft costs nothing and uses no number of your series.",
+        "text": "**Create** an invoice as a draft and **look** at the preview. Don't issue it: a draft costs nothing and uses no number of your series.",
         "hint": "On the Invoices tab tap New invoice. The first time I'll take you through your supplier details."
       },
       "companyLook": {
         "title": "Company",
-        "text": "Once you have workers, invite them here and set what they may see."
+        "text": "Once you take on your first person, invite them here and set what they may see."
       },
       "messagesLook": {
         "title": "Messages",
@@ -7662,18 +7672,29 @@
       },
       "jarvisAsk": {
         "title": "Ask me",
-        "text": "Open me in the corner and ask about something in your note, like “Who is my ideal customer?”.",
+        "text": "**Open** me in the corner and **ask** about something in your note, like “Who is my ideal customer?”.",
         "hint": "Tap me at the bottom right and type a question."
       },
       "jarvisFrequency": {
         "title": "How often I speak up",
-        "text": "Pick how often I should speak up: often, sometimes, or just a summary once a day, week or month.",
+        "text": "**Pick** how often I should speak up: often, sometimes, or just a summary once a day, week or month.",
         "hint": "Tap one of the options under Frequency."
       },
       "settingsLook": {
         "title": "Settings",
         "text": "Language, formats, theme and more are in the account menu."
       }
+    },
+    "rail": {
+      "label": "Tutorial progress",
+      "chapter": "Chapter {current} of {total}: {name}"
+    },
+    "reactions": {
+      "0": "Exactly.",
+      "1": "Nice, you've got it.",
+      "2": "And done.",
+      "3": "See? Nothing to it.",
+      "4": "Keep going."
     }
   }
 }
