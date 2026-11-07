@@ -108,7 +108,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] STOP | Konec fáze 19. Sbal menu ⌘B a obnov stránku. Ve Správě firmy pozvi dva pracovníky (druhý pod prvního), přepni seznam/mapa, přesuň tažením, založ skupinu. Otevři dashboard pracovníka: změň foto, dej šablonu Obchodník, nahraj dokument, podívej se na grafy s různým horizontem. Přihlas se jako pracovník a ověř, co vidí. Ve Zprávách si napiš ve dvou prohlížečích v přímé i skupinové konverzaci, zkus @zmínku, přílohu a smazání zprávy. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [x] 20.1 | architect | env: ANTHROPIC_API_KEY — 2026-11-06: Jarvisova pravidla v docs/jarvis-pravidla.md a záložka Pravidla v administraci AI s přepínači návrhů, číselnými pravidly a Pokyny pro Jarvise (app_settings.jarvis_rules).
 - [x] 20.2 | architect | 2026-11-06 — Mapa úkolů stojí na společné komponentě MindMap; do milníku jde importovat myšlenkovou mapu (OPML, FreeMind, XMind, Markdown, text) s náhledem a zálohou při nahrazení, i jako nový milník, a mapu exportovat do Markdownu, OPML, FreeMindu a PNG.
-- [ ] 20.3 | architect |
+- [x] 20.3 | architect | 2026-11-07 — Poznámka může být myšlenková mapa: psaní Tab/Enter, tažení s podstromem, uzly s poznámkou, barvou a odkazem, převod text ↔ mapa, import a export, Jarvis navrhne větve.
 - [ ] 20.4 | architect |
 - [ ] 20.5 | designer |
 - [ ] K20 | reviewer |
