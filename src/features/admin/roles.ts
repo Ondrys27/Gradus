@@ -38,13 +38,36 @@ export function adminCan(role: AdminRole, what: OwnerOnly): boolean {
 
 /**
  * Chart and table exports (`table.<page>.<table>.csv`) whose rows name
- * people. The audit export (`audit`) names people too.
+ * people. The audit export (`audit`) and the list of accounts with their
+ * e-mails (`users`) name people too.
  */
 export const PERSONAL_DATA_EXPORTS: ReadonlySet<string> = new Set([
   "table.ai.top_users.csv",
   "audit",
+  "users",
 ]);
 
 export function mayExport(role: AdminRole, target: string): boolean {
   return !PERSONAL_DATA_EXPORTS.has(target) || adminCan(role, "exportPersonalData");
+}
+
+/**
+ * Why the support actions of a user's detail (password reset, a new
+ * confirmation link, sign out everywhere, a changed e-mail) are not offered
+ * for an account, or null when they are. Both roles may help an ordinary
+ * account; nobody helps themselves this way (their own settings do it), and
+ * an account that enters the administration is the owner's to help, never
+ * another admin's: whoever changes an e-mail and resets a password could
+ * take the account over.
+ */
+export type AccountSupportBlock = "self" | "privileged";
+
+export function accountSupportBlock(
+  actor: { userId: string; role: AdminRole },
+  target: { id: string; roles: readonly AdminRole[] },
+): AccountSupportBlock | null {
+  if (actor.userId === target.id) return "self";
+  if (target.roles.includes("owner")) return "privileged";
+  if (target.roles.includes("admin") && actor.role !== "owner") return "privileged";
+  return null;
 }

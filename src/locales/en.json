@@ -711,6 +711,18 @@
       "resent": "The link is on its way. Check your inbox.",
       "expired": "The confirmation link has expired or was already used. Sign in and get a new one if needed.",
       "toLogin": "Go to sign in"
+    },
+    "emailChange": {
+      "title": "E-mail change",
+      "doneTitle": "The e-mail is changed",
+      "doneText": "You now sign in to {appName} as {email}.",
+      "invalidTitle": "This link no longer works",
+      "signIn": "Sign in",
+      "errors": {
+        "invalid": "The link expired, was used already, or the account's e-mail changed meanwhile. Write to us and we send a new one.",
+        "taken": "Another account uses this e-mail already. Your account's e-mail stayed the same.",
+        "failed": "The e-mail could not be changed. Try opening the link again."
+      }
     }
   },
   "profile": {
@@ -6037,12 +6049,13 @@
         "screenshot": "Screenshot",
         "screenshotGone": "The screenshot could not be loaded.",
         "screenshotOwnerOnly": "A screenshot is attached; only the owner can see it."
-      }
+      },
+      "openUser": "Account detail"
     },
     "users": {
       "title": "Users",
-      "description": "Search by name or e-mail, sort by activity or cost. No content of anyone's data.",
-      "searchPlaceholder": "Search by name or e-mail…",
+      "description": "Search by name, e-mail (or part of it) or id, sort by activity or cost. No data content.",
+      "searchPlaceholder": "Search by name, e-mail or id…",
       "sortBy": "Sort by",
       "sort": {
         "activity": "Activity",
@@ -6050,7 +6063,7 @@
         "signup": "Sign-up"
       },
       "emptyTitle": "No users found",
-      "emptyDescription": "Try a different name or e-mail, change the filters, or clear the search.",
+      "emptyDescription": "Try another name, e-mail or id, adjust the filters, or clear the search.",
       "pagination": "Result pages",
       "newer": "Newer",
       "older": "Older",
@@ -6058,6 +6071,7 @@
       "internal": "Internal",
       "columns": {
         "user": "User",
+        "email": "E-mail",
         "plan": "Plan",
         "status": "Status",
         "role": "Role",
@@ -6213,6 +6227,84 @@
           "temporary": "Only for a while, I'll be back",
           "other": "Something else"
         }
+      },
+      "export": "Export CSV",
+      "account": {
+        "title": "Account",
+        "description": "For support: the sign-in e-mail and what can be done for the account. Every action needs a reason and goes to the audit.",
+        "unavailable": "The account details could not be loaded.",
+        "email": "E-mail",
+        "copy": "Copy",
+        "copied": "Copied",
+        "unconfirmed": "Unconfirmed",
+        "signedUp": "Signed up",
+        "lastSignIn": "Last sign-in",
+        "device": "Device (last visit)",
+        "plan": "Plan",
+        "trial": "Trial",
+        "trialRunning": "Runs until {date}, {days, plural, one {# day} other {# days}} left",
+        "trialEnded": "Ended {date}",
+        "trialNone": "No trial",
+        "blocked": {
+          "self": "You manage your own account in the app's Settings.",
+          "privileged": "An account with access to the administration is managed by the owner only."
+        },
+        "reasonLabel": "Why",
+        "reasonHint": "Required, briefly. It goes to the audit.",
+        "newEmailLabel": "New e-mail",
+        "sendsTo": "The e-mail goes to {email}.",
+        "cancel": "Back",
+        "close": "Close",
+        "errors": {
+          "reason": "Write a reason (3 to 300 characters).",
+          "email": "Enter a valid e-mail address.",
+          "invalid": "Check the reason and the e-mail.",
+          "forbidden": "The administration session ended. Sign in again.",
+          "blocked": "You cannot manage this account this way.",
+          "notFound": "The account no longer exists.",
+          "limit": "This account got 5 e-mails in the last hour already. Try again later.",
+          "notNeeded": "The account's e-mail is confirmed already.",
+          "sameEmail": "The account has this e-mail already.",
+          "taken": "Another account uses this e-mail already.",
+          "noEmail": "The account has no e-mail.",
+          "failed": "That did not work. Try again."
+        },
+        "actions": {
+          "passwordReset": {
+            "button": "Send a password reset link",
+            "title": "Send a password reset link?",
+            "description": "The user gets an e-mail at {email} with a link to a new password. The link works for an hour and you never see it in the administration.",
+            "confirm": "Send the link",
+            "done": "The password reset link went to {email}."
+          },
+          "confirmation": {
+            "button": "Resend the e-mail confirmation",
+            "title": "Resend the e-mail confirmation?",
+            "description": "A new link goes to {email}. With one click the user confirms the e-mail and signs in.",
+            "confirm": "Send the confirmation",
+            "done": "The e-mail confirmation went to {email}."
+          },
+          "signOut": {
+            "button": "Sign out everywhere",
+            "title": "Sign out everywhere?",
+            "description": "For a stolen account: every device is signed out and the user has to sign in again. An open tab ends within the hour at the latest. The password stays; if in doubt, send a password reset too.",
+            "confirm": "Sign out everywhere",
+            "done": "Every sign-in of the account ended."
+          },
+          "emailChange": {
+            "button": "Change the e-mail",
+            "title": "Change the account's e-mail?",
+            "description": "The account has {email} now. A link goes to the new address and the e-mail changes once the user confirms it there (within 24 hours).",
+            "confirm": "Send the confirmation",
+            "done": "A confirmation link went to the new address. The e-mail changes once the user confirms it."
+          }
+        }
+      },
+      "reports": {
+        "title": "Reports",
+        "description": "Problems and ideas the account sent through Report a problem, newest first.",
+        "empty": "The account has not reported anything yet.",
+        "unavailable": "The reports could not be loaded."
       }
     },
     "explorer": {

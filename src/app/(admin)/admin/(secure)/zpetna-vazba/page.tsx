@@ -1,10 +1,11 @@
-import { Suspense } from "react";
+import { Suspense, type ReactNode } from "react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { SearchIcon } from "lucide-react";
 import { StatusPill } from "@/components/ui/status-pill";
 import { AdminViewLink } from "@/features/admin/ui/admin-view";
 import { ReportStatusSelect } from "@/features/admin/ui/report-status";
+import { UserDetailLink } from "@/features/admin/ui/user-link";
 import type { Tone } from "@/components/ui/tone";
 import { isErrorCode, normalizeErrorCodeQuery } from "@/features/errors/error-code";
 import { formatCalendarDate, formatDateTime } from "@/lib/format";
@@ -228,12 +229,22 @@ async function ErrorEventCard({ rawCode }: { rawCode: string }) {
   const browser =
     row.browser && t.has(`browser.${row.browser}`) ? t(`browser.${row.browser}`) : null;
   const source = t.has(`event.source.${row.source}`) ? t(`event.source.${row.source}`) : row.source;
-  const details: [string, string | null][] = [
+  const details: [string, ReactNode][] = [
     [t("event.time"), formatDateTime(new Date(row.createdAt), ADMIN_FORMAT_SETTINGS)],
     [t("pageLabel"), row.page],
     [t("event.action"), [source, row.action].filter(Boolean).join(" · ")],
     [t("errorLabel"), row.message],
-    [t("event.user"), row.userId ? nameOf(row.userId) : t("anonymous")],
+    [
+      t("event.user"),
+      row.userId ? (
+        <span className="inline-flex flex-wrap items-center gap-x-2">
+          {nameOf(row.userId)}
+          <UserDetailLink userId={row.userId} label={t("openUser")} />
+        </span>
+      ) : (
+        t("anonymous")
+      ),
+    ],
     [t("browserLabel"), [browser, device, row.viewport].filter(Boolean).join(" · ") || null],
     [t("versionLabel"), row.version],
     [t("digestLabel"), row.digest],
@@ -395,6 +406,7 @@ async function BugReports({
                     statusLabel={t(`reportStatus.${row.status}`)}
                     kindLabel={t(`reportKind.${row.kind}`)}
                     openLabel={t("openReport")}
+                    openUserLabel={t("openUser")}
                     meta={t("reportMeta", {
                       name: row.userName ?? t("anonymous"),
                       date: formatDateTime(new Date(row.createdAt), ADMIN_FORMAT_SETTINGS),
@@ -428,6 +440,7 @@ function BugReportItem({
   statusLabel,
   kindLabel,
   openLabel,
+  openUserLabel,
   meta,
   noDescription,
   labels,
@@ -439,6 +452,7 @@ function BugReportItem({
   statusLabel: string;
   kindLabel: string;
   openLabel: string;
+  openUserLabel: string;
   meta: string;
   noDescription: string;
   labels: Record<"page" | "browser" | "version" | "error" | "digest", string>;
@@ -485,7 +499,10 @@ function BugReportItem({
           ))}
       </dl>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs text-ink-muted">{meta}</p>
+        <div className="flex flex-wrap items-center gap-x-3">
+          <p className="text-xs text-ink-muted">{meta}</p>
+          {row.userId && <UserDetailLink userId={row.userId} label={openUserLabel} />}
+        </div>
         <AdminViewLink
           href={href}
           className="inline-flex h-10 items-center text-xs text-violet underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-violet/40 mouse:h-7"
@@ -529,10 +546,20 @@ async function ReportDetail({ q, id, role }: { q: AdminQuery; id: string; role: 
       : null;
   const browser =
     row.browser && t.has(`browser.${row.browser}`) ? t(`browser.${row.browser}`) : null;
-  const details: [string, string | null][] = [
+  const details: [string, ReactNode][] = [
     [t("detail.kind"), t(`reportKind.${row.kind}`)],
     [t("detail.source"), t(`reportSource.${row.source}`)],
-    [t("detail.from"), row.userId ? nameOf(row.userId) : t("anonymous")],
+    [
+      t("detail.from"),
+      row.userId ? (
+        <span className="inline-flex flex-wrap items-center gap-x-2">
+          {nameOf(row.userId)}
+          <UserDetailLink userId={row.userId} label={t("openUser")} />
+        </span>
+      ) : (
+        t("anonymous")
+      ),
+    ],
     [t("detail.sent"), formatDateTime(new Date(row.createdAt), ADMIN_FORMAT_SETTINGS)],
     [t("pageLabel"), row.page],
     [t("browserLabel"), [browser, device, row.viewport].filter(Boolean).join(" · ") || null],
@@ -652,8 +679,9 @@ async function Voices({ q }: { q: AdminQuery }) {
                     className="flex flex-col gap-1.5 rounded-xl border border-line px-3.5 py-2.5"
                   >
                     <div className="flex items-center justify-between gap-2 text-xs text-ink-muted">
-                      <span>
+                      <span className="inline-flex flex-wrap items-center gap-x-2">
                         {t("satisfactionBadge", { score: row.satisfaction })} · {row.userName}
+                        <UserDetailLink userId={row.userId} label={t("openUser")} />
                       </span>
                       <span>
                         {formatCalendarDate(row.createdAt.slice(0, 10), ADMIN_FORMAT_SETTINGS)}
@@ -714,7 +742,11 @@ async function Ideas({ q, status }: { q: AdminQuery; status: FeatureRequestStatu
             ) : (
               <ul className="flex flex-col gap-2">
                 {ideas.map((row) => (
-                  <FeatureRequestRowView key={row.id} row={row} />
+                  <FeatureRequestRowView
+                    key={row.id}
+                    row={row}
+                    userLink={<UserDetailLink userId={row.userId} label={t("openUser")} />}
+                  />
                 ))}
               </ul>
             )

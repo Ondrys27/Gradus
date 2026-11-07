@@ -71,16 +71,59 @@ function translator(locale: SiteLocale) {
 /** Values the texts may use; Supabase fills the Go fields when it sends. */
 const VALUES = { appName: APP_NAME, oldEmail: "{{ .Email }}", newEmail: "{{ .NewEmail }}" };
 
+type TextValues = { appName: string; oldEmail: string; newEmail: string };
+
 export function authTemplateSubject(kind: AuthTemplateKind, locale: SiteLocale): string {
   return translator(locale)(`${kind}.subject`, VALUES);
 }
 
 /** The e-mail in one language, a full HTML document. */
 export function authTemplateHtml(kind: AuthTemplateKind, locale: SiteLocale): string {
+  return renderHtml(kind, locale, confirmLink(kind, locale), VALUES);
+}
+
+/**
+ * The same e-mail with a real link and real addresses, for the e-mails the
+ * server sends itself through Resend (the administration's password reset,
+ * a new confirmation link, a changed e-mail): it looks exactly like the one
+ * Supabase sends, the link is escaped here.
+ */
+export function authEmail(
+  kind: AuthTemplateKind,
+  locale: SiteLocale,
+  link: string,
+  addresses: { oldEmail?: string; newEmail?: string } = {},
+): { subject: string; html: string; text: string } {
+  const values: TextValues = {
+    appName: APP_NAME,
+    oldEmail: addresses.oldEmail ?? "",
+    newEmail: addresses.newEmail ?? "",
+  };
+  const t = translator(locale);
+  const text = [
+    t(`${kind}.heading`, values),
+    t(`${kind}.body`, values),
+    `${t(`${kind}.button`, values)}: ${link}`,
+    t(`${kind}.ignore`, values),
+    t("footer", values),
+  ].join("\n\n");
+  return {
+    subject: t(`${kind}.subject`, values),
+    html: renderHtml(kind, locale, escapeHtml(link), values),
+    text,
+  };
+}
+
+/** `link` is already safe inside an attribute (escaped, or the Go template fields). */
+function renderHtml(
+  kind: AuthTemplateKind,
+  locale: SiteLocale,
+  link: string,
+  values: TextValues,
+): string {
   const t = translator(locale);
   const text = (key: "preheader" | "heading" | "body" | "button" | "ignore") =>
-    escapeHtml(t(`${kind}.${key}`, VALUES));
-  const link = confirmLink(kind, locale);
+    escapeHtml(t(`${kind}.${key}`, values));
   return `<!doctype html>
 <html lang="${locale}">
 <head>
@@ -88,7 +131,7 @@ export function authTemplateHtml(kind: AuthTemplateKind, locale: SiteLocale): st
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark">
 <meta name="supported-color-schemes" content="dark">
-<title>${escapeHtml(authTemplateSubject(kind, locale))}</title>
+<title>${escapeHtml(t(`${kind}.subject`, values))}</title>
 </head>
 <body style="margin:0;padding:0;background-color:${PALETTE.canvas};">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${text("preheader")}</div>
@@ -120,7 +163,7 @@ export function authTemplateHtml(kind: AuthTemplateKind, locale: SiteLocale): st
 </td>
 </tr>
 <tr>
-<td style="padding:20px 4px 0;font-family:${FONT};font-size:12px;line-height:1.5;color:${PALETTE.inkMuted};">${escapeHtml(t("footer", VALUES))}</td>
+<td style="padding:20px 4px 0;font-family:${FONT};font-size:12px;line-height:1.5;color:${PALETTE.inkMuted};">${escapeHtml(t("footer", values))}</td>
 </tr>
 </table>
 </td>

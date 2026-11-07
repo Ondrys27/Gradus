@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { Database } from "@/types/database";
+import type { Database, Json } from "@/types/database";
 import { browserLabel, truncateIp } from "../client-info";
 import type { AdminContext } from "./guard";
 import { fingerprint, requestInfo } from "./request-info";
@@ -19,6 +19,8 @@ export async function logAdminAction(
   context: Pick<AdminContext, "userId">,
   kind: AdminAuditKind,
   target: string,
+  /** What a change was about (`{ user, reason }` for the support actions); at most 2 000 bytes. */
+  detail?: { [key: string]: Json },
 ): Promise<boolean> {
   if (!TARGET.test(target)) throw new Error(`Invalid admin audit target: ${target}`);
   const { ip, userAgent } = await requestInfo();
@@ -27,7 +29,14 @@ export async function logAdminAction(
     kind === "login" ? { ip_prefix: truncateIp(ip), browser: browserLabel(userAgent) } : {};
   const { error } = await createAdminClient()
     .from("admin_audit")
-    .insert({ user_id: context.userId, kind, target, ip_hash: fingerprint("ip", ip), ...origin });
+    .insert({
+      user_id: context.userId,
+      kind,
+      target,
+      ip_hash: fingerprint("ip", ip),
+      ...origin,
+      ...(detail ? { detail } : {}),
+    });
   if (error) {
     console.error("[admin] audit write failed", error.message);
     return false;

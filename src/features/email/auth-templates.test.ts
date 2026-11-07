@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   AUTH_TEMPLATE_FILES,
   AUTH_TEMPLATE_KINDS,
+  authEmail,
   authTemplateFiles,
   authTemplateHtml,
   authTemplateSupabaseSubject,
@@ -61,5 +62,24 @@ describe("Supabase auth e-mail templates", () => {
       expect(doc).toContain(`email-templates/${AUTH_TEMPLATE_FILES[kind].file}.html`);
       expect(doc).toContain(AUTH_TEMPLATE_FILES[kind].supabase);
     }
+  });
+
+  it("sends the same e-mail with a real link and real addresses (the administration's support)", () => {
+    const link = "https://gradus.example/auth/confirm?token_hash=a\"b&type=recovery&next=/nove-heslo";
+    const mail = authEmail("resetPassword", "cs", link);
+    expect(mail.subject).toBe("Gradus: obnova hesla");
+    expect(mail.html).toContain(
+      'href="https://gradus.example/auth/confirm?token_hash=a&quot;b&amp;type=recovery&amp;next=/nove-heslo"',
+    );
+    expect(mail.html).not.toContain("{{");
+    expect(mail.text).toContain(link);
+
+    const change = authEmail("changeEmail", "en", "https://x.example/en/change-email?token=t", {
+      oldEmail: "old@example.com",
+      newEmail: "new@example.com",
+    });
+    expect(change.text).toContain("old@example.com");
+    expect(change.text).toContain("new@example.com");
+    expect(change.html).toContain('<html lang="en">');
   });
 });

@@ -35,6 +35,19 @@ describe("describeAuditDetail", () => {
     ).toBe("Jana · blocked: true → –");
   });
 
+  it("names the account and the reason of a support action, nothing more", () => {
+    expect(
+      describeAuditDetail(
+        { user: "0b7c1f2e-1111-2222-3333-444455556666", reason: "  Ztratil\n heslo, psal na podporu " },
+        "–",
+        nameOf,
+      ),
+    ).toBe("Jana · Ztratil heslo, psal na podporu");
+    expect(
+      describeAuditDetail({ user: "0b7c1f2e-1111-2222-3333-444455556666" }, "–", nameOf),
+    ).toBe("Jana");
+  });
+
   it("is empty for views and exports", () => {
     expect(describeAuditDetail(null, "–", nameOf)).toBe("");
     expect(describeAuditDetail("text", "–", nameOf)).toBe("");

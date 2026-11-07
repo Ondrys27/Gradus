@@ -11,6 +11,9 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | Akce / routa | Kdo | Proč |
 |---|---|---|
 | `mutations.toggleUserInternal` | owner + admin | údržba metrik, žádná osobní data ven |
+| `account-support-actions.sendPasswordReset`, `resendEmailConfirmation`, `signOutEverywhere`, `requestEmailChange` | owner + admin; admin ne u účtu majitele ani jiného admina, nikdo u sebe (`accountSupportBlock`) | podpora z detailu uživatele; povinný důvod, řádek v `admin_audit` (`users.password_reset` / `users.confirmation_resend` / `users.sign_out` / `users.email_change`, `detail` = `{ user, reason }`) ještě před akcí, nejvýš 5 e-mailů za hodinu na účet; odkaz jde jen do e-mailu, nikdy do administrace ani auditu |
+| `GET /admin/uzivatele/export` | owner | seznam účtů se jmény a e-maily (`users` v `PERSONAL_DATA_EXPORTS`); adminovi 404 |
+| `auth/email-change-actions.confirmEmailChange` (stránka `/zmena-emailu`) | kdokoli s platným podepsaným odkazem | nová adresa potvrdí změnu, kterou spustila administrace; zapíše `users.email_change.confirmed` pod toho, kdo změnu spustil |
 | `mutations.setFeatureRequestStatus` | owner + admin | třídění zpětné vazby |
 | `ai-caps-actions.saveAiCaps` | owner | stropy AI; admin je vidí jen ke čtení |
 | `ai-caps-actions.saveUserAiCap` | owner | výjimky AI; admin je vidí jen ke čtení |
@@ -38,6 +41,8 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | AI a Jarvis — karta stropů | owner upravuje, admin čte |
 | AI a Jarvis — karta Vyzkoušet připojení (jedno volání modelu přes `/api/jarvis`, `kind: ping`) | owner; adminovi se neukáže |
 | AI a Jarvis → Pravidla (`/admin/ai?tab=rules`) | owner upravuje, admin čte; „Vyzkoušet“ (`kind: rulesTest`) jen owner, adminovi se neukáže |
+| Detail uživatele — karta Účet (e-mail, registrace, poslední přihlášení, zařízení, tarif, zkouška, akce podpory) a Hlášení | owner + admin; akce podpory podle řádku výše, jinak jen věta, kdo účet spravuje |
+| Uživatelé — sloupec E-mail | owner + admin; Export CSV jen owner |
 | Detail uživatele — výjimka AI | owner upravuje, admin čte |
 | Detail uživatele — Předplatné | owner upravuje, admin čte |
 | Tarify — Účty na tarifech | owner + admin |
@@ -67,6 +72,8 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | `admin_plan_user_counts` | jen service role (server po stráži) | účty na tarifech bez interních |
 | `admin_require_owner` | jen uvnitř funkcí výše | bez práva EXECUTE pro klienty |
 | `admin_members`, `admin_people`, `metric_admin_users` | jen service role (server po stráži) | čtou `auth.users` |
+| `admin_user_sign_out` | jen service role (server po stráži a auditu) | smaže relace a obnovovací tokeny účtu v `auth`, ukončí jeho živou relaci administrace |
+| `admin_email_taken` | jen service role (server po stráži) | zda adresu už používá jiný účet, před změnou e-mailu |
 | `error_event_record`, `error_alert_claim`, `error_alert_digest_claim`, `purge_error_events` | jen service role (server) | záznamy chyb a rozhodnutí o e-mailech, bez klientského přístupu |
 | `admin_bug_report_list`, `admin_bug_report_set_status` | jen service role (server po stráži) | Zpětná vazba → Hlášení: seznam s filtry a detail; změna stavu (`feedback.report`), při prvním „Opraveno“ vrátí autora pro e-mail s poděkováním; owner + admin |
 | `bug_report_create` | jen service role (server) | hlášení z dialogu Nahlásit problém, hodinový limit na účet |

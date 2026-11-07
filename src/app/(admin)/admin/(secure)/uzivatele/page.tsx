@@ -11,7 +11,9 @@ import { requireAdmin } from "@/features/admin/server/guard";
 import { adminQuery } from "@/features/admin/server/metrics-data";
 import { parseAdminView, serializeAdminView } from "@/features/admin/view-state";
 import { loadUsers, USER_SORTS, type UserSort } from "@/features/admin/server/users-data";
-import { peopleNamer } from "@/features/admin/server/people";
+import { peopleDirectory } from "@/features/admin/server/people";
+import { mayExport } from "@/features/admin/roles";
+import { AuditExportButton } from "@/features/admin/ui/audit-export-button";
 import { AdminPageHeader } from "@/features/admin/ui/admin-page";
 import { AdminEmpty } from "@/features/admin/ui/blocks";
 import { ServerPager, ServerTable, type ServerColumn } from "@/features/admin/ui/server-table";
@@ -64,7 +66,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
     getTranslations("admin.units"),
     getTranslations("admin.controls"),
   ]);
-  const nameOf = await peopleNamer(rows.map((row) => row.userId));
+  const { nameOf, emailOf } = await peopleDirectory(rows.map((row) => row.userId));
   const planLabel = (plan: string) =>
     tControls.has(`segmentValues.plan.${plan}`) ? tControls(`segmentValues.plan.${plan}`) : plan;
   const statusLabel = (status: string) => (t.has(`status.${status}`) ? t(`status.${status}`) : status);
@@ -85,6 +87,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
 
   const columns: ServerColumn[] = [
     { key: "user", label: t("columns.user") },
+    { key: "email", label: t("columns.email") },
     { key: "plan", label: t("columns.plan") },
     { key: "status", label: t("columns.status") },
     { key: "role", label: t("columns.role") },
@@ -92,6 +95,11 @@ export default async function AdminUsersPage({ searchParams }: Props) {
     { key: SORT_COLUMN.activity, label: t("columns.lastActive"), ...sortColumn("activity") },
     { key: SORT_COLUMN.cost, label: t("columns.aiCost"), align: "right", ...sortColumn("cost") },
   ];
+
+  const exportParams = new URLSearchParams(kept);
+  if (query) exportParams.set("q", query);
+  exportParams.set("sort", sort);
+  const exportHref = `${ADMIN_PATH}/uzivatele/export?${exportParams.toString()}`;
 
   const search = (
     <form className="relative max-w-sm" action={`${ADMIN_PATH}/uzivatele`} role="search">
@@ -117,14 +125,26 @@ export default async function AdminUsersPage({ searchParams }: Props) {
 
   return (
     <>
-      <AdminPageHeader section="users" q={q} extra={search} />
+      <AdminPageHeader
+        section="users"
+        q={q}
+        extra={
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="min-w-0 flex-1">{search}</div>
+            {/* With e-mails: the owner's export only; an admin does not see the button. */}
+            {mayExport(context.role, "users") && (
+              <AuditExportButton href={exportHref} label={t("export")} />
+            )}
+          </div>
+        }
+      />
       <div className="flex flex-col gap-3">
         {rows.length === 0 ? (
           <AdminEmpty title={t("emptyTitle")} hint={t("emptyDescription")} />
         ) : (
           <ServerTable
             columns={columns}
-            minWidth="56rem"
+            minWidth="68rem"
             caption={t("title")}
             rows={rows.map((row) => ({
               key: row.userId,
@@ -142,6 +162,9 @@ export default async function AdminUsersPage({ searchParams }: Props) {
                       {t("internal")}
                     </StatusPill>
                   )}
+                </span>,
+                <span key="email" className="block max-w-64 truncate text-ink-soft select-all" data-testid="user-email">
+                  {emailOf(row.userId) ?? "–"}
                 </span>,
                 planLabel(row.plan),
                 statusLabel(row.status),

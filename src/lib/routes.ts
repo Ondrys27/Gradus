@@ -28,6 +28,8 @@ export const LOCALIZED_PAGES = {
   register: { cs: "/registrace", en: "/en/register" },
   forgotPassword: { cs: "/zapomenute-heslo", en: "/en/forgot-password" },
   resetPassword: { cs: "/nove-heslo", en: "/en/reset-password" },
+  /** The new address confirms an e-mail change the administration started; open with or without a session. */
+  emailChange: { cs: "/zmena-emailu", en: "/en/change-email" },
   waitlistConfirmed: { cs: "/cekaci-listina", en: "/en/waitlist" },
 } as const satisfies Record<string, Record<SiteLocale, string>>;
 

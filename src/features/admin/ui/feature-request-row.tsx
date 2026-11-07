@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { formatCalendarDate } from "@/lib/format";
@@ -10,7 +10,14 @@ import { FEATURE_REQUEST_STATUSES } from "../types";
 import type { FeatureRequestRow, FeatureRequestStatus } from "../types";
 
 /** One idea with a status the owner can change right here; it writes to the audit. */
-export function FeatureRequestRowView({ row }: { row: FeatureRequestRow }) {
+export function FeatureRequestRowView({
+  row,
+  userLink,
+}: {
+  row: FeatureRequestRow;
+  /** The link to the sender's account detail, rendered by the page. */
+  userLink?: ReactNode;
+}) {
   const t = useTranslations("admin.feedback");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -50,12 +57,15 @@ export function FeatureRequestRowView({ row }: { row: FeatureRequestRow }) {
         </select>
       </div>
       {row.description && <p className="text-xs text-ink-soft">{row.description}</p>}
-      <p className="text-xs text-ink-muted">
-        {t("ideaMeta", {
-          name: row.userName,
-          date: formatCalendarDate(row.createdAt.slice(0, 10), ADMIN_FORMAT_SETTINGS),
-        })}
-      </p>
+      <div className="flex flex-wrap items-center gap-x-3">
+        <p className="text-xs text-ink-muted">
+          {t("ideaMeta", {
+            name: row.userName,
+            date: formatCalendarDate(row.createdAt.slice(0, 10), ADMIN_FORMAT_SETTINGS),
+          })}
+        </p>
+        {userLink}
+      </div>
       {failed && <p className="text-xs text-pink">{t("statusFailed")}</p>}
     </li>
   );

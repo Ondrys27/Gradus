@@ -711,6 +711,18 @@
       "resent": "Odkaz je na cestě. Zkontrolujte schránku.",
       "expired": "Odkaz pro potvrzení vypršel nebo už byl použitý. Přihlaste se a případně si pošlete nový.",
       "toLogin": "Přejít na přihlášení"
+    },
+    "emailChange": {
+      "title": "Změna e-mailu",
+      "doneTitle": "E-mail je změněný",
+      "doneText": "Do {appName} se teď přihlašuješ jako {email}.",
+      "invalidTitle": "Odkaz už neplatí",
+      "signIn": "Přihlásit se",
+      "errors": {
+        "invalid": "Odkaz vypršel, už byl použitý, nebo se e-mail účtu mezitím změnil. Napiš nám a pošleme nový.",
+        "taken": "Tenhle e-mail už používá jiný účet. E-mail tvého účtu zůstal stejný.",
+        "failed": "E-mail se nepodařilo změnit. Zkus odkaz otevřít znovu."
+      }
     }
   },
   "profile": {
@@ -6037,12 +6049,13 @@
         "screenshot": "Snímek obrazovky",
         "screenshotGone": "Snímek se nepodařilo načíst.",
         "screenshotOwnerOnly": "Snímek je přiložený, vidí ho jen majitel."
-      }
+      },
+      "openUser": "Detail účtu"
     },
     "users": {
       "title": "Uživatelé",
-      "description": "Hledání podle jména nebo e-mailu, řazení podle aktivity nebo nákladů. Žádný obsah dat.",
-      "searchPlaceholder": "Hledat podle jména nebo e-mailu…",
+      "description": "Hledání podle jména, e-mailu (i jeho části) nebo ID, řazení podle aktivity nebo nákladů. Žádný obsah dat.",
+      "searchPlaceholder": "Hledat podle jména, e-mailu nebo ID…",
       "sortBy": "Řadit podle",
       "sort": {
         "activity": "Aktivity",
@@ -6050,7 +6063,7 @@
         "signup": "Registrace"
       },
       "emptyTitle": "Žádní uživatelé",
-      "emptyDescription": "Zkus jiné jméno nebo e-mail, uprav filtry, nebo hledání vymaž.",
+      "emptyDescription": "Zkus jiné jméno, e-mail nebo ID, uprav filtry, nebo hledání vymaž.",
       "pagination": "Stránky výsledků",
       "newer": "Novější",
       "older": "Starší",
@@ -6058,6 +6071,7 @@
       "internal": "Interní",
       "columns": {
         "user": "Uživatel",
+        "email": "E-mail",
         "plan": "Plán",
         "status": "Stav",
         "role": "Role",
@@ -6213,6 +6227,84 @@
           "temporary": "Jen na čas, vrátím se",
           "other": "Něco jiného"
         }
+      },
+      "export": "Export CSV",
+      "account": {
+        "title": "Účet",
+        "description": "Pro podporu: přihlašovací e-mail a co jde pro účet udělat. Každá akce chce důvod a zapíše se do auditu.",
+        "unavailable": "Údaje účtu se nepodařilo načíst.",
+        "email": "E-mail",
+        "copy": "Kopírovat",
+        "copied": "Zkopírováno",
+        "unconfirmed": "Neověřený",
+        "signedUp": "Registrace",
+        "lastSignIn": "Poslední přihlášení",
+        "device": "Zařízení (poslední návštěva)",
+        "plan": "Tarif",
+        "trial": "Zkušební období",
+        "trialRunning": "Běží do {date}, zbývá {days, plural, one {# den} few {# dny} other {# dní}}",
+        "trialEnded": "Skončilo {date}",
+        "trialNone": "Bez zkušebního období",
+        "blocked": {
+          "self": "Svůj vlastní účet si spravuješ v Nastavení aplikace.",
+          "privileged": "Účet s přístupem do administrace spravuje jen majitel."
+        },
+        "reasonLabel": "Proč",
+        "reasonHint": "Povinné, krátce. Zapíše se do auditu.",
+        "newEmailLabel": "Nový e-mail",
+        "sendsTo": "E-mail půjde na {email}.",
+        "cancel": "Zpět",
+        "close": "Zavřít",
+        "errors": {
+          "reason": "Napiš důvod (3 až 300 znaků).",
+          "email": "Zadej platnou e-mailovou adresu.",
+          "invalid": "Zkontroluj důvod a e-mail.",
+          "forbidden": "Relace administrace skončila. Přihlas se znovu.",
+          "blocked": "Tenhle účet takhle spravovat nemůžeš.",
+          "notFound": "Účet už neexistuje.",
+          "limit": "Tenhle účet dostal za poslední hodinu už 5 e-mailů. Zkus to později.",
+          "notNeeded": "E-mail účtu už je ověřený.",
+          "sameEmail": "Účet už tenhle e-mail má.",
+          "taken": "Tenhle e-mail už používá jiný účet.",
+          "noEmail": "Účet nemá e-mail.",
+          "failed": "Nepodařilo se to. Zkus to znovu."
+        },
+        "actions": {
+          "passwordReset": {
+            "button": "Poslat odkaz na reset hesla",
+            "title": "Poslat odkaz na reset hesla?",
+            "description": "Uživateli přijde na {email} e-mail s odkazem na nové heslo. Odkaz platí hodinu a v administraci ho neuvidíš.",
+            "confirm": "Poslat odkaz",
+            "done": "Odkaz na reset hesla odešel na {email}."
+          },
+          "confirmation": {
+            "button": "Poslat znovu potvrzení e-mailu",
+            "title": "Poslat znovu potvrzení e-mailu?",
+            "description": "Na {email} přijde nový odkaz. Kliknutím uživatel e-mail potvrdí a přihlásí se.",
+            "confirm": "Poslat potvrzení",
+            "done": "Potvrzení e-mailu odešlo na {email}."
+          },
+          "signOut": {
+            "button": "Ukončit všechna přihlášení",
+            "title": "Ukončit všechna přihlášení?",
+            "description": "Pro ukradený účet: odhlásí se všechna zařízení a uživatel se musí přihlásit znovu. Otevřená karta skončí nejpozději do hodiny. Heslo se nemění, při podezření pošli i reset hesla.",
+            "confirm": "Ukončit přihlášení",
+            "done": "Všechna přihlášení účtu skončila."
+          },
+          "emailChange": {
+            "button": "Změnit e-mail",
+            "title": "Změnit e-mail účtu?",
+            "description": "Teď má účet {email}. Na novou adresu přijde odkaz a e-mail se změní, až ho tam uživatel potvrdí (do 24 hodin).",
+            "confirm": "Poslat potvrzení",
+            "done": "Na novou adresu odešel odkaz k potvrzení. E-mail se změní, až ho uživatel potvrdí."
+          }
+        }
+      },
+      "reports": {
+        "title": "Hlášení",
+        "description": "Problémy a nápady, které účet poslal přes Nahlásit problém, nejnovější nahoře.",
+        "empty": "Účet zatím nic nenahlásil.",
+        "unavailable": "Hlášení se nepodařilo načíst."
       }
     },
     "explorer": {

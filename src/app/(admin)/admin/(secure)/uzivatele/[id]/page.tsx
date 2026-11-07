@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
@@ -6,7 +7,13 @@ import { formatCalendarDate, formatDateTime, formatNumber } from "@/lib/format";
 import { ADMIN_FORMAT_SETTINGS, formatMetricValue } from "@/features/admin/format-metric";
 import { logAdminAction } from "@/features/admin/server/audit";
 import { requireAdmin } from "@/features/admin/server/guard";
-import { adminCan } from "@/features/admin/roles";
+import { accountSupportBlock, adminCan } from "@/features/admin/roles";
+import { ADMIN_PATH } from "@/features/admin/access";
+import { availableSupportActions, trialState } from "@/features/admin/account-support";
+import { loadUserAccount, loadUserReports, type UserAccount, type UserReport } from "@/features/admin/server/account-data";
+import { safe } from "@/features/admin/server/metrics-data";
+import { AccountSupportActions, CopyEmail } from "@/features/admin/ui/account-support";
+import { StatusPill } from "@/components/ui/status-pill";
 import { loadUserDetail } from "@/features/admin/server/users-data";
 import { loadUserAiCap } from "@/features/admin/server/ai-caps-data";
 import { loadUserSubscription } from "@/features/admin/server/subscription-data";
@@ -42,8 +49,10 @@ export default async function AdminUserDetailPage({ params }: Props) {
   if (!z.uuid().safeParse(id).success) notFound();
   await logAdminAction(context, "view", "users.detail");
 
-  const [detail, nameOf, aiCap, subscription, t, tControls, tItems, tIndustry, tUnits, tBilling] = await Promise.all([
+  const [detail, account, reports, nameOf, aiCap, subscription, t, tControls, tItems, tIndustry, tUnits, tBilling] = await Promise.all([
     loadUserDetail(id),
+    safe("user account", () => loadUserAccount(id)),
+    safe("user reports", () => loadUserReports(id)),
     peopleNamer([id]),
     loadUserAiCap(id),
     loadUserSubscription(id),
@@ -55,6 +64,10 @@ export default async function AdminUserDetailPage({ params }: Props) {
     getTranslations("plans.billing"),
   ]);
   if (!detail) notFound();
+  const [tAdmin, tFeedback] = await Promise.all([
+    getTranslations("admin"),
+    getTranslations("admin.feedback"),
+  ]);
 
   const label = (namespace: typeof tControls, key: string, value: string | null) =>
     value && namespace.has(`segmentValues.${key}.${value}`)
@@ -97,6 +110,30 @@ export default async function AdminUserDetailPage({ params }: Props) {
           </dl>
 
           <BlockGrid>
+            <AdminCard title={t("account.title")} description={t("account.description")} wide>
+              {account.ok && account.data ? (
+                <AccountFacts
+                  userId={id}
+                  account={account.data}
+                  plan={label(tControls, "plan", detail.plan)}
+                  trial={trialState(subscription)}
+                  block={accountSupportBlock(context, { id, roles: account.data.roles })}
+                  t={t}
+                  tAdmin={tAdmin}
+                />
+              ) : (
+                <AdminEmpty hint={t("account.unavailable")} />
+              )}
+            </AdminCard>
+
+            <AdminCard title={t("reports.title")} description={t("reports.description")} wide>
+              {reports.ok ? (
+                <UserReports reports={reports.data} t={t} tFeedback={tFeedback} />
+              ) : (
+                <AdminEmpty hint={t("reports.unavailable")} />
+              )}
+            </AdminCard>
+
             <AdminCard title={t("aiTitle")}>
               <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
                 <Field label={t("aiCalls")} value={count(detail.ai.calls)} />
@@ -279,6 +316,131 @@ function SubscriptionFacts({
         </div>
       )}
     </dl>
+  );
+}
+
+type UsersT = Awaited<ReturnType<typeof getTranslations<"admin.users">>>;
+
+/** The Account card: who the account is for support, and what can be done for it. */
+function AccountFacts({
+  userId,
+  account,
+  plan,
+  trial,
+  block,
+  t,
+  tAdmin,
+}: {
+  userId: string;
+  account: UserAccount;
+  plan: string;
+  trial: ReturnType<typeof trialState>;
+  block: ReturnType<typeof accountSupportBlock>;
+  t: UsersT;
+  tAdmin: Awaited<ReturnType<typeof getTranslations<"admin">>>;
+}) {
+  const date = (at: string | null) => (at ? formatDateTime(new Date(at), SETTINGS) : "–");
+  const device = account.lastDevice
+    ? [
+        tAdmin.has(`device.${account.lastDevice.device}`)
+          ? tAdmin(`device.${account.lastDevice.device}`)
+          : account.lastDevice.device,
+        tAdmin.has(`browser.${account.lastDevice.browser}`)
+          ? tAdmin(`browser.${account.lastDevice.browser}`)
+          : account.lastDevice.browser,
+        date(account.lastDevice.at),
+      ].join(" · ")
+    : "–";
+  const trialText =
+    trial.kind === "running"
+      ? t("account.trialRunning", { date: date(trial.endsAt), days: trial.daysLeft })
+      : trial.kind === "ended"
+        ? t("account.trialEnded", { date: date(trial.endsAt) })
+        : t("account.trialNone");
+  return (
+    <div className="flex flex-col gap-4" data-testid="account-card">
+      <div className="flex min-w-0 flex-col gap-0.5">
+        <span className="text-xs text-ink-muted">{t("account.email")}</span>
+        {account.email ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <CopyEmail email={account.email} />
+            {!account.emailConfirmed && (
+              <StatusPill tone="gold" className="h-5 px-2 text-xs">
+                {t("account.unconfirmed")}
+              </StatusPill>
+            )}
+          </div>
+        ) : (
+          <span className="text-base font-semibold text-ink">–</span>
+        )}
+      </div>
+      <dl className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 xl:grid-cols-3">
+        <Info label={t("account.signedUp")} value={date(account.createdAt)} />
+        <Info label={t("account.lastSignIn")} value={date(account.lastSignInAt)} />
+        <Info label={t("account.device")} value={device} />
+        <Info label={t("account.plan")} value={plan} />
+        <Info label={t("account.trial")} value={trialText} />
+      </dl>
+      {block ? (
+        <p className="text-sm text-ink-muted">{t(`account.blocked.${block}`)}</p>
+      ) : (
+        <AccountSupportActions
+          userId={userId}
+          email={account.email}
+          actions={availableSupportActions(account)}
+        />
+      )}
+    </div>
+  );
+}
+
+/** The account's reports, each a link to its detail in Feedback → Reports. */
+function UserReports({
+  reports,
+  t,
+  tFeedback,
+}: {
+  reports: UserReport[];
+  t: UsersT;
+  tFeedback: Awaited<ReturnType<typeof getTranslations<"admin.feedback">>>;
+}) {
+  if (reports.length === 0) return <AdminEmpty hint={t("reports.empty")} />;
+  const label = (key: string) => (tFeedback.has(key) ? tFeedback(key) : null);
+  return (
+    <ul className="flex flex-col gap-1.5" data-testid="user-reports">
+      {reports.map((report) => (
+        <li key={report.id}>
+          <Link
+            href={`${ADMIN_PATH}/zpetna-vazba?tab=reports&report=${report.id}`}
+            prefetch={false}
+            className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-line px-3 py-2 text-sm outline-none hover:border-violet/50 focus-visible:ring-3 focus-visible:ring-violet/40"
+          >
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="shrink-0 text-xs text-ink-muted">
+                {label(`reportKind.${report.kind}`) ?? report.kind}
+              </span>
+              {report.code && <code className="shrink-0 font-mono text-xs text-ink">{report.code}</code>}
+              <span className="min-w-0 truncate text-ink-soft">
+                {report.description ?? tFeedback("noDescription")}
+              </span>
+            </span>
+            <span className="flex shrink-0 items-center gap-2 text-xs text-ink-muted tabular-nums">
+              {label(`reportStatus.${report.status}`) ?? report.status}
+              <span>{formatCalendarDate(report.createdAt.slice(0, 10), SETTINGS)}</span>
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function Info({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex min-w-0 flex-col gap-0.5">
+      <dt className="truncate text-xs text-ink-muted">{label}</dt>
+      <dd className="text-sm font-medium text-ink">{value}</dd>
+    </div>
   );
 }
 

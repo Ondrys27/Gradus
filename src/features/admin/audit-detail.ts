@@ -1,8 +1,9 @@
 /**
  * The before/after of an audited change (admin_audit.detail) as one line:
  * "monthly_usd: 90 → 120 · warn_percent: 80 → 75". Only the fields that
- * changed; identifiers and numbers, never free text. A user the change was
- * about leads, named by `nameOf` (see display-name.ts).
+ * changed; identifiers and numbers. A user the change was about leads, named
+ * by `nameOf` (see display-name.ts); the reason a support action was given
+ * (step 22.1, written by the administrator) closes the line.
  */
 
 type Values = Record<string, unknown> | null;
@@ -39,8 +40,15 @@ export function describeAuditDetail(
   const changes = keys
     .filter((key) => JSON.stringify(from?.[key] ?? null) !== JSON.stringify(to?.[key] ?? null))
     .map((key) => `${key}: ${show(from?.[key], empty)} → ${show(to?.[key], empty)}`);
-  if (!changes.length && from === null && to === null) changes.push(`${empty} → ${empty}`);
+  const isChange = "from" in root || "to" in root;
+  if (isChange && !changes.length && from === null && to === null) {
+    changes.push(`${empty} → ${empty}`);
+  }
   const userId = auditDetailUser(root);
   const user = userId ? nameOf(userId) : null;
-  return [user, ...changes].filter(Boolean).join(" · ");
+  const reason =
+    typeof root.reason === "string" && root.reason.trim()
+      ? root.reason.trim().replace(/\s+/g, " ").slice(0, 120)
+      : null;
+  return [user, ...changes, reason].filter(Boolean).join(" · ");
 }

@@ -7,8 +7,10 @@ import { num } from "./metrics-data";
 /**
  * The Users page: a searchable, sortable list and one account's detail, both
  * from the two dedicated functions of 20261009100000_admin_users.sql.
- * Identifiers and counts only; the page names people through ./people
- * (admin_people), and the search also matches the name and e-mail.
+ * Identifiers and counts only; the page names people (and shows their
+ * e-mail) through ./people (admin_people). The search matches the name, any
+ * part of the e-mail and the start of the id, without diacritics; the short
+ * id of step 22.4 joins it once it exists.
  */
 
 export type UserSort = "activity" | "cost" | "signup";
@@ -48,22 +50,67 @@ export async function loadUsers(input: {
     _segment: { ...input.view.segment },
   });
   if (error) throw new Error(`metric_admin_users: ${error.message}`);
-  const rows = (data ?? []).slice(0, limit).map(
-    (row): UserRow => ({
-      userId: row.user_id,
-      plan: row.plan ?? "",
-      status: row.status ?? "",
-      mode: row.mode,
-      industry: row.industry,
-      country: row.country,
-      role: row.role,
-      isInternal: row.is_internal ?? false,
-      signedUpAt: row.signed_up_at,
-      lastActiveAt: row.last_active_at,
-      aiCostUsd: num(row.ai_cost_usd) ?? 0,
-    }),
-  );
+  const rows = (data ?? []).slice(0, limit).map(toUserRow);
   return { rows, hasMore: (data ?? []).length > limit };
+}
+
+type UserRpcRow = {
+  user_id: string;
+  plan: string | null;
+  status: string | null;
+  mode: string | null;
+  industry: string | null;
+  country: string | null;
+  role: string | null;
+  is_internal: boolean | null;
+  signed_up_at: string;
+  last_active_at: string | null;
+  ai_cost_usd: number | string | null;
+};
+
+function toUserRow(row: UserRpcRow): UserRow {
+  return {
+    userId: row.user_id,
+    plan: row.plan ?? "",
+    status: row.status ?? "",
+    mode: row.mode,
+    industry: row.industry,
+    country: row.country,
+    role: row.role,
+    isInternal: row.is_internal ?? false,
+    signedUpAt: row.signed_up_at,
+    lastActiveAt: row.last_active_at,
+    aiCostUsd: num(row.ai_cost_usd) ?? 0,
+  };
+}
+
+/** The most accounts one export carries. */
+export const USERS_EXPORT_LIMIT = 5000;
+const EXPORT_BATCH = 200;
+
+/** Every account of the view and search for the CSV, in the list's order, at most USERS_EXPORT_LIMIT. */
+export async function loadUsersForExport(input: {
+  view: AdminView;
+  query: string;
+  sort: UserSort;
+}): Promise<UserRow[]> {
+  const all: UserRow[] = [];
+  for (let page = 0; all.length < USERS_EXPORT_LIMIT; page++) {
+    const { data, error } = await createAdminClient().rpc("metric_admin_users", {
+      _tz: METRICS_TIMEZONE,
+      _query: input.query || undefined,
+      _sort: input.sort,
+      _limit: EXPORT_BATCH,
+      _offset: page * EXPORT_BATCH,
+      _include_internal: input.view.internal,
+      _segment: { ...input.view.segment },
+    });
+    if (error) throw new Error(`metric_admin_users: ${error.message}`);
+    const rows = data ?? [];
+    all.push(...rows.map(toUserRow));
+    if (rows.length < EXPORT_BATCH) break;
+  }
+  return all.slice(0, USERS_EXPORT_LIMIT);
 }
 
 export type UserDetail = {
