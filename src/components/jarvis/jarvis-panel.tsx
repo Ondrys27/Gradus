@@ -17,6 +17,7 @@ import {
   FileSpreadsheetIcon,
   FileTextIcon,
   FlagIcon,
+  GraduationCapIcon,
   ImageIcon,
   PaperclipIcon,
   SquarePenIcon,
@@ -28,6 +29,7 @@ import {
 import { Jarvis } from "@/components/jarvis/jarvis";
 import { NoticePager, NoticeSlide, queueKeyDown } from "@/components/jarvis/notice-queue";
 import { useReportProblem } from "@/features/feedback/report-provider";
+import { jarvisOverlay } from "@/features/jarvis/overlay-store";
 import { SaveAnswerToNotes } from "@/features/notes/save-answer";
 import { SuggestionCard, useSuggestionActions } from "@/components/jarvis/suggestion-card";
 import {
@@ -245,6 +247,19 @@ export function JarvisPanel({ chat, onClose }: JarvisPanelProps) {
           className="grid size-11 place-items-center rounded-full text-ink-soft outline-none transition-colors hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-teal/50 disabled:opacity-40"
         >
           <SquarePenIcon aria-hidden className="size-5" />
+        </button>
+        <button
+          type="button"
+          data-testid="jarvis-tutorial"
+          onClick={() => {
+            onClose();
+            jarvisOverlay.requestTutorial();
+          }}
+          aria-label={t("tutorial")}
+          title={t("tutorial")}
+          className="grid size-11 place-items-center rounded-full text-ink-soft outline-none transition-colors hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-teal/50"
+        >
+          <GraduationCapIcon aria-hidden className="size-5" />
         </button>
         <button
           type="button"

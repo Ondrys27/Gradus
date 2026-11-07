@@ -317,6 +317,8 @@ export function useFirstActiveMilestone(enabled: boolean) {
         .select("id, title, template_id")
         .eq("user_id", user.id)
         .eq("status", "active")
+        // A sample milestone of the tutorial is never the first real step.
+        .eq("is_demo", false)
         .order("position")
         .limit(1)
         .maybeSingle();

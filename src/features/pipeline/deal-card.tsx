@@ -10,6 +10,7 @@ import { useCan } from "@/features/account/workspace-queries";
 import { formatCalendarDate, formatCurrency } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
+import { DemoBadge } from "@/features/tutorial/demo-badge";
 import { contactLabel } from "./board-logic";
 import type { Deal } from "./types";
 
@@ -37,7 +38,10 @@ export function DealCardBody({ deal, relaunchable, muted, className }: BodyProps
       )}
     >
       <div className="flex items-start justify-between gap-2">
-        <span className="min-w-0 text-sm font-semibold break-words text-ink">{deal.title}</span>
+        <span className="min-w-0 text-sm font-semibold break-words text-ink">
+          {deal.title}
+          <DemoBadge show={deal.is_demo} className="ml-1.5 align-middle" />
+        </span>
         {seeAmounts && deal.value !== null && (
           <span className="shrink-0 text-sm font-semibold text-ink-soft tabular-nums">
             {formatCurrency(Number(deal.value), deal.currency, settings)}

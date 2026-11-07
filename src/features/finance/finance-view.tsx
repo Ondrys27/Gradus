@@ -103,7 +103,7 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
         actions={
           tab === "invoices" ? (
             canIssue && (
-              <Link href={NEW_INVOICE_PATH} className={buttonVariants()}>
+              <Link href={NEW_INVOICE_PATH} data-tutorial="invoice-new" className={buttonVariants()}>
                 <PlusIcon aria-hidden data-icon="inline-start" />
                 {t("actions.newInvoice")}
               </Link>

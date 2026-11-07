@@ -13,6 +13,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import dynamic from "next/dynamic";
 import { useErrorScreenShown } from "@/features/errors/error-screen-state";
 import { whenIdle } from "@/lib/idle";
+import { setCelebrationOpen } from "./celebration-state";
 
 const loadCard = () => import("./celebration-card");
 
@@ -68,6 +69,7 @@ export function CelebrationProvider({ children }: { children: ReactNode }) {
   const dismiss = useCallback(() => setQueue((q) => q.slice(1)), []);
 
   useEffect(() => whenIdle(loadCard), []);
+  useEffect(() => setCelebrationOpen(current !== null), [current]);
 
   return (
     <CelebrationContext.Provider value={celebrate}>

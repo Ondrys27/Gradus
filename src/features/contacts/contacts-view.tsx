@@ -126,6 +126,7 @@ export function ContactsView() {
               )}
               {canCreate && (
                 <Button
+                  data-tutorial="contact-new"
                   onClick={() => {
                     setPrefill(undefined);
                     setCreating(true);
@@ -208,6 +209,7 @@ export function ContactsView() {
             action={
               canCreate && (
                 <Button
+                  data-tutorial="contact-new"
                   onClick={() => {
                     setPrefill(undefined);
                     setCreating(true);

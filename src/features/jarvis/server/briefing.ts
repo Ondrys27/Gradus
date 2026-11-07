@@ -254,6 +254,7 @@ async function loadPeriodResults(
       .from("tasks")
       .select("id", head)
       .eq("user_id", userId)
+      .eq("is_demo", false)
       .eq("status", "done")
       .gte("completed_at", range.from)
       .lt("completed_at", range.to),
@@ -261,6 +262,7 @@ async function loadPeriodResults(
       .from("crm_tasks")
       .select("id", head)
       .eq("user_id", userId)
+      .eq("is_demo", false)
       .eq("status", "done")
       .gte("completed_at", range.from)
       .lt("completed_at", range.to),
@@ -268,6 +270,7 @@ async function loadPeriodResults(
       .from("deals")
       .select("title", { count: "exact" })
       .eq("user_id", userId)
+      .eq("is_demo", false)
       .gte("won_at", range.from)
       .lt("won_at", range.to)
       .order("won_at", { ascending: false })
@@ -276,12 +279,14 @@ async function loadPeriodResults(
       .from("deals")
       .select("id", head)
       .eq("user_id", userId)
+      .eq("is_demo", false)
       .gte("lost_at", range.from)
       .lt("lost_at", range.to),
     admin
       .from("calendar_events")
       .select("id", head)
       .eq("user_id", userId)
+      .eq("is_demo", false)
       .eq("kind", "meeting")
       .gte("starts_at", range.from)
       .lt("starts_at", range.to),
@@ -295,6 +300,7 @@ async function loadPeriodResults(
       .from("milestones")
       .select("title")
       .eq("user_id", userId)
+      .eq("is_demo", false)
       .gte("completed_at", range.from)
       .lt("completed_at", range.to)
       .order("completed_at", { ascending: false })
@@ -340,6 +346,7 @@ async function loadPeriodPlan(
       .select(CRM_TASK_COLUMNS, { count: "exact" })
       .eq("assignee_id", userId)
       .in("user_id", spaces)
+      .eq("is_demo", false)
       .eq("status", "open")
       .gte("due_at", nowIso)
       .lt("due_at", end)
@@ -349,6 +356,7 @@ async function loadPeriodPlan(
       .from("tasks")
       .select("id, title, due_date", { count: "exact" })
       .eq("user_id", userId)
+      .eq("is_demo", false)
       .neq("status", "done")
       .gte("due_date", today)
       .lte("due_date", to)
@@ -358,6 +366,7 @@ async function loadPeriodPlan(
       .from("calendar_events")
       .select("id, title, starts_at", { count: "exact" })
       .eq("user_id", userId)
+      .eq("is_demo", false)
       .gte("starts_at", nowIso)
       .lt("starts_at", end)
       .order("starts_at")
@@ -422,6 +431,7 @@ export async function loadBriefingData(
         .from("tasks")
         .select("id, title")
         .eq("user_id", userId)
+        .eq("is_demo", false)
         .neq("status", "done")
         .eq("due_date", today)
         .order("position")
@@ -430,13 +440,14 @@ export async function loadBriefingData(
         .from("calendar_events")
         .select("id, title, starts_at, all_day")
         .eq("user_id", userId)
+        .eq("is_demo", false)
         .gte("starts_at", todayRange.from)
         .lt("starts_at", todayRange.to)
         .order("starts_at")
         .limit(LIST_LIMIT),
       loadTimeWindow(admin, { timeZone, country, now }),
       // The user's own space, whole (the admin client, filtered by the user id).
-      loadHealthDigest(admin, userId, null, settings, now).catch((error) => {
+      loadHealthDigest(admin, userId, null, settings, now, { excludeDemo: true }).catch((error) => {
         console.error("briefing pipeline health failed", error);
         return null;
       }),
@@ -445,6 +456,7 @@ export async function loadBriefingData(
         .select(CRM_TASK_COLUMNS, { count: "exact" })
         .eq("assignee_id", userId)
         .in("user_id", spaces)
+        .eq("is_demo", false)
         .eq("status", "open")
         .lt("due_at", nowIso)
         .order("due_at")
@@ -454,6 +466,7 @@ export async function loadBriefingData(
         .select(CRM_TASK_COLUMNS, { count: "exact" })
         .eq("assignee_id", userId)
         .in("user_id", spaces)
+        .eq("is_demo", false)
         .eq("status", "open")
         .gte("due_at", nowIso)
         .lt("due_at", todayRange.to)

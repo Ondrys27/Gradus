@@ -1,34 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { JARVIS_QUESTIONS, nextQuestion, normalizeAnswer, questionDedupeKey } from "./questions";
-import { findTourTarget, placeCallout, pointDirection, tourSteps } from "./tour";
-
-describe("tourSteps", () => {
-  it("gives an owner seven steps in game mode, without the level in tool mode", () => {
-    const game = tourSteps({ worker: false, playing: true }).map((step) => step.key);
-    expect(game).toEqual([
-      "dashboard",
-      "milestones",
-      "jarvis",
-      "level",
-      "search",
-      "settings",
-      "finish",
-    ]);
-    expect(tourSteps({ worker: false, playing: false }).map((s) => s.key)).not.toContain("level");
-  });
-
-  it("gives a worker a short version of their own environment", () => {
-    const steps = tourSteps({ worker: true, playing: false });
-    expect(steps.map((s) => s.key)).toEqual([
-      "workerDashboard",
-      "workerTasks",
-      "jarvis",
-      "settings",
-      "workerFinish",
-    ]);
-    expect(steps.at(-1)?.target).toBeNull();
-  });
-});
+import { findFirstTarget, findTourTarget, placeCallout, pointDirection } from "./tour";
 
 describe("placeCallout", () => {
   const viewport = { width: 1440, height: 900 };
@@ -83,6 +55,18 @@ describe("findTourTarget", () => {
     shown.getBoundingClientRect = () => ({ width: 40, height: 40 }) as DOMRect;
     expect(findTourTarget("nav-dashboard")?.id).toBe("shown");
     expect(findTourTarget("missing")).toBeNull();
+  });
+
+  it("finds a data-tutorial name, a CSS selector, and the first of several that is shown", () => {
+    document.body.innerHTML = `<button data-tutorial="note-new" id="note"></button><div id="settings-jarvis-frequency"></div>`;
+    for (const id of ["note", "settings-jarvis-frequency"]) {
+      document.getElementById(id)!.getBoundingClientRect = () => ({ width: 40, height: 40 }) as DOMRect;
+    }
+    expect(findTourTarget("note-new")?.id).toBe("note");
+    expect(findTourTarget("#settings-jarvis-frequency")?.id).toBe("settings-jarvis-frequency");
+    expect(findTourTarget("[broken")).toBeNull();
+    expect(findFirstTarget(["pipeline-health", "note-new"])?.id).toBe("note");
+    expect(findFirstTarget([])).toBeNull();
   });
 });
 

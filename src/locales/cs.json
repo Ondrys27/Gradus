@@ -493,61 +493,6 @@
         "noTarget": "Úkol „{task}“ je po termínu."
       }
     },
-    "tour": {
-      "next": "Další",
-      "skip": "Přeskočit",
-      "done": "Hotovo",
-      "progress": "Krok {step} z {total}",
-      "action": {
-        "openFirstTask": "Otevřít první úkol",
-        "createMilestone": "Založit první milník",
-        "openTasks": "Otevřít moje úkoly"
-      },
-      "steps": {
-        "dashboard": {
-          "title": "Dashboard",
-          "text": "Tady začíná tvůj den. Dashboard ukazuje dnešní úkoly, komu zavolat zpátky, obchody a příjem za měsíc."
-        },
-        "milestones": {
-          "title": "Milníky",
-          "text": "Tady bydlí velké cíle rozdělené na úkoly. Odškrtávej úkoly, a když jsou všechny hotové, milník dokončíš sám.",
-          "textGame": "Tady je tvoje cesta: milníky rozdělené na úkoly. Každý dokončený milník tě posune dál a odemkne další části aplikace."
-        },
-        "jarvis": {
-          "title": "To jsem já",
-          "text": "Klepni na mě v rohu, kdykoliv budeš chtít. Naplánuju s tebou den, napíšu e-mail nebo scénář hovoru, nebo se podívám na tvoje čísla."
-        },
-        "level": {
-          "title": "Úroveň a série",
-          "text": "Každý opravdový krok ti přinese XP. Plamínek počítá dny v řadě, kdy jsi něco udělal. Klepni na úroveň a uvidíš, co tě čeká."
-        },
-        "search": {
-          "title": "Vyhledávání",
-          "text": "Najdi kterýkoliv kontakt, obchod, úkol nebo nastavení během vteřiny. Na počítači stačí ⌘K nebo Ctrl+K."
-        },
-        "settings": {
-          "title": "Nastavení",
-          "text": "Jazyk, formáty, témata a jak často se ozývám najdeš v nabídce účtu. V Nastavení → Jarvis → Nápověda si tohle provedení pustíš znovu."
-        },
-        "finish": {
-          "title": "Jdeme na to",
-          "text": "To je pro začátek všechno. Tady je dobrý první krok:",
-          "target": "„{milestone}“"
-        },
-        "workerDashboard": {
-          "title": "Tvůj dashboard",
-          "text": "Tady vidíš svůj den na jeden pohled: úkoly, odpracovaný čas a co sis vydělal."
-        },
-        "workerTasks": {
-          "title": "Tvoje úkoly",
-          "text": "Tohle jsou úkoly, které jsi dostal. Odškrtni je, až budou hotové, a tvůj postup bude hned vidět."
-        },
-        "workerFinish": {
-          "title": "Můžeš začít",
-          "text": "To je všechno. Začni svými úkoly:"
-        }
-      }
-    },
     "proactive": {
       "close": "Zavřít",
       "later": "Později",
@@ -650,7 +595,8 @@
       "day": "{day} {time}",
       "suggestionLater": "Hodí se až {when}, teď to lidé většinou nezvedají."
     },
-    "reportProblem": "Nahlásit problém"
+    "reportProblem": "Nahlásit problém",
+    "tutorial": "Spustit tutoriál"
   },
   "celebration": {
     "continue": "Pokračovat",
@@ -991,9 +937,15 @@
     "help": {
       "title": "Nápověda",
       "description": "Jak se v aplikaci vyznat.",
-      "tour": "Provedení aplikací",
-      "tourHint": "Jarvis ti znovu ukáže hlavní části aplikace.",
-      "start": "Spustit provedení"
+      "tour": "Tutoriál",
+      "tourHint": "Jarvis ti aplikaci ukáže znovu: rychle, nebo celou na ukázkových datech.",
+      "start": "Spustit tutoriál",
+      "demo": "Ukázková data",
+      "demoHint": "Kontakty, obchod, milník, úkoly, schůzka a poznámka z tutoriálu se štítkem „ukázka“.",
+      "demoDelete": "Smazat ukázková data",
+      "demoConfirm": "Smazat ukázková data?",
+      "demoConfirmText": "Smaže se všechno se štítkem „ukázka“ a co na tom jen viselo. Co sis založil sám, zůstane.",
+      "demoCancel": "Zrušit"
     },
     "invoices": {
       "title": "Faktury",
@@ -4327,7 +4279,8 @@
       "contacts_generated_first": "První vygenerované kontakty",
       "meeting_tenth": "Desátá schůzka",
       "onboarding_completed": "Nastavený účet",
-      "other": "XP"
+      "other": "XP",
+      "tutorial_completed": "Dokončený tutoriál"
     },
     "path": {
       "label": "Mapa cesty",
@@ -4974,6 +4927,22 @@
       "tour_skipped_at": {
         "name": "Průvodce přeskočen na kroku",
         "description": "Na kterém kroku lidé průvodce přeskočili."
+      },
+      "tutorial_mode": {
+        "name": "Volba tutoriálu",
+        "description": "Kolik lidí zvolilo přeskočit, rychlou ukázku a úplný tutoriál."
+      },
+      "tutorial_steps": {
+        "name": "Kroky tutoriálu",
+        "description": "Kolik lidí došlo na který krok tutoriálu."
+      },
+      "tutorial_finished": {
+        "name": "Dokončený tutoriál",
+        "description": "Kdo tutoriál prošel až do konce, podle režimu."
+      },
+      "tutorial_abandoned_at": {
+        "name": "Tutoriál ukončen na kroku",
+        "description": "Na kterém kroku lidé tutoriál ukončili."
       },
       "activation_rate": {
         "name": "Míra aktivace",
@@ -7349,6 +7318,362 @@
       "deleted": "Smazáno",
       "yes": "ano",
       "filePrefix": "zpravy"
+    }
+  },
+  "tutorial": {
+    "demoBadge": "ukázka",
+    "next": "Další",
+    "skipStep": "Přeskočit krok",
+    "end": "Ukončit tutoriál",
+    "done": "Hotovo",
+    "expand": "Zobrazit",
+    "collapse": "Skrýt",
+    "progress": "Krok {step} z {total}",
+    "locked": "Tahle část se ti odemkne postupem v cestě. Až se tak stane, vyzkoušíš si ji.",
+    "checkPassed": "Splněno. Můžeš pokračovat.",
+    "firstStep": "Tvůj první skutečný krok:",
+    "firstStepTarget": "„{milestone}“",
+    "action": {
+      "openFirstTask": "Otevřít první úkol",
+      "createMilestone": "Založit první milník",
+      "openTasks": "Otevřít moje úkoly"
+    },
+    "chapters": {
+      "start": "Začátek",
+      "milestones": "Milníky",
+      "notes": "Poznámky",
+      "contacts": "Kontakty",
+      "pipeline": "Pipeline",
+      "tasks": "Úkoly",
+      "calendar": "Kalendář",
+      "finance": "Finance",
+      "company": "Firma",
+      "jarvis": "Jarvis",
+      "end": "Konec"
+    },
+    "demo": {
+      "question": "Co s ukázkovými daty?",
+      "deleted": "Smazat",
+      "kept": "Nechat si je",
+      "footnote": "Co sis během tutoriálu založil sám, zůstane v obou případech. Ukázková data smažeš i později v Nastavení → Jarvis.",
+      "note": {
+        "intro": "Ukázková poznámka z tutoriálu. Přepiš ji svými slovy.",
+        "answers": {
+          "who": "Majitel malé firmy z oboru {branch}, 30–50 let, rozhoduje sám.",
+          "problem": "Nemá čas shánět zákazníky a chce mít jistotu, že práce dopadne dobře.",
+          "today": "Spoléhá na doporučení, a když nepřijdou, nemá co dělat.",
+          "where": "Na místních akcích, v oborových skupinách na Facebooku a na LinkedInu.",
+          "decides": "Rozhoduje sám, rychle, podle důvěry a referencí.",
+          "industry": "Doplň podle svých zkušeností."
+        }
+      },
+      "contacts": {
+        "first": {
+          "firstName": "Jana",
+          "lastName": "Malá",
+          "email": "jana.mala@example.com",
+          "city": "Brno",
+          "company": {
+            "realEstate": "Rodinný dům Malá",
+            "coaching": "Studio Malá",
+            "ecommerce": "Malá Design",
+            "trades": "Rekonstrukce Malá",
+            "freelanceIt": "Malá Software",
+            "agency": "Malá Media",
+            "other": "Malá s.r.o."
+          }
+        },
+        "second": {
+          "firstName": "Petr",
+          "lastName": "Dvořák",
+          "email": "petr.dvorak@example.com",
+          "city": "Olomouc",
+          "company": {
+            "realEstate": "Byt Dvořák",
+            "coaching": "Dvořák Consulting",
+            "ecommerce": "Pekárna Dvořák",
+            "trades": "Dvořák Stavby",
+            "freelanceIt": "Dvořák Logistika",
+            "agency": "Dvořák Sport",
+            "other": "Dvořák a syn"
+          }
+        },
+        "third": {
+          "firstName": "Eva",
+          "lastName": "Svobodová",
+          "email": "eva.svobodova@example.com",
+          "city": "Praha",
+          "company": {
+            "realEstate": "Pozemky Svobodová",
+            "coaching": "Svobodová HR",
+            "ecommerce": "Květiny Eva",
+            "trades": "Kavárna Eva",
+            "freelanceIt": "Svobodová Účetnictví",
+            "agency": "Hotel Eva",
+            "other": "Eva Svobodová"
+          }
+        }
+      },
+      "deal": {
+        "realEstate": "{company}: prodej domu",
+        "coaching": "{company}: koučovací program",
+        "ecommerce": "{company}: velkoobchodní objednávka",
+        "trades": "{company}: rekonstrukce koupelny",
+        "freelanceIt": "{company}: nový web",
+        "agency": "{company}: kampaň na jaro",
+        "other": "{company}: první zakázka"
+      },
+      "milestone": {
+        "title": "Ukázka: první zakázka",
+        "description": "Ukázkový milník z tutoriálu. Klidně ho odškrtej nebo smaž.",
+        "tasks": {
+          "offer": "Připravit nabídku",
+          "prices": "Sepsat ceník",
+          "references": "Přidat reference",
+          "call": "Zavolat prvnímu zájemci",
+          "follow": "Poslat shrnutí po schůzce"
+        }
+      },
+      "crmTasks": {
+        "sendOffer": "Poslat nabídku",
+        "call": "Zavolat {name}"
+      },
+      "meeting": "Schůzka s {name}",
+      "branch": {
+        "realEstate": "realit",
+        "coaching": "koučinku",
+        "ecommerce": "e-shopů",
+        "trades": "řemesel",
+        "freelanceIt": "IT",
+        "agency": "marketingu",
+        "other": "služeb"
+      }
+    },
+    "endConfirm": {
+      "title": "Ukončit tutoriál?",
+      "text": "Kdykoliv si ho pustíš znovu v Nastavení → Jarvis.",
+      "textFull": "Ukázková data můžeš smazat hned, nebo si je nechat a smazat později v Nastavení → Jarvis.",
+      "back": "Zpět",
+      "keep": "Ukončit a nechat data",
+      "delete": "Ukončit a smazat data"
+    },
+    "celebration": {
+      "title": "Tutoriál dokončen!",
+      "quick": "Teď víš, kde co v aplikaci najdeš.",
+      "full": "Všechno sis vyzkoušel na vlastní kůži."
+    },
+    "resume": {
+      "title": "Pokračujeme v tutoriálu?",
+      "text": "Minule jsme skončili u kroku „{step}“.",
+      "textNoStep": "Tutoriál ještě není u konce.",
+      "resume": "Pokračovat",
+      "end": "Ukončit tutoriál"
+    },
+    "choice": {
+      "title": "Jak chceš začít?",
+      "close": "Zavřít",
+      "intro": "Můžu ti aplikaci ukázat. Vyber si, kolik času na to chceš dát.",
+      "minutes": "≈ {minutes} min",
+      "preparing": "Připravuji ukázková data…",
+      "failed": "Nepodařilo se to spustit. Zkus to prosím znovu.",
+      "none": {
+        "title": "Přeskočit",
+        "text": "Pustíš se do toho sám. Tutoriál si spustíš kdykoliv v Nastavení → Jarvis.",
+        "gain": "Hned k práci"
+      },
+      "quick": {
+        "title": "Rychlá ukázka",
+        "text": "Provedu tě všemi částmi aplikace. Jen se díváš, nic nezakládáš.",
+        "gain": "Víš, kde co najdeš"
+      },
+      "full": {
+        "title": "Úplný tutoriál",
+        "text": "Všechno si vyzkoušíš sám na ukázkových datech: milník, kontakt, obchod, fakturu i otázku na mě.",
+        "gain": "Umíš to hned používat · XP za dokončení"
+      }
+    },
+    "steps": {
+      "dashboard": {
+        "title": "Nástěnka",
+        "text": "Tady začíná tvůj den: dnešní úkoly, komu zavolat, obchody a příjem za měsíc. Cokoliv najdeš přes ⌘K nebo Ctrl+K."
+      },
+      "milestones": {
+        "title": "Milníky a mapa",
+        "text": "Velké cíle rozdělené na úkoly. Každý milník má i myšlenkovou mapu, kde úkoly přesouváš tažením."
+      },
+      "notes": {
+        "title": "Poznámky",
+        "text": "Podklady k podnikání na jednom místě: ideální zákazník, ceník, prodejní skript. Z poznámek vycházím, když mi píšeš."
+      },
+      "contacts": {
+        "title": "Kontakty a Cold Calling",
+        "text": "Kontakty žijí ve tvých tabulkách. V Cold Callingu je obvoláváš a přesouváš dál, třeba do Schůzek."
+      },
+      "pipeline": {
+        "title": "Pipeline a dlaždice",
+        "text": "Obchody po fázích. Dlaždice nahoře hlídají, co hoří: cíl je všude nula."
+      },
+      "tasks": {
+        "title": "Úkoly",
+        "text": "Úkoly k obchodům a kontaktům s termínem a časem. Po termínu svítí červeně."
+      },
+      "calendar": {
+        "title": "Kalendář",
+        "text": "Schůzky, termíny a úkoly na jednom místě, ve tvém časovém pásmu."
+      },
+      "finance": {
+        "title": "Finance a faktury",
+        "text": "Příjmy, výdaje a pravidelné platby. Faktury vystavíš přímo tady, i s QR platbou."
+      },
+      "company": {
+        "title": "Správa firmy",
+        "text": "Pozvi pracovníky, nastav jim práva a sleduj, jak se jim daří."
+      },
+      "messages": {
+        "title": "Zprávy",
+        "text": "Chat uvnitř firmy: skupiny i přímé zprávy s pracovníky."
+      },
+      "jarvis": {
+        "title": "To jsem já",
+        "text": "Klepni na mě v rohu, kdykoliv budeš chtít. Naplánuju s tebou den, napíšu e-mail nebo se podívám na tvoje čísla."
+      },
+      "level": {
+        "title": "Úroveň a série",
+        "text": "Každý opravdový krok ti přinese XP. Klepni na úroveň a uvidíš, co tě čeká."
+      },
+      "settings": {
+        "title": "Nastavení",
+        "text": "Jazyk, formáty, témata a jak často se ozývám najdeš v nabídce účtu. Tutoriál si tam pustíš znovu."
+      },
+      "finish": {
+        "title": "Jdeme na to",
+        "text": "To je pro začátek všechno. Teď už naostro."
+      },
+      "workerDashboard": {
+        "title": "Tvoje nástěnka",
+        "text": "Tady vidíš svůj den na jeden pohled: úkoly, odpracovaný čas a co sis vydělal."
+      },
+      "workerTasks": {
+        "title": "Tvoje úkoly",
+        "text": "Úkoly, které jsi dostal. Odškrtni je, až budou hotové, a tvůj postup bude hned vidět."
+      },
+      "workerFinish": {
+        "title": "Můžeš začít",
+        "text": "To je všechno. Začni svými úkoly."
+      },
+      "welcome": {
+        "title": "Vyzkoušíme si to",
+        "text": "Do tvého prostoru jsem přidal ukázková data se štítkem „ukázka“: tři kontakty, obchod, milník, úkoly, schůzku a poznámku. Na nich si všechno vyzkoušíš."
+      },
+      "milestonesLook": {
+        "title": "Ukázkový milník",
+        "text": "Tady je milník s úkoly, který jsem ti připravil. Hotové úkoly posouvají milník k cíli."
+      },
+      "milestoneCreate": {
+        "title": "Založ milník",
+        "text": "Založ si vlastní milník tlačítkem Nový milník. Stačí název, třeba „První tři zákazníci“.",
+        "hint": "Tlačítko Nový milník je nahoře vpravo. Napiš název a ulož."
+      },
+      "taskAdd": {
+        "title": "Přidej úkol",
+        "text": "Otevři milník a přidej do něj úkol. Napiš ho do pole pod seznamem a stiskni Enter.",
+        "hint": "Klepni na milník, pak do pole „Přidat úkol“ napiš třeba „Zavolat dodavateli“."
+      },
+      "taskMove": {
+        "title": "Přesuň úkol v mapě",
+        "text": "Přepni na mapu a přetáhni úkol pod jiný. Na počítači to jde i přes ⌘ nebo Ctrl a šipky.",
+        "hint": "Přepínač Seznam / Mapa je nad úkoly. Chyť úkol a pusť ho na jiný."
+      },
+      "noteWrite": {
+        "title": "Zapiš si do poznámek",
+        "text": "Otevři ukázkovou poznámku Ideální zákazník a doplň do ní větu, nebo založ novou poznámku.",
+        "hint": "Klepni na poznámku v seznamu a piš. Ukládá se samo."
+      },
+      "contactsLook": {
+        "title": "Kontakty",
+        "text": "Tři ukázkové kontakty už tu jsou. Každý kontakt je vždy v jedné tabulce."
+      },
+      "contactCreate": {
+        "title": "Založ kontakt",
+        "text": "Přidej kontakt tlačítkem Nový kontakt, nebo si nech pár kontaktů vygenerovat.",
+        "hint": "Tlačítko Nový kontakt je nahoře. Stačí jméno nebo firma."
+      },
+      "coldCallingLook": {
+        "title": "Cold Calling",
+        "text": "Tady obvoláváš kontakty z tabulky Neoslovení. Časovač počítá, kolik jsi dnes volal."
+      },
+      "coldCallingMove": {
+        "title": "Přesuň kontakt",
+        "text": "Vyber kontakt a přesuň ho do další tabulky, třeba do Schůzek. Odpovíš na pár otázek a je to.",
+        "hint": "U kontaktu klepni na přesun a vyber cílovou tabulku."
+      },
+      "dealFromContact": {
+        "title": "Založ z něj obchod",
+        "text": "Z kontaktu založ obchod: v detailu kontaktu nebo při přesunu do Schůzek.",
+        "hint": "Otevři kontakt a klepni na Nový obchod."
+      },
+      "pipelineLook": {
+        "title": "Pipeline",
+        "text": "Tvůj obchod je v první fázi. Ukázkový obchod má Close Date v minulosti, schválně."
+      },
+      "dealCloseDate": {
+        "title": "Dej obchodu Close Date",
+        "text": "Otevři svůj obchod a vyplň Close Date, tedy kdy čekáš uzavření.",
+        "hint": "Klepni na kartu obchodu a v Přehledu nastav Close Date."
+      },
+      "dealTask": {
+        "title": "Přidej obchodu úkol",
+        "text": "V detailu obchodu přidej úkol, třeba „Poslat nabídku“. Obchod bez úkolu by svítil v dlaždicích.",
+        "hint": "V detailu obchodu otevři Úkoly a klepni na Nový úkol."
+      },
+      "healthTiles": {
+        "title": "Co hoří",
+        "text": "Dlaždice ukazují jen špatné věci: Close Date v minulosti, úkoly po termínu a obchody bez úkolu. Klepni na dlaždici a uvidíš které."
+      },
+      "tasksLook": {
+        "title": "Úkoly",
+        "text": "Všechny úkoly obchodů a kontaktů podle termínu: po termínu, dnes, zítra a dál."
+      },
+      "taskComplete": {
+        "title": "Odškrtni úkol",
+        "text": "Odškrtni jeden úkol jako hotový. Můžeš k němu napsat poznámku, uvidíš ji v historii obchodu.",
+        "hint": "Klepni na kolečko vlevo u úkolu."
+      },
+      "calendarLook": {
+        "title": "Kalendář",
+        "text": "Ukázková schůzka je v kalendáři. Úkoly s termínem tu vidíš čárkovaně."
+      },
+      "financeLook": {
+        "title": "Finance",
+        "text": "Příjmy a výdaje po měsících a pravidelné platby. Faktury mají vlastní záložku."
+      },
+      "invoiceDraft": {
+        "title": "Zkušební faktura",
+        "text": "Založ fakturu jako koncept a podívej se na náhled. Nevystavuj ji ani neposílej, koncept nic nestojí a číselnou řadu nepoužije.",
+        "hint": "Na záložce Faktury klepni na Nová faktura. Napoprvé tě provedu údaji dodavatele."
+      },
+      "companyLook": {
+        "title": "Správa firmy",
+        "text": "Až budeš mít pracovníky, pozveš je tady a nastavíš jim, co smí vidět."
+      },
+      "messagesLook": {
+        "title": "Zprávy",
+        "text": "Firemní chat se skupinami a přímými zprávami. Na telefonu je ve spodní liště."
+      },
+      "jarvisAsk": {
+        "title": "Zeptej se mě",
+        "text": "Otevři mě v rohu a zeptej se na něco z poznámky, třeba „Kdo je můj ideální zákazník?“.",
+        "hint": "Klepni na mě vpravo dole a napiš otázku."
+      },
+      "jarvisFrequency": {
+        "title": "Jak často se ozývat",
+        "text": "Vyber, jak často se mám sám ozvat: často, občas, nebo jen souhrnem jednou denně, týdně či měsíčně.",
+        "hint": "Klepni na jednu z možností u Frekvence."
+      },
+      "settingsLook": {
+        "title": "Nastavení",
+        "text": "Jazyk, formáty, téma a další najdeš v nabídce účtu."
+      }
     }
   }
 }

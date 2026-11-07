@@ -30,19 +30,23 @@ export type DealTaskSignals = {
   lastDone: Map<string, string>;
 };
 
+/** Jarvis's own summaries leave the tutorial's sample data out (the tiles on screen show it). */
+export type HealthReadOptions = { excludeDemo?: boolean };
+
 export async function fetchDealTaskSignals(
   supabase: SupabaseClient<Database>,
   workspaceId: string,
+  options: HealthReadOptions = {},
 ): Promise<DealTaskSignals> {
+  let open = supabase
+    .from("crm_tasks")
+    .select(OPEN_DEAL_TASK_COLUMNS)
+    .eq("user_id", workspaceId)
+    .eq("status", "open")
+    .not("deal_id", "is", null);
+  if (options.excludeDemo) open = open.eq("is_demo", false);
   const [tasks, lastDone] = await Promise.all([
-    supabase
-      .from("crm_tasks")
-      .select(OPEN_DEAL_TASK_COLUMNS)
-      .eq("user_id", workspaceId)
-      .eq("status", "open")
-      .not("deal_id", "is", null)
-      .order("due_at")
-      .limit(OPEN_DEAL_TASK_LIMIT),
+    open.order("due_at").limit(OPEN_DEAL_TASK_LIMIT),
     supabase.rpc("deal_tasks_last_done", { _workspace: workspaceId }),
   ]);
   if (tasks.error) throw tasks.error;
@@ -74,15 +78,16 @@ export async function fetchOpenHealthDeals(
   supabase: SupabaseClient<Database>,
   workspaceId: string,
   limit = 2000,
+  options: HealthReadOptions = {},
 ): Promise<HealthDeal[]> {
-  const { data, error } = await supabase
+  let query = supabase
     .from("deals")
     .select(HEALTH_DEAL)
     .eq("user_id", workspaceId)
     .is("won_at", null)
-    .is("lost_at", null)
-    .order("created_at", { ascending: false })
-    .limit(limit);
+    .is("lost_at", null);
+  if (options.excludeDemo) query = query.eq("is_demo", false);
+  const { data, error } = await query.order("created_at", { ascending: false }).limit(limit);
   if (error) throw error;
   return (data ?? []) as HealthDeal[];
 }
@@ -98,10 +103,11 @@ export async function loadHealthDigest(
   assigneeId: string | null,
   settings: FormatSettings,
   now: Date,
+  options: HealthReadOptions = {},
 ): Promise<HealthDigest> {
   const [deals, signals] = await Promise.all([
-    fetchOpenHealthDeals(supabase, workspaceId),
-    fetchDealTaskSignals(supabase, workspaceId),
+    fetchOpenHealthDeals(supabase, workspaceId, undefined, options),
+    fetchDealTaskSignals(supabase, workspaceId, options),
   ]);
   return digestHealth(
     pipelineHealth({

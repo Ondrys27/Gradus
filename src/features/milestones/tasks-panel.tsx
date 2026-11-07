@@ -300,7 +300,7 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
       </div>
 
       {canEdit && (
-        <form onSubmit={quickAdd} className="flex items-center gap-2">
+        <form onSubmit={quickAdd} data-tutorial="task-add" className="flex items-center gap-2">
           <Input
             ref={quickRef}
             value={quickTitle}
@@ -376,6 +376,7 @@ function ViewSwitch({ view, onChange }: { view: TaskView; onChange: (view: TaskV
     <div
       role="group"
       aria-label={t("label")}
+      data-tutorial="task-view"
       className="flex rounded-xl border border-line bg-canvas-deep/40 p-0.5"
     >
       {options.map(({ value, icon: Icon }) => (

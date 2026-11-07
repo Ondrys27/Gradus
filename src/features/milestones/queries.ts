@@ -14,6 +14,7 @@ import { JarvisJobError, postJarvisJob } from "@/features/jarvis/queries";
 import { track } from "@/lib/analytics/client";
 import type { MindMapFormat, MindMapParseResult, MindMapTree } from "@/lib/mindmap/formats";
 import { createClient } from "@/lib/supabase/client";
+import { emitTutorialSignal } from "@/features/tutorial/signals";
 import { moveTaskAction } from "./actions";
 import { MILESTONE_TASK_LIMIT, planImport, type ImportRow } from "./map-io";
 import type { MilestoneInput, MoveTaskFailure, MoveVia, TaskInput } from "./schemas";
@@ -488,6 +489,7 @@ export function useMoveTask(milestoneId: string) {
         levelChanged: level?.changed ?? false,
       });
       if (!result.ok) throw new MoveTaskError(result.error);
+      emitTutorialSignal("taskMoved");
     },
     // Quick moves in a row (⌘↓ ⌘↓) reach the database in the order they were made.
     scope: "move-task",

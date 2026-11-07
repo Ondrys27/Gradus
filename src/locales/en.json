@@ -493,61 +493,6 @@
         "noTarget": "“{task}” is past its due time."
       }
     },
-    "tour": {
-      "next": "Next",
-      "skip": "Skip",
-      "done": "Done",
-      "progress": "Step {step} of {total}",
-      "action": {
-        "openFirstTask": "Open first task",
-        "createMilestone": "Create your first milestone",
-        "openTasks": "Open my tasks"
-      },
-      "steps": {
-        "dashboard": {
-          "title": "Dashboard",
-          "text": "Your day starts here. The Dashboard shows today's tasks, who to follow up with, your deals and this month's income."
-        },
-        "milestones": {
-          "title": "Milestones",
-          "text": "Big goals live here, split into tasks. Tick off the tasks, and when all are done, finish the milestone yourself.",
-          "textGame": "Your path lives here: milestones split into tasks. Every milestone you finish moves you along the path and unlocks more of the app."
-        },
-        "jarvis": {
-          "title": "That's me",
-          "text": "Tap me in the corner any time. I'll plan your day with you, write an e-mail or a call script, or look at your numbers."
-        },
-        "level": {
-          "title": "Level and streak",
-          "text": "Every real step earns XP. The flame counts the days in a row you got something done. Tap your level to see what's coming next."
-        },
-        "search": {
-          "title": "Search",
-          "text": "Find any contact, deal, task or setting in a second. On a computer, press ⌘K or Ctrl+K."
-        },
-        "settings": {
-          "title": "Settings",
-          "text": "Language, formats, themes and how often I speak up are in your account menu. Under Settings → Jarvis → Help you can run this tour again."
-        },
-        "finish": {
-          "title": "Let's go",
-          "text": "That's all you need for now. Here's a good first step:",
-          "target": "“{milestone}”"
-        },
-        "workerDashboard": {
-          "title": "Your dashboard",
-          "text": "This is your day at a glance: your tasks, your working time and what you've earned."
-        },
-        "workerTasks": {
-          "title": "Your tasks",
-          "text": "These are the tasks you've been given. Tick them off when they're done and your progress shows right away."
-        },
-        "workerFinish": {
-          "title": "You're all set",
-          "text": "That's it. Start with your tasks:"
-        }
-      }
-    },
     "proactive": {
       "close": "Close",
       "later": "Later",
@@ -650,7 +595,8 @@
       "day": "{day} {time}",
       "suggestionLater": "Better {when}: people mostly don't pick up now."
     },
-    "reportProblem": "Report a problem"
+    "reportProblem": "Report a problem",
+    "tutorial": "Start the tutorial"
   },
   "celebration": {
     "continue": "Continue",
@@ -991,9 +937,15 @@
     "help": {
       "title": "Help",
       "description": "Find your way around the app.",
-      "tour": "Guided tour",
-      "tourHint": "Jarvis shows you the main parts of the app again.",
-      "start": "Start the tour"
+      "tour": "Tutorial",
+      "tourHint": "Jarvis shows you around again: quickly, or all of it on sample data.",
+      "start": "Start the tutorial",
+      "demo": "Sample data",
+      "demoHint": "The tutorial's contacts, deal, milestone, tasks, meeting and note, labelled “sample”.",
+      "demoDelete": "Delete the sample data",
+      "demoConfirm": "Delete the sample data?",
+      "demoConfirmText": "Everything labelled “sample” goes, and whatever only hung on it. What you created yourself stays.",
+      "demoCancel": "Cancel"
     },
     "invoices": {
       "title": "Invoices",
@@ -4327,7 +4279,8 @@
       "contacts_generated_first": "First generated contacts",
       "meeting_tenth": "Tenth meeting",
       "onboarding_completed": "Account set up",
-      "other": "XP"
+      "other": "XP",
+      "tutorial_completed": "Tutorial finished"
     },
     "path": {
       "label": "Path map",
@@ -4974,6 +4927,22 @@
       "tour_skipped_at": {
         "name": "Tour skipped at step",
         "description": "The step where people skipped the tour."
+      },
+      "tutorial_mode": {
+        "name": "Tutorial choice",
+        "description": "How many people skipped, took the quick look or the full tutorial."
+      },
+      "tutorial_steps": {
+        "name": "Tutorial steps",
+        "description": "How many people reached each step of the tutorial."
+      },
+      "tutorial_finished": {
+        "name": "Tutorial finished",
+        "description": "Who walked the tutorial to the end, by mode."
+      },
+      "tutorial_abandoned_at": {
+        "name": "Tutorial ended at step",
+        "description": "The step at which people ended the tutorial."
       },
       "activation_rate": {
         "name": "Activation rate",
@@ -7349,6 +7318,362 @@
       "deleted": "Deleted",
       "yes": "yes",
       "filePrefix": "messages"
+    }
+  },
+  "tutorial": {
+    "demoBadge": "sample",
+    "next": "Next",
+    "skipStep": "Skip step",
+    "end": "End tutorial",
+    "done": "Done",
+    "expand": "Show",
+    "collapse": "Hide",
+    "progress": "Step {step} of {total}",
+    "locked": "This part unlocks as you go along your path. Once it does, you can try it.",
+    "checkPassed": "Done. You can go on.",
+    "firstStep": "Your first real step:",
+    "firstStepTarget": "“{milestone}”",
+    "action": {
+      "openFirstTask": "Open the first task",
+      "createMilestone": "Create your first milestone",
+      "openTasks": "Open my tasks"
+    },
+    "chapters": {
+      "start": "Start",
+      "milestones": "Milestones",
+      "notes": "Notes",
+      "contacts": "Contacts",
+      "pipeline": "Pipeline",
+      "tasks": "Tasks",
+      "calendar": "Calendar",
+      "finance": "Finance",
+      "company": "Company",
+      "jarvis": "Jarvis",
+      "end": "End"
+    },
+    "demo": {
+      "question": "What about the sample data?",
+      "deleted": "Delete it",
+      "kept": "Keep it",
+      "footnote": "Whatever you created yourself during the tutorial stays either way. You can delete the sample data later in Settings → Jarvis.",
+      "note": {
+        "intro": "A sample note from the tutorial. Rewrite it in your own words.",
+        "answers": {
+          "who": "An owner of a small business in {branch}, 30–50, who decides alone.",
+          "problem": "No time to find customers, and wants to be sure the work turns out well.",
+          "today": "Relies on referrals, and when none come, has nothing to do.",
+          "where": "At local events, in industry groups on Facebook and on LinkedIn.",
+          "decides": "Decides alone and fast, on trust and references.",
+          "industry": "Fill in from your own experience."
+        }
+      },
+      "contacts": {
+        "first": {
+          "firstName": "Jane",
+          "lastName": "Miller",
+          "email": "jane.miller@example.com",
+          "city": "Bristol",
+          "company": {
+            "realEstate": "Miller Family Home",
+            "coaching": "Miller Studio",
+            "ecommerce": "Miller Design",
+            "trades": "Miller Renovations",
+            "freelanceIt": "Miller Software",
+            "agency": "Miller Media",
+            "other": "Miller Ltd"
+          }
+        },
+        "second": {
+          "firstName": "Peter",
+          "lastName": "Hughes",
+          "email": "peter.hughes@example.com",
+          "city": "Leeds",
+          "company": {
+            "realEstate": "Hughes Flat",
+            "coaching": "Hughes Consulting",
+            "ecommerce": "Hughes Bakery",
+            "trades": "Hughes Builders",
+            "freelanceIt": "Hughes Logistics",
+            "agency": "Hughes Sport",
+            "other": "Hughes & Son"
+          }
+        },
+        "third": {
+          "firstName": "Eve",
+          "lastName": "Carter",
+          "email": "eve.carter@example.com",
+          "city": "London",
+          "company": {
+            "realEstate": "Carter Land",
+            "coaching": "Carter HR",
+            "ecommerce": "Eve's Flowers",
+            "trades": "Eve's Café",
+            "freelanceIt": "Carter Accounting",
+            "agency": "Hotel Eve",
+            "other": "Eve Carter"
+          }
+        }
+      },
+      "deal": {
+        "realEstate": "{company}: house sale",
+        "coaching": "{company}: coaching programme",
+        "ecommerce": "{company}: wholesale order",
+        "trades": "{company}: bathroom refit",
+        "freelanceIt": "{company}: new website",
+        "agency": "{company}: spring campaign",
+        "other": "{company}: first job"
+      },
+      "milestone": {
+        "title": "Sample: the first job",
+        "description": "A sample milestone from the tutorial. Tick it off or delete it as you like.",
+        "tasks": {
+          "offer": "Prepare an offer",
+          "prices": "Write a price list",
+          "references": "Add references",
+          "call": "Call the first lead",
+          "follow": "Send a summary after the meeting"
+        }
+      },
+      "crmTasks": {
+        "sendOffer": "Send the offer",
+        "call": "Call {name}"
+      },
+      "meeting": "Meeting with {name}",
+      "branch": {
+        "realEstate": "real estate",
+        "coaching": "coaching",
+        "ecommerce": "e-commerce",
+        "trades": "trades",
+        "freelanceIt": "IT",
+        "agency": "marketing",
+        "other": "services"
+      }
+    },
+    "endConfirm": {
+      "title": "End the tutorial?",
+      "text": "You can start it again any time in Settings → Jarvis.",
+      "textFull": "Delete the sample data now, or keep it and delete it later in Settings → Jarvis.",
+      "back": "Back",
+      "keep": "End and keep the data",
+      "delete": "End and delete the data"
+    },
+    "celebration": {
+      "title": "Tutorial complete!",
+      "quick": "Now you know where everything is.",
+      "full": "You tried it all yourself."
+    },
+    "resume": {
+      "title": "Shall we go on with the tutorial?",
+      "text": "Last time we stopped at “{step}”.",
+      "textNoStep": "The tutorial isn't finished yet.",
+      "resume": "Go on",
+      "end": "End tutorial"
+    },
+    "choice": {
+      "title": "How do you want to start?",
+      "close": "Close",
+      "intro": "I can show you around. Pick how much time you want to give it.",
+      "minutes": "≈ {minutes} min",
+      "preparing": "Preparing the sample data…",
+      "failed": "It couldn't start. Please try again.",
+      "none": {
+        "title": "Skip",
+        "text": "Dive in on your own. You can start the tutorial any time in Settings → Jarvis.",
+        "gain": "Straight to work"
+      },
+      "quick": {
+        "title": "Quick look",
+        "text": "I'll walk you through every part of the app. You just watch, nothing gets created.",
+        "gain": "You know where everything is"
+      },
+      "full": {
+        "title": "Full tutorial",
+        "text": "Try everything yourself on sample data: a milestone, a contact, a deal, an invoice and a question for me.",
+        "gain": "Ready to use it right away · XP when you finish"
+      }
+    },
+    "steps": {
+      "dashboard": {
+        "title": "Dashboard",
+        "text": "Your day starts here: today's tasks, who to call back, deals and this month's income. Find anything with ⌘K or Ctrl+K."
+      },
+      "milestones": {
+        "title": "Milestones and the map",
+        "text": "Big goals broken into tasks. Every milestone has a mind map too, where you drag tasks around."
+      },
+      "notes": {
+        "title": "Notes",
+        "text": "Everything about your business in one place: ideal customer, prices, sales script. I read them when you talk to me."
+      },
+      "contacts": {
+        "title": "Contacts and Cold Calling",
+        "text": "Contacts live in your own tables. In Cold Calling you call them and move them on, for example to Meetings."
+      },
+      "pipeline": {
+        "title": "Pipeline and tiles",
+        "text": "Deals by stage. The tiles at the top watch what's on fire: the goal is zero everywhere."
+      },
+      "tasks": {
+        "title": "Tasks",
+        "text": "Tasks for deals and contacts, with a date and time. Overdue ones turn red."
+      },
+      "calendar": {
+        "title": "Calendar",
+        "text": "Meetings, deadlines and tasks in one place, in your time zone."
+      },
+      "finance": {
+        "title": "Finance and invoices",
+        "text": "Income, expenses and recurring payments. Issue invoices right here, with a QR payment."
+      },
+      "company": {
+        "title": "Company",
+        "text": "Invite workers, set what they may do and see how they're doing."
+      },
+      "messages": {
+        "title": "Messages",
+        "text": "The company chat: groups and direct messages with your workers."
+      },
+      "jarvis": {
+        "title": "That's me",
+        "text": "Tap me in the corner whenever you like. I'll plan your day with you, write an e-mail or look at your numbers."
+      },
+      "level": {
+        "title": "Level and streak",
+        "text": "Every real step earns XP. Tap your level to see what's ahead."
+      },
+      "settings": {
+        "title": "Settings",
+        "text": "Language, formats, themes and how often I speak up are in the account menu. You can start the tutorial again there."
+      },
+      "finish": {
+        "title": "Let's go",
+        "text": "That's all for a start. Now for real."
+      },
+      "workerDashboard": {
+        "title": "Your dashboard",
+        "text": "Your day at a glance: tasks, time worked and what you've earned."
+      },
+      "workerTasks": {
+        "title": "Your tasks",
+        "text": "The tasks you've been given. Tick them off when they're done and your progress shows at once."
+      },
+      "workerFinish": {
+        "title": "You're ready",
+        "text": "That's everything. Start with your tasks."
+      },
+      "welcome": {
+        "title": "Let's try it",
+        "text": "I've added sample data to your space, labelled “sample”: three contacts, a deal, a milestone, tasks, a meeting and a note. You'll try everything on it."
+      },
+      "milestonesLook": {
+        "title": "A sample milestone",
+        "text": "Here's a milestone with tasks I prepared for you. Finished tasks move a milestone towards its goal."
+      },
+      "milestoneCreate": {
+        "title": "Create a milestone",
+        "text": "Create your own milestone with New milestone. A name is enough, like “First three customers”.",
+        "hint": "New milestone is at the top right. Type a name and save."
+      },
+      "taskAdd": {
+        "title": "Add a task",
+        "text": "Open a milestone and add a task to it. Type it into the field below the list and press Enter.",
+        "hint": "Tap a milestone, then type something like “Call the supplier” into “Add a task”."
+      },
+      "taskMove": {
+        "title": "Move a task in the map",
+        "text": "Switch to the map and drag a task under another one. On a computer ⌘ or Ctrl with the arrow keys works too.",
+        "hint": "The List / Map switch is above the tasks. Grab a task and drop it on another."
+      },
+      "noteWrite": {
+        "title": "Write it down",
+        "text": "Open the sample note Ideal customer and add a sentence, or start a new note.",
+        "hint": "Tap the note in the list and type. It saves by itself."
+      },
+      "contactsLook": {
+        "title": "Contacts",
+        "text": "Three sample contacts are already here. Every contact is always in exactly one table."
+      },
+      "contactCreate": {
+        "title": "Add a contact",
+        "text": "Add a contact with New contact, or let me generate a few for you.",
+        "hint": "New contact is at the top. A name or a company is enough."
+      },
+      "coldCallingLook": {
+        "title": "Cold Calling",
+        "text": "Here you call the contacts from Not contacted. The timer counts how long you've called today."
+      },
+      "coldCallingMove": {
+        "title": "Move a contact",
+        "text": "Pick a contact and move it to the next table, for example Meetings. Answer a few questions and that's it.",
+        "hint": "Tap move on a contact and choose where it goes."
+      },
+      "dealFromContact": {
+        "title": "Make it a deal",
+        "text": "Create a deal from a contact: in the contact's detail, or when moving it to Meetings.",
+        "hint": "Open a contact and tap New deal."
+      },
+      "pipelineLook": {
+        "title": "Pipeline",
+        "text": "Your deal is in the first stage. The sample deal has a Close Date in the past, on purpose."
+      },
+      "dealCloseDate": {
+        "title": "Give the deal a Close Date",
+        "text": "Open your deal and fill in the Close Date, when you expect to close it.",
+        "hint": "Tap the deal's card and set the Close Date in Overview."
+      },
+      "dealTask": {
+        "title": "Give the deal a task",
+        "text": "Add a task in the deal's detail, like “Send the offer”. A deal without a task would light up a tile.",
+        "hint": "In the deal's detail open Tasks and tap New task."
+      },
+      "healthTiles": {
+        "title": "What's on fire",
+        "text": "The tiles show only what's wrong: Close Dates in the past, overdue tasks and deals without a task. Tap a tile to see which."
+      },
+      "tasksLook": {
+        "title": "Tasks",
+        "text": "Every task of your deals and contacts by date: overdue, today, tomorrow and later."
+      },
+      "taskComplete": {
+        "title": "Tick a task off",
+        "text": "Mark one task as done. You can add a note, and it shows in the deal's history.",
+        "hint": "Tap the circle to the left of a task."
+      },
+      "calendarLook": {
+        "title": "Calendar",
+        "text": "The sample meeting is in the calendar. Tasks with a date show as dashed items."
+      },
+      "financeLook": {
+        "title": "Finance",
+        "text": "Income and expenses by month, and recurring payments. Invoices have their own tab."
+      },
+      "invoiceDraft": {
+        "title": "A practice invoice",
+        "text": "Create an invoice as a draft and look at the preview. Don't issue or send it: a draft costs nothing and uses no number of your series.",
+        "hint": "On the Invoices tab tap New invoice. The first time I'll take you through your supplier details."
+      },
+      "companyLook": {
+        "title": "Company",
+        "text": "Once you have workers, invite them here and set what they may see."
+      },
+      "messagesLook": {
+        "title": "Messages",
+        "text": "The company chat with groups and direct messages. On a phone it's in the bottom bar."
+      },
+      "jarvisAsk": {
+        "title": "Ask me",
+        "text": "Open me in the corner and ask about something in your note, like “Who is my ideal customer?”.",
+        "hint": "Tap me at the bottom right and type a question."
+      },
+      "jarvisFrequency": {
+        "title": "How often I speak up",
+        "text": "Pick how often I should speak up: often, sometimes, or just a summary once a day, week or month.",
+        "hint": "Tap one of the options under Frequency."
+      },
+      "settingsLook": {
+        "title": "Settings",
+        "text": "Language, formats, theme and more are in the account menu."
+      }
     }
   }
 }

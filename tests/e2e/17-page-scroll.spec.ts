@@ -2,7 +2,7 @@ import type { Page } from "@playwright/test";
 import { signIn, userClient, type Account } from "./support/accounts";
 import { expect, test } from "./support/fixtures";
 import { exact, text } from "./support/i18n";
-import { dismissCelebrationsAutomatically, mainNav } from "./support/ui";
+import { chooseTutorial, dismissCelebrationsAutomatically, mainNav } from "./support/ui";
 
 const L = "cs" as const;
 const t = (key: string, values?: Record<string, string | number>) => text(L, key, values);
@@ -162,23 +162,23 @@ test("17 · milestones scroll right after onboarding and Jarvis's tour", async (
   await wizard.getByRole("button", { name: exact(L, "onboarding.actions.finish") }).click();
   await expect(wizard).toBeHidden();
 
-  // The celebration (a Base UI dialog with its own scroll lock) and the tour
-  // arrive together. The celebration is closed while the tour is on: the order
-  // that used to leave the page locked.
+  // The celebration (a Base UI dialog with its own scroll lock) comes first;
+  // Jarvis asks how to start only once it is closed. Then the quick look.
   const celebration = page.getByRole("dialog", { name: t("game.celebration.onboardingCompleted.title") });
   await expect(celebration).toBeVisible();
-  const tour = page.locator("[data-jarvis-tour] [role=dialog]");
-  await expect(tour).toBeVisible({ timeout: 30_000 });
   await celebration.getByRole("button", { name: exact(L, "celebration.continue") }).dispatchEvent("click");
   await expect(celebration).toBeHidden();
-  const nextStep = tour.getByRole("button", { name: exact(L, "jarvis.tour.next") });
-  for (let step = 0; step < 20; step += 1) {
+  await chooseTutorial(page, "quick");
+  const tour = page.locator("[data-tutorial-overlay] [role=dialog]");
+  await expect(tour).toBeVisible({ timeout: 30_000 });
+  const nextStep = tour.getByRole("button", { name: exact(L, "tutorial.next") });
+  for (let step = 0; step < 30; step += 1) {
     if (!(await nextStep.isVisible())) break;
     await nextStep.click();
   }
   // The last step's action goes straight to the milestones.
-  await tour.getByRole("button", { name: exact(L, "jarvis.tour.action.openFirstTask") }).click();
-  await expect(page.locator("[data-jarvis-tour]")).toHaveCount(0);
+  await tour.getByRole("button", { name: exact(L, "tutorial.action.openFirstTask") }).click();
+  await expect(page.locator("[data-tutorial-overlay]")).toHaveCount(0);
   await expect(page).toHaveURL(/\/app\/milniky/);
   await dismissCelebrationsAutomatically(page, L);
   await expectPageScrolls(page, "after tour");

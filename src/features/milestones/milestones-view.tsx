@@ -59,7 +59,7 @@ export function MilestonesView() {
         <FileUpIcon aria-hidden data-icon="inline-start" />
         {t("actions.import")}
       </Button>
-      <Button onClick={() => setCreating(true)}>
+      <Button data-tutorial="milestone-new" onClick={() => setCreating(true)}>
         <PlusIcon aria-hidden data-icon="inline-start" />
         {t("actions.new")}
       </Button>

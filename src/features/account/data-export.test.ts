@@ -67,21 +67,28 @@ describe("export tables", () => {
   });
 });
 
-type Call = { table: string; select: string; eq: [string, string]; range: [number, number] };
+type Call = {
+  table: string;
+  select: string;
+  eq: [string, string];
+  filters: [string, unknown][];
+  range: [number, number];
+};
 
 /** A client that answers every table from `data` and records what was asked. */
 function fakeClient(data: Record<string, Record<string, unknown>[]>, fail?: string) {
   const calls: Call[] = [];
   const client = {
     from(table: string) {
-      const call = { table } as Call;
+      const call = { table, filters: [] as [string, unknown][] } as Call;
       const query = {
         select(columns: string) {
           call.select = columns;
           return query;
         },
         eq(column: string, value: string) {
-          call.eq = [column, value];
+          call.eq ??= [column, value];
+          call.filters.push([column, value]);
           return query;
         },
         order() {
@@ -114,6 +121,10 @@ describe("buildAccountExport", () => {
 
     expect(calls.every((call) => call.eq[1] === "user-1")).toBe(true);
     expect(calls.find((call) => call.table === "profiles")?.eq[0]).toBe("id");
+    // The tutorial's sample data stays out; tables without it are read whole.
+    expect(calls.find((call) => call.table === "contacts")?.filters).toContainEqual(["is_demo", false]);
+    expect(calls.find((call) => call.table === "notes")?.filters).toContainEqual(["is_demo", false]);
+    expect(calls.find((call) => call.table === "transactions")?.filters).toEqual([["user_id", "user-1"]]);
     expect(calls.filter((call) => call.table === "contacts").map((c) => c.range)).toEqual([
       [0, EXPORT_PAGE_SIZE - 1],
       [EXPORT_PAGE_SIZE, 2 * EXPORT_PAGE_SIZE - 1],

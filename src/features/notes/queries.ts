@@ -35,7 +35,8 @@ export const SEARCH_LIMIT = 50;
 /** Sent with { id, content } when a note's text was changed outside its editor. */
 export const NOTE_REPLACED_EVENT = "gradus:note-replaced";
 
-export const NOTE_LIST_COLUMNS = "id, kind, title, preview, pinned, created_at, updated_at" as const;
+export const NOTE_LIST_COLUMNS =
+  "id, kind, title, preview, pinned, created_at, updated_at, is_demo" as const;
 const NOTE_DETAIL_COLUMNS = `${NOTE_LIST_COLUMNS}, content, content_text` as const;
 
 export type NoteListItem = {
@@ -47,6 +48,8 @@ export type NoteListItem = {
   pinned: boolean;
   created_at: string;
   updated_at: string;
+  /** Sample data of the tutorial (labelled "sample"); absent in older reads. */
+  is_demo?: boolean | null;
 };
 export type NoteDetail = NoteListItem & { content: DocNode | MapDoc; content_text: string };
 

@@ -6,6 +6,7 @@ import { INDUSTRY_KEYS } from "@/features/onboarding/industries";
 import { XP_REASONS } from "@/features/game/rules";
 import { NOTE_TEMPLATE_KEYS } from "@/features/notes/templates";
 import { NOTE_KINDS } from "@/features/notes/mindmap/map-doc";
+import { TUTORIAL_MODES } from "@/features/tutorial/types";
 import { EXPORT_FORMATS, IMPORT_MODES } from "@/features/milestones/map-io";
 import { MINDMAP_FORMATS } from "@/lib/mindmap/formats";
 import { INVOICE_STYLES } from "@/features/invoices/types";
@@ -234,6 +235,32 @@ export const EVENTS = {
     total: count(20),
     variant: oneOf(["owner", "worker"]),
     replay: bool(),
+  }),
+
+  // The tutorial (20.4): the choice, every step shown, the end. For the funnel in Activation.
+  tutorial_started: event("onboarding", "client", false, {
+    mode: oneOf(TUTORIAL_MODES),
+    replay: bool(),
+  }),
+  tutorial_step: event("onboarding", "client", false, {
+    mode: oneOf(["quick", "full"]),
+    key: key(),
+    index: count(60),
+    total: count(60),
+  }),
+  tutorial_finished: event("onboarding", "client", false, {
+    mode: oneOf(["quick", "full"]),
+    total: count(60),
+    skipped: count(60),
+    demo: oneOf(["kept", "deleted", "none"]),
+    replay: bool(),
+  }),
+  tutorial_abandoned: event("onboarding", "client", false, {
+    mode: oneOf(["quick", "full"]),
+    step: key(),
+    index: count(60),
+    total: count(60),
+    demo: oneOf(["kept", "deleted", "none"]),
   }),
 
   // --- game ----------------------------------------------------------------

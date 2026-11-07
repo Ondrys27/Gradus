@@ -4,16 +4,16 @@ import { useSyncExternalStore } from "react";
 
 /**
  * What the Jarvis overlays tell each other, kept in memory for the browser
- * session: whether the guided tour is on screen, a request to start it again
- * (Settings → Help), whether Jarvis already spoke up on his own in this
+ * session: whether the tutorial is on screen, a request to choose one again
+ * (Settings → Jarvis, Jarvis's panel), whether Jarvis already spoke up on his own in this
  * session (at most once besides the summary), and which of his callouts is
  * on screen (the summary, or a notice: a proactive card or the Notes
  * introduction), so none flies in over another.
  */
 type State = {
   tourActive: boolean;
-  /** Grows with every request to start the tour; the tour starts when it changes. */
-  tourRequest: number;
+  /** Grows with every request to choose a tutorial; the choice opens when it changes. */
+  tutorialRequest: number;
   proactiveShown: boolean;
   summaryOpen: boolean;
   noticeOpen: boolean;
@@ -21,7 +21,7 @@ type State = {
 
 const INITIAL: State = {
   tourActive: false,
-  tourRequest: 0,
+  tutorialRequest: 0,
   proactiveShown: false,
   summaryOpen: false,
   noticeOpen: false,
@@ -46,7 +46,7 @@ export const jarvisOverlay = {
   setTourActive: (tourActive: boolean) => {
     if (state.tourActive !== tourActive) set({ tourActive });
   },
-  requestTour: () => set({ tourRequest: state.tourRequest + 1 }),
+  requestTutorial: () => set({ tutorialRequest: state.tutorialRequest + 1 }),
   markProactiveShown: () => set({ proactiveShown: true }),
   setSummaryOpen: (summaryOpen: boolean) => {
     if (state.summaryOpen !== summaryOpen) set({ summaryOpen });

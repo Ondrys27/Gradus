@@ -1,6 +1,6 @@
 # Pravidla Jarvise
 
-Tenhle dokument je **zdroj pravdy** o tom, kdy se Jarvis sám ozve, co říká a jak mluví. Popisuje stav k 4. 11. 2026 (krok 20.1). Kdo mění chování Jarvise v kódu, mění i tento dokument. Část pravidel jde měnit bez programátora v administraci, viz [Co jde nastavit v administraci](#co-jde-nastavit-v-administraci).
+Tenhle dokument je **zdroj pravdy** o tom, kdy se Jarvis sám ozve, co říká a jak mluví. Popisuje stav k 7. 11. 2026 (krok 20.4). Kdo mění chování Jarvise v kódu, mění i tento dokument. Část pravidel jde měnit bez programátora v administraci, viz [Co jde nastavit v administraci](#co-jde-nastavit-v-administraci).
 
 Slovníček:
 - **Vyskočení** = Jarvis sám přiletí do levého dolního rohu obsahu s bublinou, aniž by na něj uživatel klikl.
@@ -50,6 +50,14 @@ Než bublina vyskočí, server znovu spočítá pravidlové návrhy z dat (co je
 ### Časové okno pro lidi
 
 Návrhy, které znamenají někomu zavolat nebo se sejít (Komu se dnes ozvat, postřeh označený „lidé“, obchodní úkol s „zavolat / schůzka“ v názvu), **mimo pracovní okno nevyskakují**. Okno: pracovní dny 8:00–17:30 v pásmu uživatele, ne o státních svátcích ČR, poledne 12–13 není preferované; když má země uživatele dost dat ve sdíleném grafu času volání, přednost mají její nejlepší hodiny. V panelu takový návrh čeká s časem dalšího okna.
+
+### Tutoriál
+
+- **Volba „Jak chceš začít?“** (Přeskočit · Rychlá ukázka · Úplný tutoriál) přijde jednou: po onboardingu až po zavření oslavy (pracovník při první návštěvě, bez úplného tutoriálu), jinak jen na žádost (Nastavení → Jarvis, hlavička panelu Jarvise). Zavření první volby bez výběru = Přeskočit.
+- Jarvis v tutoriálu mluví **jen pevnými texty z překladů** (`tutorial.steps.*`), žádné volání modelu. Kroky „podívej se“ ztmaví stránku a svítí na prvek; kroky „udělej“ nechají stránku volnou (prstenec kolem prvku, bublina vlevo dole, na telefonu nahoře, vždy pod dialogy) a po 30 s nečinnosti přidají nápovědu.
+- **Pokračování:** po obnovení stránky do 10 minut jde tutoriál rovnou dál; později Jarvis nabídne „Pokračujeme v tutoriálu?“ (Pokračovat / Ukončit) vlevo dole.
+- Dokud je volba, nabídka pokračování nebo tutoriál na obrazovce, nic jiného nevyskakuje (souhrn počká na další stránku). Jakékoli ukončení zapíše `tour_completed_at`, na které čeká souhrn, průběžné návrhy i představení Poznámek.
+- **Ukázková data** (`is_demo`) Jarvis nikdy nepočítá do souhrnu, ranního shrnutí, dlaždic v souhrnu ani do průběžných návrhů a hlídání (`watch`, `suggestions`, `briefing`). V chatu je vidí (uživatel se ho na ukázkovou poznámku ptá).
 
 ### Představení Poznámek
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { CompassIcon } from "lucide-react";
+import { useMemo, useState } from "react";
+import { GraduationCapIcon, Trash2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +14,9 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useSession, useUserSettings } from "@/features/account/queries";
 import { jarvisOverlay } from "@/features/jarvis/overlay-store";
+import { useDeleteDemo, useHasDemoData } from "@/features/tutorial/queries";
+import { emitTutorialSignal } from "@/features/tutorial/signals";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { JARVIS_FREQUENCIES, toJarvisFrequency } from "@/features/jarvis/proactive";
 import { formatIsoTime } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
@@ -28,8 +31,9 @@ const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
  * Settings → Jarvis: whether he speaks up on his own, how often (every 2 or
  * 6 hours besides the summary of the day, or only a summary once a day,
  * week or month), quiet hours in the user's zone, the notifications of
- * Messages (e-mail when away, sound) and the guided tour again. A worker has
- * no Jarvis of their own; they get the notifications and the tour.
+ * Messages (e-mail when away, sound), the tutorial again and deleting its
+ * sample data. A worker has no Jarvis of their own; they get the
+ * notifications and the tutorial.
  */
 export function JarvisView() {
   const t = useTranslations("settings");
@@ -47,13 +51,14 @@ export function JarvisView() {
             <Button
               id="settings-help-tour"
               variant="secondary"
-              onClick={() => jarvisOverlay.requestTour()}
+              onClick={() => jarvisOverlay.requestTutorial()}
             >
-              <CompassIcon aria-hidden />
+              <GraduationCapIcon aria-hidden />
               {t("help.start")}
             </Button>
           }
         />
+        {!worker && <DemoDataRow />}
       </SettingsSection>
     </SettingsPage>
   );
@@ -135,7 +140,10 @@ function ProactiveSection() {
               key={value}
               checked={frequency === value}
               disabled={!on}
-              onSelect={() => save({ jarvis_frequency: value })}
+              onSelect={() => {
+                emitTutorialSignal("jarvisFrequency");
+                save({ jarvis_frequency: value });
+              }}
               title={t(`frequencies.${value}`)}
             />
           ))}
@@ -182,6 +190,46 @@ function ProactiveSection() {
         </SettingRow>
       )}
     </SettingsSection>
+  );
+}
+
+/** The full tutorial's sample data, while any is left: deleted on request, with what hangs on it. */
+function DemoDataRow() {
+  const t = useTranslations("settings.help");
+  const has = useHasDemoData(true);
+  const remove = useDeleteDemo();
+  const [confirming, setConfirming] = useState(false);
+  if (!has.data) return null;
+  return (
+    <>
+      <ActionRow
+        id="settings-help-demo"
+        label={t("demo")}
+        hint={t("demoHint")}
+        action={
+          <Button
+            id="settings-help-demo"
+            variant="secondary"
+            disabled={remove.isPending}
+            onClick={() => setConfirming(true)}
+          >
+            <Trash2Icon aria-hidden />
+            {t("demoDelete")}
+          </Button>
+        }
+      />
+      <ConfirmDialog
+        open={confirming}
+        onOpenChange={setConfirming}
+        title={t("demoConfirm")}
+        description={t("demoConfirmText")}
+        confirmLabel={t("demoDelete")}
+        cancelLabel={t("demoCancel")}
+        closeLabel={t("demoCancel")}
+        pending={remove.isPending}
+        onConfirm={() => remove.mutate(undefined, { onSuccess: () => setConfirming(false) })}
+      />
+    </>
   );
 }
 

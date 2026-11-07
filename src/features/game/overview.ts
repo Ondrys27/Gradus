@@ -41,6 +41,7 @@ function capFor(key: XpReason, streak: number): number | null {
     case "call_30min":
       return XP.call30min;
     case "milestone_completed":
+    case "tutorial_completed":
       return null;
     default:
       return DAILY_CAPS[key];

@@ -27,6 +27,7 @@ import {
 } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
+import { DemoBadge } from "@/features/tutorial/demo-badge";
 import { canTickTask } from "./access";
 import { isOverdue } from "./logic";
 import { contactHref, dealHref, type CrmTask } from "./types";
@@ -109,6 +110,7 @@ export function TaskRow({
         </button>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-muted">
           {showOrigin && <StatusPill tone="violet">{tOrigin("crm")}</StatusPill>}
+          <DemoBadge show={task.is_demo} />
           {task.deal && hideTarget !== "deal" && (
             <Link
               href={dealHref(task.deal.id)}

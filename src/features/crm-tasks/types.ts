@@ -7,7 +7,7 @@ export type CrmTaskStatus = Database["public"]["Enums"]["crm_task_status"];
 
 /** Every list reads these; the deal and the contact come along for the link. */
 export const CRM_TASK_COLUMNS =
-  "id, title, description, due_at, duration_minutes, assignee_id, deal_id, contact_id, status, completed_at, completed_by, completion_note, created_by, created_at, deal:deals(id, title), contact:contacts(id, company_name, first_name, last_name)";
+  "id, title, description, due_at, duration_minutes, assignee_id, deal_id, contact_id, status, completed_at, completed_by, completion_note, created_by, created_at, is_demo, deal:deals(id, title), contact:contacts(id, company_name, first_name, last_name)";
 
 export type CrmTaskContact = Pick<
   Tables["contacts"]["Row"],
@@ -34,6 +34,8 @@ export type CrmTask = Pick<
   /** Null when the deal is gone or the viewer may not see the pipeline. */
   deal: { id: string; title: string } | null;
   contact: CrmTaskContact | null;
+  /** Sample data of the tutorial (labelled "sample"); absent in older reads. */
+  is_demo?: boolean | null;
 };
 
 /** Someone a task can be given to: the owner of the space or one of its workers. */

@@ -72,6 +72,7 @@ export const XP_REASONS = [
   "calendar_event",
   "transaction_added",
   "daily_login",
+  "tutorial_completed",
 ] as const;
 export type XpReason = (typeof XP_REASONS)[number];
 
@@ -89,6 +90,9 @@ export const XP = {
   transaction: 5,
   dailyLoginBase: 10,
   dailyLoginMaxMultiplier: 3,
+  /** Once per kind of tutorial, when it was walked to the end. */
+  tutorialQuick: 25,
+  tutorialFull: 100,
 } as const;
 
 /** Seconds on the phone in one day that earn call_30min. */

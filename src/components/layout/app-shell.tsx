@@ -2,7 +2,6 @@
 
 import type { ReactNode } from "react";
 import { JarvisDock } from "@/components/jarvis/jarvis-dock";
-import { JarvisTour } from "@/components/jarvis/jarvis-tour";
 import { useUserSettings } from "@/features/account/queries";
 import { ChatSync } from "@/features/chat/chat-sync";
 import { useErrorScreenShown } from "@/features/errors/error-screen-state";
@@ -10,6 +9,7 @@ import { GameSessionStart } from "@/features/game/game-session-start";
 import { ReportProvider } from "@/features/feedback/report-provider";
 import { OnboardingGate } from "@/features/onboarding/onboarding-gate";
 import { TrialNotice } from "@/features/plan/trial-notice";
+import { TutorialHost } from "@/features/tutorial/tutorial-host";
 import { SearchProvider } from "@/features/search/search-provider";
 import { AnalyticsProvider } from "@/lib/analytics/analytics-provider";
 import { ThemeSync } from "@/features/settings/theme";
@@ -28,7 +28,7 @@ import { TopBar } from "./top-bar";
  * reload. As one client module the shell hydrates the same way every time.
  */
 export function AppShell({ children }: { children: ReactNode }) {
-  // The error page has no Jarvis (the dock hides itself, the tour goes) and no
+  // The error page has no Jarvis (the dock hides itself, the tutorial goes) and no
   // onboarding over it; the overlays of the frame close themselves.
   const errorShown = useErrorScreenShown();
   // Seeded from the server with the rest of the settings, so the first HTML
@@ -55,7 +55,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <GameSessionStart />
           <ThemeSync />
           {!errorShown && <OnboardingGate />}
-          {!errorShown && <JarvisTour />}
+          {!errorShown && <TutorialHost />}
           <AnalyticsProvider />
           <ChatSync />
           <PageLockGuard />

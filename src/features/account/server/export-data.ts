@@ -2,7 +2,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { strToU8, zipSync, type Zippable } from "fflate";
 import type { Database } from "@/types/database";
-import { EXPORT_TABLES, toCsv } from "../data-export";
+import { EXPORT_TABLES, SAMPLE_FLAGGED_TABLES, toCsv } from "../data-export";
 
 type Client = SupabaseClient<Database>;
 
@@ -25,12 +25,13 @@ export async function buildAccountExport(
     const rows: Record<string, unknown>[] = [];
     for (let from = 0; ; from += EXPORT_PAGE_SIZE) {
       // The table and its columns come from EXPORT_TABLES, typed against the schema.
-      const { data, error } = await supabase
+      let query = supabase
         .from(spec.table as "milestones")
         .select(spec.columns.join(","))
-        .eq(spec.owner as "user_id", userId)
-        .order("id")
-        .range(from, from + EXPORT_PAGE_SIZE - 1);
+        .eq(spec.owner as "user_id", userId);
+      // The tutorial's sample data is not the user's data.
+      if (SAMPLE_FLAGGED_TABLES.has(spec.table)) query = query.eq("is_demo", false);
+      const { data, error } = await query.order("id").range(from, from + EXPORT_PAGE_SIZE - 1);
       if (error) throw new Error(`export of ${spec.table} failed: ${error.message}`);
       const page = (data ?? []) as unknown as Record<string, unknown>[];
       rows.push(...page);

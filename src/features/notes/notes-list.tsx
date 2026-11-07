@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { formatEditedAt } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
+import { DemoBadge } from "@/features/tutorial/demo-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { groupNotes } from "./notes-logic";
 import type { NoteListItem } from "./queries";
@@ -74,6 +75,7 @@ function NoteRow({
           <span className={cn("truncate font-semibold", note.title ? "text-ink" : "text-ink-muted")}>
             {title}
           </span>
+          <DemoBadge show={note.is_demo} className="shrink-0" />
         </span>
         <span className="flex min-w-0 gap-2 text-sm">
           <span className="shrink-0 text-ink-soft tabular-nums">

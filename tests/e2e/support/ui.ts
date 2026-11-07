@@ -1,19 +1,34 @@
 import { expect, type Page } from "@playwright/test";
 import { exact, text, type Locale } from "./i18n";
 
-/** Walks Jarvis's guided tour with Next to the last step and closes it with Done. */
+/** Picks a tutorial on Jarvis's "How do you want to start?" (after onboarding or on request). */
+export async function chooseTutorial(page: Page, mode: "none" | "quick" | "full") {
+  const choice = page.getByTestId("tutorial-choice");
+  await expect(choice).toBeVisible({ timeout: 30_000 });
+  await choice.locator(`[data-tutorial-choice="${mode}"]`).click();
+  await expect(choice).toBeHidden({ timeout: 30_000 });
+}
+
+/**
+ * Takes the quick look (the former guided tour): picks it, walks every step
+ * with Next and closes the last one with Done. Returns the keys of the steps
+ * seen, by their titles' order.
+ */
 export async function finishTour(page: Page, locale: Locale) {
-  const tour = page.locator("[data-jarvis-tour] [role=dialog]");
+  await chooseTutorial(page, "quick");
+  const tour = page.locator("[data-tutorial-overlay] [role=dialog]");
   await expect(tour).toBeVisible({ timeout: 30_000 });
-  const next = tour.getByRole("button", { name: exact(locale, "jarvis.tour.next") });
-  const done = tour.getByRole("button", { name: exact(locale, "jarvis.tour.done") });
-  for (let step = 0; step < 20; step += 1) {
+  const next = tour.getByRole("button", { name: exact(locale, "tutorial.next") });
+  const done = tour.getByRole("button", { name: exact(locale, "tutorial.done") });
+  let steps = 1;
+  for (; steps < 30; steps += 1) {
     await expect(next.or(done)).toBeVisible();
     if (await done.isVisible()) break;
     await next.click();
   }
   await done.click();
-  await expect(page.locator("[data-jarvis-tour]")).toHaveCount(0);
+  await expect(page.locator("[data-tutorial-overlay]")).toHaveCount(0);
+  return steps;
 }
 
 /** Confirms the full-screen celebration with this title and closes it. */

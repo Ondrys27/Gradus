@@ -13,6 +13,7 @@ import { contactLabel } from "@/features/pipeline/board-logic";
 import { formatCalendarDate, formatDate, formatTime } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { toEventItem } from "./calendar-logic";
+import { DemoBadge } from "@/features/tutorial/demo-badge";
 import { useDeleteEvent } from "./queries";
 import type { CalendarEvent } from "./types";
 
@@ -86,6 +87,7 @@ export function EventDetail({ event, onClose, onEdit, readOnly = false }: Props)
               <StatusPill tone="neutral">{t("detail.fromMove")}</StatusPill>
             )}
             {fromDeal && <StatusPill tone="neutral">{t("detail.fromDeal")}</StatusPill>}
+            <DemoBadge show={current.is_demo} className="h-6 px-2.5 text-xs" />
           </div>
           <h3 className="text-xl font-semibold break-words text-ink">{current.title}</h3>
           <p className="flex items-start gap-2 text-sm text-ink-soft">

@@ -9,6 +9,7 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { formatCalendarDate, formatNumber, todayIsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
+import { DemoBadge } from "@/features/tutorial/demo-badge";
 import { progressOf } from "./task-tree";
 import type { MilestoneWithCounts } from "./types";
 
@@ -26,6 +27,7 @@ export function MilestoneCard({ milestone }: { milestone: MilestoneWithCounts })
   return (
     <Link
       href={`/app/milniky/${milestone.id}`}
+      data-tutorial={milestone.is_demo ? "demo-milestone" : undefined}
       className="block rounded-card outline-none focus-visible:ring-3 focus-visible:ring-violet/40"
     >
       <GlowCard className={cn("flex flex-col gap-4", completed && "opacity-60")}>
@@ -36,6 +38,7 @@ export function MilestoneCard({ milestone }: { milestone: MilestoneWithCounts })
               {t(`category.${milestone.category}`)}
             </StatusPill>
             {milestone.tag && <StatusPill>{milestone.tag}</StatusPill>}
+            <DemoBadge show={milestone.is_demo} className="h-6 px-2.5 text-xs" />
           </div>
         </div>
 

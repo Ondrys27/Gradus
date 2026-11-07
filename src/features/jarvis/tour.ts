@@ -1,51 +1,12 @@
 import type { JarvisDirection } from "@/components/jarvis/jarvis-pose";
 
 /**
- * The guided tour as data: which steps an account gets and where Jarvis
- * stands for each. Targets are `data-tour` attributes on the app's own
- * elements; the first visible one is used, so the sidebar on a desktop and
- * the bottom bar on a phone both work.
+ * Where Jarvis stands next to the element he talks about in the tutorial
+ * (src/features/tutorial): the callout's placement and finding the element.
+ * Targets are `data-tutorial` or `data-tour` attributes on the app's own
+ * elements, or a CSS selector; the first visible one is used, so the sidebar
+ * on a desktop and the bottom bar on a phone both work.
  */
-
-export type TourStepKey =
-  | "dashboard"
-  | "milestones"
-  | "jarvis"
-  | "level"
-  | "search"
-  | "settings"
-  | "finish"
-  | "workerDashboard"
-  | "workerTasks"
-  | "workerFinish";
-
-export type TourStep = { key: TourStepKey; target: string | null };
-
-/**
- * Seven steps for an owner (the level step only in game mode), a short
- * version for a worker's own environment.
- */
-export function tourSteps(options: { worker: boolean; playing: boolean }): TourStep[] {
-  if (options.worker) {
-    return [
-      { key: "workerDashboard", target: "nav-dashboard" },
-      { key: "workerTasks", target: "nav-tasks" },
-      { key: "jarvis", target: "jarvis" },
-      { key: "settings", target: "account" },
-      { key: "workerFinish", target: null },
-    ];
-  }
-  const steps: TourStep[] = [
-    { key: "dashboard", target: "nav-dashboard" },
-    { key: "milestones", target: "nav-milestones" },
-    { key: "jarvis", target: "jarvis" },
-    { key: "level", target: "level" },
-    { key: "search", target: "search" },
-    { key: "settings", target: "account" },
-    { key: "finish", target: null },
-  ];
-  return options.playing ? steps : steps.filter((step) => step.key !== "level");
-}
 
 export type Box = { top: number; left: number; width: number; height: number };
 export type Size = { width: number; height: number };
@@ -124,12 +85,40 @@ export function placeCallout(
   };
 }
 
-/** The first element with this `data-tour` value (an internal name) that is actually on screen. */
-export function findTourTarget(name: string, root: ParentNode = document): HTMLElement | null {
-  const nodes = root.querySelectorAll<HTMLElement>(`[data-tour="${name}"]`);
+function visible(nodes: NodeListOf<HTMLElement>): HTMLElement | null {
   for (const node of nodes) {
     const box = node.getBoundingClientRect();
     if (box.width > 0 && box.height > 0) return node;
+  }
+  return null;
+}
+
+/**
+ * The first element on screen for one target: a CSS selector (starting with
+ * `#`, `.` or `[`), otherwise a `data-tutorial` or `data-tour` name.
+ */
+export function findTourTarget(name: string, root: ParentNode = document): HTMLElement | null {
+  if (/^[#.[]/.test(name)) {
+    try {
+      return visible(root.querySelectorAll<HTMLElement>(name));
+    } catch {
+      return null;
+    }
+  }
+  const escaped = name.replace(/["\\]/g, "");
+  return visible(
+    root.querySelectorAll<HTMLElement>(`[data-tutorial="${escaped}"], [data-tour="${escaped}"]`),
+  );
+}
+
+/** The first of several targets that is on screen. */
+export function findFirstTarget(
+  names: readonly string[],
+  root: ParentNode = document,
+): HTMLElement | null {
+  for (const name of names) {
+    const found = findTourTarget(name, root);
+    if (found) return found;
   }
   return null;
 }

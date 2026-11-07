@@ -370,6 +370,15 @@ export const METRICS: readonly MetricDefinition[] = [
     "users",
     split("step", users("tour_finished", { outcome: "skipped" })),
   ),
+  metric("tutorial_mode", "activation", "users", split("mode", users("tutorial_started"))),
+  metric("tutorial_steps", "activation", "users", split("key", users("tutorial_step"))),
+  metric("tutorial_finished", "activation", "users", split("mode", users("tutorial_finished"))),
+  metric(
+    "tutorial_abandoned_at",
+    "activation",
+    "users",
+    split("step", users("tutorial_abandoned")),
+  ),
   metric(
     "activation_rate",
     "activation",

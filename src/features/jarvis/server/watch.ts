@@ -78,6 +78,7 @@ export async function loadChanges(
         .from("deals")
         .select("title, stage_id, value, currency, won_at, lost_at")
         .eq("user_id", userId)
+        .eq("is_demo", false)
         .gt("entered_stage_at", since)
         .order("entered_stage_at", { ascending: false })
         .limit(CHANGE_LIMIT),
@@ -86,6 +87,7 @@ export async function loadChanges(
         .from("tasks")
         .select("title")
         .eq("user_id", userId)
+        .eq("is_demo", false)
         .eq("status", "done")
         .gt("completed_at", since)
         .limit(CHANGE_LIMIT),
@@ -93,6 +95,7 @@ export async function loadChanges(
         .from("tasks")
         .select("title, due_date")
         .eq("user_id", userId)
+        .eq("is_demo", false)
         .gt("created_at", since)
         .limit(CHANGE_LIMIT),
       admin
@@ -106,18 +109,21 @@ export async function loadChanges(
         .from("milestones")
         .select("id, title, target_date")
         .eq("user_id", userId)
+        .eq("is_demo", false)
         .gt("created_at", since)
         .limit(10),
       admin
         .from("milestones")
         .select("title")
         .eq("user_id", userId)
+        .eq("is_demo", false)
         .gt("completed_at", since)
         .limit(10),
       admin
         .from("calendar_events")
         .select("title, starts_at")
         .eq("user_id", userId)
+        .eq("is_demo", false)
         .gt("created_at", since)
         .order("starts_at")
         .limit(10),
@@ -159,6 +165,7 @@ export async function loadOpenTasks(admin: Client, userId: string): Promise<Open
       .from("tasks")
       .select("id, title, status, milestones!inner(title, status)")
       .eq("user_id", userId)
+      .eq("is_demo", false)
       .neq("status", "done")
       .eq("milestones.status", "active")
       .order("updated_at", { ascending: false })

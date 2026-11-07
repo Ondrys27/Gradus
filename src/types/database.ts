@@ -605,6 +605,7 @@ export type Database = {
           description: string | null
           ends_at: string | null
           id: string
+          is_demo: boolean
           kind: Database["public"]["Enums"]["calendar_event_kind"]
           location: string | null
           source: string
@@ -623,6 +624,7 @@ export type Database = {
           description?: string | null
           ends_at?: string | null
           id?: string
+          is_demo?: boolean
           kind?: Database["public"]["Enums"]["calendar_event_kind"]
           location?: string | null
           source?: string
@@ -641,6 +643,7 @@ export type Database = {
           description?: string | null
           ends_at?: string | null
           id?: string
+          is_demo?: boolean
           kind?: Database["public"]["Enums"]["calendar_event_kind"]
           location?: string | null
           source?: string
@@ -1228,6 +1231,7 @@ export type Database = {
           first_name: string | null
           generated_industry: string | null
           id: string
+          is_demo: boolean
           last_name: string | null
           notes: string | null
           phone: string | null
@@ -1252,6 +1256,7 @@ export type Database = {
           first_name?: string | null
           generated_industry?: string | null
           id?: string
+          is_demo?: boolean
           last_name?: string | null
           notes?: string | null
           phone?: string | null
@@ -1276,6 +1281,7 @@ export type Database = {
           first_name?: string | null
           generated_industry?: string | null
           id?: string
+          is_demo?: boolean
           last_name?: string | null
           notes?: string | null
           phone?: string | null
@@ -1304,6 +1310,7 @@ export type Database = {
           due_at: string
           duration_minutes: number
           id: string
+          is_demo: boolean
           status: Database["public"]["Enums"]["crm_task_status"]
           title: string
           updated_at: string
@@ -1322,6 +1329,7 @@ export type Database = {
           due_at: string
           duration_minutes?: number
           id?: string
+          is_demo?: boolean
           status?: Database["public"]["Enums"]["crm_task_status"]
           title: string
           updated_at?: string
@@ -1340,6 +1348,7 @@ export type Database = {
           due_at?: string
           duration_minutes?: number
           id?: string
+          is_demo?: boolean
           status?: Database["public"]["Enums"]["crm_task_status"]
           title?: string
           updated_at?: string
@@ -1480,6 +1489,7 @@ export type Database = {
           entered_stage_at: string
           expected_close_date: string | null
           id: string
+          is_demo: boolean
           last_activity_at: string
           lost_at: string | null
           lost_reason: string | null
@@ -1502,6 +1512,7 @@ export type Database = {
           entered_stage_at?: string
           expected_close_date?: string | null
           id?: string
+          is_demo?: boolean
           last_activity_at?: string
           lost_at?: string | null
           lost_reason?: string | null
@@ -1524,6 +1535,7 @@ export type Database = {
           entered_stage_at?: string
           expected_close_date?: string | null
           id?: string
+          is_demo?: boolean
           last_activity_at?: string
           lost_at?: string | null
           lost_reason?: string | null
@@ -2278,6 +2290,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_demo: boolean
           position: number
           reward: string | null
           status: Database["public"]["Enums"]["milestone_status"]
@@ -2296,6 +2309,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_demo?: boolean
           position?: number
           reward?: string | null
           status?: Database["public"]["Enums"]["milestone_status"]
@@ -2314,6 +2328,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_demo?: boolean
           position?: number
           reward?: string | null
           status?: Database["public"]["Enums"]["milestone_status"]
@@ -2435,6 +2450,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           id: string
+          is_demo: boolean
           kind: string
           pinned: boolean
           preview: string | null
@@ -2449,6 +2465,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id?: string
+          is_demo?: boolean
           kind?: string
           pinned?: boolean
           preview?: string | null
@@ -2463,6 +2480,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id?: string
+          is_demo?: boolean
           kind?: string
           pinned?: boolean
           preview?: string | null
@@ -2801,6 +2819,7 @@ export type Database = {
           path_key: string | null
           seen_level: number
           tour_completed_at: string | null
+          tutorial: Json | null
           updated_at: string
           username: string | null
         }
@@ -2821,6 +2840,7 @@ export type Database = {
           path_key?: string | null
           seen_level?: number
           tour_completed_at?: string | null
+          tutorial?: Json | null
           updated_at?: string
           username?: string | null
         }
@@ -2841,6 +2861,7 @@ export type Database = {
           path_key?: string | null
           seen_level?: number
           tour_completed_at?: string | null
+          tutorial?: Json | null
           updated_at?: string
           username?: string | null
         }
@@ -3146,6 +3167,7 @@ export type Database = {
           description: string | null
           due_date: string | null
           id: string
+          is_demo: boolean
           milestone_id: string
           parent_task_id: string | null
           position: number
@@ -3162,6 +3184,7 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           id?: string
+          is_demo?: boolean
           milestone_id: string
           parent_task_id?: string | null
           position?: number
@@ -3178,6 +3201,7 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           id?: string
+          is_demo?: boolean
           milestone_id?: string
           parent_task_id?: string | null
           position?: number
@@ -4155,6 +4179,7 @@ export type Database = {
           email: string | null
           first_name: string | null
           id: string | null
+          is_demo: boolean | null
           last_contact_at: string | null
           last_name: string | null
           phone: string | null
@@ -5973,12 +5998,15 @@ export type Database = {
         Args: { _browser: string; _device: string; _user_id: string }
         Returns: string
       }
+      tutorial_delete_demo: { Args: never; Returns: Json }
+      tutorial_seed_demo: { Args: { _payload: Json }; Returns: Json }
       user_today: { Args: { _user_id: string }; Returns: string }
       username_available: { Args: { _username: string }; Returns: boolean }
       valid_ai_caps: { Args: { _value: Json }; Returns: boolean }
       valid_error_alerts: { Args: { _value: Json }; Returns: boolean }
       valid_jarvis_rules: { Args: { _value: Json }; Returns: boolean }
       valid_plan_catalog: { Args: { _payload: Json }; Returns: boolean }
+      valid_tutorial_state: { Args: { _state: Json }; Returns: boolean }
       work_seconds_between: {
         Args: { _from: string; _to: string; _worker_id: string }
         Returns: number

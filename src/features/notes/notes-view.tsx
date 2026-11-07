@@ -458,6 +458,7 @@ export function NotesView() {
         onClick={() => newNote("list")}
         title={t("newHint")}
         data-testid="note-new"
+        data-tutorial="note-new"
         className="rounded-r-none"
       >
         <SquarePenIcon />

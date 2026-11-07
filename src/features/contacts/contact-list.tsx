@@ -9,6 +9,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { StatusPill } from "@/components/ui/status-pill";
 import { formatDate } from "@/lib/format";
 import { useUserSettings } from "@/features/account/queries";
+import { DemoBadge } from "@/features/tutorial/demo-badge";
 import { formatPhone, telHref } from "@/lib/phone";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import {
@@ -110,7 +111,10 @@ function ContactTableView({ contacts, tables, renderExtra, extraLabel }: Props) 
                   >
                     <Avatar name={name} className="size-8 text-xs" />
                     <span className="flex min-w-0 flex-col">
-                      <span className="truncate font-medium text-ink">{name}</span>
+                      <span className="flex min-w-0 items-center gap-1.5">
+                        <span className="truncate font-medium text-ink">{name}</span>
+                        <DemoBadge show={contact.is_demo} />
+                      </span>
                       {(person || contact.city) && (
                         <span className="truncate text-xs text-ink-muted">
                           {[person, contact.city].filter(Boolean).join(" · ")}
@@ -179,6 +183,7 @@ function ContactCard({ contact, tables, renderExtra }: Props & { contact: Contac
           ) : (
             <TablePill table={contact.table_id ? tables.get(contact.table_id) : undefined} />
           )}
+          <DemoBadge show={contact.is_demo} />
           <span>
             {t("lastContactShort")} <LastContact value={contact.last_contact_at} />
           </span>

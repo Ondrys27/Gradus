@@ -34,6 +34,17 @@ function table<T extends TableName>(
   return { file, table: name, owner, columns };
 }
 
+/** Tables with the tutorial's sample data: the export carries only the user's own rows. */
+export const SAMPLE_FLAGGED_TABLES: ReadonlySet<TableName> = new Set<TableName>([
+  "milestones",
+  "tasks",
+  "crm_tasks",
+  "contacts",
+  "deals",
+  "calendar_events",
+  "notes",
+]);
+
 export const EXPORT_TABLES = [
   table("profile", "profiles", "id", [
     "id",

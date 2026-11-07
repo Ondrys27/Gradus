@@ -5,7 +5,7 @@ type Tables = Database["public"]["Tables"];
 type Views = Database["public"]["Views"];
 
 export const LIST_COLUMNS =
-  "id, company_name, first_name, last_name, email, phone, website, city, source, created_at, table_id, last_contact_at";
+  "id, company_name, first_name, last_name, email, phone, website, city, source, created_at, table_id, last_contact_at, is_demo";
 export const CONTACT_COLUMNS =
   "id, company_name, first_name, last_name, email, phone, website, address, city, postal_code, country_code, source, notes, created_at";
 export const TABLE_COLUMNS = "id, name, color, position, is_system, system_key";
@@ -35,7 +35,12 @@ export type ContactListItem = Pick<
   | "source"
   | "table_id"
   | "last_contact_at"
-> & { id: string; created_at: string };
+> & {
+  id: string;
+  created_at: string;
+  /** Sample data of the tutorial (labelled "sample"); absent in older reads. */
+  is_demo?: boolean | null;
+};
 
 export type Contact = Pick<
   Tables["contacts"]["Row"],
