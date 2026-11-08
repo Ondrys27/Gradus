@@ -120,7 +120,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [ ] 22.5 | architect | env: RESEND_API_KEY
 - [ ] K22 | reviewer |
 - [ ] STOP | Konec fáze 22. Pošli Vášovi docs/funkce.md. V administraci najdi Vášu podle e-mailu a pošli mu reset hesla. Založ promo kód VASA50 a zaregistruj se s ním v anonymním okně. Pozvi Vášu do své firmy přes jeho krátké ID, on pozvánku přijme a přepne se mezi svou a tvou firmou; zkontroluj, že se data nemíchají a že v Předplatném je za něj 0 Kč. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
-- [ ] 23.0 | RUČNĚ | Založ účet na stripe.com (zatím stačí testovací režim). Do .env.local dej STRIPE_SECRET_KEY (sk_test_…) a NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY (pk_test_…). Nainstaluj Stripe CLI (brew install stripe/stripe-cli/stripe), přihlas se (stripe login) a spusť stripe listen --forward-to localhost:3000/api/stripe/webhook; vypsaný whsec_… dej do .env.local jako STRIPE_WEBHOOK_SECRET. Stejné tři testovací hodnoty dej ve Vercelu do Preview. Pak tuhle položku zaškrtni a pusť /pokracuj.
+- [x] 23.0 | RUČNĚ | Založ účet na stripe.com (zatím stačí testovací režim). Do .env.local dej STRIPE_SECRET_KEY (sk_test_…) a NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY (pk_test_…). Nainstaluj Stripe CLI (brew install stripe/stripe-cli/stripe), přihlas se (stripe login) a spusť stripe listen --forward-to localhost:3000/api/stripe/webhook; vypsaný whsec_… dej do .env.local jako STRIPE_WEBHOOK_SECRET. Stejné tři testovací hodnoty dej ve Vercelu do Preview. Pak tuhle položku zaškrtni a pusť /pokracuj. — 2026-11-08: Stripe účet Gradus v testovacím režimu, tři testovací klíče v .env.local a ve Vercelu (Preview).
 - [ ] 23.1 | architect | env: STRIPE_SECRET_KEY
 - [ ] 23.2 | architect | env: STRIPE_SECRET_KEY
 - [ ] 23.3 | architect |
