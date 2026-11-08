@@ -777,6 +777,28 @@
       "expired": "Trial ended",
       "waitlist": "On the waitlist",
       "waitlistConfirmed": "{count} confirmed"
+    },
+    "companyLogo": {
+      "title": "Company logo",
+      "upload": "Upload logo",
+      "change": "Change logo",
+      "remove": "Remove",
+      "requirements": "JPG or PNG, up to 2 MB. You crop it to a square next.",
+      "cropTitle": "Crop the logo",
+      "cropArea": "Photo crop area",
+      "cropHint": "Drag to move, pinch or scroll to zoom.",
+      "zoom": "Zoom",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "cancel": "Cancel",
+      "save": "Save logo",
+      "saving": "Saving…",
+      "errors": {
+        "tooLarge": "The logo is larger than 2 MB.",
+        "wrongType": "Only JPG and PNG images are supported.",
+        "unreadable": "This image could not be opened.",
+        "uploadFailed": "The logo could not be saved. Please try again."
+      }
     }
   },
   "settings": {
@@ -980,6 +1002,20 @@
         "label": "Sign out",
         "hint": "On this device. You'll sign in again next time.",
         "action": "Sign out"
+      },
+      "publicId": {
+        "title": "Your ID",
+        "label": "Short ID",
+        "hint": "A company owner finds you by it when they want to add you to their team. It is not a secret and opens nothing by itself.",
+        "copy": "Copy",
+        "copied": "Copied",
+        "qr": "QR code with your ID {id}"
+      },
+      "company": {
+        "title": "Company",
+        "name": "Company name",
+        "nameHint": "The people who work for you see it in their company switcher.",
+        "logo": "Company logo"
       }
     },
     "menuLabel": "Settings groups",
@@ -1029,6 +1065,18 @@
       "username": {
         "label": "Username",
         "keywords": "account profile handle"
+      },
+      "publicId": {
+        "label": "Account short ID",
+        "keywords": "id code qr invite share account company"
+      },
+      "companyName": {
+        "label": "Company name",
+        "keywords": "company name switcher workers"
+      },
+      "companyLogo": {
+        "label": "Company logo",
+        "keywords": "company logo picture switcher workers"
       },
       "email": {
         "label": "E-mail",
@@ -7992,6 +8040,19 @@
       "firstPaymentYearly": "First year with the code: {first} instead of {regular}.",
       "freeMonths": "{months, plural, one {First month free} other {First # months free}}, then {regular} a month.",
       "betaNote": "Nothing is paid during the beta. The code's benefit applies to the first payment once you choose a plan."
+    }
+  },
+  "spaces": {
+    "mine": "My company",
+    "mineHint": "Your own space",
+    "workerHint": "You work here",
+    "unnamed": "Unnamed company",
+    "badge": "You are working in {space}",
+    "switcher": {
+      "open": "Company: {space}. Switch company",
+      "title": "Where you work",
+      "current": "You are here",
+      "failed": "Switching did not work. Please try again."
     }
   }
 }

@@ -777,6 +777,28 @@
       "expired": "Po expiraci",
       "waitlist": "Na čekací listině",
       "waitlistConfirmed": "{count} potvrzeno"
+    },
+    "companyLogo": {
+      "title": "Logo firmy",
+      "upload": "Nahrát logo",
+      "change": "Změnit logo",
+      "remove": "Odstranit",
+      "requirements": "JPG nebo PNG, nejvýše 2 MB. Potom ho oříznete na čtverec.",
+      "cropTitle": "Oříznutí loga",
+      "cropArea": "Oblast oříznutí fotky",
+      "cropHint": "Tažením posunete, sevřením prstů nebo kolečkem přiblížíte.",
+      "zoom": "Přiblížení",
+      "zoomIn": "Přiblížit",
+      "zoomOut": "Oddálit",
+      "cancel": "Zrušit",
+      "save": "Uložit logo",
+      "saving": "Ukládám…",
+      "errors": {
+        "tooLarge": "Logo je větší než 2 MB.",
+        "wrongType": "Podporované jsou jen obrázky JPG a PNG.",
+        "unreadable": "Tento obrázek se nepodařilo otevřít.",
+        "uploadFailed": "Logo se nepodařilo uložit. Zkuste to prosím znovu."
+      }
     }
   },
   "settings": {
@@ -980,6 +1002,20 @@
         "label": "Odhlásit se",
         "hint": "Na tomhle zařízení. Příště se přihlásíš znovu.",
         "action": "Odhlásit se"
+      },
+      "publicId": {
+        "title": "Tvoje ID",
+        "label": "Krátké ID",
+        "hint": "Podle něj tě majitel firmy najde, když tě bude chtít přidat do týmu. Není tajné a samo nic neotevře.",
+        "copy": "Kopírovat",
+        "copied": "Zkopírováno",
+        "qr": "QR kód s tvým ID {id}"
+      },
+      "company": {
+        "title": "Firma",
+        "name": "Název firmy",
+        "nameHint": "Tvoji pracovníci ho uvidí v přepínači firem.",
+        "logo": "Logo firmy"
       }
     },
     "menuLabel": "Skupiny nastavení",
@@ -1029,6 +1065,18 @@
       "username": {
         "label": "Uživatelské jméno",
         "keywords": "účet profil přezdívka"
+      },
+      "publicId": {
+        "label": "Krátké ID účtu",
+        "keywords": "id kód qr pozvánka sdílet účet firma"
+      },
+      "companyName": {
+        "label": "Název firmy",
+        "keywords": "firma název přepínač pracovníci"
+      },
+      "companyLogo": {
+        "label": "Logo firmy",
+        "keywords": "firma logo obrázek přepínač pracovníci"
       },
       "email": {
         "label": "E-mail",
@@ -7992,6 +8040,19 @@
       "firstPaymentYearly": "První rok s kódem: {first} místo {regular}.",
       "freeMonths": "{months, plural, one {První měsíc zdarma} few {První # měsíce zdarma} other {Prvních # měsíců zdarma}}, potom {regular} měsíčně.",
       "betaNote": "Během bety se nic neplatí. Výhoda kódu se použije při první platbě, až si vybereš tarif."
+    }
+  },
+  "spaces": {
+    "mine": "Moje firma",
+    "mineHint": "Tvůj vlastní prostor",
+    "workerHint": "Pracuješ tu",
+    "unnamed": "Firma bez názvu",
+    "badge": "Pracuješ ve firmě {space}",
+    "switcher": {
+      "open": "Firma: {space}. Přepnout firmu",
+      "title": "Kde pracuješ",
+      "current": "Právě tady",
+      "failed": "Přepnout se nepodařilo. Zkus to prosím znovu."
     }
   }
 }

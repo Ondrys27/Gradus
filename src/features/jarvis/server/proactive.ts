@@ -141,15 +141,15 @@ export function toCandidate(
   };
 }
 
+/**
+ * The account works in somebody else's company right now (the active space
+ * of this request is not its own): there it has the owner's environment, not
+ * Jarvis's own initiative. In its own space it gets them as any owner.
+ */
 export async function isWorker(supabase: Client, userId: string): Promise<boolean> {
-  const { data, error } = await supabase
-    .from("workers")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("status", "active")
-    .limit(1);
+  const { data, error } = await supabase.rpc("current_workspace_id");
   if (error) throw error;
-  return data.length > 0;
+  return Boolean(data) && data !== userId;
 }
 
 /** The brief (the summary): always in tool mode, from level 5 in game mode. */

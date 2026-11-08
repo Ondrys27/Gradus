@@ -2257,6 +2257,53 @@ export type Database = {
           },
         ]
       }
+      memberships: {
+        Row: {
+          created_at: string
+          id: string
+          joined_at: string | null
+          left_at: string | null
+          role: string
+          space_id: string
+          status: string
+          updated_at: string
+          user_id: string
+          worker_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          role: string
+          space_id: string
+          status: string
+          updated_at?: string
+          user_id: string
+          worker_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          role?: string
+          space_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          worker_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memberships_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       metrics_daily: {
         Row: {
           computed_at: string
@@ -2873,6 +2920,8 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          company_logo_url: string | null
+          company_name: string | null
           created_at: string
           display_name: string | null
           id: string
@@ -2886,6 +2935,7 @@ export type Database = {
           nps_snoozed_until: string | null
           onboarding_completed_at: string | null
           path_key: string | null
+          public_id: string | null
           seen_level: number
           tour_completed_at: string | null
           tutorial: Json | null
@@ -2894,6 +2944,8 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          company_logo_url?: string | null
+          company_name?: string | null
           created_at?: string
           display_name?: string | null
           id: string
@@ -2907,6 +2959,7 @@ export type Database = {
           nps_snoozed_until?: string | null
           onboarding_completed_at?: string | null
           path_key?: string | null
+          public_id?: string | null
           seen_level?: number
           tour_completed_at?: string | null
           tutorial?: Json | null
@@ -2915,6 +2968,8 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          company_logo_url?: string | null
+          company_name?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
@@ -2928,6 +2983,7 @@ export type Database = {
           nps_snoozed_until?: string | null
           onboarding_completed_at?: string | null
           path_key?: string | null
+          public_id?: string | null
           seen_level?: number
           tour_completed_at?: string | null
           tutorial?: Json | null
@@ -4925,6 +4981,10 @@ export type Database = {
         Returns: undefined
       }
       company_visible_worker_ids: { Args: never; Returns: string[] }
+      company_visible_worker_ids_in: {
+        Args: { _space: string }
+        Returns: string[]
+      }
       company_worker: {
         Args: { _worker_id: string }
         Returns: {
@@ -5045,6 +5105,7 @@ export type Database = {
           last_done_at: string
         }[]
       }
+      default_space_id: { Args: never; Returns: string }
       error_alert_claim: {
         Args: {
           _event_id: string
@@ -5242,6 +5303,7 @@ export type Database = {
       }
       is_client_request: { Args: never; Returns: boolean }
       is_internal_account: { Args: { _user_id: string }; Returns: boolean }
+      is_space_member: { Args: { _space: string }; Returns: boolean }
       is_workspace_member: {
         Args: { _owner: string; _user: string }
         Returns: boolean
@@ -5401,6 +5463,11 @@ export type Database = {
           day: string
           meetings: number
         }[]
+      }
+      member_spaces: { Args: never; Returns: string[] }
+      membership_status_of: {
+        Args: { _status: Database["public"]["Enums"]["worker_status"] }
+        Returns: string
       }
       metric_activation: {
         Args: {
@@ -5916,8 +5983,20 @@ export type Database = {
         Args: { _parent_id: string; _position: number; _task_id: string }
         Returns: undefined
       }
+      my_spaces: {
+        Args: never
+        Returns: {
+          company_name: string
+          logo_url: string
+          owner_name: string
+          role: string
+          space_id: string
+          worker_id: string
+        }[]
+      }
       my_worker_ids: { Args: never; Returns: string[] }
       new_invite_code: { Args: never; Returns: string }
+      new_public_id: { Args: never; Returns: string }
       next_invoice_number: {
         Args: { _issued_on: string; _ws: string }
         Returns: string
@@ -5977,6 +6056,10 @@ export type Database = {
       permission_default: {
         Args: { _action: string; _section: string }
         Returns: boolean
+      }
+      permitted_spaces: {
+        Args: { _action: string; _section: string }
+        Returns: string[]
       }
       phone_calling_code: { Args: { _country: string }; Returns: string }
       phone_to_e164: {
@@ -6126,6 +6209,7 @@ export type Database = {
         Returns: undefined
       }
       replace_reward_rules: { Args: { _rules: Json }; Returns: number }
+      requested_space: { Args: never; Returns: string }
       require_invoice_editor: { Args: never; Returns: string }
       revoke_pending_rewards: {
         Args: {
@@ -6162,6 +6246,10 @@ export type Database = {
       search_rank: {
         Args: { _doc: string; _q: string; _title: string }
         Returns: number
+      }
+      section_spaces: {
+        Args: { _level: string; _section: string }
+        Returns: string[]
       }
       set_deposit_stage: {
         Args: { _percent?: number; _stage_id: string }

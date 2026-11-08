@@ -47,6 +47,8 @@ function wrapper(worker: WorkerAccount | null, client: QueryClient) {
             user: { id: worker ? WORKER : OWNER, email: "x@example.com" },
             roles: [],
             worker,
+            spaceId: worker ? worker.ownerId : OWNER,
+            spaces: [],
             plan: { planKey: "beta", status: "active", trialEndsAt: null, readOnly: false },
           }}
         >

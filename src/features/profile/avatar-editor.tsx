@@ -9,20 +9,29 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { useProfile, useSession, useUpdateProfile } from "@/features/account/queries";
 import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 import { AVATAR_MAX_BYTES, sniffImageType, type AvatarMime } from "./avatar-image";
 import { AvatarCropper, type LoadedImage } from "./avatar-cropper";
 
 type AvatarError = "tooLarge" | "wrongType" | "unreadable" | "uploadFailed";
 
-/** One file per user at avatars/<user_id>/avatar; storage rules allow only that folder. */
-function avatarPath(userId: string) {
-  return `${userId}/avatar`;
-}
+/**
+ * One file per user and kind in the user's own folder of avatars (storage
+ * rules allow only that folder): the photo at <user_id>/avatar, the
+ * company's logo (shown to the people who work there) at <user_id>/company-logo.
+ */
+const KINDS = {
+  avatar: { file: "avatar", field: "avatar_url", texts: "profile.avatar" },
+  companyLogo: { file: "company-logo", field: "company_logo_url", texts: "profile.companyLogo" },
+} as const;
 
-export function AvatarEditor() {
-  const t = useTranslations("profile.avatar");
+export function AvatarEditor({ kind = "avatar" }: { kind?: keyof typeof KINDS }) {
+  const spec = KINDS[kind];
+  const t = useTranslations(spec.texts);
   const { user } = useSession();
   const profile = useProfile();
+  const current = profile[spec.field];
+  const avatarPath = (userId: string) => `${userId}/${spec.file}`;
   const updateProfile = useUpdateProfile();
   const inputRef = useRef<HTMLInputElement>(null);
   const [image, setImage] = useState<LoadedImage | null>(null);
@@ -76,7 +85,7 @@ export function AvatarEditor() {
       if (uploadError) throw uploadError;
       // The version parameter makes browsers and the CDN fetch the new picture.
       const url = `${storage.getPublicUrl(path).data.publicUrl}?v=${Date.now()}`;
-      await updateProfile.mutateAsync({ avatar_url: url });
+      await updateProfile.mutateAsync({ [spec.field]: url });
       setOpen(false);
     } catch {
       setError("uploadFailed");
@@ -93,7 +102,7 @@ export function AvatarEditor() {
         .storage.from("avatars")
         .remove([avatarPath(user.id)]);
       if (removeError) throw removeError;
-      await updateProfile.mutateAsync({ avatar_url: null });
+      await updateProfile.mutateAsync({ [spec.field]: null });
     } catch {
       setError("uploadFailed");
     } finally {
@@ -104,14 +113,18 @@ export function AvatarEditor() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col items-center gap-5 sm:flex-row">
-        <Avatar src={profile.avatar_url} name={name} className="size-24 text-2xl" />
+        <Avatar
+          src={current}
+          name={kind === "avatar" ? name : (profile.company_name ?? name)}
+          className={cn("size-24 text-2xl", kind === "companyLogo" && "rounded-2xl")}
+        />
         <div className="flex flex-col items-center gap-3 sm:items-start">
           <div className="flex flex-wrap justify-center gap-2">
             <Button variant="secondary" onClick={() => inputRef.current?.click()} disabled={busy}>
               <ImageUpIcon aria-hidden />
-              {profile.avatar_url ? t("change") : t("upload")}
+              {current ? t("change") : t("upload")}
             </Button>
-            {profile.avatar_url && (
+            {current && (
               <Button variant="ghost" onClick={remove} disabled={busy}>
                 <Trash2Icon aria-hidden />
                 {t("remove")}

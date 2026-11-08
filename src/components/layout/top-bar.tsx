@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { AccountMenu } from "./account-menu";
 import { BetaBadge } from "./beta-badge";
 import { Logo } from "./logo";
+import { SpaceBadge, SpaceStripe, SpaceSwitcher } from "./space-switcher";
 import { useReducedMotionSafe } from "@/lib/use-media-query";
 
 /** The level window is not part of the first load; it loads on the first tap. */
@@ -70,6 +71,7 @@ export function TopBar() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-line/50 bg-canvas/70 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
+      <SpaceStripe />
       <div className="relative flex h-18 items-center gap-2 pr-[max(--spacing(4),env(safe-area-inset-right))] pl-[max(--spacing(4),env(safe-area-inset-left))] md:grid md:grid-cols-[1fr_minmax(0,480px)_1fr] md:gap-4 md:pr-[max(--spacing(8),env(safe-area-inset-right))] md:pl-8">
         <Link
           href="/app"
@@ -79,6 +81,7 @@ export function TopBar() {
           <Logo />
         </Link>
         <BetaBadge className="-ml-1 md:hidden" />
+        <SpaceBadge className="md:hidden" />
 
         <div aria-hidden className="hidden md:block" />
         <SearchTrigger className="hidden md:flex" />
@@ -151,6 +154,7 @@ export function TopBar() {
               </motion.button>
             </div>
           )}
+          <SpaceSwitcher className="hidden md:inline-flex" />
           <AccountMenu />
         </div>
       </div>

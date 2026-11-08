@@ -13,6 +13,7 @@ import {
 } from "@/lib/user-settings";
 import type { PlanSnapshot } from "@/features/plan/plan";
 import { signOutEverywhereInTab } from "./client-state";
+import type { SpaceMembership } from "./spaces";
 import {
   PROFILE_COLUMNS,
   type AppRole,
@@ -31,8 +32,12 @@ export const accountKeys = {
 export const SessionContext = createContext<{
   user: SessionUser;
   roles: AppRole[];
-  /** Set when the account works for an owner; it then gets the worker environment. */
+  /** Set when the active space is a company the account works for; it then gets the worker environment. */
   worker: WorkerAccount | null;
+  /** The active space (whose data the app shows). */
+  spaceId: string;
+  /** The own space first, then every company the account works for. */
+  spaces: SpaceMembership[];
   /** The workspace's plan as loaded when the app started; usePlan() keeps it current. */
   plan: PlanSnapshot;
 } | null>(null);
@@ -138,6 +143,8 @@ export type ProfilePatch = Partial<
     | "tutorial"
     | "notes_intro_seen_at"
     | "nps_snoozed_until"
+    | "company_name"
+    | "company_logo_url"
     | "nps_dismiss_streak"
   >
 >;

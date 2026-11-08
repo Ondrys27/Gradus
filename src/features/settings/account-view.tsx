@@ -9,17 +9,19 @@ import { AvatarEditor } from "@/features/profile/avatar-editor";
 import { ChangePasswordForm } from "@/features/profile/change-password-form";
 import { ProfileFields } from "@/features/profile/profile-fields";
 import { locales } from "@/i18n/locales";
+import { CompanySection, PublicIdSection } from "./account-space";
 import { useSettingsSave } from "./save-state";
 import { ActionRow, ChoiceGrid, ChoiceTile, SettingRow, SettingsPage, SettingsSection } from "./ui";
 
 /**
- * Settings → Account: who you are in the app (photo, name, username), how
- * you sign in (e-mail, password), the language, and signing out.
+ * Settings → Account: who you are in the app (photo, name, username), your
+ * short id, your company's name and logo, how you sign in (e-mail,
+ * password), the language, and signing out.
  */
 export function AccountView() {
   const t = useTranslations("settings");
   const tProfile = useTranslations("profile");
-  const { user } = useSession();
+  const { user, spaceId } = useSession();
   const settings = useUserSettings();
   const { save } = useSettingsSave();
   const signOut = useSignOut();
@@ -34,6 +36,10 @@ export function AccountView() {
         </SettingRow>
         <ProfileFields />
       </SettingsSection>
+
+      <PublicIdSection />
+      {/* The company is the one of the own space; in somebody else's it is theirs to name. */}
+      {spaceId === user.id && <CompanySection />}
 
       <SettingsSection title={t("account.signInTitle")}>
         <SettingRow
