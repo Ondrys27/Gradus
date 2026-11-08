@@ -131,6 +131,13 @@ Formát: `- [ ] ID | agent | požadavek`
 - [ ] 21.2 | designer |
 - [ ] K21 | reviewer |
 - [ ] STOP | Konec fáze 21. Ve Financích otevři pohled Měsíc, zadej listopad podle své tabulky (kapitál 8 500, příjmy Grid, Fajn Jídlo, Carwest, Auto Matulka, výdaje) a porovnej Shrnutí s Google Sheets — musí sedět na korunu. Přepni Plán/Skutečnost/Rozdíl, založ prosinec z listopadu, exportuj XLSX a otevři ho. Zeptej se Jarvise, kdy ti bude nejmíň peněz. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
+- [ ] 24.1 | architect |
+- [ ] 24.2 | architect | env: ANTHROPIC_API_KEY
+- [ ] 24.3 | architect | env: INTEGRATIONS_ENCRYPTION_KEY
+- [ ] 24.4 | architect | env: RESEND_API_KEY
+- [ ] 24.5 | designer |
+- [ ] K24 | reviewer |
+- [ ] STOP | Konec fáze 24. Přepni si měnu na USD a JPY a projdi finance a ceník; v administraci → Tarify zkontroluj odvozené ceny a doplněk Bez značky. Přepni aplikaci do němčiny a slovenštiny, zkus arabštinu z draftu na svém účtu. V Plánovači nastav handle, odkaz na videohovor a pracovní dobu, přidej odběr svého Google kalendáře (tajná iCal adresa) a ověř, že obsazené časy nejsou v nabídce. Pošli si odkaz na Konzultaci do e-mailu, rezervuj z telefonu v anonymním okně, schval na nástěnce, zkontroluj e-maily, kalendář, kontakt a Cold Calling, pak termín přesuň a zruš. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [ ] 7.1 | RUČNĚ | Aplikace běží na Vercel Hobby a každý push na main se nasadí sám. Až budeš mít doménu: nastav ji ve Vercelu, změň NEXT_PUBLIC_SITE_URL ve Vercelu, uprav Site URL a Redirect URLs v Supabase → URL Configuration a dej Redeploy. Projdi produkci v anonymním okně a pak tuhle položku zaškrtni ručně.
 
 ## Odloženo
