@@ -116,7 +116,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 22.1 | architect | env: RESEND_API_KEY — 2026-11-07: Podpora v administraci: hledání účtu podle části e-mailu, reset hesla, nový potvrzovací odkaz, změna e-mailu a ukončení všech přihlášení, vše s důvodem v auditu.
 - [x] 22.2 | architect | — 2026-11-08: Promo kódy partnerů s výhodou při registraci, v průvodci a v Předplatném, provize z první platby a správa kódů s výplatami a exportem v administraci.
 - [x] 22.3 | architect | — 2026-11-08: Dokument docs/funkce.md s přehledem funkcí, schopností Jarvise s cenami, náklady na uživatele a limity tarifů, hlídaný skriptem bun run docs:funkce.
-- [ ] 22.4 | architect |
+- [x] 22.4 | architect | — 2026-11-08: Jeden účet ve více firmách: členství, krátké ID, přepínač prostorů s cookie a hlavičkou, název a logo firmy, vše po prostorech včetně Jarvise.
 - [ ] 22.5 | architect | env: RESEND_API_KEY
 - [ ] K22 | reviewer |
 - [ ] STOP | Konec fáze 22. Pošli Vášovi docs/funkce.md. V administraci najdi Vášu podle e-mailu a pošli mu reset hesla. Založ promo kód VASA50 a zaregistruj se s ním v anonymním okně. Pozvi Vášu do své firmy přes jeho krátké ID, on pozvánku přijme a přepne se mezi svou a tvou firmou; zkontroluj, že se data nemíchají a že v Předplatném je za něj 0 Kč. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
