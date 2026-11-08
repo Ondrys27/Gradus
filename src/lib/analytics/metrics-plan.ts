@@ -63,6 +63,7 @@ const FUNCTION_PARAMS: Record<
   metric_adoption: { range: true, tz: true, internal: true, segment: true },
   metric_ai_usage: { range: true, tz: true, internal: true, segment: true },
   metric_ai_top_users: { range: true, tz: true, internal: true, segment: true },
+  metric_ai_top_spaces: { range: true, tz: true, internal: true, segment: true },
   metric_jarvis_conversations: { range: true, tz: true, internal: true, segment: true },
   metric_call_time: { range: true, tz: true, internal: true, segment: true },
   metric_trials: { range: false, tz: true, internal: true, segment: true },

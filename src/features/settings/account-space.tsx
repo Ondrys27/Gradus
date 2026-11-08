@@ -1,15 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CheckIcon, CopyIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, LogOutIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
-import { useProfile, useUpdateProfile } from "@/features/account/queries";
+import { InboxActionError, useLeaveCompany } from "@/features/account/inbox";
+import { useProfile, useSession, useUpdateProfile } from "@/features/account/queries";
+import { spaceName, type SpaceMembership } from "@/features/account/spaces";
+import { APP_HOME_PATH } from "@/lib/routes";
 import { qrPath } from "@/features/invoices/document/qr";
 import { AvatarEditor } from "@/features/profile/avatar-editor";
 import { useSaveMarks } from "./save-state";
-import { SettingRow, SettingsSection } from "./ui";
+import { ActionRow, SettingRow, SettingsSection } from "./ui";
 
 /** The longest company name (profiles_company_name_length). */
 export const COMPANY_NAME_MAX = 80;
@@ -126,6 +130,75 @@ export function CompanySection() {
           <AvatarEditor kind="companyLogo" />
         </div>
       </SettingRow>
+    </SettingsSection>
+  );
+}
+
+/**
+ * The companies the account works for, each with "Leave the company"
+ * (step 22.5). Leaving asks first; the owner hears it. In the company that
+ * is open the app goes back to the account's own space.
+ */
+export function CompaniesSection() {
+  const t = useTranslations("settings.account.companies");
+  const { spaces, spaceId } = useSession();
+  const leave = useLeaveCompany();
+  const [leaving, setLeaving] = useState<SpaceMembership | null>(null);
+  const companies = spaces.filter((space) => space.role === "worker");
+  if (companies.length === 0) return null;
+  const nameOf = (space: SpaceMembership) => spaceName(space) ?? t("unnamed");
+  const failure =
+    leave.error instanceof InboxActionError
+      ? t(`errors.${leave.error.code === "readOnly" ? "readOnly" : "unknown"}`)
+      : leave.error
+        ? t("errors.unknown")
+        : null;
+
+  return (
+    <SettingsSection title={t("title")} description={t("description")}>
+      {companies.map((space) => (
+        <ActionRow
+          key={space.spaceId}
+          id={`settings-company-${space.spaceId}`}
+          label={nameOf(space)}
+          hint={space.ownerName && space.companyName ? space.ownerName : undefined}
+          action={
+            <Button
+              variant="outline"
+              onClick={() => {
+                leave.reset();
+                setLeaving(space);
+              }}
+              data-testid="leave-company"
+            >
+              <LogOutIcon aria-hidden data-icon="inline-start" />
+              {t("leave")}
+            </Button>
+          }
+        />
+      ))}
+      <ConfirmDialog
+        open={leaving !== null}
+        onOpenChange={(open) => {
+          if (!open) setLeaving(null);
+        }}
+        title={t("confirmTitle", { name: leaving ? nameOf(leaving) : "" })}
+        description={t("confirmText")}
+        confirmLabel={t("leave")}
+        cancelLabel={t("cancel")}
+        closeLabel={t("cancel")}
+        pending={leave.isPending}
+        error={failure}
+        onConfirm={() => {
+          if (!leaving) return;
+          const space = leaving.spaceId;
+          leave.mutate(space, {
+            // A full load: the switcher, the session and the active space start over.
+            onSuccess: () =>
+              window.location.assign(space === spaceId ? APP_HOME_PATH : window.location.pathname),
+          });
+        }}
+      />
     </SettingsSection>
   );
 }

@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import {
   cancelSubscription,
   loadPlanUsage,
+  loadWorkerBilling,
   requestSubscriptionChange,
   resumeSubscription,
   saveBillingProfile,
@@ -31,6 +32,7 @@ export const subscriptionKeys = {
   payments: (userId: string) => [...subscriptionKeys.all(userId), "payments"] as const,
   billing: (userId: string) => [...subscriptionKeys.all(userId), "billing"] as const,
   usage: (userId: string) => [...subscriptionKeys.all(userId), "usage"] as const,
+  workers: (userId: string) => [...subscriptionKeys.all(userId), "workers"] as const,
 };
 
 export class SubscriptionActionError extends Error {
@@ -136,6 +138,20 @@ export function usePlanUsage(enabled: boolean) {
   });
 }
 
+/**
+ * Who pays for the owner's workers: the plan's terms and, per worker, whether
+ * they hold a plan of their own. Only the owner in their own space has it.
+ */
+export function useWorkerBilling(enabled = true) {
+  const { user } = useSession();
+  return useQuery({
+    queryKey: subscriptionKeys.workers(user.id),
+    queryFn: async () => unwrap(await loadWorkerBilling()),
+    enabled,
+    staleTime: 60_000,
+  });
+}
+
 /** After any change: the row, and the plan the whole app reads (limits, read-only). */
 function useRefresh() {
   const { user } = useSession();
@@ -144,6 +160,7 @@ function useRefresh() {
     Promise.all([
       queryClient.invalidateQueries({ queryKey: subscriptionKeys.subscription(user.id) }),
       queryClient.invalidateQueries({ queryKey: planKeys.plan(user.id, user.id) }),
+      queryClient.invalidateQueries({ queryKey: subscriptionKeys.workers(user.id) }),
     ]);
 }
 

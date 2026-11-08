@@ -21,11 +21,24 @@ import { cn } from "@/lib/utils";
 import { useCompanyGroups, useCompanyTree } from "./company/queries";
 import { managerChoices, OWNER_ROOT, type CompanyGroup } from "./company/tree";
 import { InviteCard } from "./invite-card";
+import { parseInviteTarget } from "./invite-target";
 import { JOB_TITLE_MAX, NAME_MAX, validate, workerSchema, type WorkerErrorKey } from "./logic";
 import { grantsFromRows, type PermissionGrants } from "./permissions-catalog";
 import { PermissionsEditor } from "./permissions-editor";
-import { useCreateWorker, useUpdateWorker } from "./queries";
+import { InviteActionError, useCreateWorker, useUpdateWorker } from "./queries";
+import type { InviteErrorCode } from "./server/invites";
 import type { Worker, WorkerInvite } from "./types";
+
+/** A new person without the e-mail field of workerSchema: the field takes a short id too. */
+const newWorkerSchema = workerSchema.omit({ email: true });
+
+/** What the server says about a short id or e-mail, as the field's error. */
+const TARGET_ERRORS: Partial<Record<InviteErrorCode, WorkerErrorKey>> = {
+  notFound: "targetNotFound",
+  self: "targetSelf",
+  alreadyMember: "targetAlreadyMember",
+  invalid: "targetInvalid",
+};
 
 type Props = {
   open: boolean;
@@ -50,7 +63,9 @@ export function WorkerFormDialog({
 }: Props) {
   const t = useTranslations("workers.form");
   const generation = useFreshOnOpen(open);
-  const [created, setCreated] = useState<{ name: string; invite: WorkerInvite } | null>(null);
+  const [created, setCreated] = useState<{ name: string; invite: WorkerInvite; bound: boolean } | null>(
+    null,
+  );
 
   function change(next: boolean) {
     if (!next) setCreated(null);
@@ -61,7 +76,15 @@ export function WorkerFormDialog({
     <ResponsiveDialog
       open={open}
       onOpenChange={change}
-      title={created ? t("inviteReady") : worker ? t("editTitle") : t("newTitle")}
+      title={
+        created
+          ? created.bound
+            ? t("inviteSent")
+            : t("inviteReady")
+          : worker
+            ? t("editTitle")
+            : t("newTitle")
+      }
       closeLabel={t("close")}
       className="w-[min(100vw-32px,560px)]"
     >
@@ -99,7 +122,7 @@ function Fields({
   permissions?: PermissionGrants;
   defaultManagerId: string | null;
   onCancel: () => void;
-  onCreated: (result: { name: string; invite: WorkerInvite }) => void;
+  onCreated: (result: { name: string; invite: WorkerInvite; bound: boolean }) => void;
   onSaved: () => void;
 }) {
   const t = useTranslations("workers.form");
@@ -123,28 +146,47 @@ function Fields({
   async function submit(event: FormEvent) {
     event.preventDefault();
     setFailed(false);
-    const result = validate(workerSchema, { name, email, job_title: jobTitle });
-    if (!result.ok) {
-      setErrors(result.errors);
+    if (worker) {
+      const result = validate(workerSchema, { name, email, job_title: jobTitle });
+      if (!result.ok) {
+        setErrors(result.errors);
+        return;
+      }
+      setErrors({});
+      try {
+        // Rights of an existing worker are switched live on their page, not here.
+        await update.mutateAsync({ worker: result.data });
+        onSaved();
+      } catch {
+        setFailed(true);
+      }
+      return;
+    }
+
+    // A new person: their short id or e-mail in one field.
+    const result = validate(newWorkerSchema, { name, job_title: jobTitle });
+    const target = parseInviteTarget(email);
+    if (!result.ok || !target.ok) {
+      setErrors({ ...(result.ok ? {} : result.errors), ...(target.ok ? {} : { email: target.error }) });
       return;
     }
     setErrors({});
     try {
-      if (worker) {
-        // Rights of an existing worker are switched live on their page, not here.
-        await update.mutateAsync({ worker: result.data });
-        onSaved();
-      } else {
-        const { worker: saved, invite } = await create.mutateAsync({
-          worker: result.data,
-          grants: permissions,
-          managerId: managerId === OWNER_ROOT ? null : managerId,
-          groupIds: [...groupIds],
-        });
-        onCreated({ name: saved.name, invite });
-      }
-    } catch {
-      setFailed(true);
+      const { worker: saved, invite, bound } = await create.mutateAsync({
+        worker: {
+          ...result.data,
+          email: target.target.kind === "email" ? target.target.email : null,
+        },
+        grants: permissions,
+        managerId: managerId === OWNER_ROOT ? null : managerId,
+        groupIds: [...groupIds],
+        target: target.target,
+      });
+      onCreated({ name: saved.name, invite, bound });
+    } catch (error) {
+      const code = error instanceof InviteActionError ? TARGET_ERRORS[error.code] : undefined;
+      if (code) setErrors({ email: code });
+      else setFailed(true);
     }
   }
 
@@ -162,16 +204,18 @@ function Fields({
       </FormField>
       <FormField
         id="worker-email"
-        label={t("email")}
+        label={worker ? t("email") : t("target")}
         error={err("email")}
-        hint={worker ? undefined : t("emailHint")}
+        hint={worker ? undefined : t("targetHint")}
       >
         <Input
           {...fieldA11y("worker-email", err("email"), !worker)}
           value={email}
-          type="email"
+          type={worker ? "email" : "text"}
           inputMode="email"
           autoComplete="off"
+          autoCapitalize="none"
+          spellCheck={false}
           onChange={(event) => setEmail(event.target.value)}
         />
       </FormField>

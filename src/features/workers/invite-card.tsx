@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckIcon, CopyIcon, MailPlusIcon, RefreshCwIcon } from "lucide-react";
+import { BellRingIcon, CheckIcon, CopyIcon, MailPlusIcon, RefreshCwIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
@@ -42,6 +42,35 @@ export function InviteCard({
   useEffect(() => setLink(inviteUrl(invite.code, siteOrigin(), locale)), [invite.code, locale]);
   const state = inviteState(invite, new Date());
   if (state === "accepted") return null;
+  // An existing account: the invite waits in their app, there is no link to send.
+  if (invite.invitee_id) {
+    return (
+      <section
+        aria-label={t("title", { name: workerName })}
+        data-testid="invite-waiting-card"
+        className={cn(
+          "flex items-start gap-3 rounded-card border border-violet/30 bg-violet/5 p-5",
+          className,
+        )}
+      >
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-violet/30 bg-violet/10 text-violet">
+          <BellRingIcon aria-hidden className="size-5" />
+        </span>
+        <div className="flex min-w-0 flex-col gap-1">
+          <h3 className="font-semibold text-ink">{t("waitingTitle", { name: workerName })}</h3>
+          <p className="text-sm text-ink-soft">
+            {invite.declined_at
+              ? t("declined")
+              : state === "expired"
+                ? t("waitingExpired")
+                : t("waitingText", {
+                    date: formatDate(new Date(invite.expires_at), settings),
+                  })}
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section

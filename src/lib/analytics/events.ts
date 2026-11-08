@@ -190,6 +190,8 @@ export const EVENTS = {
     spaces: count(50),
     via: oneOf(["switcher", "link"]),
   }),
+  /** A worker left a company on their own (22.5); the owner removing somebody is worker_removed. */
+  space_left: event("account", "server", false, {}),
   waitlist_joined: event("account", "server", false, { locale: oneOf(["cs", "en"]) }),
   /** Settings → Privacy and data → Export my data: how many tables and rows went into the ZIP. */
   account_data_exported: event("account", "server", false, {
@@ -614,12 +616,18 @@ export const EVENTS = {
   crm_task_deleted: event("pipeline", "client", true, {}),
 
   // --- company (the workers section) ---------------------------------------
+  /** `target`: the invite waits for an existing account in the app, or a link for a new person (22.5). */
   worker_invited: event("workers", "client", true, {
     with_manager: optional(bool()),
     groups: optional(count(200)),
+    target: optional(oneOf(["account", "link"])),
   }),
   worker_invite_renewed: event("workers", "client", true, {}),
-  worker_invite_accepted: event("workers", "server", false, {}),
+  /** At the registration with the code, or in the app by an existing account. */
+  worker_invite_accepted: event("workers", "server", false, {
+    via: optional(oneOf(["signup", "app"])),
+  }),
+  worker_invite_declined: event("workers", "server", false, {}),
   worker_updated: event("workers", "client", true, {}),
   worker_permissions_saved: event("workers", "client", true, {
     view_sections: count(20),
@@ -758,11 +766,12 @@ export const EVENTS = {
    * A model call that did not happen: the monthly budget is used up, or the
    * API refused for lack of credit (error_code: billing_error,
    * enforced_spend_limit_reached). A system event: the credits are shared.
-   * One user's own cap or block (user_cap, user_blocked) is recorded on that user.
+   * One user's own cap or block (user_cap, user_blocked) is recorded on that
+   * user, so is the cap of the company they worked in (space_cap, 22.5).
    */
   jarvis_paused: event("jarvis", "server", false, {
     feature: key(),
-    reason: oneOf(["budget", "credits", "user_cap", "user_blocked"]),
+    reason: oneOf(["budget", "credits", "user_cap", "user_blocked", "space_cap"]),
     error_code: optional(key()),
   }),
   /** A bubble shown and every reaction to it (Do = accept, Show = open, Later, Close). */

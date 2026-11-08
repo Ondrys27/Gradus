@@ -62,7 +62,7 @@ U každé sekce: adopce (% aktivních, kteří ji použili), počet akcí, akce 
 
 **Finance** — transakce, vystavené faktury, automatické platby
 
-**Správa firmy** (dříve Pracovníci, sekce `workers`) — pozvánky odeslané / přijaté / vypršelé (`worker_invited` nese, zda má nadřízeného a kolik skupin), aktivní pracovníci, zadané a splněné úkoly, schválené výdělky; přesuny ve stromu (`worker_moved`: odkud — seznam / mapa / nabídka, hloubka, přímo pod majitele), skupiny založené / upravené / smazané (`worker_group_created` / `_updated` / `_deleted`, jen počty členů), volba seznam / mapa (`view_selected` s `screen = company`)
+**Správa firmy** (dříve Pracovníci, sekce `workers`) — pozvánky odeslané / přijaté / vypršelé (`worker_invited` nese, zda má nadřízeného, kolik skupin a zda pozvánka čeká na existující účet v aplikaci, nebo je to odkaz pro nového člověka; `worker_invite_accepted` při registraci / v aplikaci, `worker_invite_declined`), odchody pracovníků z firmy (`space_left`), aktivní pracovníci, zadané a splněné úkoly, schválené výdělky; přesuny ve stromu (`worker_moved`: odkud — seznam / mapa / nabídka, hloubka, přímo pod majitele), skupiny založené / upravené / smazané (`worker_group_created` / `_updated` / `_deleted`, jen počty členů), volba seznam / mapa (`view_selected` s `screen = company`)
 
 **Vyhledávání** — hledání, otevřené výsledky, míra hledání bez výsledku, ⌘K vs. kliknutí, použité rychlé akce
 
@@ -75,6 +75,7 @@ U každé sekce: adopce (% aktivních, kteří ji použili), počet akcí, akce 
 - Volání podle funkce (chat, hodnocení milníku, noční analýza, hlídání, návrh e-mailu, rozbor schůzek, nastavení odměn) a podle modelu
 - Tokeny vstup / z mezipaměti / výstup, míra zásahu mezipaměti
 - Náklady v USD a Kč — celkem, na aktivního uživatele, na funkci, 10 nejnákladnějších uživatelů (identifikátor a plán; administrace k nim dosadí jméno z profilu nebo e-mail, export CSV má jméno i ID)
+- Náklady podle prostoru — 10 prostorů s nejvyšší útratou AI (`ai_top_spaces`: prostor = majitel, jeho plán, kolik účtů v něm volalo, volání, náklad); do prostoru se počítá každé volání v něm, i pracovníka z jiného účtu (platí majitel). Jméno dosadí administrace, export CSV má jméno i ID (jen majitel)
 - Konverzace a zprávy na uživatele, délka konverzace
 - Latence p50 a p95, chybovost podle kódu
 - Soubory — počet, typy, velikost, odmítnuté a proč

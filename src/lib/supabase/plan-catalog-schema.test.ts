@@ -14,6 +14,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { PlanCatalog } from "@/config/pricing";
+import { validatePlanCatalog } from "@/features/plan/catalog";
 import { seedPlanCatalog } from "@/features/plan/catalog-seed";
 import { PGLITE_EXTENSIONS } from "./pglite-extensions";
 
@@ -146,11 +147,27 @@ describe("the first version", () => {
   it("is the seed of src/config/pricing.ts, published, and nothing else", async () => {
     await asServer();
     const all = await rows<{ status: string; payload: PlanCatalog }>(
-      `select status, payload from plan_catalog_versions`,
+      `select status, payload from plan_catalog_versions where status <> 'draft'`,
     );
     expect(all).toHaveLength(1);
     expect(all[0].status).toBe("published");
-    expect(all[0].payload).toEqual(seedPlanCatalog());
+    // Published before step 22.5: no included_workers, which reads as 0.
+    const parsed = validatePlanCatalog(all[0].payload);
+    expect(parsed.ok && parsed.catalog).toEqual(seedPlanCatalog());
+  });
+
+  it("gets a draft with the workers agreed in step 22.5, never published by itself", async () => {
+    await asServer();
+    const drafts = await rows<{ payload: PlanCatalog }>(
+      `select payload from plan_catalog_versions where status = 'draft'`,
+    );
+    expect(drafts).toHaveLength(1);
+    const parsed = validatePlanCatalog(drafts[0].payload);
+    expect(parsed.ok).toBe(true);
+    const team = parsed.ok ? parsed.catalog.find((plan) => plan.key === "team") : undefined;
+    expect(team?.included_workers).toBe(10);
+    // The rest of this file starts from the published version alone.
+    await db.query(`delete from plan_catalog_versions where status = 'draft'`);
   });
 
   it("gives current_plan() the same limits as the plans table had", async () => {
@@ -366,7 +383,9 @@ describe("the writers", () => {
     const now = await published();
     expect(now.id).toBe(id);
     expect(now.id).not.toBe(original.id);
-    expect(now.payload).toEqual(seedPlanCatalog());
+    // The first version, as published before included_workers existed.
+    const restored = validatePlanCatalog(now.payload);
+    expect(restored.ok && restored.catalog).toEqual(seedPlanCatalog());
     expect((await one<{ ai_calls_limit: number }>(`select * from current_plan($1)`, [user])).ai_calls_limit).toBe(1000);
     expect(
       (await one<{ n: number }>(`select count(*)::int as n from plan_catalog_versions where status = 'published'`)).n,

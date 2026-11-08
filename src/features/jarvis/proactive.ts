@@ -88,6 +88,7 @@ export const PROACTIVE_SUGGESTION_TYPES = [
   "milestoneReady",
   "followUps",
   "pathReady",
+  "workerInvite",
 ] as const;
 export type ProactiveSuggestionType = (typeof PROACTIVE_SUGGESTION_TYPES)[number];
 

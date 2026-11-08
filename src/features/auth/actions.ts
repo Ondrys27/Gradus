@@ -169,11 +169,13 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
       return { fieldErrors: { inviteCode: "invalidInvite" }, values };
     }
   }
-  // Invited accounts leave the trial the database started for them.
+  // Invited accounts leave the trial the database started for them. A worker's
+  // beta comes through the company: no plan of their own, the owner pays for the seat.
   if (decision.kind === "beta" || decision.kind === "worker") {
-    const { error: betaError } = await admin.rpc("grant_beta_plan", { _user_id: userId });
+    const grant = decision.kind === "worker" ? "grant_worker_plan" : "grant_beta_plan";
+    const { error: betaError } = await admin.rpc(grant, { _user_id: userId });
     if (betaError) {
-      await rollback("grant_beta_plan", betaError);
+      await rollback(grant, betaError);
       return { error: "generic", values };
     }
   }
@@ -210,7 +212,9 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
   if (profileResult.error) console.error("[auth] initial profile failed", profileResult.error);
 
   await track("account_registered", { method: decision.kind }, { userId, admin });
-  if (decision.kind === "worker") await track("worker_invite_accepted", {}, { userId, admin });
+  if (decision.kind === "worker") {
+    await track("worker_invite_accepted", { via: "signup" }, { userId, admin });
+  }
   // A tester with an invitation gets a welcome e-mail; a failure only shows in the log.
   if (decision.kind === "beta" || decision.kind === "worker") {
     const origin = await siteOrigin().catch(() => null);

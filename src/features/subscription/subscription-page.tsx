@@ -24,6 +24,7 @@ import { ChangePlanDialog } from "./change-plan-dialog";
 import { PaymentHistory } from "./payment-history";
 import { money, PlanPrice, priceOf } from "./plan-price";
 import { SubscriptionActionError, useRequestChange, useResumeSubscription, useSubscription } from "./queries";
+import { useWorkerCharge, WorkerSeatsLine } from "./worker-seats-line";
 import {
   canCancel,
   canResume,
@@ -95,15 +96,19 @@ function CurrentPlan({ plans }: { plans: PlanCatalog }) {
   const [changing, setChanging] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [notice, setNotice] = useState<SubscriptionNotice>(null);
+  const currency = priceCurrencyFor(settings.currency);
+  const sub = query.data;
+  const managed = sub ? isPaidPlanKey(sub.planKey) : false;
+  // Beta and other plans outside the catalog count workers by the month.
+  const seatBilling = managed && sub ? sub.billing : "monthly";
+  const workers = useWorkerCharge(plans, seatBilling, currency, Boolean(sub));
 
   if (query.isPending) return <Skeleton className="h-72 w-full rounded-card" />;
   if (query.isError) return <FormAlert>{t("loadFailed")}</FormAlert>;
-  const sub = query.data;
   if (!sub) return <FormAlert>{t("loadFailed")}</FormAlert>;
 
   const now = new Date();
   const status = displayStatus(sub, now);
-  const currency = priceCurrencyFor(settings.currency);
   const nameOf = (key: string) => planName(plans, key, locale) ?? tPlans("names.beta");
   const plan = isPaidPlanKey(sub.planKey) ? plans.find((p) => p.key === sub.planKey) : undefined;
   const date = (at: string | null) => (at ? formatDate(new Date(at), format) : "");
@@ -175,12 +180,24 @@ function CurrentPlan({ plans }: { plans: PlanCatalog }) {
           <Fact label={t("current.nextPayment")}>
             {next && nextPlan
               ? t("current.nextPaymentValue", {
-                  amount: money(priceOf(nextPlan, next.billing, currency), currency, format),
+                  // The extra workers go with the plan they are priced by.
+                  amount: money(
+                    priceOf(nextPlan, next.billing, currency) +
+                      (next.planKey === sub.planKey && next.billing === sub.billing
+                        ? (workers?.charge ?? 0)
+                        : 0),
+                    currency,
+                    format,
+                  ),
                   date: date(next.at),
                 })
               : t("current.noNextPayment")}
           </Fact>
         </dl>
+      )}
+
+      {workers && (workers.workers > 0 || workers.includedInPlan > 0 || workers.price !== null) && (
+        <WorkerSeatsLine data={workers} billing={seatBilling} currency={currency} />
       )}
 
       {sub.scheduled && !isExpired(sub, now) && (

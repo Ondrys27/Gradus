@@ -46,6 +46,8 @@ export function adminCan(role: AdminRole, what: OwnerOnly): boolean {
  */
 export const PERSONAL_DATA_EXPORTS: ReadonlySet<string> = new Set([
   "table.ai.top_users.csv",
+  // The owners of the costliest spaces, by name.
+  "table.ai.top_spaces.csv",
   "audit",
   "users",
   // Partner payouts for the accountant: the partner's name and e-mail.

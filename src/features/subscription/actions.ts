@@ -1,7 +1,10 @@
 "use server";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { isPaidPlanKey } from "@/config/pricing";
+import { getPublishedPlans } from "@/features/plan/catalog-server";
 import { notifyPlanRequest } from "@/features/plan/server-interest";
+import { catalogWorkerTerms, storedWorkerTerms, type WorkerTerms } from "@/features/plan/worker-seats";
 import { loadGenerationUsage } from "@/features/contacts/server/generation-usage";
 import { loadAiUsage, loadFileUsage } from "@/features/jarvis/server/usage";
 import { measure } from "@/lib/analytics/instrument";
@@ -234,6 +237,69 @@ export async function loadPlanUsage(): Promise<SubscriptionResult<PlanUsage>> {
       monthlyContacts: contacts.monthly.used,
       aiCalls: ai.used,
       aiFiles: files.used,
+    };
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Who pays for the workers
+// ---------------------------------------------------------------------------
+
+export type WorkerBillingRow = {
+  workerId: string;
+  status: "invited" | "active" | "inactive";
+  /** A valid plan of their own (an invite not yet accepted has none). */
+  ownPlan: boolean;
+  /** Declined the invite; the record is ended. */
+  declined: boolean;
+  /** An invite waiting for an existing account in the app. */
+  pendingAccount: boolean;
+};
+
+export type WorkerBilling = { planKey: string; terms: WorkerTerms; workers: WorkerBillingRow[] };
+
+/**
+ * The owner's workers against their plan (the seats in the price and the
+ * price per extra worker): from the published catalog for solo / pro / team,
+ * from the plans table for beta and other keys. worker_seats() says per
+ * worker, with the owner's own client, whether they hold a plan of their own.
+ */
+export async function loadWorkerBilling(): Promise<SubscriptionResult<WorkerBilling>> {
+  return run("workerBilling", async (ctx) => {
+    const [seats, current] = await Promise.all([
+      rpc<Database["public"]["Functions"]["worker_seats"]["Returns"]>(
+        ctx.supabase.rpc("worker_seats", { _owner: ctx.userId }),
+      ),
+      rpc<{ plan_key: string }[]>(ctx.supabase.rpc("current_plan", { _user_id: ctx.userId })),
+    ]);
+    const planKey = current[0]?.plan_key ?? "beta";
+    let terms: WorkerTerms;
+    if (isPaidPlanKey(planKey)) {
+      const plan = (await getPublishedPlans()).find((candidate) => candidate.key === planKey);
+      terms = plan ? catalogWorkerTerms(plan) : { included: 0, perWorker: null };
+    } else {
+      const { data, error } = await ctx.admin
+        .from("plans")
+        .select("included_workers, per_worker")
+        .eq("key", planKey)
+        .maybeSingle();
+      if (error) throw error;
+      terms = storedWorkerTerms(data);
+    }
+    // TODO(payments): the gateway charges the extra workers (workerSeats() over
+    // these rows, the extra ones × per_worker) as the second item of the
+    // subscription, its quantity updated for the next period. Until then the
+    // amount is only computed and shown; nothing is charged.
+    return {
+      planKey,
+      terms,
+      workers: seats.map((seat) => ({
+        workerId: seat.worker_id,
+        status: seat.status,
+        ownPlan: seat.own_plan,
+        declined: seat.declined,
+        pendingAccount: seat.pending_account,
+      })),
     };
   });
 }

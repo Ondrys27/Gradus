@@ -128,11 +128,14 @@ Stav k 8. 11. 2026.
 | Údaje dodavatele a ARES | Firma, IČO, DIČ, účet. Pro CZ dotáhne údaje z ARES (zdarma). | jen majitel | žádný |
 
 ### Správa firmy
-<!-- kód: nav:workers route:/app/firma route:/app/firma/[workerId] route:/app/firma/odmeny nav:myRewards route:/app/odmeny -->
+<!-- kód: nav:workers route:/app/firma route:/app/firma/[workerId] route:/app/firma/odmeny nav:myRewards route:/app/odmeny route:/app/pozvanky -->
 
 | Funkce | Co dělá | Pro koho | Náklad |
 |---|---|---|---|
-| Pozvat pracovníka | Pozvánka s nadřízeným a skupinami jako odkaz, který majitel pošle sám. Pracovník si založí vlastní účet. | jen majitel | žádný |
+| Pozvat pracovníka | Krátkým ID nebo e-mailem existujícího účtu: pozvánka čeká v jeho aplikaci (zvonek, e-mail, Jarvis). E-mailem novému člověku: odkaz na registraci jako dřív (i e-mailem). S nadřízeným, skupinami, právy a odměnami. | jen majitel | e-mail |
+| Pozvánky | Pozvaný vidí „Novák s.r.o. · Václav Novák tě zve jako Obchodník“, co tam uvidí a odměny; přijme (firma je v přepínači) nebo odmítne. Majitel vidí stav a dostane oznámení. | kdokoli s pozvánkou | žádný |
+| Odejít z firmy | Pracovník sám v Nastavení → Účet; majitel dostane oznámení a e-mail, práce zůstává ve firmě. | pracovník | e-mail |
+| Kdo za koho platí | Kdo má vlastní platný tarif, je ve firmě zdarma; za ostatní platí majitel: pracovníci v ceně tarifu, pak cena za každého dalšího. Štítek u pracovníka a řádek v Předplatném, nic se zatím nestrhává. | jen majitel | žádný |
 | Lidé, strom a mapa | Hierarchie firmy jako seznam nebo organizační mapa, přesun tažením. | majitel; pracovník svou větev (s právem celou firmu) | žádný |
 | Skupiny | Pracovníci ve skupinách, každá skupina má i svou konverzaci ve Zprávách. | jen majitel | žádný |
 | Jemná práva | U každé sekce zvlášť zobrazit, zakládat, upravovat, mazat… Šablony Obchodník, Asistent, Účetní, Vše. | jen majitel | žádný |
@@ -242,7 +245,7 @@ Druhy `check` a `summary` jsou v kódu připravené, ale dnes je nic nevolá. <!
 
 | Co | Jak to funguje | Pro koho |
 |---|---|---|
-| Pravidlové návrhy | Jarvis sám přiletí s věcí, kterou spočítá z dat: obchod vyhrán, komu se ozvat, obchod stojí, úkol po termínu, milník připravený k dokončení, faktura po splatnosti, obchodní úkol po termínu, další krok cesty. Před ukázáním se vždy přepočítá. <!-- kód: proactive:dealWon proactive:followUps proactive:stalledDeal proactive:overdueTask proactive:milestoneReady proactive:overdueInvoice proactive:overdueCrmTask proactive:pathReady proactive:insight --> | majitel |
+| Pravidlové návrhy | Jarvis sám přiletí s věcí, kterou spočítá z dat: obchod vyhrán, komu se ozvat, obchod stojí, úkol po termínu, milník připravený k dokončení, faktura po splatnosti, obchodní úkol po termínu, další krok cesty, pozvánka do cizí firmy. Před ukázáním se vždy přepočítá. <!-- kód: proactive:dealWon proactive:followUps proactive:stalledDeal proactive:overdueTask proactive:milestoneReady proactive:overdueInvoice proactive:overdueCrmTask proactive:pathReady proactive:workerInvite proactive:insight --> | majitel |
 | Návrh z hlídání | Postřeh z hlídání příležitostí, může nést úkoly k přidání. Model stojí jen to hlídání (viz výše), samotné ukázání nic. | majitel |
 | Otázky | Nejvýš dvě týdně: cíl měsíce, kolik hodin chce volat, co ho brzdí, ideální zákazník. Odpovědi jdou do kontextu chatu. <!-- kód: question:monthlyGoal question:callingHours question:obstacle question:idealCustomer --> | majitel |
 | Návrhy otázek v chatu | Tlačítka podle situace: naplánovat den, další krok, komu se ozvat, obchody, co stojí, úkoly a faktury po termínu, první milník, první obchod, finance měsíce, začít volat. Po kliknutí je to obyčejná zpráva chatu. <!-- kód: chip:planDay chip:planNext chip:followUps chip:stalledDeals chip:overdueTasks chip:overdueCrmTasks chip:overdueInvoices chip:nextMilestoneStep chip:firstMilestone chip:firstDeal chip:monthFinance chip:startCalling --> | majitel, pracovník |
@@ -301,14 +304,14 @@ Tyhle odhady je dobré jednou za měsíc porovnat s Náklady (období 30 dní) a
 | Soubory do Jarvise za měsíc | Přiložené soubory v chatu. Solo 0 (soubory vypnuté), Pro 100, Team 150. | Administrace → Tarify |
 | Počet pracovníků | Kolik pracovníků účet má. Dnes všude bez limitu. Nad limitem režim jen pro čtení od další půlnoci. | Administrace → Tarify |
 | Úložiště v MB | Dnes všude bez limitu. **Počítá jen soubory poslané Jarvisovi**, ne faktury, přílohy Zpráv ani dokumenty pracovníků. | Administrace → Tarify |
-| Cena za pracovníka | Měsíční příplatek za pracovníka (Team 290 Kč / 12 EUR). Jen se zobrazuje, platby zatím neběží. | Administrace → Tarify |
+| Cena za pracovníka a pracovníci v ceně | `per_worker` = cena za každého pracovníka navíc, `included_workers` = kolik jich je v ceně (starší verze bez pole = 0). Platí jen za pracovníky bez vlastního platného tarifu. Koncept z 22.5: Solo 0 a bez ceny, Pro 0 + 290 Kč / 12 EUR, Team 10 v ceně + 290 Kč; beta (tabulka `plans`) 0 + 290 Kč. Jen se počítá a ukazuje, platby zatím neběží. | Administrace → Tarify |
 | Celkový strop AI | Měsíční útrata za AI všech účtů (výchozí 90 USD). Nad ním Jarvis do konce měsíce nevolá model. | Administrace → AI a Jarvis → Strop využití AI |
-| Strop AI na uživatele | Měsíční útrata jednoho účtu v USD. Výchozí bez limitu. | Administrace → AI a Jarvis → Strop využití AI |
+| Strop AI na uživatele | Měsíční útrata jednoho účtu v USD. Výchozí bez limitu. Platí dvakrát: na všechno, co účet utratil kdekoli, a jako strop jeho prostoru na všechna volání v něm (i jeho pracovníků, platí majitel). | Administrace → AI a Jarvis → Strop využití AI |
 | Výjimka pro uživatele | Vlastní strop nebo úplně vypnutá AI pro jeden účet. | Administrace → Uživatelé → detail |
 | Práh upozornění | Od kolika procent stropu přijde e-mail (výchozí 80 %). | Administrace → AI a Jarvis |
 | Pravidla Jarvise | Vypínač u každého druhu proaktivního návrhu a u otázek, rozestupy, otázek týdně, stáří návrhu, pokyny. | Administrace → AI a Jarvis → Pravidla |
 | Zkušební období | 14 dní tarifu Pro bez karty. Po něm jen pro čtení. | V kódu (`TRIAL_DAYS`), změna = nasazení |
-| Tarif beta | Testeři a **každý pozvaný pracovník** dostanou tarif beta bez konce: 500 / 5 000 kontaktů, 3 000 odpovědí Jarvise, 500 souborů. Jarvis pracovníka se tak nepočítá do limitu majitele. | Jen v databázi (tabulka `plans`), v administraci ne |
+| Tarif beta | Testeři a **každý pozvaný pracovník** dostanou tarif beta bez konce: 500 / 5 000 kontaktů, 3 000 odpovědí Jarvise, 500 souborů. Beta pracovníka z pozvánky je „přes firmu“ (`via_worker_invite`), za vlastní tarif se nepočítá. Odpovědi Jarvise v cizí firmě se počítají podle tarifu té firmy. | Jen v databázi (tabulka `plans`), v administraci ne |
 | Promo kódy | Dny zkoušky navíc, sleva z první platby, měsíce zdarma. | Administrace → Promo kódy |
 | Registrace bez pozvánky | Zapíná veřejnou registraci se zkušebním obdobím. | Proměnná `PUBLIC_SIGNUP_ENABLED`, změna = restart |
 | Práva pracovníka | Co pracovník smí v každé sekci, včetně generování kontaktů. | Aplikace → Správa firmy (majitel) |
@@ -328,7 +331,6 @@ Pevné hranice v kódu, stejné pro všechny:
 | Pracovníci jen v Team | Pozvat pracovníky jde na kterémkoli tarifu, limit `workers` je všude prázdný. | Vyplnit limit v katalogu (např. Solo a Pro 0). Hlídání už existuje. |
 | Rozbor schůzek jen v Pro | Karta tarifu ho slibuje v Pro, ale funguje na všech tarifech. | Kontrola tarifu před voláním, jedno místo v `/api/jarvis`. |
 | Úložiště všech souborů | Limit počítá jen soubory pro Jarvise. | Přičíst faktury, přílohy Zpráv a dokumenty pracovníků (velikosti v úložišti známe). |
-| Pracovník do limitu majitele | Pracovník má vlastní betu s 3 000 odpověďmi Jarvise. | Počítat volání pracovníka do limitu prostoru majitele. |
 | E-maily kontaktům a faktury e-mailem | Bez počtu. | Měsíční počet podle `usage_events` jako u generování. |
 | Proaktivní Jarvis podle tarifu | Souhrny a hlídání mají všechny tarify stejně. | Přepínač podle tarifu vedle pravidel Jarvise. |
 | Počty záznamů | Kontakty, obchody, milníky, poznámky a faktury nemají strop. | Kontrola při zakládání. Spíš nedoporučujeme, nic nás nestojí. |

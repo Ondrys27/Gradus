@@ -492,6 +492,27 @@ export async function aiTopUsers(q: AdminQuery): Promise<AiTopUser[]> {
   }));
 }
 
+export type AiTopSpace = {
+  /** The owner of the space. */
+  spaceId: string;
+  plan: string;
+  users: number | null;
+  calls: number | null;
+  costUsd: number | null;
+};
+
+/** AI spend by space: every call made in a company counts to it, whoever made it (22.5). */
+export async function aiTopSpaces(q: AdminQuery): Promise<AiTopSpace[]> {
+  const rows = rowsOf(await run(q, "ai_top_spaces"));
+  return rows.map((row) => ({
+    spaceId: String(row.space_id),
+    plan: String(row.plan ?? ""),
+    users: num(row.users),
+    calls: num(row.calls),
+    costUsd: num(row.cost_usd),
+  }));
+}
+
 export const jarvisConversations = (q: AdminQuery) =>
   fields(q, "jarvis_conversations", [
     { name: "conversations", unit: "count" },

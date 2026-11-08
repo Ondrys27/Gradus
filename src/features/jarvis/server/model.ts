@@ -28,11 +28,15 @@ export type JarvisClient = ModelClient & { budget: BudgetGuard };
  * nowhere else; the key never leaves the server. The admin client reads the
  * month's spend (all accounts) and records the owner's budget e-mails.
  */
-export function createAnthropic(admin: SupabaseClient<Database>): JarvisClient | null {
+export function createAnthropic(
+  admin: SupabaseClient<Database>,
+  /** The space of the request: its cap covers the calls (a company's when working there). */
+  options: { spaceId?: string | null } = {},
+): JarvisClient | null {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return null;
   const anthropic = new Anthropic({ apiKey, maxRetries: 1 });
-  return { messages: anthropic.messages, budget: createBudgetGuard(admin) };
+  return { messages: anthropic.messages, budget: createBudgetGuard(admin, { spaceId: options.spaceId }) };
 }
 
 export type ModelCall = {

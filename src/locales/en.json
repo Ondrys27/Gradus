@@ -437,7 +437,8 @@
       "fileLimit": "You've attached all {limit} files for this month. They renew on the 1st.",
       "fileUpload": "The file couldn't be uploaded. Check your connection and try again.",
       "tooManyFiles": "You can attach at most {max} files to one message.",
-      "userLimit": "The AI assistant has used up its limit for your account this month. The rest of the app works as usual."
+      "userLimit": "The AI assistant has used up its limit for your account this month. A higher plan gives more room (Settings → Subscription); the rest of the app works as usual.",
+      "spaceLimit": "The AI assistant has used up this company's limit for the month. The owner raises it with a higher plan; in your own company Jarvis works on."
     },
     "files": {
       "attach": "Attach files",
@@ -491,6 +492,10 @@
       "overdueCrmTask": {
         "text": "“{task}” for {target} is past its due time.",
         "noTarget": "“{task}” is past its due time."
+      },
+      "workerInvite": {
+        "text": "{who} invites you into their team. See what they offer.",
+        "noWho": "Somebody invites you into their team. See what they offer."
       }
     },
     "proactive": {
@@ -1016,6 +1021,19 @@
         "name": "Company name",
         "nameHint": "The people who work for you see it in their company switcher.",
         "logo": "Company logo"
+      },
+      "companies": {
+        "title": "Companies you work for",
+        "description": "You can leave a company any time. The owner is told, your work stays there and your own account does not change.",
+        "unnamed": "Unnamed company",
+        "leave": "Leave the company",
+        "confirmTitle": "Leave {name}?",
+        "confirmText": "Access to its data ends right away. Deals and tasks in your care stay in the company for the owner to hand over. You can come back only with a new invite.",
+        "cancel": "Stay",
+        "errors": {
+          "readOnly": "The company is read-only right now. Try later or write to the owner.",
+          "unknown": "Leaving did not work. Try again."
+        }
       }
     },
     "menuLabel": "Settings groups",
@@ -3207,7 +3225,8 @@
           "busy": "Jarvis has too much going on right now. Try again in a minute.",
           "unavailable": "The analysis couldn't be made right now. Try again in a while.",
           "paused": "Jarvis is taking a break until the end of the month. The rest of the app works as usual.",
-          "userLimit": "The AI assistant has used up its limit for your account this month. The rest of the app works as usual."
+          "userLimit": "The AI assistant has used up its limit for your account this month. A higher plan gives more room; the rest of the app works as usual.",
+          "spaceLimit": "The AI assistant has used up this company's limit for the month. The owner raises it with a higher plan."
         }
       },
       "activeDeals": {
@@ -3380,7 +3399,8 @@
         "paused": "Jarvis is taking a break until the end of the month, so write the reply yourself. The rest of the app works as usual.",
         "network": "The connection dropped. Check the internet and try again.",
         "unknown": "Something went wrong. Try again, or write the reply yourself.",
-        "userLimit": "The AI assistant has used up its limit for your account this month, so write the reply yourself. The rest of the app works as usual."
+        "userLimit": "The AI assistant has used up its limit for your account this month, so write the reply yourself. The rest of the app works as usual.",
+        "spaceLimit": "The AI assistant has used up this company's limit for the month, so write the reply yourself. The owner raises it with a higher plan."
       },
       "attach": "Attach files (up to {max}, {size} MB each)",
       "filesSelected": "Attached files",
@@ -3518,6 +3538,23 @@
       "open": "Open Messages",
       "turnOff": "Turn these notifications off",
       "someone": "Someone"
+    },
+    "workerInvite": {
+      "subject": "{who} invites you into their team on {appName}",
+      "someone": "Somebody",
+      "intro": "{who} invites you into their team on {appName}.",
+      "introAs": "{who} invites you into their team on {appName} as {role}.",
+      "inApp": "Sign in and find the invite under the bell top right. You see what the owner allows and accept or decline it.",
+      "signUp": "Sign up with the link below; then you are in the team and have an account of your own.",
+      "free": "Working in the company costs you nothing; the owner pays for it.",
+      "open": "Open the invite",
+      "register": "Sign up"
+    },
+    "workerLeft": {
+      "subject": "{worker} left your company on {appName}",
+      "intro": "{worker} just left your company on {appName}.",
+      "next": "Their access to the company's data ended right away. Deals and tasks in their care stay in the company; hand them over in Company or in the deal.",
+      "open": "Open Company"
     }
   },
   "workers": {
@@ -3552,7 +3589,10 @@
       "cancel": "Cancel",
       "close": "Close",
       "done": "Done",
-      "saveFailed": "Saving failed. Try again."
+      "saveFailed": "Saving failed. Try again.",
+      "target": "Short ID or e-mail",
+      "targetHint": "Already has an account? Their short ID from Settings → Account is enough; the invite waits for them in the app. Someone new gets a link to sign up.",
+      "inviteSent": "Invite sent"
     },
     "permissions": {
       "title": "What they may do",
@@ -3653,7 +3693,11 @@
       "validUntil": "Valid until {date}.",
       "expired": "This invite has expired. Create a new link and send it again.",
       "renew": "New link",
-      "renewFailed": "A new link could not be created. Try again."
+      "renewFailed": "A new link could not be created. Try again.",
+      "waitingTitle": "{name} has the invite in the app",
+      "waitingText": "They see it under the bell and by e-mail and accept or decline it. Valid until {date}.",
+      "waitingExpired": "The invite expired. Remove the worker and invite them again.",
+      "declined": "They declined the invite."
     },
     "detail": {
       "loadFailed": "This worker could not be loaded. Try again.",
@@ -3900,7 +3944,8 @@
         "empty": "Add at least one rule first.",
         "unknown": "Something went wrong. Try again, or set up without AI.",
         "userLimit": "The AI assistant has used up its limit for your account this month. You can set up without AI.",
-        "paused": "Jarvis is taking a break until the end of the month. You can set up without AI."
+        "paused": "Jarvis is taking a break until the end of the month. You can set up without AI.",
+        "spaceLimit": "The AI assistant has used up this company's limit for the month. You can set up without AI."
       },
       "proposal": {
         "title": "How it will work",
@@ -3924,7 +3969,12 @@
       "descriptionTooLong": "The details are too long.",
       "amountInvalid": "Enter an amount above zero.",
       "noteTooLong": "The note is too long.",
-      "dateRequired": "Pick a date."
+      "dateRequired": "Pick a date.",
+      "targetRequired": "Enter a short ID or an e-mail.",
+      "targetInvalid": "This is neither a short ID (6 characters) nor an e-mail.",
+      "targetNotFound": "No account has this ID. Check it in their Settings → Account.",
+      "targetSelf": "That is you.",
+      "targetAlreadyMember": "They are in the company already or have an invite."
     },
     "company": {
       "tabs": {
@@ -4047,6 +4097,14 @@
         "managerOwner": "Right under you",
         "groups": "Groups",
         "groupsHint": "Optional, you can change it any time."
+      },
+      "seat": {
+        "own": "has their own plan",
+        "included": "in the price",
+        "extra": "extra {price}",
+        "extraNoPrice": "beyond the plan",
+        "declined": "declined the invite",
+        "waiting": "waiting for an answer"
       }
     },
     "dashboard": {
@@ -4864,7 +4922,8 @@
       "from": "From",
       "status": "Account status"
     },
-    "unlimited": "no limit"
+    "unlimited": "no limit",
+    "perWorkerIncluded": "{count, plural, one {{shown} worker in the price, each more + {price}} other {{shown} workers in the price, each more + {price}}}"
   },
   "trial": {
     "banner": "Trial · {days, plural, one {# day} other {# days}} left",
@@ -5543,6 +5602,10 @@
       "promo_conversion": {
         "name": "Code → payment conversion",
         "description": "Share of accounts that used a partner's promo code in the period and have paid at least once since."
+      },
+      "ai_top_spaces": {
+        "name": "Costliest spaces",
+        "description": "The 10 spaces with the highest AI spend: owner, plan, how many accounts called there, calls and cost."
       }
     }
   },
@@ -5789,7 +5852,9 @@
         "p95": "p95",
         "user": "User",
         "plan": "Plan",
-        "userId": "User ID"
+        "userId": "User ID",
+        "space": "Space (owner)",
+        "spaceId": "Space ID"
       },
       "caps": {
         "title": "AI usage caps",
@@ -5898,6 +5963,10 @@
           "pathReady": {
             "label": "Path ready",
             "description": "After onboarding in game mode, a pointer to the path's milestones."
+          },
+          "workerInvite": {
+            "label": "Invite into a company",
+            "description": "Somebody invited the user into their company and the invite waits for an answer."
           }
         },
         "questions": {
@@ -5960,7 +6029,9 @@
           "forbidden": "Only the owner with a second factor changes the rules.",
           "failed": "Saving failed. Try again."
         }
-      }
+      },
+      "topSpacesTitle": "The 10 costliest spaces",
+      "topSpacesDescription": "AI spend by space: every call in a company counts to it, a worker's from another account too (the owner pays). Next to it the spend by user, wherever they were."
     },
     "game": {
       "title": "Game",
@@ -6693,7 +6764,8 @@
         "highlight": "Highlight line {n}",
         "remove": "Remove line {n}",
         "addLine": "Add a line",
-        "placeholders": "Put a limit's number into the text as {list}."
+        "placeholders": "Put a limit's number into the text as {list}.",
+        "includedWorkersHint": "Workers without a plan of their own that the price covers. Each one more costs the price per worker (without it they do not fit the plan); anyone with a plan of their own joins for free."
       },
       "fields": {
         "name": "Name",
@@ -6703,7 +6775,8 @@
         "per_worker": "Per worker a month",
         "features": "Lines on the card",
         "recommended": "“Recommended” badge",
-        "order": "Position"
+        "order": "Position",
+        "included_workers": "Workers in the price"
       },
       "limits": {
         "daily_contacts": "Contacts a day",
@@ -7392,7 +7465,8 @@
       "perWorker": "+ {price} per worker",
       "betaText": "During the beta everything is free with no time limit. You will choose a plan once payments go live.",
       "scheduled": "From {date}: {plan} · {billing}",
-      "cancelScheduled": "Cancel the change"
+      "cancelScheduled": "Cancel the change",
+      "perWorkerIncluded": "{count, plural, one {{shown} worker in the price, each more + {price}} other {{shown} workers in the price, each more + {price}}}"
     },
     "status": {
       "beta": "Free beta",
@@ -7507,6 +7581,18 @@
       "tooLong": "The text is too long.",
       "emailInvalid": "That does not look like an e-mail.",
       "countryInvalid": "Pick a country."
+    },
+    "workers": {
+      "label": "Workers",
+      "none": "nobody yet",
+      "included": "{shown} of {of} in the price",
+      "extra": "{shown} extra × {price}",
+      "extraNoPrice": "{shown} beyond the plan",
+      "own": "{count, plural, one {{shown} has a plan of their own} other {{shown} have a plan of their own}}",
+      "chargeMonthly": "Extra workers: {amount} a month",
+      "chargeYearly": "Extra workers: {amount} a year",
+      "notInPlan": "Your plan takes no extra workers. A higher plan does.",
+      "rule": "Anyone with a valid plan of their own joins your company for free. You pay for the others by your plan; once a worker pays for their own plan, they cost nothing from the next period. An invited person counts until they accept."
     }
   },
   "messages": {
@@ -8053,6 +8139,53 @@
       "title": "Where you work",
       "current": "You are here",
       "failed": "Switching did not work. Please try again."
+    }
+  },
+  "invites": {
+    "title": "Invites",
+    "description": "Companies that invite you into their team. Accept and the company shows in the switcher top right; your own data stays apart.",
+    "loadFailed": "The invites could not be loaded. Try again.",
+    "emptyTitle": "No invites",
+    "emptyText": "When somebody invites you into their company, you see it here and under the bell.",
+    "someone": "Somebody",
+    "invites": "{who} invites you into their team",
+    "invitesAs": "{who} invites you as {role}",
+    "validUntil": "Valid until {date}",
+    "rightsTitle": "What you will see there",
+    "rightsNone": "The dashboard, your tasks and Messages; the owner may allow more later.",
+    "rewardsTitle": "Rewards",
+    "forYou": "only for you",
+    "free": "Working in the company costs you nothing: the owner has it in their plan. Your own account and data stay yours.",
+    "accept": "Accept",
+    "decline": "Decline",
+    "declineTitle": "Decline the invite?",
+    "declineText": "{who} will see that you declined. If you change your mind, they have to invite you again.",
+    "cancel": "Back",
+    "acceptedTitle": "You are in the team of {name}",
+    "acceptedText": "The company is in the switcher top right now (on a phone under More). Switch whenever you like.",
+    "switch": "Go to {name}",
+    "stay": "Stay here",
+    "switchFailed": "Switching did not work. Try the switcher top right.",
+    "errors": {
+      "invalid": "The invite is no longer valid: it expired or the owner withdrew it.",
+      "alreadyMember": "You work in this company already.",
+      "readOnly": "The company is read-only right now; the invite cannot be accepted yet.",
+      "signedOut": "Sign in again and try once more.",
+      "unknown": "Something went wrong. Try again."
+    }
+  },
+  "inbox": {
+    "title": "Notifications",
+    "open": "Notifications",
+    "openCount": "{count, plural, one {Notifications, {shown} new} other {Notifications, {shown} new}}",
+    "empty": "Nothing new.",
+    "someone": "Somebody",
+    "invite": "{who} invites you into their team",
+    "inviteHint": "Accept or decline",
+    "notes": {
+      "invite_accepted": "{name} accepted the invite into the company",
+      "invite_declined": "{name} declined the invite",
+      "worker_left": "{name} left the company"
     }
   }
 }

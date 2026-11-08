@@ -37,8 +37,9 @@ export function describePlans(
     const prices =
       `${plan.monthly.CZK} CZK or ${plan.monthly.EUR} EUR a month, ` +
       `${plan.yearly.CZK} CZK or ${plan.yearly.EUR} EUR a year` +
+      (plan.included_workers > 0 ? `, ${plan.included_workers} workers in the price` : "") +
       (plan.per_worker
-        ? `, plus ${plan.per_worker.CZK} CZK or ${plan.per_worker.EUR} EUR a month per worker`
+        ? `, plus ${plan.per_worker.CZK} CZK or ${plan.per_worker.EUR} EUR a month per ${plan.included_workers > 0 ? "further " : ""}worker`
         : "");
     const card = plan.features
       .map((feature) => plain(featureText(feature, plan, locale, String, "no limit")))
@@ -52,6 +53,7 @@ export function describePlans(
   return [
     "<plans>",
     `The plans of ${APP_NAME} as published now, prices without VAT. For plans and prices use only these; the user compares, changes or cancels their plan in Settings → Subscription.`,
+    "Workers: anyone with a valid plan of their own joins a company for free; the owner pays only for workers without one (the workers in the price first, then the price per worker). A worker's AI use in a company counts to that company's limits.",
     ...lines,
     ...(own ? [own] : []),
     "</plans>",
