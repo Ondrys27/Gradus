@@ -134,7 +134,9 @@ def pending():
         except (ValueError, KeyError, TypeError):
             versions = None
     if versions is None:
-        rows = re.findall(r"^\s*(\d{14})?\s*\|\s*(\d{14})?\s*\|", output, re.M)
+        # The text table (a terminal outside agent mode) wraps values in backticks.
+        table = output.replace("`", "").replace("│", "|")
+        rows = re.findall(r"^\s*(\d{14})?\s*\|\s*(\d{14})?\s*\|", table, re.M)
         if not rows:
             print("Výstupu supabase migration list nerozumím.", file=sys.stderr)
             return 2
