@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { fingerprint } from "@/features/admin/server/request-info";
 import { track } from "@/lib/analytics/track";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
 import {
   isPromoCode,
@@ -161,4 +162,31 @@ async function clearPromoCookie() {
   } catch {
     // Outside a request that may set cookies (never in the app's flows): the cookie expires by itself.
   }
+}
+
+/** The session's user when they are the owner of the workspace they work in. */
+export async function sessionOwnerId(): Promise<string | null> {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const userId = data?.claims?.sub;
+  if (typeof userId !== "string" || !userId) return null;
+  const { data: workspaceId, error } = await supabase.rpc("current_workspace_id");
+  if (error) throw error;
+  return workspaceId === userId ? userId : null;
+}
+
+export type PromoStatus = PromoAccountStatus & {
+  /** The owner may still enter a code: none yet and nothing paid. */
+  eligible: boolean;
+  /** A code a partner's link left in this browser, to prefill the field. */
+  suggested: string | null;
+};
+
+/** The signed-in owner's code and whether one can still be entered; null for anyone else. */
+export async function loadPromoStatus(): Promise<PromoStatus | null> {
+  const userId = await sessionOwnerId();
+  if (!userId) return null;
+  const status = await loadPromoAccountStatus(userId, createAdminClient());
+  const eligible = !status.redemption && !status.paid;
+  return { ...status, eligible, suggested: eligible ? await promoFromCookie() : null };
 }

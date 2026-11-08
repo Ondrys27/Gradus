@@ -1,15 +1,11 @@
 "use server";
 
 import { measure } from "@/lib/analytics/instrument";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import type { PromoProblem } from "./codes";
 import {
   checkPromo,
-  loadPromoAccountStatus,
-  promoFromCookie,
   redeemPromo,
-  type PromoAccountStatus,
+  sessionOwnerId,
   type PromoCheck,
   type PromoRedeemed,
 } from "./server/promo";
@@ -17,21 +13,15 @@ import {
 /**
  * The promo code field of the registration, the onboarding and Settings →
  * Subscription. Checking a code needs no account (the registration form
- * asks before there is one) and never names the partner. Redeeming and the
- * account's status are the workspace owner's only (a worker pays for
- * nothing), with the user id from the session.
+ * asks before there is one) and never names the partner. Redeeming is the
+ * workspace owner's only (a worker pays for nothing), with the user id from
+ * the session. The account's status is read through GET /api/promo/status
+ * (a plain request, so it never waits behind other server actions).
  */
 
 export type PromoActionProblem = PromoProblem | "ownerOnly" | "unavailable";
 export type PromoCheckResult = PromoCheck | { ok: false; problem: "unavailable" };
 export type PromoRedeemResult = PromoRedeemed | { ok: false; problem: "ownerOnly" | "unavailable" };
-
-export type PromoStatus = PromoAccountStatus & {
-  /** The owner may still enter a code: none yet and nothing paid. */
-  eligible: boolean;
-  /** A code a partner's link left in this browser, to prefill the field. */
-  suggested: string | null;
-};
 
 const MAX_INPUT = 64;
 
@@ -46,16 +36,6 @@ export async function checkPromoCode(input: string): Promise<PromoCheckResult> {
   })();
 }
 
-/** The session's user when they are the owner of the workspace they work in. */
-async function ownerId(): Promise<string | null> {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  const userId = data?.claims?.sub;
-  if (typeof userId !== "string" || !userId) return null;
-  const { data: workspaceId, error } = await supabase.rpc("current_workspace_id");
-  if (error) throw error;
-  return workspaceId === userId ? userId : null;
-}
 
 export async function redeemPromoCode(
   input: string,
@@ -63,7 +43,7 @@ export async function redeemPromoCode(
 ): Promise<PromoRedeemResult> {
   return measure("promo.redeem", async (): Promise<PromoRedeemResult> => {
     try {
-      const userId = await ownerId();
+      const userId = await sessionOwnerId();
       if (!userId) return { ok: false, problem: "ownerOnly" };
       // The onboarding right after the registration counts as the sign-up.
       const where = source === "signup" ? "signup" : "settings";
@@ -71,21 +51,6 @@ export async function redeemPromoCode(
     } catch (error) {
       console.error("[promo] redeem failed", error);
       return { ok: false, problem: "unavailable" };
-    }
-  })();
-}
-
-export async function loadPromoStatus(): Promise<PromoStatus | null> {
-  return measure("promo.status", async (): Promise<PromoStatus | null> => {
-    try {
-      const userId = await ownerId();
-      if (!userId) return null;
-      const status = await loadPromoAccountStatus(userId, createAdminClient());
-      const eligible = !status.redemption && !status.paid;
-      return { ...status, eligible, suggested: eligible ? await promoFromCookie() : null };
-    } catch (error) {
-      console.error("[promo] status failed", error);
-      return null;
     }
   })();
 }
