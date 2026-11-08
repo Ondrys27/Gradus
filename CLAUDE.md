@@ -30,6 +30,7 @@ bun run test
 bun run e2e           # Playwright proti běžícímu dev serveru, interní účty e2e-…@gradus.local; před každým nasazením musí projít
 bun run db:migrate    # supabase db push
 bun run db:types      # generuje src/types/database.ts
+bun run docs:funkce   # porovná docs/funkce.md s kódem a vypíše, co v něm chybí
 ```
 
 ## Struktura
@@ -50,6 +51,7 @@ bun run db:types      # generuje src/types/database.ts
 - `src/app/(admin)/` — administrace na /admin, majitel a administrátoři s druhým faktorem
 - `src/lib/analytics/` — katalog událostí (events.ts), registr metrik (metrics.ts), track()
 - `docs/metrics.md` — závazný katalog metrik
+- `docs/funkce.md` — co Gradus a Jarvis umí, pro koho a co to stojí (podklad pro tarify)
 
 Projekt je postavený od nuly. Starý kód z Lovable se nepoužívá, design je popsaný v tokenech a v plánu.
 
@@ -337,6 +339,7 @@ Registrace jen s pozvánkovým kódem. **První účet = owner.** Potvrzování 
 - Před větším krokem plán (plan mode), pak provedení.
 - Commit po každém dokončeném kroku, popis anglicky.
 - Po každé sekci: Vitest na klíčovou logiku, ruční průchod na 390 / 768 / 1440 px.
+- **Nová funkce se zapisuje do `docs/funkce.md`**: co dělá, pro koho, štítek nákladu; schopnost Jarvise do tabulky s modelem, tokeny a cenou (`<!-- cena: … -->`), nová stránka, sekce, katalog Jarvise nebo limit tarifu se značkou `<!-- kód: … -->`. `bun run docs:funkce` (i Vitest) hlídá, že dokument sedí s kódem.
 - Chyby hlásit s výstupem terminálu nebo konzole, ne popisem.
 - Před každým nasazením musí projít `bun run e2e`.
 - Hlášení od testerů jsou v `bug_reports`; oprava hlášení = stav Opraveno v administraci.
