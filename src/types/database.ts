@@ -2515,6 +2515,72 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_payouts: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          base_amount: number
+          code_id: string
+          commission_percent: number
+          created_at: string
+          currency: string
+          id: string
+          paid_at: string | null
+          paid_by: string | null
+          payment_id: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          approved_at?: string | null
+          approved_by?: string | null
+          base_amount: number
+          code_id: string
+          commission_percent: number
+          created_at?: string
+          currency: string
+          id?: string
+          paid_at?: string | null
+          paid_by?: string | null
+          payment_id?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          base_amount?: number
+          code_id?: string
+          commission_percent?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_at?: string | null
+          paid_by?: string | null
+          payment_id?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_payouts_code_id_fkey"
+            columns: ["code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_payouts_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       path_milestones: {
         Row: {
           chapter: number
@@ -2639,72 +2705,6 @@ export type Database = {
           position?: number
         }
         Relationships: []
-      }
-      partner_payouts: {
-        Row: {
-          amount: number
-          approved_at: string | null
-          approved_by: string | null
-          base_amount: number
-          code_id: string
-          commission_percent: number
-          created_at: string
-          currency: string
-          id: string
-          paid_at: string | null
-          paid_by: string | null
-          payment_id: string | null
-          status: string
-          user_id: string | null
-        }
-        Insert: {
-          amount: number
-          approved_at?: string | null
-          approved_by?: string | null
-          base_amount: number
-          code_id: string
-          commission_percent: number
-          created_at?: string
-          currency: string
-          id?: string
-          paid_at?: string | null
-          paid_by?: string | null
-          payment_id?: string | null
-          status?: string
-          user_id?: string | null
-        }
-        Update: {
-          amount?: number
-          approved_at?: string | null
-          approved_by?: string | null
-          base_amount?: number
-          code_id?: string
-          commission_percent?: number
-          created_at?: string
-          currency?: string
-          id?: string
-          paid_at?: string | null
-          paid_by?: string | null
-          payment_id?: string | null
-          status?: string
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "partner_payouts_code_id_fkey"
-            columns: ["code_id"]
-            isOneToOne: false
-            referencedRelation: "promo_codes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "partner_payouts_payment_id_fkey"
-            columns: ["payment_id"]
-            isOneToOne: false
-            referencedRelation: "payments"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       payments: {
         Row: {
