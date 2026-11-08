@@ -4981,7 +4981,10 @@ export type Database = {
         Returns: undefined
       }
       company_visible_worker_ids: { Args: never; Returns: string[] }
-      company_visible_worker_ids_in: { Args: { _space: string }; Returns: string[] }
+      company_visible_worker_ids_in: {
+        Args: { _space: string }
+        Returns: string[]
+      }
       company_worker: {
         Args: { _worker_id: string }
         Returns: {
@@ -5102,6 +5105,7 @@ export type Database = {
           last_done_at: string
         }[]
       }
+      default_space_id: { Args: never; Returns: string }
       error_alert_claim: {
         Args: {
           _event_id: string
@@ -5459,6 +5463,11 @@ export type Database = {
           day: string
           meetings: number
         }[]
+      }
+      member_spaces: { Args: never; Returns: string[] }
+      membership_status_of: {
+        Args: { _status: Database["public"]["Enums"]["worker_status"] }
+        Returns: string
       }
       metric_activation: {
         Args: {
@@ -5974,21 +5983,6 @@ export type Database = {
         Args: { _parent_id: string; _position: number; _task_id: string }
         Returns: undefined
       }
-      default_space_id: { Args: never; Returns: string }
-      member_spaces: { Args: never; Returns: string[] }
-      membership_status_of: {
-        Args: { _status: Database["public"]["Enums"]["worker_status"] }
-        Returns: string
-      }
-      permitted_spaces: {
-        Args: { _action: string; _section: string }
-        Returns: string[]
-      }
-      requested_space: { Args: never; Returns: string }
-      section_spaces: {
-        Args: { _level: string; _section: string }
-        Returns: string[]
-      }
       my_spaces: {
         Args: never
         Returns: {
@@ -6062,6 +6056,10 @@ export type Database = {
       permission_default: {
         Args: { _action: string; _section: string }
         Returns: boolean
+      }
+      permitted_spaces: {
+        Args: { _action: string; _section: string }
+        Returns: string[]
       }
       phone_calling_code: { Args: { _country: string }; Returns: string }
       phone_to_e164: {
@@ -6211,6 +6209,7 @@ export type Database = {
         Returns: undefined
       }
       replace_reward_rules: { Args: { _rules: Json }; Returns: number }
+      requested_space: { Args: never; Returns: string }
       require_invoice_editor: { Args: never; Returns: string }
       revoke_pending_rewards: {
         Args: {
@@ -6247,6 +6246,10 @@ export type Database = {
       search_rank: {
         Args: { _doc: string; _q: string; _title: string }
         Returns: number
+      }
+      section_spaces: {
+        Args: { _level: string; _section: string }
+        Returns: string[]
       }
       set_deposit_stage: {
         Args: { _percent?: number; _stage_id: string }
