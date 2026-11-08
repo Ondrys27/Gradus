@@ -4495,75 +4495,15 @@ export type Database = {
       }
     }
     Functions: {
-      account_by_email: { Args: { _email: string }; Returns: string }
-      account_by_public_id: { Args: { _public_id: string }; Returns: string }
-      account_has_own_plan: { Args: { _user_id: string }; Returns: boolean }
-      account_notifications_read: { Args: never; Returns: number }
-      grant_worker_plan: { Args: { _user_id: string }; Returns: undefined }
-      jarvis_space_calls: {
-        Args: { _since: string; _space_id: string; _user_id: string }
-        Returns: number
-      }
-      jarvis_space_month_spend: {
-        Args: { _since: string; _space_id: string }
-        Returns: number
-      }
-      metric_ai_top_spaces: {
-        Args: {
-          _from: string
-          _include_internal?: boolean
-          _limit?: number
-          _segment?: Json
-          _to: string
-          _tz?: string
-        }
-        Returns: {
-          calls: number
-          cost_usd: number
-          plan: string
-          space_id: string
-          users: number
-        }[]
-      }
-      my_worker_invites: {
-        Args: { _user?: string }
-        Returns: {
-          company_name: string
-          created_at: string
-          expires_at: string
-          grants: Json
-          invite_id: string
-          job_title: string
-          logo_url: string
-          owner_name: string
-          rewards: Json
-          space_id: string
-        }[]
-      }
-      space_leave: { Args: { _space: string }; Returns: string }
-      worker_invite_bind: {
-        Args: { _invite: string; _invitee: string; _owner: string }
-        Returns: string
-      }
-      worker_invite_respond: {
-        Args: { _accept: boolean; _invite: string }
-        Returns: string
-      }
-      worker_seats: {
-        Args: { _owner: string }
-        Returns: {
-          declined: boolean
-          own_plan: boolean
-          pending_account: boolean
-          status: Database["public"]["Enums"]["worker_status"]
-          worker_id: string
-        }[]
-      }
       accept_worker_invite: {
         Args: { _code: string; _user_id: string }
         Returns: string
       }
+      account_by_email: { Args: { _email: string }; Returns: string }
+      account_by_public_id: { Args: { _public_id: string }; Returns: string }
       account_deletion_blockers: { Args: { _user: string }; Returns: string[] }
+      account_has_own_plan: { Args: { _user_id: string }; Returns: boolean }
+      account_notifications_read: { Args: never; Returns: number }
       account_prepare_deletion: { Args: { _user: string }; Returns: undefined }
       account_storage_objects: {
         Args: { _user: string }
@@ -5353,6 +5293,7 @@ export type Database = {
       }
       grant_beta_plan: { Args: { _user_id: string }; Returns: undefined }
       grant_used_sections: { Args: { _uid: string }; Returns: undefined }
+      grant_worker_plan: { Args: { _user_id: string }; Returns: undefined }
       grant_worker_rewards: {
         Args: {
           _basis: number
@@ -5496,6 +5437,14 @@ export type Database = {
           cost_usd: number
           top_user_cost_usd: number
         }[]
+      }
+      jarvis_space_calls: {
+        Args: { _since: string; _space_id: string; _user_id: string }
+        Returns: number
+      }
+      jarvis_space_month_spend: {
+        Args: { _since: string; _space_id: string }
+        Returns: number
       }
       jarvis_top_user_spend: {
         Args: { _since: string }
@@ -5649,6 +5598,23 @@ export type Database = {
           active_users: number
           pct: number
           section: string
+          users: number
+        }[]
+      }
+      metric_ai_top_spaces: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _limit?: number
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          calls: number
+          cost_usd: number
+          plan: string
+          space_id: string
           users: number
         }[]
       }
@@ -6104,6 +6070,21 @@ export type Database = {
         }[]
       }
       my_worker_ids: { Args: never; Returns: string[] }
+      my_worker_invites: {
+        Args: { _user?: string }
+        Returns: {
+          company_name: string
+          created_at: string
+          expires_at: string
+          grants: Json
+          invite_id: string
+          job_title: string
+          logo_url: string
+          owner_name: string
+          rewards: Json
+          space_id: string
+        }[]
+      }
       new_invite_code: { Args: never; Returns: string }
       new_public_id: { Args: never; Returns: string }
       next_invoice_number: {
@@ -6365,6 +6346,7 @@ export type Database = {
         Returns: undefined
       }
       settle_idle_work_sessions: { Args: never; Returns: number }
+      space_leave: { Args: { _space: string }; Returns: string }
       start_prospecting: {
         Args: never
         Returns: {
@@ -6494,6 +6476,14 @@ export type Database = {
         Args: { _action: string; _section: string; _worker_id: string }
         Returns: boolean
       }
+      worker_invite_bind: {
+        Args: { _invite: string; _invitee: string; _owner: string }
+        Returns: string
+      }
+      worker_invite_respond: {
+        Args: { _accept: boolean; _invite: string }
+        Returns: string
+      }
       worker_month_stats: {
         Args: { _month_start: string; _timezone: string }
         Returns: {
@@ -6509,6 +6499,16 @@ export type Database = {
       worker_permissions_derive: {
         Args: { _worker_id: string }
         Returns: undefined
+      }
+      worker_seats: {
+        Args: { _owner: string }
+        Returns: {
+          declined: boolean
+          own_plan: boolean
+          pending_account: boolean
+          status: Database["public"]["Enums"]["worker_status"]
+          worker_id: string
+        }[]
       }
       worker_sessions: {
         Args: { _before: string; _limit: number; _worker_id: string }
