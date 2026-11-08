@@ -1050,6 +1050,10 @@
         "label": "Plan",
         "keywords": "subscription payment change plan cancel"
       },
+      "promoCode": {
+        "label": "Promo code",
+        "keywords": "subscription code discount partner influencer"
+      },
       "payments": {
         "label": "Payment history",
         "keywords": "subscription payments receipts"
@@ -4722,7 +4726,7 @@
             "p3": "Exercise your other rights by e-mail at {email}; we will answer within 30 days. You also have the right to lodge a complaint with the Czech Office for Personal Data Protection (www.uoou.cz)."
           },
           "cookies": {
-            "p1": "We use only necessary cookies: signing in to the app and the administration, and your chosen language. No advertising or tracking cookies and no third-party analytics.",
+            "p1": "We use only necessary cookies: signing in to the app and the administration, your chosen language, and a partner's code from their link (30 days, only to fill it in when you sign up). No advertising or tracking cookies and no third-party analytics.",
             "p2": "The app keeps unsaved notes and similar helper data in your browser so they don't get lost."
           },
           "contact": {
@@ -5487,6 +5491,10 @@
       "satisfaction": {
         "name": "Satisfaction",
         "description": "How many answers gave which mark, from 1 (very dissatisfied) to 5 (very satisfied)."
+      },
+      "promo_conversion": {
+        "name": "Code → payment conversion",
+        "description": "Share of accounts that used a partner's promo code in the period and have paid at least once since."
       }
     }
   },
@@ -5547,7 +5555,8 @@
         "explorer": "Explorer",
         "admins": "Administrators",
         "plans": "Plans",
-        "errorAlerts": "Error alerts"
+        "errorAlerts": "Error alerts",
+        "promoCodes": "Promo codes"
       },
       "soon": "Soon",
       "groups": {
@@ -6789,6 +6798,163 @@
           "failed": "The test e-mail could not be sent. Try again."
         }
       }
+    },
+    "promoCodes": {
+      "title": "Promo codes",
+      "description": "Codes of partners and campaigns: who signed up with them, who pays and which commissions wait to be paid out.",
+      "commission": "{percent}% commission on the first payment",
+      "summary": {
+        "title": "Best codes of the last 30 days",
+        "description": "By sign-ups, then by first payments.",
+        "empty": "Nobody used a code in the last 30 days.",
+        "figures": "{registrations, plural, one {# sign-up} other {# sign-ups}} · {paying, plural, one {# paying} other {# paying}}"
+      },
+      "list": {
+        "title": "All codes",
+        "description": "Sign-ups and paying accounts of all time, commissions to pay out (pending and approved) per currency.",
+        "empty": "No codes yet. Create the first one with the button above."
+      },
+      "columns": {
+        "code": "Code",
+        "partner": "Partner",
+        "benefit": "Benefit",
+        "state": "State",
+        "registrations": "Sign-ups",
+        "paying": "Paying",
+        "due": "To pay out",
+        "actions": "Actions"
+      },
+      "states": {
+        "active": "Active",
+        "inactive": "Off",
+        "scheduled": "Not yet valid",
+        "expired": "Ended",
+        "exhausted": "Used up"
+      },
+      "kinds": {
+        "influencer": "Influencer",
+        "partner": "Partner",
+        "campaign": "Campaign"
+      },
+      "sources": {
+        "signup": "Sign-up",
+        "checkout": "Checkout",
+        "settings": "Settings"
+      },
+      "actions": {
+        "create": "Create code",
+        "edit": "Edit",
+        "deactivate": "Deactivate",
+        "activate": "Activate",
+        "copyLink": "Copy link",
+        "copied": "Copied"
+      },
+      "errors": {
+        "failed": "Could not save. Try again."
+      },
+      "form": {
+        "titleNew": "New promo code",
+        "titleEdit": "Edit code {code}",
+        "close": "Close",
+        "code": "Code",
+        "codeHint": "4 to {max} letters or digits without diacritics; lower case, spaces and dashes are fixed automatically.",
+        "codeLocked": "Accounts already used this code, so its text stays and the links keep working.",
+        "generate": "Generate",
+        "partnerName": "Partner",
+        "partnerEmail": "Partner's e-mail (optional)",
+        "partnerNote": "Note (optional)",
+        "kind": "Kind",
+        "benefit": "Benefit",
+        "benefits": {
+          "trial_days_extra": "Longer trial",
+          "percent_off_first": "First month discount",
+          "months_free": "Free months"
+        },
+        "benefitUnits": {
+          "trial_days_extra": "Extra days",
+          "percent_off_first": "Discount in %",
+          "months_free": "Free months"
+        },
+        "range": "{min} to {max}",
+        "preview": "Users will see: {text}",
+        "commission": "Commission on the first payment (%)",
+        "commissionHint": "Of the first payment without VAT, 0 to 100.",
+        "maxUses": "Maximum uses (optional)",
+        "maxUsesHint": "Empty = no limit.",
+        "validFrom": "Valid from (optional)",
+        "validTo": "Valid until (optional)",
+        "validHint": "Whole days in the administration's time zone; empty = no limit.",
+        "active": "Active",
+        "save": "Save",
+        "cancel": "Cancel",
+        "errors": {
+          "code": "A code has 4 to 16 letters or digits without diacritics.",
+          "partnerName": "Say whose code it is (at most 120 characters).",
+          "partnerEmail": "That does not look like an e-mail.",
+          "benefitValue": "The value is out of the benefit's range.",
+          "commission": "The commission is 0 to 100%, with at most two decimals.",
+          "maxUses": "The number of uses is a whole number from 1.",
+          "validTo": "The end cannot be before the start.",
+          "codeTaken": "This code already exists.",
+          "codeInUse": "Accounts already used this code; its text does not change.",
+          "forbidden": "You may not do this, or the admin session has ended.",
+          "failed": "The code could not be saved. Try again.",
+          "invalid": "Check the highlighted fields."
+        }
+      },
+      "detail": {
+        "description": "Partner: {partner}",
+        "back": "All codes",
+        "overview": "Overview",
+        "partner": "Partner",
+        "figures": "Results",
+        "registrations": "{count, plural, one {# sign-up} other {# sign-ups}}",
+        "paying": "{count, plural, one {# paying} other {# paying}}",
+        "paidOut": "Paid out: {amount}"
+      },
+      "users": {
+        "title": "Users",
+        "description": "Who used the code, when, where and whether they have paid.",
+        "empty": "Nobody has used the code yet.",
+        "name": "Name",
+        "date": "Used",
+        "source": "Where",
+        "paid": "Paid?",
+        "paidOn": "Yes, {date}",
+        "notPaid": "Not yet",
+        "internal": "internal",
+        "pages": "Pages of users",
+        "range": "{from}–{to} of {total}",
+        "previous": "Previous",
+        "next": "Next"
+      },
+      "payouts": {
+        "title": "Commission payouts",
+        "description": "Made automatically on the first payment of a user with the code, from the payment without VAT.",
+        "readOnly": "The owner approves payouts and marks them paid.",
+        "empty": "No payouts yet.",
+        "created": "Created",
+        "user": "User",
+        "base": "Payment without VAT",
+        "amount": "Commission",
+        "status": "State",
+        "deletedUser": "Deleted account",
+        "statuses": {
+          "pending": "Waiting for approval",
+          "approved": "Approved",
+          "paid": "Paid out"
+        },
+        "approve": "Approve",
+        "unapprove": "Back to approval",
+        "markPaid": "Mark paid",
+        "export": "CSV export for the accountant",
+        "errors": {
+          "forbidden": "Only the owner with a live admin session changes payouts.",
+          "transition": "The payout has changed meanwhile. Reload the page.",
+          "invalid": "Invalid payout.",
+          "failed": "Could not save. Try again."
+        }
+      }
     }
   },
   "invoices": {
@@ -7787,6 +7953,45 @@
       "2": "And done.",
       "3": "See? Nothing to it.",
       "4": "Keep going."
+    }
+  },
+  "promo": {
+    "offer": "Code {code}: {benefit}",
+    "benefit": {
+      "trial_days_extra": "{value, plural, one {trial # day longer} other {trial # days longer}}",
+      "percent_off_first": "{value, plural, =50 {first month at half price} =100 {first month free} other {first month #% off}}",
+      "months_free": "{value, plural, one {first month free} other {first # months free}}"
+    },
+    "field": {
+      "toggle": "Have a code?",
+      "label": "Partner code",
+      "checking": "Checking the code…"
+    },
+    "problems": {
+      "invalid": "A code has 4 to 16 letters or digits.",
+      "not_found": "We don't know this code. Check it is typed correctly.",
+      "inactive": "This code is no longer valid.",
+      "not_started": "This code is not valid yet, try again later.",
+      "expired": "This code has expired.",
+      "exhausted": "This code has been used up, all places are taken.",
+      "already_redeemed": "Your account already uses a code. One code per account.",
+      "already_paid": "A code can only be added before the first payment.",
+      "no_trial": "This code extends the trial and your account has none.",
+      "ownerOnly": "The owner of the account enters the code.",
+      "unavailable": "The code could not be checked right now. Try again in a moment."
+    },
+    "redeem": {
+      "apply": "Use code"
+    },
+    "card": {
+      "title": "Promo code",
+      "description": "A partner's code gives a benefit for the trial or the first payment. One code per account, and only before you first pay.",
+      "redeemed": "Done. {offer}.",
+      "trialEnds": "The code makes your trial longer, it ends on {date}.",
+      "firstPayment": "First month with the code: {first} instead of {regular}.",
+      "firstPaymentYearly": "First year with the code: {first} instead of {regular}.",
+      "freeMonths": "{months, plural, one {First month free} other {First # months free}}, then {regular} a month.",
+      "betaNote": "Nothing is paid during the beta. The code's benefit applies to the first payment once you choose a plan."
     }
   }
 }

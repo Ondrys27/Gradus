@@ -42,6 +42,8 @@ export const PAGE_FILTERS: Record<AdminSectionKey, readonly AdminFilter[]> = {
   audit: [],
   // The catalog in force and its history: no period, no segments.
   plans: [],
+  // The ledger of partner codes: every account, its own 30-day summary.
+  promoCodes: [],
   // A setting: no period, no segments.
   errorAlerts: [],
   admins: [],

@@ -1050,6 +1050,10 @@
         "label": "Tarif",
         "keywords": "předplatné platba změna tarifu zrušit"
       },
+      "promoCode": {
+        "label": "Promo kód",
+        "keywords": "předplatné kód sleva partner influencer"
+      },
       "payments": {
         "label": "Historie plateb",
         "keywords": "předplatné platby doklady"
@@ -4722,7 +4726,7 @@
             "p3": "Ostatní práva uplatníš e-mailem na {email}, odpovíme nejpozději do 30 dní. Máš také právo podat stížnost u Úřadu pro ochranu osobních údajů (www.uoou.cz)."
           },
           "cookies": {
-            "p1": "Používáme jen nezbytné cookies: přihlášení do aplikace a administrace a zvolený jazyk. Žádné reklamní ani sledovací cookies a žádné analytické služby třetích stran.",
+            "p1": "Používáme jen nezbytné cookies: přihlášení do aplikace a administrace, zvolený jazyk a kód partnera z jeho odkazu (30 dní, jen aby se ti při registraci předvyplnil). Žádné reklamní ani sledovací cookies a žádné analytické služby třetích stran.",
             "p2": "Aplikace si v prohlížeči ukládá rozepsané poznámky a podobné pomocné údaje, aby se ti neztratily."
           },
           "contact": {
@@ -5487,6 +5491,10 @@
       "satisfaction": {
         "name": "Spokojenost",
         "description": "Kolik odpovědí dalo jakou známku od 1 (velmi nespokojený) do 5 (velmi spokojený)."
+      },
+      "promo_conversion": {
+        "name": "Konverze kód → platba",
+        "description": "Podíl účtů, které v období použily promo kód partnera a od té doby aspoň jednou zaplatily."
       }
     }
   },
@@ -5547,7 +5555,8 @@
         "explorer": "Průzkumník",
         "admins": "Administrátoři",
         "plans": "Tarify",
-        "errorAlerts": "Upozornění na chyby"
+        "errorAlerts": "Upozornění na chyby",
+        "promoCodes": "Promo kódy"
       },
       "soon": "Brzy",
       "groups": {
@@ -6789,6 +6798,163 @@
           "failed": "Zkušební e-mail se nepovedlo odeslat. Zkus to znovu."
         }
       }
+    },
+    "promoCodes": {
+      "title": "Promo kódy",
+      "description": "Kódy partnerů a kampaní: kdo se s nimi zaregistroval, kdo platí a jaké provize čekají na výplatu.",
+      "commission": "provize {percent} % z první platby",
+      "summary": {
+        "title": "Nejlepší kódy za 30 dní",
+        "description": "Podle registrací, potom podle prvních plateb.",
+        "empty": "Za posledních 30 dní žádný kód nikdo nepoužil.",
+        "figures": "{registrations, plural, one {# registrace} few {# registrace} other {# registrací}} · {paying, plural, one {# platící} few {# platící} other {# platících}}"
+      },
+      "list": {
+        "title": "Všechny kódy",
+        "description": "Registrace a platící za celou dobu, provize k vyplacení (čekající i schválené) po měnách.",
+        "empty": "Zatím žádný kód. Založ první tlačítkem nahoře."
+      },
+      "columns": {
+        "code": "Kód",
+        "partner": "Partner",
+        "benefit": "Výhoda",
+        "state": "Stav",
+        "registrations": "Registrace",
+        "paying": "Platící",
+        "due": "K vyplacení",
+        "actions": "Akce"
+      },
+      "states": {
+        "active": "Aktivní",
+        "inactive": "Vypnutý",
+        "scheduled": "Ještě neplatí",
+        "expired": "Skončil",
+        "exhausted": "Vyčerpaný"
+      },
+      "kinds": {
+        "influencer": "Influencer",
+        "partner": "Partner",
+        "campaign": "Kampaň"
+      },
+      "sources": {
+        "signup": "Registrace",
+        "checkout": "Platba",
+        "settings": "Nastavení"
+      },
+      "actions": {
+        "create": "Založit kód",
+        "edit": "Upravit",
+        "deactivate": "Deaktivovat",
+        "activate": "Aktivovat",
+        "copyLink": "Kopírovat odkaz",
+        "copied": "Zkopírováno"
+      },
+      "errors": {
+        "failed": "Nepodařilo se to uložit. Zkus to znovu."
+      },
+      "form": {
+        "titleNew": "Nový promo kód",
+        "titleEdit": "Upravit kód {code}",
+        "close": "Zavřít",
+        "code": "Kód",
+        "codeHint": "4 až {max} písmen nebo číslic bez diakritiky; malá písmena, mezery a pomlčky se upraví samy.",
+        "codeLocked": "Kód už někdo použil, jeho text zůstává, ať odkazy dál fungují.",
+        "generate": "Vygenerovat",
+        "partnerName": "Partner",
+        "partnerEmail": "E-mail partnera (nepovinné)",
+        "partnerNote": "Poznámka (nepovinné)",
+        "kind": "Druh",
+        "benefit": "Výhoda",
+        "benefits": {
+          "trial_days_extra": "Delší zkušební období",
+          "percent_off_first": "Sleva z prvního měsíce",
+          "months_free": "Měsíce zdarma"
+        },
+        "benefitUnits": {
+          "trial_days_extra": "Dní navíc",
+          "percent_off_first": "Sleva v %",
+          "months_free": "Měsíců zdarma"
+        },
+        "range": "{min} až {max}",
+        "preview": "Uživatel uvidí: {text}",
+        "commission": "Provize z první platby (%)",
+        "commissionHint": "Z první platby bez DPH, 0 až 100.",
+        "maxUses": "Nejvýš použití (nepovinné)",
+        "maxUsesHint": "Prázdné = bez omezení.",
+        "validFrom": "Platí od (nepovinné)",
+        "validTo": "Platí do (nepovinné)",
+        "validHint": "Celé dny v pásmu administrace; prázdné = bez omezení.",
+        "active": "Aktivní",
+        "save": "Uložit",
+        "cancel": "Zrušit",
+        "errors": {
+          "code": "Kód má 4 až 16 písmen nebo číslic bez diakritiky.",
+          "partnerName": "Napiš, komu kód patří (nejvýš 120 znaků).",
+          "partnerEmail": "Tohle nevypadá jako e-mail.",
+          "benefitValue": "Hodnota je mimo rozsah výhody.",
+          "commission": "Provize je 0 až 100 %, nejvýš na dvě desetinná místa.",
+          "maxUses": "Počet použití je celé číslo od 1.",
+          "validTo": "Konec platnosti nesmí být před začátkem.",
+          "codeTaken": "Takový kód už existuje.",
+          "codeInUse": "Kód už někdo použil, jeho text se nemění.",
+          "forbidden": "Na tohle nemáš oprávnění nebo vypršela relace administrace.",
+          "failed": "Kód se nepodařilo uložit. Zkus to znovu.",
+          "invalid": "Zkontroluj zvýrazněná pole."
+        }
+      },
+      "detail": {
+        "description": "Partner: {partner}",
+        "back": "Všechny kódy",
+        "overview": "Přehled",
+        "partner": "Partner",
+        "figures": "Výsledky",
+        "registrations": "{count, plural, one {# registrace} few {# registrace} other {# registrací}}",
+        "paying": "{count, plural, one {# platící} few {# platící} other {# platících}}",
+        "paidOut": "Vyplaceno: {amount}"
+      },
+      "users": {
+        "title": "Uživatelé",
+        "description": "Kdo kód použil, kdy, odkud a jestli už zaplatil.",
+        "empty": "Kód zatím nikdo nepoužil.",
+        "name": "Jméno",
+        "date": "Použil",
+        "source": "Odkud",
+        "paid": "Zaplatil?",
+        "paidOn": "Ano, {date}",
+        "notPaid": "Ještě ne",
+        "internal": "interní",
+        "pages": "Stránky uživatelů",
+        "range": "{from}–{to} z {total}",
+        "previous": "Předchozí",
+        "next": "Další"
+      },
+      "payouts": {
+        "title": "Výplaty provizí",
+        "description": "Vznikají samy při první platbě uživatele s kódem, z platby bez DPH.",
+        "readOnly": "Výplaty schvaluje a označuje majitel.",
+        "empty": "Zatím žádná výplata.",
+        "created": "Vznikla",
+        "user": "Uživatel",
+        "base": "Platba bez DPH",
+        "amount": "Provize",
+        "status": "Stav",
+        "deletedUser": "Smazaný účet",
+        "statuses": {
+          "pending": "Čeká na schválení",
+          "approved": "Schváleno",
+          "paid": "Vyplaceno"
+        },
+        "approve": "Schválit",
+        "unapprove": "Vrátit ke schválení",
+        "markPaid": "Označit Vyplaceno",
+        "export": "Export CSV pro účetní",
+        "errors": {
+          "forbidden": "Výplaty mění jen majitel s živou relací administrace.",
+          "transition": "Výplata už je v jiném stavu. Obnov stránku.",
+          "invalid": "Neplatná výplata.",
+          "failed": "Nepodařilo se to uložit. Zkus to znovu."
+        }
+      }
     }
   },
   "invoices": {
@@ -7787,6 +7953,45 @@
       "2": "A je to.",
       "3": "Vidíš? Nic těžkého.",
       "4": "Jedeš dál."
+    }
+  },
+  "promo": {
+    "offer": "Kód {code}: {benefit}",
+    "benefit": {
+      "trial_days_extra": "{value, plural, one {zkušební období o # den delší} few {zkušební období o # dny delší} other {zkušební období o # dní delší}}",
+      "percent_off_first": "{value, plural, =50 {první měsíc za polovinu} =100 {první měsíc zdarma} other {první měsíc o # % levněji}}",
+      "months_free": "{value, plural, one {první měsíc zdarma} few {první # měsíce zdarma} other {prvních # měsíců zdarma}}"
+    },
+    "field": {
+      "toggle": "Máš kód?",
+      "label": "Kód od partnera",
+      "checking": "Ověřuji kód…"
+    },
+    "problems": {
+      "invalid": "Kód má 4 až 16 písmen nebo číslic.",
+      "not_found": "Takový kód neznáme. Zkontroluj, jestli je opsaný správně.",
+      "inactive": "Tento kód už neplatí.",
+      "not_started": "Tento kód ještě neplatí, zkus to později.",
+      "expired": "Platnost kódu skončila.",
+      "exhausted": "Kód je vyčerpaný, všechna místa už jsou obsazená.",
+      "already_redeemed": "Tvůj účet už jeden kód používá. Na účet jde použít jen jeden.",
+      "already_paid": "Kód jde zadat jen před první platbou.",
+      "no_trial": "Kód prodlužuje zkušební období a tvůj účet žádné nemá.",
+      "ownerOnly": "Kód zadává majitel účtu.",
+      "unavailable": "Kód se teď nepodařilo ověřit. Zkus to za chvíli znovu."
+    },
+    "redeem": {
+      "apply": "Použít kód"
+    },
+    "card": {
+      "title": "Promo kód",
+      "description": "Kód od partnera dá výhodu ke zkušebnímu období nebo k první platbě. Na účet jde použít jeden, a jen než poprvé zaplatíš.",
+      "redeemed": "Hotovo. {offer}.",
+      "trialEnds": "Zkušební období je s kódem delší, končí {date}.",
+      "firstPayment": "První měsíc s kódem: {first} místo {regular}.",
+      "firstPaymentYearly": "První rok s kódem: {first} místo {regular}.",
+      "freeMonths": "{months, plural, one {První měsíc zdarma} few {První # měsíce zdarma} other {Prvních # měsíců zdarma}}, potom {regular} měsíčně.",
+      "betaNote": "Během bety se nic neplatí. Výhoda kódu se použije při první platbě, až si vybereš tarif."
     }
   }
 }

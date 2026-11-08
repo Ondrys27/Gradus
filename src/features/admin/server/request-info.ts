@@ -10,7 +10,7 @@ function fingerprintKey(): string {
 }
 
 /** A keyed hash, short enough to read in the audit, never the value itself. */
-export function fingerprint(kind: "ip" | "email", value: string): string {
+export function fingerprint(kind: "ip" | "email" | "promo", value: string): string {
   return createHmac("sha256", fingerprintKey())
     .update(`${kind}:${value.trim().toLowerCase()}`)
     .digest("hex")

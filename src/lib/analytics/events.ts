@@ -11,6 +11,7 @@ import { EXPORT_FORMATS, IMPORT_MODES } from "@/features/milestones/map-io";
 import { MINDMAP_FORMATS } from "@/lib/mindmap/formats";
 import { INVOICE_STYLES } from "@/features/invoices/types";
 import { BILLINGS, CANCEL_REASONS } from "@/features/subscription/state";
+import { PROMO_BENEFITS, PROMO_SOURCES } from "@/features/promo/codes";
 import { Constants } from "@/types/database";
 import { field, isSafeField, isScrubbedTextField } from "./fields";
 import { APP_ROUTES, ANALYTICS_SECTIONS, type AnalyticsSection } from "./routes";
@@ -48,7 +49,7 @@ function event<S extends Shape>(
   return { section, from, active, props };
 }
 
-const { id, oneOf, key, isoCode, count, number, ms, bool, optional, errorCode } = field;
+const { id, oneOf, key, isoCode, count, number, ms, bool, optional, errorCode, hash } = field;
 
 const MODES = ["game", "tool"] as const;
 const ONBOARDING_STEPS = [
@@ -843,6 +844,17 @@ export const EVENTS = {
     reason: oneOf(CANCEL_REASONS),
     with_note: bool(),
     trialing: bool(),
+  }),
+  /**
+   * An account used a partner's promo code (step 22.2): the code only as a
+   * keyed hash, never its text; where, what it gives, and whether it made a
+   * running trial longer.
+   */
+  promo_redeemed: event("plan", "server", false, {
+    code_hash: hash(),
+    source: oneOf(PROMO_SOURCES),
+    benefit: oneOf(PROMO_BENEFITS),
+    trial_extended: bool(),
   }),
   trial_notice_shown: event("plan", "client", false, {
     days_left: count(1000),

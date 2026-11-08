@@ -30,6 +30,7 @@ Závazný seznam toho, co se měří a jak. Každá metrika odsud musí mít def
 - Jarvisův průvodce — dokončen / přeskočen / na kterém kroku (do 20.4; od té doby ho nahradil tutoriál)
 - Tutoriál — trychtýř: volba (`tutorial_started`, mode none / quick / full) → kroky (`tutorial_step`, klíč kroku) → dokončení (`tutorial_finished`, podle režimu) nebo ukončení (`tutorial_abandoned`, na kterém kroku); metriky `tutorial_mode`, `tutorial_steps`, `tutorial_finished`, `tutorial_abandoned_at`
 - Aktivovaný uživatel — do 7 dnů od registrace aktivní aspoň 3 různé dny a ve 2 různých sekcích; podíl
+- Konverze kód → platba — z účtů, které v období použily promo kód partnera (`promo_redeemed`: kód jen jako hash, odkud, druh výhody), podíl těch, které od té doby zaplatily; metrika `promo_conversion` (`metric_promo_conversion`)
 
 ## 3. Retence a zapojení
 

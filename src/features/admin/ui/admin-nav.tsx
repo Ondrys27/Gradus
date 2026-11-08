@@ -27,6 +27,7 @@ import {
   ShieldCheckIcon,
   SparklesIcon,
   TagsIcon,
+  TicketPercentIcon,
   TrendingUpIcon,
   UsersIcon,
   UsersRoundIcon,
@@ -64,6 +65,7 @@ const SECTION_ICONS: Record<AdminSectionKey, LucideIcon> = {
   explorer: CompassIcon,
   audit: ScrollTextIcon,
   plans: TagsIcon,
+  promoCodes: TicketPercentIcon,
   errorAlerts: BellRingIcon,
   admins: ShieldCheckIcon,
 };

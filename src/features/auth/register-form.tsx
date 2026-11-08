@@ -6,6 +6,7 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { fieldA11y, FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
+import { PromoCodeField } from "@/features/promo/promo-code-field";
 import { browserTimeZone } from "@/lib/region";
 import { signUp } from "./actions";
 import { CheckEmail } from "./resend-confirmation";
@@ -23,10 +24,13 @@ export type RegisterInvite = {
 export function RegisterForm({
   invite,
   codeOptional = false,
+  promoCode = "",
 }: {
   invite?: RegisterInvite | null;
   /** Public sign-up is on: without a code the account starts a trial. */
   codeOptional?: boolean;
+  /** A partner's code from their link (…/?kod=XYZ, kept in a cookie for 30 days). */
+  promoCode?: string;
 }) {
   const t = useTranslations("auth");
   const [state, action] = useActionState<FormState, FormData>(signUp, {});
@@ -106,6 +110,15 @@ export function RegisterForm({
           hideLabel={t("fields.hidePassword")}
         />
       </FormField>
+      {/* A worker joins a team: the owner pays, a partner's code is not theirs to use. */}
+      {!invite && (
+        <PromoCodeField
+          name="promoCode"
+          defaultValue={state.values?.promoCode ?? promoCode}
+          serverProblem={state.promo}
+          key={`p-${state.values?.promoCode}-${state.promo}`}
+        />
+      )}
       {state.error && <FormAlert>{t(`errors.${state.error}`)}</FormAlert>}
       <SubmitButton className="mt-2 w-full">{t("register.submit")}</SubmitButton>
     </form>

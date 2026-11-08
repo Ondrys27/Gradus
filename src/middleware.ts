@@ -8,6 +8,12 @@ import {
   isAdminPublicPath,
   parseSessionStatus,
 } from "@/features/admin/access";
+import {
+  PROMO_COOKIE,
+  PROMO_COOKIE_MAX_AGE,
+  PROMO_PARAM,
+  promoCodeFromParam,
+} from "@/features/promo/link";
 import { HOME_PATH, loginUrlFor, routeKind, safeNextPath } from "@/lib/auth/routes";
 import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, URL_LOCALE_HEADER } from "@/i18n/locale-cookie";
 import { localizedPath, pageForPath, type SiteLocale } from "@/lib/routes";
@@ -23,6 +29,17 @@ import type { Database } from "@/types/database";
  */
 export async function middleware(request: NextRequest) {
   const response = await route(request);
+  // A partner's link (…/?kod=XYZ): the code waits 30 days for the registration.
+  const promo = promoCodeFromParam(request.nextUrl.searchParams.get(PROMO_PARAM));
+  if (promo) {
+    response.cookies.set(PROMO_COOKIE, promo, {
+      path: "/",
+      maxAge: PROMO_COOKIE_MAX_AGE,
+      sameSite: "lax",
+      httpOnly: true,
+      secure: request.nextUrl.protocol === "https:",
+    });
+  }
   // The administration is never indexed.
   if (isAdminPath(request.nextUrl.pathname)) {
     response.headers.set("X-Robots-Tag", "noindex, nofollow");

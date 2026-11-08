@@ -157,6 +157,7 @@ export function activationTiles(q: AdminQuery): Promise<TileData[]> {
     scalarTile(q, "activation_rate", { spark: true }),
     scalarTile(q, "time_to_value", { lowerIsBetter: true }),
     usersTile(q, "onboarding_completed"),
+    scalarTile(q, "promo_conversion"),
   ]);
 }
 

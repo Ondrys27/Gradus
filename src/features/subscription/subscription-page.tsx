@@ -14,6 +14,7 @@ import { isPaidPlanKey, priceCurrencyFor, type PlanCatalog } from "@/config/pric
 import { useSession, useUserSettings } from "@/features/account/queries";
 import { AppOverview } from "@/features/plan/app-overview";
 import { planName } from "@/features/plan/catalog";
+import { PromoCard } from "@/features/promo/promo-card";
 import { SettingsPage } from "@/features/settings/ui";
 import { formatDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
@@ -64,6 +65,9 @@ export function SubscriptionPage({ plans }: { plans: PlanCatalog }) {
         <>
           <div id="settings-plan" tabIndex={-1} data-setting-row className="rounded-card outline-none">
             <CurrentPlan plans={plans} />
+          </div>
+          <div id="settings-promo" tabIndex={-1} data-setting-row className="rounded-card outline-none">
+            <PromoCard plans={plans} />
           </div>
           <div id="settings-payments" tabIndex={-1} data-setting-row className="rounded-card outline-none">
             <PaymentHistory />

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { PromoActionProblem } from "@/features/promo/actions";
 
 /** Supabase rejects bcrypt inputs over 72 bytes; 8 is our floor everywhere. */
 export const PASSWORD_MIN = 8;
@@ -43,6 +44,8 @@ export const signUpSchema = z.object({
   password,
   // Required unless public sign-up is on; the server decides (decideSignup).
   inviteCode: z.string().trim().max(64).default(""),
+  // A partner's promo code (optional); checked again on the server before the account is made.
+  promoCode: z.string().trim().max(64).default(""),
   timeZone: z.string().max(64).default(""),
 });
 
@@ -61,6 +64,8 @@ export type FormState = {
   error?: AuthErrorKey;
   /** Per-field errors, keyed by input name. */
   fieldErrors?: Partial<Record<string, AuthErrorKey>>;
+  /** Why the promo code cannot be used (a key under `promo.problems`). */
+  promo?: PromoActionProblem;
   /** Echoed back so the form keeps what was typed (never passwords). */
   values?: Partial<Record<string, string>>;
   success?: boolean;

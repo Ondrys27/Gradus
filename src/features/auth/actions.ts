@@ -25,6 +25,7 @@ import { inviteEmailMatches, isValidInviteCode } from "./invite-code";
 import { isE2eTestAccount } from "./e2e-account";
 import { isEmailConfirmationRequired } from "./email-confirmation";
 import { decideSignup } from "./signup-mode";
+import { checkPromo, redeemPromo } from "@/features/promo/server/promo";
 import { findOpenWorkerInvite, type OpenWorkerInvite } from "./worker-invite";
 import {
   authErrorKey,
@@ -89,6 +90,7 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
     displayName: String(formData.get("displayName") ?? ""),
     email: String(formData.get("email") ?? ""),
     inviteCode: String(formData.get("inviteCode") ?? ""),
+    promoCode: String(formData.get("promoCode") ?? ""),
   };
   if (!parsed.success) return { fieldErrors: fieldErrorsFrom(parsed.error), values };
 
@@ -116,6 +118,16 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
   }
   if (workerInvite && !inviteEmailMatches(workerInvite.email, parsed.data.email)) {
     return { fieldErrors: { email: "inviteEmailMismatch" }, values };
+  }
+  // A partner's code: refused with its reason before any account exists. A
+  // worker joins someone's team and pays for nothing, so theirs is ignored.
+  const promoCode = decision.kind === "worker" ? "" : parsed.data.promoCode;
+  if (promoCode) {
+    const promo = await checkPromo(promoCode).catch((error) => {
+      console.error("[auth] promo check failed", error);
+      return { ok: false as const, problem: "unavailable" as const };
+    });
+    if (!promo.ok) return { promo: promo.problem, values };
   }
 
   const locale = await getLocale();
@@ -164,6 +176,15 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
       await rollback("grant_beta_plan", betaError);
       return { error: "generic", values };
     }
+  }
+  // After the plan is settled, so extra trial days extend the trial this account really has.
+  // A code used up in the meantime loses only the code, never the account.
+  if (promoCode) {
+    const redeemed = await redeemPromo(userId, promoCode, "signup", admin).catch((error) => {
+      console.error("[auth] promo redeem failed", error);
+      return null;
+    });
+    if (redeemed && !redeemed.ok) console.error("[auth] promo not redeemed", redeemed.problem);
   }
   const timeZone = isValidTimeZone(parsed.data.timeZone) ? parsed.data.timeZone : DEFAULT_TIME_ZONE;
   const country = countryFromTimeZone(timeZone);

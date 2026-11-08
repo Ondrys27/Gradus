@@ -20,6 +20,9 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | `jarvis-rules-actions.saveJarvisRules` | owner | pravidla Jarvise (přepínače typů a otázek, časování, Pokyny pro Jarvise); admin je vidí jen ke čtení |
 | `POST /api/jarvis` `kind: rulesTest` | owner (aal2, živá relace) | „Vyzkoušet“ u pravidel, jedno placené volání modelu; ostatním 404 |
 | `plans-actions.savePlanDraft`, `discardPlanDraft`, `planCatalogImpact`, `publishPlanCatalog`, `restorePlanVersion` | owner | katalog tarifů; admin vidí zveřejněnou verzi a historii jen ke čtení |
+| `promo-actions.savePromoCode`, `setPromoCodeActive` | owner + admin | promo kódy partnerů (marketing); DB to ověří znovu v `admin_promo_code_save` / `_set_active` (živá relace s aal2), audit `settings.promo_codes` bez jména a e-mailu partnera |
+| `promo-actions.setPayoutStatus` | owner | výplaty provizí (peníze): schválit, vrátit ke schválení, vyplaceno; admin je vidí jen ke čtení |
+| `GET /admin/promo-kody/[id]/export` | owner | výplaty kódu pro účetní se jménem a e-mailem partnera (`promo_payouts` v `PERSONAL_DATA_EXPORTS`); adminovi 404 |
 | `subscription-actions.saveUserSubscription` | owner | předplatné účtu ručně (tarif, období, stav, konec, zrušení); admin ho vidí jen ke čtení |
 | `error-alerts-actions.saveErrorAlerts`, `sendErrorAlertsTest` | owner | adresy a režim e-mailů o chybách, zkušební e-mail; admin nastavení jen čte |
 | `export-actions.recordExport` (grafy, tabulky čísel) | owner + admin | souhrnná čísla |
@@ -47,6 +50,7 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | Detail uživatele — Předplatné | owner upravuje, admin čte |
 | Tarify — Účty na tarifech | owner + admin |
 | Tarify (`/admin/tarify`) | owner upravuje a zveřejňuje, admin čte zveřejněnou verzi a historii |
+| Promo kódy (`/admin/promo-kody`, detail `/admin/promo-kody/[id]`) | owner + admin zakládají, upravují a deaktivují kódy; výplaty schvaluje, označuje a exportuje jen owner, admin je čte |
 | Upozornění na chyby (`/admin/upozorneni`) | owner upravuje a posílá zkušební e-mail, admin čte |
 | Zpětná vazba — karta Záznam chyby (hledání podle kódu) | owner + admin |
 | Zpětná vazba → Hlášení (seznam, filtry, detail, změna stavu) | owner + admin; snímek obrazovky ve detailu jen owner (adminovi se ukáže jen, že je přiložen) |
@@ -69,6 +73,10 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | `admin_plan_catalog_save_draft`, `_discard_draft`, `_publish`, `_restore` | owner | katalog tarifů, advisory lock, píše `admin_audit` (`settings.plans`, `settings.plans.draft`) |
 | `plan_catalog_impact`, `plan_overage`, `published_plan` | jen service role (server po stráži) | počty účtů a překročení limitů |
 | `admin_subscription_set` | owner | předplatné účtu ručně, zruší naplánovanou změnu, píše `admin_audit` (`users.subscription`, z čeho na co) |
+| `admin_promo_code_save`, `admin_promo_code_set_active` | owner + admin (živá relace, aal2) | kód nový nebo upravený, text použitého kódu se nemění; píše `admin_audit` (`settings.promo_codes`) |
+| `admin_partner_payout_set_status` | owner | pending → approved → paid, approved → pending; píše `admin_audit` (`settings.promo_payouts`) |
+| `admin_promo_code_stats`, `admin_promo_code_users` | jen service role (server po stráži) | počty registrací, platících a provize po měnách; uživatelé kódu |
+| `promo_check`, `promo_redeem`, `promo_account_status`, `promo_code_state` | jen service role (server, uživatel ze session) | kontrola a použití kódu v registraci, průvodci a Předplatném |
 | `admin_plan_user_counts` | jen service role (server po stráži) | účty na tarifech bez interních |
 | `admin_require_owner` | jen uvnitř funkcí výše | bez práva EXECUTE pro klienty |
 | `admin_members`, `admin_people`, `metric_admin_users` | jen service role (server po stráži) | čtou `auth.users` |

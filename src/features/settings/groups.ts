@@ -81,6 +81,7 @@ export const SETTINGS_ITEMS: readonly SettingsItemDef[] = [
   { id: "password", group: "account", target: "settings-password", who: "all" },
   { id: "signOut", group: "account", target: "settings-sign-out", who: "all" },
   { id: "plan", group: "subscription", target: "settings-plan", who: "owner" },
+  { id: "promoCode", group: "subscription", target: "settings-promo", who: "owner" },
   { id: "payments", group: "subscription", target: "settings-payments", who: "owner" },
   { id: "billing", group: "subscription", target: "settings-billing", who: "owner" },
   { id: "jarvisProactive", group: "jarvis", target: "settings-jarvis-proactive", who: "notWorker" },

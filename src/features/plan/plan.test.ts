@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toPlanSnapshot, trialNotice, UNKNOWN_PLAN, type PlanSnapshot } from "./plan";
+import { promoFirstPayment, toPlanSnapshot, trialNotice, UNKNOWN_PLAN, type PlanSnapshot } from "./plan";
 
 const now = new Date("2026-10-06T10:00:00Z");
 const day = 86_400_000;
@@ -65,5 +65,40 @@ describe("toPlanSnapshot", () => {
       readOnly: true,
     });
     expect(toPlanSnapshot(null)).toEqual(UNKNOWN_PLAN);
+  });
+});
+
+describe("promoFirstPayment", () => {
+  it("leaves the price alone without a code or with trial days", () => {
+    expect(promoFirstPayment(499, "monthly", null)).toEqual({ regular: 499, first: 499, freeMonths: 0 });
+    expect(promoFirstPayment(499, "monthly", { benefit: "trial_days_extra", value: 14 })).toEqual({
+      regular: 499,
+      first: 499,
+      freeMonths: 0,
+    });
+  });
+
+  it("takes a percentage off the first month", () => {
+    expect(promoFirstPayment(499, "monthly", { benefit: "percent_off_first", value: 50 }).first).toBe(249.5);
+    expect(promoFirstPayment(499, "monthly", { benefit: "percent_off_first", value: 100 }).first).toBe(0);
+    expect(promoFirstPayment(19.9, "monthly", { benefit: "percent_off_first", value: 33 }).first).toBe(13.33);
+    // Yearly: half of one month off the year (4 990 / 12 / 2 = 207.92).
+    expect(promoFirstPayment(4990, "yearly", { benefit: "percent_off_first", value: 50 }).first).toBe(4782.08);
+  });
+
+  it("gives free months before the first monthly payment, or twelfths off the year", () => {
+    expect(promoFirstPayment(499, "monthly", { benefit: "months_free", value: 2 })).toEqual({
+      regular: 499,
+      first: 499,
+      freeMonths: 2,
+    });
+    expect(promoFirstPayment(4990, "yearly", { benefit: "months_free", value: 1 }).first).toBe(4574.17);
+    expect(promoFirstPayment(4990, "yearly", { benefit: "months_free", value: 12 }).first).toBe(0);
+  });
+
+  it("never goes below zero or past the limits of a benefit", () => {
+    expect(promoFirstPayment(499, "monthly", { benefit: "percent_off_first", value: 150 }).first).toBe(0);
+    expect(promoFirstPayment(4990, "yearly", { benefit: "months_free", value: 20 }).first).toBe(0);
+    expect(promoFirstPayment(0, "monthly", { benefit: "percent_off_first", value: 50 }).first).toBe(0);
   });
 });

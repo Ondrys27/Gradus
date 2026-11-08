@@ -30,7 +30,7 @@ export default async function AdminActivationPage({ searchParams }: Props) {
     <>
       <AdminPageHeader section="activation" q={q} />
       <div className="flex flex-col gap-4">
-        <Suspense fallback={<FiguresSkeleton count={3} />}>
+        <Suspense fallback={<FiguresSkeleton count={4} />}>
           <Tiles q={q} />
         </Suspense>
         <Suspense fallback={<CardSkeleton height={420} />}>

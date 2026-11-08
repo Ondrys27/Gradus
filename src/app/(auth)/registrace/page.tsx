@@ -5,6 +5,8 @@ import { AuthCard, authLinkClass } from "@/features/auth/auth-card";
 import { FormAlert } from "@/components/ui/form-alert";
 import { RegisterForm, type RegisterInvite } from "@/features/auth/register-form";
 import { findOpenWorkerInvite } from "@/features/auth/worker-invite";
+import { promoCodeFromParam } from "@/features/promo/link";
+import { promoFromCookie } from "@/features/promo/server/promo";
 import { APP_NAME } from "@/lib/constants";
 import { localizedPath } from "@/lib/routes";
 import { isPublicSignupEnabled } from "@/lib/signup";
@@ -17,10 +19,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RegisterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ invite?: string | string[] }>;
+  searchParams: Promise<{ invite?: string | string[]; kod?: string | string[] }>;
 }) {
   const [t, locale] = await Promise.all([getTranslations("auth.register"), getLocale()]);
-  const { invite: inviteParam } = await searchParams;
+  const { invite: inviteParam, kod } = await searchParams;
   const code = typeof inviteParam === "string" ? inviteParam.trim().slice(0, 64) : "";
 
   // A worker's link: fill in what the owner entered and say whose team it is.
@@ -36,6 +38,9 @@ export default async function RegisterPage({
   }
 
   const publicSignup = isPublicSignupEnabled();
+  // A partner's link: the code in the address, or the one the visit kept (30 days).
+  const promoCode =
+    promoCodeFromParam(typeof kod === "string" ? kod : null) ?? (await promoFromCookie()) ?? "";
 
   return (
     <AuthCard
@@ -52,7 +57,7 @@ export default async function RegisterPage({
       })}
     >
       {inviteInvalid && <FormAlert className="mb-4">{t("workerInviteInvalid")}</FormAlert>}
-      <RegisterForm invite={invite} codeOptional={publicSignup && !invite} />
+      <RegisterForm invite={invite} codeOptional={publicSignup && !invite} promoCode={promoCode} />
       <p className="mt-4 text-xs text-ink-muted">
         {t.rich("usageNote", {
           appName: APP_NAME,

@@ -72,3 +72,59 @@ export function trialNotice(plan: PlanSnapshot, now: Date = new Date()): TrialNo
   const daysLeft = Math.ceil(msLeft / DAY_MS);
   return { kind: "trial", daysLeft, urgent: daysLeft <= TRIAL_URGENT_DAYS };
 }
+
+// ---------------------------------------------------------------------------
+// The first payment with a promo code
+// ---------------------------------------------------------------------------
+
+/** What a promo code gives (src/features/promo/codes.ts); kept structural here. */
+export type PromoPriceBenefit = {
+  benefit: "trial_days_extra" | "percent_off_first" | "months_free";
+  value: number;
+};
+
+export type PromoPrice = {
+  /** The regular price of one period (a month or a year). */
+  regular: number;
+  /** What the first charged payment comes to with the code. */
+  first: number;
+  /** Monthly billing with free months: how many months cost nothing before that payment. */
+  freeMonths: number;
+};
+
+const cents = (amount: number) => Math.round(amount * 100);
+
+/**
+ * The first payment of a period priced `regular` (the plan, without workers)
+ * with a code, before a payment gateway exists; the gateway will charge
+ * exactly this. A code's benefit is worth months of the plan, never more:
+ * - percent off the first month: monthly, that month's payment is lower;
+ *   yearly, the year costs that part of one month less;
+ * - free months: monthly, the first payment comes after them at the full
+ *   price; yearly, the year costs that many twelfths less;
+ * - extra trial days: the trial is longer, the payment unchanged.
+ */
+export function promoFirstPayment(
+  regular: number,
+  billing: "monthly" | "yearly",
+  promo: PromoPriceBenefit | null,
+): PromoPrice {
+  const plain = { regular, first: regular, freeMonths: 0 };
+  if (!promo || regular <= 0) return plain;
+  const total = cents(regular);
+  const value = Math.max(0, Math.floor(promo.value));
+  switch (promo.benefit) {
+    case "trial_days_extra":
+      return plain;
+    case "percent_off_first": {
+      const percent = Math.min(value, 100);
+      const off = billing === "monthly" ? (total * percent) / 100 : (total * percent) / 1200;
+      return { regular, first: Math.max(0, total - Math.round(off)) / 100, freeMonths: 0 };
+    }
+    case "months_free": {
+      const months = Math.min(value, 12);
+      if (billing === "monthly") return { regular, first: regular, freeMonths: months };
+      return { regular, first: Math.max(0, total - Math.round((total * months) / 12)) / 100, freeMonths: 0 };
+    }
+  }
+}

@@ -2640,6 +2640,72 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_payouts: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          base_amount: number
+          code_id: string
+          commission_percent: number
+          created_at: string
+          currency: string
+          id: string
+          paid_at: string | null
+          paid_by: string | null
+          payment_id: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          approved_at?: string | null
+          approved_by?: string | null
+          base_amount: number
+          code_id: string
+          commission_percent: number
+          created_at?: string
+          currency: string
+          id?: string
+          paid_at?: string | null
+          paid_by?: string | null
+          payment_id?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          base_amount?: number
+          code_id?: string
+          commission_percent?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_at?: string | null
+          paid_by?: string | null
+          payment_id?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_payouts_code_id_fkey"
+            columns: ["code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_payouts_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
@@ -2653,6 +2719,7 @@ export type Database = {
           status: string
           subscription_id: string | null
           user_id: string
+          vat_amount: number
         }
         Insert: {
           amount: number
@@ -2666,6 +2733,7 @@ export type Database = {
           status: string
           subscription_id?: string | null
           user_id: string
+          vat_amount?: number
         }
         Update: {
           amount?: number
@@ -2679,6 +2747,7 @@ export type Database = {
           status?: string
           subscription_id?: string | null
           user_id?: string
+          vat_amount?: number
         }
         Relationships: [
           {
@@ -2872,6 +2941,104 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "paths"
             referencedColumns: ["key"]
+          },
+        ]
+      }
+      promo_codes: {
+        Row: {
+          active: boolean
+          benefit: string
+          benefit_value: number
+          code: string
+          commission_percent_first: number
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: string
+          max_uses: number | null
+          partner_email: string | null
+          partner_name: string
+          partner_note: string | null
+          updated_at: string
+          valid_from: string | null
+          valid_to: string | null
+        }
+        Insert: {
+          active?: boolean
+          benefit: string
+          benefit_value: number
+          code: string
+          commission_percent_first?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind: string
+          max_uses?: number | null
+          partner_email?: string | null
+          partner_name: string
+          partner_note?: string | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Update: {
+          active?: boolean
+          benefit?: string
+          benefit_value?: number
+          code?: string
+          commission_percent_first?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          max_uses?: number | null
+          partner_email?: string | null
+          partner_name?: string
+          partner_note?: string | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Relationships: []
+      }
+      promo_redemptions: {
+        Row: {
+          benefit: string
+          benefit_value: number
+          code_id: string
+          commission_percent_first: number
+          id: string
+          redeemed_at: string
+          source: string
+          user_id: string
+        }
+        Insert: {
+          benefit: string
+          benefit_value: number
+          code_id: string
+          commission_percent_first: number
+          id?: string
+          redeemed_at?: string
+          source: string
+          user_id: string
+        }
+        Update: {
+          benefit?: string
+          benefit_value?: number
+          code_id?: string
+          commission_percent_first?: number
+          id?: string
+          redeemed_at?: string
+          source?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_redemptions_code_id_fkey"
+            columns: ["code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4364,6 +4531,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      admin_partner_payout_set_status: {
+        Args: { _id: string; _ip_hash?: string; _status: string }
+        Returns: Json
+      }
       admin_people: {
         Args: { _ids: string[] }
         Returns: {
@@ -4396,6 +4567,52 @@ export type Database = {
           expired: number
           plan_key: string
           trialing: number
+        }[]
+      }
+      admin_promo_code_save: {
+        Args: {
+          _active: boolean
+          _benefit: string
+          _benefit_value: number
+          _code: string
+          _commission_percent: number
+          _id: string
+          _ip_hash?: string
+          _kind: string
+          _max_uses: number
+          _partner_email: string
+          _partner_name: string
+          _partner_note: string
+          _valid_from: string
+          _valid_to: string
+        }
+        Returns: string
+      }
+      admin_promo_code_set_active: {
+        Args: { _active: boolean; _id: string; _ip_hash?: string }
+        Returns: undefined
+      }
+      admin_promo_code_stats: {
+        Args: { _since: string }
+        Returns: {
+          code_id: string
+          paying: number
+          paying_since: number
+          payouts_due: Json
+          payouts_paid: Json
+          redemptions: number
+          redemptions_since: number
+        }[]
+      }
+      admin_promo_code_users: {
+        Args: { _code_id: string; _limit: number; _offset: number }
+        Returns: {
+          first_paid_at: string
+          is_internal: boolean
+          redeemed_at: string
+          source: string
+          total: number
+          user_id: string
         }[]
       }
       admin_remove: {
@@ -5535,6 +5752,20 @@ export type Database = {
         }[]
       }
       metric_precomputed_segments: { Args: never; Returns: Json[] }
+      metric_promo_conversion: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          paying: number
+          pct: number
+          redeemed: number
+        }[]
+      }
       metric_retention: {
         Args: {
           _from: string
@@ -5789,6 +6020,13 @@ export type Database = {
         }[]
       }
       post_due_recurring_payments: { Args: never; Returns: number }
+      promo_account_status: { Args: { _user_id: string }; Returns: Json }
+      promo_check: { Args: { _code: string }; Returns: Json }
+      promo_code_state: { Args: { _code_id: string }; Returns: string }
+      promo_redeem: {
+        Args: { _code: string; _source: string; _user_id: string }
+        Returns: Json
+      }
       prospecting_daily_seconds: {
         Args: { _actor?: string; _from: string; _timezone: string; _to: string }
         Returns: {

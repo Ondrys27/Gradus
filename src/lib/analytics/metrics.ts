@@ -121,6 +121,7 @@ export type EventGrouping = string;
 export const METRIC_FUNCTIONS = {
   metric_funnel: USER,
   metric_activation: USER,
+  metric_promo_conversion: USER,
   metric_cohorts: USER,
   metric_retention: USER,
   metric_usage_heatmap: ALL,
@@ -384,6 +385,12 @@ export const METRICS: readonly MetricDefinition[] = [
     "activation",
     "percent",
     fn("metric_activation", { pick: { field: "pct" } }),
+  ),
+  metric(
+    "promo_conversion",
+    "activation",
+    "percent",
+    fn("metric_promo_conversion", { pick: { field: "pct" } }),
   ),
 
   // --- 3. Retention ----------------------------------------------------------

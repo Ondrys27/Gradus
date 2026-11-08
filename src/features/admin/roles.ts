@@ -21,6 +21,8 @@ export type OwnerOnly =
   | "editPlans"
   /** An account's subscription set by hand (until payments exist); an admin reads it. */
   | "editSubscriptions"
+  /** Partner payouts approved and marked paid; an admin reads them. */
+  | "managePayouts"
   /** Where the error e-mails go and how often, the test e-mail; an admin reads it. */
   | "editErrorAlerts"
   /** Exports whose rows name people (names, e-mails, account ids). */
@@ -38,13 +40,16 @@ export function adminCan(role: AdminRole, what: OwnerOnly): boolean {
 
 /**
  * Chart and table exports (`table.<page>.<table>.csv`) whose rows name
- * people. The audit export (`audit`) and the list of accounts with their
- * e-mails (`users`) name people too.
+ * people. The audit export (`audit`), the list of accounts with their
+ * e-mails (`users`) and the payouts of a promo code with its partner
+ * (`promo_payouts`) name people too.
  */
 export const PERSONAL_DATA_EXPORTS: ReadonlySet<string> = new Set([
   "table.ai.top_users.csv",
   "audit",
   "users",
+  // Partner payouts for the accountant: the partner's name and e-mail.
+  "promo_payouts",
 ]);
 
 export function mayExport(role: AdminRole, target: string): boolean {
