@@ -43,7 +43,7 @@ LOG=".noc/$(date +%F_%H%M).log"
 MAX_ITEMS=20        # pojistka: víc položek za jednu noc nepustí
 MAX_STUCK=3         # kolikrát po sobě smí běh skončit bez posunu
 WAIT_STUCK=600      # po neúspěšném běhu počká 10 minut
-MAX_LIMIT_WAITS=14  # vyčerpaný limit předplatného: čeká po 30 min, nejvýš 7 hodin
+MAX_LIMIT_WAITS=14  # vyčerpaný limit předplatného: čeká po 30 min, nejvýš 7 hodin v kuse (po hotové položce znovu od nuly)
 WAIT_LIMIT=1800
 
 # Claude Code má jet z předplatného Max, ne z API kreditů Jarvise.
@@ -162,6 +162,7 @@ PYEOF
     sleep "$WAIT_STUCK"
   else
     stuck=0
+    limit_waits=0
     done_items=$((done_items + 1))
     log "Hotovo: $next"
   fi
