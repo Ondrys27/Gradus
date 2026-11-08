@@ -115,7 +115,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] STOP | Konec fáze 20. Přečti si docs/jarvis-pravidla.md a v administraci → AI a Jarvis → Pravidla napiš Jarvisovi své pokyny, vyzkoušej je. V milníku importuj mapu z MindNode (export do OPML) a exportuj Markdown. V poznámkách založ myšlenkovou mapu, zkus Tab/Enter a tažení, nech si od Jarvise navrhnout větve. Založ nový účet a projdi rychlou ukázku; pak v Nastavení spusť úplný tutoriál a projdi ho celý, na konci smaž ukázková data. Co nesedí, napiš Claude Code rovnou, pak /pokracuj. · přeskočeno nočním během 2026-11-07, zkontroluj ručně (.noc/zkontroluj.md)
 - [x] 22.1 | architect | env: RESEND_API_KEY — 2026-11-07: Podpora v administraci: hledání účtu podle části e-mailu, reset hesla, nový potvrzovací odkaz, změna e-mailu a ukončení všech přihlášení, vše s důvodem v auditu.
 - [x] 22.2 | architect | — 2026-11-08: Promo kódy partnerů s výhodou při registraci, v průvodci a v Předplatném, provize z první platby a správa kódů s výplatami a exportem v administraci.
-- [ ] 22.3 | architect |
+- [x] 22.3 | architect | — 2026-11-08: Dokument docs/funkce.md s přehledem funkcí, schopností Jarvise s cenami, náklady na uživatele a limity tarifů, hlídaný skriptem bun run docs:funkce.
 - [ ] 22.4 | architect |
 - [ ] 22.5 | architect | env: RESEND_API_KEY
 - [ ] K22 | reviewer |
