@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
+import { SpaceList } from "./space-switcher";
 import { useSignOut } from "@/features/account/queries";
 import { useCloseOnErrorScreen } from "@/features/errors/error-screen-state";
 import { useReportProblem } from "@/features/feedback/report-provider";
@@ -84,6 +85,7 @@ export function BottomNav() {
         closeLabel={t("close")}
         className="md:hidden"
       >
+        <SpaceList />
         <ul className="grid grid-cols-2 gap-3">
           {moreItems.map((item) => {
             const active = isActivePath(pathname, item.href);

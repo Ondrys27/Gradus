@@ -791,7 +791,7 @@ async function chat(ctx: Context, body: unknown, request: Request) {
       return "";
     }),
     // The user's notes as data: titles, and the texts that matter for this message.
-    loadNotesContext(supabase, message, settings).catch((error) => {
+    loadNotesContext(supabase, message, settings, userId).catch((error) => {
       console.error("jarvis notes failed", error);
       return "";
     }),

@@ -17,6 +17,8 @@ export const APP_HOME_PATH = "/app";
 export const PLAN_PATH = "/app/nastaveni/predplatne";
 /** Company: the people of the firm as a tree, their groups, invites and rewards. */
 export const COMPANY_PATH = "/app/firma";
+/** /app/prostor/<space> switches to that company and opens the app there; 404 for anyone not in it. */
+export const SPACE_LINK_PATH = "/app/prostor";
 
 /** Public pages and sign-in pages with their address in each language. */
 export const LOCALIZED_PAGES = {

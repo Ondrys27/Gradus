@@ -352,11 +352,11 @@ describe("billing details", () => {
       /permission denied/,
     );
 
+    // A worker owns a space of their own too (22.4): their own details, never the owner's.
     await asUser(worker);
     expect(await rows(`select user_id from billing_profiles`)).toHaveLength(0);
-    await expect(
-      db.query(`insert into billing_profiles (user_id, name) values ($1, 'Worker')`, [worker]),
-    ).rejects.toThrow(/row-level security/);
+    await db.query(`insert into billing_profiles (user_id, name) values ($1, 'Worker')`, [worker]);
+    expect(await rows(`select user_id from billing_profiles`)).toEqual([{ user_id: worker }]);
     await expect(
       db.query(`insert into billing_profiles (user_id, name) values ($1, 'Theirs')`, [owner]),
     ).rejects.toThrow(/row-level security|duplicate/);

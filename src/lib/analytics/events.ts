@@ -183,6 +183,13 @@ export const EVENTS = {
   }),
   signed_in: event("account", "server", false, {}),
   signed_out: event("account", "client", false, {}),
+  /** The active space changed (step 22.4): whose, never which (no ids). */
+  space_switched: event("account", "server", false, {
+    from: oneOf(["own", "foreign"]),
+    to: oneOf(["own", "foreign"]),
+    spaces: count(50),
+    via: oneOf(["switcher", "link"]),
+  }),
   waitlist_joined: event("account", "server", false, { locale: oneOf(["cs", "en"]) }),
   /** Settings → Privacy and data → Export my data: how many tables and rows went into the ZIP. */
   account_data_exported: event("account", "server", false, {

@@ -71,6 +71,8 @@ const has = (call: Call, name: string, ...args: unknown[]) =>
 
 const NOW = new Date("2026-10-03T10:00:00Z");
 const USER = "00000000-0000-4000-8000-000000000001";
+/** A company the user works for. */
+const OWNER_SPACE = "00000000-0000-4000-8000-0000000000aa";
 const ID = "11111111-1111-4111-8111-111111111111";
 const MILESTONE = "22222222-2222-4222-8222-222222222222";
 const settingsRow = {
@@ -180,7 +182,8 @@ describe("loadProactive", () => {
 
   it("stays silent for a worker, while the timer runs, and when switched off", async () => {
     const worker = await loadProactive({
-      supabase: fakeDb({ workers: { data: [{ id: "w" }] } }).db,
+      // In a company the account works for: the active space is the owner's.
+      supabase: fakeDb({ "rpc:current_workspace_id": { data: OWNER_SPACE } }).db,
       admin: fakeDb().db,
       userId: USER,
       row: settingsRow,
@@ -897,7 +900,7 @@ describe("loadSummary", () => {
       await load(off, fakeDb(), { ...(settingsRow as object), jarvis_proactive: false }),
     ).toEqual({ status: "none" });
     expect(off.calls).toHaveLength(0);
-    const worker = fakeDb({ workers: { data: [{ id: "w" }] } });
+    const worker = fakeDb({ "rpc:current_workspace_id": { data: OWNER_SPACE } });
     expect(await load(worker as ReturnType<typeof supabase>, fakeDb())).toEqual({ status: "none" });
   });
 

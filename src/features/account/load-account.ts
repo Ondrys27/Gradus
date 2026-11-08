@@ -4,12 +4,18 @@ import { GRANT_ROWS_LIMIT, grantsFromRows } from "@/features/workers/permissions
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { USER_SETTINGS_COLUMNS } from "@/lib/user-settings";
+import { toSpaces } from "./spaces";
 import { PROFILE_COLUMNS, type AccountSnapshot, type WorkerAccount } from "./types";
 
 /**
- * Verifies the session and loads profile, settings and roles in one go.
- * Runs in the app layout, which Next.js keeps across page changes, so this
- * happens once per app start, never per navigation.
+ * Verifies the session and loads profile, settings, roles and the active
+ * space in one go. Runs in the app layout, which Next.js keeps across page
+ * changes, so this happens once per app start (and after a switch of the
+ * space, which reloads the app), never per navigation.
+ *
+ * The active space is the database's answer (current_workspace_id() with the
+ * cookie the server client sends): the space picked when the account belongs
+ * there, else its default. The worker record is the one of that space.
  */
 export async function loadAccount(): Promise<AccountSnapshot | null> {
   const supabase = await createClient();
@@ -27,23 +33,34 @@ export async function loadAccount(): Promise<AccountSnapshot | null> {
         .eq("user_id", userId)
         .maybeSingle(),
       supabase.from("user_roles").select("role").eq("user_id", userId),
-      supabase
-        .from("workers")
-        .select("id, owner_id, name, job_title")
-        .eq("user_id", userId)
-        .eq("status", "active")
-        .maybeSingle(),
+      supabase.rpc("current_workspace_id"),
+      supabase.rpc("my_spaces"),
     ]);
 
-  let [profile, settings, roles, workerRow] = await fetchAll();
+  let [profile, settings, roles, space, spaceRows] = await fetchAll();
 
   // Accounts created before the sign-up trigger existed get initialised on first visit.
   if (!profile.data || !settings.data) {
     const { error } = await createAdminClient().rpc("initialize_user", { _user_id: userId });
     if (error) throw error;
-    [profile, settings, roles, workerRow] = await fetchAll();
+    [profile, settings, roles, space, spaceRows] = await fetchAll();
   }
   if (!profile.data || !settings.data) throw new Error("Account data is missing");
+  if (space.error) throw space.error;
+  if (spaceRows.error) throw spaceRows.error;
+  const spaceId = space.data ?? userId;
+
+  // The worker record of the active space; none in the account's own.
+  const workerRow =
+    spaceId === userId
+      ? { data: null, error: null }
+      : await supabase
+          .from("workers")
+          .select("id, owner_id, name, job_title")
+          .eq("user_id", userId)
+          .eq("owner_id", spaceId)
+          .eq("status", "active")
+          .maybeSingle();
   if (workerRow.error) throw workerRow.error;
 
   let worker: WorkerAccount | null = null;
@@ -64,7 +81,7 @@ export async function loadAccount(): Promise<AccountSnapshot | null> {
     };
   }
 
-  // The workspace's plan: a worker works under the owner's.
+  // The active space's plan: in a company, the owner's.
   const { data: planRows, error: planError } = await supabase.rpc("current_plan", {
     _user_id: worker?.ownerId ?? userId,
   });
@@ -77,5 +94,7 @@ export async function loadAccount(): Promise<AccountSnapshot | null> {
     settings: settings.data,
     roles: (roles.data ?? []).map((row) => row.role),
     worker,
+    spaceId: worker?.ownerId ?? userId,
+    spaces: toSpaces(spaceRows.data),
   };
 }

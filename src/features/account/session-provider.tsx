@@ -16,6 +16,7 @@ import { toFormatSettings } from "@/lib/user-settings";
 import { clearClientState } from "./client-state";
 import { accountKeys, SessionContext, useUserSettings } from "./queries";
 import type { AccountSnapshot } from "./types";
+import { SpaceTabSync } from "./space-switch";
 import { WorkspaceSync } from "./workspace-queries";
 
 /**
@@ -68,14 +69,17 @@ export function SessionProvider({
       user: initial.user,
       roles: initial.roles,
       worker: initial.worker,
+      spaceId: initial.spaceId,
+      spaces: initial.spaces,
       plan: initial.plan,
     }),
-    [initial.user, initial.roles, initial.worker, initial.plan],
+    [initial.user, initial.roles, initial.worker, initial.spaceId, initial.spaces, initial.plan],
   );
 
   return (
     <SessionContext.Provider value={session}>
       <WorkspaceSync />
+      <SpaceTabSync />
       <SettingsBridge>{children}</SettingsBridge>
     </SessionContext.Provider>
   );

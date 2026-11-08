@@ -2,14 +2,33 @@
 
 import { createBrowserClient } from "@supabase/ssr";
 import type { RealtimeChannel, SupabaseClient } from "@supabase/supabase-js";
+import { readSpaceCookie, spaceHeaders } from "@/features/account/space-cookie";
 import type { Database } from "@/types/database";
 import { supabasePublicKey, supabaseUrl } from "./env";
 
 let client: SupabaseClient<Database> | undefined;
+let loadedSpaceCookie: string | null | undefined;
+
+/** The active space cookie as it is now (another tab may have switched). */
+export function currentSpaceCookie(): string | null {
+  return typeof document === "undefined" ? null : readSpaceCookie(document.cookie);
+}
+
+/**
+ * The active space cookie this tab was loaded with: the server picked the
+ * space by it, and every request of this tab names the same one, so a switch
+ * in another tab never mixes two companies here (the tab reloads instead).
+ */
+export function loadedSpace(): string | null {
+  loadedSpaceCookie ??= currentSpaceCookie();
+  return loadedSpaceCookie;
+}
 
 /** One browser client per tab; the session lives in cookies shared with the server. */
 export function createClient(): SupabaseClient<Database> {
-  client ??= createBrowserClient<Database>(supabaseUrl(), supabasePublicKey());
+  client ??= createBrowserClient<Database>(supabaseUrl(), supabasePublicKey(), {
+    global: { headers: spaceHeaders(loadedSpace()) },
+  });
   return client;
 }
 

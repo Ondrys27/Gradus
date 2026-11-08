@@ -9,8 +9,8 @@ import { num } from "./metrics-data";
  * from the two dedicated functions of 20261009100000_admin_users.sql.
  * Identifiers and counts only; the page names people (and shows their
  * e-mail) through ./people (admin_people). The search matches the name, any
- * part of the e-mail and the start of the id, without diacritics; the short
- * id of step 22.4 joins it once it exists.
+ * part of the e-mail, the start of the id and the (beginning of the) short
+ * id of Settings → Account (profiles.public_id), without diacritics.
  */
 
 export type UserSort = "activity" | "cost" | "signup";

@@ -162,7 +162,7 @@ AI pomocník v pravém dolním rohu: chat, souhrny dne, návrhy a hodnocení. V�
 
 | Funkce | Co dělá | Pro koho | Náklad |
 |---|---|---|---|
-| Účet | Fotka, jméno, uživatelské jméno, e-mail, jazyk, heslo. | majitel, pracovník | úložiště (fotka) |
+| Účet | Fotka, jméno, uživatelské jméno, krátké ID účtu (kopírovat, QR), e-mail, jazyk, heslo; ve vlastní firmě její název a logo. | majitel, pracovník | úložiště (fotka, logo) |
 | Vzhled | Šest barevných témat (v herním režimu se odemykají úrovní), zvuky, animace, země, pásmo, měna a formáty. | majitel, pracovník | žádný |
 | Práce | Herní nebo nástrojový režim, cesta oboru, kdy znovu oslovit ztracené obchody a údaje na faktury. | majitel (část i pracovník) | žádný |
 | Jarvis | Zapnutí proaktivního Jarvise, jak často se ozývá, tichý režim, e-maily ze Zpráv, znovu spustit tutoriál, smazat ukázková data. | majitel, pracovník | žádný |
@@ -174,7 +174,8 @@ AI pomocník v pravém dolním rohu: chat, souhrny dne, návrhy a hodnocení. V�
 
 | Funkce | Co dělá | Pro koho | Náklad |
 |---|---|---|---|
-| Onboarding | Průvodce na začátku: režim, obor, cesta, země a měna, první kontakt. | majitel | žádný |
+| Onboarding | Průvodce na začátku: režim, obor, cesta, země a měna, první kontakt. Pracovník z pozvánky ho dostane, až se poprvé přepne do vlastní firmy. | majitel | žádný |
+| Přepínač firem | Každý účet má vlastní firmu a může pracovat v dalších. Vpravo nahoře (na telefonu ve Více) „Moje firma“ a firmy, kde je pracovníkem, s názvem a logem; v cizí firmě tyrkysový proužek a název v hlavičce. Data firem se nemíchají, odkaz /app/prostor/… do firmy, kde účet není, je 404. | majitel, pracovník | žádný |
 | Tutoriál | Rychlá ukázka (≈ 2 min) nebo úplný tutoriál na ukázkových datech (≈ 15 min). Texty jsou pevné, bez AI. | majitel; pracovník zkrácenou ukázku | žádný |
 | Hledání ⌘K | Najde kontakty, obchody, milníky, úkoly, poznámky, události, faktury, pracovníky i nastavení, bez diakritiky. | majitel, pracovník (co vidí) | žádný |
 | Hra | XP, 30 úrovní, odznaky, série, oslavy, odemykání sekcí a témat. Nástrojový režim to vypne. | majitel, pracovník | žádný |
