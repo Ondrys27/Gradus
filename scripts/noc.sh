@@ -18,11 +18,25 @@
 # Oprávnění: režim auto — Claude Code se na nic neptá, riskantní kroky
 # sám odmítne a pravidla deny z .claude/settings.json platí dál.
 #
+# Migrace databáze: Claude Code je v režimu auto spustit nesmí. Když se položka
+# neposune a na větvi leží commitnutá migrace, která ve vzdálené databázi chybí,
+# spustí ji tenhle skript sám (scripts/noc-migrace.py): jen když jen přidává
+# (žádné drop, rename, změna typu, truncate, delete) a když projde bun run test.
+# Pak vygeneruje typy a položku pustí znovu, aby ji Claude dokončil (e2e, merge,
+# push). Cokoli jiného nechá na tobě jako dřív. Vypnutí: --bez-migraci
+#
 # Průběh: .noc/<datum>.log  (ráno stačí otevřít; složka se necommituje)
 
 cd "$(dirname "$0")/.." || exit 1
 SKIP_STOPS=0
-[ "$1" = "--bez-zastavek" ] && SKIP_STOPS=1
+AUTO_MIGRATE=1
+for arg in "$@"; do
+  case "$arg" in
+    --bez-zastavek) SKIP_STOPS=1 ;;
+    --bez-migraci) AUTO_MIGRATE=0 ;;
+  esac
+done
+export PATH="$HOME/.bun/bin:$PATH"
 mkdir -p .noc
 grep -qx '.noc/' .gitignore || echo '.noc/' >> .gitignore
 LOG=".noc/$(date +%F_%H%M).log"
@@ -39,11 +53,50 @@ unset ANTHROPIC_API_KEY
 # a položka zůstane rozdělaná. Hodina stačí i na pomalý subagent.
 export CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=3600000
 
-PROMPT='Přečti soubor .claude/commands/pokracuj.md a proveď jeho kroky 1 až 8 přesně, ale jen pro JEDNU položku — první nezaškrtnutou v docs/progress.md. Krok 9 (pokračování další položkou) neprováděj. Když je první položka STOP nebo RUČNĚ, nic nedělej a skonči. Nikdy se uživatele na nic neptej, běží to bez dozoru: když něco nejde, položku nezaškrtávej, popiš proč a skonči. Běh končí s tvým posledním tahem: subagenty spouštěj vždy v popředí (run_in_background: false) a počkej na jejich výsledek, nikdy nekonči tah, dokud práce běží na pozadí. Dev server nespouštěj na pozadí přes nástroj Bash; pro e2e ho spustí Playwright sám, a když na :3000 už běží, použij ho. Když v pracovní složce najdeš nekomitnutou rozdělanou práci na téže položce, navaž na ni. Na konci vypiš česky krátký přehled jako v pokracuj.md.'
+PROMPT='Přečti soubor .claude/commands/pokracuj.md a proveď jeho kroky 1 až 8 přesně, ale jen pro JEDNU položku — první nezaškrtnutou v docs/progress.md. Krok 9 (pokračování další položkou) neprováděj. Když je první položka STOP nebo RUČNĚ, nic nedělej a skonči. Nikdy se uživatele na nic neptej, běží to bez dozoru: když něco nejde, položku nezaškrtávej, popiš proč a skonči. Běh končí s tvým posledním tahem: subagenty spouštěj vždy v popředí (run_in_background: false) a počkej na jejich výsledek, nikdy nekonči tah, dokud práce běží na pozadí. Dev server nespouštěj na pozadí přes nástroj Bash; pro e2e ho spustí Playwright sám, a když na :3000 už běží, použij ho. Když v pracovní složce najdeš nekomitnutou rozdělanou práci na téže položce, navaž na ni. Migraci databáze (bun run db:migrate, supabase db push) nikdy nespouštěj ani nezkoušej: když je položka hotová a čeká jen na migraci, nech všechno commitnuté na její větvi, nic nepushuj a skonči; migraci spustí noční skript a položku pustí znovu. Když migrace položky už ve vzdálené databázi je (supabase migration list), spusť bun run db:types a dokonči položku (e2e, merge do main, zaškrtnutí, push). Na konci vypiš česky krátký přehled jako v pokracuj.md.'
 
 log() { echo "$(date '+%F %T')  $*" | tee -a "$LOG"; }
 
 first_open() { grep -m1 '^- \[ \]' docs/progress.md; }
+
+# Spustí čekající migrace, když jen přidávají a projdou testy. 0 = spuštěno.
+migrated_for=""
+try_migrate() {
+  [ "$AUTO_MIGRATE" = 1 ] || return 1
+  [ "$migrated_for" = "$next" ] && return 1
+  local pending files v f
+  pending="$(python3 scripts/noc-migrace.py pending 2>>"$LOG")" || {
+    log "Stav migrací nejde zjistit (supabase migration list), migraci nechávám tobě."; return 1; }
+  [ -z "$pending" ] && return 1
+  if [ -n "$(git status --porcelain -- supabase/migrations)" ]; then
+    log "Migrace nejsou commitnuté, nechávám je tobě."; return 1
+  fi
+  files=""
+  for v in $pending; do
+    f="$(ls supabase/migrations/"$v"_*.sql 2>/dev/null | head -1)"
+    [ -z "$f" ] && { log "Migrace $v je ve výpisu, ale ne v souboru, nechávám ji tobě."; return 1; }
+    files="$files $f"
+  done
+  log "Čekající migrace na větvi $(git branch --show-current):$files"
+  if ! python3 scripts/noc-migrace.py check $files >>"$LOG" 2>&1; then
+    log "Migrace jen nepřidává (důvod v logu výš), spusť ji sám po kontrole."; return 1
+  fi
+  log "Migrace jen přidává, pouštím bun run test."
+  if ! bun run test >>"$LOG" 2>&1; then
+    log "Testy neprošly, migraci nespouštím."; return 1
+  fi
+  log "Spouštím migraci (supabase db push)."
+  if ! perl -e 'alarm shift; exec @ARGV' 600 bunx supabase db push --yes </dev/null >>"$LOG" 2>&1; then
+    log "supabase db push selhal (výstup v logu výš), nechávám to tobě."; return 1
+  fi
+  bun run db:types >>"$LOG" 2>&1 || log "bun run db:types selhal, položka si typy vygeneruje sama."
+  if ! git diff --quiet -- src/types/database.ts; then
+    git add src/types/database.ts && git commit -qm "Regenerate database types after migration" && log "Typy commitnuté."
+  fi
+  migrated_for="$next"
+  log "Migrace spuštěná:$files"
+  return 0
+}
 
 log "Začátek nočního běhu."
 stuck=0
@@ -87,6 +140,11 @@ PYEOF
     fi
     log "Vyčerpaný limit předplatného, čekám 30 minut ($limit_waits/$MAX_LIMIT_WAITS)."
     sleep "$WAIT_LIMIT"
+    continue
+  fi
+
+  if [ "$(first_open)" = "$next" ] && try_migrate; then
+    log "Pouštím položku znovu, ať ji Claude dokončí."
     continue
   fi
 
