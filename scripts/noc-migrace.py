@@ -18,6 +18,7 @@ import json
 import re
 import subprocess
 import sys
+import time
 
 FORBIDDEN = [
     (r"\bdrop\s+(table|column|schema|type|domain|view|materialized\s+view|function|procedure|sequence|extension)\b",
@@ -97,21 +98,32 @@ def check(paths):
     return 1 if problems else 0
 
 
+def list_migrations():
+    """supabase migration list, tried three times: the connection to the
+    database sometimes drops for a few minutes."""
+    for attempt in range(1, 4):
+        try:
+            run = subprocess.run(
+                ["bunx", "supabase", "migration", "list"],
+                stdin=subprocess.DEVNULL,
+                capture_output=True,
+                text=True,
+                timeout=120,
+            )
+            output = run.stdout + "\n" + run.stderr
+            if run.returncode == 0:
+                return output
+            print(f"supabase migration list (pokus {attempt}): {output[-1500:]}", file=sys.stderr)
+        except (subprocess.TimeoutExpired, OSError) as error:
+            print(f"supabase migration list (pokus {attempt}): {error}", file=sys.stderr)
+        if attempt < 3:
+            time.sleep(60)
+    return None
+
+
 def pending():
-    try:
-        run = subprocess.run(
-            ["bunx", "supabase", "migration", "list"],
-            stdin=subprocess.DEVNULL,
-            capture_output=True,
-            text=True,
-            timeout=180,
-        )
-    except (subprocess.TimeoutExpired, OSError) as error:
-        print(f"supabase migration list: {error}", file=sys.stderr)
-        return 2
-    output = run.stdout + "\n" + run.stderr
-    if run.returncode != 0:
-        print(output[-2000:], file=sys.stderr)
+    output = list_migrations()
+    if output is None:
         return 2
     versions = None
     m = re.search(r'\{"migrations".*\}', output)
