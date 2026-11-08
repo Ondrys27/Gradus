@@ -120,10 +120,6 @@ Formát: `- [ ] ID | agent | požadavek`
 - [ ] 22.5 | architect | env: RESEND_API_KEY
 - [ ] K22 | reviewer |
 - [ ] STOP | Konec fáze 22. Pošli Vášovi docs/funkce.md. V administraci najdi Vášu podle e-mailu a pošli mu reset hesla. Založ promo kód VASA50 a zaregistruj se s ním v anonymním okně. Pozvi Vášu do své firmy přes jeho krátké ID, on pozvánku přijme a přepne se mezi svou a tvou firmou; zkontroluj, že se data nemíchají a že v Předplatném je za něj 0 Kč. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
-- [ ] 21.1 | architect |
-- [ ] 21.2 | designer |
-- [ ] K21 | reviewer |
-- [ ] STOP | Konec fáze 21. Ve Financích otevři pohled Měsíc, zadej listopad podle své tabulky (kapitál 8 500, příjmy Grid, Fajn Jídlo, Carwest, Auto Matulka, výdaje) a porovnej Shrnutí s Google Sheets — musí sedět na korunu. Přepni Plán/Skutečnost/Rozdíl, založ prosinec z listopadu, exportuj XLSX a otevři ho. Zeptej se Jarvise, kdy ti bude nejmíň peněz. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [ ] 23.0 | RUČNĚ | Založ účet na stripe.com (zatím stačí testovací režim). Do .env.local dej STRIPE_SECRET_KEY (sk_test_…) a NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY (pk_test_…). Nainstaluj Stripe CLI (brew install stripe/stripe-cli/stripe), přihlas se (stripe login) a spusť stripe listen --forward-to localhost:3000/api/stripe/webhook; vypsaný whsec_… dej do .env.local jako STRIPE_WEBHOOK_SECRET. Stejné tři testovací hodnoty dej ve Vercelu do Preview. Pak tuhle položku zaškrtni a pusť /pokracuj.
 - [ ] 23.1 | architect | env: STRIPE_SECRET_KEY
 - [ ] 23.2 | architect | env: STRIPE_SECRET_KEY
@@ -131,6 +127,10 @@ Formát: `- [ ] ID | agent | požadavek`
 - [ ] K23 | reviewer |
 - [ ] STOP | Konec fáze 23. V testovacím režimu: zaregistruj nový účet @gradus.local bez kódu, v Předplatném „Zaplatit a pokračovat", zaplať testovací kartou 4242 4242 4242 4242, zkontroluj aktivní tarif a doklad v Historii plateb. Zkus kartu 4000 0000 0000 0341 (selže) a banner, změnu karty v portálu, přechod na vyšší tarif a zrušení. Zkus promo kód VASA50 v Checkoutu. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [ ] 23.4 | RUČNĚ | Spuštění prodeje podle docs/spusteni.md: Vercel Pro, ověřený Stripe účet, live klíče a webhook ve Vercelu (Production), Invoicing s patičkou „Nejsem plátce DPH.", doplněné [DOPLNIT] v podmínkách, SMTP a potvrzení e-mailu v Supabase, PUBLIC_SIGNUP_ENABLED=true. Udělej jeden ostrý nákup vlastní kartou a vrať si peníze. Pak tuhle položku zaškrtni.
+- [ ] 21.1 | architect |
+- [ ] 21.2 | designer |
+- [ ] K21 | reviewer |
+- [ ] STOP | Konec fáze 21. Ve Financích otevři pohled Měsíc, zadej listopad podle své tabulky (kapitál 8 500, příjmy Grid, Fajn Jídlo, Carwest, Auto Matulka, výdaje) a porovnej Shrnutí s Google Sheets — musí sedět na korunu. Přepni Plán/Skutečnost/Rozdíl, založ prosinec z listopadu, exportuj XLSX a otevři ho. Zeptej se Jarvise, kdy ti bude nejmíň peněz. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [ ] 7.1 | RUČNĚ | Aplikace běží na Vercel Hobby a každý push na main se nasadí sám. Až budeš mít doménu: nastav ji ve Vercelu, změň NEXT_PUBLIC_SITE_URL ve Vercelu, uprav Site URL a Redirect URLs v Supabase → URL Configuration a dej Redeploy. Projdi produkci v anonymním okně a pak tuhle položku zaškrtni ručně.
 
 ## Odloženo
