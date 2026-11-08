@@ -70,6 +70,7 @@ const PLAN_FIELDS = [
   "monthly",
   "yearly",
   "per_worker",
+  "included_workers",
   "limits",
   "features",
   "recommended",
@@ -151,6 +152,16 @@ export function validatePlanCatalog(input: unknown): CatalogValidation {
     const monthly = money("monthly");
     const yearly = money("yearly");
     const perWorker = raw.per_worker === null ? null : money("per_worker");
+    // Optional: versions published before step 22.5 have none in the price.
+    let includedWorkers = 0;
+    if (raw.included_workers !== undefined) {
+      const value = raw.included_workers;
+      const path = `${key}.included_workers`;
+      if (typeof value !== "number" || !Number.isFinite(value)) add(path, "number");
+      else if (!Number.isInteger(value)) add(path, "integer");
+      else if (value < 0 || value > MAX_LIMIT) add(path, "range");
+      else includedWorkers = value;
+    }
     for (const currency of PRICE_CURRENCIES) {
       if (monthly[currency] > 0 && yearly[currency] > 12 * monthly[currency] + 1e-9) {
         add(`${key}.yearly.${currency}`, "yearlyTooHigh");
@@ -211,6 +222,7 @@ export function validatePlanCatalog(input: unknown): CatalogValidation {
       monthly,
       yearly,
       per_worker: perWorker,
+      included_workers: includedWorkers,
       limits,
       features,
       recommended: raw.recommended === true,
@@ -331,7 +343,7 @@ export type ChangeValue = string | number | boolean | null | CatalogFeature[];
 
 /**
  * One changed value of one plan. `field` is "name.cs", "monthly.EUR",
- * "per_worker.CZK", "limits.workers", "features", "recommended" or "order".
+ * "per_worker.CZK", "included_workers", "limits.workers", "features", "recommended" or "order".
  */
 export type CatalogChange = {
   plan: PaidPlanKey;
@@ -369,6 +381,7 @@ export function diffPlanCatalogs(
         push(`${field}.${currency}`, prev[field]?.[currency] ?? null, next[field]?.[currency] ?? null);
       }
     }
+    push("included_workers", prev.included_workers, next.included_workers);
     for (const limit of PLAN_LIMIT_KEYS) {
       push(`limits.${limit}`, prev.limits[limit], next.limits[limit]);
     }

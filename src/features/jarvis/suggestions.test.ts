@@ -16,11 +16,27 @@ const EMPTY: RuleInputs = {
   readyMilestones: [],
   overdueInvoices: [],
   overdueCrmTasks: [],
+  workerInvites: [],
 };
 
 describe("ruleSuggestions", () => {
   it("says nothing when nothing happened", () => {
     expect(ruleSuggestions(EMPTY)).toEqual([]);
+  });
+
+  it("points an invite into another company to the invites page, once per invite", () => {
+    const rules = ruleSuggestions({
+      ...EMPTY,
+      workerInvites: [{ id: "i1", who: "Novák s.r.o. · Václav Novák" }],
+    });
+    expect(rules).toEqual([
+      expect.objectContaining({
+        type: "workerInvite",
+        dedupeKey: "workerInvite:i1",
+        action: { kind: "open", href: "/app/pozvanky", params: { who: "Novák s.r.o. · Václav Novák" } },
+      }),
+    ]);
+    expect(isAppHref("/app/pozvanky")).toBe(true);
   });
 
   it("turns each instant trigger into one suggestion with a stable key", () => {
@@ -50,6 +66,7 @@ describe("ruleSuggestions", () => {
         },
       ],
       overdueCrmTasks: [],
+      workerInvites: [],
     });
 
     expect(rules.map((r) => [r.type, r.dedupeKey])).toEqual([

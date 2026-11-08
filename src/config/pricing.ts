@@ -67,8 +67,17 @@ export type CatalogPlan = {
   monthly: Money;
   /** The price of a whole year. */
   yearly: Money;
-  /** Extra monthly price of one worker; null for plans without it. */
+  /**
+   * The price per extra worker (price_per_extra_worker): the monthly price of
+   * each worker beyond `included_workers` who has no plan of their own; null
+   * for plans that take no extra workers.
+   */
   per_worker: Money | null;
+  /**
+   * Workers without a plan of their own that the price covers (0 = every one
+   * is extra). Versions published before step 22.5 lack it and read as 0.
+   */
+  included_workers: number;
   limits: PlanLimits;
   features: CatalogFeature[];
   /** The "recommended" badge; at most one plan has it. */

@@ -122,6 +122,11 @@ export type ChatErrorCode =
    * AI is blocked for them. The rest of the app works on.
    */
   | "userLimit"
+  /**
+   * The company the user works in has used up its monthly AI cap (its owner
+   * pays for the calls made there). The rest of the app works on.
+   */
+  | "spaceLimit"
   | "busy"
   | "unavailable"
   | "notFound"

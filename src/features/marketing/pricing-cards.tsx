@@ -119,7 +119,13 @@ export function PricingCards({
               )}
               {plan.per_worker && (
                 <p className="text-sm text-ink-soft">
-                  {t("perWorker", { price: money(perWorkerPrice(plan, currency, billing) ?? 0) })}
+                  {plan.included_workers > 0
+                    ? t("perWorkerIncluded", {
+                        count: plan.included_workers,
+                        shown: count(plan.included_workers),
+                        price: money(perWorkerPrice(plan, currency, billing) ?? 0),
+                      })
+                    : t("perWorker", { price: money(perWorkerPrice(plan, currency, billing) ?? 0) })}
                 </p>
               )}
             </div>

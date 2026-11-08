@@ -15,10 +15,12 @@ export type Worker = Pick<
   "id" | "name" | "email" | "job_title" | "status" | "user_id" | "created_at"
 >;
 
-export const INVITE_COLUMNS = "id, worker_id, code, expires_at, accepted_at" as const;
+export const INVITE_COLUMNS =
+  "id, worker_id, code, expires_at, accepted_at, invitee_id, declined_at" as const;
+/** `invitee_id` set = the invite waits for an existing account in the app (no link to send). */
 export type WorkerInvite = Pick<
   Tables["worker_invites"]["Row"],
-  "id" | "worker_id" | "code" | "expires_at" | "accepted_at"
+  "id" | "worker_id" | "code" | "expires_at" | "accepted_at" | "invitee_id" | "declined_at"
 >;
 
 export const PERMISSION_COLUMNS = "section, can_view, can_edit" as const;

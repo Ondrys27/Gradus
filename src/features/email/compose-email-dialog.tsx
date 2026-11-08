@@ -40,6 +40,7 @@ const AI_ERRORS = [
   "limitReached",
   "paused",
   "userLimit",
+  "spaceLimit",
   "network",
 ];
 

@@ -7,7 +7,7 @@ import {
   useQueryClient,
   type QueryClient,
 } from "@tanstack/react-query";
-import { useSession } from "@/features/account/queries";
+import { useSession, useUserSettings } from "@/features/account/queries";
 import { zonedWallClockToInstant, type IsoDate } from "@/lib/format";
 import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
@@ -23,7 +23,10 @@ import {
   type PermissionGrants,
   type PermissionTemplate,
 } from "./permissions-catalog";
+import { subscriptionKeys } from "@/features/subscription/queries";
+import type { InviteTarget } from "./invite-target";
 import { PAGE_SIZE, type PaymentInput, type WorkerInput, type WorkerTaskInput } from "./logic";
+import { bindWorkerInvite, checkInviteAccount, type InviteErrorCode } from "./server/invites";
 import {
   EARNING_COLUMNS,
   INVITE_COLUMNS,
@@ -272,30 +275,49 @@ function trackGrants(grants: PermissionGrants) {
   });
 }
 
+/** Why an invite to an existing account could not be made (InviteErrorCode of the server). */
+export class InviteActionError extends Error {
+  constructor(readonly code: InviteErrorCode) {
+    super(code);
+  }
+}
+
 /**
  * Worker, permissions, place in the company (manager, groups) and invite in
  * one go; the database picks the invite code and refuses a manager of
- * another owner.
+ * another owner. With a short id or an e-mail (`target`) the server then
+ * names the account behind it (the invite waits in their app) or mails the
+ * link to a new person. A short id nobody has is checked first and nothing
+ * is created; when the binding fails after all, the new record goes again.
  */
 export function useCreateWorker() {
   const { user } = useSession();
+  const settings = useUserSettings();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: {
-      worker: WorkerInput;
+      worker: { name: string; email: string | null; job_title: string | null };
       grants: PermissionGrants;
       /** Null = right under the owner. */
       managerId?: string | null;
       groupIds?: string[];
+      /** A short id or an e-mail; the e-mail is also the worker's. */
+      target?: InviteTarget;
     }) => {
       const supabase = createClient();
       const groupIds = input.groupIds ?? [];
+      const target = input.target;
+      if (target?.kind === "id") {
+        const check = await checkInviteAccount(target.publicId);
+        if (!check.ok) throw new InviteActionError(check.error);
+      }
       const { data: worker, error } = await supabase
         .from("workers")
         .insert({ ...input.worker, owner_id: user.id, manager_id: input.managerId ?? null })
         .select(WORKER_COLUMNS)
         .single();
       if (error) throw error;
+      const undo = () => supabase.from("workers").delete().eq("id", worker.id).eq("owner_id", user.id);
       await saveGrants(user.id, worker.id, input.grants);
       if (groupIds.length > 0) {
         const { error: groupError } = await supabase.from("worker_group_members").insert(
@@ -307,20 +329,48 @@ export function useCreateWorker() {
         );
         if (groupError) throw groupError;
       }
-      const { data: invite, error: inviteError } = await supabase
+      const { data: created, error: inviteError } = await supabase
         .from("worker_invites")
         .insert({ owner_id: user.id, worker_id: worker.id, email: worker.email })
         .select(INVITE_COLUMNS)
         .single();
       if (inviteError) throw inviteError;
+      let invite: WorkerInvite = created;
+      let bound = false;
+      if (target) {
+        const result = await bindWorkerInvite({
+          inviteId: created.id,
+          target: target.kind === "id" ? target.publicId : target.email,
+          locale: settings.locale,
+        });
+        if (!result.ok) {
+          // A short id must reach its account; an e-mail keeps the link for a new person.
+          if (target.kind === "id" || result.error === "self" || result.error === "alreadyMember") {
+            await undo();
+            throw new InviteActionError(result.error);
+          }
+        } else if (result.data.bound) {
+          bound = true;
+          const { data: fresh } = await supabase
+            .from("worker_invites")
+            .select(INVITE_COLUMNS)
+            .eq("id", created.id)
+            .maybeSingle();
+          if (fresh) invite = fresh;
+        }
+      }
       track("worker_invited", {
         with_manager: Boolean(input.managerId),
         groups: Math.min(groupIds.length, 200),
+        target: bound ? "account" : "link",
       });
       trackGrants(input.grants);
-      return { worker, invite };
+      return { worker, invite, bound };
     },
-    onSettled: () => invalidateAll(queryClient, user.id),
+    onSettled: () => {
+      invalidateAll(queryClient, user.id);
+      void queryClient.invalidateQueries({ queryKey: subscriptionKeys.workers(user.id) });
+    },
   });
 }
 

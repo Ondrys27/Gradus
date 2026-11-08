@@ -106,11 +106,14 @@ async function context() {
     .eq("user_id", userId)
     .maybeSingle();
   if (error) throw error;
+  // The space the calls are made in: its owner pays for them (the AI cap of that space).
+  const { data: space } = await supabase.rpc("current_workspace_id");
   const email = data.claims.email;
   return {
     supabase,
     admin: createAdminClient(),
     userId,
+    spaceId: typeof space === "string" && space ? space : userId,
     email: typeof email === "string" ? email : null,
     row,
     settings: toFormatSettings(row),
@@ -138,6 +141,7 @@ const FILE_ERROR_STATUS: Record<FileErrorCode, number> = {
 async function logNotConfigured(ctx: Context, feature: JarvisFeature) {
   await logAiUsage(ctx.admin, {
     userId: ctx.userId,
+    spaceId: ctx.spaceId,
     conversationId: null,
     feature,
     model: modelFor(feature) ?? JARVIS_MODELS.sonnet,
@@ -182,14 +186,14 @@ export const GET = instrumentRoute("api.jarvis.get", async (request: Request) =>
     // Written on the spot when today's brief is missing or no longer true (budget guard included).
     const client = wantsE2eEcho(request.headers, ctx.email, E2E_ECHO_SUMMARY)
       ? e2eEchoClient(ctx.admin, E2E_ECHO_SUMMARY)
-      : createAnthropic(ctx.admin);
+      : createAnthropic(ctx.admin, { spaceId: ctx.spaceId });
     const body = await loadSummary({ ...ctx, client });
     return NextResponse.json(body, { headers: { "Cache-Control": "no-store" } });
   }
 
   const [usage, files, situation] = await Promise.all([
-    loadAiUsage(ctx.supabase, ctx.admin, ctx.userId, ctx.settings),
-    loadFileUsage(ctx.supabase, ctx.admin, ctx.userId, ctx.settings),
+    loadAiUsage(ctx.supabase, ctx.admin, ctx.userId, ctx.settings, undefined, ctx.spaceId),
+    loadFileUsage(ctx.supabase, ctx.admin, ctx.userId, ctx.settings, undefined, ctx.spaceId),
     loadSituation(
       ctx.supabase,
       ctx.settings,
@@ -325,12 +329,12 @@ async function ping(ctx: Context, body: unknown) {
   const { supabase, admin, userId, settings } = ctx;
   const respond = (result: PingResult, status = 200) => NextResponse.json(result, { status });
 
-  const usage = await loadAiUsage(supabase, admin, userId, settings);
+  const usage = await loadAiUsage(supabase, admin, userId, settings, undefined, ctx.spaceId);
   if (limitReached(usage)) {
     limitHit(ctx, "ping");
     return respond({ ok: false, code: "limitReached", durationMs: null, usage }, 429);
   }
-  const client = createAnthropic(ctx.admin);
+  const client = createAnthropic(ctx.admin, { spaceId: ctx.spaceId });
   if (!client) {
     await logNotConfigured(ctx, "ping");
     return respond({ ok: false, code: "notConfigured", durationMs: null }, 503);
@@ -343,7 +347,7 @@ async function ping(ctx: Context, body: unknown) {
     feature: "ping",
     context: "",
     messages: [{ role: "user", content: PING_QUESTION }],
-    log: (entry) => logAiUsage(admin, { ...entry, userId, conversationId: null }),
+    log: (entry) => logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
   });
   const durationMs = Date.now() - started;
   if (!result.ok) return respond({ ok: false, code: result.code, durationMs }, 502);
@@ -381,12 +385,12 @@ async function rulesTest(ctx: Context, body: unknown) {
   if (instructions.length > OWNER_INSTRUCTIONS_MAX) {
     return respond({ ok: false, code: "invalid", durationMs: null }, 400);
   }
-  const usage = await loadAiUsage(supabase, admin, userId, settings);
+  const usage = await loadAiUsage(supabase, admin, userId, settings, undefined, ctx.spaceId);
   if (limitReached(usage)) {
     limitHit(ctx, "ping");
     return respond({ ok: false, code: "limitReached", durationMs: null }, 429);
   }
-  const client = createAnthropic(ctx.admin);
+  const client = createAnthropic(ctx.admin, { spaceId: ctx.spaceId });
   if (!client) {
     await logNotConfigured(ctx, "ping");
     return respond({ ok: false, code: "notConfigured", durationMs: null }, 503);
@@ -400,7 +404,7 @@ async function rulesTest(ctx: Context, body: unknown) {
     instructions: withOwnerInstructions(JARVIS_PERSONA, instructions),
     context: RULES_TEST_CONTEXT,
     messages: [{ role: "user", content: parsed.data.message }],
-    log: (entry) => logAiUsage(admin, { ...entry, userId, conversationId: null }),
+    log: (entry) => logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
   });
   const durationMs = Date.now() - started;
   if (!result.ok) return respond({ ok: false, code: result.code, durationMs }, 502);
@@ -433,12 +437,12 @@ async function milestoneReview(ctx: Context, body: unknown) {
   if (!milestone) return jobError("notFound", 404);
   if (milestone.ai_feedback) return jobError("alreadyReviewed", 409);
 
-  const usage = await loadAiUsage(supabase, admin, userId, settings);
+  const usage = await loadAiUsage(supabase, admin, userId, settings, undefined, ctx.spaceId);
   if (limitReached(usage)) {
     limitHit(ctx, "milestone_review");
     return jobError("limitReached", 429);
   }
-  const client = createAnthropic(ctx.admin);
+  const client = createAnthropic(ctx.admin, { spaceId: ctx.spaceId });
   if (!client) {
     await logNotConfigured(ctx, "milestone_review");
     return jobError("notConfigured", 503);
@@ -459,7 +463,7 @@ async function milestoneReview(ctx: Context, body: unknown) {
     today: todayIsoDate(settings),
     locale,
     notes,
-    log: (entry) => logAiUsage(admin, { ...entry, userId, conversationId: null }),
+    log: (entry) => logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
   });
   if (!result.ok) return jobError(result.code, 502);
   return NextResponse.json({ ok: true, feedback: result.text });
@@ -470,12 +474,12 @@ async function salesAnalysis(ctx: Context, body: unknown) {
   if (!salesAnalysisRequestSchema.safeParse(body).success) return jobError("unknown", 400);
   const { supabase, admin, userId, settings, locale } = ctx;
 
-  const usage = await loadAiUsage(supabase, admin, userId, settings);
+  const usage = await loadAiUsage(supabase, admin, userId, settings, undefined, ctx.spaceId);
   if (limitReached(usage)) {
     limitHit(ctx, "analysis");
     return jobError("limitReached", 429);
   }
-  const client = createAnthropic(ctx.admin);
+  const client = createAnthropic(ctx.admin, { spaceId: ctx.spaceId });
   if (!client) {
     await logNotConfigured(ctx, "analysis");
     return jobError("notConfigured", 503);
@@ -488,7 +492,7 @@ async function salesAnalysis(ctx: Context, body: unknown) {
     userId,
     locale,
     seeAmounts: await maySeeDealAmounts(supabase, userId),
-    log: (entry) => logAiUsage(admin, { ...entry, userId, conversationId: null }),
+    log: (entry) => logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
   });
   if (!result.ok) return jobError(result.code, result.code === "locked" ? 403 : 502);
   return NextResponse.json({ ok: true, analysis: result.analysis });
@@ -505,12 +509,12 @@ async function rewardSetup(ctx: Context, body: unknown) {
   if (leafCount(tree.data) === 0) return jobError("empty", 400);
   const { supabase, admin, userId, settings, locale } = ctx;
 
-  const usage = await loadAiUsage(supabase, admin, userId, settings);
+  const usage = await loadAiUsage(supabase, admin, userId, settings, undefined, ctx.spaceId);
   if (limitReached(usage)) {
     limitHit(ctx, "reward_setup");
     return jobError("limitReached", 429);
   }
-  const client = createAnthropic(ctx.admin);
+  const client = createAnthropic(ctx.admin, { spaceId: ctx.spaceId });
   if (!client) {
     await logNotConfigured(ctx, "reward_setup");
     return jobError("notConfigured", 503);
@@ -531,7 +535,7 @@ async function rewardSetup(ctx: Context, body: unknown) {
     workers,
     currency: settings.currency,
     locale,
-    log: (entry) => logAiUsage(admin, { ...entry, userId, conversationId: null }),
+    log: (entry) => logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
   });
   if (!result.ok) return jobError(result.code, 502);
   return NextResponse.json({ ok: true, proposal: result.proposal });
@@ -561,12 +565,12 @@ async function noteMapSuggest(ctx: Context, body: unknown) {
   const doc = note ? noteContentOf(kind, note.content) : null;
   if (!doc || !isMapDoc(doc)) return jobError("notFound", 404);
 
-  const usage = await loadAiUsage(supabase, admin, userId, settings);
+  const usage = await loadAiUsage(supabase, admin, userId, settings, undefined, ctx.spaceId);
   if (limitReached(usage)) {
     limitHit(ctx, "note_map_suggest");
     return jobError("limitReached", 429);
   }
-  const client = createAnthropic(ctx.admin);
+  const client = createAnthropic(ctx.admin, { spaceId: ctx.spaceId });
   if (!client) {
     await logNotConfigured(ctx, "note_map_suggest");
     return jobError("notConfigured", 503);
@@ -579,7 +583,7 @@ async function noteMapSuggest(ctx: Context, body: unknown) {
     nodeId: parsed.data.nodeId,
     request: parsed.data.request ?? "",
     locale,
-    log: (entry) => logAiUsage(admin, { ...entry, userId, conversationId: null }),
+    log: (entry) => logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
   });
   if (!result.ok) {
     return jobError(result.code, result.code === "notFound" ? 404 : result.code === "empty" ? 422 : 502);
@@ -630,12 +634,12 @@ async function emailReply(ctx: Context, body: unknown) {
     }
   }
 
-  const usage = await loadAiUsage(supabase, admin, userId, settings);
+  const usage = await loadAiUsage(supabase, admin, userId, settings, undefined, ctx.spaceId);
   if (limitReached(usage)) {
     limitHit(ctx, "email_reply");
     return jobError("limitReached", 429);
   }
-  const client = createAnthropic(ctx.admin);
+  const client = createAnthropic(ctx.admin, { spaceId: ctx.spaceId });
   if (!client) {
     await logNotConfigured(ctx, "email_reply");
     return jobError("notConfigured", 503);
@@ -653,7 +657,7 @@ async function emailReply(ctx: Context, body: unknown) {
     deal,
     locale,
     receivedEmail: parsed.data.receivedEmail,
-    log: (entry) => logAiUsage(admin, { ...entry, userId, conversationId: null }),
+    log: (entry) => logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
   });
   if (!result.ok) return jobError(result.code, 502);
   return NextResponse.json({ ok: true, reply: result.reply });
@@ -681,7 +685,7 @@ async function chat(ctx: Context, body: unknown, request: Request) {
       ...(code ? { error_code: code } : {}),
     }) as const;
 
-  const usage = await loadAiUsage(supabase, admin, userId, settings);
+  const usage = await loadAiUsage(supabase, admin, userId, settings, undefined, ctx.spaceId);
   if (limitReached(usage)) {
     limitHit(ctx, "chat");
     const event: ChatEvent = { type: "error", code: "limitReached", usage };
@@ -692,7 +696,7 @@ async function chat(ctx: Context, body: unknown, request: Request) {
   // The end-to-end tests' own accounts may ask for the echo stand-in (never in production).
   const client = wantsE2eEcho(request.headers, ctx.email)
     ? e2eEchoClient(ctx.admin)
-    : createAnthropic(ctx.admin);
+    : createAnthropic(ctx.admin, { spaceId: ctx.spaceId });
   if (!client) {
     await logNotConfigured(ctx, "chat");
     const event: ChatEvent = { type: "error", code: "notConfigured", usage };
@@ -741,7 +745,7 @@ async function chat(ctx: Context, body: unknown, request: Request) {
   }
   const finalConversationId = conversationId;
   const log = (entry: Parameters<Parameters<typeof streamModel>[0]["log"]>[0]) =>
-    logAiUsage(admin, { ...entry, userId, conversationId: finalConversationId });
+    logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: finalConversationId });
 
   // Messages are server-owned: only the admin client writes them, always with the session's id.
   const { data: userMessage, error: insertError } = await admin
@@ -881,7 +885,7 @@ async function chat(ctx: Context, body: unknown, request: Request) {
           .update({ last_message_at: new Date().toISOString() })
           .eq("id", finalConversationId);
 
-        const fresh = await loadAiUsage(supabase, admin, userId, settings).catch(() => usage);
+        const fresh = await loadAiUsage(supabase, admin, userId, settings, undefined, ctx.spaceId).catch(() => usage);
         if (result.ok && messageId) {
           send({ type: "done", messageId, usage: fresh });
           await track("jarvis_message_sent", turn(true), { userId, admin });

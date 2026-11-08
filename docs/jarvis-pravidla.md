@@ -78,13 +78,14 @@ Jednou za život účtu, jen majiteli, po onboardingu a dokončené prohlídce. 
 | `overdueCrmTask` Obchodní úkol po termínu | pevný text | otevřený obchodní úkol přiřazený uživateli, po termínu na minutu | z pravidel; každý úkol a termín jednou | ano (volání a schůzky jen v okně) |
 | `milestoneReady` Milník připravený | pevný text | aktivní milník, jehož všechny úkoly jsou hotové (aspoň jeden). Dokončit ho musí uživatel sám | z pravidel; každý milník jednou | ano |
 | `followUps` Komu se dnes ozvat | pevný text | kontakty v tabulce Ozvat se, kterým dnes nastal termín | z pravidel; jednou denně | ano (jen v okně) |
+| `workerInvite` Pozvánka do firmy | pevný text | otevřená pozvánka jiné firmy na tenhle účet (krátkým ID nebo e-mailem); odkaz na Pozvánky, přijme nebo odmítne jen uživatel | z pravidel; každá pozvánka jednou, po přijetí nebo odmítnutí odejde | ano |
 | `pathReady` Cesta je připravená | pevný text | herní režim, do 14 dní po onboardingu, cesta vytvořila milníky | jednou za cestu | ano |
 | `dealWon` Obchod vyhraný | pevný text | obchod vyhraný za posledních 7 dní | z pravidel | ne, jen v panelu |
 | `taskCompleted` Označil jsem úkol jako hotový | pevný text | hlídání příležitostí s jistotou poznalo, že úkol je hotový (nikdy milník) | při hlídání | ne, jen v panelu s tlačítkem **Vrátit** |
 | `insight` Postřeh | **model** (Haiku) | co se u uživatele změnilo od minulého hlídání (obchody, úkoly, přesuny kontaktů, milníky, události) + otevřené úkoly; nejvýš 2 postřehy, k novému milníku může navrhnout až 5 úkolů (vzniknou až po Přidat) | hlídání příležitostí 1× denně (10:00 UTC), jen u účtů se změnou za posledních 7 dní; když nic, mlčí | ano |
 | **Otázky** | pevné texty a možnosti z překladů | viz níže | nejvýš 2 za 7 dní, jen když ve frontě není žádný návrh | ano |
 
-Pravidlové návrhy (typy s pevným textem) se počítají z dat v databázi při každém otevření panelu a před každým vyskočením; od každého typu nejvýš 3 najednou. Text skládá rozhraní z překladů (`jarvis.suggestion.<typ>`), takže sedí s jazykem rozhraní. Pořadí ve frontě: po termínu (úkoly, faktury, obchodní úkoly) → komu se ozvat → stojící obchod → hotový milník → cesta → postřehy; co musí čekat na okno, jde dozadu.
+Pravidlové návrhy (typy s pevným textem) se počítají z dat v databázi při každém otevření panelu a před každým vyskočením; od každého typu nejvýš 3 najednou. Text skládá rozhraní z překladů (`jarvis.suggestion.<typ>`), takže sedí s jazykem rozhraní. Pořadí ve frontě: po termínu (úkoly, faktury, obchodní úkoly) → komu se ozvat a pozvánka do firmy → stojící obchod → hotový milník → cesta → postřehy; co musí čekat na okno, jde dozadu.
 
 Návrh starší než **3 dny** už sám nevyskočí (v panelu postřehy zmizí po 3 dnech, ostatní, dokud platí).
 
@@ -112,6 +113,7 @@ Poznámka může být myšlenková mapa. Když uživatel v mapě vybere uzel a d
 ### Kdy Jarvis nic nenapíše, i když by měl
 
 - Vyčerpaný měsíční rozpočet AI nebo strop uživatele: model se nevolá, souhrn ani postřehy se nepíšou, pravidlové návrhy (pevné texty) běží dál.
+- V cizí firmě se volání počítá do stropu té firmy (strop jejího majitele na všechna volání v ní) a zároveň do vlastního stropu pracovníka; po vyčerpání stropu firmy Jarvis řekne, že má firma limit vyčerpaný a majitel ho zvýší vyšším tarifem (`spaceLimit`), ve vlastní firmě funguje dál. Odpovědi Jarvise v cizí firmě se počítají podle tarifu té firmy.
 - Chybí klíč k API nebo model selže: souhrn se neukáže („raději ticho než nepravda“).
 
 ---

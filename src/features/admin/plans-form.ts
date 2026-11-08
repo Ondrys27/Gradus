@@ -28,6 +28,8 @@ export type FormPlan = {
   /** Off = no price per worker (null in the catalog); the amounts stay for switching back. */
   perWorkerOn: boolean;
   per_worker: FormMoney;
+  /** Workers without a plan of their own that the price covers. */
+  included_workers: string;
   limits: Record<PlanLimitKey, string>;
   features: FormFeature[];
   recommended: boolean;
@@ -57,6 +59,7 @@ export function toForm(catalog: readonly CatalogPlan[]): FormPlan[] {
     yearly: moneyText(plan.yearly),
     perWorkerOn: plan.per_worker !== null,
     per_worker: moneyText(plan.per_worker),
+    included_workers: text(plan.included_workers),
     limits: Object.fromEntries(
       PLAN_LIMIT_KEYS.map((limit) => [limit, text(plan.limits[limit])]),
     ) as Record<PlanLimitKey, string>,
@@ -91,6 +94,8 @@ export function fromForm(form: readonly FormPlan[]): PlanCatalog {
     monthly: moneyValue(plan.monthly),
     yearly: moneyValue(plan.yearly),
     per_worker: plan.perWorkerOn ? moneyValue(plan.per_worker) : null,
+    // Empty is none in the price.
+    included_workers: parseAmount(plan.included_workers) ?? 0,
     limits: Object.fromEntries(
       PLAN_LIMIT_KEYS.map((limit) => [limit, parseAmount(plan.limits[limit])]),
     ),

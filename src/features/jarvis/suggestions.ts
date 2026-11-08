@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { APP_HOME_PATH } from "@/lib/routes";
+import { APP_HOME_PATH, INVITES_PATH } from "@/lib/routes";
 import type { RuleType, SuggestionType } from "./suggestion-types";
 
 /**
@@ -36,6 +36,7 @@ export const APP_PATHS = [
   "/app/kalendar",
   "/app/finance",
   "/app/ukoly-crm",
+  INVITES_PATH,
 ] as const;
 
 export function isAppHref(href: string): boolean {
@@ -119,6 +120,8 @@ export type RuleInputs = {
     target: string | null;
     dueAt: string;
   }[];
+  /** Invites into other companies waiting for this account (step 22.5); `who` = company · owner. */
+  workerInvites: { id: string; who: string }[];
 };
 
 export type RuleSuggestion = {
@@ -227,6 +230,16 @@ export function ruleSuggestions(inputs: RuleInputs): RuleSuggestion[] {
         href: `/app/ukoly-crm?task=${task.id}`,
         params: { task: task.title, target: task.target ?? "" },
       },
+    });
+  }
+
+  // An invite into another company: only the person decides, on the invites page.
+  for (const invite of inputs.workerInvites.slice(0, PER_RULE_LIMIT)) {
+    out.push({
+      type: "workerInvite",
+      dedupeKey: `workerInvite:${invite.id}`,
+      text: "An invite into another company waits",
+      action: { kind: "open", href: INVITES_PATH, params: { who: invite.who } },
     });
   }
 

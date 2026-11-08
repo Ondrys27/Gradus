@@ -77,6 +77,7 @@ function SuggestForm({
         ? t(`errors.${code}`)
         : code === "paused" ||
             code === "userLimit" ||
+            code === "spaceLimit" ||
             code === "notConfigured" ||
             code === "network" ||
             code === "busy"

@@ -11,7 +11,7 @@ import type { Database } from "@/types/database";
 import { budgetSnapshot, NEAR_LIMIT_SHARE, utcMonthStart, type BudgetSnapshot } from "../budget";
 import { userAllowed, userLimit, type AiCaps } from "../caps";
 import type { JarvisFeature } from "../models";
-import { loadAiCaps, loadUserOverride, loadUserSpend } from "./caps";
+import { loadAiCaps, loadSpaceSpend, loadUserOverride, loadUserSpend } from "./caps";
 import { ownerContact } from "./owner";
 
 type Client = SupabaseClient<Database>;
@@ -140,15 +140,19 @@ async function alertEmail(
  * What the check before a model call decided: go ahead; "paused" — the
  * application-wide cap is used up or the API ran out of credit (Jarvis takes
  * a break until the month ends); "userLimit" — this user's own monthly cap is
- * used up or AI is blocked for them (the rest of the app works on).
+ * used up or AI is blocked for them (the rest of the app works on);
+ * "spaceLimit" — the company the user works in has used up its cap (its
+ * owner's cap covers every call made there, the owner pays for them).
  */
-export type BudgetVerdict = "ok" | "paused" | "userLimit";
+export type BudgetVerdict = "ok" | "paused" | "userLimit" | "spaceLimit";
 
 /** Before every model call, and when the API says the credit is gone. */
 export type BudgetGuard = {
   /**
    * The application-wide cap always; with a user id also that user's cap
-   * (an exception from ai_user_caps, else the per-user cap of the app).
+   * (an exception from ai_user_caps, else the per-user cap of the app) on
+   * everything they spent, and the cap of the space the call is made in (its
+   * owner's cap) on everything spent there by anybody.
    */
   check(feature: JarvisFeature, userId?: string | null): Promise<BudgetVerdict>;
   /** The API refused the call for lack of credit; no more calls through this guard. */
@@ -158,7 +162,11 @@ export type BudgetGuard = {
 /** A spend read this recently is reused, so a chat turn or a cron run does not sum ai_usage per call. */
 const SNAPSHOT_TTL_MS = 15_000;
 
-type PausedReason = PauseReason | { reason: "user_cap" } | { reason: "user_blocked" };
+type PausedReason =
+  | PauseReason
+  | { reason: "user_cap" }
+  | { reason: "user_blocked" }
+  | { reason: "space_cap" };
 
 /**
  * The budget of one request or one cron run. The caps come from the
@@ -171,11 +179,17 @@ type PausedReason = PauseReason | { reason: "user_cap" } | { reason: "user_block
  */
 export function createBudgetGuard(
   admin: Client,
-  options: { now?: () => Date; send?: Send } = {},
+  options: {
+    now?: () => Date;
+    send?: Send;
+    /** The space this request works in; the user's own one when not given. */
+    spaceId?: string | null;
+  } = {},
 ): BudgetGuard {
   const now = options.now ?? (() => new Date());
   let cached: { at: number; snapshot: BudgetSnapshot } | null = null;
   const userSpend = new Map<string, { at: number; spentUsd: number }>();
+  const spaceSpend = new Map<string, { at: number; spentUsd: number }>();
   let creditsOut = false;
   const alerted = new Set<AlertKind>();
 
@@ -252,6 +266,36 @@ export function createBudgetGuard(
     return false;
   };
 
+  /**
+   * The cap of the space: its owner's (exception or the per-user cap) on all
+   * calls made in it. A blocked owner blocks only their own calls, not their
+   * people's: the block is about a person, the cap about the money.
+   */
+  const spaceAllows = async (
+    feature: JarvisFeature,
+    userId: string,
+    spaceId: string,
+    caps: AiCaps,
+    at: Date,
+  ): Promise<boolean> => {
+    const override = await loadUserOverride(admin, spaceId, { now: at.getTime() });
+    const limit = userLimit(caps, override?.blocked ? { ...override, blocked: false } : override);
+    if (limit.kind !== "cap") return true;
+    let spent = spaceSpend.get(spaceId);
+    if (!spent || at.getTime() - spent.at > SNAPSHOT_TTL_MS) {
+      try {
+        spent = { at: at.getTime(), spentUsd: await loadSpaceSpend(admin, spaceId, utcMonthStart(at)) };
+        spaceSpend.set(spaceId, spent);
+      } catch (error) {
+        console.error("jarvis space spend read failed", error);
+        return true;
+      }
+    }
+    if (userAllowed(limit, spent.spentUsd)) return true;
+    await paused(feature, { reason: "space_cap" }, userId);
+    return false;
+  };
+
   return {
     async check(feature, userId = null) {
       if (creditsOut) {
@@ -262,6 +306,10 @@ export function createBudgetGuard(
       const caps = await loadAiCaps(admin, { now: at.getTime() });
       if (!(await globalAllows(feature, caps, at))) return "paused";
       if (userId && !(await userAllows(feature, userId, caps, at))) return "userLimit";
+      const spaceId = options.spaceId ?? userId;
+      if (userId && spaceId && !(await spaceAllows(feature, userId, spaceId, caps, at))) {
+        return spaceId === userId ? "userLimit" : "spaceLimit";
+      }
       return "ok";
     },
     async creditsExhausted(feature, errorCode) {

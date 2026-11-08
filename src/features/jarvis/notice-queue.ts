@@ -16,6 +16,7 @@ export const SUGGESTION_URGENCY: Record<string, number> = {
   overdueInvoice: 1,
   overdueCrmTask: 1,
   followUps: 2,
+  workerInvite: 2,
   stalledDeal: 3,
   milestoneReady: 4,
   dealWon: 5,

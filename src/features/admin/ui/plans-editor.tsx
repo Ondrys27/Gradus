@@ -432,6 +432,22 @@ function PlanCardEditor({
           />
         </label>
         {plan.perWorkerOn && <div className="grid grid-cols-2 gap-3">{money("per_worker")}</div>}
+        <FormField
+          id={id("included_workers")}
+          label={t("fields.included_workers")}
+          hint={t("card.includedWorkersHint")}
+          error={message("included_workers")}
+        >
+          <Input
+            {...fieldA11y(id("included_workers"), message("included_workers"))}
+            inputMode="numeric"
+            autoComplete="off"
+            value={plan.included_workers}
+            onChange={(event) =>
+              onChange((current) => ({ ...current, included_workers: event.target.value }))
+            }
+          />
+        </FormField>
       </fieldset>
 
       <fieldset className="flex flex-col gap-3">

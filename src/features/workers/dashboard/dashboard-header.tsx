@@ -7,6 +7,7 @@ import { useWorkspace } from "@/features/account/workspace-queries";
 import { formatDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { PersonStatus } from "../company/person-bits";
+import { SeatChip, useCompanySeats } from "../company/seat-chip";
 import { JOB_TITLE_MAX } from "../logic";
 import { EditableText } from "./editable-field";
 import { PhotoEditor } from "./photo-editor";
@@ -34,6 +35,7 @@ export function DashboardHeader({
   const settings = useFormatSettings();
   const workspace = useWorkspace();
   const update = useUpdateCompanyWorker(worker);
+  const seats = useCompanySeats();
   const editable = worker.canEdit && !workspace.readOnly;
   const photo = (worker.canEdit || worker.isSelf) && !workspace.readOnly;
 
@@ -86,6 +88,7 @@ export function DashboardHeader({
           )}
           <div className="flex flex-wrap items-center gap-2 text-xs text-ink-muted">
             <PersonStatus status={worker.status} />
+            <SeatChip workerId={worker.id} status={worker.status} seats={seats} />
             {viewer !== "owner" && worker.isSelf && (
               <span className="rounded-full bg-violet/20 px-1.5 font-semibold text-violet">
                 {t("you")}

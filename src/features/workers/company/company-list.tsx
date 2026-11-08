@@ -38,6 +38,7 @@ import { cn } from "@/lib/utils";
 import { formatNumber } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { GroupChips, PersonCounts, PersonStatus } from "./person-bits";
+import { SeatChip, useCompanySeats } from "./seat-chip";
 import {
   flattenCompanyTree,
   OWNER_ROOT,
@@ -104,6 +105,7 @@ export function CompanyList({
   onOpen,
 }: CompanyViewProps) {
   const t = useTranslations("workers.company");
+  const seats = useCompanySeats();
   const wide = useMediaQuery("(min-width: 640px)");
   const reduceMotion = useReducedMotionSafe();
   const indent = wide ? INDENT.wide : INDENT.phone;
@@ -198,6 +200,7 @@ export function CompanyList({
             groups={groups}
             viewer={viewer}
             canEdit={canEdit}
+            seats={seats}
             faint={context?.has(row.node.id) ?? false}
             dimmed={drag?.subtree.has(row.node.id) ?? false}
             dropState={over?.id === row.node.id ? (over.valid ? "ok" : "invalid") : null}
@@ -225,6 +228,7 @@ type RowProps = {
   groups: ReadonlyMap<string, CompanyGroup>;
   viewer: CompanyViewer;
   canEdit: boolean;
+  seats: ReturnType<typeof useCompanySeats>;
   faint: boolean;
   dimmed: boolean;
   dropState: "ok" | "invalid" | null;
@@ -240,6 +244,7 @@ function CompanyListRow({
   groups,
   viewer,
   canEdit,
+  seats,
   faint,
   dimmed,
   dropState,
@@ -364,6 +369,7 @@ function CompanyListRow({
               </span>
             )}
             {person && <PersonStatus status={person.status} />}
+            {person && <SeatChip workerId={person.id} status={person.status} seats={seats} />}
           </span>
           {person && person.groupIds.length > 0 && (
             <GroupChips groupIds={person.groupIds} groups={groups} className="pt-0.5" />

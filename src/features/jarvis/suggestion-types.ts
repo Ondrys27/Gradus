@@ -10,6 +10,7 @@ export const RULE_TYPES = [
   "milestoneReady",
   "overdueInvoice",
   "overdueCrmTask",
+  "workerInvite",
 ] as const;
 export type RuleType = (typeof RULE_TYPES)[number];
 export type SuggestionType = RuleType | "taskCompleted" | "insight" | "pathReady";

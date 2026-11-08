@@ -14,6 +14,7 @@ type State = {
   caps: Stored | null;
   overrides: Map<string, { cap_usd: number | null; blocked: boolean }>;
   userSpend: Map<string, number>;
+  spaceSpend: Map<string, number>;
 };
 
 /**
@@ -26,11 +27,15 @@ function fakeAdmin(spentUsd: number, init: Partial<State> = {}) {
     caps: init.caps ?? null,
     overrides: init.overrides ?? new Map(),
     userSpend: init.userSpend ?? new Map(),
+    spaceSpend: init.spaceSpend ?? new Map(),
   };
   const admin = {
     rpc: vi.fn(async (name: string, args: Record<string, string>) => {
       if (name === "jarvis_user_month_spend") {
         return { data: state.userSpend.get(args._user_id) ?? 0, error: null };
+      }
+      if (name === "jarvis_space_month_spend") {
+        return { data: state.spaceSpend.get(args._space_id) ?? 0, error: null };
       }
       return { data: [{ cost_usd: spentUsd, calls: 12 }], error: null };
     }),
@@ -272,6 +277,44 @@ describe("caps from the administration", () => {
       { feature: "chat", reason: "user_blocked" },
       expect.objectContaining({ userId: "blocked" }),
     );
+  });
+
+  it("counts a worker's calls in a company to that company's cap: the owner pays", async () => {
+    const { admin } = fakeAdmin(20, {
+      caps: caps({ per_user_usd: 5 }),
+      overrides: new Map([["boss", { cap_usd: 10, blocked: false }]]),
+      // The worker spent little of their own; the company's calls are at its cap.
+      userSpend: new Map([["worker", 1]]),
+      spaceSpend: new Map([
+        ["boss", 10],
+        ["worker", 1],
+      ]),
+    });
+    const inCompany = createBudgetGuard(admin, { now: () => NOW, send: ok(), spaceId: "boss" });
+    expect(await inCompany.check("chat", "worker")).toBe("spaceLimit");
+    expect(track).toHaveBeenCalledWith(
+      "jarvis_paused",
+      { feature: "chat", reason: "space_cap" },
+      expect.objectContaining({ userId: "worker" }),
+    );
+    // In their own space the worker is still free to ask.
+    const own = createBudgetGuard(admin, { now: () => NOW, send: ok() });
+    expect(await own.check("chat", "worker")).toBe("ok");
+    // The owner's own space holds everybody's calls made there: their own cap.
+    const boss = createBudgetGuard(admin, { now: () => NOW, send: ok(), spaceId: "boss" });
+    expect(await boss.check("chat", "boss")).toBe("userLimit");
+  });
+
+  it("a worker keeps their own cap in a company, and a blocked owner blocks only themselves", async () => {
+    const { admin } = fakeAdmin(20, {
+      caps: caps({ per_user_usd: 5 }),
+      overrides: new Map([["boss", { cap_usd: null, blocked: true }]]),
+      userSpend: new Map([["spender", 5]]),
+    });
+    const guard = createBudgetGuard(admin, { now: () => NOW, send: ok(), spaceId: "boss" });
+    expect(await guard.check("chat", "spender")).toBe("userLimit");
+    expect(await guard.check("chat", "careful")).toBe("ok");
+    expect(await guard.check("chat", "boss")).toBe("userLimit");
   });
 
   it("keeps the application-wide pause first, whatever the user's cap", async () => {

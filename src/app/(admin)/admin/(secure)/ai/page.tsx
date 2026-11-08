@@ -16,6 +16,7 @@ import {
   aiCostChart,
   aiErrors,
   aiTiles,
+  aiTopSpaces,
   aiTopUsers,
   jarvisConversations,
   type AiUsageRow,
@@ -129,8 +130,11 @@ export default async function AdminAiPage({ searchParams }: Props) {
           <Suspense fallback={<GridSkeleton count={3} height={180} columns={3} />}>
             <More q={q} />
           </Suspense>
-          <Suspense fallback={<CardSkeleton height={260} />}>
-            <TopUsers q={q} exportable={mayExport(context.role, "table.ai.top_users.csv")} />
+          <Suspense fallback={<GridSkeleton count={2} height={260} />}>
+            <BlockGrid>
+              <TopUsers q={q} exportable={mayExport(context.role, "table.ai.top_users.csv")} />
+              <TopSpaces q={q} exportable={mayExport(context.role, "table.ai.top_spaces.csv")} />
+            </BlockGrid>
           </Suspense>
         </div>
         {/* The caps change what Jarvis may spend: the one action with consequences, at the end. */}
@@ -441,6 +445,73 @@ async function TopUsers({ q, exportable }: { q: AdminQuery; exportable: boolean 
                 className="text-xs text-violet underline-offset-2 hover:underline"
               >
                 {t("openDetail", { name: nameOf(row.userId) })}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </AdminCard>
+  );
+}
+
+/**
+ * AI spend by space (step 22.5): every call made in a company counts to it,
+ * the owner's and their people's, since the owner pays for them; the table
+ * by user next to it says who spent what wherever they were.
+ */
+async function TopSpaces({ q, exportable }: { q: AdminQuery; exportable: boolean }) {
+  const [loaded, t, tUnits] = await Promise.all([
+    safe("ai top spaces", () => aiTopSpaces(q)),
+    getTranslations("admin.ai"),
+    getTranslations("admin.units"),
+  ]);
+  const nameOf = await peopleNamer(loaded.ok ? loaded.data.map((row) => row.spaceId) : []);
+  return (
+    <AdminCard title={t("topSpacesTitle")} description={t("topSpacesDescription")}>
+      <Show loaded={loaded}>
+        {(rows) => (
+          <DataTable
+            id="ai.top_spaces"
+            exportable={exportable}
+            table={buildTable(rows, [
+              { key: "space_name", label: t("columns.space"), render: (row) => nameOf(row.spaceId) },
+              { key: "space_id", label: t("columns.spaceId"), csvOnly: true, render: (row) => row.spaceId },
+              { key: "plan", label: t("columns.plan"), render: (row) => row.plan },
+              {
+                key: "users",
+                label: t("columns.users"),
+                align: "right",
+                render: (row) => count(row.users),
+                csv: (row) => row.users,
+              },
+              {
+                key: "calls",
+                label: t("columns.calls"),
+                align: "right",
+                render: (row) => count(row.calls),
+                csv: (row) => row.calls,
+              },
+              {
+                key: "cost_usd",
+                label: t("columns.cost"),
+                align: "right",
+                render: (row) => formatMetricValue(row.costUsd, "usd", tUnits),
+                csv: (row) => metricCsvValue(row.costUsd, "usd"),
+              },
+            ])}
+          />
+        )}
+      </Show>
+      {loaded.ok && loaded.data.length > 0 && (
+        <ul className="flex flex-wrap gap-x-3 gap-y-1">
+          {loaded.data.map((row) => (
+            <li key={row.spaceId}>
+              <Link
+                href={`${ADMIN_PATH}/uzivatele/${row.spaceId}`}
+                prefetch={false}
+                className="text-xs text-violet underline-offset-2 hover:underline"
+              >
+                {t("openDetail", { name: nameOf(row.spaceId) })}
               </Link>
             </li>
           ))}

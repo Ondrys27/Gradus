@@ -19,7 +19,7 @@ export function planLimits(row: PlanRow | null | undefined): PlanLimits {
   return { aiCalls: row?.ai_calls_limit ?? 0, fileUploads: row?.file_uploads_limit ?? 0 };
 }
 
-/** The plan's monthly numbers, read with the user's own client. */
+/** The plan's monthly numbers of an account (the own one or the active space's), read with the user's own client. */
 async function loadLimits(supabase: Client, userId: string): Promise<PlanLimits> {
   const { data, error } = await supabase.rpc("current_plan", { _user_id: userId });
   if (error) throw error;
@@ -44,6 +44,9 @@ function monthStart(settings: FormatSettings, now: Date): string {
  * Answered AI calls this calendar month, the month counted in the user's zone.
  * Failed calls are logged but do not use up the plan. ai_usage is server-only,
  * so the admin client reads it, filtered by the user id from the session.
+ * In a company the account works for (`spaceId`), the plan is the company's
+ * (its owner pays) and the calls counted are this person's ones made there;
+ * in the own space the own plan and the own calls made there.
  */
 export async function loadAiUsage(
   supabase: Client,
@@ -51,18 +54,19 @@ export async function loadAiUsage(
   userId: string,
   settings: FormatSettings,
   now: Date = new Date(),
+  spaceId: string | null = null,
 ): Promise<AiCallUsage> {
+  const space = spaceId ?? userId;
   const [limits, used] = await Promise.all([
-    loadLimits(supabase, userId),
-    admin
-      .from("ai_usage")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .eq("success", true)
-      .gte("created_at", monthStart(settings, now)),
+    loadLimits(supabase, space),
+    admin.rpc("jarvis_space_calls", {
+      _user_id: userId,
+      _space_id: space,
+      _since: monthStart(settings, now),
+    }),
   ]);
   if (used.error) throw used.error;
-  return { used: used.count ?? 0, limit: limits.aiCalls };
+  return { used: Number(used.data ?? 0), limit: limits.aiCalls };
 }
 
 /** Every accepted file is one of these analytics events. */
@@ -78,9 +82,11 @@ export async function loadFileUsage(
   userId: string,
   settings: FormatSettings,
   now: Date = new Date(),
+  spaceId: string | null = null,
 ): Promise<{ used: number; limit: number }> {
   const [limits, used] = await Promise.all([
-    loadLimits(supabase, userId),
+    // The plan of the space the files go to (a company's when working there).
+    loadLimits(supabase, spaceId ?? userId),
     admin
       .from("analytics_events")
       .select("id", { count: "exact", head: true })
@@ -98,6 +104,8 @@ export function limitReached(usage: AiCallUsage): boolean {
 
 export type AiUsageEntry = {
   userId: string;
+  /** The space the call was made in; the account's own when not given. */
+  spaceId?: string | null;
   conversationId: string | null;
   feature: JarvisFeature;
   model: JarvisModel;
@@ -118,6 +126,7 @@ const MISSING_REFERENCE = "23503";
 export async function logAiUsage(admin: Client, entry: AiUsageEntry): Promise<void> {
   const row = {
     user_id: entry.userId,
+    space_id: entry.spaceId ?? entry.userId,
     conversation_id: entry.conversationId,
     purpose: entry.feature,
     model: entry.model,

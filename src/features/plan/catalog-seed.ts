@@ -21,6 +21,8 @@ export function seedPlanCatalog(): PlanCatalog {
       EUR: plan.monthly.EUR * YEARLY_MONTHS_CHARGED,
     },
     per_worker: plan.perWorker ? { ...plan.perWorker } : null,
+    // The first version had no workers in the price: each one was extra.
+    included_workers: 0,
     limits: { ...plan.limits },
     features: plan.features.map((feature) => ({
       cs: line(cs.plans.features[feature]),

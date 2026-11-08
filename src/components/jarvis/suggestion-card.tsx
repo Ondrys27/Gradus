@@ -9,6 +9,7 @@ import {
   FlagIcon,
   HourglassIcon,
   LightbulbIcon,
+  MailPlusIcon,
   MapIcon,
   PhoneCallIcon,
   ReceiptTextIcon,
@@ -35,6 +36,7 @@ const ICONS: Record<SuggestionType, LucideIcon> = {
   milestoneReady: FlagIcon,
   overdueInvoice: ReceiptTextIcon,
   overdueCrmTask: SquareCheckBigIcon,
+  workerInvite: MailPlusIcon,
   taskCompleted: CircleCheckIcon,
   insight: LightbulbIcon,
   pathReady: MapIcon,
@@ -48,6 +50,7 @@ const ICON_TONE: Record<SuggestionType, string> = {
   milestoneReady: "text-gold",
   overdueInvoice: "text-pink",
   overdueCrmTask: "text-pink",
+  workerInvite: "text-violet",
   taskCompleted: "text-green",
   insight: "text-violet",
   pathReady: "text-teal",
@@ -86,7 +89,9 @@ export function useSuggestionText() {
                 ? t("overdueInvoice.noCustomer", params)
                 : type === "overdueCrmTask" && !params.target
                   ? t("overdueCrmTask.noTarget", params)
-                  : t(`${type}.text`, params),
+                  : type === "workerInvite" && !params.who
+                    ? t("workerInvite.noWho", params)
+                    : t(`${type}.text`, params),
           detail: null,
           prompt:
             suggestion.action.kind === "ask"

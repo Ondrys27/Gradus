@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import type { Billing, CatalogPlan, PriceCurrency } from "@/config/pricing";
 import { monthlyPrice, perWorkerPrice, yearlyPrice } from "@/features/plan/catalog";
-import { formatCurrency, type FormatSettings } from "@/lib/format";
+import { formatCurrency, formatNumber, type FormatSettings } from "@/lib/format";
 
 export function money(value: number, currency: string, format: FormatSettings): string {
   return formatCurrency(value, currency, format, Number.isInteger(value) ? 0 : 2);
@@ -33,7 +33,13 @@ export function PlanPrice({
       <span>{billing === "yearly" ? t("perYear", { price }) : t("perMonth", { price })}</span>
       {worker !== null && (
         <span className="text-xs font-normal text-ink-soft">
-          {t("perWorker", { price: money(worker, currency, format) })}
+          {plan.included_workers > 0
+            ? t("perWorkerIncluded", {
+                count: plan.included_workers,
+                shown: formatNumber(plan.included_workers, {}, format),
+                price: money(worker, currency, format),
+              })
+            : t("perWorker", { price: money(worker, currency, format) })}
         </span>
       )}
     </span>

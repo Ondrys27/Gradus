@@ -437,7 +437,8 @@
       "fileLimit": "Tento měsíc jsi přiložil všech {limit} souborů. Obnoví se 1. dne v měsíci.",
       "fileUpload": "Soubor se nepodařilo nahrát. Zkontroluj připojení a zkus to znovu.",
       "tooManyFiles": "K jedné zprávě jdou přiložit nejvýš {max} soubory.",
-      "userLimit": "AI pomocník má pro tvůj účet tento měsíc vyčerpaný limit. Zbytek aplikace funguje dál."
+      "userLimit": "AI pomocník má pro tvůj účet tento měsíc vyčerpaný limit. Víc prostoru dává vyšší tarif (Nastavení → Předplatné); zbytek aplikace funguje dál.",
+      "spaceLimit": "AI pomocník má v téhle firmě tento měsíc vyčerpaný limit. Majitel ho zvýší vyšším tarifem; ve vlastní firmě Jarvis funguje dál."
     },
     "files": {
       "attach": "Přiložit soubory",
@@ -491,6 +492,10 @@
       "overdueCrmTask": {
         "text": "Úkol „{task}“ u {target} je po termínu.",
         "noTarget": "Úkol „{task}“ je po termínu."
+      },
+      "workerInvite": {
+        "text": "{who} tě zve do svého týmu. Podívej se, co ti nabízí.",
+        "noWho": "Někdo tě zve do svého týmu. Podívej se, co ti nabízí."
       }
     },
     "proactive": {
@@ -1016,6 +1021,19 @@
         "name": "Název firmy",
         "nameHint": "Tvoji pracovníci ho uvidí v přepínači firem.",
         "logo": "Logo firmy"
+      },
+      "companies": {
+        "title": "Firmy, kde pracuješ",
+        "description": "Z firmy můžeš kdykoli odejít. Majitel dostane zprávu, tvoje práce tam zůstane a tvůj vlastní účet se nemění.",
+        "unnamed": "Firma bez názvu",
+        "leave": "Odejít z firmy",
+        "confirmTitle": "Odejít z firmy {name}?",
+        "confirmText": "Přístup k jejím datům skončí hned. Obchody a úkoly, které máš na starosti, zůstanou ve firmě a majitel je předá dál. Vrátit se můžeš jen s novou pozvánkou.",
+        "cancel": "Zůstat",
+        "errors": {
+          "readOnly": "Firma je teď jen pro čtení. Zkus to později, nebo napiš majiteli.",
+          "unknown": "Odejít se nepodařilo. Zkus to znovu."
+        }
       }
     },
     "menuLabel": "Skupiny nastavení",
@@ -3207,7 +3225,8 @@
           "busy": "Jarvis má teď moc práce. Zkus to za minutu.",
           "unavailable": "Rozbor teď nejde udělat. Zkus to za chvíli.",
           "paused": "Jarvis si dává do konce měsíce pauzu, aplikace funguje dál.",
-          "userLimit": "AI pomocník má pro tvůj účet tento měsíc vyčerpaný limit. Zbytek aplikace funguje dál."
+          "userLimit": "AI pomocník má pro tvůj účet tento měsíc vyčerpaný limit. Víc prostoru dává vyšší tarif; zbytek aplikace funguje dál.",
+          "spaceLimit": "AI pomocník má v téhle firmě tento měsíc vyčerpaný limit. Majitel ho zvýší vyšším tarifem."
         }
       },
       "activeDeals": {
@@ -3380,7 +3399,8 @@
         "paused": "Jarvis si dává do konce měsíce pauzu, takže odpověď napiš sám. Aplikace funguje dál.",
         "network": "Spojení se přerušilo. Zkontroluj internet a zkus to znovu.",
         "unknown": "Něco se pokazilo. Zkus to znovu, nebo napiš odpověď sám.",
-        "userLimit": "AI pomocník má pro tvůj účet tento měsíc vyčerpaný limit, takže odpověď napiš sám. Aplikace funguje dál."
+        "userLimit": "AI pomocník má pro tvůj účet tento měsíc vyčerpaný limit, takže odpověď napiš sám. Aplikace funguje dál.",
+        "spaceLimit": "AI pomocník má v téhle firmě tento měsíc vyčerpaný limit, takže odpověď napiš sám. Majitel ho zvýší vyšším tarifem."
       },
       "attach": "Přiložit soubory (max {max}, každý do {size} MB)",
       "filesSelected": "Přiložené soubory",
@@ -3518,6 +3538,23 @@
       "open": "Otevřít Zprávy",
       "turnOff": "Vypnout tato upozornění",
       "someone": "Někdo"
+    },
+    "workerInvite": {
+      "subject": "{who} tě zve do týmu v {appName}",
+      "someone": "Někdo",
+      "intro": "{who} tě zve do svého týmu v {appName}.",
+      "introAs": "{who} tě zve do svého týmu v {appName} jako {role}.",
+      "inApp": "Pozvánku najdeš po přihlášení ve zvonku vpravo nahoře. Uvidíš, co ti majitel povolil, a přijmeš ji, nebo odmítneš.",
+      "signUp": "Zaregistruj se přes odkaz níže; po registraci budeš v týmu a budeš mít i vlastní účet.",
+      "free": "Za práci ve firmě neplatíš, platí ji majitel.",
+      "open": "Otevřít pozvánku",
+      "register": "Zaregistrovat se"
+    },
+    "workerLeft": {
+      "subject": "{worker} odešel z firmy v {appName}",
+      "intro": "{worker} právě odešel z tvé firmy v {appName}.",
+      "next": "Přístup k datům firmy skončil hned. Obchody a úkoly, které měl na starosti, zůstaly ve firmě; předat je můžeš ve Správě firmy nebo v detailu obchodu.",
+      "open": "Otevřít Správu firmy"
     }
   },
   "workers": {
@@ -3552,7 +3589,10 @@
       "cancel": "Zrušit",
       "close": "Zavřít",
       "done": "Hotovo",
-      "saveFailed": "Uložení se nepovedlo. Zkus to znovu."
+      "saveFailed": "Uložení se nepovedlo. Zkus to znovu.",
+      "target": "Krátké ID nebo e-mail",
+      "targetHint": "Má už účet? Stačí jeho krátké ID z Nastavení → Účet, pozvánka na něj počká v aplikaci. Nový člověk dostane odkaz na registraci.",
+      "inviteSent": "Pozvánka odeslána"
     },
     "permissions": {
       "title": "Co může dělat",
@@ -3653,7 +3693,11 @@
       "validUntil": "Platí do {date}.",
       "expired": "Pozvánka vypršela. Vytvoř nový odkaz a pošli ho znovu.",
       "renew": "Nový odkaz",
-      "renewFailed": "Nový odkaz se nepodařilo vytvořit. Zkus to znovu."
+      "renewFailed": "Nový odkaz se nepodařilo vytvořit. Zkus to znovu.",
+      "waitingTitle": "{name} má pozvánku v aplikaci",
+      "waitingText": "Uvidí ji ve zvonku a v e-mailu a přijme ji nebo odmítne. Platí do {date}.",
+      "waitingExpired": "Pozvánka vypršela. Odeber pracovníka a pozvi ho znovu.",
+      "declined": "Pozvánku odmítl."
     },
     "detail": {
       "loadFailed": "Pracovníka se nepodařilo načíst. Zkus to znovu.",
@@ -3900,7 +3944,8 @@
         "empty": "Nejdřív přidej aspoň jedno pravidlo.",
         "unknown": "Něco se pokazilo. Zkus to znovu, nebo nastav bez AI.",
         "userLimit": "AI pomocník má pro tvůj účet tento měsíc vyčerpaný limit. Můžeš nastavit bez AI.",
-        "paused": "Jarvis si dává do konce měsíce pauzu. Můžeš nastavit bez AI."
+        "paused": "Jarvis si dává do konce měsíce pauzu. Můžeš nastavit bez AI.",
+        "spaceLimit": "AI pomocník má v téhle firmě tento měsíc vyčerpaný limit. Můžeš nastavit bez AI."
       },
       "proposal": {
         "title": "Jak to bude fungovat",
@@ -3924,7 +3969,12 @@
       "descriptionTooLong": "Podrobnosti jsou moc dlouhé.",
       "amountInvalid": "Zadej částku větší než nula.",
       "noteTooLong": "Poznámka je moc dlouhá.",
-      "dateRequired": "Vyber datum."
+      "dateRequired": "Vyber datum.",
+      "targetRequired": "Zadej krátké ID nebo e-mail.",
+      "targetInvalid": "Tohle není krátké ID (6 znaků) ani e-mail.",
+      "targetNotFound": "Účet s tímhle ID neexistuje. Zkontroluj ho v jeho Nastavení → Účet.",
+      "targetSelf": "Tohle jsi ty.",
+      "targetAlreadyMember": "Ve firmě už je, nebo už má pozvánku."
     },
     "company": {
       "tabs": {
@@ -4047,6 +4097,14 @@
         "managerOwner": "Přímo pod tebou",
         "groups": "Skupiny",
         "groupsHint": "Nepovinné, jde to kdykoli změnit."
+      },
+      "seat": {
+        "own": "má vlastní tarif",
+        "included": "v ceně",
+        "extra": "navíc {price}",
+        "extraNoPrice": "nad rámec tarifu",
+        "declined": "odmítl pozvánku",
+        "waiting": "čeká na přijetí"
       }
     },
     "dashboard": {
@@ -4864,7 +4922,8 @@
       "from": "Od",
       "status": "Stav účtu"
     },
-    "unlimited": "bez limitu"
+    "unlimited": "bez limitu",
+    "perWorkerIncluded": "{count, plural, one {{shown} pracovník v ceně, další + {price}} few {{shown} pracovníci v ceně, další + {price}} other {{shown} pracovníků v ceně, další + {price}}}"
   },
   "trial": {
     "banner": "Zkušební období · zbývá {days, plural, one {# den} few {# dny} other {# dní}}",
@@ -5543,6 +5602,10 @@
       "promo_conversion": {
         "name": "Konverze kód → platba",
         "description": "Podíl účtů, které v období použily promo kód partnera a od té doby aspoň jednou zaplatily."
+      },
+      "ai_top_spaces": {
+        "name": "Nejnákladnější prostory",
+        "description": "10 prostorů s nejvyšší útratou AI: majitel, plán, kolik účtů v něm volalo, volání a náklad."
       }
     }
   },
@@ -5789,7 +5852,9 @@
         "p95": "p95",
         "user": "Uživatel",
         "plan": "Plán",
-        "userId": "ID uživatele"
+        "userId": "ID uživatele",
+        "space": "Prostor (majitel)",
+        "spaceId": "ID prostoru"
       },
       "caps": {
         "title": "Strop využití AI",
@@ -5898,6 +5963,10 @@
           "pathReady": {
             "label": "Cesta je připravená",
             "description": "Po onboardingu v herním režimu odkaz na milníky cesty."
+          },
+          "workerInvite": {
+            "label": "Pozvánka do firmy",
+            "description": "Někdo uživatele pozval do své firmy a pozvánka čeká na přijetí."
           }
         },
         "questions": {
@@ -5960,7 +6029,9 @@
           "forbidden": "Pravidla mění jen majitel s ověřením druhým faktorem.",
           "failed": "Uložení se nepovedlo. Zkus to znovu."
         }
-      }
+      },
+      "topSpacesTitle": "10 nejnákladnějších prostorů",
+      "topSpacesDescription": "Útrata AI podle prostoru: každé volání ve firmě se počítá do ní, i pracovníka z jiného účtu (platí majitel). Vedle útrata podle uživatele, ať byl kdekoli."
     },
     "game": {
       "title": "Hra",
@@ -6693,7 +6764,8 @@
         "highlight": "Zvýraznit řádek {n}",
         "remove": "Odebrat řádek {n}",
         "addLine": "Přidat vlastnost",
-        "placeholders": "Číslo z limitu vložíš do textu jako {list}."
+        "placeholders": "Číslo z limitu vložíš do textu jako {list}.",
+        "includedWorkersHint": "Pracovníci bez vlastního tarifu, které cena pokrývá. Každý další stojí cenu za pracovníka (bez ní se do tarifu nevejde); kdo má vlastní tarif, je ve firmě zdarma."
       },
       "fields": {
         "name": "Název",
@@ -6703,7 +6775,8 @@
         "per_worker": "Za pracovníka měsíčně",
         "features": "Vlastnosti na kartě",
         "recommended": "Štítek „Doporučeno“",
-        "order": "Pořadí"
+        "order": "Pořadí",
+        "included_workers": "Pracovníků v ceně"
       },
       "limits": {
         "daily_contacts": "Kontakty denně",
@@ -7392,7 +7465,8 @@
       "perWorker": "+ {price} za pracovníka",
       "betaText": "Během bety máš všechno zdarma a bez časového omezení. Tarif si vybereš, až spustíme platby.",
       "scheduled": "Od {date}: {plan} · {billing}",
-      "cancelScheduled": "Zrušit změnu"
+      "cancelScheduled": "Zrušit změnu",
+      "perWorkerIncluded": "{count, plural, one {{shown} pracovník v ceně, další + {price}} few {{shown} pracovníci v ceně, další + {price}} other {{shown} pracovníků v ceně, další + {price}}}"
     },
     "status": {
       "beta": "Beta zdarma",
@@ -7507,6 +7581,18 @@
       "tooLong": "Text je moc dlouhý.",
       "emailInvalid": "Tohle nevypadá jako e-mail.",
       "countryInvalid": "Vyber zemi."
+    },
+    "workers": {
+      "label": "Pracovníci",
+      "none": "zatím nikdo",
+      "included": "{shown} z {of} v ceně",
+      "extra": "{shown} navíc × {price}",
+      "extraNoPrice": "{shown} nad rámec tarifu",
+      "own": "{count, plural, one {{shown} má vlastní tarif} few {{shown} mají vlastní tarif} other {{shown} má vlastní tarif}}",
+      "chargeMonthly": "Za pracovníky navíc {amount} měsíčně",
+      "chargeYearly": "Za pracovníky navíc {amount} ročně",
+      "notInPlan": "Tvůj tarif pracovníky navíc nezahrnuje. Vyšší tarif je má.",
+      "rule": "Kdo má vlastní platný tarif, je ve firmě zdarma. Za ostatní platíš podle svého tarifu; když si pracovník tarif zaplatí sám, od dalšího období se za něj neplatí. Pozvaný se počítá, dokud pozvánku nepřijme."
     }
   },
   "messages": {
@@ -8053,6 +8139,53 @@
       "title": "Kde pracuješ",
       "current": "Právě tady",
       "failed": "Přepnout se nepodařilo. Zkus to prosím znovu."
+    }
+  },
+  "invites": {
+    "title": "Pozvánky",
+    "description": "Firmy, které tě zvou do svého týmu. Přijmeš a firma bude v přepínači vpravo nahoře; tvoje vlastní data zůstávají oddělená.",
+    "loadFailed": "Pozvánky se nepodařilo načíst. Zkus to znovu.",
+    "emptyTitle": "Žádné pozvánky",
+    "emptyText": "Až tě někdo pozve do své firmy, uvidíš to tady a ve zvonku.",
+    "someone": "Někdo",
+    "invites": "{who} tě zve do svého týmu",
+    "invitesAs": "{who} tě zve jako {role}",
+    "validUntil": "Platí do {date}",
+    "rightsTitle": "Co tam uvidíš",
+    "rightsNone": "Nástěnku, svoje úkoly a Zprávy; víc ti majitel může povolit později.",
+    "rewardsTitle": "Odměny",
+    "forYou": "jen pro tebe",
+    "free": "Za práci ve firmě neplatíš: majitel to má ve svém tarifu. Tvůj vlastní účet a data zůstávají tvoje.",
+    "accept": "Přijmout",
+    "decline": "Odmítnout",
+    "declineTitle": "Odmítnout pozvánku?",
+    "declineText": "{who} uvidí, že jsi pozvánku odmítl. Pokud si to rozmyslíš, musí tě pozvat znovu.",
+    "cancel": "Zpět",
+    "acceptedTitle": "Jsi v týmu {name}",
+    "acceptedText": "Firma je teď v přepínači vpravo nahoře (na telefonu ve Více). Přepnout se můžeš kdykoli.",
+    "switch": "Přejít do {name}",
+    "stay": "Zůstat tady",
+    "switchFailed": "Přepnout se nepodařilo. Zkus to přepínačem vpravo nahoře.",
+    "errors": {
+      "invalid": "Pozvánka už neplatí: vypršela, nebo ji majitel zrušil.",
+      "alreadyMember": "V téhle firmě už pracuješ.",
+      "readOnly": "Firma je teď jen pro čtení, pozvánku zatím nejde přijmout.",
+      "signedOut": "Přihlas se znovu a zkus to.",
+      "unknown": "Něco se pokazilo. Zkus to znovu."
+    }
+  },
+  "inbox": {
+    "title": "Oznámení",
+    "open": "Oznámení",
+    "openCount": "{count, plural, one {Oznámení, {shown} nové} few {Oznámení, {shown} nová} other {Oznámení, {shown} nových}}",
+    "empty": "Nic nového.",
+    "someone": "Někdo",
+    "invite": "{who} tě zve do týmu",
+    "inviteHint": "Přijmout nebo odmítnout",
+    "notes": {
+      "invite_accepted": "{name} přijal pozvánku do firmy",
+      "invite_declined": "{name} pozvánku odmítl",
+      "worker_left": "{name} odešel z firmy"
     }
   }
 }

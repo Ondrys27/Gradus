@@ -27,6 +27,7 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | `error-alerts-actions.saveErrorAlerts`, `sendErrorAlertsTest` | owner | adresy a režim e-mailů o chybách, zkušební e-mail; admin nastavení jen čte |
 | `export-actions.recordExport` (grafy, tabulky čísel) | owner + admin | souhrnná čísla |
 | `export-actions.recordExport` (`table.ai.top_users.csv`) | owner | jména a id uživatelů |
+| `export-actions.recordExport` (`table.ai.top_spaces.csv`) | owner | jména majitelů a id prostorů (útrata AI podle prostoru) |
 | `GET /admin/audit/export` | owner | jména a id lidí v auditu; adminovi 404 |
 | `admins-actions.createAdminInvite` | owner | sekce Administrátoři |
 | `admins-actions.sendAdminInviteEmail` | owner | sekce Administrátoři |

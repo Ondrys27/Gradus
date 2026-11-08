@@ -69,7 +69,7 @@ export async function loadRuleInputs(
   );
   const ownSpaces = [userId, ...spaces.map((space) => space.owner_id)];
 
-  const [won, stalled, stages, overdue, milestones, followUpTable, invoices, crmTasks] =
+  const [won, stalled, stages, overdue, milestones, followUpTable, invoices, crmTasks, invites] =
     await Promise.all([
       client
         .from("deals")
@@ -137,6 +137,8 @@ export async function loadRuleInputs(
         .lt("due_at", now.toISOString())
         .order("due_at")
         .limit(PER_RULE_LIMIT),
+      // Invites into other companies naming this account (own client: its own; cron: by id).
+      client.rpc("my_worker_invites", { _user: userId }),
     ]);
 
   const stageNames = new Map(list(stages).map((stage) => [stage.id, stage.name]));
@@ -222,6 +224,13 @@ export async function loadRuleInputs(
           ]
         : [],
     ),
+    workerInvites: list(invites)
+      .slice(0, PER_RULE_LIMIT)
+      .map((invite) => ({
+        id: invite.invite_id,
+        who:
+          [...new Set([invite.company_name, invite.owner_name].filter(Boolean))].join(" · ") || "",
+      })),
     overdueCrmTasks: list(crmTasks).map((task) => ({
       id: task.id,
       title: task.title,

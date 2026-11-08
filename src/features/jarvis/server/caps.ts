@@ -85,6 +85,16 @@ export async function loadUserSpend(admin: Client, userId: string, since: Date):
   return Number(data ?? 0);
 }
 
+/** One space's AI spend since an instant: every call made in it, by its owner or the people working there. */
+export async function loadSpaceSpend(admin: Client, spaceId: string, since: Date): Promise<number> {
+  const { data, error } = await admin.rpc("jarvis_space_month_spend", {
+    _space_id: spaceId,
+    _since: since.toISOString(),
+  });
+  if (error) throw error;
+  return Number(data ?? 0);
+}
+
 /** The largest spend of one user since an instant, for the administration. */
 export async function loadTopUserSpend(
   admin: Client,
