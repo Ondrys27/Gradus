@@ -297,6 +297,33 @@ describe("rights go with the row's company", () => {
     await asServer();
   });
 
+  it("a worker in a company has only the rights granted there", async () => {
+    await asServer();
+    await db.query(`insert into contacts (user_id, company_name) values ($1, 'Z client')`, [ownerZ]);
+    // Only "pipeline: view" in Z: no contacts, no finance, nothing to write.
+    await asUser(member, ownerZ);
+    expect(await workspace()).toBe(ownerZ);
+    expect((await rows(`select 1 from contacts where user_id = $1`, [ownerZ])).length).toBe(0);
+    await expect(
+      db.query(`insert into contacts (user_id, company_name) values ($1, 'Mine now')`, [ownerZ]),
+    ).rejects.toThrow();
+    const stage = await rows(`select id from pipeline_stages where user_id = $1 limit 1`, [ownerZ]);
+    expect(stage.length).toBe(1);
+    await expect(
+      db.query(`insert into deals (user_id, stage_id, title) values ($1, $2, 'Mine now')`, [
+        ownerZ,
+        (stage[0] as { id: string }).id,
+      ]),
+    ).rejects.toThrow();
+    const rights = async (section: string, action: string) =>
+      (await one<{ ok: boolean }>(`select has_permission($1, $2, $3) as ok`, [ownerZ, section, action])).ok;
+    expect(await rights("pipeline", "view")).toBe(true);
+    expect(await rights("pipeline", "create")).toBe(false);
+    expect(await rights("contacts", "view")).toBe(false);
+    expect(await rights("finance", "view")).toBe(false);
+    await asServer();
+  });
+
   it("a member still reads its company's rows whatever space is active (the app filters)", async () => {
     await asServer();
     await db.query(`insert into contacts (user_id, company_name) values ($1, 'X client')`, [ownerX]);
@@ -577,6 +604,88 @@ describe("isolation sweep: a space the account does not belong to", () => {
     }
     await asServer();
   });
+
+  it("the client's functions refuse the space too, and change nothing there", async () => {
+    await asServer();
+    const idOf = async (table: string, column = "user_id") =>
+      (await one<{ id: string }>(`select id from public."${table}" where "${column}" = $1 limit 1`, [ownerY])).id;
+    const yWorker = (
+      await one<{ id: string }>(`select id from workers where owner_id = $1 and user_id = $2`, [ownerY, workerOfY])
+    ).id;
+    const [yInvoice, yContact, yTable, yDeal, yChannel, yGroup, yInvite] = await Promise.all([
+      idOf("invoices"),
+      idOf("contacts"),
+      idOf("contact_tables"),
+      idOf("deals"),
+      idOf("chat_channels", "owner_id"),
+      idOf("worker_groups", "owner_id"),
+      idOf("worker_invites", "owner_id"),
+    ]);
+    const snapshot = async () => {
+      await asServer();
+      const parts: string[] = [];
+      for (const target of targets) {
+        const found = await rows(
+          `select to_jsonb(t) as row from public."${target.table}" t
+           where "${target.ownerColumn}" = '${ownerY}'::uuid order by 1::text`,
+        );
+        parts.push(`${target.table}:${JSON.stringify(found)}`);
+      }
+      return parts.join("\n");
+    };
+    const before = await snapshot();
+
+    // Each call either fails or answers nothing: no row, false, null or zero.
+    const calls: Array<[string, unknown[]]> = [
+      [`select * from company_worker($1)`, [yWorker]],
+      [`select * from company_worker_impact($1)`, [yWorker]],
+      [`select * from company_visible_worker_ids_in($1)`, [ownerY]],
+      [`select company_can_edit_worker($1)`, [yWorker]],
+      [`select worker_documents_own($1)`, [yWorker]],
+      [`select crm_task_target_visible($1, $2, $3)`, [ownerY, yDeal, yContact]],
+      [`select is_workspace_member($1, $2)`, [ownerY, workerOfY]],
+      [`select has_section_access($1, 'finance', 'view')`, [ownerY]],
+      [`select has_permission($1, 'contacts', 'view')`, [ownerY]],
+      [`select is_space_member($1)`, [ownerY]],
+      [`select chat_is_member($1)`, [yChannel]],
+      [`select * from worker_seats($1)`, [ownerY]],
+      [`select * from my_worker_invites($1)`, [ownerY]],
+      [`select company_update_worker($1, '{"job_title": "Taken"}'::jsonb)`, [yWorker]],
+      [`select company_set_group_member($1, $2, true)`, [yWorker, yGroup]],
+      [`select * from company_remove_worker($1, null)`, [yWorker]],
+      [`select record_worker_payment($1, 1, now(), null)`, [yWorker]],
+      [`select start_work_session($1)`, [yWorker]],
+      [`select pause_work_session($1)`, [yWorker]],
+      [`select issue_invoice($1)`, [yInvoice]],
+      [`select mark_invoice_paid($1)`, [yInvoice]],
+      [`select cancel_invoice($1)`, [yInvoice]],
+      [`select move_contact($1, $2, '{}'::jsonb)`, [yContact, yTable]],
+      [`select remove_contact_table($1, null)`, [yTable]],
+      [`select link_deal_to_booked_meeting($1)`, [yDeal]],
+      [`select chat_mark_read($1, now())`, [yChannel]],
+      [`select chat_set_member_flags($1, true, true)`, [yChannel]],
+      [`select chat_set_muted_all($1, true)`, [yChannel]],
+      [`select chat_open_direct($1)`, [yWorker]],
+      [`select space_leave($1)`, [ownerY]],
+      [`select worker_invite_respond($1, true)`, [yInvite]],
+    ];
+    const nothing = (value: unknown) =>
+      value === null || value === false || value === 0 || value === "" ||
+      (Array.isArray(value) && value.length === 0);
+    const leaks: string[] = [];
+    for (const [sql, params] of calls) {
+      await asUser(member, ownerY);
+      const answer = await db
+        .query<Row>(sql, params as never)
+        .then((result) => result.rows)
+        .catch(() => null);
+      if (answer && answer.some((row) => Object.values(row).some((value) => !nothing(value)))) {
+        leaks.push(`${sql} → ${JSON.stringify(answer)}`);
+      }
+    }
+    expect(leaks).toEqual([]);
+    expect(await snapshot()).toBe(before);
+  }, 120_000);
 
   it("the space's functions give nothing away either", async () => {
     await asUser(member, ownerY);

@@ -23,6 +23,12 @@ export type OwnerOnly =
   | "editSubscriptions"
   /** Partner payouts approved and marked paid; an admin reads them. */
   | "managePayouts"
+  /**
+   * A changed sign-in e-mail of an account (support): with a password reset
+   * after it, it hands the account to whoever owns the new address, so only
+   * the owner starts it; an admin sends resets and confirmations.
+   */
+  | "changeEmails"
   /** Where the error e-mails go and how often, the test e-mail; an admin reads it. */
   | "editErrorAlerts"
   /** Exports whose rows name people (names, e-mails, account ids). */

@@ -7,7 +7,7 @@ import { formatCalendarDate, formatDateTime, formatNumber } from "@/lib/format";
 import { ADMIN_FORMAT_SETTINGS, formatMetricValue } from "@/features/admin/format-metric";
 import { logAdminAction } from "@/features/admin/server/audit";
 import { requireAdmin } from "@/features/admin/server/guard";
-import { accountSupportBlock, adminCan } from "@/features/admin/roles";
+import { accountSupportBlock, adminCan, type AdminRole } from "@/features/admin/roles";
 import { ADMIN_PATH } from "@/features/admin/access";
 import { availableSupportActions, trialState } from "@/features/admin/account-support";
 import { loadUserAccount, loadUserReports, type UserAccount, type UserReport } from "@/features/admin/server/account-data";
@@ -118,6 +118,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
                   plan={label(tControls, "plan", detail.plan)}
                   trial={trialState(subscription)}
                   block={accountSupportBlock(context, { id, roles: account.data.roles })}
+                  role={context.role}
                   t={t}
                   tAdmin={tAdmin}
                 />
@@ -328,6 +329,7 @@ function AccountFacts({
   plan,
   trial,
   block,
+  role,
   t,
   tAdmin,
 }: {
@@ -336,6 +338,7 @@ function AccountFacts({
   plan: string;
   trial: ReturnType<typeof trialState>;
   block: ReturnType<typeof accountSupportBlock>;
+  role: AdminRole;
   t: UsersT;
   tAdmin: Awaited<ReturnType<typeof getTranslations<"admin">>>;
 }) {
@@ -387,7 +390,7 @@ function AccountFacts({
         <AccountSupportActions
           userId={userId}
           email={account.email}
-          actions={availableSupportActions(account)}
+          actions={availableSupportActions(account, role)}
         />
       )}
     </div>

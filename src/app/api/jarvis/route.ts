@@ -432,6 +432,7 @@ async function milestoneReview(ctx: Context, body: unknown) {
     .from("milestones")
     .select("title, description, category, target_date, ai_feedback")
     .eq("id", parsed.data.milestoneId)
+    .eq("user_id", ctx.spaceId)
     .maybeSingle();
   if (error) throw error;
   if (!milestone) return jobError("notFound", 404);
@@ -458,6 +459,7 @@ async function milestoneReview(ctx: Context, body: unknown) {
     client,
     admin,
     userId,
+    spaceId: ctx.spaceId,
     milestoneId: parsed.data.milestoneId,
     milestone,
     today: todayIsoDate(settings),
@@ -611,6 +613,7 @@ async function emailReply(ctx: Context, body: unknown) {
     .from("contacts")
     .select("company_name, first_name, last_name")
     .eq("id", parsed.data.contactId)
+    .eq("user_id", ctx.spaceId)
     .maybeSingle();
   if (contactError) throw contactError;
   if (!contact) return jobError("notFound", 404);
@@ -622,6 +625,7 @@ async function emailReply(ctx: Context, body: unknown) {
       .from("deals")
       .select("title, value, currency, stage:pipeline_stages(name)")
       .eq("id", parsed.data.dealId)
+      .eq("user_id", ctx.spaceId)
       .maybeSingle();
     if (error) throw error;
     if (data) {

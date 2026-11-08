@@ -13,6 +13,7 @@ import {
   emailChangeLink,
   newEmailSchema,
   recoveryLink,
+  roleMaySupport,
   SUPPORT_AUDIT_TARGET,
   SUPPORT_EMAIL_ACTIONS,
   SUPPORT_EMAILS_PER_HOUR,
@@ -29,8 +30,8 @@ import { toSiteLocale, type SiteLocale } from "@/lib/routes";
 
 /**
  * The support actions of a user's detail (step 22.1). Owner and admin alike
- * (an admin never for the owner's or another admin's account, nobody for
- * their own); each one needs a reason and is written to admin_audit with it
+ * (an admin never for the owner's or another admin's account and never the
+ * e-mail change, nobody for their own); each one needs a reason and is written to admin_audit with it
  * before it happens, so nothing happens unaudited. The links go only into
  * the e-mail to the person's own address (or the new one), never back to
  * the administration and never into the audit.
@@ -83,7 +84,7 @@ async function prepare(
   const reason = supportReasonSchema.safeParse(rawReason);
   if (!userId.success || !reason.success) return { ok: false, error: "invalid" };
   const context = await adminAccess(true);
-  if (!context) return { ok: false, error: "forbidden" };
+  if (!context || !roleMaySupport(context.role, action)) return { ok: false, error: "forbidden" };
 
   const admin = createAdminClient();
   const [user, roles, settings] = await Promise.all([

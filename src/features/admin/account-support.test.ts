@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   availableSupportActions,
+  roleMaySupport,
   confirmationLink,
   emailChangeLink,
   newEmailSchema,
@@ -43,18 +44,31 @@ describe("support links", () => {
 
 describe("what the Account card offers", () => {
   it("offers the confirmation only while the e-mail is unconfirmed", () => {
-    expect(availableSupportActions({ email: "a@b.cz", emailConfirmed: true })).toEqual([
+    expect(availableSupportActions({ email: "a@b.cz", emailConfirmed: true }, "owner")).toEqual([
       "passwordReset",
       "signOut",
       "emailChange",
     ]);
-    expect(availableSupportActions({ email: "a@b.cz", emailConfirmed: false })).toEqual([
+    expect(availableSupportActions({ email: "a@b.cz", emailConfirmed: false }, "owner")).toEqual([
       "passwordReset",
       "confirmation",
       "signOut",
       "emailChange",
     ]);
-    expect(availableSupportActions({ email: null, emailConfirmed: false })).toEqual(["signOut"]);
+    expect(availableSupportActions({ email: null, emailConfirmed: false }, "owner")).toEqual([
+      "signOut",
+    ]);
+  });
+
+  it("leaves the e-mail change to the owner", () => {
+    expect(availableSupportActions({ email: "a@b.cz", emailConfirmed: false }, "admin")).toEqual([
+      "passwordReset",
+      "confirmation",
+      "signOut",
+    ]);
+    expect(roleMaySupport("admin", "emailChange")).toBe(false);
+    expect(roleMaySupport("admin", "passwordReset")).toBe(true);
+    expect(roleMaySupport("owner", "emailChange")).toBe(true);
   });
 
   it("lets owner and admin help ordinary accounts, never themselves or the owner", () => {

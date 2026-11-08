@@ -47,12 +47,15 @@ export const MAX_FEEDBACK_LENGTH = 1200;
 /**
  * Sonnet reviews a new milestone once; the feedback is written to
  * milestones.ai_feedback with the admin client (the column is server-only),
- * always filtered by the session's user id.
+ * always filtered by the space the milestone was read in (the session's
+ * active space, checked by the database; the user's own when not given).
  */
 export async function reviewMilestone(args: {
   client: ModelClient;
   admin: Client;
   userId: string;
+  /** The space of the milestone; a worker's milestone is the company's row. */
+  spaceId?: string;
   milestoneId: string;
   milestone: ReviewedMilestone;
   today: string;
@@ -76,7 +79,7 @@ export async function reviewMilestone(args: {
     .from("milestones")
     .update({ ai_feedback: feedback, ai_feedback_at: new Date().toISOString() })
     .eq("id", args.milestoneId)
-    .eq("user_id", args.userId);
+    .eq("user_id", args.spaceId ?? args.userId);
   if (error) throw error;
   return { ...result, text: feedback };
 }

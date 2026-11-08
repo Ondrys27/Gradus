@@ -1,7 +1,9 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { EMAIL_CHANGE_CONFIRMED_TARGET } from "@/features/admin/account-support";
+import { EMAIL_CHANGE_CONFIRMED_TARGET, roleMaySupport } from "@/features/admin/account-support";
+import { accountSupportBlock } from "@/features/admin/roles";
+import { loadAdminRoles } from "@/features/admin/server/account-data";
 import { fingerprint, requestInfo } from "@/features/admin/server/request-info";
 import { emailChangeStillApplies, readEmailChangeToken } from "./email-change-token";
 
@@ -14,7 +16,9 @@ export type EmailChangeOutcome =
  * unexpired link for an account that still has the old address changes its
  * e-mail (confirmed, since the link reached the new address). Any other link
  * gets the same neutral answer. Called from the page in the browser, so a
- * mail scanner that only fetches the link changes nothing.
+ * mail scanner that only fetches the link changes nothing. Whoever asked
+ * must still be allowed to now (the owner; the account still one the owner
+ * helps), so a link outlives no change of roles.
  */
 export async function confirmEmailChange(token: string): Promise<EmailChangeOutcome> {
   const secret = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -25,6 +29,19 @@ export async function confirmEmailChange(token: string): Promise<EmailChangeOutc
   const admin = createAdminClient();
   const { data: user, error: readError } = await admin.auth.admin.getUserById(claim.userId);
   if (readError || !user.user || !emailChangeStillApplies(claim, user.user.email)) {
+    return { ok: false, error: "invalid" };
+  }
+  const [askerRoles, accountRoles] = await Promise.all([
+    loadAdminRoles(claim.requestedBy),
+    loadAdminRoles(claim.userId),
+  ]).catch(() => [null, null] as const);
+  const askerRole = askerRoles?.includes("owner") ? "owner" : askerRoles?.includes("admin") ? "admin" : null;
+  if (
+    !askerRole ||
+    !accountRoles ||
+    !roleMaySupport(askerRole, "emailChange") ||
+    accountSupportBlock({ userId: claim.requestedBy, role: askerRole }, { id: claim.userId, roles: accountRoles })
+  ) {
     return { ok: false, error: "invalid" };
   }
   const { error } = await admin.auth.admin.updateUserById(claim.userId, {
