@@ -5029,7 +5029,12 @@ export type Database = {
         Returns: string
       }
       admin_plan_catalog_publish_full: {
-        Args: { _add_ons: Json; _expected: string; _ip_hash?: string; _payload: Json }
+        Args: {
+          _add_ons: Json
+          _expected: string
+          _ip_hash?: string
+          _payload: Json
+        }
         Returns: string
       }
       admin_plan_catalog_restore: {
