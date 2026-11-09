@@ -4928,27 +4928,6 @@ export type Database = {
         }[]
       }
       award_xp: { Args: { _reason: string; _ref_id?: string }; Returns: Json }
-      billing_apply_subscription: {
-        Args: {
-          _amount?: number
-          _billing: string
-          _cancel_at_period_end: boolean
-          _currency?: string
-          _event_at: string
-          _mode: string
-          _period_end: string
-          _period_start: string
-          _plan_key: string
-          _scheduled_at?: string
-          _scheduled_billing?: string
-          _scheduled_plan_key?: string
-          _status: string
-          _subscription_ref: string
-          _trial_end: string
-          _user_id: string
-        }
-        Returns: Json
-      }
       billing_alert_add: {
         Args: {
           _amount?: number
@@ -4977,6 +4956,27 @@ export type Database = {
         }[]
       }
       billing_alerts_release: { Args: { _ids: string[] }; Returns: undefined }
+      billing_apply_subscription: {
+        Args: {
+          _amount?: number
+          _billing: string
+          _cancel_at_period_end: boolean
+          _currency?: string
+          _event_at: string
+          _mode: string
+          _period_end: string
+          _period_start: string
+          _plan_key: string
+          _scheduled_at?: string
+          _scheduled_billing?: string
+          _scheduled_plan_key?: string
+          _status: string
+          _subscription_ref: string
+          _trial_end: string
+          _user_id: string
+        }
+        Returns: Json
+      }
       billing_customer_save: {
         Args: { _customer_id: string; _mode: string; _user_id: string }
         Returns: string
