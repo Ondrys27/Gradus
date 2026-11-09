@@ -2923,6 +2923,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "meeting_surveys_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "meeting_surveys_deal_id_user_id_fkey"
             columns: ["deal_id", "user_id"]
             isOneToOne: false
@@ -4021,27 +4028,6 @@ export type Database = {
         }
         Relationships: []
       }
-      scheduler_rate_events: {
-        Row: {
-          client_hash: string
-          created_at: string
-          id: number
-          kind: string
-        }
-        Insert: {
-          client_hash: string
-          created_at?: string
-          id?: never
-          kind: string
-        }
-        Update: {
-          client_hash?: string
-          created_at?: string
-          id?: never
-          kind?: string
-        }
-        Relationships: []
-      }
       scheduler_profiles: {
         Row: {
           bio: string | null
@@ -4084,6 +4070,27 @@ export type Database = {
           updated_at?: string
           user_id?: string
           video_link?: string | null
+        }
+        Relationships: []
+      }
+      scheduler_rate_events: {
+        Row: {
+          client_hash: string
+          created_at: string
+          id: number
+          kind: string
+        }
+        Insert: {
+          client_hash: string
+          created_at?: string
+          id?: never
+          kind: string
+        }
+        Update: {
+          client_hash?: string
+          created_at?: string
+          id?: never
+          kind?: string
         }
         Relationships: []
       }
@@ -7411,7 +7418,10 @@ export type Database = {
         Args: { _booking: string; _reason: string }
         Returns: Json
       }
-      scheduler_dismiss_survey: { Args: { _booking: string }; Returns: undefined }
+      scheduler_dismiss_survey: {
+        Args: { _booking: string }
+        Returns: undefined
+      }
       scheduler_handle_available: {
         Args: { _handle: string; _profile?: string }
         Returns: boolean
@@ -7432,6 +7442,18 @@ export type Database = {
         Args: { _space: string; _user: string }
         Returns: boolean
       }
+      scheduler_host_busy: {
+        Args: {
+          _after: number
+          _before: number
+          _end: string
+          _except: string
+          _host: string
+          _start: string
+        }
+        Returns: boolean
+      }
+      scheduler_host_lock: { Args: { _host: string }; Returns: undefined }
       scheduler_profile_owner: {
         Args: { _profile: string }
         Returns: Record<string, unknown>
@@ -7441,6 +7463,10 @@ export type Database = {
         Returns: boolean
       }
       scheduler_random_handle: { Args: never; Returns: string }
+      scheduler_rate_take: {
+        Args: { _client: string; _kind: string; _limit: number }
+        Returns: undefined
+      }
       scheduler_reminders_valid: {
         Args: { _reminders: Json }
         Returns: boolean
