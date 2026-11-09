@@ -128,7 +128,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] STOP | Konec fáze 23. V testovacím režimu: zaregistruj nový účet @gradus.local bez kódu, v Předplatném „Zaplatit a pokračovat", zaplať testovací kartou 4242 4242 4242 4242, zkontroluj aktivní tarif a doklad v Historii plateb. Zkus kartu 4000 0000 0000 0341 (selže) a banner, změnu karty v portálu, přechod na vyšší tarif a zrušení. Zkus promo kód VASA50 v Checkoutu. Co nesedí, napiš Claude Code rovnou, pak /pokracuj. · přeskočeno nočním během 2026-11-09, zkontroluj ručně (.noc/zkontroluj.md)
 - [x] 21.1 | architect | 2026-11-09: Plán měsíce ve Financích jako týdenní tabulka příjmů a výdajů s kapitálem, skutečností z transakcí, založením dalšího měsíce, exportem XLSX/CSV, importem CSV a Jarvisovým hlídáním nejnižšího stavu peněz.
 - [x] 21.2 | designer | 2026-11-09 Tabulka plánu měsíce jako nástroj na čísla: přilepená hlavička, zvýrazněný aktuální týden, shrnutí se sparkline kapitálu, průvodce prázdným měsícem a zvýraznění přepočtených buněk.
-- [ ] K21 | reviewer |
+- [x] K21 | reviewer | 2026-11-09 — Kontrola fáze 21: opraveno dvojí dosazení automatických plateb při přenosu, měna přeneseného měsíce, řídicí znaky v importu CSV a čeština bubliny cashLow.
 - [ ] STOP | Konec fáze 21. Ve Financích otevři pohled Měsíc, zadej listopad podle své tabulky (kapitál 8 500, příjmy Grid, Fajn Jídlo, Carwest, Auto Matulka, výdaje) a porovnej Shrnutí s Google Sheets — musí sedět na korunu. Přepni Plán/Skutečnost/Rozdíl, založ prosinec z listopadu, exportuj XLSX a otevři ho. Zeptej se Jarvise, kdy ti bude nejmíň peněz. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [ ] 24.1 | architect |
 - [ ] 24.3 | architect | env: INTEGRATIONS_ENCRYPTION_KEY
