@@ -21,11 +21,12 @@ import { gatewayFor, loadStoredSubscription, viaStripe } from "./account";
 import { ensureCatalogPrices, loadPublishedVersion } from "./catalog-sync";
 import { vatMode } from "./client";
 import { promoCoupon, type CouponSpec } from "./coupon";
-import { ensureCustomer } from "./customer";
+import { ensureCustomer, storedCustomer } from "./customer";
+import { ensurePortalConfiguration } from "./portal";
 import { planPeriodPrice, priceLookupKey } from "./prices";
 import { extraWorkerQuantity } from "./seats";
 import { checkoutStart } from "./timing";
-import { CHECKOUT_SOURCES, type CheckoutSource } from "./sources";
+import { CHECKOUT_SOURCES, PORTAL_SOURCES, type CheckoutSource, type PortalSource } from "./sources";
 
 /**
  * Paying for a plan (step 23.1): a Stripe Checkout of a subscription for the
@@ -196,6 +197,60 @@ export async function startCheckout(input: CheckoutInput): Promise<SubscriptionR
     await track(
       "checkout_started",
       { plan: planKey, billing, currency, with_promo: promo !== null, from },
+      { userId: ctx.userId, ownerId: ctx.userId, admin: ctx.admin },
+    );
+    return { url };
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Stripe's Customer Portal (step 23.2)
+// ---------------------------------------------------------------------------
+
+/** Gradus's portal configuration per mode, made or checked once per process. */
+const portalConfigurations = new Map<string, string>();
+
+const portalSchema = z.object({ from: z.enum(PORTAL_SOURCES) });
+
+/**
+ * "Manage payment method and receipts": a Customer Portal session for the
+ * workspace's Stripe customer, back to Settings → Subscription. Only the
+ * owner, only a subscription that runs (or ran) through Stripe in this
+ * deployment's mode. The portal changes the card, the billing address and
+ * shows the receipts; plans and cancelling stay Gradus's. Works in the
+ * read-only mode too (a card that failed is how the account gets out of it).
+ */
+export async function openBillingPortal(input: { from: PortalSource }): Promise<SubscriptionResult<{ url: string }>> {
+  return runSubscription("openBillingPortal", async (ctx) => {
+    const parsed = portalSchema.safeParse(input);
+    if (!parsed.success) throw new SubscriptionError("invalid");
+    const sub = await loadStoredSubscription(ctx.admin, ctx.userId);
+    if (!sub || sub.gateway !== "stripe") throw new SubscriptionError("notAllowed");
+    const { stripe, mode } = await gatewayFor(ctx);
+    if (sub.stripeMode !== mode) throw new SubscriptionError("paymentsUnavailable");
+    const customer = await storedCustomer(ctx.admin, ctx.userId, mode);
+    if (!customer) throw new SubscriptionError("notAllowed");
+    const locale = (await getLocale()) === "en" ? "en" : "cs";
+    const site = await siteOrigin();
+
+    const url = await viaStripe("portal", async () => {
+      let configuration = portalConfigurations.get(mode);
+      if (!configuration) {
+        configuration = (await ensurePortalConfiguration(stripe, process.env.NEXT_PUBLIC_SITE_URL ?? site)).id;
+        portalConfigurations.set(mode, configuration);
+      }
+      const session = await stripe.billingPortal.sessions.create({
+        customer,
+        configuration,
+        locale,
+        return_url: `${site}${PLAN_PATH}`,
+      });
+      return session.url;
+    });
+
+    await track(
+      "billing_portal_opened",
+      { from: parsed.data.from, past_due: sub.status === "past_due" },
       { userId: ctx.userId, ownerId: ctx.userId, admin: ctx.admin },
     );
     return { url };

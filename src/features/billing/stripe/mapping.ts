@@ -84,6 +84,8 @@ export type SubscriptionState = {
   workerItem: { id: string; quantity: number } | null;
   /** The catalog version of the plan's price. */
   version: number;
+  /** Stripe ended it after the last failed attempt to collect a payment. */
+  endedForNonPayment: boolean;
 };
 
 export type SubscriptionProblem = "no_workspace" | "unknown_price" | "incomplete";
@@ -140,6 +142,10 @@ export function subscriptionState(
   const amount =
     planAmount === null || workerAmount === null ? null : fromMinorUnits(planAmount + workerAmount);
   const current = { planKey: plan.key.plan, billing: plan.key.billing };
+  const cancelled = status === "cancelled";
+  // An ended subscription ends when Stripe ended it (after the last failed
+  // attempt that is now, not the end of the period nobody paid for).
+  const periodEnd = (cancelled ? toIso(sub.ended_at) : null) ?? toIso(plan.item.current_period_end);
 
   return {
     ok: true,
@@ -150,15 +156,16 @@ export function subscriptionState(
       ...current,
       status,
       periodStart: toIso(plan.item.current_period_start),
-      periodEnd: toIso(plan.item.current_period_end),
+      periodEnd,
       trialEnd: toIso(sub.trial_end),
-      cancelAtPeriodEnd: status !== "cancelled" && (sub.cancel_at_period_end || sub.cancel_at !== null),
-      scheduled: status === "cancelled" ? null : scheduledChange(schedule, current, now),
+      cancelAtPeriodEnd: !cancelled && (sub.cancel_at_period_end || sub.cancel_at !== null),
+      scheduled: cancelled ? null : scheduledChange(schedule, current, now),
       amount,
       currency: plan.item.price.currency ? plan.item.price.currency.toUpperCase() : null,
       planItemId: plan.item.id,
       workerItem: worker ? { id: worker.item.id, quantity: worker.item.quantity ?? 0 } : null,
       version: plan.key.version,
+      endedForNonPayment: cancelled && sub.cancellation_details?.reason === "payment_failed",
     },
   };
 }
@@ -180,7 +187,26 @@ export type PaymentState = {
   paidAt: string;
   invoiceUrl: string | null;
   attempt: number;
+  /** The service period the invoice's line items cover; null without lines. */
+  period: { start: string; end: string } | null;
+  /** The plan it paid for, from the subscription (the webhook adds it). */
+  plan: { planKey: PaidPlanKey; billing: Billing } | null;
 };
+
+/** From the earliest start to the latest end of the invoice's lines (a proration covers the rest of a period). */
+export function invoicePeriod(invoice: Stripe.Invoice): PaymentState["period"] {
+  let start: number | null = null;
+  let end: number | null = null;
+  for (const line of invoice.lines?.data ?? []) {
+    const period = line.period;
+    if (!period || !(period.start > 0) || !(period.end >= period.start)) continue;
+    start = start === null ? period.start : Math.min(start, period.start);
+    end = end === null ? period.end : Math.max(end, period.end);
+  }
+  const from = toIso(start);
+  const to = toIso(end);
+  return from && to ? { start: from, end: to } : null;
+}
 
 export function invoiceSubscriptionRef(invoice: Stripe.Invoice): string | null {
   return idOf(invoice.parent?.subscription_details?.subscription ?? null);
@@ -213,6 +239,8 @@ export function paymentFromInvoice(
     paidAt,
     invoiceUrl: url && /^https:\/\//.test(url) && url.length <= 2000 ? url : null,
     attempt: Math.max(0, invoice.attempt_count ?? 0),
+    period: invoicePeriod(invoice),
+    plan: null,
   };
 }
 

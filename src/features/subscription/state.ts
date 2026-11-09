@@ -8,8 +8,7 @@ import {
 } from "@/config/pricing";
 
 /**
- * The subscription of a workspace and what may happen to it, before a payment
- * gateway exists. The database decides the same in subscription_expired(),
+ * The subscription of a workspace and what may happen to it. The database decides the same in subscription_expired(),
  * subscription_request_change(), _cancel() and _resume()
  * (supabase/migrations/…_subscription_management.sql); this mirrors it for
  * the screen, so the page offers only what the database will accept.
@@ -148,6 +147,34 @@ export function paymentRoute(sub: Subscription, now: Date = new Date()): Payment
   if (hasLiveGateway(sub, now)) return "gateway";
   if (sub.status === "trialing" || sub.status === "cancelled" || isExpired(sub, now)) return "checkout";
   return "manual";
+}
+
+// ---------------------------------------------------------------------------
+// Managing payments (step 23.2)
+// ---------------------------------------------------------------------------
+
+/**
+ * Stripe's Customer Portal (card, billing address, receipts) is there for a
+ * subscription that runs or ran through Stripe: also once it ended, so the
+ * receipts stay at hand and a failed card can be replaced.
+ */
+export function canOpenPortal(sub: Subscription): boolean {
+  return sub.gateway === "stripe" && isManagedPlan(sub);
+}
+
+/**
+ * The banner of a failed payment above the app: while Stripe retries (past
+ * due, the app runs as before), for the owner in their own workspace only; a
+ * worker never sees it. Once Stripe gives up the subscription is cancelled
+ * and expired, and the read-only card says the rest.
+ */
+export function showPastDueBanner(
+  sub: Subscription | null,
+  viewer: { worker: boolean },
+  now: Date = new Date(),
+): boolean {
+  if (viewer.worker || !sub) return false;
+  return sub.status === "past_due" && isManagedPlan(sub) && !isExpired(sub, now);
 }
 
 // ---------------------------------------------------------------------------

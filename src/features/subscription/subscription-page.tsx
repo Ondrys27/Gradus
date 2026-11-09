@@ -24,6 +24,7 @@ import { CancelDialog } from "./cancel-dialog";
 import { ChangePlanDialog } from "./change-plan-dialog";
 import { PaymentHistory } from "./payment-history";
 import { PayButton } from "./pay-button";
+import { PortalButton } from "./portal-button";
 import { money, PlanPrice, priceOf } from "./plan-price";
 import {
   SubscriptionActionError,
@@ -35,6 +36,7 @@ import {
 import { useWorkerCharge, WorkerSeatsLine } from "./worker-seats-line";
 import {
   canCancel,
+  canOpenPortal,
   canResume,
   changeBlock,
   displayStatus,
@@ -92,7 +94,7 @@ export function SubscriptionPage({
             <PromoCard plans={plans} />
           </div>
           <div id="settings-payments" tabIndex={-1} data-setting-row className="rounded-card outline-none">
-            <PaymentHistory />
+            <PaymentHistory plans={plans} />
           </div>
           <div id="settings-billing" tabIndex={-1} data-setting-row className="rounded-card outline-none">
             <BillingDetailsForm />
@@ -176,6 +178,8 @@ function CurrentPlan({
   const block = changeBlock(sub, now);
   // Nothing runs in Stripe yet (the trial, or it ended): paying is a Checkout.
   const checkoutMode = payments && paymentRoute(sub, now) === "checkout";
+  // The card, the billing address and the receipts are Stripe's portal.
+  const portal = payments && canOpenPortal(sub);
 
   function doResume() {
     setNotice(null);
@@ -264,14 +268,15 @@ function CurrentPlan({
       {status === "pastDue" && (
         <div
           role="status"
-          className="flex items-start gap-3 rounded-xl border border-pink/40 bg-pink/10 px-4 py-3 text-sm text-ink"
+          className="flex flex-wrap items-start gap-3 rounded-xl border border-pink/40 bg-pink/10 px-4 py-3 text-sm text-ink"
           data-testid="subscription-past-due"
         >
           <CreditCardIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-pink" />
-          <span className="flex min-w-0 flex-col gap-0.5">
+          <span className="flex min-w-0 flex-1 flex-col gap-0.5">
             <span className="font-semibold">{t("pastDue.title")}</span>
             <span className="text-ink-soft">{t("pastDue.text")}</span>
           </span>
+          {portal && <PortalButton from="past_due_banner" variant="default" size="sm" label={t("pastDue.bannerCta")} />}
         </div>
       )}
 
@@ -293,6 +298,7 @@ function CurrentPlan({
                 {t("actions.resume")}
               </Button>
             )}
+            {portal && <PortalButton from="settings" />}
             {canCancel(sub, now) && (
               <Button variant="ghost" className="text-ink-soft sm:ml-auto" onClick={() => setCancelling(true)}>
                 {t("actions.cancel")}
@@ -303,6 +309,7 @@ function CurrentPlan({
             <InfoIcon aria-hidden className="mt-0.5 size-3.5 shrink-0" />
             {payments ? t("gatewayNote") : t("noGateway")}
           </p>
+          {portal && <p className="text-xs text-ink-muted">{t("portal.hint")}</p>}
         </div>
       )}
 

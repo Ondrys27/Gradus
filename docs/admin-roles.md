@@ -24,7 +24,8 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | `promo-actions.savePromoCode`, `setPromoCodeActive` | owner + admin | promo kódy partnerů (marketing); DB to ověří znovu v `admin_promo_code_save` / `_set_active` (živá relace s aal2), audit `settings.promo_codes` bez jména a e-mailu partnera |
 | `promo-actions.setPayoutStatus` | owner | výplaty provizí (peníze): schválit, vrátit ke schválení, vyplaceno; admin je vidí jen ke čtení |
 | `GET /admin/promo-kody/[id]/export` | owner | výplaty kódu pro účetní se jménem a e-mailem partnera (`promo_payouts` v `PERSONAL_DATA_EXPORTS`); adminovi 404 |
-| `subscription-actions.saveUserSubscription` | owner | předplatné účtu ručně (tarif, období, stav, konec, zrušení); admin ho vidí jen ke čtení |
+| `subscription-actions.saveUserSubscription` | owner | předplatné účtu ručně (tarif, období, stav, konec, zrušení); admin ho vidí jen ke čtení; u předplatného ve Stripe varuje, že ruční změna Stripe nezmění |
+| `subscription-actions.syncUserSubscriptionWithStripe` | owner (`editSubscriptions`, aal2, živá relace) | „Srovnat se Stripe“ u účtu: načte předplatné ze Stripe a zapíše ho jako denní srovnání; řádek `admin_audit` `users.subscription_sync` s `{ user }` před akcí, bez něj nic |
 | `error-alerts-actions.saveErrorAlerts`, `sendErrorAlertsTest` | owner | adresy a režim e-mailů o chybách, zkušební e-mail; admin nastavení jen čte |
 | `export-actions.recordExport` (grafy, tabulky čísel) | owner + admin | souhrnná čísla |
 | `export-actions.recordExport` (`table.ai.top_users.csv`) | owner | jména a id uživatelů |
@@ -49,7 +50,7 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | Detail uživatele — karta Účet (e-mail, registrace, poslední přihlášení, zařízení, tarif, zkouška, akce podpory) a Hlášení | owner + admin; akce podpory podle řádku výše, jinak jen věta, kdo účet spravuje |
 | Uživatelé — sloupec E-mail | owner + admin; Export CSV jen owner |
 | Detail uživatele — výjimka AI | owner upravuje, admin čte |
-| Detail uživatele — Předplatné | owner upravuje, admin čte |
+| Detail uživatele — Předplatné | owner upravuje, admin čte; odkazy na zákazníka a předplatné ve Stripe a poslední platby vidí oba, „Srovnat se Stripe“ jen owner |
 | Tarify — Účty na tarifech | owner + admin |
 | Tarify (`/admin/tarify`) | owner upravuje a zveřejňuje, admin čte zveřejněnou verzi a historii |
 | Promo kódy (`/admin/promo-kody`, detail `/admin/promo-kody/[id]`) | owner + admin zakládají, upravují a deaktivují kódy; výplaty schvaluje, označuje a exportuje jen owner, admin je čte |

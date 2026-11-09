@@ -88,6 +88,20 @@ describe("describeSubscription", () => {
     expect(describeSubscription(null, seedPlanCatalog(), settings, now)).toBeNull();
   });
 
+  it("knows a failed payment Stripe retries and reminds of it once", () => {
+    const line = describeSubscription(
+      toSubscription({ ...row, status: "past_due", trial_ends_at: null, provider: "stripe" }),
+      seedPlanCatalog(),
+      settings,
+      now,
+    );
+    expect(line).toContain("The last payment failed (past due)");
+    expect(line).toContain("Remind the user of it once in this conversation");
+    expect(line).toContain("Manage payment method and receipts");
+    expect(line).toContain("charged to their card through Stripe");
+    expect(line).not.toContain("not live yet");
+  });
+
   it("goes inside the <plans> block", () => {
     const block = describePlans(seedPlanCatalog(), "en", "The user's own plan: X.");
     expect(block).toMatch(/The user's own plan: X\.\n<\/plans>$/);

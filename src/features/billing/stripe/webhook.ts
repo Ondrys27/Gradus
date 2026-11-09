@@ -14,6 +14,7 @@ import {
 import {
   accountAllowedInMode,
   eventMode,
+  isLocalEmail,
   isSyntheticE2eEvent,
   modeAllowedInEnv,
   type StripeMode,
@@ -83,6 +84,31 @@ export type AnalyticsCall =
   | { name: "payment_failed"; props: { attempt: number; plan?: PaidPlanKey; billing?: Billing } }
   | { name: "payment_refunded"; props: { currency: "CZK" | "EUR"; plan?: PaidPlanKey } };
 
+/**
+ * What the app's owner hears about (one e-mail a day at most, billing_alerts):
+ * the first payment of an account and a subscription Stripe ended after its
+ * last failed attempt. Never for @gradus.local accounts.
+ */
+export type OwnerAlert =
+  | {
+      kind: "first_payment";
+      workspace: string;
+      mode: StripeMode;
+      ref: string;
+      planKey: PaidPlanKey | null;
+      billing: Billing | null;
+      amount: number;
+      currency: string;
+    }
+  | {
+      kind: "final_failure";
+      workspace: string;
+      mode: StripeMode;
+      ref: string;
+      planKey: PaidPlanKey;
+      billing: Billing;
+    };
+
 export type WebhookDeps = {
   vercelEnv: string | undefined;
   /** The mode of the configured secret key; null without one. */
@@ -111,6 +137,8 @@ export type WebhookDeps = {
     eventAt: Date,
   ) => Promise<RecordAnswer>;
   track: (call: AnalyticsCall, workspace: string) => Promise<void>;
+  /** Records an alert for the owner's digest; never throws. */
+  alert: (alert: OwnerAlert) => Promise<void>;
   /** Into error_events with a GR code (and the owner's e-mail). */
   report: (problem: WebhookProblem, context: { type: string; workspace: string | null }) => void;
 };
@@ -177,6 +205,8 @@ class EventContext {
   workspace: string | null = null;
   detail: Record<string, string> = {};
   private checked = new Set<string>();
+  /** Workspaces of @gradus.local accounts: their payments alert nobody. */
+  private local = new Set<string>();
 
   constructor(
     private readonly event: Stripe.Event,
@@ -215,6 +245,7 @@ class EventContext {
     if (!accountAllowedInMode(this.mode, account)) throw new Rejected("account_mode", workspace);
     if (this.synthetic && !this.deps.isE2eAccount(account.email)) throw new Rejected("not_e2e_account", workspace);
     this.checked.add(workspace);
+    if (isLocalEmail(account.email)) this.local.add(workspace);
     this.workspace = workspace;
   }
 
@@ -241,6 +272,18 @@ class EventContext {
     const answer = await this.deps.applySubscription(state, this.mode, this.eventAt);
     if (answer.outcome === "rejected") throw new Rejected("db_rejected", state.workspace);
     if (answer.reason) this.detail.reason = answer.reason;
+    // Stripe gave up collecting: the workspace is read-only from now on, the owner hears of it.
+    if (state.endedForNonPayment && answer.outcome !== "stale" && !this.local.has(state.workspace)) {
+      this.detail.ended = "payment_failed";
+      await this.deps.alert({
+        kind: "final_failure",
+        workspace: state.workspace,
+        mode: this.mode,
+        ref: state.subscriptionRef,
+        planKey: state.planKey,
+        billing: state.billing,
+      });
+    }
     return { outcome: answer.outcome, state };
   }
 
@@ -267,11 +310,22 @@ class EventContext {
     if (!object.id) return "ignored";
     this.detail.object = object.id;
     const invoice = await this.deps.loadInvoice(object.id, this.event);
-    const payment = paymentFromInvoice(invoice, status, this.eventAt);
+    const fromInvoice = paymentFromInvoice(invoice, status, this.eventAt);
     // The subscription first: its period moves with the invoice, and it names the workspace.
     let sub: { outcome: EventOutcome; state: SubscriptionState | null } | null = null;
-    if (payment.subscriptionRef) sub = await this.subscription(payment.subscriptionRef, payment.workspace);
-    const workspace = sub?.state?.workspace ?? payment.workspace;
+    if (fromInvoice.subscriptionRef) sub = await this.subscription(fromInvoice.subscriptionRef, fromInvoice.workspace);
+    const subState = sub?.state ?? null;
+    // What it paid for: the subscription's plan, the lines' period (else the subscription's).
+    const payment: PaymentState = {
+      ...fromInvoice,
+      plan: subState ? { planKey: subState.planKey, billing: subState.billing } : null,
+      period:
+        fromInvoice.period ??
+        (subState?.periodStart && subState.periodEnd
+          ? { start: subState.periodStart, end: subState.periodEnd }
+          : null),
+    };
+    const workspace = subState?.workspace ?? payment.workspace;
     if (!workspace) {
       // An invoice of no subscription of Gradus (made by hand in Stripe).
       return sub?.outcome ?? "ignored";
@@ -292,6 +346,18 @@ class EventContext {
           },
           workspace,
         );
+      }
+      if (answer.first === true && !this.local.has(workspace)) {
+        await this.deps.alert({
+          kind: "first_payment",
+          workspace,
+          mode: this.mode,
+          ref: payment.invoiceRef,
+          planKey: state?.planKey ?? null,
+          billing: state?.billing ?? null,
+          amount: payment.amount,
+          currency: payment.currency,
+        });
       }
     } else if (status === "failed" && answer.outcome === "applied") {
       await this.deps.track(

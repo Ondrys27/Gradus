@@ -1,10 +1,8 @@
-import { randomUUID } from "node:crypto";
-import Stripe from "stripe";
-import { admin, signIn, type Account } from "./support/accounts";
-import { env } from "./support/env";
+import { admin, signIn } from "./support/accounts";
 import { expect, test } from "./support/fixtures";
 import { text } from "./support/i18n";
 import { openApp } from "./support/ui";
+import { DAY, invoiceObject, secret, send, subscriptionObject, tag } from "./support/stripe";
 
 /**
  * Payments through Stripe (step 23.1) without a network call to Stripe: the
@@ -19,92 +17,6 @@ import { openApp } from "./support/ui";
 const L = "cs" as const;
 const t = (key: string, values?: Record<string, string | number>) => text(L, key, values);
 const PATH = "/app/nastaveni/predplatne";
-const DAY = 86_400;
-
-const secret = env("STRIPE_WEBHOOK_SECRET");
-const tag = () => randomUUID().replace(/-/g, "").slice(0, 16);
-
-function subscriptionObject(account: Account, id: string, status: string, now: number) {
-  return {
-    id,
-    object: "subscription",
-    status,
-    customer: `cus_e2e_${tag()}`,
-    livemode: false,
-    cancel_at_period_end: false,
-    cancel_at: null,
-    trial_end: null,
-    schedule: null,
-    metadata: { workspace: account.id, plan: "pro", billing: "monthly" },
-    items: {
-      object: "list",
-      data: [
-        {
-          id: `si_e2e_${tag()}`,
-          object: "subscription_item",
-          quantity: 1,
-          current_period_start: now,
-          current_period_end: now + 30 * DAY,
-          price: {
-            id: `price_e2e_${tag()}`,
-            object: "price",
-            currency: "czk",
-            unit_amount: 89000,
-            lookup_key: "plan:pro:CZK:monthly:v1",
-            metadata: {},
-          },
-        },
-      ],
-    },
-  };
-}
-
-function invoiceObject(subscription: ReturnType<typeof subscriptionObject>, paid: boolean, now: number) {
-  return {
-    id: `in_e2e_${tag()}`,
-    object: "invoice",
-    status: paid ? "paid" : "open",
-    livemode: false,
-    currency: "czk",
-    amount_due: 89000,
-    amount_paid: paid ? 89000 : 0,
-    attempt_count: 1,
-    hosted_invoice_url: "https://invoice.stripe.com/i/e2e/receipt",
-    total_taxes: [],
-    status_transitions: { paid_at: paid ? now : null, finalized_at: now, marked_uncollectible_at: null, voided_at: null },
-    parent: {
-      type: "subscription_details",
-      quote_details: null,
-      subscription_details: { subscription, metadata: subscription.metadata },
-    },
-  };
-}
-
-async function send(
-  request: import("@playwright/test").APIRequestContext,
-  type: string,
-  object: unknown,
-  created: number,
-  id = `evt_e2e_${tag()}`,
-) {
-  const payload = JSON.stringify({
-    id,
-    object: "event",
-    api_version: "2026-10-28.endive",
-    created,
-    livemode: false,
-    pending_webhooks: 1,
-    request: { id: null, idempotency_key: null },
-    type,
-    data: { object },
-  });
-  const signature = Stripe.webhooks.generateTestHeaderString({ payload, secret: secret as string });
-  const response = await request.post("/api/stripe/webhook", {
-    data: payload,
-    headers: { "stripe-signature": signature, "content-type": "application/json" },
-  });
-  return { status: response.status(), body: (await response.json()) as { outcome?: string }, id };
-}
 
 test("50 · Stripe webhook: paid → active plan and receipt, failed → past-due banner", async ({
   page,

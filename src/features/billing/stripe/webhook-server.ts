@@ -2,9 +2,11 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type Stripe from "stripe";
 import { isE2eTestAccount } from "@/features/auth/e2e-account";
+import { runInBackground } from "@/features/errors/alerts/server/background";
 import { captureServerError } from "@/features/errors/alerts/server/capture";
 import { track } from "@/lib/analytics/track";
 import type { Database } from "@/types/database";
+import { recordOwnerAlert, sendOwnerDigest } from "../owner-alerts-server";
 import type { StripeClient } from "./client";
 import { paymentIntentOf } from "./mapping";
 import {
@@ -113,6 +115,15 @@ export function webhookDeps(admin: Admin, client: StripeClient | null, synthetic
     recordPayment: (payment, status, workspace, mode, eventAt) =>
       recordStripePayment(admin, payment, status, workspace, mode, eventAt),
     track: (call, workspace) => trackCall(admin, call, workspace),
+    alert: async (alert) => {
+      try {
+        if (await recordOwnerAlert(admin, alert)) {
+          runInBackground("billing digest", () => sendOwnerDigest(admin));
+        }
+      } catch (error) {
+        console.error("[billing] owner alert failed", error instanceof Error ? error.message : "unknown");
+      }
+    },
     report: (problem, context) =>
       captureServerError(new Error(`stripe webhook: ${problem}`), {
         source: "route",

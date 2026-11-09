@@ -66,6 +66,8 @@ export async function recordStripePayment(
     _currency: payment.currency,
     _paid_at: payment.paidAt,
     ...(payment.invoiceUrl ? { _invoice_url: payment.invoiceUrl } : {}),
+    ...(payment.plan ? { _plan_key: payment.plan.planKey, _billing: payment.plan.billing } : {}),
+    ...(payment.period ? { _period_start: payment.period.start, _period_end: payment.period.end } : {}),
   });
   if (error) throw new Error(`billing_record_payment: ${error.code ?? error.message}`);
   return data as unknown as RecordAnswer;

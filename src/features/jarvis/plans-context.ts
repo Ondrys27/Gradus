@@ -67,8 +67,10 @@ export const WORKER_SUBSCRIPTION_LINE =
 /**
  * What the user has now, for the <plans> block: the plan, the billing period
  * and the state with its dates in the user's zone (when the trial ends, when
- * a cancelled subscription stops), a scheduled change. Computed from the row
- * at the moment of the chat, never stored. Payments are not live yet.
+ * a cancelled subscription stops), a scheduled change, a failed payment
+ * Stripe is retrying (Jarvis reminds of it once in a conversation). Computed
+ * from the row at the moment of the chat, never stored. A subscription that
+ * does not run through Stripe is not charged.
  */
 export function describeSubscription(
   sub: Subscription | null,
@@ -100,7 +102,10 @@ export function describeSubscription(
       parts.push(`Ended on ${day(end ?? sub.trialEndsAt)}: the workspace is read-only, the data is kept, until a plan is active again.`);
       break;
     case "pastDue":
-      parts.push("The last payment failed.");
+      parts.push(
+        "The last payment failed (past due): Stripe retries it over the next days and the app keeps working as before; if the last attempt fails too, the subscription ends and the workspace becomes read-only (nothing deleted) until they pay again. " +
+          "Remind the user of it once in this conversation, not in every answer: they update the card in Settings → Subscription → Manage payment method and receipts.",
+      );
       break;
     default:
       parts.push("Active.");
@@ -109,10 +114,14 @@ export function describeSubscription(
     parts.push(`Scheduled change: ${name(sub.scheduled.planKey)}, billed ${sub.scheduled.billing}, from ${day(sub.scheduled.at)}.`);
   }
   const next = nextPayment(sub, now);
-  parts.push(
-    next
-      ? `Next payment due ${day(next.at)}; payments are not live yet, so nothing is charged.`
-      : "Payments are not live yet; nothing is charged.",
-  );
+  if (sub.gateway === "stripe") {
+    if (next) parts.push(`Next payment due ${day(next.at)}, charged to their card through Stripe.`);
+  } else {
+    parts.push(
+      next
+        ? `Next payment due ${day(next.at)}; payments are not live yet, so nothing is charged.`
+        : "Payments are not live yet; nothing is charged.",
+    );
+  }
   return parts.join(" ");
 }

@@ -1,12 +1,13 @@
 import type Stripe from "stripe";
 import { describe, expect, it } from "vitest";
 import { eventOf, fixture, WORKSPACE } from "./fixtures.test-helper";
-import type { SubscriptionState } from "./mapping";
+import type { PaymentState, SubscriptionState } from "./mapping";
 import {
   processStripeEvent,
   type AnalyticsCall,
   type ApplyAnswer,
   type ClaimResult,
+  type OwnerAlert,
   type WebhookDeps,
   type WebhookProblem,
 } from "./webhook";
@@ -25,6 +26,8 @@ function harness(overrides: Partial<WebhookDeps> = {}, options: { account?: { em
   const subscriptions = new Map<string, Row>();
   const payments = new Map<string, { status: string; syncedAt: number }>();
   const tracked: AnalyticsCall[] = [];
+  const alerts: OwnerAlert[] = [];
+  const recorded: PaymentState[] = [];
   const reported: WebhookProblem[] = [];
   const finished: { id: string; outcome: string }[] = [];
   const stripeSubs = new Map<string, Stripe.Subscription>();
@@ -68,6 +71,7 @@ function harness(overrides: Partial<WebhookDeps> = {}, options: { account?: { em
       return { outcome: "applied", previous_status: row?.state.status, linked: !row };
     },
     recordPayment: async (payment, status, _workspace, _mode, eventAt) => {
+      recorded.push(payment);
       const ranks = ["failed", "paid", "refunded"];
       const row = payments.get(payment.invoiceRef);
       if (row && ranks.indexOf(status) < ranks.indexOf(row.status)) return { outcome: "stale" };
@@ -79,12 +83,15 @@ function harness(overrides: Partial<WebhookDeps> = {}, options: { account?: { em
     track: async (call) => {
       tracked.push(call);
     },
+    alert: async (alert) => {
+      alerts.push(alert);
+    },
     report: (problem) => {
       reported.push(problem);
     },
     ...overrides,
   };
-  return { deps, subscriptions, payments, tracked, reported, finished, stripeSubs, invoices, schedules };
+  return { deps, subscriptions, payments, tracked, alerts, recorded, reported, finished, stripeSubs, invoices, schedules };
 }
 
 const active = () => fixture<Stripe.Subscription>("subscription-active");
@@ -291,5 +298,89 @@ describe("checkout and invoices", () => {
     await processStripeEvent(eventOf("charge.refunded", fixture<Stripe.Charge>("charge-refunded")), h.deps);
     expect(h.payments.get("in_1Paid")?.status).toBe("refunded");
     expect(h.tracked.at(-1)).toEqual({ name: "payment_refunded", props: { currency: "CZK", plan: "pro" } });
+  });
+});
+
+describe("managing payments (step 23.2)", () => {
+  // Internal in test mode, but not @gradus.local: the owner hears about it.
+  const customer = { account: { email: "ondrej@example.com", internal: true } };
+
+  it("records what a payment paid for: the plan, and the period of its lines or else the subscription's", async () => {
+    const h = harness();
+    h.stripeSubs.set("sub_1Active", active());
+    h.invoices.set("in_1Paid", {
+      ...fixture<Stripe.Invoice>("invoice-paid"),
+      lines: { object: "list", data: [{ period: { start: 1793491200, end: 1796169600 } }] },
+    } as unknown as Stripe.Invoice);
+    await processStripeEvent(eventOf("invoice.paid", { id: "in_1Paid", object: "invoice" }), h.deps);
+    expect(h.recorded[0]).toMatchObject({
+      plan: { planKey: "pro", billing: "monthly" },
+      period: { start: "2026-11-01T00:00:00.000Z", end: "2026-12-02T00:00:00.000Z" },
+    });
+
+    const without = harness();
+    without.stripeSubs.set("sub_1Active", active());
+    without.invoices.set("in_1Paid", fixture<Stripe.Invoice>("invoice-paid"));
+    await processStripeEvent(eventOf("invoice.paid", { id: "in_1Paid", object: "invoice" }), without.deps);
+    expect(without.recorded[0]?.period).toEqual({
+      start: new Date(1793491200 * 1000).toISOString(),
+      end: new Date(1796169600 * 1000).toISOString(),
+    });
+  });
+
+  it("tells the owner about an account's first payment once, never about @gradus.local", async () => {
+    const h = harness({}, customer);
+    h.stripeSubs.set("sub_1Active", active());
+    h.invoices.set("in_1Paid", fixture<Stripe.Invoice>("invoice-paid"));
+    await processStripeEvent(eventOf("invoice.paid", { id: "in_1Paid", object: "invoice" }), h.deps);
+    await processStripeEvent(eventOf("invoice.paid", { id: "in_1Paid", object: "invoice" }), h.deps);
+    expect(h.alerts).toEqual([
+      {
+        kind: "first_payment",
+        workspace: WORKSPACE,
+        mode: "test",
+        ref: "in_1Paid",
+        planKey: "pro",
+        billing: "monthly",
+        amount: 445,
+        currency: "CZK",
+      },
+    ]);
+
+    const local = harness();
+    local.stripeSubs.set("sub_1Active", active());
+    local.invoices.set("in_1Paid", fixture<Stripe.Invoice>("invoice-paid"));
+    await processStripeEvent(eventOf("invoice.paid", { id: "in_1Paid", object: "invoice" }), local.deps);
+    expect(local.payments.get("in_1Paid")?.status).toBe("paid");
+    expect(local.alerts).toEqual([]);
+  });
+
+  it("past due keeps the app running; ended after the last attempt it is cancelled now and the owner hears of it", async () => {
+    const h = harness({}, customer);
+    h.stripeSubs.set("sub_1Active", withStatus(active(), "past_due"));
+    h.invoices.set("in_1Failed", fixture<Stripe.Invoice>("invoice-failed"));
+    await processStripeEvent(eventOf("invoice.payment_failed", { id: "in_1Failed", object: "invoice" }), h.deps);
+    expect(h.subscriptions.get(WORKSPACE)?.state.status).toBe("past_due");
+    expect(h.alerts).toEqual([]);
+
+    const ended = fixture<Stripe.Subscription>("subscription-ended-unpaid");
+    h.stripeSubs.set("sub_1Active", ended);
+    await processStripeEvent(eventOf("customer.subscription.deleted", ended, { created: 1795000001 }), h.deps);
+    const state = h.subscriptions.get(WORKSPACE)!.state;
+    expect(state).toMatchObject({ status: "cancelled", cancelAtPeriodEnd: false, endedForNonPayment: true });
+    // It ends when Stripe ended it, not at the end of the period nobody paid for.
+    expect(state.periodEnd).toBe(new Date(1795000000 * 1000).toISOString());
+    expect(h.alerts).toEqual([
+      { kind: "final_failure", workspace: WORKSPACE, mode: "test", ref: "sub_1Active", planKey: "pro", billing: "monthly" },
+    ]);
+  });
+
+  it("a subscription the user cancelled is not a failure", async () => {
+    const h = harness({}, customer);
+    const ended = fixture<Stripe.Subscription>("subscription-canceled");
+    h.stripeSubs.set(ended.id, ended);
+    await processStripeEvent(eventOf("customer.subscription.deleted", ended), h.deps);
+    expect(h.subscriptions.get(WORKSPACE)?.state.endedForNonPayment).toBe(false);
+    expect(h.alerts).toEqual([]);
   });
 });

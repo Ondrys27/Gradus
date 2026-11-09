@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { seedPlanCatalog } from "@/features/plan/catalog-seed";
 import { fixture, WORKSPACE } from "./fixtures.test-helper";
 import {
+  invoicePeriod,
   isFullRefund,
   paymentFromInvoice,
   storedStatusOf,
@@ -75,6 +76,7 @@ describe("subscription state", () => {
         planItemId: "si_1Plan",
         workerItem: null,
         version: 2,
+        endedForNonPayment: false,
       },
     });
   });
@@ -112,6 +114,19 @@ describe("subscription state", () => {
   it("a cancelled subscription is cancelled, not ending", () => {
     const mapped = subscriptionState(fixture<Stripe.Subscription>("subscription-canceled"), null, NOW);
     expect(mapped.ok && mapped.state).toMatchObject({ status: "cancelled", cancelAtPeriodEnd: false, planKey: "solo" });
+  });
+
+  it("an ended subscription ends when Stripe ended it, and says when it was for non-payment", () => {
+    const unpaid = subscriptionState(fixture<Stripe.Subscription>("subscription-ended-unpaid"), null, NOW);
+    expect(unpaid.ok && unpaid.state).toMatchObject({
+      status: "cancelled",
+      periodEnd: iso(1795000000),
+      endedForNonPayment: true,
+      scheduled: null,
+    });
+    // Without ended_at (an older object) the period's end stays.
+    const cancelled = subscriptionState(fixture<Stripe.Subscription>("subscription-canceled"), null, NOW);
+    expect(cancelled.ok && cancelled.state).toMatchObject({ periodEnd: iso(1796169600), endedForNonPayment: false });
   });
 
   it("marks an ending subscription by cancel_at too", () => {
@@ -161,7 +176,25 @@ describe("payments", () => {
       paidAt: iso(1793491300),
       invoiceUrl: "https://invoice.stripe.com/i/acct_1/test_1Paid",
       attempt: 1,
+      period: null,
+      plan: null,
     });
+  });
+
+  it("covers the period of the invoice's lines, a proration included", () => {
+    const invoice = {
+      ...fixture<Stripe.Invoice>("invoice-paid"),
+      lines: {
+        object: "list",
+        data: [
+          { period: { start: 1794000000, end: 1796169600 } },
+          { period: { start: 1793491200, end: 1796169600 } },
+          { period: { start: 0, end: 0 } },
+        ],
+      },
+    } as unknown as Stripe.Invoice;
+    expect(invoicePeriod(invoice)).toEqual({ start: iso(1793491200), end: iso(1796169600) });
+    expect(invoicePeriod(fixture<Stripe.Invoice>("invoice-paid"))).toBeNull();
   });
 
   it("takes what is due for a failed attempt and never a link that is not https", () => {

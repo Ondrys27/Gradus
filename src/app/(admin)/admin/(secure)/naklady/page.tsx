@@ -10,6 +10,7 @@ import {
   costsTiles,
   marginByPlanRows,
   mrrByCurrency,
+  paymentsByCurrency,
   trialConversionFields,
   trialFields,
 } from "@/features/admin/server/page-data";
@@ -45,6 +46,9 @@ export default async function AdminCostsPage({ searchParams }: Props) {
         </Suspense>
         <Suspense fallback={<CardSkeleton height={240} />}>
           <Margin q={q} />
+        </Suspense>
+        <Suspense fallback={<CardSkeleton height={200} />}>
+          <Payments q={q} />
         </Suspense>
         <Suspense fallback={<GridSkeleton count={2} height={180} />}>
           <Trial q={q} />
@@ -120,6 +124,63 @@ async function Margin({ q }: { q: AdminQuery }) {
                     ? tUnits("none")
                     : formatMetricValue(row.marginShare * 100, "percent", tUnits),
                 csv: (row) => row.marginShare,
+              },
+            ])}
+          />
+        )}
+      </Show>
+    </AdminCard>
+  );
+}
+
+/** Revenue, refunds, paying accounts and unpaid payments per currency, from the payments (live, no internal). */
+async function Payments({ q }: { q: AdminQuery }) {
+  const [loaded, tItem, t, tUnits] = await Promise.all([
+    safe("payments", () => paymentsByCurrency(q)),
+    getTranslations("metrics.items.payments"),
+    getTranslations("admin.costs.payments"),
+    getTranslations("admin.units"),
+  ]);
+  const money = (value: number | null, currency: string) =>
+    value === null
+      ? tUnits("none")
+      : formatNumber(value, { style: "currency", currency }, ADMIN_FORMAT_SETTINGS);
+  const count = (value: number | null) => (value === null ? tUnits("none") : formatNumber(value, {}, ADMIN_FORMAT_SETTINGS));
+  return (
+    <AdminCard title={tItem("name")} description={tItem("description")}>
+      <Show loaded={loaded}>
+        {(rows) => (
+          <DataTable
+            id="costs.payments"
+            table={buildTable(rows, [
+              { key: "currency", label: t("currency"), render: (row) => row.currency },
+              {
+                key: "revenue",
+                label: t("revenue"),
+                align: "right",
+                render: (row) => money(row.revenue, row.currency),
+                csv: (row) => row.revenue,
+              },
+              {
+                key: "refunded",
+                label: t("refunded"),
+                align: "right",
+                render: (row) => money(row.refunded, row.currency),
+                csv: (row) => row.refunded,
+              },
+              {
+                key: "paying_accounts",
+                label: t("payingAccounts"),
+                align: "right",
+                render: (row) => count(row.payingAccounts),
+                csv: (row) => row.payingAccounts,
+              },
+              {
+                key: "failed_payments",
+                label: t("failedPayments"),
+                align: "right",
+                render: (row) => count(row.failedPayments),
+                csv: (row) => row.failedPayments,
               },
             ])}
           />
