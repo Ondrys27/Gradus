@@ -495,7 +495,15 @@ function Block({
           {t(kind)}
         </th>
       </tr>
-      <DndContext id={dndId} sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <DndContext
+        id={dndId}
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+        // The screen-reader text is a <div>, which may not sit inside <tbody>;
+        // dnd-kit renders it only after mount, so the server never needs `document`.
+        accessibility={{ container: typeof document === "undefined" ? undefined : document.body }}
+      >
         <SortableContext items={rows.map((row) => row.id)} strategy={verticalListSortingStrategy}>
           {rows.map((row) => (
             <SortableLine key={row.id} id={row.id} disabled={!canEdit}>
