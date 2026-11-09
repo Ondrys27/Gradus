@@ -11,6 +11,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { Json } from "@/types/database";
 import { calendarProvider } from "./analytics";
+import { clientInsert } from "./client-insert";
 import { handleCandidates, handleFromName, uniqueSlug } from "./handle";
 import {
   activePresetCount,
@@ -154,13 +155,14 @@ export async function ensureSchedulerSetup(input: {
         if (!available) continue;
         const inserted = await supabase
           .from("scheduler_profiles")
-          .insert({
-            user_id: userId,
-            space_id: space,
-            handle,
-            display_name: displayName,
-            time_zone: zone,
-          })
+          .insert(
+            clientInsert("scheduler_profiles", {
+              space_id: space,
+              handle,
+              display_name: displayName,
+              time_zone: zone,
+            }),
+          )
           .select("id")
           .single();
         if (!inserted.error) {
@@ -174,7 +176,13 @@ export async function ensureSchedulerSetup(input: {
         // Every candidate taken: the database's own placeholder handle, changed in the guide.
         const fallback = await supabase
           .from("scheduler_profiles")
-          .insert({ user_id: userId, space_id: space, display_name: displayName, time_zone: zone })
+          .insert(
+            clientInsert("scheduler_profiles", {
+              space_id: space,
+              display_name: displayName,
+              time_zone: zone,
+            }),
+          )
           .select("id")
           .single();
         if (fallback.error) throw fallback.error;
@@ -190,15 +198,14 @@ export async function ensureSchedulerSetup(input: {
     if (rules.error) throw rules.error;
     if (!rules.data.length) {
       const { error } = await supabase.from("availability_rules").insert(
-        DEFAULT_WEEKDAYS.map((weekday) => ({
-          profile_id: profileId!,
-          // The guard takes person and space from the profile; these only satisfy the types.
-          user_id: userId,
-          space_id: space,
-          weekday,
-          start_time: DEFAULT_HOURS.start,
-          end_time: DEFAULT_HOURS.end,
-        })),
+        DEFAULT_WEEKDAYS.map((weekday) =>
+          clientInsert("availability_rules", {
+            profile_id: profileId!,
+            weekday,
+            start_time: DEFAULT_HOURS.start,
+            end_time: DEFAULT_HOURS.end,
+          }),
+        ),
       );
       if (error) throw error;
     }
@@ -209,11 +216,8 @@ export async function ensureSchedulerSetup(input: {
       const rows = PRESET_TYPES.map((preset, index) => {
         const slug = uniqueSlug(names.data[preset.key], slugs);
         slugs.push(slug);
-        return {
+        return clientInsert("event_types", {
           profile_id: profileId!,
-          // The guard takes person and space from the profile; these only satisfy the types.
-          user_id: userId,
-          space_id: space,
           slug,
           name: names.data[preset.key],
           duration_min: preset.duration,
@@ -221,7 +225,7 @@ export async function ensureSchedulerSetup(input: {
           position: index,
           active: index < active,
           color: TYPE_TONES[index % TYPE_TONES.length],
-        };
+        });
       });
       // One by one: the limit counts the active ones already in.
       for (const row of rows) {

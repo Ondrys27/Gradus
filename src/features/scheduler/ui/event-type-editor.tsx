@@ -104,8 +104,16 @@ type Props = {
 export function EventTypeEditor(props: Props) {
   const t = useTranslations("scheduler.editor");
   const isPhone = useIsPhone();
+  // A new type, once saved, goes on as that type in a fresh body (keyed by
+  // its id); what it just did carries over: "Saved" and the open tab.
+  const [created, setCreated] = useState<{ id: string; tab: EventTypeTab } | null>(null);
+  const carried = created && props.type?.id === created.id ? created : null;
+  const close = () => {
+    setCreated(null);
+    props.onClose();
+  };
   return (
-    <Dialog.Root open={props.open} onOpenChange={(open) => !open && props.onClose()}>
+    <Dialog.Root open={props.open} onOpenChange={(open) => !open && close()}>
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-overlay bg-canvas/70 backdrop-blur-sm transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
         <Dialog.Popup
@@ -129,13 +137,30 @@ export function EventTypeEditor(props: Props) {
             </Dialog.Close>
           </div>
           {props.open && (props.type || props.draft) && (
-            <EditorBody key={props.type?.id ?? "new"} {...props} />
+            <EditorBody
+              key={props.type?.id ?? "new"}
+              {...props}
+              onClose={close}
+              onCreated={(type, tab) => {
+                setCreated({ id: type.id, tab });
+                props.onCreated(type);
+              }}
+              justCreated={Boolean(carried)}
+              initialTab={carried?.tab ?? "basics"}
+            />
           )}
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>
   );
 }
+
+type BodyProps = Omit<Props, "onCreated"> & {
+  onCreated: (type: EventType, tab: EventTypeTab) => void;
+  /** The type was created a moment ago in this window: say it is saved. */
+  justCreated: boolean;
+  initialTab: EventTypeTab;
+};
 
 function EditorBody({
   type,
@@ -150,10 +175,12 @@ function EditorBody({
   position,
   onDelete,
   deleting,
-}: Props) {
+  justCreated,
+  initialTab,
+}: BodyProps) {
   const t = useTranslations("scheduler.editor");
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [tab, setTab] = useState<EventTypeTab>("basics");
+  const [tab, setTab] = useState<EventTypeTab>(initialTab);
   const [draft, setDraft] = useState<EventTypeDraft>(() => initial ?? draftFromType(type!));
   // A new type's slug follows its name until the person types one.
   const [slugTouched, setSlugTouched] = useState(Boolean(type));
@@ -185,7 +212,7 @@ function EditorBody({
     } else {
       create.mutate(
         { draft, position, active: startActive, preset: false },
-        { onSuccess: (created) => onCreated(created) },
+        { onSuccess: (created) => onCreated(created, tab) },
       );
     }
   }
@@ -266,7 +293,8 @@ function EditorBody({
         {problem === "planLimit" && <PlanLimitNotice limit={limit} />}
         {problem && problem !== "planLimit" && <FormAlert>{t(`errors.${problem}`)}</FormAlert>}
         {!type && !startActive && <p className="text-xs text-ink-muted">{t("startsInactive")}</p>}
-        {(create.isSuccess || update.isSuccess) && !pending && !error && (
+        {((justCreated && update.isIdle) ||
+          ((create.isSuccess || update.isSuccess) && !pending && !error)) && (
           <p role="status" className="text-sm text-green">
             {t("saved")}
           </p>

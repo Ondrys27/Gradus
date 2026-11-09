@@ -14,6 +14,7 @@ import {
   type SchedulerActionResult,
   type SchedulerError,
 } from "./actions";
+import { clientInsert } from "./client-insert";
 import { draftToRow, toEventType, type EventTypeDraft } from "./event-type-form";
 import type { PresetKey } from "./presets";
 import type { GuestDay } from "./slots";
@@ -245,15 +246,14 @@ export function useCreateEventType(profileId: string | undefined) {
       if (!profileId) throw new Error("no profile");
       const row = await createClient()
         .from("event_types")
-        .insert({
-          ...draftToRow(input.draft),
-          profile_id: profileId,
-          // The guard takes person and space from the profile; these only satisfy the types.
-          user_id: workspace.userId,
-          space_id: workspace.id,
-          position: input.position,
-          active: input.active,
-        })
+        .insert(
+          clientInsert("event_types", {
+            ...draftToRow(input.draft),
+            profile_id: profileId,
+            position: input.position,
+            active: input.active,
+          }),
+        )
         .select(EVENT_TYPE_COLUMNS)
         .single();
       if (row.error) throw row.error;
@@ -397,14 +397,13 @@ export function useSaveWeeklyRules(profileId: string | undefined) {
         const { data, error } = await supabase
           .from("availability_rules")
           .insert(
-            input.rules.map((rule) => ({
-              ...rule,
-              profile_id: profileId,
-              // The guard takes person and space from the profile; these only satisfy the types.
-              user_id: workspace.userId,
-              space_id: workspace.id,
-              event_type_id: input.eventTypeId,
-            })),
+            input.rules.map((rule) =>
+              clientInsert("availability_rules", {
+                ...rule,
+                profile_id: profileId,
+                event_type_id: input.eventTypeId,
+              }),
+            ),
           )
           .select("id");
         if (error) throw error;
@@ -454,24 +453,15 @@ export function useAddOverrides(profileId: string | undefined) {
         .eq("profile_id", profileId)
         .in("date", input.dates);
       if (clearError) throw clearError;
-      const rows: Array<{
-        profile_id: string;
-        user_id: string;
-        space_id: string;
-        date: string;
-        start_time: string | null;
-        end_time: string | null;
-      }> = input.dates.flatMap((date) =>
+      const rows = input.dates.flatMap((date) =>
         (input.intervals ?? [{ start_time: null, end_time: null }]).map(
-          (interval: { start_time: string | null; end_time: string | null }) => ({
-            profile_id: profileId,
-            // The guard takes person and space from the profile; these only satisfy the types.
-            user_id: workspace.userId,
-            space_id: workspace.id,
-            date,
-            start_time: interval.start_time,
-            end_time: interval.end_time,
-          }),
+          (interval: { start_time: string | null; end_time: string | null }) =>
+            clientInsert("availability_overrides", {
+              profile_id: profileId,
+              date,
+              start_time: interval.start_time,
+              end_time: interval.end_time,
+            }),
         ),
       );
       const { error } = await supabase.from("availability_overrides").insert(rows);
