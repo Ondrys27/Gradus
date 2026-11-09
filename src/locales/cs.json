@@ -2108,7 +2108,8 @@
       "stageRequired": "Vyber fázi.",
       "nameRequired": "Pojmenuj fázi.",
       "nameTooLong": "Název je příliš dlouhý.",
-      "contactNoteTooLong": "Vejdi se do 200 znaků."
+      "contactNoteTooLong": "Vejdi se do 200 znaků.",
+      "currencyInvalid": "Vyber měnu."
     },
     "a11y": {
       "instructions": "Mezerníkem zvedni, šipkami přesuň, mezerníkem pusť a klávesou Escape zruš.",
@@ -2965,7 +2966,8 @@
       "income": "Příjmy",
       "expense": "Výdaje",
       "balance": "Zůstatek",
-      "loadFailed": "Souhrn se nepodařilo načíst."
+      "loadFailed": "Souhrn se nepodařilo načíst.",
+      "unconverted": "Nezapočteno, chybí aktuální kurz: {amounts} (bilance v měně)."
     },
     "chart": {
       "view": {
@@ -5185,7 +5187,13 @@
       "status": "Stav účtu"
     },
     "unlimited": "bez limitu",
-    "perWorkerIncluded": "{count, plural, one {{shown} pracovník v ceně, další + {price}} few {{shown} pracovníci v ceně, další + {price}} other {{shown} pracovníků v ceně, další + {price}}}"
+    "perWorkerIncluded": "{count, plural, one {{shown} pracovník v ceně, další + {price}} few {{shown} pracovníci v ceně, další + {price}} other {{shown} pracovníků v ceně, další + {price}}}",
+    "addOns": {
+      "no_branding": {
+        "name": "Bez značky {appName}",
+        "description": "Tvoje rezervační stránka a vše, co vidí klienti, bez našeho loga a patičky."
+      }
+    }
   },
   "trial": {
     "banner": "Zkušební období · zbývá {days, plural, one {# den} few {# dny} other {# dní}}",
@@ -6367,6 +6375,26 @@
         "lastOk": "Poslední výsledek",
         "runs7d": "Běhy (7 dní)",
         "failures7d": "Selhání (7 dní)"
+      },
+      "rates": {
+        "title": "Kurzy měn",
+        "description": "Denně z ECB (frankfurter.app) a open.er-api.com. Zdroj, který selže, nechá poslední kurzy; kurz starší než 7 dní se pro cenu nepoužije, ukáže se EUR. Uložené částky se nikdy nepřepočítávají.",
+        "columns": {
+          "source": "Zdroj",
+          "lastSuccess": "Naposledy úspěšně",
+          "lastAttempt": "Poslední pokus",
+          "state": "Stav",
+          "rates": "Kurzů"
+        },
+        "sources": {
+          "ecb": "ECB (frankfurter.app)",
+          "open_er": "open.er-api.com"
+        },
+        "ok": "V pořádku",
+        "failed": "Selhalo ({error}), zůstávají poslední kurzy",
+        "never": "Zatím neběželo",
+        "fresh": "{count, plural, one {{shown} měna má} few {{shown} měny mají} other {{shown} měn má}} kurz z posledních 7 dní.",
+        "stale": "{count, plural, one {{shown} kurz je starší} few {{shown} kurzy jsou starší} other {{shown} kurzů je starších}} než 7 dní, ceny se ukazují v EUR: {codes}"
       }
     },
     "feedback": {
@@ -7104,7 +7132,10 @@
         "remove": "Odebrat řádek {n}",
         "addLine": "Přidat vlastnost",
         "placeholders": "Číslo z limitu vložíš do textu jako {list}.",
-        "includedWorkersHint": "Pracovníci bez vlastního tarifu, které cena pokrývá. Každý další stojí cenu za pracovníka (bez ní se do tarifu nevejde); kdo má vlastní tarif, je ve firmě zdarma."
+        "includedWorkersHint": "Pracovníci bez vlastního tarifu, které cena pokrývá. Každý další stojí cenu za pracovníka (bez ní se do tarifu nevejde); kdo má vlastní tarif, je ve firmě zdarma.",
+        "deviationAbove": "O {percent} víc než podle kurzu ({exact}).",
+        "deviationBelow": "O {percent} míň než podle kurzu ({exact}).",
+        "derivedPlaceholder": "z kurzu"
       },
       "fields": {
         "name": "Název",
@@ -7115,7 +7146,8 @@
         "features": "Vlastnosti na kartě",
         "recommended": "Štítek „Doporučeno“",
         "order": "Pořadí",
-        "included_workers": "Pracovníků v ceně"
+        "included_workers": "Pracovníků v ceně",
+        "description": "Popis"
       },
       "limits": {
         "daily_contacts": "Kontakty denně",
@@ -7130,7 +7162,7 @@
         "tooLong": "Nejvýš {max} znaků.",
         "number": "Zadej číslo.",
         "positive": "Musí být víc než 0.",
-        "decimals": "Nejvýš dvě desetinná místa.",
+        "decimals": "Příliš mnoho desetinných míst pro tuto měnu.",
         "integer": "Jen celé číslo.",
         "range": "Mimo povolený rozsah.",
         "yearlyTooHigh": "Roční cena může být nejvýš 12× měsíční.",
@@ -7138,7 +7170,8 @@
         "keys": "Tarify musí být právě Solo, Pro a Tým.",
         "order": "Každý tarif musí mít jiné pořadí.",
         "recommended": "Štítek může mít jen jeden tarif.",
-        "invalid": "Neplatná hodnota."
+        "invalid": "Neplatná hodnota.",
+        "currencies": "Ruční cena v měně potřebuje měsíc, rok i cenu za pracovníka."
       },
       "problems": {
         "invalid": "Koncept má chyby, oprav zvýrazněná pole.",
@@ -7171,15 +7204,36 @@
         "yes": "ano",
         "no": "ne",
         "unlimited": "bez limitu",
-        "empty": "prázdné"
+        "empty": "prázdné",
+        "addOn": "Doplněk {name}"
       },
       "preview": {
         "title": "Takto to uvidí návštěvník",
         "publishedTitle": "Zveřejněné tarify",
         "language": "Jazyk náhledu",
-        "cs": "Česky (CZK)",
-        "en": "Anglicky (EUR)",
-        "invalid": "Náhled se ukáže, až koncept nebude mít chyby."
+        "cs": "Česky",
+        "en": "Anglicky",
+        "invalid": "Náhled se ukáže, až koncept nebude mít chyby.",
+        "currency": "Měna náhledu",
+        "noRate": "Pro {currency} není kurz z posledních 7 dní, návštěvník uvidí ceny v EUR.",
+        "pricesTitle": "Ceny v {currency}",
+        "base": "Základní měna katalogu, ceny se zadávají v ní.",
+        "rate": "Ceny bez ruční ceny podle kurzu z {date}, zaokrouhlené prodejně (nejvýš 8 % od přesného přepočtu).",
+        "noRateShort": "Kurz z posledních 7 dní chybí.",
+        "columns": {
+          "item": "Položka",
+          "price": "Cena",
+          "origin": "Odkud",
+          "exact": "Přesně podle kurzu"
+        },
+        "monthly": "měsíčně",
+        "yearly": "za rok",
+        "perWorker": "za pracovníka",
+        "manual": "ruční",
+        "derived": "z kurzu",
+        "above": "o {percent} víc než kurz",
+        "below": "o {percent} míň než kurz",
+        "setManual": "Přepsat {currency} ručně"
       },
       "history": {
         "title": "Historie verzí",
@@ -7198,6 +7252,20 @@
         "cancelling": "Zrušené ke konci",
         "expired": "Vypršelé",
         "empty": "Zatím žádné účty."
+      },
+      "currencies": {
+        "title": "Ruční ceny v měnách",
+        "description": "Základní ceny jsou v EUR. Měna, kterou sem přidáš, má ve všech tarifech a doplňcích vlastní ceny, které kurz nemění. Ostatní měny se počítají z EUR podle denního kurzu a zaokrouhlí se prodejně.",
+        "base": "{currency} · základ",
+        "add": "Přidat měnu s ruční cenou",
+        "remove": "Odebrat ruční ceny v {currency}",
+        "hint": "Prázdná pole měny u tarifu znamenají cenu z kurzu. Zaplatit jde jen v EUR a v měnách s ruční cenou."
+      },
+      "addOns": {
+        "title": "Doplňky",
+        "description": "Něco navíc k libovolnému tarifu. Cena je měsíční, ročně se platí 12×.",
+        "name": "Název ({locale})",
+        "descriptionLabel": "Popis ({locale})"
       }
     },
     "errorAlerts": {
@@ -7926,7 +7994,8 @@
       "countryInvalid": "Vyber zemi.",
       "paymentsUnavailable": "Platby teď nejdou spustit. Zkus to později nebo nám napiš.",
       "checkoutRequired": "Nejdřív tarif zaplať, potom ho můžeš měnit.",
-      "gatewayFailed": "Platební brána teď neodpověděla. Nic se nezměnilo, zkus to za chvíli znovu."
+      "gatewayFailed": "Platební brána teď neodpověděla. Nic se nezměnilo, zkus to za chvíli znovu.",
+      "addOnScheduled": "Na konec období čeká změna tarifu. Nejdřív ji zruš, nebo doplněk přepni až po ní."
     },
     "workers": {
       "label": "Pracovníci",
@@ -7965,6 +8034,20 @@
     "chosen": {
       "trial": "Vybraný tarif: {plan} · {billing}. Zaplatíš po zkušebce ({date}).",
       "other": "Vybraný tarif: {plan} · {billing}."
+    },
+    "addOns": {
+      "title": "Doplňky",
+      "description": "Něco navíc k tarifu. Zapneš a vypneš je kdykoli.",
+      "perMonth": "{price} měsíčně",
+      "toggle": "Zapnout {name}",
+      "hint": {
+        "gateway": "Zapnutí doúčtuje zbytek tohoto období hned, vypnutí odečte nevyužitou část z další platby.",
+        "checkout": "Zaplatíš ho spolu s tarifem.",
+        "free": "S tvým tarifem zatím zdarma.",
+        "manual": "Připočte se k další platbě."
+      },
+      "on": "{name} je zapnutý.",
+      "off": "{name} je vypnutý."
     }
   },
   "messages": {
@@ -8582,5 +8665,19 @@
         "yearly": "ročně"
       }
     }
+  },
+  "currency": {
+    "picker": {
+      "label": "Měna",
+      "search": "Hledej podle kódu nebo názvu",
+      "empty": "Žádná měna neodpovídá.",
+      "groups": {
+        "popular": "Nejčastější",
+        "all": "Všechny měny"
+      }
+    },
+    "rateNote": "orientačně podle kurzu z {date}",
+    "chargedIn": "platí se v {currency}",
+    "switcher": "Měna"
   }
 }

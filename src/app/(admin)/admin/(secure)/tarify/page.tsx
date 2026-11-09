@@ -6,6 +6,7 @@ import { peopleNamer } from "@/features/admin/server/people";
 import { loadCatalogVersions, type CatalogVersion } from "@/features/admin/server/plans-data";
 import { loadPlanUserCounts, type PlanUserCount } from "@/features/admin/server/subscription-data";
 import { ADMIN_FORMAT_SETTINGS } from "@/features/admin/format-metric";
+import { getExchangeRates } from "@/features/currency/server/rates";
 import { formatNumber } from "@/lib/format";
 import { adminCan } from "@/features/admin/roles";
 import { AdminCard } from "@/features/admin/ui/blocks";
@@ -37,9 +38,10 @@ export default async function AdminPlansPage() {
   await logAdminAction(context, "view", "plans");
   const canEdit = adminCan(context.role, "editPlans");
 
-  const [versions, counts, t, tControls] = await Promise.all([
+  const [versions, counts, rates, t, tControls] = await Promise.all([
     loadCatalogVersions(),
     loadPlanUserCounts(),
+    getExchangeRates(),
     getTranslations("admin.plans"),
     getTranslations("admin.controls"),
   ]);
@@ -51,6 +53,7 @@ export default async function AdminPlansPage() {
     publishedAt: version.publishedAt,
     publishedBy: version.publishedBy ? nameOf(version.publishedBy) : null,
     catalog: version.catalog,
+    addOns: version.addOns,
   });
 
   return (
@@ -59,17 +62,31 @@ export default async function AdminPlansPage() {
       <div className="flex flex-col gap-4">
         {canEdit ? (
           <PlansEditor
-            published={{ id: versions.published.id, catalog: versions.published.catalog }}
+            published={{
+              id: versions.published.id,
+              catalog: versions.published.catalog,
+              addOns: versions.published.addOns,
+            }}
             draft={
               versions.draft
-                ? { catalog: versions.draft.catalog, createdAt: versions.draft.createdAt }
+                ? {
+                    catalog: versions.draft.catalog,
+                    addOns: versions.draft.addOnsStored ? versions.draft.addOns : null,
+                    createdAt: versions.draft.createdAt,
+                  }
                 : null
             }
+            rates={rates}
             previewMessages={PREVIEW_MESSAGES}
           />
         ) : (
           <AdminCard title={t("preview.publishedTitle")} description={t("readOnly")}>
-            <PlansPreview catalog={versions.published.catalog} messages={PREVIEW_MESSAGES} />
+            <PlansPreview
+              catalog={versions.published.catalog}
+              addOns={versions.published.addOns}
+              rates={rates}
+              messages={PREVIEW_MESSAGES}
+            />
           </AdminCard>
         )}
         <AdminCard title={t("counts.title")} description={t("counts.description")}>

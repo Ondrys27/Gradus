@@ -1,6 +1,7 @@
 import "server-only";
-import type { PaidPlanKey, PlanCatalog } from "@/config/pricing";
-import { validatePlanCatalog } from "@/features/plan/catalog";
+import type { CatalogAddOn, PaidPlanKey, PlanCatalog } from "@/config/pricing";
+import { validatePlanAddOns, validatePlanCatalog } from "@/features/plan/catalog";
+import { seedAddOns } from "@/features/plan/catalog-seed";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
@@ -19,6 +20,10 @@ export type CatalogVersion = {
   publishedAt: string | null;
   publishedBy: string | null;
   catalog: PlanCatalog;
+  /** The version's add-ons (step 24.1); a version saved before has none stored and reads as the seed's. */
+  addOns: CatalogAddOn[];
+  /** Whether the add-ons are stored on the row (false = the seed's, from before step 24.1). */
+  addOnsStored: boolean;
 };
 
 export type CatalogVersions = {
@@ -41,11 +46,13 @@ type VersionRow = {
   published_at: string | null;
   published_by: string | null;
   payload: unknown;
+  add_ons: unknown;
 };
 
 function toVersion(row: VersionRow): CatalogVersion | null {
   const parsed = validatePlanCatalog(row.payload);
-  if (!parsed.ok || !STATUSES.includes(row.status as CatalogVersionStatus)) {
+  const addOns = row.add_ons === null ? null : validatePlanAddOns(row.add_ons);
+  if (!parsed.ok || (addOns && !addOns.ok) || !STATUSES.includes(row.status as CatalogVersionStatus)) {
     console.error("[admin] plan catalog version unreadable", row.id);
     return null;
   }
@@ -57,10 +64,12 @@ function toVersion(row: VersionRow): CatalogVersion | null {
     publishedAt: row.published_at,
     publishedBy: row.published_by,
     catalog: parsed.catalog,
+    addOns: addOns?.ok ? addOns.addOns : seedAddOns(),
+    addOnsStored: addOns !== null,
   };
 }
 
-const COLUMNS = "id, status, created_at, created_by, published_at, published_by, payload";
+const COLUMNS = "id, status, created_at, created_by, published_at, published_by, payload, add_ons";
 
 export async function loadCatalogVersions(): Promise<CatalogVersions> {
   const admin = createAdminClient();

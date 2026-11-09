@@ -10,18 +10,53 @@ import {
   subscriptionState,
   workspaceOf,
 } from "./mapping";
-import { catalogPriceSpecs, parseLookupKey, priceLookupKey, workerPeriodPrice } from "./prices";
+import { seedAddOns } from "@/features/plan/catalog-seed";
+import {
+  addOnLookupKey,
+  addOnPriceSpecs,
+  catalogPriceSpecs,
+  fromMinorUnits,
+  minorUnits,
+  parseAddOnLookupKey,
+  parseLookupKey,
+  priceLookupKey,
+  workerPeriodPrice,
+} from "./prices";
 
 const iso = (unix: number) => new Date(unix * 1000).toISOString();
 const NOW = new Date(1793491400 * 1000);
 
 describe("prices", () => {
+  it("counts in Stripe's smallest unit of each currency", () => {
+    expect(minorUnits(19.99, "EUR")).toBe(1999);
+    expect(minorUnits(2990, "JPY")).toBe(2990);
+    expect(minorUnits(1.234, "KWD")).toBe(1230);
+    expect(fromMinorUnits(1999, "CZK")).toBe(19.99);
+    expect(fromMinorUnits(2990, "JPY")).toBe(2990);
+  });
+
+  it("prices the add-ons in EUR and the manual currencies, both periods", () => {
+    const specs = addOnPriceSpecs(seedAddOns(), 3);
+    expect(specs.map((spec) => spec.lookupKey).sort()).toEqual([
+      "addon:no_branding:CZK:monthly:v3",
+      "addon:no_branding:CZK:yearly:v3",
+      "addon:no_branding:EUR:monthly:v3",
+      "addon:no_branding:EUR:yearly:v3",
+    ]);
+    expect(specs.find((spec) => spec.lookupKey === "addon:no_branding:EUR:yearly:v3")?.unitAmount).toBe(1188);
+    expect(specs.find((spec) => spec.lookupKey === "addon:no_branding:CZK:monthly:v3")?.unitAmount).toBe(2900);
+    const key = { addOn: "no_branding" as const, currency: "EUR", billing: "monthly" as const, version: 3 };
+    expect(parseAddOnLookupKey(addOnLookupKey(key))).toEqual(key);
+    expect(parseAddOnLookupKey("addon:other:EUR:monthly:v3")).toBeNull();
+    expect(parseLookupKey(addOnLookupKey(key))).toBeNull();
+  });
+
   it("names a price by plan, currency, period and catalog version, and reads it back", () => {
     const key = { kind: "plan" as const, plan: "pro" as const, currency: "CZK" as const, billing: "monthly" as const, version: 4 };
     expect(priceLookupKey(key)).toBe("plan:pro:CZK:monthly:v4");
     expect(parseLookupKey("plan:pro:CZK:monthly:v4")).toEqual(key);
     expect(parseLookupKey("worker:team:EUR:yearly:v12")).toMatchObject({ kind: "worker", plan: "team", version: 12 });
-    for (const bad of ["plan:beta:CZK:monthly:v1", "plan:pro:USD:monthly:v1", "plan:pro:CZK:weekly:v1", "pro", null]) {
+    for (const bad of ["plan:beta:CZK:monthly:v1", "plan:pro:usd:monthly:v1", "plan:pro:CZK:weekly:v1", "pro", null]) {
       expect(parseLookupKey(bad)).toBeNull();
     }
   });
@@ -75,6 +110,7 @@ describe("subscription state", () => {
         currency: "CZK",
         planItemId: "si_1Plan",
         workerItem: null,
+        addOnItems: [],
         version: 2,
         endedForNonPayment: false,
       },

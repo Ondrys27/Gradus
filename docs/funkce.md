@@ -169,13 +169,14 @@ AI pomocník v pravém dolním rohu: chat, souhrny dne, návrhy a hodnocení. V�
 | Funkce | Co dělá | Pro koho | Náklad |
 |---|---|---|---|
 | Účet | Fotka, jméno, uživatelské jméno, krátké ID účtu (kopírovat, QR), e-mail, jazyk, heslo; ve vlastní firmě její název a logo. | majitel, pracovník | úložiště (fotka, logo) |
-| Vzhled | Šest barevných témat (v herním režimu se odemykají úrovní), zvuky, animace, země, pásmo, měna a formáty. | majitel, pracovník | žádný |
+| Vzhled | Šest barevných témat (v herním režimu se odemykají úrovní), zvuky, animace, země, pásmo, měna a formáty. Měna je jakákoli platná podle ISO 4217 (hledání podle kódu i názvu, měna země a nejčastější nahoře); mění jen zobrazení, uložené částky zůstávají v měně, ve které vznikly. | majitel, pracovník | žádný |
 | Práce | Herní nebo nástrojový režim, cesta oboru, kdy znovu oslovit ztracené obchody a údaje na faktury. | majitel (část i pracovník) | žádný |
 | Jarvis | Zapnutí proaktivního Jarvise, jak často se ozývá, tichý režim, e-maily ze Zpráv, znovu spustit tutoriál, smazat ukázková data. | majitel, pracovník | žádný |
 | Soukromí | Export všech dat (ZIP s CSV), smazání účtu, podmínky a ochrana soukromí. | majitel, pracovník | žádný |
 | Předplatné | Tarif, změna, zrušení a obnovení, historie plateb s doklady, fakturační údaje (propíšou se do Stripe), promo kód. Stará adresa /app/tarif sem přesměruje. | jen majitel | e-mail (nám o změně) |
 | Platební metoda a doklady | „Spravovat platební metodu a doklady“ otevře Stripe Customer Portal: změna karty, fakturační adresa a seznam dokladů (tarif se mění a ruší jen v Gradusu). Historie plateb ukazuje datum, tarif, období, částku, stav (i vráceno) a doklad od Stripe. | jen majitel | Stripe |
 | Neúspěšná platba | Když platba selže, majitel vidí nad aplikací „Platba se nepovedla, aktualizuj kartu“ s odkazem do portálu; aplikace běží dál, Stripe platbu opakuje a posílá vlastní e-maily. Když neprojde ani poslední pokus, předplatné skončí a účet je jen pro čtení jako po zkušebce, nic se nesmaže. Jarvis to v rozhovoru jednou připomene. Pracovník nic nevidí. | jen majitel | Stripe, e-mail (nám souhrnem 1× denně) |
+| Doplňky | V Předplatném přepínač „Bez značky Gradus“ (0,99 € měsíčně, 29 Kč ručně, jinde podle kurzu). Ve Stripe se zapnutím přidá položka předplatného se zbytkem období hned, vypnutím odebere; během zkušebky se zaplatí spolu s tarifem, beta neplatí. Skrytí značky použije plánovač schůzek (24.3). | jen majitel | Stripe |
 | Zaplatit a pokračovat | Placení přes Stripe Checkout: zkušebka je bez karty, kdo zaplatí během ní, platí až od jejího konce, po expiraci hned. Tlačítko je v Předplatném, v liště posledních 3 dnů zkušebky a na kartě po expiraci. Promo kód se uplatní jako kupon, jiné kódy ve Stripe zadat nejde. Vyšší tarif ve Stripe hned s doplatkem, nižší od konce období, zrušení ke konci období. Ceny jen ze zveřejněného katalogu, testovací a ostrý režim se nemíchají. | jen majitel | Stripe |
 
 ### Napříč aplikací
@@ -190,6 +191,7 @@ AI pomocník v pravém dolním rohu: chat, souhrny dne, návrhy a hodnocení. V�
 | Hra | XP, 30 úrovní, odznaky, série, oslavy, odemykání sekcí a témat. Nástrojový režim to vypne. | majitel, pracovník | žádný |
 | Nahlásit problém | Hlášení chyby nebo nápadu i se snímkem obrazovky, majitel aplikace dostane e-mail. | majitel, pracovník | e-mail, úložiště |
 | Upozornění na chyby | Každá zachycená chyba přijde majiteli aplikace e-mailem (s ochranou proti záplavě). Stránka /app/test-chyby je jen pro naše testy. | jen my | e-mail |
+| Kurzy měn | Jednou denně kurzy proti EUR z ECB (frankfurter.app) a open.er-api.com, oba zdarma a bez klíče. Jen pro zobrazení cen tarifů a souhrnů napříč měnami („orientačně podle kurzu z …“); uložené částky se nikdy nepřepočítávají, kurz starší než 7 dní se pro cenu nepoužije. Stav zdrojů v Administraci → Zdraví. | všichni | žádný |
 
 ### Web
 <!-- kód: route:/ route:/cenik route:/podminky route:/soukromi route:/cekaci-listina route:/en route:/en/pricing route:/en/terms route:/en/privacy route:/en/waitlist -->
@@ -197,7 +199,7 @@ AI pomocník v pravém dolním rohu: chat, souhrny dne, návrhy a hodnocení. V�
 
 | Funkce | Co dělá | Pro koho | Náklad |
 |---|---|---|---|
-| Úvodní stránka a ceník | Česky na `/`, anglicky pod `/en`. Ceny se berou ze zveřejněného katalogu tarifů. Bez sledovacích cookies. Při veřejné registraci vede tlačítko každého tarifu na registraci s předvybraným tarifem a obdobím (`?tarif=pro&obdobi=rok`) a čekací listina se schová. | návštěvník | žádný |
+| Úvodní stránka a ceník | Česky na `/`, anglicky pod `/en`. Ceny se berou ze zveřejněného katalogu tarifů. Bez sledovacích cookies. Ceník ukazuje měnu podle země návštěvníka (hlavička Vercelu, cookie jen s kódem měny), přihlášenému jeho měnu, s přepínačem a odkazem `?mena=USD`; měna bez ruční ceny se přepočte z EUR denním kurzem s poznámkou „orientačně podle kurzu z …, platí se v EUR“. SEO nabídky v měně stránky. Při veřejné registraci vede tlačítko každého tarifu na registraci s předvybraným tarifem a obdobím (`?tarif=pro&obdobi=rok`) a čekací listina se schová. | návštěvník | žádný |
 | Čekací listina | Dokud je registrace uzavřená, nechá návštěvník e-mail a potvrdí ho odkazem. | návštěvník | e-mail |
 | Podmínky a soukromí | Právní stránky v obou jazycích, s oddíly pro placení (prodávající, cena a Stripe, obnovování, zrušení, odstoupení, reklamace). Údaje prodávajícího z proměnných prostředí; dokud některý chybí, build v produkci selže. | návštěvník | žádný |
 | Přihlášení a registrace | Přihlášení, registrace s pozvánkou nebo kódem, a při veřejné registraci i bez kódu (14 dní zdarma). Povinný souhlas s podmínkami a zásadami (server uloží kdy a kterou verzi), nepovinný souhlas s novinkami. Tarif vybraný na webu se ukáže v Předplatném jako „Vybraný tarif, zaplatíš po zkušebce“ a zaplatí ho tlačítko Zaplatit. Špatné pozvánkové a promo kódy mají limit pokusů podle IP a e-mailu. Zapomenuté heslo, nové heslo, potvrzení změny e-mailu. | každý | e-mail (Supabase přes Resend) |
@@ -319,6 +321,8 @@ Tyhle odhady je dobré jednou za měsíc porovnat s Náklady (období 30 dní) a
 | Zkušební období | 14 dní tarifu Pro bez karty. Po něm jen pro čtení. | V kódu (`TRIAL_DAYS`), změna = nasazení |
 | Tarif beta | Testeři a **každý pozvaný pracovník** dostanou tarif beta bez konce: 500 / 5 000 kontaktů, 3 000 odpovědí Jarvise, 500 souborů. Beta pracovníka z pozvánky je „přes firmu“ (`via_worker_invite`), za vlastní tarif se nepočítá. Odpovědi Jarvise v cizí firmě se počítají podle tarifu té firmy. | Jen v databázi (tabulka `plans`), v administraci ne |
 | Promo kódy | Dny zkoušky navíc, sleva z první platby, měsíce zdarma. | Administrace → Promo kódy |
+| Ceny v měnách | Základ v EUR, ruční ceny v libovolných měnách (dnes CZK), ostatní z kurzu se „prodejním“ zaokrouhlením (`psychologicalPrice`, nejvýš 8 % od přesného přepočtu). Platí se jen v EUR a v měnách s ruční cenou. Náhled v libovolné měně, „Přepsat ručně“, varování nad 15 % od kurzu. | Administrace → Tarify |
+| Doplňky | Položky katalogu navíc k tarifu (dnes `no_branding`), cena měsíčně v EUR a ručních měnách. | Administrace → Tarify |
 | Registrace bez pozvánky | Zapíná veřejnou registraci se zkušebním obdobím a schová čekací listinu. Bez potvrzování e-mailu v Supabase ukáže administrace varování. Kontrolní seznam spuštění je v `docs/spusteni.md`. | Proměnná `PUBLIC_SIGNUP_ENABLED`, změna = restart |
 | Práva pracovníka | Co pracovník smí v každé sekci, včetně generování kontaktů. | Aplikace → Správa firmy (majitel) |
 

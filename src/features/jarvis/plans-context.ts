@@ -1,5 +1,7 @@
-import type { CatalogPlan, PlanLimits } from "@/config/pricing";
-import { featureText, planName, planText, sortedPlans } from "@/features/plan/catalog";
+import type { CatalogPlan, Money, PlanLimits } from "@/config/pricing";
+import { featureText, moneyCurrencies, planName, planText, sortedPlans } from "@/features/plan/catalog";
+import { localizePlan } from "@/features/plan/localized";
+import type { RateTable } from "@/lib/exchange-rates";
 import {
   displayStatus,
   nextPayment,
@@ -22,24 +24,37 @@ function limitsLine(limits: PlanLimits): string {
   ].join(", ");
 }
 
+/** "19 EUR or 490 CZK": EUR and every manual price of the catalog. */
+const amounts = (money: Money) => moneyCurrencies(money).map((code) => `${money[code]} ${code}`).join(" or ");
+
 /**
  * Jarvis's knowledge of the plans: the published catalog as a short block of
  * the chat context, card texts in the interface language. Read on every
  * chat, so a published change is what Jarvis says from the next message.
+ * Prices are EUR and the manual ones; for a user whose currency has no
+ * manual price, `local` adds the price at today's rate (shown, not charged).
  */
 export function describePlans(
   plans: readonly CatalogPlan[],
   locale: string,
   /** What the user has, from describeSubscription(); left out when unknown. */
   own: string | null = null,
+  local: { currency: string; rates: RateTable; now?: Date } | null = null,
 ): string {
   const lines = sortedPlans(plans).map((plan) => {
+    const derived =
+      local && typeof plan.monthly[local.currency] !== "number"
+        ? localizePlan(plan, local.currency, local.rates, local.now)
+        : null;
     const prices =
-      `${plan.monthly.CZK} CZK or ${plan.monthly.EUR} EUR a month, ` +
-      `${plan.yearly.CZK} CZK or ${plan.yearly.EUR} EUR a year` +
+      `${amounts(plan.monthly)} a month, ` +
+      `${amounts(plan.yearly)} a year` +
       (plan.included_workers > 0 ? `, ${plan.included_workers} workers in the price` : "") +
       (plan.per_worker
-        ? `, plus ${plan.per_worker.CZK} CZK or ${plan.per_worker.EUR} EUR a month per ${plan.included_workers > 0 ? "further " : ""}worker`
+        ? `, plus ${amounts(plan.per_worker)} a month per ${plan.included_workers > 0 ? "further " : ""}worker`
+        : "") +
+      (derived && local
+        ? ` (in ${local.currency} about ${derived.monthly[local.currency]} a month and ${derived.yearly[local.currency]} a year at today's rate; charged in EUR)`
         : "");
     const card = plan.features
       .map((feature) => plain(featureText(feature, plan, locale, String, "no limit")))

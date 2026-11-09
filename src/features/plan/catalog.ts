@@ -4,8 +4,10 @@ import {
   OPTIONAL_LIMITS,
   PAID_PLAN_KEYS,
   PLAN_LIMIT_KEYS,
-  PRICE_CURRENCIES,
+  isAddOnKey,
+  type AddOnKey,
   type Billing,
+  type CatalogAddOn,
   type CatalogFeature,
   type CatalogPlan,
   type CatalogText,
@@ -16,6 +18,7 @@ import {
   type PlanLimits,
   type PriceCurrency,
 } from "@/config/pricing";
+import { BASE_CURRENCY, currencyDigits, isCurrencyShape } from "@/lib/currency";
 
 /**
  * The plan catalog as data: validation of a version, the prices a card shows
@@ -28,7 +31,10 @@ export const NAME_MAX = 40;
 export const TAGLINE_MAX = 80;
 export const FEATURE_MAX = 120;
 export const MAX_FEATURES = 12;
-export const MAX_PRICE = 1_000_000;
+/** In any currency (KRW, VND and IDR count in hundreds of thousands). */
+export const MAX_PRICE = 1_000_000_000;
+/** Manual prices of one thing: EUR and up to 59 others. */
+export const MAX_PRICE_CURRENCIES = 60;
 export const MAX_LIMIT = 1_000_000;
 
 // ---------------------------------------------------------------------------
@@ -44,6 +50,7 @@ export type CatalogIssueCode =
   | "integer"
   | "range"
   | "yearlyTooHigh"
+  | "currencies"
   | "tooManyFeatures"
   | "keys"
   | "order"
@@ -77,9 +84,62 @@ const PLAN_FIELDS = [
   "order",
 ] as const;
 
-/** Whole cents at most: 19, 19.9, 19.99. */
-function hasCents(value: number): boolean {
-  return Math.abs(value * 100 - Math.round(value * 100)) < 1e-6;
+/** At most the currency's decimals, never more than cents: 19, 19.9, 19.99; JPY 2990. */
+export function hasCurrencyDecimals(value: number, currency: string): boolean {
+  const factor = 10 ** Math.min(currencyDigits(currency), 2);
+  return Math.abs(value * factor - Math.round(value * factor)) < 1e-6;
+}
+
+/** The currencies of a price, EUR first, then A–Z. */
+export function moneyCurrencies(money: Money): string[] {
+  return Object.keys(money).sort((a, b) =>
+    a === BASE_CURRENCY ? -1 : b === BASE_CURRENCY ? 1 : a.localeCompare(b),
+  );
+}
+
+/** The currencies with a manual price besides EUR. */
+export function manualCurrencies(money: Money): string[] {
+  return moneyCurrencies(money).filter((code) => code !== BASE_CURRENCY);
+}
+
+/** The currencies a price object names, valid amount or not (so one typo is one error). */
+const namedCurrencies = (value: unknown): string =>
+  isObject(value)
+    ? Object.keys(value)
+        .filter(isCurrencyShape)
+        .sort()
+        .join()
+    : "";
+
+const sameCurrencies = (a: unknown, b: unknown) => namedCurrencies(a) === namedCurrencies(b);
+
+/**
+ * Checks one price object: EUR always, other three-letter codes at will,
+ * each amount above 0, at most MAX_PRICE and with at most the currency's
+ * decimals (none for JPY). Same as plan_catalog_money_ok() in the database.
+ */
+export function validateMoney(
+  value: unknown,
+  path: string,
+  add: (path: string, code: CatalogIssueCode) => void,
+): Money {
+  const result: Money = { EUR: 0 };
+  if (!isObject(value) || Object.keys(value).length > MAX_PRICE_CURRENCIES) {
+    add(path, "invalid");
+    return result;
+  }
+  if (!(BASE_CURRENCY in value)) add(`${path}.${BASE_CURRENCY}`, "required");
+  for (const [currency, amount] of Object.entries(value)) {
+    const at = `${path}.${currency}`;
+    if (!isCurrencyShape(currency)) add(path, "invalid");
+    else if (amount === null || amount === undefined) add(at, "required");
+    else if (typeof amount !== "number" || !Number.isFinite(amount)) add(at, "number");
+    else if (amount <= 0) add(at, "positive");
+    else if (amount > MAX_PRICE) add(at, "range");
+    else if (!hasCurrencyDecimals(amount, currency)) add(at, "decimals");
+    else result[currency] = amount;
+  }
+  return result;
 }
 
 /**
@@ -127,25 +187,8 @@ export function validatePlanCatalog(input: unknown): CatalogValidation {
       return result;
     };
 
-    const money = (field: "monthly" | "yearly" | "per_worker"): Money => {
-      const value = raw[field];
-      const result = { CZK: 0, EUR: 0 };
-      if (!isObject(value) || !hasOnlyKeys(value, PRICE_CURRENCIES)) {
-        add(`${key}.${field}`, "invalid");
-        return result;
-      }
-      for (const currency of PRICE_CURRENCIES) {
-        const amount = value[currency];
-        const path = `${key}.${field}.${currency}`;
-        if (amount === null || amount === undefined) add(path, "required");
-        else if (typeof amount !== "number" || !Number.isFinite(amount)) add(path, "number");
-        else if (amount <= 0) add(path, "positive");
-        else if (amount > MAX_PRICE) add(path, "range");
-        else if (!hasCents(amount)) add(path, "decimals");
-        else result[currency] = amount;
-      }
-      return result;
-    };
+    const money = (field: "monthly" | "yearly" | "per_worker"): Money =>
+      validateMoney(raw[field], `${key}.${field}`, add);
 
     const name = text("name", 1, NAME_MAX);
     const tagline = text("tagline", 0, TAGLINE_MAX);
@@ -162,8 +205,12 @@ export function validatePlanCatalog(input: unknown): CatalogValidation {
       else if (value < 0 || value > MAX_LIMIT) add(path, "range");
       else includedWorkers = value;
     }
-    for (const currency of PRICE_CURRENCIES) {
-      if (monthly[currency] > 0 && yearly[currency] > 12 * monthly[currency] + 1e-9) {
+    // A manual price in a currency is the month, the year and (if any) the worker.
+    if (!sameCurrencies(raw.monthly, raw.yearly)) add(`${key}.yearly`, "currencies");
+    if (perWorker && !sameCurrencies(raw.monthly, raw.per_worker)) add(`${key}.per_worker`, "currencies");
+    for (const currency of moneyCurrencies(monthly)) {
+      const year = yearly[currency];
+      if (monthly[currency] > 0 && year !== undefined && year > 12 * monthly[currency] + 1e-9) {
         add(`${key}.yearly.${currency}`, "yearlyTooHigh");
       }
     }
@@ -234,6 +281,64 @@ export function validatePlanCatalog(input: unknown): CatalogValidation {
   if (plans.filter((plan) => plan.recommended).length > 1) add("catalog", "recommended");
 
   return issues.length ? { ok: false, issues } : { ok: true, catalog: sortedPlans(plans) };
+}
+
+export const ADD_ON_NAME_MAX = 40;
+export const ADD_ON_DESCRIPTION_MAX = 160;
+const ADD_ON_FIELDS = ["key", "name", "description", "monthly", "order"] as const;
+
+export type AddOnsValidation =
+  | { ok: true; addOns: CatalogAddOn[] }
+  | { ok: false; issues: CatalogIssue[] };
+
+/**
+ * Checks the add-ons of a version: each known key once (ADD_ON_KEYS), a name
+ * (1–40) and a description (0–160) in both languages, a monthly price like a
+ * plan's and an order 0–9. Same as valid_plan_add_ons() in the database.
+ * Issues name the add-on by key: "no_branding.monthly.EUR".
+ */
+export function validatePlanAddOns(input: unknown): AddOnsValidation {
+  const issues: CatalogIssue[] = [];
+  const add = (path: string, code: CatalogIssueCode) => issues.push({ path, code });
+  if (!Array.isArray(input) || input.length > 10) return { ok: false, issues: [{ path: "addOns", code: "invalid" }] };
+  const addOns: CatalogAddOn[] = [];
+  const seen = new Set<string>();
+  for (const raw of input as unknown[]) {
+    if (!isObject(raw) || !isAddOnKey(raw.key) || seen.has(raw.key)) {
+      add("addOns", "keys");
+      continue;
+    }
+    const key = raw.key;
+    seen.add(key);
+    if (!hasOnlyKeys(raw, ADD_ON_FIELDS)) add(key, "invalid");
+    const text = (field: "name" | "description", min: number, max: number): CatalogText => {
+      const value = raw[field];
+      const result = { cs: "", en: "" };
+      if (!isObject(value) || !hasOnlyKeys(value, CATALOG_LOCALES)) add(`${key}.${field}`, "invalid");
+      for (const locale of CATALOG_LOCALES) {
+        const item = isObject(value) ? value[locale] : undefined;
+        const trimmed = typeof item === "string" ? item.trim() : "";
+        if (typeof item !== "string" || trimmed.length < min) add(`${key}.${field}.${locale}`, "required");
+        else if (trimmed.length > max) add(`${key}.${field}.${locale}`, "tooLong");
+        result[locale] = trimmed;
+      }
+      return result;
+    };
+    const order = raw.order;
+    if (typeof order !== "number" || !Number.isInteger(order) || order < 0 || order > 9) {
+      add(`${key}.order`, "order");
+    }
+    addOns.push({
+      key,
+      name: text("name", 1, ADD_ON_NAME_MAX),
+      description: text("description", 0, ADD_ON_DESCRIPTION_MAX),
+      monthly: validateMoney(raw.monthly, `${key}.monthly`, add),
+      order: typeof order === "number" ? order : 0,
+    });
+  }
+  return issues.length
+    ? { ok: false, issues }
+    : { ok: true, addOns: [...addOns].sort((a, b) => a.order - b.order) };
 }
 
 const EMPTY_LIMITS: PlanLimits = {
@@ -377,7 +482,11 @@ export function diffPlanCatalogs(
       }
     }
     for (const field of ["monthly", "yearly", "per_worker"] as const) {
-      for (const currency of PRICE_CURRENCIES) {
+      const currencies = new Set([
+        ...moneyCurrencies(prev[field] ?? { EUR: 0 }),
+        ...moneyCurrencies(next[field] ?? { EUR: 0 }),
+      ]);
+      for (const currency of currencies) {
         push(`${field}.${currency}`, prev[field]?.[currency] ?? null, next[field]?.[currency] ?? null);
       }
     }
@@ -390,6 +499,35 @@ export function diffPlanCatalogs(
     }
     push("recommended", prev.recommended, next.recommended);
     push("order", prev.order, next.order);
+  }
+  return changes;
+}
+
+/** One changed value of an add-on: "name.cs", "description.en", "monthly.EUR"… */
+export type AddOnChange = { addOn: AddOnKey; field: string; from: string | number | null; to: string | number | null };
+
+/** Every value that differs between the add-ons of two versions (an add-on only in one: every field). */
+export function diffAddOns(from: readonly CatalogAddOn[], to: readonly CatalogAddOn[]): AddOnChange[] {
+  const changes: AddOnChange[] = [];
+  const keys = [...new Set([...to.map((addOn) => addOn.key), ...from.map((addOn) => addOn.key)])];
+  for (const key of keys) {
+    const prev = from.find((addOn) => addOn.key === key);
+    const next = to.find((addOn) => addOn.key === key);
+    const push = (field: string, a: string | number | null, b: string | number | null) => {
+      if (a !== b) changes.push({ addOn: key, field, from: a, to: b });
+    };
+    for (const field of ["name", "description"] as const) {
+      for (const locale of CATALOG_LOCALES) {
+        push(`${field}.${locale}`, prev?.[field][locale] ?? null, next?.[field][locale] ?? null);
+      }
+    }
+    const currencies = new Set([
+      ...moneyCurrencies(prev?.monthly ?? { EUR: 0 }),
+      ...moneyCurrencies(next?.monthly ?? { EUR: 0 }),
+    ]);
+    for (const currency of currencies) {
+      push(`monthly.${currency}`, prev?.monthly[currency] ?? null, next?.monthly[currency] ?? null);
+    }
   }
   return changes;
 }

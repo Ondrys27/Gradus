@@ -3,11 +3,13 @@
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { StatusPill } from "@/components/ui/status-pill";
-import { priceCurrencyFor } from "@/config/pricing";
 import { useSession, useUserSettings } from "@/features/account/queries";
+import { useExchangeRates } from "@/features/currency/use-exchange-rates";
+import { moneyIn } from "@/features/plan/localized";
 import { workerSeats, type Seat } from "@/features/plan/worker-seats";
 import { money } from "@/features/subscription/plan-price";
 import { useWorkerBilling } from "@/features/subscription/queries";
+import { BASE_CURRENCY } from "@/lib/currency";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import type { WorkerStatus } from "../types";
 
@@ -24,6 +26,7 @@ export function useCompanySeats(): { seats: ReadonlyMap<string, SeatInfo>; price
   const format = useFormatSettings();
   const isOwner = !worker && spaceId === user.id;
   const query = useWorkerBilling(isOwner);
+  const rates = useExchangeRates();
   return useMemo(() => {
     const out = new Map<string, SeatInfo>();
     if (!query.data) return { seats: out, price: null };
@@ -40,10 +43,15 @@ export function useCompanySeats(): { seats: ReadonlyMap<string, SeatInfo>; price
         pendingAccount: row.pendingAccount,
       });
     }
-    const currency = priceCurrencyFor(settings.currency);
-    const price = terms.perWorker ? money(terms.perWorker[currency], currency, format) : null;
+    // The user's currency (manual or at the day's rate), else EUR.
+    const local = terms.perWorker ? moneyIn(terms.perWorker, settings.currency, rates) : null;
+    const price = terms.perWorker
+      ? local
+        ? money(local.amount, settings.currency, format)
+        : money(terms.perWorker.EUR, BASE_CURRENCY, format)
+      : null;
     return { seats: out, price };
-  }, [query.data, settings.currency, format]);
+  }, [query.data, settings.currency, format, rates]);
 }
 
 /** "has their own plan" / "in the price" / "extra 290 Kč", and a declined or waiting invite. */

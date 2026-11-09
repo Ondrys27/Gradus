@@ -1,5 +1,7 @@
 import type { Metadata, MetadataRoute } from "next";
-import { priceCurrencyFor, type CatalogPlan } from "@/config/pricing";
+import type { CatalogPlan } from "@/config/pricing";
+import { pageCurrency } from "@/features/currency/visitor-currency";
+import { localizePlans } from "@/features/plan/localized";
 import { monthlyPrice, perWorkerPrice, planText, sortedPlans } from "@/features/plan/catalog";
 import { APP_NAME } from "@/lib/constants";
 import { LOCALIZED_PAGES, SITE_LOCALES, type SiteLocale } from "@/lib/routes";
@@ -92,7 +94,9 @@ export function softwareApplicationJsonLd({
   description: string;
   plans: readonly CatalogPlan[];
 }) {
-  const currency = priceCurrencyFor(locale);
+  // The page's own currency (CZK on the Czech site, EUR on the English one), only
+  // with a manual price: a converted one moves with the rate. Else EUR.
+  const { plans: priced, currency } = localizePlans(plans, pageCurrency(locale), {});
   return {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
@@ -102,7 +106,7 @@ export function softwareApplicationJsonLd({
     inLanguage: locale,
     url: absoluteUrl(LOCALIZED_PAGES.home[locale]),
     description,
-    offers: sortedPlans(plans).map((plan) => {
+    offers: sortedPlans(priced).map((plan) => {
       const perWorker = perWorkerPrice(plan, currency, "monthly");
       const monthly = {
         "@type": "UnitPriceSpecification",

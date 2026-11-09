@@ -10,6 +10,7 @@ import type { Json } from "@/types/database";
 import { createClient } from "@/lib/supabase/client";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { runCheck, type CheckContext } from "./checks";
+import { useExchangeRates } from "@/features/currency/use-exchange-rates";
 import { buildDemoPayload } from "./demo-data";
 import { CHECK_INTERVAL_MS } from "./engine";
 import { subscribeTutorialSignals } from "./signals";
@@ -53,6 +54,7 @@ export function useSeedDemo() {
   const settings = useFormatSettings();
   const t = useTranslations("tutorial.demo");
   const template = useTranslations("notes.templates");
+  const rates = useExchangeRates();
   return useMutation({
     mutationFn: async (): Promise<string> => {
       const payload = buildDemoPayload({
@@ -61,6 +63,7 @@ export function useSeedDemo() {
         now: new Date(),
         t: (key, values) => t(key, values),
         template: (key) => template(key),
+        rates,
       });
       const { data, error } = await createClient().rpc("tutorial_seed_demo", {
         _payload: payload as unknown as Json,

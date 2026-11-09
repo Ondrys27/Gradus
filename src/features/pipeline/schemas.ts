@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CURRENCIES } from "@/lib/format";
+import { isCurrencyShape } from "@/lib/currency";
 
 export const TITLE_MAX = 120;
 export const DESCRIPTION_MAX = 2000;
@@ -40,7 +40,7 @@ export const dealSchema = z.object({
     .max(VALUE_MAX, "valueInvalid")
     .nullable()
     .refine((value) => value === null || Number.isFinite(value), "valueInvalid"),
-  currency: z.enum(CURRENCIES),
+  currency: z.string().refine(isCurrencyShape, "currencyInvalid"),
   expected_close_date: isoDate.nullable(),
   stage_id: z.string().uuid("stageRequired"),
   description: z.string().trim().max(DESCRIPTION_MAX, "descriptionTooLong"),

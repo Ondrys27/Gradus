@@ -130,9 +130,10 @@ export function MonthView({ month, onMonthChange, categoryNames }: Props) {
             today,
             hideEmpty,
             categoryNames,
+            currency: settings.currency,
           })
         : null,
-    [plan.data, actuals.data, deals.data, view, today, hideEmpty, month, categoryNames],
+    [plan.data, actuals.data, deals.data, view, today, hideEmpty, month, categoryNames, settings.currency],
   );
 
   /** The planned closing capital of a loaded month (what the next one starts with). */

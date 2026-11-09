@@ -23,6 +23,8 @@ export type SubscriptionErrorCode =
   | "checkoutRequired"
   /** Stripe refused or could not be reached; nothing changed. */
   | "gatewayFailed"
+  /** An add-on waits until a downgrade scheduled in Stripe takes effect (or is dropped). */
+  | "addOnScheduled"
   | "unknown";
 
 export type SubscriptionResult<T> = { ok: true; data: T } | { ok: false; error: SubscriptionErrorCode };

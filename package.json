@@ -18,7 +18,8 @@
     "metrics:backfill": "bun scripts/metrics-backfill.ts",
     "env:check": "bash scripts/check-env.sh",
     "docs:funkce": "bun scripts/docs-funkce.ts",
-    "stripe:portal": "bun scripts/stripe-portal.ts"
+    "stripe:portal": "bun scripts/stripe-portal.ts",
+    "gen:currencies": "bun scripts/gen-currencies.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",

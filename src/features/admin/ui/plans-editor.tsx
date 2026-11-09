@@ -8,10 +8,13 @@ import {
   PlusIcon,
   StarIcon,
   Trash2Icon,
+  TriangleAlertIcon,
+  XIcon,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { CurrencyPicker } from "@/components/ui/currency-picker";
 import { FormAlert } from "@/components/ui/form-alert";
 import { fieldA11y, FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
@@ -21,29 +24,45 @@ import {
   CATALOG_LOCALES,
   OPTIONAL_LIMITS,
   PLAN_LIMIT_KEYS,
-  PRICE_CURRENCIES,
+  type CatalogAddOn,
   type PlanCatalog,
 } from "@/config/pricing";
 import { SortableList } from "@/features/contacts/sortable-list";
 import {
+  ADD_ON_DESCRIPTION_MAX,
+  ADD_ON_NAME_MAX,
+  diffAddOns,
   diffPlanCatalogs,
   FEATURE_MAX,
   MAX_FEATURES,
+  MAX_PRICE_CURRENCIES,
   NAME_MAX,
   TAGLINE_MAX,
+  validatePlanAddOns,
   validatePlanCatalog,
   type CatalogIssue,
 } from "@/features/plan/catalog";
-import { formatDateTime } from "@/lib/format";
+import { manualDeviation, MANUAL_DEVIATION_WARN } from "@/features/plan/localized";
+import { BASE_CURRENCY, currencyDisplayName } from "@/lib/currency";
+import type { RateTable } from "@/lib/exchange-rates";
+import { formatDateTime, formatNumber, formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ADMIN_FORMAT_SETTINGS } from "../format-metric";
 import {
+  addCurrency,
   featureId,
+  formCurrencies,
+  fromAddOnsForm,
   fromForm,
   moveCard,
   moveFeature,
+  parseAmount,
+  removeCurrency,
   setRecommended,
+  toAddOnsForm,
   toForm,
+  type FormAddOn,
+  type FormMoney,
   type FormPlan,
 } from "../plans-form";
 import type { PlanImpact } from "../server/plans-data";
@@ -55,14 +74,31 @@ import {
   type PlansActionError,
 } from "../server/plans-actions";
 import { PlanChanges } from "./plans-changes";
-import { PlansPreview, type PreviewMessages } from "./plans-preview";
+import { PlansPreview, type DerivedPrices, type PreviewMessages } from "./plans-preview";
 
-type Published = { id: string; catalog: PlanCatalog };
-type Draft = { catalog: PlanCatalog; createdAt: string };
+type Published = { id: string; catalog: PlanCatalog; addOns: CatalogAddOn[] };
+/** `addOns` null: a draft saved before step 24.1, without add-ons stored (saving adds them). */
+type Draft = { catalog: PlanCatalog; addOns: CatalogAddOn[] | null; createdAt: string };
 type Notice = "saved" | "discarded" | "published" | "noChanges";
+type Valid = { catalog: PlanCatalog; addOns: CatalogAddOn[] };
+type Form = { plans: FormPlan[]; addOns: FormAddOn[] };
 
 const when = (iso: string) => formatDateTime(new Date(iso), ADMIN_FORMAT_SETTINGS);
-const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+
+/** JSON with the keys of every object sorted, so the order of currencies never counts. */
+function stable(value: unknown): string {
+  return JSON.stringify(value, (_, item: unknown) =>
+    item && typeof item === "object" && !Array.isArray(item)
+      ? Object.fromEntries(Object.entries(item as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b)))
+      : item,
+  );
+}
+const same = (a: unknown, b: unknown) => stable(a) === stable(b);
+
+const formOf = (catalog: PlanCatalog, addOns: readonly CatalogAddOn[]): Form => ({
+  plans: toForm(catalog, addOns),
+  addOns: toAddOnsForm(addOns, catalog),
+});
 
 /**
  * The draft of the plan catalog: the three cards side by side as on the
@@ -74,55 +110,78 @@ const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
 export function PlansEditor({
   published,
   draft,
+  rates,
   previewMessages,
 }: {
   published: Published;
   draft: Draft | null;
+  /** The day's exchange rates: derived prices in the preview and the 15 % warning. */
+  rates: RateTable;
   previewMessages: PreviewMessages;
 }) {
   const t = useTranslations("admin.plans");
   const router = useRouter();
-  const start = draft?.catalog ?? published.catalog;
-  const [form, setForm] = useState<FormPlan[]>(() => toForm(start));
+  const [form, setFormState] = useState<Form>(() =>
+    formOf(draft?.catalog ?? published.catalog, draft?.addOns ?? published.addOns),
+  );
   const [saved, setSaved] = useState<Draft | null>(draft);
   const [showErrors, setShowErrors] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null);
   const [problem, setProblem] = useState<PlansActionError | null>(null);
   const [discarding, setDiscarding] = useState(false);
-  const [confirming, setConfirming] = useState<{ catalog: PlanCatalog; impact: PlanImpact[] | null } | null>(
-    null,
-  );
+  const [confirming, setConfirming] = useState<(Valid & { impact: PlanImpact[] | null }) | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const payload = useMemo(() => fromForm(form), [form]);
-  const validation = useMemo(() => validatePlanCatalog(payload), [payload]);
-  const valid = validation.ok ? validation.catalog : null;
-  const issues = validation.ok ? [] : validation.issues;
-  const baseline = saved?.catalog ?? published.catalog;
+  const validation = useMemo(() => validatePlanCatalog(fromForm(form.plans)), [form.plans]);
+  const addOnsValidation = useMemo(() => validatePlanAddOns(fromAddOnsForm(form.addOns)), [form.addOns]);
+  const valid: Valid | null =
+    validation.ok && addOnsValidation.ok ? { catalog: validation.catalog, addOns: addOnsValidation.addOns } : null;
+  const issues = [
+    ...(validation.ok ? [] : validation.issues),
+    ...(addOnsValidation.ok ? [] : addOnsValidation.issues),
+  ];
+  const baseline: Valid = saved
+    ? { catalog: saved.catalog, addOns: saved.addOns ?? published.addOns }
+    : { catalog: published.catalog, addOns: published.addOns };
   const dirty = !valid || !same(valid, baseline);
+  const currencies = formCurrencies(form.plans);
 
   const issueAt = (path: string) =>
     showErrors ? issues.find((issue) => issue.path === path) : undefined;
 
-  const update = (index: number, change: (plan: FormPlan) => FormPlan) => {
-    setForm((current) => current.map((plan, i) => (i === index ? change(plan) : plan)));
+  const setForm = (change: (current: Form) => Form) => {
+    setFormState(change);
     setNotice(null);
   };
+  const setPlans = (change: (plans: FormPlan[]) => FormPlan[]) =>
+    setForm((current) => ({ ...current, plans: change(current.plans) }));
+  const update = (index: number, change: (plan: FormPlan) => FormPlan) =>
+    setPlans((plans) => plans.map((plan, i) => (i === index ? change(plan) : plan)));
+  const updateAddOn = (index: number, change: (addOn: FormAddOn) => FormAddOn) =>
+    setForm((current) => ({
+      ...current,
+      addOns: current.addOns.map((addOn, i) => (i === index ? change(addOn) : addOn)),
+    }));
+  const setManual = (currency: string, prices?: DerivedPrices) =>
+    setForm((current) => addCurrency(current, currency, prices));
 
   function fail(error: PlansActionError) {
     setProblem(error);
     if (error === "invalid") setShowErrors(true);
   }
 
-  /** Saves when something changed; returns the catalog as the draft holds it. */
-  async function persist(): Promise<PlanCatalog | null> {
+  const savedAsValid = (draft: Draft | null) =>
+    draft && draft.addOns !== null && valid ? same(valid, { catalog: draft.catalog, addOns: draft.addOns }) : false;
+
+  /** Saves when something changed; returns the plans and add-ons as the draft holds them. */
+  async function persist(): Promise<Valid | null> {
     if (!valid) {
       setShowErrors(true);
       setProblem("invalid");
       return null;
     }
-    if (saved && same(valid, saved.catalog)) return saved.catalog;
-    const result = await savePlanDraft(valid).catch(
+    if (saved && saved.addOns && savedAsValid(saved)) return { catalog: saved.catalog, addOns: saved.addOns };
+    const result = await savePlanDraft(valid.catalog, valid.addOns).catch(
       () => ({ ok: false, error: "failed" }) as const,
     );
     if (!result.ok) {
@@ -131,16 +190,17 @@ export function PlansEditor({
     }
     setSaved((current) => ({
       catalog: result.catalog,
+      addOns: result.addOns,
       createdAt: current?.createdAt ?? new Date().toISOString(),
     }));
-    return result.catalog;
+    return { catalog: result.catalog, addOns: result.addOns };
   }
 
   function save() {
     setNotice(null);
     setProblem(null);
     startTransition(async () => {
-      if (valid && saved && same(valid, saved.catalog)) {
+      if (savedAsValid(saved)) {
         setNotice("noChanges");
         return;
       }
@@ -161,7 +221,7 @@ export function PlansEditor({
       }
       setDiscarding(false);
       setSaved(null);
-      setForm(toForm(published.catalog));
+      setFormState(formOf(published.catalog, published.addOns));
       setShowErrors(false);
       setNotice("discarded");
       router.refresh();
@@ -172,15 +232,15 @@ export function PlansEditor({
     setNotice(null);
     setProblem(null);
     startTransition(async () => {
-      const catalog = await persist();
-      if (!catalog) return;
-      setConfirming({ catalog, impact: null });
-      const result = await planCatalogImpact(catalog).catch(
+      const version = await persist();
+      if (!version) return;
+      setConfirming({ ...version, impact: null });
+      const result = await planCatalogImpact(version.catalog).catch(
         () => ({ ok: false, error: "failed" }) as const,
       );
       setConfirming((current) =>
-        current && current.catalog === catalog
-          ? { catalog, impact: result.ok ? result.impact : [] }
+        current && current.catalog === version.catalog
+          ? { ...version, impact: result.ok ? result.impact : [] }
           : current,
       );
     });
@@ -189,7 +249,7 @@ export function PlansEditor({
   function publish() {
     if (!confirming) return;
     startTransition(async () => {
-      const result = await publishPlanCatalog(confirming.catalog, published.id).catch(
+      const result = await publishPlanCatalog(confirming.catalog, confirming.addOns, published.id).catch(
         () => ({ ok: false, error: "failed" }) as const,
       );
       if (!result.ok) {
@@ -203,24 +263,43 @@ export function PlansEditor({
     });
   }
 
-  const unchanged = confirming ? diffPlanCatalogs(published.catalog, confirming.catalog).length === 0 : false;
+  const unchanged = confirming
+    ? diffPlanCatalogs(published.catalog, confirming.catalog).length === 0 &&
+      diffAddOns(published.addOns, confirming.addOns).length === 0
+    : false;
 
   return (
     <div className="flex flex-col gap-6" data-testid="plans-editor">
+      <ManualCurrencies
+        currencies={currencies}
+        onAdd={(currency) => setManual(currency)}
+        onRemove={(currency) => setForm((current) => removeCurrency(current, currency))}
+      />
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        {form.map((plan, index) => (
+        {form.plans.map((plan, index) => (
           <PlanCardEditor
             key={plan.key}
             plan={plan}
             index={index}
-            count={form.length}
+            count={form.plans.length}
+            currencies={currencies}
+            rates={rates}
             issueAt={issueAt}
             onChange={(change) => update(index, change)}
-            onMove={(step) => setForm((current) => moveCard(current, index, step))}
-            onRecommended={(on) => setForm((current) => setRecommended(current, plan.key, on))}
+            onMove={(step) => setPlans((current) => moveCard(current, index, step))}
+            onRecommended={(on) => setPlans((current) => setRecommended(current, plan.key, on))}
           />
         ))}
       </div>
+      {form.addOns.length > 0 && (
+        <AddOnsEditor
+          addOns={form.addOns}
+          currencies={currencies}
+          rates={rates}
+          issueAt={issueAt}
+          onChange={updateAddOn}
+        />
+      )}
       {showErrors && issues.some((issue) => issue.path === "catalog") && (
         <FormAlert>{t(`errors.${issues.find((issue) => issue.path === "catalog")!.code}`)}</FormAlert>
       )}
@@ -260,7 +339,13 @@ export function PlansEditor({
 
       <section className="flex flex-col gap-3">
         <h2 className="text-[15px] leading-5 font-semibold text-ink">{t("preview.title")}</h2>
-        <PlansPreview catalog={valid} messages={previewMessages} />
+        <PlansPreview
+          catalog={valid?.catalog ?? null}
+          addOns={valid?.addOns ?? []}
+          rates={rates}
+          messages={previewMessages}
+          onSetManual={setManual}
+        />
       </section>
 
       <ConfirmDialog
@@ -286,7 +371,12 @@ export function PlansEditor({
           <div className="flex flex-col gap-5">
             <p className="text-sm text-ink-soft">{t("publishConfirm.description")}</p>
             <div className="max-h-[50vh] overflow-y-auto">
-              <PlanChanges from={published.catalog} to={confirming.catalog} impact={confirming.impact} />
+              <PlanChanges
+                from={published.catalog}
+                to={confirming.catalog}
+                impact={confirming.impact}
+                addOns={{ from: published.addOns, to: confirming.addOns }}
+              />
             </div>
             {problem && <FormAlert>{t(`problems.${problem}`)}</FormAlert>}
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -310,6 +400,8 @@ function PlanCardEditor({
   plan,
   index,
   count,
+  currencies,
+  rates,
   issueAt,
   onChange,
   onMove,
@@ -318,6 +410,8 @@ function PlanCardEditor({
   plan: FormPlan;
   index: number;
   count: number;
+  currencies: readonly string[];
+  rates: RateTable;
   issueAt: IssueAt;
   onChange: (change: (plan: FormPlan) => FormPlan) => void;
   onMove: (step: -1 | 1) => void;
@@ -352,27 +446,32 @@ function PlanCardEditor({
       );
     });
 
-  const money = (field: "monthly" | "yearly" | "per_worker") =>
-    PRICE_CURRENCIES.map((currency) => {
-      const path = `${field}.${currency}`;
-      const error = message(path);
-      return (
-        <FormField key={path} id={id(path)} label={`${t(`fields.${field}`)} (${currency})`} error={error}>
-          <Input
-            {...fieldA11y(id(path), error)}
-            inputMode="decimal"
-            autoComplete="off"
-            value={plan[field][currency]}
-            onChange={(event) =>
-              onChange((current) => ({
-                ...current,
-                [field]: { ...current[field], [currency]: event.target.value },
-              }))
-            }
-          />
-        </FormField>
-      );
-    });
+  const money = (field: "monthly" | "yearly" | "per_worker", currency: string) => {
+    const path = `${field}.${currency}`;
+    return (
+      <MoneyField
+        key={path}
+        id={id(path)}
+        label={`${t(`fields.${field}`)} (${currency})`}
+        currency={currency}
+        money={plan[field]}
+        rates={rates}
+        error={message(path)}
+        onChange={(value) =>
+          onChange((current) => ({
+            ...current,
+            [field]: { ...current[field], [currency]: value },
+          }))
+        }
+      />
+    );
+  };
+  const prices = (fields: readonly ("monthly" | "yearly" | "per_worker")[]) =>
+    currencies.map((currency) => (
+      <div key={currency} className="grid grid-cols-2 gap-3" data-testid={`plan-${plan.key}-prices-${currency}`}>
+        {fields.map((field) => money(field, currency))}
+      </div>
+    ));
 
   return (
     <article
@@ -420,10 +519,8 @@ function PlanCardEditor({
 
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-2 text-sm font-semibold text-ink">{t("card.prices")}</legend>
-        <div className="grid grid-cols-2 gap-3">
-          {money("monthly")}
-          {money("yearly")}
-        </div>
+        {message("yearly") && <p className="text-xs text-pink">{message("yearly")}</p>}
+        {prices(["monthly", "yearly"])}
         <label className="flex min-h-11 items-center justify-between gap-3 text-sm text-ink-soft">
           {t("card.perWorker")}
           <Switch
@@ -431,7 +528,14 @@ function PlanCardEditor({
             onCheckedChange={(on) => onChange((current) => ({ ...current, perWorkerOn: on }))}
           />
         </label>
-        {plan.perWorkerOn && <div className="grid grid-cols-2 gap-3">{money("per_worker")}</div>}
+        {plan.perWorkerOn && (
+          <>
+            {message("per_worker") && <p className="text-xs text-pink">{message("per_worker")}</p>}
+            <div className="grid grid-cols-2 gap-3">
+              {currencies.map((currency) => money("per_worker", currency))}
+            </div>
+          </>
+        )}
         <FormField
           id={id("included_workers")}
           label={t("fields.included_workers")}
@@ -579,5 +683,225 @@ function PlanCardEditor({
         </p>
       </fieldset>
     </article>
+  );
+}
+
+/**
+ * A price field. A manual price (any currency but EUR) more than 15 % from
+ * the EUR price at the day's rate gets a warning under it; the rate never
+ * changes it.
+ */
+function MoneyField({
+  id,
+  label,
+  currency,
+  money,
+  rates,
+  error,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  currency: string;
+  money: FormMoney;
+  rates: RateTable;
+  error?: string;
+  onChange: (value: string) => void;
+}) {
+  const t = useTranslations("admin.plans.card");
+  const eur = parseAmount(money[BASE_CURRENCY] ?? "");
+  const manual = parseAmount(money[currency] ?? "");
+  const deviation =
+    currency !== BASE_CURRENCY && eur !== null && eur > 0 && manual !== null && manual > 0
+      ? manualDeviation({ EUR: eur, [currency]: manual }, currency, rates)
+      : null;
+  const warn = !error && deviation !== null && Math.abs(deviation) > MANUAL_DEVIATION_WARN;
+  const exact = eur !== null && deviation !== null && manual !== null ? manual / (1 + deviation) : null;
+  return (
+    <FormField
+      id={id}
+      label={label}
+      error={error}
+      hint={
+        warn && exact !== null ? (
+          <span className="flex items-start gap-1 text-gold" data-testid="plan-price-deviation">
+            <TriangleAlertIcon aria-hidden className="mt-0.5 size-3.5 shrink-0" />
+            {t(deviation > 0 ? "deviationAbove" : "deviationBelow", {
+              percent: formatNumber(Math.abs(deviation), { style: "percent", decimals: 0 }, ADMIN_FORMAT_SETTINGS),
+              exact: formatPrice(Math.round(exact * 100) / 100, currency, ADMIN_FORMAT_SETTINGS),
+            })}
+          </span>
+        ) : undefined
+      }
+    >
+      <Input
+        {...fieldA11y(id, error)}
+        inputMode="decimal"
+        autoComplete="off"
+        placeholder={currency === BASE_CURRENCY ? undefined : t("derivedPlaceholder")}
+        value={money[currency] ?? ""}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </FormField>
+  );
+}
+
+/**
+ * The currencies with a manual price besides EUR, for the whole catalog: one
+ * added here gets fields on every card and add-on; removing it derives its
+ * prices from EUR again.
+ */
+function ManualCurrencies({
+  currencies,
+  onAdd,
+  onRemove,
+}: {
+  currencies: readonly string[];
+  onAdd: (currency: string) => void;
+  onRemove: (currency: string) => void;
+}) {
+  const t = useTranslations("admin.plans.currencies");
+  const locale = useLocale();
+  const manual = currencies.filter((currency) => currency !== BASE_CURRENCY);
+  return (
+    <section
+      className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4"
+      data-testid="plans-manual-currencies"
+    >
+      <div className="flex flex-col gap-1">
+        <h2 className="text-[15px] leading-5 font-semibold text-ink">{t("title")}</h2>
+        <p className="text-sm text-ink-soft">{t("description")}</p>
+      </div>
+      <ul className="flex flex-wrap items-center gap-2">
+        <li className="flex min-h-11 items-center rounded-full border border-line bg-canvas px-3 text-sm text-ink mouse:min-h-9">
+          {t("base", { currency: BASE_CURRENCY })}
+        </li>
+        {manual.map((currency) => (
+          <li
+            key={currency}
+            className="flex min-h-11 items-center gap-1 rounded-full border border-violet/40 bg-violet/10 pr-1 pl-3 text-sm text-ink mouse:min-h-9"
+            title={currencyDisplayName(currency, locale)}
+          >
+            {currency}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label={t("remove", { currency })}
+              onClick={() => onRemove(currency)}
+            >
+              <XIcon aria-hidden />
+            </Button>
+          </li>
+        ))}
+        {currencies.length < MAX_PRICE_CURRENCIES && (
+          <li>
+            <CurrencyPicker
+              id="plans-add-currency"
+              value={BASE_CURRENCY}
+              ariaLabel={t("add")}
+              compact
+              onChange={(currency) => {
+                if (!currencies.includes(currency)) onAdd(currency);
+              }}
+              className="min-w-32"
+            />
+          </li>
+        )}
+      </ul>
+      <p className="text-xs text-ink-muted">{t("hint")}</p>
+    </section>
+  );
+}
+
+/** The add-ons of the catalog: names, descriptions and the monthly price in each currency. */
+function AddOnsEditor({
+  addOns,
+  currencies,
+  rates,
+  issueAt,
+  onChange,
+}: {
+  addOns: readonly FormAddOn[];
+  currencies: readonly string[];
+  rates: RateTable;
+  issueAt: IssueAt;
+  onChange: (index: number, change: (addOn: FormAddOn) => FormAddOn) => void;
+}) {
+  const t = useTranslations("admin.plans");
+  return (
+    <section className="flex flex-col gap-3" data-testid="plans-add-ons">
+      <div className="flex flex-col gap-1">
+        <h2 className="text-[15px] leading-5 font-semibold text-ink">{t("addOns.title")}</h2>
+        <p className="text-sm text-ink-soft">{t("addOns.description")}</p>
+      </div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        {addOns.map((addOn, index) => {
+          const id = (path: string) => `addon-${addOn.key}-${path.replace(/\./g, "-")}`;
+          const message = (path: string, max?: number) => {
+            const issue = issueAt(`${addOn.key}.${path}`);
+            return issue ? t(`errors.${issue.code}`, { max: max ?? 0 }) : undefined;
+          };
+          const text = (field: "name" | "description", max: number) =>
+            CATALOG_LOCALES.map((locale) => {
+              const path = `${field}.${locale}`;
+              const error = message(path, max);
+              return (
+                <FormField
+                  key={path}
+                  id={id(path)}
+                  label={t(`addOns.${field === "description" ? "descriptionLabel" : "name"}`, { locale: locale.toUpperCase() })}
+                  error={error}
+                >
+                  <Input
+                    {...fieldA11y(id(path), error)}
+                    value={addOn[field][locale]}
+                    maxLength={max + 20}
+                    onChange={(event) =>
+                      onChange(index, (current) => ({
+                        ...current,
+                        [field]: { ...current[field], [locale]: event.target.value },
+                      }))
+                    }
+                  />
+                </FormField>
+              );
+            });
+          return (
+            <article
+              key={addOn.key}
+              className="flex min-w-0 flex-col gap-3 rounded-2xl border border-line bg-surface p-4"
+              data-testid={`addon-card-${addOn.key}`}
+            >
+              <h3 className="truncate text-base font-semibold text-ink">{addOn.name.cs || addOn.key}</h3>
+              {text("name", ADD_ON_NAME_MAX)}
+              {text("description", ADD_ON_DESCRIPTION_MAX)}
+              <div className="grid grid-cols-2 gap-3">
+                {currencies.map((currency) => {
+                  const path = `monthly.${currency}`;
+                  return (
+                    <MoneyField
+                      key={path}
+                      id={id(path)}
+                      label={`${t("fields.monthly")} (${currency})`}
+                      currency={currency}
+                      money={addOn.monthly}
+                      rates={rates}
+                      error={message(path)}
+                      onChange={(value) =>
+                        onChange(index, (current) => ({
+                          ...current,
+                          monthly: { ...current.monthly, [currency]: value },
+                        }))
+                      }
+                    />
+                  );
+                })}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
   );
 }

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { StatusPill } from "@/components/ui/status-pill";
-import type { PlanCatalog } from "@/config/pricing";
+import type { CatalogAddOn, PlanCatalog } from "@/config/pricing";
 import { formatDateTime } from "@/lib/format";
 import { ADMIN_FORMAT_SETTINGS } from "../format-metric";
 import type { PlanImpact } from "../server/plans-data";
@@ -24,6 +24,8 @@ export type HistoryVersion = {
   /** Who published it; null for the first version (the migration) or a deleted account. */
   publishedBy: string | null;
   catalog: PlanCatalog;
+  /** Its add-ons (the seed's for a version from before step 24.1); restoring brings them back too. */
+  addOns: CatalogAddOn[];
 };
 
 const when = (iso: string | null) => (iso ? formatDateTime(new Date(iso), ADMIN_FORMAT_SETTINGS) : "–");
@@ -128,7 +130,12 @@ export function PlansHistory({
           <div className="flex flex-col gap-5">
             <p className="text-sm text-ink-soft">{t("restoreConfirm.description")}</p>
             <div className="max-h-[50vh] overflow-y-auto">
-              <PlanChanges from={current.catalog} to={restoring.version.catalog} impact={restoring.impact} />
+              <PlanChanges
+                from={current.catalog}
+                to={restoring.version.catalog}
+                impact={restoring.impact}
+                addOns={{ from: current.addOns, to: restoring.version.addOns }}
+              />
             </div>
             {problem && <FormAlert>{t(`problems.${problem}`)}</FormAlert>}
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

@@ -76,6 +76,7 @@ import {
   logAiUsage,
 } from "@/features/jarvis/server/usage";
 import { runWatch } from "@/features/jarvis/server/watch";
+import { getExchangeRates } from "@/features/currency/server/rates";
 import { getPublishedPlans } from "@/features/plan/catalog-server";
 import { instrumentRoute, runCron } from "@/lib/analytics/instrument";
 import { track, trackLater } from "@/lib/analytics/track";
@@ -804,12 +805,12 @@ async function chat(ctx: Context, body: unknown, request: Request) {
       return "";
     }),
     // The published plan catalog (getPublishedPlans() falls back to the seed itself) and what the user has.
-    getPublishedPlans().then(async (catalog) => {
+    Promise.all([getPublishedPlans(), getExchangeRates()]).then(async ([catalog, rates]) => {
       const own = await loadSubscriptionLine(supabase, userId, catalog, settings).catch((error) => {
         console.error("jarvis subscription failed", error);
         return null;
       });
-      return describePlans(catalog, locale, own);
+      return describePlans(catalog, locale, own, { currency: settings.currency, rates });
     }),
     // The owner's instructions from the administration (cached 30 s; defaults on a failed read).
     loadJarvisRules(admin),

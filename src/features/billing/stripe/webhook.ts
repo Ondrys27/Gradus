@@ -76,13 +76,13 @@ export type WebhookProblem =
   | "db_rejected";
 
 export type AnalyticsCall =
-  | { name: "checkout_completed"; props: { plan: PaidPlanKey; billing: Billing; currency: "CZK" | "EUR" } }
+  | { name: "checkout_completed"; props: { plan: PaidPlanKey; billing: Billing; currency: string } }
   | {
       name: "payment_succeeded";
-      props: { plan: PaidPlanKey; billing: Billing; currency: "CZK" | "EUR"; first: boolean };
+      props: { plan: PaidPlanKey; billing: Billing; currency: string; first: boolean };
     }
   | { name: "payment_failed"; props: { attempt: number; plan?: PaidPlanKey; billing?: Billing } }
-  | { name: "payment_refunded"; props: { currency: "CZK" | "EUR"; plan?: PaidPlanKey } };
+  | { name: "payment_refunded"; props: { currency: string; plan?: PaidPlanKey } };
 
 /**
  * What the app's owner hears about (one e-mail a day at most, billing_alerts):
@@ -157,8 +157,9 @@ class Rejected extends Error {
 const isHandled = (type: string): type is HandledEvent => (HANDLED_EVENTS as readonly string[]).includes(type);
 const idOf = (value: string | { id: string } | null | undefined) =>
   typeof value === "string" ? value : (value?.id ?? null);
-const asCurrency = (value: string | null | undefined): "CZK" | "EUR" | null =>
-  value === "CZK" || value === "EUR" ? value : null;
+/** A charged currency for analytics: three capital letters, else nothing. */
+const asCurrency = (value: string | null | undefined): string | null =>
+  value && /^[A-Z]{3}$/.test(value) ? value : null;
 
 /** Folds several writes into the event's one outcome; a refusal wins, then a change. */
 function merge(a: EventOutcome, b: EventOutcome): EventOutcome {

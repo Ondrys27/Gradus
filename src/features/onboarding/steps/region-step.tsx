@@ -10,7 +10,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useUpdateSettings, useUserSettings } from "@/features/account/queries";
-import { CURRENCIES, countryName, currencyName } from "@/lib/format";
+import { countryName } from "@/lib/format";
+import { CurrencyPicker } from "@/components/ui/currency-picker";
 import { browserTimeZone, COUNTRY_CODES, countryFromTimeZone } from "@/lib/region";
 import { StepShell } from "../step-shell";
 
@@ -49,14 +50,6 @@ export function RegionStep({
       COUNTRY_CODES.map((code) => ({ value: code, label: countryName(code, uiLocale) })).sort(
         (a, b) => a.label.localeCompare(b.label, uiLocale),
       ),
-    [uiLocale],
-  );
-  const currencyOptions = useMemo(
-    () =>
-      CURRENCIES.map((code) => ({
-        value: code,
-        label: `${code} — ${currencyName(code, uiLocale)}`,
-      })),
     [uiLocale],
   );
 
@@ -98,22 +91,12 @@ export function RegionStep({
       </FormField>
 
       <FormField id="onboarding-currency" label={t("currency")}>
-        <Select
+        <CurrencyPicker
+          id="onboarding-currency"
           value={currency}
-          items={currencyOptions}
-          onValueChange={(value) => typeof value === "string" && setCurrency(value)}
-        >
-          <SelectTrigger id="onboarding-currency">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="max-h-[min(var(--available-height),320px)]">
-            {currencyOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          country={country}
+          onChange={setCurrency}
+        />
       </FormField>
     </StepShell>
   );

@@ -1,4 +1,4 @@
-import type { IsoDate } from "@/lib/format";
+import { DEFAULT_FORMAT_SETTINGS, type IsoDate } from "@/lib/format";
 import { actualValues, assignTransactions, type Assignment, type PlanTransaction } from "./assign";
 import { pipelineSuggestions, type DealForPlan, type PipelineSuggestion } from "./carry-over";
 import type { LoadedPlan } from "./load";
@@ -63,12 +63,14 @@ export function buildMonthModel(input: {
   today: IsoDate;
   hideEmpty: boolean;
   categoryNames: Record<string, string[]>;
+  /** The display currency, for a month not founded yet (a founded one keeps its own). */
+  currency?: string;
 }): MonthModel {
   const { plan, view } = input;
   const weeks = monthWeeks(input.monthKey);
   const count = weeks.length;
   const record = plan.month;
-  const currency = record?.currency ?? "CZK";
+  const currency = record?.currency ?? input.currency ?? DEFAULT_FORMAT_SETTINGS.currency;
   const opening = record?.opening_capital ?? 0;
   const reserve = record?.reserve ?? null;
   const kinds = kindsOf(plan.rows);

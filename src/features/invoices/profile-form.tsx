@@ -10,8 +10,9 @@ import { Input, Textarea } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Switch } from "@/components/ui/switch";
 import { useUserSettings } from "@/features/account/queries";
-import { countryName, CURRENCIES } from "@/lib/format";
-import { COUNTRY_CODES } from "@/lib/region";
+import { countryName, DEFAULT_FORMAT_SETTINGS } from "@/lib/format";
+import { CurrencyPicker } from "@/components/ui/currency-picker";
+import { COUNTRY_CODES, DEFAULT_COUNTRY } from "@/lib/region";
 import { errorCodeOf } from "./errors";
 import { czAccountToIban, formatIban } from "./iban";
 import { isValidIco } from "./ico";
@@ -117,7 +118,11 @@ export function InvoiceProfileForm({
   const save = useSaveInvoiceProfile();
   const ares = useAresLookup();
   const [values, setValues] = useState(() =>
-    initialValues(profile, settings.country_code || "CZ", settings.currency || "CZK"),
+    initialValues(
+      profile,
+      settings.country_code || DEFAULT_COUNTRY,
+      settings.currency || DEFAULT_FORMAT_SETTINGS.currency,
+    ),
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(false);
@@ -145,11 +150,6 @@ export function InvoiceProfileForm({
       ),
     [uiLocale],
   );
-  const currencyOptions = useMemo(() => {
-    const codes: string[] = [...CURRENCIES];
-    if (!codes.includes(values.currency)) codes.push(values.currency);
-    return codes.map((code) => ({ value: code, label: code }));
-  }, [values.currency]);
 
   const error = (key: string) => {
     const code = errors[key];
@@ -399,10 +399,10 @@ export function InvoiceProfileForm({
             />
           </FormField>
           <FormField id="invoice-profile-currency" label={t("currency")}>
-            <SimpleSelect
+            <CurrencyPicker
               id="invoice-profile-currency"
               value={values.currency}
-              options={currencyOptions}
+              country={values.country}
               onChange={(value) => set("currency", value)}
             />
           </FormField>

@@ -19,7 +19,8 @@ import { SortableList } from "@/features/contacts/sortable-list";
 import { Segmented } from "@/features/finance/segmented";
 import { contactLabel } from "@/features/pipeline/board-logic";
 import { useContactSearch } from "@/features/pipeline/queries";
-import { countryName, CURRENCIES, formatCurrency, formatNumber, todayIsoDate } from "@/lib/format";
+import { countryName, formatCurrency, formatNumber, todayIsoDate } from "@/lib/format";
+import { CurrencyPicker } from "@/components/ui/currency-picker";
 import { COUNTRY_CODES } from "@/lib/region";
 import { createClient } from "@/lib/supabase/client";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
@@ -314,13 +315,10 @@ export function InvoiceEditor({
             />
           </FormField>
           <FormField id="invoice-currency" label={t("details.currency")}>
-            <SimpleSelect
+            <CurrencyPicker
               id="invoice-currency"
               value={draft.currency}
-              options={[...new Set([...CURRENCIES, draft.currency])].map((code) => ({
-                value: code,
-                label: code,
-              }))}
+              country={ownerCountry}
               onChange={(value) => update({ currency: value })}
             />
           </FormField>

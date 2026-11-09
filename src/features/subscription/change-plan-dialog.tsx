@@ -7,12 +7,11 @@ import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import {
-  priceCurrencyFor,
+  type PriceCurrency,
   type CatalogPlan,
   type PaidPlanKey,
   type PlanCatalog,
 } from "@/config/pricing";
-import { useUserSettings } from "@/features/account/queries";
 import { PricingCards } from "@/features/marketing/pricing-cards";
 import { planText } from "@/features/plan/catalog";
 import { formatDate, formatNumber } from "@/lib/format";
@@ -41,13 +40,16 @@ export function ChangePlanDialog({
   onOpenChange,
   subscription,
   plans,
+  currency,
   checkout = false,
   onDone,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   subscription: Subscription & { planKey: PaidPlanKey };
+  /** The catalog with prices in `currency` (useLocalizedPlans). */
   plans: PlanCatalog;
+  currency: PriceCurrency;
   checkout?: boolean;
   onDone: (message: string) => void;
 }) {
@@ -70,6 +72,7 @@ export function ChangePlanDialog({
         <Confirm
           subscription={subscription}
           plans={plans}
+          currency={currency}
           target={target}
           choice={choice}
           checkout={checkout}
@@ -80,7 +83,7 @@ export function ChangePlanDialog({
           }}
         />
       ) : (
-        <Picker subscription={subscription} plans={plans} checkout={checkout} onPick={setChoice} />
+        <Picker subscription={subscription} plans={plans} currency={currency} checkout={checkout} onPick={setChoice} />
       )}
     </ResponsiveDialog>
   );
@@ -89,21 +92,22 @@ export function ChangePlanDialog({
 function Picker({
   subscription,
   plans,
+  currency,
   checkout,
   onPick,
 }: {
   subscription: Subscription & { planKey: PaidPlanKey };
   plans: PlanCatalog;
+  currency: PriceCurrency;
   checkout: boolean;
   onPick: (choice: PlanChoice) => void;
 }) {
   const t = useTranslations("subscription.change");
-  const settings = useUserSettings();
   const format = useFormatSettings();
   return (
     <PricingCards
       plans={plans}
-      currency={priceCurrencyFor(settings.currency)}
+      currency={currency}
       formatSettings={format}
       initialBilling={subscription.billing}
       footnote={<p className="text-center text-sm text-ink-muted">{t("footnote")}</p>}
@@ -131,6 +135,7 @@ function Picker({
 function Confirm({
   subscription,
   plans,
+  currency,
   target,
   choice,
   checkout,
@@ -139,6 +144,7 @@ function Confirm({
 }: {
   subscription: Subscription & { planKey: PaidPlanKey };
   plans: PlanCatalog;
+  currency: PriceCurrency;
   target: CatalogPlan;
   choice: PlanChoice;
   checkout: boolean;
@@ -148,9 +154,7 @@ function Confirm({
   const t = useTranslations("subscription");
   const tPlans = useTranslations("plans");
   const locale = useLocale();
-  const settings = useUserSettings();
   const format = useFormatSettings();
-  const currency = priceCurrencyFor(settings.currency);
   const request = useRequestChange();
   const usage = usePlanUsage(true);
   const [error, setError] = useState<string | null>(null);

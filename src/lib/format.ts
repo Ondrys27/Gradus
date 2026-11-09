@@ -1,4 +1,5 @@
 import { format as formatDateFns } from "date-fns";
+import { currencyDigits, currencyDisplayName, CURRENCY_CODES } from "./currency";
 
 /**
  * All user-visible formatting goes through this module.
@@ -34,33 +35,11 @@ export type TimeFormat = (typeof TIME_FORMATS)[number];
 export const WEEK_STARTS = [1, 0, 6] as const;
 export type WeekStart = (typeof WEEK_STARTS)[number];
 
-/** Currencies offered in settings. Display only: amounts are never converted. */
-export const CURRENCIES = [
-  "CZK",
-  "EUR",
-  "USD",
-  "GBP",
-  "PLN",
-  "HUF",
-  "CHF",
-  "SEK",
-  "NOK",
-  "DKK",
-  "RON",
-  "BGN",
-  "UAH",
-  "TRY",
-  "CAD",
-  "AUD",
-  "NZD",
-  "JPY",
-  "CNY",
-  "INR",
-  "BRL",
-  "MXN",
-  "ZAR",
-  "AED",
-] as const;
+/**
+ * Every currency in circulation (ISO 4217, generated into
+ * src/config/currencies.ts). Display only: amounts are never converted.
+ */
+export const CURRENCIES: readonly string[] = CURRENCY_CODES;
 
 export type FormatSettings = {
   /** BCP 47 locale used only for number grouping and decimal separators. */
@@ -111,14 +90,17 @@ export function formatNumber(
     currencyDisplay = "symbol",
     grouping = true,
   } = options;
+  const code = style === "currency" ? (currency ?? settings.currency) : undefined;
+  // A currency is never written with more decimals than it has: JPY, HUF and KRW none.
+  const places = code ? Math.min(decimals, currencyDigits(code)) : decimals;
   return new Intl.NumberFormat(settings.numberLocale, {
     style,
     signDisplay: signed ? "exceptZero" : "auto",
-    currency: style === "currency" ? (currency ?? settings.currency) : undefined,
+    currency: code,
     currencyDisplay: style === "currency" ? currencyDisplay : undefined,
     useGrouping: grouping,
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
+    minimumFractionDigits: places,
+    maximumFractionDigits: places,
   }).format(value);
 }
 
@@ -130,6 +112,19 @@ export function formatCurrency(
   decimals = 0,
 ): string {
   return formatNumber(value, { style: "currency", currency, decimals }, settings);
+}
+
+/**
+ * A price: whole amounts without decimals ("490 Kč", "19 €"), others with all
+ * the decimals of the currency ("0,99 €", "1,19 US$"; JPY always whole).
+ */
+export function formatPrice(
+  value: number,
+  currency: string,
+  settings: FormatSettings = DEFAULT_FORMAT_SETTINGS,
+): string {
+  const decimals = Number.isInteger(value) ? 0 : currencyDigits(currency);
+  return formatCurrency(value, currency, settings, decimals);
 }
 
 /**
@@ -399,11 +394,7 @@ export function countryName(code: string, uiLocale: string): string {
 
 /** Currency name in the UI language, e.g. "Czech Koruna" / "česká koruna". */
 export function currencyName(code: string, uiLocale: string): string {
-  try {
-    return new Intl.DisplayNames([uiLocale], { type: "currency" }).of(code) ?? code;
-  } catch {
-    return code;
-  }
+  return currencyDisplayName(code, uiLocale);
 }
 
 /** Minutes a time zone is ahead of UTC at a given moment (negative when behind). */

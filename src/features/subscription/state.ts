@@ -1,6 +1,8 @@
 import {
+  isAddOnKey,
   isPaidPlanKey,
   PAID_PLAN_KEYS,
+  type AddOnKey,
   type Billing,
   type PaidPlanKey,
   type PlanLimitKey,
@@ -48,10 +50,12 @@ export type Subscription = {
    * hint until the account pays; the database drops it with any change.
    */
   chosen: { planKey: PaidPlanKey; billing: Billing } | null;
+  /** The add-ons switched on (step 24.1); they count only while the subscription runs. */
+  addOns: AddOnKey[];
 };
 
 export const SUBSCRIPTION_COLUMNS =
-  "plan_key, billing, status, trial_ends_at, current_period_start, current_period_end, cancel_at_period_end, cancel_reason, scheduled_plan_key, scheduled_billing, scheduled_at, provider, chosen_plan_key, chosen_billing";
+  "plan_key, billing, status, trial_ends_at, current_period_start, current_period_end, cancel_at_period_end, cancel_reason, scheduled_plan_key, scheduled_billing, scheduled_at, provider, chosen_plan_key, chosen_billing, add_ons";
 
 export type SubscriptionRow = {
   plan_key: string;
@@ -68,6 +72,7 @@ export type SubscriptionRow = {
   provider?: string | null;
   chosen_plan_key?: string | null;
   chosen_billing?: string | null;
+  add_ons?: string[] | null;
 };
 
 const toBilling = (value: string | null): Billing => (value === "yearly" ? "yearly" : "monthly");
@@ -95,6 +100,7 @@ export function toSubscription(row: SubscriptionRow): Subscription {
           }
         : null,
     gateway: row.provider === "stripe" ? "stripe" : null,
+    addOns: (row.add_ons ?? []).filter(isAddOnKey),
     chosen:
       isPaidPlanKey(row.chosen_plan_key) && row.chosen_billing
         ? { planKey: row.chosen_plan_key, billing: toBilling(row.chosen_billing) }
@@ -335,4 +341,27 @@ export function limitOverages(limits: PlanLimits, usage: PlanUsage): LimitOverag
     if (used > allowed) out.push({ limit, used, allowed, locks: false });
   }
   return out;
+}
+
+// ---------------------------------------------------------------------------
+// Add-ons (step 24.1)
+// ---------------------------------------------------------------------------
+
+/** Whether the account has an add-on now: switched on and the subscription not expired (= account_has_add_on()). */
+export function hasAddOn(sub: Subscription, key: AddOnKey, now: Date = new Date()): boolean {
+  return sub.addOns.includes(key) && !isExpired(sub, now);
+}
+
+export type AddOnBlock = "expired" | "scheduled";
+
+/**
+ * Why an add-on cannot be switched now, as subscription_set_add_on() and the
+ * gateway decide: not after the subscription expired, and not in Stripe
+ * while a downgrade waits for the end of the period (its next phase holds
+ * the items). Beta and plans outside the catalog switch it without paying.
+ */
+export function addOnBlock(sub: Subscription, now: Date = new Date()): AddOnBlock | null {
+  if (isExpired(sub, now)) return "expired";
+  if (hasLiveGateway(sub, now) && sub.scheduled) return "scheduled";
+  return null;
 }

@@ -11,12 +11,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CurrencyPicker } from "@/components/ui/currency-picker";
 import { Switch } from "@/components/ui/switch";
 import { useUserSettings } from "@/features/account/queries";
 import {
   countryName,
-  CURRENCIES,
-  currencyName,
   DATE_FORMATS,
   formatDate,
   formatNumber,
@@ -63,11 +62,6 @@ export function AppearanceView() {
       ),
     [uiLocale],
   );
-  const currencyOptions = useMemo<Option[]>(() => {
-    const codes: string[] = [...CURRENCIES];
-    if (!codes.includes(settings.currency)) codes.push(settings.currency);
-    return codes.map((code) => ({ value: code, label: code, detail: currencyName(code, uiLocale) }));
-  }, [settings.currency, uiLocale]);
   const dateOptions: Option[] = DATE_FORMATS.map((pattern) => ({
     value: pattern,
     label: formatDate(now, { ...format, dateFormat: pattern }),
@@ -184,10 +178,10 @@ export function AppearanceView() {
           hint={t("region.currencyHint")}
           fields={["currency"]}
         >
-          <OptionSelect
+          <CurrencyPicker
             id="settings-currency"
             value={settings.currency}
-            options={currencyOptions}
+            country={settings.country_code}
             onChange={(value) => save({ currency: value })}
           />
         </SettingRow>

@@ -4,7 +4,7 @@ import { useMemo, useState, type KeyboardEvent, type ReactNode } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { FileTextIcon, MailIcon, Trash2Icon, XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { StatusPill } from "@/components/ui/status-pill";
 import { toneFill } from "@/components/ui/tone";
+import { useUserSettings } from "@/features/account/queries";
 import { useCan, useWorkspace } from "@/features/account/workspace-queries";
 import { TargetTasks } from "@/features/crm-tasks/target-tasks";
 import { useAssignees } from "@/features/crm-tasks/queries";
@@ -33,7 +34,8 @@ import { invoicePath } from "@/features/invoices/types";
 import { useInvoiceErrorText } from "@/features/invoices/use-invoice-error";
 import { MentionedInNotes } from "@/features/notes/mentioned-in-notes";
 import { WorkNotes } from "@/features/notes/work-notes";
-import { CURRENCIES, currencyName, formatDate } from "@/lib/format";
+import { formatDate } from "@/lib/format";
+import { CurrencyPicker } from "@/components/ui/currency-picker";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { useIsPhone } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
@@ -545,15 +547,10 @@ function ValueField({
   onSave: (change: DealPatch) => void;
 }) {
   const t = useTranslations("pipeline");
-  const locale = useLocale();
+  const settings = useUserSettings();
   const stored = deal.value === null ? "" : String(Number(deal.value)).replace(".", ",");
   const [text, setText] = useSyncedText(stored);
   const [invalid, setInvalid] = useState(false);
-  const currencies = useMemo(
-    () =>
-      CURRENCIES.map((code) => ({ value: code, label: `${code} · ${currencyName(code, locale)}` })),
-    [locale],
-  );
 
   function commit() {
     const amount = parseAmount(text);
@@ -581,28 +578,16 @@ function ValueField({
           onBlur={commit}
           onKeyDown={editKeys(text !== stored, () => setText(stored))}
         />
-        <Select
+        <CurrencyPicker
+          id="deal-currency"
+          compact
+          ariaLabel={t("form.currency")}
           value={deal.currency}
-          items={currencies}
+          country={settings.country_code}
           disabled={!canEdit}
-          onValueChange={(next) =>
-            next && next !== deal.currency && onSave({ currency: next as DealPatch["currency"] })
-          }
-        >
-          <SelectTrigger
-            aria-label={t("form.currency")}
-            className="w-24 shrink-0 text-sm mouse:min-h-9"
-          >
-            <span className="truncate">{deal.currency}</span>
-          </SelectTrigger>
-          <SelectContent>
-            {currencies.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          onChange={(next) => next !== deal.currency && onSave({ currency: next })}
+          className="w-24 shrink-0 text-sm mouse:min-h-9"
+        />
       </div>
       {invalid && <p className="text-xs text-pink">{t("errors.valueInvalid")}</p>}
     </>

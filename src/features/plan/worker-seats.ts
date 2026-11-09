@@ -81,15 +81,14 @@ export function catalogWorkerTerms(plan: Pick<CatalogPlan, "included_workers" | 
 /** The terms of a plan outside the catalog (beta), from the plans table; anything unreadable is none. */
 export function storedWorkerTerms(row: { included_workers: number | null; per_worker: unknown } | null): WorkerTerms {
   const price = row?.per_worker as Record<string, unknown> | null | undefined;
+  // EUR always, other currencies as set; every amount above zero.
   const valid =
     price &&
     typeof price === "object" &&
-    typeof price.CZK === "number" &&
     typeof price.EUR === "number" &&
-    price.CZK > 0 &&
-    price.EUR > 0;
+    Object.values(price).every((amount) => typeof amount === "number" && amount > 0);
   return {
     included: Math.max(0, Math.floor(row?.included_workers ?? 0)),
-    perWorker: valid ? { CZK: price.CZK as number, EUR: price.EUR as number } : null,
+    perWorker: valid ? ({ ...price } as Money) : null,
   };
 }

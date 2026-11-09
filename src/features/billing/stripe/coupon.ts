@@ -83,7 +83,7 @@ export function promoCoupon(input: PromoCouponInput): CouponSpec | null {
             };
       }
       const price = promoFirstPayment(input.regular, "yearly", input.benefit);
-      const amountOff = minorUnits(price.regular) - minorUnits(price.first);
+      const amountOff = minorUnits(price.regular, input.currency) - minorUnits(price.first, input.currency);
       if (amountOff <= 0) return null;
       const kind = input.benefit.benefit === "percent_off_first" ? `pct${value}` : `free${value}`;
       return {

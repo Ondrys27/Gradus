@@ -2108,7 +2108,8 @@
       "stageRequired": "Choose a stage.",
       "nameRequired": "Give the stage a name.",
       "nameTooLong": "The name is too long.",
-      "contactNoteTooLong": "Keep it under 200 characters."
+      "contactNoteTooLong": "Keep it under 200 characters.",
+      "currencyInvalid": "Pick a currency."
     },
     "a11y": {
       "instructions": "Press space to pick up, the arrow keys to move, space to drop and escape to cancel.",
@@ -2965,7 +2966,8 @@
       "income": "Income",
       "expense": "Expenses",
       "balance": "Balance",
-      "loadFailed": "The summary could not be loaded."
+      "loadFailed": "The summary could not be loaded.",
+      "unconverted": "Not included, no current rate: {amounts} (balance per currency)."
     },
     "chart": {
       "view": {
@@ -5185,7 +5187,13 @@
       "status": "Account status"
     },
     "unlimited": "no limit",
-    "perWorkerIncluded": "{count, plural, one {{shown} worker in the price, each more + {price}} other {{shown} workers in the price, each more + {price}}}"
+    "perWorkerIncluded": "{count, plural, one {{shown} worker in the price, each more + {price}} other {{shown} workers in the price, each more + {price}}}",
+    "addOns": {
+      "no_branding": {
+        "name": "Without {appName} branding",
+        "description": "Your booking page and everything your clients see, without our logo and footer."
+      }
+    }
   },
   "trial": {
     "banner": "Trial · {days, plural, one {# day} other {# days}} left",
@@ -6367,6 +6375,26 @@
         "lastOk": "Last result",
         "runs7d": "Runs (7 d)",
         "failures7d": "Failures (7 d)"
+      },
+      "rates": {
+        "title": "Exchange rates",
+        "description": "Daily from the ECB (frankfurter.app) and open.er-api.com. A source that fails keeps its last rates; a rate older than 7 days is not used for a price, EUR is shown instead. Stored amounts are never converted.",
+        "columns": {
+          "source": "Source",
+          "lastSuccess": "Last success",
+          "lastAttempt": "Last attempt",
+          "state": "State",
+          "rates": "Rates"
+        },
+        "sources": {
+          "ecb": "ECB (frankfurter.app)",
+          "open_er": "open.er-api.com"
+        },
+        "ok": "OK",
+        "failed": "Failed ({error}), last rates kept",
+        "never": "Not run yet",
+        "fresh": "{count, plural, one {{shown} currency has} other {{shown} currencies have}} a rate from the last 7 days.",
+        "stale": "{count, plural, one {{shown} rate is} other {{shown} rates are}} older than 7 days, prices show in EUR: {codes}"
       }
     },
     "feedback": {
@@ -7104,7 +7132,10 @@
         "remove": "Remove line {n}",
         "addLine": "Add a line",
         "placeholders": "Put a limit's number into the text as {list}.",
-        "includedWorkersHint": "Workers without a plan of their own that the price covers. Each one more costs the price per worker (without it they do not fit the plan); anyone with a plan of their own joins for free."
+        "includedWorkersHint": "Workers without a plan of their own that the price covers. Each one more costs the price per worker (without it they do not fit the plan); anyone with a plan of their own joins for free.",
+        "deviationAbove": "{percent} above the rate ({exact}).",
+        "deviationBelow": "{percent} below the rate ({exact}).",
+        "derivedPlaceholder": "from the rate"
       },
       "fields": {
         "name": "Name",
@@ -7115,7 +7146,8 @@
         "features": "Lines on the card",
         "recommended": "“Recommended” badge",
         "order": "Position",
-        "included_workers": "Workers in the price"
+        "included_workers": "Workers in the price",
+        "description": "Description"
       },
       "limits": {
         "daily_contacts": "Contacts a day",
@@ -7130,7 +7162,7 @@
         "tooLong": "At most {max} characters.",
         "number": "Enter a number.",
         "positive": "Must be more than 0.",
-        "decimals": "At most two decimals.",
+        "decimals": "Too many decimals for this currency.",
         "integer": "Whole numbers only.",
         "range": "Out of the allowed range.",
         "yearlyTooHigh": "A year can cost at most 12 × the monthly price.",
@@ -7138,7 +7170,8 @@
         "keys": "The plans must be exactly Solo, Pro and Team.",
         "order": "Every plan needs its own position.",
         "recommended": "Only one plan can carry the badge.",
-        "invalid": "Invalid value."
+        "invalid": "Invalid value.",
+        "currencies": "A manual price in a currency needs the month, the year and the price per worker."
       },
       "problems": {
         "invalid": "The draft has errors; fix the highlighted fields.",
@@ -7171,15 +7204,36 @@
         "yes": "yes",
         "no": "no",
         "unlimited": "no limit",
-        "empty": "empty"
+        "empty": "empty",
+        "addOn": "Add-on {name}"
       },
       "preview": {
         "title": "What a visitor will see",
         "publishedTitle": "Published plans",
         "language": "Preview language",
-        "cs": "Czech (CZK)",
-        "en": "English (EUR)",
-        "invalid": "The preview shows once the draft has no errors."
+        "cs": "Czech",
+        "en": "English",
+        "invalid": "The preview shows once the draft has no errors.",
+        "currency": "Preview currency",
+        "noRate": "There is no rate from the last 7 days for {currency}; visitors will see EUR prices.",
+        "pricesTitle": "Prices in {currency}",
+        "base": "The catalog's base currency; prices are set in it.",
+        "rate": "Prices without a manual price at the rate of {date}, rounded to a selling price (at most 8 % from the exact conversion).",
+        "noRateShort": "No rate from the last 7 days.",
+        "columns": {
+          "item": "Item",
+          "price": "Price",
+          "origin": "Source",
+          "exact": "Exactly at the rate"
+        },
+        "monthly": "monthly",
+        "yearly": "a year",
+        "perWorker": "per worker",
+        "manual": "manual",
+        "derived": "from the rate",
+        "above": "{percent} above the rate",
+        "below": "{percent} below the rate",
+        "setManual": "Set {currency} by hand"
       },
       "history": {
         "title": "Version history",
@@ -7198,6 +7252,20 @@
         "cancelling": "Cancelling",
         "expired": "Expired",
         "empty": "No accounts yet."
+      },
+      "currencies": {
+        "title": "Manual prices in currencies",
+        "description": "Base prices are in EUR. A currency you add here gets its own prices in every plan and add-on, which no exchange rate changes. Every other currency is derived from EUR at the day's rate and rounded to a selling price.",
+        "base": "{currency} · base",
+        "add": "Add a currency with manual prices",
+        "remove": "Remove the manual prices in {currency}",
+        "hint": "Empty fields of a currency in a plan mean the price comes from the rate. Payments run only in EUR and in currencies with a manual price."
+      },
+      "addOns": {
+        "title": "Add-ons",
+        "description": "Extras on top of any plan. The price is monthly; paid yearly it is 12 of them.",
+        "name": "Name ({locale})",
+        "descriptionLabel": "Description ({locale})"
       }
     },
     "errorAlerts": {
@@ -7926,7 +7994,8 @@
       "countryInvalid": "Pick a country.",
       "paymentsUnavailable": "Payments cannot be started right now. Try again later or write to us.",
       "checkoutRequired": "Pay for the plan first, then you can change it.",
-      "gatewayFailed": "The payment gateway did not answer. Nothing changed; try again in a moment."
+      "gatewayFailed": "The payment gateway did not answer. Nothing changed; try again in a moment.",
+      "addOnScheduled": "A change of plan waits for the end of the period. Cancel it first, or switch the add-on after it."
     },
     "workers": {
       "label": "Workers",
@@ -7965,6 +8034,20 @@
     "chosen": {
       "trial": "Selected plan: {plan} · {billing}. You pay after the trial ({date}).",
       "other": "Selected plan: {plan} · {billing}."
+    },
+    "addOns": {
+      "title": "Add-ons",
+      "description": "Extras on top of your plan. Switch them on or off any time.",
+      "perMonth": "{price} a month",
+      "toggle": "Switch on {name}",
+      "hint": {
+        "gateway": "Switching on charges the rest of this period now; switching off credits the unused part to your next payment.",
+        "checkout": "You pay for it together with the plan.",
+        "free": "Free with your plan for now.",
+        "manual": "It is added to your next payment."
+      },
+      "on": "{name} is on.",
+      "off": "{name} is off."
     }
   },
   "messages": {
@@ -8582,5 +8665,19 @@
         "yearly": "yearly"
       }
     }
+  },
+  "currency": {
+    "picker": {
+      "label": "Currency",
+      "search": "Search by code or name",
+      "empty": "No currency matches.",
+      "groups": {
+        "popular": "Most used",
+        "all": "All currencies"
+      }
+    },
+    "rateNote": "roughly at the rate of {date}",
+    "chargedIn": "charged in {currency}",
+    "switcher": "Currency"
   }
 }

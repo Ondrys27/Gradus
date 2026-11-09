@@ -1,11 +1,14 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import type { CatalogFeature, PlanCatalog } from "@/config/pricing";
+import type { CatalogAddOn, CatalogFeature, PlanCatalog } from "@/config/pricing";
 import {
+  diffAddOns,
   diffPlanCatalogs,
   loweredLimits,
   planName,
+  planText,
+  type AddOnChange,
   type CatalogChange,
   type ChangeValue,
 } from "@/features/plan/catalog";
@@ -27,19 +30,24 @@ export function PlanChanges({
   from,
   to,
   impact,
+  addOns,
 }: {
   from: PlanCatalog;
   to: PlanCatalog;
   /** Null while it loads or when it could not be read. */
   impact: PlanImpact[] | null;
+  /** The add-ons of both versions (step 24.1). */
+  addOns?: { from: readonly CatalogAddOn[]; to: readonly CatalogAddOn[] };
 }) {
   const t = useTranslations("admin.plans");
   const locale = useLocale();
   const changes = diffPlanCatalogs(from, to);
   const lowered = loweredLimits(from, to);
   const plans = [...new Set(changes.map((change) => change.plan))];
+  const addOnChanges = addOns ? diffAddOns(addOns.from, addOns.to) : [];
+  const changedAddOns = [...new Set(addOnChanges.map((change) => change.addOn))];
 
-  if (plans.length === 0) {
+  if (plans.length === 0 && changedAddOns.length === 0) {
     return (
       <p className="text-sm text-ink-soft" data-testid="plan-changes">
         {t("diff.none")}
@@ -83,7 +91,36 @@ export function PlanChanges({
           </li>
         );
       })}
+      {changedAddOns.map((key) => {
+        const addOn = addOns?.to.find((item) => item.key === key) ?? addOns?.from.find((item) => item.key === key);
+        return (
+          <li key={`addon-${key}`} className="flex flex-col gap-2 rounded-xl border border-line p-3">
+            <h3 className="text-sm font-semibold text-ink">
+              {t("diff.addOn", { name: addOn ? planText(addOn.name, locale) : key })}
+            </h3>
+            <ul className="flex flex-col gap-1.5 text-sm">
+              {addOnChanges
+                .filter((change) => change.addOn === key)
+                .map((change) => (
+                  <AddOnChangeRow key={change.field} change={change} />
+                ))}
+            </ul>
+          </li>
+        );
+      })}
     </ul>
+  );
+}
+
+function AddOnChangeRow({ change }: { change: AddOnChange }) {
+  const t = useTranslations("admin.plans");
+  return (
+    <li className="flex flex-wrap justify-between gap-x-3 gap-y-0.5">
+      <span className="text-ink-soft">{fieldLabel(change.field, t)}</span>
+      <span className="font-semibold break-all text-ink tabular-nums">
+        {value(change.field, change.from, t)} → {value(change.field, change.to, t)}
+      </span>
+    </li>
   );
 }
 

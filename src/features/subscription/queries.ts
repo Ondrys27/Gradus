@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { AddOnKey } from "@/config/pricing";
 import { useSession } from "@/features/account/queries";
 import { planKeys } from "@/features/plan/queries";
 import { openBillingPortal, startCheckout, type CheckoutInput } from "@/features/billing/stripe/actions";
@@ -12,6 +13,7 @@ import {
   loadWorkerBilling,
   requestSubscriptionChange,
   resumeSubscription,
+  setSubscriptionAddOn,
   saveBillingProfile,
 } from "./actions";
 import type { SubscriptionErrorCode, SubscriptionResult } from "./server-context";
@@ -201,6 +203,14 @@ export function useResumeSubscription() {
   const refresh = useRefresh();
   return useMutation({
     mutationFn: async () => unwrap(await resumeSubscription()),
+    onSettled: refresh,
+  });
+}
+
+export function useSetAddOn() {
+  const refresh = useRefresh();
+  return useMutation({
+    mutationFn: async (input: { addOn: AddOnKey; on: boolean }) => unwrap(await setSubscriptionAddOn(input)),
     onSettled: refresh,
   });
 }
