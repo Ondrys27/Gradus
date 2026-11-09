@@ -6215,21 +6215,6 @@ export type Database = {
           redeemed: number
         }[]
       }
-      metric_signup_conversion: {
-        Args: {
-          _from: string
-          _include_internal?: boolean
-          _segment?: Json
-          _to: string
-          _tz?: string
-        }
-        Returns: {
-          paying: number
-          pct: number
-          signups: number
-          source: string
-        }[]
-      }
       metric_retention: {
         Args: {
           _from: string
@@ -6284,6 +6269,21 @@ export type Database = {
           sessions_per_user_day: number
           sessions_per_user_week: number
           users: number
+        }[]
+      }
+      metric_signup_conversion: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          paying: number
+          pct: number
+          signups: number
+          source: string
         }[]
       }
       metric_trial_conversion: {
