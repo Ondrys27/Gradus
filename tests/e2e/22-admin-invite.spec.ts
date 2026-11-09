@@ -4,6 +4,7 @@ import { admin, e2eEmail, e2ePassword, type Account } from "./support/accounts";
 import { expect, test } from "./support/fixtures";
 import { exact, text } from "./support/i18n";
 import { totp } from "./support/totp";
+import { waitForAdmin } from "./support/ui";
 
 /**
  * Administrators (step 14.4): the owner invites someone, the link leads to a
@@ -122,6 +123,7 @@ test("22 · an invitation makes a new admin, works once, and removal locks them 
   await signInOwner(page, owner);
   await page.getByRole("link", { name: exact(L, "admin.shell.nav.admins") }).first().click();
   await expect(page).toHaveURL(/\/admin\/administratori$/);
+  await waitForAdmin(page);
   await page.getByRole("button", { name: exact(L, "admin.admins.invite.open") }).click();
   const adminEmail = e2eEmail("invadmin");
   accounts.register(adminEmail);

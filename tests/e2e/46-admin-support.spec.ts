@@ -5,6 +5,7 @@ import { requiredEnv } from "./support/env";
 import { expect, test } from "./support/fixtures";
 import { exact, text } from "./support/i18n";
 import { totp } from "./support/totp";
+import { waitForAdmin } from "./support/ui";
 
 /**
  * Support in the administration (step 22.1): the owner finds an account by
@@ -60,6 +61,7 @@ test("46 · the owner finds an account by part of its e-mail and sends a passwor
 
   // Test accounts are internal: the view includes them, the search is a part of the address.
   await page.goto("/admin/uzivatele?internal=1");
+  await waitForAdmin(page);
   const part = target.email.slice(4, 22).toUpperCase();
   const search = page.getByRole("searchbox", { name: exact(L, "admin.users.searchPlaceholder") });
   await search.fill(part);
@@ -73,6 +75,7 @@ test("46 · the owner finds an account by part of its e-mail and sends a passwor
   await expect(page).toHaveURL(new RegExp(`/admin/uzivatele/${target.id}`));
   const card = page.getByTestId("account-card");
   await expect(card.getByTestId("account-email")).toHaveText(target.email);
+  await waitForAdmin(page);
 
   // A reason is required before anything is sent.
   await card

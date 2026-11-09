@@ -5,6 +5,7 @@ import { admin, type Account } from "./support/accounts";
 import { expect, test } from "./support/fixtures";
 import { exact, text } from "./support/i18n";
 import { totp } from "./support/totp";
+import { waitForAdmin } from "./support/ui";
 
 /**
  * Plans in the administration (step 15.5): the owner changes Solo's monthly
@@ -76,6 +77,7 @@ test("27 · a price change waits in the draft, shows on the website once publish
   try {
     await signInToAdmin(page, owner);
     await page.goto("/admin/tarify");
+    await waitForAdmin(page);
     const editor = page.getByTestId("plans-editor");
     await expect(editor).toBeVisible();
     const actions = page.getByTestId("plans-actions");
@@ -116,6 +118,7 @@ test("27 · a price change waits in the draft, shows on the website once publish
 
     // 3. Bringing back the previous version publishes a copy of it.
     await page.reload();
+    await waitForAdmin(page);
     const previous = page.getByTestId("plan-version").nth(1);
     await previous.getByRole("button", { name: exact(L, "admin.plans.history.restore") }).click();
     const restore = page.getByRole("dialog").filter({ has: page.getByTestId("plan-changes") });

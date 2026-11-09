@@ -190,7 +190,9 @@ test("41 · worker dashboard: photo and title → Obchodník → what the worker
     expect(handed?.assignee_id).toBe(owner.id);
 
     // The access ended: back in their own account, the owner's deals gone.
-    await workerPage.reload();
+    // The app may reload itself first (WorkspaceSync hears the record end),
+    // which aborts this reload; either way the next page starts over.
+    await workerPage.reload().catch(() => undefined);
     await openApp(workerPage, "/app/pipeline");
     await expect(workerPage.getByText("E2E Obchod prodejce")).toHaveCount(0);
   } finally {

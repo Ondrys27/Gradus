@@ -113,6 +113,18 @@ export async function waitForApp(page: Page) {
   });
 }
 
+/**
+ * The administration is interactive: its sidebar (a Suspense boundary of its
+ * own) has hydrated. A dialog opened before that marks the not yet hydrated
+ * sidebar aria-hidden and React reports a hydration mismatch.
+ */
+export async function waitForAdmin(page: Page) {
+  await page.waitForFunction(() => {
+    const sidebar = document.querySelector('[data-testid="admin-sidebar"]');
+    return Boolean(sidebar && Object.keys(sidebar).some((key) => key.startsWith("__reactProps$")));
+  });
+}
+
 /** Opens an app page with a full load and waits until it is interactive. */
 export async function openApp(page: Page, path: string) {
   await page.goto(path);

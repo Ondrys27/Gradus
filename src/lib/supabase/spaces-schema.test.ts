@@ -126,6 +126,8 @@ let member: string;
 let workerOfY: string;
 let memberInX: string;
 let memberInY: string;
+/** Never worked anywhere; not the first account either (that one owns the application). */
+let stranger: string;
 
 beforeAll(async () => {
   db = new PGlite({ extensions: PGLITE_EXTENSIONS });
@@ -140,6 +142,7 @@ beforeAll(async () => {
   ownerZ = await createAuthUser();
   member = await createAuthUser();
   workerOfY = await createAuthUser();
+  stranger = await createAuthUser();
   // The member works for X with every right, used to work for Y (removed now)
   // and works for Z with only "pipeline: view".
   memberInX = await hire(ownerX, member, "all");
@@ -458,7 +461,17 @@ async function sampleValue(column: Column): Promise<string> {
   }
 }
 
-type Target = { table: string; ownerColumn: string; insertSql: (owner: string) => string };
+type Target = {
+  table: string;
+  ownerColumn: string;
+  /**
+   * The table names the account in user_id besides the space in ownerColumn
+   * (workers, memberships): the person's own rows of a company are theirs to
+   * read (CLAUDE.md, tables of workers), so the sweep leaves them out.
+   */
+  personal: boolean;
+  insertSql: (owner: string) => string;
+};
 
 async function sweepTargets(): Promise<Target[]> {
   await asServer();
@@ -477,28 +490,40 @@ async function sweepTargets(): Promise<Target[]> {
       [table],
     );
     const names = columns.map((c) => c.column_name);
-    const ownerColumn =
-      OWNER_COLUMNS.find((name) => names.includes(name)) ?? (table === "profiles" ? "id" : null);
-    if (!ownerColumn) continue;
-    const filled: Array<[string, string]> = [];
-    for (const column of columns) {
-      if (column.column_name === ownerColumn) continue;
-      if (column.is_generated === "ALWAYS" || column.identity_generation === "ALWAYS") continue;
-      if (column.is_nullable === "YES" || column.column_default !== null) continue;
-      filled.push([column.column_name, await sampleValue(column)]);
+    // Every owner column of the table: workers is the account's (user_id) and
+    // the company's (owner_id), memberships the account's and the space's.
+    const ownerColumns: string[] = OWNER_COLUMNS.filter((name) => names.includes(name));
+    if (!ownerColumns.length && table === "profiles") ownerColumns.push("id");
+    for (const ownerColumn of ownerColumns) {
+      const filled: Array<[string, string]> = [];
+      for (const column of columns) {
+        if (column.column_name === ownerColumn) continue;
+        if (column.is_generated === "ALWAYS" || column.identity_generation === "ALWAYS") continue;
+        if (column.is_nullable === "YES" || column.column_default !== null) continue;
+        filled.push([column.column_name, await sampleValue(column)]);
+      }
+      targets.push({
+        table,
+        ownerColumn,
+        personal: ownerColumn !== "user_id" && names.includes("user_id"),
+        insertSql: (owner) => {
+          const cols = [ownerColumn, ...filled.map(([name]) => name)].map((c) => `"${c}"`).join(", ");
+          const values = [`'${owner}'::uuid`, ...filled.map(([, value]) => value)].join(", ");
+          return `insert into public."${table}" (${cols}) values (${values})`;
+        },
+      });
     }
-    targets.push({
-      table,
-      ownerColumn,
-      insertSql: (owner) => {
-        const cols = [ownerColumn, ...filled.map(([name]) => name)].map((c) => `"${c}"`).join(", ");
-        const values = [`'${owner}'::uuid`, ...filled.map(([, value]) => value)].join(", ");
-        return `insert into public."${table}" (${cols}) values (${values})`;
-      },
-    });
   }
   return targets;
 }
+
+/** The rows of space `owner` in a target, without the ones naming `account` itself. */
+function ofSpace(target: Target, owner: string, account?: string): string {
+  const where = `"${target.ownerColumn}" = '${owner}'::uuid`;
+  return target.personal && account ? `${where} and "user_id" is distinct from '${account}'::uuid` : where;
+}
+
+const targetName = (target: Target) => `${target.table}.${target.ownerColumn}`;
 
 describe("isolation sweep: a space the account does not belong to", () => {
   let targets: Target[] = [];
@@ -520,13 +545,13 @@ describe("isolation sweep: a space the account does not belong to", () => {
     }
     await db.exec(`set session_replication_role = replica`);
     for (const target of targets) {
-      if (ONE_PER_ACCOUNT.has(target.table)) {
-        seeded.add(target.table);
+      if (ONE_PER_ACCOUNT.has(target.table) && !target.personal) {
+        seeded.add(targetName(target));
         continue;
       }
       try {
         await db.exec(target.insertSql(ownerY));
-        seeded.add(target.table);
+        seeded.add(targetName(target));
       } catch {
         // Reported by the coverage check below.
       }
@@ -535,45 +560,52 @@ describe("isolation sweep: a space the account does not belong to", () => {
   }, 120_000);
 
   it("covers the tables (the seed did not silently skip them)", () => {
-    const missing = targets.map((t) => t.table).filter((table) => !seeded.has(table));
+    const missing = targets.map(targetName).filter((name) => !seeded.has(name));
     expect(missing).toEqual([]);
     expect(targets.length).toBeGreaterThan(60);
+    // The company side of the tables that also name an account is swept too.
+    expect(targets.map(targetName)).toEqual(expect.arrayContaining(["workers.owner_id", "memberships.space_id"]));
   });
 
-  it("sees nothing, changes nothing, deletes nothing and inserts nothing", async () => {
+  // Removed from Y (a member of X and Z), and a stranger who never worked there.
+  it.each([
+    ["a removed worker", () => member],
+    ["a stranger", () => stranger],
+  ])("%s sees nothing, changes nothing, deletes nothing and inserts nothing", async (_who, persona) => {
+    const account = persona();
     const leaks: string[] = [];
     for (const target of targets) {
-      const where = `"${target.ownerColumn}" = '${ownerY}'::uuid`;
+      const where = ofSpace(target, ownerY, account);
       await asServer();
       const before = await rows(`select to_jsonb(t) as row from public."${target.table}" t where ${where}`);
-      // Removed from Y, a member of X and Z, asking for Y.
-      await asUser(member, ownerY);
+      // Asking for Y.
+      await asUser(account, ownerY);
       const visible = await db
         .query<{ n: number }>(`select count(*)::int as n from public."${target.table}" where ${where}`)
         .then((result) => result.rows[0]?.n ?? 0)
         .catch(() => 0);
-      if (visible > 0) leaks.push(`${target.table}: select`);
+      if (visible > 0) leaks.push(`${targetName(target)}: select`);
       const updated = await db
         .query(`update public."${target.table}" set "${target.ownerColumn}" = "${target.ownerColumn}" where ${where}`)
         .then((result) => result.affectedRows ?? 0)
         .catch(() => 0);
-      if (updated > 0) leaks.push(`${target.table}: update`);
+      if (updated > 0) leaks.push(`${targetName(target)}: update`);
       const deleted = await db
         .query(`delete from public."${target.table}" where ${where}`)
         .then((result) => result.affectedRows ?? 0)
         .catch(() => 0);
-      if (deleted > 0) leaks.push(`${target.table}: delete`);
+      if (deleted > 0) leaks.push(`${targetName(target)}: delete`);
       const inserted = await db
         .query(target.insertSql(ownerY))
         .then(() => "inserted" as const)
         .catch((error: { code?: string }) => error.code ?? "error");
       // A foreign key or uniqueness error means the policies let the row through.
       if (inserted === "inserted" || inserted === "23503" || inserted === "23505") {
-        leaks.push(`${target.table}: insert (${inserted})`);
+        leaks.push(`${targetName(target)}: insert (${inserted})`);
       }
       await asServer();
       const after = await rows(`select to_jsonb(t) as row from public."${target.table}" t where ${where}`);
-      if (JSON.stringify(after) !== JSON.stringify(before)) leaks.push(`${target.table}: changed`);
+      if (JSON.stringify(after) !== JSON.stringify(before)) leaks.push(`${targetName(target)}: changed`);
     }
     expect(leaks).toEqual([]);
   }, 120_000);
@@ -668,24 +700,105 @@ describe("isolation sweep: a space the account does not belong to", () => {
       [`select chat_open_direct($1)`, [yWorker]],
       [`select space_leave($1)`, [ownerY]],
       [`select worker_invite_respond($1, true)`, [yInvite]],
+      [`select chat_member_token($1)`, [ownerY]],
+      [`select chat_direct_peer_gone($1)`, [yChannel]],
+      // Storage: the files of the space by their path.
+      [`select invoice_pdf_readable($1)`, [`${ownerY}/${yInvoice}.pdf`]],
+      [`select worker_document_object_access($1, false)`, [`${ownerY}/${yWorker}/${yInvoice}`]],
+      [`select worker_document_object_access($1, true)`, [`${ownerY}/${yWorker}/${yInvoice}`]],
+      [`select worker_avatar_writable($1)`, [`${ownerY}/${yWorker}/avatar`]],
+      [`select chat_attachment_uploadable($1)`, [`${ownerY}/${crypto.randomUUID()}/${crypto.randomUUID()}`]],
     ];
     const nothing = (value: unknown) =>
       value === null || value === false || value === 0 || value === "" ||
       (Array.isArray(value) && value.length === 0);
     const leaks: string[] = [];
-    for (const [sql, params] of calls) {
-      await asUser(member, ownerY);
-      const answer = await db
-        .query<Row>(sql, params as never)
-        .then((result) => result.rows)
-        .catch(() => null);
-      if (answer && answer.some((row) => Object.values(row).some((value) => !nothing(value)))) {
-        leaks.push(`${sql} → ${JSON.stringify(answer)}`);
+    // Removed from Y, and a stranger who never worked there.
+    for (const account of [member, stranger]) {
+      for (const [sql, params] of calls) {
+        await asUser(account, ownerY);
+        const answer = await db
+          .query<Row>(sql, params as never)
+          .then((result) => result.rows)
+          .catch(() => null);
+        if (answer && answer.some((row) => Object.values(row).some((value) => !nothing(value)))) {
+          leaks.push(`${account === member ? "removed" : "stranger"}: ${sql} → ${JSON.stringify(answer)}`);
+        }
       }
     }
     expect(leaks).toEqual([]);
     expect(await snapshot()).toBe(before);
   }, 120_000);
+
+  it("the space's files in storage stay closed too", async () => {
+    await asServer();
+    const yWorker = (
+      await one<{ id: string }>(`select id from workers where owner_id = $1 and user_id = $2`, [ownerY, workerOfY])
+    ).id;
+    const yMessage = (await one<{ id: string }>(`select id from chat_messages where owner_id = $1 limit 1`, [ownerY]))
+      .id;
+    const buckets = await rows<{ id: string; public: boolean }>(`select id, public from storage.buckets order by id`);
+    expect(buckets.length).toBeGreaterThan(5);
+    // Every path shape the buckets use, under Y's folder.
+    const names = [
+      `${ownerY}/${crypto.randomUUID()}.pdf`,
+      `${ownerY}/${yWorker}/${crypto.randomUUID()}`,
+      `${ownerY}/${yWorker}/avatar`,
+      `${ownerY}/${yMessage}/${crypto.randomUUID()}`,
+      `${ownerY}/company-logo`,
+    ];
+    for (const bucket of buckets) {
+      for (const name of names) {
+        await db.query(`insert into storage.objects (bucket_id, name, owner) values ($1, $2, $3)`, [
+          bucket.id,
+          name,
+          ownerY,
+        ]);
+      }
+    }
+    const like = `${ownerY}/%`;
+    const before = await rows(`select bucket_id, name from storage.objects where name like $1 order by 1, 2`, [like]);
+    const leaks: string[] = [];
+    for (const account of [member, stranger]) {
+      await asUser(account, ownerY);
+      const seen = await rows<{ bucket_id: string }>(
+        `select bucket_id from storage.objects where name like $1`,
+        [like],
+      );
+      // Public buckets are read by address anyway; their writes still are Y's only.
+      for (const row of seen) {
+        if (!buckets.find((bucket) => bucket.id === row.bucket_id)?.public) leaks.push(`${row.bucket_id}: select`);
+      }
+      const updated = await db
+        .query(`update storage.objects set name = name where name like $1`, [like])
+        .then((result) => result.affectedRows ?? 0)
+        .catch(() => 0);
+      if (updated > 0) leaks.push(`update ${updated}`);
+      const deleted = await db
+        .query(`delete from storage.objects where name like $1`, [like])
+        .then((result) => result.affectedRows ?? 0)
+        .catch(() => 0);
+      if (deleted > 0) leaks.push(`delete ${deleted}`);
+      for (const bucket of buckets) {
+        for (const name of names) {
+          const inserted = await db
+            .query(`insert into storage.objects (bucket_id, name, owner) values ($1, $2, $3)`, [
+              bucket.id,
+              `${name}-${account}`,
+              account,
+            ])
+            .then(() => true)
+            .catch(() => false);
+          if (inserted) leaks.push(`${bucket.id}: insert ${name}`);
+        }
+      }
+    }
+    await asServer();
+    expect(leaks).toEqual([]);
+    expect(await rows(`select bucket_id, name from storage.objects where name like $1 order by 1, 2`, [like])).toEqual(
+      before,
+    );
+  });
 
   it("the space's functions give nothing away either", async () => {
     await asUser(member, ownerY);

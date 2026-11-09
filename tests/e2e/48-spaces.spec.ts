@@ -73,6 +73,14 @@ test("48 · one account, two companies: switch, the data stay apart, a foreign c
   await openApp(page, "/app/kontakty");
   await expect(current).toHaveText(t("spaces.mine"));
   await expect(main.getByText("E2E Klient cizí firmy")).toHaveCount(0);
+  // A cookie forged to name that company: the database ignores it and takes
+  // the account's default (the company it works for), never the stranger's.
+  const origin = new URL(page.url()).origin;
+  await page.context().addCookies([{ name: "active_space", value: stranger.id, url: origin }]);
+  await openApp(page, "/app/kontakty");
+  await expect(current).toHaveText("E2E Firma B");
+  await expect(main.getByText("E2E Klient firmy B").first()).toBeVisible();
+  await expect(main.getByText("E2E Klient cizí firmy")).toHaveCount(0);
 
   // A link into the other company switches there and opens the dashboard.
   await page.goto(`/app/prostor/${boss.id}`);

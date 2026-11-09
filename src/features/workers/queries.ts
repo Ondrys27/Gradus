@@ -318,23 +318,30 @@ export function useCreateWorker() {
         .single();
       if (error) throw error;
       const undo = () => supabase.from("workers").delete().eq("id", worker.id).eq("owner_id", user.id);
-      await saveGrants(user.id, worker.id, input.grants);
-      if (groupIds.length > 0) {
-        const { error: groupError } = await supabase.from("worker_group_members").insert(
-          groupIds.map((groupId) => ({
-            group_id: groupId,
-            worker_id: worker.id,
-            owner_id: user.id,
-          })),
-        );
-        if (groupError) throw groupError;
-      }
-      const { data: created, error: inviteError } = await supabase
-        .from("worker_invites")
-        .insert({ owner_id: user.id, worker_id: worker.id, email: worker.email })
-        .select(INVITE_COLUMNS)
-        .single();
-      if (inviteError) throw inviteError;
+      // A record left without its invite would hold a seat of the plan nobody can take: it goes again.
+      const created = await (async () => {
+        await saveGrants(user.id, worker.id, input.grants);
+        if (groupIds.length > 0) {
+          const { error: groupError } = await supabase.from("worker_group_members").insert(
+            groupIds.map((groupId) => ({
+              group_id: groupId,
+              worker_id: worker.id,
+              owner_id: user.id,
+            })),
+          );
+          if (groupError) throw groupError;
+        }
+        const { data, error: inviteError } = await supabase
+          .from("worker_invites")
+          .insert({ owner_id: user.id, worker_id: worker.id, email: worker.email })
+          .select(INVITE_COLUMNS)
+          .single();
+        if (inviteError) throw inviteError;
+        return data;
+      })().catch(async (failure: unknown) => {
+        await undo();
+        throw failure;
+      });
       let invite: WorkerInvite = created;
       let bound = false;
       if (target) {
