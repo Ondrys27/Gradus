@@ -8,7 +8,7 @@ import en from "@/locales/en.json";
 import { categoryNames } from "./category-names";
 import { NOVEMBER_CELLS, NOVEMBER_OPENING, NOVEMBER_ROWS } from "./fixtures";
 import { buildMonthModel } from "./month-model";
-import { PlanGrid } from "./plan-grid";
+import { PlanGrid, type GuideState } from "./plan-grid";
 import type { PlanView } from "./sheet";
 
 afterEach(cleanup);
@@ -19,7 +19,7 @@ const plan = {
   cells: NOVEMBER_CELLS,
 };
 
-function setup(options: { view?: PlanView; canEdit?: boolean; locale?: "cs" | "en" } = {}) {
+function setup(options: { view?: PlanView; canEdit?: boolean; locale?: "cs" | "en"; guide?: GuideState; opening?: number } = {}) {
   const handlers = {
     onSaveCell: vi.fn(),
     onSaveOpening: vi.fn(),
@@ -31,9 +31,10 @@ function setup(options: { view?: PlanView; canEdit?: boolean; locale?: "cs" | "e
     onAcceptSuggestion: vi.fn(),
   };
   const view = options.view ?? "plan";
-  const model = buildMonthModel({
+  const opening = options.opening ?? NOVEMBER_OPENING;
+  const modelOf = (cells: typeof NOVEMBER_CELLS) => buildMonthModel({
     monthKey: "2026-11",
-    plan,
+    plan: { ...plan, month: { ...plan.month, opening_capital: opening }, cells },
     transactions: [],
     deals: [],
     view,
@@ -43,14 +44,22 @@ function setup(options: { view?: PlanView; canEdit?: boolean; locale?: "cs" | "e
   });
   const missing: string[] = [];
   const locale = options.locale ?? "cs";
-  const node: ReactNode = (
+  const node = (cells = NOVEMBER_CELLS): ReactNode => (
     <NextIntlClientProvider locale={locale} messages={locale === "cs" ? cs : en} onError={(error) => missing.push(error.message)}>
-      <PlanGrid model={model} view={view} opening={NOVEMBER_OPENING} canEdit={options.canEdit ?? true} {...handlers} />
+      <PlanGrid
+        model={modelOf(cells)}
+        view={view}
+        opening={opening}
+        currency="CZK"
+        canEdit={options.canEdit ?? true}
+        guide={options.guide ?? null}
+        {...handlers}
+      />
     </NextIntlClientProvider>
   );
-  render(node);
+  const { rerender } = render(node());
   expect(missing).toEqual([]);
-  return handlers;
+  return { ...handlers, rerender: (cells: typeof NOVEMBER_CELLS) => rerender(node(cells)) };
 }
 
 const cell = (row: string, week: string) => screen.getByRole("gridcell", { name: `${row}, ${week}` });
@@ -139,5 +148,52 @@ describe("PlanGrid", () => {
     fireEvent.click(cell("Grid", "Week 1"));
     expect(screen.queryByRole("textbox")).toBeNull();
     expect(handlers.onSaveCell).not.toHaveBeenCalled();
+  });
+
+  it("names the currency once, in the corner of the header", () => {
+    setup();
+    expect(screen.getByRole("columnheader", { name: /Částky v CZK/ })).toBeTruthy();
+    expect(screen.queryAllByText(/Kč/)).toHaveLength(0);
+  });
+
+  it("a fresh month shows the three first steps and leads into them", () => {
+    setup({ guide: { opening: true, income: false, expense: false } });
+    const guide = screen.getByRole("list", { name: "Jak začít" });
+    expect(guide.textContent).toContain("Zadej počáteční kapitál");
+    const next = screen.getByRole("button", { name: "Přidej první příjem" });
+    expect(next.getAttribute("aria-current")).toBe("step");
+    fireEvent.click(next);
+    expect(document.activeElement).toBe(screen.getByRole("textbox", { name: "Nový příjem" }));
+    fireEvent.click(screen.getByRole("button", { name: /Zadej počáteční kapitál/ }));
+    expect(screen.getByRole("textbox", { name: "Počáteční kapitál, Týden 1" })).toBeTruthy();
+  });
+
+  it("the guide is gone once all three steps are done, and never without the right to edit", () => {
+    setup({ guide: { opening: true, income: true, expense: true } });
+    expect(screen.queryByRole("list", { name: "Jak začít" })).toBeNull();
+    cleanup();
+    setup({ guide: { opening: false, income: false, expense: false }, canEdit: false });
+    expect(screen.queryByRole("list", { name: "Jak začít" })).toBeNull();
+  });
+
+  it("the lowest closing capital below zero stands out in the table", () => {
+    setup({ opening: -20000 });
+    const lowest = cell("Konečný kapitál", "Týden 1");
+    expect(lowest.getAttribute("title")).toBe("Nejnižší stav měsíce");
+    expect(lowest.className).toContain("bg-pink");
+  });
+
+  it("after a typed number the recomputed cells flash, the untouched ones do not", () => {
+    const handlers = setup();
+    fireEvent.click(cell("Grid", "Týden 1"));
+    const input = screen.getByRole("textbox", { name: "Grid, Týden 1" });
+    fireEvent.change(input, { target: { value: "5000" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(handlers.onSaveCell).toHaveBeenCalledWith(expect.objectContaining({ rowId: "grid", week: 1, value: 5000 }));
+    handlers.rerender([...NOVEMBER_CELLS, { row_id: "grid", week: 1, planned: 5000, note: null }]);
+    const flash = (row: string, week: string) => cell(row, week).querySelector('[class*="animate-plan-flash"]');
+    expect(flash("Příjmy celkem", "Týden 1")).not.toBeNull();
+    expect(flash("Konečný kapitál", "Celkem")).not.toBeNull();
+    expect(flash("Výdaje celkem", "Týden 1")).toBeNull();
   });
 });

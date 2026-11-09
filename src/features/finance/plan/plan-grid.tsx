@@ -29,6 +29,8 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
+  ArrowRightIcon,
+  CheckIcon,
   EllipsisIcon,
   FileTextIcon,
   GripVerticalIcon,
@@ -56,12 +58,19 @@ const SOURCE_ICONS: Partial<Record<PlanSource, LucideIcon>> = {
   invoice: FileTextIcon,
 };
 
+/** The three first steps of a fresh month; the guide shows until all are done. */
+export type GuideState = { opening: boolean; income: boolean; expense: boolean };
+const GUIDE_STEPS = ["opening", "income", "expense"] as const;
+
 type Props = {
   model: MonthModel;
   view: PlanView;
   opening: number;
+  currency: string;
   /** Finance "write", not read-only, the month not closed. */
   canEdit: boolean;
+  /** Null hides the guide (a month that is already going, or no right to edit). */
+  guide?: GuideState | null;
   onSaveCell: (change: CellChange) => void;
   onSaveOpening: (value: number) => void;
   /** Resolves with the new row's id, or null when it could not be made. */
@@ -94,8 +103,14 @@ function useAmount() {
       : formatNumber(value, { decimals: Number.isInteger(value) ? 0 : 2 }, settings);
 }
 
+/** The first column sticks left; it must be opaque, so tinted rows carry the tint themselves. */
+const STICKY = "sticky left-0 z-[1] bg-surface";
+const STICKY_TINT = "sticky left-0 z-[1] plan-row-tint";
+const CELL_HEIGHT = "h-11 mouse:h-9";
+const FLASH_MS = 1000;
+
 export function PlanGrid(props: Props) {
-  const { model, view, canEdit } = props;
+  const { model, view, canEdit, currency, guide = null } = props;
   const t = useTranslations("finance.plan.grid");
   const settings = useFormatSettings();
   const amount = useAmount();
@@ -105,6 +120,7 @@ export function PlanGrid(props: Props) {
   const [active, setActive] = useState<Active | null>(null);
   const [editing, setEditing] = useState<Editing | null>(null);
   const tableRef = useRef<HTMLTableElement>(null);
+  const showGuide = editable && guide !== null && GUIDE_STEPS.some((step) => !guide[step]);
 
   const lines = useMemo<GridLine[]>(() => {
     const result: GridLine[] = [{ key: "opening", type: "opening" }];
@@ -153,6 +169,47 @@ export function PlanGrid(props: Props) {
     }
   }
 
+  // After a typed number the cells it recomputed light up for a moment: the
+  // computed values are remembered, and the ones that differ after the user's
+  // own change get a fresh flash (a loaded month or a changed view never flashes).
+  const computedSnapshot = useRef<{ scope: string; values: Map<string, number> } | null>(null);
+  const userChanged = useRef(false);
+  const [flashes, setFlashes] = useState<Map<string, number>>(new Map());
+  useEffect(() => {
+    const scope = `${model.month}|${view}`;
+    const next = new Map<string, number>();
+    for (const line of lines) {
+      for (let col = 0; col <= weeks; col += 1) {
+        if (isEditableCell(line, col)) continue;
+        next.set(`${line.key}|${col}`, lineValue(line, col));
+      }
+    }
+    // Another month or view starts over: nothing there was recomputed by the user.
+    const previous = computedSnapshot.current?.scope === scope ? computedSnapshot.current.values : null;
+    computedSnapshot.current = { scope, values: next };
+    if (!userChanged.current || !previous) return;
+    userChanged.current = false;
+    const changed = [...next].filter(([key, value]) => previous.has(key) && previous.get(key) !== value);
+    if (changed.length === 0) return;
+    const stamp = Date.now();
+    setFlashes((current) => {
+      const map = new Map(current);
+      for (const [key] of changed) map.set(key, stamp);
+      return map;
+    });
+    const timer = setTimeout(
+      () =>
+        setFlashes((current) => {
+          const map = new Map(current);
+          for (const [key, at] of current) if (at === stamp) map.delete(key);
+          return map;
+        }),
+      FLASH_MS,
+    );
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the snapshot follows the model only
+  }, [model, view, lines, weeks]);
+
   function startEditing(line: GridLine, col: number, draft?: string) {
     if (!isEditableCell(line, col)) return;
     const current = line.type === "opening" ? props.opening : line.type === "row" ? line.row.plan[col] : 0;
@@ -186,9 +243,13 @@ export function PlanGrid(props: Props) {
     const value = parsed.value ?? 0;
     const expression = /[*/×x+()]|\d\s*[-−]/i.test(editing.draft.replace(/^\s*[-−]/, ""));
     if (line?.type === "opening") {
-      if (value !== props.opening) props.onSaveOpening(value);
+      if (value !== props.opening) {
+        userChanged.current = true;
+        props.onSaveOpening(value);
+      }
     } else if (line?.type === "row") {
       if (value !== line.row.plan[editing.col]) {
+        userChanged.current = true;
         props.onSaveCell({ rowId: line.row.id, kind: line.row.kind, week: editing.col + 1, value, expression });
       }
     }
@@ -230,8 +291,11 @@ export function PlanGrid(props: Props) {
     }
     if ((event.key === "Delete" || event.key === "Backspace") && isEditableCell(line, col)) {
       event.preventDefault();
-      if (line.type === "opening") props.onSaveOpening(0);
-      else if (line.type === "row" && line.row.plan[col] !== 0) {
+      if (line.type === "opening") {
+        if (props.opening !== 0) userChanged.current = true;
+        props.onSaveOpening(0);
+      } else if (line.type === "row" && line.row.plan[col] !== 0) {
+        userChanged.current = true;
         props.onSaveCell({ rowId: line.row.id, kind: line.row.kind, week: col + 1, value: null, expression: false });
       }
       return;
@@ -264,7 +328,20 @@ export function PlanGrid(props: Props) {
     }
   }
 
-  function cell(line: GridLine, col: number, options: { strong?: boolean } = {}): ReactNode {
+  /** The guide's steps lead into the cell or the name field they talk about. */
+  function goToStep(step: (typeof GUIDE_STEPS)[number]) {
+    if (step === "opening") {
+      startEditing(lines[0], 0);
+      return;
+    }
+    tableRef.current?.querySelector<HTMLInputElement>(`[data-new-row="${step}"]`)?.focus();
+  }
+
+  const lowest = view !== "diff" ? model.sheet.summary : null;
+  const isPastCol = (col: number) => col < weeks && col < model.pastWeeks;
+  const isCurrentCol = (col: number) => model.currentWeek === col + 1;
+
+  function cell(line: GridLine, col: number, options: { strong?: boolean; topLine?: boolean } = {}): ReactNode {
     const value = lineValue(line, col);
     const isEditing = editing?.line === line.key && editing.col === col;
     const isActive = active?.line === line.key && active.col === col;
@@ -275,16 +352,18 @@ export function PlanGrid(props: Props) {
     const small =
       view === "plan" &&
       line.type === "row" &&
-      col < weeks &&
-      col < model.pastWeeks &&
+      isPastCol(col) &&
       line.row.actual &&
       (line.row.actual[col] !== 0 || line.row.plan[col] !== 0)
         ? line.row.actual[col]
         : null;
+    const lowestCell =
+      line.type === "closing" && lowest !== null && lowest.warning !== null && col === lowest.lowest.week - 1;
     const rowName =
       line.type === "row" ? line.row.label : line.type === "other" ? t("other") : t(line.type === "total" ? `${line.kind}Total` : line.type);
     const columnName = col < weeks ? t("week", { week: col + 1 }) : t("total");
     const first = !active && line.type === "opening" && col === 0;
+    const flash = flashes.get(`${line.key}|${col}`);
     return (
       <td
         key={col}
@@ -293,6 +372,7 @@ export function PlanGrid(props: Props) {
         tabIndex={isActive || first ? 0 : -1}
         aria-label={`${rowName}, ${columnName}`}
         aria-readonly={!canType}
+        title={lowestCell ? t("lowestCell") : undefined}
         onKeyDown={(event) => onCellKeyDown(event, line, col)}
         onFocus={() => {
           if (!isActive && !editing) setActive({ line: line.key, col });
@@ -303,14 +383,24 @@ export function PlanGrid(props: Props) {
           else setActive({ line: line.key, col });
         }}
         className={cn(
-          "relative h-11 min-w-26 border-b border-line/60 px-2 text-right align-middle tabular-nums outline-none mouse:h-9",
-          col === weeks && "border-l border-line/60",
-          model.currentWeek === col + 1 && "bg-violet/5",
+          "relative min-w-26 border-b border-line/60 px-2 text-right align-middle tabular-nums outline-none",
+          CELL_HEIGHT,
+          col === weeks && "border-l border-line",
+          isCurrentCol(col) && "bg-ink/4",
+          options.topLine && "border-t border-line-strong",
           (canType || canOpen) && "cursor-pointer hover:bg-surface-hover",
           isActive && !isEditing && "ring-2 ring-violet/70 ring-inset",
           options.strong && "font-semibold",
+          lowestCell && "bg-pink/12",
         )}
       >
+        {flash !== undefined && (
+          <span
+            key={flash}
+            aria-hidden
+            className="pointer-events-none absolute inset-0.5 rounded-md motion-safe:animate-plan-flash"
+          />
+        )}
         {isEditing ? (
           <input
             autoFocus
@@ -334,11 +424,12 @@ export function PlanGrid(props: Props) {
             )}
           />
         ) : (
-          <span className="flex flex-col items-end leading-tight">
+          <span className={cn("relative flex flex-col items-end leading-tight", isPastCol(col) && "opacity-65")}>
             <span
               className={cn(
-                value < 0 ? "text-pink" : entered ? "text-violet" : "text-ink",
+                value < 0 || lowestCell ? "text-pink" : entered ? "text-violet" : "text-ink",
                 line.type === "other" && "text-ink-soft",
+                lowestCell && "font-semibold",
               )}
             >
               {amount(value, blankZero)}
@@ -354,46 +445,115 @@ export function PlanGrid(props: Props) {
     );
   }
 
-  const weekCells = (line: GridLine, options?: { strong?: boolean }) =>
+  const weekCells = (line: GridLine, options?: { strong?: boolean; topLine?: boolean }) =>
     Array.from({ length: weeks + 1 }, (_, col) => cell(line, col, options));
   const lineOf = (key: string) => lines[lineIndex.get(key) ?? -1];
-  const sticky = "sticky left-0 z-[1] bg-surface";
+  const headerCell = "sticky top-0 z-[2] border-t-2 border-b border-b-line bg-surface px-2 py-2 text-right font-medium whitespace-nowrap";
 
   return (
-    <div className="overflow-x-auto rounded-card border border-line bg-surface" data-testid="finance-plan-grid">
-      <table ref={tableRef} role="grid" aria-label={t("label")} className="w-full border-collapse text-sm">
+    <div
+      className="overflow-auto rounded-card border border-line bg-surface md:max-h-[calc(100dvh-9rem)]"
+      data-testid="finance-plan-grid"
+    >
+      <table
+        ref={tableRef}
+        role="grid"
+        aria-label={t("label")}
+        className="w-full border-separate border-spacing-0 text-sm"
+      >
         <thead>
           <tr>
-            <th scope="col" className={cn(sticky, "min-w-44 border-b border-line px-3 py-2 text-left font-medium text-ink-soft")}>
-              <span className="sr-only">{t("item")}</span>
+            <th
+              scope="col"
+              className={cn(
+                headerCell,
+                "left-0 z-[3] min-w-44 border-t-transparent px-3 text-left text-xs font-normal text-ink-muted",
+              )}
+            >
+              <span className="sr-only">{t("item")}. </span>
+              {t("amountsIn", { currency })}
             </th>
-            {model.weeks.map((week) => (
-              <th
-                key={week.week}
-                scope="col"
-                className={cn(
-                  "border-b border-line px-2 py-2 text-right font-medium whitespace-nowrap text-ink-soft",
-                  model.currentWeek === week.week && "bg-violet/5 text-ink",
-                )}
-              >
-                <span className="block">{t("week", { week: week.week })}</span>
-                <span className="block text-[11px] font-normal text-ink-muted">
-                  {formatDayMonth(week.start, settings)} – {formatDayMonth(week.end, settings)}
-                </span>
-              </th>
-            ))}
-            <th scope="col" className="border-b border-l border-line px-2 py-2 text-right font-medium text-ink-soft">
+            {model.weeks.map((week) => {
+              const current = model.currentWeek === week.week;
+              const past = week.week <= model.pastWeeks;
+              return (
+                <th
+                  key={week.week}
+                  scope="col"
+                  className={cn(
+                    headerCell,
+                    current ? "border-t-ink/70 bg-ink/4 text-ink" : "border-t-transparent text-ink-soft",
+                    past && "opacity-65",
+                  )}
+                >
+                  <span className="block">
+                    {t("week", { week: week.week })}
+                    {current && <span className="sr-only"> ({t("currentWeek")})</span>}
+                    {past && <span className="sr-only"> ({t("pastWeek")})</span>}
+                  </span>
+                  <span className="block text-[11px] font-normal text-ink-muted">
+                    {formatDayMonth(week.start, settings)} – {formatDayMonth(week.end, settings)}
+                  </span>
+                </th>
+              );
+            })}
+            <th scope="col" className={cn(headerCell, "border-l border-line border-t-transparent text-ink-soft")}>
               {t("total")}
             </th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <th scope="row" className={cn(sticky, "border-b border-line/60 px-3 text-left font-semibold text-ink")}>
+            <th scope="row" className={cn(STICKY, "border-b border-line/60 px-3 text-left font-semibold text-ink")}>
               {t("opening")}
             </th>
             {weekCells(lineOf("opening"), { strong: true })}
           </tr>
+          {showGuide && guide && (
+            <tr data-testid="finance-plan-guide">
+              <td colSpan={weeks + 2} className="border-b border-line/60 px-2 py-1.5">
+                <ol aria-label={t("guide.label")} className="sticky left-2 flex w-max max-w-[calc(100vw-3rem)] flex-wrap items-center gap-y-1 text-sm">
+                  {GUIDE_STEPS.map((step, index) => {
+                    const done = guide[step];
+                    const next = !done && GUIDE_STEPS.slice(0, index).every((earlier) => guide[earlier]);
+                    return (
+                      <li key={step} className="flex items-center">
+                        {index > 0 && <ArrowRightIcon aria-hidden className="mx-1 size-3.5 shrink-0 text-ink-muted" />}
+                        <button
+                          type="button"
+                          onClick={() => goToStep(step)}
+                          aria-current={next ? "step" : undefined}
+                          className={cn(
+                            "flex min-h-9 cursor-pointer items-center gap-2 rounded-lg px-2 outline-none focus-visible:ring-3 focus-visible:ring-violet/40",
+                            done
+                              ? "text-ink-muted"
+                              : next
+                                ? "bg-violet/12 font-medium text-violet hover:bg-violet/18"
+                                : "text-ink-soft hover:bg-surface-hover",
+                          )}
+                        >
+                          {done ? (
+                            <CheckIcon aria-label={t("guide.done")} className="size-4 text-green" />
+                          ) : (
+                            <span
+                              aria-hidden
+                              className={cn(
+                                "grid size-5 place-items-center rounded-full border text-[11px] font-semibold",
+                                next ? "border-violet/60" : "border-line-strong",
+                              )}
+                            >
+                              {index + 1}
+                            </span>
+                          )}
+                          <span className={cn(done && "line-through decoration-ink-muted/60")}>{t(`guide.${step}`)}</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </td>
+            </tr>
+          )}
         </tbody>
         {(["income", "expense"] as const).map((kind) => (
           <Block
@@ -401,8 +561,8 @@ export function PlanGrid(props: Props) {
             kind={kind}
             model={model}
             canEdit={editable}
-            sticky={sticky}
             weeks={weeks}
+            currentCol={isCurrentCol}
             onMoveRow={props.onMoveRow}
             onAddRow={async (label) => {
               const id = await props.onAddRow(kind, label);
@@ -412,30 +572,26 @@ export function PlanGrid(props: Props) {
             onRenameRow={props.onRenameRow}
             onDeleteRow={props.onDeleteRow}
             onAcceptSuggestion={props.onAcceptSuggestion}
-            renderCells={(key, strong) => weekCells(lineOf(key), { strong })}
+            renderCells={(key, options) => weekCells(lineOf(key), options)}
           />
         ))}
         <tbody>
           <tr>
-            <th
-              scope="rowgroup"
-              colSpan={weeks + 2}
-              className={cn(sticky, "px-3 pt-4 pb-1 text-left text-xs font-semibold tracking-wide text-ink-muted uppercase")}
-            >
+            <th scope="rowgroup" colSpan={weeks + 2} className={cn(STICKY, "px-3 pt-4 pb-1 text-left text-xs font-semibold text-ink-soft")}>
               {t("capital")}
             </th>
           </tr>
           <tr>
-            <th scope="row" className={cn(sticky, "border-b border-line/60 px-3 text-left font-semibold text-ink")}>
+            <th scope="row" className={cn(STICKY, "border-b border-line/60 px-3 text-left font-medium text-ink")}>
               {t("balance")}
             </th>
-            {weekCells(lineOf("balance"), { strong: true })}
+            {weekCells(lineOf("balance"))}
           </tr>
           <tr>
-            <th scope="row" className={cn(sticky, "px-3 text-left font-semibold text-ink")}>
+            <th scope="row" className={cn(STICKY, "border-t border-line-strong px-3 text-left font-semibold text-ink")}>
               {t("closing")}
             </th>
-            {weekCells(lineOf("closing"), { strong: true })}
+            {weekCells(lineOf("closing"), { strong: true, topLine: true })}
           </tr>
         </tbody>
       </table>
@@ -447,8 +603,8 @@ function Block({
   kind,
   model,
   canEdit,
-  sticky,
   weeks,
+  currentCol,
   onMoveRow,
   onAddRow,
   onRenameRow,
@@ -459,14 +615,14 @@ function Block({
   kind: PlanKind;
   model: MonthModel;
   canEdit: boolean;
-  sticky: string;
   weeks: number;
+  currentCol: (col: number) => boolean;
   onMoveRow: Props["onMoveRow"];
   onAddRow: (label: string) => Promise<boolean>;
   onRenameRow: Props["onRenameRow"];
   onDeleteRow: Props["onDeleteRow"];
   onAcceptSuggestion: Props["onAcceptSuggestion"];
-  renderCells: (key: string, strong?: boolean) => ReactNode;
+  renderCells: (key: string, options?: { strong?: boolean; topLine?: boolean }) => ReactNode;
 }) {
   const t = useTranslations("finance.plan.grid");
   const amount = useAmount();
@@ -487,11 +643,7 @@ function Block({
   return (
     <tbody>
       <tr>
-        <th
-          scope="rowgroup"
-          colSpan={weeks + 2}
-          className={cn(sticky, "px-3 pt-4 pb-1 text-left text-xs font-semibold tracking-wide text-ink-muted uppercase")}
-        >
+        <th scope="rowgroup" colSpan={weeks + 2} className={cn(STICKY, "px-3 pt-4 pb-1 text-left text-xs font-semibold text-ink-soft")}>
           {t(kind)}
         </th>
       </tr>
@@ -508,10 +660,9 @@ function Block({
           {rows.map((row) => (
             <SortableLine key={row.id} id={row.id} disabled={!canEdit}>
               {(handle, style, ref) => (
-                <tr ref={ref} style={style}>
+                <tr ref={ref} style={style} className="plan-row-tint">
                   <RowLabel
                     row={row}
-                    sticky={sticky}
                     handle={handle}
                     canEdit={canEdit}
                     onRename={onRenameRow}
@@ -525,8 +676,8 @@ function Block({
         </SortableContext>
       </DndContext>
       {suggestions.map((suggestion) => (
-        <tr key={suggestion.dealId} className="text-ink-muted">
-          <th scope="row" className={cn(sticky, "border-b border-line/60 px-3 text-left font-normal")}>
+        <tr key={suggestion.dealId} className="plan-row-tint text-ink-muted">
+          <th scope="row" className={cn(STICKY_TINT, "border-b border-line/60 px-3 text-left font-normal")}>
             <span className="flex items-center gap-2">
               <HandshakeIcon aria-hidden className="size-3.5 shrink-0" />
               <span className="min-w-0 flex-1 truncate italic">
@@ -549,8 +700,10 @@ function Block({
             <td
               key={col}
               className={cn(
-                "h-11 border-b border-line/60 px-2 text-right italic tabular-nums mouse:h-9",
-                col === weeks && "border-l border-line/60",
+                "border-b border-line/60 px-2 text-right italic tabular-nums",
+                CELL_HEIGHT,
+                col === weeks && "border-l border-line",
+                currentCol(col) && "bg-ink/4",
               )}
             >
               {col === weeks || col === suggestion.week - 1 ? amount(suggestion.amount) : ""}
@@ -558,20 +711,20 @@ function Block({
           ))}
         </tr>
       ))}
-      {canEdit && <NewRow kind={kind} sticky={sticky} weeks={weeks} onAdd={onAddRow} />}
+      {canEdit && <NewRow kind={kind} weeks={weeks} currentCol={currentCol} onAdd={onAddRow} />}
       {other && (
-        <tr>
-          <th scope="row" className={cn(sticky, "border-b border-line/60 px-3 text-left font-normal text-ink-soft")}>
+        <tr className="plan-row-tint">
+          <th scope="row" className={cn(STICKY_TINT, "border-b border-line/60 px-3 text-left font-normal text-ink-soft")}>
             {t("other")}
           </th>
           {renderCells(`other:${kind}`)}
         </tr>
       )}
       <tr>
-        <th scope="row" className={cn(sticky, "border-b border-line px-3 text-left font-semibold text-ink")}>
+        <th scope="row" className={cn(STICKY, "border-t border-b border-t-line-strong border-b-line/60 px-3 text-left font-semibold text-ink")}>
           {t(`${kind}Total`)}
         </th>
-        {renderCells(`total:${kind}`, true)}
+        {renderCells(`total:${kind}`, { strong: true, topLine: true })}
       </tr>
     </tbody>
   );
@@ -612,14 +765,12 @@ function SortableLine({
 
 function RowLabel({
   row,
-  sticky,
   handle,
   canEdit,
   onRename,
   onDelete,
 }: {
   row: ModelRow;
-  sticky: string;
   handle: ReactNode;
   canEdit: boolean;
   onRename: Props["onRenameRow"];
@@ -643,7 +794,7 @@ function RowLabel({
     "flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg px-3 text-[15px] text-ink-soft outline-none select-none data-highlighted:bg-surface-hover data-highlighted:text-ink mouse:min-h-9 [&_svg]:size-4";
 
   return (
-    <th scope="row" className={cn(sticky, "group/row border-b border-line/60 px-1 text-left font-normal text-ink")}>
+    <th scope="row" className={cn(STICKY_TINT, "group/row border-b border-line/60 px-1 text-left font-normal text-ink")}>
       <div className="flex items-center gap-1">
         {handle}
         {renaming !== null ? (
@@ -705,13 +856,13 @@ function RowLabel({
 /** The empty line above the total: typing a name makes a new row. */
 function NewRow({
   kind,
-  sticky,
   weeks,
+  currentCol,
   onAdd,
 }: {
   kind: PlanKind;
-  sticky: string;
   weeks: number;
+  currentCol: (col: number) => boolean;
   onAdd: (label: string) => Promise<boolean>;
 }) {
   const t = useTranslations("finance.plan.grid");
@@ -729,11 +880,12 @@ function NewRow({
 
   return (
     <tr>
-      <th scope="row" className={cn(sticky, "border-b border-line/60 px-1 font-normal")}>
+      <th scope="row" className={cn(STICKY, "border-b border-line/60 px-1 font-normal")}>
         <input
           value={label}
           maxLength={120}
           disabled={busy}
+          data-new-row={kind}
           placeholder={t("newRow")}
           aria-label={t(kind === "income" ? "newIncome" : "newExpense")}
           onChange={(event) => setLabel(event.target.value)}
@@ -747,7 +899,16 @@ function NewRow({
           className="h-11 w-full min-w-0 rounded-md border border-transparent bg-transparent px-2 text-sm text-ink outline-none placeholder:text-ink-muted hover:border-line focus:border-violet mouse:h-9"
         />
       </th>
-      <td colSpan={weeks + 1} className="border-b border-line/60" />
+      {Array.from({ length: weeks + 1 }, (_, col) => (
+        <td
+          key={col}
+          className={cn(
+            "border-b border-line/60",
+            col === weeks && "border-l border-line",
+            currentCol(col) && "bg-ink/4",
+          )}
+        />
+      ))}
     </tr>
   );
 }

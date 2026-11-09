@@ -115,6 +115,14 @@ function usePlanCache(month: PlanMonthKey) {
       if (previous) queryClient.setQueryData(key, previous);
       void queryClient.invalidateQueries({ queryKey: key });
     },
+    /**
+     * After an optimistic change the month is read again: `change` cancels a
+     * fetch in flight (a new row being loaded, say), so without this the row
+     * would stay missing until the next load.
+     */
+    settle() {
+      return queryClient.invalidateQueries({ queryKey: key });
+    },
     refresh() {
       return queryClient.invalidateQueries({ queryKey: planKeys.all(user.id) });
     },
@@ -154,6 +162,7 @@ export function useSavePlanCell(month: PlanMonthKey) {
         ],
       })),
     onError: (_error, _variables, previous) => cache.restore(previous),
+    onSettled: () => cache.settle(),
     onSuccess: (_data, { kind, value, expression }) =>
       track("finance_plan_cell_saved", { kind, expression, cleared: !value }),
   });
@@ -175,6 +184,7 @@ export function useUpdatePlanMonth(month: PlanMonthKey) {
     onMutate: (change) =>
       cache.change((plan) => (plan.month ? { ...plan, month: { ...plan.month, ...change } } : plan)),
     onError: (_error, _variables, previous) => cache.restore(previous),
+    onSettled: () => cache.settle(),
     onSuccess: (_data, change) =>
       track("finance_plan_month_updated", {
         field: change.closed !== undefined ? "closed" : change.reserve !== undefined ? "reserve" : "opening",
@@ -238,6 +248,7 @@ export function useRenamePlanRow(month: PlanMonthKey) {
     onMutate: ({ id, label }) =>
       cache.change((plan) => ({ ...plan, rows: plan.rows.map((row) => (row.id === id ? { ...row, label } : row)) })),
     onError: (_error, _variables, previous) => cache.restore(previous),
+    onSettled: () => cache.settle(),
     onSuccess: () => track("finance_plan_row_updated", { change: "rename" }),
   });
 }
@@ -266,6 +277,7 @@ export function useMovePlanRow(month: PlanMonthKey) {
         };
       }),
     onError: (_error, _variables, previous) => cache.restore(previous),
+    onSettled: () => cache.settle(),
     onSuccess: () => track("finance_plan_row_updated", { change: "move" }),
   });
 }
@@ -284,6 +296,7 @@ export function useDeletePlanRow(month: PlanMonthKey) {
         cells: plan.cells.filter((cell) => cell.row_id !== id),
       })),
     onError: (_error, _variables, previous) => cache.restore(previous),
+    onSettled: () => cache.settle(),
     onSuccess: (_data, { kind, hadNumbers }) => track("finance_plan_row_deleted", { kind, had_numbers: hadNumbers }),
   });
 }

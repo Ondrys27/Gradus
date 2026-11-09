@@ -3128,7 +3128,7 @@
       "close": "Uzavřít měsíc",
       "reopen": "Znovu otevřít měsíc",
       "loadFailed": "Plán měsíce se nepodařilo načíst.",
-      "help": "Klikni do buňky a piš: 12 500, 12,5k nebo 3*4000. Enter a Tab posouvají jako v tabulce, Esc zruší. Modrá čísla zadáváš, černá se počítají. Týden je od pondělí do neděle; týden, který přesahuje do dalšího měsíce, patří měsíci, ve kterém je jeho pondělí.",
+      "help": "Klikni do buňky a piš: 12 500, 12,5k nebo 3*4000. Enter a Tab posouvají jako v tabulce, Esc zruší. Modrá čísla zadáváš, ostatní se počítají. Týden je od pondělí do neděle; týden, který přesahuje do dalšího měsíce, patří měsíci, ve kterém je jeho pondělí.",
       "empty": {
         "title": "{month} ještě nemá plán",
         "description": "Naplánuj si příjmy a výdaje po týdnech a uvidíš, kdy ti bude nejmíň peněz.",
@@ -3251,6 +3251,17 @@
           "deal": "Obchod",
           "recurring": "Automatická platba",
           "invoice": "Faktura"
+        },
+        "amountsIn": "Částky v {currency}",
+        "currentWeek": "tento týden",
+        "pastWeek": "uplynulý týden",
+        "lowestCell": "Nejnižší stav měsíce",
+        "guide": {
+          "label": "Jak začít",
+          "opening": "Zadej počáteční kapitál",
+          "income": "Přidej první příjem",
+          "expense": "Přidej první výdaj",
+          "done": "hotovo"
         }
       },
       "summary": {
@@ -3267,7 +3278,12 @@
         "warningReserve": "V týdnu {week} klesne kapitál pod rezervu {reserve}.",
         "reserve": "Rezerva ({currency})",
         "reservePlaceholder": "bez rezervy",
-        "reserveHint": "Pod touhle částkou tě shrnutí i Jarvis upozorní."
+        "reserveHint": "Pod touhle částkou tě shrnutí i Jarvis upozorní.",
+        "closingHint": "na konci měsíce",
+        "sparkline": "Konečný kapitál po týdnech",
+        "weekPoint": "Týden {week}: {value}",
+        "reserveLine": "rezerva {value}",
+        "zeroLine": "nula"
       },
       "create": {
         "title": "Založit {month}",

@@ -60,6 +60,8 @@
   --animate-edge-shine: edge-shine 4.2s linear infinite;
   /* The live ring of an in-progress task: one slow turn of --ring-angle. */
   --animate-ring-spin: ring-spin 3.6s linear infinite;
+  /* A recomputed cell of the month plan lights up for a moment after a number is typed. */
+  --animate-plan-flash: plan-flash 0.9s ease-out forwards;
 
   @keyframes shimmer {
     0% {
@@ -465,6 +467,20 @@
 @media (prefers-reduced-motion: reduce) {
   [data-settings-highlight] {
     animation: none;
+  }
+}
+
+/* The month plan: item rows sit on a faint, opaque tint (the first column is sticky, so it cannot be translucent). */
+@utility plan-row-tint {
+  background-color: color-mix(in oklab, var(--color-surface) 96%, var(--color-ink));
+}
+
+@keyframes plan-flash {
+  0% {
+    background-color: color-mix(in oklab, var(--color-violet) 28%, transparent);
+  }
+  100% {
+    background-color: transparent;
   }
 }
 

@@ -3128,7 +3128,7 @@
       "close": "Close the month",
       "reopen": "Reopen the month",
       "loadFailed": "The month plan could not be loaded.",
-      "help": "Click a cell and type: 12500, 12.5k or 3*4000. Enter and Tab move like in a spreadsheet, Esc cancels. Blue numbers are typed in, black ones are computed. A week runs Monday to Sunday; a week reaching into the next month belongs to the month of its Monday.",
+      "help": "Click a cell and type: 12500, 12.5k or 3*4000. Enter and Tab move like in a spreadsheet, Esc cancels. Blue numbers are typed in, the others are computed. A week runs Monday to Sunday; a week reaching into the next month belongs to the month of its Monday.",
       "empty": {
         "title": "{month} has no plan yet",
         "description": "Plan your income and expenses week by week and see when money will be tightest.",
@@ -3251,6 +3251,17 @@
           "deal": "Deal",
           "recurring": "Automatic payment",
           "invoice": "Invoice"
+        },
+        "amountsIn": "Amounts in {currency}",
+        "currentWeek": "this week",
+        "pastWeek": "past week",
+        "lowestCell": "Lowest point of the month",
+        "guide": {
+          "label": "How to start",
+          "opening": "Enter the opening capital",
+          "income": "Add the first income",
+          "expense": "Add the first expense",
+          "done": "done"
         }
       },
       "summary": {
@@ -3267,7 +3278,12 @@
         "warningReserve": "In week {week} the capital drops below the reserve of {reserve}.",
         "reserve": "Reserve ({currency})",
         "reservePlaceholder": "no reserve",
-        "reserveHint": "Below this amount the summary and Jarvis warn you."
+        "reserveHint": "Below this amount the summary and Jarvis warn you.",
+        "closingHint": "at the end of the month",
+        "sparkline": "Closing capital by week",
+        "weekPoint": "Week {week}: {value}",
+        "reserveLine": "reserve {value}",
+        "zeroLine": "zero"
       },
       "create": {
         "title": "Create {month}",

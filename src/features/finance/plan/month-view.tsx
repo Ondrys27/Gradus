@@ -26,7 +26,6 @@ import { useWorkspace } from "@/features/account/workspace-queries";
 import { track } from "@/lib/analytics/client";
 import { formatDayMonth, todayIsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
-import { cn } from "@/lib/utils";
 import { Segmented } from "../segmented";
 import { TransactionFormDialog, type TransactionDefaults } from "../transaction-form-dialog";
 import { CATEGORIES } from "../types";
@@ -316,7 +315,6 @@ export function MonthView({ month, onMonthChange, categoryNames }: Props) {
           >
             <ChevronRightIcon aria-hidden />
           </Button>
-          {exists && <span className="text-xs text-ink-muted">{currency}</span>}
           {closed && (
             <span className="ml-2 flex items-center gap-1 text-xs text-ink-muted">
               <LockIcon aria-hidden className="size-3.5" />
@@ -442,11 +440,12 @@ export function MonthView({ month, onMonthChange, categoryNames }: Props) {
         />
       ) : (
         model && (
-          <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-start">
+          <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-start">
             <div className="lg:order-2">
               <SummaryPanel
-                summary={(view === "actual" && model.actualSheet ? model.actualSheet : model.planSheet).summary}
+                sheet={view === "actual" && model.actualSheet ? model.actualSheet : model.planSheet}
                 weeks={model.weeks}
+                currentWeek={model.currentWeek}
                 currency={currency}
                 reserve={plan.data.month?.reserve ?? null}
                 canEdit={canEdit}
@@ -458,7 +457,17 @@ export function MonthView({ month, onMonthChange, categoryNames }: Props) {
                 model={model}
                 view={view}
                 opening={plan.data.month?.opening_capital ?? 0}
+                currency={currency}
                 canEdit={canEdit}
+                guide={
+                  canEdit
+                    ? {
+                        opening: (plan.data.month?.opening_capital ?? 0) !== 0,
+                        income: rowsOfKind(plan.data.rows, "income").length > 0,
+                        expense: rowsOfKind(plan.data.rows, "expense").length > 0,
+                      }
+                    : null
+                }
                 onSaveCell={(change) => {
                   setError(null);
                   saveCell.mutate(change, { onError: fail });
@@ -477,7 +486,7 @@ export function MonthView({ month, onMonthChange, categoryNames }: Props) {
                 onOpenCell={(rowId, kind, label, week) => setCellTarget({ rowId, kind, label, week })}
                 onAcceptSuggestion={onAccept}
               />
-              <p className={cn("text-xs text-ink-muted")}>{t("help")}</p>
+              <p className="text-xs text-ink-muted">{t("help")}</p>
             </div>
           </div>
         )
