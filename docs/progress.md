@@ -130,7 +130,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 21.2 | designer | 2026-11-09 Tabulka plánu měsíce jako nástroj na čísla: přilepená hlavička, zvýrazněný aktuální týden, shrnutí se sparkline kapitálu, průvodce prázdným měsícem a zvýraznění přepočtených buněk.
 - [x] K21 | reviewer | 2026-11-09 — Kontrola fáze 21: opraveno dvojí dosazení automatických plateb při přenosu, měna přeneseného měsíce, řídicí znaky v importu CSV a čeština bubliny cashLow.
 - [x] STOP | Konec fáze 21. Ve Financích otevři pohled Měsíc, zadej listopad podle své tabulky (kapitál 8 500, příjmy Grid, Fajn Jídlo, Carwest, Auto Matulka, výdaje) a porovnej Shrnutí s Google Sheets — musí sedět na korunu. Přepni Plán/Skutečnost/Rozdíl, založ prosinec z listopadu, exportuj XLSX a otevři ho. Zeptej se Jarvise, kdy ti bude nejmíň peněz. Co nesedí, napiš Claude Code rovnou, pak /pokracuj. · přeskočeno nočním během 2026-11-09, zkontroluj ručně (.noc/zkontroluj.md)
-- [ ] 24.1 | architect |
+- [x] 24.1 | architect | 2026-11-09: Měny celého světa podle ISO 4217 s denními kurzy ECB a open.er-api, přepočtem jen pro zobrazení, cenami tarifů v libovolné měně s psychologickým zaokrouhlením, ceníkem podle země návštěvníka a doplňkem Bez značky.
 - [ ] 24.3 | architect | env: INTEGRATIONS_ENCRYPTION_KEY
 - [ ] 24.4 | architect | env: RESEND_API_KEY
 - [ ] 24.5 | designer |
