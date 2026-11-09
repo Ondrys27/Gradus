@@ -21,6 +21,7 @@ import {
   useSuggestEmailReply,
 } from "./queries";
 import { EMAIL_BODY_MAX, EMAIL_SUBJECT_MAX } from "./types";
+import { MeetingLinkHint } from "@/features/scheduler/ui/meeting-link-hint";
 
 /** Codes with their own text under `email.compose.errors`. */
 const SEND_ERRORS: EmailErrorCode[] = [
@@ -203,6 +204,17 @@ function ComposeForm({
           onChange={(event) => setBody(event.target.value)}
         />
       </FormField>
+
+      {/* Jarvis: a meeting is easier with the booking link; one click puts it in. */}
+      {!body.includes("/s/") && (
+        <MeetingLinkHint
+          purpose="meeting"
+          from="email"
+          onInsert={(url) =>
+            setBody((current) => (current.trim() ? `${current.trimEnd()}\n\n${url}` : url))
+          }
+        />
+      )}
 
       <div className="flex flex-col gap-2">
         <Button

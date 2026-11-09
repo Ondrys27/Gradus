@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useSession } from "@/features/account/queries";
 import { canDo } from "@/features/account/workspace";
+import { grantAllows } from "@/features/workers/permissions-catalog";
 import { useWorkspace } from "@/features/account/workspace-queries";
 import { useLocale } from "next-intl";
 import { useChatUnread } from "@/features/chat/queries";
@@ -32,7 +33,12 @@ export function useNavAccess(): WorkerNavAccess {
   return useMemo(
     () =>
       workspace.role === "worker"
-        ? { permissions: workspace.permissions, company: canDo(workspace, "company", "view") }
+        ? {
+            permissions: workspace.permissions,
+            company: canDo(workspace, "company", "view"),
+            // Seen also when read-only: their bookings stay readable.
+            scheduler: grantAllows(workspace.grants, "scheduler", "own"),
+          }
         : null,
     [workspace],
   );

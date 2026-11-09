@@ -1,4 +1,5 @@
 import {
+  CalendarDaysIcon,
   CreditCardIcon,
   PaletteIcon,
   ShieldIcon,
@@ -18,6 +19,7 @@ export const SETTINGS_GROUPS = [
   "jarvis",
   "appearance",
   "work",
+  "calendar",
   "privacy",
 ] as const;
 export type SettingsGroup = (typeof SETTINGS_GROUPS)[number];
@@ -42,6 +44,8 @@ export const SETTINGS_GROUP_DEFS: readonly SettingsGroupDef[] = [
   { key: "jarvis", href: `${SETTINGS_PATH}/jarvis`, icon: SparklesIcon, who: "all" },
   { key: "appearance", href: `${SETTINGS_PATH}/vzhled`, icon: PaletteIcon, who: "all" },
   { key: "work", href: `${SETTINGS_PATH}/prace`, icon: WrenchIcon, who: "all" },
+  // Subscribed calendars (busy times for the scheduler) and the Gradus calendar as a feed.
+  { key: "calendar", href: `${SETTINGS_PATH}/kalendar`, icon: CalendarDaysIcon, who: "all" },
   { key: "privacy", href: `${SETTINGS_PATH}/soukromi`, icon: ShieldIcon, who: "all" },
 ];
 
@@ -108,6 +112,13 @@ export const SETTINGS_ITEMS: readonly SettingsItemDef[] = [
   { id: "reengage", group: "work", target: "settings-reengage", who: "owner" },
   { id: "coldCallingStage", group: "work", target: "settings-cold-calling-stage", who: "caller" },
   { id: "invoices", group: "work", target: "settings-invoices", who: "owner" },
+  {
+    id: "calendarSubscriptions",
+    group: "calendar",
+    target: "settings-calendar-subscriptions",
+    who: "all",
+  },
+  { id: "calendarFeed", group: "calendar", target: "settings-calendar-feed", who: "all" },
   { id: "export", group: "privacy", target: "settings-account-export", who: "all" },
   { id: "legal", group: "privacy", target: "settings-legal", who: "all" },
   { id: "deleteAccount", group: "privacy", target: "settings-account-delete", who: "all" },

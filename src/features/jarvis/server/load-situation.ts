@@ -11,6 +11,7 @@ import type { Database } from "@/types/database";
 import type { UserSituation } from "../situation";
 import { loadCashPlan } from "./cash-plan";
 import { loadTimeWindow } from "./time-window";
+import { loadSchedulerSituation } from "@/features/scheduler/server/situation";
 
 type Client = SupabaseClient<Database>;
 
@@ -82,6 +83,8 @@ export async function loadSituation(
 
   // The month plan never fails the rest either; without a plan it is null.
   const cashPlan = loadCashPlan(supabase, ws, settings, now);
+  // The person's own scheduler (bookings, approvals, the link to send); never fails the rest.
+  const scheduler = assigneeId && ws ? loadSchedulerSituation(supabase, assigneeId, ws, now) : Promise.resolve(null);
 
   const [
     milestones,
@@ -296,6 +299,7 @@ export async function loadSituation(
     pipelineHealth: await pipelineHealth,
     // Like the month's totals: a worker only with finance summaries.
     cashPlan: seeFinance ? await cashPlan : null,
+    scheduler: await scheduler,
   };
 }
 

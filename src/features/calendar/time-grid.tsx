@@ -220,6 +220,8 @@ export function TimeGrid({
     if (event.button !== 0) return;
     if (mode === "resize") event.stopPropagation();
     const { item } = positioned;
+    // Busy times of subscribed calendars are read only.
+    if (item.type === "busy") return;
     const origin = { x: event.clientX, y: event.clientY };
     const touch = event.pointerType === "touch";
     let active = false;
@@ -419,7 +421,11 @@ export function TimeGrid({
                       onOpen={() => {
                         if (!justDragged.current) onOpenItem(entry.item);
                       }}
-                      onStart={(event, mode) => startItemDrag(event, entry, day, mode)}
+                      onStart={
+                        entry.item.type === "busy"
+                          ? undefined
+                          : (event, mode) => startItemDrag(event, entry, day, mode)
+                      }
                     />
                   ))}
                   {ghost && ghostBox && (

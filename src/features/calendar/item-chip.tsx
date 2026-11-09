@@ -1,6 +1,6 @@
 "use client";
 
-import { HandshakeIcon, ListChecksIcon, SquareCheckBigIcon } from "lucide-react";
+import { CalendarRangeIcon, HandshakeIcon, ListChecksIcon, SquareCheckBigIcon } from "lucide-react";
 import type { Tone } from "@/components/ui/tone";
 import { formatTime } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
@@ -37,7 +37,12 @@ export const taskTone: Record<Tone, string> = {
   pink: "border-dashed border-pink/60 bg-pink/10 text-ink",
 };
 
+/** Busy times of subscribed calendars: grey, hatched, plainly not the user's own events. */
+export const busyClass =
+  "border-dashed border-line-strong bg-[repeating-linear-gradient(135deg,var(--color-surface-hover)_0_6px,transparent_6px_12px)] text-ink-muted";
+
 export function itemClass(item: CalendarItem): string {
+  if (item.type === "busy") return busyClass;
   if (item.type === "mirror") return mirrorTone[item.tone];
   if (item.type === "task") return taskTone[item.tone];
   return blockTone[item.tone];
@@ -48,9 +53,11 @@ export function MirrorIcon({ item, className }: { item: CalendarItem; className?
   const Icon =
     item.type === "task"
       ? SquareCheckBigIcon
-      : item.mirror.source === "task"
-        ? ListChecksIcon
-        : HandshakeIcon;
+      : item.type === "busy"
+        ? CalendarRangeIcon
+        : item.mirror.source === "task"
+          ? ListChecksIcon
+          : HandshakeIcon;
   return <Icon aria-hidden className={cn("size-3.5 shrink-0", className)} />;
 }
 

@@ -99,6 +99,16 @@ export const PERMISSION_CATALOG = [
     ],
   },
   {
+    // Scheduler (24.3): "own" = their own booking page, meeting types and
+    // bookings in this company; nobody else's, ever.
+    key: "scheduler",
+    nav: "scheduler",
+    actions: [
+      { key: "view", kind: "view" },
+      { key: "own", kind: "write" },
+    ],
+  },
+  {
     key: "finance",
     nav: "finance",
     actions: [
@@ -317,6 +327,7 @@ const TEMPLATE_GRANTS: Record<Exclude<PermissionTemplate, "all">, PermissionGran
     tasks: ["view", "create", "update"],
     cold_calling: ["view", "call"],
     calendar: ["view", "create", "update"],
+    scheduler: ["view", "own"],
     company: ["view"],
   },
   // Keeps the plan and the diary: milestones, everyone's tasks and events, contacts.

@@ -16,6 +16,8 @@ import { SIGNUP_SOURCES } from "@/features/auth/signup-mode";
 import { BILLINGS, CANCEL_REASONS } from "@/features/subscription/state";
 import { PROMO_BENEFITS, PROMO_SOURCES } from "@/features/promo/codes";
 import { CHECKOUT_SOURCES, PORTAL_SOURCES } from "@/features/billing/stripe/sources";
+import { LOCATION_KINDS } from "@/features/scheduler/types";
+import { CALENDAR_PROVIDERS, EVENT_TYPE_TABS, LINK_SOURCES } from "@/features/scheduler/analytics";
 import { Constants } from "@/types/database";
 import { field, isSafeField, isScrubbedTextField } from "./fields";
 import { APP_ROUTES, ANALYTICS_SECTIONS, type AnalyticsSection } from "./routes";
@@ -137,6 +139,7 @@ const CRON_JOBS = [
   "error_alerts",
   "chat_attachments",
   "exchange_rates",
+  "calendar_subscriptions",
 ] as const;
 const FILE_ERRORS = [
   "fileType",
@@ -582,6 +585,54 @@ export const EVENTS = {
   }),
   calendar_event_updated: event("calendar", "client", true, { kind: oneOf(CALENDAR_KINDS) }),
   calendar_event_deleted: event("calendar", "client", true, {}),
+
+  // --- scheduler (Plánovač schůzek, 24.3) -------------------------------------
+  // Lengths, counts and kinds only; never a handle, a link, a name or an answer.
+  scheduler_setup_completed: event("calendar", "client", true, {
+    video_link: bool(),
+    skipped: bool(),
+  }),
+  scheduler_event_type_created: event("calendar", "client", true, {
+    duration: count(480),
+    location: oneOf(LOCATION_KINDS),
+    approval: bool(),
+    preset: bool(),
+  }),
+  scheduler_event_type_updated: event("calendar", "client", true, {
+    tab: oneOf(EVENT_TYPE_TABS),
+  }),
+  scheduler_event_type_toggled: event("calendar", "client", true, {
+    active: bool(),
+    by_owner: bool(),
+  }),
+  scheduler_event_type_deleted: event("calendar", "client", true, {}),
+  scheduler_availability_saved: event("calendar", "client", true, {
+    scope: oneOf(["profile", "type", "override"]),
+    intervals: count(500),
+  }),
+  scheduler_link_copied: event("calendar", "client", false, { from: oneOf(LINK_SOURCES) }),
+  scheduler_plan_limit_hit: event("calendar", "client", false, {}),
+  calendar_subscription_added: event("calendar", "server", true, {
+    provider: oneOf(CALENDAR_PROVIDERS),
+    ok: bool(),
+  }),
+  calendar_subscription_removed: event("calendar", "client", true, {}),
+  calendar_subscription_refreshed: event("calendar", "server", false, {
+    ok: bool(),
+    intervals: count(5000),
+    error_code: optional(key()),
+  }),
+  calendar_feed_created: event("calendar", "server", true, { renewed: bool() }),
+  // Written by the booking page and the host's decisions (24.4).
+  booking_held: event("calendar", "server", false, {}),
+  booking_created: event("calendar", "server", true, {
+    status: oneOf(["pending", "confirmed"]),
+    duration: count(480),
+  }),
+  booking_confirmed: event("calendar", "server", true, {}),
+  booking_declined: event("calendar", "server", true, {}),
+  booking_cancelled: event("calendar", "server", true, { by: oneOf(["host", "guest"]) }),
+  booking_rescheduled: event("calendar", "server", true, { by: oneOf(["host", "guest"]) }),
 
   // --- finance -------------------------------------------------------------
   transaction_created: event("finance", "client", true, {

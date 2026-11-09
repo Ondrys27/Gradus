@@ -12,6 +12,7 @@ import { digestIsClear, type HealthDigest } from "@/features/pipeline/health";
 import { describeCashPlan, type CashPlan } from "./cash-plan";
 import type { SuggestionKey } from "./protocol";
 import { describeTimeWindow, type TimeWindow } from "./time-window";
+import { describeScheduler, type SchedulerSituation } from "@/features/scheduler/situation";
 
 /**
  * The user's situation as Jarvis sees it before every call: loaded from the
@@ -67,6 +68,11 @@ export type UserSituation = {
    * to see finance summaries.
    */
   cashPlan: CashPlan | null;
+  /**
+   * The person's scheduler: upcoming bookings, those waiting for approval and
+   * the link to send; null or absent without one.
+   */
+  scheduler?: SchedulerSituation | null;
 };
 
 /** Longest title or name passed on; the model needs the gist, not the essay. */
@@ -223,6 +229,8 @@ export function describeSituation(situation: UserSituation, settings: FormatSett
   }
 
   if (situation.cashPlan) lines.push(describeCashPlan(situation.cashPlan, settings));
+
+  if (situation.scheduler) lines.push(...describeScheduler(situation.scheduler, settings));
 
   return lines.join("\n");
 }

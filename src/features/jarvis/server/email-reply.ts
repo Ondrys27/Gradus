@@ -24,12 +24,16 @@ export type EmailReplyDeal = {
   stageName: string;
 };
 
+/** The user's booking link (Scheduler), offered when the reply arranges a meeting. */
+export type EmailReplyBookingLink = { name: string; durationMin: number; url: string };
+
 /** What the model reads: the contact and deal (when given), then the received e-mail. */
 export function emailReplyContext(args: {
   contact: EmailReplyContact;
   deal: EmailReplyDeal | null;
   locale: string;
   receivedEmail: string;
+  bookingLink?: EmailReplyBookingLink | null;
 }): string {
   const dealLines = args.deal
     ? [
@@ -37,10 +41,13 @@ export function emailReplyContext(args: {
         args.deal.value !== null ? `Value: ${args.deal.value} ${args.deal.currency}` : null,
       ].filter(Boolean)
     : ["No deal is linked to this contact yet."];
+  const booking = args.bookingLink
+    ? `\nBooking link of the user (${JSON.stringify(args.bookingLink.name)}, ${args.bookingLink.durationMin} min): ${args.bookingLink.url}\nWhen the reply proposes or arranges a meeting or a call, offer this link so the contact picks a free time themselves; otherwise leave it out.`
+    : "";
   return `<context>
 Contact: ${args.contact.name}
 ${dealLines.join("\n")}
-Interface language: ${args.locale}
+Interface language: ${args.locale}${booking}
 </context>
 <received_email>
 ${args.receivedEmail}
@@ -57,6 +64,7 @@ export async function suggestEmailReply(args: {
   deal: EmailReplyDeal | null;
   locale: string;
   receivedEmail: string;
+  bookingLink?: EmailReplyBookingLink | null;
   log: ModelCall["log"];
 }): Promise<EmailReplyResult> {
   const result = await streamModel({

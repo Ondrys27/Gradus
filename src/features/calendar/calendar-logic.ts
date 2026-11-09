@@ -19,6 +19,8 @@ import type {
   MirrorCalendarItem,
   TaskCalendarItem,
   TimedItem,
+  BusyCalendarItem,
+  LaidOutItem,
 } from "./types";
 
 export const DEFAULT_VIEW: CalendarView = "month";
@@ -199,7 +201,47 @@ export function toTaskItem(task: CrmTask, timeZone: string, now: Date): TaskCale
   };
 }
 
-const TYPE_ORDER: Record<CalendarItem["type"], number> = { event: 0, task: 1, mirror: 2 };
+/**
+ * The busy times of subscribed calendars in the shown days; an all-day one
+ * covers its days (its end is the midnight after the last).
+ */
+export function toBusyItems(
+  subscriptions: ReadonlyArray<{
+    id: string;
+    name: string;
+    busy: ReadonlyArray<{ start: string; end: string; allDay?: true }>;
+  }>,
+  timeZone: string,
+  firstDay: IsoDate,
+  lastDay: IsoDate,
+): BusyCalendarItem[] {
+  const out: BusyCalendarItem[] = [];
+  for (const subscription of subscriptions) {
+    for (const [index, interval] of subscription.busy.entries()) {
+      const startMs = Date.parse(interval.start);
+      const endMs = Date.parse(interval.end);
+      if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) continue;
+      const first = instantToZonedParts(new Date(startMs), timeZone).date;
+      const last = instantToZonedParts(new Date(endMs - 1), timeZone).date;
+      if (last < firstDay || first > lastDay) continue;
+      out.push({
+        type: "busy",
+        key: `busy:${subscription.id}:${index}`,
+        title: subscription.name,
+        tone: "neutral",
+        allDay: Boolean(interval.allDay),
+        firstDay: first,
+        lastDay: last < first ? first : last,
+        subscriptionId: subscription.id,
+        startMs,
+        endMs,
+      });
+    }
+  }
+  return out;
+}
+
+const TYPE_ORDER: Record<CalendarItem["type"], number> = { event: 0, task: 1, mirror: 2, busy: 3 };
 
 function compareItems(a: CalendarItem, b: CalendarItem): number {
   if (a.allDay !== b.allDay) return a.allDay ? -1 : 1;
@@ -238,7 +280,7 @@ export function dotsForDay(items: CalendarItem[]): {
 // ---------------------------------------------------------------------------
 
 export type PositionedItem = {
-  item: TimedItem;
+  item: LaidOutItem;
   /** Minutes from midnight of the shown day. */
   top: number;
   height: number;
@@ -257,7 +299,7 @@ function minuteOnDay(instantMs: number, day: IsoDate, timeZone: string) {
 /** Places the timed items of one day side by side where they overlap. */
 export function layoutDay(items: CalendarItem[], day: IsoDate, timeZone: string): PositionedItem[] {
   const boxes = items
-    .filter((item): item is TimedItem => item.type !== "mirror" && !item.allDay)
+    .filter((item): item is LaidOutItem => item.type !== "mirror" && !item.allDay)
     .map((item) => {
       const start = minuteOnDay(item.startMs, day, timeZone);
       let end = minuteOnDay(item.endMs, day, timeZone);

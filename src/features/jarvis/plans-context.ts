@@ -21,6 +21,7 @@ function limitsLine(limits: PlanLimits): string {
     `${limits.ai_calls} Jarvis answers and ${limits.ai_files} files for Jarvis a month`,
     `workers: ${limit(limits.workers)}`,
     `storage: ${limits.storage_mb === null ? "no limit" : `${limits.storage_mb} MB`}`,
+    `active meeting types in the scheduler: ${limit(limits.scheduler_types)}`,
   ].join(", ");
 }
 

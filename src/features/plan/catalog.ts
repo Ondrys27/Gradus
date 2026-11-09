@@ -4,7 +4,9 @@ import {
   OPTIONAL_LIMITS,
   PAID_PLAN_KEYS,
   PLAN_LIMIT_KEYS,
+  SCHEDULER_TYPES_DEFAULT,
   isAddOnKey,
+  isPaidPlanKey,
   type AddOnKey,
   type Billing,
   type CatalogAddOn,
@@ -223,7 +225,10 @@ export function validatePlanCatalog(input: unknown): CatalogValidation {
       for (const limit of PLAN_LIMIT_KEYS) {
         const value = rawLimits[limit];
         const path = `${key}.limits.${limit}`;
-        if (value === null && OPTIONAL_LIMITS.includes(limit)) {
+        // Versions published before 24.3 have no scheduler limit: the default of the plan.
+        if (limit === "scheduler_types" && value === undefined) {
+          limits.scheduler_types = isPaidPlanKey(key) ? SCHEDULER_TYPES_DEFAULT[key] : null;
+        } else if (value === null && OPTIONAL_LIMITS.includes(limit)) {
           (limits as Record<PlanLimitKey, number | null>)[limit] = null;
         } else if (typeof value !== "number" || !Number.isFinite(value)) {
           add(path, value === null || value === undefined ? "required" : "number");
@@ -348,6 +353,7 @@ const EMPTY_LIMITS: PlanLimits = {
   ai_files: 0,
   workers: null,
   storage_mb: null,
+  scheduler_types: null,
 };
 
 // ---------------------------------------------------------------------------

@@ -51,6 +51,11 @@ export type PlanLimits = {
   ai_files: number;
   workers: number | null;
   storage_mb: number | null;
+  /**
+   * Active meeting types of the scheduler per person (24.3); null = no limit.
+   * Versions published before 24.3 lack it and read as SCHEDULER_TYPES_DEFAULT.
+   */
+  scheduler_types: number | null;
 };
 export const PLAN_LIMIT_KEYS = [
   "daily_contacts",
@@ -59,10 +64,24 @@ export const PLAN_LIMIT_KEYS = [
   "ai_files",
   "workers",
   "storage_mb",
+  "scheduler_types",
 ] as const satisfies readonly (keyof PlanLimits)[];
 export type PlanLimitKey = (typeof PLAN_LIMIT_KEYS)[number];
 /** The limits that may be empty (no limit). */
-export const OPTIONAL_LIMITS: readonly PlanLimitKey[] = ["workers", "storage_mb"];
+export const OPTIONAL_LIMITS: readonly PlanLimitKey[] = [
+  "workers",
+  "storage_mb",
+  "scheduler_types",
+];
+/**
+ * The scheduler limit of a catalog version that has none (published before
+ * 24.3); the same as plans.scheduler_types_limit, which the database reads then.
+ */
+export const SCHEDULER_TYPES_DEFAULT: Record<PaidPlanKey, number | null> = {
+  solo: 1,
+  pro: null,
+  team: null,
+};
 
 /** One line of a plan card; `highlight` makes it stand out. */
 export type CatalogFeature = CatalogText & { highlight: boolean };
@@ -134,6 +153,7 @@ export const PAID_PLANS: readonly PaidPlan[] = [
       ai_files: 0,
       workers: null,
       storage_mb: null,
+      scheduler_types: 1,
     },
     features: ["allSections", "generatedContacts", "jarvis"],
   },
@@ -147,6 +167,7 @@ export const PAID_PLANS: readonly PaidPlan[] = [
       ai_files: 100,
       workers: null,
       storage_mb: null,
+      scheduler_types: null,
     },
     recommended: true,
     features: [
@@ -168,6 +189,7 @@ export const PAID_PLANS: readonly PaidPlan[] = [
       ai_files: 150,
       workers: null,
       storage_mb: null,
+      scheduler_types: null,
     },
     features: ["everythingInPro", "workers", "rewards", "teamStats"],
   },

@@ -237,7 +237,8 @@
       "shortcutMac": "⌘B"
     },
     "messages": "Zprávy",
-    "unread": "{count, plural, one {# nepřečtená zpráva} few {# nepřečtené zprávy} other {# nepřečtených zpráv}}"
+    "unread": "{count, plural, one {# nepřečtená zpráva} few {# nepřečtené zprávy} other {# nepřečtených zpráv}}",
+    "scheduler": "Plánovač schůzek"
   },
   "topBar": {
     "home": "Přejít na přehled",
@@ -347,7 +348,8 @@
       "workers": "tým zaměstnanci brigádníci odměny",
       "tasks": "úkoly udělat termín po termínu obchody kontakty",
       "myRewards": "výdělky platby odměny",
-      "messages": "zprávy chat konverzace skupiny přímé zprávy tým psát"
+      "messages": "zprávy chat konverzace skupiny přímé zprávy tým psát",
+      "scheduler": "plánovač rezervace schůzky typy schůzek dostupnost termín odkaz calendly"
     },
     "settingsItems": {
       "contactTables": {
@@ -1077,6 +1079,10 @@
       "privacy": {
         "title": "Soukromí a data",
         "description": "Kopie dat, podmínky a smazání účtu."
+      },
+      "calendar": {
+        "title": "Kalendář",
+        "description": "Další kalendáře, které se mají držet volné, a tvůj kalendář jako odkaz k odběru."
       }
     },
     "items": {
@@ -1231,6 +1237,14 @@
       "chatSound": {
         "label": "Zvuk nové zprávy",
         "keywords": "zprávy chat zvuk oznámení"
+      },
+      "calendarSubscriptions": {
+        "label": "Odebírané kalendáře",
+        "keywords": "ics ical google apple outlook obsazeno kalendář odběr tajná adresa"
+      },
+      "calendarFeed": {
+        "label": "Odkaz pro odběr tvého kalendáře",
+        "keywords": "ics feed export google apple outlook odebírat kalendář odkaz"
       }
     },
     "work": {
@@ -1284,6 +1298,100 @@
       "emailHint": "Při přímé zprávě nebo zmínce, když jsi aspoň 10 minut pryč. Souhrn nejvýš jednou za hodinu, bez obsahu zpráv.",
       "sound": "Zvuk nové zprávy",
       "soundHint": "Krátký tón, když přijde zpráva mimo otevřenou konverzaci. Platí, jen když máš zapnuté zvuky ve Vzhledu."
+    },
+    "calendar": {
+      "subscriptionsTitle": "Odebírané kalendáře",
+      "subscriptionsHint": "Vlož tajnou adresu iCal jiného kalendáře. Jeho obsazené časy se na rezervační stránce nikdy nenabídnou a v tvém kalendáři se ukážou šedě. Ukládají se jen obsazené časy, nikdy co je to za události.",
+      "loadFailed": "Kalendáře se nepodařilo načíst. Zkus to za chvíli.",
+      "none": "Zatím žádný kalendář.",
+      "max": "Nejvýš {count} kalendářů.",
+      "fetched": "Aktualizováno {when} ({at})",
+      "pending": "Čeká na první stažení",
+      "show": "V kalendáři",
+      "showInCalendar": "Ukazovat {name} v kalendáři",
+      "refresh": "Obnovit",
+      "remove": "Odebrat",
+      "removeTitle": "Odebrat {name}?",
+      "removeText": "Jeho obsazené časy se hned přestanou počítat. Kalendář sám zůstane, jak je.",
+      "cancel": "Zrušit",
+      "close": "Zavřít",
+      "addTitle": "Přidat kalendář",
+      "name": "Název",
+      "namePlaceholder": "Práce v Googlu",
+      "nameRequired": "Pojmenuj kalendář.",
+      "url": "Tajná adresa iCal",
+      "urlHint": "Začíná https:// nebo webcal://. Uloží se šifrovaně a už se nikde neukáže.",
+      "urlRequired": "Vlož adresu.",
+      "color": "Barva",
+      "add": "Přidat kalendář",
+      "adding": "Stahuju…",
+      "added": "Kalendář je přidaný: {count, plural, =0 {v příštích 60 dnech nic obsazeného} one {v příštích 60 dnech # obsazený čas} few {v příštích 60 dnech # obsazené časy} other {v příštích 60 dnech # obsazených časů}}.",
+      "errors": {
+        "invalid": "Tohle není adresa kalendáře. Zkopíruj celou adresu iCal.",
+        "notHttps": "Přidat jde jen zabezpečená adresa (https:// nebo webcal://).",
+        "blocked": "Tahle adresa není z internetu dostupná.",
+        "timeout": "Kalendář do 10 sekund neodpověděl. Zkus to později.",
+        "tooLarge": "Kalendář je větší než 5 MB.",
+        "http": "Kalendář stažení odmítl. Zkontroluj, že adresa ještě platí.",
+        "notCalendar": "Adresa odpovídá, ale ne kalendářem (iCal).",
+        "network": "Kalendář se nepodařilo stáhnout. Zkus to později.",
+        "key": "Kalendáře na tomhle serveru ještě nejsou nastavené.",
+        "store": "Obsazené časy se nepodařilo uložit. Zkus to znovu.",
+        "notConfigured": "Kalendáře na tomhle serveru ještě nejsou nastavené.",
+        "tooMany": "Kalendářů už máš nejvíc, kolik jde.",
+        "tooSoon": "Obnoveno před chvílí. Zkus to za minutu.",
+        "notFound": "Tenhle kalendář už tu není.",
+        "unauthenticated": "Přihlas se znovu.",
+        "forbidden": "Tohle udělat nemůžeš.",
+        "readOnly": "Účet je jen pro čtení.",
+        "unknown": "Něco se nepovedlo. Zkus to znovu."
+      },
+      "help": {
+        "title": "Kde najdu tajnou adresu?",
+        "google": {
+          "name": "Google Kalendář",
+          "step1": "Otevři Google Kalendář na počítači a jdi do Nastavení (ozubené kolo).",
+          "step2": "Vlevo v části Nastavení mých kalendářů vyber kalendář.",
+          "step3": "Sjeď k části Integrovat kalendář.",
+          "step4": "Zkopíruj Tajnou adresu ve formátu iCal a vlož ji sem."
+        },
+        "apple": {
+          "name": "Kalendář Apple (iCloud)",
+          "step1": "Otevři aplikaci Kalendář na Macu nebo icloud.com/calendar.",
+          "step2": "U kalendáře klikni na ikonu sdílení.",
+          "step3": "Zapni Veřejný kalendář.",
+          "step4": "Zkopíruj adresu (webcal://…) a vlož ji sem."
+        },
+        "outlook": {
+          "name": "Outlook",
+          "step1": "Otevři Outlook na webu a jdi do Nastavení → Kalendář → Sdílené kalendáře.",
+          "step2": "V části Publikovat kalendář vyber kalendář a Může zobrazit všechny podrobnosti (nebo jen kdy jsem zaneprázdněn).",
+          "step3": "Klikni na Publikovat.",
+          "step4": "Zkopíruj odkaz ICS a vlož ho sem."
+        },
+        "privacy": "Kdo má tajnou adresu, ten kalendář přečte, tak si ji nech pro sebe. Kdyby někam unikla, vytvoř v nastavení kalendáře novou a vyměň ji tady."
+      },
+      "feed": {
+        "title": "Odkaz pro odběr tvého kalendáře",
+        "description": "Přidej si svůj kalendář odsud do Googlu, Applu nebo Outlooku: události se tam ukážou a samy se aktualizují.",
+        "loadFailed": "Odkaz se nepodařilo načíst. Zkus to za chvíli.",
+        "inactive": "Zatím žádný odkaz.",
+        "active": "Odkaz funguje od {date}. Kvůli bezpečí se ukazuje jen při vytvoření.",
+        "created": "Tvůj odkaz je hotový:",
+        "link": "Odkaz k odběru",
+        "copy": "Kopírovat",
+        "copied": "Zkopírováno",
+        "onceHint": "Ulož si ho hned: ukáže se jen teď. Kdo odkaz má, vidí tvoje události.",
+        "create": "Vytvořit odkaz",
+        "renew": "Nový odkaz",
+        "renewTitle": "Vytvořit nový odkaz?",
+        "renewText": "Starý odkaz hned přestane fungovat; kalendáře, které ho používají, potřebují nový.",
+        "revoke": "Vypnout odkaz",
+        "failed": "Nepovedlo se to. Zkus to znovu.",
+        "cancel": "Zrušit",
+        "close": "Zavřít",
+        "howTo": "Google Kalendář: Další kalendáře → + → Z adresy URL. Apple: Soubor → Nový odběr kalendáře. Outlook: Přidat kalendář → Odebírat z webu."
+      }
     }
   },
   "milestones": {
@@ -2892,7 +3000,8 @@
       "label": "Zobrazit z jiných sekcí",
       "tasks": "Úkoly z milníků",
       "deals": "Očekávaná uzavření obchodů",
-      "crmTasks": "Úkoly obchodů a kontaktů"
+      "crmTasks": "Úkoly obchodů a kontaktů",
+      "subscriptions": "Odebírané kalendáře"
     },
     "more": "+{count} dalších",
     "allDayShort": "Celý den",
@@ -3885,6 +3994,9 @@
         },
         "company": {
           "update": "Upravovat lidi ve své části firmy"
+        },
+        "scheduler": {
+          "own": "Vlastní rezervační stránka, typy schůzek a rezervace"
         }
       },
       "scope": {
@@ -7155,7 +7267,8 @@
         "ai_calls": "Odpovědi Jarvise měsíčně",
         "ai_files": "Soubory do Jarvise měsíčně",
         "workers": "Pracovníci",
-        "storage_mb": "Úložiště (MB)"
+        "storage_mb": "Úložiště (MB)",
+        "scheduler_types": "Aktivní typy schůzek (Plánovač)"
       },
       "errors": {
         "required": "Vyplň.",
@@ -8679,5 +8792,377 @@
     "rateNote": "orientačně podle kurzu z {date}",
     "chargedIn": "platí se v {currency}",
     "switcher": "Měna"
+  },
+  "scheduler": {
+    "description": "Typy schůzek a pracovní doba pro tvou rezervační stránku. Klient si vybere čas, který máš v kalendáři volný.",
+    "tabsLabel": "Části plánovače",
+    "tabs": {
+      "types": "Typy schůzek",
+      "availability": "Dostupnost",
+      "bookings": "Rezervace",
+      "team": "Všichni"
+    },
+    "newType": "Nový typ",
+    "loadFailed": "Plánovač se nepodařilo načíst. Zkus to za chvíli.",
+    "readOnly": "Účet je jen pro čtení, plánovač teď nastavit nejde.",
+    "toggleFailed": "Změna se neuložila. Zkus to znovu.",
+    "noRight": {
+      "title": "Plánovač ti otevřený není",
+      "text": "Kdo má vlastní rezervační stránku, rozhoduje majitel firmy."
+    },
+    "empty": {
+      "title": "Zatím žádný typ schůzky",
+      "text": "Přidej první: co si klient může rezervovat, jak dlouho to trvá a kde."
+    },
+    "presets": {
+      "intro": "Úvodní hovor",
+      "consultation": "Konzultace",
+      "meeting": "Schůzka"
+    },
+    "link": {
+      "label": "Tvoje rezervační stránka",
+      "copy": "Kopírovat odkaz",
+      "copied": "Zkopírováno"
+    },
+    "colors": {
+      "violet": "Fialová",
+      "teal": "Tyrkysová",
+      "gold": "Zlatá",
+      "green": "Zelená",
+      "pink": "Růžová",
+      "neutral": "Šedá"
+    },
+    "planLimit": {
+      "text": "Tvůj tarif dovoluje {count, plural, one {# aktivní typ schůzky} few {# aktivní typy schůzek} other {# aktivních typů schůzek}}. Pro a Team jich mají kolik chceš.",
+      "upgrade": "Zobrazit tarify",
+      "worker": "Tarif mění majitel firmy.",
+      "note": "Tvůj tarif dovoluje {count, plural, one {# aktivní typ schůzky} few {# aktivní typy schůzek} other {# aktivních typů schůzek}}; ostatní čekají vypnuté."
+    },
+    "duration": {
+      "minutes": "{minutes} min",
+      "hours": "{hours} h",
+      "hoursMinutes": "{hours} h {minutes} min"
+    },
+    "card": {
+      "bookings": "{count, plural, =0 {Za 30 dní žádná rezervace} one {{formatted} rezervace za 30 dní} few {{formatted} rezervace za 30 dní} other {{formatted} rezervací za 30 dní}}",
+      "inactive": "Vypnuto: na rezervační stránce není",
+      "activate": "Zapnout {name}",
+      "deactivate": "Vypnout {name}"
+    },
+    "profile": {
+      "edit": "Upravit stránku",
+      "title": "Tvoje rezervační stránka",
+      "close": "Zavřít",
+      "name": "Jméno",
+      "nameHint": "Ukáže se nahoře na stránce.",
+      "headline": "Jedna věta o tobě",
+      "headlineHint": "Třeba: Weby pro malé firmy v Brně.",
+      "bio": "O tobě",
+      "photoHint": "Fotka je ta z tvého profilu (Nastavení → Účet).",
+      "save": "Uložit",
+      "cancel": "Zrušit",
+      "saveFailed": "Stránka se neuložila. Zkus to znovu."
+    },
+    "setup": {
+      "title": "Tři věci a rezervační stránka je hotová",
+      "description": "Klienti uvidí stránku s tvým jménem, typy schůzek a časy, které máš v kalendáři volné.",
+      "handle": "Adresa tvé stránky",
+      "handleHint": "Tvůj odkaz: {link}",
+      "handleProblems": {
+        "tooShort": "Aspoň 3 znaky.",
+        "tooLong": "Nejvýš 30 znaků.",
+        "format": "Jen malá písmena bez diakritiky, číslice a pomlčky uvnitř.",
+        "reserved": "Tohle slovo je vyhrazené. Vyber jiné.",
+        "taken": "Tuhle adresu už někdo má. Zkus jinou."
+      },
+      "video": "Odkaz na tvůj videohovor",
+      "videoHint": "Tvoje trvalá místnost v Google Meet, Teams, Zoomu nebo Jitsi. Klient ji dostane v potvrzení.",
+      "videoProblem": "Vlož celý odkaz začínající https://.",
+      "hours": "Pracovní doba",
+      "hoursHint": "Je nastavené pondělí až pátek 9:00–17:00. Změň ji, přidej přestávku nebo volný den.",
+      "hoursAction": "Nastavit pracovní dobu",
+      "done": "Hotovo",
+      "skip": "Později",
+      "saveFailed": "Stránka se neuložila. Zkus to znovu."
+    },
+    "hours": {
+      "dayOpen": "{day}: pracovní den",
+      "closed": "Nepracuju",
+      "from": "{day} od",
+      "to": "{day} do",
+      "remove": "Odebrat úsek v {day}",
+      "add": "Přidat úsek",
+      "midnightHint": "Konec 00:00 znamená do půlnoci.",
+      "issues": {
+        "order": "Konec musí být po začátku.",
+        "overlap": "Překrývá se s jiným úsekem dne.",
+        "format": "Zadej čas."
+      }
+    },
+    "availability": {
+      "zoneTitle": "Časové pásmo",
+      "zoneHint": "Pracovní doba platí v tomhle pásmu. Klient vidí časy ve svém.",
+      "weekTitle": "Pracovní doba",
+      "weekHint": "Kdy si tě klienti můžou rezervovat, den po dni. Typ schůzky může mít vlastní.",
+      "exceptionsTitle": "Výjimky",
+      "exceptionsHint": "Volný den, dovolená nebo jiná doba v jeden den. Platí pro všechny typy schůzek.",
+      "loadFailed": "Dostupnost se nepodařilo načíst. Zkus to za chvíli.",
+      "saveFailed": "Změna se neuložila. Zkus to znovu.",
+      "readOnly": "Účet je jen pro čtení.",
+      "saveWeek": "Uložit pracovní dobu",
+      "saving": "Ukládám…",
+      "saved": "Uloženo",
+      "discard": "Zahodit změny",
+      "from": "Od",
+      "to": "Do",
+      "toHint": "Prázdné = jen jeden den.",
+      "pickDate": "Vyber den",
+      "sameDay": "Stejný den",
+      "kind": "Co platí",
+      "kinds": {
+        "blocked": "Celý den nedostupný",
+        "hours": "Jiná doba"
+      },
+      "hoursFrom": "K dispozici od",
+      "hoursTo": "K dispozici do",
+      "tooLong": "Nejvýš {days} dní najednou.",
+      "badHours": "Konec musí být po začátku.",
+      "addException": "Přidat výjimku",
+      "noExceptions": "Žádné výjimky před tebou.",
+      "blockedDay": "Nedostupný",
+      "removeException": "Odebrat výjimku {date}"
+    },
+    "editor": {
+      "newTitle": "Nový typ schůzky",
+      "editTitle": "Typ schůzky",
+      "close": "Zavřít",
+      "cancel": "Zrušit",
+      "tabsLabel": "Části typu schůzky",
+      "tabs": {
+        "basics": "Základ",
+        "availability": "Dostupnost",
+        "questions": "Otázky",
+        "reminders": "Připomínky",
+        "confirmation": "Potvrzení",
+        "preview": "Náhled"
+      },
+      "name": "Název",
+      "slug": "Adresa",
+      "slugHint": "Odkaz tohoto typu končí {path}",
+      "description": "Co klient získá",
+      "descriptionPlaceholder": "Půl hodiny nad tvým webem: co funguje a co změnit nejdřív.",
+      "duration": "Délka",
+      "durationCustom": "Jiná",
+      "durationMinutes": "Délka v minutách",
+      "minutesUnit": "min",
+      "hoursUnit": "hodin",
+      "daysUnit": "dní",
+      "location": "Kde",
+      "locations": {
+        "video": "Videohovor",
+        "phone": "Telefon",
+        "in_person": "Osobně",
+        "custom": "Jinak"
+      },
+      "placeLabel": {
+        "phone": "Kdo komu volá",
+        "in_person": "Adresa",
+        "custom": "Kde schůzka proběhne",
+        "video": "Videohovor"
+      },
+      "placeHint": {
+        "phone": "Nepovinné, třeba: Zavolám vám na číslo, které vyplníte.",
+        "in_person": "Kde se potkáte.",
+        "custom": "Třeba odkaz na vlastní místnost.",
+        "video": ""
+      },
+      "videoUses": "Klient dostane tvůj odkaz na videohovor: {link}",
+      "videoMissing": "Přidej odkaz na videohovor na rezervační stránku (Upravit stránku), klient ho dostane v potvrzení.",
+      "color": "Barva",
+      "customHours": "Vlastní pracovní doba",
+      "customHoursHint": "Vypnuto: typ používá pracovní dobu z Dostupnosti.",
+      "customHoursAfterCreate": "Nejdřív typ ulož, pak mu nastavíš vlastní dobu.",
+      "customHoursSaveHint": "Ulož i typ, ať tuhle dobu začne používat.",
+      "bufferBefore": "Volno před",
+      "bufferAfter": "Volno po",
+      "none": "Žádné",
+      "notice": "Nejdřív za",
+      "noticeHint": "Jak dlouho před začátkem může přijít poslední rezervace.",
+      "horizon": "Nejvýš dopředu",
+      "horizonHint": "Až {max} dní.",
+      "perDay": "Nejvýš za den",
+      "perDayHint": "Rezervací tohoto typu za den; prázdné = bez limitu.",
+      "noLimit": "Bez limitu",
+      "step": "Časy po",
+      "stepHint": "Jak daleko od sebe jsou nabízené začátky.",
+      "approval": "Rezervace potvrzuju sám",
+      "approvalHint": "Rezervace počká, dokud ji nepotvrdíš; klient to ví.",
+      "confirmationNote": "Text po rezervaci",
+      "confirmationNoteHint": "Klient ho uvidí po rezervaci a dostane ho v potvrzení.",
+      "dealStage": "Založit obchod",
+      "dealStageHint": "Potvrzená rezervace založí klientovi obchod v téhle fázi.",
+      "noDeal": "Obchod nezakládat",
+      "untitled": "Bez názvu",
+      "previewAfterCreate": "Ulož typ a uvidíš tu volné termíny.",
+      "previewFailed": "Volné termíny se nepodařilo načíst. Zkus to za chvíli.",
+      "previewEmpty": "V příštích dnech není nic volného. Zkontroluj pracovní dobu, předstih a výjimky.",
+      "previewHint": "Volné termíny, jak je teď vidí klient v pásmu {zone}.",
+      "previewInactive": "Typ je vypnutý: klienti ho zatím nevidí.",
+      "startsInactive": "Tvůj tarif nemá místo na další aktivní typ: tenhle začne vypnutý.",
+      "save": "Uložit",
+      "create": "Vytvořit",
+      "saving": "Ukládám…",
+      "saved": "Uloženo",
+      "delete": "Smazat typ",
+      "deleteTitle": "Smazat {name}?",
+      "deleteText": "Jeho odkaz přestane fungovat. Vzniklé rezervace zůstanou v historii.",
+      "errors": {
+        "readOnly": "Účet je jen pro čtení.",
+        "slugTaken": "Typ s touhle adresou už máš.",
+        "handleTaken": "Tahle adresa je obsazená.",
+        "invalid": "Něco je vyplněné špatně. Zkontroluj záložky s tečkou.",
+        "unknown": "Typ se neuložil. Zkus to znovu."
+      },
+      "issues": {
+        "name": {
+          "required": "Pojmenuj typ.",
+          "tooLong": "Nejvýš 80 znaků."
+        },
+        "slug": {
+          "format": "Jen malá písmena bez diakritiky, číslice a pomlčky.",
+          "taken": "Typ s touhle adresou už máš."
+        },
+        "description": {
+          "tooLong": "Nejvýš 2 000 znaků."
+        },
+        "confirmation_note": {
+          "tooLong": "Nejvýš 1 000 znaků."
+        },
+        "location_text": {
+          "tooLong": "Nejvýš 300 znaků.",
+          "required": "Napiš, kde schůzka proběhne."
+        },
+        "duration_min": {
+          "range": "Od 5 do 480 minut."
+        },
+        "buffers": {
+          "range": "Nejvýš 4 hodiny."
+        },
+        "notice": {
+          "range": "Od 0 do 720 hodin."
+        },
+        "horizon": {
+          "range": "Od 1 do 60 dní."
+        },
+        "perDay": {
+          "range": "Od 1 do 100, nebo prázdné."
+        },
+        "step": {
+          "range": "Po 15, 30 nebo 60 minutách."
+        },
+        "questions": {
+          "tooMany": "Nejvýš 20 otázek.",
+          "label": "Napiš otázku.",
+          "options": "Napiš možnosti, každou na řádek.",
+          "locked": "Jméno a e-mail se ptají vždy."
+        },
+        "reminders": {
+          "tooMany": "Nejvýš 5 připomínek.",
+          "range": "Od 5 minut do 7 dní předem.",
+          "duplicate": "Dvě připomínky ve stejný čas."
+        }
+      }
+    },
+    "questions": {
+      "hint": "Co klient vyplní při rezervaci. Jméno a e-mail jsou tam vždy.",
+      "builtin": {
+        "name": "Jméno",
+        "email": "E-mail",
+        "phone": "Telefon",
+        "company": "Firma"
+      },
+      "untitled": "Nová otázka",
+      "always": "Vždy",
+      "moveUp": "Posunout výš",
+      "moveDown": "Posunout níž",
+      "remove": "Odebrat otázku",
+      "label": "Otázka",
+      "labelPlaceholder": "O čem si chcete promluvit?",
+      "type": "Odpověď",
+      "types": {
+        "text": "Krátký text",
+        "textarea": "Delší text",
+        "phone": "Telefon",
+        "email": "E-mail",
+        "select": "Výběr",
+        "checkbox": "Zaškrtávátko"
+      },
+      "options": "Možnosti",
+      "optionsPlaceholder": "Každá možnost na řádek",
+      "required": "Povinné",
+      "add": "Přidat otázku"
+    },
+    "reminders": {
+      "hint": "E-maily před schůzkou, klientovi i tobě.",
+      "none": "Žádná připomínka.",
+      "byEmail": "e-mailem",
+      "remove": "Odebrat připomínku",
+      "add": "Přidat připomínku",
+      "max": "Nejvýš {count} připomínek.",
+      "daysBefore": "{count, plural, one {# den předem} few {# dny předem} other {# dní předem}}",
+      "hoursBefore": "{count, plural, one {# hodinu předem} few {# hodiny předem} other {# hodin předem}}",
+      "minutesBefore": "{count, plural, one {# minutu předem} few {# minuty předem} other {# minut předem}}"
+    },
+    "bookings": {
+      "whenLabel": "Kdy",
+      "when": {
+        "upcoming": "Nadcházející",
+        "past": "Minulé"
+      },
+      "statusLabel": "Stav",
+      "filter": {
+        "all": "Vše",
+        "pending": "Čekají",
+        "confirmed": "Potvrzené",
+        "cancelled": "Zrušené"
+      },
+      "scopeLabel": "Čí",
+      "scope": {
+        "mine": "Moje",
+        "team": "Všichni"
+      },
+      "status": {
+        "held": "Rezervuje se",
+        "pending": "Čeká na tebe",
+        "confirmed": "Potvrzená",
+        "cancelled": "Zrušená",
+        "declined": "Odmítnutá",
+        "rescheduled": "Přesunutá"
+      },
+      "loadFailed": "Rezervace se nepodařilo načíst. Zkus to za chvíli.",
+      "emptyUpcoming": "Žádná rezervace před tebou",
+      "emptyPast": "Žádná minulá rezervace",
+      "emptyHint": "Pošli klientovi odkaz na typ schůzky: co si rezervuje, uvidíš tady i v kalendáři.",
+      "deletedType": "Smazaný typ",
+      "previous": "Předchozí",
+      "next": "Další",
+      "page": "Strana {page} z {pages}"
+    },
+    "team": {
+      "hint": "Rezervační stránky lidí ve tvé firmě. Typ můžeš vypnout; zbytek si mění sami.",
+      "loadFailed": "Plánovače firmy se nepodařilo načíst. Zkus to za chvíli.",
+      "emptyTitle": "Nikdo další rezervační stránku nemá",
+      "emptyText": "Pracovník s právem Plánovač: vlastní si ji nastaví sám.",
+      "noTypes": "Zatím žádný typ schůzky."
+    },
+    "hint": {
+      "text": "Jarvis: pošli odkaz na rezervaci „{name}“ ({duration})",
+      "insert": "Vložit odkaz",
+      "copy": "Kopírovat odkaz",
+      "copied": "Zkopírováno",
+      "mail": "E-mail",
+      "mailSubject": "Najdeme si čas",
+      "mailBody": "Dobrý den,\n\nvyberte si čas, který vám vyhovuje: {url}\n\nDěkuji"
+    }
   }
 }

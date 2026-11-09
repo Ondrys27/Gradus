@@ -25,6 +25,7 @@ import { websiteHref } from "@/features/contacts/schemas";
 import { contactName, contactPerson, type ContactTable } from "@/features/contacts/types";
 import { formatPhone, telHref } from "@/lib/phone";
 import { cn } from "@/lib/utils";
+import { MeetingLinkHint } from "@/features/scheduler/ui/meeting-link-hint";
 
 type Props = {
   contactId: string | null;
@@ -133,6 +134,11 @@ function PanelBody({
           </Button>
         )}
       </div>
+
+      {/* "Follow up": Jarvis suggests sending the booking link for a first call. */}
+      {tables.find((table) => table.id === entry?.table_id)?.system_key === "follow_up" && (
+        <MeetingLinkHint purpose="intro" from="coldCalling" email={data.email} />
+      )}
 
       {deal ? (
         <Link
