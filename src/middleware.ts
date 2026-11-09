@@ -14,6 +14,11 @@ import {
   PROMO_PARAM,
   promoCodeFromParam,
 } from "@/features/promo/link";
+import {
+  CURRENCY_COOKIE_MAX_AGE,
+  GEO_CURRENCY_COOKIE,
+  geoCurrency,
+} from "@/features/currency/visitor-currency";
 import { HOME_PATH, loginUrlFor, routeKind, safeNextPath } from "@/lib/auth/routes";
 import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, URL_LOCALE_HEADER } from "@/i18n/locale-cookie";
 import { localizedPath, pageForPath, type SiteLocale } from "@/lib/routes";
@@ -37,6 +42,16 @@ export async function middleware(request: NextRequest) {
       maxAge: PROMO_COOKIE_MAX_AGE,
       sameSite: "lax",
       httpOnly: true,
+      secure: request.nextUrl.protocol === "https:",
+    });
+  }
+  // The price list's currency by the visitor's country (Vercel's header); only a code.
+  const geo = geoCurrency(request.headers.get("x-vercel-ip-country"));
+  if (geo && request.cookies.get(GEO_CURRENCY_COOKIE)?.value !== geo) {
+    response.cookies.set(GEO_CURRENCY_COOKIE, geo, {
+      path: "/",
+      maxAge: CURRENCY_COOKIE_MAX_AGE,
+      sameSite: "lax",
       secure: request.nextUrl.protocol === "https:",
     });
   }

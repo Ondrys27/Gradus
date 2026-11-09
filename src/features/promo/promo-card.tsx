@@ -5,8 +5,7 @@ import { TicketPercentIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FormAlert } from "@/components/ui/form-alert";
 import { GlowCard } from "@/components/ui/glow-card";
-import { isPaidPlanKey, priceCurrencyFor, type PlanCatalog } from "@/config/pricing";
-import { useUserSettings } from "@/features/account/queries";
+import { isPaidPlanKey, type PlanCatalog, type PriceCurrency } from "@/config/pricing";
 import { promoFirstPayment } from "@/features/plan/plan";
 import { money, priceOf } from "@/features/subscription/plan-price";
 import { useSubscription } from "@/features/subscription/queries";
@@ -22,10 +21,10 @@ import { useRefreshAfterPromo, usePromoStatus } from "./queries";
  * charge it; or, until the account has a code and has not paid, the field
  * to enter one. Nothing for a worker or an account that paid without a code.
  */
-export function PromoCard({ plans }: { plans: PlanCatalog }) {
+/** `plans` carry prices in `currency` (useLocalizedPlans). */
+export function PromoCard({ plans, currency }: { plans: PlanCatalog; currency: PriceCurrency }) {
   const t = useTranslations("promo.card");
   const offerText = usePromoOfferText();
-  const settings = useUserSettings();
   const format = useFormatSettings();
   const status = usePromoStatus();
   const subscription = useSubscription();
@@ -54,7 +53,6 @@ export function PromoCard({ plans }: { plans: PlanCatalog }) {
 
   const offer = data.redemption;
   const sub = subscription.data ?? null;
-  const currency = priceCurrencyFor(settings.currency);
   const plan =
     sub && isPaidPlanKey(sub.planKey) ? plans.find((p) => p.key === sub.planKey) : undefined;
   const lines: string[] = [];

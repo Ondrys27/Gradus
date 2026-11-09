@@ -11,9 +11,14 @@ import { GlowCard } from "@/components/ui/glow-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusPill } from "@/components/ui/status-pill";
 import type { Tone } from "@/components/ui/tone";
-import { isPaidPlanKey, priceCurrencyFor, type PlanCatalog } from "@/config/pricing";
+import { isPaidPlanKey, type CatalogAddOn, type PlanCatalog } from "@/config/pricing";
 import { useSession, useUserSettings } from "@/features/account/queries";
+import { AddOnsCard } from "@/features/subscription/add-ons-card";
+import { RateNote } from "@/features/currency/rate-note";
+import { useExchangeRates, useLocalizedPlans } from "@/features/currency/use-exchange-rates";
 import { AppOverview } from "@/features/plan/app-overview";
+import { chargeCurrency, type LocalizedPlans } from "@/features/plan/localized";
+import type { RateTable } from "@/lib/exchange-rates";
 import { planName } from "@/features/plan/catalog";
 import { PromoCard } from "@/features/promo/promo-card";
 import { SettingsPage } from "@/features/settings/ui";
@@ -73,15 +78,24 @@ export type CheckoutReturn = "success" | "cancelled" | null;
  */
 export function SubscriptionPage({
   plans,
+  addOns = [],
+  rates,
   payments = false,
   checkout = null,
 }: {
   plans: PlanCatalog;
+  /** The published add-ons (step 24.1). */
+  addOns?: readonly CatalogAddOn[];
+  /** The exchange rates the server had, for prices in the user's currency. */
+  rates?: RateTable;
   payments?: boolean;
   checkout?: CheckoutReturn;
 }) {
   const t = useTranslations("subscription");
   const { worker, roles } = useSession();
+  const settings = useUserSettings();
+  // Prices in the user's currency: manual, else at the day's rate, else EUR.
+  const prices = useLocalizedPlans(plans, settings.currency, rates);
   return (
     <SettingsPage title={t("title")} description={t("description")}>
       {worker ? (
@@ -89,10 +103,15 @@ export function SubscriptionPage({
       ) : (
         <>
           <div id="settings-plan" tabIndex={-1} data-setting-row className="rounded-card outline-none">
-            <CurrentPlan plans={plans} payments={payments} checkout={checkout} />
+            <CurrentPlan prices={prices} payments={payments} checkout={checkout} rates={rates} />
           </div>
+          {addOns.length > 0 && (
+            <div id="settings-add-ons" tabIndex={-1} data-setting-row className="rounded-card outline-none">
+              <AddOnsCard addOns={addOns} currency={settings.currency} rates={rates} />
+            </div>
+          )}
           <div id="settings-promo" tabIndex={-1} data-setting-row className="rounded-card outline-none">
-            <PromoCard plans={plans} />
+            <PromoCard plans={prices.plans} currency={prices.currency} />
           </div>
           <div id="settings-payments" tabIndex={-1} data-setting-row className="rounded-card outline-none">
             <PaymentHistory plans={plans} />
@@ -109,14 +128,17 @@ export function SubscriptionPage({
 }
 
 function CurrentPlan({
-  plans,
+  prices,
   payments,
   checkout,
+  rates,
 }: {
-  plans: PlanCatalog;
+  prices: LocalizedPlans;
   payments: boolean;
   checkout: CheckoutReturn;
+  rates?: RateTable;
 }) {
+  const plans = prices.plans;
   const t = useTranslations("subscription");
   const tPlans = useTranslations("plans");
   const locale = useLocale();
@@ -137,12 +159,12 @@ function CurrentPlan({
   useEffect(() => {
     if (linked) void queryClient.invalidateQueries({ queryKey: subscriptionKeys.payments(user.id) });
   }, [linked, queryClient, user.id]);
-  const currency = priceCurrencyFor(settings.currency);
+  const currency = prices.currency;
   const sub = query.data;
   const managed = sub ? isPaidPlanKey(sub.planKey) : false;
   // Beta and other plans outside the catalog count workers by the month.
   const seatBilling = managed && sub ? sub.billing : "monthly";
-  const workers = useWorkerCharge(plans, seatBilling, currency, Boolean(sub));
+  const workers = useWorkerCharge(plans, seatBilling, currency, Boolean(sub), useExchangeRates(rates));
 
   if (query.isPending) return <Skeleton className="h-72 w-full rounded-card" />;
   if (query.isError) return <FormAlert>{t("loadFailed")}</FormAlert>;
@@ -223,6 +245,9 @@ function CurrentPlan({
         <dl className="grid gap-4 sm:grid-cols-3">
           <Fact label={t("current.price")}>
             {plan ? <PlanPrice plan={plan} billing={sub.billing} currency={currency} format={format} /> : "–"}
+            {plan && prices.derived && prices.rateAt && (
+              <RateNote at={prices.rateAt} charged={chargeCurrency(plan, settings.currency)} />
+            )}
           </Fact>
           <Fact label={t("current.period")}>{tPlans(`billing.${sub.billing}`)}</Fact>
           <Fact label={t("current.nextPayment")}>
@@ -340,6 +365,7 @@ function CurrentPlan({
             onOpenChange={setChanging}
             subscription={sub}
             plans={plans}
+            currency={currency}
             checkout={checkoutMode}
             onDone={(text) => setNotice({ tone: "success", text })}
           />

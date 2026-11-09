@@ -1,13 +1,14 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type Stripe from "stripe";
-import type { Billing, CatalogPlan, PaidPlanKey, PriceCurrency } from "@/config/pricing";
+import type { AddOnKey, Billing, CatalogPlan, PaidPlanKey, PriceCurrency } from "@/config/pricing";
+import { BASE_CURRENCY } from "@/lib/currency";
 import type { ChangeTiming } from "@/features/subscription/state";
 import type { Database } from "@/types/database";
 import { ensureCatalogPrices, loadPublishedVersion, type PublishedVersion } from "./catalog-sync";
 import { subscriptionState, type SubscriptionState } from "./mapping";
 import type { StripeMode } from "./modes";
-import { priceLookupKey } from "./prices";
+import { addOnLookupKey, priceLookupKey } from "./prices";
 import { extraWorkerQuantity } from "./seats";
 
 /**
@@ -62,6 +63,8 @@ type Target = {
   planPrice: string;
   workerPrice: string | null;
   workers: number;
+  /** The add-ons the subscription carries, at the target's currency and period. */
+  addOns: { addOn: AddOnKey; price: string; itemId: string }[];
   version: PublishedVersion;
 };
 
@@ -69,6 +72,7 @@ async function target(
   ctx: GatewayContext,
   choice: { planKey: PaidPlanKey; billing: Billing },
   currency: PriceCurrency,
+  addOnItems: SubscriptionState["addOnItems"] = [],
 ): Promise<Target> {
   const version = await loadPublishedVersion(ctx.admin);
   const plan = version.catalog.find((candidate) => candidate.key === choice.planKey);
@@ -79,10 +83,19 @@ async function target(
   if (!planPrice) throw new GatewayStateError("price_missing");
   const workerPrice = prices.get(priceLookupKey({ ...key, kind: "worker" })) ?? null;
   const workers = workerPrice ? await extraWorkerQuantity(ctx.admin, ctx.workspace, plan) : 0;
-  return { plan, ...choice, planPrice, workerPrice, workers, version };
+  // Every item of a subscription bills over the same period: the add-ons follow the plan's.
+  const addOns = addOnItems.map((item) => {
+    const price = prices.get(
+      addOnLookupKey({ addOn: item.addOn, currency, billing: choice.billing, version: version.number }),
+    );
+    if (!price) throw new GatewayStateError("price_missing");
+    return { addOn: item.addOn, price, itemId: item.id };
+  });
+  return { plan, ...choice, planPrice, workerPrice, workers, addOns, version };
 }
 
-const asCurrency = (value: string | null): PriceCurrency => (value === "EUR" ? "EUR" : "CZK");
+/** A subscription keeps the currency it started in. */
+const asCurrency = (value: string | null): PriceCurrency => value ?? BASE_CURRENCY;
 
 const metadataFor = (ctx: GatewayContext, to: Target) => ({
   workspace: ctx.workspace,
@@ -96,6 +109,7 @@ function targetItems(to: Target): { price: string; quantity: number }[] {
   return [
     { price: to.planPrice, quantity: 1 },
     ...(to.workerPrice && to.workers > 0 ? [{ price: to.workerPrice, quantity: to.workers }] : []),
+    ...to.addOns.map((addOn) => ({ price: addOn.price, quantity: 1 })),
   ];
 }
 
@@ -111,7 +125,7 @@ export async function changeStripePlan(
     return;
   }
   // A subscription keeps its currency in Stripe; the new prices are in it too.
-  const to = await target(ctx, choice, asCurrency(state.currency));
+  const to = await target(ctx, choice, asCurrency(state.currency), state.addOnItems);
   if (timing === "immediate") {
     await releaseSchedule(ctx, sub);
     const items: Stripe.SubscriptionUpdateParams.Item[] = [{ id: state.planItemId, price: to.planPrice }];
@@ -124,6 +138,7 @@ export async function changeStripePlan(
     } else if (to.workerPrice && to.workers > 0) {
       items.push({ price: to.workerPrice, quantity: to.workers });
     }
+    for (const addOn of to.addOns) items.push({ id: addOn.itemId, price: addOn.price });
     await ctx.stripe.subscriptions.update(ref, {
       items,
       // Nothing is charged during a trial; otherwise the difference is invoiced now.
@@ -173,6 +188,48 @@ async function scheduleDowngrade(
       },
     ],
   });
+}
+
+/**
+ * Switches an add-on on or off in a running subscription (step 24.1): on =
+ * a new item at the plan's currency and period, the rest of the period
+ * invoiced now (nothing during a trial); off = the item goes, the unused
+ * part credited to the next invoice. Returns whether Stripe changed.
+ */
+export async function setStripeAddOn(
+  ctx: GatewayContext,
+  ref: string,
+  addOn: AddOnKey,
+  on: boolean,
+): Promise<boolean> {
+  const { sub, state } = await load(ctx, ref);
+  if (state.status === "cancelled") throw new GatewayStateError("cancelled");
+  // A downgrade waiting in a schedule would bring back the old items: drop
+  // it only when the add-on changes, and only if it would carry no add-on.
+  if (idOf(sub.schedule)) throw new GatewayStateError("scheduled_change");
+  const trial = sub.status === "trialing";
+  const existing = state.addOnItems.find((item) => item.addOn === addOn);
+  if (on) {
+    if (existing) return false;
+    const version = await loadPublishedVersion(ctx.admin);
+    const prices = await ensureCatalogPrices(ctx.stripe, ctx.mode, version);
+    const price = prices.get(
+      addOnLookupKey({ addOn, currency: asCurrency(state.currency), billing: state.billing, version: version.number }),
+    );
+    if (!price) throw new GatewayStateError("price_missing");
+    await ctx.stripe.subscriptionItems.create({
+      subscription: sub.id,
+      price,
+      quantity: 1,
+      proration_behavior: trial ? "none" : "always_invoice",
+    });
+    return true;
+  }
+  if (!existing) return false;
+  await ctx.stripe.subscriptionItems.del(existing.id, {
+    proration_behavior: trial ? "none" : "create_prorations",
+  });
+  return true;
 }
 
 export async function cancelStripeSubscription(ctx: GatewayContext, ref: string): Promise<void> {

@@ -2,14 +2,22 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getTranslations } from "next-intl/server";
 import Stripe from "stripe";
-import type { PlanCatalog } from "@/config/pricing";
-import { planText, validatePlanCatalog } from "@/features/plan/catalog";
+import type { CatalogAddOn, PlanCatalog } from "@/config/pricing";
+import { planText, validatePlanAddOns, validatePlanCatalog } from "@/features/plan/catalog";
+import { seedAddOns } from "@/features/plan/catalog-seed";
 import { APP_NAME } from "@/lib/constants";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Database } from "@/types/database";
 import { stripeClient } from "./client";
 import type { StripeMode } from "./modes";
-import { catalogPriceSpecs, parseLookupKey, type PriceSpec } from "./prices";
+import {
+  addOnPriceSpecs,
+  catalogPriceSpecs,
+  parseAddOnLookupKey,
+  parseLookupKey,
+  type AddOnPriceSpec,
+  type PriceSpec,
+} from "./prices";
 
 /**
  * The published catalog version in Stripe (step 23.1): a Product per plan
@@ -27,26 +35,30 @@ export type PublishedVersion = {
   /** 1 for the first published version, counted by publication; never reused. */
   number: number;
   catalog: PlanCatalog;
+  /** The version's add-ons (step 24.1); a version without any stored reads as the seed's. */
+  addOns: CatalogAddOn[];
 };
 
 /** The published version straight from the database (never the cached seed: money depends on it). */
 export async function loadPublishedVersion(admin: Admin = createAdminClient()): Promise<PublishedVersion> {
   const { data, error } = await admin
     .from("plan_catalog_versions")
-    .select("id, payload, published_at")
+    .select("id, payload, add_ons, published_at")
     .eq("status", "published")
     .maybeSingle();
   if (error) throw new Error(`plan catalog: ${error.code ?? error.message}`);
   if (!data?.published_at) throw new Error("plan catalog: nothing published");
   const parsed = validatePlanCatalog(data.payload);
   if (!parsed.ok) throw new Error("plan catalog: the published version is invalid");
+  const addOns = data.add_ons === null ? { ok: true as const, addOns: seedAddOns() } : validatePlanAddOns(data.add_ons);
+  if (!addOns.ok) throw new Error("plan catalog: the published add-ons are invalid");
   const { count, error: countError } = await admin
     .from("plan_catalog_versions")
     .select("id", { count: "exact", head: true })
     .neq("status", "draft")
     .lte("published_at", data.published_at);
   if (countError) throw new Error(`plan catalog: ${countError.code ?? countError.message}`);
-  return { id: data.id, number: Math.max(1, count ?? 1), catalog: parsed.catalog };
+  return { id: data.id, number: Math.max(1, count ?? 1), catalog: parsed.catalog, addOns: addOns.addOns };
 }
 
 const isMissing = (error: unknown) =>
@@ -65,14 +77,31 @@ async function ensureProduct(stripe: Stripe, id: string, name: string, kind: str
   }
 }
 
-async function productName(catalog: PlanCatalog, spec: PriceSpec): Promise<string> {
+async function productName(version: PublishedVersion, spec: AnySpec): Promise<string> {
+  if (spec.type === "addon") {
+    const addOn = version.addOns.find((candidate) => candidate.key === spec.addOn);
+    return `${APP_NAME}: ${addOn ? planText(addOn.name, "cs") : spec.addOn}`;
+  }
   if (spec.kind === "worker") {
     const t = await getTranslations({ locale: "cs", namespace: "billing.stripe" });
     return t("workerProduct", { appName: APP_NAME });
   }
-  const plan = catalog.find((candidate) => candidate.key === spec.plan);
+  const plan = version.catalog.find((candidate) => candidate.key === spec.plan);
   return `${APP_NAME} ${plan ? planText(plan.name, "cs") : spec.plan}`;
 }
+
+/** A Price of a plan, of extra workers or of an add-on. */
+type AnySpec = (PriceSpec & { type: "plan" }) | (AddOnPriceSpec & { type: "addon" });
+
+const versionSpecs = (version: PublishedVersion): AnySpec[] => [
+  ...catalogPriceSpecs(version.catalog, version.number).map((spec) => ({ ...spec, type: "plan" as const })),
+  ...addOnPriceSpecs(version.addOns, version.number).map((spec) => ({ ...spec, type: "addon" as const })),
+];
+
+const specMetadata = (spec: AnySpec): Record<string, string> =>
+  spec.type === "addon"
+    ? { kind: "addon", add_on: spec.addOn, currency: spec.currency, billing: spec.billing, version: String(spec.version) }
+    : { kind: spec.kind, plan: spec.plan, currency: spec.currency, billing: spec.billing, version: String(spec.version) };
 
 /** Stripe's lookup_keys filter takes ten at a time. */
 const LOOKUP_BATCH = 10;
@@ -86,7 +115,7 @@ export async function ensureCatalogPrices(
   mode: StripeMode,
   version: PublishedVersion,
 ): Promise<Map<string, string>> {
-  const specs = catalogPriceSpecs(version.catalog, version.number);
+  const specs = versionSpecs(version);
   const found = new Map<string, Stripe.Price>();
   for (let index = 0; index < specs.length; index += LOOKUP_BATCH) {
     const keys = specs.slice(index, index + LOOKUP_BATCH).map((spec) => spec.lookupKey);
@@ -103,7 +132,12 @@ export async function ensureCatalogPrices(
       continue;
     }
     if (!products.has(spec.productId)) {
-      await ensureProduct(stripe, spec.productId, await productName(version.catalog, spec), spec.kind);
+      await ensureProduct(
+        stripe,
+        spec.productId,
+        await productName(version, spec),
+        spec.type === "addon" ? "addon" : spec.kind,
+      );
       products.add(spec.productId);
     }
     const price = await stripe.prices.create(
@@ -115,14 +149,7 @@ export async function ensureCatalogPrices(
         lookup_key: spec.lookupKey,
         // Catalog prices are final (not a VAT payer); BILLING_VAT_MODE=stripe_tax decides later.
         tax_behavior: "unspecified",
-        metadata: {
-          kind: spec.kind,
-          plan: spec.plan,
-          currency: spec.currency,
-          billing: spec.billing,
-          version: String(spec.version),
-          catalog_version: version.id,
-        },
+        metadata: { ...specMetadata(spec), catalog_version: version.id },
       },
       { idempotencyKey: `price:${mode}:${spec.lookupKey}` },
     );
@@ -133,10 +160,10 @@ export async function ensureCatalogPrices(
 
 /** Archives the active prices of Gradus's products that belong to another version. */
 async function archiveOlderPrices(stripe: Stripe, version: PublishedVersion) {
-  const productIds = new Set(catalogPriceSpecs(version.catalog, version.number).map((spec) => spec.productId));
+  const productIds = new Set(versionSpecs(version).map((spec) => spec.productId));
   for (const product of productIds) {
     for await (const price of stripe.prices.list({ product, active: true, limit: 100 })) {
-      const key = parseLookupKey(price.lookup_key);
+      const key = parseLookupKey(price.lookup_key) ?? parseAddOnLookupKey(price.lookup_key);
       if (key && key.version !== version.number) await stripe.prices.update(price.id, { active: false });
     }
   }

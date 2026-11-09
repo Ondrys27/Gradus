@@ -1,4 +1,5 @@
 import type { DateFormat, NumberFormatKey, TimeFormat, WeekStart } from "./format";
+import { BASE_CURRENCY, currencyForCountry } from "./currency";
 import { TIMEZONE_COUNTRIES } from "./timezone-countries";
 
 export const DEFAULT_TIME_ZONE = "Europe/Prague";
@@ -46,6 +47,9 @@ export type RegionFormats = {
   weekStartsOn: WeekStart;
 };
 
+/** Everything but the currency, which comes from the country (src/config/currencies.ts). */
+type Formats = Omit<RegionFormats, "currency">;
+
 const EUROZONE = [
   "AT",
   "BE",
@@ -69,31 +73,28 @@ const EUROZONE = [
   "SK",
 ];
 
-const CZECH: RegionFormats = {
-  currency: "CZK",
+const CZECH: Formats = {
   dateFormat: "d. M. yyyy",
   timeFormat: "HH:mm",
   numberFormat: "cs",
   weekStartsOn: 1,
 };
-const EURO_DOTS: RegionFormats = {
-  currency: "EUR",
+const EURO_DOTS: Formats = {
   dateFormat: "dd.MM.yyyy",
   timeFormat: "HH:mm",
   numberFormat: "de",
   weekStartsOn: 1,
 };
-const EURO_SPACES: RegionFormats = {
-  currency: "EUR",
+const EURO_SPACES: Formats = {
   dateFormat: "dd/MM/yyyy",
   timeFormat: "HH:mm",
   numberFormat: "fr",
   weekStartsOn: 1,
 };
 
-const PRESETS: Record<string, RegionFormats> = {
+const PRESETS: Record<string, Formats> = {
   CZ: CZECH,
-  SK: { ...CZECH, currency: "EUR" },
+  SK: CZECH,
   DE: EURO_DOTS,
   AT: EURO_DOTS,
   NL: EURO_DOTS,
@@ -102,70 +103,60 @@ const PRESETS: Record<string, RegionFormats> = {
   ES: { ...EURO_DOTS, dateFormat: "dd/MM/yyyy" },
   IT: { ...EURO_DOTS, dateFormat: "dd/MM/yyyy" },
   PL: {
-    currency: "PLN",
     dateFormat: "dd.MM.yyyy",
     timeFormat: "HH:mm",
     numberFormat: "cs",
     weekStartsOn: 1,
   },
   HU: {
-    currency: "HUF",
     dateFormat: "yyyy-MM-dd",
     timeFormat: "HH:mm",
     numberFormat: "cs",
     weekStartsOn: 1,
   },
   CH: {
-    currency: "CHF",
     dateFormat: "dd.MM.yyyy",
     timeFormat: "HH:mm",
     numberFormat: "ch",
     weekStartsOn: 1,
   },
   GB: {
-    currency: "GBP",
     dateFormat: "dd/MM/yyyy",
     timeFormat: "HH:mm",
     numberFormat: "en",
     weekStartsOn: 1,
   },
   IE: {
-    currency: "EUR",
     dateFormat: "dd/MM/yyyy",
     timeFormat: "HH:mm",
     numberFormat: "en",
     weekStartsOn: 1,
   },
   US: {
-    currency: "USD",
     dateFormat: "MM/dd/yyyy",
     timeFormat: "h:mm a",
     numberFormat: "en",
     weekStartsOn: 0,
   },
   CA: {
-    currency: "CAD",
     dateFormat: "yyyy-MM-dd",
     timeFormat: "h:mm a",
     numberFormat: "en",
     weekStartsOn: 0,
   },
   AU: {
-    currency: "AUD",
     dateFormat: "dd/MM/yyyy",
     timeFormat: "h:mm a",
     numberFormat: "en",
     weekStartsOn: 1,
   },
   SE: {
-    currency: "SEK",
     dateFormat: "yyyy-MM-dd",
     timeFormat: "HH:mm",
     numberFormat: "fr",
     weekStartsOn: 1,
   },
   UA: {
-    currency: "UAH",
     dateFormat: "dd.MM.yyyy",
     timeFormat: "HH:mm",
     numberFormat: "fr",
@@ -178,11 +169,12 @@ const PRESETS: Record<string, RegionFormats> = {
  * registration; afterwards the user's own choices in settings win.
  */
 export function regionFormats(country: string | null): RegionFormats {
-  if (!country) return CZECH;
-  if (PRESETS[country]) return PRESETS[country];
-  if (EUROZONE.includes(country)) return EURO_DOTS;
+  const currency = currencyForCountry(country ?? DEFAULT_COUNTRY) ?? BASE_CURRENCY;
+  if (!country) return { ...CZECH, currency };
+  if (PRESETS[country]) return { ...PRESETS[country], currency };
+  if (EUROZONE.includes(country)) return { ...EURO_DOTS, currency };
   return {
-    currency: "USD",
+    currency,
     dateFormat: "dd/MM/yyyy",
     timeFormat: "HH:mm",
     numberFormat: "en",

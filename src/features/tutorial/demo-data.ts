@@ -1,3 +1,5 @@
+import { freshRate, type RateTable } from "@/lib/exchange-rates";
+import { psychologicalPrice } from "@/lib/psychological-price";
 import type { IndustryKey } from "@/features/onboarding/industries";
 import { draftFromDoc, type DocNode } from "@/features/notes/document";
 import {
@@ -19,8 +21,20 @@ import { todayIsoDate, zonedWallClockToInstant, type FormatSettings, type IsoDat
 
 export const DEMO_CONTACT_KEYS = ["first", "second", "third"] as const;
 
-/** A sample deal's value by the display currency; other currencies get the EUR one. */
-const DEAL_VALUE: Record<string, number> = { CZK: 25_000, EUR: 1_000 };
+/** A sample deal is worth about this much in EUR (25 000 Kč in Czech crowns, as the guide shows it). */
+const DEAL_VALUE_EUR = 1_000;
+const DEAL_VALUE: Record<string, number> = { CZK: 25_000, EUR: DEAL_VALUE_EUR };
+
+/**
+ * The sample deal's value in the display currency: a round figure where the
+ * guide has one, else the EUR value at the day's rate as a selling price
+ * (JPY 159 000), and 1 000 of the currency without a rate.
+ */
+export function demoDealValue(currency: string, rates: RateTable = {}, now: Date = new Date()): number {
+  if (DEAL_VALUE[currency] !== undefined) return DEAL_VALUE[currency];
+  const rate = freshRate(rates, currency, now);
+  return rate === null ? DEAL_VALUE_EUR : psychologicalPrice(DEAL_VALUE_EUR * rate, currency);
+}
 
 export type DemoPayload = {
   contacts: { first_name: string; last_name: string; company_name: string; email: string; city: string }[];
@@ -90,6 +104,8 @@ export function buildDemoPayload(input: {
   now: Date;
   t: DemoTranslator;
   template: TemplateTranslator;
+  /** The day's exchange rates for the sample deal's value. */
+  rates?: RateTable;
 }): DemoPayload {
   const { industry, settings, now, t } = input;
   const zone = settings.timeZone;
@@ -112,7 +128,7 @@ export function buildDemoPayload(input: {
     contacts,
     deal: {
       title: t(`deal.${industry}`, { company: lead.company_name }),
-      value: DEAL_VALUE[settings.currency] ?? DEAL_VALUE.EUR!,
+      value: demoDealValue(settings.currency, input.rates, now),
       expected_close_date: shift(today, -3),
     },
     milestone: {

@@ -9,7 +9,10 @@
  * falls back to it when the database cannot be read. Changing it changes
  * nothing on the website.
  *
- * Prices are without VAT. Czech visitors see CZK, everyone else EUR.
+ * Prices are without VAT. Every price is set in EUR; the owner may add a
+ * manual price in any other currency (CZK in the seed). Every other currency
+ * is derived from EUR at the day's rate and rounded to a selling price
+ * (src/features/plan/localized.ts), so a visitor sees their own currency.
  */
 
 /** Length of the free trial after a sign-up without an invite. */
@@ -21,15 +24,20 @@ export const YEARLY_MONTHS_CHARGED = 10;
 
 export const PAID_PLAN_KEYS = ["solo", "pro", "team"] as const;
 export type PaidPlanKey = (typeof PAID_PLAN_KEYS)[number];
-export const PRICE_CURRENCIES = ["CZK", "EUR"] as const;
-export type PriceCurrency = (typeof PRICE_CURRENCIES)[number];
+/** An ISO 4217 code a price is shown or charged in. */
+export type PriceCurrency = string;
 export type Billing = "monthly" | "yearly";
 
 /** The two languages every text of the catalog has. */
 export const CATALOG_LOCALES = ["cs", "en"] as const;
 export type CatalogLocale = (typeof CATALOG_LOCALES)[number];
 export type CatalogText = Record<CatalogLocale, string>;
-export type Money = Record<PriceCurrency, number>;
+/**
+ * The prices of one thing: always EUR (BASE_CURRENCY), plus the manual
+ * prices the owner set for other currencies. A currency missing here is
+ * derived from EUR when shown.
+ */
+export type Money = { EUR: number } & Record<PriceCurrency, number>;
 
 /**
  * Limits of a plan. The four counts are what current_plan() enforces (the
@@ -172,10 +180,37 @@ export function isPaidPlanKey(value: unknown): value is PaidPlanKey {
   return (PAID_PLAN_KEYS as readonly unknown[]).includes(value);
 }
 
-/** CZK for Czech, EUR for every other language or currency. */
-export function priceCurrencyFor(localeOrCurrency: string | null | undefined): PriceCurrency {
-  return localeOrCurrency === "cs" || localeOrCurrency === "CZK" ? "CZK" : "EUR";
+// ---------------------------------------------------------------------------
+// Add-ons (step 24.1): extras on top of any plan, in the catalog next to the plans.
+// ---------------------------------------------------------------------------
+
+/** The add-ons the code knows; the same list is add_on_keys() in the database. */
+export const ADD_ON_KEYS = ["no_branding"] as const;
+export type AddOnKey = (typeof ADD_ON_KEYS)[number];
+
+export function isAddOnKey(value: unknown): value is AddOnKey {
+  return (ADD_ON_KEYS as readonly unknown[]).includes(value);
 }
+
+/** One add-on of a catalog version (plan_catalog_versions.add_ons). */
+export type CatalogAddOn = {
+  key: AddOnKey;
+  name: CatalogText;
+  description: CatalogText;
+  /** The monthly price; paid yearly it is twelve of them. */
+  monthly: Money;
+  /** Position in the list, 0 first. */
+  order: number;
+};
+
+/**
+ * The seed of the add-ons: "Without Gradus branding" for 0,99 € a month,
+ * 29 Kč by hand; every other currency is derived (USD 1,19, GBP 0,89…).
+ * Versions published before step 24.1 have no add-ons and read as this.
+ */
+export const ADD_ON_SEED_PRICES: Record<AddOnKey, Money> = {
+  no_branding: { EUR: 0.99, CZK: 29 },
+};
 
 /** The catalog's text language for an interface or page locale (Czech or English). */
 export function catalogLocaleFor(locale: string | null | undefined): CatalogLocale {

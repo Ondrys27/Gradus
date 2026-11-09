@@ -1789,6 +1789,54 @@ export type Database = {
         }
         Relationships: []
       }
+      exchange_rate_sources: {
+        Row: {
+          last_attempt_at: string
+          last_error: string | null
+          last_success_at: string | null
+          rates: number
+          source: string
+        }
+        Insert: {
+          last_attempt_at: string
+          last_error?: string | null
+          last_success_at?: string | null
+          rates?: number
+          source: string
+        }
+        Update: {
+          last_attempt_at?: string
+          last_error?: string | null
+          last_success_at?: string | null
+          rates?: number
+          source?: string
+        }
+        Relationships: []
+      }
+      exchange_rates: {
+        Row: {
+          base: string
+          code: string
+          fetched_at: string
+          rate: number
+          source: string
+        }
+        Insert: {
+          base?: string
+          code: string
+          fetched_at: string
+          rate: number
+          source: string
+        }
+        Update: {
+          base?: string
+          code?: string
+          fetched_at?: string
+          rate?: number
+          source?: string
+        }
+        Relationships: []
+      }
       fakturoid_connections: {
         Row: {
           account_slug: string
@@ -3091,6 +3139,7 @@ export type Database = {
       }
       plan_catalog_versions: {
         Row: {
+          add_ons: Json | null
           created_at: string
           created_by: string | null
           id: string
@@ -3100,6 +3149,7 @@ export type Database = {
           status: string
         }
         Insert: {
+          add_ons?: Json | null
           created_at?: string
           created_by?: string | null
           id?: string
@@ -3109,6 +3159,7 @@ export type Database = {
           status: string
         }
         Update: {
+          add_ons?: Json | null
           created_at?: string
           created_by?: string | null
           id?: string
@@ -3631,6 +3682,7 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          add_ons: string[]
           billing: string
           cancel_at_period_end: boolean
           cancel_note: string | null
@@ -3660,6 +3712,7 @@ export type Database = {
           via_worker_invite: boolean
         }
         Insert: {
+          add_ons?: string[]
           billing?: string
           cancel_at_period_end?: boolean
           cancel_note?: string | null
@@ -3689,6 +3742,7 @@ export type Database = {
           via_worker_invite?: boolean
         }
         Update: {
+          add_ons?: string[]
           billing?: string
           cancel_at_period_end?: boolean
           cancel_note?: string | null
@@ -4815,6 +4869,10 @@ export type Database = {
       account_by_email: { Args: { _email: string }; Returns: string }
       account_by_public_id: { Args: { _public_id: string }; Returns: string }
       account_deletion_blockers: { Args: { _user: string }; Returns: string[] }
+      account_has_add_on: {
+        Args: { _key: string; _user_id: string }
+        Returns: boolean
+      }
       account_has_own_plan: { Args: { _user_id: string }; Returns: boolean }
       account_notifications_read: { Args: never; Returns: number }
       account_prepare_deletion: { Args: { _user: string }; Returns: undefined }
@@ -4826,6 +4884,7 @@ export type Database = {
         }[]
       }
       add_interested_contact_table: { Args: never; Returns: string }
+      add_on_keys: { Args: never; Returns: string[] }
       admin_bug_report_list: {
         Args: {
           _code?: string
@@ -4969,12 +5028,20 @@ export type Database = {
         Args: { _expected: string; _ip_hash?: string; _payload: Json }
         Returns: string
       }
+      admin_plan_catalog_publish_full: {
+        Args: { _add_ons: Json; _expected: string; _ip_hash?: string; _payload: Json }
+        Returns: string
+      }
       admin_plan_catalog_restore: {
         Args: { _expected: string; _ip_hash?: string; _version: string }
         Returns: string
       }
       admin_plan_catalog_save_draft: {
         Args: { _ip_hash?: string; _payload: Json }
+        Returns: string
+      }
+      admin_plan_catalog_save_draft_full: {
+        Args: { _add_ons: Json; _ip_hash?: string; _payload: Json }
         Returns: string
       }
       admin_plan_user_counts: {
@@ -5540,6 +5607,7 @@ export type Database = {
         Args: { _contact: string; _deal: string; _owner: string }
         Returns: boolean
       }
+      currency_digits: { Args: { _code: string }; Returns: number }
       current_plan: {
         Args: { _user_id: string }
         Returns: {
@@ -5679,6 +5747,14 @@ export type Database = {
       finance_totals: {
         Args: { _category?: string; _from: string; _to: string }
         Returns: {
+          expense: number
+          income: number
+        }[]
+      }
+      finance_totals_by_currency: {
+        Args: { _category?: string; _from: string; _to: string }
+        Returns: {
+          currency: string
           expense: number
           income: number
         }[]
@@ -6669,6 +6745,10 @@ export type Database = {
       plan_catalog_money_ok: { Args: { _value: Json }; Returns: boolean }
       plan_catalog_number: { Args: { _value: Json }; Returns: number }
       plan_catalog_plan_ok: { Args: { _p: Json }; Returns: boolean }
+      plan_catalog_same_currencies: {
+        Args: { _a: Json; _b: Json }
+        Returns: boolean
+      }
       plan_catalog_text_ok: {
         Args: { _max: number; _min: number; _value: Json }
         Returns: boolean
@@ -6897,6 +6977,10 @@ export type Database = {
         Returns: Json
       }
       subscription_resume: { Args: { _user_id: string }; Returns: Json }
+      subscription_set_add_on: {
+        Args: { _key: string; _on: boolean; _user_id: string }
+        Returns: Json
+      }
       subscription_usage: {
         Args: { _owner: string }
         Returns: {
@@ -6919,6 +7003,7 @@ export type Database = {
       valid_ai_caps: { Args: { _value: Json }; Returns: boolean }
       valid_error_alerts: { Args: { _value: Json }; Returns: boolean }
       valid_jarvis_rules: { Args: { _value: Json }; Returns: boolean }
+      valid_plan_add_ons: { Args: { _value: Json }; Returns: boolean }
       valid_plan_catalog: { Args: { _payload: Json }; Returns: boolean }
       valid_tutorial_state: { Args: { _state: Json }; Returns: boolean }
       work_seconds_between: {

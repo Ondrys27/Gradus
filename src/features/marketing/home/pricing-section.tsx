@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { getExchangeRates } from "@/features/currency/server/rates";
 import { getPublishedPlans } from "@/features/plan/catalog-server";
 import { homeAnchorId, type SiteLocale } from "@/lib/routes";
 import { WebPricing } from "../web-pricing";
@@ -17,9 +18,10 @@ export async function PricingSection({
   /** The /cenik page has the plans as its main heading. */
   headingLevel?: 1 | 2;
 }) {
-  const [t, plans] = await Promise.all([
+  const [t, plans, rates] = await Promise.all([
     getTranslations({ locale, namespace: "marketing.pricing" }),
     getPublishedPlans(),
+    getExchangeRates(),
   ]);
   const Heading = headingLevel === 1 ? "h1" : "h2";
 
@@ -43,6 +45,7 @@ export async function PricingSection({
       <div className="mt-12 md:mt-16">
         <WebPricing
           plans={plans}
+          rates={rates}
           signupEnabled={signupEnabled}
           faqHref={`#${homeAnchorId(locale, "faq")}`}
         />

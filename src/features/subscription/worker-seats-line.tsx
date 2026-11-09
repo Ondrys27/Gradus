@@ -3,6 +3,8 @@
 import { UsersIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { isPaidPlanKey, type Billing, type PlanCatalog, type PriceCurrency } from "@/config/pricing";
+import { moneyIn } from "@/features/plan/localized";
+import type { RateTable } from "@/lib/exchange-rates";
 import { perWorkerPrice } from "@/features/plan/catalog";
 import { extraWorkersCharge, workerSeats, type WorkerSeats } from "@/features/plan/worker-seats";
 import { formatNumber } from "@/lib/format";
@@ -32,6 +34,7 @@ export function useWorkerCharge(
   billing: Billing,
   currency: PriceCurrency,
   enabled = true,
+  rates: RateTable = {},
 ): WorkerCharge | null {
   const query = useWorkerBilling(enabled);
   if (!query.data) return null;
@@ -45,7 +48,7 @@ export function useWorkerCharge(
   const price = plan
     ? perWorkerPrice(plan, currency, billing)
     : terms.perWorker
-      ? terms.perWorker[currency]
+      ? (moneyIn(terms.perWorker, currency, rates)?.amount ?? null)
       : null;
   return {
     seats,

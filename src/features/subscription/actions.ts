@@ -1,6 +1,6 @@
 "use server";
 
-import { isPaidPlanKey } from "@/config/pricing";
+import { isAddOnKey, isPaidPlanKey, type AddOnKey } from "@/config/pricing";
 import {
   gatewayFor,
   loadStoredSubscription,
@@ -13,6 +13,7 @@ import {
   cancelStripeSubscription,
   changeStripePlan,
   resumeStripeSubscription,
+  setStripeAddOn,
 } from "@/features/billing/stripe/gateway";
 import { accountAllowedInMode } from "@/features/billing/stripe/modes";
 import { getPublishedPlans } from "@/features/plan/catalog-server";
@@ -42,6 +43,7 @@ import {
   type SubscriptionResult,
 } from "./server-context";
 import {
+  addOnBlock,
   changeBlock,
   changeDirection,
   hasLiveGateway,
@@ -217,6 +219,51 @@ export async function resumeSubscription(): Promise<SubscriptionResult<{ resumed
       ctx.admin.rpc("subscription_resume", { _user_id: ctx.userId }),
     );
     return { resumed: result.resumed };
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Add-ons (step 24.1)
+// ---------------------------------------------------------------------------
+
+/**
+ * Switches an add-on on or off. A subscription that runs in Stripe gets or
+ * loses the add-on's item first (the rest of the period invoiced now, or
+ * credited); during the free trial or a plan set by hand it is only written
+ * (Checkout then charges it with the plan, beta never pays). Not after the
+ * subscription expired, and not while Stripe holds a downgrade.
+ */
+export async function setSubscriptionAddOn(input: {
+  addOn: AddOnKey;
+  on: boolean;
+}): Promise<SubscriptionResult<{ changed: boolean }>> {
+  return run("addOn", async (ctx) => {
+    if (!isAddOnKey(input?.addOn) || typeof input.on !== "boolean") throw new SubscriptionError("invalid");
+    const sub = await loadStoredSubscription(ctx.admin, ctx.userId);
+    if (!sub) throw new SubscriptionError("notAllowed");
+    const block = addOnBlock(sub);
+    if (block === "expired") throw new SubscriptionError("expired");
+    if (block === "scheduled") throw new SubscriptionError("addOnScheduled");
+    let charged = false;
+    await gatewayStep(
+      ctx,
+      async (gateway, ref) => {
+        charged = true;
+        await setStripeAddOn(gateway, ref, input.addOn, input.on);
+      },
+      { checkoutInstead: () => false },
+    );
+    const result = await rpc<{ changed: boolean }>(
+      ctx.admin.rpc("subscription_set_add_on", { _user_id: ctx.userId, _key: input.addOn, _on: input.on }),
+    );
+    if (result.changed) {
+      await track(
+        "add_on_changed",
+        { add_on: input.addOn, on: input.on, charged },
+        { userId: ctx.userId, ownerId: ctx.userId, admin: ctx.admin },
+      );
+    }
+    return { changed: result.changed };
   });
 }
 

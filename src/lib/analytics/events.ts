@@ -136,6 +136,7 @@ const CRON_JOBS = [
   "notes_trash",
   "error_alerts",
   "chat_attachments",
+  "exchange_rates",
 ] as const;
 const FILE_ERRORS = [
   "fileType",
@@ -145,7 +146,7 @@ const FILE_ERRORS = [
   "fileLimit",
 ] as const;
 const PAID_PLANS = ["solo", "pro", "team"] as const;
-const CHECKOUT_CURRENCIES = ["CZK", "EUR"] as const;
+const ADD_ONS = ["no_branding"] as const;
 
 export const EVENTS = {
   // --- platform ------------------------------------------------------------
@@ -931,19 +932,19 @@ export const EVENTS = {
   checkout_started: event("plan", "server", false, {
     plan: oneOf(PAID_PLANS),
     billing: oneOf(BILLINGS),
-    currency: oneOf(CHECKOUT_CURRENCIES),
+    currency: isoCode(3),
     with_promo: bool(),
     from: oneOf(CHECKOUT_SOURCES),
   }),
   checkout_completed: event("plan", "server", false, {
     plan: oneOf(PAID_PLANS),
     billing: oneOf(BILLINGS),
-    currency: oneOf(CHECKOUT_CURRENCIES),
+    currency: isoCode(3),
   }),
   payment_succeeded: event("plan", "server", false, {
     plan: oneOf(PAID_PLANS),
     billing: oneOf(BILLINGS),
-    currency: oneOf(CHECKOUT_CURRENCIES),
+    currency: isoCode(3),
     first: bool(),
   }),
   payment_failed: event("plan", "server", false, {
@@ -952,8 +953,14 @@ export const EVENTS = {
     billing: optional(oneOf(BILLINGS)),
   }),
   payment_refunded: event("plan", "server", false, {
-    currency: oneOf(CHECKOUT_CURRENCIES),
+    currency: isoCode(3),
     plan: optional(oneOf(PAID_PLANS)),
+  }),
+  /** An add-on switched on or off in Settings → Subscription (step 24.1); `charged` = through Stripe. */
+  add_on_changed: event("plan", "server", false, {
+    add_on: oneOf(ADD_ONS),
+    on: bool(),
+    charged: bool(),
   }),
   /** Stripe's Customer Portal opened (step 23.2): from where, and whether a payment was failing. */
   billing_portal_opened: event("plan", "server", false, {

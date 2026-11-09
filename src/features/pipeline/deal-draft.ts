@@ -1,4 +1,4 @@
-import { CURRENCIES } from "@/lib/format";
+import { BASE_CURRENCY, isCurrencyShape } from "@/lib/currency";
 import {
   fieldErrors,
   dealSchema,
@@ -23,7 +23,7 @@ export type DealDraft = {
 };
 
 export function defaultCurrency(userCurrency: string): string {
-  return (CURRENCIES as readonly string[]).includes(userCurrency) ? userCurrency : CURRENCIES[0];
+  return isCurrencyShape(userCurrency) ? userCurrency : BASE_CURRENCY;
 }
 
 export function emptyDraft(stageId: string, currency: string): DealDraft {

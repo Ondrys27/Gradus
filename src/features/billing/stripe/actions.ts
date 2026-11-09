@@ -4,7 +4,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { getLocale, getTranslations } from "next-intl/server";
 import type Stripe from "stripe";
 import { z } from "zod";
-import { priceCurrencyFor, type PriceCurrency } from "@/config/pricing";
+import type { CatalogPlan, PriceCurrency } from "@/config/pricing";
+import { chargeCurrency } from "@/features/plan/localized";
+import { DEFAULT_FORMAT_SETTINGS } from "@/lib/format";
 import { PROMO_BENEFITS, type PromoBenefitKind } from "@/features/promo/codes";
 import { planChoiceSchema, type PlanChoiceInput } from "@/features/subscription/schemas";
 import {
@@ -25,7 +27,7 @@ import { ensureCustomer, storedCustomer } from "./customer";
 import { subscriptionState, workspaceOf } from "./mapping";
 import type { StripeMode } from "./modes";
 import { ensurePortalConfiguration } from "./portal";
-import { planPeriodPrice, priceLookupKey } from "./prices";
+import { addOnLookupKey, planPeriodPrice, priceLookupKey } from "./prices";
 import { extraWorkerQuantity } from "./seats";
 import { applySubscriptionState, hasPaidStripeInvoice } from "./store";
 import { checkoutStart } from "./timing";
@@ -135,9 +137,13 @@ async function refuseSecondSubscription(
   for (const session of open.data) await stripe.checkout.sessions.expire(session.id);
 }
 
-async function priceCurrency(admin: Admin, userId: string): Promise<PriceCurrency> {
+/**
+ * The currency Checkout charges: the user's own when the plan has a manual
+ * price in it, else EUR (a price derived at the day's rate is only shown).
+ */
+async function priceCurrency(admin: Admin, userId: string, plan: CatalogPlan): Promise<PriceCurrency> {
   const { data } = await admin.from("user_settings").select("currency").eq("user_id", userId).maybeSingle();
-  return priceCurrencyFor(data?.currency ?? "CZK");
+  return chargeCurrency(plan, data?.currency ?? DEFAULT_FORMAT_SETTINGS.currency);
 }
 
 export async function startCheckout(input: CheckoutInput): Promise<SubscriptionResult<{ url: string }>> {
@@ -159,7 +165,7 @@ export async function startCheckout(input: CheckoutInput): Promise<SubscriptionR
     const version = await loadPublishedVersion(ctx.admin);
     const plan = version.catalog.find((candidate) => candidate.key === planKey);
     if (!plan) throw new SubscriptionError("notAllowed");
-    const currency = await priceCurrency(ctx.admin, ctx.userId);
+    const currency = await priceCurrency(ctx.admin, ctx.userId, plan);
     const locale = (await getLocale()) === "en" ? "en" : "cs";
     const t = await getTranslations({ locale, namespace: "billing.checkout" });
     const site = await siteOrigin();
@@ -183,6 +189,12 @@ export async function startCheckout(input: CheckoutInput): Promise<SubscriptionR
       if (!planPrice) throw new SubscriptionError("unknown");
       const workerPrice = prices.get(priceLookupKey({ ...key, kind: "worker" }));
       const workers = workerPrice ? await extraWorkerQuantity(ctx.admin, ctx.userId, plan) : 0;
+      // The add-ons switched on during the trial are paid with the plan, at its period.
+      const addOnPrices = sub.addOns.map((addOn) => {
+        const price = prices.get(addOnLookupKey({ addOn, currency, billing, version: version.number }));
+        if (!price) throw new SubscriptionError("unknown");
+        return price;
+      });
       const customer = await ensureCustomer(stripe, ctx.admin, {
         workspace: ctx.userId,
         mode,
@@ -208,6 +220,7 @@ export async function startCheckout(input: CheckoutInput): Promise<SubscriptionR
         line_items: [
           { price: planPrice, quantity: 1 },
           ...(workerPrice && workers > 0 ? [{ price: workerPrice, quantity: workers }] : []),
+          ...addOnPrices.map((price) => ({ price, quantity: 1 })),
         ],
         metadata,
         subscription_data: {

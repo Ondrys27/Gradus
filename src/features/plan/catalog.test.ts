@@ -178,8 +178,8 @@ describe("diffPlanCatalogs", () => {
     expect(diffPlanCatalogs(seed(), next)).toEqual([
       { plan: "pro", field: "name.en", from: "Pro", to: "Pro+" },
       { plan: "pro", field: "monthly.CZK", from: 890, to: 990 },
-      { plan: "pro", field: "per_worker.CZK", from: null, to: 100 },
       { plan: "pro", field: "per_worker.EUR", from: null, to: 4 },
+      { plan: "pro", field: "per_worker.CZK", from: null, to: 100 },
       { plan: "pro", field: "limits.workers", from: null, to: 3 },
     ]);
   });

@@ -1,4 +1,5 @@
 import { addMonths, endOfMonth, startOfMonth, startOfYear } from "date-fns";
+import { sumInCurrency, type RateTable } from "@/lib/exchange-rates";
 import { isoDateToLocal, localToIsoDate, type IsoDate } from "@/lib/format";
 import type { PeriodKind } from "./types";
 
@@ -151,4 +152,44 @@ export function zoomedRange(kind: ChartKind, rows: ChartRow[], window: ZoomWindo
   const endRow = rows[end];
   const to = kind === "year" ? localToIsoDate(endOfMonth(isoDateToLocal(endRow.key))) : endRow.key;
   return { from: startRow.key, to };
+}
+
+/** Income and expenses of one currency, as finance_totals_by_currency() returns them. */
+export type CurrencyTotals = { currency: string; income: number; expense: number };
+
+export type Totals = {
+  /** In the display currency; amounts in other currencies converted at the day's rate. */
+  income: number;
+  expense: number;
+  /** Some amount was in another currency: shown with "roughly at the rate of …". */
+  converted: boolean;
+  /** The oldest rate used, null when nothing was converted. */
+  asOf: string | null;
+  /** Currencies without a usable rate (older than 7 days or none), left out of the sums. */
+  missing: CurrencyTotals[];
+};
+
+/**
+ * The summary across currencies (step 24.1): the stored amounts stay in the
+ * currency they were made in; for the screen everything is added up in the
+ * display currency at the day's rate, and what cannot be converted is listed
+ * on its own instead of being guessed.
+ */
+export function combineTotals(
+  rows: readonly CurrencyTotals[],
+  currency: string,
+  rates: RateTable,
+  now: Date = new Date(),
+): Totals {
+  const income = sumInCurrency(rows.map((row) => ({ currency: row.currency, amount: row.income })), currency, rates, now);
+  const expense = sumInCurrency(rows.map((row) => ({ currency: row.currency, amount: row.expense })), currency, rates, now);
+  const missing = rows.filter((row) => income.missing.includes(row.currency));
+  const asOf = [income.asOf, expense.asOf].filter((at): at is string => !!at).sort()[0] ?? null;
+  return {
+    income: income.total,
+    expense: expense.total,
+    converted: rows.some((row) => row.currency !== currency && !income.missing.includes(row.currency)),
+    asOf,
+    missing,
+  };
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { catalogLocaleFor, isPaidPlanKey, PAID_PLANS, priceCurrencyFor } from "./pricing";
+import { ADD_ON_KEYS, ADD_ON_SEED_PRICES, catalogLocaleFor, isAddOnKey, isPaidPlanKey, PAID_PLANS } from "./pricing";
 
 describe("pricing seed", () => {
   it("has the three plans with Pro recommended", () => {
@@ -21,11 +21,17 @@ describe("pricing seed", () => {
     expect(isPaidPlanKey(undefined)).toBe(false);
   });
 
-  it("shows CZK to Czech visitors and EUR to everyone else", () => {
-    expect(priceCurrencyFor("cs")).toBe("CZK");
-    expect(priceCurrencyFor("CZK")).toBe("CZK");
-    expect(priceCurrencyFor("en")).toBe("EUR");
-    expect(priceCurrencyFor("USD")).toBe("EUR");
+  it("prices every plan in EUR, with CZK as the manual price", () => {
+    for (const plan of PAID_PLANS) {
+      expect(Object.keys(plan.monthly).sort(), plan.key).toEqual(["CZK", "EUR"]);
+    }
+  });
+
+  it("sells the add-on without branding for 0,99 € or 29 Kč a month", () => {
+    expect(ADD_ON_KEYS).toEqual(["no_branding"]);
+    expect(ADD_ON_SEED_PRICES.no_branding).toEqual({ EUR: 0.99, CZK: 29 });
+    expect(isAddOnKey("no_branding")).toBe(true);
+    expect(isAddOnKey("pro")).toBe(false);
   });
 
   it("reads the catalog in Czech only for Czech", () => {

@@ -12,9 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CURRENCIES, currencyName } from "@/lib/format";
-import { useLocale } from "next-intl";
-import { useSession } from "@/features/account/queries";
+import { CurrencyPicker } from "@/components/ui/currency-picker";
+import { useSession, useUserSettings } from "@/features/account/queries";
 import { useAssignees } from "@/features/crm-tasks/queries";
 import { useAssigneeName } from "@/features/crm-tasks/use-assignee-name";
 import { ContactPicker } from "./contact-picker";
@@ -45,16 +44,8 @@ export function DealFormFields({
   showAssignee = false,
 }: Props) {
   const t = useTranslations("pipeline");
-  const locale = useLocale();
 
-  const currencies = useMemo(
-    () =>
-      CURRENCIES.map((code) => ({
-        value: code,
-        label: `${code} · ${currencyName(code, locale)}`,
-      })),
-    [locale],
-  );
+  const settings = useUserSettings();
   const stageItems = useMemo(
     () => stages.map((stage) => ({ value: stage.id, label: stage.name })),
     [stages],
@@ -98,22 +89,13 @@ export function DealFormFields({
             />
           </FormField>
           <FormField id={`${idPrefix}-currency`} label={t("form.currency")} className="sm:w-44">
-            <Select
+            <CurrencyPicker
+              id={`${idPrefix}-currency`}
+              compact
               value={draft.currency}
-              items={currencies}
-              onValueChange={(next) => next && onChange({ currency: next })}
-            >
-              <SelectTrigger id={`${idPrefix}-currency`}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {currencies.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              country={settings.country_code}
+              onChange={(next) => onChange({ currency: next })}
+            />
           </FormField>
         </div>
       )}

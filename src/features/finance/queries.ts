@@ -10,8 +10,10 @@ import {
 import { useSession } from "@/features/account/queries";
 import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { useAwardXp } from "@/features/game/queries";
-import type { DailyRow, DateRange, MonthlyRow } from "./finance-logic";
-import { PAGE_SIZE } from "./finance-logic";
+import { useExchangeRates } from "@/features/currency/use-exchange-rates";
+import { useFormatSettings } from "@/lib/use-format-settings";
+import type { CurrencyTotals, DailyRow, DateRange, MonthlyRow, Totals } from "./finance-logic";
+import { combineTotals, PAGE_SIZE } from "./finance-logic";
 import type { RecurringInput, TransactionInput } from "./schemas";
 import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
@@ -69,21 +71,32 @@ export function useTransactions(range: DateRange, category: string | null, page:
   });
 }
 
+/**
+ * Income and expenses of a period in the display currency. The database adds
+ * up each currency on its own (finance_totals_by_currency); amounts in other
+ * currencies are converted here at the day's rate, only for the screen.
+ */
 export function useTotals(range: DateRange, category: string | null) {
   const { user } = useSession();
+  const { currency } = useFormatSettings();
+  const rates = useExchangeRates();
   return useQuery({
     queryKey: financeKeys.totals(user.id, range, category),
     placeholderData: keepPreviousData,
-    queryFn: async () => {
-      const { data, error } = await createClient().rpc("finance_totals", {
+    queryFn: async (): Promise<CurrencyTotals[]> => {
+      const { data, error } = await createClient().rpc("finance_totals_by_currency", {
         _from: range.from,
         _to: range.to,
         _category: category ?? undefined,
       });
       if (error) throw error;
-      const row = data[0];
-      return { income: Number(row?.income ?? 0), expense: Number(row?.expense ?? 0) };
+      return data.map((row) => ({
+        currency: row.currency,
+        income: Number(row.income ?? 0),
+        expense: Number(row.expense ?? 0),
+      }));
     },
+    select: (rows): Totals => combineTotals(rows, currency, rates),
   });
 }
 

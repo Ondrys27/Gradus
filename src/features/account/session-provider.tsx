@@ -8,6 +8,8 @@ import { writeLocaleCookie } from "@/i18n/locale-cookie";
 import type { Locale } from "@/i18n/locales";
 import { loginUrlFor } from "@/lib/auth/routes";
 import { applyAnimationsEnabled } from "@/lib/animation-preference";
+import { CURRENCY_COOKIE_MAX_AGE, USER_CURRENCY_COOKIE } from "@/features/currency/visitor-currency";
+import { isCurrencyShape } from "@/lib/currency";
 import { applySoundEnabled } from "@/lib/sound-preference";
 import { createClient } from "@/lib/supabase/client";
 import { CelebrationProvider } from "@/components/celebration/celebration-provider";
@@ -93,6 +95,11 @@ function SettingsBridge({ children }: { children: ReactNode }) {
   const formatSettings = useMemo(() => toFormatSettings(settings), [settings]);
 
   useEffect(() => applySoundEnabled(settings.sound_enabled), [settings.sound_enabled]);
+  // The website's price list shows a signed-in user their own currency.
+  useEffect(() => {
+    if (!isCurrencyShape(settings.currency)) return;
+    document.cookie = `${USER_CURRENCY_COOKIE}=${settings.currency}; path=/; max-age=${CURRENCY_COOKIE_MAX_AGE}; samesite=lax`;
+  }, [settings.currency]);
   useEffect(
     () => applyAnimationsEnabled(settings.animations_enabled),
     [settings.animations_enabled],

@@ -19,6 +19,7 @@ import { buildTable } from "@/features/admin/table";
 import { BreakdownList, DataTable } from "@/features/admin/ui/data-blocks";
 import { ADMIN_FORMAT_SETTINGS, formatMetricValue } from "@/features/admin/format-metric";
 import { Figures } from "@/features/admin/ui/metric-tile";
+import { exchangeRateHealth } from "@/features/currency/server/rates";
 import { formatDateTime, formatNumber } from "@/lib/format";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -53,6 +54,9 @@ export default async function AdminHealthPage({ searchParams }: Props) {
         </Suspense>
         <Suspense fallback={<CardSkeleton height={240} />}>
           <Cron q={q} />
+        </Suspense>
+        <Suspense fallback={<CardSkeleton height={200} />}>
+          <ExchangeRates />
         </Suspense>
       </div>
     </>
@@ -182,6 +186,74 @@ async function Cron({ q }: { q: AdminQuery }) {
               },
             ])}
           />
+        )}
+      </Show>
+    </AdminCard>
+  );
+}
+
+/**
+ * Exchange rates (step 24.1): how each source did on its last run. A failed
+ * source keeps its last rates; a rate older than 7 days is not used for a
+ * price (EUR is shown instead), listed here so the owner sees it.
+ */
+async function ExchangeRates() {
+  const [loaded, t] = await Promise.all([
+    safe("exchange rates", () => exchangeRateHealth()),
+    getTranslations("admin.health.rates"),
+  ]);
+  const at = (value: string | null) => (value ? formatDateTime(new Date(value), ADMIN_FORMAT_SETTINGS) : "–");
+  return (
+    <AdminCard title={t("title")} description={t("description")}>
+      <Show loaded={loaded}>
+        {(health) => (
+          <div className="flex flex-col gap-3" data-testid="health-exchange-rates">
+            <DataTable
+              id="health.exchange_rates"
+              table={buildTable(health.sources, [
+                { key: "source", label: t("columns.source"), render: (row) => t(`sources.${row.source}`) },
+                {
+                  key: "last_success_at",
+                  label: t("columns.lastSuccess"),
+                  render: (row) => at(row.lastSuccessAt),
+                  csv: (row) => row.lastSuccessAt,
+                },
+                {
+                  key: "last_attempt_at",
+                  label: t("columns.lastAttempt"),
+                  render: (row) => at(row.lastAttemptAt),
+                  csv: (row) => row.lastAttemptAt,
+                },
+                {
+                  key: "state",
+                  label: t("columns.state"),
+                  render: (row) =>
+                    row.lastAttemptAt === null
+                      ? t("never")
+                      : row.lastError
+                        ? t("failed", { error: row.lastError })
+                        : t("ok"),
+                  csv: (row) => row.lastError ?? (row.lastAttemptAt ? "ok" : ""),
+                },
+                {
+                  key: "rates",
+                  label: t("columns.rates"),
+                  align: "right",
+                  render: (row) => count(row.rates),
+                  csv: (row) => row.rates,
+                },
+              ])}
+            />
+            <p className={health.stale.length ? "text-sm text-gold" : "text-sm text-ink-soft"}>
+              {health.stale.length
+                ? t("stale", {
+                    count: health.stale.length,
+                    shown: count(health.stale.length),
+                    codes: health.stale.join(", "),
+                  })
+                : t("fresh", { count: health.currencies, shown: count(health.currencies) })}
+            </p>
+          </div>
         )}
       </Show>
     </AdminCard>

@@ -1,7 +1,7 @@
 import type Stripe from "stripe";
-import type { Billing, PaidPlanKey } from "@/config/pricing";
+import type { AddOnKey, Billing, PaidPlanKey } from "@/config/pricing";
 import type { StoredStatus } from "@/features/subscription/state";
-import { fromMinorUnits, parseLookupKey, type PriceKey } from "./prices";
+import { fromMinorUnits, parseAddOnLookupKey, parseLookupKey, type PriceKey } from "./prices";
 
 /**
  * Stripe's objects as the rows of Gradus (step 23.1), without any I/O: the
@@ -82,6 +82,8 @@ export type SubscriptionState = {
   currency: string | null;
   planItemId: string;
   workerItem: { id: string; quantity: number } | null;
+  /** The add-ons charged with it (step 24.1): their subscription items. */
+  addOnItems: { addOn: AddOnKey; id: string }[];
   /** The catalog version of the plan's price. */
   version: number;
   /** Stripe ended it after the last failed attempt to collect a payment. */
@@ -128,10 +130,19 @@ export function subscriptionState(
 
   let plan: { item: Stripe.SubscriptionItem; key: PriceKey } | null = null;
   let worker: { item: Stripe.SubscriptionItem; key: PriceKey } | null = null;
+  const addOns: Stripe.SubscriptionItem[] = [];
+  const addOnItems: SubscriptionState["addOnItems"] = [];
   for (const item of sub.items?.data ?? []) {
     const key = priceKeyOf(item.price);
     if (key?.kind === "plan" && !plan) plan = { item, key };
     else if (key?.kind === "worker" && !worker) worker = { item, key };
+    else {
+      const addOn = parseAddOnLookupKey(item.price.lookup_key ?? null);
+      if (addOn && !addOnItems.some((known) => known.addOn === addOn.addOn)) {
+        addOns.push(item);
+        addOnItems.push({ addOn: addOn.addOn, id: item.id });
+      }
+    }
   }
   if (!plan) return { ok: false, problem: "unknown_price", workspace };
 
@@ -139,8 +150,15 @@ export function subscriptionState(
     typeof item.price.unit_amount === "number" ? item.price.unit_amount * (item.quantity ?? 1) : null;
   const planAmount = unit(plan.item);
   const workerAmount = worker ? unit(worker.item) : 0;
+  const addOnAmounts = addOns.map(unit);
+  const addOnAmount = addOnAmounts.includes(null)
+    ? null
+    : addOnAmounts.reduce<number>((sum, value) => sum + (value ?? 0), 0);
+  const currency = plan.item.price.currency ? plan.item.price.currency.toUpperCase() : null;
   const amount =
-    planAmount === null || workerAmount === null ? null : fromMinorUnits(planAmount + workerAmount);
+    planAmount === null || workerAmount === null || addOnAmount === null
+      ? null
+      : fromMinorUnits(planAmount + workerAmount + addOnAmount, currency ?? "EUR");
   const current = { planKey: plan.key.plan, billing: plan.key.billing };
   const cancelled = status === "cancelled";
   // An ended subscription ends when Stripe ended it (after the last failed
@@ -161,9 +179,10 @@ export function subscriptionState(
       cancelAtPeriodEnd: !cancelled && (sub.cancel_at_period_end || sub.cancel_at !== null),
       scheduled: cancelled ? null : scheduledChange(schedule, current, now),
       amount,
-      currency: plan.item.price.currency ? plan.item.price.currency.toUpperCase() : null,
+      currency,
       planItemId: plan.item.id,
       workerItem: worker ? { id: worker.item.id, quantity: worker.item.quantity ?? 0 } : null,
+      addOnItems,
       version: plan.key.version,
       endedForNonPayment: cancelled && sub.cancellation_details?.reason === "payment_failed",
     },
@@ -225,7 +244,8 @@ export function paymentFromInvoice(
 ): PaymentState {
   const minor = status === "failed" ? invoice.amount_due : invoice.amount_paid;
   const vat = (invoice.total_taxes ?? []).reduce((sum, tax) => sum + (tax.amount ?? 0), 0);
-  const amount = fromMinorUnits(Math.max(0, minor ?? 0));
+  const currency = (invoice.currency ?? "").toUpperCase();
+  const amount = fromMinorUnits(Math.max(0, minor ?? 0), currency);
   const paidAt =
     status === "failed" ? eventAt.toISOString() : (toIso(invoice.status_transitions?.paid_at) ?? eventAt.toISOString());
   const url = invoice.hosted_invoice_url ?? null;
@@ -234,8 +254,8 @@ export function paymentFromInvoice(
     workspace: workspaceOf(invoice.parent?.subscription_details?.metadata),
     subscriptionRef: invoiceSubscriptionRef(invoice),
     amount,
-    vatAmount: Math.min(amount, fromMinorUnits(Math.max(0, vat))),
-    currency: (invoice.currency ?? "").toUpperCase(),
+    vatAmount: Math.min(amount, fromMinorUnits(Math.max(0, vat), currency)),
+    currency,
     paidAt,
     invoiceUrl: url && /^https:\/\//.test(url) && url.length <= 2000 ? url : null,
     attempt: Math.max(0, invoice.attempt_count ?? 0),

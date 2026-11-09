@@ -1,4 +1,13 @@
-import { PAID_PLANS, YEARLY_MONTHS_CHARGED, type PlanCatalog } from "@/config/pricing";
+import {
+  ADD_ON_KEYS,
+  ADD_ON_SEED_PRICES,
+  PAID_PLANS,
+  YEARLY_MONTHS_CHARGED,
+  type CatalogAddOn,
+  type Money,
+  type PlanCatalog,
+} from "@/config/pricing";
+import { APP_NAME } from "@/lib/constants";
 import cs from "@/locales/cs.json";
 import en from "@/locales/en.json";
 
@@ -16,10 +25,7 @@ export function seedPlanCatalog(): PlanCatalog {
     name: { cs: cs.plans.names[plan.key], en: en.plans.names[plan.key] },
     tagline: { cs: cs.plans.taglines[plan.key], en: en.plans.taglines[plan.key] },
     monthly: { ...plan.monthly },
-    yearly: {
-      CZK: plan.monthly.CZK * YEARLY_MONTHS_CHARGED,
-      EUR: plan.monthly.EUR * YEARLY_MONTHS_CHARGED,
-    },
+    yearly: times(plan.monthly, YEARLY_MONTHS_CHARGED),
     per_worker: plan.perWorker ? { ...plan.perWorker } : null,
     // The first version had no workers in the price: each one was extra.
     included_workers: 0,
@@ -30,6 +36,29 @@ export function seedPlanCatalog(): PlanCatalog {
       highlight: false,
     })),
     recommended: plan.recommended === true,
+    order,
+  }));
+}
+
+/** The catalog stores plain text: the app's name goes in once, here. */
+const withAppName = (text: string) => text.replaceAll("{appName}", APP_NAME);
+
+const times = (money: Money, factor: number): Money =>
+  Object.fromEntries(Object.entries(money).map(([code, amount]) => [code, amount * factor])) as Money;
+
+/**
+ * The add-ons of a version published before step 24.1 (it has none stored):
+ * the seed prices with the names and descriptions of the translations.
+ */
+export function seedAddOns(): CatalogAddOn[] {
+  return ADD_ON_KEYS.map((key, order) => ({
+    key,
+    name: { cs: withAppName(cs.plans.addOns[key].name), en: withAppName(en.plans.addOns[key].name) },
+    description: {
+      cs: withAppName(cs.plans.addOns[key].description),
+      en: withAppName(en.plans.addOns[key].description),
+    },
+    monthly: { ...ADD_ON_SEED_PRICES[key] },
     order,
   }));
 }

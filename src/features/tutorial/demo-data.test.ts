@@ -80,3 +80,15 @@ describe("buildDemoPayload", () => {
     expect(payload.deal.value).toBe(1_000);
   });
 });
+
+describe("demoDealValue", () => {
+  it("is round in crowns and euros and a selling price elsewhere", async () => {
+    const { demoDealValue } = await import("./demo-data");
+    const now = new Date("2026-11-09T12:00:00Z");
+    const rates = { JPY: { rate: 157, at: "2026-11-08T16:00:00Z", source: "ecb" as const } };
+    expect(demoDealValue("CZK", rates, now)).toBe(25_000);
+    expect(demoDealValue("EUR", rates, now)).toBe(1_000);
+    expect(demoDealValue("JPY", rates, now)).toBe(159_000);
+    expect(demoDealValue("INR", rates, now)).toBe(1_000);
+  });
+});

@@ -9,12 +9,22 @@ describe("describePlans", () => {
     const block = describePlans(seedPlanCatalog(), "cs");
     expect(block.startsWith("<plans>\n")).toBe(true);
     expect(block.endsWith("\n</plans>")).toBe(true);
-    expect(block).toContain("- Solo: 490 CZK or 19 EUR a month, 4900 CZK or 190 EUR a year.");
+    expect(block).toContain("- Solo: 19 EUR or 490 CZK a month, 190 EUR or 4900 CZK a year.");
     expect(block).toContain("- Pro (recommended):");
-    expect(block).toContain("plus 290 CZK or 12 EUR a month per worker");
+    expect(block).toContain("plus 12 EUR or 290 CZK a month per worker");
     expect(block).toContain("100 vygenerovaných kontaktů měsíčně");
     expect(block).toContain("workers: no limit, storage: no limit");
     expect(describePlans(seedPlanCatalog(), "en")).toContain("- Team:");
+  });
+
+  it("adds the user's own currency at today's rate when it has no manual price", () => {
+    const now = new Date("2026-11-09T12:00:00Z");
+    const rates = { USD: { rate: 1.16, at: "2026-11-08T16:00:00Z", source: "ecb" as const } };
+    const block = describePlans(seedPlanCatalog(), "en", null, { currency: "USD", rates, now });
+    expect(block).toContain("(in USD about 21.99 a month and 219.9 a year at today's rate; charged in EUR)");
+    expect(describePlans(seedPlanCatalog(), "en", null, { currency: "CZK", rates, now })).not.toContain("today's rate");
+    // Without a fresh rate nothing is guessed.
+    expect(describePlans(seedPlanCatalog(), "en", null, { currency: "INR", rates, now })).not.toContain("about");
   });
 
   it("keeps card texts from closing the block", () => {
