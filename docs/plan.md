@@ -4617,9 +4617,9 @@ Zkontroluj fázi 23 podle CLAUDE.md:
 
 ---
 
-# FÁZE 24 — Plánovač schůzek, měny a jazyky
+# FÁZE 24 — Plánovač schůzek a měny
 
-*Rozhodnutí ze dne 8. 11.: plánovač pracuje jen s kalendářem Gradusu (cizí kalendáře jednosměrně přes odběr ICS; obousměrné propojení s Googlem až po ověření aplikace u Googlu, samostatné kolo). Odkaz na videohovor je trvalý odkaz uživatele (automatický Google Meet později). Pořadí: měny (24.1) a jazyky (24.2) jdou PŘED plánovačem, protože veřejná stránka plánovače potřebuje obojí. Vercel Hobby: plánované úlohy jen jednou denně — připomínky proto plánuje Resend (scheduled_at), ne cron.*
+*Rozhodnutí ze dne 8. 11.: plánovač pracuje jen s kalendářem Gradusu (cizí kalendáře jednosměrně přes odběr ICS; obousměrné propojení s Googlem až po ověření aplikace u Googlu, samostatné kolo). Odkaz na videohovor je trvalý odkaz uživatele (automatický Google Meet později). Pořadí: měny (24.1) jdou PŘED plánovačem, protože je veřejná stránka plánovače potřebuje. Jazyky jsou odložené na úplný konec (fáze 25, rozhodnutí 9. 11.); plánovač zatím pracuje jen s cs a en, které už jsou. Vercel Hobby: plánované úlohy jen jednou denně — připomínky proto plánuje Resend (scheduled_at), ne cron.*
 
 *Navazuje na fázi 23 (platby přes Stripe): doplněk no_branding (24.1) se platí jako další položka předplatného ve Stripe, ne přes TODO(payments). „Free“ v 24.3 = tarif Solo, „Pro a vyšší“ = Pro a Team.*
 
@@ -4673,62 +4673,6 @@ ve financích, fakturách i v cenách tarifů.
 6. Vitest pro zaokrouhlování a přepočty, E2E: změnit měnu na JPY →
    finance a ceník správně formátované; ceník z IP jiné země.
    Doplň CLAUDE.md (Texty a formáty, Tarify).
-```
-
----
-
-## Prompt 24.2 — Jazyky: libovolný jazyk a automatický překlad · **Opus 5.5**
-
-```
-Aplikace má být dostupná ve světových jazycích. Dnes CS a EN,
-~6 000 textů na jazyk v src/locales/*.json. Překlad všech jazyků
-ručně nejde; udělej infrastrukturu pro libovolný jazyk a strojový
-překlad s kontrolou.
-
-1. INFRASTRUKTURA. src/i18n/locales.ts se stane seznamem všech
-   podporovaných jazyků s metadaty (kód BCP 47, název v daném
-   jazyce, směr psaní, výchozí měna a formát data, stav: published |
-   draft). Načítání zpráv po jazyce líně (dynamický import), ne
-   všechny do bundle. Výběr jazyka v nastavení a na webu (návštěvník
-   podle Accept-Language, s přepínačem; URL /en, /de… pro web,
-   aplikace podle nastavení). RTL: layout musí fungovat s dir="rtl"
-   (logické CSS vlastnosti místo left/right; projdi Tailwind třídy
-   ml-/mr-/pl-/pr-/left-/right- a nahraď ms-/me-/ps-/pe-/start-/end-).
-   Jarvis odpovídá v jazyce uživatele (už umí? ověř a doplň
-   instrukci do promptu), e-maily, PDF faktur (fonty pro latinku,
-   cyrilici, řečtinu; CJK a arabština přes vhodný font — ověř, že
-   PDF nezobrazí čtverečky) a Jarvisovy pevné texty tutoriálu
-   a pravidel jdou ze stejných souborů.
-2. PŘEKLADOVÝ KANÁL. Skript bun run i18n:translate <jazyk>:
-   vezme en.json jako zdroj, přeloží jen klíče, které v cílovém
-   jazyce chybí nebo mají starší hash zdroje (ulož hash každého
-   zdrojového textu do locales/.hashes.json), přes Claude API
-   (Sonnet, dávky po ~150 klíčích, s glosářem pojmů Gradusu:
-   Jarvis, milník, pipeline, Close Date… v docs/i18n-glosar.md,
-   kde pro každý jazyk je i rozhodnutí, co se nepřekládá). Zachová
-   zástupné symboly {name}, ICU plurály a HTML značky — validace po
-   překladu, selhání se opraví druhým průchodem. Výsledek označí
-   jako draft; bun run i18n:check vypíše chybějící a zastaralé
-   klíče ve všech jazycích; bun run i18n:translate --all přeloží
-   všechny jazyky se stavem published nebo draft. Odhadni a napiš
-   do souhrnu cenu jednoho jazyka (orientačně do 2 USD).
-3. PRVNÍ SADA. Přelož a zapni (published) tyto jazyky: de, sk,
-   pl, es, fr, it, pt-BR, nl, uk, ro, hu, tr. Připrav jako draft
-   (přeložené, ale skryté): ru, ja, zh-CN, ko, ar (RTL), hi, id,
-   vi, sv, da, nb, fi, el, cs/en zůstávají. Další jazyk = jeden
-   příkaz a přepnutí stavu v administraci → Nastavení → Jazyky
-   (seznam, stav, procento přeloženého, datum překladu, tlačítko
-   Přeložit chybějící). Jazyk ve stavu draft jde zapnout pro
-   konkrétní účet (interní testeři) v detailu uživatele.
-4. KVALITA. V aplikaci u každého textu v draft jazyce nenápadná
-   možnost „Navrhnout lepší překlad" (jen přihlášený; návrhy do
-   tabulky i18n_suggestions, administrace je schválí → zapíše do
-   JSON přes skript). Překlady nikdy nemění klíče ani strukturu.
-5. Vitest pro validaci zástupných symbolů a plurálů, i18n:check
-   v CI (bun run lint ho volá), E2E: přepnutí do de a ar →
-   aplikace i web bez anglických zbytků na nástěnce, RTL rozvržení
-   bez překryvů. Doplň CLAUDE.md (Texty a formáty: každý nový text
-   jde do en.json a cs.json, ostatní jazyky doplní skript).
 ```
 
 ---
@@ -4831,7 +4775,7 @@ funkčnost, data a e-maily.
    hosta (auto z prohlížeče, přepínač se seznamem pásem); formulář
    s otázkami typu; shrnutí „Konzultace 30 min · út 12. 11. 14:00
    (Europe/Prague) s Ondřejem"; tlačítko Rezervovat. Jazyk stránky
-   podle prohlížeče hosta (z published jazyků z 24.2, přepínač),
+   podle prohlížeče hosta (cs nebo en, přepínač; další jazyky přidá fáze 25),
    výchozí jazyk hostitele. Vlevo nahoře logo a název Gradus s
    odkazem na web, dole „Vytvořeno v Gradusu"; obojí zmizí, když
    hostitel má doplněk no_branding. Stránka indexovatelná jen
@@ -4908,8 +4852,8 @@ záře nejvýš, žádné rozmazané bubliny, typografie Gradusu.
 5. Značka Gradus vlevo nahoře a „Vytvořeno v Gradusu" dole jako
    součást designu, ne nálepka; po skrytí doplňkem rozvržení
    nepoznamená díru.
-6. Jazykové verze: ověř 3 jazyky (cs, en, de) a RTL (ar) na
-   rozvržení. Snímky po do docs/scheduler-design/after/, E2E
+6. Jazykové verze: ověř cs a en na rozvržení (další jazyky
+   a RTL až fáze 25). Snímky po do docs/scheduler-design/after/, E2E
    z 24.4 projdou (jen selektory).
 ```
 
@@ -4918,12 +4862,9 @@ záře nejvýš, žádné rozmazané bubliny, typografie Gradusu.
 ## Kontrola fáze 24 · **Opus 5.5**
 
 ```
-Zkontroluj fázi 23 podle CLAUDE.md:
+Zkontroluj fázi 24 podle CLAUDE.md:
 - měny: žádné CZK/EUR napevno mimo seed, zaokrouhlení v mezích,
   staré kurzy se nepoužijí, uložené částky se nikdy nepřepisují,
-- jazyky: i18n:check čistý, zástupné symboly a plurály validní ve
-  všech jazycích, RTL bez překryvů, draft jazyk nevidí běžný účet,
-  skript nikdy nemění klíče,
 - plánovač: sloty respektují buffer, notice, max/den, výjimky, DST
   a pásma; ICS odběr: jen https, limit velikosti, timeout, URL
   šifrovaná, neukládá se jako události; dva hosté nikdy stejný
@@ -4935,5 +4876,80 @@ Zkontroluj fázi 23 podle CLAUDE.md:
   hostitele a aktivní typy; /s/<handle> cizího uživatele 404 při
   neaktivním profilu,
 - doplněk no_branding skrývá značku jen u účtu, který ho má,
+- migrace jen přidávací, bun run lint, test, build a e2e projdou.
+```
+
+---
+
+# FÁZE 25 — Jazyky (až úplně nakonec)
+
+*Odloženo 9. 11.: jazyky přijdou až po všem ostatním, aby se nepřekládaly texty, které se ještě mění. V postupu zatím nejsou; až na ně dojde, přidej do docs/progress.md před 7.1 řádky `- [ ] 25.1 | architect | env: ANTHROPIC_API_KEY`, `- [ ] K25 | reviewer |` a STOP. Plánovač z fáze 24 pak dostane výběr jazyka z published jazyků a RTL ověření v 25.1 bodu 5. Překlad platí API kredity Jarvise (do 2 USD na jazyk, ~24 jazyků).*
+
+## Prompt 25.1 — Jazyky: libovolný jazyk a automatický překlad · **Opus 5.5**
+
+```
+Aplikace má být dostupná ve světových jazycích. Dnes CS a EN,
+~6 000 textů na jazyk v src/locales/*.json. Překlad všech jazyků
+ručně nejde; udělej infrastrukturu pro libovolný jazyk a strojový
+překlad s kontrolou.
+
+1. INFRASTRUKTURA. src/i18n/locales.ts se stane seznamem všech
+   podporovaných jazyků s metadaty (kód BCP 47, název v daném
+   jazyce, směr psaní, výchozí měna a formát data, stav: published |
+   draft). Načítání zpráv po jazyce líně (dynamický import), ne
+   všechny do bundle. Výběr jazyka v nastavení a na webu (návštěvník
+   podle Accept-Language, s přepínačem; URL /en, /de… pro web,
+   aplikace podle nastavení). RTL: layout musí fungovat s dir="rtl"
+   (logické CSS vlastnosti místo left/right; projdi Tailwind třídy
+   ml-/mr-/pl-/pr-/left-/right- a nahraď ms-/me-/ps-/pe-/start-/end-).
+   Jarvis odpovídá v jazyce uživatele (už umí? ověř a doplň
+   instrukci do promptu), e-maily, PDF faktur (fonty pro latinku,
+   cyrilici, řečtinu; CJK a arabština přes vhodný font — ověř, že
+   PDF nezobrazí čtverečky) a Jarvisovy pevné texty tutoriálu
+   a pravidel jdou ze stejných souborů.
+2. PŘEKLADOVÝ KANÁL. Skript bun run i18n:translate <jazyk>:
+   vezme en.json jako zdroj, přeloží jen klíče, které v cílovém
+   jazyce chybí nebo mají starší hash zdroje (ulož hash každého
+   zdrojového textu do locales/.hashes.json), přes Claude API
+   (Sonnet, dávky po ~150 klíčích, s glosářem pojmů Gradusu:
+   Jarvis, milník, pipeline, Close Date… v docs/i18n-glosar.md,
+   kde pro každý jazyk je i rozhodnutí, co se nepřekládá). Zachová
+   zástupné symboly {name}, ICU plurály a HTML značky — validace po
+   překladu, selhání se opraví druhým průchodem. Výsledek označí
+   jako draft; bun run i18n:check vypíše chybějící a zastaralé
+   klíče ve všech jazycích; bun run i18n:translate --all přeloží
+   všechny jazyky se stavem published nebo draft. Odhadni a napiš
+   do souhrnu cenu jednoho jazyka (orientačně do 2 USD).
+3. PRVNÍ SADA. Přelož a zapni (published) tyto jazyky: de, sk,
+   pl, es, fr, it, pt-BR, nl, uk, ro, hu, tr. Připrav jako draft
+   (přeložené, ale skryté): ru, ja, zh-CN, ko, ar (RTL), hi, id,
+   vi, sv, da, nb, fi, el, cs/en zůstávají. Další jazyk = jeden
+   příkaz a přepnutí stavu v administraci → Nastavení → Jazyky
+   (seznam, stav, procento přeloženého, datum překladu, tlačítko
+   Přeložit chybějící). Jazyk ve stavu draft jde zapnout pro
+   konkrétní účet (interní testeři) v detailu uživatele.
+4. KVALITA. V aplikaci u každého textu v draft jazyce nenápadná
+   možnost „Navrhnout lepší překlad" (jen přihlášený; návrhy do
+   tabulky i18n_suggestions, administrace je schválí → zapíše do
+   JSON přes skript). Překlady nikdy nemění klíče ani strukturu.
+5. Vitest pro validaci zástupných symbolů a plurálů, i18n:check
+   v CI (bun run lint ho volá), E2E: přepnutí do de a ar →
+   aplikace i web bez anglických zbytků na nástěnce, RTL rozvržení
+   bez překryvů. Doplň CLAUDE.md (Texty a formáty: každý nový text
+   jde do en.json a cs.json, ostatní jazyky doplní skript).
+   Veřejná rezervační stránka plánovače (24.4) vezme jazyk hosta
+   z published jazyků s přepínačem; ověř cs, en, de a RTL (ar).
+```
+
+---
+
+## Kontrola fáze 25 · **Opus 5.5**
+
+```
+Zkontroluj fázi 25 podle CLAUDE.md:
+- jazyky: i18n:check čistý, zástupné symboly a plurály validní ve
+  všech jazycích, RTL bez překryvů, draft jazyk nevidí běžný účet,
+  skript nikdy nemění klíče,
+- veřejná rezervační stránka v de a ar bez anglických zbytků,
 - migrace jen přidávací, bun run lint, test, build a e2e projdou.
 ```
