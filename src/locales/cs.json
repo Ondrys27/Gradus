@@ -4934,6 +4934,11 @@
       "cta": "Vybrat tarif",
       "workerText": "Zkušební období tohoto účtu skončilo. Data vidíš všechna, nové věci půjde zakládat, až majitel vybere tarif."
     },
+    "subscriptionEnded": {
+      "title": "Předplatné skončilo",
+      "text": "Tvoje data zůstávají a všechno vidíš. Nové věci půjde zakládat, až tarif znovu zaplatíš.",
+      "cta": "Předplatné"
+    },
     "overLimit": {
       "title": "Účet je nad limitem tarifu",
       "text": "Máš víc pracovníků nebo souborů, než tarif dovoluje. Data zůstávají a všechno vidíš. Nové věci půjde zakládat, až se vejdeš do limitu nebo si vybereš vyšší tarif.",
@@ -5622,6 +5627,10 @@
       "failed_payments": {
         "name": "Neúspěšné platby",
         "description": "Neúspěšné pokusy o platbu faktury předplatného podle čísla pokusu."
+      },
+      "payments": {
+        "name": "Platby za období",
+        "description": "Tržby, vrácené platby, platící účty a neuhrazené platby z plateb předplatného v ostrém režimu, po měnách (měny se nesčítají). Bez interních účtů."
       }
     }
   },
@@ -6062,6 +6071,13 @@
         "costPerUser": "Náklad na aktivního uživatele",
         "margin": "Marže",
         "marginShare": "Marže (%)"
+      },
+      "payments": {
+        "currency": "Měna",
+        "revenue": "Tržby",
+        "refunded": "Vráceno",
+        "payingAccounts": "Platící účty",
+        "failedPayments": "Neuhrazené po selhání"
       }
     },
     "health": {
@@ -6320,7 +6336,7 @@
       "internalDescription": "Interní účet (majitel, demo, testy) se do metrik nepočítá, dokud ho ovládání nezapne.",
       "subscription": {
         "title": "Předplatné",
-        "description": "Tarif, období a stav účtu. Dokud nejsou platby, nastavuje je majitel ručně.",
+        "description": "Tarif, období a stav účtu, u plateb přes Stripe i odkazy do Stripe a poslední platby. Ručně ho mění majitel.",
         "plan": "Tarif",
         "billing": "Období",
         "status": "Stav",
@@ -6361,7 +6377,8 @@
             "invalid": "Tahle kombinace nejde (zkušební období a zrušení potřebují konec období).",
             "forbidden": "Relace administrace skončila. Přihlas se znovu.",
             "failed": "Změnu se nepodařilo uložit. Zkus to znovu."
-          }
+          },
+          "confirmStripe": "Pozor: předplatné běží ve Stripe a tahle změna se do Stripe nepropíše."
         },
         "reasons": {
           "too_expensive": "Je to pro mě moc drahé",
@@ -6370,7 +6387,39 @@
           "switching": "Přecházím jinam",
           "temporary": "Jen na čas, vrátím se",
           "other": "Něco jiného"
-        }
+        },
+        "stripeTitle": "Stripe",
+        "stripeCustomer": "Zákazník ve Stripe",
+        "stripeSubscription": "Předplatné ve Stripe",
+        "stripeMode": "Režim",
+        "modes": {
+          "test": "testovací",
+          "live": "ostrý"
+        },
+        "openInStripe": "Otevřít ve Stripe",
+        "noStripe": "Účet ve Stripe nic nemá.",
+        "payments": "Poslední platby",
+        "noPayments": "Zatím žádné platby.",
+        "paymentStatuses": {
+          "paid": "Zaplaceno",
+          "failed": "Nezdařilo se",
+          "refunded": "Vráceno"
+        },
+        "receipt": "Doklad",
+        "sync": "Srovnat se Stripe",
+        "syncHint": "Načte předplatné ze Stripe a zapíše jeho stav, jako to dělá denní srovnání.",
+        "syncResult": {
+          "fixed": "Srovnáno: stav se změnil podle Stripe.",
+          "same": "Srovnáno: stav už odpovídal Stripe.",
+          "paymentsOff": "Stripe v tomhle nasazení neběží.",
+          "notLinked": "Předplatné není propojené se Stripe.",
+          "otherMode": "Předplatné je v jiném režimu Stripe než toto nasazení.",
+          "mismatch": "Předplatné ve Stripe patří jinému prostoru nebo nemá cenu z katalogu.",
+          "gatewayFailed": "Stripe teď neodpověděl. Zkus to znovu.",
+          "forbidden": "Relace administrace skončila. Přihlas se znovu.",
+          "failed": "Srovnání se nepovedlo. Zkus to znovu."
+        },
+        "stripeWarning": "Toto předplatné běží ve Stripe. Ruční změna Stripe nezmění: platby, období i zrušení tam běží dál a další událost ze Stripe ruční změnu přepíše. Mění ho uživatel v Předplatném, nebo ho uprav přímo ve Stripe."
       },
       "export": "Export CSV",
       "account": {
@@ -7565,13 +7614,16 @@
       "status": "Stav",
       "receipt": "Doklad",
       "download": "Stáhnout doklad",
-      "receiptsSoon": "Doklady budou dostupné po spuštění plateb",
+      "receiptsSoon": "U starších plateb doklad není",
       "statuses": {
         "paid": "Zaplaceno",
         "failed": "Nezdařilo se",
         "refunded": "Vráceno"
       },
-      "open": "Otevřít doklad"
+      "open": "Otevřít doklad",
+      "plan": "Tarif",
+      "period": "Období",
+      "periodValue": "{from} – {to}"
     },
     "billing": {
       "title": "Fakturační údaje",
@@ -7621,7 +7673,11 @@
     "pay": "Zaplatit a pokračovat",
     "pastDue": {
       "title": "Poslední platba se nepovedla",
-      "text": "Stripe to zkusí znovu. Do té doby funguje všechno jako teď, jen zkontroluj kartu."
+      "text": "Stripe to během několika dní zkusí znovu. Do té doby funguje všechno jako teď. Když neprojde ani poslední pokus, předplatné skončí a účet bude jen pro čtení, data se nesmažou.",
+      "banner": "Platba se nepovedla, aktualizuj kartu",
+      "bannerText": "Stripe platbu zkusí znovu. Aplikace mezitím běží jako dřív.",
+      "bannerCta": "Aktualizovat kartu",
+      "bannerDetails": "Předplatné"
     },
     "checkout": {
       "success": "Díky! Platbu zpracováváme, tarif se tu ukáže za pár vteřin.",
@@ -7629,6 +7685,11 @@
       "trialStart": "Platit začneš {date}, až skončí zkušební období. Do té doby se nic nestrhne.",
       "nowStart": "Placené období začne hned po zaplacení.",
       "redirecting": "Přesměrovávám na platbu…"
+    },
+    "portal": {
+      "open": "Spravovat platební metodu a doklady",
+      "hint": "Kartu, fakturační adresu a doklady spravuješ u Stripe. Tarif měníš a rušíš tady.",
+      "redirecting": "Otevírám Stripe…"
     }
   },
   "messages": {
@@ -8232,6 +8293,18 @@
       "terms": "Souhlasím s [obchodními podmínkami]({url}).",
       "startsNow": "Předplatné začíná hned po zaplacení. Souhlasím se zahájením služby ihned a beru na vědomí, že tím ztrácím právo odstoupit od smlouvy do 14 dnů.",
       "startsAfterTrial": "Zkušební období běží dál, první platba proběhne až po jeho konci. Souhlasím, že placená služba na něj naváže hned, a beru na vědomí, že tím ztrácím právo odstoupit od smlouvy do 14 dnů."
+    },
+    "ownerDigest": {
+      "subject": "{appName}: {firsts, plural, one {# první platba} few {# první platby} other {# prvních plateb}}, {failures, plural, one {# předplatné skončilo pro neplacení} few {# předplatná skončila pro neplacení} other {# předplatných skončilo pro neplacení}}",
+      "intro": "Souhrn plateb od posledního e-mailu (nejvýš jeden denně).",
+      "firstPayments": "{count, plural, one {První platba nového účtu} few {První platby nových účtů} other {První platby nových účtů}}:",
+      "finalFailures": "{count, plural, one {Předplatné ukončené po posledním neúspěšném pokusu o platbu} other {Předplatná ukončená po posledním neúspěšném pokusu o platbu}}:",
+      "finalFailuresHint": "Účet je teď jen pro čtení, data zůstávají. Po zaplacení se vše vrátí.",
+      "testMode": "testovací režim",
+      "billing": {
+        "monthly": "měsíčně",
+        "yearly": "ročně"
+      }
     }
   }
 }

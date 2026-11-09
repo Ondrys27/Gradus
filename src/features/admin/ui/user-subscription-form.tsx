@@ -3,6 +3,7 @@
 import { useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { AlertTriangleIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FormAlert } from "@/components/ui/form-alert";
@@ -23,16 +24,21 @@ import {
 
 /**
  * One account's subscription set by hand: plan, billing, status, end of the
- * period and the cancellation. Saving asks for confirmation from → to.
+ * period and the cancellation. Saving asks for confirmation from → to. A
+ * subscription that runs in Stripe says, above the form and in the
+ * confirmation, that a change by hand does not reach Stripe.
  */
 export function UserSubscriptionForm({
   userId,
   saved,
   planLabels,
+  stripe = false,
 }: {
   userId: string;
   saved: AdminSubscriptionForm;
   planLabels: Record<string, string>;
+  /** The subscription runs in Stripe (provider = stripe). */
+  stripe?: boolean;
 }) {
   const t = useTranslations("admin.users.subscription");
   const tPlans = useTranslations("plans.billing");
@@ -92,6 +98,7 @@ export function UserSubscriptionForm({
 
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-4" data-testid="user-subscription-form">
+      {stripe && <StripeWarning testId="user-subscription-stripe-warning">{t("stripeWarning")}</StripeWarning>}
       <div className="grid gap-4 sm:grid-cols-3">
         <FormField id="subscription-plan" label={t("form.planLabel")}>
           <SimpleSelect
@@ -163,6 +170,7 @@ export function UserSubscriptionForm({
           <p className="text-sm text-ink-soft" data-testid="user-subscription-change">
             {t("form.confirmDescription", { from: summary(saved), to: summary(values) })}
           </p>
+          {stripe && <StripeWarning>{t("form.confirmStripe")}</StripeWarning>}
           {problem && <FormAlert>{t(`form.errors.${problem}`)}</FormAlert>}
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button type="button" variant="ghost" onClick={() => setConfirming(false)}>
@@ -175,5 +183,18 @@ export function UserSubscriptionForm({
         </div>
       </ResponsiveDialog>
     </form>
+  );
+}
+
+function StripeWarning({ children, testId }: { children: string; testId?: string }) {
+  return (
+    <p
+      role="note"
+      data-testid={testId}
+      className="flex items-start gap-2.5 rounded-xl border border-gold/40 bg-gold/10 px-3.5 py-3 text-sm text-ink"
+    >
+      <AlertTriangleIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-gold" />
+      <span className="min-w-0">{children}</span>
+    </p>
   );
 }

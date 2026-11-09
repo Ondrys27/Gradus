@@ -624,6 +624,26 @@ export const trialConversionFields = (q: AdminQuery) =>
     { name: "trial_paid_pct", unit: "percent" },
   ]);
 
+export type PaymentsRow = {
+  currency: string;
+  revenue: number | null;
+  refunded: number | null;
+  payingAccounts: number | null;
+  failedPayments: number | null;
+};
+
+/** Payments in the period per currency, from the payments themselves (metric_payments). */
+export async function paymentsByCurrency(q: AdminQuery): Promise<PaymentsRow[]> {
+  const rows = rowsOf(await run(q, "payments"));
+  return rows.map((row) => ({
+    currency: String(row.key),
+    revenue: num(row.revenue),
+    refunded: num(row.refunded),
+    payingAccounts: num(row.paying_accounts),
+    failedPayments: num(row.failed_payments),
+  }));
+}
+
 /** MRR now, one row per currency (currencies never add up). */
 export const mrrByCurrency = (q: AdminQuery) => distribution(q, "mrr");
 

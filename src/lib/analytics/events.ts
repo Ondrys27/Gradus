@@ -12,7 +12,7 @@ import { MINDMAP_FORMATS } from "@/lib/mindmap/formats";
 import { INVOICE_STYLES } from "@/features/invoices/types";
 import { BILLINGS, CANCEL_REASONS } from "@/features/subscription/state";
 import { PROMO_BENEFITS, PROMO_SOURCES } from "@/features/promo/codes";
-import { CHECKOUT_SOURCES } from "@/features/billing/stripe/sources";
+import { CHECKOUT_SOURCES, PORTAL_SOURCES } from "@/features/billing/stripe/sources";
 import { Constants } from "@/types/database";
 import { field, isSafeField, isScrubbedTextField } from "./fields";
 import { APP_ROUTES, ANALYTICS_SECTIONS, type AnalyticsSection } from "./routes";
@@ -911,6 +911,11 @@ export const EVENTS = {
   payment_refunded: event("plan", "server", false, {
     currency: oneOf(CHECKOUT_CURRENCIES),
     plan: optional(oneOf(PAID_PLANS)),
+  }),
+  /** Stripe's Customer Portal opened (step 23.2): from where, and whether a payment was failing. */
+  billing_portal_opened: event("plan", "server", false, {
+    from: oneOf(PORTAL_SOURCES),
+    past_due: bool(),
   }),
 } satisfies Record<string, EventDef>;
 

@@ -16,7 +16,8 @@ import { AccountSupportActions, CopyEmail } from "@/features/admin/ui/account-su
 import { StatusPill } from "@/components/ui/status-pill";
 import { loadUserDetail } from "@/features/admin/server/users-data";
 import { loadUserAiCap } from "@/features/admin/server/ai-caps-data";
-import { loadUserSubscription } from "@/features/admin/server/subscription-data";
+import { loadUserStripe, loadUserSubscription } from "@/features/admin/server/subscription-data";
+import { UserStripePanel } from "@/features/admin/ui/user-stripe-panel";
 import { periodEndDate } from "@/features/admin/subscription-form";
 import { UserSubscriptionForm } from "@/features/admin/ui/user-subscription-form";
 import { peopleNamer } from "@/features/admin/server/people";
@@ -49,13 +50,14 @@ export default async function AdminUserDetailPage({ params }: Props) {
   if (!z.uuid().safeParse(id).success) notFound();
   await logAdminAction(context, "view", "users.detail");
 
-  const [detail, account, reports, nameOf, aiCap, subscription, t, tControls, tItems, tIndustry, tUnits, tBilling] = await Promise.all([
+  const [detail, account, reports, nameOf, aiCap, subscription, stripe, t, tControls, tItems, tIndustry, tUnits, tBilling] = await Promise.all([
     loadUserDetail(id),
     safe("user account", () => loadUserAccount(id)),
     safe("user reports", () => loadUserReports(id)),
     peopleNamer([id]),
     loadUserAiCap(id),
     loadUserSubscription(id),
+    safe("user stripe", () => loadUserStripe(id)),
     getTranslations("admin.users"),
     getTranslations("admin.controls"),
     getTranslations("metrics.items"),
@@ -199,9 +201,20 @@ export default async function AdminUserDetailPage({ params }: Props) {
                 billingLabel={(key) => tBilling(key)}
                 t={t}
               />
+              {stripe.ok && (
+                <UserStripePanel
+                  userId={id}
+                  link={stripe.data}
+                  canSync={adminCan(context.role, "editSubscriptions")}
+                  planLabel={Object.fromEntries(
+                    ["beta", "solo", "pro", "team"].map((key) => [key, label(tControls, "plan", key)]),
+                  )}
+                />
+              )}
               {adminCan(context.role, "editSubscriptions") && (
                 <UserSubscriptionForm
                   userId={id}
+                  stripe={subscription?.gateway === "stripe"}
                   planLabels={Object.fromEntries(
                     ["beta", "solo", "pro", "team"].map((key) => [key, label(tControls, "plan", key)]),
                   )}

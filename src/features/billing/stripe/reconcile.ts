@@ -1,8 +1,9 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import Stripe from "stripe";
 import type { Database } from "@/types/database";
 import { ensureCatalogPrices, loadPublishedVersion } from "./catalog-sync";
-import { stripeClient } from "./client";
+import { stripeClient, type StripeClient } from "./client";
 import { syncWorkerSeats } from "./gateway";
 import { subscriptionState } from "./mapping";
 import { applySubscriptionState } from "./store";
@@ -27,6 +28,77 @@ export type ReconcileReport = {
   seats: number;
   failed: number;
 };
+
+type Row = { user_id: string; provider_ref: string };
+type RowOutcome = { fixed: boolean; seats: boolean; failed: boolean };
+
+/** One row: Stripe's subscription as it is now, and the extra workers for the next period. */
+async function reconcileRow(
+  admin: Admin,
+  client: StripeClient,
+  row: Row,
+  version: Awaited<ReturnType<typeof loadPublishedVersion>>,
+  prices: Awaited<ReturnType<typeof ensureCatalogPrices>>,
+): Promise<RowOutcome> {
+  const at = new Date();
+  const sub = await client.stripe.subscriptions.retrieve(row.provider_ref);
+  const scheduleId = typeof sub.schedule === "string" ? sub.schedule : (sub.schedule?.id ?? null);
+  const schedule = scheduleId
+    ? await client.stripe.subscriptionSchedules.retrieve(scheduleId, { expand: ["phases.items.price"] })
+    : null;
+  const mapped = subscriptionState(sub, schedule, at);
+  if (!mapped.ok || mapped.state.workspace !== row.user_id) return { fixed: false, seats: false, failed: true };
+  const answer = await applySubscriptionState(admin, mapped.state, client.mode, at);
+  // An ended subscription has no workers' item to keep.
+  const seats =
+    mapped.state.status === "cancelled"
+      ? false
+      : await syncWorkerSeats(
+          { stripe: client.stripe, mode: client.mode, admin, workspace: row.user_id },
+          sub,
+          mapped.state,
+          version,
+          prices,
+        );
+  return { fixed: answer.outcome === "applied", seats, failed: false };
+}
+
+export type WorkspaceSyncResult =
+  | { ok: true; fixed: boolean; seats: boolean }
+  | { ok: false; reason: "paymentsOff" | "notLinked" | "otherMode" | "mismatch" | "gatewayFailed" };
+
+/**
+ * "Sync with Stripe" of the administration for one workspace: the same as
+ * the daily reconciliation, for its row only (also once it is cancelled, so
+ * a missed end is caught up). Only a row of this deployment's mode.
+ */
+export async function syncWorkspaceWithStripe(admin: Admin, workspace: string): Promise<WorkspaceSyncResult> {
+  const client = stripeClient();
+  if (!client) return { ok: false, reason: "paymentsOff" };
+  const { data, error } = await admin
+    .from("subscriptions")
+    .select("user_id, provider, provider_ref, stripe_mode")
+    .eq("user_id", workspace)
+    .maybeSingle();
+  if (error) throw new Error(`sync: ${error.code ?? error.message}`);
+  if (!data || data.provider !== "stripe" || !data.provider_ref || data.provider_ref.startsWith("sub_e2e_")) {
+    return { ok: false, reason: "notLinked" };
+  }
+  if (data.stripe_mode !== client.mode) return { ok: false, reason: "otherMode" };
+  try {
+    const version = await loadPublishedVersion(admin);
+    const prices = await ensureCatalogPrices(client.stripe, client.mode, version);
+    const outcome = await reconcileRow(admin, client, { user_id: workspace, provider_ref: data.provider_ref }, version, prices);
+    if (outcome.failed) return { ok: false, reason: "mismatch" };
+    return { ok: true, fixed: outcome.fixed, seats: outcome.seats };
+  } catch (failure) {
+    if (failure instanceof Stripe.errors.StripeError) {
+      console.error(`[stripe] admin sync failed: ${failure.type}${failure.code ? ` ${failure.code}` : ""}`);
+      return { ok: false, reason: "gatewayFailed" };
+    }
+    throw failure;
+  }
+}
 
 export async function reconcileStripeSubscriptions(
   admin: Admin,
@@ -54,27 +126,10 @@ export async function reconcileStripeSubscriptions(
   for (const row of data) {
     report.checked += 1;
     try {
-      const at = new Date();
-      const sub = await client.stripe.subscriptions.retrieve(row.provider_ref as string);
-      const scheduleId = typeof sub.schedule === "string" ? sub.schedule : (sub.schedule?.id ?? null);
-      const schedule = scheduleId
-        ? await client.stripe.subscriptionSchedules.retrieve(scheduleId, { expand: ["phases.items.price"] })
-        : null;
-      const mapped = subscriptionState(sub, schedule, at);
-      if (!mapped.ok || mapped.state.workspace !== row.user_id) {
-        report.failed += 1;
-        continue;
-      }
-      const answer = await applySubscriptionState(admin, mapped.state, client.mode, at);
-      if (answer.outcome === "applied") report.fixed += 1;
-      const seatsChanged = await syncWorkerSeats(
-        { stripe: client.stripe, mode: client.mode, admin, workspace: row.user_id },
-        sub,
-        mapped.state,
-        version,
-        prices,
-      );
-      if (seatsChanged) report.seats += 1;
+      const outcome = await reconcileRow(admin, client, row as { user_id: string; provider_ref: string }, version, prices);
+      if (outcome.failed) report.failed += 1;
+      if (outcome.fixed) report.fixed += 1;
+      if (outcome.seats) report.seats += 1;
     } catch (failure) {
       report.failed += 1;
       console.error("[cron] stripe reconcile row failed", (failure as { code?: string })?.code ?? "");

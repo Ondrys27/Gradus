@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { PlanLimits } from "@/config/pricing";
 import {
   canCancel,
+  canOpenPortal,
   canResume,
   changeBlock,
   changeDirection,
@@ -12,6 +13,7 @@ import {
   nextPayment,
   paymentRoute,
   plannedChange,
+  showPastDueBanner,
   toSubscription,
   type Subscription,
   type SubscriptionRow,
@@ -220,5 +222,44 @@ describe("how a plan is paid for (step 23.1)", () => {
   it("a plan the administration set stays manual; beta never pays", () => {
     expect(paymentRoute(sub(), NOW)).toBe("manual");
     expect(paymentRoute(sub({ plan_key: "beta", current_period_end: null }), NOW)).toBe("none");
+  });
+});
+
+describe("a failed payment (step 23.2)", () => {
+  const stripe = (overrides: Partial<SubscriptionRow> = {}) => sub({ provider: "stripe", ...overrides });
+  const owner = { worker: false };
+
+  it("shows the banner to the owner while Stripe retries, never to a worker", () => {
+    const pastDue = stripe({ status: "past_due" });
+    expect(showPastDueBanner(pastDue, owner, NOW)).toBe(true);
+    expect(showPastDueBanner(pastDue, { worker: true }, NOW)).toBe(false);
+    expect(showPastDueBanner(null, owner, NOW)).toBe(false);
+    // The app runs as before while it retries: not expired, not read-only.
+    expect(isExpired(pastDue, NOW)).toBe(false);
+    expect(displayStatus(pastDue, NOW)).toBe("pastDue");
+    expect(hasLiveGateway(pastDue, NOW)).toBe(true);
+  });
+
+  it("hides it once paid again, and once Stripe ended the subscription after the last attempt", () => {
+    expect(showPastDueBanner(stripe({ status: "active" }), owner, NOW)).toBe(false);
+    // subscription.deleted: cancelled when Stripe ended it (now), expired like after a trial.
+    const ended = stripe({ status: "cancelled", current_period_end: at(-0.01) });
+    expect(showPastDueBanner(ended, owner, NOW)).toBe(false);
+    expect(isExpired(ended, NOW)).toBe(true);
+    expect(displayStatus(ended, NOW)).toBe("expired");
+    expect(paymentRoute(ended, NOW)).toBe("checkout");
+  });
+
+  it("no banner for beta or a plan outside the catalog", () => {
+    expect(showPastDueBanner(stripe({ status: "past_due", plan_key: "beta" }), owner, NOW)).toBe(false);
+  });
+
+  it("offers Stripe's portal for a subscription that runs or ran in Stripe", () => {
+    expect(canOpenPortal(stripe())).toBe(true);
+    expect(canOpenPortal(stripe({ status: "past_due" }))).toBe(true);
+    expect(canOpenPortal(stripe({ status: "cancelled", current_period_end: at(-3) }))).toBe(true);
+    expect(canOpenPortal(sub())).toBe(false);
+    expect(canOpenPortal(trial())).toBe(false);
+    expect(canOpenPortal(stripe({ plan_key: "beta" }))).toBe(false);
   });
 });

@@ -4934,6 +4934,11 @@
       "cta": "Choose a plan",
       "workerText": "This account's trial has ended. You can see all the data; new things can be created once the owner chooses a plan."
     },
+    "subscriptionEnded": {
+      "title": "Your subscription has ended",
+      "text": "Your data stays and you can see all of it. You can add new things again once you pay for a plan.",
+      "cta": "Subscription"
+    },
     "overLimit": {
       "title": "Your account is over its plan's limits",
       "text": "You have more workers or files than your plan allows. Your data stays and you can see all of it. You can create new things again once you are within the limits or choose a bigger plan.",
@@ -5622,6 +5627,10 @@
       "failed_payments": {
         "name": "Failed payments",
         "description": "Failed payment attempts of subscription invoices, by attempt."
+      },
+      "payments": {
+        "name": "Payments in the period",
+        "description": "Revenue, refunds, paying accounts and unpaid payments from the subscription payments in live mode, per currency (currencies never add up). Internal accounts left out."
       }
     }
   },
@@ -6062,6 +6071,13 @@
         "costPerUser": "Cost per active user",
         "margin": "Margin",
         "marginShare": "Margin (%)"
+      },
+      "payments": {
+        "currency": "Currency",
+        "revenue": "Revenue",
+        "refunded": "Refunded",
+        "payingAccounts": "Paying accounts",
+        "failedPayments": "Unpaid after failing"
       }
     },
     "health": {
@@ -6320,7 +6336,7 @@
       "internalDescription": "An internal account (the owner, demo, tests) is left out of every metric unless the controls include it.",
       "subscription": {
         "title": "Subscription",
-        "description": "The account's plan, billing period and state. Until payments exist, the owner sets them by hand.",
+        "description": "The account's plan, billing period and state; with Stripe payments also the links to Stripe and the latest payments. The owner changes it by hand.",
         "plan": "Plan",
         "billing": "Billing",
         "status": "Status",
@@ -6361,7 +6377,8 @@
             "invalid": "That combination is not possible (a trial and a cancellation need a period end).",
             "forbidden": "The admin session has ended. Sign in again.",
             "failed": "The change could not be saved. Try again."
-          }
+          },
+          "confirmStripe": "Careful: the subscription runs in Stripe and this change does not reach Stripe."
         },
         "reasons": {
           "too_expensive": "It is too expensive for me",
@@ -6370,7 +6387,39 @@
           "switching": "I'm moving to something else",
           "temporary": "Only for a while, I'll be back",
           "other": "Something else"
-        }
+        },
+        "stripeTitle": "Stripe",
+        "stripeCustomer": "Stripe customer",
+        "stripeSubscription": "Stripe subscription",
+        "stripeMode": "Mode",
+        "modes": {
+          "test": "test",
+          "live": "live"
+        },
+        "openInStripe": "Open in Stripe",
+        "noStripe": "The account has nothing in Stripe.",
+        "payments": "Latest payments",
+        "noPayments": "No payments yet.",
+        "paymentStatuses": {
+          "paid": "Paid",
+          "failed": "Failed",
+          "refunded": "Refunded"
+        },
+        "receipt": "Receipt",
+        "sync": "Sync with Stripe",
+        "syncHint": "Loads the subscription from Stripe and writes its state, as the daily reconciliation does.",
+        "syncResult": {
+          "fixed": "Synced: the state changed to Stripe's.",
+          "same": "Synced: the state already matched Stripe.",
+          "paymentsOff": "Stripe does not run in this deployment.",
+          "notLinked": "The subscription is not linked to Stripe.",
+          "otherMode": "The subscription is in another Stripe mode than this deployment.",
+          "mismatch": "The Stripe subscription belongs to another workspace or has no catalog price.",
+          "gatewayFailed": "Stripe did not answer. Try again.",
+          "forbidden": "The admin session has ended. Sign in again.",
+          "failed": "The sync did not work. Try again."
+        },
+        "stripeWarning": "This subscription runs in Stripe. A change by hand does not change Stripe: payments, the period and a cancellation go on there, and Stripe's next event overwrites the change. The user changes it in Subscription, or change it in Stripe itself."
       },
       "export": "Export CSV",
       "account": {
@@ -7565,13 +7614,16 @@
       "status": "Status",
       "receipt": "Receipt",
       "download": "Download receipt",
-      "receiptsSoon": "Receipts will be available once payments go live",
+      "receiptsSoon": "Older payments have no receipt",
       "statuses": {
         "paid": "Paid",
         "failed": "Failed",
         "refunded": "Refunded"
       },
-      "open": "Open receipt"
+      "open": "Open receipt",
+      "plan": "Plan",
+      "period": "Period",
+      "periodValue": "{from} – {to}"
     },
     "billing": {
       "title": "Billing details",
@@ -7621,7 +7673,11 @@
     "pay": "Pay and continue",
     "pastDue": {
       "title": "The last payment did not go through",
-      "text": "Stripe will try again. Until then everything works as it does now; just check your card."
+      "text": "Stripe will try again over the next few days. Until then everything works as it does now. If the last attempt fails too, the subscription ends and the account becomes read-only; no data is deleted.",
+      "banner": "The payment did not go through, update your card",
+      "bannerText": "Stripe will try the payment again. The app keeps working in the meantime.",
+      "bannerCta": "Update card",
+      "bannerDetails": "Subscription"
     },
     "checkout": {
       "success": "Thank you! We are processing the payment; your plan shows here in a few seconds.",
@@ -7629,6 +7685,11 @@
       "trialStart": "You start paying on {date}, when your trial ends. Nothing is charged until then.",
       "nowStart": "The paid period starts as soon as you pay.",
       "redirecting": "Taking you to the payment…"
+    },
+    "portal": {
+      "open": "Manage payment method and receipts",
+      "hint": "You manage your card, billing address and receipts at Stripe. Change or cancel your plan here.",
+      "redirecting": "Opening Stripe…"
     }
   },
   "messages": {
@@ -8232,6 +8293,18 @@
       "terms": "I agree to the [terms of service]({url}).",
       "startsNow": "The subscription starts as soon as you pay. I agree to the service starting right away and understand that I thereby lose the right to withdraw within 14 days.",
       "startsAfterTrial": "Your trial keeps running; the first payment comes only after it ends. I agree to the paid service following it right away and understand that I thereby lose the right to withdraw within 14 days."
+    },
+    "ownerDigest": {
+      "subject": "{appName}: {firsts, plural, one {# first payment} other {# first payments}}, {failures, plural, one {# subscription ended for non-payment} other {# subscriptions ended for non-payment}}",
+      "intro": "Payments since the last e-mail (one a day at most).",
+      "firstPayments": "{count, plural, one {The first payment of a new account} other {First payments of new accounts}}:",
+      "finalFailures": "{count, plural, one {A subscription ended after the last failed payment attempt} other {Subscriptions ended after the last failed payment attempt}}:",
+      "finalFailuresHint": "The account is read-only now, the data stays. Paying brings everything back.",
+      "testMode": "test mode",
+      "billing": {
+        "monthly": "monthly",
+        "yearly": "yearly"
+      }
     }
   }
 }

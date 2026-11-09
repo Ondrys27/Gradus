@@ -69,6 +69,7 @@ const FUNCTION_PARAMS: Record<
   metric_trials: { range: false, tz: true, internal: true, segment: true },
   metric_mrr: { range: false, tz: true, internal: true, segment: true },
   metric_trial_conversion: { range: true, tz: true, internal: true, segment: true },
+  metric_payments: { range: true, tz: true, internal: true, segment: true },
   metric_waitlist: { range: true, tz: true, internal: false, segment: false },
   metric_workers: { range: true, tz: true, internal: true, segment: true },
   metric_cron_runs: { range: false, tz: false, internal: false, segment: false },

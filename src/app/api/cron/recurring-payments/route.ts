@@ -1,3 +1,4 @@
+import { sendOwnerDigest } from "@/features/billing/owner-alerts-server";
 import { reconcileStripeSubscriptions } from "@/features/billing/stripe/reconcile";
 import { runCron } from "@/lib/analytics/instrument";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -11,7 +12,9 @@ export const maxDuration = 300;
  * own time zone, so running it twice books nothing twice), then the
  * reconciliation with Stripe (step 23.1): the running subscriptions in Stripe
  * read again and any difference a missed webhook left fixed, at most 200 a
- * run, with the extra workers' count for the next period.
+ * run, with the extra workers' count for the next period. Last, the app
+ * owner's digest of first payments and subscriptions ended for non-payment
+ * that waited since yesterday's (step 23.2, one e-mail a day at most).
  */
 export function GET(request: Request) {
   return runCron("recurring_payments", request, async () => {
@@ -19,9 +22,10 @@ export function GET(request: Request) {
     const { data, error } = await admin.rpc("post_due_recurring_payments");
     if (error) throw error;
     const stripe = await reconcileStripeSubscriptions(admin);
+    const digest = await sendOwnerDigest(admin);
     return {
       processed: (data ?? 0) + stripe.checked,
-      body: { booked: data, stripe },
+      body: { booked: data, stripe, digest },
     };
   });
 }

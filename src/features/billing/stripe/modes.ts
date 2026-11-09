@@ -34,12 +34,15 @@ export const eventMode = (livemode: boolean): StripeMode => (livemode ? "live" :
 
 const LOCAL_EMAIL = /@gradus\.local$/i;
 
+/** The test and demo accounts' domain: nobody needs to hear about their payments. */
+export const isLocalEmail = (email: string | null | undefined) => !!email && LOCAL_EMAIL.test(email.trim());
+
 /** As billing_mode_allowed(): test for internal and @gradus.local accounts, live for the rest. */
 export function accountAllowedInMode(
   mode: StripeMode,
   account: { email: string | null; internal: boolean },
 ): boolean {
-  const local = !!account.email && LOCAL_EMAIL.test(account.email.trim());
+  const local = isLocalEmail(account.email);
   return mode === "test" ? account.internal || local : !account.internal && !local;
 }
 

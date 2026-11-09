@@ -136,6 +136,7 @@ export const METRIC_FUNCTIONS = {
   metric_trials: USER,
   metric_mrr: USER,
   metric_trial_conversion: USER,
+  metric_payments: USER,
   metric_waitlist: NONE,
   metric_workers: USER,
   metric_cron_runs: NONE,
@@ -922,6 +923,8 @@ export const METRICS: readonly MetricDefinition[] = [
   metric("mrr", "costs", "table", fn("metric_mrr")),
   metric("trial_conversion", "costs", "table", fn("metric_trial_conversion")),
   metric("failed_payments", "costs", "count", split("attempt", count("payment_failed"))),
+  // Managing payments (step 23.2): from the payments themselves, per currency.
+  metric("payments", "costs", "table", fn("metric_payments")),
 
   // --- 8. Technical health ---------------------------------------------------
   metric("errors", "health", "count", daily("errors")),

@@ -102,6 +102,8 @@ U každé sekce: adopce (% aktivních, kteří ji použili), počet akcí, akce 
   - MRR po měnách — běžící placená předplatná ve Stripe (ostrý režim), roční jako dvanáctina, z `subscriptions.stripe_amount` (cena období bez slev); měny se nesčítají; metrika `mrr` (`metric_mrr`)
   - Konverze zkušebka → platba — zkušební období, která v období skončila, a podíl účtů, které od té doby zaplatily; metrika `trial_conversion` (`metric_trial_conversion`)
   - Neúspěšné platby — pokusy o platbu faktury předplatného, které selhaly (`payment_failed`: číslo pokusu), podle pokusu; metrika `failed_payments`
+  - Platby za období — z tabulky `payments` (ostrý režim, bez interních), po měnách, měny se nesčítají: tržby (zaplacené, vrácené se nepočítají), vráceno, platící účty (zaplatily v období), neuhrazené po selhání (faktury, jejichž poslední stav je selhání); metrika `payments` (`metric_payments`)
+  - Otevření Stripe Customer Portalu `billing_portal_opened` (odkud: settings / past_due_banner, zda platba visí)
   - Trychtýř placení z událostí `checkout_started` (tarif, období, měna, s kódem, odkud: settings / trial_banner / read_only) → `checkout_completed`, vrácené platby `payment_refunded`
 - Náklad na aktivního uživatele za měsíc, podle plánu
 - Odhad marže proti ceníku

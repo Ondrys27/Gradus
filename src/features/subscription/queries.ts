@@ -3,7 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
 import { planKeys } from "@/features/plan/queries";
-import { startCheckout, type CheckoutInput } from "@/features/billing/stripe/actions";
+import { openBillingPortal, startCheckout, type CheckoutInput } from "@/features/billing/stripe/actions";
+import type { PortalSource } from "@/features/billing/stripe/sources";
 import { createClient } from "@/lib/supabase/client";
 import {
   cancelSubscription,
@@ -77,6 +78,11 @@ export type Payment = {
   paidAt: string;
   status: "paid" | "failed" | "refunded";
   invoiceUrl: string | null;
+  /** The plan and period it paid for; null on payments before step 23.2. */
+  planKey: string | null;
+  billing: "monthly" | "yearly" | null;
+  periodStart: string | null;
+  periodEnd: string | null;
 };
 
 export function usePayments() {
@@ -86,7 +92,7 @@ export function usePayments() {
     queryFn: async (): Promise<Payment[]> => {
       const { data, error } = await createClient()
         .from("payments")
-        .select("id, amount, currency, paid_at, status, invoice_url")
+        .select("id, amount, currency, paid_at, status, invoice_url, plan_key, billing, period_start, period_end")
         .eq("user_id", user.id)
         .order("paid_at", { ascending: false })
         .limit(PAYMENTS_LIMIT);
@@ -98,6 +104,10 @@ export function usePayments() {
         paidAt: row.paid_at,
         status: row.status === "failed" || row.status === "refunded" ? row.status : "paid",
         invoiceUrl: row.invoice_url,
+        planKey: row.plan_key,
+        billing: row.billing === "yearly" || row.billing === "monthly" ? row.billing : null,
+        periodStart: row.period_start,
+        periodEnd: row.period_end,
       }));
     },
   });
@@ -199,6 +209,14 @@ export function useResumeSubscription() {
 export function useStartCheckout() {
   return useMutation({
     mutationFn: async (input: CheckoutInput) => unwrap(await startCheckout(input)),
+    onSuccess: ({ url }) => window.location.assign(url),
+  });
+}
+
+/** Opens Stripe's Customer Portal (card, billing address, receipts): the browser leaves for Stripe. */
+export function useOpenPortal() {
+  return useMutation({
+    mutationFn: async (from: PortalSource) => unwrap(await openBillingPortal({ from })),
     onSuccess: ({ url }) => window.location.assign(url),
   });
 }

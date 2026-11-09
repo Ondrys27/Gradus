@@ -38,8 +38,11 @@ export function TrialNotice() {
   // "Pay and continue" for the owner in the trial's last days and once it ended.
   const offerPay =
     !worker && paymentsInBrowser() && (notice.kind === "expired" || (notice.kind === "trial" && notice.urgent));
-  const own = useSubscription({ enabled: offerPay });
-  const payable = own.data && isManagedPlan(own.data) && paymentRoute(own.data) === "checkout" ? own.data : null;
+  // The owner's own row: whether it can be paid, and whether what ended was a paid subscription.
+  const own = useSubscription({ enabled: offerPay || (!worker && notice.kind === "expired") });
+  const payable = offerPay && own.data && isManagedPlan(own.data) && paymentRoute(own.data) === "checkout" ? own.data : null;
+  // Stripe ended a paid subscription (the last payment failed, or it was cancelled): not a trial.
+  const paidEnded = !worker && own.data?.gateway === "stripe";
 
   // Once per load of the app: the trial's state as the owner sees it.
   useEffect(() => {
@@ -53,6 +56,7 @@ export function TrialNotice() {
 
   if (notice.kind === "expired" || notice.kind === "overLimit") {
     const key = notice.kind;
+    const textKey = key === "expired" && paidEnded ? "subscriptionEnded" : key;
     return (
       <section
         role="status"
@@ -60,21 +64,21 @@ export function TrialNotice() {
       >
         <LockIcon aria-hidden className="size-6 shrink-0 text-gold" />
         <div className="flex flex-1 flex-col gap-1">
-          <h2 className="font-semibold text-ink">{t(`${key}.title`)}</h2>
+          <h2 className="font-semibold text-ink">{t(`${textKey}.title`)}</h2>
           <p className="text-sm text-ink-soft">
-            {worker ? t(`${key}.workerText`) : t(`${key}.text`)}
+            {worker ? t(`${key}.workerText`) : t(`${textKey}.text`)}
           </p>
         </div>
         {!worker && (
           <div className="flex flex-wrap items-start gap-2">
-            {key === "expired" && offerPay && payable && (
+            {key === "expired" && payable && (
               <PayButton planKey={payable.planKey} billing={payable.billing} from="read_only" />
             )}
             <Link
               href={PLAN_PATH}
               className={buttonVariants({ variant: key === "expired" && payable ? "outline" : "default" })}
             >
-              {t(`${key}.cta`)}
+              {t(`${textKey}.cta`)}
             </Link>
           </div>
         )}

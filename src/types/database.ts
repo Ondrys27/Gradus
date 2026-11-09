@@ -508,6 +508,48 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_alerts: {
+        Row: {
+          amount: number | null
+          billing: string | null
+          created_at: string
+          currency: string | null
+          id: string
+          kind: string
+          notified_at: string | null
+          plan_key: string | null
+          ref: string
+          stripe_mode: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          billing?: string | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          kind: string
+          notified_at?: string | null
+          plan_key?: string | null
+          ref: string
+          stripe_mode: string
+          user_id: string
+        }
+        Update: {
+          amount?: number | null
+          billing?: string | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          kind?: string
+          notified_at?: string | null
+          plan_key?: string | null
+          ref?: string
+          stripe_mode?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       billing_customers: {
         Row: {
           created_at: string
@@ -2813,11 +2855,15 @@ export type Database = {
       payments: {
         Row: {
           amount: number
+          billing: string | null
           created_at: string
           currency: string
           id: string
           invoice_url: string | null
           paid_at: string
+          period_end: string | null
+          period_start: string | null
+          plan_key: string | null
           provider: string | null
           provider_ref: string | null
           provider_synced_at: string | null
@@ -2829,11 +2875,15 @@ export type Database = {
         }
         Insert: {
           amount: number
+          billing?: string | null
           created_at?: string
           currency: string
           id?: string
           invoice_url?: string | null
           paid_at?: string
+          period_end?: string | null
+          period_start?: string | null
+          plan_key?: string | null
           provider?: string | null
           provider_ref?: string | null
           provider_synced_at?: string | null
@@ -2845,11 +2895,15 @@ export type Database = {
         }
         Update: {
           amount?: number
+          billing?: string | null
           created_at?: string
           currency?: string
           id?: string
           invoice_url?: string | null
           paid_at?: string
+          period_end?: string | null
+          period_start?: string | null
+          plan_key?: string | null
           provider?: string | null
           provider_ref?: string | null
           provider_synced_at?: string | null
@@ -4874,6 +4928,34 @@ export type Database = {
         }[]
       }
       award_xp: { Args: { _reason: string; _ref_id?: string }; Returns: Json }
+      billing_alert_add: {
+        Args: {
+          _amount?: number
+          _billing?: string
+          _currency?: string
+          _kind: string
+          _mode: string
+          _plan_key?: string
+          _ref: string
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      billing_alerts_claim: {
+        Args: { _tz?: string }
+        Returns: {
+          amount: number
+          billing: string
+          created_at: string
+          currency: string
+          id: string
+          kind: string
+          plan_key: string
+          stripe_mode: string
+          user_id: string
+        }[]
+      }
+      billing_alerts_release: { Args: { _ids: string[] }; Returns: undefined }
       billing_apply_subscription: {
         Args: {
           _amount?: number
@@ -4924,12 +5006,16 @@ export type Database = {
       billing_record_payment: {
         Args: {
           _amount: number
+          _billing?: string
           _currency: string
           _event_at: string
           _invoice_ref: string
           _invoice_url?: string
           _mode: string
           _paid_at: string
+          _period_end?: string
+          _period_start?: string
+          _plan_key?: string
           _status: string
           _user_id: string
           _vat_amount: number
@@ -6051,6 +6137,22 @@ export type Database = {
           accounts: number
           key: string
           value: number
+        }[]
+      }
+      metric_payments: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          failed_payments: number
+          key: string
+          paying_accounts: number
+          refunded: number
+          revenue: number
         }[]
       }
       metric_precomputed_segments: { Args: never; Returns: Json[] }
