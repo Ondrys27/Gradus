@@ -45,6 +45,8 @@ import {
 } from "@/features/jarvis/server/attachments";
 import { runBriefings } from "@/features/jarvis/server/briefing";
 import { suggestEmailReply } from "@/features/jarvis/server/email-reply";
+import { linkOrigin, loadBookingLink } from "@/features/scheduler/server/link";
+import { siteOrigin } from "@/lib/site-origin";
 import { handleFeatureRequest } from "@/features/jarvis/server/feature-requests";
 import { loadSituation } from "@/features/jarvis/server/load-situation";
 import { reviewMilestone } from "@/features/jarvis/server/milestone-review";
@@ -655,6 +657,15 @@ async function emailReply(ctx: Context, body: unknown) {
     [contact.first_name, contact.last_name].filter(Boolean).join(" ") ||
     "the contact";
 
+  // The scheduler's link for a meeting, when the person has one (never fails the reply).
+  const bookingLink = await loadBookingLink(
+    supabase,
+    userId,
+    ctx.spaceId,
+    "meeting",
+    linkOrigin(await siteOrigin().catch(() => null)),
+  ).catch(() => null);
+
   const result = await suggestEmailReply({
     client,
     userId,
@@ -662,6 +673,7 @@ async function emailReply(ctx: Context, body: unknown) {
     deal,
     locale,
     receivedEmail: parsed.data.receivedEmail,
+    bookingLink,
     log: (entry) => logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
   });
   if (!result.ok) return jobError(result.code, 502);

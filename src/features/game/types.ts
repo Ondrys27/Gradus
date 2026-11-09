@@ -94,11 +94,14 @@ export function isLockableSection(key: string): key is LockableSection {
 }
 
 /**
- * The section whose lock a menu item shares: its own, or for Messages the
- * one of Company (the chat is between the people of the firm). Null for
+ * The section whose lock a menu item shares: its own, for Messages the one
+ * of Company (the chat is between the people of the firm), for the Scheduler
+ * the Calendar's. Null for
  * items that are never locked.
  */
 export function lockSectionOf(key: string): LockableSection | null {
   if (key === "messages") return "workers";
+  // The scheduler books into the calendar: it opens with it.
+  if (key === "scheduler") return "calendar";
   return isLockableSection(key) ? key : null;
 }

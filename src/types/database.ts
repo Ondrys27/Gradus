@@ -508,6 +508,98 @@ export type Database = {
         }
         Relationships: []
       }
+      availability_overrides: {
+        Row: {
+          created_at: string
+          date: string
+          end_time: string | null
+          id: string
+          profile_id: string
+          space_id: string
+          start_time: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          end_time?: string | null
+          id?: string
+          profile_id: string
+          space_id: string
+          start_time?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          end_time?: string | null
+          id?: string
+          profile_id?: string
+          space_id?: string
+          start_time?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "availability_overrides_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "scheduler_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      availability_rules: {
+        Row: {
+          created_at: string
+          end_time: string
+          event_type_id: string | null
+          id: string
+          profile_id: string
+          space_id: string
+          start_time: string
+          user_id: string
+          weekday: number
+        }
+        Insert: {
+          created_at?: string
+          end_time: string
+          event_type_id?: string | null
+          id?: string
+          profile_id: string
+          space_id: string
+          start_time: string
+          user_id: string
+          weekday: number
+        }
+        Update: {
+          created_at?: string
+          end_time?: string
+          event_type_id?: string | null
+          id?: string
+          profile_id?: string
+          space_id?: string
+          start_time?: string
+          user_id?: string
+          weekday?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "availability_rules_event_type_id_fkey"
+            columns: ["event_type_id"]
+            isOneToOne: false
+            referencedRelation: "event_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "availability_rules_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "scheduler_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       billing_alerts: {
         Row: {
           amount: number | null
@@ -618,6 +710,120 @@ export type Database = {
           vat_no?: string | null
         }
         Relationships: []
+      }
+      bookings: {
+        Row: {
+          answers: Json
+          calendar_event_id: string | null
+          cancel_reason: string | null
+          cancelled_by: string | null
+          contact_id: string | null
+          created_at: string
+          deal_id: string | null
+          ends_at: string
+          event_type_id: string | null
+          guest_company: string | null
+          guest_email: string
+          guest_name: string
+          guest_phone: string | null
+          guest_time_zone: string | null
+          hold_expires_at: string | null
+          host_user_id: string | null
+          id: string
+          manage_token_hash: string | null
+          reminder_ids: Json
+          space_id: string
+          starts_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          answers?: Json
+          calendar_event_id?: string | null
+          cancel_reason?: string | null
+          cancelled_by?: string | null
+          contact_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          ends_at: string
+          event_type_id?: string | null
+          guest_company?: string | null
+          guest_email: string
+          guest_name: string
+          guest_phone?: string | null
+          guest_time_zone?: string | null
+          hold_expires_at?: string | null
+          host_user_id?: string | null
+          id?: string
+          manage_token_hash?: string | null
+          reminder_ids?: Json
+          space_id: string
+          starts_at: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          answers?: Json
+          calendar_event_id?: string | null
+          cancel_reason?: string | null
+          cancelled_by?: string | null
+          contact_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          ends_at?: string
+          event_type_id?: string | null
+          guest_company?: string | null
+          guest_email?: string
+          guest_name?: string
+          guest_phone?: string | null
+          guest_time_zone?: string | null
+          hold_expires_at?: string | null
+          host_user_id?: string | null
+          id?: string
+          manage_token_hash?: string | null
+          reminder_ids?: Json
+          space_id?: string
+          starts_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_calendar_event_id_fkey"
+            columns: ["calendar_event_id"]
+            isOneToOne: false
+            referencedRelation: "calendar_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contact_list"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_event_type_id_fkey"
+            columns: ["event_type_id"]
+            isOneToOne: false
+            referencedRelation: "event_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       bug_reports: {
         Row: {
@@ -782,6 +988,78 @@ export type Database = {
             referencedColumns: ["id", "user_id"]
           },
         ]
+      }
+      calendar_feed_tokens: {
+        Row: {
+          created_at: string
+          last_used_at: string | null
+          token_hash: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          last_used_at?: string | null
+          token_hash: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          last_used_at?: string | null
+          token_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      calendar_subscriptions: {
+        Row: {
+          busy: Json
+          busy_until: string | null
+          color: string
+          created_at: string
+          id: string
+          last_error: string | null
+          last_fetched_at: string | null
+          last_status: string
+          name: string
+          show_in_calendar: boolean
+          updated_at: string
+          url_cipher: string
+          url_hint: string
+          user_id: string
+        }
+        Insert: {
+          busy?: Json
+          busy_until?: string | null
+          color?: string
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          last_fetched_at?: string | null
+          last_status?: string
+          name: string
+          show_in_calendar?: boolean
+          updated_at?: string
+          url_cipher: string
+          url_hint: string
+          user_id?: string
+        }
+        Update: {
+          busy?: Json
+          busy_until?: string | null
+          color?: string
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          last_fetched_at?: string | null
+          last_status?: string
+          name?: string
+          show_in_calendar?: boolean
+          updated_at?: string
+          url_cipher?: string
+          url_hint?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       call_time_stats: {
         Row: {
@@ -1788,6 +2066,111 @@ export type Database = {
           viewport?: string | null
         }
         Relationships: []
+      }
+      event_types: {
+        Row: {
+          active: boolean
+          buffer_after_min: number
+          buffer_before_min: number
+          color: string
+          confirmation_note: string | null
+          created_at: string
+          custom_availability: boolean
+          deal_stage_id: string | null
+          description: string | null
+          duration_min: number
+          id: string
+          location_kind: string
+          location_text: string | null
+          max_days_ahead: number
+          max_per_day: number | null
+          min_notice_hours: number
+          name: string
+          position: number
+          profile_id: string
+          questions: Json
+          reminders: Json
+          requires_approval: boolean
+          slot_step_min: number
+          slug: string
+          space_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          buffer_after_min?: number
+          buffer_before_min?: number
+          color?: string
+          confirmation_note?: string | null
+          created_at?: string
+          custom_availability?: boolean
+          deal_stage_id?: string | null
+          description?: string | null
+          duration_min?: number
+          id?: string
+          location_kind?: string
+          location_text?: string | null
+          max_days_ahead?: number
+          max_per_day?: number | null
+          min_notice_hours?: number
+          name: string
+          position?: number
+          profile_id: string
+          questions?: Json
+          reminders?: Json
+          requires_approval?: boolean
+          slot_step_min?: number
+          slug: string
+          space_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          buffer_after_min?: number
+          buffer_before_min?: number
+          color?: string
+          confirmation_note?: string | null
+          created_at?: string
+          custom_availability?: boolean
+          deal_stage_id?: string | null
+          description?: string | null
+          duration_min?: number
+          id?: string
+          location_kind?: string
+          location_text?: string | null
+          max_days_ahead?: number
+          max_per_day?: number | null
+          min_notice_hours?: number
+          name?: string
+          position?: number
+          profile_id?: string
+          questions?: Json
+          reminders?: Json
+          requires_approval?: boolean
+          slot_step_min?: number
+          slug?: string
+          space_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_types_deal_stage_fkey"
+            columns: ["deal_stage_id", "space_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stages"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "event_types_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "scheduler_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       exchange_rate_sources: {
         Row: {
@@ -3183,6 +3566,7 @@ export type Database = {
           monthly_generation_limit: number
           name: string
           per_worker: Json | null
+          scheduler_types_limit: number | null
           updated_at: string
         }
         Insert: {
@@ -3197,6 +3581,7 @@ export type Database = {
           monthly_generation_limit: number
           name: string
           per_worker?: Json | null
+          scheduler_types_limit?: number | null
           updated_at?: string
         }
         Update: {
@@ -3211,6 +3596,7 @@ export type Database = {
           monthly_generation_limit?: number
           name?: string
           per_worker?: Json | null
+          scheduler_types_limit?: number | null
           updated_at?: string
         }
         Relationships: []
@@ -3605,6 +3991,51 @@ export type Database = {
           liked?: string | null
           satisfaction?: number
           user_id?: string
+        }
+        Relationships: []
+      }
+      scheduler_profiles: {
+        Row: {
+          bio: string | null
+          created_at: string
+          display_name: string | null
+          handle: string
+          headline: string | null
+          id: string
+          setup_done_at: string | null
+          space_id: string
+          time_zone: string
+          updated_at: string
+          user_id: string
+          video_link: string | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          handle?: string
+          headline?: string | null
+          id?: string
+          setup_done_at?: string | null
+          space_id: string
+          time_zone?: string
+          updated_at?: string
+          user_id: string
+          video_link?: string | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          handle?: string
+          headline?: string | null
+          id?: string
+          setup_done_at?: string | null
+          space_id?: string
+          time_zone?: string
+          updated_at?: string
+          user_id?: string
+          video_link?: string | null
         }
         Relationships: []
       }
@@ -6887,6 +7318,35 @@ export type Database = {
         Returns: undefined
       }
       reward_rule_is_valid: { Args: { _rule: Json }; Returns: boolean }
+      scheduler_booking_counts: {
+        Args: { _since: string }
+        Returns: {
+          bookings: number
+          event_type_id: string
+        }[]
+      }
+      scheduler_handle_available: {
+        Args: { _handle: string; _profile?: string }
+        Returns: boolean
+      }
+      scheduler_handle_ok: { Args: { _handle: string }; Returns: boolean }
+      scheduler_profile_owner: {
+        Args: { _profile: string }
+        Returns: Record<string, unknown>
+      }
+      scheduler_questions_valid: {
+        Args: { _questions: Json }
+        Returns: boolean
+      }
+      scheduler_random_handle: { Args: never; Returns: string }
+      scheduler_reminders_valid: {
+        Args: { _reminders: Json }
+        Returns: boolean
+      }
+      scheduler_time_zone_ok: { Args: { _zone: string }; Returns: boolean }
+      scheduler_tone_ok: { Args: { _tone: string }; Returns: boolean }
+      scheduler_types_limit: { Args: { _space: string }; Returns: number }
+      scheduler_types_limit_of: { Args: { _space: string }; Returns: number }
       search_doc: { Args: { _parts: string[] }; Returns: string }
       search_matches: {
         Args: {

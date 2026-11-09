@@ -2,7 +2,7 @@
 
 Tenhle přehled je pro návrh tarifů. Popisuje, co aplikace a Jarvis umí, kdo co používá a kolik nás stojí provoz. Píše se z kódu a drží se aktuální: kdo přidá funkci, připíše ji sem. `bun run docs:funkce` porovná dokument s kódem a vypíše, co v něm chybí (v textu jsou na to skryté značky `<!-- kód: … -->`, při čtení nejsou vidět).
 
-Stav k 8. 11. 2026.
+Stav k 9. 11. 2026.
 
 **Jak číst štítky nákladu**
 
@@ -114,7 +114,21 @@ Stav k 8. 11. 2026.
 |---|---|---|---|
 | Den, týden, měsíc | Schůzky, úkoly a termíny, celodenní události, navázané na kontakt a obchod. Na telefonu seznam týdne. | majitel, pracovník s právem kalendář | žádný |
 | Vrstvy | Volitelně ukáže úkoly milníků, očekávané uzavření obchodů a obchodní úkoly. Přetažením se úkol přeplánuje. | majitel, pracovník | žádný |
-| Bez napojení ven | Synchronizace s Google nebo Apple kalendářem ani opakované události dnes **nejsou**. | — | — |
+| Odebírané kalendáře | Obsazené časy z odebíraných kalendářů (Google, Apple, Outlook přes tajnou adresu iCal, Nastavení → Kalendář) šedě a jen pro čtení, přepínač „Odebírané kalendáře“. Nikdy se z nich nestanou události Gradusu. | majitel, pracovník (své) | žádný |
+| Bez obousměrného napojení | Zápis do Google nebo Apple kalendáře a opakované události v Gradusu dnes **nejsou**; ven jde jen odkaz k odběru (Nastavení → Kalendář). | — | — |
+
+### Plánovač schůzek
+<!-- kód: nav:scheduler route:/app/planovac -->
+
+| Funkce | Co dělá | Pro koho | Náklad |
+|---|---|---|---|
+| Typy schůzek | Karty typů (název, délka, místo: videohovor / telefon / osobně / jinak, barva, počet rezervací za 30 dní, Kopírovat odkaz, přepínač aktivní). Při prvním otevření tři typy (Úvodní hovor 15 min, Konzultace 30 min, Schůzka 60 min) a pracovní doba po–pá 9–17. | majitel, pracovník s právem „plánovač: vlastní“ | žádný |
+| Editor typu | Záložky Základ · Dostupnost (vlastní pracovní doba, volno před a po, nejdřív za, nejvýš dopředu do 60 dní, nejvýš za den, časy po 15 / 30 / 60 min) · Otázky (jméno a e-mail vždy, telefon, firma, vlastní; řazení, povinné) · Připomínky (výchozí 24 h a 1 h, nejvýš 5) · Potvrzení (schvalovat ručně, text po rezervaci, založit obchod ve fázi) · Náhled (skutečné volné termíny). | majitel, pracovník (své) | žádný |
+| Dostupnost | Časové pásmo, pracovní doba po dnech s více úseky, výjimky kalendářem (volný den, dovolená, jiná doba). Volné termíny počítá jedna funkce (`slots.ts`) z pracovní doby mínus vlastní události a obchodní úkoly s časem, obsazené časy odebíraných kalendářů a aktivní rezervace. | majitel, pracovník (své) | žádný |
+| Rezervační stránka | Odkaz `/s/<adresa>/<typ>` s vlastní adresou (handle) a trvalým odkazem na videohovor; průvodce „adresa, videohovor, pracovní doba“. Samotnou veřejnou stránku a rezervace dodělá krok 24.4. | majitel, pracovník (své) | žádný |
+| Rezervace | Nadcházející a minulé se stavem a filtrem; majitel přepne na „Všichni“. | majitel, pracovník (své) | žádný |
+| Všichni | Majitel vidí rezervační stránky a typy pracovníků a jejich rezervace, typ může jen vypnout. | jen majitel | žádný |
+| Jarvis a odkaz na schůzku | Jarvis zná nadcházející rezervace a čekající schválení; u kontaktu v Cold Callingu ve stavu Ozvat se a v e-mailu nabídne „pošli odkaz na schůzku“ s nejvhodnějším typem (úvodní hovor nejkratší, schůzka nejblíž 30 min). | majitel, pracovník (své) | žádný (v návrhu odpovědi e-mailem součást volání AI) |
 
 ### Finance a faktury
 <!-- kód: nav:finance route:/app/finance route:/app/finance/faktury/nova route:/app/finance/faktury/[id] -->
@@ -164,7 +178,7 @@ Stav k 8. 11. 2026.
 AI pomocník v pravém dolním rohu: chat, souhrny dne, návrhy a hodnocení. Všechno, co dělá, s modelem a cenou je v [kapitole 2](#2-jarvis). Majitel i pracovník mají každý vlastního Jarvise a vlastní konverzace.
 
 ### Nastavení
-<!-- kód: route:/app/nastaveni route:/app/nastaveni/ucet route:/app/nastaveni/vzhled route:/app/nastaveni/prace route:/app/nastaveni/jarvis route:/app/nastaveni/soukromi route:/app/nastaveni/predplatne route:/app/tarif -->
+<!-- kód: route:/app/nastaveni route:/app/nastaveni/ucet route:/app/nastaveni/vzhled route:/app/nastaveni/prace route:/app/nastaveni/jarvis route:/app/nastaveni/soukromi route:/app/nastaveni/predplatne route:/app/tarif route:/app/nastaveni/kalendar -->
 
 | Funkce | Co dělá | Pro koho | Náklad |
 |---|---|---|---|
@@ -172,6 +186,7 @@ AI pomocník v pravém dolním rohu: chat, souhrny dne, návrhy a hodnocení. V�
 | Vzhled | Šest barevných témat (v herním režimu se odemykají úrovní), zvuky, animace, země, pásmo, měna a formáty. Měna je jakákoli platná podle ISO 4217 (hledání podle kódu i názvu, měna země a nejčastější nahoře); mění jen zobrazení, uložené částky zůstávají v měně, ve které vznikly. | majitel, pracovník | žádný |
 | Práce | Herní nebo nástrojový režim, cesta oboru, kdy znovu oslovit ztracené obchody a údaje na faktury. | majitel (část i pracovník) | žádný |
 | Jarvis | Zapnutí proaktivního Jarvise, jak často se ozývá, tichý režim, e-maily ze Zpráv, znovu spustit tutoriál, smazat ukázková data. | majitel, pracovník | žádný |
+| Kalendář | Odebírané kalendáře: tajná adresa iCal (Google, Apple, Outlook) s návodem, název, barva; server ji stáhne (jen https, 5 MB, 10 s, veřejné adresy), uloží šifrovaně a drží jen obsazené časy na 60 dní, obnova denně, ručně a při otevření rezervační stránky. Odkaz pro odběr kalendáře Gradusu (ICS s tajným tokenem, ukáže se jednou, jde obnovit a vypnout). | majitel, pracovník | žádný |
 | Soukromí | Export všech dat (ZIP s CSV), smazání účtu, podmínky a ochrana soukromí. | majitel, pracovník | žádný |
 | Předplatné | Tarif, změna, zrušení a obnovení, historie plateb s doklady, fakturační údaje (propíšou se do Stripe), promo kód. Stará adresa /app/tarif sem přesměruje. | jen majitel | e-mail (nám o změně) |
 | Platební metoda a doklady | „Spravovat platební metodu a doklady“ otevře Stripe Customer Portal: změna karty, fakturační adresa a seznam dokladů (tarif se mění a ruší jen v Gradusu). Historie plateb ukazuje datum, tarif, období, částku, stav (i vráceno) a doklad od Stripe. | jen majitel | Stripe |
@@ -302,7 +317,7 @@ Tyhle odhady je dobré jednou za měsíc porovnat s Náklady (období 30 dní) a
 ## 4. Čím jde omezovat tarif
 
 ### Co už dnes existuje
-<!-- kód: limit:daily_contacts limit:monthly_contacts limit:ai_calls limit:ai_files limit:workers limit:storage_mb -->
+<!-- kód: limit:daily_contacts limit:monthly_contacts limit:ai_calls limit:ai_files limit:workers limit:storage_mb limit:scheduler_types -->
 
 | Limit nebo přepínač | Co hlídá | Kde se nastavuje |
 |---|---|---|
@@ -312,6 +327,7 @@ Tyhle odhady je dobré jednou za měsíc porovnat s Náklady (období 30 dní) a
 | Soubory do Jarvise za měsíc | Přiložené soubory v chatu. Solo 0 (soubory vypnuté), Pro 100, Team 150. | Administrace → Tarify |
 | Počet pracovníků | Kolik pracovníků účet má. Dnes všude bez limitu. Nad limitem režim jen pro čtení od další půlnoci. | Administrace → Tarify |
 | Úložiště v MB | Dnes všude bez limitu. **Počítá jen soubory poslané Jarvisovi**, ne faktury, přílohy Zpráv ani dokumenty pracovníků. | Administrace → Tarify |
+| Aktivní typy schůzek | Kolik typů schůzek v Plánovači může mít jeden člověk zapnutých. Solo 1, Pro a Team bez limitu (verze katalogu před 24.3 a beta podle tabulky `plans`). Nad limitem nový typ začne vypnutý, zapnutí odmítne DB s nabídkou vyššího tarifu. | Administrace → Tarify |
 | Cena za pracovníka a pracovníci v ceně | `per_worker` = cena za každého pracovníka navíc, `included_workers` = kolik jich je v ceně (starší verze bez pole = 0). Platí jen za pracovníky bez vlastního platného tarifu. Koncept z 22.5: Solo 0 a bez ceny, Pro 0 + 290 Kč / 12 EUR, Team 10 v ceně + 290 Kč; beta (tabulka `plans`) 0 + 290 Kč. Jen se počítá a ukazuje, platby zatím neběží. | Administrace → Tarify |
 | Celkový strop AI | Měsíční útrata za AI všech účtů (výchozí 90 USD). Nad ním Jarvis do konce měsíce nevolá model. | Administrace → AI a Jarvis → Strop využití AI |
 | Strop AI na uživatele | Měsíční útrata jednoho účtu v USD. Výchozí bez limitu. Platí dvakrát: na všechno, co účet utratil kdekoli, a jako strop jeho prostoru na všechna volání v něm (i jeho pracovníků, platí majitel). | Administrace → AI a Jarvis → Strop využití AI |

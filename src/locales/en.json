@@ -237,7 +237,8 @@
       "shortcutMac": "⌘B"
     },
     "messages": "Messages",
-    "unread": "{count, plural, one {# unread message} other {# unread messages}}"
+    "unread": "{count, plural, one {# unread message} other {# unread messages}}",
+    "scheduler": "Scheduler"
   },
   "topBar": {
     "home": "Go to dashboard",
@@ -347,7 +348,8 @@
       "workers": "team employees staff rewards",
       "tasks": "tasks to do follow-up due overdue deals contacts",
       "myRewards": "earnings payments",
-      "messages": "messages chat conversations groups direct team write"
+      "messages": "messages chat conversations groups direct team write",
+      "scheduler": "scheduler booking meeting types availability appointment calendly link"
     },
     "settingsItems": {
       "contactTables": {
@@ -1077,6 +1079,10 @@
       "privacy": {
         "title": "Privacy and data",
         "description": "A copy of your data, the terms and deleting the account."
+      },
+      "calendar": {
+        "title": "Calendar",
+        "description": "Other calendars to keep free and your calendar as a link to subscribe to."
       }
     },
     "items": {
@@ -1231,6 +1237,14 @@
       "chatSound": {
         "label": "Sound of a new message",
         "keywords": "messages chat sound notifications"
+      },
+      "calendarSubscriptions": {
+        "label": "Subscribed calendars",
+        "keywords": "ics ical google apple outlook busy calendar subscription secret address"
+      },
+      "calendarFeed": {
+        "label": "Link to subscribe to your calendar",
+        "keywords": "ics feed export google apple outlook subscribe calendar link"
       }
     },
     "work": {
@@ -1284,6 +1298,100 @@
       "emailHint": "For a direct message or a mention, when you have been away for at least 10 minutes. A summary at most once an hour, without the messages' content.",
       "sound": "Sound of a new message",
       "soundHint": "A short tone when a message arrives outside the open conversation. Only with sounds on in Appearance."
+    },
+    "calendar": {
+      "subscriptionsTitle": "Subscribed calendars",
+      "subscriptionsHint": "Paste the secret iCal address of another calendar. Its busy times are never offered on your booking page and show in grey in your calendar. Only the busy times are kept, never what the events are.",
+      "loadFailed": "Calendars could not be loaded. Try again in a moment.",
+      "none": "No calendar yet.",
+      "max": "At most {count} calendars.",
+      "fetched": "Updated {when} ({at})",
+      "pending": "Waiting for the first download",
+      "show": "In calendar",
+      "showInCalendar": "Show {name} in the calendar",
+      "refresh": "Refresh",
+      "remove": "Remove",
+      "removeTitle": "Remove {name}?",
+      "removeText": "Its busy times stop counting at once. The calendar itself stays as it is.",
+      "cancel": "Cancel",
+      "close": "Close",
+      "addTitle": "Add a calendar",
+      "name": "Name",
+      "namePlaceholder": "Work in Google",
+      "nameRequired": "Give the calendar a name.",
+      "url": "Secret iCal address",
+      "urlHint": "Starts with https:// or webcal://. It is stored encrypted and never shown again.",
+      "urlRequired": "Paste the address.",
+      "color": "Colour",
+      "add": "Add calendar",
+      "adding": "Downloading…",
+      "added": "Calendar added: {count, plural, =0 {no busy time in the next 60 days} one {# busy time in the next 60 days} other {# busy times in the next 60 days}}.",
+      "errors": {
+        "invalid": "This is not a calendar address. Copy the whole iCal address.",
+        "notHttps": "Only secure addresses (https:// or webcal://) can be added.",
+        "blocked": "This address cannot be reached from the internet.",
+        "timeout": "The calendar did not answer within 10 seconds. Try again later.",
+        "tooLarge": "The calendar is larger than 5 MB.",
+        "http": "The calendar refused the download. Check that the address is still valid.",
+        "notCalendar": "The address answers, but not with a calendar (iCal).",
+        "network": "The calendar could not be downloaded. Try again later.",
+        "key": "Calendars are not set up on this server yet.",
+        "store": "The busy times could not be saved. Try again.",
+        "notConfigured": "Calendars are not set up on this server yet.",
+        "tooMany": "You already have the most calendars there can be.",
+        "tooSoon": "Refreshed a moment ago. Try again in a minute.",
+        "notFound": "This calendar is gone.",
+        "unauthenticated": "Sign in again.",
+        "forbidden": "You cannot do this.",
+        "readOnly": "Your account is read-only.",
+        "unknown": "Something went wrong. Try again."
+      },
+      "help": {
+        "title": "Where do I find the secret address?",
+        "google": {
+          "name": "Google Calendar",
+          "step1": "Open Google Calendar on a computer and go to Settings (the gear).",
+          "step2": "On the left under Settings for my calendars, pick the calendar.",
+          "step3": "Scroll to Integrate calendar.",
+          "step4": "Copy Secret address in iCal format and paste it here."
+        },
+        "apple": {
+          "name": "Apple Calendar (iCloud)",
+          "step1": "Open the Calendar app on a Mac or icloud.com/calendar.",
+          "step2": "Next to the calendar click the share icon.",
+          "step3": "Turn on Public Calendar.",
+          "step4": "Copy the address (webcal://…) and paste it here."
+        },
+        "outlook": {
+          "name": "Outlook",
+          "step1": "Open Outlook on the web and go to Settings → Calendar → Shared calendars.",
+          "step2": "Under Publish a calendar pick the calendar and Can view all details (or only when I'm busy).",
+          "step3": "Click Publish.",
+          "step4": "Copy the ICS link and paste it here."
+        },
+        "privacy": "Anyone with a secret address can read that calendar, so keep it to yourself. If it ever gets out, make a new one in the calendar's settings and replace it here."
+      },
+      "feed": {
+        "title": "Link to subscribe to your calendar",
+        "description": "Add your calendar from here to Google, Apple or Outlook: its events show there and update by themselves.",
+        "loadFailed": "The link could not be loaded. Try again in a moment.",
+        "inactive": "No link yet.",
+        "active": "The link works since {date}. For safety it is shown only when made.",
+        "created": "Your link is ready:",
+        "link": "Link to subscribe",
+        "copy": "Copy",
+        "copied": "Copied",
+        "onceHint": "Save it now: it is shown only this once. Anyone with the link sees your events.",
+        "create": "Create link",
+        "renew": "New link",
+        "renewTitle": "Make a new link?",
+        "renewText": "The old link stops working at once; calendars that use it need the new one.",
+        "revoke": "Turn the link off",
+        "failed": "That did not work. Try again.",
+        "cancel": "Cancel",
+        "close": "Close",
+        "howTo": "Google Calendar: Other calendars → + → From URL. Apple: File → New Calendar Subscription. Outlook: Add calendar → Subscribe from web."
+      }
     }
   },
   "milestones": {
@@ -2892,7 +3000,8 @@
       "label": "Show from other sections",
       "tasks": "Milestone tasks",
       "deals": "Close Date of deals",
-      "crmTasks": "Deal and contact tasks"
+      "crmTasks": "Deal and contact tasks",
+      "subscriptions": "Subscribed calendars"
     },
     "more": "+{count} more",
     "allDayShort": "All day",
@@ -3885,6 +3994,9 @@
         },
         "company": {
           "update": "Edit people in their part of the company"
+        },
+        "scheduler": {
+          "own": "Own booking page, meeting types and bookings"
         }
       },
       "scope": {
@@ -7155,7 +7267,8 @@
         "ai_calls": "Jarvis answers a month",
         "ai_files": "Files for Jarvis a month",
         "workers": "Workers",
-        "storage_mb": "Storage (MB)"
+        "storage_mb": "Storage (MB)",
+        "scheduler_types": "Active meeting types (Scheduler)"
       },
       "errors": {
         "required": "Fill this in.",
@@ -8679,5 +8792,377 @@
     "rateNote": "roughly at the rate of {date}",
     "chargedIn": "charged in {currency}",
     "switcher": "Currency"
+  },
+  "scheduler": {
+    "description": "Meeting types and working hours for your booking page. Clients pick a time that is free in your calendar.",
+    "tabsLabel": "Scheduler sections",
+    "tabs": {
+      "types": "Meeting types",
+      "availability": "Availability",
+      "bookings": "Bookings",
+      "team": "Everyone"
+    },
+    "newType": "New type",
+    "loadFailed": "The scheduler could not be loaded. Try again in a moment.",
+    "readOnly": "Your account is read-only, so the scheduler cannot be set up now.",
+    "toggleFailed": "The change was not saved. Try again.",
+    "noRight": {
+      "title": "The scheduler is not open to you",
+      "text": "The owner of the company decides who has their own booking page."
+    },
+    "empty": {
+      "title": "No meeting type yet",
+      "text": "Add the first one: what clients can book, how long it takes and where."
+    },
+    "presets": {
+      "intro": "Intro call",
+      "consultation": "Consultation",
+      "meeting": "Meeting"
+    },
+    "link": {
+      "label": "Your booking page",
+      "copy": "Copy link",
+      "copied": "Copied"
+    },
+    "colors": {
+      "violet": "Violet",
+      "teal": "Teal",
+      "gold": "Gold",
+      "green": "Green",
+      "pink": "Pink",
+      "neutral": "Grey"
+    },
+    "planLimit": {
+      "text": "Your plan allows {count, plural, one {# active meeting type} other {# active meeting types}}. Pro and Team have any number.",
+      "upgrade": "See the plans",
+      "worker": "The owner of the company changes the plan.",
+      "note": "Your plan allows {count, plural, one {# active meeting type} other {# active meeting types}}; the others wait switched off."
+    },
+    "duration": {
+      "minutes": "{minutes} min",
+      "hours": "{hours} h",
+      "hoursMinutes": "{hours} h {minutes} min"
+    },
+    "card": {
+      "bookings": "{count, plural, =0 {No bookings in 30 days} one {{formatted} booking in 30 days} other {{formatted} bookings in 30 days}}",
+      "inactive": "Switched off: not on the booking page",
+      "activate": "Switch on {name}",
+      "deactivate": "Switch off {name}"
+    },
+    "profile": {
+      "edit": "Edit page",
+      "title": "Your booking page",
+      "close": "Close",
+      "name": "Name",
+      "nameHint": "Shown at the top of the page.",
+      "headline": "One line about you",
+      "headlineHint": "For example: Websites for small businesses in Brno.",
+      "bio": "About you",
+      "photoHint": "The photo is the one of your profile (Settings → Account).",
+      "save": "Save",
+      "cancel": "Cancel",
+      "saveFailed": "The page was not saved. Try again."
+    },
+    "setup": {
+      "title": "Three things and your booking page is ready",
+      "description": "Clients will see a page with your name, the meeting types and the times that are free in your calendar.",
+      "handle": "Address of your page",
+      "handleHint": "Your link: {link}",
+      "handleProblems": {
+        "tooShort": "At least 3 characters.",
+        "tooLong": "At most 30 characters.",
+        "format": "Only small letters without accents, digits and hyphens inside.",
+        "reserved": "This word is reserved. Pick another one.",
+        "taken": "Somebody already has this address. Try another one."
+      },
+      "video": "Link to your video call",
+      "videoHint": "Your permanent room in Google Meet, Teams, Zoom or Jitsi. Clients get it in the confirmation.",
+      "videoProblem": "Paste a whole https:// link.",
+      "hours": "Working hours",
+      "hoursHint": "Monday to Friday 9:00–17:00 is set. Change it, add a break or a day off.",
+      "hoursAction": "Set working hours",
+      "done": "Done",
+      "skip": "Later",
+      "saveFailed": "The page was not saved. Try again."
+    },
+    "hours": {
+      "dayOpen": "{day}: working day",
+      "closed": "Not working",
+      "from": "{day} from",
+      "to": "{day} until",
+      "remove": "Remove an interval on {day}",
+      "add": "Add interval",
+      "midnightHint": "An end of 00:00 means until midnight.",
+      "issues": {
+        "order": "The end must come after the start.",
+        "overlap": "Overlaps another interval of the day.",
+        "format": "Enter a time."
+      }
+    },
+    "availability": {
+      "zoneTitle": "Time zone",
+      "zoneHint": "Your working hours are in this zone. Clients see the times in theirs.",
+      "weekTitle": "Working hours",
+      "weekHint": "When clients can book you, day by day. A meeting type can have its own hours.",
+      "exceptionsTitle": "Exceptions",
+      "exceptionsHint": "A day off, a holiday or other hours on one day. They apply to every meeting type.",
+      "loadFailed": "Availability could not be loaded. Try again in a moment.",
+      "saveFailed": "The change was not saved. Try again.",
+      "readOnly": "Your account is read-only.",
+      "saveWeek": "Save hours",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "discard": "Discard changes",
+      "from": "From",
+      "to": "Until",
+      "toHint": "Empty = just one day.",
+      "pickDate": "Pick a day",
+      "sameDay": "The same day",
+      "kind": "What applies",
+      "kinds": {
+        "blocked": "Not available all day",
+        "hours": "Other hours"
+      },
+      "hoursFrom": "Available from",
+      "hoursTo": "Available until",
+      "tooLong": "At most {days} days at once.",
+      "badHours": "The end must come after the start.",
+      "addException": "Add exception",
+      "noExceptions": "No exceptions ahead.",
+      "blockedDay": "Not available",
+      "removeException": "Remove the exception on {date}"
+    },
+    "editor": {
+      "newTitle": "New meeting type",
+      "editTitle": "Meeting type",
+      "close": "Close",
+      "cancel": "Cancel",
+      "tabsLabel": "Parts of the meeting type",
+      "tabs": {
+        "basics": "Basics",
+        "availability": "Availability",
+        "questions": "Questions",
+        "reminders": "Reminders",
+        "confirmation": "Confirmation",
+        "preview": "Preview"
+      },
+      "name": "Name",
+      "slug": "Address",
+      "slugHint": "The link of this type ends with {path}",
+      "description": "What the client gets",
+      "descriptionPlaceholder": "Half an hour on your website: what works, what to change first.",
+      "duration": "Length",
+      "durationCustom": "Other",
+      "durationMinutes": "Length in minutes",
+      "minutesUnit": "min",
+      "hoursUnit": "hours",
+      "daysUnit": "days",
+      "location": "Where",
+      "locations": {
+        "video": "Video call",
+        "phone": "Phone",
+        "in_person": "In person",
+        "custom": "Other"
+      },
+      "placeLabel": {
+        "phone": "Who calls whom",
+        "in_person": "Address",
+        "custom": "Where the meeting takes place",
+        "video": "Video call"
+      },
+      "placeHint": {
+        "phone": "Optional, e.g. I will call you on the number you give.",
+        "in_person": "Where you meet.",
+        "custom": "For example: a link to your own room.",
+        "video": ""
+      },
+      "videoUses": "Clients get your video link: {link}",
+      "videoMissing": "Add your video link to the booking page (Edit page), clients get it in the confirmation.",
+      "color": "Colour",
+      "customHours": "Own working hours",
+      "customHoursHint": "Off: this type uses the hours of Availability.",
+      "customHoursAfterCreate": "Save the type first, then set its own hours.",
+      "customHoursSaveHint": "Save the type too, so it starts using these hours.",
+      "bufferBefore": "Free time before",
+      "bufferAfter": "Free time after",
+      "none": "None",
+      "notice": "At the earliest in",
+      "noticeHint": "How long before the start the last booking may come.",
+      "horizon": "At most ahead",
+      "horizonHint": "Up to {max} days.",
+      "perDay": "At most a day",
+      "perDayHint": "Bookings of this type in one day; empty = no limit.",
+      "noLimit": "No limit",
+      "step": "Times every",
+      "stepHint": "How far apart the offered start times are.",
+      "approval": "Confirm bookings myself",
+      "approvalHint": "A booking waits until you confirm it; the client knows.",
+      "confirmationNote": "Text after booking",
+      "confirmationNoteHint": "Shown to the client after booking and sent in the confirmation.",
+      "dealStage": "Open a deal",
+      "dealStageHint": "A confirmed booking opens a deal for the client in this stage.",
+      "noDeal": "Do not open a deal",
+      "untitled": "Untitled",
+      "previewAfterCreate": "Save the type and you will see the free times here.",
+      "previewFailed": "Free times could not be loaded. Try again in a moment.",
+      "previewEmpty": "No free time in the coming days. Check the working hours, the notice and the exceptions.",
+      "previewHint": "Free times as a client in {zone} sees them now.",
+      "previewInactive": "The type is switched off: clients do not see it yet.",
+      "startsInactive": "Your plan has no room for another active type: this one starts switched off.",
+      "save": "Save",
+      "create": "Create",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "delete": "Delete type",
+      "deleteTitle": "Delete {name}?",
+      "deleteText": "Its link stops working. Bookings made stay in the history.",
+      "errors": {
+        "readOnly": "Your account is read-only.",
+        "slugTaken": "You already have a type with this address.",
+        "handleTaken": "This address is taken.",
+        "invalid": "Something is filled in wrong. Check the tabs marked with a dot.",
+        "unknown": "The type was not saved. Try again."
+      },
+      "issues": {
+        "name": {
+          "required": "Give the type a name.",
+          "tooLong": "At most 80 characters."
+        },
+        "slug": {
+          "format": "Only small letters without accents, digits and hyphens.",
+          "taken": "You already have a type with this address."
+        },
+        "description": {
+          "tooLong": "At most 2,000 characters."
+        },
+        "confirmation_note": {
+          "tooLong": "At most 1,000 characters."
+        },
+        "location_text": {
+          "tooLong": "At most 300 characters.",
+          "required": "Say where the meeting takes place."
+        },
+        "duration_min": {
+          "range": "From 5 to 480 minutes."
+        },
+        "buffers": {
+          "range": "At most 4 hours."
+        },
+        "notice": {
+          "range": "From 0 to 720 hours."
+        },
+        "horizon": {
+          "range": "From 1 to 60 days."
+        },
+        "perDay": {
+          "range": "From 1 to 100, or empty."
+        },
+        "step": {
+          "range": "Every 15, 30 or 60 minutes."
+        },
+        "questions": {
+          "tooMany": "At most 20 questions.",
+          "label": "Write the question.",
+          "options": "Give the choices, one per line.",
+          "locked": "Name and e-mail are always asked."
+        },
+        "reminders": {
+          "tooMany": "At most 5 reminders.",
+          "range": "From 5 minutes to 7 days before.",
+          "duplicate": "Two reminders at the same time."
+        }
+      }
+    },
+    "questions": {
+      "hint": "What the client fills in when booking. Name and e-mail are always there.",
+      "builtin": {
+        "name": "Name",
+        "email": "E-mail",
+        "phone": "Phone",
+        "company": "Company"
+      },
+      "untitled": "New question",
+      "always": "Always asked",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "remove": "Remove question",
+      "label": "Question",
+      "labelPlaceholder": "What would you like to talk about?",
+      "type": "Answer",
+      "types": {
+        "text": "Short text",
+        "textarea": "Longer text",
+        "phone": "Phone",
+        "email": "E-mail",
+        "select": "Choice",
+        "checkbox": "Tick box"
+      },
+      "options": "Choices",
+      "optionsPlaceholder": "One choice per line",
+      "required": "Required",
+      "add": "Add question"
+    },
+    "reminders": {
+      "hint": "E-mails before the meeting, to the client and to you.",
+      "none": "No reminder.",
+      "byEmail": "by e-mail",
+      "remove": "Remove reminder",
+      "add": "Add reminder",
+      "max": "At most {count} reminders.",
+      "daysBefore": "{count, plural, one {# day before} other {# days before}}",
+      "hoursBefore": "{count, plural, one {# hour before} other {# hours before}}",
+      "minutesBefore": "{count, plural, one {# minute before} other {# minutes before}}"
+    },
+    "bookings": {
+      "whenLabel": "When",
+      "when": {
+        "upcoming": "Upcoming",
+        "past": "Past"
+      },
+      "statusLabel": "Status",
+      "filter": {
+        "all": "All",
+        "pending": "Waiting",
+        "confirmed": "Confirmed",
+        "cancelled": "Cancelled"
+      },
+      "scopeLabel": "Whose",
+      "scope": {
+        "mine": "Mine",
+        "team": "Everyone"
+      },
+      "status": {
+        "held": "Being booked",
+        "pending": "Waiting for you",
+        "confirmed": "Confirmed",
+        "cancelled": "Cancelled",
+        "declined": "Declined",
+        "rescheduled": "Moved"
+      },
+      "loadFailed": "Bookings could not be loaded. Try again in a moment.",
+      "emptyUpcoming": "No booking ahead",
+      "emptyPast": "No past booking",
+      "emptyHint": "Send the link of a meeting type to a client: what they book shows here and in your calendar.",
+      "deletedType": "Deleted type",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {page} of {pages}"
+    },
+    "team": {
+      "hint": "The booking pages of the people in your company. You can switch a type off; they change the rest themselves.",
+      "loadFailed": "The company's schedulers could not be loaded. Try again in a moment.",
+      "emptyTitle": "Nobody else has a booking page",
+      "emptyText": "A worker with the right Scheduler: own sets up their own.",
+      "noTypes": "No meeting type yet."
+    },
+    "hint": {
+      "text": "Jarvis: send a link to book “{name}” ({duration})",
+      "insert": "Insert link",
+      "copy": "Copy link",
+      "copied": "Copied",
+      "mail": "E-mail",
+      "mailSubject": "Let's find a time",
+      "mailBody": "Hello,\n\npick a time that suits you here: {url}\n\nThank you"
+    }
   }
 }

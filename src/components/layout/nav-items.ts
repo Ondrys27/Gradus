@@ -1,5 +1,6 @@
 import {
   Building2Icon,
+  CalendarClockIcon,
   CalendarDaysIcon,
   CoinsIcon,
   ContactRoundIcon,
@@ -24,6 +25,7 @@ export type NavKey =
   | "tasks"
   | "coldCalling"
   | "calendar"
+  | "scheduler"
   | "finance"
   | "workers"
   | "messages"
@@ -40,6 +42,8 @@ export const navItems: NavItem[] = [
   { key: "tasks", href: "/app/ukoly-crm", icon: ListChecksIcon },
   { key: "coldCalling", href: "/app/cold-calling", icon: PhoneCallIcon },
   { key: "calendar", href: "/app/kalendar", icon: CalendarDaysIcon },
+  // Scheduler: meeting types and hours for the public booking page.
+  { key: "scheduler", href: "/app/planovac", icon: CalendarClockIcon },
   { key: "finance", href: "/app/finance", icon: WalletIcon },
   // Messages: the company chat (groups and people), with the unread count.
   { key: "messages", href: "/app/zpravy", icon: MessageCircleIcon },
@@ -72,6 +76,8 @@ export type WorkerNavAccess = {
   permissions: Partial<Record<string, { view: boolean; edit: boolean }>>;
   /** Company (their branch) is on unless the owner switched it off. */
   company?: boolean;
+  /** Their own scheduler in this company ("scheduler: own"). */
+  scheduler?: boolean;
 } | null;
 
 /**
@@ -92,9 +98,14 @@ const WORKER_END: NavKey[] = ["workers"];
 export function navItemsFor(access: WorkerNavAccess): NavItem[] {
   if (!access) return navItems;
   const byKey = new Map([...navItems, ...workerOnlyItems].map((item) => [item.key, item]));
-  const allowed = PERMISSION_SECTIONS.filter(
+  const allowed: NavKey[] = PERMISSION_SECTIONS.filter(
     ({ section }) => access.permissions[section]?.view,
   ).map(({ key }) => key);
+  // The scheduler sits after the calendar, as in the owner's menu.
+  if (access.scheduler) {
+    const calendar = allowed.indexOf("calendar");
+    allowed.splice(calendar >= 0 ? calendar + 1 : allowed.length, 0, "scheduler");
+  }
   const end = access.company === false ? [] : WORKER_END;
   return [...WORKER_BASE, ...allowed, ...end].map((key) => byKey.get(key)!);
 }

@@ -170,6 +170,7 @@ describe("limitOverages", () => {
     ai_calls: 300,
     ai_files: 0,
     workers: 0,
+    scheduler_types: 1,
     storage_mb: 500,
   };
 

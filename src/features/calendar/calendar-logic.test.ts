@@ -280,9 +280,24 @@ describe("remembered choices", () => {
     expect(parseView(null)).toBe("month");
     expect(parseView("year")).toBe("month");
     expect(parseView("week")).toBe("week");
-    expect(parseMirrors(null)).toEqual({ tasks: true, deals: true, crmTasks: true });
-    expect(parseMirrors("nonsense")).toEqual({ tasks: true, deals: true, crmTasks: true });
-    expect(parseMirrors('{"tasks":false}')).toEqual({ tasks: false, deals: true, crmTasks: true });
+    expect(parseMirrors(null)).toEqual({
+      tasks: true,
+      deals: true,
+      crmTasks: true,
+      subscriptions: true,
+    });
+    expect(parseMirrors("nonsense")).toEqual({
+      tasks: true,
+      deals: true,
+      crmTasks: true,
+      subscriptions: true,
+    });
+    expect(parseMirrors('{"tasks":false}')).toEqual({
+      tasks: false,
+      deals: true,
+      crmTasks: true,
+      subscriptions: true,
+    });
     expect(parseMirrors('{"crmTasks":false}')).toMatchObject({ crmTasks: false });
   });
 });

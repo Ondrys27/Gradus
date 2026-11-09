@@ -26,8 +26,8 @@ describe("isActivePath", () => {
 });
 
 describe("navigation", () => {
-  it("has eleven sections, five of them in the phone bar", () => {
-    expect(navItems).toHaveLength(11);
+  it("has twelve sections, five of them in the phone bar", () => {
+    expect(navItems).toHaveLength(12);
     expect(navItems.map((item) => item.key).slice(0, 3)).toEqual([
       "dashboard",
       "milestones",
@@ -38,6 +38,8 @@ describe("navigation", () => {
     // Tasks follow the pipeline.
     const keys = navItems.map((item) => item.key);
     expect(keys[keys.indexOf("pipeline") + 1]).toBe("tasks");
+    // The scheduler follows the calendar.
+    expect(keys[keys.indexOf("calendar") + 1]).toBe("scheduler");
     expect(bottomNavKeys.every((key) => navItems.some((item) => item.key === key))).toBe(true);
   });
 });
@@ -69,6 +71,20 @@ describe("worker navigation", () => {
     const withCalendar = { permissions: { calendar: { view: true, edit: false } } };
     expect(navItemsFor(withCalendar).map((item) => item.key)).toContain("calendar");
     expect(isPathAllowed("/app/kalendar", withCalendar)).toBe(true);
+  });
+
+  it("opens the scheduler only with 'scheduler: own', right after the calendar", () => {
+    expect(isPathAllowed("/app/planovac", worker)).toBe(false);
+    const withScheduler = {
+      permissions: { calendar: { view: true, edit: false } },
+      scheduler: true,
+    };
+    const keys = navItemsFor(withScheduler).map((item) => item.key);
+    expect(keys[keys.indexOf("calendar") + 1]).toBe("scheduler");
+    expect(isPathAllowed("/app/planovac", withScheduler)).toBe(true);
+    expect(navItemsFor({ permissions: {}, scheduler: true }).map((item) => item.key)).toContain(
+      "scheduler",
+    );
   });
 
   it("keeps the owner's sidebar as it was", () => {

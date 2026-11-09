@@ -93,9 +93,27 @@ export type TaskCalendarItem = ItemBase & {
   endMs: number;
 };
 
+/**
+ * Busy time of a subscribed calendar (Settings → Calendar): grey, read only,
+ * never a Gradus event; the subscription's name is its title.
+ */
+export type BusyCalendarItem = ItemBase & {
+  type: "busy";
+  subscriptionId: string;
+  startMs: number;
+  endMs: number;
+};
+
 /** Items that sit on the time axis and can be dragged. */
 export type TimedItem = EventItem | TaskCalendarItem;
+/** Everything drawn on the time axis: the draggable items and the busy times. */
+export type LaidOutItem = TimedItem | BusyCalendarItem;
 
-export type CalendarItem = EventItem | MirrorCalendarItem | TaskCalendarItem;
+export type CalendarItem = EventItem | MirrorCalendarItem | TaskCalendarItem | BusyCalendarItem;
 
-export type MirrorPrefs = { tasks: boolean; deals: boolean; crmTasks: boolean };
+export type MirrorPrefs = {
+  tasks: boolean;
+  deals: boolean;
+  crmTasks: boolean;
+  subscriptions: boolean;
+};

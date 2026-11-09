@@ -6,6 +6,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   HandshakeIcon,
+  CalendarRangeIcon,
   ListChecksIcon,
   PlusIcon,
   SquareCheckBigIcon,
@@ -34,6 +35,7 @@ import {
   shiftCursor,
   toEventItem,
   toMirrorItem,
+  toBusyItems,
   toTaskItem,
   viewDays,
   type TimeRange,
@@ -48,6 +50,7 @@ import { EventFormDialog, type NewEventStart } from "./event-form-dialog";
 import { MonthView } from "./month-view";
 import { useCan, useWorkspace } from "@/features/account/workspace-queries";
 import { useCalendarEvents, useMirrors, useUpdateEvent } from "./queries";
+import { useSubscriptionBusy } from "@/features/scheduler/queries";
 import { TimeGrid } from "./time-grid";
 import {
   CALENDAR_VIEWS,
@@ -155,6 +158,10 @@ export function CalendarView() {
     ready && mirrors.crmTasks,
   );
 
+  // Busy times of the account's subscribed calendars (Settings → Calendar), grey and read only.
+  const busyQuery = useSubscriptionBusy(ready);
+  const hasSubscriptions = (busyQuery.data ?? []).length > 0;
+
   const items = useMemo(() => {
     const list: CalendarItem[] = [
       ...(eventsQuery.data ?? []).map((event) => toEventItem(event, settings.timeZone)),
@@ -162,14 +169,21 @@ export function CalendarView() {
       ...(mirrors.crmTasks ? (tasksQuery.data ?? []) : []).map((task) =>
         toTaskItem(task, settings.timeZone, now),
       ),
+      ...(mirrors.subscriptions
+        ? toBusyItems(busyQuery.data ?? [], settings.timeZone, firstDay, lastDay)
+        : []),
     ];
     return itemsByDay(list, days);
   }, [
     eventsQuery.data,
     mirrorsQuery.data,
     tasksQuery.data,
+    busyQuery.data,
     mirrors.crmTasks,
+    mirrors.subscriptions,
     days,
+    firstDay,
+    lastDay,
     settings.timeZone,
     now,
   ]);
@@ -193,6 +207,8 @@ export function CalendarView() {
   }
 
   function openItem(item: CalendarItem) {
+    // A subscribed calendar's busy time is only shown; it opens nothing.
+    if (item.type === "busy") return;
     if (item.type === "mirror") router.push(item.mirror.href);
     else if (item.type === "task") taskDialogs.open(item.task);
     // A deal's delivery date belongs to the deal: it opens the deal, never an editor.
@@ -323,6 +339,16 @@ export function CalendarView() {
         >
           {t("mirrors.crmTasks")}
         </MirrorToggle>
+        {hasSubscriptions && (
+          <MirrorToggle
+            pressed={mirrors.subscriptions}
+            tone="neutral"
+            onToggle={() => toggleMirror("subscriptions")}
+            icon={<CalendarRangeIcon aria-hidden className="size-4" />}
+          >
+            {t("mirrors.subscriptions")}
+          </MirrorToggle>
+        )}
       </div>
 
       {(failed || changeFailed) && (
@@ -389,6 +415,7 @@ const TOGGLE_TONE = {
   teal: "border-teal/60 bg-teal/10 text-teal",
   gold: "border-gold/60 bg-gold/10 text-gold",
   violet: "border-violet/60 bg-violet/10 text-violet",
+  neutral: "border-line-strong bg-surface-hover text-ink-soft",
 } as const;
 
 function MirrorToggle({
@@ -399,7 +426,7 @@ function MirrorToggle({
   children,
 }: {
   pressed: boolean;
-  tone: "teal" | "gold" | "violet";
+  tone: "teal" | "gold" | "violet" | "neutral";
   onToggle: () => void;
   icon: ReactNode;
   children: ReactNode;
