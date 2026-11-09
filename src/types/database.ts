@@ -4900,11 +4900,21 @@ export type Database = {
         Returns: string
       }
       billing_event_claim: {
-        Args: { _created: string; _event_id: string; _mode: string; _type: string }
+        Args: {
+          _created: string
+          _event_id: string
+          _mode: string
+          _type: string
+        }
         Returns: string
       }
       billing_event_finish: {
-        Args: { _detail?: Json; _event_id: string; _outcome: string; _user_id?: string }
+        Args: {
+          _detail?: Json
+          _event_id: string
+          _outcome: string
+          _user_id?: string
+        }
         Returns: undefined
       }
       billing_mode_allowed: {
