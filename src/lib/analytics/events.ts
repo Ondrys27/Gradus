@@ -633,6 +633,8 @@ export const EVENTS = {
   booking_declined: event("calendar", "server", true, {}),
   booking_cancelled: event("calendar", "server", true, { by: oneOf(["host", "guest"]) }),
   booking_rescheduled: event("calendar", "server", true, { by: oneOf(["host", "guest"]) }),
+  booking_no_show: event("calendar", "server", true, { no_show: bool() }),
+  booking_survey_dismissed: event("calendar", "server", false, {}),
 
   // --- finance -------------------------------------------------------------
   transaction_created: event("finance", "client", true, {

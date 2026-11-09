@@ -407,7 +407,8 @@ export function canEditEvent(
   event: Pick<CalendarEvent, "source" | "actor_id">,
   access: { owner: boolean; update: boolean; viewAll: boolean; userId: string },
 ): boolean {
-  if (event.source === "deal_deadline") return false;
+  // A deal's delivery date and a booked meeting change through the deal and the booking.
+  if (event.source === "deal_deadline" || event.source === "booking") return false;
   if (access.owner) return access.update;
   return access.update && (access.viewAll || event.actor_id === access.userId);
 }

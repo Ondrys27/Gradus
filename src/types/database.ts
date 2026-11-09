@@ -717,24 +717,31 @@ export type Database = {
           calendar_event_id: string | null
           cancel_reason: string | null
           cancelled_by: string | null
+          client_hash: string | null
+          confirmed_at: string | null
           contact_id: string | null
           created_at: string
           deal_id: string | null
           ends_at: string
           event_type_id: string | null
           guest_company: string | null
-          guest_email: string
-          guest_name: string
+          guest_email: string | null
+          guest_name: string | null
           guest_phone: string | null
           guest_time_zone: string | null
           hold_expires_at: string | null
           host_user_id: string | null
           id: string
+          locale: string
           manage_token_hash: string | null
+          no_show_at: string | null
           reminder_ids: Json
+          reschedule_count: number
+          rescheduled_at: string | null
           space_id: string
           starts_at: string
           status: string
+          survey_dismissed_at: string | null
           updated_at: string
         }
         Insert: {
@@ -742,24 +749,31 @@ export type Database = {
           calendar_event_id?: string | null
           cancel_reason?: string | null
           cancelled_by?: string | null
+          client_hash?: string | null
+          confirmed_at?: string | null
           contact_id?: string | null
           created_at?: string
           deal_id?: string | null
           ends_at: string
           event_type_id?: string | null
           guest_company?: string | null
-          guest_email: string
-          guest_name: string
+          guest_email?: string | null
+          guest_name?: string | null
           guest_phone?: string | null
           guest_time_zone?: string | null
           hold_expires_at?: string | null
           host_user_id?: string | null
           id?: string
+          locale?: string
           manage_token_hash?: string | null
+          no_show_at?: string | null
           reminder_ids?: Json
+          reschedule_count?: number
+          rescheduled_at?: string | null
           space_id: string
           starts_at: string
           status?: string
+          survey_dismissed_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -767,24 +781,31 @@ export type Database = {
           calendar_event_id?: string | null
           cancel_reason?: string | null
           cancelled_by?: string | null
+          client_hash?: string | null
+          confirmed_at?: string | null
           contact_id?: string | null
           created_at?: string
           deal_id?: string | null
           ends_at?: string
           event_type_id?: string | null
           guest_company?: string | null
-          guest_email?: string
-          guest_name?: string
+          guest_email?: string | null
+          guest_name?: string | null
           guest_phone?: string | null
           guest_time_zone?: string | null
           hold_expires_at?: string | null
           host_user_id?: string | null
           id?: string
+          locale?: string
           manage_token_hash?: string | null
+          no_show_at?: string | null
           reminder_ids?: Json
+          reschedule_count?: number
+          rescheduled_at?: string | null
           space_id?: string
           starts_at?: string
           status?: string
+          survey_dismissed_at?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1505,6 +1526,7 @@ export type Database = {
           created_at: string
           from_table_id: string | null
           id: string
+          source: string | null
           to_table_id: string | null
           user_id: string
         }
@@ -1515,6 +1537,7 @@ export type Database = {
           created_at?: string
           from_table_id?: string | null
           id?: string
+          source?: string | null
           to_table_id?: string | null
           user_id: string
         }
@@ -1525,6 +1548,7 @@ export type Database = {
           created_at?: string
           from_table_id?: string | null
           id?: string
+          source?: string | null
           to_table_id?: string | null
           user_id?: string
         }
@@ -2869,6 +2893,7 @@ export type Database = {
       meeting_surveys: {
         Row: {
           answers: Json
+          booking_id: string | null
           created_at: string
           deal_id: string
           id: string
@@ -2878,6 +2903,7 @@ export type Database = {
         }
         Insert: {
           answers?: Json
+          booking_id?: string | null
           created_at?: string
           deal_id: string
           id?: string
@@ -2887,6 +2913,7 @@ export type Database = {
         }
         Update: {
           answers?: Json
+          booking_id?: string | null
           created_at?: string
           deal_id?: string
           id?: string
@@ -3991,6 +4018,27 @@ export type Database = {
           liked?: string | null
           satisfaction?: number
           user_id?: string
+        }
+        Relationships: []
+      }
+      scheduler_rate_events: {
+        Row: {
+          client_hash: string
+          created_at: string
+          id: number
+          kind: string
+        }
+        Insert: {
+          client_hash: string
+          created_at?: string
+          id?: never
+          kind: string
+        }
+        Update: {
+          client_hash?: string
+          created_at?: string
+          id?: never
+          kind?: string
         }
         Relationships: []
       }
@@ -7318,6 +7366,22 @@ export type Database = {
         Returns: undefined
       }
       reward_rule_is_valid: { Args: { _rule: Json }; Returns: boolean }
+      scheduler_book: {
+        Args: {
+          _answers: Json
+          _booking: string
+          _client_hash: string
+          _company: string
+          _email: string
+          _locale: string
+          _name: string
+          _new_token_hash: string
+          _phone: string
+          _time_zone: string
+          _token_hash: string
+        }
+        Returns: Json
+      }
       scheduler_booking_counts: {
         Args: { _since: string }
         Returns: {
@@ -7325,11 +7389,49 @@ export type Database = {
           event_type_id: string
         }[]
       }
+      scheduler_booking_effects: {
+        Args: {
+          _booking: string
+          _confirming: boolean
+          _country?: string
+          _deal_title: string
+          _description: string
+          _location: string
+          _title: string
+        }
+        Returns: Json
+      }
+      scheduler_cancel: {
+        Args: { _booking: string; _by: string; _reason: string }
+        Returns: Json
+      }
+      scheduler_cleanup: { Args: never; Returns: number }
+      scheduler_confirm: { Args: { _booking: string }; Returns: Json }
+      scheduler_decline: {
+        Args: { _booking: string; _reason: string }
+        Returns: Json
+      }
+      scheduler_dismiss_survey: { Args: { _booking: string }; Returns: undefined }
       scheduler_handle_available: {
         Args: { _handle: string; _profile?: string }
         Returns: boolean
       }
       scheduler_handle_ok: { Args: { _handle: string }; Returns: boolean }
+      scheduler_hold: {
+        Args: {
+          _client_hash: string
+          _guest_time_zone?: string
+          _release?: string
+          _starts_at: string
+          _token_hash: string
+          _type: string
+        }
+        Returns: Json
+      }
+      scheduler_host_active: {
+        Args: { _space: string; _user: string }
+        Returns: boolean
+      }
       scheduler_profile_owner: {
         Args: { _profile: string }
         Returns: Record<string, unknown>
@@ -7342,6 +7444,14 @@ export type Database = {
       scheduler_reminders_valid: {
         Args: { _reminders: Json }
         Returns: boolean
+      }
+      scheduler_reschedule: {
+        Args: { _booking: string; _starts_at: string }
+        Returns: Json
+      }
+      scheduler_set_no_show: {
+        Args: { _booking: string; _no_show: boolean }
+        Returns: Json
       }
       scheduler_time_zone_ok: { Args: { _zone: string }; Returns: boolean }
       scheduler_tone_ok: { Args: { _tone: string }; Returns: boolean }
@@ -7605,7 +7715,7 @@ export type Database = {
         | "datetime"
         | "select"
         | "boolean"
-      contact_source: "manual" | "generated" | "import"
+      contact_source: "manual" | "generated" | "import" | "scheduler"
       crm_task_status: "open" | "done"
       earning_status: "pending" | "approved" | "paid"
       feature_request_status:
@@ -7810,7 +7920,7 @@ export const Constants = {
         "select",
         "boolean",
       ],
-      contact_source: ["manual", "generated", "import"],
+      contact_source: ["manual", "generated", "import", "scheduler"],
       crm_task_status: ["open", "done"],
       earning_status: ["pending", "approved", "paid"],
       feature_request_status: [

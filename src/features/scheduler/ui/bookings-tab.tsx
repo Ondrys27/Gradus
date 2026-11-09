@@ -7,28 +7,18 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormAlert } from "@/components/ui/form-alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StatusPill } from "@/components/ui/status-pill";
-import type { Tone } from "@/components/ui/tone";
 import { formatPhone } from "@/lib/phone";
 import { formatDate, formatTime } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
+import { useWorkspace } from "@/features/account/workspace-queries";
 import {
   useBookings,
   type BookingScope,
   type BookingStatusFilter,
   type BookingWhen,
 } from "../queries";
-import type { BookingStatus } from "../types";
-
-const STATUS_TONE: Record<BookingStatus, Tone> = {
-  held: "neutral",
-  pending: "gold",
-  confirmed: "green",
-  cancelled: "pink",
-  declined: "pink",
-  rescheduled: "neutral",
-};
+import { BookingControls, BookingDetailDialog, BookingStatus } from "./booking-controls";
 
 const STATUS_FILTERS: readonly BookingStatusFilter[] = ["all", "pending", "confirmed", "cancelled"];
 
@@ -41,14 +31,26 @@ export function BookingsTab({
   hostNames,
   canSeeTeam,
   country,
+  initialBooking = null,
 }: {
   typeNames: Map<string, string>;
   hostNames: Map<string, string>;
   canSeeTeam: boolean;
   country: string | null;
+  /** `?booking=<id>`: open that booking (the link of the host's e-mail). */
+  initialBooking?: string | null;
 }) {
   const t = useTranslations("scheduler.bookings");
   const settings = useFormatSettings();
+  const workspace = useWorkspace();
+  const [open, setOpenState] = useState<string | null>(initialBooking);
+  function setOpen(next: string | null) {
+    setOpenState(next);
+    const url = new URL(window.location.href);
+    if (next) url.searchParams.set("booking", next);
+    else url.searchParams.delete("booking");
+    window.history.replaceState(window.history.state, "", url);
+  }
   const [when, setWhen] = useState<BookingWhen>("upcoming");
   const [status, setStatus] = useState<BookingStatusFilter>("all");
   const [scope, setScope] = useState<BookingScope>("mine");
@@ -108,10 +110,13 @@ export function BookingsTab({
               const end = new Date(booking.ends_at);
               const typeName = booking.event_type_id ? typeNames.get(booking.event_type_id) : null;
               const host = booking.host_user_id ? hostNames.get(booking.host_user_id) : null;
+              const row = { ...booking, typeName: typeName ?? null, questions: [] };
               return (
                 <li
                   key={booking.id}
                   className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:gap-4"
+                  data-testid="booking-row"
+                  data-booking={booking.id}
                 >
                   <div className="flex w-full flex-col sm:w-44 sm:shrink-0">
                     <span className="text-sm font-semibold text-ink tabular-nums">
@@ -121,7 +126,11 @@ export function BookingsTab({
                       {formatTime(start, settings)} – {formatTime(end, settings)}
                     </span>
                   </div>
-                  <div className="flex min-w-0 flex-1 flex-col">
+                  <button
+                    type="button"
+                    onClick={() => setOpen(booking.id)}
+                    className="flex min-w-0 flex-1 cursor-pointer flex-col rounded-lg text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                  >
                     <span className="truncate text-sm font-medium text-ink">
                       {booking.guest_name}
                       {booking.guest_company && (
@@ -138,10 +147,11 @@ export function BookingsTab({
                         .filter(Boolean)
                         .join(" · ")}
                     </span>
+                  </button>
+                  <div className="flex flex-col items-start gap-2 sm:items-end">
+                    <BookingStatus booking={row} />
+                    <BookingControls booking={row} isHost={booking.host_user_id === workspace.userId} compact />
                   </div>
-                  <StatusPill tone={STATUS_TONE[booking.status as BookingStatus] ?? "neutral"} dot>
-                    {t(`status.${booking.status}`)}
-                  </StatusPill>
                 </li>
               );
             })}
@@ -174,6 +184,12 @@ export function BookingsTab({
           )}
         </>
       )}
+      <BookingDetailDialog
+        bookingId={open}
+        userId={workspace.userId}
+        country={country}
+        onClose={() => setOpen(null)}
+      />
     </div>
   );
 }

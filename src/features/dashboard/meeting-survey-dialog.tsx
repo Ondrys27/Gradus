@@ -20,7 +20,13 @@ import {
   type SurveyQuestion,
 } from "./survey-questions";
 
-export type SurveyTarget = { dealId: string; dealTitle: string; stageId: string | null };
+export type SurveyTarget = {
+  dealId: string;
+  dealTitle: string;
+  stageId: string | null;
+  /** A meeting booked through the scheduler (24.4): the survey is filed under it too. */
+  bookingId?: string;
+};
 
 type Props = {
   /** The deal whose meeting is asked about; the dialog is open while there is one. */
@@ -78,7 +84,7 @@ function SurveyForm({ target, onClose }: { target: SurveyTarget; onClose: () => 
     if (answeredCount(cleaned) === 0) return;
     setFailed(false);
     save.mutate(
-      { dealId: target.dealId, stageId: target.stageId, answers: cleaned },
+      { dealId: target.dealId, stageId: target.stageId, bookingId: target.bookingId, answers: cleaned },
       { onSuccess: onClose, onError: () => setFailed(true) },
     );
   }

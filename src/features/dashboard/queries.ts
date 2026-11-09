@@ -490,6 +490,7 @@ export function useSaveMeetingSurvey() {
     mutationFn: async (input: {
       dealId: string;
       stageId: string | null;
+      bookingId?: string;
       answers: SurveyAnswers;
     }) => {
       const { error } = await createClient().from("meeting_surveys").insert({
@@ -497,6 +498,7 @@ export function useSaveMeetingSurvey() {
         deal_id: input.dealId,
         stage_id: input.stageId,
         answers: input.answers,
+        ...(input.bookingId ? { booking_id: input.bookingId } : {}),
       });
       if (error) throw error;
     },
@@ -505,6 +507,8 @@ export function useSaveMeetingSurvey() {
         queryClient.invalidateQueries({ queryKey: dashboardKeys.surveys(user.id) }),
         // The survey count unlocks the AI analysis.
         queryClient.invalidateQueries({ queryKey: ["jarvis", user.id, "sales-analysis"] }),
+        // A booked meeting answered leaves "Waiting for you".
+        queryClient.invalidateQueries({ queryKey: ["scheduler", user.id, "bookings", "surveys"] }),
       ]),
   });
 }

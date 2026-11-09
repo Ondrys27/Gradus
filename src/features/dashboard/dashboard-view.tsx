@@ -12,6 +12,7 @@ import { useFormatSettings } from "@/lib/use-format-settings";
 import { daySummaryParts, greetingPart } from "./dashboard-logic";
 import { SatisfactionCard } from "./satisfaction-card";
 import { TileDetail } from "./tile-detail";
+import { WaitingForYou } from "./waiting-for-you";
 import {
   ActiveDealsTile,
   IncomeTile,
@@ -58,6 +59,8 @@ export function DashboardView() {
           {overview.pending ? <Skeleton className="h-6 w-72 max-w-full" /> : summary}
         </div>
       </header>
+
+      <WaitingForYou />
 
       <DashboardPipelineHealth />
 

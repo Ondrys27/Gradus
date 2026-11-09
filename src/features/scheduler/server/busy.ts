@@ -70,11 +70,15 @@ async function spacesOf(admin: Admin, userId: string): Promise<string[]> {
   return [...new Set([userId, ...(data ?? []).map((row) => row.space_id)])];
 }
 
+/** A booking being moved: its own time and its meeting in the calendar do not block it. */
+export type BusyExclude = { bookingId: string; calendarEventId: string | null };
+
 export async function loadHostBusy(
   admin: Admin,
   hostUserId: string,
   range: { from: number; to: number },
   now = Date.now(),
+  exclude?: BusyExclude,
 ): Promise<HostBusy> {
   const spaces = await spacesOf(admin, hostUserId);
   const fromIso = new Date(range.from - DAY).toISOString();
@@ -82,7 +86,7 @@ export async function loadHostBusy(
   const [events, tasks, subscriptions, bookings] = await Promise.all([
     admin
       .from("calendar_events")
-      .select("starts_at, ends_at")
+      .select("id, starts_at, ends_at")
       .in("user_id", spaces)
       // Their own: made by them, or in their own space before anyone was named.
       .or(`actor_id.eq.${hostUserId},and(user_id.eq.${hostUserId},actor_id.is.null)`)
@@ -104,7 +108,7 @@ export async function loadHostBusy(
     admin.from("calendar_subscriptions").select("busy").eq("user_id", hostUserId).limit(10),
     admin
       .from("bookings")
-      .select("event_type_id, starts_at, ends_at, status, hold_expires_at")
+      .select("id, event_type_id, starts_at, ends_at, status, hold_expires_at")
       .eq("host_user_id", hostUserId)
       .in("status", ["held", "pending", "confirmed"])
       .gte("ends_at", new Date(range.from).toISOString())
@@ -116,6 +120,7 @@ export async function loadHostBusy(
 
   const busy: Interval[] = [];
   for (const event of events.data ?? []) {
+    if (exclude?.calendarEventId && event.id === exclude.calendarEventId) continue;
     const start = Date.parse(event.starts_at);
     const end = event.ends_at ? Date.parse(event.ends_at) : start + EVENT_DEFAULT_MIN * MINUTE;
     busy.push({ start, end: Math.max(end, start + MINUTE) });
@@ -129,7 +134,10 @@ export async function loadHostBusy(
 
   return {
     busy: mergeIntervals(busy),
-    bookings: activeBookings(bookings.data ?? [], now).map((booking) => ({
+    bookings: activeBookings(
+      (bookings.data ?? []).filter((booking) => booking.id !== exclude?.bookingId),
+      now,
+    ).map((booking) => ({
       start: Date.parse(booking.starts_at),
       end: Date.parse(booking.ends_at),
       eventTypeId: booking.event_type_id,
@@ -148,6 +156,7 @@ export async function loadTypeSlots(
   typeRow: EventTypeRow,
   guestTimeZone: string,
   now = Date.now(),
+  exclude?: BusyExclude,
 ): Promise<TypeSlots> {
   const type: EventType = toEventType(typeRow);
   const [profile, rules, overrides] = await Promise.all([
@@ -173,6 +182,7 @@ export async function loadTypeSlots(
     type.user_id,
     { from: now, to: now + (type.max_days_ahead + 2) * DAY },
     now,
+    exclude,
   );
   const bookings: BookingBusy[] = host.bookings.map((booking) => ({
     start: booking.start,

@@ -501,6 +501,12 @@
       },
       "cashLow": {
         "text": "In week {weekFormatted} your capital drops {zero, select, yes {below zero} other {below {thresholdMoney}}}{hasCause, select, yes { because of the expense “{cause}” ({causeAmountMoney})} other {}}{missing, plural, =0 {} one {; {missingFormatted} planned income has not come in} other {; {missingFormatted} planned incomes have not come in}}."
+      },
+      "bookingPending": {
+        "text": "{guest} wants to book a {type} for {startsAtFormatted}. Confirm the time or decline it."
+      },
+      "bookingNew": {
+        "text": "New booking: {guest}, {type} for {startsAtFormatted}. It is in your calendar."
       }
     },
     "proactive": {
@@ -2616,7 +2622,8 @@
       "currentTable": "Current table",
       "emailSent": "The e-mail was sent.",
       "moveToEmailSent": "Move to “Email sent”",
-      "dismissEmailSent": "Not now"
+      "dismissEmailSent": "Not now",
+      "fromScheduler": "From the scheduler"
     },
     "notes": {
       "title": "Note",
@@ -3041,7 +3048,9 @@
       "edit": "Edit",
       "delete": "Delete",
       "fromDeal": "Deal delivery date",
-      "fromDealHint": "It changes with the deal; open the deal to move it."
+      "fromDealHint": "It changes with the deal; open the deal to move it.",
+      "fromBooking": "From the scheduler",
+      "fromBookingHint": "The guest booked this meeting through the scheduler. It moves and is cancelled in Scheduler → Bookings, and the guest gets an e-mail."
     },
     "delete": {
       "title": "Delete this event?",
@@ -3681,6 +3690,27 @@
           "placeholder": "Notes"
         }
       }
+    },
+    "waiting": {
+      "title": "Waiting for you",
+      "booking": {
+        "title": "{guest} wants to book a {type}",
+        "meeting": "meeting",
+        "open": "Open the booking"
+      },
+      "invite": {
+        "title": "{who} invites you to their team",
+        "someone": "Someone",
+        "accept": "Accept",
+        "decline": "Decline",
+        "open": "See the invite"
+      },
+      "survey": {
+        "title": "How did the meeting with {guest} go?",
+        "fill": "Fill in the survey",
+        "noShow": "No-show",
+        "skip": "Skip"
+      }
     }
   },
   "email": {
@@ -3883,6 +3913,92 @@
       "intro": "{worker} just left your company on {appName}.",
       "next": "Their access to the company's data ended right away. Deals and tasks in their care stay in the company; hand them over in Company or in the deal.",
       "open": "Open Company"
+    },
+    "booking": {
+      "meeting": "Meeting",
+      "when": "When: {when} ({zone})",
+      "duration": "Length: {formatted} min",
+      "with": "With: {host}",
+      "place": {
+        "video": "Video call: {link}",
+        "videoLater": "Video call: the link comes once it is confirmed",
+        "phoneGuest": "By phone: {host} will call you on your number",
+        "phoneHost": "By phone on {phone}",
+        "phoneNone": "By phone (no number given)",
+        "at": "Where: {place}"
+      },
+      "previous": "Previous time: {when}",
+      "reason": "Reason: {reason}",
+      "alternative": "Another time offered: {when}. You can book it through the link below.",
+      "reschedule": "Reschedule",
+      "cancel": "Cancel",
+      "bookAgain": "Pick another time",
+      "openApp": "Open in the app",
+      "madeWith": "Made with {appName}",
+      "guestEmail": "E-mail: {email}",
+      "guestPhone": "Phone: {phone}",
+      "guestCompany": "Company: {company}",
+      "yes": "yes",
+      "no": "no",
+      "icsTitle": "{type} · {host}",
+      "guest": {
+        "confirmed": {
+          "subject": "Confirmed: {type} · {when}",
+          "intro": "Your {type} with {host} is confirmed. The calendar invite is attached."
+        },
+        "pending": {
+          "subject": "Waiting for confirmation: {type} · {when}",
+          "intro": "Thank you for booking. {host} still needs to confirm it.",
+          "next": "Once they do, you will get an e-mail with the link to the call."
+        },
+        "approved": {
+          "subject": "Confirmed: {type} · {when}",
+          "intro": "{host} confirmed your {type}. The calendar invite is attached."
+        },
+        "declined": {
+          "subject": "Not confirmed: {type} · {when}",
+          "intro": "Unfortunately {host} could not confirm this time."
+        },
+        "cancelledByHost": {
+          "subject": "Cancelled: {type} · {when}",
+          "intro": "{host} cancelled the {type}."
+        },
+        "cancelledByGuest": {
+          "subject": "Cancelled: {type} · {when}",
+          "intro": "You cancelled your {type} with {host}. If another time suits you, pick a new one."
+        },
+        "rescheduled": {
+          "subject": "New time: {type} · {when}",
+          "intro": "Your {type} with {host} has a new time."
+        },
+        "reminder": {
+          "subject": "Reminder: {type} · {when}",
+          "intro": "A reminder of your {type} with {host} in {minutes, plural, =60 {an hour} =120 {2 hours} =1440 {a day} =2880 {2 days} =10080 {a week} one {# minute} other {# minutes}}."
+        }
+      },
+      "host": {
+        "booked": {
+          "subject": "New booking: {guest} · {when}",
+          "intro": "{guest} booked a {type}. The meeting is in your calendar and the contact in Gradus."
+        },
+        "approval": {
+          "subject": "To approve: {guest} · {when}",
+          "intro": "{guest} wants to book a {type}. Confirm the time or decline it.",
+          "button": "Confirm or decline"
+        },
+        "cancelledByGuest": {
+          "subject": "Cancelled: {guest} · {when}",
+          "intro": "{guest} cancelled the {type}. It left your calendar and stays in the contact's history."
+        },
+        "rescheduledByGuest": {
+          "subject": "Rescheduled: {guest} · {when}",
+          "intro": "{guest} moved the {type} to a new time."
+        },
+        "reminder": {
+          "subject": "Reminder: {type} with {guest} · {when}",
+          "intro": "In {minutes, plural, =60 {an hour} =120 {2 hours} =1440 {a day} =2880 {2 days} =10080 {a week} one {# minute} other {# minutes}} you meet {guest} for a {type}."
+        }
+      }
     }
   },
   "workers": {
@@ -6383,6 +6499,14 @@
           "cashLow": {
             "label": "Money running short",
             "description": "By the month plan (Finance → Month) the capital drops below zero or below the reserve this week or a later one."
+          },
+          "bookingPending": {
+            "label": "Booking to approve",
+            "description": "A guest booked a meeting type that is approved by hand."
+          },
+          "bookingNew": {
+            "label": "New booking",
+            "description": "A guest booked a meeting through the scheduler (last two days, still ahead)."
           }
         },
         "questions": {
@@ -9146,7 +9270,72 @@
       "deletedType": "Deleted type",
       "previous": "Previous",
       "next": "Next",
-      "page": "Page {page} of {pages}"
+      "page": "Page {page} of {pages}",
+      "label": {
+        "held": "Being booked",
+        "pending": "Waiting for you",
+        "confirmed": "Confirmed",
+        "done": "Took place",
+        "noShow": "No-show",
+        "cancelled": "Cancelled",
+        "declined": "Declined",
+        "rescheduled": "Rescheduled"
+      },
+      "actions": {
+        "approve": "Confirm",
+        "decline": "Decline",
+        "reschedule": "Reschedule",
+        "cancel": "Cancel",
+        "noShow": "No-show",
+        "cameAfterAll": "Came after all"
+      },
+      "problems": {
+        "slotTaken": "That time is no longer free. Pick another.",
+        "holdExpired": "The booking has expired meanwhile.",
+        "rateLimited": "Too many attempts. Try again in a while.",
+        "invalidState": "This cannot be done with the booking any more. Reload it.",
+        "notFound": "The booking could not be found.",
+        "invalid": "Something in the input is not right.",
+        "readOnly": "The account is read-only; confirming or moving is not possible now.",
+        "unavailable": "The scheduler is not taking bookings right now.",
+        "forbidden": "You cannot change this booking.",
+        "unknown": "That did not work. Try again."
+      },
+      "decline": {
+        "title": "Decline the booking",
+        "close": "Close",
+        "text": "{guest} gets an e-mail with the reason and a link to pick another time.",
+        "reason": "Reason (the guest sees it)",
+        "alternative": "Offer another time (optional)",
+        "alternativeHint": "It goes into the e-mail; the guest books it themselves.",
+        "alternativeTime": "Time",
+        "keep": "Back",
+        "confirm": "Decline"
+      },
+      "cancel": {
+        "title": "Cancel the meeting",
+        "close": "Close",
+        "text": "{guest} gets an e-mail about it. The meeting leaves the calendar and stays in the contact's history.",
+        "reason": "Reason (the guest sees it, optional)",
+        "keep": "Keep it",
+        "confirm": "Cancel the meeting"
+      },
+      "reschedule": {
+        "title": "Reschedule the meeting",
+        "close": "Close",
+        "text": "Pick a new free time. {guest} gets an e-mail with it and the reminders move along.",
+        "loadFailed": "The free times could not be loaded.",
+        "keep": "Back",
+        "pick": "Pick a time",
+        "confirm": "Move to {when}"
+      },
+      "yes": "yes",
+      "no": "no",
+      "reason": "Reason: {reason}",
+      "detailTitle": "Booking",
+      "close": "Close",
+      "notFound": "The booking could not be found.",
+      "history": "Booking: {type}"
     },
     "team": {
       "hint": "The booking pages of the people in your company. You can switch a type off; they change the rest themselves.",
@@ -9163,6 +9352,110 @@
       "mail": "E-mail",
       "mailSubject": "Let's find a time",
       "mailBody": "Hello,\n\npick a time that suits you here: {url}\n\nThank you"
+    },
+    "bookingEvent": {
+      "title": "{type} · {guest}",
+      "bookedVia": "Booked through the scheduler."
+    }
+  },
+  "booking": {
+    "meta": {
+      "hostTitle": "{name} · book a meeting",
+      "hostDescription": "Pick a time to meet {name}.",
+      "typeTitle": "{type} · {name}",
+      "manageTitle": "Your booking"
+    },
+    "frame": {
+      "madeWith": "Made with {appName}",
+      "language": "Language",
+      "languages": {
+        "cs": "Čeština",
+        "en": "English"
+      }
+    },
+    "page": {
+      "typesTitle": "Pick a meeting",
+      "noTypes": "There is nothing to book here yet.",
+      "allTypes": "All meetings",
+      "duration": "{minutes} min",
+      "location": {
+        "video": "Video call",
+        "phone": "Phone call",
+        "in_person": "In person",
+        "custom": "Elsewhere"
+      }
+    },
+    "calendar": {
+      "title": "Pick a time",
+      "zone": "Time zone",
+      "pickDay": "Pick a day",
+      "pickDayHint": "Days with a free time are highlighted.",
+      "timesOf": "Free times",
+      "dayFree": "{day} {number}, free times",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "noSlots": "There is no free time right now. Please try again later."
+    },
+    "form": {
+      "title": "Your details",
+      "summary": "{type} {duration} min · {when} ({zone}) · {host}",
+      "held": "We hold this time for you for {time}",
+      "fields": {
+        "name": "Name",
+        "email": "E-mail",
+        "phone": "Phone",
+        "company": "Company"
+      },
+      "choose": "Choose",
+      "errors": {
+        "required": "Please fill this in.",
+        "invalid": "This does not look right.",
+        "tooLong": "This is too long."
+      },
+      "honeypot": "Website (leave empty)",
+      "approvalNote": "{host} still confirms the time. Until then it is reserved for you.",
+      "back": "Change time",
+      "submit": "Book",
+      "submitting": "Booking…"
+    },
+    "notice": {
+      "taken": "This time is no longer free. Please pick another.",
+      "expired": "The hold ran out. Please pick a time again.",
+      "rateLimited": "Too many attempts. Please try again in a while.",
+      "unavailable": "Booking is not possible right now.",
+      "unknown": "Something went wrong. Please try again."
+    },
+    "result": {
+      "confirmedTitle": "Done, the meeting is booked",
+      "confirmedText": "We sent the confirmation with a calendar invite to {email}.",
+      "pendingTitle": "Your booking waits for confirmation",
+      "pendingText": "{host} will confirm the time and you will get an e-mail. A summary went to {email}.",
+      "video": "Video call link",
+      "manage": "Reschedule or cancel"
+    },
+    "errors": {
+      "slots": "The free times could not be loaded. Please try again in a while.",
+      "unavailable": "Booking is not possible right now."
+    },
+    "manage": {
+      "title": "Your booking",
+      "status": {
+        "pending": "Waiting for confirmation.",
+        "confirmed": "Confirmed.",
+        "cancelled": "Cancelled.",
+        "declined": "Not confirmed."
+      },
+      "reschedule": "Reschedule",
+      "cancel": "Cancel the meeting",
+      "pickNew": "Pick a new time",
+      "moveTo": "Move to {when}",
+      "keep": "Keep it",
+      "reason": "Reason (optional)",
+      "confirmCancel": "Cancel the meeting",
+      "rescheduled": "Done, the meeting has a new time. The confirmation is in your e-mail.",
+      "cancelled": "The meeting is cancelled. The confirmation is in your e-mail.",
+      "over": "This booking can no longer be changed.",
+      "failed": "That did not work. Please try again."
     }
   }
 }

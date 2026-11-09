@@ -80,13 +80,15 @@ Jednou za život účtu, jen majiteli, po onboardingu a dokončené prohlídce. 
 | `milestoneReady` Milník připravený | pevný text | aktivní milník, jehož všechny úkoly jsou hotové (aspoň jeden). Dokončit ho musí uživatel sám | z pravidel; každý milník jednou | ano |
 | `followUps` Komu se dnes ozvat | pevný text | kontakty v tabulce Ozvat se, kterým dnes nastal termín | z pravidel; jednou denně | ano (jen v okně) |
 | `workerInvite` Pozvánka do firmy | pevný text | otevřená pozvánka jiné firmy na tenhle účet (krátkým ID nebo e-mailem); odkaz na Pozvánky, přijme nebo odmítne jen uživatel | z pravidel; každá pozvánka jednou, po přijetí nebo odmítnutí odejde | ano |
+| `bookingPending` Rezervace ke schválení | pevný text | rezervace z plánovače u typu se schvalováním, kterou uživatel hostí a ještě neproběhla; odkaz na rezervaci, potvrdí nebo odmítne jen uživatel. Zapíše ji hned rezervace, dál z pravidel | každá rezervace jednou, po potvrzení nebo odmítnutí odejde | ano |
+| `bookingNew` Nová rezervace | pevný text | potvrzená rezervace z plánovače z posledních dvou dnů, kterou uživatel hostí a ještě neproběhla; odkaz na rezervaci | každá rezervace jednou; po dvou dnech, zrušení nebo proběhnutí odejde | ano |
 | `pathReady` Cesta je připravená | pevný text | herní režim, do 14 dní po onboardingu, cesta vytvořila milníky | jednou za cestu | ano |
 | `dealWon` Obchod vyhraný | pevný text | obchod vyhraný za posledních 7 dní | z pravidel | ne, jen v panelu |
 | `taskCompleted` Označil jsem úkol jako hotový | pevný text | hlídání příležitostí s jistotou poznalo, že úkol je hotový (nikdy milník) | při hlídání | ne, jen v panelu s tlačítkem **Vrátit** |
 | `insight` Postřeh | **model** (Haiku) | co se u uživatele změnilo od minulého hlídání (obchody, úkoly, přesuny kontaktů, milníky, události) + otevřené úkoly; nejvýš 2 postřehy, k novému milníku může navrhnout až 5 úkolů (vzniknou až po Přidat) | hlídání příležitostí 1× denně (10:00 UTC), jen u účtů se změnou za posledních 7 dní; když nic, mlčí | ano |
 | **Otázky** | pevné texty a možnosti z překladů | viz níže | nejvýš 2 za 7 dní, jen když ve frontě není žádný návrh | ano |
 
-Pravidlové návrhy (typy s pevným textem) se počítají z dat v databázi při každém otevření panelu a před každým vyskočením; od každého typu nejvýš 3 najednou. Text skládá rozhraní z překladů (`jarvis.suggestion.<typ>`), takže sedí s jazykem rozhraní. Pořadí ve frontě: po termínu (úkoly, faktury, obchodní úkoly) a docházející peníze → komu se ozvat a pozvánka do firmy → stojící obchod → hotový milník → cesta → postřehy; co musí čekat na okno, jde dozadu.
+Pravidlové návrhy (typy s pevným textem) se počítají z dat v databázi při každém otevření panelu a před každým vyskočením; od každého typu nejvýš 3 najednou. Text skládá rozhraní z překladů (`jarvis.suggestion.<typ>`), takže sedí s jazykem rozhraní. Pořadí ve frontě: po termínu (úkoly, faktury, obchodní úkoly), docházející peníze a rezervace ke schválení → komu se ozvat a pozvánka do firmy → nová rezervace a stojící obchod → hotový milník → cesta → postřehy; co musí čekat na okno, jde dozadu.
 
 Návrh starší než **3 dny** už sám nevyskočí (v panelu postřehy zmizí po 3 dnech, ostatní, dokud platí).
 

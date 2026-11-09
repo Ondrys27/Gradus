@@ -501,6 +501,12 @@
       },
       "cashLow": {
         "text": "{week, plural, =1 {V} =5 {V} other {Ve}} {weekFormatted}. týdnu ti klesne kapitál {zero, select, yes {pod nulu} other {pod {thresholdMoney}}}{hasCause, select, yes { kvůli výdaji „{cause}“ ({causeAmountMoney})} other {}}{missing, plural, =0 {} one {, chybí {missingFormatted} příjem} few {, chybí {missingFormatted} příjmy} other {, chybí {missingFormatted} příjmů}}."
+      },
+      "bookingPending": {
+        "text": "{guest} si chce rezervovat {type} na {startsAtFormatted}. Potvrď termín, nebo ho odmítni."
+      },
+      "bookingNew": {
+        "text": "Nová rezervace: {guest}, {type} na {startsAtFormatted}. Schůzku máš v kalendáři."
       }
     },
     "proactive": {
@@ -2616,7 +2622,8 @@
       "currentTable": "Aktuální tabulka",
       "emailSent": "E-mail byl odeslán.",
       "moveToEmailSent": "Přesunout do „Odeslán e-mail“",
-      "dismissEmailSent": "Teď ne"
+      "dismissEmailSent": "Teď ne",
+      "fromScheduler": "Z plánovače"
     },
     "notes": {
       "title": "Poznámka",
@@ -3041,7 +3048,9 @@
       "edit": "Upravit",
       "delete": "Smazat",
       "fromDeal": "Datum realizace obchodu",
-      "fromDealHint": "Mění se jen v obchodu; otevři obchod a posuň ho tam."
+      "fromDealHint": "Mění se jen v obchodu; otevři obchod a posuň ho tam.",
+      "fromBooking": "Z plánovače",
+      "fromBookingHint": "Schůzku si host rezervoval přes plánovač. Přesouvá a ruší se v Plánovači → Rezervace, host o tom dostane e-mail."
     },
     "delete": {
       "title": "Smazat tuto událost?",
@@ -3681,6 +3690,27 @@
           "placeholder": "Poznámky"
         }
       }
+    },
+    "waiting": {
+      "title": "Čeká na tebe",
+      "booking": {
+        "title": "{guest} si chce rezervovat {type}",
+        "meeting": "schůzku",
+        "open": "Otevřít rezervaci"
+      },
+      "invite": {
+        "title": "{who} tě zve do svého týmu",
+        "someone": "Někdo",
+        "accept": "Přijmout",
+        "decline": "Odmítnout",
+        "open": "Zobrazit pozvánku"
+      },
+      "survey": {
+        "title": "Jak dopadla schůzka s {guest}?",
+        "fill": "Vyplnit dotazník",
+        "noShow": "Nepřišel",
+        "skip": "Přeskočit"
+      }
     }
   },
   "email": {
@@ -3883,6 +3913,92 @@
       "intro": "{worker} právě odešel z tvé firmy v {appName}.",
       "next": "Přístup k datům firmy skončil hned. Obchody a úkoly, které měl na starosti, zůstaly ve firmě; předat je můžeš ve Správě firmy nebo v detailu obchodu.",
       "open": "Otevřít Správu firmy"
+    },
+    "booking": {
+      "meeting": "Schůzka",
+      "when": "Kdy: {when} ({zone})",
+      "duration": "Délka: {formatted} min",
+      "with": "S kým: {host}",
+      "place": {
+        "video": "Videohovor: {link}",
+        "videoLater": "Videohovor: odkaz přijde po potvrzení",
+        "phoneGuest": "Telefonicky: {host} vám zavolá na vaše číslo",
+        "phoneHost": "Telefonicky na {phone}",
+        "phoneNone": "Telefonicky (host nezadal číslo)",
+        "at": "Kde: {place}"
+      },
+      "previous": "Původní termín: {when}",
+      "reason": "Důvod: {reason}",
+      "alternative": "Navržený jiný termín: {when}. Rezervovat si ho můžete na odkazu níže.",
+      "reschedule": "Přesunout",
+      "cancel": "Zrušit",
+      "bookAgain": "Vybrat jiný termín",
+      "openApp": "Otevřít v aplikaci",
+      "madeWith": "Vytvořeno v {appName}",
+      "guestEmail": "E-mail: {email}",
+      "guestPhone": "Telefon: {phone}",
+      "guestCompany": "Firma: {company}",
+      "yes": "ano",
+      "no": "ne",
+      "icsTitle": "{type} · {host}",
+      "guest": {
+        "confirmed": {
+          "subject": "Potvrzeno: {type} · {when}",
+          "intro": "Vaše schůzka {type} s {host} je potvrzená. Pozvánku do kalendáře najdete v příloze."
+        },
+        "pending": {
+          "subject": "Čeká na potvrzení: {type} · {when}",
+          "intro": "Děkujeme za rezervaci. {host} ji ještě musí potvrdit.",
+          "next": "Jakmile ji potvrdí, přijde vám e-mail s odkazem na hovor."
+        },
+        "approved": {
+          "subject": "Potvrzeno: {type} · {when}",
+          "intro": "{host} potvrdil(a) vaši schůzku {type}. Pozvánku do kalendáře najdete v příloze."
+        },
+        "declined": {
+          "subject": "Termín nebyl potvrzen: {type} · {when}",
+          "intro": "{host} tento termín bohužel nepotvrdil(a)."
+        },
+        "cancelledByHost": {
+          "subject": "Zrušeno: {type} · {when}",
+          "intro": "{host} schůzku {type} zrušil(a)."
+        },
+        "cancelledByGuest": {
+          "subject": "Zrušeno: {type} · {when}",
+          "intro": "Schůzku {type} s {host} jste zrušili. Kdyby se to hodilo jindy, vyberte si nový termín."
+        },
+        "rescheduled": {
+          "subject": "Nový termín: {type} · {when}",
+          "intro": "Schůzka {type} s {host} má nový termín."
+        },
+        "reminder": {
+          "subject": "Připomínka: {type} · {when}",
+          "intro": "Připomínáme schůzku {type} s {host} za {minutes, plural, =60 {hodinu} =120 {2 hodiny} =1440 {den} =2880 {2 dny} =10080 {týden} one {# minutu} few {# minuty} other {# minut}}."
+        }
+      },
+      "host": {
+        "booked": {
+          "subject": "Nová rezervace: {guest} · {when}",
+          "intro": "{guest} si rezervoval(a) {type}. Schůzku máš v kalendáři a kontakt v Gradusu."
+        },
+        "approval": {
+          "subject": "Ke schválení: {guest} · {when}",
+          "intro": "{guest} si chce rezervovat {type}. Potvrď termín, nebo ho odmítni.",
+          "button": "Potvrdit nebo odmítnout"
+        },
+        "cancelledByGuest": {
+          "subject": "Zrušeno: {guest} · {when}",
+          "intro": "{guest} zrušil(a) schůzku {type}. Z kalendáře zmizela, v historii kontaktu zůstává."
+        },
+        "rescheduledByGuest": {
+          "subject": "Přesunuto: {guest} · {when}",
+          "intro": "{guest} přesunul(a) schůzku {type} na nový termín."
+        },
+        "reminder": {
+          "subject": "Připomínka: {type} s {guest} · {when}",
+          "intro": "Za {minutes, plural, =60 {hodinu} =120 {2 hodiny} =1440 {den} =2880 {2 dny} =10080 {týden} one {# minutu} few {# minuty} other {# minut}} máš schůzku {type} s {guest}."
+        }
+      }
     }
   },
   "workers": {
@@ -6383,6 +6499,14 @@
           "cashLow": {
             "label": "Dochází peníze",
             "description": "Podle plánu měsíce (Finance → Měsíc) klesne kapitál v tomto nebo dalším týdnu pod nulu nebo pod zadanou rezervu."
+          },
+          "bookingPending": {
+            "label": "Rezervace ke schválení",
+            "description": "Host si přes plánovač rezervoval schůzku typu, který se schvaluje ručně."
+          },
+          "bookingNew": {
+            "label": "Nová rezervace",
+            "description": "Host si přes plánovač rezervoval schůzku (poslední dva dny, ještě neproběhla)."
           }
         },
         "questions": {
@@ -9146,7 +9270,72 @@
       "deletedType": "Smazaný typ",
       "previous": "Předchozí",
       "next": "Další",
-      "page": "Strana {page} z {pages}"
+      "page": "Strana {page} z {pages}",
+      "label": {
+        "held": "Rezervuje se",
+        "pending": "Čeká na tebe",
+        "confirmed": "Potvrzená",
+        "done": "Proběhla",
+        "noShow": "Nepřišel",
+        "cancelled": "Zrušená",
+        "declined": "Odmítnutá",
+        "rescheduled": "Přesunutá"
+      },
+      "actions": {
+        "approve": "Potvrdit",
+        "decline": "Odmítnout",
+        "reschedule": "Přesunout",
+        "cancel": "Zrušit",
+        "noShow": "Nepřišel",
+        "cameAfterAll": "Nakonec přišel"
+      },
+      "problems": {
+        "slotTaken": "Ten termín už není volný. Vyber jiný.",
+        "holdExpired": "Rezervace mezitím vypršela.",
+        "rateLimited": "Příliš mnoho pokusů. Zkus to za chvíli.",
+        "invalidState": "Tohle už s rezervací udělat nejde. Načti ji znovu.",
+        "notFound": "Rezervaci se nepodařilo najít.",
+        "invalid": "Něco v zadání nesedí.",
+        "readOnly": "Účet je jen pro čtení, potvrdit ani přesunout teď nejde.",
+        "unavailable": "Plánovač teď rezervace nepřijímá.",
+        "forbidden": "Tuhle rezervaci měnit nemůžeš.",
+        "unknown": "Nepodařilo se to. Zkus to znovu."
+      },
+      "decline": {
+        "title": "Odmítnout rezervaci",
+        "close": "Zavřít",
+        "text": "{guest} dostane e-mail s důvodem a odkazem, kde si vybere jiný termín.",
+        "reason": "Důvod (uvidí ho host)",
+        "alternative": "Navrhnout jiný čas (nepovinné)",
+        "alternativeHint": "Napíšeme ho do e-mailu; host si ho rezervuje sám.",
+        "alternativeTime": "Čas",
+        "keep": "Zpět",
+        "confirm": "Odmítnout"
+      },
+      "cancel": {
+        "title": "Zrušit schůzku",
+        "close": "Zavřít",
+        "text": "{guest} dostane e-mail o zrušení. Schůzka zmizí z kalendáře a zůstane v historii kontaktu.",
+        "reason": "Důvod (uvidí ho host, nepovinný)",
+        "keep": "Nechat",
+        "confirm": "Zrušit schůzku"
+      },
+      "reschedule": {
+        "title": "Přesunout schůzku",
+        "close": "Zavřít",
+        "text": "Vyber nový volný termín. {guest} dostane e-mail s novým časem a připomínky se přeplánují.",
+        "loadFailed": "Volné termíny se nepodařilo načíst.",
+        "keep": "Zpět",
+        "pick": "Vyber čas",
+        "confirm": "Přesunout na {when}"
+      },
+      "yes": "ano",
+      "no": "ne",
+      "reason": "Důvod: {reason}",
+      "detailTitle": "Rezervace",
+      "close": "Zavřít",
+      "notFound": "Rezervaci se nepodařilo najít.",
+      "history": "Rezervace: {type}"
     },
     "team": {
       "hint": "Rezervační stránky lidí ve tvé firmě. Typ můžeš vypnout; zbytek si mění sami.",
@@ -9163,6 +9352,110 @@
       "mail": "E-mail",
       "mailSubject": "Najdeme si čas",
       "mailBody": "Dobrý den,\n\nvyberte si čas, který vám vyhovuje: {url}\n\nDěkuji"
+    },
+    "bookingEvent": {
+      "title": "{type} · {guest}",
+      "bookedVia": "Rezervace z plánovače."
+    }
+  },
+  "booking": {
+    "meta": {
+      "hostTitle": "{name} · rezervace schůzky",
+      "hostDescription": "Vyberte si termín schůzky s {name}.",
+      "typeTitle": "{type} · {name}",
+      "manageTitle": "Vaše rezervace"
+    },
+    "frame": {
+      "madeWith": "Vytvořeno v {appName}",
+      "language": "Jazyk",
+      "languages": {
+        "cs": "Čeština",
+        "en": "English"
+      }
+    },
+    "page": {
+      "typesTitle": "Vyberte typ schůzky",
+      "noTypes": "Zatím tu není žádná schůzka k rezervaci.",
+      "allTypes": "Všechny schůzky",
+      "duration": "{minutes} min",
+      "location": {
+        "video": "Videohovor",
+        "phone": "Telefonicky",
+        "in_person": "Osobně",
+        "custom": "Jinde"
+      }
+    },
+    "calendar": {
+      "title": "Vyberte termín",
+      "zone": "Časové pásmo",
+      "pickDay": "Vyberte den",
+      "pickDayHint": "Dny s volným termínem jsou zvýrazněné.",
+      "timesOf": "Volné časy",
+      "dayFree": "{day} {number}., volné termíny",
+      "previousMonth": "Předchozí měsíc",
+      "nextMonth": "Další měsíc",
+      "noSlots": "Teď tu není žádný volný termín. Zkuste to později."
+    },
+    "form": {
+      "title": "Vaše údaje",
+      "summary": "{type} {duration} min · {when} ({zone}) · {host}",
+      "held": "Termín vám držíme ještě {time}",
+      "fields": {
+        "name": "Jméno",
+        "email": "E-mail",
+        "phone": "Telefon",
+        "company": "Firma"
+      },
+      "choose": "Vyberte",
+      "errors": {
+        "required": "Vyplňte prosím.",
+        "invalid": "Tohle nevypadá správně.",
+        "tooLong": "Je to příliš dlouhé."
+      },
+      "honeypot": "Web (nevyplňujte)",
+      "approvalNote": "Termín ještě potvrdí {host}. Do té doby je pro vás rezervovaný.",
+      "back": "Změnit čas",
+      "submit": "Rezervovat",
+      "submitting": "Rezervuji…"
+    },
+    "notice": {
+      "taken": "Tento termín už není volný. Vyberte prosím jiný.",
+      "expired": "Držení termínu vypršelo. Vyberte čas znovu.",
+      "rateLimited": "Příliš mnoho pokusů. Zkuste to prosím za chvíli.",
+      "unavailable": "Rezervace teď není možná.",
+      "unknown": "Něco se nepovedlo. Zkuste to prosím znovu."
+    },
+    "result": {
+      "confirmedTitle": "Hotovo, schůzka je rezervovaná",
+      "confirmedText": "Potvrzení s pozvánkou do kalendáře jsme poslali na {email}.",
+      "pendingTitle": "Rezervace čeká na potvrzení",
+      "pendingText": "{host} termín potvrdí, pak vám přijde e-mail. Shrnutí jsme poslali na {email}.",
+      "video": "Odkaz na videohovor",
+      "manage": "Přesunout nebo zrušit"
+    },
+    "errors": {
+      "slots": "Volné termíny se nepodařilo načíst. Zkuste to prosím za chvíli.",
+      "unavailable": "Rezervace teď není možná."
+    },
+    "manage": {
+      "title": "Vaše rezervace",
+      "status": {
+        "pending": "Čeká na potvrzení.",
+        "confirmed": "Potvrzeno.",
+        "cancelled": "Zrušeno.",
+        "declined": "Nepotvrzeno."
+      },
+      "reschedule": "Přesunout",
+      "cancel": "Zrušit schůzku",
+      "pickNew": "Vyberte nový termín",
+      "moveTo": "Přesunout na {when}",
+      "keep": "Nechat, jak je",
+      "reason": "Důvod (nepovinný)",
+      "confirmCancel": "Zrušit schůzku",
+      "rescheduled": "Hotovo, schůzka má nový termín. Potvrzení přišlo e-mailem.",
+      "cancelled": "Schůzka je zrušená. Potvrzení přišlo e-mailem.",
+      "over": "Tuhle rezervaci už nejde změnit.",
+      "failed": "Nepodařilo se to. Zkuste to prosím znovu."
     }
   }
 }

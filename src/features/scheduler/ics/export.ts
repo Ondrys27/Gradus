@@ -123,3 +123,49 @@ export function buildIcsFeed(args: {
   lines.push("END:VCALENDAR");
   return lines.map(foldLine).join(CRLF) + CRLF;
 }
+
+export type BookingIcsStatus = "CONFIRMED" | "TENTATIVE" | "CANCELLED";
+
+/**
+ * One booked meeting as the .ics attachment of the guest's e-mails (24.4).
+ * The same UID for the booking's whole life and a sequence that grows with
+ * every change, so a calendar that imported it updates it (a move) or drops
+ * it (STATUS:CANCELLED) instead of adding another.
+ */
+export function buildBookingIcs(args: {
+  uid: string;
+  sequence: number;
+  status: BookingIcsStatus;
+  title: string;
+  start: string;
+  end: string;
+  now: Date;
+  description?: string | null;
+  location?: string | null;
+  url?: string | null;
+  /** The product in PRODID; a host without branding gets a neutral one. */
+  product?: string;
+}): string {
+  const start = Date.parse(args.start);
+  const end = Date.parse(args.end);
+  const lines: string[] = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    `PRODID:-//${escapeText(args.product ?? APP_NAME)}//Booking//EN`,
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "BEGIN:VEVENT",
+    `UID:${safeId(args.uid)}`,
+    `SEQUENCE:${Math.max(0, Math.floor(args.sequence))}`,
+    `DTSTAMP:${icsUtc(args.now)}`,
+    `DTSTART:${icsUtc(new Date(start))}`,
+    `DTEND:${icsUtc(new Date(end > start ? end : start + DEFAULT_LENGTH_MS))}`,
+    `STATUS:${args.status}`,
+    `SUMMARY:${escapeText(args.title)}`,
+  ];
+  if (args.description) lines.push(`DESCRIPTION:${escapeText(args.description)}`);
+  if (args.location) lines.push(`LOCATION:${escapeText(args.location)}`);
+  if (args.url && /^https:\/\//.test(args.url)) lines.push(`URL:${safeId(args.url)}`);
+  lines.push("END:VEVENT", "END:VCALENDAR");
+  return lines.map(foldLine).join(CRLF) + CRLF;
+}

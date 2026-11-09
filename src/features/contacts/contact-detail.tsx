@@ -165,6 +165,9 @@ function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNo
               {contact.source === "generated" && (
                 <StatusPill tone="violet">{t("detail.generated")}</StatusPill>
               )}
+              {contact.source === "scheduler" && (
+                <StatusPill tone="teal">{t("detail.fromScheduler")}</StatusPill>
+              )}
             </div>
           </div>
         </div>

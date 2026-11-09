@@ -99,3 +99,30 @@ describe("foldLine", () => {
     expect(folded).not.toContain("�");
   });
 });
+
+describe("the .ics of a booked meeting", () => {
+  it("keeps one UID with a growing sequence and the status", async () => {
+    const { buildBookingIcs } = await import("./export");
+    const ics = buildBookingIcs({
+      uid: "booking-1",
+      sequence: 7,
+      status: "CANCELLED",
+      title: "Konzultace · Ondřej",
+      start: "2026-11-12T13:00:00Z",
+      end: "2026-11-12T13:30:00Z",
+      now: new Date("2026-11-10T08:00:00Z"),
+      location: "Praha; Karlín",
+      url: "https://meet.jit.si/x",
+      product: "Booking",
+    });
+    expect(ics).toContain("UID:booking-1\r\n");
+    expect(ics).toContain("SEQUENCE:7\r\n");
+    expect(ics).toContain("STATUS:CANCELLED\r\n");
+    expect(ics).toContain("DTSTART:20261112T130000Z\r\n");
+    expect(ics).toContain("DTEND:20261112T133000Z\r\n");
+    expect(ics).toContain(String.raw`LOCATION:Praha\; Karlín` + "\r\n");
+    expect(ics).toContain("URL:https://meet.jit.si/x\r\n");
+    expect(ics).toContain("PRODID:-//Booking//Booking//EN");
+    expect(ics).not.toContain("Gradus");
+  });
+});

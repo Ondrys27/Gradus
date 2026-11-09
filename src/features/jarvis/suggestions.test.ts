@@ -43,6 +43,29 @@ describe("ruleSuggestions", () => {
     expect(isAppHref("/app/pozvanky")).toBe(true);
   });
 
+  it("points a booking to approve and a new booking to the booking in the scheduler", () => {
+    const rules = ruleSuggestions({
+      ...EMPTY,
+      bookings: [
+        { id: "b1", status: "pending", guest: "Jana", type: "Konzultace", startsAt: "2026-11-12T13:00:00Z" },
+        { id: "b2", status: "confirmed", guest: "Petr", type: "Úvodní hovor", startsAt: "2026-11-13T09:00:00Z" },
+      ],
+    });
+    expect(rules).toEqual([
+      expect.objectContaining({
+        type: "bookingPending",
+        dedupeKey: "bookingPending:b1",
+        action: {
+          kind: "open",
+          href: "/app/planovac?tab=bookings&booking=b1",
+          params: { guest: "Jana", type: "Konzultace", startsAt: "2026-11-12T13:00:00Z" },
+        },
+      }),
+      expect.objectContaining({ type: "bookingNew", dedupeKey: "bookingNew:b2" }),
+    ]);
+    expect(isAppHref("/app/planovac?tab=bookings&booking=b1")).toBe(true);
+  });
+
   it("warns about money running short in the month plan, keyed by what it says", () => {
     const cashLow = {
       month: "2026-11",

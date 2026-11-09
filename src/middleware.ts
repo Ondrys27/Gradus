@@ -34,6 +34,14 @@ import type { Database } from "@/types/database";
  */
 export async function middleware(request: NextRequest) {
   const response = await route(request);
+  // The public booking pages (24.4) store nothing but the guest's own language and zone.
+  if (isBookingPath(request.nextUrl.pathname)) {
+    if (request.nextUrl.pathname.startsWith("/s/r/")) {
+      response.headers.set("X-Robots-Tag", "noindex, nofollow");
+      response.headers.set("Referrer-Policy", "no-referrer");
+    }
+    return response;
+  }
   // A partner's link (…/?kod=XYZ): the code waits 30 days for the registration.
   const promo = promoCodeFromParam(request.nextUrl.searchParams.get(PROMO_PARAM));
   if (promo) {
@@ -151,6 +159,11 @@ async function route(request: NextRequest) {
   response.cookies.getAll().forEach((cookie) => localized.cookies.set(cookie));
   // A visitor's cookie remembers the language; an account's language comes from its settings.
   return page && !signedIn ? withLocaleCookie(localized, page.locale) : localized;
+}
+
+/** /s/<handle>, /s/<handle>/<slug> and the guest's /s/r/<token>. */
+function isBookingPath(pathname: string): boolean {
+  return pathname === "/s" || pathname.startsWith("/s/");
 }
 
 function withLocaleCookie(response: NextResponse, locale: SiteLocale) {

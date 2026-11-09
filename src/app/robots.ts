@@ -8,7 +8,8 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: [APP_HOME_PATH, "/api/", "/auth/", "/design-system"],
+      // A booking's own page (/s/r/<token>) carries its secret; a meeting type's page is noindex.
+      disallow: [APP_HOME_PATH, "/api/", "/auth/", "/design-system", "/s/r/"],
     },
     sitemap: absoluteUrl("/sitemap.xml"),
   };

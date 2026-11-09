@@ -73,7 +73,13 @@ function newDraft(): EventTypeDraft {
  * first open sets up the profile, three types and working hours, then a
  * guide asks for the handle, the video link and the hours.
  */
-export function SchedulerView({ initialTab = "types" }: { initialTab?: SchedulerTab }) {
+export function SchedulerView({
+  initialTab = "types",
+  initialBooking = null,
+}: {
+  initialTab?: SchedulerTab;
+  initialBooking?: string | null;
+}) {
   const t = useTranslations("scheduler");
   const tNav = useTranslations("nav");
   const workspace = useWorkspace();
@@ -170,6 +176,7 @@ export function SchedulerView({ initialTab = "types" }: { initialTab?: Scheduler
       tabs={tabs}
       setTab={setTab}
       header={header}
+      initialBooking={initialBooking}
     />
   );
 }
@@ -182,7 +189,9 @@ function Loaded({
   tabs,
   setTab,
   header,
+  initialBooking,
 }: {
+  initialBooking: string | null;
   profile: SchedulerProfile;
   editable: boolean;
   owner: boolean;
@@ -346,6 +355,7 @@ function Loaded({
           hostNames={hostNames}
           canSeeTeam={owner}
           country={settings.country_code ?? null}
+          initialBooking={initialBooking}
         />
       )}
 
