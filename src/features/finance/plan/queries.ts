@@ -306,7 +306,8 @@ export function useWritePlanMonth() {
         _space: space,
         _month: input.month,
         _opening: input.opening,
-        _reserve: input.reserve,
+        // Generated RPC types never mark arguments nullable; null = no reserve.
+        _reserve: input.reserve as unknown as number,
         _currency: input.currency,
         _rows: input.rows,
         _replace: input.replace ?? false,
