@@ -525,9 +525,9 @@ export type Database = {
           end_time?: string | null
           id?: string
           profile_id: string
-          space_id?: string
+          space_id: string
           start_time?: string | null
-          user_id?: string
+          user_id: string
         }
         Update: {
           created_at?: string
@@ -539,7 +539,15 @@ export type Database = {
           start_time?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "availability_overrides_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "scheduler_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       availability_rules: {
         Row: {
@@ -559,9 +567,9 @@ export type Database = {
           event_type_id?: string | null
           id?: string
           profile_id: string
-          space_id?: string
+          space_id: string
           start_time: string
-          user_id?: string
+          user_id: string
           weekday: number
         }
         Update: {
@@ -575,7 +583,22 @@ export type Database = {
           user_id?: string
           weekday?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "availability_rules_event_type_id_fkey"
+            columns: ["event_type_id"]
+            isOneToOne: false
+            referencedRelation: "event_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "availability_rules_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "scheduler_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       billing_alerts: {
         Row: {
@@ -764,7 +787,43 @@ export type Database = {
           status?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "bookings_calendar_event_id_fkey"
+            columns: ["calendar_event_id"]
+            isOneToOne: false
+            referencedRelation: "calendar_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contact_list"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_event_type_id_fkey"
+            columns: ["event_type_id"]
+            isOneToOne: false
+            referencedRelation: "event_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       bug_reports: {
         Row: {
@@ -2063,9 +2122,9 @@ export type Database = {
           requires_approval?: boolean
           slot_step_min?: number
           slug: string
-          space_id?: string
+          space_id: string
           updated_at?: string
-          user_id?: string
+          user_id: string
         }
         Update: {
           active?: boolean
@@ -2096,7 +2155,22 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "event_types_deal_stage_fkey"
+            columns: ["deal_stage_id", "space_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stages"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "event_types_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "scheduler_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       exchange_rate_sources: {
         Row: {
@@ -3491,8 +3565,8 @@ export type Database = {
           key: string
           monthly_generation_limit: number
           name: string
-          scheduler_types_limit: number | null
           per_worker: Json | null
+          scheduler_types_limit: number | null
           updated_at: string
         }
         Insert: {
@@ -3506,8 +3580,8 @@ export type Database = {
           key: string
           monthly_generation_limit: number
           name: string
-          scheduler_types_limit?: number | null
           per_worker?: Json | null
+          scheduler_types_limit?: number | null
           updated_at?: string
         }
         Update: {
@@ -3521,8 +3595,8 @@ export type Database = {
           key?: string
           monthly_generation_limit?: number
           name?: string
-          scheduler_types_limit?: number | null
           per_worker?: Json | null
+          scheduler_types_limit?: number | null
           updated_at?: string
         }
         Relationships: []
@@ -3946,7 +4020,7 @@ export type Database = {
           space_id: string
           time_zone?: string
           updated_at?: string
-          user_id?: string
+          user_id: string
           video_link?: string | null
         }
         Update: {
@@ -7256,6 +7330,21 @@ export type Database = {
         Returns: boolean
       }
       scheduler_handle_ok: { Args: { _handle: string }; Returns: boolean }
+      scheduler_profile_owner: {
+        Args: { _profile: string }
+        Returns: Record<string, unknown>
+      }
+      scheduler_questions_valid: {
+        Args: { _questions: Json }
+        Returns: boolean
+      }
+      scheduler_random_handle: { Args: never; Returns: string }
+      scheduler_reminders_valid: {
+        Args: { _reminders: Json }
+        Returns: boolean
+      }
+      scheduler_time_zone_ok: { Args: { _zone: string }; Returns: boolean }
+      scheduler_tone_ok: { Args: { _tone: string }; Returns: boolean }
       scheduler_types_limit: { Args: { _space: string }; Returns: number }
       scheduler_types_limit_of: { Args: { _space: string }; Returns: number }
       search_doc: { Args: { _parts: string[] }; Returns: string }
