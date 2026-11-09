@@ -33,7 +33,13 @@ export type PublicHost = {
   country: string | null;
   /** The space owner's "no branding" add-on: no Gradus logo, no "Made with Gradus". */
   brandingHidden: boolean;
-  /** Bookable now: the person still has the scheduler there and the space is not read-only. */
+  /**
+   * The person still has the scheduler in that space (their own, or an active
+   * worker with "scheduler: view" and "own"). Without it the public pages are
+   * 404: a worker who left gives nothing of themselves away.
+   */
+  active: boolean;
+  /** Bookable now: active and the space is not read-only. */
   available: boolean;
 };
 
@@ -106,6 +112,7 @@ export async function loadHostOfProfile(
     locale: must(settings)?.locale ?? null,
     country: must(settings)?.country_code ?? null,
     brandingHidden: must(addOn) === true,
+    active: must(active) === true,
     available: must(active) === true && !must(plan)?.[0]?.read_only,
   };
 }

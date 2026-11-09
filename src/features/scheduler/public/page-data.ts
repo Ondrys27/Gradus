@@ -37,6 +37,8 @@ export const loadHostPage = cache(async (handle: string): Promise<HostPage | nul
     loadHostOfProfile(admin, profile),
     loadPublicTypes(admin, profile.id),
   ]);
+  // The profile of someone who can no longer take bookings there is not public at all.
+  if (!host.active) return null;
   return { host, types: types.map(publicType) };
 });
 

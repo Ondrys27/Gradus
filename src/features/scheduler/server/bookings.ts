@@ -455,7 +455,11 @@ export async function cancelReminders(admin: Admin, ctx: BookingContext, now = D
   if (!scheduled.length) return;
   for (const item of scheduled) {
     if (item.id && Date.parse(item.at) > now) {
-      const cancelled = await cancelBookingMail(item.id).catch(() => false);
+      const id = item.id;
+      // One retry: a reminder that stays scheduled would go out for a time that no longer holds.
+      const cancelled =
+        (await cancelBookingMail(id).catch(() => false)) ||
+        (await cancelBookingMail(id).catch(() => false));
       if (!cancelled) console.error("[scheduler] reminder cancel failed");
     }
   }
@@ -467,18 +471,34 @@ export async function cancelReminders(admin: Admin, ctx: BookingContext, now = D
  * The daily cron: reminders of confirmed meetings that were too far ahead for
  * Resend when booked and have now come into its window.
  */
+const DUE_PAGE = 500;
+const DUE_PAGES = 20;
+
 export async function scheduleDueReminders(admin: Admin, origin: string, now = Date.now()) {
-  const { data, error } = await admin
-    .from("bookings")
-    .select("id, starts_at, reminder_ids, event_type:event_types(reminders)")
-    .eq("status", "confirmed")
-    .gt("starts_at", new Date(now).toISOString())
-    .lt("starts_at", new Date(now + 40 * 86_400_000).toISOString())
-    .order("starts_at")
-    .limit(500);
-  if (error) throw error;
+  // Page through every confirmed meeting of the next 40 days: the nearest ones
+  // mostly have their reminders already, so one page would starve the later.
+  const rows: Array<{
+    id: string;
+    starts_at: string;
+    reminder_ids: Json;
+    event_type: { reminders: Json } | null;
+  }> = [];
+  for (let page = 0; page < DUE_PAGES; page++) {
+    const { data, error } = await admin
+      .from("bookings")
+      .select("id, starts_at, reminder_ids, event_type:event_types(reminders)")
+      .eq("status", "confirmed")
+      .gt("starts_at", new Date(now).toISOString())
+      .lt("starts_at", new Date(now + 40 * 86_400_000).toISOString())
+      .order("starts_at")
+      .order("id")
+      .range(page * DUE_PAGE, page * DUE_PAGE + DUE_PAGE - 1);
+    if (error) throw error;
+    rows.push(...(data ?? []));
+    if ((data ?? []).length < DUE_PAGE) break;
+  }
   let scheduled = 0;
-  for (const row of data ?? []) {
+  for (const row of rows) {
     const offsets = Array.isArray(row.event_type?.reminders)
       ? (row.event_type.reminders as Array<{ offset_minutes?: unknown }>).flatMap((item) =>
           typeof item?.offset_minutes === "number" ? [item.offset_minutes] : [],
@@ -493,7 +513,7 @@ export async function scheduleDueReminders(admin: Admin, origin: string, now = D
       log("cron reminders failed", reminderError);
     }
   }
-  return { checked: data?.length ?? 0, scheduled };
+  return { checked: rows.length, scheduled };
 }
 
 // ---------------------------------------------------------------------------
@@ -547,6 +567,7 @@ export async function holdSlot(
   const profile = await loadPublicProfile(admin, input.handle);
   if (!profile) return { ok: false, problem: "notFound" };
   const host = await loadHostOfProfile(admin, profile);
+  if (!host.active) return { ok: false, problem: "notFound" };
   if (!host.available) return { ok: false, problem: "unavailable" };
   const row = await loadPublicTypeRow(admin, profile.id, input.slug);
   if (!row) return { ok: false, problem: "notFound" };

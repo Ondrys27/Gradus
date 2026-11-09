@@ -57,7 +57,7 @@ export async function GET(request: Request) {
       loadHostOfProfile(admin, profile),
       loadPublicTypeRow(admin, profile.id, parsed.data.slug),
     ]);
-    if (!row) return NextResponse.json({ error: "notFound" }, { status: 404, headers: HEADERS });
+    if (!row || !host.active) return NextResponse.json({ error: "notFound" }, { status: 404, headers: HEADERS });
     if (!host.available) {
       return NextResponse.json({ error: "unavailable" }, { status: 409, headers: HEADERS });
     }
