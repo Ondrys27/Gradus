@@ -12,6 +12,7 @@ import { MINDMAP_FORMATS } from "@/lib/mindmap/formats";
 import { INVOICE_STYLES } from "@/features/invoices/types";
 import { BILLINGS, CANCEL_REASONS } from "@/features/subscription/state";
 import { PROMO_BENEFITS, PROMO_SOURCES } from "@/features/promo/codes";
+import { CHECKOUT_SOURCES } from "@/features/billing/stripe/sources";
 import { Constants } from "@/types/database";
 import { field, isSafeField, isScrubbedTextField } from "./fields";
 import { APP_ROUTES, ANALYTICS_SECTIONS, type AnalyticsSection } from "./routes";
@@ -141,6 +142,7 @@ const FILE_ERRORS = [
   "fileLimit",
 ] as const;
 const PAID_PLANS = ["solo", "pro", "team"] as const;
+const CHECKOUT_CURRENCIES = ["CZK", "EUR"] as const;
 
 export const EVENTS = {
   // --- platform ------------------------------------------------------------
@@ -875,6 +877,40 @@ export const EVENTS = {
   trial_notice_shown: event("plan", "client", false, {
     days_left: count(1000),
     expired: bool(),
+  }),
+  /**
+   * Payments through Stripe (step 23.1), all from the server: an owner opened
+   * a Checkout (from where, whether a promo code goes with it), the Checkout
+   * was paid, a subscription's invoice was paid (the account's first one or
+   * not), failed (which attempt) or refunded. Never an amount, a name or an
+   * e-mail.
+   */
+  checkout_started: event("plan", "server", false, {
+    plan: oneOf(PAID_PLANS),
+    billing: oneOf(BILLINGS),
+    currency: oneOf(CHECKOUT_CURRENCIES),
+    with_promo: bool(),
+    from: oneOf(CHECKOUT_SOURCES),
+  }),
+  checkout_completed: event("plan", "server", false, {
+    plan: oneOf(PAID_PLANS),
+    billing: oneOf(BILLINGS),
+    currency: oneOf(CHECKOUT_CURRENCIES),
+  }),
+  payment_succeeded: event("plan", "server", false, {
+    plan: oneOf(PAID_PLANS),
+    billing: oneOf(BILLINGS),
+    currency: oneOf(CHECKOUT_CURRENCIES),
+    first: bool(),
+  }),
+  payment_failed: event("plan", "server", false, {
+    attempt: count(100),
+    plan: optional(oneOf(PAID_PLANS)),
+    billing: optional(oneOf(BILLINGS)),
+  }),
+  payment_refunded: event("plan", "server", false, {
+    currency: oneOf(CHECKOUT_CURRENCIES),
+    plan: optional(oneOf(PAID_PLANS)),
   }),
 } satisfies Record<string, EventDef>;
 

@@ -611,8 +611,21 @@ export function costsBreakdowns(q: AdminQuery): Promise<BreakdownData[]> {
     "plan_interest",
     "subscription_changes",
     "subscription_cancellations",
+    "paying_accounts",
+    "failed_payments",
   ]);
 }
+
+/** Trial → payment for the trials that ended in the period. */
+export const trialConversionFields = (q: AdminQuery) =>
+  fields(q, "trial_conversion", [
+    { name: "trials_ended", unit: "count" },
+    { name: "trials_paid", unit: "count" },
+    { name: "trial_paid_pct", unit: "percent" },
+  ]);
+
+/** MRR now, one row per currency (currencies never add up). */
+export const mrrByCurrency = (q: AdminQuery) => distribution(q, "mrr");
 
 // --- Technical health ----------------------------------------------------------------
 

@@ -6,9 +6,11 @@ import {
   changeBlock,
   changeDirection,
   displayStatus,
+  hasLiveGateway,
   isExpired,
   limitOverages,
   nextPayment,
+  paymentRoute,
   plannedChange,
   toSubscription,
   type Subscription,
@@ -191,5 +193,32 @@ describe("limitOverages", () => {
         { workers: 9, storageBytes: 9e12, monthlyContacts: 100, aiCalls: 0, aiFiles: 0 },
       ),
     ).toEqual([]);
+  });
+});
+
+describe("how a plan is paid for (step 23.1)", () => {
+  it("a subscription in Stripe changes through Stripe while it runs", () => {
+    const stripe = sub({ provider: "stripe" });
+    expect(stripe.gateway).toBe("stripe");
+    expect(hasLiveGateway(stripe, NOW)).toBe(true);
+    expect(paymentRoute(stripe, NOW)).toBe("gateway");
+    expect(paymentRoute(sub({ provider: "stripe", status: "past_due" }), NOW)).toBe("gateway");
+  });
+
+  it("the trial without a card and an ended plan are paid through Checkout", () => {
+    expect(paymentRoute(sub({ status: "trialing", trial_ends_at: at(5), current_period_end: at(5) }), NOW)).toBe(
+      "checkout",
+    );
+    expect(paymentRoute(sub({ status: "trialing", trial_ends_at: at(-1), current_period_end: at(-1) }), NOW)).toBe(
+      "checkout",
+    );
+    const ended = sub({ provider: "stripe", status: "cancelled", current_period_end: at(-1) });
+    expect(hasLiveGateway(ended, NOW)).toBe(false);
+    expect(paymentRoute(ended, NOW)).toBe("checkout");
+  });
+
+  it("a plan the administration set stays manual; beta never pays", () => {
+    expect(paymentRoute(sub(), NOW)).toBe("manual");
+    expect(paymentRoute(sub({ plan_key: "beta", current_period_end: null }), NOW)).toBe("none");
   });
 });

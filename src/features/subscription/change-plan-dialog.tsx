@@ -19,30 +19,36 @@ import { formatDate, formatNumber } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { SubscriptionActionError, usePlanUsage, useRequestChange } from "./queries";
 import {
+  isExpired,
   limitOverages,
   plannedChange,
   type PlanChoice,
   type Subscription,
 } from "./state";
+import { PayButton } from "./pay-button";
 import { PlanPrice } from "./plan-price";
 
 /**
  * Changing the plan: the three plans of the published catalog side by side
  * with a monthly / yearly switch, then a confirmation that says when the
  * change applies (up now, down at the end of the period) and what of the
- * account's data the new plan would not hold.
+ * account's data the new plan would not hold. While nothing runs in Stripe
+ * (`checkout`: the trial, or it ended) the confirmation pays for the chosen
+ * plan through Stripe's Checkout instead.
  */
 export function ChangePlanDialog({
   open,
   onOpenChange,
   subscription,
   plans,
+  checkout = false,
   onDone,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   subscription: Subscription & { planKey: PaidPlanKey };
   plans: PlanCatalog;
+  checkout?: boolean;
   onDone: (message: string) => void;
 }) {
   const t = useTranslations("subscription.change");
@@ -66,6 +72,7 @@ export function ChangePlanDialog({
           plans={plans}
           target={target}
           choice={choice}
+          checkout={checkout}
           onBack={() => setChoice(null)}
           onDone={(message) => {
             close(false);
@@ -73,7 +80,7 @@ export function ChangePlanDialog({
           }}
         />
       ) : (
-        <Picker subscription={subscription} plans={plans} onPick={setChoice} />
+        <Picker subscription={subscription} plans={plans} checkout={checkout} onPick={setChoice} />
       )}
     </ResponsiveDialog>
   );
@@ -82,10 +89,12 @@ export function ChangePlanDialog({
 function Picker({
   subscription,
   plans,
+  checkout,
   onPick,
 }: {
   subscription: Subscription & { planKey: PaidPlanKey };
   plans: PlanCatalog;
+  checkout: boolean;
   onPick: (choice: PlanChoice) => void;
 }) {
   const t = useTranslations("subscription.change");
@@ -100,7 +109,7 @@ function Picker({
       footnote={<p className="text-center text-sm text-ink-muted">{t("footnote")}</p>}
       flat
       action={(plan, billing) =>
-        plan.key === subscription.planKey && billing === subscription.billing ? (
+        plan.key === subscription.planKey && billing === subscription.billing && !checkout ? (
           <Button variant="outline" className="w-full" disabled>
             {t("currentPlan")}
           </Button>
@@ -124,6 +133,7 @@ function Confirm({
   plans,
   target,
   choice,
+  checkout,
   onBack,
   onDone,
 }: {
@@ -131,6 +141,7 @@ function Confirm({
   plans: PlanCatalog;
   target: CatalogPlan;
   choice: PlanChoice;
+  checkout: boolean;
   onBack: () => void;
   onDone: (message: string) => void;
 }) {
@@ -193,7 +204,11 @@ function Confirm({
       </div>
 
       <p className="text-sm text-ink-soft" data-testid="subscription-timing">
-        {planned.timing === "scheduled"
+        {checkout
+          ? !isExpired(subscription) && subscription.status === "trialing" && subscription.trialEndsAt
+            ? t("checkout.trialStart", { date: date(subscription.trialEndsAt) })
+            : t("checkout.nowStart")
+          : planned.timing === "scheduled"
           ? t("change.scheduled", { date: date(planned.at) })
           : subscription.status === "trialing" && subscription.trialEndsAt
             ? t("change.trialImmediate", { date: date(subscription.trialEndsAt) })
@@ -239,9 +254,13 @@ function Confirm({
         <Button variant="ghost" onClick={onBack} disabled={request.isPending}>
           {t("change.back")}
         </Button>
-        <Button onClick={confirm} disabled={request.isPending} data-testid="subscription-confirm-change">
-          {t("change.confirm")}
-        </Button>
+        {checkout ? (
+          <PayButton planKey={choice.planKey} billing={choice.billing} from="settings" />
+        ) : (
+          <Button onClick={confirm} disabled={request.isPending} data-testid="subscription-confirm-change">
+            {t("change.confirm")}
+          </Button>
+        )}
       </div>
     </div>
   );

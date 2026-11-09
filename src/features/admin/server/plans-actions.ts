@@ -3,6 +3,9 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import type { PlanCatalog } from "@/config/pricing";
+import { syncStripeCatalog } from "@/features/billing/stripe/catalog-sync";
+import { captureServerError } from "@/features/errors/alerts/server/capture";
+import { runInBackground } from "@/features/errors/alerts/server/background";
 import { validatePlanCatalog, type CatalogIssue } from "@/features/plan/catalog";
 import { PLAN_CATALOG_TAG } from "@/features/plan/catalog-server";
 import { LOCALIZED_PAGES, PLAN_PATH } from "@/lib/routes";
@@ -46,6 +49,21 @@ function refused(error: { code?: string; message: string }): { ok: false; error:
 function parse(input: unknown): { ok: true; catalog: PlanCatalog } | { ok: false; error: "invalid"; issues: CatalogIssue[] } {
   const parsed = validatePlanCatalog(input);
   return parsed.ok ? parsed : { ok: false, error: "invalid", issues: parsed.issues };
+}
+
+/**
+ * The new version's prices in Stripe and the older ones archived (step
+ * 23.1), after the response: a Stripe failure never undoes a publish, it is
+ * recorded, and the first Checkout makes what is missing anyway.
+ */
+function syncStripeLater() {
+  runInBackground("stripe-catalog", async () => {
+    try {
+      await syncStripeCatalog();
+    } catch (error) {
+      captureServerError(error, { source: "action", page: PAGE, action: "admin.plans.stripeSync" });
+    }
+  });
 }
 
 /** Everything that shows the published plans: the website in both languages and the app. */
@@ -124,6 +142,7 @@ export async function publishPlanCatalog(
   });
   if (error) return refused(error);
   revalidatePublished();
+  syncStripeLater();
   return { ok: true };
 }
 
@@ -144,5 +163,6 @@ export async function restorePlanVersion(
   });
   if (error) return refused(error);
   revalidatePublished();
+  syncStripeLater();
   return { ok: true };
 }

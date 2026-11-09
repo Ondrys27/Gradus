@@ -42,10 +42,12 @@ export type Subscription = {
   cancelReason: CancelReason | null;
   /** A downgrade waiting for the end of the period. */
   scheduled: { planKey: string; billing: Billing; at: string } | null;
+  /** The payment gateway the subscription runs through (Stripe), or none yet. */
+  gateway: "stripe" | null;
 };
 
 export const SUBSCRIPTION_COLUMNS =
-  "plan_key, billing, status, trial_ends_at, current_period_start, current_period_end, cancel_at_period_end, cancel_reason, scheduled_plan_key, scheduled_billing, scheduled_at";
+  "plan_key, billing, status, trial_ends_at, current_period_start, current_period_end, cancel_at_period_end, cancel_reason, scheduled_plan_key, scheduled_billing, scheduled_at, provider";
 
 export type SubscriptionRow = {
   plan_key: string;
@@ -59,6 +61,7 @@ export type SubscriptionRow = {
   scheduled_plan_key: string | null;
   scheduled_billing: string | null;
   scheduled_at: string | null;
+  provider?: string | null;
 };
 
 const toBilling = (value: string | null): Billing => (value === "yearly" ? "yearly" : "monthly");
@@ -85,6 +88,7 @@ export function toSubscription(row: SubscriptionRow): Subscription {
             at: row.scheduled_at,
           }
         : null,
+    gateway: row.provider === "stripe" ? "stripe" : null,
   };
 }
 
@@ -117,6 +121,33 @@ export function displayStatus(sub: Subscription, now: Date = new Date()): Displa
   if (sub.status === "trialing") return "trialing";
   if (sub.status === "past_due") return "pastDue";
   return "active";
+}
+
+// ---------------------------------------------------------------------------
+// Paying (step 23.1)
+// ---------------------------------------------------------------------------
+
+/** A subscription that runs in Stripe: changes go through Stripe's API. */
+export function hasLiveGateway(sub: Subscription, now: Date = new Date()): boolean {
+  return sub.gateway === "stripe" && sub.status !== "cancelled" && !isExpired(sub, now);
+}
+
+/**
+ * How a catalog plan is paid for and changed:
+ * - `gateway`: it runs in Stripe; a change, cancelling and resuming go
+ *   through Stripe's API, the webhook writes the outcome;
+ * - `checkout`: nothing runs in Stripe (the free trial without a card, or it
+ *   has ended), paying starts a Stripe Checkout;
+ * - `manual`: the administration set it by hand, it is changed as before;
+ * - `none`: beta and plans outside the catalog, which Checkout never offers.
+ */
+export type PaymentRoute = "gateway" | "checkout" | "manual" | "none";
+
+export function paymentRoute(sub: Subscription, now: Date = new Date()): PaymentRoute {
+  if (!isManagedPlan(sub)) return "none";
+  if (hasLiveGateway(sub, now)) return "gateway";
+  if (sub.status === "trialing" || sub.status === "cancelled" || isExpired(sub, now)) return "checkout";
+  return "manual";
 }
 
 // ---------------------------------------------------------------------------

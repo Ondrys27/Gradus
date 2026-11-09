@@ -97,6 +97,12 @@ U každé sekce: adopce (% aktivních, kteří ji použili), počet akcí, akce 
 ## 7. Náklady a ekonomika
 
 - Náklady na AI, Google Places (požadavky × cena z konfigurace), e-maily (počet × cena)
+- Platby přes Stripe (23.1, jen ze serveru, nikdy částky u jména ani e-mail):
+  - Platící účty — účty, kterým v období prošla platba předplatného (`payment_succeeded`: tarif, období, měna, první platba ano/ne), podle tarifu; metrika `paying_accounts`
+  - MRR po měnách — běžící placená předplatná ve Stripe (ostrý režim), roční jako dvanáctina, z `subscriptions.stripe_amount` (cena období bez slev); měny se nesčítají; metrika `mrr` (`metric_mrr`)
+  - Konverze zkušebka → platba — zkušební období, která v období skončila, a podíl účtů, které od té doby zaplatily; metrika `trial_conversion` (`metric_trial_conversion`)
+  - Neúspěšné platby — pokusy o platbu faktury předplatného, které selhaly (`payment_failed`: číslo pokusu), podle pokusu; metrika `failed_payments`
+  - Trychtýř placení z událostí `checkout_started` (tarif, období, měna, s kódem, odkud: settings / trial_banner / read_only) → `checkout_completed`, vrácené platby `payment_refunded`
 - Náklad na aktivního uživatele za měsíc, podle plánu
 - Odhad marže proti ceníku
 - Zkušební období — běžící, končící tento týden, vypršelá, klepnutí na „Mám zájem", převod

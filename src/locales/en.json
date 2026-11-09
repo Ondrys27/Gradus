@@ -5606,6 +5606,22 @@
       "ai_top_spaces": {
         "name": "Costliest spaces",
         "description": "The 10 spaces with the highest AI spend: owner, plan, how many accounts called there, calls and cost."
+      },
+      "paying_accounts": {
+        "name": "Paying accounts",
+        "description": "Accounts with a subscription payment in the period, by plan."
+      },
+      "mrr": {
+        "name": "Monthly recurring revenue (MRR)",
+        "description": "Running paid Stripe subscriptions, a yearly one as a twelfth. Per currency; currencies never add up."
+      },
+      "trial_conversion": {
+        "name": "Trial → payment",
+        "description": "Trials that ended in the period and how many of those accounts have paid since."
+      },
+      "failed_payments": {
+        "name": "Failed payments",
+        "description": "Failed payment attempts of subscription invoices, by attempt."
       }
     }
   },
@@ -6619,7 +6635,10 @@
       "total_czk": "Total (CZK)",
       "running": "Running",
       "ending_this_week": "Ending this week",
-      "expired": "Expired"
+      "expired": "Expired",
+      "trials_ended": "Trials ended",
+      "trials_paid": "Of them paid",
+      "trial_paid_pct": "Conversion"
     },
     "people": {
       "unnamed": "Unnamed account · {suffix}"
@@ -7540,7 +7559,7 @@
       "description": "Payments of your subscription and their receipts.",
       "loadFailed": "The payments could not be loaded right now.",
       "empty": "No payments yet",
-      "emptyHint": "Payments are not live yet. Once you pay, they show up here.",
+      "emptyHint": "Once you start paying, every payment and its receipt show up here.",
       "date": "Date",
       "amount": "Amount",
       "status": "Status",
@@ -7551,7 +7570,8 @@
         "paid": "Paid",
         "failed": "Failed",
         "refunded": "Refunded"
-      }
+      },
+      "open": "Open receipt"
     },
     "billing": {
       "title": "Billing details",
@@ -7580,7 +7600,10 @@
       "nameRequired": "Fill in a name or company.",
       "tooLong": "The text is too long.",
       "emailInvalid": "That does not look like an e-mail.",
-      "countryInvalid": "Pick a country."
+      "countryInvalid": "Pick a country.",
+      "paymentsUnavailable": "Payments cannot be started right now. Try again later or write to us.",
+      "checkoutRequired": "Pay for the plan first, then you can change it.",
+      "gatewayFailed": "The payment gateway did not answer. Nothing changed; try again in a moment."
     },
     "workers": {
       "label": "Workers",
@@ -7593,6 +7616,19 @@
       "chargeYearly": "Extra workers: {amount} a year",
       "notInPlan": "Your plan takes no extra workers. A higher plan does.",
       "rule": "Anyone with a valid plan of their own joins your company for free. You pay for the others by your plan; once a worker pays for their own plan, they cost nothing from the next period. An invited person counts until they accept."
+    },
+    "gatewayNote": "Payments are handled securely by Stripe. We never store your card or its details.",
+    "pay": "Pay and continue",
+    "pastDue": {
+      "title": "The last payment did not go through",
+      "text": "Stripe will try again. Until then everything works as it does now; just check your card."
+    },
+    "checkout": {
+      "success": "Thank you! We are processing the payment; your plan shows here in a few seconds.",
+      "cancelled": "The payment did not go through. Nothing was charged; you can try again.",
+      "trialStart": "You start paying on {date}, when your trial ends. Nothing is charged until then.",
+      "nowStart": "The paid period starts as soon as you pay.",
+      "redirecting": "Taking you to the payment…"
     }
   },
   "messages": {
@@ -8186,6 +8222,16 @@
       "invite_accepted": "{name} accepted the invite into the company",
       "invite_declined": "{name} declined the invite",
       "worker_left": "{name} left the company"
+    }
+  },
+  "billing": {
+    "stripe": {
+      "workerProduct": "{appName} – extra worker"
+    },
+    "checkout": {
+      "terms": "I agree to the [terms of service]({url}).",
+      "startsNow": "The subscription starts as soon as you pay. I agree to the service starting right away and understand that I thereby lose the right to withdraw within 14 days.",
+      "startsAfterTrial": "Your trial keeps running; the first payment comes only after it ends. I agree to the paid service following it right away and understand that I thereby lose the right to withdraw within 14 days."
     }
   }
 }

@@ -5606,6 +5606,22 @@
       "ai_top_spaces": {
         "name": "Nejnákladnější prostory",
         "description": "10 prostorů s nejvyšší útratou AI: majitel, plán, kolik účtů v něm volalo, volání a náklad."
+      },
+      "paying_accounts": {
+        "name": "Platící účty",
+        "description": "Účty, kterým v období prošla platba předplatného, podle tarifu."
+      },
+      "mrr": {
+        "name": "Měsíční opakované tržby (MRR)",
+        "description": "Běžící placená předplatná přes Stripe, roční jako dvanáctina. Po měnách, měny se nesčítají."
+      },
+      "trial_conversion": {
+        "name": "Zkušební období → platba",
+        "description": "Zkušební období, která v období skončila, a kolik z účtů od té doby zaplatilo."
+      },
+      "failed_payments": {
+        "name": "Neúspěšné platby",
+        "description": "Neúspěšné pokusy o platbu faktury předplatného podle čísla pokusu."
       }
     }
   },
@@ -6619,7 +6635,10 @@
       "total_czk": "Celkem (Kč)",
       "running": "Běžící",
       "ending_this_week": "Končí tento týden",
-      "expired": "Vypršelé"
+      "expired": "Vypršelé",
+      "trials_ended": "Skončilo zkušebních",
+      "trials_paid": "Z nich zaplatilo",
+      "trial_paid_pct": "Konverze"
     },
     "people": {
       "unnamed": "Účet bez jména · {suffix}"
@@ -7540,7 +7559,7 @@
       "description": "Platby předplatného a doklady k nim.",
       "loadFailed": "Platby se teď nepodařilo načíst.",
       "empty": "Zatím žádné platby",
-      "emptyHint": "Platby zatím nespouštíme. Jakmile začneš platit, uvidíš je tady.",
+      "emptyHint": "Jakmile začneš platit, uvidíš tady každou platbu i doklad k ní.",
       "date": "Datum",
       "amount": "Částka",
       "status": "Stav",
@@ -7551,7 +7570,8 @@
         "paid": "Zaplaceno",
         "failed": "Nezdařilo se",
         "refunded": "Vráceno"
-      }
+      },
+      "open": "Otevřít doklad"
     },
     "billing": {
       "title": "Fakturační údaje",
@@ -7580,7 +7600,10 @@
       "nameRequired": "Vyplň jméno nebo firmu.",
       "tooLong": "Text je moc dlouhý.",
       "emailInvalid": "Tohle nevypadá jako e-mail.",
-      "countryInvalid": "Vyber zemi."
+      "countryInvalid": "Vyber zemi.",
+      "paymentsUnavailable": "Platby teď nejdou spustit. Zkus to později nebo nám napiš.",
+      "checkoutRequired": "Nejdřív tarif zaplať, potom ho můžeš měnit.",
+      "gatewayFailed": "Platební brána teď neodpověděla. Nic se nezměnilo, zkus to za chvíli znovu."
     },
     "workers": {
       "label": "Pracovníci",
@@ -7593,6 +7616,19 @@
       "chargeYearly": "Za pracovníky navíc {amount} ročně",
       "notInPlan": "Tvůj tarif pracovníky navíc nezahrnuje. Vyšší tarif je má.",
       "rule": "Kdo má vlastní platný tarif, je ve firmě zdarma. Za ostatní platíš podle svého tarifu; když si pracovník tarif zaplatí sám, od dalšího období se za něj neplatí. Pozvaný se počítá, dokud pozvánku nepřijme."
+    },
+    "gatewayNote": "Platby bezpečně zpracovává Stripe. Kartu ani její údaje u nás neukládáme.",
+    "pay": "Zaplatit a pokračovat",
+    "pastDue": {
+      "title": "Poslední platba se nepovedla",
+      "text": "Stripe to zkusí znovu. Do té doby funguje všechno jako teď, jen zkontroluj kartu."
+    },
+    "checkout": {
+      "success": "Díky! Platbu zpracováváme, tarif se tu ukáže za pár vteřin.",
+      "cancelled": "Platba neproběhla. Nic se nestrhlo, můžeš to zkusit znovu.",
+      "trialStart": "Platit začneš {date}, až skončí zkušební období. Do té doby se nic nestrhne.",
+      "nowStart": "Placené období začne hned po zaplacení.",
+      "redirecting": "Přesměrovávám na platbu…"
     }
   },
   "messages": {
@@ -8186,6 +8222,16 @@
       "invite_accepted": "{name} přijal pozvánku do firmy",
       "invite_declined": "{name} pozvánku odmítl",
       "worker_left": "{name} odešel z firmy"
+    }
+  },
+  "billing": {
+    "stripe": {
+      "workerProduct": "{appName} – pracovník navíc"
+    },
+    "checkout": {
+      "terms": "Souhlasím s [obchodními podmínkami]({url}).",
+      "startsNow": "Předplatné začíná hned po zaplacení. Souhlasím se zahájením služby ihned a beru na vědomí, že tím ztrácím právo odstoupit od smlouvy do 14 dnů.",
+      "startsAfterTrial": "Zkušební období běží dál, první platba proběhne až po jeho konci. Souhlasím, že placená služba na něj naváže hned, a beru na vědomí, že tím ztrácím právo odstoupit od smlouvy do 14 dnů."
     }
   }
 }

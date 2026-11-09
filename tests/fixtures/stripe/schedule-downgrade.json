@@ -1,0 +1,25 @@
+{
+  "id": "sub_sched_1Down",
+  "object": "subscription_schedule",
+  "status": "active",
+  "end_behavior": "release",
+  "subscription": "sub_1Trial",
+  "phases": [
+    {
+      "start_date": 1792800000,
+      "end_date": 1794009600,
+      "trial_end": 1794009600,
+      "items": [
+        { "price": { "id": "price_1TeamEurYearly", "object": "price", "lookup_key": "plan:team:EUR:yearly:v3", "metadata": {} }, "quantity": 1 }
+      ]
+    },
+    {
+      "start_date": 1794009600,
+      "end_date": 1825545600,
+      "trial_end": null,
+      "items": [
+        { "price": { "id": "price_1ProEurMonthly", "object": "price", "lookup_key": "plan:pro:EUR:monthly:v3", "metadata": {} }, "quantity": 1 }
+      ]
+    }
+  ]
+}

@@ -134,6 +134,8 @@ export const METRIC_FUNCTIONS = {
   metric_jarvis_conversations: USER,
   metric_call_time: USER,
   metric_trials: USER,
+  metric_mrr: USER,
+  metric_trial_conversion: USER,
   metric_waitlist: NONE,
   metric_workers: USER,
   metric_cron_runs: NONE,
@@ -915,6 +917,11 @@ export const METRICS: readonly MetricDefinition[] = [
     "count",
     split("reason", count("subscription_cancelled")),
   ),
+  // Payments through Stripe (step 23.1): currencies never add up.
+  metric("paying_accounts", "costs", "users", split("plan", users("payment_succeeded"))),
+  metric("mrr", "costs", "table", fn("metric_mrr")),
+  metric("trial_conversion", "costs", "table", fn("metric_trial_conversion")),
+  metric("failed_payments", "costs", "count", split("attempt", count("payment_failed"))),
 
   // --- 8. Technical health ---------------------------------------------------
   metric("errors", "health", "count", daily("errors")),

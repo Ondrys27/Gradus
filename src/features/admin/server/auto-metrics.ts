@@ -50,6 +50,7 @@ const LOWER_IS_BETTER = new Set<string>([
   "cost_per_active_user",
   "streak_freezes",
   "integration_errors",
+  "failed_payments",
 ]);
 
 export async function autoTile(q: AdminQuery, key: string): Promise<TileData | null> {

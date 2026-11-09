@@ -7,6 +7,9 @@ import { HourglassIcon, LockIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { buttonVariants } from "@/components/ui/button";
 import { useSession } from "@/features/account/queries";
+import { PayButton, paymentsInBrowser } from "@/features/subscription/pay-button";
+import { useSubscription } from "@/features/subscription/queries";
+import { isManagedPlan, paymentRoute } from "@/features/subscription/state";
 import { track } from "@/lib/analytics/client";
 import { PLAN_PATH } from "@/lib/routes";
 import { cn } from "@/lib/utils";
@@ -32,6 +35,11 @@ export function TrialNotice() {
       ? null
       : notice.kind;
   const daysLeft = notice.kind === "trial" ? notice.daysLeft : 0;
+  // "Pay and continue" for the owner in the trial's last days and once it ended.
+  const offerPay =
+    !worker && paymentsInBrowser() && (notice.kind === "expired" || (notice.kind === "trial" && notice.urgent));
+  const own = useSubscription({ enabled: offerPay });
+  const payable = own.data && isManagedPlan(own.data) && paymentRoute(own.data) === "checkout" ? own.data : null;
 
   // Once per load of the app: the trial's state as the owner sees it.
   useEffect(() => {
@@ -58,9 +66,17 @@ export function TrialNotice() {
           </p>
         </div>
         {!worker && (
-          <Link href={PLAN_PATH} className={buttonVariants()}>
-            {t(`${key}.cta`)}
-          </Link>
+          <div className="flex flex-wrap items-start gap-2">
+            {key === "expired" && offerPay && payable && (
+              <PayButton planKey={payable.planKey} billing={payable.billing} from="read_only" />
+            )}
+            <Link
+              href={PLAN_PATH}
+              className={buttonVariants({ variant: key === "expired" && payable ? "outline" : "default" })}
+            >
+              {t(`${key}.cta`)}
+            </Link>
+          </div>
         )}
       </section>
     );
@@ -82,10 +98,16 @@ export function TrialNotice() {
         className={cn("size-4 shrink-0", notice.urgent ? "text-orange" : "text-ink-muted")}
       />
       <span>{t("banner", { days: notice.daysLeft })}</span>
+      {offerPay && payable && (
+        <div className="ml-auto">
+          <PayButton planKey={payable.planKey} billing={payable.billing} from="trial_banner" size="sm" />
+        </div>
+      )}
       <Link
         href={PLAN_PATH}
         className={cn(
-          "ml-auto inline-flex min-h-11 items-center font-medium underline-offset-4 hover:underline mouse:min-h-0",
+          "inline-flex min-h-11 items-center font-medium underline-offset-4 hover:underline mouse:min-h-0",
+          !(offerPay && payable) && "ml-auto",
           notice.urgent ? "text-orange" : "text-violet",
         )}
       >

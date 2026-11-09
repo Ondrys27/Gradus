@@ -21,8 +21,9 @@ const STATUS_TONE: Record<Payment["status"], Tone> = {
 };
 
 /**
- * The payments of the subscription, newest first. Receipts come with the
- * payment gateway; until then the button is there, muted, and says so.
+ * The payments of the subscription, newest first, each with Stripe's hosted
+ * receipt when it has one. A payment without one (before Stripe) keeps the
+ * muted button that says so.
  */
 export function PaymentHistory() {
   const t = useTranslations("subscription.payments");
@@ -70,24 +71,40 @@ export function PaymentHistory() {
                 <span>
                   <StatusPill tone={STATUS_TONE[payment.status]}>{t(`statuses.${payment.status}`)}</StatusPill>
                 </span>
-                {/* Receipts arrive with the gateway; focusable so the reason can be read. */}
-                <button
-                  type="button"
-                  aria-disabled
-                  title={t("receiptsSoon")}
-                  aria-label={`${t("download")}: ${t("receiptsSoon")}`}
-                  className={cn(
-                    buttonVariants({ variant: "ghost", size: "icon" }),
-                    "cursor-not-allowed justify-self-end opacity-50",
-                  )}
-                  onClick={(event) => event.preventDefault()}
-                >
-                  <DownloadIcon aria-hidden />
-                </button>
+                {payment.invoiceUrl ? (
+                  <a
+                    href={payment.invoiceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={t("open")}
+                    aria-label={t("open")}
+                    data-testid="subscription-receipt"
+                    className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "justify-self-end")}
+                  >
+                    <DownloadIcon aria-hidden />
+                  </a>
+                ) : (
+                  // No receipt for this one; focusable so the reason can be read.
+                  <button
+                    type="button"
+                    aria-disabled
+                    title={t("receiptsSoon")}
+                    aria-label={`${t("download")}: ${t("receiptsSoon")}`}
+                    className={cn(
+                      buttonVariants({ variant: "ghost", size: "icon" }),
+                      "cursor-not-allowed justify-self-end opacity-50",
+                    )}
+                    onClick={(event) => event.preventDefault()}
+                  >
+                    <DownloadIcon aria-hidden />
+                  </button>
+                )}
               </li>
             ))}
           </ul>
-          <p className="text-xs text-ink-muted">{t("receiptsSoon")}</p>
+          {payments.data.some((payment) => !payment.invoiceUrl) && (
+            <p className="text-xs text-ink-muted">{t("receiptsSoon")}</p>
+          )}
         </div>
       )}
     </GlowCard>

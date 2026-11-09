@@ -1,16 +1,28 @@
 "use server";
 
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { isPaidPlanKey } from "@/config/pricing";
+import {
+  gatewayFor,
+  loadStoredSubscription,
+  viaStripe,
+  type StoredSubscription,
+} from "@/features/billing/stripe/account";
+import { stripeClient } from "@/features/billing/stripe/client";
+import { syncCustomer } from "@/features/billing/stripe/customer";
+import {
+  cancelStripeSubscription,
+  changeStripePlan,
+  resumeStripeSubscription,
+} from "@/features/billing/stripe/gateway";
+import { accountAllowedInMode } from "@/features/billing/stripe/modes";
 import { getPublishedPlans } from "@/features/plan/catalog-server";
 import { notifyPlanRequest } from "@/features/plan/server-interest";
 import { catalogWorkerTerms, storedWorkerTerms, type WorkerTerms } from "@/features/plan/worker-seats";
 import { loadGenerationUsage } from "@/features/contacts/server/generation-usage";
 import { loadAiUsage, loadFileUsage } from "@/features/jarvis/server/usage";
-import { measure } from "@/lib/analytics/instrument";
+import { captureServerError } from "@/features/errors/alerts/server/capture";
 import { track } from "@/lib/analytics/track";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
+import { getLocale } from "next-intl/server";
 import { toFormatSettings, USER_SETTINGS_COLUMNS } from "@/lib/user-settings";
 import type { Database } from "@/types/database";
 import {
@@ -22,7 +34,24 @@ import {
   type CancelInput,
   type PlanChoiceInput,
 } from "./schemas";
-import type { ChangeDirection, ChangeTiming, PlanUsage } from "./state";
+import {
+  rpc,
+  runSubscription as run,
+  SubscriptionError,
+  type SubscriptionContext,
+  type SubscriptionErrorCode,
+  type SubscriptionResult,
+} from "./server-context";
+import {
+  changeBlock,
+  changeDirection,
+  hasLiveGateway,
+  paymentRoute,
+  plannedChange,
+  type ChangeDirection,
+  type ChangeTiming,
+  type PlanUsage,
+} from "./state";
 
 /**
  * Settings → Subscription, called from the page. The user comes from the
@@ -31,70 +60,38 @@ import type { ChangeDirection, ChangeTiming, PlanUsage } from "./state";
  * requests go through the database functions with the admin client and the
  * session's user id, which also lock the row and decide what is allowed.
  * They work in a read-only workspace too: that is when a plan is chosen.
- * Failures come back as codes, never thrown.
+ * A subscription that runs in Stripe changes in Stripe first (gateway.ts);
+ * the database then records the request as before and the webhook writes
+ * Stripe's outcome (status, period, the plan in force). Without one, a
+ * trial or an ended plan is paid through Checkout (startCheckout). Failures
+ * come back as codes, never thrown.
  */
 
-export type SubscriptionErrorCode =
-  | "ownerOnly"
-  | "invalid"
-  | "notAllowed"
-  | "cancelPending"
-  | "expired"
-  | "unknown";
+export type { SubscriptionErrorCode, SubscriptionResult };
 
-export type SubscriptionResult<T> = { ok: true; data: T } | { ok: false; error: SubscriptionErrorCode };
+type Context = SubscriptionContext;
 
-type Client = SupabaseClient<Database>;
-type Context = { supabase: Client; admin: Client; userId: string; email: string | null };
-
-class SubscriptionError extends Error {
-  constructor(readonly code: SubscriptionErrorCode) {
-    super(code);
+/**
+ * Before the database records a change of a subscription that runs in
+ * Stripe, Stripe makes it. Without one: a trial or an ended plan is a
+ * Checkout, a plan set by the administration changes as before.
+ */
+async function gatewayStep(
+  ctx: Context,
+  work: (gateway: Awaited<ReturnType<typeof gatewayFor>>, ref: string, sub: StoredSubscription) => Promise<void>,
+  options: { checkoutInstead: (sub: StoredSubscription) => boolean },
+) {
+  const sub = await loadStoredSubscription(ctx.admin, ctx.userId);
+  if (!sub) return;
+  if (sub.providerRef && hasLiveGateway(sub)) {
+    const gateway = await gatewayFor(ctx);
+    if (sub.stripeMode !== gateway.mode) throw new SubscriptionError("paymentsUnavailable");
+    await viaStripe("change", () => work(gateway, sub.providerRef as string, sub));
+    return;
   }
-}
-
-async function ownerContext(): Promise<Context> {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  const userId = data?.claims?.sub;
-  if (typeof userId !== "string" || !userId) throw new SubscriptionError("ownerOnly");
-  const { data: workspaceId, error } = await supabase.rpc("current_workspace_id");
-  if (error) throw error;
-  if (workspaceId !== userId) throw new SubscriptionError("ownerOnly");
-  const email = typeof data?.claims?.email === "string" ? data.claims.email : null;
-  return { supabase, admin: createAdminClient(), userId, email };
-}
-
-/** What the database functions raise, as codes. */
-function fromDatabase(error: { code?: string; message?: string }): SubscriptionError | null {
-  const message = error.message ?? "";
-  if (error.code === "22023") return new SubscriptionError("invalid");
-  if (error.code === "42501") return new SubscriptionError("notAllowed");
-  if (error.code === "55000" && message.includes("cancel_pending")) {
-    return new SubscriptionError("cancelPending");
+  if (options.checkoutInstead(sub) && paymentRoute(sub) === "checkout" && stripeClient()) {
+    throw new SubscriptionError("checkoutRequired");
   }
-  if (error.code === "55000" && message.includes("expired")) return new SubscriptionError("expired");
-  return null;
-}
-
-function run<T>(name: string, work: (ctx: Context) => Promise<T>): Promise<SubscriptionResult<T>> {
-  return measure(`subscription.${name}`, async (): Promise<SubscriptionResult<T>> => {
-    try {
-      return { ok: true, data: await work(await ownerContext()) };
-    } catch (error) {
-      if (error instanceof SubscriptionError) return { ok: false, error: error.code };
-      const known = fromDatabase(error as { code?: string; message?: string });
-      if (known) return { ok: false, error: known.code };
-      console.error(`subscription action ${name} failed`, error);
-      return { ok: false, error: "unknown" };
-    }
-  })();
-}
-
-async function rpc<T>(call: PromiseLike<{ data: unknown; error: unknown }>): Promise<T> {
-  const { data, error } = await call;
-  if (error) throw error;
-  return data as T;
 }
 
 // ---------------------------------------------------------------------------
@@ -112,10 +109,24 @@ export async function requestSubscriptionChange(
     const { planKey, billing } = parsed.data;
     const { data: before } = await ctx.admin.rpc("current_plan", { _user_id: ctx.userId });
 
-    // TODO(payments): with a gateway, an upgrade opens its checkout (or charges
-    // the difference) here and the webhook applies the change; a downgrade
-    // becomes the gateway's change at renewal. Until then the request is only
-    // written (status and period untouched) and the app owner is told.
+    // In Stripe first, by the same rule the database applies next: up now
+    // (prorated), down at the end of the period (a schedule), the current
+    // plan drops a scheduled change. A refusal there changes nothing here.
+    await gatewayStep(
+      ctx,
+      async (gateway, ref, sub) => {
+        if (!isPaidPlanKey(sub.planKey)) throw new SubscriptionError("notAllowed");
+        if (changeBlock(sub)) throw new SubscriptionError("cancelPending");
+        const planned = plannedChange({ ...sub, planKey: sub.planKey }, { planKey, billing });
+        await changeStripePlan(gateway, ref, { planKey, billing }, planned.timing);
+      },
+      {
+        // Dropping a scheduled change (the current plan again) needs no payment.
+        checkoutInstead: (sub) =>
+          !isPaidPlanKey(sub.planKey) ||
+          changeDirection({ planKey: sub.planKey, billing: sub.billing }, { planKey, billing }) !== "same",
+      },
+    );
     const result = await rpc<{
       when: ChangeTiming;
       direction: ChangeDirection;
@@ -165,6 +176,10 @@ export async function cancelSubscription(
   return run("cancel", async (ctx) => {
     const parsed = cancelSchema.safeParse(input);
     if (!parsed.success) throw new SubscriptionError("invalid");
+    // Stripe stops at the end of the period; the reason and the note stay in Gradus.
+    await gatewayStep(ctx, (gateway, ref) => cancelStripeSubscription(gateway, ref), {
+      checkoutInstead: () => false,
+    });
     const result = await rpc<{
       already: boolean;
       ends_at: string;
@@ -198,6 +213,9 @@ export async function cancelSubscription(
 
 export async function resumeSubscription(): Promise<SubscriptionResult<{ resumed: boolean }>> {
   return run("resume", async (ctx) => {
+    await gatewayStep(ctx, (gateway, ref) => resumeStripeSubscription(gateway, ref), {
+      checkoutInstead: () => false,
+    });
     const result = await rpc<{ resumed: boolean }>(
       ctx.admin.rpc("subscription_resume", { _user_id: ctx.userId }),
     );
@@ -286,10 +304,9 @@ export async function loadWorkerBilling(): Promise<SubscriptionResult<WorkerBill
       if (error) throw error;
       terms = storedWorkerTerms(data);
     }
-    // TODO(payments): the gateway charges the extra workers (workerSeats() over
-    // these rows, the extra ones × per_worker) as the second item of the
-    // subscription, its quantity updated for the next period. Until then the
-    // amount is only computed and shown; nothing is charged.
+    // Stripe charges the extra workers as the second item of the subscription
+    // (startCheckout and gateway.ts), its quantity kept by the daily
+    // reconciliation from the next period (syncWorkerSeats).
     return {
       planKey,
       terms,
@@ -319,6 +336,37 @@ export async function saveBillingProfile(
       .from("billing_profiles")
       .upsert({ user_id: ctx.userId, ...parsed.data }, { onConflict: "user_id" });
     if (error) throw error;
+    await syncBillingProfileToStripe(ctx, parsed.data);
     return parsed.data;
   });
+}
+
+/**
+ * The same details on the workspace's Stripe customer, once it has one. A
+ * failure there never undoes the save: it is logged and recorded, and the
+ * next save sends everything again.
+ */
+async function syncBillingProfileToStripe(ctx: Context, profile: BillingProfile) {
+  const client = stripeClient();
+  if (!client) return;
+  try {
+    const { data } = await ctx.admin.from("profiles").select("is_internal").eq("id", ctx.userId).maybeSingle();
+    if (!accountAllowedInMode(client.mode, { email: ctx.email, internal: data?.is_internal ?? false })) return;
+    const locale = (await getLocale()) === "en" ? "en" : "cs";
+    await syncCustomer(client.stripe, ctx.admin, {
+      workspace: ctx.userId,
+      mode: client.mode,
+      profile,
+      email: ctx.email,
+      locale,
+    });
+  } catch (error) {
+    console.error("[stripe] billing details not synced", (error as { code?: string })?.code ?? "");
+    captureServerError(error, {
+      source: "action",
+      page: "/app/nastaveni/predplatne",
+      action: "subscription.saveBillingProfile",
+      userId: ctx.userId,
+    });
+  }
 }

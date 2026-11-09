@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import { CalendarClockIcon, InfoIcon } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { CalendarClockIcon, CreditCardIcon, InfoIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -22,8 +23,15 @@ import { BillingDetailsForm } from "./billing-details-form";
 import { CancelDialog } from "./cancel-dialog";
 import { ChangePlanDialog } from "./change-plan-dialog";
 import { PaymentHistory } from "./payment-history";
+import { PayButton } from "./pay-button";
 import { money, PlanPrice, priceOf } from "./plan-price";
-import { SubscriptionActionError, useRequestChange, useResumeSubscription, useSubscription } from "./queries";
+import {
+  SubscriptionActionError,
+  subscriptionKeys,
+  useRequestChange,
+  useResumeSubscription,
+  useSubscription,
+} from "./queries";
 import { useWorkerCharge, WorkerSeatsLine } from "./worker-seats-line";
 import {
   canCancel,
@@ -33,6 +41,7 @@ import {
   isExpired,
   isManagedPlan,
   nextPayment,
+  paymentRoute,
   periodEndOf,
   type DisplayStatus,
 } from "./state";
@@ -49,13 +58,25 @@ const STATUS_TONE: Record<DisplayStatus, Tone> = {
 /** A message after an action, shown on the card until the next one. */
 export type SubscriptionNotice = { tone: "success" | "error"; text: string } | null;
 
+/** Back from Stripe's Checkout: paid (the webhook is on its way) or left without paying. */
+export type CheckoutReturn = "success" | "cancelled" | null;
+
 /**
- * Settings → Subscription: the plan in force, choosing another one,
- * cancelling and taking it back, the payments and the billing details. Only
- * the owner of a workspace has one; a worker sees who handles it. Until a
- * payment gateway exists, choices are recorded and shown, nothing is charged.
+ * Settings → Subscription: the plan in force, paying for it through Stripe,
+ * choosing another one, cancelling and taking it back, the payments and the
+ * billing details. Only the owner of a workspace has one; a worker sees who
+ * handles it. `payments` says whether Stripe runs in this deployment; without
+ * it choices are recorded and shown, nothing is charged.
  */
-export function SubscriptionPage({ plans }: { plans: PlanCatalog }) {
+export function SubscriptionPage({
+  plans,
+  payments = false,
+  checkout = null,
+}: {
+  plans: PlanCatalog;
+  payments?: boolean;
+  checkout?: CheckoutReturn;
+}) {
   const t = useTranslations("subscription");
   const { worker, roles } = useSession();
   return (
@@ -65,7 +86,7 @@ export function SubscriptionPage({ plans }: { plans: PlanCatalog }) {
       ) : (
         <>
           <div id="settings-plan" tabIndex={-1} data-setting-row className="rounded-card outline-none">
-            <CurrentPlan plans={plans} />
+            <CurrentPlan plans={plans} payments={payments} checkout={checkout} />
           </div>
           <div id="settings-promo" tabIndex={-1} data-setting-row className="rounded-card outline-none">
             <PromoCard plans={plans} />
@@ -84,18 +105,35 @@ export function SubscriptionPage({ plans }: { plans: PlanCatalog }) {
   );
 }
 
-function CurrentPlan({ plans }: { plans: PlanCatalog }) {
+function CurrentPlan({
+  plans,
+  payments,
+  checkout,
+}: {
+  plans: PlanCatalog;
+  payments: boolean;
+  checkout: CheckoutReturn;
+}) {
   const t = useTranslations("subscription");
   const tPlans = useTranslations("plans");
   const locale = useLocale();
   const settings = useUserSettings();
   const format = useFormatSettings();
-  const query = useSubscription();
+  const { user } = useSession();
+  const queryClient = useQueryClient();
+  const query = useSubscription({ poll: checkout === "success" });
   const resume = useResumeSubscription();
   const unschedule = useRequestChange();
   const [changing, setChanging] = useState(false);
   const [cancelling, setCancelling] = useState(false);
-  const [notice, setNotice] = useState<SubscriptionNotice>(null);
+  const [notice, setNotice] = useState<SubscriptionNotice>(
+    checkout ? { tone: checkout === "success" ? "success" : "error", text: t(`checkout.${checkout}`) } : null,
+  );
+  const linked = query.data?.gateway === "stripe";
+  // Once the webhook linked the subscription, its first payment is there too.
+  useEffect(() => {
+    if (linked) void queryClient.invalidateQueries({ queryKey: subscriptionKeys.payments(user.id) });
+  }, [linked, queryClient, user.id]);
   const currency = priceCurrencyFor(settings.currency);
   const sub = query.data;
   const managed = sub ? isPaidPlanKey(sub.planKey) : false;
@@ -136,6 +174,8 @@ function CurrentPlan({ plans }: { plans: PlanCatalog }) {
   const next = nextPayment(sub, now);
   const nextPlan = next && plans.find((p) => p.key === next.planKey);
   const block = changeBlock(sub, now);
+  // Nothing runs in Stripe yet (the trial, or it ended): paying is a Checkout.
+  const checkoutMode = payments && paymentRoute(sub, now) === "checkout";
 
   function doResume() {
     setNotice(null);
@@ -221,13 +261,32 @@ function CurrentPlan({ plans }: { plans: PlanCatalog }) {
         </div>
       )}
 
+      {status === "pastDue" && (
+        <div
+          role="status"
+          className="flex items-start gap-3 rounded-xl border border-pink/40 bg-pink/10 px-4 py-3 text-sm text-ink"
+          data-testid="subscription-past-due"
+        >
+          <CreditCardIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-pink" />
+          <span className="flex min-w-0 flex-col gap-0.5">
+            <span className="font-semibold">{t("pastDue.title")}</span>
+            <span className="text-ink-soft">{t("pastDue.text")}</span>
+          </span>
+        </div>
+      )}
+
       {notice && <FormAlert tone={notice.tone}>{notice.text}</FormAlert>}
 
       {status !== "beta" && (
         <div className="flex flex-col gap-4 border-t border-line/60 pt-5">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-start gap-2">
+            {checkoutMode && !block && isManagedPlan(sub) && (
+              <PayButton planKey={sub.planKey} billing={sub.billing} from="settings" />
+            )}
             {!block && (
-              <Button onClick={() => setChanging(true)}>{t("actions.change")}</Button>
+              <Button variant={checkoutMode ? "outline" : "default"} onClick={() => setChanging(true)}>
+                {t("actions.change")}
+              </Button>
             )}
             {canResume(sub, now) && (
               <Button onClick={doResume} disabled={resume.isPending}>
@@ -242,7 +301,7 @@ function CurrentPlan({ plans }: { plans: PlanCatalog }) {
           </div>
           <p className="flex items-start gap-2 text-xs text-ink-muted">
             <InfoIcon aria-hidden className="mt-0.5 size-3.5 shrink-0" />
-            {t("noGateway")}
+            {payments ? t("gatewayNote") : t("noGateway")}
           </p>
         </div>
       )}
@@ -254,6 +313,7 @@ function CurrentPlan({ plans }: { plans: PlanCatalog }) {
             onOpenChange={setChanging}
             subscription={sub}
             plans={plans}
+            checkout={checkoutMode}
             onDone={(text) => setNotice({ tone: "success", text })}
           />
           <CancelDialog
