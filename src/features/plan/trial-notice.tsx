@@ -9,7 +9,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { useSession } from "@/features/account/queries";
 import { PayButton, paymentsInBrowser } from "@/features/subscription/pay-button";
 import { useSubscription } from "@/features/subscription/queries";
-import { isManagedPlan, paymentRoute } from "@/features/subscription/state";
+import { chosenPlan, isManagedPlan, paymentRoute } from "@/features/subscription/state";
 import { track } from "@/lib/analytics/client";
 import { PLAN_PATH } from "@/lib/routes";
 import { cn } from "@/lib/utils";
@@ -40,7 +40,10 @@ export function TrialNotice() {
     !worker && paymentsInBrowser() && (notice.kind === "expired" || (notice.kind === "trial" && notice.urgent));
   // The owner's own row: whether it can be paid, and whether what ended was a paid subscription.
   const own = useSubscription({ enabled: offerPay || (!worker && notice.kind === "expired") });
-  const payable = offerPay && own.data && isManagedPlan(own.data) && paymentRoute(own.data) === "checkout" ? own.data : null;
+  const payableSub =
+    offerPay && own.data && isManagedPlan(own.data) && paymentRoute(own.data) === "checkout" ? own.data : null;
+  // The plan picked on the website, when there is one, is what gets paid.
+  const payable = payableSub ? (chosenPlan(payableSub) ?? payableSub) : null;
   // Stripe ended a paid subscription (the last payment failed, or it was cancelled): not a trial.
   const paidEnded = !worker && own.data?.gateway === "stripe";
 

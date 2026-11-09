@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { legalOperator } from "@/config/legal";
+import { assertLegalComplete, legalOperator } from "@/config/legal";
 import { APP_NAME } from "@/lib/constants";
 import type { SiteLocale } from "@/lib/routes";
 import { pageMetadata } from "./seo";
@@ -8,14 +8,24 @@ import { pageMetadata } from "./seo";
 export type LegalKind = "terms" | "privacy";
 
 /**
- * The beta texts: each section of a document with its paragraph keys under
- * `marketing.legal.bodies.<kind>.<section>`. A lawyer reviews them before launch.
+ * Each section of a document with its paragraph keys under
+ * `marketing.legal.bodies.<kind>.<section>`: the beta's texts with what paid
+ * plans need (seller, price and payment through Stripe, automatic renewal,
+ * cancelling, a consumer's withdrawal, complaints, Stripe as a processor).
+ * A lawyer reviews them before launch.
  */
 export const LEGAL_SECTIONS: Record<LegalKind, Record<string, readonly string[]>> = {
   terms: {
     intro: ["p1", "p2"],
-    beta: ["p1", "p2"],
+    seller: ["p1", "p2"],
     account: ["p1", "p2"],
+    trial: ["p1", "p2"],
+    beta: ["p1", "p2"],
+    prices: ["p1", "p2", "p3", "p4"],
+    renewal: ["p1", "p2", "p3"],
+    cancellation: ["p1", "p2", "p3"],
+    withdrawal: ["p1", "p2", "p3"],
+    complaints: ["p1", "p2"],
     warranty: ["p1", "p2"],
     data: ["p1", "p2", "p3"],
     feedback: ["p1", "p2"],
@@ -28,12 +38,12 @@ export const LEGAL_SECTIONS: Record<LegalKind, Record<string, readonly string[]>
   },
   privacy: {
     controller: ["p1", "p2"],
-    data: ["p1", "p2", "p3", "p4"],
-    purpose: ["p1", "p2", "p3"],
+    data: ["p1", "p2", "p3", "p4", "p5", "p6"],
+    purpose: ["p1", "p2", "p3", "p4"],
     usage: ["p1", "p2", "p3"],
     ai: ["p1", "p2", "p3"],
-    processors: ["p1", "p2", "p3", "p4", "p5", "p6", "p7"],
-    retention: ["p1", "p2", "p3"],
+    processors: ["p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8"],
+    retention: ["p1", "p2", "p3", "p4"],
     rights: ["p1", "p2", "p3"],
     cookies: ["p1", "p2"],
     contact: ["p1"],
@@ -51,9 +61,10 @@ export async function legalMetadata(locale: SiteLocale, kind: LegalKind): Promis
 }
 
 /**
- * Terms and privacy for the closed beta, with a visible note that a lawyer
- * reviews them before launch. The operator comes from the configuration
- * (config/legal.ts); whatever is missing shows as [DOPLNIT].
+ * Terms and privacy, with a visible note that a lawyer reviews them before
+ * launch. The operator comes from the configuration (config/legal.ts);
+ * whatever is missing shows as [DOPLNIT], and in production it can not be
+ * shown at all: generating the page fails, so the production build fails.
  */
 export async function LegalPage({ locale, kind }: { locale: SiteLocale; kind: LegalKind }) {
   setRequestLocale(locale);
@@ -62,6 +73,7 @@ export async function LegalPage({ locale, kind }: { locale: SiteLocale; kind: Le
     getTranslations({ locale, namespace: "marketing.meta" }),
   ]);
   const operator = legalOperator();
+  assertLegalComplete(operator);
   const missing = t("missing");
   const values = {
     appName: APP_NAME,
@@ -69,7 +81,7 @@ export async function LegalPage({ locale, kind }: { locale: SiteLocale; kind: Le
     companyId: operator.companyId ?? missing,
     address: operator.address ?? missing,
     email: operator.email ?? missing,
-    backupDays: missing,
+    backupDays: operator.backupDays ?? missing,
   };
   // Keys come from LEGAL_SECTIONS; a test checks each one exists in both languages.
   const text = t as unknown as (key: string, values?: Record<string, string>) => string;

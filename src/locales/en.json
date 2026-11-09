@@ -674,7 +674,10 @@
       "descriptionPublic": "14 days free, no credit card.",
       "inviteOptional": "Invite code (optional)",
       "inviteOptionalHint": "If you have an invite, enter it. Otherwise you start a 14-day trial.",
-      "usageNote": "{appName} measures how the app is used — only types of actions and times, never the content of your data. <link>More about it</link>"
+      "usageNote": "{appName} measures how the app is used — only types of actions and times, never the content of your data. <link>More about it</link>",
+      "terms": "I agree to the <terms>terms of service</terms> and the <privacy>privacy policy</privacy>.",
+      "marketing": "Send me an occasional e-mail with news and tips. Optional, unsubscribe any time.",
+      "chosenPlan": "Selected plan: {plan} · {billing}. The first {days} days are free; you pay only after the trial."
     },
     "forgot": {
       "title": "Reset your password",
@@ -706,7 +709,9 @@
       "linkExpired": "The link has expired or was already used. Ask for a new one.",
       "generic": "Something went wrong. Please try again.",
       "inviteEmailMismatch": "Use the e-mail address the invite was sent for.",
-      "emailNotConfirmed": "Your e-mail isn't confirmed yet. Click the link we sent you, or get a new one."
+      "emailNotConfirmed": "Your e-mail isn't confirmed yet. Click the link we sent you, or get a new one.",
+      "termsRequired": "To create an account, please agree to the terms.",
+      "tooManyCodeAttempts": "Too many wrong codes. Try again in 15 minutes."
     },
     "confirm": {
       "title": "Check your e-mail",
@@ -4705,31 +4710,38 @@
     },
     "legal": {
       "betaNotice": "Beta version, to be reviewed by a lawyer before launch",
-      "betaNoticeText": "This text applies to the closed beta of {appName}. A lawyer will review it before the public launch, and we will let you know about changes.",
+      "betaNoticeText": "We are preparing this text for the launch of paid {appName} plans. A lawyer will review it before the launch, and we will let you know about changes.",
       "heading": "{number}. {title}",
       "missing": "[DOPLNIT]",
       "sections": {
         "terms": {
-          "intro": "Introduction and operator",
-          "beta": "Closed beta",
+          "intro": "Introduction",
+          "seller": "Seller",
           "account": "Account",
-          "warranty": "No warranty",
+          "trial": "Free trial",
+          "beta": "Beta and invitations",
+          "prices": "Price and payment",
+          "renewal": "Automatic renewal",
+          "cancellation": "Cancelling the subscription",
+          "withdrawal": "A consumer's right of withdrawal",
+          "complaints": "Complaints",
+          "warranty": "Availability and changes",
           "data": "Your data and backups",
           "feedback": "Feedback",
           "use": "Rules of use",
           "liability": "Liability",
-          "termination": "Closing your account and the end of the beta",
+          "termination": "Closing your account and the end of the service",
           "changes": "Changes to these terms",
           "law": "Governing law",
           "contact": "Contact"
         },
         "privacy": {
-          "controller": "Who processes your data",
+          "controller": "Who processes the data",
           "data": "What data we process",
-          "purpose": "Why, and on what legal basis",
-          "usage": "Usage measurement",
+          "purpose": "Why and on what basis",
+          "usage": "Measuring usage",
           "ai": "Artificial intelligence",
-          "processors": "Who we share it with",
+          "processors": "Who we share data with",
           "retention": "How long we keep it",
           "rights": "Your rights",
           "cookies": "Cookies",
@@ -4739,44 +4751,77 @@
       "bodies": {
         "terms": {
           "intro": {
-            "p1": "These terms govern the use of the {appName} app during the closed beta. The app is operated by {name}, company ID {companyId}, registered at {address} (\"we\").",
-            "p2": "{appName} is a web app for people starting a business: milestones and tasks, deals, contacts, cold calling, a calendar, finances with invoices, workers and the AI assistant Jarvis. By creating an account you agree to these terms."
+            "p1": "These terms govern the use of the {appName} app and subscriptions to its paid plans. They form a contract between you and the seller named in the next section.",
+            "p2": "{appName} is a web app for people starting a business: milestones and tasks, deals, contacts, cold calling, a calendar, finances with invoices, workers and the AI assistant Jarvis. When you register you expressly agree to these terms and the privacy policy; we record when, and which version."
           },
-          "beta": {
-            "p1": "The beta is closed: you can create an account only with an invitation from us or from the owner of the team you will work in.",
-            "p2": "{appName} is free during the beta. You pay nothing and nothing turns into a paid plan on its own. If we introduce paid plans after the beta, we will write to you first, and you will continue only if you want to."
+          "seller": {
+            "p1": "The seller and operator of {appName} is {name}, company ID {companyId}, registered at {address}, e-mail {email}.",
+            "p2": "The contract is made in Czech or English, depending on the language of the website. You can view, print and save these terms on this page at any time."
           },
           "account": {
             "p1": "Your account is personal. Give true details, don't share your password, and tell us if you suspect someone else got into your account. You are responsible for what happens in your account.",
             "p2": "An account owner can invite workers and choose which parts of the app they see. The owner is responsible for whom they give access."
           },
+          "trial": {
+            "p1": "Anyone who registers without an invitation gets 14 days of the Pro plan for free. No payment card is needed and nothing is charged during the trial.",
+            "p2": "If you don't pay by the end of the trial, the account becomes read-only: you can see and download your data but not add new data. Nothing is deleted, and paying opens the account again."
+          },
+          "beta": {
+            "p1": "Anyone with a beta invitation (a beta code) or an invitation from the owner of the company they work in uses {appName} for free. When we end the beta, we will write to you first, and you will continue on a paid plan only if you want to.",
+            "p2": "The beta is a trial version: some features are still being finished and may change."
+          },
+          "prices": {
+            "p1": "Plan prices are on the pricing page of the website and in the app under Settings → Subscription, in Czech crowns or euros, per month or per year. The price shown when you order applies. For plans with paid extra workers, their number is added to the price as the pricing page says.",
+            "p2": "Prices on the pricing page exclude VAT. We add VAT only when we are required to charge it; the payment page then shows it separately.",
+            "p3": "You pay by card through the Stripe payment gateway. You enter your card details directly with Stripe; we neither see nor store them. You get a receipt for every payment by e-mail and find it under Settings → Subscription → Payment history.",
+            "p4": "A partner's promo code applies to the first payment under the code's terms; an account can use only one code."
+          },
+          "renewal": {
+            "p1": "The subscription renews automatically: at the start of each new period (month or year) we charge the plan's price to the saved card until you cancel.",
+            "p2": "If a payment fails, the payment gateway retries it several times and we let you know; the app keeps running in the meantime. If the last attempt fails too, the subscription ends and the account becomes read-only. Your data stays.",
+            "p3": "We announce a price change by e-mail at least 30 days in advance. The new price applies only from the next period, and you can cancel before then."
+          },
+          "cancellation": {
+            "p1": "You can cancel the subscription at any time under Settings → Subscription. The paid period runs to its end and nothing more is charged; until then you can take the cancellation back.",
+            "p2": "Moving to a higher plan applies at once and you pay only the proportional part until the end of the period; moving to a lower plan applies from the next period.",
+            "p3": "We don't refund a period that has started, unless the law says otherwise. After the subscription ends the account is read-only and your data stays; you delete the account with all its data under Settings → Privacy and data."
+          },
+          "withdrawal": {
+            "p1": "A consumer may withdraw from a contract made at a distance within 14 days of making it. The 14-day free trial is there to try the app without commitment.",
+            "p2": "The paid service starts right after you pay, or right after the trial ends. When you order, you therefore expressly agree to the service starting before the withdrawal period ends and acknowledge that you thereby lose the right to withdraw from the contract.",
+            "p3": "If you still have the right to withdraw, write to us within 14 days at {email}. We refund the money within 14 days of the withdrawal, the same way you paid, less the proportional part for the time the service ran."
+          },
+          "complaints": {
+            "p1": "If the service doesn't work as it should, write to us at {email} with what doesn't work and since when. You can also use \"Report a problem\" in the app.",
+            "p2": "We confirm a complaint at once and settle it without undue delay, within 30 days at the latest. Depending on the defect, we fix it, give a reasonable discount or refund the proportional part of the price. This does not affect your statutory rights for defective performance."
+          },
           "warranty": {
-            "p1": "The beta is a trial version. We provide it as is, without any warranty of function, availability or fitness for a particular purpose.",
-            "p2": "The app will change often: we may add, change or remove features, also without prior notice. It may sometimes be unavailable because of maintenance or an error."
+            "p1": "We keep developing the app and take care that it is available and reliable. We can't promise uninterrupted availability: it may sometimes be briefly unavailable because of maintenance or an error.",
+            "p2": "We may add, change or remove features. If a change would substantially limit the plan you pay for, we will tell you in advance and you can cancel the subscription."
           },
           "data": {
             "p1": "The data you put into the app is yours. We use it only to make the app work for you, as described in the privacy policy.",
-            "p2": "An error in the beta may lose or damage data. Back up what matters: you can download a copy of all your data at any time in the app under Settings → Privacy and data → Export my data.",
+            "p2": "We back up the data regularly. Still, back up what matters yourself: you can download a copy of all your data at any time under Settings → Privacy and data → Export my data.",
             "p3": "If you put other people's personal data into the app (contacts, for example), you are responsible for having a legal basis for it. We process it for you only to make the app work."
           },
           "feedback": {
-            "p1": "Testers help us improve the app: they report bugs, unclear places and ideas, ideally through \"Report a problem\" in the app. A report may contain technical details about the browser and a screenshot, if you attach one.",
-            "p2": "We may freely use feedback to improve {appName}, without any claim to a reward. Taking part in the beta is voluntary."
+            "p1": "Report bugs, unclear places and ideas, ideally through \"Report a problem\" in the app. A report may contain technical details about the browser and a screenshot, if you attach one.",
+            "p2": "We may freely use feedback to improve {appName}, without any claim to a reward."
           },
           "use": {
             "p1": "Use the app lawfully. In particular, don't use it to send unsolicited messages, to harass people or to process personal data without a legal basis.",
             "p2": "Don't try to get around security, access other people's data, overload the app or scrape it automatically. If you break these rules, we may limit or end your access."
           },
           "liability": {
-            "p1": "To the extent the law allows, we are not liable for lost profits, lost data or other indirect damage caused by using the beta. This does not affect rights the law guarantees you and that cannot be limited.",
+            "p1": "To the extent the law allows, we are not liable for lost profits, lost data or other indirect damage caused by using the app. This does not affect rights the law guarantees you and that cannot be limited.",
             "p2": "Jarvis's recommendations and other output of artificial intelligence may be inaccurate. Decisions about your business are yours."
           },
           "termination": {
-            "p1": "You can close your account at any time yourself under Settings → Privacy and data → Delete account. This deletes all your data.",
-            "p2": "We may end or limit the beta. Where possible, we will tell you at least 14 days in advance so you can download your data. In case of a serious breach of these terms we may end access at once."
+            "p1": "You can close your account at any time yourself under Settings → Privacy and data → Delete account. This deletes all your data; cancel a running subscription first under Settings → Subscription.",
+            "p2": "We may stop running the app. We will tell you at least 30 days in advance so you can download your data, and refund the unused part of a paid subscription. In case of a serious breach of these terms we may end access at once."
           },
           "changes": {
-            "p1": "We may change these terms during the beta. We will tell you about important changes by e-mail or in the app. If you don't agree with a change, you can close your account."
+            "p1": "We may change these terms. We will tell you about important changes by e-mail or in the app at least 30 days in advance. If you don't agree with a change, you can cancel the subscription and delete your account."
           },
           "law": {
             "p1": "These terms are governed by the law of the Czech Republic. Disputes will be decided by the competent courts of the Czech Republic; this does not affect the rights of consumers under the law of their country of residence.",
@@ -4789,18 +4834,21 @@
         "privacy": {
           "controller": {
             "p1": "The controller of personal data is {name}, company ID {companyId}, registered at {address}, e-mail {email}.",
-            "p2": "This policy applies to the {appName} app and its website during the closed beta."
+            "p2": "This policy applies to the {appName} app and its website."
           },
           "data": {
             "p1": "Account data: e-mail, name, password (only as a secure hash, never readable), profile photo, language, time zone and other settings.",
             "p2": "Content you put into the app: milestones, tasks, contacts, deals, events, finances, invoices, notes, files and messages to Jarvis. For the personal data of your contacts you are the controller, and we process it for you as a processor.",
-            "p3": "Usage and technical data: which screens and actions of the app you use, the type of device and browser, and error records. For sign-ins to the administration we store only a shortened IP address.",
-            "p4": "Problem reports: your description, technical details about the browser, the app's latest error messages and a screenshot, if you attach one."
+            "p3": "Usage and technical data: which screens and actions of the app you use, the type of device and browser, and error records. For sign-ins to the administration and attempts at invite or promo codes we store only an encoded fingerprint of the IP address.",
+            "p4": "Problem reports: your description, technical details about the browser, the app's latest error messages and a screenshot, if you attach one.",
+            "p5": "Subscription and payments: the plan, the period, billing details (name or company, company ID, VAT ID, address, e-mail for receipts), amounts and the state of payments. We never see the card number; Stripe processes it.",
+            "p6": "Consents from registration: when and which version of the terms and this policy you accepted, and whether you want news by e-mail."
           },
           "purpose": {
-            "p1": "To provide the app under the terms (performance of a contract): your account and sign-in, storing your data, e-mails about your account (such as a password reset), Jarvis and contact generation.",
-            "p2": "Based on legitimate interest: security, finding and fixing errors, measuring usage and improving the app.",
-            "p3": "With consent: the waitlist. We keep your e-mail there until you withdraw consent; an unconfirmed sign-up is deleted after 30 days."
+            "p1": "To provide the app under the terms (performance of a contract): your account and sign-in, storing your data, the subscription and payments, e-mails about your account (such as a password reset or a receipt), Jarvis and contact generation.",
+            "p2": "Based on legitimate interest: security (including limiting attempts at codes), finding and fixing errors, measuring usage and improving the app.",
+            "p3": "With consent: the waitlist and news by e-mail, if you ticked it when registering. You can withdraw consent at any time through the link in the e-mail or by writing to {email}; an unconfirmed waitlist sign-up is deleted after 30 days.",
+            "p4": "Under a legal obligation: accounting and tax records of payments."
           },
           "usage": {
             "p1": "To learn which parts of {appName} help and what needs to get better, we record how the app is used: which screens you open, which actions you take (such as creating a milestone or moving a contact), how long you spend in the app, what kind of device you use and which errors happened.",
@@ -4819,12 +4867,14 @@
             "p4": "Anthropic: the language model behind Jarvis. USA.",
             "p5": "Google Maps Platform: finding businesses when generating contacts. Google, worldwide including the USA.",
             "p6": "Resend: sending e-mails (password reset, invoices, notifications). USA.",
-            "p7": "Transfers to the USA rely on the EU–US Data Privacy Framework or the European Commission's standard contractual clauses. We don't sell data and don't pass it on to anyone else unless the law requires it."
+            "p7": "Stripe: the payment gateway for subscriptions (card payments, receipts, managing the payment method). Stripe Payments Europe, Ireland, with transfers to the USA.",
+            "p8": "Transfers to the USA rely on the EU–US Data Privacy Framework or the European Commission's standard contractual clauses. We don't sell data and don't pass it on to anyone else unless the law requires it."
           },
           "retention": {
             "p1": "We keep account data and your content while you have an account. Deleting your account in the app deletes them at once, including uploaded files; they leave the database backups within {backupDays} days.",
             "p2": "Usage records, sessions and error records are deleted automatically after 13 months. After you delete your account, usage records stay only anonymously, with no link to you.",
-            "p3": "Deleted notes stay in the trash for 30 days, then they are deleted for good."
+            "p3": "Deleted notes stay in the trash for 30 days, then they are deleted for good.",
+            "p4": "We keep payment records even after the account is deleted, for as long as accounting and tax law requires (10 years at most)."
           },
           "rights": {
             "p1": "You have the right to access your data, have it corrected or erased, restrict its processing, take it elsewhere, and object to processing based on legitimate interest. You can withdraw consent at any time.",
@@ -4833,7 +4883,7 @@
           },
           "cookies": {
             "p1": "We use only necessary cookies: signing in to the app and the administration, your chosen language, and a partner's code from their link (30 days, only to fill it in when you sign up). No advertising or tracking cookies and no third-party analytics.",
-            "p2": "The app keeps unsaved notes and similar helper data in your browser so they don't get lost."
+            "p2": "The app keeps unsaved notes and similar helper data in your browser so they don't get lost. Stripe's payment page uses its own cookies under Stripe's policy."
           },
           "contact": {
             "p1": "For questions about personal data, write to {email}."
@@ -5631,6 +5681,10 @@
       "payments": {
         "name": "Payments in the period",
         "description": "Revenue, refunds, paying accounts and unpaid payments from the subscription payments in live mode, per currency (currencies never add up). Internal accounts left out."
+      },
+      "signup_conversion": {
+        "name": "Sign-up → payment conversion",
+        "description": "Share of accounts registered in the period (signup_completed) that have paid at least once since."
       }
     }
   },
@@ -5717,7 +5771,8 @@
       "title": "Overview",
       "description": "The main numbers of the app at a glance.",
       "chartTitle": "Active users and sign-ups",
-      "chartDescription": "Daily, weekly and monthly active users, with sign-ups per day on the right axis."
+      "chartDescription": "Daily, weekly and monthly active users, with sign-ups per day on the right axis.",
+      "signupWithoutConfirmation": "Public sign-up is on (PUBLIC_SIGNUP_ENABLED), but Supabase does not ask new accounts to confirm their e-mail. Turn on Confirm email in Supabase → Authentication → Sign In / Providers (only with your own SMTP through Resend), or anyone can register with someone else's address."
     },
     "audit": {
       "title": "Audit",
@@ -7690,6 +7745,10 @@
       "open": "Manage payment method and receipts",
       "hint": "You manage your card, billing address and receipts at Stripe. Change or cancel your plan here.",
       "redirecting": "Opening Stripe…"
+    },
+    "chosen": {
+      "trial": "Selected plan: {plan} · {billing}. You pay after the trial ({date}).",
+      "other": "Selected plan: {plan} · {billing}."
     }
   },
   "messages": {
@@ -8209,7 +8268,8 @@
       "already_paid": "A code can only be added before the first payment.",
       "no_trial": "This code extends the trial and your account has none.",
       "ownerOnly": "The owner of the account enters the code.",
-      "unavailable": "The code could not be checked right now. Try again in a moment."
+      "unavailable": "The code could not be checked right now. Try again in a moment.",
+      "tooManyAttempts": "Too many code attempts. Try again in 15 minutes."
     },
     "redeem": {
       "apply": "Use code"

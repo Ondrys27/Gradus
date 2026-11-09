@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decideSignup } from "./signup-mode";
+import { decideSignup, signupSource, wantsE2ePublicSignup } from "./signup-mode";
 
 const base = {
   code: "",
@@ -55,5 +55,26 @@ describe("decideSignup with public sign-up on", () => {
     expect(decideSignup({ ...open, code: "typo", betaCodeConfigured: false })).toMatchObject({
       error: "invalidInvite",
     });
+  });
+});
+
+describe("signupSource", () => {
+  it("names an invitation first, then a partner's code, then a pricing card", () => {
+    expect(signupSource({ kind: "beta", promoCode: true, planPicked: true })).toBe("invite");
+    expect(signupSource({ kind: "worker", promoCode: false, planPicked: false })).toBe("invite");
+    expect(signupSource({ kind: "trial", promoCode: true, planPicked: true })).toBe("code");
+    expect(signupSource({ kind: "trial", promoCode: false, planPicked: true })).toBe("pricing");
+    expect(signupSource({ kind: "trial", promoCode: false, planPicked: false })).toBe("web");
+  });
+});
+
+describe("wantsE2ePublicSignup", () => {
+  const with_ = (value: string | null) => ({ get: () => value });
+  it("needs the header and never works in production", () => {
+    expect(wantsE2ePublicSignup(with_("public"), "preview")).toBe(true);
+    expect(wantsE2ePublicSignup(with_("public"), undefined)).toBe(true);
+    expect(wantsE2ePublicSignup(with_("public"), "production")).toBe(false);
+    expect(wantsE2ePublicSignup(with_(null), undefined)).toBe(false);
+    expect(wantsE2ePublicSignup(with_("yes"), undefined)).toBe(false);
   });
 });

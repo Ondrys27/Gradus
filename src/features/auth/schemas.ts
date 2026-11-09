@@ -25,6 +25,8 @@ export type AuthErrorKey =
   | "rateLimited"
   | "linkExpired"
   | "emailNotConfirmed"
+  | "termsRequired"
+  | "tooManyCodeAttempts"
   | "generic";
 
 const email = z.string().trim().toLowerCase().email("invalidEmail");
@@ -47,6 +49,16 @@ export const signUpSchema = z.object({
   // A partner's promo code (optional); checked again on the server before the account is made.
   promoCode: z.string().trim().max(64).default(""),
   timeZone: z.string().max(64).default(""),
+  // The terms and the privacy policy: required, the server records when and which version.
+  terms: z
+    .string()
+    .default("")
+    .refine((value) => value === "on", "termsRequired"),
+  // News by e-mail: optional and separate.
+  marketing: z.string().max(8).default(""),
+  // The plan picked on the website (?tarif=pro&obdobi=rok); parseSignupPlan decides what it is.
+  plan: z.string().max(16).default(""),
+  billing: z.string().max(16).default(""),
 });
 
 export const forgotPasswordSchema = z.object({ email });

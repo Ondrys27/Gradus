@@ -3051,6 +3051,7 @@ export type Database = {
           industry: string | null
           is_internal: boolean
           last_daily_brief_on: string | null
+          marketing_consent_at: string | null
           mode: string
           notes_intro_seen_at: string | null
           nps_asked_at: string | null
@@ -3060,6 +3061,8 @@ export type Database = {
           path_key: string | null
           public_id: string | null
           seen_level: number
+          terms_accepted_at: string | null
+          terms_version: string | null
           tour_completed_at: string | null
           tutorial: Json | null
           updated_at: string
@@ -3075,6 +3078,7 @@ export type Database = {
           industry?: string | null
           is_internal?: boolean
           last_daily_brief_on?: string | null
+          marketing_consent_at?: string | null
           mode?: string
           notes_intro_seen_at?: string | null
           nps_asked_at?: string | null
@@ -3084,6 +3088,8 @@ export type Database = {
           path_key?: string | null
           public_id?: string | null
           seen_level?: number
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           tour_completed_at?: string | null
           tutorial?: Json | null
           updated_at?: string
@@ -3099,6 +3105,7 @@ export type Database = {
           industry?: string | null
           is_internal?: boolean
           last_daily_brief_on?: string | null
+          marketing_consent_at?: string | null
           mode?: string
           notes_intro_seen_at?: string | null
           nps_asked_at?: string | null
@@ -3108,6 +3115,8 @@ export type Database = {
           path_key?: string | null
           public_id?: string | null
           seen_level?: number
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           tour_completed_at?: string | null
           tutorial?: Json | null
           updated_at?: string
@@ -3424,6 +3433,33 @@ export type Database = {
         }
         Relationships: []
       }
+      signup_code_attempts: {
+        Row: {
+          account_hash: string | null
+          created_at: string
+          id: number
+          ip_hash: string
+          kind: string
+          stage: string
+        }
+        Insert: {
+          account_hash?: string | null
+          created_at?: string
+          id?: never
+          ip_hash: string
+          kind: string
+          stage: string
+        }
+        Update: {
+          account_hash?: string | null
+          created_at?: string
+          id?: never
+          ip_hash?: string
+          kind?: string
+          stage?: string
+        }
+        Relationships: []
+      }
       stripe_events: {
         Row: {
           attempts: number
@@ -3476,6 +3512,9 @@ export type Database = {
           cancel_note: string | null
           cancel_reason: string | null
           cancel_requested_at: string | null
+          chosen_at: string | null
+          chosen_billing: string | null
+          chosen_plan_key: string | null
           created_at: string
           current_period_end: string | null
           current_period_start: string
@@ -3502,6 +3541,9 @@ export type Database = {
           cancel_note?: string | null
           cancel_reason?: string | null
           cancel_requested_at?: string | null
+          chosen_at?: string | null
+          chosen_billing?: string | null
+          chosen_plan_key?: string | null
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string
@@ -3528,6 +3570,9 @@ export type Database = {
           cancel_note?: string | null
           cancel_reason?: string | null
           cancel_requested_at?: string | null
+          chosen_at?: string | null
+          chosen_billing?: string | null
+          chosen_plan_key?: string | null
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string
@@ -6224,6 +6269,21 @@ export type Database = {
           sessions_per_user_day: number
           sessions_per_user_week: number
           users: number
+        }[]
+      }
+      metric_signup_conversion: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          paying: number
+          pct: number
+          signups: number
+          source: string
         }[]
       }
       metric_trial_conversion: {

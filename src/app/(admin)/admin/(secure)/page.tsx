@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { isEmailConfirmationRequired } from "@/features/auth/email-confirmation";
 import { logAdminAction } from "@/features/admin/server/audit";
 import { requireAdmin } from "@/features/admin/server/guard";
 import { adminQuery, safe, type AdminQuery } from "@/features/admin/server/metrics-data";
@@ -9,6 +10,7 @@ import { AdminChart } from "@/features/admin/ui/admin-chart";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
 import { AdminCard, CardSkeleton, FiguresSkeleton } from "@/features/admin/ui/blocks";
 import { Figures } from "@/features/admin/ui/metric-tile";
+import { isPublicSignupEnabled } from "@/lib/signup";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.overview");
@@ -26,6 +28,9 @@ export default async function AdminOverviewPage({ searchParams }: Props) {
     <>
       <AdminPageHeader section="overview" q={q} />
       <div className="flex flex-col gap-4">
+        <Suspense fallback={null}>
+          <SignupWarning />
+        </Suspense>
         <Suspense fallback={<FiguresSkeleton more={6} />}>
           <Tiles q={q} />
         </Suspense>
@@ -34,6 +39,24 @@ export default async function AdminOverviewPage({ searchParams }: Props) {
         </Suspense>
       </div>
     </>
+  );
+}
+
+/**
+ * Public sign-up without e-mail confirmation lets anyone register with
+ * someone else's address: the switch is in Supabase, the app only reads it.
+ */
+async function SignupWarning() {
+  if (!isPublicSignupEnabled() || (await isEmailConfirmationRequired())) return null;
+  const t = await getTranslations("admin.overview");
+  return (
+    <div
+      role="note"
+      data-testid="admin-signup-warning"
+      className="rounded-xl border border-gold/40 bg-gold/10 px-4 py-3 text-sm text-pretty text-ink"
+    >
+      {t("signupWithoutConfirmation")}
+    </div>
   );
 }
 

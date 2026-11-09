@@ -31,6 +31,7 @@ Závazný seznam toho, co se měří a jak. Každá metrika odsud musí mít def
 - Tutoriál — trychtýř: volba (`tutorial_started`, mode none / quick / full) → kroky (`tutorial_step`, klíč kroku) → dokončení (`tutorial_finished`, podle režimu) nebo ukončení (`tutorial_abandoned`, na kterém kroku); metriky `tutorial_mode`, `tutorial_steps`, `tutorial_finished`, `tutorial_abandoned_at`
 - Aktivovaný uživatel — do 7 dnů od registrace aktivní aspoň 3 různé dny a ve 2 různých sekcích; podíl
 - Konverze kód → platba — z účtů, které v období použily promo kód partnera (`promo_redeemed`: kód jen jako hash, odkud, druh výhody), podíl těch, které od té doby zaplatily; metrika `promo_conversion` (`metric_promo_conversion`)
+- Konverze registrace → platba — z účtů, které se v období zaregistrovaly (`signup_completed`: odkud web / pricing / invite / code, způsob beta / worker / trial, tarif vybraný na webu, souhlas s novinkami), podíl těch, které od té doby zaplatily; metrika `signup_conversion` (`metric_signup_conversion`, řádek `all` a po zdrojích)
 
 ## 3. Retence a zapojení
 

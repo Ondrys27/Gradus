@@ -6,6 +6,7 @@ import {
   canResume,
   changeBlock,
   changeDirection,
+  chosenPlan,
   displayStatus,
   hasLiveGateway,
   isExpired,
@@ -261,5 +262,22 @@ describe("a failed payment (step 23.2)", () => {
     expect(canOpenPortal(sub())).toBe(false);
     expect(canOpenPortal(trial())).toBe(false);
     expect(canOpenPortal(stripe({ plan_key: "beta" }))).toBe(false);
+  });
+});
+
+describe("the plan picked on the website (step 23.3)", () => {
+  const picked = { chosen_plan_key: "team", chosen_billing: "yearly" };
+
+  it("is what a trial would pay for, and after it ended too", () => {
+    expect(trial(5, picked).chosen).toEqual({ planKey: "team", billing: "yearly" });
+    expect(chosenPlan(trial(5, picked), NOW)).toEqual({ planKey: "team", billing: "yearly" });
+    expect(chosenPlan(trial(-2, picked), NOW)).toEqual({ planKey: "team", billing: "yearly" });
+  });
+
+  it("is gone once the plan runs in Stripe, without a choice, or with a plan outside the catalog", () => {
+    expect(chosenPlan(trial(5, { ...picked, provider: "stripe", status: "active" }), NOW)).toBeNull();
+    expect(chosenPlan(trial(5), NOW)).toBeNull();
+    expect(trial(5, { chosen_plan_key: "beta", chosen_billing: "monthly" }).chosen).toBeNull();
+    expect(chosenPlan(sub({ ...picked, plan_key: "beta" }), NOW)).toBeNull();
   });
 });

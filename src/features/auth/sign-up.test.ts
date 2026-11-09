@@ -7,6 +7,13 @@ const deleteUser = vi.fn();
 const signInWithPassword = vi.fn();
 const resend = vi.fn();
 const confirmationRequired = vi.fn(async () => false);
+const track = vi.fn(async () => {});
+const codesLocked = vi.fn(async () => false);
+const recordWrongCode = vi.fn(async () => {});
+const requestHeaders = new Map<string, string>();
+/** Every admin update: [table, values]; `failUpdate` makes the one of that table fail. */
+const updates: [string, Record<string, unknown>][] = [];
+let failUpdate: string | null = null;
 const redirect = vi.fn((target: string) => {
   throw new Error(`redirect:${target}`);
 });
@@ -16,23 +23,34 @@ vi.mock("next/navigation", () => ({
   redirect: (target: string) => redirect(target),
   RedirectType: { push: "push", replace: "replace" },
 }));
-vi.mock("next/headers", () => ({ cookies: async () => ({ set: vi.fn() }) }));
+vi.mock("next/headers", () => ({
+  cookies: async () => ({ set: vi.fn() }),
+  headers: async () => ({ get: (name: string) => requestHeaders.get(name) ?? null }),
+}));
+vi.mock("@/lib/analytics/track", () => ({ track }));
+vi.mock("./code-attempts-server", () => ({
+  codeGuard: async (email: string) => ({ keys: { ip: "ip", account: email }, exempt: false }),
+  codesLocked: () => codesLocked(),
+  recordWrongCode: (...args: unknown[]) => recordWrongCode(...(args as [])),
+}));
 vi.mock("next-intl/server", () => ({ getLocale: async () => "cs" }));
 vi.mock("@/lib/site-origin", () => ({ siteOrigin: async () => "http://localhost:3000" }));
 vi.mock("./worker-invite", () => ({ findOpenWorkerInvite: async () => null }));
 vi.mock("./email-confirmation", () => ({
   isEmailConfirmationRequired: () => confirmationRequired(),
 }));
-vi.mock("@/lib/supabase/admin", () => {
-  const update = () => ({ eq: async () => ({ error: null }) });
-  return {
-    createAdminClient: () => ({
-      auth: { admin: { createUser, deleteUser } },
-      rpc,
-      from: () => ({ update }),
+vi.mock("@/lib/supabase/admin", () => ({
+  createAdminClient: () => ({
+    auth: { admin: { createUser, deleteUser } },
+    rpc,
+    from: (table: string) => ({
+      update: (values: Record<string, unknown>) => {
+        updates.push([table, values]);
+        return { eq: async () => ({ error: failUpdate === table ? { message: "boom" } : null }) };
+      },
     }),
-  };
-});
+  }),
+}));
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => ({ auth: { signInWithPassword, resend } }),
 }));
@@ -50,7 +68,10 @@ const person = {
   email: "jana@example.com",
   password: "12345678",
   timeZone: "Europe/Prague",
+  terms: "on",
 };
+const updateOf = (table: string, column: string) =>
+  updates.find(([name, values]) => name === table && column in values)?.[1];
 
 beforeEach(() => {
   vi.stubEnv("INVITE_CODE", "beta-2026");
@@ -65,6 +86,9 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.clearAllMocks();
+  updates.length = 0;
+  failUpdate = null;
+  requestHeaders.clear();
 });
 
 describe("signUp with PUBLIC_SIGNUP_ENABLED=false", () => {
@@ -185,5 +209,112 @@ describe("e-mail confirmation", () => {
     resend.mockResolvedValue({ error: { code: "over_email_send_rate_limit", status: 429 } });
     const state = await resendConfirmation({}, form({ email: "jana@example.com" }));
     expect(state.error).toBe("rateLimited");
+  });
+});
+
+describe("consent to the terms", () => {
+  beforeEach(() => vi.stubEnv("PUBLIC_SIGNUP_ENABLED", "true"));
+
+  it("creates no account without it", async () => {
+    const state = await signUp({}, form({ ...person, terms: "" }));
+    expect(state.fieldErrors).toEqual({ terms: "termsRequired" });
+    expect(createUser).not.toHaveBeenCalled();
+  });
+
+  it("records when, which version and the optional news consent on the server", async () => {
+    await expect(signUp({}, form({ ...person, marketing: "on" }))).rejects.toThrow("redirect:/app");
+    const consent = updateOf("profiles", "terms_accepted_at");
+    expect(consent).toMatchObject({ terms_version: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/) });
+    expect(consent?.terms_accepted_at).toEqual(expect.any(String));
+    expect(consent?.marketing_consent_at).toBe(consent?.terms_accepted_at);
+
+    updates.length = 0;
+    await expect(signUp({}, form(person))).rejects.toThrow("redirect:/app");
+    expect(updateOf("profiles", "terms_accepted_at")?.marketing_consent_at).toBeNull();
+  });
+
+  it("removes the account again when the consent can not be recorded", async () => {
+    failUpdate = "profiles";
+    const state = await signUp({}, form(person));
+    expect(state.error).toBe("generic");
+    expect(deleteUser).toHaveBeenCalledWith("new-user");
+  });
+});
+
+describe("the plan picked on the website", () => {
+  beforeEach(() => vi.stubEnv("PUBLIC_SIGNUP_ENABLED", "true"));
+
+  it("stays with the trial as the selected plan and says where the sign-up came from", async () => {
+    await expect(signUp({}, form({ ...person, plan: "team", billing: "yearly" }))).rejects.toThrow(
+      "redirect:/app",
+    );
+    expect(updateOf("subscriptions", "chosen_plan_key")).toMatchObject({
+      chosen_plan_key: "team",
+      chosen_billing: "yearly",
+    });
+    expect(track).toHaveBeenCalledWith(
+      "signup_completed",
+      { from: "pricing", method: "trial", plan: "team", billing: "yearly", marketing_consent: false },
+      expect.anything(),
+    );
+  });
+
+  it("is ignored with an invitation and when it is no plan", async () => {
+    await expect(
+      signUp({}, form({ ...person, inviteCode: "beta-2026", plan: "pro", billing: "monthly" })),
+    ).rejects.toThrow("redirect:/app");
+    await expect(signUp({}, form({ ...person, plan: "beta" }))).rejects.toThrow("redirect:/app");
+    expect(updateOf("subscriptions", "chosen_plan_key")).toBeUndefined();
+    expect(track).toHaveBeenCalledWith(
+      "signup_completed",
+      expect.objectContaining({ from: "invite", method: "beta" }),
+      expect.anything(),
+    );
+    expect(track).toHaveBeenCalledWith(
+      "signup_completed",
+      expect.objectContaining({ from: "web", method: "trial" }),
+      expect.anything(),
+    );
+  });
+});
+
+describe("guessing codes", () => {
+  beforeEach(() => vi.stubEnv("PUBLIC_SIGNUP_ENABLED", "true"));
+
+  it("counts a wrong invite code", async () => {
+    await signUp({}, form({ ...person, inviteCode: "wrong" }));
+    expect(recordWrongCode).toHaveBeenCalledWith(expect.anything(), "invite", "submit");
+  });
+
+  it("refuses every code during a pause, a right one too, and creates nothing", async () => {
+    codesLocked.mockResolvedValue(true);
+    const state = await signUp({}, form({ ...person, inviteCode: "beta-2026" }));
+    expect(state.error).toBe("tooManyCodeAttempts");
+    expect(createUser).not.toHaveBeenCalled();
+  });
+
+  it("never holds back a registration without any code", async () => {
+    codesLocked.mockResolvedValue(true);
+    await expect(signUp({}, form(person))).rejects.toThrow("redirect:/app");
+  });
+});
+
+describe("public sign-up in the end-to-end tests", () => {
+  beforeEach(() => vi.stubEnv("PUBLIC_SIGNUP_ENABLED", "false"));
+  const e2e = { ...person, email: "e2e-public-ab12@gradus.local" };
+
+  it("opens only for the tests' own accounts with the header, outside production", async () => {
+    requestHeaders.set("x-gradus-e2e-signup", "public");
+    await expect(signUp({}, form(e2e))).rejects.toThrow("redirect:/app");
+    expect(createUser).toHaveBeenCalledOnce();
+
+    createUser.mockClear();
+    expect((await signUp({}, form(person))).fieldErrors).toEqual({ inviteCode: "inviteRequired" });
+    vi.stubEnv("VERCEL_ENV", "production");
+    expect((await signUp({}, form(e2e))).fieldErrors).toEqual({ inviteCode: "inviteRequired" });
+    requestHeaders.clear();
+    vi.stubEnv("VERCEL_ENV", "preview");
+    expect((await signUp({}, form(e2e))).fieldErrors).toEqual({ inviteCode: "inviteRequired" });
+    expect(createUser).not.toHaveBeenCalled();
   });
 });

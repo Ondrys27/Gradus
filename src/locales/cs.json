@@ -674,7 +674,10 @@
       "descriptionPublic": "14 dní zdarma, bez platební karty.",
       "inviteOptional": "Pozvánkový kód (nepovinné)",
       "inviteOptionalHint": "Máte-li pozvánku, zadejte ji. Jinak začnete 14denní zkušební období.",
-      "usageNote": "{appName} měří, jak se aplikace používá — jen typy akcí a časy, nikdy obsah tvých dat. <link>Víc o měření</link>"
+      "usageNote": "{appName} měří, jak se aplikace používá — jen typy akcí a časy, nikdy obsah tvých dat. <link>Víc o měření</link>",
+      "terms": "Souhlasím s <terms>obchodními podmínkami</terms> a <privacy>zásadami ochrany osobních údajů</privacy>.",
+      "marketing": "Chci občas dostat e-mail s novinkami a tipy. Nepovinné, odhlásit se jde kdykoli.",
+      "chosenPlan": "Vybraný tarif: {plan} · {billing}. Prvních {days} dní je zdarma, zaplatíš až po zkušebce."
     },
     "forgot": {
       "title": "Obnovení hesla",
@@ -706,7 +709,9 @@
       "linkExpired": "Platnost odkazu vypršela nebo už byl použit. Požádejte o nový.",
       "generic": "Něco se pokazilo. Zkuste to prosím znovu.",
       "inviteEmailMismatch": "Použij e-mail, na který přišla pozvánka.",
-      "emailNotConfirmed": "E-mail zatím není potvrzený. Klikněte na odkaz, který jsme vám poslali, nebo si pošlete nový."
+      "emailNotConfirmed": "E-mail zatím není potvrzený. Klikněte na odkaz, který jsme vám poslali, nebo si pošlete nový.",
+      "termsRequired": "Pro založení účtu je potřeba souhlasit s podmínkami.",
+      "tooManyCodeAttempts": "Příliš mnoho špatných kódů. Zkus to znovu za 15 minut."
     },
     "confirm": {
       "title": "Zkontrolujte e-mail",
@@ -4705,20 +4710,27 @@
     },
     "legal": {
       "betaNotice": "Verze pro betu, před spuštěním projde revizí právníka",
-      "betaNoticeText": "Tento text platí pro uzavřenou betu {appName}. Před veřejným spuštěním ho zkontroluje právník a o změnách dáme vědět.",
+      "betaNoticeText": "Tento text připravujeme ke spuštění prodeje {appName}. Před spuštěním ho zkontroluje právník a o změnách dáme vědět.",
       "heading": "{number}. {title}",
       "missing": "[DOPLNIT]",
       "sections": {
         "terms": {
-          "intro": "Úvod a provozovatel",
-          "beta": "Uzavřená beta",
+          "intro": "Úvod",
+          "seller": "Prodávající",
           "account": "Účet",
-          "warranty": "Bez záruky",
+          "trial": "Zkušební období",
+          "beta": "Beta a pozvánky",
+          "prices": "Cena a platba",
+          "renewal": "Automatické obnovování",
+          "cancellation": "Zrušení předplatného",
+          "withdrawal": "Odstoupení spotřebitele od smlouvy",
+          "complaints": "Reklamace",
+          "warranty": "Dostupnost a změny",
           "data": "Tvoje data a zálohy",
           "feedback": "Zpětná vazba",
           "use": "Pravidla používání",
           "liability": "Odpovědnost",
-          "termination": "Zrušení účtu a konec bety",
+          "termination": "Zrušení účtu a konec služby",
           "changes": "Změny podmínek",
           "law": "Rozhodné právo",
           "contact": "Kontakt"
@@ -4739,44 +4751,77 @@
       "bodies": {
         "terms": {
           "intro": {
-            "p1": "Tyto podmínky upravují používání aplikace {appName} během uzavřené bety. Aplikaci provozuje {name}, IČO {companyId}, se sídlem {address} (dále „my“).",
-            "p2": "{appName} je webová aplikace pro začínající podnikatele: milníky a úkoly, obchody, kontakty, cold calling, kalendář, finance s fakturami, pracovníci a AI asistent Jarvis. Založením účtu s těmito podmínkami souhlasíš."
+            "p1": "Tyto obchodní podmínky upravují používání aplikace {appName} a předplatné jejích placených tarifů. Uzavírá se jimi smlouva mezi tebou a prodávajícím, kterého najdeš v následujícím oddílu.",
+            "p2": "{appName} je webová aplikace pro začínající podnikatele: milníky a úkoly, obchody, kontakty, cold calling, kalendář, finance s fakturami, pracovníci a AI asistent Jarvis. Při registraci s těmito podmínkami a se zásadami ochrany osobních údajů výslovně souhlasíš; zaznamenáme, kdy a kterou jejich verzi."
           },
-          "beta": {
-            "p1": "Beta je uzavřená: účet založíš jen s pozvánkou od nás nebo od majitele týmu, ve kterém budeš pracovat.",
-            "p2": "Během bety je {appName} zdarma. Nic neplatíš a nic se ti automaticky nezpoplatní. Pokud po betě zavedeme placené tarify, předem ti napíšeme a pokračovat budeš, jen když budeš chtít."
+          "seller": {
+            "p1": "Prodávajícím a provozovatelem {appName} je {name}, IČO {companyId}, se sídlem {address}, e-mail {email}.",
+            "p2": "Smlouvu uzavíráme v češtině nebo v angličtině podle jazyka webu. Tyto podmínky si můžeš kdykoli zobrazit, vytisknout a uložit na této stránce."
           },
           "account": {
             "p1": "Účet je osobní. Uváděj pravdivé údaje, heslo nikomu nedávej a dej nám vědět, pokud máš podezření, že se k účtu dostal někdo cizí. Za činnost ve svém účtu odpovídáš ty.",
             "p2": "Majitel účtu může přizvat pracovníky a určit, které části aplikace uvidí. Za to, komu přístup dá, odpovídá majitel."
           },
+          "trial": {
+            "p1": "Kdo se zaregistruje bez pozvánky, dostane 14 dní tarifu Pro zdarma. Platební karta není potřeba a během zkušebního období ti nic nestrhneme.",
+            "p2": "Když do konce zkušebního období nezaplatíš, účet přejde do režimu jen pro čtení: data uvidíš a stáhneš, ale nové nezapíšeš. Nic se nemaže a zaplacením se účet zase otevře."
+          },
+          "beta": {
+            "p1": "Kdo dostal pozvánku do bety (beta kód) nebo pozvánku od majitele firmy, ve které pracuje, používá {appName} zdarma. Když betu ukončíme, napíšeme ti předem a v placeném tarifu budeš pokračovat, jen když budeš chtít.",
+            "p2": "Beta je zkušební verze: některé funkce se teprve dolaďují a mohou se měnit."
+          },
+          "prices": {
+            "p1": "Ceny tarifů jsou v ceníku na webu a v aplikaci v Nastavení → Předplatné, v korunách nebo v eurech, za měsíc nebo za rok. Platí cena zobrazená při objednávce. U tarifů s placenými pracovníky navíc se k ceně připočte jejich počet podle ceníku.",
+            "p2": "Ceny v ceníku jsou bez DPH. DPH k nim připočteme, jen když ji jsme povinni účtovat; platební stránka ji pak ukáže zvlášť.",
+            "p3": "Platí se kartou přes platební bránu Stripe. Údaje o kartě zadáváš přímo u Stripe, my je nevidíme ani neukládáme. Doklad o každé platbě dostaneš e-mailem a najdeš ho v Nastavení → Předplatné → Historie plateb.",
+            "p4": "Slevový kód partnera se uplatní při první platbě podle podmínek kódu; jeden účet může použít jen jeden kód."
+          },
+          "renewal": {
+            "p1": "Předplatné se automaticky obnovuje: na začátku každého dalšího období (měsíce nebo roku) strhneme cenu tarifu z uložené karty, dokud předplatné nezrušíš.",
+            "p2": "Když platba neprojde, platební brána ji několikrát zopakuje a dáme ti vědět; mezitím aplikace běží dál. Když neprojde ani poslední pokus, předplatné skončí a účet přejde do režimu jen pro čtení. Data zůstávají.",
+            "p3": "Změnu ceny ti oznámíme e-mailem nejméně 30 dní předem. Nová cena platí až od dalšího období a do té doby můžeš předplatné zrušit."
+          },
+          "cancellation": {
+            "p1": "Předplatné zrušíš kdykoli v Nastavení → Předplatné. Zaplacené období doběhne a pak už nic nestrhneme; do jeho konce můžeš zrušení vzít zpět.",
+            "p2": "Přechod na vyšší tarif platí hned a doplatíš jen poměrnou část do konce období; přechod na nižší tarif platí od dalšího období.",
+            "p3": "Za načaté období peníze nevracíme, pokud zákon nestanoví jinak. Po konci předplatného je účet jen pro čtení a data zůstávají; účet se všemi daty smažeš v Nastavení → Soukromí a data."
+          },
+          "withdrawal": {
+            "p1": "Spotřebitel může od smlouvy uzavřené na dálku odstoupit do 14 dnů od jejího uzavření. Na vyzkoušení bez závazku slouží 14 dní zkušebního období zdarma.",
+            "p2": "Placená služba začíná hned po zaplacení, nebo hned po konci zkušebního období. Při objednávce proto výslovně souhlasíš se zahájením služby před uplynutím lhůty pro odstoupení a bereš na vědomí, že tím právo odstoupit od smlouvy ztrácíš.",
+            "p3": "Pokud ti právo na odstoupení přesto náleží, napiš nám do 14 dnů na {email}. Peníze vrátíme do 14 dnů od odstoupení stejným způsobem, jakým jsi platil, snížené o poměrnou část za dobu, po kterou služba běžela."
+          },
+          "complaints": {
+            "p1": "Když služba nefunguje, jak má, napiš nám na {email}, co nefunguje a odkdy. Můžeš použít i „Nahlásit problém“ v aplikaci.",
+            "p2": "Přijetí reklamace hned potvrdíme a vyřídíme ji bez zbytečného odkladu, nejpozději do 30 dnů. Podle povahy vady ji odstraníme, poskytneme přiměřenou slevu, nebo vrátíme poměrnou část ceny. Tím nejsou dotčena tvoje práva z vadného plnění podle zákona."
+          },
           "warranty": {
-            "p1": "Beta je zkušební verze. Poskytujeme ji tak, jak je, bez jakékoli záruky funkčnosti, dostupnosti nebo vhodnosti pro konkrétní účel.",
-            "p2": "Aplikace se bude často měnit: funkce můžeme přidávat, upravovat i odebírat, a to i bez předchozího upozornění. Občas může být nedostupná kvůli údržbě nebo chybě."
+            "p1": "Aplikaci průběžně vyvíjíme a staráme se, aby byla dostupná a spolehlivá. Nepřetržitou dostupnost slíbit nemůžeme: občas může být krátce nedostupná kvůli údržbě nebo chybě.",
+            "p2": "Funkce můžeme přidávat, upravovat i odebírat. Pokud by změna podstatně omezila tarif, který platíš, dáme ti vědět předem a předplatné můžeš zrušit."
           },
           "data": {
             "p1": "Data, která do aplikace vložíš, jsou tvoje. Používáme je jen k tomu, aby ti aplikace fungovala, jak popisují zásady ochrany osobních údajů.",
-            "p2": "Při chybě v betě může dojít ke ztrátě nebo poškození dat. Důležité věci si proto zálohuj: kopii všech dat stáhneš kdykoli v aplikaci v Nastavení → Soukromí a data → Exportovat moje data.",
+            "p2": "Data pravidelně zálohujeme. Důležité věci si přesto zálohuj i sám: kopii všech dat stáhneš kdykoli v Nastavení → Soukromí a data → Exportovat moje data.",
             "p3": "Pokud do aplikace vkládáš osobní údaje jiných lidí (například kontakty), odpovídáš za to, že k tomu máš právní důvod. My je pro tebe zpracováváme jen k tomu, aby ti aplikace fungovala."
           },
           "feedback": {
-            "p1": "Testeři nám pomáhají aplikaci vylepšovat: hlásí chyby, nejasnosti a nápady, nejlépe přes „Nahlásit problém“ v aplikaci. Hlášení může obsahovat technické údaje o prohlížeči a snímek obrazovky, pokud ho přiložíš.",
-            "p2": "Zpětnou vazbu můžeme volně použít ke zlepšení {appName}, bez nároku na odměnu. Účast v betě je dobrovolná."
+            "p1": "Chyby, nejasnosti a nápady nám hlaš nejlépe přes „Nahlásit problém“ v aplikaci. Hlášení může obsahovat technické údaje o prohlížeči a snímek obrazovky, pokud ho přiložíš.",
+            "p2": "Zpětnou vazbu můžeme volně použít ke zlepšení {appName}, bez nároku na odměnu."
           },
           "use": {
             "p1": "Aplikaci používej v souladu se zákony. Zejména ji nepoužívej k rozesílání nevyžádaných sdělení, k obtěžování lidí ani ke zpracování osobních údajů bez právního důvodu.",
             "p2": "Nezkoušej obcházet zabezpečení, získat přístup k cizím datům, aplikaci přetěžovat ani ji automaticky vytěžovat. Při porušení pravidel můžeme přístup omezit nebo zrušit."
           },
           "liability": {
-            "p1": "V rozsahu, který zákon dovoluje, neodpovídáme za ušlý zisk, ztrátu dat ani jiné nepřímé škody vzniklé používáním bety. Tím nejsou dotčena práva, která ti zákon zaručuje a která nelze omezit.",
+            "p1": "V rozsahu, který zákon dovoluje, neodpovídáme za ušlý zisk, ztrátu dat ani jiné nepřímé škody vzniklé používáním aplikace. Tím nejsou dotčena práva, která ti zákon zaručuje a která nelze omezit.",
             "p2": "Doporučení Jarvise a další výstupy umělé inteligence mohou být nepřesné. Rozhodnutí o svém podnikání děláš ty."
           },
           "termination": {
-            "p1": "Účet můžeš kdykoli zrušit sám v Nastavení → Soukromí a data → Smazat účet. Smažou se tím všechna tvoje data.",
-            "p2": "Betu můžeme ukončit nebo omezit. Pokud to půjde, dáme ti vědět aspoň 14 dní předem, abys mohl data stáhnout. Při závažném porušení podmínek můžeme přístup ukončit hned."
+            "p1": "Účet můžeš kdykoli zrušit sám v Nastavení → Soukromí a data → Smazat účet. Smažou se tím všechna tvoje data; běžící předplatné nejdřív zruš v Nastavení → Předplatné.",
+            "p2": "Provoz aplikace můžeme ukončit. Dáme ti vědět aspoň 30 dní předem, abys mohl data stáhnout, a nevyčerpanou část zaplaceného předplatného vrátíme. Při závažném porušení podmínek můžeme přístup ukončit hned."
           },
           "changes": {
-            "p1": "Podmínky můžeme během bety měnit. O podstatných změnách tě informujeme e-mailem nebo v aplikaci. Pokud se změnou nesouhlasíš, můžeš účet zrušit."
+            "p1": "Podmínky můžeme měnit. O podstatných změnách tě informujeme e-mailem nebo v aplikaci nejméně 30 dní předem. Pokud se změnou nesouhlasíš, můžeš předplatné zrušit a účet smazat."
           },
           "law": {
             "p1": "Tyto podmínky se řídí právem České republiky. Spory budou řešit příslušné soudy České republiky; tím nejsou dotčena práva spotřebitelů podle předpisů země jejich bydliště.",
@@ -4789,18 +4834,21 @@
         "privacy": {
           "controller": {
             "p1": "Správcem osobních údajů je {name}, IČO {companyId}, se sídlem {address}, e-mail {email}.",
-            "p2": "Tyto zásady platí pro aplikaci {appName} a její web během uzavřené bety."
+            "p2": "Tyto zásady platí pro aplikaci {appName} a její web."
           },
           "data": {
             "p1": "Údaje účtu: e-mail, jméno, heslo (jen jako bezpečný otisk, nikdy čitelně), profilová fotka, jazyk, časové pásmo a další nastavení.",
             "p2": "Obsah, který do aplikace vložíš: milníky, úkoly, kontakty, obchody, události, finance, faktury, poznámky, soubory a zprávy Jarvisovi. U osobních údajů tvých kontaktů jsi správcem ty a my je pro tebe zpracováváme jako zpracovatel.",
-            "p3": "Údaje o používání a technické údaje: jaké obrazovky a akce v aplikaci používáš, typ zařízení a prohlížeče a záznamy chyb. U přihlášení do administrace ukládáme jen zkrácenou IP adresu.",
-            "p4": "Hlášení problémů: tvůj popis, technické údaje o prohlížeči, poslední chybové hlášky aplikace a snímek obrazovky, pokud ho přiložíš."
+            "p3": "Údaje o používání a technické údaje: jaké obrazovky a akce v aplikaci používáš, typ zařízení a prohlížeče a záznamy chyb. U přihlášení do administrace a u pokusů o pozvánkový nebo slevový kód ukládáme jen zakódovaný otisk IP adresy.",
+            "p4": "Hlášení problémů: tvůj popis, technické údaje o prohlížeči, poslední chybové hlášky aplikace a snímek obrazovky, pokud ho přiložíš.",
+            "p5": "Předplatné a platby: tarif, období, fakturační údaje (jméno nebo firma, IČO, DIČ, adresa, e-mail pro doklady), částky a stav plateb. Číslo karty nikdy nevidíme, zpracovává ho Stripe.",
+            "p6": "Souhlasy z registrace: kdy a kterou verzi podmínek a těchto zásad jsi odsouhlasil a zda chceš dostávat novinky e-mailem."
           },
           "purpose": {
-            "p1": "Abychom ti mohli aplikaci poskytovat podle podmínek (plnění smlouvy): účet a přihlášení, ukládání tvých dat, e-maily k účtu (třeba obnova hesla), Jarvis a generování kontaktů.",
-            "p2": "Z oprávněného zájmu: zabezpečení, hledání a opravy chyb, měření používání a vylepšování aplikace.",
-            "p3": "Se souhlasem: čekací listina. E-mail tam máme, dokud souhlas neodvoláš; nepotvrzenou přihlášku mažeme po 30 dnech."
+            "p1": "Abychom ti mohli aplikaci poskytovat podle podmínek (plnění smlouvy): účet a přihlášení, ukládání tvých dat, předplatné a platby, e-maily k účtu (třeba obnova hesla nebo doklad o platbě), Jarvis a generování kontaktů.",
+            "p2": "Z oprávněného zájmu: zabezpečení (včetně omezení pokusů o kódy), hledání a opravy chyb, měření používání a vylepšování aplikace.",
+            "p3": "Se souhlasem: čekací listina a novinky e-mailem, pokud jsi je při registraci zaškrtl. Souhlas můžeš kdykoli odvolat odkazem v e-mailu nebo napsáním na {email}; nepotvrzenou přihlášku na čekací listinu mažeme po 30 dnech.",
+            "p4": "Ze zákonné povinnosti: účetní a daňové doklady o platbách."
           },
           "usage": {
             "p1": "Abychom věděli, které části {appName} pomáhají a co je potřeba zlepšit, zaznamenáváme, jak se aplikace používá: které obrazovky otevřeš, jaké akce uděláš (třeba založení milníku nebo přesun kontaktu), jak dlouho v aplikaci jsi, z jakého typu zařízení a jaké chyby nastaly.",
@@ -4819,12 +4867,14 @@
             "p4": "Anthropic: jazykový model pro Jarvise. USA.",
             "p5": "Google Maps Platform: vyhledávání firem při generování kontaktů. Google, celosvětově včetně USA.",
             "p6": "Resend: odesílání e-mailů (obnova hesla, faktury, oznámení). USA.",
-            "p7": "Předávání do USA probíhá na základě rámce EU–USA pro ochranu osobních údajů (Data Privacy Framework) nebo standardních smluvních doložek Evropské komise. Údaje neprodáváme a nikomu dalšímu je nepředáváme, pokud to nevyžaduje zákon."
+            "p7": "Stripe: platební brána pro předplatné (platba kartou, doklady o platbách, správa platební metody). Stripe Payments Europe, Irsko, s předáním do USA.",
+            "p8": "Předávání do USA probíhá na základě rámce EU–USA pro ochranu osobních údajů (Data Privacy Framework) nebo standardních smluvních doložek Evropské komise. Údaje neprodáváme a nikomu dalšímu je nepředáváme, pokud to nevyžaduje zákon."
           },
           "retention": {
             "p1": "Údaje účtu a tvůj obsah uchováváme, dokud máš účet. Smazáním účtu v aplikaci se hned smažou, včetně nahraných souborů; ze záloh databáze zmizí do {backupDays} dní.",
             "p2": "Záznamy o používání, relace a záznamy chyb mažeme automaticky po 13 měsících. Po smazání účtu zůstanou záznamy o používání jen anonymně, bez vazby na tebe.",
-            "p3": "Smazané poznámky jsou 30 dní v koši, potom se smažou natrvalo."
+            "p3": "Smazané poznámky jsou 30 dní v koši, potom se smažou natrvalo.",
+            "p4": "Doklady o platbách uchováváme i po smazání účtu po dobu, kterou ukládají účetní a daňové předpisy (nejvýš 10 let)."
           },
           "rights": {
             "p1": "Máš právo na přístup ke svým údajům, jejich opravu, výmaz, omezení zpracování a přenositelnost a právo vznést námitku proti zpracování z oprávněného zájmu. Souhlas můžeš kdykoli odvolat.",
@@ -4833,7 +4883,7 @@
           },
           "cookies": {
             "p1": "Používáme jen nezbytné cookies: přihlášení do aplikace a administrace, zvolený jazyk a kód partnera z jeho odkazu (30 dní, jen aby se ti při registraci předvyplnil). Žádné reklamní ani sledovací cookies a žádné analytické služby třetích stran.",
-            "p2": "Aplikace si v prohlížeči ukládá rozepsané poznámky a podobné pomocné údaje, aby se ti neztratily."
+            "p2": "Aplikace si v prohlížeči ukládá rozepsané poznámky a podobné pomocné údaje, aby se ti neztratily. Platební stránka Stripe používá své vlastní cookies podle zásad Stripe."
           },
           "contact": {
             "p1": "S dotazy k osobním údajům se obrať na {email}."
@@ -5631,6 +5681,10 @@
       "payments": {
         "name": "Platby za období",
         "description": "Tržby, vrácené platby, platící účty a neuhrazené platby z plateb předplatného v ostrém režimu, po měnách (měny se nesčítají). Bez interních účtů."
+      },
+      "signup_conversion": {
+        "name": "Konverze registrace → platba",
+        "description": "Podíl účtů registrovaných v období (signup_completed), které od té doby aspoň jednou zaplatily."
       }
     }
   },
@@ -5717,7 +5771,8 @@
       "title": "Přehled",
       "description": "Hlavní čísla aplikace na jednom místě.",
       "chartTitle": "Aktivní uživatelé a registrace",
-      "chartDescription": "Denně, týdně a měsíčně aktivní uživatelé, registrace za den na pravé ose."
+      "chartDescription": "Denně, týdně a měsíčně aktivní uživatelé, registrace za den na pravé ose.",
+      "signupWithoutConfirmation": "Veřejná registrace je zapnutá (PUBLIC_SIGNUP_ENABLED), ale Supabase nežádá potvrzení e-mailu. Zapni v Supabase → Authentication → Sign In / Providers volbu Confirm email (až s vlastním SMTP přes Resend), jinak se dá zaregistrovat i s cizí adresou."
     },
     "audit": {
       "title": "Audit",
@@ -7690,6 +7745,10 @@
       "open": "Spravovat platební metodu a doklady",
       "hint": "Kartu, fakturační adresu a doklady spravuješ u Stripe. Tarif měníš a rušíš tady.",
       "redirecting": "Otevírám Stripe…"
+    },
+    "chosen": {
+      "trial": "Vybraný tarif: {plan} · {billing}. Zaplatíš po zkušebce ({date}).",
+      "other": "Vybraný tarif: {plan} · {billing}."
     }
   },
   "messages": {
@@ -8209,7 +8268,8 @@
       "already_paid": "Kód jde zadat jen před první platbou.",
       "no_trial": "Kód prodlužuje zkušební období a tvůj účet žádné nemá.",
       "ownerOnly": "Kód zadává majitel účtu.",
-      "unavailable": "Kód se teď nepodařilo ověřit. Zkus to za chvíli znovu."
+      "unavailable": "Kód se teď nepodařilo ověřit. Zkus to za chvíli znovu.",
+      "tooManyAttempts": "Příliš mnoho pokusů o kód. Zkus to znovu za 15 minut."
     },
     "redeem": {
       "apply": "Použít kód"

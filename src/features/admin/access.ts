@@ -182,6 +182,10 @@ export type LoginAttempt = { at: Date | string; success: boolean };
 export function lockedUntil(
   attempts: readonly LoginAttempt[],
   now: Date = new Date(),
+  limits: { maxFailures: number; lockoutMs: number } = {
+    maxFailures: ADMIN_MAX_FAILURES,
+    lockoutMs: ADMIN_LOCKOUT_MS,
+  },
 ): Date | null {
   const sorted = attempts
     .map((attempt) => ({ at: new Date(attempt.at).getTime(), success: attempt.success }))
@@ -195,10 +199,10 @@ export function lockedUntil(
       failures = [];
       continue;
     }
-    failures = failures.filter((at) => attempt.at - at < ADMIN_LOCKOUT_MS);
+    failures = failures.filter((at) => attempt.at - at < limits.lockoutMs);
     failures.push(attempt.at);
-    if (failures.length >= ADMIN_MAX_FAILURES) {
-      lockEnd = attempt.at + ADMIN_LOCKOUT_MS;
+    if (failures.length >= limits.maxFailures) {
+      lockEnd = attempt.at + limits.lockoutMs;
       failures = [];
     }
   }

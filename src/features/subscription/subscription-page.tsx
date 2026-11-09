@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { CalendarClockIcon, CreditCardIcon, InfoIcon } from "lucide-react";
+import { CalendarClockIcon, CreditCardIcon, InfoIcon, SparklesIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -39,6 +39,7 @@ import {
   canOpenPortal,
   canResume,
   changeBlock,
+  chosenPlan,
   displayStatus,
   isExpired,
   isManagedPlan,
@@ -180,6 +181,9 @@ function CurrentPlan({
   const checkoutMode = payments && paymentRoute(sub, now) === "checkout";
   // The card, the billing address and the receipts are Stripe's portal.
   const portal = payments && canOpenPortal(sub);
+  // The plan picked on the website before registering: what the trial turns into once paid.
+  const chosen = chosenPlan(sub, now);
+  const payFor = chosen ?? (isManagedPlan(sub) ? { planKey: sub.planKey, billing: sub.billing } : null);
 
   function doResume() {
     setNotice(null);
@@ -244,6 +248,22 @@ function CurrentPlan({
         <WorkerSeatsLine data={workers} billing={seatBilling} currency={currency} />
       )}
 
+      {chosen && (
+        <div
+          className="flex flex-wrap items-center gap-3 rounded-xl border border-teal/40 bg-teal/10 px-4 py-3 text-sm text-ink"
+          data-testid="subscription-chosen"
+        >
+          <SparklesIcon aria-hidden className="size-4 shrink-0 text-teal" />
+          <span className="min-w-0 flex-1">
+            {t(status === "trialing" ? "chosen.trial" : "chosen.other", {
+              plan: nameOf(chosen.planKey),
+              billing: tPlans(`billing.${chosen.billing}`),
+              date: date(sub.trialEndsAt),
+            })}
+          </span>
+        </div>
+      )}
+
       {sub.scheduled && !isExpired(sub, now) && (
         <div
           className="flex flex-wrap items-center gap-3 rounded-xl border border-gold/40 bg-gold/10 px-4 py-3 text-sm text-ink"
@@ -285,8 +305,8 @@ function CurrentPlan({
       {status !== "beta" && (
         <div className="flex flex-col gap-4 border-t border-line/60 pt-5">
           <div className="flex flex-wrap items-start gap-2">
-            {checkoutMode && !block && isManagedPlan(sub) && (
-              <PayButton planKey={sub.planKey} billing={sub.billing} from="settings" />
+            {checkoutMode && !block && payFor && (
+              <PayButton planKey={payFor.planKey} billing={payFor.billing} from="settings" />
             )}
             {!block && (
               <Button variant={checkoutMode ? "outline" : "default"} onClick={() => setChanging(true)}>

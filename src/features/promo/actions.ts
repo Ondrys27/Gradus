@@ -1,5 +1,6 @@
 "use server";
 
+import { codeGuard, codesLocked, recordWrongCode } from "@/features/auth/code-attempts-server";
 import { measure } from "@/lib/analytics/instrument";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { PromoProblem } from "./codes";
@@ -20,16 +21,24 @@ import {
  * (a plain request, so it never waits behind other server actions).
  */
 
-export type PromoActionProblem = PromoProblem | "ownerOnly" | "unavailable";
-export type PromoCheckResult = PromoCheck | { ok: false; problem: "unavailable" };
-export type PromoRedeemResult = PromoRedeemed | { ok: false; problem: "ownerOnly" | "unavailable" };
+export type PromoActionProblem = PromoProblem | "ownerOnly" | "unavailable" | "tooManyAttempts";
+export type PromoCheckResult = PromoCheck | { ok: false; problem: "unavailable" | "tooManyAttempts" };
+export type PromoRedeemResult =
+  | PromoRedeemed
+  | { ok: false; problem: "ownerOnly" | "unavailable" | "tooManyAttempts" };
 
 const MAX_INPUT = 64;
 
 export async function checkPromoCode(input: string): Promise<PromoCheckResult> {
   return measure("promo.check", async (): Promise<PromoCheckResult> => {
     try {
-      return await checkPromo(String(input ?? "").slice(0, MAX_INPUT));
+      // Guessing codes while typing is held back per address (code-attempts.ts).
+      const admin = createAdminClient();
+      const guard = await codeGuard(null);
+      if (await codesLocked(guard, admin)) return { ok: false, problem: "tooManyAttempts" };
+      const result = await checkPromo(String(input ?? "").slice(0, MAX_INPUT), admin);
+      if (!result.ok && result.problem === "not_found") await recordWrongCode(guard, "promo", "check", admin);
+      return result;
     } catch (error) {
       console.error("[promo] check failed", error);
       return { ok: false, problem: "unavailable" };
@@ -60,7 +69,11 @@ export async function redeemPromoCode(
         if (error) throw error;
         if (profile && !profile.onboarding_completed_at) where = "signup";
       }
-      return await redeemPromo(userId, String(input ?? "").slice(0, MAX_INPUT), where, admin);
+      const guard = await codeGuard({ account: userId });
+      if (await codesLocked(guard, admin)) return { ok: false, problem: "tooManyAttempts" };
+      const result = await redeemPromo(userId, String(input ?? "").slice(0, MAX_INPUT), where, admin);
+      if (!result.ok && result.problem === "not_found") await recordWrongCode(guard, "promo", "submit", admin);
+      return result;
     } catch (error) {
       console.error("[promo] redeem failed", error);
       return { ok: false, problem: "unavailable" };

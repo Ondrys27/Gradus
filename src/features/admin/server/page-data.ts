@@ -158,6 +158,7 @@ export function activationTiles(q: AdminQuery): Promise<TileData[]> {
     scalarTile(q, "time_to_value", { lowerIsBetter: true }),
     usersTile(q, "onboarding_completed"),
     scalarTile(q, "promo_conversion"),
+    scalarTile(q, "signup_conversion"),
   ]);
 }
 
