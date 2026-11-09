@@ -32,6 +32,7 @@ for (const journey of journeys) {
       await page.locator("#register-name").fill(`E2E ${mode}`);
       await page.locator("#register-email").fill(email);
       await page.locator("#register-password").fill(e2ePassword());
+      await page.getByTestId("register-terms").click();
       await page.locator("form button[type=submit]").click();
       await expect(page).toHaveURL(/\/app$/, { timeout: 60_000 });
 

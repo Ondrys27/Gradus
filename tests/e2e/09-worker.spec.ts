@@ -71,6 +71,7 @@ test("9 · a worker joins through the invite: with the contacts right sees conta
     await expect(worker.locator("#register-invite")).toHaveValue(code);
     await expect(worker.locator("#register-email")).toHaveValue(workerEmail);
     await worker.locator("#register-password").fill(e2ePassword());
+    await worker.getByTestId("register-terms").click();
     await worker.locator("form button[type=submit]").click();
     await expect(worker).toHaveURL(/\/app$/, { timeout: 60_000 });
     await waitForApp(worker);

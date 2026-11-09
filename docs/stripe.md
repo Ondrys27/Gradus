@@ -63,3 +63,19 @@ Doklad ke každé platbě vystavuje Stripe; Gradus ukazuje v Historii plateb odk
 - Produkce bere jen ostrý klíč (`sk_live_…`), vývoj a preview jen testovací; testovací režim mění jen interní účty a @gradus.local, ostrý jen ostatní.
 - Denní cron `recurring-payments` srovná předplatná se Stripe (zmeškaný webhook) a pošle ti souhrn plateb, pokud ho ten den ještě neposlal webhook. V administraci → Uživatelé → detail → Předplatné je odkaz na zákazníka a předplatné ve Stripe a tlačítko **Srovnat se Stripe** (jen majitel).
 - Ruční změna předplatného v administraci u účtu, který platí přes Stripe, Stripe nezmění a další událost ze Stripe ji přepíše. Takové předplatné měň ve Stripe, nebo ho nech změnit uživatele v Předplatném.
+
+## 5. Podmínky a soukromí: co musíš doplnit ([DOPLNIT])
+
+Obchodní podmínky (`/podminky`, `/en/terms`) a zásady ochrany osobních údajů (`/soukromi`, `/en/privacy`) mají od kroku 23.3 oddíly, které platby vyžadují: prodávající, zkušební období, cena a platba přes Stripe, automatické obnovování, zrušení předplatného, odstoupení spotřebitele do 14 dnů se souhlasem se začátkem služby, reklamace a Stripe mezi zpracovateli. Údaje o tobě v textu nejsou, berou se z proměnných prostředí. Dokud některá chybí, stránka na jejím místě ukáže **[DOPLNIT]** a **build v produkci (`VERCEL_ENV=production`) selže** s výpisem chybějících proměnných, takže se [DOPLNIT] nikdy neukáže zákazníkům. Ve vývoji a preview se stránky vykreslí i s [DOPLNIT].
+
+Nastav ve Vercelu → Settings → Environment Variables → **Production** (a ideálně i Preview, ať náhledy sedí):
+
+| Proměnná | Kde se ukáže | Příklad |
+|---|---|---|
+| `LEGAL_NAME` | prodávající v podmínkách, správce v zásadách | `Ondřej Otava` nebo název firmy |
+| `LEGAL_COMPANY_ID` | IČO prodávajícího a správce | `12345678` |
+| `LEGAL_ADDRESS` | sídlo prodávajícího a správce | `Ulice 1, 110 00 Praha 1` |
+| `CONTACT_EMAIL` (jinak `OWNER_EMAIL`) | kontakt pro reklamace, odstoupení, osobní údaje a patička webu | `ahoj@gradusgo.com` |
+| `LEGAL_BACKUP_DAYS` | za kolik dní smazaný účet zmizí ze záloh databáze (zásady, Jak dlouho je uchováváme) | `7` (Supabase Pro drží denní zálohy 7 dní; ověř ve svém tarifu Supabase) |
+
+Změna se projeví až novým nasazením (stránky se generují při buildu). Údaje musí sedět s tím, co máš ve Stripe (Settings → Business → Public details) a na dokladech. Texty podmínek nese verze `TERMS_VERSION` (`src/config/legal.ts`); každá změna obsahu = nové datum, registrace ukládá, kterou verzi kdo přijal (`profiles.terms_version`). Před spuštěním je projde právník (na stránce je o tom poznámka).

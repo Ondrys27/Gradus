@@ -82,6 +82,7 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
   - Plán a stav jen přes `current_plan(user_id)` (plán, status včetně `expired`, `read_only`, limity). Expirace se počítá, neukládá. Po expiraci jsou limity generování a AI 0.
   - Jen pro čtení hlídá trigger `enforce_workspace_writable` na datech prostoru: zápis přihlášeného uživatele (i přes SECURITY DEFINER funkce) do prostoru s `read_only` skončí chybou `read_only`. Admin klient blokovaný není, serverové routy kontrolují `current_plan` samy. Nastavení, profil a XP zůstávají zapisovatelné. V rozhraní `useCan(…, "edit")` vrací false.
   - `waitlist` píše a čte jen server; e-mail jen se souhlasem, platí až po potvrzení odkazem, nepotvrzené se po 30 dnech mažou.
+  - **Veřejná registrace** (23.3, `PUBLIC_SIGNUP_ENABLED=true`): bez kódu = zkušebka, beta kód a pozvánka pracovníka fungují dál (beta zdarma), překlep v kódu zkušebku nikdy nezaloží (`decideSignup`). Povinný souhlas s podmínkami a zásadami: `profiles.terms_accepted_at` + `terms_version` (`TERMS_VERSION` v `src/config/legal.ts`, nové datum s každou změnou textu), nepovinný `marketing_consent_at`; píše jen server, klientský zápis odmítne `profiles_consent_guard`; bez záznamu souhlasu se účet smaže. Tarif z webu (`?tarif=pro&obdobi=rok`, `parseSignupPlan` / `registerHref` v `src/features/auth/signup-plan.ts`) se uloží jen ke zkušebce do `subscriptions.chosen_plan_key` / `chosen_billing` (píše jen server, DB ho zahodí s každou změnou tarifu, období, naplánované změny nebo brány: `subscriptions_chosen_reset`); Předplatné ukáže „Vybraný tarif …, zaplatíš po zkušebce“ a Zaplatit platí ten (`chosenPlan` v `state.ts`). Špatné pozvánkové a promo kódy počítá `signup_code_attempts` (jen otisky IP a e-mailu, jen server, den): 5 v odeslaném formuláři za 15 min z adresy nebo na e-mail = 15 min pauza pro všechny kódy, kontrola při psaní 20 z adresy (`code-attempts.ts`); účty e2e-…@gradus.local mimo produkci se nepočítají. Potvrzení e-mailu čte aplikace ze Supabase; veřejná registrace bez něj = varování na Přehledu administrace. E2E zapne veřejnou registraci hlavičkou `x-gradus-e2e-signup: public` (mimo produkci, jen pro e2e účty). Událost `signup_completed` (odkud web | pricing | invite | code), metrika `signup_conversion` v Aktivaci. Kontrolní seznam spuštění pro majitele: `docs/spusteni.md`.
 
 ### Konkrétní části
 - **Úkoly:** `parent_task_id` pro podúkoly do libovolné hloubky. Úkol s podúkoly **nejde odškrtnout, dokud nejsou všechny podúkoly hotové** (zamčené zaškrtávátko se zámkem). Jakmile jsou, odemkne se, ale **nedokončí se sám**, uživatel ho odškrtne ručně. Odškrtnutí podúkolu u hotového nadřazeného ho vrátí do rozpracovaného. Postup milníku = splněné / všechny úkoly.
@@ -320,6 +321,8 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 
 ### Web
 - Marketingový web: čeština výchozí, angličtina pod /en. Žádná vymyšlená čísla, recenze ani loga. Žádné sledovací cookies. Snímky aplikace jen z bun run screenshots nad demo účtem.
+- Při veřejné registraci vede hlavní tlačítko na registraci a tlačítko každého tarifu na `/cenik` i `/` na registraci s předvybraným tarifem a obdobím (`SignupCta` s `plan`); čekací listina se schová. Bez ní tlačítka otevřou čekací listinu.
+- **Podmínky a zásady** (`/podminky`, `/soukromi`, `legal-page.tsx`, texty `marketing.legal`) mají oddíly pro placení: prodávající, zkušební období, cena a platba přes Stripe, automatické obnovování, zrušení, odstoupení spotřebitele (souhlas se začátkem služby), reklamace, Stripe jako zpracovatel. Údaje prodávajícího jen z proměnných `LEGAL_NAME`, `LEGAL_COMPANY_ID`, `LEGAL_ADDRESS`, `CONTACT_EMAIL` / `OWNER_EMAIL`, `LEGAL_BACKUP_DAYS`, nikdy v textu; chybějící = [DOPLNIT] a build v produkci (`VERCEL_ENV=production`) selže (`assertLegalComplete`, seznam v `docs/stripe.md`).
 
 ### Analytika a administrace
 - Události jen z katalogu events.ts. Vlastnosti jen identifikátory, výčty, čísla, pravdivostní hodnoty — nikdy volný text, jména, kontakty, názvy ani obsah zpráv.
@@ -384,4 +387,4 @@ Registrace jen s pozvánkovým kódem. **První účet = owner.** Potvrzování 
 
 ## Do prosince nepatří
 
-Přátelé a chat, veřejná registrace, prodejní web, platby předplatného, plná mailová schránka, mobilní aplikace, další jazyky. Uživatelské jméno v profilu je rezervované pro budoucí přátele.
+Přátelé a chat, plná mailová schránka, mobilní aplikace, další jazyky. Uživatelské jméno v profilu je rezervované pro budoucí přátele.

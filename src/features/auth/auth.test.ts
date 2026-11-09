@@ -23,6 +23,7 @@ describe("sign-up validation", () => {
       email: " Ondra@Example.com ",
       password: "12345678",
       inviteCode: "x",
+      terms: "on",
     });
     expect(ok.success && ok.data.email).toBe("ondra@example.com");
 
@@ -35,9 +36,11 @@ describe("sign-up validation", () => {
     // The invite code is checked by the server (decideSignup), not the schema.
     expect(bad.success).toBe(false);
     if (!bad.success) {
+      // The terms are required; the consent to news is not.
       expect(fieldErrorsFrom(bad.error)).toEqual({
         email: "invalidEmail",
         password: "passwordTooShort",
+        terms: "termsRequired",
       });
     }
   });

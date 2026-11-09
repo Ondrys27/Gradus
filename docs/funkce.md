@@ -195,10 +195,10 @@ AI pomocník v pravém dolním rohu: chat, souhrny dne, návrhy a hodnocení. V�
 
 | Funkce | Co dělá | Pro koho | Náklad |
 |---|---|---|---|
-| Úvodní stránka a ceník | Česky na `/`, anglicky pod `/en`. Ceny se berou ze zveřejněného katalogu tarifů. Bez sledovacích cookies. | návštěvník | žádný |
+| Úvodní stránka a ceník | Česky na `/`, anglicky pod `/en`. Ceny se berou ze zveřejněného katalogu tarifů. Bez sledovacích cookies. Při veřejné registraci vede tlačítko každého tarifu na registraci s předvybraným tarifem a obdobím (`?tarif=pro&obdobi=rok`) a čekací listina se schová. | návštěvník | žádný |
 | Čekací listina | Dokud je registrace uzavřená, nechá návštěvník e-mail a potvrdí ho odkazem. | návštěvník | e-mail |
-| Podmínky a soukromí | Právní stránky v obou jazycích. | návštěvník | žádný |
-| Přihlášení a registrace | Přihlášení, registrace s pozvánkou nebo kódem, zapomenuté heslo, nové heslo, potvrzení změny e-mailu. | každý | e-mail (Supabase přes Resend) |
+| Podmínky a soukromí | Právní stránky v obou jazycích, s oddíly pro placení (prodávající, cena a Stripe, obnovování, zrušení, odstoupení, reklamace). Údaje prodávajícího z proměnných prostředí; dokud některý chybí, build v produkci selže. | návštěvník | žádný |
+| Přihlášení a registrace | Přihlášení, registrace s pozvánkou nebo kódem, a při veřejné registraci i bez kódu (14 dní zdarma). Povinný souhlas s podmínkami a zásadami (server uloží kdy a kterou verzi), nepovinný souhlas s novinkami. Tarif vybraný na webu se ukáže v Předplatném jako „Vybraný tarif, zaplatíš po zkušebce“ a zaplatí ho tlačítko Zaplatit. Špatné pozvánkové a promo kódy mají limit pokusů podle IP a e-mailu. Zapomenuté heslo, nové heslo, potvrzení změny e-mailu. | každý | e-mail (Supabase přes Resend) |
 | Odkaz partnera | `/?kod=XYZ` si zapamatuje promo kód na 30 dní a registrace ho předvyplní. | návštěvník | žádný |
 
 ---
@@ -317,7 +317,7 @@ Tyhle odhady je dobré jednou za měsíc porovnat s Náklady (období 30 dní) a
 | Zkušební období | 14 dní tarifu Pro bez karty. Po něm jen pro čtení. | V kódu (`TRIAL_DAYS`), změna = nasazení |
 | Tarif beta | Testeři a **každý pozvaný pracovník** dostanou tarif beta bez konce: 500 / 5 000 kontaktů, 3 000 odpovědí Jarvise, 500 souborů. Beta pracovníka z pozvánky je „přes firmu“ (`via_worker_invite`), za vlastní tarif se nepočítá. Odpovědi Jarvise v cizí firmě se počítají podle tarifu té firmy. | Jen v databázi (tabulka `plans`), v administraci ne |
 | Promo kódy | Dny zkoušky navíc, sleva z první platby, měsíce zdarma. | Administrace → Promo kódy |
-| Registrace bez pozvánky | Zapíná veřejnou registraci se zkušebním obdobím. | Proměnná `PUBLIC_SIGNUP_ENABLED`, změna = restart |
+| Registrace bez pozvánky | Zapíná veřejnou registraci se zkušebním obdobím a schová čekací listinu. Bez potvrzování e-mailu v Supabase ukáže administrace varování. Kontrolní seznam spuštění je v `docs/spusteni.md`. | Proměnná `PUBLIC_SIGNUP_ENABLED`, změna = restart |
 | Práva pracovníka | Co pracovník smí v každé sekci, včetně generování kontaktů. | Aplikace → Správa firmy (majitel) |
 
 Pevné hranice v kódu, stejné pro všechny:

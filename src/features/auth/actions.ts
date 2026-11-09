@@ -1,6 +1,6 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect, RedirectType } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { track } from "@/lib/analytics/track";
@@ -21,10 +21,13 @@ import { siteOrigin } from "@/lib/site-origin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { isPublicSignupEnabled } from "@/lib/signup";
+import { TERMS_VERSION } from "@/config/legal";
 import { inviteEmailMatches, isValidInviteCode } from "./invite-code";
 import { isE2eTestAccount } from "./e2e-account";
 import { isEmailConfirmationRequired } from "./email-confirmation";
-import { decideSignup } from "./signup-mode";
+import { codeGuard, codesLocked, recordWrongCode } from "./code-attempts-server";
+import { decideSignup, signupSource, wantsE2ePublicSignup } from "./signup-mode";
+import { parseSignupPlan } from "./signup-plan";
 import { checkPromo, redeemPromo } from "@/features/promo/server/promo";
 import { findOpenWorkerInvite, type OpenWorkerInvite } from "./worker-invite";
 import {
@@ -79,7 +82,12 @@ export async function signIn(_prev: FormState, formData: FormData): Promise<Form
  * Accounts are created only here (sign-ups are disabled in Supabase). With an
  * invite code (beta or a worker invite) the account gets beta; without one,
  * and only when PUBLIC_SIGNUP_ENABLED is on, a 14-day trial, which the
- * database starts for every new account by itself.
+ * database starts for every new account by itself. The terms and the privacy
+ * policy must be accepted; when and which version (and the optional consent
+ * to news) the server writes into the profile, never the browser. Wrong
+ * invite and promo codes count towards a pause per address and e-mail
+ * (code-attempts.ts). A plan picked on the website stays with the trial as
+ * the selected plan (subscriptions.chosen_*).
  * E-mail confirmation follows Supabase's own switch (isEmailConfirmationRequired):
  * when it is on, the account is created unconfirmed, Supabase sends the
  * confirmation e-mail and the form says to check the inbox instead of signing in.
@@ -91,10 +99,16 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
     email: String(formData.get("email") ?? ""),
     inviteCode: String(formData.get("inviteCode") ?? ""),
     promoCode: String(formData.get("promoCode") ?? ""),
+    terms: formData.get("terms") === "on" ? "on" : "",
+    marketing: formData.get("marketing") === "on" ? "on" : "",
   };
   if (!parsed.success) return { fieldErrors: fieldErrorsFrom(parsed.error), values };
 
   const code = parsed.data.inviteCode;
+  // Guessing codes: during a pause every code is refused, a right one too.
+  const guard =
+    code || parsed.data.promoCode ? await codeGuard(parsed.data.email) : null;
+  if (guard && (await codesLocked(guard))) return { error: "tooManyCodeAttempts", values };
   const expected = process.env.INVITE_CODE;
   const betaCodeMatches = Boolean(code) && isValidInviteCode(code, expected);
   let workerInvite: OpenWorkerInvite | null = null;
@@ -109,9 +123,13 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
     betaCodeMatches,
     workerInviteFound: Boolean(workerInvite),
     betaCodeConfigured: Boolean(expected),
-    publicSignup: isPublicSignupEnabled(),
+    // The tests' own accounts may sign up publicly outside production (signup-mode.ts).
+    publicSignup:
+      isPublicSignupEnabled() ||
+      (wantsE2ePublicSignup(await headers()) && isE2eTestAccount(parsed.data.email)),
   });
   if (decision.kind === "error") {
+    if (decision.error === "invalidInvite" && guard) await recordWrongCode(guard, "invite", "submit");
     return decision.field
       ? { fieldErrors: { [decision.field]: decision.error }, values }
       : { error: decision.error, values };
@@ -127,7 +145,10 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
       console.error("[auth] promo check failed", error);
       return { ok: false as const, problem: "unavailable" as const };
     });
-    if (!promo.ok) return { promo: promo.problem, values };
+    if (!promo.ok) {
+      if (promo.problem === "not_found" && guard) await recordWrongCode(guard, "promo", "submit");
+      return { promo: promo.problem, values };
+    }
   }
 
   const locale = await getLocale();
@@ -157,6 +178,21 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
     const { error: deleteError } = await admin.auth.admin.deleteUser(userId);
     if (deleteError) console.error("[auth] rollback of new account failed", deleteError);
   };
+
+  // The consent is part of the account: without its record the account goes again.
+  const consentAt = new Date().toISOString();
+  const { error: consentError } = await admin
+    .from("profiles")
+    .update({
+      terms_accepted_at: consentAt,
+      terms_version: TERMS_VERSION,
+      marketing_consent_at: parsed.data.marketing === "on" ? consentAt : null,
+    })
+    .eq("id", userId);
+  if (consentError) {
+    await rollback("recording the consent", consentError);
+    return { error: "generic", values };
+  }
 
   // A worker's account is bound to the owner's worker record, or not created at all.
   if (decision.kind === "worker") {
@@ -188,6 +224,18 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
     });
     if (redeemed && !redeemed.ok) console.error("[auth] promo not redeemed", redeemed.problem);
   }
+  // The plan picked on the website, shown in Settings → Subscription until the account pays.
+  const chosen =
+    decision.kind === "trial"
+      ? parseSignupPlan({ tarif: parsed.data.plan, obdobi: parsed.data.billing })
+      : null;
+  if (chosen) {
+    const { error: chosenError } = await admin
+      .from("subscriptions")
+      .update({ chosen_plan_key: chosen.planKey, chosen_billing: chosen.billing, chosen_at: consentAt })
+      .eq("user_id", userId);
+    if (chosenError) console.error("[auth] saving the selected plan failed", chosenError);
+  }
   const timeZone = isValidTimeZone(parsed.data.timeZone) ? parsed.data.timeZone : DEFAULT_TIME_ZONE;
   const country = countryFromTimeZone(timeZone);
   const formats = regionFormats(country);
@@ -212,6 +260,16 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
   if (profileResult.error) console.error("[auth] initial profile failed", profileResult.error);
 
   await track("account_registered", { method: decision.kind }, { userId, admin });
+  await track(
+    "signup_completed",
+    {
+      from: signupSource({ kind: decision.kind, promoCode: Boolean(promoCode), planPicked: Boolean(chosen) }),
+      method: decision.kind,
+      ...(chosen ? { plan: chosen.planKey, billing: chosen.billing } : {}),
+      marketing_consent: parsed.data.marketing === "on",
+    },
+    { userId, admin },
+  );
   if (decision.kind === "worker") {
     await track("worker_invite_accepted", { via: "signup" }, { userId, admin });
   }

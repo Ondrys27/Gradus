@@ -114,6 +114,7 @@ test("47 · promo code: link → sign-up with the code → one sign-up → first
       await visitor.locator("#register-name").fill("E2E Promo");
       await visitor.locator("#register-email").fill(email);
       await visitor.locator("#register-password").fill(e2ePassword());
+      await visitor.getByTestId("register-terms").click();
       await visitor.locator("form button[type=submit]").click();
       await expect(visitor).toHaveURL(/\/app$/, { timeout: 60_000 });
 

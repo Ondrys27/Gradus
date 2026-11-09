@@ -43,10 +43,15 @@ export type Subscription = {
   scheduled: { planKey: string; billing: Billing; at: string } | null;
   /** The payment gateway the subscription runs through (Stripe), or none yet. */
   gateway: "stripe" | null;
+  /**
+   * The plan picked on the website before registering (step 23.3): only a
+   * hint until the account pays; the database drops it with any change.
+   */
+  chosen: { planKey: PaidPlanKey; billing: Billing } | null;
 };
 
 export const SUBSCRIPTION_COLUMNS =
-  "plan_key, billing, status, trial_ends_at, current_period_start, current_period_end, cancel_at_period_end, cancel_reason, scheduled_plan_key, scheduled_billing, scheduled_at, provider";
+  "plan_key, billing, status, trial_ends_at, current_period_start, current_period_end, cancel_at_period_end, cancel_reason, scheduled_plan_key, scheduled_billing, scheduled_at, provider, chosen_plan_key, chosen_billing";
 
 export type SubscriptionRow = {
   plan_key: string;
@@ -61,6 +66,8 @@ export type SubscriptionRow = {
   scheduled_billing: string | null;
   scheduled_at: string | null;
   provider?: string | null;
+  chosen_plan_key?: string | null;
+  chosen_billing?: string | null;
 };
 
 const toBilling = (value: string | null): Billing => (value === "yearly" ? "yearly" : "monthly");
@@ -88,6 +95,10 @@ export function toSubscription(row: SubscriptionRow): Subscription {
           }
         : null,
     gateway: row.provider === "stripe" ? "stripe" : null,
+    chosen:
+      isPaidPlanKey(row.chosen_plan_key) && row.chosen_billing
+        ? { planKey: row.chosen_plan_key, billing: toBilling(row.chosen_billing) }
+        : null,
   };
 }
 
@@ -147,6 +158,16 @@ export function paymentRoute(sub: Subscription, now: Date = new Date()): Payment
   if (hasLiveGateway(sub, now)) return "gateway";
   if (sub.status === "trialing" || sub.status === "cancelled" || isExpired(sub, now)) return "checkout";
   return "manual";
+}
+
+/**
+ * The plan picked on the website, while it is still what the account would
+ * pay for: nothing runs in Stripe yet (the trial, or it ended) and the plan
+ * can be changed. The pay button pays this one instead of the trial's plan.
+ */
+export function chosenPlan(sub: Subscription, now: Date = new Date()): PlanChoice | null {
+  if (!sub.chosen || paymentRoute(sub, now) !== "checkout" || changeBlock(sub, now)) return null;
+  return sub.chosen;
 }
 
 // ---------------------------------------------------------------------------

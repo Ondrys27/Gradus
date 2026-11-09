@@ -5,7 +5,8 @@ import en from "@/locales/en.json";
 
 vi.mock("server-only", () => ({}));
 const { LEGAL_SECTIONS } = await import("./legal-page");
-const { legalOperator } = await import("@/config/legal");
+const { assertLegalComplete, legalOperator } = await import("@/config/legal");
+const { legalGaps, placeholdersIn } = await import("@/config/legal-gaps");
 
 type Messages = { [key: string]: string | Messages };
 
@@ -48,7 +49,7 @@ describe("legal texts", () => {
   it("names every processor in both languages", () => {
     for (const messages of [cs, en]) {
       const processors = JSON.stringify(messages.marketing.legal.bodies.privacy.processors);
-      for (const name of ["Supabase", "Vercel", "Anthropic", "Google Maps Platform", "Resend"]) {
+      for (const name of ["Supabase", "Vercel", "Anthropic", "Google Maps Platform", "Resend", "Stripe"]) {
         expect(processors).toContain(name);
       }
     }
@@ -61,11 +62,61 @@ describe("legalOperator", () => {
     vi.stubEnv("LEGAL_COMPANY_ID", "");
     vi.stubEnv("LEGAL_ADDRESS", "");
     vi.stubEnv("CONTACT_EMAIL", "hello@example.com");
+    vi.stubEnv("LEGAL_BACKUP_DAYS", "seven");
     expect(legalOperator()).toEqual({
       name: "Jan Novák",
       companyId: null,
       address: null,
       email: "hello@example.com",
+      backupDays: null,
     });
+  });
+});
+
+describe("[DOPLNIT] in production", () => {
+  const complete = {
+    name: "Jan Novák",
+    companyId: "12345678",
+    address: "Ulice 1, Praha",
+    email: "hello@example.com",
+    backupDays: "7",
+  };
+
+  it("names every value the owner still has to fill in", () => {
+    expect(legalGaps(complete)).toEqual([]);
+    expect(legalGaps({ ...complete, companyId: null, backupDays: null }).map((gap) => gap.env)).toEqual([
+      "LEGAL_COMPANY_ID",
+      "LEGAL_BACKUP_DAYS",
+    ]);
+  });
+
+  it("fails the production build while anything is missing, never elsewhere", () => {
+    const gaps = { ...complete, address: null };
+    expect(() => assertLegalComplete(gaps, true)).toThrow(/LEGAL_ADDRESS/);
+    expect(() => assertLegalComplete(gaps, false)).not.toThrow();
+    expect(() => assertLegalComplete(complete, true)).not.toThrow();
+    vi.stubEnv("VERCEL_ENV", "production");
+    expect(() => assertLegalComplete(gaps)).toThrow(/\[DOPLNIT\]/);
+    vi.stubEnv("VERCEL_ENV", "preview");
+    expect(() => assertLegalComplete(gaps)).not.toThrow();
+  });
+
+  it("has no [DOPLNIT] written into the texts: every gap comes from the configuration", () => {
+    for (const messages of [cs, en]) {
+      expect(placeholdersIn(messages.marketing.legal.bodies)).toEqual([]);
+      expect(placeholdersIn(messages.marketing.legal.sections)).toEqual([]);
+    }
+    expect(placeholdersIn({ a: { b: "x [DOPLNIT] y" }, c: "ok" })).toEqual(["a.b"]);
+  });
+
+  it("covers what payments need in both languages", () => {
+    for (const messages of [cs, en]) {
+      const terms = messages.marketing.legal.bodies.terms;
+      for (const section of ["seller", "prices", "renewal", "cancellation", "withdrawal", "complaints"]) {
+        expect(terms).toHaveProperty(section);
+      }
+      expect(JSON.stringify(terms.seller)).toContain("{companyId}");
+      expect(JSON.stringify(terms.prices)).toContain("Stripe");
+    }
   });
 });

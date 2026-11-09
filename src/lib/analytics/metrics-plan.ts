@@ -55,6 +55,7 @@ const FUNCTION_PARAMS: Record<
   metric_funnel: { range: true, tz: true, internal: true, segment: true },
   metric_activation: { range: true, tz: true, internal: true, segment: true },
   metric_promo_conversion: { range: true, tz: true, internal: true, segment: true },
+  metric_signup_conversion: { range: true, tz: true, internal: true, segment: true },
   metric_cohorts: { range: true, tz: true, internal: true, segment: true },
   metric_retention: { range: true, tz: true, internal: true, segment: true },
   metric_usage_heatmap: { range: true, tz: true, internal: true, segment: true },

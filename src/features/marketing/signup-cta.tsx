@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { buttonVariants } from "@/components/ui/button";
-import { localizedPath } from "@/lib/routes";
+import { registerHref, type SignupPlanChoice } from "@/features/auth/signup-plan";
 import { cn } from "@/lib/utils";
 
 // The dialog and its form load only when someone asks for the waitlist.
@@ -18,7 +18,8 @@ const WaitlistDialog = dynamic(
 
 /**
  * The main button of the website. With public sign-up it goes to the
- * registration (trial); without it, it opens the waitlist.
+ * registration (trial), with the plan of a pricing card picked
+ * (?tarif=pro&obdobi=rok); without it, it opens the waitlist.
  */
 export function SignupCta({
   signupEnabled,
@@ -26,9 +27,12 @@ export function SignupCta({
   long = false,
   size = "default",
   className,
+  plan,
 }: {
   signupEnabled: boolean;
   source: string;
+  /** The plan of the pricing card the button sits on. */
+  plan?: SignupPlanChoice;
   /** "Try free for 14 days" instead of "Try for free". */
   long?: boolean;
   size?: "default" | "lg";
@@ -42,7 +46,7 @@ export function SignupCta({
 
   if (signupEnabled) {
     return (
-      <Link href={localizedPath("register", locale)} className={classes}>
+      <Link href={registerHref(locale, plan)} className={classes} data-plan={plan?.planKey}>
         {long ? t("trial") : t("tryFree")}
       </Link>
     );

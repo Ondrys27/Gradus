@@ -10,6 +10,7 @@ import { TUTORIAL_MODES } from "@/features/tutorial/types";
 import { EXPORT_FORMATS, IMPORT_MODES } from "@/features/milestones/map-io";
 import { MINDMAP_FORMATS } from "@/lib/mindmap/formats";
 import { INVOICE_STYLES } from "@/features/invoices/types";
+import { SIGNUP_SOURCES } from "@/features/auth/signup-mode";
 import { BILLINGS, CANCEL_REASONS } from "@/features/subscription/state";
 import { PROMO_BENEFITS, PROMO_SOURCES } from "@/features/promo/codes";
 import { CHECKOUT_SOURCES, PORTAL_SOURCES } from "@/features/billing/stripe/sources";
@@ -182,6 +183,18 @@ export const EVENTS = {
   // --- account -------------------------------------------------------------
   account_registered: event("account", "server", false, {
     method: oneOf(["beta", "worker", "trial"]),
+  }),
+  /**
+   * A registration finished (step 23.3): where it came from (the website, a
+   * plan on the pricing cards, an invitation, a partner's code), the plan
+   * picked on the website and the optional consent to news. Never the code.
+   */
+  signup_completed: event("account", "server", false, {
+    from: oneOf(SIGNUP_SOURCES),
+    method: oneOf(["beta", "worker", "trial"]),
+    plan: optional(oneOf(PAID_PLANS)),
+    billing: optional(oneOf(BILLINGS)),
+    marketing_consent: bool(),
   }),
   signed_in: event("account", "server", false, {}),
   signed_out: event("account", "client", false, {}),

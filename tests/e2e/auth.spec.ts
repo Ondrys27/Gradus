@@ -18,6 +18,7 @@ test("registration rejects a wrong invite code", async ({ page }) => {
   await page.goto("/registrace?invite=definitely-not-the-code");
   await page.fill("#register-email", "e2e@example.com");
   await page.fill("#register-password", "12345678");
+  await page.getByTestId("register-terms").click();
   await page.click("button[type=submit]");
   // Either the code is wrong, or INVITE_CODE is not configured and registration is closed.
   await expect(

@@ -36,10 +36,11 @@ export function WebPricing({
       plans={plans}
       currency={priceCurrencyFor(locale)}
       formatSettings={webFormatSettings(locale)}
-      action={(plan) => (
+      action={(plan, billing) => (
         <SignupCta
           signupEnabled={signupEnabled}
           source={`pricing-${plan.key}`}
+          plan={{ planKey: plan.key, billing }}
           className="w-full"
         />
       )}

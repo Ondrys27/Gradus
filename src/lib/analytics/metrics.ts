@@ -122,6 +122,7 @@ export const METRIC_FUNCTIONS = {
   metric_funnel: USER,
   metric_activation: USER,
   metric_promo_conversion: USER,
+  metric_signup_conversion: USER,
   metric_cohorts: USER,
   metric_retention: USER,
   metric_usage_heatmap: ALL,
@@ -395,6 +396,13 @@ export const METRICS: readonly MetricDefinition[] = [
     "activation",
     "percent",
     fn("metric_promo_conversion", { pick: { field: "pct" } }),
+  ),
+  // Registration → payment (step 23.3): of the accounts registered in the period, who paid since.
+  metric(
+    "signup_conversion",
+    "activation",
+    "percent",
+    fn("metric_signup_conversion", { pick: { field: "pct", where: { source: "all" } } }),
   ),
 
   // --- 3. Retention ----------------------------------------------------------

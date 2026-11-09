@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import { AuthCard, authLinkClass } from "@/features/auth/auth-card";
 import { FormAlert } from "@/components/ui/form-alert";
 import { RegisterForm, type RegisterInvite } from "@/features/auth/register-form";
+import { wantsE2ePublicSignup } from "@/features/auth/signup-mode";
+import { parseSignupPlan } from "@/features/auth/signup-plan";
 import { findOpenWorkerInvite } from "@/features/auth/worker-invite";
+import { planName } from "@/features/plan/catalog";
+import { getPublishedPlans } from "@/features/plan/catalog-server";
 import { promoCodeFromParam } from "@/features/promo/link";
 import { promoFromCookie } from "@/features/promo/server/promo";
 import { APP_NAME } from "@/lib/constants";
@@ -19,10 +24,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RegisterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ invite?: string | string[]; kod?: string | string[] }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const [t, locale] = await Promise.all([getTranslations("auth.register"), getLocale()]);
-  const { invite: inviteParam, kod } = await searchParams;
+  const params = await searchParams;
+  const { invite: inviteParam, kod } = params;
   const code = typeof inviteParam === "string" ? inviteParam.trim().slice(0, 64) : "";
 
   // A worker's link: fill in what the owner entered and say whose team it is.
@@ -37,7 +43,11 @@ export default async function RegisterPage({
     else inviteInvalid = true;
   }
 
-  const publicSignup = isPublicSignupEnabled();
+  // The tests' own run may show the public form outside production (signup-mode.ts).
+  const publicSignup = isPublicSignupEnabled() || wantsE2ePublicSignup(await headers());
+  // A plan picked on the website (?tarif=pro&obdobi=rok) goes with a trial only.
+  const choice = publicSignup && !invite ? parseSignupPlan(params) : null;
+  const chosenName = choice ? planName(await getPublishedPlans(), choice.planKey, locale) : null;
   // A partner's link: the code in the address, or the one the visit kept (30 days).
   const promoCode =
     promoCodeFromParam(typeof kod === "string" ? kod : null) ?? (await promoFromCookie()) ?? "";
@@ -57,7 +67,12 @@ export default async function RegisterPage({
       })}
     >
       {inviteInvalid && <FormAlert className="mb-4">{t("workerInviteInvalid")}</FormAlert>}
-      <RegisterForm invite={invite} codeOptional={publicSignup && !invite} promoCode={promoCode} />
+      <RegisterForm
+        invite={invite}
+        codeOptional={publicSignup && !invite}
+        promoCode={promoCode}
+        chosenPlan={choice && chosenName ? { ...choice, name: chosenName } : null}
+      />
       <p className="mt-4 text-xs text-ink-muted">
         {t.rich("usageNote", {
           appName: APP_NAME,
