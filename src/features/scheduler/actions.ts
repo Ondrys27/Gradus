@@ -154,7 +154,13 @@ export async function ensureSchedulerSetup(input: {
         if (!available) continue;
         const inserted = await supabase
           .from("scheduler_profiles")
-          .insert({ space_id: space, handle, display_name: displayName, time_zone: zone })
+          .insert({
+            user_id: userId,
+            space_id: space,
+            handle,
+            display_name: displayName,
+            time_zone: zone,
+          })
           .select("id")
           .single();
         if (!inserted.error) {
@@ -168,7 +174,7 @@ export async function ensureSchedulerSetup(input: {
         // Every candidate taken: the database's own placeholder handle, changed in the guide.
         const fallback = await supabase
           .from("scheduler_profiles")
-          .insert({ space_id: space, display_name: displayName, time_zone: zone })
+          .insert({ user_id: userId, space_id: space, display_name: displayName, time_zone: zone })
           .select("id")
           .single();
         if (fallback.error) throw fallback.error;
@@ -186,6 +192,9 @@ export async function ensureSchedulerSetup(input: {
       const { error } = await supabase.from("availability_rules").insert(
         DEFAULT_WEEKDAYS.map((weekday) => ({
           profile_id: profileId!,
+          // The guard takes person and space from the profile; these only satisfy the types.
+          user_id: userId,
+          space_id: space,
           weekday,
           start_time: DEFAULT_HOURS.start,
           end_time: DEFAULT_HOURS.end,
@@ -202,6 +211,9 @@ export async function ensureSchedulerSetup(input: {
         slugs.push(slug);
         return {
           profile_id: profileId!,
+          // The guard takes person and space from the profile; these only satisfy the types.
+          user_id: userId,
+          space_id: space,
           slug,
           name: names.data[preset.key],
           duration_min: preset.duration,
