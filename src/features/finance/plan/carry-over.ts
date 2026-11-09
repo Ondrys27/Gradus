@@ -125,7 +125,9 @@ export function buildNewMonth(input: {
       for (const row of rowsOfKind(input.previous.rows, kind)) {
         if (input.mode === "recurring" && row.source !== "recurring") continue;
         const values = blank();
-        if (input.mode === "numbers") {
+        // A recurring payment's row takes its numbers from the payment only (below):
+        // copying last month's would plan a quarterly or ended payment again.
+        if (input.mode === "numbers" && row.source !== "recurring") {
           for (const cell of input.previous.cells) {
             if (cell.row_id !== row.id || !cell.planned) continue;
             add(values, Math.min(cell.week, weeks), cell.planned);

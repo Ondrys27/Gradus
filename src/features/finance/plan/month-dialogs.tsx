@@ -52,8 +52,11 @@ export function CreateMonthDialog(props: CreateProps) {
   );
 }
 
-function CreateForm({ month, previous, currency, onCreated, onOpenChange }: CreateProps) {
+function CreateForm({ month, previous, currency: fallbackCurrency, onCreated, onOpenChange }: CreateProps) {
   const t = useTranslations("finance.plan.create");
+  // Carried from a month, the new one keeps its currency: the copied numbers and
+  // the opening capital are in it, and amounts never convert.
+  const currency = previous?.plan.month?.currency ?? fallbackCurrency;
   const tErrors = useTranslations("finance.plan.errors");
   const settings = useFormatSettings();
   const decimal = decimalMarkOf(settings.numberLocale);

@@ -338,7 +338,11 @@ export function importPlanCsv(
   const order: string[] = [];
   let found = false;
   for (const line of lines.slice(header + 1)) {
-    const label = (line[labelColumn] ?? "").replace(/^'/, "").trim();
+    // Control characters (a NUL of a binary file above all) never reach a row name.
+    const label = (line[labelColumn] ?? "")
+      .replace(/[\u0000-\u001f\u007f]/g, " ")
+      .replace(/^'/, "")
+      .trim();
     const name = normalizeLabel(label);
     if (!name) continue;
     if (NAMES.opening.includes(name)) {

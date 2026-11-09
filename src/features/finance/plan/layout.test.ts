@@ -131,6 +131,11 @@ describe("CSV export and import", () => {
     expect(importPlanCsv("\u0000\u0001garbage\"\"\";;;", { weeks: 5, decimal: "," })).toMatchObject({ ok: false });
   });
 
+  it("keeps control characters out of the row names", () => {
+    const result = importPlanCsv("Plán,Týden 1,Týden 2\nPříjmy\nGr\u0000id\u0007,100,\n", { weeks: 5, decimal: "," });
+    expect(result.ok && result.plan.rows.map((row) => row.label)).toEqual(["Gr id"]);
+  });
+
   it("parses quotes, doubled quotes and line breaks inside fields", () => {
     expect(parseCsv('a,"b ""c""","d\ne"\r\n1,2,3')).toEqual([
       ["a", 'b "c"', "d\ne"],

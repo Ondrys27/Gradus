@@ -141,6 +141,27 @@ describe("pipelineSuggestions", () => {
   });
 });
 
+describe("a row made from a recurring payment", () => {
+  it("never carries last month's numbers: a payment not due in the month plans nothing", () => {
+    const rows = buildNewMonth({
+      month: "2026-12",
+      currency: "CZK",
+      previous: {
+        rows: [{ id: "r", kind: "expense", label: "Pojištění", position: 0, source: "recurring", source_id: "rec-q" }],
+        cells: [{ row_id: "r", week: 2, planned: 6000, note: null }],
+        weeks: 5,
+      },
+      mode: "numbers",
+      // Quarterly: next due in February, nothing in December.
+      recurring: [{ ...rent, id: "rec-q", description: "Pojištění", frequency: "quarterly", next_due_on: "2027-02-10", due_day: 10 }],
+      invoices: [],
+    });
+    expect(rows).toEqual([
+      { kind: "expense", label: "Pojištění", position: 0, source: "recurring", source_id: "rec-q", cells: [] },
+    ]);
+  });
+});
+
 describe("a recurring payment due in the month", () => {
   it("replaces the copied numbers of its row instead of adding to them", () => {
     const rows = buildNewMonth({

@@ -498,7 +498,7 @@
         "noWho": "Někdo tě zve do svého týmu. Podívej se, co ti nabízí."
       },
       "cashLow": {
-        "text": "Ve {weekFormatted}. týdnu ti klesne kapitál {zero, select, yes {pod nulu} other {pod {thresholdMoney}}}{hasCause, select, yes { kvůli výdaji „{cause}“ ({causeAmountMoney})} other {}}{missing, plural, =0 {} one {, chybí {missingFormatted} příjem} few {, chybí {missingFormatted} příjmy} other {, chybí {missingFormatted} příjmů}}."
+        "text": "{week, plural, =1 {V} =5 {V} other {Ve}} {weekFormatted}. týdnu ti klesne kapitál {zero, select, yes {pod nulu} other {pod {thresholdMoney}}}{hasCause, select, yes { kvůli výdaji „{cause}“ ({causeAmountMoney})} other {}}{missing, plural, =0 {} one {, chybí {missingFormatted} příjem} few {, chybí {missingFormatted} příjmy} other {, chybí {missingFormatted} příjmů}}."
       }
     },
     "proactive": {
