@@ -5635,6 +5635,7 @@ export type Database = {
           income: number
         }[]
       }
+      finance_month_weeks: { Args: { _month: string }; Returns: number }
       finance_monthly_totals: {
         Args: { _from: string; _to: string }
         Returns: {
@@ -5643,20 +5644,23 @@ export type Database = {
           month: string
         }[]
       }
-      finance_month_weeks: { Args: { _month: string }; Returns: number }
+      finance_plan_month_closed: {
+        Args: { _month: string; _space: string }
+        Returns: boolean
+      }
       finance_plan_transactions: {
         Args: { _from: string; _space: string; _to: string }
         Returns: {
           amount: number
-          category: string | null
-          contact_id: string | null
+          category: string
+          contact_id: string
           currency: string
-          deal_id: string | null
-          description: string | null
+          deal_id: string
+          description: string
           id: string
-          invoice_id: string | null
+          invoice_id: string
           occurred_on: string
-          recurring_payment_id: string | null
+          recurring_payment_id: string
           type: Database["public"]["Enums"]["transaction_type"]
         }[]
       }
@@ -5666,7 +5670,7 @@ export type Database = {
           _month: string
           _opening: number
           _replace?: boolean
-          _reserve: number | null
+          _reserve: number
           _rows: Json
           _space: string
         }
