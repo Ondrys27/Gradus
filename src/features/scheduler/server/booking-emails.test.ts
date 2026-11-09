@@ -73,6 +73,20 @@ describe("the guest's e-mails", () => {
     expect(mail.text).toContain("10:00");
     expect(mail.text).not.toContain("/s/r/");
   });
+
+  it("a reminder says how soon the meeting is", () => {
+    const mail = guestBookingEmail({
+      kind: "reminder",
+      meeting: MEETING,
+      locale: "cs",
+      settings: guestFormatSettings("cs", "Europe/Prague"),
+      manageUrl: "https://gradus.test/s/r/token",
+      bookAgainUrl: null,
+      reminderMinutes: 60,
+      brandingHidden: false,
+    });
+    expect(mail.text).toContain("za hodinu");
+  });
 });
 
 describe("the host's e-mails", () => {

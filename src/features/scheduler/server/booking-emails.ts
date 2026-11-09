@@ -169,14 +169,9 @@ export function guestBookingEmail(input: {
     type: meeting.typeName,
     host: meeting.hostName,
     when: when(meeting, settings, locale),
+    minutes: input.reminderMinutes ?? 0,
   };
   const paragraphs: string[] = [t(`email.booking.guest.${input.kind}.intro`, values)];
-  if (input.kind === "reminder" && input.reminderMinutes) {
-    paragraphs[0] = t("email.booking.guest.reminder.intro", {
-      ...values,
-      minutes: input.reminderMinutes,
-    });
-  }
   if (input.previousStartsAt) {
     paragraphs.push(
       t("email.booking.previous", {
