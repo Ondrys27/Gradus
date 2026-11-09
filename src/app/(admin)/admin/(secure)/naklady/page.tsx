@@ -9,6 +9,8 @@ import {
   costsBreakdowns,
   costsTiles,
   marginByPlanRows,
+  mrrByCurrency,
+  trialConversionFields,
   trialFields,
 } from "@/features/admin/server/page-data";
 import { ADMIN_FORMAT_SETTINGS, formatMetricValue } from "@/features/admin/format-metric";
@@ -128,8 +130,10 @@ async function Margin({ q }: { q: AdminQuery }) {
 }
 
 async function Trial({ q }: { q: AdminQuery }) {
-  const [trial, breakdowns, t] = await Promise.all([
+  const [trial, conversion, mrr, breakdowns, t] = await Promise.all([
     safe("trial fields", () => trialFields(q)),
+    safe("trial conversion", () => trialConversionFields(q)),
+    safe("mrr", () => mrrByCurrency(q)),
     safe("costs breakdowns", () => costsBreakdowns(q)),
     getTranslations("metrics.items"),
   ]);
@@ -137,6 +141,12 @@ async function Trial({ q }: { q: AdminQuery }) {
     <BlockGrid>
       <AdminCard title={t("trials.name")} description={t("trials.description")}>
         <Show loaded={trial}>{(data) => <FieldsGrid data={data} />}</Show>
+      </AdminCard>
+      <AdminCard title={t("trial_conversion.name")} description={t("trial_conversion.description")}>
+        <Show loaded={conversion}>{(data) => <FieldsGrid data={data} />}</Show>
+      </AdminCard>
+      <AdminCard title={t("mrr.name")} description={t("mrr.description")}>
+        <Show loaded={mrr}>{(data) => <BreakdownList data={data} />}</Show>
       </AdminCard>
       <Show loaded={breakdowns}>
         {(blocks) =>

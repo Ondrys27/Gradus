@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
 import { planKeys } from "@/features/plan/queries";
+import { startCheckout, type CheckoutInput } from "@/features/billing/stripe/actions";
 import { createClient } from "@/lib/supabase/client";
 import {
   cancelSubscription,
@@ -11,9 +12,8 @@ import {
   requestSubscriptionChange,
   resumeSubscription,
   saveBillingProfile,
-  type SubscriptionErrorCode,
-  type SubscriptionResult,
 } from "./actions";
+import type { SubscriptionErrorCode, SubscriptionResult } from "./server-context";
 import {
   BILLING_PROFILE_COLUMNS,
   type BillingProfile,
@@ -46,11 +46,18 @@ function unwrap<T>(result: SubscriptionResult<T>): T {
   return result.data;
 }
 
-/** The account's own subscription (RLS: read own only), or null without one. */
-export function useSubscription() {
+/**
+ * The account's own subscription (RLS: read own only), or null without one.
+ * Right after a Checkout the webhook may still be on its way: `poll` reads it
+ * again every few seconds until the row follows Stripe.
+ */
+export function useSubscription({ poll = false, enabled = true }: { poll?: boolean; enabled?: boolean } = {}) {
   const { user } = useSession();
   return useQuery({
     queryKey: subscriptionKeys.subscription(user.id),
+    enabled,
+    refetchInterval: (query) =>
+      poll && query.state.dataUpdateCount < 12 && query.state.data?.gateway !== "stripe" ? 3_000 : false,
     queryFn: async (): Promise<Subscription | null> => {
       const { data, error } = await createClient()
         .from("subscriptions")
@@ -185,6 +192,14 @@ export function useResumeSubscription() {
   return useMutation({
     mutationFn: async () => unwrap(await resumeSubscription()),
     onSettled: refresh,
+  });
+}
+
+/** Opens Stripe's Checkout: the browser leaves for Stripe's page. */
+export function useStartCheckout() {
+  return useMutation({
+    mutationFn: async (input: CheckoutInput) => unwrap(await startCheckout(input)),
+    onSuccess: ({ url }) => window.location.assign(url),
   });
 }
 

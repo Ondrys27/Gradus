@@ -1,0 +1,25 @@
+{
+  "id": "sub_1Foreign",
+  "object": "subscription",
+  "status": "active",
+  "customer": "cus_1Owner",
+  "livemode": false,
+  "cancel_at_period_end": false,
+  "cancel_at": null,
+  "trial_end": null,
+  "schedule": null,
+  "metadata": { "workspace": "11111111-1111-4111-8111-111111111111" },
+  "items": {
+    "object": "list",
+    "data": [
+      {
+        "id": "si_1Foreign",
+        "object": "subscription_item",
+        "quantity": 1,
+        "current_period_start": 1793491200,
+        "current_period_end": 1796169600,
+        "price": { "id": "price_1Other", "object": "price", "currency": "czk", "unit_amount": 100, "lookup_key": "something_else", "metadata": {} }
+      }
+    ]
+  }
+}

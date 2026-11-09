@@ -13,6 +13,7 @@ Stav k 8. 11. 2026.
 | **Google Maps** | Volá Google Places API. 0,035 USD za jeden požadavek (do 20 firem). |
 | **e-mail** | Odejde e-mail přes Resend. Asi 0,0009 USD za kus, k tomu paušál Resendu. |
 | **úložiště** | Uloží soubor (PDF, obrázek, dokument). V praxi skoro zadarmo, viz tabulka nákladů. |
+| **Stripe** | Platba předplatného kartou přes Stripe. Stripe si z každé úspěšné platby strhne poplatek podle svého ceníku; samotné volání API nic nestojí. |
 
 **Pro koho:**
 - **majitel** je ten, kdo má účet a firmu.
@@ -135,7 +136,7 @@ Stav k 8. 11. 2026.
 | Pozvat pracovníka | Krátkým ID nebo e-mailem existujícího účtu: pozvánka čeká v jeho aplikaci (zvonek, e-mail, Jarvis). E-mailem novému člověku: odkaz na registraci jako dřív (i e-mailem). S nadřízeným, skupinami, právy a odměnami. | jen majitel | e-mail |
 | Pozvánky | Pozvaný vidí „Novák s.r.o. · Václav Novák tě zve jako Obchodník“, co tam uvidí a odměny; přijme (firma je v přepínači) nebo odmítne. Majitel vidí stav a dostane oznámení. | kdokoli s pozvánkou | žádný |
 | Odejít z firmy | Pracovník sám v Nastavení → Účet; majitel dostane oznámení a e-mail, práce zůstává ve firmě. | pracovník | e-mail |
-| Kdo za koho platí | Kdo má vlastní platný tarif, je ve firmě zdarma; za ostatní platí majitel: pracovníci v ceně tarifu, pak cena za každého dalšího. Štítek u pracovníka a řádek v Předplatném, nic se zatím nestrhává. | jen majitel | žádný |
+| Kdo za koho platí | Kdo má vlastní platný tarif, je ve firmě zdarma; za ostatní platí majitel: pracovníci v ceně tarifu, pak cena za každého dalšího. Štítek u pracovníka a řádek v Předplatném; ve Stripe druhá položka předplatného, počet se srovná denně a platí od dalšího období. | jen majitel | Stripe |
 | Lidé, strom a mapa | Hierarchie firmy jako seznam nebo organizační mapa, přesun tažením. | majitel; pracovník svou větev (s právem celou firmu) | žádný |
 | Skupiny | Pracovníci ve skupinách, každá skupina má i svou konverzaci ve Zprávách. | jen majitel | žádný |
 | Jemná práva | U každé sekce zvlášť zobrazit, zakládat, upravovat, mazat… Šablony Obchodník, Asistent, Účetní, Vše. | jen majitel | žádný |
@@ -170,7 +171,8 @@ AI pomocník v pravém dolním rohu: chat, souhrny dne, návrhy a hodnocení. V�
 | Práce | Herní nebo nástrojový režim, cesta oboru, kdy znovu oslovit ztracené obchody a údaje na faktury. | majitel (část i pracovník) | žádný |
 | Jarvis | Zapnutí proaktivního Jarvise, jak často se ozývá, tichý režim, e-maily ze Zpráv, znovu spustit tutoriál, smazat ukázková data. | majitel, pracovník | žádný |
 | Soukromí | Export všech dat (ZIP s CSV), smazání účtu, podmínky a ochrana soukromí. | majitel, pracovník | žádný |
-| Předplatné | Tarif, změna, zrušení a obnovení, historie plateb, fakturační údaje, promo kód. Platby zatím neběží. Stará adresa /app/tarif sem přesměruje. | jen majitel | e-mail (nám o změně) |
+| Předplatné | Tarif, změna, zrušení a obnovení, historie plateb s doklady, fakturační údaje (propíšou se do Stripe), promo kód. Stará adresa /app/tarif sem přesměruje. | jen majitel | e-mail (nám o změně) |
+| Zaplatit a pokračovat | Placení přes Stripe Checkout: zkušebka je bez karty, kdo zaplatí během ní, platí až od jejího konce, po expiraci hned. Tlačítko je v Předplatném, v liště posledních 3 dnů zkušebky a na kartě po expiraci. Promo kód se uplatní jako kupon, jiné kódy ve Stripe zadat nejde. Vyšší tarif ve Stripe hned s doplatkem, nižší od konce období, zrušení ke konci období. Ceny jen ze zveřejněného katalogu, testovací a ostrý režim se nemíchají. | jen majitel | Stripe |
 
 ### Napříč aplikací
 <!-- kód: route:/app/test-chyby -->

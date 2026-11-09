@@ -508,6 +508,33 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_customers: {
+        Row: {
+          created_at: string
+          id: string
+          stripe_customer_id: string
+          stripe_mode: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          stripe_customer_id: string
+          stripe_mode?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          stripe_customer_id?: string
+          stripe_mode?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       billing_profiles: {
         Row: {
           city: string | null
@@ -2793,7 +2820,9 @@ export type Database = {
           paid_at: string
           provider: string | null
           provider_ref: string | null
+          provider_synced_at: string | null
           status: string
+          stripe_mode: string
           subscription_id: string | null
           user_id: string
           vat_amount: number
@@ -2807,7 +2836,9 @@ export type Database = {
           paid_at?: string
           provider?: string | null
           provider_ref?: string | null
+          provider_synced_at?: string | null
           status: string
+          stripe_mode?: string
           subscription_id?: string | null
           user_id: string
           vat_amount?: number
@@ -2821,7 +2852,9 @@ export type Database = {
           paid_at?: string
           provider?: string | null
           provider_ref?: string | null
+          provider_synced_at?: string | null
           status?: string
+          stripe_mode?: string
           subscription_id?: string | null
           user_id?: string
           vat_amount?: number
@@ -3337,6 +3370,51 @@ export type Database = {
         }
         Relationships: []
       }
+      stripe_events: {
+        Row: {
+          attempts: number
+          claimed_at: string | null
+          detail: Json
+          event_created: string
+          event_id: string
+          id: string
+          outcome: string | null
+          processed_at: string | null
+          received_at: string
+          stripe_mode: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          attempts?: number
+          claimed_at?: string | null
+          detail?: Json
+          event_created: string
+          event_id: string
+          id?: string
+          outcome?: string | null
+          processed_at?: string | null
+          received_at?: string
+          stripe_mode?: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          attempts?: number
+          claimed_at?: string | null
+          detail?: Json
+          event_created?: string
+          event_id?: string
+          id?: string
+          outcome?: string | null
+          processed_at?: string | null
+          received_at?: string
+          stripe_mode?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           billing: string
@@ -3351,10 +3429,14 @@ export type Database = {
           plan_key: string
           provider: string | null
           provider_ref: string | null
+          provider_synced_at: string | null
           scheduled_at: string | null
           scheduled_billing: string | null
           scheduled_plan_key: string | null
           status: Database["public"]["Enums"]["subscription_status"]
+          stripe_amount: number | null
+          stripe_currency: string | null
+          stripe_mode: string | null
           trial_ends_at: string | null
           updated_at: string
           user_id: string
@@ -3373,10 +3455,14 @@ export type Database = {
           plan_key: string
           provider?: string | null
           provider_ref?: string | null
+          provider_synced_at?: string | null
           scheduled_at?: string | null
           scheduled_billing?: string | null
           scheduled_plan_key?: string | null
           status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_amount?: number | null
+          stripe_currency?: string | null
+          stripe_mode?: string | null
           trial_ends_at?: string | null
           updated_at?: string
           user_id: string
@@ -3395,10 +3481,14 @@ export type Database = {
           plan_key?: string
           provider?: string | null
           provider_ref?: string | null
+          provider_synced_at?: string | null
           scheduled_at?: string | null
           scheduled_billing?: string | null
           scheduled_plan_key?: string | null
           status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_amount?: number | null
+          stripe_currency?: string | null
+          stripe_mode?: string | null
           trial_ends_at?: string | null
           updated_at?: string
           user_id?: string
@@ -4784,6 +4874,68 @@ export type Database = {
         }[]
       }
       award_xp: { Args: { _reason: string; _ref_id?: string }; Returns: Json }
+      billing_apply_subscription: {
+        Args: {
+          _amount?: number
+          _billing: string
+          _cancel_at_period_end: boolean
+          _currency?: string
+          _event_at: string
+          _mode: string
+          _period_end: string
+          _period_start: string
+          _plan_key: string
+          _scheduled_at?: string
+          _scheduled_billing?: string
+          _scheduled_plan_key?: string
+          _status: string
+          _subscription_ref: string
+          _trial_end: string
+          _user_id: string
+        }
+        Returns: Json
+      }
+      billing_customer_save: {
+        Args: { _customer_id: string; _mode: string; _user_id: string }
+        Returns: string
+      }
+      billing_event_claim: {
+        Args: {
+          _created: string
+          _event_id: string
+          _mode: string
+          _type: string
+        }
+        Returns: string
+      }
+      billing_event_finish: {
+        Args: {
+          _detail?: Json
+          _event_id: string
+          _outcome: string
+          _user_id?: string
+        }
+        Returns: undefined
+      }
+      billing_mode_allowed: {
+        Args: { _mode: string; _user_id: string }
+        Returns: boolean
+      }
+      billing_record_payment: {
+        Args: {
+          _amount: number
+          _currency: string
+          _event_at: string
+          _invoice_ref: string
+          _invoice_url?: string
+          _mode: string
+          _paid_at: string
+          _status: string
+          _user_id: string
+          _vat_amount: number
+        }
+        Returns: Json
+      }
       book_invoice_income: {
         Args: {
           _invoice: Database["public"]["Tables"]["invoices"]["Row"]
@@ -5893,6 +6045,14 @@ export type Database = {
           total: number
         }[]
       }
+      metric_mrr: {
+        Args: { _include_internal?: boolean; _segment?: Json; _tz?: string }
+        Returns: {
+          accounts: number
+          key: string
+          value: number
+        }[]
+      }
       metric_precomputed_segments: { Args: never; Returns: Json[] }
       metric_promo_conversion: {
         Args: {
@@ -5962,6 +6122,20 @@ export type Database = {
           sessions_per_user_day: number
           sessions_per_user_week: number
           users: number
+        }[]
+      }
+      metric_trial_conversion: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _segment?: Json
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          trial_paid_pct: number
+          trials_ended: number
+          trials_paid: number
         }[]
       }
       metric_trials: {

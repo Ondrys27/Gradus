@@ -1,0 +1,11 @@
+{
+  "id": "ch_1Refunded",
+  "object": "charge",
+  "livemode": false,
+  "amount": 44500,
+  "amount_refunded": 44500,
+  "refunded": true,
+  "currency": "czk",
+  "payment_intent": "pi_1Paid",
+  "metadata": {}
+}
