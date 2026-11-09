@@ -496,6 +496,9 @@
       "workerInvite": {
         "text": "{who} invites you into their team. See what they offer.",
         "noWho": "Somebody invites you into their team. See what they offer."
+      },
+      "cashLow": {
+        "text": "In week {weekFormatted} your capital drops {zero, select, yes {below zero} other {below {thresholdMoney}}}{hasCause, select, yes { because of the expense “{cause}” ({causeAmountMoney})} other {}}{missing, plural, =0 {} one {; {missingFormatted} planned income has not come in} other {; {missingFormatted} planned incomes have not come in}}."
       }
     },
     "proactive": {
@@ -2987,7 +2990,9 @@
       "label": "Finance sections",
       "transactions": "Transactions",
       "recurring": "Recurring",
-      "invoices": "Invoices"
+      "invoices": "Invoices",
+      "month": "Month",
+      "overview": "Overview"
     },
     "actions": {
       "newTransaction": "New transaction",
@@ -3105,6 +3110,197 @@
       "previous": "Previous page",
       "next": "Next page",
       "position": "Page {page} of {pages}"
+    },
+    "plan": {
+      "previousMonth": "Previous month: {month}",
+      "nextMonth": "Next month: {month}",
+      "closedBadge": "Closed",
+      "views": {
+        "label": "What the table shows",
+        "plan": "Plan",
+        "actual": "Actual",
+        "diff": "Difference"
+      },
+      "hideEmpty": "Hide empty rows",
+      "hiddenRows": "{count, plural, one {# hidden} other {# hidden}}",
+      "carry": "Create {next} from {from}",
+      "more": "More month options",
+      "close": "Close the month",
+      "reopen": "Reopen the month",
+      "loadFailed": "The month plan could not be loaded.",
+      "help": "Click a cell and type: 12500, 12.5k or 3*4000. Enter and Tab move like in a spreadsheet, Esc cancels. Blue numbers are typed in, black ones are computed. A week runs Monday to Sunday; a week reaching into the next month belongs to the month of its Monday.",
+      "empty": {
+        "title": "{month} has no plan yet",
+        "description": "Plan your income and expenses week by week and see when money will be tightest.",
+        "create": "Create {month}"
+      },
+      "errors": {
+        "labelTaken": "This block already has a row with that name.",
+        "readOnly": "The account is read-only; the plan can't be changed now.",
+        "closed": "The month is closed. Reopen it first.",
+        "monthExists": "This month already has a plan.",
+        "saveFailed": "Could not save. Please try again."
+      },
+      "export": {
+        "label": "Export",
+        "xlsx": "Excel (XLSX)",
+        "csv": "CSV",
+        "fileName": "finance-plan-{month}",
+        "legend": "Blue numbers are typed in (the plan), black ones are formulas. Amounts in {currency}."
+      },
+      "import": {
+        "menu": "Import from CSV",
+        "title": "Import into {month}",
+        "close": "Close",
+        "description": "A CSV in the same layout as the table: a row with Week 1…, Opening capital, INCOME and EXPENSES with their items. That's how you bring over your Google Sheets or Excel table (File → Download → CSV).",
+        "choose": "Choose a CSV file",
+        "problems": {
+          "tooLarge": "The file is too large (512 kB at most).",
+          "notPlanLayout": "We found no row of weeks (Week 1, Week 2…) and no INCOME or EXPENSES blocks in the file.",
+          "tooManyRows": "The file has more than 300 items."
+        },
+        "preview": "Income: {income} · expenses: {expense} · opening capital: {opening}",
+        "noOpening": "not in the file",
+        "foldedWeeks": "Weeks the month doesn't have are added to week {weeks}.",
+        "replaceWarning": "Importing replaces the month's current plan.",
+        "cancel": "Cancel",
+        "replace": "Replace the plan",
+        "submit": "Import"
+      },
+      "cell": {
+        "title": "{row} · Week {week}",
+        "close": "Close",
+        "empty": "No transaction here this week yet.",
+        "noDescription": "No description",
+        "add": "Add transaction"
+      },
+      "deleteRow": {
+        "title": "Delete the row?",
+        "description": "The row “{name}” has numbers in the plan. They will be deleted with it.",
+        "confirm": "Delete",
+        "cancel": "Cancel"
+      },
+      "months": {
+        "title": "{name} {year}",
+        "title1": "January",
+        "title2": "February",
+        "title3": "March",
+        "title4": "April",
+        "title5": "May",
+        "title6": "June",
+        "title7": "July",
+        "title8": "August",
+        "title9": "September",
+        "title10": "October",
+        "title11": "November",
+        "title12": "December",
+        "name1": "January",
+        "name2": "February",
+        "name3": "March",
+        "name4": "April",
+        "name5": "May",
+        "name6": "June",
+        "name7": "July",
+        "name8": "August",
+        "name9": "September",
+        "name10": "October",
+        "name11": "November",
+        "name12": "December",
+        "from1": "January",
+        "from2": "February",
+        "from3": "March",
+        "from4": "April",
+        "from5": "May",
+        "from6": "June",
+        "from7": "July",
+        "from8": "August",
+        "from9": "September",
+        "from10": "October",
+        "from11": "November",
+        "from12": "December"
+      },
+      "grid": {
+        "label": "Month plan",
+        "item": "Item",
+        "week": "Week {week}",
+        "total": "Total",
+        "opening": "Opening capital",
+        "income": "Income",
+        "expense": "Expenses",
+        "incomeTotal": "Total income",
+        "expenseTotal": "Total expenses",
+        "capital": "Capital",
+        "balance": "Weekly balance",
+        "closing": "Closing capital",
+        "other": "Other",
+        "newRow": "+ New item",
+        "newIncome": "New income",
+        "newExpense": "New expense",
+        "invalidNumber": "That's not a number. Try 12500, 12.5k or 3*4000.",
+        "rowMenu": "Options for row {name}",
+        "rename": "Rename",
+        "delete": "Delete",
+        "drag": "Move row",
+        "pipelineHeading": "expected from the pipeline",
+        "accept": "Accept",
+        "acceptLabel": "Accept {name} into the plan",
+        "actualHint": "Actual: {value}",
+        "source": {
+          "manual": "Typed in",
+          "contact": "Client",
+          "deal": "Deal",
+          "recurring": "Automatic payment",
+          "invoice": "Invoice"
+        }
+      },
+      "summary": {
+        "title": "Month summary",
+        "opening": "Opening capital",
+        "income": "Total income",
+        "expense": "Total expenses",
+        "balance": "Month balance",
+        "closing": "Closing capital",
+        "lowest": "Lowest point",
+        "lowestWeek": "in week {week} ({range})",
+        "lowestWhen": "When",
+        "warningNegative": "In week {week} the capital drops below zero.",
+        "warningReserve": "In week {week} the capital drops below the reserve of {reserve}.",
+        "reserve": "Reserve ({currency})",
+        "reservePlaceholder": "no reserve",
+        "reserveHint": "Below this amount the summary and Jarvis warn you."
+      },
+      "create": {
+        "title": "Create {month}",
+        "fromTitle": "Create {month} from the previous month",
+        "close": "Close",
+        "copyLegend": "What to take from {month}",
+        "mode": {
+          "labels": "Rows without numbers",
+          "numbers": "Rows with their numbers",
+          "recurring": "Automatic payments only"
+        },
+        "modeHint": {
+          "labels": "The same items, you fill in the numbers.",
+          "numbers": "Copies the plan week by week too.",
+          "recurring": "Only the rows of automatic payments."
+        },
+        "opening": "Opening capital ({currency})",
+        "openingFromPrevious": "Prefilled with the closing capital of {month}. You can change it.",
+        "openingHint": "What you have at the start of the month.",
+        "autoFill": "Automatic payments go into the week they are due, unpaid invoices due in the month as income from that client.",
+        "cancel": "Cancel",
+        "submit": "Create"
+      },
+      "chart": {
+        "title": "Capital week by week",
+        "description": "Plan and actual, three months back and three ahead. Only months that have a plan.",
+        "loadFailed": "The chart could not be loaded.",
+        "empty": "No month has a plan yet. Create one in Finance → Month.",
+        "week": "Week {week}",
+        "plan": "Plan",
+        "actual": "Actual",
+        "weekColumn": "Week"
+      }
     }
   },
   "dashboard": {
@@ -6047,6 +6243,10 @@
           "workerInvite": {
             "label": "Invite into a company",
             "description": "Somebody invited the user into their company and the invite waits for an answer."
+          },
+          "cashLow": {
+            "label": "Money running short",
+            "description": "By the month plan (Finance → Month) the capital drops below zero or below the reserve this week or a later one."
           }
         },
         "questions": {

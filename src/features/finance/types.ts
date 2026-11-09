@@ -88,5 +88,5 @@ export const PERIOD_KINDS = [
 ] as const;
 export type PeriodKind = (typeof PERIOD_KINDS)[number];
 
-export const FINANCE_TABS = ["transactions", "recurring", "invoices"] as const;
+export const FINANCE_TABS = ["month", "transactions", "recurring", "invoices", "overview"] as const;
 export type FinanceTab = (typeof FINANCE_TABS)[number];

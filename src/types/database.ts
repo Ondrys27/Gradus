@@ -1861,6 +1861,130 @@ export type Database = {
         }
         Relationships: []
       }
+      finance_plan_cells: {
+        Row: {
+          actual: number | null
+          note: string | null
+          planned: number
+          row_id: string
+          updated_at: string
+          user_id: string
+          week: number
+        }
+        Insert: {
+          actual?: number | null
+          note?: string | null
+          planned?: number
+          row_id: string
+          updated_at?: string
+          user_id: string
+          week: number
+        }
+        Update: {
+          actual?: number | null
+          note?: string | null
+          planned?: number
+          row_id?: string
+          updated_at?: string
+          user_id?: string
+          week?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_plan_cells_row_fkey"
+            columns: ["row_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "finance_plan_rows"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
+      finance_plan_months: {
+        Row: {
+          closed: boolean
+          created_at: string
+          created_by: string | null
+          currency: string
+          id: string
+          month: string
+          opening_capital: number
+          reserve: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          closed?: boolean
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          id?: string
+          month: string
+          opening_capital?: number
+          reserve?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          closed?: boolean
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          id?: string
+          month?: string
+          opening_capital?: number
+          reserve?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      finance_plan_rows: {
+        Row: {
+          created_at: string
+          id: string
+          kind: Database["public"]["Enums"]["transaction_type"]
+          label: string
+          month: string
+          position: number
+          source: string
+          source_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: Database["public"]["Enums"]["transaction_type"]
+          label: string
+          month: string
+          position?: number
+          source?: string
+          source_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["transaction_type"]
+          label?: string
+          month?: string
+          position?: number
+          source?: string
+          source_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_plan_rows_month_fkey"
+            columns: ["user_id", "month"]
+            isOneToOne: false
+            referencedRelation: "finance_plan_months"
+            referencedColumns: ["user_id", "month"]
+          },
+        ]
+      }
       generation_keyword_stats: {
         Row: {
           day: string
@@ -5518,6 +5642,35 @@ export type Database = {
           income: number
           month: string
         }[]
+      }
+      finance_month_weeks: { Args: { _month: string }; Returns: number }
+      finance_plan_transactions: {
+        Args: { _from: string; _space: string; _to: string }
+        Returns: {
+          amount: number
+          category: string | null
+          contact_id: string | null
+          currency: string
+          deal_id: string | null
+          description: string | null
+          id: string
+          invoice_id: string | null
+          occurred_on: string
+          recurring_payment_id: string | null
+          type: Database["public"]["Enums"]["transaction_type"]
+        }[]
+      }
+      finance_plan_write_month: {
+        Args: {
+          _currency: string
+          _month: string
+          _opening: number
+          _replace?: boolean
+          _reserve: number | null
+          _rows: Json
+          _space: string
+        }
+        Returns: string
       }
       finance_totals: {
         Args: { _category?: string; _from: string; _to: string }

@@ -18,7 +18,7 @@ test("28 · zooming the Finance chart in and out never crashes the page", async 
 }) => {
   const account = await accounts.create({ label: "finance-zoom" });
   await signIn(page, account);
-  await page.goto("/app/finance");
+  await page.goto("/app/finance?tab=overview");
 
   const zoomIn = page.getByRole("button", { name: exact(L, "finance.chart.zoomIn") });
   const zoomOut = page.getByRole("button", { name: exact(L, "finance.chart.zoomOut") });

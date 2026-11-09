@@ -9,6 +9,7 @@ import {
   type IsoDate,
 } from "@/lib/format";
 import { digestIsClear, type HealthDigest } from "@/features/pipeline/health";
+import { describeCashPlan, type CashPlan } from "./cash-plan";
 import type { SuggestionKey } from "./protocol";
 import { describeTimeWindow, type TimeWindow } from "./time-window";
 
@@ -60,6 +61,12 @@ export type UserSituation = {
    * A worker's are only their own; null when they could not be read.
    */
   pipelineHealth: HealthDigest | null;
+  /**
+   * The month plan (Finance → Month) of the month today belongs to, with the
+   * lowest point and a cash warning; null without a plan or without the right
+   * to see finance summaries.
+   */
+  cashPlan: CashPlan | null;
 };
 
 /** Longest title or name passed on; the model needs the gist, not the essay. */
@@ -215,6 +222,8 @@ export function describeSituation(situation: UserSituation, settings: FormatSett
     );
   }
 
+  if (situation.cashPlan) lines.push(describeCashPlan(situation.cashPlan, settings));
+
   return lines.join("\n");
 }
 
@@ -225,6 +234,8 @@ export function suggestionsFor(situation: UserSituation, limit = 3): SuggestionK
   if (situation.overdueCrmTasksTotal) keys.push("overdueCrmTasks");
   if (situation.overdueTotal) keys.push("overdueTasks");
   if (situation.overdueInvoicesTotal) keys.push("overdueInvoices");
+  // Money running short this month: the month's finances are worth a question.
+  if (situation.cashPlan?.finding) keys.push("monthFinance");
   if (situation.stalledDeals) keys.push("stalledDeals");
   // Late in the day, at the weekend or on a holiday the next working day is what to plan.
   const plan: SuggestionKey =
@@ -234,7 +245,7 @@ export function suggestionsFor(situation: UserSituation, limit = 3): SuggestionK
   else keys.push("nextMilestoneStep");
   if (!situation.stages.some((stage) => stage.open > 0)) keys.push("firstDeal");
   if (situation.prospectingSeconds === 0) keys.push("startCalling");
-  keys.push("monthFinance");
+  if (!keys.includes("monthFinance")) keys.push("monthFinance");
   if (!keys.includes(plan)) keys.push(plan);
   return keys.slice(0, limit);
 }

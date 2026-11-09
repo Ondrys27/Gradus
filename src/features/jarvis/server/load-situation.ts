@@ -9,6 +9,7 @@ import { serverCan } from "@/features/account/server/permissions";
 import { todayIsoDate, type FormatSettings } from "@/lib/format";
 import type { Database } from "@/types/database";
 import type { UserSituation } from "../situation";
+import { loadCashPlan } from "./cash-plan";
 import { loadTimeWindow } from "./time-window";
 
 type Client = SupabaseClient<Database>;
@@ -78,6 +79,9 @@ export async function loadSituation(
       return null;
     },
   );
+
+  // The month plan never fails the rest either; without a plan it is null.
+  const cashPlan = loadCashPlan(supabase, ws, settings, now);
 
   const [
     milestones,
@@ -290,6 +294,8 @@ export async function loadSituation(
     overdueCrmTasksTotal: crmOverdue.count ?? 0,
     crmTasksDueToday: crmToday.count ?? 0,
     pipelineHealth: await pipelineHealth,
+    // Like the month's totals: a worker only with finance summaries.
+    cashPlan: seeFinance ? await cashPlan : null,
   };
 }
 

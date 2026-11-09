@@ -496,6 +496,9 @@
       "workerInvite": {
         "text": "{who} tě zve do svého týmu. Podívej se, co ti nabízí.",
         "noWho": "Někdo tě zve do svého týmu. Podívej se, co ti nabízí."
+      },
+      "cashLow": {
+        "text": "Ve {weekFormatted}. týdnu ti klesne kapitál {zero, select, yes {pod nulu} other {pod {thresholdMoney}}}{hasCause, select, yes { kvůli výdaji „{cause}“ ({causeAmountMoney})} other {}}{missing, plural, =0 {} one {, chybí {missingFormatted} příjem} few {, chybí {missingFormatted} příjmy} other {, chybí {missingFormatted} příjmů}}."
       }
     },
     "proactive": {
@@ -2987,7 +2990,9 @@
       "label": "Části financí",
       "transactions": "Transakce",
       "recurring": "Automatické platby",
-      "invoices": "Faktury"
+      "invoices": "Faktury",
+      "month": "Měsíc",
+      "overview": "Přehled"
     },
     "actions": {
       "newTransaction": "Nová transakce",
@@ -3105,6 +3110,197 @@
       "previous": "Předchozí stránka",
       "next": "Další stránka",
       "position": "Strana {page} z {pages}"
+    },
+    "plan": {
+      "previousMonth": "Předchozí měsíc: {month}",
+      "nextMonth": "Další měsíc: {month}",
+      "closedBadge": "Uzavřený",
+      "views": {
+        "label": "Co tabulka ukazuje",
+        "plan": "Plán",
+        "actual": "Skutečnost",
+        "diff": "Rozdíl"
+      },
+      "hideEmpty": "Skrýt prázdné řádky",
+      "hiddenRows": "{count, plural, one {# skrytý} few {# skryté} other {# skrytých}}",
+      "carry": "Založit {next} z {from}",
+      "more": "Další možnosti měsíce",
+      "close": "Uzavřít měsíc",
+      "reopen": "Znovu otevřít měsíc",
+      "loadFailed": "Plán měsíce se nepodařilo načíst.",
+      "help": "Klikni do buňky a piš: 12 500, 12,5k nebo 3*4000. Enter a Tab posouvají jako v tabulce, Esc zruší. Modrá čísla zadáváš, černá se počítají. Týden je od pondělí do neděle; týden, který přesahuje do dalšího měsíce, patří měsíci, ve kterém je jeho pondělí.",
+      "empty": {
+        "title": "{month} ještě nemá plán",
+        "description": "Naplánuj si příjmy a výdaje po týdnech a uvidíš, kdy ti bude nejmíň peněz.",
+        "create": "Založit {month}"
+      },
+      "errors": {
+        "labelTaken": "Řádek s tímhle názvem už v bloku je.",
+        "readOnly": "Účet je jen pro čtení, plán teď nejde měnit.",
+        "closed": "Měsíc je uzavřený. Nejdřív ho znovu otevři.",
+        "monthExists": "Tenhle měsíc už plán má.",
+        "saveFailed": "Nepodařilo se uložit. Zkus to znovu."
+      },
+      "export": {
+        "label": "Exportovat",
+        "xlsx": "Excel (XLSX)",
+        "csv": "CSV",
+        "fileName": "financni-plan-{month}",
+        "legend": "Modrá čísla jsou zadaná (plán), černá se počítají vzorcem. Částky v {currency}."
+      },
+      "import": {
+        "menu": "Importovat z CSV",
+        "title": "Import do: {month}",
+        "close": "Zavřít",
+        "description": "Soubor CSV ve stejném rozvržení jako tabulka: řádek s Týden 1…, Počáteční kapitál, PŘÍJMY a VÝDAJE s položkami. Tak přeneseš svou tabulku z Google Sheets nebo Excelu (Soubor → Stáhnout → CSV).",
+        "choose": "Vybrat soubor CSV",
+        "problems": {
+          "tooLarge": "Soubor je moc velký (nejvýš 512 kB).",
+          "notPlanLayout": "V souboru jsme nenašli řádek s týdny (Týden 1, Týden 2…) ani bloky PŘÍJMY a VÝDAJE.",
+          "tooManyRows": "V souboru je víc než 300 položek."
+        },
+        "preview": "Příjmy: {income} · výdaje: {expense} · počáteční kapitál: {opening}",
+        "noOpening": "není v souboru",
+        "foldedWeeks": "Týdny, které měsíc nemá, se přičtou do týdne {weeks}.",
+        "replaceWarning": "Import nahradí současný plán měsíce.",
+        "cancel": "Zrušit",
+        "replace": "Nahradit plán",
+        "submit": "Importovat"
+      },
+      "cell": {
+        "title": "{row} · Týden {week}",
+        "close": "Zavřít",
+        "empty": "V tomhle týdnu tu zatím žádná transakce není.",
+        "noDescription": "Bez popisu",
+        "add": "Přidat transakci"
+      },
+      "deleteRow": {
+        "title": "Smazat řádek?",
+        "description": "Řádek „{name}“ má v plánu čísla. Smažou se s ním.",
+        "confirm": "Smazat",
+        "cancel": "Zrušit"
+      },
+      "months": {
+        "title": "{name} {year}",
+        "title1": "Leden",
+        "title2": "Únor",
+        "title3": "Březen",
+        "title4": "Duben",
+        "title5": "Květen",
+        "title6": "Červen",
+        "title7": "Červenec",
+        "title8": "Srpen",
+        "title9": "Září",
+        "title10": "Říjen",
+        "title11": "Listopad",
+        "title12": "Prosinec",
+        "name1": "leden",
+        "name2": "únor",
+        "name3": "březen",
+        "name4": "duben",
+        "name5": "květen",
+        "name6": "červen",
+        "name7": "červenec",
+        "name8": "srpen",
+        "name9": "září",
+        "name10": "říjen",
+        "name11": "listopad",
+        "name12": "prosinec",
+        "from1": "ledna",
+        "from2": "února",
+        "from3": "března",
+        "from4": "dubna",
+        "from5": "května",
+        "from6": "června",
+        "from7": "července",
+        "from8": "srpna",
+        "from9": "září",
+        "from10": "října",
+        "from11": "listopadu",
+        "from12": "prosince"
+      },
+      "grid": {
+        "label": "Plán měsíce",
+        "item": "Položka",
+        "week": "Týden {week}",
+        "total": "Celkem",
+        "opening": "Počáteční kapitál",
+        "income": "Příjmy",
+        "expense": "Výdaje",
+        "incomeTotal": "Příjmy celkem",
+        "expenseTotal": "Výdaje celkem",
+        "capital": "Kapitál",
+        "balance": "Bilance týdne",
+        "closing": "Konečný kapitál",
+        "other": "Ostatní",
+        "newRow": "+ Nová položka",
+        "newIncome": "Nový příjem",
+        "newExpense": "Nový výdaj",
+        "invalidNumber": "Tohle není číslo. Zkus 12 500, 12,5k nebo 3*4000.",
+        "rowMenu": "Možnosti řádku {name}",
+        "rename": "Přejmenovat",
+        "delete": "Smazat",
+        "drag": "Přesunout řádek",
+        "pipelineHeading": "očekávané z pipeline",
+        "accept": "Přijmout",
+        "acceptLabel": "Přijmout {name} do plánu",
+        "actualHint": "Skutečnost: {value}",
+        "source": {
+          "manual": "Zadané ručně",
+          "contact": "Klient",
+          "deal": "Obchod",
+          "recurring": "Automatická platba",
+          "invoice": "Faktura"
+        }
+      },
+      "summary": {
+        "title": "Shrnutí měsíce",
+        "opening": "Vstupní kapitál",
+        "income": "Příjmy celkem",
+        "expense": "Výdaje celkem",
+        "balance": "Bilance měsíce",
+        "closing": "Konečný kapitál",
+        "lowest": "Nejnižší stav",
+        "lowestWeek": "v týdnu {week} ({range})",
+        "lowestWhen": "Kdy nastane",
+        "warningNegative": "V týdnu {week} klesne kapitál pod nulu.",
+        "warningReserve": "V týdnu {week} klesne kapitál pod rezervu {reserve}.",
+        "reserve": "Rezerva ({currency})",
+        "reservePlaceholder": "bez rezervy",
+        "reserveHint": "Pod touhle částkou tě shrnutí i Jarvis upozorní."
+      },
+      "create": {
+        "title": "Založit {month}",
+        "fromTitle": "Založit {month} z minulého měsíce",
+        "close": "Zavřít",
+        "copyLegend": "Co převzít z: {month}",
+        "mode": {
+          "labels": "Řádky bez čísel",
+          "numbers": "Řádky i s čísly",
+          "recurring": "Jen automatické platby"
+        },
+        "modeHint": {
+          "labels": "Stejné položky, čísla doplníš.",
+          "numbers": "Zkopíruje i plán po týdnech.",
+          "recurring": "Jen řádky automatických plateb."
+        },
+        "opening": "Počáteční kapitál ({currency})",
+        "openingFromPrevious": "Předvyplněný konečný kapitál z: {month}. Můžeš ho přepsat.",
+        "openingHint": "Kolik máš na začátku měsíce.",
+        "autoFill": "Automatické platby se samy dosadí do týdne splatnosti a nezaplacené faktury se splatností v měsíci jako příjem u klienta.",
+        "cancel": "Zrušit",
+        "submit": "Založit"
+      },
+      "chart": {
+        "title": "Vývoj kapitálu po týdnech",
+        "description": "Plán a skutečnost, tři měsíce zpět a tři dopředu. Jen měsíce, které mají plán.",
+        "loadFailed": "Graf se nepodařilo načíst.",
+        "empty": "Zatím žádný měsíc s plánem. Založ ho ve Financích → Měsíc.",
+        "week": "Týden {week}",
+        "plan": "Plán",
+        "actual": "Skutečnost",
+        "weekColumn": "Týden"
+      }
     }
   },
   "dashboard": {
@@ -6047,6 +6243,10 @@
           "workerInvite": {
             "label": "Pozvánka do firmy",
             "description": "Někdo uživatele pozval do své firmy a pozvánka čeká na přijetí."
+          },
+          "cashLow": {
+            "label": "Dochází peníze",
+            "description": "Podle plánu měsíce (Finance → Měsíc) klesne kapitál v tomto nebo dalším týdnu pod nulu nebo pod zadanou rezervu."
           }
         },
         "questions": {

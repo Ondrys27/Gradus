@@ -34,6 +34,7 @@ function situation(overrides: Partial<UserSituation> = {}): UserSituation {
     overdueCrmTasksTotal: 0,
     crmTasksDueToday: 0,
     pipelineHealth: null,
+    cashPlan: null,
     ...overrides,
   };
 }
@@ -268,5 +269,51 @@ describe("pipeline health in the situation", () => {
       "Pipeline health (goal is zero everywhere): all clear",
     );
     expect(describeSituation(situation(), settings)).not.toContain("Pipeline health");
+  });
+});
+
+describe("the month plan in the situation", () => {
+  const cashPlan = {
+    month: "2026-11",
+    currency: "CZK",
+    weeks: 5,
+    pastWeeks: 1,
+    closing: 17000,
+    lowest: { value: 6500, week: 1 },
+    reserve: 5000,
+    finding: {
+      week: 4,
+      closing: 3000,
+      threshold: 5000,
+      cause: { label: "Nájem", amount: 12000 },
+      missingIncomes: 2,
+    },
+  };
+
+  it("gives the plan, the lowest point and the warning with its reason", () => {
+    const text = describeSituation(situation({ cashPlan }), settings);
+    expect(text).toContain("Finance plan 2026-11");
+    expect(text).toContain("lowest 6 500 Kč at the end of week 1, reserve 5 000 Kč");
+    expect(text).toContain("drops to 3 000 Kč at the end of week 4, below the reserve 5 000 Kč");
+    expect(text).toContain('"Nájem" 12 000 Kč');
+    expect(text).toContain("2 planned income(s)");
+  });
+
+  it("says nothing about a plan that does not exist, and no warning for a fine month", () => {
+    expect(describeSituation(situation(), settings)).not.toContain("Finance plan");
+    const fine = describeSituation(
+      situation({ cashPlan: { ...cashPlan, finding: null } }),
+      settings,
+    );
+    expect(fine).toContain("Finance plan 2026-11");
+    expect(fine).not.toContain("Cash warning");
+  });
+
+  it("offers the month's finances first when money runs short", () => {
+    const keys = suggestionsFor(situation({ cashPlan, milestonesTotal: 1 }));
+    expect(keys[0]).toBe("monthFinance");
+    expect(new Set(suggestionsFor(situation({ cashPlan }), 10)).size).toBe(
+      suggestionsFor(situation({ cashPlan }), 10).length,
+    );
   });
 });

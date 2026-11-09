@@ -19,8 +19,9 @@ const {
   summaryLinks,
 } = await import("./briefing");
 const { proposedTasks } = await import("./watch");
-const { suggestionNotBefore } = await import("./suggestions");
+const { loadRuleInputs, suggestionNotBefore } = await import("./suggestions");
 const { timeWindow } = await import("../time-window");
+const { DEFAULT_PROACTIVE_RULES } = await import("../proactive");
 
 type Result = { data?: unknown; error?: unknown; count?: number | null };
 type Call = { table: string; ops: [string, unknown[]][] };
@@ -111,6 +112,98 @@ describe("toCandidate", () => {
         NOW,
       )?.item.questionKey,
     ).toBe("callingHours");
+  });
+});
+
+describe("cashLow: money running short in the month plan", () => {
+  const row = (id: string, kind: string, label: string, position: number, cells: [number, number][]) => ({
+    id,
+    kind,
+    label,
+    position,
+    source: "manual",
+    source_id: null,
+    finance_plan_cells: cells.map(([week, planned]) => ({ week, planned, note: null })),
+  });
+  const plan = {
+    finance_plan_months: {
+      data: { id: "m", month: "2026-11", opening_capital: 8500, reserve: 8000, currency: "CZK", closed: false },
+    },
+    finance_plan_rows: {
+      data: [
+        row("fajn", "income", "Fajn Jídlo", 0, [[1, 10000], [3, 24500]]),
+        row("grid", "income", "Grid", 1, [[2, 40000]]),
+        row("rent", "expense", "Nájem", 0, [[1, 12000]]),
+        row("pay", "expense", "Mzdy", 1, [[2, 30000], [4, 14000]]),
+      ],
+    },
+    "rpc:finance_plan_transactions": {
+      data: [
+        {
+          id: "t1",
+          type: "expense",
+          amount: 12000,
+          currency: "CZK",
+          category: "rent",
+          description: null,
+          occurred_on: "2026-11-03",
+          recurring_payment_id: null,
+          invoice_id: null,
+          deal_id: null,
+          contact_id: null,
+        },
+      ],
+    },
+  };
+  const format = {
+    numberLocale: "cs-CZ",
+    dateFormat: "d. M. yyyy",
+    timeFormat: "HH:mm",
+    weekStartsOn: 1 as const,
+    currency: "CZK",
+    timeZone: "Europe/Prague",
+  };
+  const nov10 = new Date("2026-11-10T09:00:00Z");
+
+  it("is read from the user's own plan and the transactions so far, live at every check", async () => {
+    const { db, calls } = fakeDb(plan);
+    const inputs = await loadRuleInputs(db, USER, format, nov10);
+    expect(inputs.cashLow).toEqual({
+      month: "2026-11",
+      week: 2,
+      threshold: 8000,
+      currency: "CZK",
+      cause: { label: "Mzdy", amount: 30000 },
+      missingIncomes: 1,
+    });
+    const months = calls.find((call) => call.table === "finance_plan_months")!;
+    expect(has(months, "eq", "user_id", USER)).toBe(true);
+    expect(has(months, "eq", "month", "2026-11")).toBe(true);
+  });
+
+  it("says nothing without a plan, or when the plan can not be read", async () => {
+    expect((await loadRuleInputs(fakeDb().db, USER, format, nov10)).cashLow).toBeNull();
+    const broken = fakeDb({ ...plan, finance_plan_rows: { error: { message: "denied" } } });
+    vi.spyOn(console, "error").mockImplementationOnce(() => {});
+    expect((await loadRuleInputs(broken.db, USER, format, nov10)).cashLow).toBeNull();
+  });
+
+  it("may come up on its own unless the owner of the app switched it off", () => {
+    const suggestion = {
+      id: ID,
+      kind: "suggestion",
+      type: "cashLow",
+      text: "Capital drops below 8000 CZK in week 2 of 2026-11",
+      action: { kind: "open", href: "/app/finance?tab=month&month=2026-11", params: { week: 2 } },
+      payload: {},
+      created_at: "2026-10-03T08:00:00Z",
+    };
+    expect(toCandidate(suggestion, NOW)?.item.type).toBe("cashLow");
+    const off = {
+      ...DEFAULT_PROACTIVE_RULES,
+      suggestionTypes: { ...DEFAULT_PROACTIVE_RULES.suggestionTypes, cashLow: false },
+    };
+    expect(toCandidate(suggestion, NOW, null, off)).toBeNull();
   });
 });
 

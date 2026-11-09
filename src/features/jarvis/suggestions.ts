@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { APP_HOME_PATH, INVITES_PATH } from "@/lib/routes";
+import { cashLowDedupeKey, type CashLowInput } from "./cash-plan";
 import type { RuleType, SuggestionType } from "./suggestion-types";
 
 /**
@@ -122,6 +123,12 @@ export type RuleInputs = {
   }[];
   /** Invites into other companies waiting for this account (step 22.5); `who` = company · owner. */
   workerInvites: { id: string; who: string }[];
+  /**
+   * The month plan says the capital drops below zero or the reserve this week
+   * or later (21.1); null when the month is fine or has no plan. Optional for
+   * callers from before the plan.
+   */
+  cashLow?: CashLowInput | null;
 };
 
 export type RuleSuggestion = {
@@ -212,7 +219,11 @@ export function ruleSuggestions(inputs: RuleInputs): RuleSuggestion[] {
       action: {
         kind: "open",
         href: `/app/finance/faktury/${invoice.id}`,
-        params: { number: invoice.number, customer: invoice.customer ?? "", days: invoice.daysLate },
+        params: {
+          number: invoice.number,
+          customer: invoice.customer ?? "",
+          days: invoice.daysLate,
+        },
       },
     });
   }
@@ -229,6 +240,31 @@ export function ruleSuggestions(inputs: RuleInputs): RuleSuggestion[] {
         kind: "open",
         href: `/app/ukoly-crm?task=${task.id}`,
         params: { task: task.title, target: task.target ?? "" },
+      },
+    });
+  }
+
+  // Money running short in the month plan: Jarvis only points to the plan.
+  if (inputs.cashLow) {
+    const low = inputs.cashLow;
+    out.push({
+      type: "cashLow",
+      dedupeKey: cashLowDedupeKey(low),
+      text: `Capital drops below ${low.threshold} ${low.currency} in week ${low.week} of ${low.month}`,
+      action: {
+        kind: "open",
+        href: `/app/finance?tab=month&month=${low.month}`,
+        params: {
+          month: low.month,
+          week: low.week,
+          threshold: low.threshold,
+          currency: low.currency,
+          zero: low.threshold > 0 ? "no" : "yes",
+          hasCause: low.cause ? "yes" : "no",
+          cause: low.cause?.label ?? "",
+          causeAmount: low.cause?.amount ?? 0,
+          missing: low.missingIncomes,
+        },
       },
     });
   }
