@@ -355,6 +355,20 @@ export function formatSlotMoment(
   return `${weekday} ${dayMonth} ${formatTime(instant, settings)}`;
 }
 
+/**
+ * A date as one says it, in the settings zone and the UI language: the long
+ * weekday, day and month, no year and no time, e.g. "úterý 10. listopadu" /
+ * "Tuesday, 10 November". The booking confirmation's big line.
+ */
+export function formatSpokenDate(
+  instant: Date,
+  settings: FormatSettings = DEFAULT_FORMAT_SETTINGS,
+  uiLocale: string = "cs",
+): string {
+  const wall = toZonedWallClock(instant, settings.timeZone);
+  return new Intl.DateTimeFormat(uiLocale, { weekday: "long", day: "numeric", month: "long" }).format(wall);
+}
+
 /** The whole date of a moment for an e-mail: weekday, date and time, e.g. "úterý 12. 11. 2026 14:00". */
 export function formatLongMoment(
   instant: Date,

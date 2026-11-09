@@ -292,11 +292,16 @@ async function effectsSafely(admin: Admin, ctx: BookingContext, confirming: bool
 // E-mails
 // ---------------------------------------------------------------------------
 
+/** The one UID a booking's calendar event has, in e-mails and on the page. */
+export function icsUidOf(bookingId: string): string {
+  return `booking-${bookingId}`;
+}
+
 function icsAttachment(ctx: BookingContext, status: BookingIcsStatus, locale: string, now: Date) {
   const meeting = meetingOf(ctx, locale, status === "CONFIRMED");
   const t = serverTranslator(locale);
   const ics = buildBookingIcs({
-    uid: `booking-${ctx.booking.id}`,
+    uid: icsUidOf(ctx.booking.id),
     // Grows with every change, so a calendar updates the event it imported.
     sequence: Math.floor(now.getTime() / 1000) % 2_000_000_000,
     status,
@@ -589,6 +594,8 @@ export type BookResult = {
   endsAt: string;
   /** The meeting's video link, only for a confirmed booking. */
   videoLink: string | null;
+  /** The UID of the e-mail's .ics, so "Add to calendar" on the page makes the same event. */
+  icsUid: string;
 };
 
 export async function bookHold(
@@ -666,6 +673,7 @@ export async function bookHold(
       endsAt: ctx.booking.ends_at,
       videoLink:
         status === "confirmed" && type.location_kind === "video" ? (profile.video_link ?? null) : null,
+      icsUid: icsUidOf(held.id),
     },
   };
 }

@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { ChevronRightIcon } from "lucide-react";
+import { ArrowRightIcon, ClockIcon } from "lucide-react";
 import { formatNumber } from "@/lib/format";
 import { APP_NAME } from "@/lib/constants";
 import { bookingPath } from "@/features/scheduler/handle";
 import { guestFormatSettings } from "@/features/scheduler/booking/guest-format";
 import { BookingFrame } from "@/features/scheduler/public/booking-frame";
-import { HostCard } from "@/features/scheduler/public/host-card";
+import { Chip, InviteCard, PlaceIcon } from "@/features/scheduler/public/invite-card";
 import { loadHostPage, pageLocale } from "@/features/scheduler/public/page-data";
 
 type Props = { params: Promise<{ handle: string }> };
@@ -28,7 +28,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-/** /s/<handle>: the host and their active meeting types (24.4). */
+/**
+ * /s/<handle>: the host and their active meeting types (24.4). The
+ * invitation with the host's bio on the left, the meetings to pick from on
+ * the right (24.5).
+ */
 export default async function HostBookingPage({ params }: Props) {
   const { handle } = await params;
   const page = await loadHostPage(handle);
@@ -39,36 +43,68 @@ export default async function HostBookingPage({ params }: Props) {
   const settings = guestFormatSettings(locale, host.profile.time_zone);
 
   return (
-    <BookingFrame locale={locale} brandingHidden={host.brandingHidden}>
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
-        <HostCard host={{ ...host, headline: host.profile.headline }} />
-        {host.profile.bio && <p className="text-sm whitespace-pre-line text-ink-soft">{host.profile.bio}</p>}
-        <h1 className="text-xl font-semibold text-ink">{t("page.typesTitle")}</h1>
-        {!host.available || types.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-line px-4 py-6 text-sm text-ink-muted" data-testid="booking-unavailable">
-            {host.available ? t("page.noTypes") : t("errors.unavailable")}
-          </p>
-        ) : (
-          <ul className="flex flex-col gap-3" data-testid="booking-types">
-            {types.map((type) => (
-              <li key={type.id}>
-                <Link
-                  href={bookingPath(host.profile.handle, type.slug)}
-                  className="flex min-h-16 items-center gap-4 rounded-2xl border border-line bg-surface px-4 py-3 outline-none hover:border-violet focus-visible:ring-3 focus-visible:ring-ring/50"
-                >
-                  <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="font-semibold text-ink">{type.name}</span>
-                    <span className="text-sm text-ink-muted">
-                      {t("page.duration", { minutes: formatNumber(type.duration_min, {}, settings) })} ·{" "}
-                      {t(`page.location.${type.location_kind}`)}
-                    </span>
-                  </span>
-                  <ChevronRightIcon aria-hidden className="size-5 text-ink-muted" />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+    <BookingFrame locale={locale} brandingHidden={host.brandingHidden} ownBrand={host.company ?? host.name}>
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-10">
+        <aside className="lg:sticky lg:top-6">
+          <InviteCard host={{ ...host, headline: host.profile.headline }} labels={{ meeting: t("page.meeting") }}>
+            {host.profile.bio && (
+              <>
+                <hr className="border-line/70" />
+                <p className="text-[15px] leading-relaxed whitespace-pre-line text-ink-soft text-pretty">
+                  {host.profile.bio}
+                </p>
+              </>
+            )}
+          </InviteCard>
+        </aside>
+        <section className="flex flex-col gap-4">
+          <h1 className="font-display text-2xl font-bold tracking-tight text-ink md:text-3xl">{t("page.typesTitle")}</h1>
+          {!host.available || types.length === 0 ? (
+            <p
+              className="rounded-3xl border border-dashed border-line px-5 py-8 text-sm text-ink-muted"
+              data-testid="booking-unavailable"
+            >
+              {host.available ? t("page.noTypes") : t("errors.unavailable")}
+            </p>
+          ) : (
+            <ul className="flex flex-col gap-3" data-testid="booking-types">
+              {types.map((type) => {
+                const place =
+                  type.location_kind === "in_person" || type.location_kind === "custom"
+                    ? (type.location_text ?? t(`page.location.${type.location_kind}`))
+                    : t(`page.location.${type.location_kind}`);
+                return (
+                  <li key={type.id}>
+                    <Link
+                      href={bookingPath(host.profile.handle, type.slug)}
+                      className="group flex flex-col gap-3 rounded-3xl border border-line bg-surface p-5 outline-none transition-colors hover:border-line-strong hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-ring/50 md:p-6"
+                    >
+                      <span className="flex items-start justify-between gap-4">
+                        <span className="font-display text-xl leading-tight font-bold tracking-tight text-ink text-balance md:text-2xl">
+                          {type.name}
+                        </span>
+                        <span className="grid size-11 shrink-0 place-items-center rounded-full border border-line text-ink-soft transition-colors group-hover:border-violet group-hover:bg-violet group-hover:text-white mouse:size-9">
+                          <ArrowRightIcon aria-hidden className="size-4" />
+                        </span>
+                      </span>
+                      {type.description && (
+                        <span className="line-clamp-3 text-sm leading-relaxed text-ink-soft text-pretty">
+                          {type.description}
+                        </span>
+                      )}
+                      <ul className="flex flex-wrap gap-2">
+                        <Chip icon={<ClockIcon aria-hidden />}>
+                          {t("page.duration", { minutes: formatNumber(type.duration_min, {}, settings) })}
+                        </Chip>
+                        <Chip icon={<PlaceIcon kind={type.location_kind} />}>{place}</Chip>
+                      </ul>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
       </div>
     </BookingFrame>
   );

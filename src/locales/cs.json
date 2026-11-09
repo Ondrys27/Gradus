@@ -9374,7 +9374,7 @@
       }
     },
     "page": {
-      "typesTitle": "Vyberte typ schůzky",
+      "typesTitle": "Vyberte si schůzku",
       "noTypes": "Zatím tu není žádná schůzka k rezervaci.",
       "allTypes": "Všechny schůzky",
       "duration": "{minutes} min",
@@ -9383,23 +9383,33 @@
         "phone": "Telefonicky",
         "in_person": "Osobně",
         "custom": "Jinde"
-      }
+      },
+      "meeting": "Schůzka",
+      "pick": "Vybrat termín"
     },
     "calendar": {
       "title": "Vyberte termín",
       "zone": "Časové pásmo",
       "pickDay": "Vyberte den",
-      "pickDayHint": "Dny s volným termínem jsou zvýrazněné.",
+      "pickDayHint": "Volné dny mají tečku. Vyberte jeden a vpravo se ukážou časy.",
       "timesOf": "Volné časy",
       "dayFree": "{day} {number}., volné termíny",
       "previousMonth": "Předchozí měsíc",
       "nextMonth": "Další měsíc",
-      "noSlots": "Teď tu není žádný volný termín. Zkuste to později."
+      "noSlots": "Teď tu není žádný volný termín. Zkuste to později.",
+      "steps": {
+        "day": "Den",
+        "time": "Čas",
+        "details": "Údaje"
+      },
+      "anotherDay": "Jiný den",
+      "zoneLine": "Časy v pásmu {zone}",
+      "changeZone": "Změnit",
+      "zoneDone": "Hotovo"
     },
     "form": {
       "title": "Vaše údaje",
-      "summary": "{type} {duration} min · {when} ({zone}) · {host}",
-      "held": "Termín vám držíme ještě {time}",
+      "held": "Držíme vám ho ještě {time}",
       "fields": {
         "name": "Jméno",
         "email": "E-mail",
@@ -9416,7 +9426,9 @@
       "approvalNote": "Termín ještě potvrdí {host}. Do té doby je pro vás rezervovaný.",
       "back": "Změnit čas",
       "submit": "Rezervovat",
-      "submitting": "Rezervuji…"
+      "submitting": "Rezervuji…",
+      "whenLabel": "Váš termín",
+      "meetingLine": "{type} · {duration} min · {host}"
     },
     "notice": {
       "taken": "Tento termín už není volný. Vyberte prosím jiný.",
@@ -9426,12 +9438,19 @@
       "unknown": "Něco se nepovedlo. Zkuste to prosím znovu."
     },
     "result": {
-      "confirmedTitle": "Hotovo, schůzka je rezervovaná",
-      "confirmedText": "Potvrzení s pozvánkou do kalendáře jsme poslali na {email}.",
-      "pendingTitle": "Rezervace čeká na potvrzení",
-      "pendingText": "{host} termín potvrdí, pak vám přijde e-mail. Shrnutí jsme poslali na {email}.",
+      "confirmedTitle": "Máte to. Schůzka je domluvená.",
+      "confirmedText": "Pozvánku do kalendáře jsme poslali na {email}. Těšte se.",
+      "pendingTitle": "Termín je váš, čeká jen na potvrzení",
+      "pendingText": "{host} si ho ještě potvrdí. Do té doby ho držíme jen pro vás; jakmile potvrdí, přijde vám e-mail s pozvánkou do kalendáře. Shrnutí už máte na {email}.",
       "video": "Odkaz na videohovor",
-      "manage": "Přesunout nebo zrušit"
+      "manage": "Přesunout nebo zrušit",
+      "pendingBadge": "Čeká na potvrzení",
+      "with": "s {host}",
+      "icsTitle": "{type} s {host}",
+      "addToCalendar": "Přidat do kalendáře",
+      "google": "Google",
+      "apple": "Apple / ICS",
+      "outlook": "Outlook"
     },
     "errors": {
       "slots": "Volné termíny se nepodařilo načíst. Zkuste to prosím za chvíli.",
@@ -9440,10 +9459,10 @@
     "manage": {
       "title": "Vaše rezervace",
       "status": {
-        "pending": "Čeká na potvrzení.",
-        "confirmed": "Potvrzeno.",
-        "cancelled": "Zrušeno.",
-        "declined": "Nepotvrzeno."
+        "pending": "Čeká na potvrzení",
+        "confirmed": "Potvrzeno",
+        "cancelled": "Zrušeno",
+        "declined": "Nepotvrzeno"
       },
       "reschedule": "Přesunout",
       "cancel": "Zrušit schůzku",
@@ -9455,7 +9474,8 @@
       "rescheduled": "Hotovo, schůzka má nový termín. Potvrzení přišlo e-mailem.",
       "cancelled": "Schůzka je zrušená. Potvrzení přišlo e-mailem.",
       "over": "Tuhle rezervaci už nejde změnit.",
-      "failed": "Nepodařilo se to. Zkuste to prosím znovu."
+      "failed": "Nepodařilo se to. Zkuste to prosím znovu.",
+      "meetingLine": "{type} · {duration} min · {host}"
     }
   }
 }
