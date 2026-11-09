@@ -126,7 +126,6 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 23.3 | architect | 2026-11-09: Veřejná registrace bez kódu se zkušebkou, povinným souhlasem s podmínkami, tarifem předvybraným z ceníku, limitem pokusů o kódy a oddíly o placení v podmínkách a zásadách.
 - [x] K23 | reviewer | 2026-11-09: Kontrola fáze 23: promo kupony jen na tarif, jedno předplatné Stripe na prostor (druhý Checkout odmítnut) a důvod zrušení i po webhooku Stripe.
 - [x] STOP | Konec fáze 23. V testovacím režimu: zaregistruj nový účet @gradus.local bez kódu, v Předplatném „Zaplatit a pokračovat", zaplať testovací kartou 4242 4242 4242 4242, zkontroluj aktivní tarif a doklad v Historii plateb. Zkus kartu 4000 0000 0000 0341 (selže) a banner, změnu karty v portálu, přechod na vyšší tarif a zrušení. Zkus promo kód VASA50 v Checkoutu. Co nesedí, napiš Claude Code rovnou, pak /pokracuj. · přeskočeno nočním během 2026-11-09, zkontroluj ručně (.noc/zkontroluj.md)
-- [ ] 23.4 | RUČNĚ | Spuštění prodeje podle docs/spusteni.md: Vercel Pro, ověřený Stripe účet, live klíče a webhook ve Vercelu (Production), Invoicing s patičkou „Nejsem plátce DPH.", doplněné [DOPLNIT] v podmínkách, SMTP a potvrzení e-mailu v Supabase, PUBLIC_SIGNUP_ENABLED=true. Udělej jeden ostrý nákup vlastní kartou a vrať si peníze. Pak tuhle položku zaškrtni.
 - [ ] 21.1 | architect |
 - [ ] 21.2 | designer |
 - [ ] K21 | reviewer |
@@ -137,6 +136,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [ ] 24.5 | designer |
 - [ ] K24 | reviewer |
 - [ ] STOP | Konec fáze 24. Přepni si měnu na USD a JPY a projdi finance a ceník; v administraci → Tarify zkontroluj odvozené ceny a doplněk Bez značky. V Plánovači nastav handle, odkaz na videohovor a pracovní dobu, přidej odběr svého Google kalendáře (tajná iCal adresa) a ověř, že obsazené časy nejsou v nabídce. Pošli si odkaz na Konzultaci do e-mailu, rezervuj z telefonu v anonymním okně, schval na nástěnce, zkontroluj e-maily, kalendář, kontakt a Cold Calling, pak termín přesuň a zruš. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
+- [ ] 23.4 | RUČNĚ | Spuštění prodeje podle docs/spusteni.md: Vercel Pro, ověřený Stripe účet, live klíče a webhook ve Vercelu (Production), Invoicing s patičkou „Nejsem plátce DPH.", doplněné [DOPLNIT] v podmínkách, SMTP a potvrzení e-mailu v Supabase, PUBLIC_SIGNUP_ENABLED=true. Udělej jeden ostrý nákup vlastní kartou a vrať si peníze. Pak tuhle položku zaškrtni.
 - [ ] 7.1 | RUČNĚ | Aplikace běží na Vercel Hobby a každý push na main se nasadí sám. Až budeš mít doménu: nastav ji ve Vercelu, změň NEXT_PUBLIC_SITE_URL ve Vercelu, uprav Site URL a Redirect URLs v Supabase → URL Configuration a dej Redeploy. Projdi produkci v anonymním okně a pak tuhle položku zaškrtni ručně.
 
 ## Odloženo
