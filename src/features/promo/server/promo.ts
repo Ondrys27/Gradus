@@ -5,6 +5,7 @@ import { fingerprint } from "@/features/admin/server/request-info";
 import { track } from "@/lib/analytics/track";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { hasPaidStripeInvoice } from "@/features/billing/stripe/store";
 import type { Database } from "@/types/database";
 import {
   isPromoCode,
@@ -119,6 +120,12 @@ export type PromoAccountStatus = {
   redemption: (PromoOffer & { redeemedAt: string }) | null;
   /** Paid already: no code can be added any more. */
   paid: boolean;
+  /**
+   * A Stripe invoice was paid at any amount (a free month or a trial's start
+   * is 0): the code's coupon went with that subscription, a new Checkout has
+   * none.
+   */
+  used: boolean;
 };
 
 export async function loadPromoAccountStatus(
@@ -145,7 +152,9 @@ export async function loadPromoAccountStatus(
           redeemedAt: row.redemption.redeemed_at,
         }
       : null;
-  return { redemption, paid: row.paid === true };
+  const paid = row.paid === true;
+  const used = paid || (redemption !== null && (await hasPaidStripeInvoice(admin, userId)));
+  return { redemption, paid, used };
 }
 
 /** The code a partner's link left in this browser (…/?kod=XYZ), if it looks like one. */

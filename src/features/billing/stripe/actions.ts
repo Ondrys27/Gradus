@@ -22,9 +22,12 @@ import { ensureCatalogPrices, loadPublishedVersion } from "./catalog-sync";
 import { vatMode } from "./client";
 import { promoCoupon, type CouponSpec } from "./coupon";
 import { ensureCustomer, storedCustomer } from "./customer";
+import { subscriptionState, workspaceOf } from "./mapping";
+import type { StripeMode } from "./modes";
 import { ensurePortalConfiguration } from "./portal";
 import { planPeriodPrice, priceLookupKey } from "./prices";
 import { extraWorkerQuantity } from "./seats";
+import { applySubscriptionState, hasPaidStripeInvoice } from "./store";
 import { checkoutStart } from "./timing";
 import { CHECKOUT_SOURCES, PORTAL_SOURCES, type CheckoutSource, type PortalSource } from "./sources";
 
@@ -48,13 +51,20 @@ type PromoStatus = {
   paid: boolean;
 };
 
-/** The account's code, while it has not paid yet (the benefit is for the first payment only). */
+/**
+ * The account's code, while it has not paid yet (the benefit is for the first
+ * payment only). An invoice the coupon took to zero (a free month, 100 % off)
+ * is a payment of the code too: once a Stripe invoice of the account was
+ * paid, at any amount, a later Checkout gets no coupon, otherwise cancelling
+ * and paying again would repeat the free months for ever.
+ */
 async function promoOf(admin: Admin, userId: string) {
   const { data, error } = await admin.rpc("promo_account_status", { _user_id: userId });
   if (error) throw error;
   const status = data as unknown as PromoStatus | null;
   const redemption = status?.redemption;
   if (!redemption || status?.paid) return null;
+  if (await hasPaidStripeInvoice(admin, userId)) return null;
   if (!(PROMO_BENEFITS as readonly string[]).includes(redemption.benefit)) return null;
   return {
     code: redemption.code,
@@ -81,10 +91,48 @@ async function ensureCoupon(stripe: Stripe, coupon: CouponSpec) {
       ...(coupon.durationInMonths ? { duration_in_months: coupon.durationInMonths } : {}),
       ...(coupon.percentOff !== undefined ? { percent_off: coupon.percentOff } : {}),
       ...(coupon.amountOff !== undefined ? { amount_off: coupon.amountOff, currency: coupon.currency } : {}),
+      // The plan's price only, never the extra workers.
+      applies_to: { products: coupon.products },
       metadata: { app: "gradus" },
     },
     { idempotencyKey: `coupon:${coupon.id}` },
   );
+}
+
+/** Stripe statuses of a subscription that still bills (or will): a second one would charge twice. */
+const RUNNING_STATUSES: readonly Stripe.Subscription.Status[] = ["active", "trialing", "past_due", "unpaid", "paused"];
+
+/**
+ * One subscription per workspace. A Checkout paid in another tab, whose
+ * webhook has not arrived yet, already runs in Stripe: it is written now
+ * (as the webhook would) and no second Checkout starts. Any other Checkout
+ * still open for the customer is expired, so two of them can never both be
+ * paid.
+ */
+async function refuseSecondSubscription(
+  stripe: Stripe,
+  admin: Admin,
+  mode: StripeMode,
+  customer: string,
+  workspace: string,
+) {
+  const subscriptions = await stripe.subscriptions.list({ customer, status: "all", limit: 20 });
+  const running = subscriptions.data.find(
+    (sub) => RUNNING_STATUSES.includes(sub.status) && workspaceOf(sub.metadata) === workspace,
+  );
+  if (running) {
+    const scheduleId = typeof running.schedule === "string" ? running.schedule : (running.schedule?.id ?? null);
+    const schedule = scheduleId
+      ? await stripe.subscriptionSchedules.retrieve(scheduleId, { expand: ["phases.items.price"] })
+      : null;
+    const mapped = subscriptionState(running, schedule);
+    if (mapped.ok && mapped.state.workspace === workspace) {
+      await applySubscriptionState(admin, mapped.state, mode, new Date(running.created * 1000));
+    }
+    throw new SubscriptionError("notAllowed");
+  }
+  const open = await stripe.checkout.sessions.list({ customer, status: "open", limit: 20 });
+  for (const session of open.data) await stripe.checkout.sessions.expire(session.id);
 }
 
 async function priceCurrency(admin: Admin, userId: string): Promise<PriceCurrency> {
@@ -141,6 +189,7 @@ export async function startCheckout(input: CheckoutInput): Promise<SubscriptionR
         email: ctx.email,
         locale,
       });
+      await refuseSecondSubscription(stripe, ctx.admin, mode, customer, ctx.userId);
       if (coupon) await ensureCoupon(stripe, coupon);
 
       const start = checkoutStart(sub);

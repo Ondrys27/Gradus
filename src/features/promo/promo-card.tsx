@@ -10,6 +10,7 @@ import { useUserSettings } from "@/features/account/queries";
 import { promoFirstPayment } from "@/features/plan/plan";
 import { money, priceOf } from "@/features/subscription/plan-price";
 import { useSubscription } from "@/features/subscription/queries";
+import { hasLiveGateway } from "@/features/subscription/state";
 import { formatDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { PromoRedeemForm, usePromoOfferText } from "./promo-code-field";
@@ -61,7 +62,9 @@ export function PromoCard({ plans }: { plans: PlanCatalog }) {
     if (sub?.status === "trialing" && sub.trialEndsAt) {
       lines.push(t("trialEnds", { date: formatDate(new Date(sub.trialEndsAt), format) }));
     }
-  } else if (sub && plan && !data.paid) {
+  } else if (sub && plan && !data.paid && !(data.used && !hasLiveGateway(sub))) {
+    // A running Stripe subscription carries the coupon until its first payment;
+    // without one, a code whose invoice was already paid (a free month) has nothing left.
     const price = promoFirstPayment(priceOf(plan, sub.billing, currency), sub.billing, offer);
     const regular = money(price.regular, currency, format);
     if (price.freeMonths > 0) {

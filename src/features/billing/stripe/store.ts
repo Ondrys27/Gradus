@@ -125,3 +125,19 @@ export async function accountOf(
   if (!user?.user) return null;
   return { email: user.user.email ?? null, internal: profile?.is_internal ?? false };
 }
+
+/**
+ * Whether a Stripe invoice of the account was ever paid, at any amount (a
+ * free month or 100 % off is a payment of 0). The promo code's coupon is for
+ * the first subscription only: after this, a new Checkout gets none.
+ */
+export async function hasPaidStripeInvoice(admin: Admin, workspace: string): Promise<boolean> {
+  const { count, error } = await admin
+    .from("payments")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", workspace)
+    .eq("provider", "stripe")
+    .in("status", ["paid", "refunded"]);
+  if (error) throw new Error(`payments: ${error.code ?? error.message}`);
+  return (count ?? 0) > 0;
+}

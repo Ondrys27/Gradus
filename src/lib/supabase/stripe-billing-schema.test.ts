@@ -362,6 +362,29 @@ describe("the subscription", () => {
     });
   });
 
+  it("takes the user's reason when Stripe's webhook recorded the cancellation first", async () => {
+    const user = await testAccount();
+    await apply(user, { eventAt: iso(-1) });
+    // The webhook of cancel_at_period_end arrives before the server records the reason.
+    await apply(user, { cancel: true });
+    await asServiceRole();
+    const { r } = await one<{ r: Row }>(
+      `select subscription_cancel($1, 'not_using', 'Nepoužívám') as r`,
+      [user],
+    );
+    expect(r).toMatchObject({ already: false });
+    expect(await subscriptionOf(user)).toMatchObject({
+      cancel_at_period_end: true,
+      cancel_reason: "not_using",
+      cancel_note: "Nepoužívám",
+    });
+    // A second request is once.
+    await asServiceRole();
+    const again = await one<{ r: Row }>(`select subscription_cancel($1, 'other') as r`, [user]);
+    expect(again.r).toMatchObject({ already: true });
+    expect(await subscriptionOf(user)).toMatchObject({ cancel_reason: "not_using" });
+  });
+
   it("holds a downgrade scheduled in Stripe, and the trial's end while trialing", async () => {
     const user = await testAccount();
     const end = iso(10);
