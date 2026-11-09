@@ -12,9 +12,8 @@ import {
   requestSubscriptionChange,
   resumeSubscription,
   saveBillingProfile,
-  type SubscriptionErrorCode,
-  type SubscriptionResult,
 } from "./actions";
+import type { SubscriptionErrorCode, SubscriptionResult } from "./server-context";
 import {
   BILLING_PROFILE_COLUMNS,
   type BillingProfile,

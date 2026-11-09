@@ -39,7 +39,6 @@ import {
   runSubscription as run,
   SubscriptionError,
   type SubscriptionContext,
-  type SubscriptionErrorCode,
   type SubscriptionResult,
 } from "./server-context";
 import {
@@ -66,8 +65,6 @@ import {
  * trial or an ended plan is paid through Checkout (startCheckout). Failures
  * come back as codes, never thrown.
  */
-
-export type { SubscriptionErrorCode, SubscriptionResult };
 
 type Context = SubscriptionContext;
 
