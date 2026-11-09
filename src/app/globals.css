@@ -129,6 +129,39 @@
   }
 }
 
+/*
+ * The public booking page's moving backdrop (24.5): a sparse dot grid that
+ * drifts one cell (seamless), three thin lines that wave by one period, and a
+ * wide tint that breathes. All of it is transform or opacity on its own layer,
+ * so the compositor does the work and the main thread sleeps; reduced motion
+ * stops all three (the global rule plus `motion-reduce:animate-none`).
+ */
+@keyframes booking-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-56px, -56px, 0);
+  }
+}
+@keyframes booking-wave {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-1200px, 0, 0);
+  }
+}
+@keyframes booking-breathe {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 /* shadcn/ui semantic names mapped onto the Gradus tokens. */
 @theme inline {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;

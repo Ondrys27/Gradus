@@ -36,8 +36,12 @@ export default async function ManageBookingPage({ params, searchParams }: Props)
   const live = guestCanManage(booking, Date.now()) && Boolean(ctx.host?.available);
 
   return (
-    <BookingFrame locale={locale} brandingHidden={Boolean(ctx.host?.brandingHidden)}>
-      <div className="mx-auto w-full max-w-3xl">
+    <BookingFrame
+      locale={locale}
+      brandingHidden={Boolean(ctx.host?.brandingHidden)}
+      ownBrand={ctx.host?.company ?? ctx.host?.name ?? null}
+    >
+      <div className="mx-auto w-full max-w-2xl">
         <ManageView
           token={token}
           startWithCancel={cancel === "1"}
@@ -45,6 +49,7 @@ export default async function ManageBookingPage({ params, searchParams }: Props)
             typeName: ctx.type?.name ?? "",
             durationMin: Math.round((Date.parse(booking.ends_at) - Date.parse(booking.starts_at)) / 60_000),
             startsAt: booking.starts_at,
+            endsAt: booking.ends_at,
             status,
             hostName: ctx.host?.name ?? "",
             videoLink: status === "confirmed" && ctx.type?.location_kind === "video" ? (ctx.profile?.video_link ?? null) : null,

@@ -9383,23 +9383,33 @@
         "phone": "Phone call",
         "in_person": "In person",
         "custom": "Elsewhere"
-      }
+      },
+      "meeting": "Meeting",
+      "pick": "Pick a time"
     },
     "calendar": {
       "title": "Pick a time",
       "zone": "Time zone",
       "pickDay": "Pick a day",
-      "pickDayHint": "Days with a free time are highlighted.",
+      "pickDayHint": "Free days carry a dot. Pick one and the times show on the right.",
       "timesOf": "Free times",
       "dayFree": "{day} {number}, free times",
       "previousMonth": "Previous month",
       "nextMonth": "Next month",
-      "noSlots": "There is no free time right now. Please try again later."
+      "noSlots": "There is no free time right now. Please try again later.",
+      "steps": {
+        "day": "Day",
+        "time": "Time",
+        "details": "Details"
+      },
+      "anotherDay": "Another day",
+      "zoneLine": "Times in {zone}",
+      "changeZone": "Change",
+      "zoneDone": "Done"
     },
     "form": {
       "title": "Your details",
-      "summary": "{type} {duration} min · {when} ({zone}) · {host}",
-      "held": "We hold this time for you for {time}",
+      "held": "We hold it for you for {time}",
       "fields": {
         "name": "Name",
         "email": "E-mail",
@@ -9416,7 +9426,9 @@
       "approvalNote": "{host} still confirms the time. Until then it is reserved for you.",
       "back": "Change time",
       "submit": "Book",
-      "submitting": "Booking…"
+      "submitting": "Booking…",
+      "whenLabel": "Your time",
+      "meetingLine": "{type} · {duration} min · {host}"
     },
     "notice": {
       "taken": "This time is no longer free. Please pick another.",
@@ -9426,12 +9438,19 @@
       "unknown": "Something went wrong. Please try again."
     },
     "result": {
-      "confirmedTitle": "Done, the meeting is booked",
-      "confirmedText": "We sent the confirmation with a calendar invite to {email}.",
-      "pendingTitle": "Your booking waits for confirmation",
-      "pendingText": "{host} will confirm the time and you will get an e-mail. A summary went to {email}.",
+      "confirmedTitle": "That's it. The meeting is set.",
+      "confirmedText": "We sent the calendar invite to {email}. See you there.",
+      "pendingTitle": "The time is yours, pending confirmation",
+      "pendingText": "{host} still confirms it. Until then it is held for you alone; once confirmed, you get an e-mail with the calendar invite. A summary is already at {email}.",
       "video": "Video call link",
-      "manage": "Reschedule or cancel"
+      "manage": "Reschedule or cancel",
+      "pendingBadge": "Pending confirmation",
+      "with": "with {host}",
+      "icsTitle": "{type} with {host}",
+      "addToCalendar": "Add to calendar",
+      "google": "Google",
+      "apple": "Apple / ICS",
+      "outlook": "Outlook"
     },
     "errors": {
       "slots": "The free times could not be loaded. Please try again in a while.",
@@ -9440,10 +9459,10 @@
     "manage": {
       "title": "Your booking",
       "status": {
-        "pending": "Waiting for confirmation.",
-        "confirmed": "Confirmed.",
-        "cancelled": "Cancelled.",
-        "declined": "Not confirmed."
+        "pending": "Waiting for confirmation",
+        "confirmed": "Confirmed",
+        "cancelled": "Cancelled",
+        "declined": "Not confirmed"
       },
       "reschedule": "Reschedule",
       "cancel": "Cancel the meeting",
@@ -9455,7 +9474,8 @@
       "rescheduled": "Done, the meeting has a new time. The confirmation is in your e-mail.",
       "cancelled": "The meeting is cancelled. The confirmation is in your e-mail.",
       "over": "This booking can no longer be changed.",
-      "failed": "That did not work. Please try again."
+      "failed": "That did not work. Please try again.",
+      "meetingLine": "{type} · {duration} min · {host}"
     }
   }
 }
