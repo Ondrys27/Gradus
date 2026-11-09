@@ -12,7 +12,20 @@ import { sendEmail, type EmailResult } from "./resend";
  * production every address is real mail.
  */
 
-export type OutboxMail = { to: string; subject: string; text: string; html: string; at: number };
+export type OutboxMail = {
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+  at: number;
+  /** The id the mock gave a booking e-mail (e2e_…), so a scheduled one can be cancelled. */
+  id?: string;
+  /** When a scheduled e-mail (a reminder) would go out. */
+  scheduledAt?: string;
+  cancelled?: boolean;
+  /** Names of the attached files. */
+  attachments?: string[];
+};
 
 const KEEP_MS = 10 * 60_000;
 const MAX_KEPT = 100;
@@ -34,6 +47,16 @@ export function keepE2eMail(mail: Omit<OutboxMail, "at">, now = Date.now()): voi
   const list = store();
   list.push({ ...mail, at: now });
   prune(list, now);
+}
+
+/** A scheduled e-mail of the mock is cancelled; false when there is none by that id. */
+export function cancelE2eMail(id: string, now = Date.now()): boolean {
+  const list = store();
+  prune(list, now);
+  const found = list.find((mail) => mail.id === id);
+  if (!found) return false;
+  found.cancelled = true;
+  return true;
 }
 
 /** The kept mail of one test address, oldest first. */

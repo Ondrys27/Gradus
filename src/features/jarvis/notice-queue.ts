@@ -18,6 +18,8 @@ export const SUGGESTION_URGENCY: Record<string, number> = {
   cashLow: 1,
   followUps: 2,
   workerInvite: 2,
+  bookingPending: 1,
+  bookingNew: 3,
   stalledDeal: 3,
   milestoneReady: 4,
   dealWon: 5,

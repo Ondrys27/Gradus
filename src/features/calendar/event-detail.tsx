@@ -15,6 +15,7 @@ import { useFormatSettings } from "@/lib/use-format-settings";
 import { toEventItem } from "./calendar-logic";
 import { DemoBadge } from "@/features/tutorial/demo-badge";
 import { useDeleteEvent } from "./queries";
+import { BookingOfEvent } from "@/features/scheduler/ui/booking-of-event";
 import type { CalendarEvent } from "./types";
 
 type Props = {
@@ -41,7 +42,9 @@ export function EventDetail({ event, onClose, onEdit, readOnly = false }: Props)
   const item = toEventItem(current, settings.timeZone);
   // A deal's delivery date is changed in the deal only.
   const fromDeal = current.source === "deal_deadline";
-  const editable = !readOnly && !fromDeal;
+  // A booked meeting moves and cancels through its booking, which tells the guest.
+  const fromBooking = current.source === "booking";
+  const editable = !readOnly && !fromDeal && !fromBooking;
 
   let when: string;
   if (item.allDay) {
@@ -87,6 +90,7 @@ export function EventDetail({ event, onClose, onEdit, readOnly = false }: Props)
               <StatusPill tone="neutral">{t("detail.fromMove")}</StatusPill>
             )}
             {fromDeal && <StatusPill tone="neutral">{t("detail.fromDeal")}</StatusPill>}
+            {fromBooking && <StatusPill tone="neutral">{t("detail.fromBooking")}</StatusPill>}
             <DemoBadge show={current.is_demo} className="h-6 px-2.5 text-xs" />
           </div>
           <h3 className="text-xl font-semibold break-words text-ink">{current.title}</h3>
@@ -126,6 +130,7 @@ export function EventDetail({ event, onClose, onEdit, readOnly = false }: Props)
             </ul>
           )}
           {fromDeal && <p className="text-sm text-ink-muted">{t("detail.fromDealHint")}</p>}
+          {fromBooking && <BookingOfEvent eventId={current.id} />}
           <MentionedInNotes kind="event" id={current.id} onOpenNote={onClose} />
           {editable && (
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">

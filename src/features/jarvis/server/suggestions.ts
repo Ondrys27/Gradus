@@ -74,8 +74,18 @@ export async function loadRuleInputs(
   // The plan of the user's own space; without one (or on any error) no cashLow.
   const cashPlan = loadCashPlan(client, userId, settings, now);
 
-  const [won, stalled, stages, overdue, milestones, followUpTable, invoices, crmTasks, invites] =
-    await Promise.all([
+  const [
+    won,
+    stalled,
+    stages,
+    overdue,
+    milestones,
+    followUpTable,
+    invoices,
+    crmTasks,
+    invites,
+    hosted,
+  ] = await Promise.all([
       client
         .from("deals")
         .select("id, title, contact:contacts(company_name, first_name, last_name)")
@@ -144,6 +154,16 @@ export async function loadRuleInputs(
         .limit(PER_RULE_LIMIT),
       // Invites into other companies naming this account (own client: its own; cron: by id).
       client.rpc("my_worker_invites", { _user: userId }),
+      // Bookings the user hosts (24.4): pending ones, and confirmed ones booked lately; still ahead.
+      client
+        .from("bookings")
+        .select("id, status, guest_name, starts_at, created_at, confirmed_at, event_type:event_types(name)")
+        .eq("host_user_id", userId)
+        .in("status", ["pending", "confirmed"])
+        .gt("starts_at", now.toISOString())
+        .or(`status.eq.pending,created_at.gte.${subDays(now, 2).toISOString()}`)
+        .order("starts_at")
+        .limit(PER_RULE_LIMIT * 2),
     ]);
 
   const stageNames = new Map(list(stages).map((stage) => [stage.id, stage.name]));
@@ -243,8 +263,27 @@ export async function loadRuleInputs(
       dueAt: task.due_at,
     })),
     cashLow: cashLowInputOf(await cashPlan),
+    bookings: list(hosted)
+      // A new booking is news only when it was confirmed as booked, not after the host approved it.
+      .filter(
+        (row) =>
+          row.status === "pending" ||
+          (row.status === "confirmed" &&
+            row.confirmed_at !== null &&
+            Date.parse(row.confirmed_at) - Date.parse(row.created_at) < BOOKED_AT_ONCE_MS),
+      )
+      .map((row) => ({
+        id: row.id,
+        status: row.status as "pending" | "confirmed",
+        guest: row.guest_name ?? "",
+        type: row.event_type?.name ?? "",
+        startsAt: row.starts_at,
+      })),
   };
 }
+
+/** A hold turns into a booking within its five minutes (and a little more). */
+const BOOKED_AT_ONCE_MS = 10 * 60_000;
 
 /**
  * Writes the rule suggestions of this moment (each event once, thanks to the

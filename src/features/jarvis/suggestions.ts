@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { APP_HOME_PATH, INVITES_PATH } from "@/lib/routes";
+import { bookingAppPath } from "@/features/scheduler/booking/paths";
+import { SCHEDULER_PATH } from "@/features/scheduler/types";
 import { cashLowDedupeKey, type CashLowInput } from "./cash-plan";
 import type { RuleType, SuggestionType } from "./suggestion-types";
 
@@ -38,6 +40,7 @@ export const APP_PATHS = [
   "/app/finance",
   "/app/ukoly-crm",
   INVITES_PATH,
+  SCHEDULER_PATH,
 ] as const;
 
 export function isAppHref(href: string): boolean {
@@ -123,6 +126,17 @@ export type RuleInputs = {
   }[];
   /** Invites into other companies waiting for this account (step 22.5); `who` = company · owner. */
   workerInvites: { id: string; who: string }[];
+  /**
+   * Bookings the user hosts (24.4): pending ones to approve, and confirmed
+   * ones booked in the last two days. Optional for callers from before.
+   */
+  bookings?: {
+    id: string;
+    status: "pending" | "confirmed";
+    guest: string;
+    type: string;
+    startsAt: string;
+  }[];
   /**
    * The month plan says the capital drops below zero or the reserve this week
    * or later (21.1); null when the month is fine or has no plan. Optional for
@@ -276,6 +290,22 @@ export function ruleSuggestions(inputs: RuleInputs): RuleSuggestion[] {
       dedupeKey: `workerInvite:${invite.id}`,
       text: "An invite into another company waits",
       action: { kind: "open", href: INVITES_PATH, params: { who: invite.who } },
+    });
+  }
+
+  // A booking only the host decides on (approve or decline), or a new one to know about.
+  for (const booking of (inputs.bookings ?? []).slice(0, PER_RULE_LIMIT)) {
+    const type = booking.status === "pending" ? "bookingPending" : "bookingNew";
+    out.push({
+      type,
+      // A moved booking is a new event.
+      dedupeKey: `${type}:${booking.id}`,
+      text: type === "bookingPending" ? "A booking waits for approval" : "A new booking",
+      action: {
+        kind: "open",
+        href: bookingAppPath(booking.id),
+        params: { guest: booking.guest, type: booking.type, startsAt: booking.startsAt },
+      },
     });
   }
 

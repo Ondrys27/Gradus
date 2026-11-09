@@ -2,8 +2,9 @@
 
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
+  CalendarCheckIcon,
   CalendarClockIcon,
   CircleCheckIcon,
   FlagIcon,
@@ -24,7 +25,7 @@ import { useWhenLabel } from "@/features/jarvis/call-window";
 import { useDismissSuggestion, useUndoTaskCompletion } from "@/features/jarvis/queries";
 import type { Suggestion } from "@/features/jarvis/suggestions";
 import { isRuleType, type SuggestionType } from "@/features/jarvis/suggestion-types";
-import { formatCurrency, formatNumber, type FormatSettings } from "@/lib/format";
+import { formatCurrency, formatNumber, formatSlotMoment, type FormatSettings } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/client";
@@ -39,6 +40,8 @@ const ICONS: Record<SuggestionType, LucideIcon> = {
   overdueCrmTask: SquareCheckBigIcon,
   workerInvite: MailPlusIcon,
   cashLow: TrendingDownIcon,
+  bookingPending: CalendarCheckIcon,
+  bookingNew: CalendarCheckIcon,
   taskCompleted: CircleCheckIcon,
   insight: LightbulbIcon,
   pathReady: MapIcon,
@@ -54,6 +57,8 @@ const ICON_TONE: Record<SuggestionType, string> = {
   overdueCrmTask: "text-pink",
   workerInvite: "text-violet",
   cashLow: "text-orange",
+  bookingPending: "text-gold",
+  bookingNew: "text-green",
   taskCompleted: "text-green",
   insight: "text-violet",
   pathReady: "text-teal",
@@ -66,11 +71,16 @@ const ICON_TONE: Record<SuggestionType, string> = {
 function formatParams(
   params: Record<string, string | number> | undefined,
   settings: FormatSettings,
+  uiLocale: string,
 ): Record<string, string | number> {
   const out: Record<string, string | number> = {};
   for (const [key, value] of Object.entries(params ?? {})) {
     out[key] = value;
     if (typeof value === "number") out[`${key}Formatted`] = formatNumber(value, {}, settings);
+  }
+  // A booked meeting (bookingPending, bookingNew): its moment as the app writes it.
+  if (typeof params?.startsAt === "string" && Number.isFinite(Date.parse(params.startsAt))) {
+    out.startsAtFormatted = formatSlotMoment(new Date(params.startsAt), settings, uiLocale);
   }
   // Amounts of the month plan (cashLow) in the plan's own currency.
   if (typeof params?.currency === "string") {
@@ -87,9 +97,10 @@ function formatParams(
 export function useSuggestionText() {
   const t = useTranslations("jarvis.suggestion");
   const settings = useFormatSettings();
+  const uiLocale = useLocale();
   return useCallback(
     (suggestion: Suggestion) => {
-      const params = formatParams(suggestion.action.params, settings);
+      const params = formatParams(suggestion.action.params, settings, uiLocale);
       if (isRuleType(suggestion.type)) {
         const type = suggestion.type;
         return {
@@ -131,7 +142,7 @@ export function useSuggestionText() {
         prompt: suggestion.action.kind === "ask" ? suggestion.action.prompt : "",
       };
     },
-    [t, settings],
+    [t, settings, uiLocale],
   );
 }
 

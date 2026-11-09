@@ -21,6 +21,8 @@ import { Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ActorAvatar } from "@/features/account/members";
 import { TaskHistoryItem, useFinishedTasks } from "@/features/crm-tasks/history";
+import { useContactBookings } from "@/features/scheduler/booking-queries";
+import { BookingHistoryItem } from "@/features/scheduler/ui/booking-history-item";
 import { useCan } from "@/features/account/workspace-queries";
 import { formatDateTime } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
@@ -47,6 +49,8 @@ export function ActivityPanel({ contactId }: { contactId: string }) {
   const activities = useActivities(contactId);
   // Finished tasks of the contact with their notes join the history by date.
   const finished = useFinishedTasks("contact", contactId);
+  // Meetings the contact booked through the scheduler, a cancelled one too (24.4).
+  const bookings = useContactBookings(contactId);
   const remove = useDeleteActivity(contactId);
   // Logging calls and notes: contacts "update" or calling (cold calling).
   const canUpdate = useCan("contacts", "update");
@@ -73,7 +77,7 @@ export function ActivityPanel({ contactId }: { contactId: string }) {
         <Skeleton className="h-24 rounded-xl" />
       ) : activities.isError ? (
         <FormAlert>{t("loadFailed")}</FormAlert>
-      ) : activities.data.length === 0 && finished.length === 0 ? (
+      ) : activities.data.length === 0 && finished.length === 0 && !bookings.data?.length ? (
         <p className="flex items-center gap-2 rounded-xl border border-dashed border-line px-3 py-4 text-sm text-ink-muted">
           <HistoryIcon aria-hidden className="size-4 shrink-0" />
           {t("empty")}
@@ -83,11 +87,14 @@ export function ActivityPanel({ contactId }: { contactId: string }) {
           {[
             ...activities.data.map((activity) => ({ at: activity.occurred_at, activity })),
             ...finished.map((task) => ({ at: task.completed_at!, task })),
+            ...(bookings.data ?? []).map((booking) => ({ at: booking.starts_at, booking })),
           ]
             .sort((a, b) => Date.parse(b.at) - Date.parse(a.at))
             .map((entry) => {
               if ("task" in entry)
                 return <TaskHistoryItem key={`task:${entry.task.id}`} task={entry.task} />;
+              if ("booking" in entry)
+                return <BookingHistoryItem key={`booking:${entry.booking.id}`} booking={entry.booking} />;
               const { activity } = entry;
               const Icon = ICONS[activity.type];
               return (

@@ -36,6 +36,8 @@ export async function sendEmail(message: {
   fromName?: string;
   cc?: string[];
   replyTo?: string;
+  /** ISO instant: Resend sends it then (at most 30 days ahead); the id cancels it. */
+  scheduledAt?: string;
 }): Promise<EmailResult> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return { ok: false, error: "RESEND_API_KEY is not set" };
@@ -52,6 +54,7 @@ export async function sendEmail(message: {
         text: message.text,
         html: message.html,
         ...(message.attachments?.length ? { attachments: message.attachments } : {}),
+        ...(message.scheduledAt ? { scheduled_at: message.scheduledAt } : {}),
       }),
       // Attachments make the request slower than a plain notification e-mail.
       signal: AbortSignal.timeout(20_000),
@@ -68,6 +71,24 @@ export async function sendEmail(message: {
       };
     }
     return { ok: true, id: body?.id ?? null };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+/** Cancels an e-mail scheduled with `scheduledAt`. Never throws; an e-mail already sent stays sent. */
+export async function cancelEmail(id: string): Promise<EmailResult> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return { ok: false, error: "RESEND_API_KEY is not set" };
+  if (!/^[A-Za-z0-9_-]{1,100}$/.test(id)) return { ok: false, error: "invalid id" };
+  try {
+    const response = await fetch(`${ENDPOINT}/${id}/cancel`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}` },
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!response.ok) return { ok: false, error: String(response.status) };
+    return { ok: true, id };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : String(error) };
   }

@@ -690,8 +690,8 @@ describe("morning brief", () => {
     expect(outcome).toBe("empty");
     expect(stream).not.toHaveBeenCalled();
     expect(admin.calls.some((c) => c.table === "jarvis_suggestions")).toBe(false);
-    // Every read is the user's own (sales tasks: the ones given to the user).
-    const OWN = ["user_id", "milestone_id", "assignee_id"];
+    // Every read is the user's own (sales tasks: the ones given to the user; bookings: the ones they host).
+    const OWN = ["user_id", "milestone_id", "assignee_id", "host_user_id"];
     for (const call of admin.calls.filter((c) => !c.table.startsWith("rpc:"))) {
       expect(
         call.ops.some(([n, a]) => n === "eq" && OWN.includes(a[0] as string) && a[1] !== undefined),

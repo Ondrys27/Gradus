@@ -55,7 +55,7 @@ export async function loadSchedulerSituation(
     return {
       upcoming: (upcoming.data ?? []).map((row) => ({
         startsAt: new Date(row.starts_at),
-        guest: row.guest_name,
+        guest: row.guest_name ?? "",
         type: row.event_type_id ? (names.get(row.event_type_id) ?? null) : null,
         pending: row.status === "pending",
       })),

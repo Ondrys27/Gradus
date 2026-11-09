@@ -337,6 +337,36 @@ export function formatDateTime(
 }
 
 /**
+ * A moment as a booking names it, in the settings zone: the short weekday in
+ * the UI language, day and month in the number style and the clock time,
+ * e.g. "út 12. 11. 14:00" / "Tue 12/11 14:00".
+ */
+export function formatSlotMoment(
+  instant: Date,
+  settings: FormatSettings = DEFAULT_FORMAT_SETTINGS,
+  uiLocale: string = "cs",
+): string {
+  const wall = toZonedWallClock(instant, settings.timeZone);
+  const weekday = new Intl.DateTimeFormat(uiLocale, { weekday: "short" }).format(wall);
+  const dayMonth = new Intl.DateTimeFormat(settings.numberLocale, {
+    day: "numeric",
+    month: "numeric",
+  }).format(wall);
+  return `${weekday} ${dayMonth} ${formatTime(instant, settings)}`;
+}
+
+/** The whole date of a moment for an e-mail: weekday, date and time, e.g. "úterý 12. 11. 2026 14:00". */
+export function formatLongMoment(
+  instant: Date,
+  settings: FormatSettings = DEFAULT_FORMAT_SETTINGS,
+  uiLocale: string = "cs",
+): string {
+  const wall = toZonedWallClock(instant, settings.timeZone);
+  const weekday = new Intl.DateTimeFormat(uiLocale, { weekday: "long" }).format(wall);
+  return `${weekday} ${formatDate(instant, settings)} ${formatTime(instant, settings)}`;
+}
+
+/**
  * When something was last changed, as a list shows it: the time for today
  * (in the user's zone), the date otherwise.
  */

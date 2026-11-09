@@ -11,11 +11,16 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function SchedulerPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string | string[] }>;
+  searchParams: Promise<{ tab?: string | string[]; booking?: string | string[] }>;
 }) {
-  const { tab } = await searchParams;
+  const { tab, booking } = await searchParams;
   const initialTab = (SCHEDULER_TABS as readonly string[]).includes(String(tab))
     ? (tab as SchedulerTab)
     : "types";
-  return <SchedulerView initialTab={initialTab} />;
+  // A booking from the host's e-mail or Jarvis opens on the Bookings tab.
+  const bookingId =
+    typeof booking === "string" && /^[0-9a-f-]{36}$/i.test(booking) ? booking : null;
+  return (
+    <SchedulerView initialTab={bookingId ? "bookings" : initialTab} initialBooking={bookingId} />
+  );
 }
