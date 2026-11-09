@@ -75,6 +75,7 @@ Jednou za život účtu, jen majiteli, po onboardingu a dokončené prohlídce. 
 | `stalledDeal` Obchod stojí | pevný text z překladů | otevřený obchod 14 a více dní ve stejné fázi | z pravidel při každé kontrole; každé „zastavení“ jednou | ano |
 | `overdueTask` Úkol milníku po termínu | pevný text | nehotový úkol aktivního milníku 3 a více dní po termínu | z pravidel; každý úkol a termín jednou | ano |
 | `overdueInvoice` Faktura po splatnosti | pevný text | vystavená nezaplacená faktura po dni splatnosti (pracovník bez financí ji nevidí) | z pravidel; každá faktura a splatnost jednou | ano |
+| `cashLow` Dochází peníze | pevný text | plán měsíce (Finance → Měsíc) vlastního prostoru: se skutečností za uplynulé týdny a plánem od tohoto týdne klesne konečný kapitál týdne pod nulu nebo pod zadanou rezervu; text řekne týden, hranici, největší výdaj toho týdne a kolik plánovaných příjmů z uplynulých týdnů nepřišlo. Měsíc bez plánu nebo uplynulý týden nic | z pravidel; změní-li se týden, hranice, příčina nebo počet chybějících příjmů, je to nový návrh a starý odejde | ano |
 | `overdueCrmTask` Obchodní úkol po termínu | pevný text | otevřený obchodní úkol přiřazený uživateli, po termínu na minutu | z pravidel; každý úkol a termín jednou | ano (volání a schůzky jen v okně) |
 | `milestoneReady` Milník připravený | pevný text | aktivní milník, jehož všechny úkoly jsou hotové (aspoň jeden). Dokončit ho musí uživatel sám | z pravidel; každý milník jednou | ano |
 | `followUps` Komu se dnes ozvat | pevný text | kontakty v tabulce Ozvat se, kterým dnes nastal termín | z pravidel; jednou denně | ano (jen v okně) |
@@ -85,7 +86,7 @@ Jednou za život účtu, jen majiteli, po onboardingu a dokončené prohlídce. 
 | `insight` Postřeh | **model** (Haiku) | co se u uživatele změnilo od minulého hlídání (obchody, úkoly, přesuny kontaktů, milníky, události) + otevřené úkoly; nejvýš 2 postřehy, k novému milníku může navrhnout až 5 úkolů (vzniknou až po Přidat) | hlídání příležitostí 1× denně (10:00 UTC), jen u účtů se změnou za posledních 7 dní; když nic, mlčí | ano |
 | **Otázky** | pevné texty a možnosti z překladů | viz níže | nejvýš 2 za 7 dní, jen když ve frontě není žádný návrh | ano |
 
-Pravidlové návrhy (typy s pevným textem) se počítají z dat v databázi při každém otevření panelu a před každým vyskočením; od každého typu nejvýš 3 najednou. Text skládá rozhraní z překladů (`jarvis.suggestion.<typ>`), takže sedí s jazykem rozhraní. Pořadí ve frontě: po termínu (úkoly, faktury, obchodní úkoly) → komu se ozvat a pozvánka do firmy → stojící obchod → hotový milník → cesta → postřehy; co musí čekat na okno, jde dozadu.
+Pravidlové návrhy (typy s pevným textem) se počítají z dat v databázi při každém otevření panelu a před každým vyskočením; od každého typu nejvýš 3 najednou. Text skládá rozhraní z překladů (`jarvis.suggestion.<typ>`), takže sedí s jazykem rozhraní. Pořadí ve frontě: po termínu (úkoly, faktury, obchodní úkoly) a docházející peníze → komu se ozvat a pozvánka do firmy → stojící obchod → hotový milník → cesta → postřehy; co musí čekat na okno, jde dozadu.
 
 Návrh starší než **3 dny** už sám nevyskočí (v panelu postřehy zmizí po 3 dnech, ostatní, dokud platí).
 

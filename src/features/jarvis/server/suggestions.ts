@@ -23,6 +23,8 @@ import {
   type Suggestion,
   type SuggestionType,
 } from "../suggestions";
+import { cashLowInputOf } from "../cash-plan";
+import { loadCashPlan } from "./cash-plan";
 import { loadTimeWindow } from "./time-window";
 
 type Client = SupabaseClient<Database>;
@@ -68,6 +70,9 @@ export async function loadRuleInputs(
       .limit(5),
   );
   const ownSpaces = [userId, ...spaces.map((space) => space.owner_id)];
+
+  // The plan of the user's own space; without one (or on any error) no cashLow.
+  const cashPlan = loadCashPlan(client, userId, settings, now);
 
   const [won, stalled, stages, overdue, milestones, followUpTable, invoices, crmTasks, invites] =
     await Promise.all([
@@ -237,6 +242,7 @@ export async function loadRuleInputs(
       target: task.deal?.title ?? (task.contact ? contactName(task.contact) : null),
       dueAt: task.due_at,
     })),
+    cashLow: cashLowInputOf(await cashPlan),
   };
 }
 

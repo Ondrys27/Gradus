@@ -14,6 +14,7 @@ import {
   PhoneCallIcon,
   ReceiptTextIcon,
   SquareCheckBigIcon,
+  TrendingDownIcon,
   TrophyIcon,
   Undo2Icon,
   XIcon,
@@ -23,7 +24,7 @@ import { useWhenLabel } from "@/features/jarvis/call-window";
 import { useDismissSuggestion, useUndoTaskCompletion } from "@/features/jarvis/queries";
 import type { Suggestion } from "@/features/jarvis/suggestions";
 import { isRuleType, type SuggestionType } from "@/features/jarvis/suggestion-types";
-import { formatNumber, type FormatSettings } from "@/lib/format";
+import { formatCurrency, formatNumber, type FormatSettings } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/client";
@@ -37,6 +38,7 @@ const ICONS: Record<SuggestionType, LucideIcon> = {
   overdueInvoice: ReceiptTextIcon,
   overdueCrmTask: SquareCheckBigIcon,
   workerInvite: MailPlusIcon,
+  cashLow: TrendingDownIcon,
   taskCompleted: CircleCheckIcon,
   insight: LightbulbIcon,
   pathReady: MapIcon,
@@ -51,6 +53,7 @@ const ICON_TONE: Record<SuggestionType, string> = {
   overdueInvoice: "text-pink",
   overdueCrmTask: "text-pink",
   workerInvite: "text-violet",
+  cashLow: "text-orange",
   taskCompleted: "text-green",
   insight: "text-violet",
   pathReady: "text-teal",
@@ -68,6 +71,14 @@ function formatParams(
   for (const [key, value] of Object.entries(params ?? {})) {
     out[key] = value;
     if (typeof value === "number") out[`${key}Formatted`] = formatNumber(value, {}, settings);
+  }
+  // Amounts of the month plan (cashLow) in the plan's own currency.
+  if (typeof params?.currency === "string") {
+    for (const key of ["threshold", "causeAmount"]) {
+      const value = params[key];
+      if (typeof value === "number")
+        out[`${key}Money`] = formatCurrency(value, params.currency, settings);
+    }
   }
   return out;
 }

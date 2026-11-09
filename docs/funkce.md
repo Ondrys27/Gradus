@@ -121,7 +121,9 @@ Stav k 8. 11. 2026.
 
 | Funkce | Co dělá | Pro koho | Náklad |
 |---|---|---|---|
-| Příjmy a výdaje | Transakce s kategoriemi, souhrny za období a graf. Část se zapíše sama ze zálohy, vyhraného obchodu nebo zaplacené faktury. | majitel, pracovník s právem finance | žádný |
+| Příjmy a výdaje | Transakce s kategoriemi, hledání podle období. Část se zapíše sama ze zálohy, vyhraného obchodu nebo zaplacené faktury. | majitel, pracovník s právem finance | žádný |
+| Plán měsíce (Měsíc) | Výchozí pohled Financí: tabulka příjmů a výdajů po týdnech jako v Google Sheets (počáteční kapitál, PŘÍJMY, VÝDAJE, bilance a konečný kapitál týdne), Shrnutí měsíce s nejnižším stavem a varováním pod nulou nebo pod rezervou. Úprava buňky na místě (12 500, 12,5k, 3*4000), Plán · Skutečnost · Rozdíl (skutečnost z transakcí), založení dalšího měsíce z předchozího, automatické platby a faktury se dosadí samy, obchody s Close Date jako návrh. Export XLSX/CSV a import CSV ve stejném rozvržení. | majitel, pracovník s právem finance (zapisuje s „zapisovat“) | žádný |
+| Přehled | Souhrnné dlaždice, graf příjmů a graf vývoje kapitálu po týdnech (plán i skutečnost, 3 měsíce zpět a 3 dopředu). | majitel, pracovník se souhrny | žádný |
 | Pravidelné platby | Týdně, měsíčně, čtvrtletně nebo ročně se samy zaúčtují (noční úloha). | majitel, pracovník | žádný |
 | Faktury | Koncept, vystavení s číselnou řadou, storno dobropisem a „zaplaceno“. Čtyři vzhledy a QR platba pro CZ. | majitel, pracovník s fakturami | žádný |
 | PDF faktury | Vznikne při prvním stažení nebo odeslání a uloží se. | majitel, pracovník | úložiště |
@@ -249,7 +251,7 @@ Druhy `check` a `summary` jsou v kódu připravené, ale dnes je nic nevolá. <!
 
 | Co | Jak to funguje | Pro koho |
 |---|---|---|
-| Pravidlové návrhy | Jarvis sám přiletí s věcí, kterou spočítá z dat: obchod vyhrán, komu se ozvat, obchod stojí, úkol po termínu, milník připravený k dokončení, faktura po splatnosti, obchodní úkol po termínu, další krok cesty, pozvánka do cizí firmy. Před ukázáním se vždy přepočítá. <!-- kód: proactive:dealWon proactive:followUps proactive:stalledDeal proactive:overdueTask proactive:milestoneReady proactive:overdueInvoice proactive:overdueCrmTask proactive:pathReady proactive:workerInvite proactive:insight --> | majitel |
+| Pravidlové návrhy | Jarvis sám přiletí s věcí, kterou spočítá z dat: obchod vyhrán, komu se ozvat, obchod stojí, úkol po termínu, milník připravený k dokončení, faktura po splatnosti, obchodní úkol po termínu, další krok cesty, pozvánka do cizí firmy, docházející peníze podle plánu měsíce (kdy kapitál klesne pod nulu nebo rezervu a proč). Před ukázáním se vždy přepočítá. <!-- kód: proactive:dealWon proactive:followUps proactive:stalledDeal proactive:overdueTask proactive:milestoneReady proactive:overdueInvoice proactive:overdueCrmTask proactive:pathReady proactive:workerInvite proactive:cashLow proactive:insight --> | majitel |
 | Návrh z hlídání | Postřeh z hlídání příležitostí, může nést úkoly k přidání. Model stojí jen to hlídání (viz výše), samotné ukázání nic. | majitel |
 | Otázky | Nejvýš dvě týdně: cíl měsíce, kolik hodin chce volat, co ho brzdí, ideální zákazník. Odpovědi jdou do kontextu chatu. <!-- kód: question:monthlyGoal question:callingHours question:obstacle question:idealCustomer --> | majitel |
 | Návrhy otázek v chatu | Tlačítka podle situace: naplánovat den, další krok, komu se ozvat, obchody, co stojí, úkoly a faktury po termínu, první milník, první obchod, finance měsíce, začít volat. Po kliknutí je to obyčejná zpráva chatu. <!-- kód: chip:planDay chip:planNext chip:followUps chip:stalledDeals chip:overdueTasks chip:overdueCrmTasks chip:overdueInvoices chip:nextMilestoneStep chip:firstMilestone chip:firstDeal chip:monthFinance chip:startCalling --> | majitel, pracovník |

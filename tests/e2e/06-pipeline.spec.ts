@@ -123,6 +123,6 @@ test("6 · deal → dragged to the won stage → celebration → contact in Clie
   expect(income).toContainEqual(
     expect.objectContaining({ type: "income", source: "deal_invoice", description: title }),
   );
-  await openApp(page, "/app/finance");
+  await openApp(page, "/app/finance?tab=transactions");
   await expect(page.locator("main").getByText(title).first()).toBeVisible();
 });

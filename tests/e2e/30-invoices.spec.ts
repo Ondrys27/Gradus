@@ -100,7 +100,7 @@ test("30 · supplier guide → invoice from a deal → PDF → paid → income i
       return data;
     })
     .toEqual([{ amount: 24000, type: "income", source: "invoice" }]);
-  await openApp(page, "/app/finance");
+  await openApp(page, "/app/finance?tab=transactions");
   await expect(page.getByText(new RegExp(number)).first()).toBeVisible();
 });
 

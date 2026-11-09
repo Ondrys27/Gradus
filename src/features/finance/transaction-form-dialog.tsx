@@ -23,9 +23,18 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   /** Editing this one, or a new transaction when null. */
   transaction: Transaction | null;
+  /** What a new one starts with, e.g. from a cell of the month plan. */
+  defaults?: TransactionDefaults;
 };
 
-export function TransactionFormDialog({ open, onOpenChange, transaction }: Props) {
+export type TransactionDefaults = {
+  type: Transaction["type"];
+  occurred_on: IsoDate;
+  description: string;
+  category: string | null;
+};
+
+export function TransactionFormDialog({ open, onOpenChange, transaction, defaults }: Props) {
   const t = useTranslations("finance.form");
   const generation = useFreshOnOpen(open);
   return (
@@ -36,12 +45,25 @@ export function TransactionFormDialog({ open, onOpenChange, transaction }: Props
       closeLabel={t("close")}
       className="w-[min(100vw-32px,480px)]"
     >
-      <Fields key={generation} transaction={transaction} onDone={() => onOpenChange(false)} />
+      <Fields
+        key={generation}
+        transaction={transaction}
+        defaults={defaults}
+        onDone={() => onOpenChange(false)}
+      />
     </ResponsiveDialog>
   );
 }
 
-function Fields({ transaction, onDone }: { transaction: Transaction | null; onDone: () => void }) {
+function Fields({
+  transaction,
+  defaults,
+  onDone,
+}: {
+  transaction: Transaction | null;
+  defaults?: TransactionDefaults;
+  onDone: () => void;
+}) {
   const t = useTranslations("finance.form");
   const tErrors = useTranslations("finance.errors");
   const settings = useFormatSettings();
@@ -55,10 +77,17 @@ function Fields({ transaction, onDone }: { transaction: Transaction | null; onDo
           category: transaction.category,
           description: transaction.description ?? "",
         }
-      : { type: "expense", amount: "", category: defaultCategory("expense"), description: "" },
+      : defaults
+        ? {
+            type: defaults.type,
+            amount: "",
+            category: defaults.category ?? defaultCategory(defaults.type),
+            description: defaults.description,
+          }
+        : { type: "expense", amount: "", category: defaultCategory("expense"), description: "" },
   );
   const [date, setDate] = useState<IsoDate | null>(
-    () => transaction?.occurred_on ?? todayIsoDate(settings),
+    () => transaction?.occurred_on ?? defaults?.occurred_on ?? todayIsoDate(settings),
   );
   const [errors, setErrors] = useState<Partial<Record<string, FinanceErrorKey>>>({});
   const [failed, setFailed] = useState(false);

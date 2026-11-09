@@ -33,10 +33,58 @@ describe("ruleSuggestions", () => {
       expect.objectContaining({
         type: "workerInvite",
         dedupeKey: "workerInvite:i1",
-        action: { kind: "open", href: "/app/pozvanky", params: { who: "Novák s.r.o. · Václav Novák" } },
+        action: {
+          kind: "open",
+          href: "/app/pozvanky",
+          params: { who: "Novák s.r.o. · Václav Novák" },
+        },
       }),
     ]);
     expect(isAppHref("/app/pozvanky")).toBe(true);
+  });
+
+  it("warns about money running short in the month plan, keyed by what it says", () => {
+    const cashLow = {
+      month: "2026-11",
+      week: 4,
+      threshold: 5000,
+      currency: "CZK",
+      cause: { label: "Nájem", amount: 12000 },
+      missingIncomes: 2,
+    };
+    const [rule] = ruleSuggestions({ ...EMPTY, cashLow });
+    expect(rule.type).toBe("cashLow");
+    expect(rule.dedupeKey).toMatch(/^cashLow:2026-11:4:5000:2:[a-z0-9]+-12000$/);
+    expect(rule.action).toEqual({
+      kind: "open",
+      href: "/app/finance?tab=month&month=2026-11",
+      params: {
+        month: "2026-11",
+        week: 4,
+        threshold: 5000,
+        currency: "CZK",
+        zero: "no",
+        hasCause: "yes",
+        cause: "Nájem",
+        causeAmount: 12000,
+        missing: 2,
+      },
+    });
+    expect(suggestionActionSchema.safeParse(rule.action).success).toBe(true);
+    // Another missing income or another week is a new suggestion; the old one retires.
+    const [later] = ruleSuggestions({ ...EMPTY, cashLow: { ...cashLow, missingIncomes: 3 } });
+    expect(later.dedupeKey).not.toBe(rule.dedupeKey);
+    const [zero] = ruleSuggestions({
+      ...EMPTY,
+      cashLow: { ...cashLow, threshold: 0, cause: null },
+    });
+    expect(zero.action.params).toMatchObject({
+      zero: "yes",
+      hasCause: "no",
+      cause: "",
+      causeAmount: 0,
+    });
+    expect(ruleSuggestions({ ...EMPTY, cashLow: null })).toEqual([]);
   });
 
   it("turns each instant trigger into one suggestion with a stable key", () => {

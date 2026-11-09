@@ -89,6 +89,7 @@ export const PROACTIVE_SUGGESTION_TYPES = [
   "followUps",
   "pathReady",
   "workerInvite",
+  "cashLow",
 ] as const;
 export type ProactiveSuggestionType = (typeof PROACTIVE_SUGGESTION_TYPES)[number];
 

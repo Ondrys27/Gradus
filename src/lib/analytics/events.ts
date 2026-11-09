@@ -10,6 +10,8 @@ import { TUTORIAL_MODES } from "@/features/tutorial/types";
 import { EXPORT_FORMATS, IMPORT_MODES } from "@/features/milestones/map-io";
 import { MINDMAP_FORMATS } from "@/lib/mindmap/formats";
 import { INVOICE_STYLES } from "@/features/invoices/types";
+import { CARRY_MODES } from "@/features/finance/plan/carry-over";
+import { PLAN_VIEWS } from "@/features/finance/plan/sheet";
 import { SIGNUP_SOURCES } from "@/features/auth/signup-mode";
 import { BILLINGS, CANCEL_REASONS } from "@/features/subscription/state";
 import { PROMO_BENEFITS, PROMO_SOURCES } from "@/features/promo/codes";
@@ -608,6 +610,34 @@ export const EVENTS = {
   invoice_paid: event("finance", "server", true, {}),
   invoice_cancelled: event("finance", "server", true, {}),
   invoice_profile_saved: event("finance", "server", true, { created: bool(), vat_payer: bool() }),
+  // The month plan (21.1): counts and enums only, never names or amounts.
+  finance_plan_month_created: event("finance", "client", true, {
+    from: oneOf(["empty", "previous", "import"]),
+    mode: optional(oneOf(CARRY_MODES)),
+    rows: count(300),
+    recurring: count(300),
+    invoices: count(300),
+  }),
+  finance_plan_month_updated: event("finance", "client", true, {
+    field: oneOf(["opening", "reserve", "closed"]),
+  }),
+  finance_plan_cell_saved: event("finance", "client", true, {
+    kind: oneOf(["income", "expense"]),
+    expression: bool(),
+    cleared: bool(),
+  }),
+  finance_plan_row_added: event("finance", "client", true, {
+    kind: oneOf(["income", "expense"]),
+    from: oneOf(["typed", "pipeline"]),
+  }),
+  finance_plan_row_updated: event("finance", "client", true, { change: oneOf(["rename", "move"]) }),
+  finance_plan_row_deleted: event("finance", "client", true, {
+    kind: oneOf(["income", "expense"]),
+    had_numbers: bool(),
+  }),
+  finance_plan_view_changed: event("finance", "client", false, { view: oneOf(PLAN_VIEWS) }),
+  finance_plan_exported: event("finance", "client", false, { format: oneOf(["csv", "xlsx"]) }),
+  finance_plan_imported: event("finance", "client", true, { rows: count(300), replaced: bool() }),
   /** Before 16.3, from the browser; kept for the history. */
   invoice_paid_marked: event("finance", "client", true, {}),
   invoice_deleted: event("finance", "client", true, {}),

@@ -27,6 +27,8 @@ import { periodRange } from "./finance-logic";
 import { canDo } from "@/features/account/workspace";
 import { useWorkspace } from "@/features/account/workspace-queries";
 import { fetchTransaction } from "./queries";
+import { MonthView } from "./plan/month-view";
+import { planWeekOf, type PlanMonthKey } from "./plan/weeks";
 import { RecurringFormDialog } from "./recurring-form-dialog";
 import { RecurringPanel } from "./recurring-panel";
 import { Segmented } from "./segmented";
@@ -47,11 +49,25 @@ const IncomeChart = dynamic(() => import("./income-chart").then((module) => modu
   ssr: false,
   loading: () => <Skeleton className="h-96 rounded-card" />,
 });
+const CapitalChart = dynamic(() => import("./plan/capital-chart").then((module) => module.CapitalChart), {
+  ssr: false,
+  loading: () => <Skeleton className="h-64 rounded-card" />,
+});
 
 /** `undefined` closed, `null` a new one, otherwise the one being edited. */
 type Editing<T> = T | null | undefined;
 
-export function FinanceView({ initialTab = "transactions" }: { initialTab?: FinanceTab }) {
+export function FinanceView({
+  initialTab = "month",
+  initialMonth,
+  categoryNames = {},
+}: {
+  initialTab?: FinanceTab;
+  /** Category names in every language, for matching transactions to plan rows. */
+  categoryNames?: Record<string, string[]>;
+  /** "YYYY-MM" from the address (?month=), else the month of today's week. */
+  initialMonth?: PlanMonthKey;
+}) {
   const t = useTranslations("finance");
   const settings = useFormatSettings();
   const today = todayIsoDate(settings);
@@ -60,6 +76,7 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
   const [transaction, setTransaction] = useState<Editing<Transaction>>(undefined);
   const [payment, setPayment] = useState<Editing<RecurringPayment>>(undefined);
   const range = useMemo(() => periodRange(period, today), [period, today]);
+  const [month, setMonth] = useState<PlanMonthKey>(() => initialMonth ?? planWeekOf(today).month);
   // Finance opens with finance or invoices; inside, each part has its own right.
   const workspace = useWorkspace();
   const canSeeMoney = canDo(workspace, "finance", "view");
@@ -69,7 +86,7 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
   const canEdit = canDo(workspace, "finance", "write");
   const canIssue = canDo(workspace, "invoices", "issue");
   const allowedTabs = FINANCE_TABS.filter((value) =>
-    value === "invoices" ? canSeeInvoices : canSeeMoney,
+    value === "invoices" ? canSeeInvoices : value === "overview" ? canSeeSummaries : canSeeMoney,
   );
   const tab: FinanceTab = allowedTabs.includes(requestedTab)
     ? requestedTab
@@ -80,6 +97,20 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
   if (initialTab !== seenTab) {
     setSeenTab(initialTab);
     setTab(initialTab);
+  }
+  const [seenMonth, setSeenMonth] = useState(initialMonth);
+  if (initialMonth !== seenMonth) {
+    setSeenMonth(initialMonth);
+    if (initialMonth) setMonth(initialMonth);
+  }
+
+  /** The month stays in the address, so a link (Jarvis, a reload) opens the same one. */
+  function changeMonth(next: PlanMonthKey) {
+    setMonth(next);
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", "month");
+    url.searchParams.set("month", next);
+    window.history.replaceState(window.history.state, "", url);
   }
   // The search opens a found transaction for editing, whatever period it is in.
   useUrlIntent("transaction", (id) => {
@@ -108,7 +139,7 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
                 {t("actions.newInvoice")}
               </Link>
             )
-          ) : !canEdit ? null : (
+          ) : !canEdit || tab === "month" || tab === "overview" ? null : (
             <Button onClick={() => (tab === "recurring" ? setPayment(null) : setTransaction(null))}>
               <PlusIcon aria-hidden data-icon="inline-start" />
               {tab === "recurring" ? t("actions.newRecurring") : t("actions.newTransaction")}
@@ -117,7 +148,15 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
         }
       />
 
-      {canSeeMoney && (
+      <Segmented
+        label={t("tabs.label")}
+        value={tab}
+        options={tabs}
+        onChange={setTab}
+        panelId={() => "finance-panel"}
+      />
+
+      {canSeeMoney && (tab === "transactions" || tab === "overview") && (
         <div className="flex flex-col gap-2 sm:max-w-xs">
           <label htmlFor="finance-period" className="text-sm font-medium text-ink-soft">
             {t("period.label")}
@@ -143,22 +182,7 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
         </div>
       )}
 
-      {canSeeSummaries && (
-        <>
-          <SummaryTiles range={range} />
-          <GlowCard interactive={false}>
-            <IncomeChart today={today} />
-          </GlowCard>
-        </>
-      )}
 
-      <Segmented
-        label={t("tabs.label")}
-        value={tab}
-        options={tabs}
-        onChange={setTab}
-        panelId={() => "finance-panel"}
-      />
       {/* The old tab's height stays until the new one has loaded, so the page does not jump. */}
       <KeepHeight token={tab} id="finance-panel" role="tabpanel" aria-labelledby={`tab-${tab}`}>
         {tab === "transactions" && (
@@ -175,6 +199,18 @@ export function FinanceView({ initialTab = "transactions" }: { initialTab?: Fina
           />
         )}
         {tab === "invoices" && <InvoiceList />}
+        {tab === "month" && <MonthView month={month} onMonthChange={changeMonth} categoryNames={categoryNames} />}
+        {tab === "overview" && canSeeSummaries && (
+          <div className="flex flex-col gap-6">
+            <SummaryTiles range={range} />
+            <GlowCard interactive={false}>
+              <IncomeChart today={today} />
+            </GlowCard>
+            <GlowCard interactive={false}>
+              <CapitalChart today={today} />
+            </GlowCard>
+          </div>
+        )}
       </KeepHeight>
 
       <TransactionFormDialog

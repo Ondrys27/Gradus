@@ -44,7 +44,7 @@ async function savedSettings(userId: string) {
  * month; "this month" would then rightly hide it.
  */
 async function openFinance(page: Page) {
-  await openApp(page, "/app/finance");
+  await openApp(page, "/app/finance?tab=transactions");
   await page.locator("#finance-period").click();
   await page.getByRole("option", { name: t("finance.period.last3Months") }).click();
   await expect(page.locator("#finance-period")).toContainText(t("finance.period.last3Months"));
