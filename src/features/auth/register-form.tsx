@@ -55,6 +55,10 @@ export function RegisterForm({
   // The browser's zone seeds the account's time zone, country and formats.
   const [timeZone, setTimeZone] = useState("");
   useEffect(() => setTimeZone(browserTimeZone()), []);
+  // The server never sends the password back, and React resets uncontrolled
+  // fields after every action: held here, it survives an error (missing consent,
+  // wrong code), so the visitor doesn't have to type it again.
+  const [password, setPassword] = useState("");
 
   // E-mail confirmation is on: the account waits for the link from the inbox.
   if (state.success && state.values?.email) return <CheckEmail email={state.values.email} />;
@@ -136,6 +140,8 @@ export function RegisterForm({
         <PasswordInput
           {...fieldA11y("register-password", err("password"), true)}
           name="password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
           autoComplete="new-password"
           minLength={PASSWORD_MIN}
           required
