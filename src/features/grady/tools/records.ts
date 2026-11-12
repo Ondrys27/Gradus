@@ -120,6 +120,7 @@ function keyOf(record: Pick<UndoRecord, "table" | "match">): string {
 type DbError = { code?: string; message?: string } | null;
 type Filter = PromiseLike<{ data: unknown; error: DbError }> & {
   eq(column: string, value: string | number): Filter;
+  select(columns: string): Filter;
   maybeSingle(): PromiseLike<{ data: unknown; error: DbError }>;
 };
 /** The few calls Undo makes, on any of its tables (the names are only known at run time). */
@@ -225,10 +226,24 @@ export async function undoRecords(db: Db, records: UndoRecord[]): Promise<UndoRe
     if (step.kind === "skip") continue;
     const table = tableOf(db, step.record.table);
     const query = step.kind === "delete" ? table.delete() : table.update(step.values);
-    const { error } = await matching(query, step.record.match);
+    // The rows written come back: a write row level security filters out is no error, only no row.
+    const { data, error } = await matching(query, step.record.match).select(
+      Object.keys(step.record.match).join(", "),
+    );
     if (error) {
       console.error("grady undo failed", step.record.table, error.code);
       return { ok: false, reason: "failed" };
+    }
+    if (!Array.isArray(data) || data.length === 0) {
+      // A delete may find the row already gone with its parent; anything else was refused.
+      const still =
+        step.kind === "delete"
+          ? await readRow(db, step.record.table, step.record.match, Object.keys(step.record.match))
+          : true;
+      if (still) {
+        console.error("grady undo refused", step.record.table);
+        return { ok: false, reason: "failed" };
+      }
     }
   }
   return { ok: true };

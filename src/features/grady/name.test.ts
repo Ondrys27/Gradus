@@ -19,6 +19,8 @@ const ALLOWED_FILES: Readonly<Record<string, string>> = {
   "features/grady/prompt.ts": "the persona tells the model it used to be called Jarvis",
   "features/grady/prompt.test.ts": "tests of that",
   "features/game/skill-text.ts": "the skills' stored descriptions still say Jarvis",
+  "features/plan/assistant-name.ts": "the first published catalog's stored card texts still say Jarvis",
+  "features/plan/assistant-name.test.ts": "tests of that",
   "features/game/skill-text.test.ts": "a stored description as a fixture",
   "lib/supabase/plan-catalog-schema.test.ts": "the first published catalog still says Jarvis",
   "app/api/jarvis/route.ts": "the old address of the route",

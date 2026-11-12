@@ -4,6 +4,7 @@ import {
   blocksFromPlainText,
   docWithTitle,
   draftFromDoc,
+  extractText,
   fitsLimits,
   type DocNode,
   type NoteDraft,
@@ -37,6 +38,17 @@ async function readNote(ctx: ToolContext, id: string) {
       .is("deleted_at", null)
       .maybeSingle(),
   );
+}
+
+/** The document with its first text line (the title) replaced; the rest stays as it is. */
+function withFirstLine(doc: DocNode, title: string): DocNode {
+  const content = doc.content ?? [];
+  const first = content.findIndex((node) => extractText({ type: "doc", content: [node] }) !== "");
+  const node = content[first];
+  if (!node || (node.type !== "heading" && node.type !== "paragraph"))
+    return docWithTitle(title, content);
+  const line: DocNode = { ...node, content: [{ type: "text", text: title }] };
+  return { ...doc, type: "doc", content: [...content.slice(0, first), line, ...content.slice(first + 1)] };
 }
 
 /** The note's text as it was, for Undo, when it is small enough to keep. */
@@ -172,8 +184,14 @@ export const noteTools = [
         };
       }
       const title = input.title ?? note.title;
-      const body = input.text ?? note.content_text.split("\n").slice(1).join("\n");
-      const draft = checked(draftFromDoc(docWithTitle(title, blocksFromPlainText(body))));
+      // Only a new title: the document keeps its formatting, chips and lists, the first line changes.
+      const draft = checked(
+        draftFromDoc(
+          input.text === undefined
+            ? withFirstLine(noteContentOf("text", note.content) as DocNode, title)
+            : docWithTitle(title, blocksFromPlainText(input.text)),
+        ),
+      );
       const records = textBefore(note);
       await writeNote(ops(ctx), { userId: ctx.userId, id: note.id, draft });
       return {

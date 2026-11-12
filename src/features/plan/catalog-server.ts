@@ -2,6 +2,7 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 import type { CatalogAddOn, PlanCatalog } from "@/config/pricing";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { withAssistantNames } from "./assistant-name";
 import { validatePlanAddOns, validatePlanCatalog } from "./catalog";
 import { seedAddOns, seedPlanCatalog } from "./catalog-seed";
 
@@ -29,9 +30,13 @@ const loadPublished = unstable_cache(
     // A version published before step 24.1 has no add-ons stored: the seed's.
     const addOns = data.add_ons === null ? null : validatePlanAddOns(data.add_ons);
     if (addOns && !addOns.ok) throw new Error("plan catalog: the published add-ons are invalid");
-    return { catalog: parsed.catalog, addOns: addOns ? addOns.addOns : seedAddOns() };
+    // Stored card texts of the first version keep the old name (assistant-name.ts).
+    return withAssistantNames({
+      catalog: parsed.catalog,
+      addOns: addOns ? addOns.addOns : seedAddOns(),
+    });
   },
-  ["plan-catalog-published-v2"],
+  ["plan-catalog-published-v3"],
   { tags: [PLAN_CATALOG_TAG], revalidate: REVALIDATE_SECONDS },
 );
 

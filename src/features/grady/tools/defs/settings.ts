@@ -158,7 +158,11 @@ export const schedulerTools = [
       const changed = { ...patch, ...(input.active !== undefined ? { active: input.active } : {}) };
       return {
         output: { eventTypeId: type.id },
-        records: [updated("event_types", type.id, previousOf(type, changed))],
+        // The owner may only switch a worker's type off (event_types_guard): no Undo to switch it on.
+        records:
+          type.user_id === ctx.userId
+            ? [updated("event_types", type.id, previousOf(type, changed))]
+            : [],
         summary: ctx.t("update_event_type", { name: quoted(input.name ?? type.name) }),
         href: hrefs.scheduler,
       };

@@ -46,13 +46,16 @@ type ContactFields = { [K in keyof typeof contactFields]?: string };
 /** The tool's fields as the contact form saves them (phones in E.164). */
 function toRow(ctx: ToolContext, input: ContactFields, base?: Record<string, string | null>) {
   const pick = (value: string | undefined, column: string) => value ?? base?.[column] ?? "";
+  // A number that is no phone number is refused, never saved as an empty phone (only "" clears it).
+  const phone = input.phone?.trim() ? toE164(input.phone, ctx.country) : null;
+  if (input.phone?.trim() && !phone)
+    throw new ToolError("invalidPhone", "That is not a valid phone number.");
   const parsed = contactSchema.safeParse({
     company_name: pick(input.companyName, "company_name"),
     first_name: pick(input.firstName, "first_name"),
     last_name: pick(input.lastName, "last_name"),
     email: pick(input.email, "email"),
-    phone:
-      input.phone !== undefined ? (toE164(input.phone, ctx.country) ?? "") : (base?.phone ?? ""),
+    phone: input.phone !== undefined ? (phone ?? "") : (base?.phone ?? ""),
     website: pick(input.website, "website"),
     address: pick(input.address, "address"),
     city: pick(input.city, "city"),

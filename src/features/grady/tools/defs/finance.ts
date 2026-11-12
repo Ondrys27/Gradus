@@ -445,6 +445,8 @@ export const invoiceTools = [
     async execute(ctx, input) {
       let invoiceId = input.invoiceId ?? null;
       let previous: InvoiceRecord | null = null;
+      // From a deal the database hands back its draft or unpaid invoice when there is one already.
+      let existing = false;
       if (invoiceId) {
         previous = await readInvoice(ctx, invoiceId);
         if (previous.status !== "draft") throw new ToolError("alreadyIssued");
@@ -459,7 +461,15 @@ export const invoiceTools = [
           ),
         );
       } else if (input.dealId && !input.items) {
+        const { data: before, error } = await ctx.db
+          .from("invoices")
+          .select("id")
+          .eq("user_id", ctx.workspaceId)
+          .eq("deal_id", input.dealId)
+          .limit(100);
+        if (error) throw error;
         invoiceId = unwrap(await createInvoiceFromDealAction(input.dealId));
+        existing = before.some((row) => row.id === invoiceId);
       } else {
         if (!input.items)
           throw new ToolError("invalid", "Items are needed for an invoice without a deal.");
@@ -513,6 +523,7 @@ export const invoiceTools = [
           total: invoice.total,
           currency: invoice.currency,
           status: invoice.status,
+          ...(existing ? { existing: true } : {}),
         },
         records: previous
           ? [
@@ -523,7 +534,9 @@ export const invoiceTools = [
                 currency: previous.currency,
               }),
             ]
-          : [inserted("invoices", invoice.id)],
+          : existing
+            ? []
+            : [inserted("invoices", invoice.id)],
         summary: ctx.t(previous ? "update_invoice_draft" : "save_invoice_draft", {
           name: quoted(invoice.customer?.name ?? ""),
         }),

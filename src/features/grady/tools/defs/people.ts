@@ -169,15 +169,28 @@ export const companyTools = [
         existing: existing ? { id: existing.id, memberIds: existing.memberIds } : null,
         position: count ?? 0,
       });
-      const records: UndoRecord[] = existing
-        ? [
-            updated("worker_groups", groupId, {
-              name: existing.name,
-              color: existing.color,
-              description: existing.description,
-            }),
-          ]
-        : [inserted("worker_groups", groupId)];
+      // Undo of a changed group takes back the new members too; a removed membership can not
+      // be written back the plain way, so such a change has no Undo.
+      const added = existing ? memberIds.filter((id) => !existing.memberIds.includes(id)) : [];
+      const removed = existing ? existing.memberIds.filter((id) => !memberIds.includes(id)) : [];
+      const records: UndoRecord[] = !existing
+        ? [inserted("worker_groups", groupId)]
+        : removed.length
+          ? []
+          : [
+              updated("worker_groups", groupId, {
+                name: existing.name,
+                color: existing.color,
+                description: existing.description,
+              }),
+              ...added.map(
+                (workerId): UndoRecord => ({
+                  table: "worker_group_members",
+                  match: { group_id: groupId, worker_id: workerId },
+                  op: "insert",
+                }),
+              ),
+            ];
       return {
         output: { groupId },
         records,
@@ -187,7 +200,7 @@ export const companyTools = [
         href: `${hrefs.company}?tab=groups`,
       };
     },
-    // Members of a changed group are not taken back by Undo; a new group goes whole.
+    // A new group goes whole; a changed one with its new members (see above).
     undoable: true,
     invalidates: ["workers"],
   }),
@@ -252,10 +265,12 @@ export const companyTools = [
       if (left && JSON.stringify([...current].sort()) !== JSON.stringify([...left].sort())) {
         return { ok: false, reason: "changed" };
       }
+      // Only this section goes back: a later change of another section stays.
+      const key = section as keyof PermissionGrants;
       await saveWorkerGrants(ops(ctx), {
         ownerId: ctx.workspaceId,
         workerId: String(record.match.id),
-        grants,
+        grants: { ...now, [key]: grants[key] ?? [] } as PermissionGrants,
       });
       return { ok: true };
     },
