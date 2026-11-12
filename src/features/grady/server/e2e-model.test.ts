@@ -9,6 +9,7 @@ const {
   E2E_MODEL_HEADER,
   E2E_NO_NOTES,
   E2E_SUMMARY_TEXT,
+  e2eEchoClient,
   echoedAsk,
   echoedNotes,
   wantsE2eEcho,
@@ -51,5 +52,25 @@ describe("the end-to-end echo model", () => {
     ];
     expect(echoedNotes({ system })).toBe("<user_notes>\nCeník\n</user_notes>");
     expect(echoedNotes({ system: "nothing here" })).toBe(E2E_NO_NOTES);
+  });
+
+  it("streams like the tools loop reads it: events, then the whole message", async () => {
+    const client = e2eEchoClient({} as never);
+    const stream = client.messages.stream({
+      model: "claude-sonnet-5-5",
+      max_tokens: 10,
+      system: "<user_notes>\nCeník\n</user_notes>",
+      messages: [{ role: "user", content: "?" }],
+    }) as unknown as AsyncIterable<{ type: string }> & {
+      finalMessage: () => Promise<{ stop_reason: string; content: { type: string; text: string }[] }>;
+    };
+    const types: string[] = [];
+    for await (const event of stream) types.push(event.type);
+    expect(types).toEqual(["message_start", "content_block_delta", "message_delta"]);
+    const message = await stream.finalMessage();
+    expect(message.stop_reason).toBe("end_turn");
+    expect(message.content).toEqual([
+      expect.objectContaining({ type: "text", text: "<user_notes>\nCeník\n</user_notes>" }),
+    ]);
   });
 });

@@ -69,8 +69,9 @@ export function e2eEchoClient(
   model: E2eModel = E2E_ECHO_NOTES,
 ): GradyClient {
   const answer = model === E2E_ECHO_SUMMARY ? echoedAsk : echoedNotes;
-  const stream = (params: Anthropic.MessageStreamParams) =>
-    (async function* () {
+  const stream = (params: Anthropic.MessageStreamParams) => {
+    const reply = answer(params);
+    async function* events() {
       yield {
         type: "message_start",
         message: { usage: { input_tokens: 0, output_tokens: 0 } },
@@ -78,14 +79,27 @@ export function e2eEchoClient(
       yield {
         type: "content_block_delta",
         index: 0,
-        delta: { type: "text_delta", text: answer(params) },
+        delta: { type: "text_delta", text: reply },
       } as Anthropic.MessageStreamEvent;
       yield {
         type: "message_delta",
         delta: { stop_reason: "end_turn", stop_sequence: null },
         usage: { output_tokens: 0 },
       } as unknown as Anthropic.MessageStreamEvent;
-    })();
+    }
+    // The tools loop (26.2) reads the whole answer back after the stream.
+    const message = {
+      id: "msg_e2e_echo",
+      type: "message",
+      role: "assistant",
+      model: params.model,
+      content: [{ type: "text", text: reply, citations: null }],
+      stop_reason: "end_turn",
+      stop_sequence: null,
+      usage: { input_tokens: 0, output_tokens: 0 },
+    } as unknown as Anthropic.Message;
+    return Object.assign(events(), { finalMessage: async () => message });
+  };
   return {
     messages: { stream } as unknown as Anthropic["messages"],
     budget: createBudgetGuard(admin),
