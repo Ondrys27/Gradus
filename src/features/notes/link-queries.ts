@@ -6,7 +6,9 @@ import { useProfile, useSession } from "@/features/account/queries";
 import { useWorkspace } from "@/features/account/workspace-queries";
 import { industryKeyOf, type IndustryKey } from "@/features/onboarding/industries";
 import { track } from "@/lib/analytics/client";
+import { clientOps } from "@/lib/ops-client";
 import { createClient } from "@/lib/supabase/client";
+import { linkNote } from "./ops";
 import { draftFromDoc } from "./document";
 import { getNoteSaver, useCreateNote } from "./queries";
 import { isNoteTemplateKey, workNoteDoc, type NoteTemplateKey } from "./templates";
@@ -171,28 +173,15 @@ export function useTaskNoteTemplates(milestoneId: string, enabled = true) {
   });
 }
 
-function insertLink(noteId: string, target: WorkTarget) {
-  return createClient()
-    .from("note_links")
-    .insert({
-      note_id: noteId,
-      task_id: target.kind === "task" ? target.id : null,
-      milestone_id: target.kind === "milestone" ? target.id : null,
-      deal_id: target.kind === "deal" ? target.id : null,
-    });
-}
-
 /** Ties an existing note to a task or milestone; linking it twice is no error. */
 export function useLinkNote() {
   const { user } = useSession();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ noteId, target }: { noteId: string; target: WorkTarget }) => {
-      const { error } = await insertLink(noteId, target);
-      if (error && error.code !== "23505") throw error;
+      await linkNote(clientOps(), { noteId, target, how: "attach" });
     },
-    onSuccess: (_data, { target }) => {
-      track("note_linked", { target: target.kind, how: "attach" });
+    onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: noteLinkKeys.all(user.id) });
     },
   });
@@ -256,16 +245,10 @@ export function useWriteToNotes() {
       const saver = getNoteSaver(user.id);
       await saver.flush(id);
       if (saver.unsavedDraft(id)) throw new Error("note_not_saved");
-      const { error } = await insertLink(id, target);
-      if (error) throw error;
+      await linkNote(clientOps(), { noteId: id, target, how: "write", template });
       return id;
     },
-    onSuccess: (_id, { target, template }) => {
-      track("note_linked", {
-        target: target.kind,
-        how: "write",
-        template: template ?? undefined,
-      });
+    onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: noteLinkKeys.all(user.id) });
     },
   });

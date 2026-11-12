@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
 import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { createClient } from "@/lib/supabase/client";
+import { cardFromRow, type ActionCard } from "./actions";
 import { readChatStream } from "./chat-stream";
 import { uploadContentType, type FileKind, MIME_BY_KIND } from "./files";
 import type {
@@ -40,6 +41,8 @@ export type ChatMessage = {
   content: string;
   attachments?: ChatAttachment[];
   rating?: Rating | null;
+  /** Grady's changes in the app from this answer (cards with Open, Undo, Confirm). */
+  actions?: ActionCard[];
 };
 
 export type Conversation = { id: string | null; messages: ChatMessage[] };
@@ -100,12 +103,29 @@ export function useGradyConversation(enabled: boolean) {
           files.set(row.entity_id, list);
         }
       }
+      // Grady's changes under his answers; RLS gives the account its own rows only.
+      const answerIds = data.filter((m) => m.role === "assistant").map((m) => m.id);
+      const actions = new Map<string, ActionCard[]>();
+      if (answerIds.length) {
+        const { data: rows, error: actionsError } = await supabase
+          .from("grady_actions")
+          .select("*")
+          .in("message_id", answerIds)
+          .order("created_at")
+          .limit(500);
+        if (actionsError) throw actionsError;
+        for (const row of rows) {
+          if (!row.message_id) continue;
+          actions.set(row.message_id, [...(actions.get(row.message_id) ?? []), cardFromRow(row)]);
+        }
+      }
       return {
         id: conversation.id,
         messages: data.reverse().map((message) => ({
           ...message,
           rating: message.rating as Rating | null,
           attachments: files.get(message.id),
+          actions: actions.get(message.id),
         })),
       };
     },

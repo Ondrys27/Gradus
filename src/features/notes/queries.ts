@@ -10,7 +10,9 @@ import {
 } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
 import { track } from "@/lib/analytics/client";
+import { clientOps } from "@/lib/ops-client";
 import { createClient } from "@/lib/supabase/client";
+import { setNotePinned, trashNote, writeNote } from "./ops";
 import {
   appendToDoc,
   draftFromDoc,
@@ -101,23 +103,7 @@ function localBackup(userId: string): DraftBackup {
  * race just means updating again).
  */
 async function saveNote(userId: string, id: string, draft: NoteDraft): Promise<void> {
-  const supabase = createClient();
-  const text = {
-    kind: draft.kind ?? "text",
-    title: draft.title,
-    content: draft.content as never,
-    content_text: draft.content_text,
-  };
-  const update = () =>
-    supabase.from("notes").update(text).eq("user_id", userId).eq("id", id).select("id");
-  const updated = await update();
-  if (updated.error) throw updated.error;
-  if (updated.data.length > 0) return;
-  const inserted = await supabase.from("notes").insert({ id, user_id: userId, ...text });
-  if (!inserted.error) return;
-  if (inserted.error.code !== "23505") throw inserted.error;
-  const again = await update();
-  if (again.error) throw again.error;
+  await writeNote({ db: createClient() }, { userId, id, draft });
 }
 
 export function getNoteSaver(userId: string): NoteSaver {
@@ -435,14 +421,8 @@ export function usePinNote() {
   const queryClient = useQueryClient();
   const key = noteKeys.list(user.id);
   return useMutation({
-    mutationFn: async ({ id, pinned }: { id: string; pinned: boolean }) => {
-      const { error } = await createClient()
-        .from("notes")
-        .update({ pinned })
-        .eq("user_id", user.id)
-        .eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: ({ id, pinned }: { id: string; pinned: boolean }) =>
+      setNotePinned({ db: createClient() }, { userId: user.id, id, pinned }),
     onMutate: ({ id, pinned }) => {
       const previous = queryClient.getQueryData<NoteListItem[]>(key);
       queryClient.setQueryData<NoteListItem[]>(key, (list) =>
@@ -470,6 +450,8 @@ export function useDeleteNote() {
   return useMutation({
     mutationFn: async ({
       id,
+      pinned,
+      from,
     }: {
       id: string;
       pinned: boolean;
@@ -477,20 +459,14 @@ export function useDeleteNote() {
       from: "editor" | "list" | "keyboard";
     }) => {
       await getNoteSaver(user.id).flush(id);
-      const { error } = await createClient()
-        .from("notes")
-        .update({ deleted_at: new Date().toISOString() })
-        .eq("user_id", user.id)
-        .eq("id", id);
-      if (error) throw error;
+      await trashNote(clientOps(), { userId: user.id, id, pinned, from });
     },
     onMutate: ({ id }) => {
       const previous = queryClient.getQueryData<NoteListItem[]>(key);
       queryClient.setQueryData<NoteListItem[]>(key, (list) => list?.filter((n) => n.id !== id));
       return { previous };
     },
-    onSuccess: (_data, { id, pinned, from }) => {
-      track("note_deleted", { pinned, from });
+    onSuccess: (_data, { id }) => {
       queryClient.removeQueries({ queryKey: noteKeys.detail(user.id, id) });
       void queryClient.invalidateQueries({ queryKey: noteKeys.trash(user.id) });
     },
@@ -595,7 +571,9 @@ export function useAppendToNote() {
       const next = isMapDoc(content)
         ? appendTextToMap(sanitizeMapDoc(content), heading, text)
         : appendToDoc(content as DocNode, heading, blocks);
-      const draft = isMapDoc(next) ? mapDraft(next, { mentionText }) : draftFromDoc(next, { mentionText });
+      const draft = isMapDoc(next)
+        ? mapDraft(next, { mentionText })
+        : draftFromDoc(next, { mentionText });
       saver.edit(id, draft);
       applyDraftToCache(queryClient, user.id, id, draft);
       window.dispatchEvent(new CustomEvent(NOTE_REPLACED_EVENT, { detail: { id, content: next } }));

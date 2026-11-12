@@ -9,18 +9,25 @@ import {
 } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
 import { useWorkspace, useWorkspaceId } from "@/features/account/workspace-queries";
-import { track } from "@/lib/analytics/client";
+import { clientOps } from "@/lib/ops-client";
 import { createClient } from "@/lib/supabase/client";
 import { type FormatSettings, type IsoDate } from "@/lib/format";
 import { dayRangeToInstants } from "@/features/calendar/calendar-logic";
 import {
-  delayMinutes,
   dueRange,
   durationBounds,
   effectiveStatus,
   type TaskFilters,
   type TaskInput,
 } from "./logic";
+import {
+  completeCrmTask,
+  createCrmTask,
+  deleteCrmTask,
+  reopenCrmTask,
+  toCrmTaskRow,
+  updateCrmTask,
+} from "./ops";
 import {
   CRM_TASK_COLUMNS,
   type Assignee,
@@ -329,36 +336,13 @@ export function useTargetName(kind: "deal" | "contact", id: string | null) {
 // guard decide what the account may change.
 // ---------------------------------------------------------------------------
 
-function toRow(input: TaskInput) {
-  return {
-    title: input.title,
-    description: input.description || null,
-    due_at: input.due_at,
-    duration_minutes: input.duration_minutes,
-    assignee_id: input.assignee_id,
-    deal_id: input.deal_id,
-    contact_id: input.contact_id,
-  };
-}
-
 export function useCreateTask(origin: TaskOrigin) {
   const { user } = useSession();
   const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: TaskInput) => {
-      const assignee = input.assignee_id ?? user.id;
-      const { error } = await createClient()
-        .from("crm_tasks")
-        .insert({ ...toRow(input), assignee_id: assignee, user_id: workspaceId });
-      if (error) throw error;
-      track("crm_task_created", {
-        from: origin,
-        duration: input.duration_minutes,
-        assigned_to_other: assignee !== user.id,
-        has_deal: input.deal_id !== null,
-        has_contact: input.contact_id !== null,
-      });
+      await createCrmTask(clientOps(), { workspaceId, userId: user.id, input, from: origin });
     },
     onSettled: () => invalidateTasks(queryClient, user.id),
   });
@@ -368,11 +352,8 @@ export function useUpdateTask() {
   const { user } = useSession();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, input }: { id: string; input: TaskInput }) => {
-      const { error } = await createClient().from("crm_tasks").update(toRow(input)).eq("id", id);
-      if (error) throw error;
-      track("crm_task_updated", { via: "form" });
-    },
+    mutationFn: ({ id, input }: { id: string; input: TaskInput }) =>
+      updateCrmTask(clientOps(), id, toCrmTaskRow(input), "form"),
     onSettled: () => invalidateTasks(queryClient, user.id),
   });
 }
@@ -388,14 +369,8 @@ export function useMoveTask() {
   const queryClient = useQueryClient();
   const filter = { queryKey: [...crmTaskKeys.all(user.id), "calendar"] };
   return useMutation({
-    mutationFn: async ({ id, dueAt }: { id: string; dueAt: string }) => {
-      const { error } = await createClient()
-        .from("crm_tasks")
-        .update({ due_at: dueAt })
-        .eq("id", id);
-      if (error) throw error;
-      track("crm_task_updated", { via: "calendar" });
-    },
+    mutationFn: ({ id, dueAt }: { id: string; dueAt: string }) =>
+      updateCrmTask(clientOps(), id, { due_at: dueAt }, "calendar"),
     onMutate: async ({ id, dueAt }): Promise<{ snapshot: Snapshot }> => {
       await queryClient.cancelQueries(filter);
       const snapshot = queryClient.getQueriesData<CrmTask[]>(filter);
@@ -416,19 +391,8 @@ export function useCompleteTask() {
   const { user } = useSession();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ task, note }: { task: CrmTask; note: string }) => {
-      const clean = note.trim();
-      const { error } = await createClient()
-        .from("crm_tasks")
-        .update({ status: "done", completion_note: clean || null })
-        .eq("id", task.id);
-      if (error) throw error;
-      track("crm_task_completed", {
-        duration: task.duration_minutes,
-        delay_minutes: delayMinutes(task.due_at, new Date()),
-        has_note: clean.length > 0,
-      });
-    },
+    mutationFn: ({ task, note }: { task: CrmTask; note: string }) =>
+      completeCrmTask(clientOps(), task, note),
     onSettled: () => invalidateTasks(queryClient, user.id),
   });
 }
@@ -438,14 +402,7 @@ export function useReopenTask() {
   const { user } = useSession();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await createClient()
-        .from("crm_tasks")
-        .update({ status: "open" })
-        .eq("id", id);
-      if (error) throw error;
-      track("crm_task_reopened", {});
-    },
+    mutationFn: (id: string) => reopenCrmTask(clientOps(), id),
     onSettled: () => invalidateTasks(queryClient, user.id),
   });
 }
@@ -454,11 +411,7 @@ export function useDeleteTask() {
   const { user } = useSession();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await createClient().from("crm_tasks").delete().eq("id", id);
-      if (error) throw error;
-      track("crm_task_deleted", {});
-    },
+    mutationFn: (id: string) => deleteCrmTask(clientOps(), id),
     onSettled: () => invalidateTasks(queryClient, user.id),
   });
 }

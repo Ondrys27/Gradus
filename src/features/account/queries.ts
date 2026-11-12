@@ -22,7 +22,8 @@ import {
   type WorkerAccount,
 } from "./types";
 import { flush, track } from "@/lib/analytics/client";
-import { settingsEvents } from "@/lib/analytics/settings-events";
+import { clientOps } from "@/lib/ops-client";
+import { updateSettings } from "@/features/settings/ops";
 
 export const accountKeys = {
   profile: (userId: string) => ["account", userId, "profile"] as const,
@@ -95,16 +96,8 @@ export function useUpdateSettings() {
   const key = accountKeys.settings(user.id);
 
   return useMutation({
-    mutationFn: async (patch: UserSettingsPatch) => {
-      const { data, error } = await createClient()
-        .from("user_settings")
-        .update(patch)
-        .eq("user_id", user.id)
-        .select(USER_SETTINGS_COLUMNS)
-        .single();
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: (patch: UserSettingsPatch) =>
+      updateSettings(clientOps(), { userId: user.id, patch }),
     onMutate: async (patch) => {
       await queryClient.cancelQueries({ queryKey: key });
       const previous = queryClient.getQueryData<UserSettings>(key);
@@ -124,8 +117,7 @@ export function useUpdateSettings() {
         }
       }
     },
-    onSuccess: (row, patch) => {
-      for (const props of settingsEvents(patch)) track("settings_changed", props);
+    onSuccess: (row) => {
       queryClient.setQueryData(key, row);
     },
   });

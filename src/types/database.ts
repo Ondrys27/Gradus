@@ -2458,6 +2458,65 @@ export type Database = {
         }
         Relationships: []
       }
+      grady_actions: {
+        Row: {
+          conversation_id: string | null
+          created_at: string
+          decided_at: string | null
+          error: string | null
+          id: string
+          input: Json
+          message_id: string | null
+          result: Json | null
+          risk: string
+          space_id: string
+          status: string
+          tool: string
+          undone_at: string | null
+          user_id: string
+        }
+        Insert: {
+          conversation_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          error?: string | null
+          id?: string
+          input?: Json
+          message_id?: string | null
+          result?: Json | null
+          risk: string
+          space_id: string
+          status?: string
+          tool: string
+          undone_at?: string | null
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          error?: string | null
+          id?: string
+          input?: Json
+          message_id?: string | null
+          result?: Json | null
+          risk?: string
+          space_id?: string
+          status?: string
+          tool?: string
+          undone_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grady_actions_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "jarvis_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoice_counters: {
         Row: {
           last_number: number

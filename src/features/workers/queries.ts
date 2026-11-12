@@ -10,16 +10,13 @@ import {
 import { useSession, useUserSettings } from "@/features/account/queries";
 import { zonedWallClockToInstant, type IsoDate } from "@/lib/format";
 import { track } from "@/lib/analytics/client";
+import { clientOps } from "@/lib/ops-client";
 import { createClient } from "@/lib/supabase/client";
+import { saveWorkerGrants } from "./ops";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import {
   GRANT_ROWS_LIMIT,
-  grantCounts,
-  grantRows,
   grantsFromRows,
-  legacyAccess,
-  LEGACY_SOURCES,
-  type LegacySection,
   type PermissionGrants,
   type PermissionTemplate,
 } from "./permissions-catalog";
@@ -217,13 +214,7 @@ export function useWorkerGrants(workerId: string, enabled = true) {
 
 /** Every right of the catalog as a row, so nothing is left to a default. */
 async function saveGrants(ownerId: string, workerId: string, grants: PermissionGrants) {
-  const { error } = await createClient()
-    .from("worker_permission_grants")
-    .upsert(
-      grantRows(grants).map((row) => ({ ...row, owner_id: ownerId, worker_id: workerId })),
-      { onConflict: "worker_id,section,action" },
-    );
-  if (error) throw error;
+  await saveWorkerGrants(clientOps(), { ownerId, workerId, grants });
 }
 
 /**
@@ -246,7 +237,6 @@ export function useSaveWorkerGrants(workerId: string) {
       template?: PermissionTemplate;
     }) => {
       await saveGrants(user.id, workerId, grants);
-      trackGrants(grants);
       if (template) track("worker_permission_template_applied", { template });
     },
     onMutate: async ({ grants }) => {
@@ -262,16 +252,6 @@ export function useSaveWorkerGrants(workerId: string) {
       if (queryClient.isMutating({ mutationKey: ["workers", "permissions", workerId] }) > 1) return;
       void queryClient.invalidateQueries({ queryKey: key });
     },
-  });
-}
-
-/** How many sections a worker may see and how many they may change, never which person. */
-function trackGrants(grants: PermissionGrants) {
-  const sections = Object.keys(LEGACY_SOURCES) as LegacySection[];
-  const access = sections.map((section) => legacyAccess(grants, section));
-  track("worker_permissions_saved", {
-    view_sections: Math.min(grantCounts(grants).sections, 20),
-    edit_sections: access.filter((level) => level.edit).length,
   });
 }
 
@@ -317,7 +297,8 @@ export function useCreateWorker() {
         .select(WORKER_COLUMNS)
         .single();
       if (error) throw error;
-      const undo = () => supabase.from("workers").delete().eq("id", worker.id).eq("owner_id", user.id);
+      const undo = () =>
+        supabase.from("workers").delete().eq("id", worker.id).eq("owner_id", user.id);
       // A record left without its invite would hold a seat of the plan nobody can take: it goes again.
       const created = await (async () => {
         await saveGrants(user.id, worker.id, input.grants);
@@ -371,7 +352,6 @@ export function useCreateWorker() {
         groups: Math.min(groupIds.length, 200),
         target: bound ? "account" : "link",
       });
-      trackGrants(input.grants);
       return { worker, invite, bound };
     },
     onSettled: () => {
@@ -394,7 +374,6 @@ export function useUpdateWorker(workerId: string) {
       if (error) throw error;
       if (input.grants) await saveGrants(user.id, workerId, input.grants);
       track("worker_updated", {});
-      if (input.grants) trackGrants(input.grants);
     },
     onSettled: () => invalidateAll(queryClient, user.id),
   });

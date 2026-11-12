@@ -3,7 +3,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
 import { track } from "@/lib/analytics/client";
+import { clientOps } from "@/lib/ops-client";
 import { createClient } from "@/lib/supabase/client";
+import { removeWorker } from "../ops";
 import { workerKeys } from "../queries";
 import type { DashboardWorker } from "./types";
 
@@ -193,17 +195,7 @@ export function useRemoveWorker(workerId: string) {
       assignee: string | null;
       to: "owner" | "worker" | "nobody";
     }) => {
-      const { data, error } = await createClient().rpc("company_remove_worker", {
-        _worker_id: workerId,
-        ...(assignee ? { _assignee: assignee } : {}),
-      });
-      if (error) throw error;
-      const row = data[0];
-      track("worker_removed", {
-        deals: Math.min(row?.deals ?? 0, 10_000),
-        tasks: Math.min((row?.crm_tasks ?? 0) + (row?.worker_tasks ?? 0), 10_000),
-        to,
-      });
+      await removeWorker(clientOps(), { workerId, assignee, to });
     },
     onSettled: () => {
       void invalidate();

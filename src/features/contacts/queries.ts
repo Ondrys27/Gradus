@@ -14,7 +14,15 @@ import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
 import { duplicateEmailKey, duplicatePhoneKey, searchFilter } from "./contact-search";
-import { moveContact, type MoveContactInput } from "./move-contact";
+import {
+  addActivity,
+  createContact,
+  deleteContact,
+  moveContactToTable,
+  updateContact,
+  type MoveToTableArgs,
+} from "./ops";
+import { clientOps } from "@/lib/ops-client";
 import type { ActivityInput, ContactInput } from "./schemas";
 import {
   ACTIVITY_COLUMNS,
@@ -333,36 +341,15 @@ export function useDuplicates(phone: string, email: string, excludeId?: string) 
   });
 }
 
-/** Which fields a contact has filled, for "how complete are contacts" (never the values). */
-function filled(row: Pick<Contact, "email" | "phone" | "website">) {
-  return {
-    has_email: Boolean(row.email),
-    has_phone: Boolean(row.phone),
-    has_website: Boolean(row.website),
-  };
-}
-
 /** The database fills phone_normalized and puts the contact into Unreached. */
 export function useCreateContact(where: "contacts" | "onboarding" = "contacts") {
   const { user } = useSession();
   const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: ContactInput): Promise<Contact> => {
-      const { data, error } = await createClient()
-        .from("contacts")
-        .insert({ ...input, user_id: workspaceId })
-        .select(CONTACT_COLUMNS)
-        .single();
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: (input: ContactInput): Promise<Contact> =>
+      createContact(clientOps(), { workspaceId, input, where }),
     onSuccess: (row) => {
-      track("contact_created", {
-        source: row.source === "generated" || row.source === "import" ? row.source : "manual",
-        where,
-        ...filled(row),
-      });
       queryClient.setQueryData(contactKeys.detail(user.id, row.id), row);
       return queryClient.invalidateQueries({ queryKey: contactKeys.all(user.id) });
     },
@@ -374,19 +361,9 @@ export function useUpdateContact(id: string) {
   const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (patch: Partial<ContactInput> & { notes?: string | null }) => {
-      const { data, error } = await createClient()
-        .from("contacts")
-        .update(patch)
-        .eq("user_id", workspaceId)
-        .eq("id", id)
-        .select(CONTACT_COLUMNS)
-        .single();
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: (patch: Partial<ContactInput> & { notes?: string | null }) =>
+      updateContact(clientOps(), { workspaceId, id, patch }),
     onSuccess: (row) => {
-      track("contact_updated", filled(row));
       queryClient.setQueryData(contactKeys.detail(user.id, id), row);
       return queryClient.invalidateQueries({ queryKey: contactKeys.lists(user.id) });
     },
@@ -398,16 +375,8 @@ export function useDeleteContact(id: string) {
   const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async () => {
-      const { error } = await createClient()
-        .from("contacts")
-        .delete()
-        .eq("user_id", workspaceId)
-        .eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: () => deleteContact(clientOps(), { workspaceId, id }),
     onSuccess: () => {
-      track("contact_deleted", {});
       queryClient.removeQueries({ queryKey: contactKeys.detail(user.id, id) });
       void queryClient.invalidateQueries({ queryKey: contactKeys.all(user.id) });
       // Deals keep their row but lose the contact.
@@ -422,17 +391,9 @@ export function useAddActivity(contactId: string) {
   const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: ActivityInput): Promise<Activity> => {
-      const { data, error } = await createClient()
-        .from("contact_activities")
-        .insert({ ...input, contact_id: contactId, user_id: workspaceId })
-        .select(ACTIVITY_COLUMNS)
-        .single();
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: (input: ActivityInput): Promise<Activity> =>
+      addActivity(clientOps(), { workspaceId, contactId, input }),
     onSuccess: (row) => {
-      track("contact_activity_logged", { type: row.type });
       queryClient.setQueryData<Activity[]>(contactKeys.activities(user.id, contactId), (list) =>
         list ? [row, ...list].sort((a, b) => b.occurred_at.localeCompare(a.occurred_at)) : list,
       );
@@ -470,7 +431,7 @@ export function useMoveContact() {
   const { user } = useSession();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: MoveContactInput) => moveContact(createClient(), input),
+    mutationFn: (input: MoveToTableArgs) => moveContactToTable(clientOps(), input),
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: contactKeys.all(user.id) }),

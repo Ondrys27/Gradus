@@ -26,6 +26,7 @@ import {
   XIcon,
   type LucideIcon,
 } from "lucide-react";
+import { ActionCard } from "@/components/grady/action-card";
 import { Grady } from "@/components/grady/grady";
 import { NoticePager, NoticeSlide, queueKeyDown } from "@/components/grady/notice-queue";
 import { useReportProblem } from "@/features/feedback/report-provider";
@@ -39,6 +40,7 @@ import {
   uploadContentType,
   type FileKind,
 } from "@/features/grady/files";
+import type { ActionCard as Card } from "@/features/grady/actions";
 import { MAX_MESSAGE_LENGTH, type Rating, type SuggestionKey } from "@/features/grady/protocol";
 import {
   useGradyConversation,
@@ -124,7 +126,14 @@ export function GradyPanel({ chat, onClose }: GradyPanelProps) {
   useLayoutEffect(() => {
     const list = listRef.current;
     if (list) list.scrollTop = list.scrollHeight;
-  }, [messages.length, pending?.answer, pending?.userText, error]);
+  }, [
+    messages.length,
+    pending?.answer,
+    pending?.userText,
+    pending?.actions?.length,
+    pending?.progress,
+    error,
+  ]);
 
   // The input grows with the text, up to about five lines.
   useLayoutEffect(() => {
@@ -339,13 +348,24 @@ export function GradyPanel({ chat, onClose }: GradyPanelProps) {
               files={message.attachments?.map((file) => ({ name: file.name, kind: file.kind }))}
             />
           ) : (
-            <AssistantBubble
-              key={message.id}
-              text={message.content}
-              rating={message.rating}
-              onRate={(rating) => rateMessage.mutate({ messageId: message.id, rating })}
-              savable
-            />
+            <div key={message.id} className="flex flex-col gap-2">
+              {message.actions?.length ? (
+                <ActionCards
+                  cards={message.actions}
+                  onNavigate={() => {
+                    if (isPhone) onClose();
+                  }}
+                />
+              ) : null}
+              {(message.content.trim() || !message.actions?.length) && (
+                <AssistantBubble
+                  text={message.content}
+                  rating={message.rating}
+                  onRate={(rating) => rateMessage.mutate({ messageId: message.id, rating })}
+                  savable
+                />
+              )}
+            </div>
           ),
         )}
         {pending && (pending.userText || pending.fileNames.length > 0) && (
@@ -354,7 +374,13 @@ export function GradyPanel({ chat, onClose }: GradyPanelProps) {
             files={pending.fileNames.map((name) => ({ name, kind: null }))}
           />
         )}
+        {pending?.actions?.length ? <ActionCards cards={pending.actions} /> : null}
         {pending?.answer && <AssistantBubble text={pending.answer} />}
+        {pending?.progress && (
+          <p role="status" className="self-start text-xs text-ink-muted">
+            {pending.progress}
+          </p>
+        )}
         {showTyping && <TypingDots label={t("typing")} />}
         {errorText && (
           <div
@@ -455,6 +481,17 @@ export function GradyPanel({ chat, onClose }: GradyPanelProps) {
         </button>
       </form>
     </motion.section>
+  );
+}
+
+/** Grady's changes from one answer, above its text. */
+function ActionCards({ cards, onNavigate }: { cards: Card[]; onNavigate?: () => void }) {
+  return (
+    <div className="flex max-w-[92%] flex-col gap-2">
+      {cards.map((card) => (
+        <ActionCard key={card.id} card={card} onNavigate={onNavigate} />
+      ))}
+    </div>
   );
 }
 

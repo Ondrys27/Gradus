@@ -182,7 +182,7 @@ Stav k 9. 11. 2026.
 
 ### Grady
 
-AI pomocník v pravém dolním rohu: chat, souhrny dne, návrhy a hodnocení. Všechno, co dělá, s modelem a cenou je v [kapitole 2](#2-grady). Majitel i pracovník mají každý vlastního Gradyho a vlastní konverzace.
+AI pomocník v pravém dolním rohu: chat, souhrny dne, návrhy a hodnocení. Na pokyn v chatu pracuje v aplikaci za uživatele (zakládá a mění milníky, úkoly, poznámky, kontakty, obchody, události, finance a další, vždy jen v rámci práv v aktivní firmě): běžné změny hned s kartou „Hotovo · Otevřít · Vrátit“ (24 h), mazání, odeslání, finanční kroky faktur, lidi, dokončení milníku a hromadné změny až po Potvrdit. Všechno, co dělá, s modelem a cenou je v [kapitole 2](#2-grady). Majitel i pracovník mají každý vlastního Gradyho a vlastní konverzace.
 
 ### Nastavení
 <!-- kód: route:/app/nastaveni route:/app/nastaveni/ucet route:/app/nastaveni/vzhled route:/app/nastaveni/prace route:/app/nastaveni/grady route:/app/nastaveni/soukromi route:/app/nastaveni/predplatne route:/app/tarif route:/app/nastaveni/kalendar -->
@@ -253,6 +253,7 @@ Tokeny jsou odhad z délky promptů v kódu a běžných dat, ne měření; jede
 | Co Grady dělá | Kdy a pro koho | Model | Typické tokeny | Cena 1 použití | Běžný uživatel za měsíc |
 |---|---|---|---|---|---|
 | Rozbor obchodních schůzek | Na požádání, po 5 dotaznících ze schůzek. Čte až 150 posledních. | Opus | 2 200 do cache · 3 500 vstup · 1 200 výstup | 0,049 USD <!-- cena: ai=analysis in=3500 read=0 write=2200 out=1200 --> | 0–1× (se 150 dotazníky až 0,13 USD) |
+| Grady pracuje v aplikaci | Zpráva, ve které Grady na pokyn uživatele něco najde a změní (jedno kolo nástrojů = dvě volání). Definice nástrojů (asi 8 000 tokenů, podle práv uživatele) jsou ve stálé části promptu a jdou z cache; nejvýš 8 kol a 25 změn na zprávu, každé kolo přes strop a do ai_usage. | Sonnet | 21 000 z cache · 9 400 vstup · 450 výstup | 0,025 USD <!-- cena: ai=chat in=9400 read=21000 write=0 out=450 --> | 10–20× |
 | Chat se souborem | Zpráva s PDF, obrázkem, Wordem nebo Excelem (nejvýš 3 soubory po 10 MB). | Sonnet | 2 500 z cache · 9 000 vstup · 550 výstup | 0,024 USD <!-- cena: ai=chat in=9000 read=2500 write=0 out=550 --> | 3–5× |
 | Chat: první zpráva konverzace | Otázka v panelu Gradyho. V kontextu je souhrn situace, tarify, poznámky (až 12 000 znaků) a odpovědi na otázky. | Sonnet | 2 500 do cache · 3 500 vstup · 450 výstup | 0,018 USD <!-- cena: ai=chat in=3500 read=0 write=2500 out=450 --> | 15× |
 | Chat: další zpráva | Pokračování konverzace. S ní jde i historie, nejvýš 20 zpráv. | Sonnet | 2 500 z cache · 4 500 vstup · 450 výstup | 0,014 USD <!-- cena: ai=chat in=4500 read=2500 write=0 out=450 --> | 45× |
@@ -266,12 +267,12 @@ Tokeny jsou odhad z délky promptů v kódu a běžných dat, ne měření; jede
 | Hlídání příležitostí | Jednou denně (10:00 UTC), jen u účtů, kde se od minula něco změnilo. Návrh se ukáže v bublině nebo v panelu. | Haiku | 2 200 vstup · 300 výstup | 0,0004 USD <!-- cena: ai=opportunity_scan in=2200 read=0 write=0 out=300 --> | 15–20× |
 | Třídění nápadů z chatu | Když zpráva zní jako přání nové funkce, Haiku to ověří a majitel aplikace dostane e-mail. | Haiku | 300 vstup · 60 výstup | 0,00006 USD <!-- cena: ai=classify in=300 read=0 write=0 out=60 --> | 1–3× |
 
-Pokyny majitele z administrace (až 2 000 znaků, asi 500 tokenů) jdou navíc do každého chatu a souhrnu. Celý blok poznámek přidá chatu nejvýš asi 4 000 tokenů, tedy nejvýš 0,008 USD na zprávu.
+Pokyny majitele z administrace (až 2 000 znaků, asi 500 tokenů) jdou navíc do každého chatu a souhrnu. Definice nástrojů Gradyho přidají chatu asi 8 000 tokenů ve stálé části (z cache za 0,0008 USD na volání, zápis do cache jednou za 5 minut asi 0,02 USD); zpráva bez nástrojů stojí jako dřív plus tato cache. Celý blok poznámek přidá chatu nejvýš asi 4 000 tokenů, tedy nejvýš 0,008 USD na zprávu.
 
 Druhy `check` a `summary` jsou v kódu připravené, ale dnes je nic nevolá. <!-- kód: ai:check ai:summary -->
 
 ### Co Grady dělá bez modelu (0 USD)
-<!-- kód: kind:proactive kind:rateMessage -->
+<!-- kód: kind:proactive kind:rateMessage kind:confirmAction kind:rejectAction kind:undoAction -->
 
 | Co | Jak to funguje | Pro koho |
 |---|---|---|
@@ -285,6 +286,7 @@ Druhy `check` a `summary` jsou v kódu připravené, ale dnes je nic nevolá. <!
 | Představení Poznámek | Jednou za život účtu, pevný text. | majitel |
 | Uložit do poznámek | Odpověď Gradyho jde jedním tlačítkem do poznámky. | majitel |
 | Palec nahoru / dolů | Hodnocení odpovědi Gradyho, pro naši kontrolu kvality. | majitel, pracovník |
+| Potvrdit, Zrušit, Vrátit | Karta změny pod odpovědí Gradyho: Potvrdit spustí čekající krok (server znovu ověří vlastníka, práva a vstup, návrh propadá po 30 min), Zrušit ho zahodí, Vrátit vezme zpět hotovou změnu do 24 h a nic nepřepíše, když se záznam mezitím změnil jinak. XP a oslavy jako při práci rukama. | majitel, pracovník |
 | Reakce na návrh | Přidat, Později, Zavřít. Úkoly z návrhu vzniknou až po Přidat. | majitel |
 
 ---

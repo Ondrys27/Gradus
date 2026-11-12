@@ -13,9 +13,21 @@ import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { GradyJobError, postGradyJob } from "@/features/grady/queries";
 import { track } from "@/lib/analytics/client";
 import type { MindMapFormat, MindMapParseResult, MindMapTree } from "@/lib/mindmap/formats";
+import { clientOps } from "@/lib/ops-client";
 import { createClient } from "@/lib/supabase/client";
 import { emitTutorialSignal } from "@/features/tutorial/signals";
 import { moveTaskAction } from "./actions";
+import {
+  createMilestone,
+  createTask,
+  deleteMilestone,
+  deleteTask,
+  setMilestoneStatus,
+  setTaskStatus,
+  toTaskRow,
+  updateMilestone,
+  updateTask,
+} from "./ops";
 import { MILESTONE_TASK_LIMIT, planImport, type ImportRow } from "./map-io";
 import type { MilestoneInput, MoveTaskFailure, MoveVia, TaskInput } from "./schemas";
 import {
@@ -126,26 +138,6 @@ export function useTasks(milestoneId: string) {
   });
 }
 
-function toMilestoneRow(input: MilestoneInput) {
-  return {
-    title: input.title,
-    description: input.description || null,
-    category: input.category,
-    tag: input.tag || null,
-    target_date: input.target_date,
-    reward: input.reward || null,
-  };
-}
-
-function toTaskRow(input: TaskInput) {
-  return {
-    title: input.title,
-    description: input.description || null,
-    status: input.status,
-    due_date: input.due_date,
-  };
-}
-
 const REVIEW_MUTATION = ["milestones", "review"] as const;
 
 /**
@@ -194,21 +186,9 @@ export function useCreateMilestone() {
     mutationFn: async (input: MilestoneInput) => {
       const list = queryClient.getQueryData<MilestoneWithCounts[]>(milestoneKeys.list(user.id));
       const position = list?.length ? Math.max(...list.map((m) => m.position)) + 1 : 0;
-      const { data, error } = await createClient()
-        .from("milestones")
-        .insert({ ...toMilestoneRow(input), user_id: workspaceId, position })
-        .select(MILESTONE_COLUMNS)
-        .single();
-      if (error) throw error;
-      return data;
+      return createMilestone(clientOps(), { workspaceId, input, position, where: "form" });
     },
     onSuccess: (row) => {
-      track("milestone_created", {
-        where: "form",
-        category: row.category,
-        has_reward: Boolean(row.reward),
-        has_target_date: Boolean(row.target_date),
-      });
       queryClient.setQueryData(milestoneKeys.detail(user.id, row.id), row);
       // Grady looks at every new milestone once; a failure only means no feedback.
       review.mutate(row.id);
@@ -228,18 +208,8 @@ export function useUpdateMilestone(id: string) {
   const { user } = useSession();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: MilestoneInput) => {
-      const { data, error } = await createClient()
-        .from("milestones")
-        .update(toMilestoneRow(input))
-        .eq("id", id)
-        .select(MILESTONE_COLUMNS)
-        .single();
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: (input: MilestoneInput) => updateMilestone(clientOps(), id, input),
     onSuccess: (row) => {
-      track("milestone_updated", { has_reward: Boolean(row.reward) });
       syncMilestone(queryClient, user.id, row);
     },
   });
@@ -253,36 +223,19 @@ export function useSetMilestoneStatus(id: string) {
   const { user } = useSession();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (status: MilestoneStatus) => {
-      const { data, error } = await createClient()
-        .from("milestones")
-        .update({ status })
-        .eq("id", id)
-        .select(`${MILESTONE_COLUMNS}, template_id`)
-        .single();
-      if (error) throw error;
-      return data;
+    mutationFn: (status: MilestoneStatus) => {
+      const counts = queryClient
+        .getQueryData<MilestoneWithCounts[]>(milestoneKeys.list(user.id))
+        ?.find((item) => item.id === id);
+      const tasks = queryClient.getQueryData<Task[]>(milestoneKeys.tasks(user.id, id));
+      return setMilestoneStatus(
+        clientOps(),
+        id,
+        status === "completed" ? "completed" : "active",
+        tasks?.length ?? counts?.total,
+      );
     },
     onSuccess: (row) => {
-      if (row.status === "completed") {
-        const counts = queryClient
-          .getQueryData<MilestoneWithCounts[]>(milestoneKeys.list(user.id))
-          ?.find((item) => item.id === row.id);
-        const tasks = queryClient.getQueryData<Task[]>(milestoneKeys.tasks(user.id, row.id));
-        const finished = row.completed_at ? new Date(row.completed_at) : new Date();
-        track("milestone_completed", {
-          milestone_id: row.id,
-          from_template: row.template_id !== null,
-          task_count: tasks?.length ?? counts?.total ?? 0,
-          days_open: Math.max(
-            0,
-            Math.floor((finished.getTime() - new Date(row.created_at).getTime()) / 86_400_000),
-          ),
-          has_reward: Boolean(row.reward),
-        });
-      } else if (row.status === "active") {
-        track("milestone_reopened", {});
-      }
       syncMilestone(queryClient, user.id, row);
     },
   });
@@ -293,12 +246,8 @@ export function useDeleteMilestone(id: string) {
   const { user } = useSession();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async () => {
-      const { error } = await createClient().from("milestones").delete().eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: () => deleteMilestone(clientOps(), id),
     onSuccess: () => {
-      track("milestone_deleted", {});
       queryClient.removeQueries({ queryKey: milestoneKeys.detail(user.id, id) });
       queryClient.removeQueries({ queryKey: milestoneKeys.tasks(user.id, id) });
       queryClient.setQueryData<MilestoneWithCounts[]>(milestoneKeys.list(user.id), (list) =>
@@ -381,21 +330,14 @@ export function useCreateTask(milestoneId: string) {
     mutationFn: async ({ parentId, input }) => {
       const tasks =
         queryClient.getQueryData<Task[]>(milestoneKeys.tasks(user.id, milestoneId)) ?? [];
-      const { data, error } = await createClient()
-        .from("tasks")
-        .insert({
-          ...toTaskRow(input),
-          user_id: workspaceId,
-          milestone_id: milestoneId,
-          parent_task_id: parentId,
-          position: nextPosition(tasks, parentId),
-        })
-        .select(TASK_COLUMNS)
-        .single();
-      if (error) throw error;
-      const depth = parentId ? taskDepth(tasks, parentId) + 1 : 0;
-      track("task_created", { depth, is_subtask: depth > 0 });
-      return data;
+      return createTask(clientOps(), {
+        workspaceId,
+        milestoneId,
+        parentId,
+        input,
+        position: nextPosition(tasks, parentId),
+        depth: parentId ? taskDepth(tasks, parentId) + 1 : 0,
+      });
     },
     onSuccess: (row, _variables, tasks) => reopenAncestors([...tasks, row], row.id),
   });
@@ -403,11 +345,7 @@ export function useCreateTask(milestoneId: string) {
 
 export function useUpdateTask(milestoneId: string) {
   return useTaskMutation<{ id: string; input: TaskInput }>(milestoneId, {
-    mutationFn: async ({ id, input }) => {
-      const { error } = await createClient().from("tasks").update(toTaskRow(input)).eq("id", id);
-      if (error) throw error;
-      track("task_updated", {});
-    },
+    mutationFn: ({ id, input }) => updateTask(clientOps(), id, input),
     apply: (tasks, { id, input }) => {
       const { status, ...fields } = toTaskRow(input);
       const patched = tasks.map((task) => (task.id === id ? { ...task, ...fields } : task));
@@ -422,16 +360,15 @@ export function useSetTaskStatus(milestoneId: string) {
   const before = useRef(new Map<string, { status: TaskStatus; depth: number }>());
   return useTaskMutation<{ id: string; status: TaskStatus }>(milestoneId, {
     mutationFn: async ({ id, status }) => {
-      const { error } = await createClient().from("tasks").update({ status }).eq("id", id);
-      if (error) throw error;
       const previous = before.current.get(id);
       before.current.delete(id);
-      const depth = previous?.depth ?? 0;
-      if (status === "done" && previous?.status !== "done") {
-        track("task_completed", { depth, is_subtask: depth > 0, where: "milestone" });
-      } else if (status !== "done" && previous?.status === "done") {
-        track("task_reopened", { where: "milestone" });
-      }
+      await setTaskStatus(clientOps(), {
+        id,
+        status,
+        previous: previous?.status ?? null,
+        depth: previous?.depth ?? 0,
+        where: "milestone",
+      });
     },
     apply: (tasks, { id, status }) => {
       const task = tasks.find((item) => item.id === id);
@@ -446,10 +383,9 @@ export function useDeleteTask(milestoneId: string) {
   const removedCount = useRef(new Map<string, number>());
   return useTaskMutation<string>(milestoneId, {
     mutationFn: async (id) => {
-      const { error } = await createClient().from("tasks").delete().eq("id", id);
-      if (error) throw error;
-      track("task_deleted", { removed: removedCount.current.get(id) ?? 1 });
+      const removed = removedCount.current.get(id) ?? 1;
       removedCount.current.delete(id);
+      await deleteTask(clientOps(), id, removed);
     },
     apply: (tasks, id) => {
       const removed = subtreeIds(tasks, id);

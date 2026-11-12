@@ -3,7 +3,14 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { useWorkspace } from "@/features/account/workspace-queries";
 import { track } from "@/lib/analytics/client";
+import { clientOps } from "@/lib/ops-client";
 import { createClient } from "@/lib/supabase/client";
+import {
+  addAvailabilityOverrides,
+  setEventTypeActive,
+  updateEventType,
+  type EventTypeTab,
+} from "./ops";
 import {
   addCalendarSubscription,
   calendarFeedState,
@@ -273,28 +280,19 @@ export function useUpdateEventType() {
   const workspace = useWorkspace();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: {
-      id: string;
-      draft: EventTypeDraft;
-      tab: Parameters<typeof trackUpdate>[0];
-    }) => {
-      const { error } = await createClient()
-        .from("event_types")
-        .update(draftToRow(input.draft))
-        .eq("id", input.id)
-        .eq("user_id", workspace.userId);
-      if (error) throw error;
-      trackUpdate(input.tab);
+    mutationFn: async (input: { id: string; draft: EventTypeDraft; tab: EventTypeTabArg }) => {
+      await updateEventType(clientOps(), {
+        id: input.id,
+        userId: workspace.userId,
+        patch: draftToRow(input.draft),
+        tab: input.tab,
+      });
     },
     onSettled: () => invalidateTypes(queryClient, workspace.userId),
   });
 }
 
-function trackUpdate(
-  tab: "basics" | "availability" | "questions" | "reminders" | "confirmation" | "preview",
-) {
-  track("scheduler_event_type_updated", { tab });
-}
+type EventTypeTabArg = EventTypeTab;
 
 /** On or off; the space's owner may switch somebody else's type off (never on). */
 export function useToggleEventType() {
@@ -302,16 +300,10 @@ export function useToggleEventType() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: { type: Pick<EventType, "id" | "user_id">; active: boolean }) => {
-      const { data, error } = await createClient()
-        .from("event_types")
-        .update({ active: input.active })
-        .eq("id", input.type.id)
-        .select("id");
-      if (error) throw error;
-      if (!data?.length) throw new Error("not changed");
-      track("scheduler_event_type_toggled", {
+      await setEventTypeActive(clientOps(), {
+        id: input.type.id,
         active: input.active,
-        by_owner: input.type.user_id !== workspace.userId,
+        byOwner: input.type.user_id !== workspace.userId,
       });
     },
     onError: (error) => {
@@ -445,30 +437,10 @@ export function useAddOverrides(profileId: string | undefined) {
       intervals: Array<{ start_time: string; end_time: string }> | null;
     }) => {
       if (!profileId) throw new Error("no profile");
-      const supabase = createClient();
-      // A date gets the new exception instead of what it had.
-      const { error: clearError } = await supabase
-        .from("availability_overrides")
-        .delete()
-        .eq("profile_id", profileId)
-        .in("date", input.dates);
-      if (clearError) throw clearError;
-      const rows = input.dates.flatMap((date) =>
-        (input.intervals ?? [{ start_time: null, end_time: null }]).map(
-          (interval: { start_time: string | null; end_time: string | null }) =>
-            clientInsert("availability_overrides", {
-              profile_id: profileId,
-              date,
-              start_time: interval.start_time,
-              end_time: interval.end_time,
-            }),
-        ),
-      );
-      const { error } = await supabase.from("availability_overrides").insert(rows);
-      if (error) throw error;
-      track("scheduler_availability_saved", {
-        scope: "override",
-        intervals: Math.min(500, rows.length),
+      await addAvailabilityOverrides(clientOps(), {
+        profileId,
+        dates: input.dates,
+        intervals: input.intervals,
       });
     },
     onSettled: () => {

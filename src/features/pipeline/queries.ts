@@ -5,16 +5,19 @@ import { useSession } from "@/features/account/queries";
 import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { invalidateFinance } from "@/features/finance/queries";
 import { track } from "@/lib/analytics/client";
+import { clientOps } from "@/lib/ops-client";
 import { createClient } from "@/lib/supabase/client";
 import { applyMove, nextDealPosition, reorderStages, sortStages } from "./board-logic";
 import { fetchDealTaskSignals, type DealTaskSignals } from "./health-data";
 import {
-  dealPatchSchema,
-  type DealInput,
-  type DealPatch,
-  type DealPatchField,
-  type StageInput,
-} from "./schemas";
+  addDealContact,
+  createDeal,
+  deleteDeal,
+  moveDeal,
+  patchDeal,
+  type DealSource,
+} from "./ops";
+import { type DealInput, type DealPatch, type StageInput } from "./schemas";
 import {
   DEAL_ACTIVITY_COLUMNS,
   DEAL_COLUMNS,
@@ -213,20 +216,8 @@ export function useDealActivities(dealId: string) {
   });
 }
 
-function toDealRow(input: DealInput) {
-  return {
-    title: input.title,
-    contact_id: input.contact_id,
-    value: input.value,
-    currency: input.currency,
-    expected_close_date: input.expected_close_date,
-    description: input.description || null,
-    ...(input.assignee_id ? { assignee_id: input.assignee_id } : {}),
-  };
-}
-
 /** Where the new-deal form was opened, for analytics. */
-export type DealSource = "pipeline" | "contact" | "cold_calling";
+export type { DealSource };
 
 /** New deals start last in their stage. The database stamps entered_stage_at and won_at. */
 export function useCreateDeal() {
@@ -236,37 +227,19 @@ export function useCreateDeal() {
   return useMutation({
     mutationFn: async (input: DealInput & { source?: DealSource }) => {
       const deals = queryClient.getQueryData<Deal[]>(pipelineKeys.deals(user.id)) ?? [];
-      const { data, error } = await createClient()
-        .from("deals")
-        .insert({
-          ...toDealRow(input),
-          user_id: workspaceId,
-          stage_id: input.stage_id,
-          position: nextDealPosition(deals, input.stage_id),
-        })
-        .select(DEAL_COLUMNS)
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (row, input) => {
-      track("deal_created", {
-        currency: row.currency,
-        ...(row.value !== null ? { value: row.value } : {}),
-        has_contact: row.contact_id !== null,
-        from: input.source ?? "pipeline",
-      });
       // Created straight into a won stage is a win too.
       const stage = queryClient
         .getQueryData<Stage[]>(pipelineKeys.stages(user.id))
-        ?.find((item) => item.id === row.stage_id);
-      if (stage?.is_won) {
-        track("deal_won", {
-          currency: row.currency,
-          ...(row.value !== null ? { value: row.value } : {}),
-          days_open: 0,
-        });
-      }
+        ?.find((item) => item.id === input.stage_id);
+      return createDeal(clientOps(), {
+        workspaceId,
+        input,
+        position: nextDealPosition(deals, input.stage_id),
+        source: input.source ?? "pipeline",
+        stage: stage ?? null,
+      });
+    },
+    onSuccess: (row) => {
       queryClient.setQueryData<Deal[]>(pipelineKeys.deals(user.id), (deals) =>
         deals ? [row, ...deals] : deals,
       );
@@ -290,27 +263,8 @@ export function usePatchDeal(id: string) {
     // One save of a deal at a time, in order: two quick changes of a date never
     // land the other way round (the board and the calendar end on the last one).
     scope: { id: `deal-patch:${id}` },
-    mutationFn: async (patch: DealPatch) => {
-      const clean = dealPatchSchema.parse(patch);
-      // An emptied text is no text.
-      const row = {
-        ...clean,
-        ...(clean.description !== undefined ? { description: clean.description || null } : {}),
-        ...(clean.lost_reason !== undefined ? { lost_reason: clean.lost_reason || null } : {}),
-      };
-      const { data, error } = await createClient()
-        .from("deals")
-        .update(row)
-        .eq("id", id)
-        .select(DEAL_COLUMNS)
-        .single();
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: (patch: DealPatch) => patchDeal(clientOps(), id, patch),
     onSuccess: (row, patch) => {
-      for (const field of Object.keys(patch) as DealPatchField[]) {
-        track("deal_updated", { field });
-      }
       queryClient.setQueryData<Deal[]>(pipelineKeys.deals(user.id), (deals) =>
         deals?.map((deal) => (deal.id === row.id ? row : deal)),
       );
@@ -352,12 +306,10 @@ export function useDeleteDeal() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await createClient().from("deals").delete().eq("id", id);
-      if (error) throw error;
+      await deleteDeal(clientOps(), id);
       return id;
     },
     onSuccess: (id) => {
-      track("deal_deleted", {});
       queryClient.setQueryData<Deal[]>(pipelineKeys.deals(user.id), (deals) =>
         deals?.filter((deal) => deal.id !== id),
       );
@@ -381,21 +333,13 @@ export function useMoveDeal() {
   return useMutation({
     mutationFn: async ({ deal, stage, lostReason }: MoveVariables) => {
       const deals = queryClient.getQueryData<Deal[]>(key) ?? [];
-      const { error } = await createClient()
-        .from("deals")
-        .update({
-          stage_id: stage.id,
-          position: nextDealPosition(deals, stage.id),
-          lost_reason: stage.is_lost && lostReason ? lostReason : null,
-        })
-        .eq("id", deal.id);
-      if (error) throw error;
-      trackMove(
+      await moveDeal(clientOps(), {
         deal,
         stage,
         lostReason,
-        queryClient.getQueryData<Stage[]>(pipelineKeys.stages(user.id)),
-      );
+        position: nextDealPosition(deals, stage.id),
+        stages: queryClient.getQueryData<Stage[]>(pipelineKeys.stages(user.id)),
+      });
     },
     onMutate: async ({ deal, stage, lostReason }) => {
       await queryClient.cancelQueries({ queryKey: key });
@@ -431,32 +375,6 @@ export function useMoveDeal() {
     },
     mutationKey: ["pipeline", "move"],
   });
-}
-
-/** A stage change as analytics sees it: positions and times, plus a win or a loss with its value. */
-function trackMove(deal: Deal, stage: Stage, lostReason: string | undefined, stages?: Stage[]) {
-  const now = Date.now();
-  const from = stages?.find((item) => item.id === deal.stage_id);
-  const value = deal.value !== null ? { value: deal.value } : {};
-  track("deal_moved", {
-    from_position: Math.max(0, from?.position ?? 0),
-    to_position: Math.max(0, stage.position),
-    hours_in_stage: Math.max(
-      0,
-      Math.floor((now - new Date(deal.entered_stage_at).getTime()) / 3_600_000),
-    ),
-    to_won: stage.is_won,
-    to_lost: stage.is_lost,
-  });
-  if (stage.is_won && !from?.is_won) {
-    track("deal_won", {
-      currency: deal.currency,
-      ...value,
-      days_open: Math.max(0, Math.floor((now - new Date(deal.created_at).getTime()) / 86_400_000)),
-    });
-  } else if (stage.is_lost && !from?.is_lost) {
-    track("deal_lost", { currency: deal.currency, ...value, has_reason: Boolean(lostReason) });
-  }
 }
 
 export function useCreateStage() {
@@ -700,30 +618,13 @@ export function useAddDealContact(dealId: string) {
     mutationFn: async ({
       contactId,
       note,
+      created,
     }: {
       contactId: string;
       note: string;
       created: boolean;
     }) => {
-      const { data, error } = await createClient()
-        .from("deal_contacts")
-        .insert({
-          user_id: workspaceId,
-          deal_id: dealId,
-          contact_id: contactId,
-          note: note || null,
-        })
-        .select("is_primary")
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (row, { note, created }) => {
-      track("deal_contact_added", {
-        primary: row.is_primary,
-        created_new: created,
-        has_note: note.length > 0,
-      });
+      return addDealContact(clientOps(), { workspaceId, dealId, contactId, note, created });
     },
     onSettled: () => invalidateDealContacts(queryClient, user.id, dealId),
   });

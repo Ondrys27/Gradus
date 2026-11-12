@@ -17,14 +17,12 @@ import { offersDeal } from "@/features/pipeline/contact-deals";
 import { NewDealFromContactForm } from "@/features/pipeline/new-deal-from-contact";
 import type { DealContact } from "@/features/pipeline/types";
 import { useFreshOnOpen } from "@/features/milestones/use-fresh-on-open";
-import { track } from "@/lib/analytics/client";
 import { instantToZonedParts, todayIsoDate, zonedWallClockToInstant } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { byPosition, fieldOptions } from "./field-logic";
 import {
   answerErrors,
-  answersToSave,
   initialAnswers,
   shownFields,
   type AnswerError,
@@ -32,7 +30,7 @@ import {
 } from "./move-form";
 import { useMoveContact } from "./queries";
 import { useFields } from "./table-queries";
-import { MEETING_FIELD_KEY, tableTone, type ContactField, type ContactTable } from "./types";
+import { tableTone, type ContactField, type ContactTable } from "./types";
 
 export type MoveResult = {
   table: ContactTable;
@@ -254,13 +252,8 @@ function AnswerForm({
     const found = answerErrors(fields, answers);
     setErrors(found);
     if (Object.keys(found).length > 0) return;
-    const toSave = answersToSave(fields, answers);
     try {
-      await move.mutateAsync({ contactId, tableId: table.id, answers: toSave });
-      const meetingBooked = shown.some(
-        (field) => field.system_key === MEETING_FIELD_KEY && field.id in toSave,
-      );
-      trackMove(from, table, shown, toSave, meetingBooked);
+      const { meetingBooked } = await move.mutateAsync({ contactId, from, table, fields, answers });
       onMoved({ table, meetingBooked });
       // Quiet, small reward for every move; no confetti, just a bit of XP. The
       // server finds the move (and the meeting it booked) it has not paid for yet.
@@ -369,56 +362,6 @@ function DealOffer({
       </div>
     </div>
   );
-}
-
-const TABLE_KEYS = [
-  "unreached",
-  "no_answer",
-  "failed",
-  "meeting_scheduled",
-  "interested",
-  "email_sent",
-  "follow_up",
-  "clients",
-] as const;
-const DEFAULT_REASONS = [
-  "has_solution",
-  "not_interested",
-  "no_budget",
-  "not_target_group",
-  "other",
-] as const;
-
-function tableKey(table: ContactTable | null) {
-  if (!table) return "none" as const;
-  return TABLE_KEYS.find((key) => key === table.system_key) ?? ("custom" as const);
-}
-
-/**
- * The move as analytics sees it: which kinds of table, how many questions,
- * whether a meeting was booked and, for Unsuccessful, which default reason.
- * The answers themselves never leave.
- */
-function trackMove(
-  from: ContactTable | null,
-  to: ContactTable,
-  shown: ContactField[],
-  saved: Record<string, unknown>,
-  meetingBooked: boolean,
-) {
-  const reasonField = shown.find((field) => field.system_key === "reason");
-  const answer = reasonField ? saved[reasonField.id] : undefined;
-  const reason =
-    typeof answer === "string"
-      ? (DEFAULT_REASONS.find((key) => key === answer) ?? ("custom" as const))
-      : undefined;
-  track("contact_moved", {
-    from_table: tableKey(from),
-    to_table: tableKey(to),
-    questions: shown.length,
-    meeting_booked: meetingBooked,
-    ...(reason ? { reason } : {}),
-  });
 }
 
 function AnswerField({
