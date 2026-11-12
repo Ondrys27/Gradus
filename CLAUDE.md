@@ -241,7 +241,7 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - Routing: Haiku rutina a klasifikace, Sonnet rozhovor a hodnocení, Opus velké rozbory.
 - **Zápis do `ai_usage` přímo ve volání**, ne zpětně.
 - Hlídání příležitostí **dávkově 1× denně** (na Vercel Pro 3× denně) + okamžité spouštěče. Když nic, mlčí.
-- Automatické akce jen s oznámením a možností Vrátit. Milník nikdy nedokončuje sám.
+- **Práce v aplikaci na pokyn** (26.2, `src/features/grady/tools/`, smyčka `server/tools/loop.ts`, tabulka `grady_actions`, migrace `20261118090000_grady_actions.sql`): v chatu Grady na pokyn uživatele dělá nástroji, co by uživatel udělal rukama („dej mi to do úkolů“ = udělá, nevysvětluje ručně). Model dostane jen nástroje, které účet v aktivním prostoru smí (pracovník jen svá práva, jen pro čtení = jen čtecí nástroje), zápisy klientem uživatele přes RLS a sdílené `ops.ts` sekcí (stejné XP, oslavy a analytika jako v UI), id od modelu server vždy ověří dotazem přes RLS. **instant** = provede hned, karta „Hotovo · Otevřít · Vrátit“ (Vrátit do 24 h, při mezitímní změně záznamu nic nepřepíše); **confirm** = mazání, odeslání, finanční kroky faktur, lidi, rezervace, dokončení milníku a hromadné změny (> 5 záznamů) až po Potvrdit (`kind: confirmAction`, propadá po 30 min). Nejvýš 8 kol a 25 zápisů na zprávu, každé kolo přes strážce rozpočtu a do `ai_usage`. Mimo katalog: předplatné, platby, promo kódy, smazání účtu, heslo a e-mail, administrace, role, export dat. Proaktivní návrhy, souhrny, hlídání a hodnocení milníku nástroje pro zápis nemají. Milník nikdy nedokončí bez pokynu a potvrzení. Události `grady_action_done` / `_confirmed` / `_rejected` / `_undone` / `_failed`, nikdy obsah.
 - Hodnocení milníku: když je dobrý, řekne to a nevymýšlí výtky.
 - Soubory: PDF, PNG, JPG, TXT, CSV, DOCX, XLSX; 10 MB; 3 na zprávu; typ podle obsahu.
 - **Průvodce** je dnes rychlá ukázka tutoriálu (viz Tutoriál); každé jeho ukončení zapíše `profiles.tour_completed_at`, na které čeká souhrn, návrhy i představení Poznámek.
@@ -346,7 +346,7 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - **Odznaky** (`achievements`, `user_achievements`) se vyhodnocují serverově po každé relevantní akci (`evaluate_achievements`), jen poprvé.
 - **Série:** den se počítá, když uživatel udělá aspoň jednu akci dávající XP (denní přihlášení se nepočítá). Jedna záchrana za týden (pondělí–neděle) — vynechaný den sérii nepřeruší, záchrana se spotřebuje jen když opravdu přemostí k dřívějšímu aktivnímu dni.
 - Odemykání sekcí v game režimu jen přes milníky cesty (`unlock_key`) a úrovně, nikdy přes počty akcí. Zamčená sekce v menu ukazuje, který milník ji odemkne.
-- Grady se sám ozývá podle pravidel v sekci Grady. Nic nevytváří bez potvrzení.
+- Grady se sám ozývá podle pravidel v sekci Grady. Sám od sebe nic nevytváří; na pokyn v chatu běžné změny hned s Vrátit, mazání, odeslání, finanční kroky, lidi, dokončení milníku a hromadné změny až po Potvrdit.
 
 ### Web
 - Marketingový web: čeština výchozí, angličtina pod /en. Žádná vymyšlená čísla, recenze ani loga. Žádné sledovací cookies. Snímky aplikace jen z bun run screenshots nad demo účtem.
