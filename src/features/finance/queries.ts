@@ -16,7 +16,9 @@ import type { CurrencyTotals, DailyRow, DateRange, MonthlyRow, Totals } from "./
 import { combineTotals, PAGE_SIZE } from "./finance-logic";
 import type { RecurringInput, TransactionInput } from "./schemas";
 import { track } from "@/lib/analytics/client";
+import { clientOps } from "@/lib/ops-client";
 import { createClient } from "@/lib/supabase/client";
+import { deleteRecurring, deleteTransaction, saveRecurring, saveTransaction } from "./ops";
 import {
   RECURRING_COLUMNS,
   TRANSACTION_COLUMNS,
@@ -167,21 +169,7 @@ export function useSaveTransaction() {
   const awardXp = useAwardXp();
   return useFinanceMutation(
     async ({ id, input }: { id?: string; input: TransactionInput }, workspaceId) => {
-      const row = { ...input, description: input.description || null };
-      const supabase = createClient();
-      const { error } = id
-        ? await supabase.from("transactions").update(row).eq("user_id", workspaceId).eq("id", id)
-        : await supabase.from("transactions").insert({ ...row, user_id: workspaceId });
-      if (error) throw error;
-      if (id) {
-        track("transaction_updated", { type: input.type });
-      } else {
-        track("transaction_created", {
-          type: input.type,
-          currency: input.currency,
-          has_category: input.category !== null,
-        });
-      }
+      await saveTransaction(clientOps(), { workspaceId, id, input });
       // A small reward for a new one; the server finds the transaction it has not paid for yet.
       if (!id) awardXp.mutate({ reason: "transaction_added" });
     },
@@ -189,11 +177,7 @@ export function useSaveTransaction() {
 }
 
 export function useDeleteTransaction() {
-  return useFinanceMutation(async (id: string) => {
-    const { error } = await createClient().from("transactions").delete().eq("id", id);
-    if (error) throw error;
-    track("transaction_deleted", {});
-  });
+  return useFinanceMutation((id: string) => deleteTransaction(clientOps(), id));
 }
 
 /** Income the pipeline booked, and then flagged, is confirmed as it stands. */
@@ -226,29 +210,10 @@ export function useRecurringPayments() {
   });
 }
 
-/** Weekly payments have no day of the month; the others keep the day of the first one. */
-function dueDay(input: RecurringInput): number | null {
-  return input.frequency === "weekly" ? null : Number(input.next_due_on.slice(8, 10));
-}
-
 export function useSaveRecurring() {
   return useFinanceMutation(
     async ({ id, input }: { id?: string; input: RecurringInput }, workspaceId) => {
-      const row = { ...input, due_day: dueDay(input) };
-      const supabase = createClient();
-      const { error } = id
-        ? await supabase
-            .from("recurring_payments")
-            .update(row)
-            .eq("user_id", workspaceId)
-            .eq("id", id)
-        : await supabase.from("recurring_payments").insert({ ...row, user_id: workspaceId });
-      if (error) throw error;
-      track("recurring_payment_saved", {
-        created: !id,
-        type: input.type,
-        frequency: input.frequency,
-      });
+      await saveRecurring(clientOps(), { workspaceId, id, input });
     },
   );
 }
@@ -265,9 +230,5 @@ export function useToggleRecurring() {
 }
 
 export function useDeleteRecurring() {
-  return useFinanceMutation(async (id: string) => {
-    const { error } = await createClient().from("recurring_payments").delete().eq("id", id);
-    if (error) throw error;
-    track("recurring_payment_deleted", {});
-  });
+  return useFinanceMutation((id: string) => deleteRecurring(clientOps(), id));
 }

@@ -3,7 +3,8 @@
 import { measure } from "@/lib/analytics/instrument";
 import { trackLater } from "@/lib/analytics/track";
 import { createClient } from "@/lib/supabase/server";
-import { moveTaskFailure, moveTaskSchema, type MoveTaskResult } from "./schemas";
+import { moveTask } from "./ops";
+import { moveTaskSchema, type MoveTaskResult } from "./schemas";
 
 /**
  * Moves a milestone task (with everything below it) under a new parent, or to
@@ -14,25 +15,16 @@ import { moveTaskFailure, moveTaskSchema, type MoveTaskResult } from "./schemas"
 const move = measure("milestones.moveTask", async (input: unknown): Promise<MoveTaskResult> => {
   const parsed = moveTaskSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid" };
-  const { taskId, parentId, position, via, depth, levelChanged } = parsed.data;
 
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
-  if (!data?.claims?.sub) return { ok: false, error: "forbidden" };
+  const userId = data?.claims?.sub;
+  if (!userId) return { ok: false, error: "forbidden" };
 
-  const { error } = await supabase.rpc("move_task", {
-    _task_id: taskId,
-    // The generated type does not know that null (level 1) is allowed.
-    _parent_id: parentId as string,
-    _position: position,
-  });
-  if (error) {
-    const failure = moveTaskFailure(error);
-    if (failure === "unknown") console.error("move_task failed", error.code);
-    return { ok: false, error: failure };
-  }
-  trackLater("task_moved", { via, depth, level_changed: levelChanged });
-  return { ok: true };
+  return moveTask(
+    { db: supabase, track: (event, props) => trackLater(event, props, { userId }) },
+    parsed.data,
+  );
 });
 
 export async function moveTaskAction(input: unknown): Promise<MoveTaskResult> {

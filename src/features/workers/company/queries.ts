@@ -3,17 +3,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
 import { track } from "@/lib/analytics/client";
+import { clientOps } from "@/lib/ops-client";
 import { createClient } from "@/lib/supabase/client";
+import { moveWorker as moveWorkerOp, saveGroup, type GroupInput } from "../ops";
 import { workerKeys } from "../queries";
-import {
-  depthOf,
-  groupTone,
-  membershipDiff,
-  moveWorker,
-  type CompanyGroup,
-  type CompanyPerson,
-  type GroupTone,
-} from "./tree";
+import { depthOf, groupTone, moveWorker, type CompanyGroup, type CompanyPerson } from "./tree";
 
 export const companyKeys = {
   // Under "workers", so every change of a worker refreshes the tree too.
@@ -94,12 +88,15 @@ export function useMoveWorker() {
   const key = companyKeys.tree(user.id);
   return useMutation({
     mutationFn: async (input: { workerId: string; managerId: string | null; via: MoveVia }) => {
-      const { error } = await createClient()
-        .from("workers")
-        .update({ manager_id: input.managerId })
-        .eq("id", input.workerId)
-        .eq("owner_id", user.id);
-      if (error) throw error;
+      const previous = queryClient.getQueryData<CompanyPerson[]>(key);
+      const after = previous ? moveWorker(previous, input.workerId, input.managerId) : [];
+      await moveWorkerOp(clientOps(), {
+        ownerId: user.id,
+        workerId: input.workerId,
+        managerId: input.managerId,
+        via: input.via,
+        depth: depthOf(after, input.workerId),
+      });
     },
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: key });
@@ -112,16 +109,6 @@ export function useMoveWorker() {
       }
       return { previous };
     },
-    onSuccess: (_data, input, context) => {
-      const after = context?.previous
-        ? moveWorker(context.previous, input.workerId, input.managerId)
-        : [];
-      track("worker_moved", {
-        via: input.via,
-        depth: Math.min(depthOf(after, input.workerId), 100),
-        to_owner: input.managerId === null,
-      });
-    },
     onError: (_error, _input, context) => {
       if (context?.previous) queryClient.setQueryData(key, context.previous);
     },
@@ -129,12 +116,7 @@ export function useMoveWorker() {
   });
 }
 
-export type GroupInput = {
-  name: string;
-  color: GroupTone;
-  description: string | null;
-  memberIds: string[];
-};
+export type { GroupInput };
 
 /** A new group or changes to one, with its members added and removed. */
 export function useSaveGroup() {
@@ -147,53 +129,12 @@ export function useSaveGroup() {
       existing: { id: string; memberIds: string[] } | null;
       position: number;
     }) => {
-      const supabase = createClient();
-      const { name, color, description, memberIds } = input.group;
-      let groupId = input.existing?.id;
-      if (groupId) {
-        const { error } = await supabase
-          .from("worker_groups")
-          .update({ name, color, description })
-          .eq("id", groupId)
-          .eq("owner_id", user.id);
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase
-          .from("worker_groups")
-          .insert({ owner_id: user.id, name, color, description, position: input.position })
-          .select("id")
-          .single();
-        if (error) throw error;
-        groupId = data.id;
-      }
-      const { added, removed } = membershipDiff(input.existing?.memberIds ?? [], memberIds);
-      if (added.length > 0) {
-        const { error } = await supabase
-          .from("worker_group_members")
-          .insert(
-            added.map((workerId) => ({
-              group_id: groupId,
-              worker_id: workerId,
-              owner_id: user.id,
-            })),
-          );
-        if (error) throw error;
-      }
-      if (removed.length > 0) {
-        const { error } = await supabase
-          .from("worker_group_members")
-          .delete()
-          .eq("group_id", groupId)
-          .eq("owner_id", user.id)
-          .in("worker_id", removed);
-        if (error) throw error;
-      }
-      if (input.existing) {
-        track("worker_group_updated", { added: added.length, removed: removed.length });
-      } else {
-        track("worker_group_created", { members: added.length });
-      }
-      return groupId;
+      return saveGroup(clientOps(), {
+        ownerId: user.id,
+        group: input.group,
+        existing: input.existing,
+        position: input.position,
+      });
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: workerKeys.all(user.id) }),
   });

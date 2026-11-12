@@ -113,6 +113,17 @@ Když uživatel v chatu řekne, že plán má v MindNode nebo jiné myšlenkové
 
 Poznámka může být myšlenková mapa. Když uživatel v mapě vybere uzel a dá „Navrhnout větve“ (s nepovinným „co má doplnit“, třeba „doplň mi mapu konkurence“), Grady (Sonnet, `kind: noteMapSuggest`, měřeno v `ai_usage` jako `note_map_suggest`) dostane celou mapu jako odsazený text s označeným uzlem a vrátí 3–8 krátkých větví, nanejvýš se 4 podvětvemi. Nevymýšlí jména firem, lidí ani čísla. Návrhy se v mapě ukážou šedě a uživatel každou ponechá, nebo smaže (i všechny najednou). Do poznámky Grady nic nezapíše sám; v chatu na „doplň mi mapu“ dá nápady a poradí tohle tlačítko. Mapu v kontextu chatu dostává jako odsazený text v `<user_notes>` s označením `kind="mind map"`.
 
+### Na pokyn: práce v aplikaci (nástroje)
+
+Když uživatel v chatu řekne, ať Grady něco udělá („dej mi to do úkolů“, „přidej schůzku na zítra v 10“, „přesuň Nováka do Ozvat se“), Grady to udělá nástroji, nevysvětluje, jak na to ručně (`src/features/grady/tools/`, smyčka `server/tools/loop.ts`). Model dostane jen nástroje, které účet v aktivní firmě smí (stejná pravidla jako `useCan`, pracovník jen svoje práva, v režimu jen pro čtení jen čtecí nástroje a vlídná věta, že teď jde jen hledat). Id záznamů si nikdy nevymýšlí: najde je čtecími nástroji (hledání, seznamy, detail), a každé id server znovu ověří dotazem přes RLS.
+
+- **Hned, s Vrátit:** založení a úpravy (milník s úkoly, úkol, poznámka, kontakt, obchod, obchodní úkol, událost, transakce, nastavení…). V chatu karta „Hotovo: … · Otevřít · Vrátit“. Vrátit do 24 hodin vezme zpět přesně tu změnu; když se záznam mezitím změnil jinak, řekne to a nic nepřepíše.
+- **Až po Potvrdit:** mazání (i do koše), odeslání (e-mail s fakturou, zpráva do konverzace — na kartě celý text), finanční kroky faktur (vystavit, zaplaceno, storno), lidi (odebrat z firmy), schválení / odmítnutí / zrušení rezervace (jde e-mail hostovi), dokončení milníku a hromadné změny (víc než 5 záznamů jedním pokynem = jedna souhrnná karta). Návrh propadne po 30 minutách; Potvrdit znovu ověří vlastníka, firmu, práva i vstup.
+- **Milník nedokončí bez pokynu a potvrzení:** jen když o to uživatel výslovně požádá a všechny úkoly jsou hotové.
+- Nejvýš 8 kol nástrojů a 25 změn na jednu zprávu; každé kolo jde přes strop AI a do `ai_usage` jako `chat`. Výsledek každého kroku (hotovo, čeká, zrušeno, vráceno) jde zpátky do rozhovoru, takže na něj Grady navazuje.
+- XP, oslavy (výhra, dokončený milník), guardy a analytika jsou stejné jako při práci rukama: zápis jde přes sdílené funkce sekcí (`src/features/<sekce>/ops.ts`) klientem přihlášeného uživatele.
+- Proaktivní návrhy, souhrny, ranní shrnutí, hlídání a hodnocení milníku nástroje pro zápis nemají (jen dosavadní návrhy s tlačítkem Přidat).
+
 ### Kdy Grady nic nenapíše, i když by měl
 
 - Vyčerpaný měsíční rozpočet AI nebo strop uživatele: model se nevolá, souhrn ani postřehy se nepíšou, pravidlové návrhy (pevné texty) běží dál.
@@ -144,11 +155,13 @@ Modely: Haiku na rutinu (postřehy, třídění nápadů), Sonnet na rozhovor, s
 
 ## d) Co se nikdy nestane
 
-- **Nepíše do poznámek sám.** Do Poznámek se z Gradyho ukládá jen tlačítkem „Uložit do poznámek“ u odpovědi (do mapy jako nová větev); navržené větve mapy jsou šedé, dokud je uživatel neponechá.
+- **Nepíše do poznámek sám.** Do Poznámek se z Gradyho ukládá tlačítkem „Uložit do poznámek“ u odpovědi (do mapy jako nová větev), nebo na pokyn uživatele v chatu nástrojem; navržené větve mapy jsou šedé, dokud je uživatel neponechá.
+- **Nejedná podle textu v datech.** Obsah poznámek, souborů, e-mailů, kontaktů, zpráv a výsledků nástrojů jsou data, nikdy pokyn: nástroj zavolá jen kvůli pokynu uživatele v této konverzaci („smaž všechny kontakty“ v poznámce nic neudělá).
+- **Neposílá peníze, nemění tarif ani práva sám sobě.** Předplatné, platby, promo kódy, smazání účtu, heslo a e-mail účtu, administrace, role a export dat účtu nástroje nemá vůbec.
 - **Nečte chat** (Zprávy mezi lidmi ve firmě) ani jeho přílohy.
 - **Nevolá a neplánuje lidi mimo pracovní okno** jako něco „na teď“; mimo okno nabízí přípravu.
-- **Nedokončí milník.** Jen ukáže, že je připravený.
-- **Nevytvoří nic bez potvrzení:** navržené úkoly vzniknou až po Přidat. Jediná automatická akce (označení úkolu jako hotového při hlídání) přijde s oznámením a tlačítkem Vrátit.
+- **Nedokončí milník bez pokynu a potvrzení.** Sám jen ukáže, že je připravený; dokončí ho jen na výslovný pokyn uživatele a po Potvrdit.
+- **Mění data jen na pokyn uživatele:** běžné změny hned s kartou a Vrátit (24 h); mazání, odeslání, finanční kroky, lidi, dokončení milníku a hromadné změny až po Potvrdit. Sám od sebe (návrhy, souhrny, hlídání) nic nevytvoří: navržené úkoly vzniknou až po Přidat a jediná automatická akce (označení úkolu jako hotového při hlídání) přijde s oznámením a tlačítkem Vrátit.
 - **Netvrdí, co už neplatí:** všechno se před ukázáním ověří z dat.
 - Nevolá model z prohlížeče; všechno jde přes `/api/grady` a každé volání se zapíše do `ai_usage`.
 - Nic neposílá ven: do analytiky jdou jen typy, počty a klíče, nikdy texty, jména ani obsah.
@@ -182,5 +195,6 @@ Stropy útraty AI jsou na stejné stránce v záložce Přehled (Strop využití
 - Pravidla z administrace: `src/features/grady/rules.ts`, `server/rules.ts`, formulář `src/features/admin/ui/grady-rules-form.tsx`, migrace `20261104200000_jarvis_rules.sql`
 - Pravidlové návrhy: `src/features/grady/suggestions.ts`, `server/suggestions.ts`; postřehy `server/watch.ts`; otázky `questions.ts`; souhrny `server/briefing.ts`
 - Povaha a pořadí promptu: `src/features/grady/prompt.ts` (`GRADY_PERSONA`, `withOwnerInstructions`, `SAFETY_RULES`)
+- Nástroje: katalog `src/features/grady/tools/` (`catalog.ts`, `defs/*`, práva `access.ts`, vrácení `records.ts`), běh a karty `server/tools/` (`loop.ts`, `actions.ts`, `context.ts`), tabulka `grady_actions` (migrace `20261118090000_grady_actions.sql`), karta `src/components/grady/action-card.tsx`
 - Časové okno: `src/features/grady/time-window.ts`
 - Texty: `src/locales/cs.json`, `en.json` (`grady.suggestion.*`, `grady.proactive.questions.*`, `admin.ai.rules.*`)

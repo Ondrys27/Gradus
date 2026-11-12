@@ -3,7 +3,9 @@
 import { useCallback, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
+import type { ActionCard } from "./actions";
 import type { AiCallUsage, AttachmentRef, ChatErrorCode, GradyOverview } from "./protocol";
+import { useApplyActionCard } from "./use-action-cards";
 import {
   gradyKeys,
   removeChatFiles,
@@ -21,6 +23,10 @@ export type PendingTurn = {
   /** Names of the files going with it, shown the same way. */
   fileNames: string[];
   answer: string;
+  /** What Grady is doing in the app right now ("Creating the task…"); null while he writes. */
+  progress?: string | null;
+  /** Cards of the changes made or proposed so far in this answer. */
+  actions?: ActionCard[];
 };
 
 /** "fileUpload" and "tooManyFiles" come from the panel itself, before anything is sent. */
@@ -56,6 +62,7 @@ export function useGradyChat() {
   const [pending, setPending] = useState<PendingTurn | null>(null);
   const [error, setError] = useState<ChatError | null>(null);
   const busy = useRef(false);
+  const applyCard = useApplyActionCard();
 
   const updateConversation = useCallback(
     (update: (conversation: Conversation) => Conversation) =>
@@ -103,6 +110,10 @@ export function useGradyChat() {
       const conversation = queryClient.getQueryData<Conversation>(conversationKey);
       let accepted = false;
       let answer = "";
+      let progress: string | null = null;
+      const actions: ActionCard[] = [];
+      const show = () =>
+        setPending({ userText: null, fileNames: [], answer, progress, actions: [...actions] });
       const last = await sendChat(
         { conversationId: conversation?.id ?? null, message, attachments },
         (event) => {
@@ -127,11 +138,28 @@ export function useGradyChat() {
               break;
             case "delta":
               answer += event.text;
-              setPending({ userText: null, fileNames: [], answer });
+              progress = null;
+              show();
+              break;
+            case "tool":
+              progress = event.label || null;
+              show();
+              break;
+            case "action":
+              actions.push(event.card);
+              progress = null;
+              // A change made now: its sections are read again, XP and a celebration as by hand.
+              if (event.card.status === "done") applyCard(event.card, { awards: true });
+              show();
               break;
             case "done":
               updateConversation((current) =>
-                append(current, { id: event.messageId, role: "assistant", content: answer }),
+                append(current, {
+                  id: event.messageId,
+                  role: "assistant",
+                  content: answer,
+                  ...(actions.length ? { actions } : {}),
+                }),
               );
               // The answer now sits in the conversation; drop the streaming copy in the same render.
               setPending(null);
@@ -158,7 +186,15 @@ export function useGradyChat() {
       if (accepted) return "accepted";
       return last.type === "error" && isFileError(last.code) ? "filesRefused" : "refused";
     },
-    [queryClient, conversationKey, overviewKey, updateConversation, updateUsage, user.id],
+    [
+      queryClient,
+      conversationKey,
+      overviewKey,
+      updateConversation,
+      updateUsage,
+      user.id,
+      applyCard,
+    ],
   );
 
   /** Starts a new conversation; the old one stays in the database. */

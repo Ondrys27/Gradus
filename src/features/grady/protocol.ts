@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { ActionCard } from "./actions";
 import { MAX_FILES_PER_MESSAGE, type FileKind } from "./files";
 import type { ProactiveKind, SummaryPeriod } from "./proactive";
 import { OWNER_INSTRUCTIONS_MAX } from "./rules";
@@ -89,6 +90,15 @@ export type RulesTestResult =
   | { ok: true; text: string; durationMs: number; costUsd: number; model: string }
   | { ok: false; code: ChatErrorCode | "invalid"; durationMs: number | null };
 
+/** The user's answer to a card of Grady's change: Confirm, Cancel, or Undo of a done one. */
+export const ACTION_DECISIONS = ["confirmAction", "rejectAction", "undoAction"] as const;
+export const actionDecisionRequestSchema = z.object({
+  kind: z.enum(ACTION_DECISIONS),
+  id: z.uuid(),
+});
+export type ActionDecisionResult =
+  { ok: true; card: ActionCard } | { ok: false; code: string; card?: ActionCard };
+
 /** Thumb up/down on one of Grady's own answers; sending the same rating again clears it. */
 export const RATINGS = ["up", "down"] as const;
 export type Rating = (typeof RATINGS)[number];
@@ -147,6 +157,10 @@ export type ChatEvent =
       attachments: ChatAttachment[];
     }
   | { type: "delta"; text: string }
+  /** Grady is using a tool: "Creating the task…". */
+  | { type: "tool"; label: string }
+  /** A change made, or proposed for Confirm, during this answer. */
+  | { type: "action"; card: ActionCard }
   | { type: "done"; messageId: string; usage: AiCallUsage }
   | { type: "error"; code: ChatErrorCode; usage?: AiCallUsage };
 

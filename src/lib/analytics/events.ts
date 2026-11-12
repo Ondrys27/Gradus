@@ -324,7 +324,7 @@ export const EVENTS = {
 
   // --- milestones and tasks ------------------------------------------------
   milestone_created: event("milestones", "client", true, {
-    where: oneOf(["form", "onboarding", "import"]),
+    where: oneOf(["form", "onboarding", "import", "grady"]),
     category: oneOf(["work", "personal"]),
     has_reward: bool(),
     has_target_date: bool(),
@@ -452,7 +452,7 @@ export const EVENTS = {
     value: optional(number()),
     has_contact: bool(),
     /** Where the new-deal form was opened: the board, a contact's detail, Cold Calling. */
-    from: optional(oneOf(["pipeline", "contact", "cold_calling"])),
+    from: optional(oneOf(["pipeline", "contact", "cold_calling", "grady"])),
   }),
   /** One field saved in the deal detail (which one, never its value). */
   deal_updated: event("pipeline", "client", true, {
@@ -515,7 +515,7 @@ export const EVENTS = {
   // --- contacts ------------------------------------------------------------
   contact_created: event("contacts", "client", true, {
     source: oneOf(["manual", "generated", "import"]),
-    where: oneOf(["contacts", "pipeline", "onboarding"]),
+    where: oneOf(["contacts", "pipeline", "onboarding", "grady"]),
     has_email: bool(),
     has_phone: bool(),
     has_website: bool(),
@@ -699,7 +699,7 @@ export const EVENTS = {
   // --- sales tasks (Úkoly) ---------------------------------------------------
   // Lengths and delays in minutes; never a title, a note or who it is for.
   crm_task_created: event("pipeline", "client", true, {
-    from: oneOf(["deal", "contact", "tasks"]),
+    from: oneOf(["deal", "contact", "tasks", "grady"]),
     duration: count(1440),
     assigned_to_other: bool(),
     has_deal: bool(),
@@ -870,6 +870,21 @@ export const EVENTS = {
    * One user's own cap or block (user_cap, user_blocked) is recorded on that
    * user, so is the cap of the company they worked in (space_cap, 22.5).
    */
+  /**
+   * Grady's tools (26.2): a change done in the chat on the user's word, a
+   * confirmed or cancelled proposal, an undo, a failure. The tool's name and
+   * section only, never the input, a name or a text.
+   */
+  grady_action_done: event("jarvis", "server", true, {
+    tool: key(),
+    section: key(),
+    risk: oneOf(["instant", "confirm"]),
+    via: oneOf(["chat"]),
+  }),
+  grady_action_confirmed: event("jarvis", "server", true, { tool: key() }),
+  grady_action_rejected: event("jarvis", "server", false, { tool: key() }),
+  grady_action_undone: event("jarvis", "server", true, { tool: key() }),
+  grady_action_failed: event("jarvis", "server", false, { tool: key(), error_code: key() }),
   jarvis_paused: event("jarvis", "server", false, {
     feature: key(),
     reason: oneOf(["budget", "credits", "user_cap", "user_blocked", "space_cap"]),

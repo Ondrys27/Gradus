@@ -5,6 +5,7 @@ import { useSession } from "@/features/account/queries";
 import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
+import { savePlanCell } from "./ops";
 import { financeKeys } from "../queries";
 import { type NewPlanRow } from "./carry-over";
 import {
@@ -34,7 +35,10 @@ export const planKeys = {
 export type PlanErrorKey = "labelTaken" | "readOnly" | "closed" | "monthExists" | "saveFailed";
 
 export function planErrorKey(error: unknown): PlanErrorKey {
-  const message = error instanceof Error ? error.message : String((error as { message?: unknown })?.message ?? "");
+  const message =
+    error instanceof Error
+      ? error.message
+      : String((error as { message?: unknown })?.message ?? "");
   const code = (error as { code?: string })?.code;
   if (/read_only/.test(message)) return "readOnly";
   if (/finance_plan_month_closed/.test(message)) return "closed";
@@ -60,7 +64,9 @@ export function usePlanMonths(months: PlanMonthKey[]) {
     queryFn: async () => {
       const client = createClient();
       const records = await loadPlanMonths(client, space, months);
-      const plans = await Promise.all(records.map((record) => loadPlanMonth(client, space, record.month)));
+      const plans = await Promise.all(
+        records.map((record) => loadPlanMonth(client, space, record.month)),
+      );
       return plans;
     },
   });
@@ -129,30 +135,20 @@ function usePlanCache(month: PlanMonthKey) {
   };
 }
 
-export type CellChange = { rowId: string; kind: PlanKind; week: number; value: number | null; expression: boolean };
+export type CellChange = {
+  rowId: string;
+  kind: PlanKind;
+  week: number;
+  value: number | null;
+  expression: boolean;
+};
 
 /** One planned number: saved at once, shown before the answer, put back if it fails. */
 export function useSavePlanCell(month: PlanMonthKey) {
   const cache = usePlanCache(month);
   return useMutation({
-    mutationFn: async ({ rowId, week, value }: CellChange) => {
-      const supabase = createClient();
-      const { error } =
-        value === null || value === 0
-          ? await supabase
-              .from("finance_plan_cells")
-              .delete()
-              .eq("user_id", cache.space)
-              .eq("row_id", rowId)
-              .eq("week", week)
-          : await supabase
-              .from("finance_plan_cells")
-              .upsert(
-                { user_id: cache.space, row_id: rowId, week, planned: value },
-                { onConflict: "row_id,week" },
-              );
-      if (error) throw error;
-    },
+    mutationFn: ({ rowId, week, value }: CellChange) =>
+      savePlanCell({ db: createClient() }, { space: cache.space, rowId, week, value }),
     onMutate: ({ rowId, week, value }) =>
       cache.change((plan) => ({
         ...plan,
@@ -182,12 +178,19 @@ export function useUpdatePlanMonth(month: PlanMonthKey) {
       if (error) throw error;
     },
     onMutate: (change) =>
-      cache.change((plan) => (plan.month ? { ...plan, month: { ...plan.month, ...change } } : plan)),
+      cache.change((plan) =>
+        plan.month ? { ...plan, month: { ...plan.month, ...change } } : plan,
+      ),
     onError: (_error, _variables, previous) => cache.restore(previous),
     onSettled: () => cache.settle(),
     onSuccess: (_data, change) =>
       track("finance_plan_month_updated", {
-        field: change.closed !== undefined ? "closed" : change.reserve !== undefined ? "reserve" : "opening",
+        field:
+          change.closed !== undefined
+            ? "closed"
+            : change.reserve !== undefined
+              ? "reserve"
+              : "opening",
       }),
   });
 }
@@ -246,7 +249,10 @@ export function useRenamePlanRow(month: PlanMonthKey) {
       if (error) throw error;
     },
     onMutate: ({ id, label }) =>
-      cache.change((plan) => ({ ...plan, rows: plan.rows.map((row) => (row.id === id ? { ...row, label } : row)) })),
+      cache.change((plan) => ({
+        ...plan,
+        rows: plan.rows.map((row) => (row.id === id ? { ...row, label } : row)),
+      })),
     onError: (_error, _variables, previous) => cache.restore(previous),
     onSettled: () => cache.settle(),
     onSuccess: () => track("finance_plan_row_updated", { change: "rename" }),
@@ -273,7 +279,9 @@ export function useMovePlanRow(month: PlanMonthKey) {
         const positions = new Map(order.map((item) => [item.id, item.position]));
         return {
           ...plan,
-          rows: plan.rows.map((row) => (positions.has(row.id) ? { ...row, position: positions.get(row.id)! } : row)),
+          rows: plan.rows.map((row) =>
+            positions.has(row.id) ? { ...row, position: positions.get(row.id)! } : row,
+          ),
         };
       }),
     onError: (_error, _variables, previous) => cache.restore(previous),
@@ -286,7 +294,11 @@ export function useDeletePlanRow(month: PlanMonthKey) {
   const cache = usePlanCache(month);
   return useMutation({
     mutationFn: async ({ id }: { id: string; kind: PlanKind; hadNumbers: boolean }) => {
-      const { error } = await createClient().from("finance_plan_rows").delete().eq("user_id", cache.space).eq("id", id);
+      const { error } = await createClient()
+        .from("finance_plan_rows")
+        .delete()
+        .eq("user_id", cache.space)
+        .eq("id", id);
       if (error) throw error;
     },
     onMutate: ({ id }) =>
@@ -297,7 +309,8 @@ export function useDeletePlanRow(month: PlanMonthKey) {
       })),
     onError: (_error, _variables, previous) => cache.restore(previous),
     onSettled: () => cache.settle(),
-    onSuccess: (_data, { kind, hadNumbers }) => track("finance_plan_row_deleted", { kind, had_numbers: hadNumbers }),
+    onSuccess: (_data, { kind, hadNumbers }) =>
+      track("finance_plan_row_deleted", { kind, had_numbers: hadNumbers }),
   });
 }
 

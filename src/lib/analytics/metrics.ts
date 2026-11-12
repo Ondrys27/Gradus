@@ -865,12 +865,9 @@ export const METRICS: readonly MetricDefinition[] = [
     "ratio",
     ratio(count("jarvis_auto_action_undone"), count("jarvis_auto_action")),
   ),
-  metric(
-    "jarvis_answer_ratings",
-    "ai",
-    "count",
-    split("rating", count("jarvis_message_rated")),
-  ),
+  // Grady works in the app (26.2): changes made in the chat by section, then how they ended.
+  metric("grady_actions", "ai", "count", split("section", count("grady_action_done"))),
+  metric("jarvis_answer_ratings", "ai", "count", split("rating", count("jarvis_message_rated"))),
   metric(
     "ai_cap_users",
     "ai",
@@ -972,7 +969,12 @@ export const METRICS: readonly MetricDefinition[] = [
     "count",
     ev({ event: "satisfaction_submitted", calc: "avg", prop: "satisfaction" }),
   ),
-  metric("satisfaction", "feedback", "count", split("satisfaction", count("satisfaction_submitted"))),
+  metric(
+    "satisfaction",
+    "feedback",
+    "count",
+    split("satisfaction", count("satisfaction_submitted")),
+  ),
 ];
 
 const BY_KEY = new Map(METRICS.map((definition) => [definition.key, definition]));

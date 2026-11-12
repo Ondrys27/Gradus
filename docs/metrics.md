@@ -82,6 +82,7 @@ U každé sekce: adopce (% aktivních, kteří ji použili), počet akcí, akce 
 - Soubory — počet, typy, velikost, odmítnuté a proč
 - Proaktivní bubliny — zobrazeno, Udělat, Ukázat, Později, Zavřít, bez reakce; míra přijetí podle typu (postřeh / návrh / otázka)
 - Automatické akce Gradyho a kolik z nich uživatel vrátil
+- Změny od Gradyho na pokyn v chatu (`grady_actions`): hotové změny podle sekce a rizika (instant / confirm) z `grady_action_done`, potvrzené / zrušené návrhy (`grady_action_confirmed`, `grady_action_rejected`), vrácené (`grady_action_undone`) a neúspěšné podle kódu chyby (`grady_action_failed`); jen název nástroje a sekce, nikdy vstup, názvy ani texty
 - Hodnocení odpovědí palcem nahoru / dolů
 - Uživatelé na AI stropu (%)
 

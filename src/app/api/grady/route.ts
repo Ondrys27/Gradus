@@ -16,6 +16,7 @@ import {
 } from "@/features/grady/prompt";
 import { normalizeInstructions, OWNER_INSTRUCTIONS_MAX } from "@/features/grady/rules";
 import {
+  actionDecisionRequestSchema,
   chatRequestSchema,
   emailReplyRequestSchema,
   milestoneReviewRequestSchema,
@@ -54,9 +55,28 @@ import { createAnthropic, streamModel } from "@/features/grady/server/model";
 import { loadMilestoneNotes, loadNotesContext } from "@/features/grady/server/notes";
 import {
   E2E_ECHO_SUMMARY,
+  E2E_TOOL_SCRIPT,
   e2eEchoClient,
+  e2eToolClient,
+  e2eToolScript,
   wantsE2eEcho,
 } from "@/features/grady/server/e2e-model";
+import type { ActionCard } from "@/features/grady/actions";
+import { toolsFor } from "@/features/grady/tools/access";
+import { GRADY_TOOLS } from "@/features/grady/tools/catalog";
+import type { ToolContext } from "@/features/grady/tools/types";
+import {
+  actionsNote,
+  confirmAction,
+  loadActions,
+  proposeBulk,
+  rejectAction,
+  runToolCall,
+  undoAction,
+  type ActionEnv,
+} from "@/features/grady/server/tools/actions";
+import { createToolContext } from "@/features/grady/server/tools/context";
+import { streamWithTools } from "@/features/grady/server/tools/loop";
 import {
   loadAnswersBlock,
   loadProactive,
@@ -272,6 +292,9 @@ export const POST = instrumentRoute("api.jarvis.post", async (request: Request) 
   if (kind === "rulesTest") return rulesTest(ctx, body);
   if (kind === "proactive") return proactive(ctx, body);
   if (kind === "rateMessage") return rateMessage(ctx, body);
+  if (kind === "confirmAction" || kind === "rejectAction" || kind === "undoAction") {
+    return actionDecision(ctx, body);
+  }
   return chat(ctx, body, request);
 });
 
@@ -304,6 +327,34 @@ async function rateMessage(ctx: Context, body: unknown) {
   return NextResponse.json({ ok: true, rating: next });
 }
 
+/**
+ * Confirm, Cancel or Undo on a card of Grady's change; no model call. The
+ * action is looked up for the session's user only, in the active space, and
+ * the tool runs again with the user's own client and current rights.
+ */
+async function actionDecision(ctx: Context, body: unknown) {
+  const parsed = actionDecisionRequestSchema.safeParse(body);
+  if (!parsed.success) return jobError("unknown", 400);
+  const toolContext = await createToolContext({
+    db: ctx.supabase,
+    userId: ctx.userId,
+    spaceId: ctx.spaceId,
+    settings: ctx.settings,
+    locale: ctx.locale,
+    country: ctx.row?.country_code ?? null,
+  });
+  const env = { ctx: toolContext, admin: ctx.admin };
+  const decide =
+    parsed.data.kind === "confirmAction"
+      ? confirmAction
+      : parsed.data.kind === "rejectAction"
+        ? rejectAction
+        : undoAction;
+  const result = await decide(env, parsed.data.id);
+  const status = result.ok ? 200 : result.code === "notFound" ? 404 : 409;
+  return NextResponse.json(result, { status });
+}
+
 /** What the user did with something Grady brought up on his own; no model call. */
 async function proactive(ctx: Context, body: unknown) {
   const parsed = proactiveRequestSchema.safeParse(body);
@@ -317,7 +368,8 @@ async function proactive(ctx: Context, body: unknown) {
   return NextResponse.json({ ok: true, created: result.created });
 }
 
-const PING_QUESTION = "This is a connection test from the administration. Reply with one short sentence.";
+const PING_QUESTION =
+  "This is a connection test from the administration. Reply with one short sentence.";
 
 /**
  * Administration → AI and Grady → "Test the connection": one short question
@@ -351,7 +403,8 @@ async function ping(ctx: Context, body: unknown) {
     feature: "ping",
     context: "",
     messages: [{ role: "user", content: PING_QUESTION }],
-    log: (entry) => logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
+    log: (entry) =>
+      logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
   });
   const durationMs = Date.now() - started;
   if (!result.ok) return respond({ ok: false, code: result.code, durationMs }, 502);
@@ -408,7 +461,8 @@ async function rulesTest(ctx: Context, body: unknown) {
     instructions: withOwnerInstructions(GRADY_PERSONA, instructions),
     context: RULES_TEST_CONTEXT,
     messages: [{ role: "user", content: parsed.data.message }],
-    log: (entry) => logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
+    log: (entry) =>
+      logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
   });
   const durationMs = Date.now() - started;
   if (!result.ok) return respond({ ok: false, code: result.code, durationMs }, 502);
@@ -469,7 +523,8 @@ async function milestoneReview(ctx: Context, body: unknown) {
     today: todayIsoDate(settings),
     locale,
     notes,
-    log: (entry) => logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
+    log: (entry) =>
+      logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
   });
   if (!result.ok) return jobError(result.code, 502);
   return NextResponse.json({ ok: true, feedback: result.text });
@@ -498,7 +553,8 @@ async function salesAnalysis(ctx: Context, body: unknown) {
     userId,
     locale,
     seeAmounts: await maySeeDealAmounts(supabase, userId),
-    log: (entry) => logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
+    log: (entry) =>
+      logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
   });
   if (!result.ok) return jobError(result.code, result.code === "locked" ? 403 : 502);
   return NextResponse.json({ ok: true, analysis: result.analysis });
@@ -541,7 +597,8 @@ async function rewardSetup(ctx: Context, body: unknown) {
     workers,
     currency: settings.currency,
     locale,
-    log: (entry) => logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
+    log: (entry) =>
+      logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
   });
   if (!result.ok) return jobError(result.code, 502);
   return NextResponse.json({ ok: true, proposal: result.proposal });
@@ -589,10 +646,14 @@ async function noteMapSuggest(ctx: Context, body: unknown) {
     nodeId: parsed.data.nodeId,
     request: parsed.data.request ?? "",
     locale,
-    log: (entry) => logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
+    log: (entry) =>
+      logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
   });
   if (!result.ok) {
-    return jobError(result.code, result.code === "notFound" ? 404 : result.code === "empty" ? 422 : 502);
+    return jobError(
+      result.code,
+      result.code === "notFound" ? 404 : result.code === "empty" ? 422 : 502,
+    );
   }
   await track(
     "note_map_suggested",
@@ -675,7 +736,8 @@ async function emailReply(ctx: Context, body: unknown) {
     locale,
     receivedEmail: parsed.data.receivedEmail,
     bookingLink,
-    log: (entry) => logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
+    log: (entry) =>
+      logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
   });
   if (!result.ok) return jobError(result.code, 502);
   return NextResponse.json({ ok: true, reply: result.reply });
@@ -714,7 +776,9 @@ async function chat(ctx: Context, body: unknown, request: Request) {
   // The end-to-end tests' own accounts may ask for the echo stand-in (never in production).
   const client = wantsE2eEcho(request.headers, ctx.email)
     ? e2eEchoClient(ctx.admin)
-    : createAnthropic(ctx.admin, { spaceId: ctx.spaceId });
+    : wantsE2eEcho(request.headers, ctx.email, E2E_TOOL_SCRIPT)
+      ? e2eToolClient(ctx.admin, e2eToolScript(request.headers))
+      : createAnthropic(ctx.admin, { spaceId: ctx.spaceId });
   if (!client) {
     await logNotConfigured(ctx, "chat");
     const event: ChatEvent = { type: "error", code: "notConfigured", usage };
@@ -763,7 +827,12 @@ async function chat(ctx: Context, body: unknown, request: Request) {
   }
   const finalConversationId = conversationId;
   const log = (entry: Parameters<Parameters<typeof streamModel>[0]["log"]>[0]) =>
-    logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: finalConversationId });
+    logAiUsage(admin, {
+      ...entry,
+      userId,
+      spaceId: ctx.spaceId,
+      conversationId: finalConversationId,
+    });
 
   // Messages are server-owned: only the admin client writes them, always with the session's id.
   const { data: userMessage, error: insertError } = await admin
@@ -838,17 +907,55 @@ async function chat(ctx: Context, body: unknown, request: Request) {
     return new Map();
   });
   const current = currentTurnAttachments(files);
+  // What Grady's earlier answers changed in the app goes back with them.
+  const earlierActions = await loadActions(
+    supabase,
+    rows.filter((row) => row.role === "assistant").map((row) => row.id),
+  ).catch((error) => {
+    console.error("grady history actions failed", error);
+    return new Map();
+  });
   const stored: StoredMessage[] = rows.map((row) => ({
     role: row.role,
-    content: row.content,
+    content:
+      row.role === "assistant"
+        ? row.content + actionsNote(earlierActions.get(row.id) ?? [])
+        : row.content,
     attachments: row.id === userMessage.id ? current : earlierFiles.get(row.id),
   }));
   const messages = toModelMessages(stored);
+
+  // The tools the account may use in the active space now (none when the space can not be read).
+  const toolContext: ToolContext | null = await createToolContext({
+    db: supabase,
+    userId,
+    spaceId: ctx.spaceId,
+    settings,
+    locale,
+    country: ctx.row?.country_code ?? null,
+  }).catch((error) => {
+    console.error("grady tool context failed", error);
+    return null;
+  });
+  const tools = toolContext ? toolsFor(toolContext.workspace, GRADY_TOOLS) : [];
+  const assistantMessageId = crypto.randomUUID();
+  const actionEnv: ActionEnv | null = toolContext
+    ? {
+        ctx: toolContext,
+        admin,
+        conversationId: finalConversationId,
+        messageId: assistantMessageId,
+      }
+    : null;
+  const toolsNote = toolContext?.workspace.readOnly
+    ? "\n<tools_note>This space is read-only now (the trial or the plan ended): you can look things up but change nothing. When the user asks for a change, say kindly in one sentence that the app is read-only until the plan is renewed in Settings → Subscription, and offer what you can do (look things up, plan, draft).</tools_note>"
+    : "";
   const extra =
     `\n${plans}` +
     (notes ? `\n${notes}` : "") +
     (answers ? `\n${answers}` : "") +
-    (idea ? `\n${featureRequestNote()}` : "");
+    (idea ? `\n${featureRequestNote()}` : "") +
+    toolsNote;
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
@@ -871,26 +978,44 @@ async function chat(ctx: Context, body: unknown, request: Request) {
           userMessageId: userMessage.id,
           attachments: shownAttachments,
         });
-        const result = await streamModel({
+        const cards: ActionCard[] = [];
+        const common = {
           client,
           userId,
-          feature: "chat",
           instructions: withOwnerInstructions(GRADY_PERSONA, rules.instructions),
           context: situationBlock(situation, locale) + extra,
           messages,
-          onText: (text) => send({ type: "delta", text }),
+          onText: (text: string) => send({ type: "delta", text }),
           log,
-        });
+        };
+        const result =
+          actionEnv && tools.length
+            ? await streamWithTools({
+                ...common,
+                tools,
+                runTool: (call) => runToolCall(actionEnv, call),
+                runBulk: (calls) => proposeBulk(actionEnv, calls),
+                onTool: (name) => send({ type: "tool", label: progressLabel(toolContext, name) }),
+                onStep: (step) => {
+                  if (!step.card) return;
+                  cards.push(step.card);
+                  send({ type: "action", card: step.card });
+                },
+              })
+            : await streamModel({ ...common, feature: "chat" });
 
+        // An answer that made changes is kept even when its last words failed: the cards belong to it.
         let messageId: string | null = null;
-        if (result.ok) {
+        if (result.ok || cards.length) {
+          const content = result.text.trim() || cards.map((card) => card.summary).join("\n");
           const { data, error } = await admin
             .from("jarvis_messages")
             .insert({
+              id: assistantMessageId,
               user_id: userId,
               conversation_id: finalConversationId,
               role: "assistant",
-              content: result.text,
+              content,
               model: result.model,
             })
             .select("id")
@@ -903,8 +1028,15 @@ async function chat(ctx: Context, body: unknown, request: Request) {
           .update({ last_message_at: new Date().toISOString() })
           .eq("id", finalConversationId);
 
-        const fresh = await loadAiUsage(supabase, admin, userId, settings, undefined, ctx.spaceId).catch(() => usage);
-        if (result.ok && messageId) {
+        const fresh = await loadAiUsage(
+          supabase,
+          admin,
+          userId,
+          settings,
+          undefined,
+          ctx.spaceId,
+        ).catch(() => usage);
+        if ((result.ok || cards.length) && messageId) {
           send({ type: "done", messageId, usage: fresh });
           await track("jarvis_message_sent", turn(true), { userId, admin });
         } else {
@@ -928,4 +1060,14 @@ async function chat(ctx: Context, body: unknown, request: Request) {
       "Cache-Control": "no-store",
     },
   });
+}
+
+/** "Creating the task…" in the user's language; a tool without its own line says it is working. */
+function progressLabel(toolContext: ToolContext | null, name: string): string {
+  if (!toolContext) return "";
+  try {
+    return toolContext.t(`progress.${name}`);
+  } catch {
+    return toolContext.t("progress.default");
+  }
 }

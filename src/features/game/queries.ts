@@ -9,7 +9,9 @@ import {
 } from "@/components/celebration/celebration-provider";
 import { accountKeys, useProfile, useSession } from "@/features/account/queries";
 import { track } from "@/lib/analytics/client";
+import { clientOps } from "@/lib/ops-client";
 import { createClient } from "@/lib/supabase/client";
+import { setGameMode } from "./ops";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { parseAwardResult, parseGameState } from "./parse";
 import { tierForLevel, type XpReason } from "./rules";
@@ -202,11 +204,8 @@ export function useSetGameMode() {
   const { user } = useSession();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (mode: GameMode) => {
-      const { error } = await createClient().from("profiles").update({ mode }).eq("id", user.id);
-      if (error) throw error;
-      track("game_mode_changed", { to: mode, where: "settings" });
-    },
+    mutationFn: (mode: GameMode) =>
+      setGameMode(clientOps(), { userId: user.id, mode, where: "settings" }),
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: accountKeys.profile(user.id) }),
