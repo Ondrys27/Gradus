@@ -311,7 +311,7 @@ function SignOutItem({ collapsed }: { collapsed: boolean }) {
 /**
  * On a phone the groups sit in a bar along the bottom edge. A group with
  * one page opens it; the others open a sheet with their pages. There is no
- * Jarvis in the administration, so the bar may use the whole width.
+ * Grady in the administration, so the bar may use the whole width.
  */
 export function AdminBottomNav({ role }: { role: AdminRole }) {
   const t = useTranslations("admin.shell");

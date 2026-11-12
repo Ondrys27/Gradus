@@ -8,8 +8,8 @@ import {
   userCapFormSchema,
   type AiCapsForm,
   type UserCapForm,
-} from "@/features/jarvis/caps";
-import { clearAiCapsCache } from "@/features/jarvis/server/caps";
+} from "@/features/grady/caps";
+import { clearAiCapsCache } from "@/features/grady/server/caps";
 import { createClient } from "@/lib/supabase/server";
 import { ADMIN_PATH } from "../access";
 import { adminAccessFor } from "./guard";

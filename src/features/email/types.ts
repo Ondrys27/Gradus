@@ -1,6 +1,6 @@
 /**
  * Sending an e-mail from a contact or a deal. Attachments share the limits and
- * the allowed types of Jarvis's files (features/jarvis/files.ts): one server
+ * the allowed types of Grady's files (features/grady/files.ts): one server
  * already checks a file's real content against them, no need for a second set.
  */
 

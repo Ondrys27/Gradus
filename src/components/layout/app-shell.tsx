@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { JarvisDock } from "@/components/jarvis/jarvis-dock";
+import { GradyDock } from "@/components/grady/grady-dock";
 import { useUserSettings } from "@/features/account/queries";
 import { ChatSync } from "@/features/chat/chat-sync";
 import { useErrorScreenShown } from "@/features/errors/error-screen-state";
@@ -24,12 +24,12 @@ import { TopBar } from "./top-bar";
  * The app frame around every page. A client component on purpose: rendered
  * from the server layout, its nine siblings arrived as separate client
  * references, and whether their code was already in the browser changed the
- * tree React numbers useId by, so ids (the account menu, Jarvis's gradients,
+ * tree React numbers useId by, so ids (the account menu, Grady's gradients,
  * every switch on the page) came out different from the server HTML on a
  * reload. As one client module the shell hydrates the same way every time.
  */
 export function AppShell({ children }: { children: ReactNode }) {
-  // The error page has no Jarvis (the dock hides itself, the tutorial goes) and no
+  // The error page has no Grady (the dock hides itself, the tutorial goes) and no
   // onboarding over it; the overlays of the frame close themselves.
   const errorShown = useErrorScreenShown();
   // Seeded from the server with the rest of the settings, so the first HTML
@@ -53,7 +53,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </main>
           </div>
           <BottomNav />
-          <JarvisDock />
+          <GradyDock />
           <GameSessionStart />
           <ThemeSync />
           {!errorShown && <OnboardingGate />}

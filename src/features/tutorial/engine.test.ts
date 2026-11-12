@@ -44,7 +44,7 @@ describe("tutorialSteps", () => {
       "finance",
       "workers",
       "messages",
-      "jarvis",
+      "grady",
       "settings",
     ] as const) {
       expect(sections.has(section)).toBe(true);
@@ -259,8 +259,8 @@ describe("steps and checks", () => {
       "deal_id",
       null,
     ]);
-    // Jarvis's chat is the account's own, not the space's.
-    expect(checkQuery(TUTORIAL_CHECKS.jarvisAsked, context).filters).toEqual([
+    // Grady's chat is the account's own, not the space's.
+    expect(checkQuery(TUTORIAL_CHECKS.gradyAsked, context).filters).toEqual([
       ["eq", "user_id", "me"],
       ["gt", "created_at", "2026-11-07T09:00:00Z"],
       ["eq", "role", "user"],

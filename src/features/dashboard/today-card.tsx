@@ -9,7 +9,7 @@ import { GlowCard } from "@/components/ui/glow-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusPill } from "@/components/ui/status-pill";
 import { useCalendarEvents } from "@/features/calendar/queries";
-import { CallWindowNotice } from "@/features/jarvis/call-window";
+import { CallWindowNotice } from "@/features/grady/call-window";
 import { TaskCheckbox } from "@/features/milestones/task-checkbox";
 import { formatNumber, formatTime } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";

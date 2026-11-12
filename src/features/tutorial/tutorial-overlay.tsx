@@ -14,11 +14,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion, useIsPresent } from "framer-motion";
 import { CheckIcon, LightbulbIcon, LockIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Jarvis, JARVIS_SIZES, type JarvisState } from "@/components/jarvis/jarvis";
-import { SpeechBubble, type BubbleTail } from "@/components/jarvis/speech-bubble";
-import { useTargetBox, useViewport } from "@/components/jarvis/tour-overlay";
+import { Grady, GRADY_SIZES, type GradyState } from "@/components/grady/grady";
+import { SpeechBubble, type BubbleTail } from "@/components/grady/speech-bubble";
+import { useTargetBox, useViewport } from "@/components/grady/tour-overlay";
 import { Button } from "@/components/ui/button";
-import { placeCallout, type Box, type Size } from "@/features/jarvis/tour";
+import { placeCallout, type Box, type Size } from "@/features/grady/tour";
 import { usePageScrollLock } from "@/lib/scroll-lock";
 import { useIsPhone, useReducedMotionSafe } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
@@ -30,8 +30,8 @@ import { TutorialRail } from "./tutorial-rail";
 import { Reaction, StepText } from "./tutorial-text";
 import type { DemoResolution, RunningMode } from "./types";
 
-const CHARACTER = JARVIS_SIZES.bubble;
-/** Jarvis next to the element of a hands-on step. */
+const CHARACTER = GRADY_SIZES.bubble;
+/** Grady next to the element of a hands-on step. */
 const COMPANION = 72;
 /** Room around the lit element. */
 const SPOT_PADDING = 8;
@@ -76,8 +76,8 @@ function useIdleSince(key: string, enabled: boolean) {
 
 /**
  * The tutorial on screen. A look step dims the page and lights the element
- * Jarvis talks about, with him flying over to it; a hands-on step leaves the
- * page free to use: a ring around the element with Jarvis standing next to
+ * Grady talks about, with him flying over to it; a hands-on step leaves the
+ * page free to use: a ring around the element with Grady standing next to
  * it, and his bubble at the edge (below dialogs and sheets, so it never
  * covers what the user fills in; on a phone at the end of the screen away
  * from the element), whose Next unlocks with a short reaction once the
@@ -120,7 +120,7 @@ type LayerProps = OverlayProps & {
 
 /**
  * The element's box, held over a page change: while the next page renders
- * and the element is not there yet, Jarvis stays where he was instead of
+ * and the element is not there yet, Grady stays where he was instead of
  * jumping to the middle and back.
  */
 function useHeldBox(box: Box | null, hasTargets: boolean): Box | null {
@@ -184,7 +184,7 @@ function LookLayer(props: LayerProps) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onNext, last, confirming]);
 
-  const state: JarvisState =
+  const state: GradyState =
     placement.side === "center" ? (last ? "happy" : "waving") : index === 0 ? "waving" : "pointing";
   const below = placement.side !== "above";
   const tail: BubbleTail = isPhone
@@ -204,7 +204,7 @@ function LookLayer(props: LayerProps) {
   return (
     <div
       className="fixed inset-0 z-takeover"
-      data-jarvis-tour=""
+      data-grady-tour=""
       data-tutorial-overlay="look"
       data-tutorial-step={step.key}
     >
@@ -263,7 +263,7 @@ function LookLayer(props: LayerProps) {
         )}
       >
         <div className={cn("shrink-0", isPhone && placement.flip && "self-end")}>
-          <Jarvis
+          <Grady
             size={CHARACTER}
             state={state}
             direction={placement.direction}
@@ -332,9 +332,9 @@ function DoLayer(props: LayerProps & { passed: boolean }) {
     : ({ type: "spring", stiffness: 160, damping: 22 } as const);
   // On a phone the bubble takes the end of the screen the element is not on; the top keeps clear of the rail.
   const end = phoneBubbleEnd(box, viewport);
-  // On a larger screen Jarvis stands next to the element itself; the bubble then has no head.
+  // On a larger screen Grady stands next to the element itself; the bubble then has no head.
   const companion = !isPhone && box ? companionPlacement(box, viewport, COMPANION) : null;
-  const jarvisState: JarvisState = passed ? "happy" : "pointing";
+  const gradyState: GradyState = passed ? "happy" : "pointing";
 
   return (
     <>
@@ -366,12 +366,12 @@ function DoLayer(props: LayerProps & { passed: boolean }) {
           animate={{ top: companion.top, left: companion.left }}
           transition={spring}
         >
-          <Jarvis size={COMPANION} state={jarvisState} direction={companion.direction} />
+          <Grady size={COMPANION} state={gradyState} direction={companion.direction} />
         </motion.div>
       )}
       <section
         aria-labelledby={titleId}
-        data-jarvis-tour=""
+        data-grady-tour=""
         data-tutorial-overlay="do"
         data-tutorial-step={step.key}
         data-capture-ignore=""
@@ -386,7 +386,7 @@ function DoLayer(props: LayerProps & { passed: boolean }) {
         <TutorialRail steps={steps} index={index} />
         {!companion && !isPhone && (
           <div className="shrink-0">
-            <Jarvis size={56} state={jarvisState} variant="head" />
+            <Grady size={56} state={gradyState} variant="head" />
           </div>
         )}
         <div className="min-w-0 flex-1 rounded-2xl border border-line-strong bg-surface/95 p-3 shadow-popover backdrop-blur-md">
@@ -414,7 +414,7 @@ function DoLayer(props: LayerProps & { passed: boolean }) {
               setConfirming={setConfirming}
               primaryRef={primaryRef}
               onCollapse={() => setCollapsed(true)}
-              head={isPhone ? <Jarvis size={40} state={jarvisState} variant="head" /> : undefined}
+              head={isPhone ? <Grady size={40} state={gradyState} variant="head" /> : undefined}
             />
           )}
         </div>
@@ -448,7 +448,7 @@ function StepBody({
   setConfirming: (value: boolean) => void;
   primaryRef: RefObject<HTMLButtonElement | null>;
   onCollapse?: () => void;
-  /** Jarvis's head in the header row (a phone, where there is no room beside the bubble). */
+  /** Grady's head in the header row (a phone, where there is no room beside the bubble). */
   head?: ReactNode;
 }) {
   const t = useTranslations("tutorial");
@@ -500,7 +500,7 @@ function StepBody({
       <h2 id={titleId} className="mb-1 text-sm font-semibold text-teal">
         {t(`steps.${step.key}.title`)}
       </h2>
-      <StepText key={step.key} text={t(step.jarvisSays, values)} typed={step.action === "look"} />
+      <StepText key={step.key} text={t(step.gradySays, values)} typed={step.action === "look"} />
       {step.locked && (
         <p className="mt-2 flex items-start gap-1.5 text-sm text-ink-muted">
           <LockIcon aria-hidden className="mt-0.5 size-3.5 shrink-0" />

@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { Jarvis, JARVIS_SIZES, type JarvisState } from "@/components/jarvis/jarvis";
+import { Grady, GRADY_SIZES, type GradyState } from "@/components/grady/grady";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -54,7 +54,7 @@ const colorTokens = [
 ] as const;
 
 const stages = ["lead", "contacted", "meeting", "won"] as const;
-const jarvisStates: JarvisState[] = ["idle", "thinking", "happy"];
+const gradyStates: GradyState[] = ["idle", "thinking", "happy"];
 
 export function DesignSystemShowcase() {
   const t = useTranslations("designSystem");
@@ -282,19 +282,19 @@ export function DesignSystemShowcase() {
         />
       </Section>
 
-      <Section title={t("sections.jarvis")}>
+      <Section title={t("sections.grady")}>
         <GlowCard interactive={false} className="flex flex-wrap items-end justify-around gap-8">
-          {jarvisStates.map((state) => (
+          {gradyStates.map((state) => (
             <div key={state} className="flex flex-col items-center gap-3">
               <div className="flex items-end gap-4">
-                <Jarvis state={state} size={JARVIS_SIZES.bubble} />
-                <Jarvis state={state} variant="head" size={JARVIS_SIZES.button} />
+                <Grady state={state} size={GRADY_SIZES.bubble} />
+                <Grady state={state} variant="head" size={GRADY_SIZES.button} />
               </div>
-              <span className="micro-label">{t(`jarvis.${state}`)}</span>
+              <span className="micro-label">{t(`grady.${state}`)}</span>
             </div>
           ))}
-          <Link href="/design-system/jarvis" className={buttonVariants({ variant: "outline" })}>
-            {t("jarvis.playground")}
+          <Link href="/design-system/grady" className={buttonVariants({ variant: "outline" })}>
+            {t("grady.playground")}
           </Link>
         </GlowCard>
       </Section>

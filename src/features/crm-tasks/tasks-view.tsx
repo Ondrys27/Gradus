@@ -71,7 +71,7 @@ export function TasksView() {
   const ownerDone = useDoneWorkerTasks(worker?.id ?? null, ownerDonePage);
   const setOwnerStatus = useSetWorkerTaskStatus();
 
-  // A link to one task (from Jarvis, the calendar) opens its detail.
+  // A link to one task (from Grady, the calendar) opens its detail.
   useUrlIntent("task", (id) => {
     setRequested(id);
   });

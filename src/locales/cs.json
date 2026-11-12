@@ -60,7 +60,7 @@
       "controls": "Formulářové prvky",
       "empty": "Prázdný stav",
       "skeleton": "Načítání",
-      "jarvis": "Jarvis"
+      "grady": "Grady"
     },
     "colors": {
       "canvas": "Pozadí",
@@ -71,7 +71,7 @@
       "line": "Okraj",
       "lineStrong": "Světlý okraj",
       "violet": "Primární",
-      "teal": "Postup · úspěch · Jarvis",
+      "teal": "Postup · úspěch · Grady",
       "gold": "Odměny · XP",
       "green": "Vyhráno",
       "pink": "Prohráno · chyby",
@@ -148,10 +148,10 @@
     },
     "empty": {
       "title": "Zatím žádné kontakty",
-      "description": "Přidej první kontakt nebo nech Jarvise najít firmy ve tvém okolí.",
+      "description": "Přidej první kontakt nebo nech Gradyho najít firmy ve tvém okolí.",
       "action": "Přidat kontakt"
     },
-    "jarvis": {
+    "grady": {
       "idle": "V klidu",
       "thinking": "Přemýšlí",
       "happy": "Má radost",
@@ -159,10 +159,10 @@
       "pointing": "Ukazuje",
       "surprised": "Je překvapený",
       "sleeping": "Spí",
-      "playground": "Otevřít ladění Jarvise"
+      "playground": "Otevřít ladění Gradyho"
     },
-    "jarvisPage": {
-      "title": "Jarvis",
+    "gradyPage": {
+      "title": "Grady",
       "description": "Všechny stavy a velikosti vedle sebe. Přepínej je a laď animaci.",
       "back": "Design systém",
       "px": "{size} px",
@@ -394,17 +394,17 @@
     },
     "untitled": "Koncept"
   },
-  "jarvis": {
-    "open": "Otevřít Jarvise",
-    "close": "Zavřít Jarvise",
-    "title": "Jarvis",
+  "grady": {
+    "open": "Otevřít Gradyho",
+    "close": "Zavřít Gradyho",
+    "title": "Grady",
     "subtitle": "Tvůj průvodce podnikáním",
     "newChat": "Nový rozhovor",
-    "greeting": "Ahoj, já jsem Jarvis. Vidím tvoje milníky, obchody, kontakty i kalendář. Co dnes posuneme dál?",
-    "inputLabel": "Zpráva pro Jarvise",
-    "placeholder": "Zeptej se Jarvise…",
+    "greeting": "Ahoj, já jsem Grady. Vidím tvoje milníky, obchody, kontakty i kalendář. Co dnes posuneme dál?",
+    "inputLabel": "Zpráva pro Gradyho",
+    "placeholder": "Zeptej se Gradyho…",
     "send": "Odeslat",
-    "typing": "Jarvis píše",
+    "typing": "Grady píše",
     "usage": "{used} z {limit} zpráv tento měsíc",
     "suggestions": "Návrhy",
     "loadFailed": "Rozhovor se nepodařilo načíst.",
@@ -423,16 +423,16 @@
       "overdueInvoices": "Pomoz mi připomenout faktury po splatnosti"
     },
     "error": {
-      "limitReached": "Všech {limit} zpráv pro Jarvise je na tento měsíc vyčerpáno. Obnoví se prvního dne dalšího měsíce.",
-      "notConfigured": "Jarvis ještě není připojený. Zkus to později.",
-      "paused": "Jarvis si dává do konce měsíce pauzu, aplikace funguje dál.",
-      "busy": "Jarvis má teď moc práce. Zkus to za minutu.",
-      "unavailable": "Jarvis teď nemůže odpovědět. Zkus to za chvíli.",
+      "limitReached": "Všech {limit} zpráv pro Gradyho je na tento měsíc vyčerpáno. Obnoví se prvního dne dalšího měsíce.",
+      "notConfigured": "Grady ještě není připojený. Zkus to později.",
+      "paused": "Grady si dává do konce měsíce pauzu, aplikace funguje dál.",
+      "busy": "Grady má teď moc práce. Zkus to za minutu.",
+      "unavailable": "Grady teď nemůže odpovědět. Zkus to za chvíli.",
       "notFound": "Tenhle rozhovor už neexistuje. Další zpráva začne nový.",
       "network": "Spojení se přerušilo. Zkontroluj internet a zkus to znovu.",
       "unknown": "Něco se pokazilo. Zkus to znovu.",
       "dismiss": "Zavřít",
-      "fileType": "Jarvis umí číst PDF, Word (DOCX), Excel (XLSX), text, CSV, PNG a JPG. Tenhle soubor nic z toho není.",
+      "fileType": "Grady umí číst PDF, Word (DOCX), Excel (XLSX), text, CSV, PNG a JPG. Tenhle soubor nic z toho není.",
       "fileTooLarge": "Soubor může mít nejvýš {max} MB.",
       "fileUnreadable": "Soubor se nepodařilo přečíst. Může být poškozený nebo chráněný heslem.",
       "fileMissing": "Soubor nedorazil. Přilož ho znovu.",
@@ -440,7 +440,7 @@
       "fileUpload": "Soubor se nepodařilo nahrát. Zkontroluj připojení a zkus to znovu.",
       "tooManyFiles": "K jedné zprávě jdou přiložit nejvýš {max} soubory.",
       "userLimit": "AI pomocník má pro tvůj účet tento měsíc vyčerpaný limit. Víc prostoru dává vyšší tarif (Nastavení → Předplatné); zbytek aplikace funguje dál.",
-      "spaceLimit": "AI pomocník má v téhle firmě tento měsíc vyčerpaný limit. Majitel ho zvýší vyšším tarifem; ve vlastní firmě Jarvis funguje dál."
+      "spaceLimit": "AI pomocník má v téhle firmě tento měsíc vyčerpaný limit. Majitel ho zvýší vyšším tarifem; ve vlastní firmě Grady funguje dál."
     },
     "files": {
       "attach": "Přiložit soubory",
@@ -453,7 +453,7 @@
       "down": "Nepovedená odpověď"
     },
     "suggestion": {
-      "heading": "Jarvis si všiml",
+      "heading": "Grady si všiml",
       "do": "Udělat",
       "undo": "Vrátit",
       "keep": "Nechat",
@@ -513,20 +513,20 @@
       "close": "Zavřít",
       "later": "Později",
       "show": "Ukázat",
-      "ask": "Zeptat se Jarvise",
+      "ask": "Zeptat se Gradyho",
       "add": "Přidat úkoly",
       "thanks": "Díky",
       "send": "Odeslat",
       "answerPlaceholder": "Nebo napiš vlastní odpověď…",
       "answerLabel": "Tvoje odpověď",
       "options": "Odpovědi",
-      "tasksPreview": "Úkoly, které Jarvis navrhuje",
+      "tasksPreview": "Úkoly, které Grady navrhuje",
       "failed": "Tohle se nepovedlo. Zkus to znovu.",
       "answered": "Díky, budu s tím počítat.",
       "added": "Přidáno do milníku.",
       "heading": {
         "briefing": "Dobré ráno",
-        "suggestion": "Jarvis si všiml",
+        "suggestion": "Grady si všiml",
         "question": "Rychlá otázka"
       },
       "questions": {
@@ -586,7 +586,7 @@
       "settings": "Nastavit, jak často"
     },
     "queue": {
-      "label": "Upozornění Jarvise",
+      "label": "Upozornění Gradyho",
       "position": "{current} z {total}",
       "previous": "Předchozí",
       "next": "Další"
@@ -621,14 +621,14 @@
   },
   "sections": {
     "dashboard": {
-      "description": "Tvůj den na jeden pohled: postup, další kroky a co si všiml Jarvis.",
+      "description": "Tvůj den na jeden pohled: postup, další kroky a co si všiml Grady.",
       "emptyTitle": "Zatím tu nic není",
       "emptyDescription": "Až přidáš milníky, kontakty a obchody, uvidíš tady přehled."
     },
     "contacts": {
       "description": "Všichni, se kterými pracuješ, roztřídění do vlastních tabulek.",
       "emptyTitle": "Zatím žádné kontakty",
-      "emptyDescription": "Přidej první kontakt nebo nech Jarvise najít firmy ve tvém okolí."
+      "emptyDescription": "Přidej první kontakt nebo nech Gradyho najít firmy ve tvém okolí."
     },
     "pipeline": {
       "description": "Všechny obchody a fáze, ve které jsou.",
@@ -824,7 +824,7 @@
   },
   "settings": {
     "title": "Nastavení",
-    "description": "Účet, Jarvis, vzhled, práce a data na jednom místě.",
+    "description": "Účet, Grady, vzhled, práce a data na jednom místě.",
     "status": {
       "saving": "Ukládám…",
       "saved": "Uloženo",
@@ -961,10 +961,10 @@
       "locked": "Zamčeno",
       "theme": "Téma"
     },
-    "jarvis": {
+    "grady": {
       "title": "Sám od sebe",
-      "description": "Kdy se Jarvis ozve sám od sebe. Chat v rohu funguje vždycky.",
-      "proactive": "Jarvis se ozývá sám",
+      "description": "Kdy se Grady ozve sám od sebe. Chat v rohu funguje vždycky.",
+      "proactive": "Grady se ozývá sám",
       "proactiveHint": "Při prvním příchodu dne přiletí se souhrnem, u Často a Občas i mezi tím s návrhem nebo otázkou. Nikdy, když běží časovač volání.",
       "frequency": "Jak často",
       "frequencies": {
@@ -977,13 +977,13 @@
       "frequencyHint": {
         "every_2h": "Souhrn při prvním příchodu dne a mezi tím návrhy nejvýš jednou za 2 hodiny.",
         "every_6h": "Souhrn při prvním příchodu dne a mezi tím návrhy nejvýš jednou za 6 hodin.",
-        "daily": "Jen souhrn dne při prvním příchodu. Návrhy počkají v panelu Jarvise.",
+        "daily": "Jen souhrn dne při prvním příchodu. Návrhy počkají v panelu Gradyho.",
         "weekly": "Jen souhrn týdne při prvním příchodu v týdnu: čísla za minulý týden a plán na tento. Návrhy počkají v panelu.",
         "monthly": "Jen souhrn měsíce při prvním příchodu v měsíci. Návrhy počkají v panelu."
       },
       "quiet": {
         "title": "Tichý režim",
-        "hint": "V tyhle hodiny Jarvis mlčí. Časy jsou ve tvém časovém pásmu.",
+        "hint": "V tyhle hodiny Grady mlčí. Časy jsou ve tvém časovém pásmu.",
         "from": "Od",
         "to": "Do",
         "hours": "Od kdy do kdy"
@@ -993,7 +993,7 @@
       "title": "Nápověda",
       "description": "Jak se v aplikaci vyznat.",
       "tour": "Tutoriál",
-      "tourHint": "Jarvis ti aplikaci ukáže znovu: rychle, nebo celou na ukázkových datech.",
+      "tourHint": "Grady ti aplikaci ukáže znovu: rychle, nebo celou na ukázkových datech.",
       "start": "Spustit tutoriál",
       "demo": "Ukázková data",
       "demoHint": "Kontakty, obchod, milník, úkoly, schůzka a poznámka z tutoriálu se štítkem „ukázka“.",
@@ -1070,8 +1070,8 @@
         "title": "Předplatné",
         "description": "Tarif, platby a fakturační údaje."
       },
-      "jarvis": {
-        "title": "Jarvis",
+      "grady": {
+        "title": "Grady",
         "description": "Kdy se ozve sám, jak často, kdy mlčí a upozornění na zprávy."
       },
       "appearance": {
@@ -1148,16 +1148,16 @@
         "label": "Fakturační údaje",
         "keywords": "předplatné firma IČO DIČ adresa"
       },
-      "jarvisProactive": {
-        "label": "Jarvis se ozývá sám",
+      "gradyProactive": {
+        "label": "Grady se ozývá sám",
         "keywords": "asistent souhrn návrhy proaktivní"
       },
-      "jarvisFrequency": {
-        "label": "Jak často se Jarvis ozývá",
+      "gradyFrequency": {
+        "label": "Jak často se Grady ozývá",
         "keywords": "asistent frekvence souhrn denně týdně měsíčně"
       },
-      "jarvisQuiet": {
-        "label": "Tichý režim Jarvise",
+      "gradyQuiet": {
+        "label": "Tichý režim Gradyho",
         "keywords": "asistent tiché hodiny noc"
       },
       "tour": {
@@ -1280,7 +1280,7 @@
         "hint": "Natrvalo smaže účet, všechna data i nahrané soubory. Nejde to vrátit.",
         "action": "Smazat účet",
         "title": "Smazat účet natrvalo?",
-        "point1": "Smažou se všechna tvoje data: milníky, úkoly, kontakty, obchody, události, finance, faktury, poznámky, rozhovory s Jarvisem i nahrané soubory.",
+        "point1": "Smažou se všechna tvoje data: milníky, úkoly, kontakty, obchody, události, finance, faktury, poznámky, rozhovory s Gradym i nahrané soubory.",
         "pointWorker": "Co jsi vytvořil v týmu majitele, zůstane jemu.",
         "point2": "Statistiky používání aplikace zůstanou jen anonymně, bez vazby na tebe.",
         "point3": "Smazání nejde vrátit. Pokud chceš data mít, nejdřív si je stáhni.",
@@ -1497,8 +1497,8 @@
       "completedTitle": "Milník je dokončený",
       "completedDescription": "Kdyby ještě něco chybělo, můžeš ho znovu otevřít.",
       "statusFailed": "Milník se nepodařilo změnit. Zkus to znovu.",
-      "jarvisFeedback": "Jarvisův pohled",
-      "jarvisReviewing": "Jarvis si prohlíží tvůj milník…"
+      "gradyFeedback": "Gradyho pohled",
+      "gradyReviewing": "Grady si prohlíží tvůj milník…"
     },
     "tasks": {
       "heading": "Úkoly",
@@ -1884,9 +1884,9 @@
       "templateHint": "Tenhle krok se nejlép sepíše: „Zapsat do poznámek“ založí poznámku s osnovou „{outline}“.",
       "failed": "Nepovedlo se to. Zkus to za chvíli znovu."
     },
-    "fromJarvis": {
+    "fromGrady": {
       "save": "Uložit do poznámek",
-      "heading": "Od Jarvise, {date}",
+      "heading": "Od Gradyho, {date}",
       "newNote": "Nová poznámka",
       "orAppend": "Nebo ji přidej na konec poznámky:",
       "pickLabel": "Poznámky, kam odpověď přidat",
@@ -1973,31 +1973,31 @@
         "instructions": "Přetáhni uzel na jiný (stane se jeho podřízeným), mezi uzly (změní pořadí) nebo na střed mapy. Na telefonu ho nejdřív podrž. Klávesy: ⌘ nebo Ctrl se šipkami ←/→ mění úroveň, ↑/↓ pořadí."
       },
       "suggestions": {
-        "banner": "Jarvis navrhl {count, plural, one {# větev} few {# větve} many {# větve} other {# větví}}. Šedé uzly si nech, nebo je smaž.",
+        "banner": "Grady navrhl {count, plural, one {# větev} few {# větve} many {# větve} other {# větví}}. Šedé uzly si nech, nebo je smaž.",
         "acceptAll": "Ponechat vše",
         "rejectAll": "Smazat vše",
         "accept": "Ponechat",
         "reject": "Smazat",
         "acceptOne": "Ponechat návrh „{title}“",
         "rejectOne": "Smazat návrh „{title}“",
-        "added": "Jarvis přidal {count, plural, one {# návrh} few {# návrhy} many {# návrhu} other {# návrhů}}."
+        "added": "Grady přidal {count, plural, one {# návrh} few {# návrhy} many {# návrhu} other {# návrhů}}."
       },
       "suggest": {
-        "button": "Navrhnout větve (Jarvis)",
-        "title": "Jarvis navrhne větve",
+        "button": "Navrhnout větve (Grady)",
+        "title": "Grady navrhne větve",
         "close": "Zavřít",
-        "intro": "Jarvis přidá pod uzel „{title}“ nové větve. Uvidíš je šedě a každou si necháš, nebo smažeš.",
+        "intro": "Grady přidá pod uzel „{title}“ nové větve. Uvidíš je šedě a každou si necháš, nebo smažeš.",
         "untitledNode": "bez názvu",
         "requestLabel": "Co má doplnit",
-        "requestHint": "Nepovinné. Jarvis vidí celou mapu.",
+        "requestHint": "Nepovinné. Grady vidí celou mapu.",
         "requestPlaceholder": "Třeba: doplň mi mapu konkurence",
-        "note": "Jarvis do poznámky nic nezapíše sám, návrhy jsou jen nabídka.",
+        "note": "Grady do poznámky nic nezapíše sám, návrhy jsou jen nabídka.",
         "cancel": "Zrušit",
         "submit": "Navrhnout",
-        "thinking": "Jarvis přemýšlí…",
+        "thinking": "Grady přemýšlí…",
         "errors": {
-          "limitReached": "Zprávy pro Jarvise jsou na tento měsíc vyčerpané. Obnoví se prvního dne dalšího měsíce.",
-          "empty": "Jarvis teď nic nového nenavrhl. Zkus napsat, co má doplnit.",
+          "limitReached": "Zprávy pro Gradyho jsou na tento měsíc vyčerpané. Obnoví se prvního dne dalšího měsíce.",
+          "empty": "Grady teď nic nového nenavrhl. Zkus napsat, co má doplnit.",
           "notFound": "Uzel ani poznámku se nepodařilo najít. Obnov stránku a zkus to znovu."
         }
       },
@@ -2061,7 +2061,7 @@
         },
         "text": {
           "title": "Převést mapu na text",
-          "text": "Střed mapy bude nadpis a větve odrážky pod ním. Převod je nevratný: barvy větví zmizí a nepřijaté návrhy Jarvise se nepřevedou. Jako nová poznámka zůstane mapa, jak je.",
+          "text": "Střed mapy bude nadpis a větve odrážky pod ním. Převod je nevratný: barvy větví zmizí a nepřijaté návrhy Gradyho se nepřevedou. Jako nová poznámka zůstane mapa, jak je.",
           "replace": "Převést na text"
         }
       }
@@ -3398,7 +3398,7 @@
         "warningReserve": "V týdnu {week} klesne kapitál pod rezervu {reserve}.",
         "reserve": "Rezerva ({currency})",
         "reservePlaceholder": "bez rezervy",
-        "reserveHint": "Pod touhle částkou tě shrnutí i Jarvis upozorní.",
+        "reserveHint": "Pod touhle částkou tě shrnutí i Grady upozorní.",
         "closingHint": "na konci měsíce",
         "sparkline": "Konečný kapitál po týdnech",
         "weekPoint": "Týden {week}: {value}",
@@ -3553,15 +3553,15 @@
         "aiAnalysis": "AI rozbor",
         "open": "Otevřít pipeline",
         "aiAgain": "Nový AI rozbor",
-        "aiRunning": "Jarvis rozebírá tvoje schůzky. Může to chvíli trvat.",
+        "aiRunning": "Grady rozebírá tvoje schůzky. Může to chvíli trvat.",
         "aiLocked": "{count, plural, one {Odemkne se po {needed} dalším dotazníku.} few {Odemkne se po {needed} dalších dotaznících.} other {Odemkne se po {needed} dalších dotaznících.}}",
         "aiLatest": "Rozbor z {date}",
         "aiError": {
-          "limitReached": "Tento měsíc jsi vyčerpal všechna volání Jarvise.",
-          "notConfigured": "Jarvis ještě není připojený. Zkus to později.",
-          "busy": "Jarvis má teď moc práce. Zkus to za minutu.",
+          "limitReached": "Tento měsíc jsi vyčerpal všechna volání Gradyho.",
+          "notConfigured": "Grady ještě není připojený. Zkus to později.",
+          "busy": "Grady má teď moc práce. Zkus to za minutu.",
           "unavailable": "Rozbor teď nejde udělat. Zkus to za chvíli.",
-          "paused": "Jarvis si dává do konce měsíce pauzu, aplikace funguje dál.",
+          "paused": "Grady si dává do konce měsíce pauzu, aplikace funguje dál.",
           "userLimit": "AI pomocník má pro tvůj účet tento měsíc vyčerpaný limit. Víc prostoru dává vyšší tarif; zbytek aplikace funguje dál.",
           "spaceLimit": "AI pomocník má v téhle firmě tento měsíc vyčerpaný limit. Majitel ho zvýší vyšším tarifem."
         }
@@ -3714,12 +3714,12 @@
     }
   },
   "email": {
-    "jarvisBudget": {
-      "nearSubject": "{appName}: Jarvis vyčerpal {share} měsíčního rozpočtu",
-      "pausedSubject": "{appName}: Jarvis má do konce měsíce pauzu",
-      "nearIntro": "Jarvis tento měsíc utratil přes {threshold} rozpočtu na AI. Při 100 % přestane volat model až do konce měsíce.",
-      "pausedIntro": "Jarvis vyčerpal rozpočet na AI pro tento měsíc a do konce měsíce model nevolá. Uživatelé vidí vlídnou hlášku o pauze, hlídání příležitostí běží jen z pravidel a ranní shrnutí se nepíšou.",
-      "creditsIntro": "API odmítlo volání kvůli nedostatku kreditu nebo dosaženému limitu útraty ({code}). Jarvis model nevolá, dokud kredit nebude zpátky. Uživatelé vidí vlídnou hlášku o pauze.",
+    "gradyBudget": {
+      "nearSubject": "{appName}: Grady vyčerpal {share} měsíčního rozpočtu",
+      "pausedSubject": "{appName}: Grady má do konce měsíce pauzu",
+      "nearIntro": "Grady tento měsíc utratil přes {threshold} rozpočtu na AI. Při 100 % přestane volat model až do konce měsíce.",
+      "pausedIntro": "Grady vyčerpal rozpočet na AI pro tento měsíc a do konce měsíce model nevolá. Uživatelé vidí vlídnou hlášku o pauze, hlídání příležitostí běží jen z pravidel a ranní shrnutí se nepíšou.",
+      "creditsIntro": "API odmítlo volání kvůli nedostatku kreditu nebo dosaženému limitu útraty ({code}). Grady model nevolá, dokud kredit nebude zpátky. Uživatelé vidí vlídnou hlášku o pauze.",
       "spent": "Útrata tento měsíc: {spent} z {budget} ({share}).",
       "projected": "Při dosavadním tempu do konce měsíce: {projected}.",
       "calls": "Volání modelu tento měsíc: {calls}.",
@@ -3728,7 +3728,7 @@
     },
     "featureRequest": {
       "subject": "{appName}: nový nápad – {title}",
-      "intro": "Uživatel aplikace {appName} napsal Jarvisovi, co mu v aplikaci chybí.",
+      "intro": "Uživatel aplikace {appName} napsal Gradymu, co mu v aplikaci chybí.",
       "title": "Nápad",
       "description": "Stručně",
       "from": "Od",
@@ -3748,13 +3748,13 @@
       "aiReceivedLabel": "Vlož přijatý e-mail",
       "aiReceivedPlaceholder": "Vlož zprávu, na kterou odpovídáš…",
       "aiSuggest": "Navrhnout odpověď",
-      "aiWorking": "Jarvis přemýšlí…",
+      "aiWorking": "Grady přemýšlí…",
       "aiError": {
-        "notConfigured": "Jarvis ještě není připojený, takže odpověď nenavrhne. Napiš ji sám.",
-        "busy": "Jarvis má teď moc práce. Zkus to za minutu.",
-        "unavailable": "Jarvis teď nemůže odpovědět. Zkus to později.",
-        "limitReached": "Volání Jarvise na tento měsíc došla.",
-        "paused": "Jarvis si dává do konce měsíce pauzu, takže odpověď napiš sám. Aplikace funguje dál.",
+        "notConfigured": "Grady ještě není připojený, takže odpověď nenavrhne. Napiš ji sám.",
+        "busy": "Grady má teď moc práce. Zkus to za minutu.",
+        "unavailable": "Grady teď nemůže odpovědět. Zkus to později.",
+        "limitReached": "Volání Gradyho na tento měsíc došla.",
+        "paused": "Grady si dává do konce měsíce pauzu, takže odpověď napiš sám. Aplikace funguje dál.",
         "network": "Spojení se přerušilo. Zkontroluj internet a zkus to znovu.",
         "unknown": "Něco se pokazilo. Zkus to znovu, nebo napiš odpověď sám.",
         "userLimit": "AI pomocník má pro tvůj účet tento měsíc vyčerpaný limit, takže odpověď napiš sám. Aplikace funguje dál.",
@@ -4292,10 +4292,10 @@
     },
     "rewards": {
       "title": "Systém odměn",
-      "description": "Spouštěče jsou to, co pracovníci dělají, pravidla kolik za to dostanou. Jarvis z toho udělá pravidla a vysvětlí je; nic neběží, dokud nepotvrdíš.",
+      "description": "Spouštěče jsou to, co pracovníci dělají, pravidla kolik za to dostanou. Grady z toho udělá pravidla a vysvětlí je; nic neběží, dokud nepotvrdíš.",
       "back": "Správa firmy",
       "askAi": "Nechat AI nastavit",
-      "aiWorking": "Jarvis čte…",
+      "aiWorking": "Grady čte…",
       "withoutAi": "Nastavit bez AI",
       "mapLabel": "Strom odměn",
       "root": "Odměny",
@@ -4383,21 +4383,21 @@
         "maxPerMonth": "{count, plural, one {nejvýš jednou za měsíc} other {nejvýš {shown}× za měsíc}}"
       },
       "aiError": {
-        "notConfigured": "Jarvis ještě není připojený, takže pravidla teď nenastaví. Můžeš je nastavit bez AI; podmínky z poznámek se ale nepoužijí.",
-        "busy": "Jarvis má teď moc práce. Zkus to za minutu, nebo nastav bez AI.",
-        "unavailable": "Jarvis teď nemůže odpovědět. Zkus to později, nebo nastav bez AI.",
-        "limitReached": "Volání Jarvise na tento měsíc došla. Můžeš nastavit bez AI.",
+        "notConfigured": "Grady ještě není připojený, takže pravidla teď nenastaví. Můžeš je nastavit bez AI; podmínky z poznámek se ale nepoužijí.",
+        "busy": "Grady má teď moc práce. Zkus to za minutu, nebo nastav bez AI.",
+        "unavailable": "Grady teď nemůže odpovědět. Zkus to později, nebo nastav bez AI.",
+        "limitReached": "Volání Gradyho na tento měsíc došla. Můžeš nastavit bez AI.",
         "network": "Spojení se přerušilo. Zkontroluj internet a zkus to znovu.",
         "empty": "Nejdřív přidej aspoň jedno pravidlo.",
         "unknown": "Něco se pokazilo. Zkus to znovu, nebo nastav bez AI.",
         "userLimit": "AI pomocník má pro tvůj účet tento měsíc vyčerpaný limit. Můžeš nastavit bez AI.",
-        "paused": "Jarvis si dává do konce měsíce pauzu. Můžeš nastavit bez AI.",
+        "paused": "Grady si dává do konce měsíce pauzu. Můžeš nastavit bez AI.",
         "spaceLimit": "AI pomocník má v téhle firmě tento měsíc vyčerpaný limit. Můžeš nastavit bez AI."
       },
       "proposal": {
         "title": "Jak to bude fungovat",
-        "withoutAi": "Nastaveno bez Jarvise: pravidla přesně podle stromu.",
-        "ignored": "Tohle Jarvis nastavit neumí:",
+        "withoutAi": "Nastaveno bez Gradyho: pravidla přesně podle stromu.",
+        "ignored": "Tohle Grady nastavit neumí:",
         "notesDropped": "Bez AI se tyhle podmínky nepoužijí:",
         "approvalNote": "Každý výdělek čeká na tvoje schválení, než se započítá. Potvrzením nahradíš platná pravidla.",
         "confirm": "Potvrdit a spustit",
@@ -4874,6 +4874,11 @@
       },
       "emptyTitle": "Zatím žádná cesta",
       "emptyDescription": "Vyber cestu v Nastavení → Práce → Hra a její milníky se ukážou tady."
+    },
+    "skillText": {
+      "morningBrief": "Grady ti každé ráno shrne den: schůzky, volání zpět, úkoly.",
+      "weeklyAnalysis": "Grady každý týden projde hovory, obchody a peníze a řekne, co změnit.",
+      "industryAdvice": "Grady podle tvých výsledků doporučí, na které obory se zaměřit."
     }
   },
   "onboarding": {
@@ -4966,7 +4971,7 @@
       "description": "Osoba nebo firma, se kterou bys mohl obchodovat. Další můžeš přidat kdykoliv později, tenhle krok jde i přeskočit."
     },
     "closing": {
-      "title": "Já jsem Jarvis",
+      "title": "Já jsem Grady",
       "description": "Najdeš mě vpravo dole na každé obrazovce. Zeptej se mě na cokoliv a párkrát denně se ti sám ozvu s postřehem.",
       "descriptionGame": "Tvoje cesta čeká v Milnících. Najdeš mě v pravém dolním rohu každé obrazovky. Zeptej se mě na cokoliv a párkrát denně se podívám, jak ti to jde."
     },
@@ -5057,16 +5062,16 @@
             "2": "tabulky si pojmenuješ sám, tyhle jsou výchozí"
           }
         },
-        "jarvis": {
-          "title": "Jarvis čte tvoje obchody a ozve se, až když má co říct.",
+        "grady": {
+          "title": "Grady čte tvoje obchody a ozve se, až když má co říct.",
           "text": "Vidí pipeline, kontakty i kalendář. Ráno ti napíše, že Catering na konferenci za 76 000 Kč čeká na odpověď k nabídce už týden, a navrhne, co zákazníkovi poslat. Když vyhraješ obchod, připomene ti říct si o doporučení, dokud je to čerstvé. Když se nic neděje, mlčí.",
-          "alt": "Jarvis v aplikaci {appName}: panel s postřehy k obchodům a rozhovor s asistentem",
+          "alt": "Grady v aplikaci {appName}: panel s postřehy k obchodům a rozhovor s asistentem",
           "notes": {
             "1": "tohle napsal sám, bez tvé otázky",
             "2": "jedno klepnutí a úkol je v seznamu"
           },
           "chat": {
-            "name": "Jarvis",
+            "name": "Grady",
             "you": "Ty",
             "caption": "Ukázka",
             "line": "{who}: {text}",
@@ -5122,7 +5127,7 @@
             "answer": "Ne. Herní režim vypneš v nastavení a {appName} je obyčejný nástroj. Nic se nezamyká a o nic nepřijdeš."
           },
           "ai": {
-            "question": "Co dělá Jarvis s mými daty?",
+            "question": "Co dělá Grady s mými daty?",
             "answer": "Vidí jen tvoje obchody, kontakty a kalendář a používá je jen pro tvoje odpovědi. Na datech zákazníků se nic netrénuje."
           },
           "notFor": {
@@ -5194,7 +5199,7 @@
         "terms": {
           "intro": {
             "p1": "Tyto obchodní podmínky upravují používání aplikace {appName} a předplatné jejích placených tarifů. Uzavírá se jimi smlouva mezi tebou a prodávajícím, kterého najdeš v následujícím oddílu.",
-            "p2": "{appName} je webová aplikace pro začínající podnikatele: milníky a úkoly, obchody, kontakty, cold calling, kalendář, finance s fakturami, pracovníci a AI asistent Jarvis. Při registraci s těmito podmínkami a se zásadami ochrany osobních údajů výslovně souhlasíš; zaznamenáme, kdy a kterou jejich verzi."
+            "p2": "{appName} je webová aplikace pro začínající podnikatele: milníky a úkoly, obchody, kontakty, cold calling, kalendář, finance s fakturami, pracovníci a AI asistent Grady. Při registraci s těmito podmínkami a se zásadami ochrany osobních údajů výslovně souhlasíš; zaznamenáme, kdy a kterou jejich verzi."
           },
           "seller": {
             "p1": "Prodávajícím a provozovatelem {appName} je {name}, IČO {companyId}, se sídlem {address}, e-mail {email}.",
@@ -5256,7 +5261,7 @@
           },
           "liability": {
             "p1": "V rozsahu, který zákon dovoluje, neodpovídáme za ušlý zisk, ztrátu dat ani jiné nepřímé škody vzniklé používáním aplikace. Tím nejsou dotčena práva, která ti zákon zaručuje a která nelze omezit.",
-            "p2": "Doporučení Jarvise a další výstupy umělé inteligence mohou být nepřesné. Rozhodnutí o svém podnikání děláš ty."
+            "p2": "Doporučení Gradyho a další výstupy umělé inteligence mohou být nepřesné. Rozhodnutí o svém podnikání děláš ty."
           },
           "termination": {
             "p1": "Účet můžeš kdykoli zrušit sám v Nastavení → Soukromí a data → Smazat účet. Smažou se tím všechna tvoje data; běžící předplatné nejdřív zruš v Nastavení → Předplatné.",
@@ -5280,25 +5285,25 @@
           },
           "data": {
             "p1": "Údaje účtu: e-mail, jméno, heslo (jen jako bezpečný otisk, nikdy čitelně), profilová fotka, jazyk, časové pásmo a další nastavení.",
-            "p2": "Obsah, který do aplikace vložíš: milníky, úkoly, kontakty, obchody, události, finance, faktury, poznámky, soubory a zprávy Jarvisovi. U osobních údajů tvých kontaktů jsi správcem ty a my je pro tebe zpracováváme jako zpracovatel.",
+            "p2": "Obsah, který do aplikace vložíš: milníky, úkoly, kontakty, obchody, události, finance, faktury, poznámky, soubory a zprávy Gradymu. U osobních údajů tvých kontaktů jsi správcem ty a my je pro tebe zpracováváme jako zpracovatel.",
             "p3": "Údaje o používání a technické údaje: jaké obrazovky a akce v aplikaci používáš, typ zařízení a prohlížeče a záznamy chyb. U přihlášení do administrace a u pokusů o pozvánkový nebo slevový kód ukládáme jen zakódovaný otisk IP adresy.",
             "p4": "Hlášení problémů: tvůj popis, technické údaje o prohlížeči, poslední chybové hlášky aplikace a snímek obrazovky, pokud ho přiložíš.",
             "p5": "Předplatné a platby: tarif, období, fakturační údaje (jméno nebo firma, IČO, DIČ, adresa, e-mail pro doklady), částky a stav plateb. Číslo karty nikdy nevidíme, zpracovává ho Stripe.",
             "p6": "Souhlasy z registrace: kdy a kterou verzi podmínek a těchto zásad jsi odsouhlasil a zda chceš dostávat novinky e-mailem."
           },
           "purpose": {
-            "p1": "Abychom ti mohli aplikaci poskytovat podle podmínek (plnění smlouvy): účet a přihlášení, ukládání tvých dat, předplatné a platby, e-maily k účtu (třeba obnova hesla nebo doklad o platbě), Jarvis a generování kontaktů.",
+            "p1": "Abychom ti mohli aplikaci poskytovat podle podmínek (plnění smlouvy): účet a přihlášení, ukládání tvých dat, předplatné a platby, e-maily k účtu (třeba obnova hesla nebo doklad o platbě), Grady a generování kontaktů.",
             "p2": "Z oprávněného zájmu: zabezpečení (včetně omezení pokusů o kódy), hledání a opravy chyb, měření používání a vylepšování aplikace.",
             "p3": "Se souhlasem: čekací listina a novinky e-mailem, pokud jsi je při registraci zaškrtl. Souhlas můžeš kdykoli odvolat odkazem v e-mailu nebo napsáním na {email}; nepotvrzenou přihlášku na čekací listinu mažeme po 30 dnech.",
             "p4": "Ze zákonné povinnosti: účetní a daňové doklady o platbách."
           },
           "usage": {
             "p1": "Abychom věděli, které části {appName} pomáhají a co je potřeba zlepšit, zaznamenáváme, jak se aplikace používá: které obrazovky otevřeš, jaké akce uděláš (třeba založení milníku nebo přesun kontaktu), jak dlouho v aplikaci jsi, z jakého typu zařízení a jaké chyby nastaly.",
-            "p2": "Ukládáme jen typy akcí, počty, časy a stavy, nikdy obsah: žádná jména, telefony, e-maily, názvy firem, obchodů ani úkolů a žádné zprávy Jarvisovi. Záznamy jsou spojené s tvým účtem, vidí je jen provozovatel {appName} a nepoužíváme k tomu žádné sledovací cookies ani služby třetích stran.",
+            "p2": "Ukládáme jen typy akcí, počty, časy a stavy, nikdy obsah: žádná jména, telefony, e-maily, názvy firem, obchodů ani úkolů a žádné zprávy Gradymu. Záznamy jsou spojené s tvým účtem, vidí je jen provozovatel {appName} a nepoužíváme k tomu žádné sledovací cookies ani služby třetích stran.",
             "p3": "Záznamy o používání a relacích se automaticky mažou po 13 měsících. Po smazání účtu zůstanou jen anonymně, bez vazby na tebe."
           },
           "ai": {
-            "p1": "Když použiješ Jarvise, pošleme tvou zprávu a potřebný kontext z tvých dat (například souhrn situace, poznámky nebo přiložený soubor) společnosti Anthropic, která provozuje jazykový model. Stejně tak u ranního shrnutí a návrhů, které Jarvis připravuje sám.",
+            "p1": "Když použiješ Gradyho, pošleme tvou zprávu a potřebný kontext z tvých dat (například souhrn situace, poznámky nebo přiložený soubor) společnosti Anthropic, která provozuje jazykový model. Stejně tak u ranního shrnutí a návrhů, které Grady připravuje sám.",
             "p2": "Anthropic údaje poslané přes API nepoužívá k trénování svých modelů a uchovává je jen omezenou dobu podle svých obchodních podmínek. Ani my tvoje data k trénování umělé inteligence nepoužíváme.",
             "p3": "Při generování kontaktů posíláme do Google Maps Platform jen hledaný obor a místo, žádné tvoje údaje."
           },
@@ -5306,7 +5311,7 @@
             "p1": "Údaje za nás zpracovávají tito zpracovatelé, každý jen v rozsahu, který pro svou práci potřebuje:",
             "p2": "Supabase: databáze, přihlašování a úložiště souborů. Data jsou uložená v EU (Irsko).",
             "p3": "Vercel: provoz webu a aplikace. Serverová část běží v EU (Frankfurt), statické části webu se doručují přes celosvětovou síť.",
-            "p4": "Anthropic: jazykový model pro Jarvise. USA.",
+            "p4": "Anthropic: jazykový model pro Gradyho. USA.",
             "p5": "Google Maps Platform: vyhledávání firem při generování kontaktů. Google, celosvětově včetně USA.",
             "p6": "Resend: odesílání e-mailů (obnova hesla, faktury, oznámení). USA.",
             "p7": "Stripe: platební brána pro předplatné (platba kartou, doklady o platbách, správa platební metody). Stripe Payments Europe, Irsko, s předáním do USA.",
@@ -5397,10 +5402,10 @@
     "trialNote": "Všechny tarify začínají 14 dny zdarma. Bez karty.",
     "features": {
       "allSections": "Všechny sekce aplikace",
-      "jarvis": "Asistent Jarvis",
+      "grady": "Asistent Grady",
       "generatedContacts": "{count} vygenerovaných kontaktů měsíčně",
       "meetingAnalysis": "AI rozbor schůzek",
-      "jarvisFiles": "Soubory do Jarvise",
+      "gradyFiles": "Soubory do Gradyho",
       "calendarSync": "Synchronizace kalendáře",
       "prioritySupport": "Přednostní podpora",
       "everythingInPro": "Vše z Pro",
@@ -5451,7 +5456,7 @@
       "activation": "Aktivace",
       "retention": "Retence",
       "features": "Funkce",
-      "ai": "AI a Jarvis",
+      "ai": "AI a Grady",
       "game": "Hra",
       "costs": "Náklady",
       "health": "Zdraví",
@@ -5547,7 +5552,7 @@
         "description": "Krok, na kterém lidé onboarding přeskočili."
       },
       "tour_outcome": {
-        "name": "Jarvisův průvodce",
+        "name": "Gradyho průvodce",
         "description": "Dokončen nebo přeskočen."
       },
       "tour_skipped_at": {
@@ -5623,7 +5628,7 @@
         "description": "Uživatelé, kteří aplikaci otevřeli z odkazu v e-mailu."
       },
       "returns_from_jarvis": {
-        "name": "Reakce na Jarvisovu bublinu",
+        "name": "Reakce na Gradyho bublinu",
         "description": "Uživatelé podle reakce na proaktivní bublinu."
       },
       "feature_adoption": {
@@ -5668,7 +5673,7 @@
       },
       "milestone_reviews": {
         "name": "AI hodnocení milníku",
-        "description": "Vyžádaná hodnocení milníku od Jarvise."
+        "description": "Vyžádaná hodnocení milníku od Gradyho."
       },
       "deals_created": {
         "name": "Vytvořené obchody",
@@ -5880,7 +5885,7 @@
       },
       "email_drafts_requested": {
         "name": "Vyžádané AI návrhy",
-        "description": "Návrhy e-mailu vyžádané od Jarvise."
+        "description": "Návrhy e-mailu vyžádané od Gradyho."
       },
       "email_drafts_used": {
         "name": "Použité AI návrhy",
@@ -5903,7 +5908,7 @@
         "description": "Zapnuté a vypnuté zvuky."
       },
       "settings_jarvis_proactive": {
-        "name": "Jarvisova iniciativa",
+        "name": "Gradyho iniciativa",
         "description": "Zapnutá a vypnutá proaktivní ozvání."
       },
       "ai_calls": {
@@ -5935,7 +5940,7 @@
         "description": "10 účtů s nejvyšším nákladem AI, jen identifikátor a plán."
       },
       "jarvis_conversations": {
-        "name": "Konverzace s Jarvisem",
+        "name": "Konverzace s Gradym",
         "description": "Konverzace, zprávy na uživatele a medián zpráv v konverzaci."
       },
       "ai_errors": {
@@ -5964,7 +5969,7 @@
       },
       "jarvis_auto_actions": {
         "name": "Automatické akce",
-        "description": "Co Jarvis udělal sám."
+        "description": "Co Grady udělal sám."
       },
       "jarvis_auto_actions_undone": {
         "name": "Vrácené akce",
@@ -5976,7 +5981,7 @@
       },
       "ai_cap_users": {
         "name": "Na stropu AI",
-        "description": "Podíl uživatelů Jarvise, kteří narazili na měsíční strop."
+        "description": "Podíl uživatelů Gradyho, kteří narazili na měsíční strop."
       },
       "users_by_mode": {
         "name": "Hra / běžný režim",
@@ -6184,7 +6189,7 @@
         "activation": "Aktivace",
         "retention": "Retence",
         "features": "Funkce",
-        "ai": "AI a Jarvis",
+        "ai": "AI a Grady",
         "game": "Hra",
         "costs": "Náklady",
         "health": "Zdraví",
@@ -6340,10 +6345,10 @@
       }
     },
     "ai": {
-      "title": "AI a Jarvis",
-      "description": "Volání, tokeny, náklady, latence a jak lidé reagují na Jarvise.",
+      "title": "AI a Grady",
+      "description": "Volání, tokeny, náklady, latence a jak lidé reagují na Gradyho.",
       "budget": {
-        "title": "Rozpočet Jarvise",
+        "title": "Rozpočet Gradyho",
         "description": "Útrata všech účtů včetně interních za období zvolené nahoře proti měsíčnímu stropu přepočtenému na toto období (u 30 dní kalendářní měsíc v UTC, jak ho hlídá kontrola před voláním modelu). Stav a odhad jsou vždy za tento měsíc.",
         "meter": "Využití rozpočtu",
         "projected": "Odhad do konce měsíce",
@@ -6354,7 +6359,7 @@
           "paused": "Pauza"
         },
         "statusHint": {
-          "ok": "Jarvis volá model jako obvykle.",
+          "ok": "Grady volá model jako obvykle.",
           "near": "Nad prahem upozornění: majitel dostává jeden e-mail denně.",
           "paused": "Na 100 %: do konce měsíce žádné volání modelu, hlídání běží jen z pravidel."
         },
@@ -6387,7 +6392,7 @@
       "caps": {
         "title": "Strop využití AI",
         "description": "Změna platí do minuty, bez nového nasazení. Každá změna se zapíše do auditu s původní a novou hodnotou.",
-        "defaults": "Zatím nic uloženého, platí výchozí hodnoty: JARVIS_MONTHLY_BUDGET_USD ({budget}), bez stropu na uživatele, upozornění na {percent} %.",
+        "defaults": "Zatím nic uloženého, platí výchozí hodnoty: GRADY_MONTHLY_BUDGET_USD ({budget}), bez stropu na uživatele, upozornění na {percent} %.",
         "monthlyLabel": "Celkový měsíční strop pro celou aplikaci (USD)",
         "monthlyHint": "Všechny účty dohromady, včetně interních. 0 zastaví každé volání modelu. Nejvýš {max}.",
         "perUserLabel": "Měsíční strop na jednoho uživatele (USD)",
@@ -6425,7 +6430,7 @@
           "failed": "Změnu se nepodařilo uložit. Zkus to znovu."
         },
         "sectionTitle": "Stropy",
-        "sectionDescription": "Změna stropu mění, kolik Jarvis smí utratit, od příští minuty.",
+        "sectionDescription": "Změna stropu mění, kolik Grady smí utratit, od příští minuty.",
         "periodNote": "Pole jsou měsíční stropy. Ukazatele pod nimi porovnávají útratu {period} se stropy přepočtenými na toto období (měsíční strop / počet dní měsíce za každý den)."
       },
       "period": {
@@ -6438,14 +6443,14 @@
       },
       "connection": {
         "title": "Vyzkoušet připojení",
-        "description": "Pošle Jarvisovi krátký dotaz a ukáže, jestli odpověděl, za jak dlouho a kolik to stálo. Počítá se do útraty.",
+        "description": "Pošle Gradymu krátký dotaz a ukáže, jestli odpověděl, za jak dlouho a kolik to stálo. Počítá se do útraty.",
         "test": "Vyzkoušet připojení",
-        "testing": "Ptám se Jarvise…",
-        "ok": "Jarvis odpověděl",
+        "testing": "Ptám se Gradyho…",
+        "ok": "Grady odpověděl",
         "duration": "Za {seconds} s",
         "cost": "Stálo to {cost}",
         "model": "Model {model}",
-        "failed": "Jarvis neodpověděl",
+        "failed": "Grady neodpověděl",
         "failedAfter": "Chyba přišla za {seconds} s."
       },
       "tabs": "Části",
@@ -6454,15 +6459,15 @@
         "rules": "Pravidla"
       },
       "rules": {
-        "title": "Pravidla Jarvise",
-        "description": "Kdy Jarvis sám vyskočí, s čím a co mu říkáš ty. Platí pro celou aplikaci a projeví se do minuty. Celý popis je v docs/jarvis-pravidla.md.",
+        "title": "Pravidla Gradyho",
+        "description": "Kdy Grady sám vyskočí, s čím a co mu říkáš ty. Platí pro celou aplikaci a projeví se do minuty. Celý popis je v docs/grady-pravidla.md.",
         "defaults": "Zatím nic uloženého: ukazují se výchozí hodnoty aplikace.",
         "typesTitle": "Co smí sám vyskočit",
-        "typesHint": "Vypnutý typ už sám nevyskočí. V panelu Jarvise zůstává dál, souhrn dne se nemění.",
+        "typesHint": "Vypnutý typ už sám nevyskočí. V panelu Gradyho zůstává dál, souhrn dne se nemění.",
         "types": {
           "insight": {
             "label": "Postřehy z hlídání",
-            "description": "Co Jarvis sám napíše při denním hlídání příležitostí (model)."
+            "description": "Co Grady sám napíše při denním hlídání příležitostí (model)."
           },
           "stalledDeal": {
             "label": "Obchod stojí",
@@ -6533,30 +6538,30 @@
           }
         },
         "instructions": {
-          "label": "Pokyny pro Jarvise",
-          "hint": "Tvůj text jde do systémového promptu chatu i souhrnů jako blok „Pokyny majitele aplikace“ hned za povahu Jarvise. Bezpečnostní pravidla (nevymýšlet čísla, poznámky jsou data, žádné osobní údaje ven) mají vždy přednost.",
+          "label": "Pokyny pro Gradyho",
+          "hint": "Tvůj text jde do systémového promptu chatu i souhrnů jako blok „Pokyny majitele aplikace“ hned za povahu Gradyho. Bezpečnostní pravidla (nevymýšlet čísla, poznámky jsou data, žádné osobní údaje ven) mají vždy přednost.",
           "placeholder": "Např. Mluv stručně a tykej. U obchodů vždy navrhni jeden konkrétní další krok.",
           "counter": "{used} / {max} znaků",
           "length": "{count, plural, =0 {prázdné} one {# znak} few {# znaky} other {# znaků}}"
         },
         "test": {
           "title": "Vyzkoušet",
-          "description": "Pošle Jarvisovi zprávu s pokyny tak, jak jsou teď v poli (i neuložené), a ukáže odpověď. Bez dat uživatele, počítá se do útraty.",
+          "description": "Pošle Gradymu zprávu s pokyny tak, jak jsou teď v poli (i neuložené), a ukáže odpověď. Bez dat uživatele, počítá se do útraty.",
           "messageLabel": "Testovací zpráva",
           "defaultMessage": "Mám tři rozjednané obchody a nevím, kterým začít. Co mi radíš?",
           "run": "Vyzkoušet",
-          "running": "Jarvis píše…",
+          "running": "Grady píše…",
           "meta": "Za {seconds} s · {cost} · {model}",
-          "failed": "Jarvis neodpověděl",
+          "failed": "Grady neodpověděl",
           "invalid": "Pokyny jsou delší než povolených 2 000 znaků.",
-          "limitReached": "Tvůj účet má vyčerpaný limit odpovědí Jarvise."
+          "limitReached": "Tvůj účet má vyčerpaný limit odpovědí Gradyho."
         },
         "on": "zapnuto",
         "off": "vypnuto",
         "save": "Uložit pravidla",
         "saved": "Uloženo. Projeví se do minuty.",
         "noChanges": "Nic se nezměnilo.",
-        "confirmTitle": "Uložit pravidla Jarvise?",
+        "confirmTitle": "Uložit pravidla Gradyho?",
         "confirmDescription": "Změna platí hned pro všechny účty.",
         "confirmDefaults": "Uložíš výchozí hodnoty jako první nastavení.",
         "confirm": "Uložit",
@@ -6635,7 +6640,7 @@
     },
     "feedback": {
       "title": "Zpětná vazba",
-      "description": "Hlášení chyb, nápady, spokojenost a jak lidé hodnotí Jarvisovy odpovědi.",
+      "description": "Hlášení chyb, nápady, spokojenost a jak lidé hodnotí Gradyho odpovědi.",
       "answersTitle": "Odpovědi z dotazníku spokojenosti",
       "answersDescription": "Nejnovější odpovědi, ve kterých lidé něco napsali.",
       "noAnswers": "Zatím nikdo nic nenapsal.",
@@ -6643,9 +6648,9 @@
       "liked": "Líbí se",
       "improve": "Vylepšit",
       "ideasTitle": "Nápady",
-      "ideasDescription": "Odeslané přes Jarvise; stav měň podle toho, jak je zpracováváš.",
+      "ideasDescription": "Odeslané přes Gradyho; stav měň podle toho, jak je zpracováváš.",
       "emptyTitle": "Zatím žádné nápady",
-      "emptyDescription": "Nápady, které lidé pošlou Jarvisovi, se zobrazí tady.",
+      "emptyDescription": "Nápady, které lidé pošlou Gradymu, se zobrazí tady.",
       "ideaMeta": "Od {name} · {date}",
       "statusFailed": "Nepodařilo se uložit. Zkus to znovu.",
       "status": {
@@ -6820,7 +6825,7 @@
         "search": "Vyhledávání",
         "email": "E-mail",
         "settings": "Nastavení",
-        "jarvis": "Jarvis",
+        "jarvis": "Grady",
         "game": "Hra",
         "plan": "Tarif",
         "messages": "Zprávy"
@@ -6866,7 +6871,7 @@
       "yes": "Ano",
       "no": "Ne",
       "changesTitle": "Změny účtu",
-      "changesDescription": "Co mění, jak se účet počítá a kolik za něj Jarvis smí utratit. Každá změna se zapíše do auditu.",
+      "changesDescription": "Co mění, jak se účet počítá a kolik za něj Grady smí utratit. Každá změna se zapíše do auditu.",
       "internalTitle": "Interní účet",
       "internalDescription": "Interní účet (majitel, demo, testy) se do metrik nepočítá, dokud ho ovládání nezapne.",
       "subscription": {
@@ -7340,7 +7345,7 @@
         "saved": "Koncept uložen. Web ukazuje pořád zveřejněnou verzi.",
         "noChanges": "Žádné změny k uložení.",
         "discarded": "Koncept zahozen.",
-        "published": "Zveřejněno. Web, aplikace i Jarvis ukazují novou verzi.",
+        "published": "Zveřejněno. Web, aplikace i Grady ukazují novou verzi.",
         "restored": "Verze vrácena a zveřejněna."
       },
       "actions": {
@@ -7359,7 +7364,7 @@
         "prices": "Ceny bez DPH",
         "perWorker": "Cena za pracovníka",
         "limits": "Limity",
-        "limitsHint": "Kontakty a Jarvis jsou limity za den nebo měsíc. Pracovníci a úložiště jsou limity toho, co účet má; prázdné pole = bez limitu. Kdo je nad nižším limitem, má od dalšího dne režim jen pro čtení, nic se nemaže.",
+        "limitsHint": "Kontakty a Grady jsou limity za den nebo měsíc. Pracovníci a úložiště jsou limity toho, co účet má; prázdné pole = bez limitu. Kdo je nad nižším limitem, má od dalšího dne režim jen pro čtení, nic se nemaže.",
         "unlimited": "bez limitu",
         "features": "Vlastnosti na kartě",
         "line": "Řádek {n} ({locale})",
@@ -7388,8 +7393,8 @@
       "limits": {
         "daily_contacts": "Kontakty denně",
         "monthly_contacts": "Kontakty měsíčně",
-        "ai_calls": "Odpovědi Jarvise měsíčně",
-        "ai_files": "Soubory do Jarvise měsíčně",
+        "ai_calls": "Odpovědi Gradyho měsíčně",
+        "ai_files": "Soubory do Gradyho měsíčně",
         "workers": "Pracovníci",
         "storage_mb": "Úložiště (MB)",
         "scheduler_types": "Aktivní typy schůzek (Plánovač)"
@@ -7423,7 +7428,7 @@
       },
       "publishConfirm": {
         "title": "Zveřejnit tarify?",
-        "description": "Tohle se změní na webu, v aplikaci i v Jarvisovi proti zveřejněné verzi:",
+        "description": "Tohle se změní na webu, v aplikaci i v Gradym proti zveřejněné verzi:",
         "confirm": "Zveřejnit"
       },
       "restoreConfirm": {
@@ -8153,8 +8158,8 @@
         "workers": "Pracovníci: máš {used}, tarif dovoluje {allowed}",
         "storage_mb": "Úložiště: máš {used} MB, tarif dovoluje {allowed} MB",
         "monthly_contacts": "Vygenerované kontakty tento měsíc: {used}, tarif dovoluje {allowed}",
-        "ai_calls": "Odpovědi Jarvise tento měsíc: {used}, tarif dovoluje {allowed}",
-        "ai_files": "Soubory pro Jarvise tento měsíc: {used}, tarif dovoluje {allowed}"
+        "ai_calls": "Odpovědi Gradyho tento měsíc: {used}, tarif dovoluje {allowed}",
+        "ai_files": "Soubory pro Gradyho tento měsíc: {used}, tarif dovoluje {allowed}"
       },
       "locksNote": "Nad limitem pracovníků nebo úložiště bude účet od další půlnoci jen pro čtení, dokud se do limitu nevejdeš. Nic se nesmaže.",
       "monthlyNote": "Nad měsíčním limitem už tento měsíc nic nového nepřibude.",
@@ -8430,14 +8435,14 @@
       "calendar": "Kalendář",
       "finance": "Finance",
       "company": "Firma",
-      "jarvis": "Jarvis",
+      "grady": "Grady",
       "end": "Konec"
     },
     "demo": {
       "question": "Co s ukázkovými daty?",
       "deleted": "Smazat",
       "kept": "Nechat si je",
-      "footnote": "Co sis během tutoriálu založil sám, zůstane v obou případech. Ukázková data smažeš i později v Nastavení → Jarvis.",
+      "footnote": "Co sis během tutoriálu založil sám, zůstane v obou případech. Ukázková data smažeš i později v Nastavení → Grady.",
       "note": {
         "intro": "Ukázková poznámka z tutoriálu. Přepiš ji svými slovy.",
         "answers": {
@@ -8533,8 +8538,8 @@
     },
     "endConfirm": {
       "title": "Ukončit tutoriál?",
-      "text": "Kdykoliv si ho pustíš znovu v Nastavení → Jarvis.",
-      "textFull": "Ukázková data můžeš smazat hned, nebo si je nechat a smazat později v Nastavení → Jarvis.",
+      "text": "Kdykoliv si ho pustíš znovu v Nastavení → Grady.",
+      "textFull": "Ukázková data můžeš smazat hned, nebo si je nechat a smazat později v Nastavení → Grady.",
       "back": "Zpět",
       "keep": "Ukončit a nechat data",
       "delete": "Ukončit a smazat data"
@@ -8562,7 +8567,7 @@
       "failed": "Nepodařilo se to spustit. Zkus to prosím znovu.",
       "none": {
         "title": "Přeskočit a pustit se do toho sám",
-        "text": "Tutoriál si pustíš kdykoliv v Nastavení → Jarvis."
+        "text": "Tutoriál si pustíš kdykoliv v Nastavení → Grady."
       },
       "quick": {
         "title": "Rychlá ukázka",
@@ -8572,7 +8577,7 @@
           "1": "Co za tebe hlídám",
           "2": "Jak a kdy se ozvu"
         },
-        "previewAlt": "Náhled rychlé ukázky: zvýrazněná položka v menu a Jarvis, který na ni ukazuje"
+        "previewAlt": "Náhled rychlé ukázky: zvýrazněná položka v menu a Grady, který na ni ukazuje"
       },
       "full": {
         "title": "Úplný tutoriál",
@@ -9345,7 +9350,7 @@
       "noTypes": "Zatím žádný typ schůzky."
     },
     "hint": {
-      "text": "Jarvis: pošli odkaz na rezervaci „{name}“ ({duration})",
+      "text": "Grady: pošli odkaz na rezervaci „{name}“ ({duration})",
       "insert": "Vložit odkaz",
       "copy": "Kopírovat odkaz",
       "copied": "Zkopírováno",

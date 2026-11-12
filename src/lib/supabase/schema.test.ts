@@ -961,7 +961,7 @@ describe("security: server-owned rows and columns", () => {
     user = await createAuthUser();
   });
 
-  it("leaves Jarvis output and unlocks to the server", async () => {
+  it("leaves Grady output and unlocks to the server", async () => {
     await asServer();
     const conversation = (
       await one<{ id: string }>(
@@ -2342,7 +2342,7 @@ describe("audit: moveContact, milestone progress and daily timer totals", () => 
   });
 });
 
-describe("jarvis", () => {
+describe("grady", () => {
   it("keeps conversations to their owner and messages and usage to the server", async () => {
     const user = await createAuthUser();
     const other = await createAuthUser();
@@ -2351,7 +2351,7 @@ describe("jarvis", () => {
     const conversation = await one<{ id: string }>(
       `insert into jarvis_conversations (user_id, title) values ('${user}', 'Plan') returning id`,
     );
-    // Messages and usage are written only by /api/jarvis through the admin client.
+    // Messages and usage are written only by /api/grady through the admin client.
     await expect(
       db.query(
         `insert into jarvis_messages (user_id, conversation_id, role, content)
@@ -2421,7 +2421,7 @@ describe("jarvis", () => {
   });
 });
 
-describe("jarvis extensions", () => {
+describe("grady extensions", () => {
   it("lets the client only mark its own suggestions seen or dismissed", async () => {
     const user = await createAuthUser();
     const other = await createAuthUser();
@@ -2520,13 +2520,13 @@ describe("jarvis extensions", () => {
        values ($1, 'jarvis_message', gen_random_uuid(), $2, 'a.pdf', 'application/pdf', 10, 'Hello')`;
 
     await asUser(user);
-    await expect(db.query(insert, values(user, `${user}/jarvis/a`))).rejects.toThrow(
+    await expect(db.query(insert, values(user, `${user}/grady/a`))).rejects.toThrow(
       /row-level security/,
     );
 
     await asServer();
-    await db.query(insert, values(user, `${user}/jarvis/a`));
-    await expect(db.query(insert, values(user, `${other}/jarvis/b`))).rejects.toThrow(
+    await db.query(insert, values(user, `${user}/grady/a`));
+    await expect(db.query(insert, values(user, `${other}/grady/b`))).rejects.toThrow(
       /attachments_storage_path_owner/,
     );
 

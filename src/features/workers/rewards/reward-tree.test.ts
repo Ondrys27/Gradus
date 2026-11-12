@@ -94,7 +94,7 @@ describe("reward tree", () => {
 });
 
 describe("compiling", () => {
-  it("takes kinds and amounts from the tree and only names and conditions from Jarvis", () => {
+  it("takes kinds and amounts from the tree and only names and conditions from Grady", () => {
     const proposal = compileRewardTree(tree, {
       summary: "Za každý úkol 200 Kč.",
       rules: [
@@ -145,7 +145,7 @@ describe("compiling", () => {
     ]);
   });
 
-  it("works without Jarvis, naming rules by their notes and applying no conditions", () => {
+  it("works without Grady, naming rules by their notes and applying no conditions", () => {
     const proposal = compileRewardTree(tree, null);
     expect(proposal.summary).toBeNull();
     expect(proposal.rules[0].name).toBe("Jen když to stihne do termínu");

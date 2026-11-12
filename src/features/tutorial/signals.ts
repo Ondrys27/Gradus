@@ -1,11 +1,11 @@
 /**
  * What the app tells the tutorial when the user did something no row in the
  * database records on its own: a task moved in the map, a frequency picked in
- * Settings → Jarvis. In memory for the tab; a step that waits on one counts it
+ * Settings → Grady. In memory for the tab; a step that waits on one counts it
  * only when it came after the step began.
  */
 
-export const TUTORIAL_SIGNALS = ["taskMoved", "jarvisFrequency"] as const;
+export const TUTORIAL_SIGNALS = ["taskMoved", "gradyFrequency"] as const;
 export type TutorialSignal = (typeof TUTORIAL_SIGNALS)[number];
 
 const last = new Map<TutorialSignal, number>();

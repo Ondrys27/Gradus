@@ -2,12 +2,12 @@ import { useRef, type ReactNode } from "react";
 import { ArrowLeftIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Jarvis, type JarvisState } from "@/components/jarvis/jarvis";
+import { Grady, type GradyState } from "@/components/grady/grady";
 import { useOverflowBottom } from "@/lib/use-overflow-bottom";
 import { cn } from "@/lib/utils";
 
 /**
- * The layout every onboarding step shares: Jarvis, a title and an optional
+ * The layout every onboarding step shares: Grady, a title and an optional
  * description stay put at the top, the step's own footer of buttons stays
  * put at the bottom (so a step that is saving something can disable just
  * its own "continue"), and only the content between them — a long list of
@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
  * With `onBack`, a quiet Back sits bottom left (below the buttons on a phone).
  */
 export function StepShell({
-  jarvisState = "idle",
+  gradyState = "idle",
   title,
   description,
   children,
@@ -26,7 +26,7 @@ export function StepShell({
   backDisabled = false,
   className,
 }: {
-  jarvisState?: JarvisState;
+  gradyState?: GradyState;
   title: string;
   description?: ReactNode;
   children?: ReactNode;
@@ -43,7 +43,7 @@ export function StepShell({
   return (
     <div className={cn("flex h-full min-h-0 flex-col", className)}>
       <div className="flex shrink-0 flex-col items-center gap-3 pb-4 text-center">
-        <Jarvis variant="head" size={64} state={jarvisState} />
+        <Grady variant="head" size={64} state={gradyState} />
         <h2 className="text-2xl font-bold text-balance text-ink">{title}</h2>
         {description && <p className="max-w-sm text-sm text-pretty text-ink-soft">{description}</p>}
       </div>

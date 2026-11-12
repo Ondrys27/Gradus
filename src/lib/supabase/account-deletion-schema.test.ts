@@ -206,7 +206,7 @@ beforeAll(async () => {
   await asServer();
   for (const [bucket, name] of [
     ["avatars", `${solo}/avatar.webp`],
-    ["attachments", `${solo}/jarvis/a1`],
+    ["attachments", `${solo}/grady/a1`],
     ["attachments", `${solo}/email/e1`],
     ["invoices", `${solo}/inv-1.pdf`],
     ["bug-screenshots", `${solo}/report-1.jpg`],
@@ -269,7 +269,7 @@ describe("account deletion functions", () => {
     expect(files.map((f) => `${f.bucket_id}:${f.name}`).sort()).toEqual(
       [
         `attachments:${solo}/email/e1`,
-        `attachments:${solo}/jarvis/a1`,
+        `attachments:${solo}/grady/a1`,
         `avatars:${solo}/avatar.webp`,
         `bug-screenshots:${solo}/report-1.jpg`,
         `invoices:${solo}/inv-1.pdf`,
@@ -318,7 +318,7 @@ describe("deleting an account", () => {
     }
     // The usage analytics stay, without the person.
     expect(await count(`select 1 from analytics_events`)).toBe(eventsBefore);
-    // Jarvis's budget still counts what the account spent: the credits are gone.
+    // Grady's budget still counts what the account spent: the credits are gone.
     expect(await count(`select 1 from ai_usage where user_id = $1`, [solo])).toBe(0);
     expect(await spend()).toEqual(spendBefore);
   });

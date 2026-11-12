@@ -679,7 +679,7 @@ export function TreeMap({
         </div>
       )}
 
-      {/* Bottom left: the bottom-right corner belongs to Jarvis. */}
+      {/* Bottom left: the bottom-right corner belongs to Grady. */}
       <div
         data-map-ui
         role="toolbar"

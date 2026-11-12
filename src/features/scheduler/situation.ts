@@ -1,6 +1,6 @@
 import { formatDate, formatTime, type FormatSettings } from "@/lib/format";
 
-/** The scheduler in Jarvis's summary of the situation (24.3). */
+/** The scheduler in Grady's summary of the situation (24.3). */
 export type SchedulerSituation = {
   upcoming: { startsAt: Date; guest: string; type: string | null; pending: boolean }[];
   upcomingTotal: number;

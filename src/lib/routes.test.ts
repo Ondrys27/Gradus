@@ -35,6 +35,7 @@ describe("legacy redirects", () => {
     expect(legacyRedirectTarget("/app/pracovnici")).toBe("/app/firma");
     expect(legacyRedirectTarget("/app/pracovnici/abc")).toBe("/app/firma/abc");
     expect(legacyRedirectTarget("/register")).toBe("/en/register");
+    expect(legacyRedirectTarget("/app/nastaveni/jarvis")).toBe("/app/nastaveni/grady");
     expect(legacyRedirectTarget("/milestonesx")).toBeNull();
   });
 

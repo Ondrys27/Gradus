@@ -3,7 +3,7 @@ import type { MapDoc, NoteKind } from "./mindmap/map-doc";
 
 /**
  * The editor's document (Tiptap / ProseMirror JSON) and what is derived from
- * it: the plain text kept for search and Jarvis, the title (its first line)
+ * it: the plain text kept for search and Grady, the title (its first line)
  * and the size limits the database enforces as well.
  */
 
@@ -145,7 +145,7 @@ function paragraph(value: string): DocNode {
 }
 
 /**
- * Plain text (one of Jarvis's answers) as editor blocks: lines starting with
+ * Plain text (one of Grady's answers) as editor blocks: lines starting with
  * "- " or "1. " become lists, other lines paragraphs, empty lines go.
  */
 export function blocksFromPlainText(text: string): DocNode[] {

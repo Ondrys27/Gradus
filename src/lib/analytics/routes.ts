@@ -22,7 +22,7 @@ export const ANALYTICS_SECTIONS = [
   "search",
   "email",
   "settings",
-  "jarvis",
+  "jarvis", // Grady: DB name kept from Jarvis (analytics_event_catalog.area)
   "game",
   "plan",
 ] as const;
@@ -50,7 +50,7 @@ const ROUTE_SECTIONS = {
   "/app/zpravy": "messages",
   "/app/nastaveni": "settings",
   "/app/nastaveni/ucet": "settings",
-  "/app/nastaveni/jarvis": "settings",
+  "/app/nastaveni/grady": "settings",
   "/app/nastaveni/vzhled": "settings",
   "/app/nastaveni/prace": "settings",
   "/app/nastaveni/kalendar": "settings",

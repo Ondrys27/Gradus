@@ -115,6 +115,8 @@ export const LEGACY_REDIRECTS: readonly (readonly [from: string, to: string])[] 
   ["/settings", "/app/nastaveni"],
   // The profile moved into Settings → Account.
   ["/app/profil", "/app/nastaveni/ucet"],
+  // The assistant was called Jarvis until 26.1.
+  ["/app/nastaveni/jarvis", "/app/nastaveni/grady"],
   ["/login", "/en/login"],
   ["/register", "/en/register"],
   ["/forgot-password", "/en/forgot-password"],

@@ -1,12 +1,12 @@
 import { formatCalendarDate, type FormatSettings, type IsoDate } from "@/lib/format";
 import { daysBetween, shiftDay } from "@/lib/analytics/metrics";
-import { budgetStatus, type BudgetStatus } from "@/features/jarvis/budget";
+import { budgetStatus, type BudgetStatus } from "@/features/grady/budget";
 import { MAX_RANGE_DAYS, type AdminView, type DateRange } from "./view-state";
 
 /**
- * Jarvis's budget for the period chosen in the administration's top bar.
+ * Grady's budget for the period chosen in the administration's top bar.
  * The caps stay monthly in the database and the check before a model call
- * (jarvis/server/budget.ts) keeps counting the calendar month; only what the
+ * (grady/server/budget.ts) keeps counting the calendar month; only what the
  * AI page shows is scaled to the period:
  *
  *   - 30 days: the calendar month as the check counts it, the monthly cap;

@@ -88,7 +88,7 @@ describe("a map note's document", () => {
     expect(normalizeUrl("x".repeat(MAP_LIMITS.href + 30))).toBeNull();
   });
 
-  it("writes the indented outline for search and Jarvis, suggestions left out", () => {
+  it("writes the indented outline for search and Grady, suggestions left out", () => {
     const base: MapDoc = {
       type: "mindmap",
       version: 1,
@@ -112,7 +112,7 @@ describe("a map note's document", () => {
         ],
       },
     };
-    const { doc } = insertSuggestions(base, "r", [{ title: "Návrh Jarvise" }]);
+    const { doc } = insertSuggestions(base, "r", [{ title: "Návrh Gradyho" }]);
     const outline = mapToOutline(doc, { mentionText: (kind, label) => `[kontakt: ${label}]` });
     expect(outline).toBe(
       [
@@ -293,13 +293,13 @@ describe("files ↔ map", () => {
     expect(mindTreeToMap(wide).root.children).toHaveLength(MAP_LIMITS.nodes);
   });
 
-  it("keeps one of Jarvis's answers as a new branch with its lines nested", () => {
+  it("keeps one of Grady's answers as a new branch with its lines nested", () => {
     const map = newMapDoc("Konkurence", ["Kavárny"]);
-    const next = appendTextToMap(map, "Od Jarvise, 6. 11. 2026", "- Ceny\n  - espresso 55\n- Otevírací doba");
+    const next = appendTextToMap(map, "Od Gradyho, 6. 11. 2026", "- Ceny\n  - espresso 55\n- Otevírací doba");
     const branch = next.root.children[1];
-    expect(branch.title).toBe("Od Jarvise, 6. 11. 2026");
+    expect(branch.title).toBe("Od Gradyho, 6. 11. 2026");
     expect(shape(branch)).toEqual({
-      "Od Jarvise, 6. 11. 2026": [{ Ceny: ["espresso 55"] }, "Otevírací doba"],
+      "Od Gradyho, 6. 11. 2026": [{ Ceny: ["espresso 55"] }, "Otevírací doba"],
     });
   });
 });

@@ -6,20 +6,20 @@ import { exact, text } from "./support/i18n";
 const L = "cs" as const;
 const t = (key: string, values?: Record<string, string | number>) => text(L, key, values);
 
-/** Same as src/features/jarvis/server/e2e-model.ts: the echo stand-in instead of Anthropic. */
+/** Same as src/features/grady/server/e2e-model.ts: the echo stand-in instead of Anthropic. */
 const E2E_MODEL_HEADER = "x-gradus-e2e-model";
 const E2E_ECHO_NOTES = "echo-notes";
 const OPML = path.resolve(__dirname, "../fixtures/mindmap/sample.opml");
 
-// Nodes glide in and Jarvis's button bobs; with reduced motion both hold still.
+// Nodes glide in and Grady's button bobs; with reduced motion both hold still.
 test.use({ reducedMotion: "reduce" });
 
 /**
  * 20.3: a note that is a mind map. A new map is typed with Tab and Enter,
- * survives a reload, takes an OPML file and reaches Jarvis as its indented
+ * survives a reload, takes an OPML file and reaches Grady as its indented
  * outline inside <user_notes>.
  */
-test("44 · mind map note: Tab/Enter → reload → import OPML → Jarvis sees the outline", async ({
+test("44 · mind map note: Tab/Enter → reload → import OPML → Grady sees the outline", async ({
   page,
   accounts,
 }) => {
@@ -87,17 +87,17 @@ test("44 · mind map note: Tab/Enter → reload → import OPML → Jarvis sees 
     .toContain("  Produkty\n    Vybrat dodavatele\n    Nafotit produkty\n      Pozadí a světlo");
   expect((await stored()).content_text.startsWith(outline)).toBe(true);
 
-  // Jarvis gets the map as its indented outline (the echo model answers with his context).
-  await page.route("**/api/jarvis", async (route) => {
+  // Grady gets the map as its indented outline (the echo model answers with his context).
+  await page.route("**/api/grady", async (route) => {
     if (route.request().method() !== "POST") return route.continue();
     await route.continue({
       headers: { ...route.request().headers(), [E2E_MODEL_HEADER]: E2E_ECHO_NOTES },
     });
   });
-  await page.getByRole("button", { name: exact(L, "jarvis.open") }).click();
-  const panel = page.getByRole("dialog", { name: t("jarvis.title") });
-  await panel.getByRole("textbox", { name: t("jarvis.inputLabel") }).fill("Co mám v mapě Konkurence?");
-  await panel.getByRole("button", { name: exact(L, "jarvis.send") }).click();
+  await page.getByRole("button", { name: exact(L, "grady.open") }).click();
+  const panel = page.getByRole("dialog", { name: t("grady.title") });
+  await panel.getByRole("textbox", { name: t("grady.inputLabel") }).fill("Co mám v mapě Konkurence?");
+  await panel.getByRole("button", { name: exact(L, "grady.send") }).click();
   const answer = panel.locator(".border-teal.whitespace-pre-wrap").last();
   await expect(answer).toContainText("<user_notes>", { timeout: 30_000 });
   await expect(answer).toContainText('kind="mind map"');

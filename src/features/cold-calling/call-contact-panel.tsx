@@ -135,7 +135,7 @@ function PanelBody({
         )}
       </div>
 
-      {/* "Follow up": Jarvis suggests sending the booking link for a first call. */}
+      {/* "Follow up": Grady suggests sending the booking link for a first call. */}
       {tables.find((table) => table.id === entry?.table_id)?.system_key === "follow_up" && (
         <MeetingLinkHint purpose="intro" from="coldCalling" email={data.email} />
       )}

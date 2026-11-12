@@ -7,8 +7,8 @@ import {
   ACCEPTED_EXTENSIONS,
   MAX_FILE_BYTES,
   MAX_FILES_PER_MESSAGE,
-} from "@/features/jarvis/files";
-import { JarvisJobError, postJarvisJob } from "@/features/jarvis/queries";
+} from "@/features/grady/files";
+import { GradyJobError, postGradyJob } from "@/features/grady/queries";
 import { pipelineKeys } from "@/features/pipeline/queries";
 import { createClient } from "@/lib/supabase/client";
 import { sendEmailAction, type SendEmailInput } from "./actions";
@@ -17,7 +17,7 @@ import { track } from "@/lib/analytics/client";
 
 const ATTACHMENTS_BUCKET = "attachments";
 
-/** Same allowances as Jarvis's own files; one set of limits for the whole app. */
+/** Same allowances as Grady's own files; one set of limits for the whole app. */
 export { ACCEPTED_EXTENSIONS, MAX_FILE_BYTES, MAX_FILES_PER_MESSAGE as MAX_EMAIL_ATTACHMENTS };
 
 export type EmailAttachmentRef = { path: string; name: string };
@@ -44,7 +44,7 @@ export type SendEmailArgs = {
   subject: string;
   body: string;
   files: File[];
-  /** The body started from Jarvis's draft. */
+  /** The body started from Grady's draft. */
   usedAiDraft?: boolean;
 };
 
@@ -99,23 +99,23 @@ export function useSendEmail() {
   });
 }
 
-export { JarvisJobError as EmailReplyError };
+export { GradyJobError as EmailReplyError };
 
-/** Jarvis drafts a reply to a pasted-in e-mail; the user edits it before sending. */
+/** Grady drafts a reply to a pasted-in e-mail; the user edits it before sending. */
 export function useSuggestEmailReply() {
   return useMutation({
-    mutationKey: ["jarvis", "email-reply"],
+    mutationKey: ["grady", "email-reply"],
     mutationFn: async (args: {
       contactId: string;
       dealId: string | null;
       receivedEmail: string;
     }) => {
-      const result = await postJarvisJob<{ reply: string }>({ kind: "emailReply", ...args });
+      const result = await postGradyJob<{ reply: string }>({ kind: "emailReply", ...args });
       track("email_draft_requested", {
         ok: result.ok,
         ...(result.ok ? {} : { error_code: result.code }),
       });
-      if (!result.ok) throw new JarvisJobError(result.code);
+      if (!result.ok) throw new GradyJobError(result.code);
       return result.reply;
     },
   });

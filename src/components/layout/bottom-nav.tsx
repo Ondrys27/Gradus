@@ -32,7 +32,7 @@ const accountItems = [
 
 /**
  * Floating glass bar for phones. It stops short of the right edge:
- * the bottom-right corner belongs to Jarvis.
+ * the bottom-right corner belongs to Grady.
  */
 export function BottomNav() {
   const t = useTranslations("nav");

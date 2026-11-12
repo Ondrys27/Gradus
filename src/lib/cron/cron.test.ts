@@ -18,7 +18,7 @@ const { runCron } = await import("@/lib/analytics/instrument");
 
 const ROOT = path.resolve(__dirname, "../../..");
 const CRON_DIR = path.join(ROOT, "src/app/api/cron");
-const JARVIS_ROUTE = path.join(ROOT, "src/app/api/jarvis/route.ts");
+const GRADY_ROUTE = path.join(ROOT, "src/app/api/grady/route.ts");
 
 type CronEntry = { path: string; schedule: string };
 const crons: CronEntry[] = JSON.parse(readFileSync(path.join(ROOT, "vercel.json"), "utf8")).crons;
@@ -85,8 +85,8 @@ describe("cron routes", () => {
     expect(source.match(/export (async )?function (\w+)/g)).toEqual(["export function GET"]);
   });
 
-  it("the Jarvis jobs in /api/jarvis go through runCron too", () => {
-    const source = readFileSync(JARVIS_ROUTE, "utf8");
+  it("the Grady jobs in /api/grady go through runCron too", () => {
+    const source = readFileSync(GRADY_ROUTE, "utf8");
     expect(source).toMatch(/function watch\(request: Request\) \{\s+return runCron\("jarvis_watch"/);
     expect(source).toMatch(
       /function briefing\(request: Request\) \{\s+return runCron\("jarvis_briefing"/,
@@ -99,13 +99,13 @@ describe("vercel.json", () => {
     const paths = crons.map((entry) => entry.path);
     expect(new Set(paths).size).toBe(paths.length);
     for (const dir of cronDirs) expect(paths).toContain(`/api/cron/${dir}`);
-    expect(paths).toContain("/api/jarvis?task=watch");
-    expect(paths).toContain("/api/jarvis?task=briefing");
+    expect(paths).toContain("/api/grady?task=watch");
+    expect(paths).toContain("/api/grady?task=briefing");
   });
 
   it("lists only routes that exist", () => {
     for (const { path: route } of crons) {
-      if (route.startsWith("/api/jarvis?task=")) continue;
+      if (route.startsWith("/api/grady?task=")) continue;
       expect(cronDirs).toContain(route.replace("/api/cron/", ""));
     }
   });

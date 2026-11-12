@@ -1,7 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Billing, PaidPlanKey } from "@/config/pricing";
-import { ownerContact } from "@/features/jarvis/server/feature-requests";
+import { ownerContact } from "@/features/grady/server/feature-requests";
 import { serverTranslator } from "@/i18n/server-translator";
 import { APP_NAME } from "@/lib/constants";
 import { escapeHtml, sendEmail } from "@/lib/email/resend";

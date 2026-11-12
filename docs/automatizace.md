@@ -43,7 +43,7 @@ Jsi seniorní vývojář na projektu Gradus. Dostaneš jeden prompt z plánu př
 
 Pravidla:
 
-1. Nejdřív si přečti CLAUDE.md a drž se ho doslova, hlavně sekce Data, Jarvis a Rozhraní.
+1. Nejdřív si přečti CLAUDE.md a drž se ho doslova, hlavně sekce Data, Grady a Rozhraní.
 2. Než začneš psát kód, promysli postup a rizika. Udělej přesně to, co je v promptu, nic navíc.
 3. U všeho, co se týká databáze, ověř ochranu řádků a že klient nemůže zapsat, co nemá.
 4. Než skončíš, spusť `bun run lint`, `bun run test` a `bun run build` a oprav všechno, dokud neprojdou. Ke klíčové logice přidej Vitest testy.
@@ -172,7 +172,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [ ] STOP | Konec fáze 3. Proklikej všech osm sekcí na počítači i telefonu: milníky s podúkoly a mapou, pipeline, kontakty s tabulkami a přesuny, cold calling s časovačem, kalendář, finance, dashboard. Co nesedí, napiš Claude Code rovnou, pak znovu /pokracuj.
 - [ ] 4.1 | architect | env: ANTHROPIC_API_KEY
 - [ ] 4.2 | architect | env: RESEND_API_KEY
-- [ ] STOP | Konec fáze 4. Vyzkoušej Jarvise: rozhovor, nahrání PDF a obrázku, návrhy v panelu, hodnocení nového milníku, nápad na novou funkci (musí přijít e-mail). Podívej se do Supabase do tabulky ai_usage, jestli se zapisuje spotřeba.
+- [ ] STOP | Konec fáze 4. Vyzkoušej Gradyho: rozhovor, nahrání PDF a obrázku, návrhy v panelu, hodnocení nového milníku, nápad na novou funkci (musí přijít e-mail). Podívej se do Supabase do tabulky ai_usage, jestli se zapisuje spotřeba.
 - [ ] 5.1 | architect |
 - [ ] 5.2 | architect |
 - [ ] 5.3 | builder | env: RESEND_API_KEY

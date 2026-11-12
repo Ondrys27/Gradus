@@ -57,7 +57,7 @@ describe("deleteAccount", () => {
   it("removes the files by bucket in batches, prepares, then deletes the user", async () => {
     const attachments = Array.from({ length: 150 }, (_, i) => ({
       bucket_id: "attachments",
-      name: `${USER.id}/jarvis/${i}`,
+      name: `${USER.id}/grady/${i}`,
     }));
     const fake = fakeAdmin({
       objects: {

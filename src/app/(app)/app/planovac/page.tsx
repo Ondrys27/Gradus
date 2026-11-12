@@ -17,7 +17,7 @@ export default async function SchedulerPage({
   const initialTab = (SCHEDULER_TABS as readonly string[]).includes(String(tab))
     ? (tab as SchedulerTab)
     : "types";
-  // A booking from the host's e-mail or Jarvis opens on the Bookings tab.
+  // A booking from the host's e-mail or Grady opens on the Bookings tab.
   const bookingId =
     typeof booking === "string" && /^[0-9a-f-]{36}$/i.test(booking) ? booking : null;
   return (

@@ -11,7 +11,7 @@ import { useProfile, useSession } from "@/features/account/queries";
 import { useCan } from "@/features/account/workspace-queries";
 import { useFirstActiveMilestone } from "@/features/game/overview-queries";
 import { useAwardXp, useGameState, useIsPlaying } from "@/features/game/queries";
-import { jarvisOverlay, useJarvisOverlay } from "@/features/jarvis/overlay-store";
+import { gradyOverlay, useGradyOverlay } from "@/features/grady/overlay-store";
 import { track } from "@/lib/analytics/client";
 import {
   atStep,
@@ -42,18 +42,18 @@ const TutorialChoice = dynamic(
   { ssr: false },
 );
 
-/** Lets the onboarding wizard and its celebration leave before Jarvis asks. */
+/** Lets the onboarding wizard and its celebration leave before Grady asks. */
 const START_DELAY_MS = 1200;
 
 type Phase = "idle" | "choice" | "resume" | "running";
 
 /**
- * Jarvis's tutorial in the app frame: asks how to start once onboarding is
- * done (a worker on the first visit) and whenever Settings → Jarvis or his
+ * Grady's tutorial in the app frame: asks how to start once onboarding is
+ * done (a worker on the first visit) and whenever Settings → Grady or his
  * panel asks for it, runs the chosen one, stores the progress after every
  * step (profiles.tutorial) and picks it up again after a reload (at once) or
- * later (Jarvis offers to go on). Any end stamps tour_completed_at, which the
- * rest of Jarvis waits for.
+ * later (Grady offers to go on). Any end stamps tour_completed_at, which the
+ * rest of Grady waits for.
  */
 export function TutorialHost() {
   const t = useTranslations("tutorial");
@@ -68,7 +68,7 @@ export function TutorialHost() {
   const deleteDemo = useDeleteDemo();
   const award = useAwardXp();
   const celebrating = useCelebrationOpen();
-  const request = useJarvisOverlay((state) => state.tutorialRequest);
+  const request = useGradyOverlay((state) => state.tutorialRequest);
   const canWrite = useCan("milestones", "edit");
   const { items } = useNavItems();
 
@@ -115,7 +115,7 @@ export function TutorialHost() {
     return () => window.clearTimeout(timer);
   }, [due, celebrating, phase]);
 
-  // Asked for again (Settings → Jarvis, the panel).
+  // Asked for again (Settings → Grady, the panel).
   useEffect(() => {
     if (request === handledRequest.current) return;
     handledRequest.current = request;
@@ -137,8 +137,8 @@ export function TutorialHost() {
   }, [ready, stored, phase, worker, playing, access]);
 
   useEffect(() => {
-    jarvisOverlay.setTourActive(phase !== "idle");
-    return () => jarvisOverlay.setTourActive(false);
+    gradyOverlay.setTourActive(phase !== "idle");
+    return () => gradyOverlay.setTourActive(false);
   }, [phase]);
 
   // Every step shown is stored and counted.

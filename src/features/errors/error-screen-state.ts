@@ -4,7 +4,7 @@ import { useEffect, useSyncExternalStore } from "react";
 
 /**
  * Whether an error page is on screen. The app's frame (outside the error
- * boundary) reads it to keep Jarvis away while the person deals with the error.
+ * boundary) reads it to keep Grady away while the person deals with the error.
  */
 
 let shown = 0;
@@ -42,7 +42,7 @@ export function useErrorScreenShown(): boolean {
 }
 
 /**
- * For an overlay outside the error boundary (Jarvis's panel, the search
+ * For an overlay outside the error boundary (Grady's panel, the search
  * window, a menu, a sheet): closes it as soon as an error page is shown, so
  * nothing stays over the error page or keeps its buttons from a click.
  * `close` must be stable (a state setter or a useCallback). Returns whether

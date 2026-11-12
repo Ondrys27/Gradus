@@ -1,7 +1,7 @@
 // @vitest-environment node
 //
 // Links between notes and tasks or milestones, the prepared outline on path
-// steps and what Jarvis may read of the notes, on the real migrations (PGlite).
+// steps and what Grady may read of the notes, on the real migrations (PGlite).
 
 import { PGlite } from "@electric-sql/pglite";
 import { readFileSync, readdirSync } from "node:fs";
@@ -50,7 +50,7 @@ alter default privileges in schema public grant all on sequences to authenticate
 
 
 type Row = Record<string, unknown>;
-type JarvisNote = {
+type GradyNote = {
   id: string;
   title: string;
   pinned: boolean;
@@ -115,9 +115,9 @@ async function link(uid: string, note: string, target: { task?: string; mileston
     await asServer();
   }
 }
-async function jarvisNotes(uid: string, query: string | null) {
+async function gradyNotes(uid: string, query: string | null) {
   await asUser(uid);
-  const result = await rows<JarvisNote>(`select * from jarvis_notes($1)`, [query]);
+  const result = await rows<GradyNote>(`select * from jarvis_notes($1)`, [query]);
   await asServer();
   return result;
 }
@@ -298,7 +298,7 @@ describe("jarvis_notes", () => {
     await link(user, linked.id, { task: task.id });
     await link(user, doneLink.id, { task: doneTask.id });
 
-    const notes = await jarvisNotes(user, "Kolik bere Šťastná za espresso?");
+    const notes = await gradyNotes(user, "Kolik bere Šťastná za espresso?");
     const byId = new Map(notes.map((n) => [n.id, n]));
     expect(notes).toHaveLength(5);
     expect(notes.every((n) => n.recent)).toBe(true);
@@ -326,7 +326,7 @@ describe("jarvis_notes", () => {
     await db.query(`update milestones set status = 'completed' where id = $1`, [finished.id]);
     await db.query(`update notes set deleted_at = now() where id = $1`, [trashed.id]);
 
-    const notes = await jarvisNotes(user, null);
+    const notes = await gradyNotes(user, null);
     expect(notes.map((n) => n.title).sort()).toEqual(["Hotový plán", "Plán"]);
     expect(notes.find((n) => n.id === open.id)?.links).toEqual([
       { kind: "milestone", title: "Rozjezd" },
@@ -338,7 +338,7 @@ describe("jarvis_notes", () => {
     const user = await createAuthUser();
     for (let i = 0; i < 55; i += 1) await addNote(user, `Poznámka ${i}`, `obsah číslo ${i}`);
     await addNote(user, "Dlouhá", "x".repeat(20_000), true);
-    const notes = await jarvisNotes(user, "obsah");
+    const notes = await gradyNotes(user, "obsah");
     expect(notes.filter((n) => n.recent)).toHaveLength(50);
     expect(notes.filter((n) => n.match_rank !== null)).toHaveLength(3);
     const long = notes.find((n) => n.title === "Dlouhá");
@@ -347,9 +347,9 @@ describe("jarvis_notes", () => {
 
   it("returns nothing of another account and nothing to a worker from the owner", async () => {
     await addNote(owner, "Tajná strategie", "jen pro majitele", true);
-    const theirs = await jarvisNotes(stranger, "strategie");
+    const theirs = await gradyNotes(stranger, "strategie");
     expect(theirs.some((n) => n.title === "Tajná strategie")).toBe(false);
-    const worker = await jarvisNotes(workerUser, "strategie");
+    const worker = await gradyNotes(workerUser, "strategie");
     expect(worker.some((n) => n.title === "Tajná strategie")).toBe(false);
     await db.exec(`select set_config('request.jwt.claim.sub', '', false); set role anon;`);
     await expect(db.query(`select * from jarvis_notes('x')`)).rejects.toThrow(

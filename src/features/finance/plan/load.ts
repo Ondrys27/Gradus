@@ -8,7 +8,7 @@ import { monthSpan, type PlanMonthKey } from "./weeks";
 /**
  * Reading the plan with the caller's own client (browser or server): row
  * level security decides what they see, every query is limited to the space
- * and the month. Shared by the Month view and Jarvis.
+ * and the month. Shared by the Month view and Grady.
  */
 
 type Client = SupabaseClient<Database>;

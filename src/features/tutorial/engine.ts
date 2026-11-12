@@ -10,12 +10,12 @@ import type {
 /**
  * The tutorial's rules, without React: which steps this account gets now,
  * where a tutorial picks up again after a reload or the next day, when the
- * next step may be taken, when Jarvis gives a hint and what is stored.
+ * next step may be taken, when Grady gives a hint and what is stored.
  */
 
 /** A hands-on step gets its hint after this long without activity. */
 export const HINT_AFTER_MS = 30_000;
-/** Back within this long (a reload, a moment away): the tutorial just goes on; later Jarvis asks. */
+/** Back within this long (a reload, a moment away): the tutorial just goes on; later Grady asks. */
 export const RESUME_DIRECTLY_MS = 10 * 60_000;
 /** How often a hands-on step looks whether it is done (besides after every change the app saves). */
 export const CHECK_INTERVAL_MS = 3_000;
@@ -107,7 +107,7 @@ export function isRunning(state: TutorialState | null): state is TutorialState &
   return !!state && state.mode !== "none" && !state.finished_at && !!state.started_at;
 }
 
-/** After a reload it simply goes on; after a longer while Jarvis offers to go on. */
+/** After a reload it simply goes on; after a longer while Grady offers to go on. */
 export function resumeHow(state: TutorialState, now: Date): "direct" | "offer" {
   const last = Date.parse(state.updated_at ?? state.started_at ?? "");
   if (!Number.isFinite(last)) return "offer";
@@ -140,13 +140,13 @@ export function canAdvance(step: TutorialStep, passed: boolean): boolean {
   return step.action === "look" || passed;
 }
 
-/** Jarvis gives the hint of a hands-on step after a while without activity. */
+/** Grady gives the hint of a hands-on step after a while without activity. */
 export function hintDue(step: TutorialStep, passed: boolean, idleSince: number, now: number) {
   return step.action === "do" && !passed && now - idleSince >= HINT_AFTER_MS;
 }
 
 /**
- * Whether Jarvis asks how to start: once onboarding is done (a worker on the
+ * Whether Grady asks how to start: once onboarding is done (a worker on the
  * first visit), until a choice is stored or the former tour was walked.
  */
 export function choiceDue(input: {

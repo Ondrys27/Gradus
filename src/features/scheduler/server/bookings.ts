@@ -58,7 +58,7 @@ import {
  * change is one database function (scheduler_*: the rules under the host's
  * lock); around it this file writes what follows: the contact, the meeting
  * in the calendar and the deal (scheduler_booking_effects), the e-mails with
- * the .ics, the scheduled reminders and Jarvis's bubble for the host.
+ * the .ics, the scheduled reminders and Grady's bubble for the host.
  *
  * Admin client throughout: the guest has no session, and the host's actions
  * reach this only after the caller checked the session (booking-actions.ts).
@@ -517,10 +517,10 @@ export async function scheduleDueReminders(admin: Admin, origin: string, now = D
 }
 
 // ---------------------------------------------------------------------------
-// Jarvis's bubble for the host
+// Grady's bubble for the host
 // ---------------------------------------------------------------------------
 
-async function tellJarvis(admin: Admin, ctx: BookingContext) {
+async function tellGrady(admin: Admin, ctx: BookingContext) {
   const { booking } = ctx;
   if (!booking.host_user_id || !["pending", "confirmed"].includes(booking.status)) return;
   const type = booking.status === "pending" ? "bookingPending" : "bookingNew";
@@ -542,7 +542,7 @@ async function tellJarvis(admin: Admin, ctx: BookingContext) {
     },
     { onConflict: "user_id,dedupe_key", ignoreDuplicates: true },
   );
-  if (error) log("jarvis bubble failed", error);
+  if (error) log("grady bubble failed", error);
 }
 
 // ---------------------------------------------------------------------------
@@ -679,7 +679,7 @@ export async function bookHold(
     await mailSafely("guest pending", () => emailGuest(ctx, "pending", { ics: "TENTATIVE" }));
     await mailSafely("host approval", () => emailHost(ctx, "approval"));
   }
-  await tellJarvis(admin, ctx);
+  await tellGrady(admin, ctx);
   await track(
     "booking_created",
     { status, duration: Math.min(480, type.duration_min) },

@@ -10,7 +10,7 @@ import { RuleText } from "./rule-text";
 
 type Props = {
   proposal: RewardProposal | null;
-  /** Notes that will not be applied because the rules were set up without Jarvis. */
+  /** Notes that will not be applied because the rules were set up without Grady. */
   droppedNotes: string[];
   workerNames: Map<string, string>;
   pending: boolean;
@@ -19,7 +19,7 @@ type Props = {
   onClose: () => void;
 };
 
-/** What will run: Jarvis's summary, the rules in words, and what could not be set. */
+/** What will run: Grady's summary, the rules in words, and what could not be set. */
 export function ProposalDialog({
   proposal,
   droppedNotes,

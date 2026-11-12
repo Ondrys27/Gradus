@@ -378,7 +378,7 @@ export type CreateNoteInput = {
     | "task"
     | "milestone"
     | "deal"
-    | "jarvis"
+    | "jarvis" // from Grady's answer: DB name kept from Jarvis (note_created.where)
     | "convert";
   template?: { key: NoteTemplateKey; industry: IndustryKey | null };
   /** A note made from a file or from another note; by default blank or template. */
@@ -557,7 +557,7 @@ export function useRemoveBlankNote() {
 
 /**
  * Adds a small heading and blocks at the end of an existing note (one of
- * Jarvis's answers), through the autosave like any edit. An open editor of
+ * Grady's answers), through the autosave like any edit. An open editor of
  * the note takes the new text over, so its next keystroke keeps it.
  */
 export function useAppendToNote() {

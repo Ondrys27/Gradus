@@ -236,7 +236,7 @@ export function MapNoteEditor({ note, readOnly, autoFocus, isPhone, actions, bac
     };
   }, [note.id, saver]);
 
-  // A branch added from outside (one of Jarvis's answers) shows here too.
+  // A branch added from outside (one of Grady's answers) shows here too.
   useEffect(() => {
     const onReplaced = (event: Event) => {
       const detail = (event as CustomEvent<{ id: string; content: unknown }>).detail;

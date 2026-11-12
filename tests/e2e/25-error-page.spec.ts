@@ -7,7 +7,7 @@ import { totp } from "./support/totp";
 /**
  * The error page (step 15.2): /app/test-chyby crashes on purpose for test
  * accounts. The page apologises, shows a code (copied with one click), has no
- * Jarvis, and "Send feedback" stores one report in bug_reports under that
+ * Grady, and "Send feedback" stores one report in bug_reports under that
  * code (a second click sends nothing). The same code is in the client_error
  * event, and the administration finds the report by it.
  */
@@ -64,7 +64,7 @@ test("25 · a crash shows the error page, and its feedback is found by the code"
   await expect(page.getByRole("heading", { name: exact(L, "errorPage.title") })).toBeVisible();
   const code = (await page.getByTestId("error-code").textContent())?.trim() ?? "";
   expect(code).toMatch(/^GR-[A-Z0-9]{6}$/);
-  await expect(page.getByRole("button", { name: within(L, "jarvis.open") })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: within(L, "grady.open") })).toHaveCount(0);
   await expect(page.getByRole("link", { name: exact(L, "errorPage.home.app") })).toBeVisible();
 
   // Copy puts the code on the clipboard.
@@ -139,10 +139,10 @@ test("25 · a crash shows the error page, and its feedback is found by the code"
     )
     .toBe(true);
 
-  // Back to the dashboard: Jarvis is there again.
+  // Back to the dashboard: Grady is there again.
   await page.getByRole("link", { name: exact(L, "errorPage.home.app") }).click();
   await expect(page).toHaveURL(/\/app$/);
-  await expect(page.getByRole("button", { name: within(L, "jarvis.open") })).toBeVisible();
+  await expect(page.getByRole("button", { name: within(L, "grady.open") })).toBeVisible();
   dropExpectedCrashErrors(consoleErrors);
 
   // The administration finds the report by its code (internal accounts' too).
@@ -200,7 +200,7 @@ for (const viewport of [
   { width: 1440, height: 900 },
   { width: 390, height: 844 },
 ]) {
-  test(`25 · with Jarvis open, the error page takes the first click (${viewport.width} px)`, async ({
+  test(`25 · with Grady open, the error page takes the first click (${viewport.width} px)`, async ({
     page,
     accounts,
     consoleErrors,
@@ -210,17 +210,17 @@ for (const viewport of [
     await signIn(page, account);
     await page.goto(`${CRASH_PATH}?later=1`);
 
-    // Jarvis is open when the page crashes.
-    const openJarvis = page.getByRole("button", { name: within(L, "jarvis.open") });
-    await openJarvis.click();
-    const panel = page.getByRole("dialog", { name: exact(L, "jarvis.title") });
+    // Grady is open when the page crashes.
+    const openGrady = page.getByRole("button", { name: within(L, "grady.open") });
+    await openGrady.click();
+    const panel = page.getByRole("dialog", { name: exact(L, "grady.title") });
     await expect(panel).toBeVisible();
     await page.evaluate((name) => window.dispatchEvent(new Event(name)), CRASH_EVENT);
 
-    // The error page is on top; Jarvis's panel and button are gone.
+    // The error page is on top; Grady's panel and button are gone.
     await expect(page.getByRole("heading", { name: exact(L, "errorPage.title") })).toBeVisible();
     await expect(panel).toHaveCount(0);
-    await expect(openJarvis).toHaveCount(0);
+    await expect(openGrady).toHaveCount(0);
 
     // Copy: one click puts the code on the clipboard.
     const code = (await page.getByTestId("error-code").textContent())?.trim() ?? "";
@@ -234,10 +234,10 @@ for (const viewport of [
     await clickOnce(page, page.getByRole("button", { name: exact(L, "errorPage.feedback") }));
     await expect(page.getByLabel(text(L, "errorPage.feedbackLabel"))).toBeVisible();
 
-    // Try again: one click brings the page back, with Jarvis's button and the panel closed.
+    // Try again: one click brings the page back, with Grady's button and the panel closed.
     await clickOnce(page, page.getByRole("button", { name: exact(L, "errorPage.retry") }));
     await expect(page.getByRole("heading", { name: exact(L, "errorPage.title") })).toHaveCount(0);
-    await expect(openJarvis).toBeVisible();
+    await expect(openGrady).toBeVisible();
     await expect(panel).toHaveCount(0);
     dropExpectedCrashErrors(consoleErrors);
   });

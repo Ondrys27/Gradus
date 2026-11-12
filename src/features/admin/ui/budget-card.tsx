@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { StatusPill } from "@/components/ui/status-pill";
 import type { Tone } from "@/components/ui/tone";
-import type { BudgetSnapshot, BudgetStatus } from "@/features/jarvis/budget";
+import type { BudgetSnapshot, BudgetStatus } from "@/features/grady/budget";
 import { formatNumber, formatUsd } from "@/lib/format";
 import { describePeriod, periodFigures, type BudgetPeriod } from "../ai-budget-period";
 import { ADMIN_FORMAT_SETTINGS } from "../format-metric";
@@ -15,8 +15,8 @@ const BAR_TONE = { ok: "progress", near: "reward", paused: "danger" } as const;
 const usd = (value: number) => formatUsd(value, ADMIN_FORMAT_SETTINGS);
 
 /**
- * Jarvis's spend in the period of the top bar against the monthly cap scaled
- * to it, the monthly cap as the anchor, this month's pace and whether Jarvis
+ * Grady's spend in the period of the top bar against the monthly cap scaled
+ * to it, the monthly cap as the anchor, this month's pace and whether Grady
  * is paused right now (the status is always the calendar month the check counts).
  */
 export async function BudgetCard({

@@ -26,14 +26,14 @@ describe("settings catalog", () => {
   });
 
   it("builds deep links from elsewhere in the app by id", () => {
-    expect(settingsHref("jarvisFrequency")).toBe(
-      "/app/nastaveni/jarvis?focus=settings-jarvis-frequency",
+    expect(settingsHref("gradyFrequency")).toBe(
+      "/app/nastaveni/grady?focus=settings-grady-frequency",
     );
     expect(settingsHref("country")).toBe("/app/nastaveni/vzhled?focus=settings-country");
   });
 
-  it("has no Integrations item: the Jarvis test lives in the administration", () => {
-    expect(SETTINGS_ITEMS.some((item) => /integration|ping|jarvisTest/i.test(item.id))).toBe(false);
+  it("has no Integrations item: the Grady test lives in the administration", () => {
+    expect(SETTINGS_ITEMS.some((item) => /integration|ping|gradyTest/i.test(item.id))).toBe(false);
   });
 
   it("shows a worker neither the subscription nor the owner's business settings", () => {
@@ -42,7 +42,7 @@ describe("settings catalog", () => {
     expect(groups).not.toContain("subscription");
     const items = visibleSettingsItems(worker).map((item) => item.id);
     expect(items).not.toContain("invoices");
-    expect(items).not.toContain("jarvisFrequency");
+    expect(items).not.toContain("gradyFrequency");
     expect(items).toContain("tour");
   });
 

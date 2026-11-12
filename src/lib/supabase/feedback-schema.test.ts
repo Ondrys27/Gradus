@@ -1,6 +1,6 @@
 // @vitest-environment node
 //
-// NPS and Jarvis answer ratings in the database (step 11.5): nps_responses
+// NPS and Grady answer ratings in the database (step 11.5): nps_responses
 // takes one answer per insert, owned by its user, never changed afterwards;
 // jarvis_messages.rating stays closed to the client, like the rest of the
 // table; admin_audit accepts the new 'update' kind. Runs every migration in

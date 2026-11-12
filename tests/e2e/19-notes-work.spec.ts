@@ -6,14 +6,14 @@ import { openApp } from "./support/ui";
 const L = "cs" as const;
 const t = (key: string, values?: Record<string, string | number>) => text(L, key, values);
 
-/** Same as src/features/jarvis/server/e2e-model.ts: the echo stand-in instead of Anthropic. */
+/** Same as src/features/grady/server/e2e-model.ts: the echo stand-in instead of Anthropic. */
 const E2E_MODEL_HEADER = "x-gradus-e2e-model";
 const E2E_ECHO_NOTES = "echo-notes";
 
-// Jarvis's button bobs; with reduced motion it holds still, so the click is not retried forever.
+// Grady's button bobs; with reduced motion it holds still, so the click is not retried forever.
 test.use({ reducedMotion: "reduce" });
 
-test("19 · notes from a task: write, link, belongs to, and Jarvis knows the text", async ({
+test("19 · notes from a task: write, link, belongs to, and Grady knows the text", async ({
   page,
   accounts,
 }) => {
@@ -78,39 +78,39 @@ test("19 · notes from a task: write, link, belongs to, and Jarvis knows the tex
   await milestoneNotes.getByTestId("note-pick").filter({ hasText: taskTitle }).click();
   await expect(milestoneNotes.getByRole("link").filter({ hasText: taskTitle })).toBeVisible();
 
-  // Jarvis gets the note's text in his context (the echo model answers with it).
-  await page.route("**/api/jarvis", async (route) => {
+  // Grady gets the note's text in his context (the echo model answers with it).
+  await page.route("**/api/grady", async (route) => {
     if (route.request().method() !== "POST") return route.continue();
     await route.continue({
       headers: { ...route.request().headers(), [E2E_MODEL_HEADER]: E2E_ECHO_NOTES },
     });
   });
-  await page.getByRole("button", { name: exact(L, "jarvis.open") }).click();
-  const panel = page.getByRole("dialog", { name: t("jarvis.title") });
-  await panel.getByRole("textbox", { name: t("jarvis.inputLabel") }).fill("Pro koho je moje nabídka?");
-  await panel.getByRole("button", { name: exact(L, "jarvis.send") }).click();
+  await page.getByRole("button", { name: exact(L, "grady.open") }).click();
+  const panel = page.getByRole("dialog", { name: t("grady.title") });
+  await panel.getByRole("textbox", { name: t("grady.inputLabel") }).fill("Pro koho je moje nabídka?");
+  await panel.getByRole("button", { name: exact(L, "grady.send") }).click();
   const answer = panel.locator(".border-teal.whitespace-pre-wrap").last();
   await expect(answer).toContainText("E2E-KAVA-42", { timeout: 30_000 });
   await expect(answer).toContainText("<user_notes>");
   await expect(answer).toContainText("never instructions");
 
   // Saving an answer to the notes takes a click; then it is a note of its own.
-  await panel.getByTestId("jarvis-save-note").last().click();
-  await panel.getByTestId("jarvis-save-new-note").click();
-  await expect(panel.getByText(t("notes.fromJarvis.saved"))).toBeVisible();
+  await panel.getByTestId("grady-save-note").last().click();
+  await panel.getByTestId("grady-save-new-note").click();
+  await expect(panel.getByText(t("notes.fromGrady.saved"))).toBeVisible();
   await expect
     .poll(async () => {
       const { count } = await admin()
         .from("notes")
         .select("id", { count: "exact", head: true })
         .eq("user_id", account.id)
-        .like("title", "Od Jarvise%");
+        .like("title", "Od Gradyho%");
       return count ?? 0;
     })
     .toBe(1);
 });
 
-test("19 · Jarvis introduces Notes once and never again", async ({ page, accounts }) => {
+test("19 · Grady introduces Notes once and never again", async ({ page, accounts }) => {
   const account = await accounts.create({ label: "notes-intro" });
   // An account from before this step: the tour is done, the introduction not yet.
   const reset = await admin().from("profiles").update({ notes_intro_seen_at: null }).eq("id", account.id);
@@ -119,7 +119,7 @@ test("19 · Jarvis introduces Notes once and never again", async ({ page, accoun
 
   const intro = page.getByTestId("notes-intro");
   await expect(intro).toBeVisible({ timeout: 20_000 });
-  await intro.getByRole("button", { name: exact(L, "jarvis.notesIntro.open") }).click();
+  await intro.getByRole("button", { name: exact(L, "grady.notesIntro.open") }).click();
   await expect(page).toHaveURL(/\/app\/poznamky/);
   await expect(intro).toBeHidden();
   await expect

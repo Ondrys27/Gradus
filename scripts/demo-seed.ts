@@ -666,10 +666,10 @@ async function seedXp(userId: string) {
 }
 
 // -----------------------------------------------------------------------------
-// 10. A Jarvis conversation to screenshot
+// 10. A Grady conversation to screenshot
 // -----------------------------------------------------------------------------
 
-async function seedJarvis(userId: string) {
+async function seedGrady(userId: string) {
   const { data: conversation, error } = await admin
     .from("jarvis_conversations")
     .insert({ user_id: userId, title: "Jak zrychlit pipeline", last_message_at: iso(daysAgo(0, 11)) })
@@ -754,8 +754,8 @@ async function main() {
   console.log("XP and streak…");
   await seedXp(userId);
 
-  console.log("Jarvis conversation…");
-  await seedJarvis(userId);
+  console.log("Grady conversation…");
+  await seedGrady(userId);
 
   console.log(`Done. Sign in as ${DEMO_EMAIL} / ${DEMO_PASSWORD}.`);
 }

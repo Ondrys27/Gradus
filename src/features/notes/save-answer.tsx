@@ -17,12 +17,12 @@ import { useSession } from "@/features/account/queries";
 import { noteHref } from "./work-notes";
 
 /**
- * "Save to notes" under one of Jarvis's answers: as a new note, or added to
+ * "Save to notes" under one of Grady's answers: as a new note, or added to
  * the end of an existing one. Nothing reaches the notes without this click;
- * Jarvis never writes there on his own.
+ * Grady never writes there on his own.
  */
 export function SaveAnswerToNotes({ text }: { text: string }) {
-  const t = useTranslations("notes.fromJarvis");
+  const t = useTranslations("notes.fromGrady");
   const settings = useFormatSettings();
   const { user } = useSession();
   const { allowed, readOnly } = useNotesInWork();
@@ -92,7 +92,7 @@ export function SaveAnswerToNotes({ text }: { text: string }) {
         aria-expanded={open}
         aria-label={t("save")}
         title={t("save")}
-        data-testid="jarvis-save-note"
+        data-testid="grady-save-note"
         className={cn(
           "grid size-9 place-items-center rounded-full outline-none transition-colors hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-teal/50 mouse:size-7",
           open ? "text-violet" : "text-ink-muted",
@@ -108,7 +108,7 @@ export function SaveAnswerToNotes({ text }: { text: string }) {
             disabled={busy || append.isPending}
             onClick={() => void saveNew()}
             className="self-start"
-            data-testid="jarvis-save-new-note"
+            data-testid="grady-save-new-note"
           >
             <SquarePenIcon aria-hidden data-icon="inline-start" />
             {t("newNote")}

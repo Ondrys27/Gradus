@@ -9,7 +9,7 @@ const UPCOMING_DAYS = 7;
 const UPCOMING_LIMIT = 5;
 
 /**
- * What Jarvis knows of the person's scheduler: bookings of the next seven
+ * What Grady knows of the person's scheduler: bookings of the next seven
  * days, those waiting for approval, and the link to send for a first call.
  * Read with the user's own client (RLS); never fails the rest of the
  * situation, so a problem reads as null.

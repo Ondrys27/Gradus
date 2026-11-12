@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
-import { JarvisJobError, postJarvisJob } from "@/features/jarvis/queries";
+import { GradyJobError, postGradyJob } from "@/features/grady/queries";
 import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
 import { workerKeys } from "../queries";
@@ -86,16 +86,16 @@ export function useActiveRewardRules() {
   });
 }
 
-/** Jarvis reads the tree and proposes rules with a summary. Nothing is saved yet. */
+/** Grady reads the tree and proposes rules with a summary. Nothing is saved yet. */
 export function useRewardSetup() {
   return useMutation({
-    mutationKey: ["jarvis", "reward-setup"],
+    mutationKey: ["grady", "reward-setup"],
     mutationFn: async (tree: RewardTree): Promise<RewardProposal> => {
-      const result = await postJarvisJob<{ proposal: RewardProposal }>({
+      const result = await postGradyJob<{ proposal: RewardProposal }>({
         kind: "rewardSetup",
         tree,
       });
-      if (!result.ok) throw new JarvisJobError(result.code);
+      if (!result.ok) throw new GradyJobError(result.code);
       return result.proposal;
     },
   });

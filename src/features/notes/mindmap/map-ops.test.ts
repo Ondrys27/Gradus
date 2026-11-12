@@ -133,7 +133,7 @@ describe("map operations", () => {
   });
 });
 
-describe("Jarvis's suggestions", () => {
+describe("Grady's suggestions", () => {
   it("inserts suggested branches marked, under the node, after what is there", () => {
     const { doc, ids: added } = insertSuggestions(sample(), "b", [
       { title: "  Ceny  ", children: [{ title: "Levnější" }, { title: "" }] },

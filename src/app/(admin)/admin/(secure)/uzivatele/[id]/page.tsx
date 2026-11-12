@@ -22,7 +22,7 @@ import { periodEndDate } from "@/features/admin/subscription-form";
 import { UserSubscriptionForm } from "@/features/admin/ui/user-subscription-form";
 import { peopleNamer } from "@/features/admin/server/people";
 import { CopyId } from "@/features/admin/ui/copy-id";
-import { remainingUsd, userCapModeOf } from "@/features/jarvis/caps";
+import { remainingUsd, userCapModeOf } from "@/features/grady/caps";
 import { AdminCard, AdminEmpty, BlockGrid, PageSection } from "@/features/admin/ui/blocks";
 import { AdminPageBar } from "@/features/admin/ui/page-bar";
 import { InternalToggle } from "@/features/admin/ui/internal-toggle";

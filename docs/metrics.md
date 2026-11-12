@@ -6,7 +6,7 @@ Závazný seznam toho, co se měří a jak. Každá metrika odsud musí mít def
 
 - **Interní účty se nepočítají.** Majitel, demo účet a testovací účty mají `is_internal = true` a jsou ze všech metrik vyloučené, pokud se v administraci výslovně nezapnou.
 - **Aktivní uživatel** = aspoň jedna smysluplná akce za období (založení, úprava, přesun, odeslání, dokončení). Samotné přihlášení nebo zobrazení stránky nestačí.
-- **Žádný obsah.** Měří se počty, časy, stavy a typy — nikdy jména, telefony, e-maily, názvy firem a obchodů, texty úkolů, zprávy Jarvisovi ani poznámky.
+- **Žádný obsah.** Měří se počty, časy, stavy a typy — nikdy jména, telefony, e-maily, názvy firem a obchodů, texty úkolů, zprávy Gradymu ani poznámky.
 - **Segmenty** pro všechny metriky: plán (beta / zkušební / solo / pro / tým), režim (hra / běžný), obor, jazyk, země, role (majitel / pracovník), zařízení, týden registrace.
 - **Peníze v různých měnách** se nesčítají dohromady. Hodnoty obchodů a transakcí se zobrazují po měnách.
 
@@ -27,7 +27,7 @@ Závazný seznam toho, co se měří a jak. Každá metrika odsud musí mít def
 - Trychtýř: registrace → onboarding dokončen → první milník → první splněný úkol → první kontakt → první obchod → první domluvená schůzka → první vyhraný obchod. Procento a medián času mezi kroky.
 - Doba do hodnoty — medián času od registrace k první domluvené schůzce
 - Onboarding — dokončení a krok, na kterém lidé odpadají
-- Jarvisův průvodce — dokončen / přeskočen / na kterém kroku (do 20.4; od té doby ho nahradil tutoriál)
+- Gradyho průvodce — dokončen / přeskočen / na kterém kroku (do 20.4; od té doby ho nahradil tutoriál)
 - Tutoriál — trychtýř: volba (`tutorial_started`, mode none / quick / full) → kroky (`tutorial_step`, klíč kroku) → dokončení (`tutorial_finished`, podle režimu) nebo ukončení (`tutorial_abandoned`, na kterém kroku); metriky `tutorial_mode`, `tutorial_steps`, `tutorial_finished`, `tutorial_abandoned_at`
 - Aktivovaný uživatel — do 7 dnů od registrace aktivní aspoň 3 různé dny a ve 2 různých sekcích; podíl
 - Konverze kód → platba — z účtů, které v období použily promo kód partnera (`promo_redeemed`: kód jen jako hash, odkud, druh výhody), podíl těch, které od té doby zaplatily; metrika `promo_conversion` (`metric_promo_conversion`)
@@ -41,7 +41,7 @@ Závazný seznam toho, co se měří a jak. Každá metrika odsud musí mít def
 - Relace na uživatele za den a týden, délka relace (medián, p90), čas v aplikaci za den
 - Aktivní dny v týdnu — rozdělení 1 až 7
 - Kdy aplikaci používají — heatmapa den v týdnu × hodina
-- Návraty vyvolané Jarvisovou bublinou nebo e-mailem
+- Návraty vyvolané Gradyho bublinou nebo e-mailem
 
 ## 4. Funkce
 
@@ -49,7 +49,7 @@ U každé sekce: adopce (% aktivních, kteří ji použili), počet akcí, akce 
 
 **Milníky** — vytvořené (z kapitoly / vlastní), dokončené, míra a medián doby dokončení, úkoly a podúkoly vytvořené a splněné, hloubka stromu, podíl pohledů Seznam / Mapa / Cesta, vyplněná odměna (%), vyžádané AI hodnocení, importy myšlenkových map (`mindmap_imported`: formát, počet uzlů, přidat / nahradit / nový milník, zploštění) a exporty (`mindmap_exported`: formát, z mapy / ze seznamu / záloha)
 
-**Poznámky** — založené (prázdné / ze šablony, podle klíče šablony a oboru, odkud: seznam, úkol, milník, Jarvis), smazané, uživatelé s aspoň jednou poznámkou, propojení s úkoly a milníky (připojená / zapsaná, podle šablony), uložené odpovědi Jarvise (nová / připojená), představení Poznámek Jarvisem (zobrazeno / otevřeno / zavřeno), smazání podle místa (otevřená poznámka / popelnice v seznamu / klávesa), odkazy na záznamy v textu (kontakt / obchod / událost / pracovník, napsáním @ / tlačítkem) a jejich otevření z čipu, myšlenkové mapy v poznámkách (založené mapy podle `kind`, převody text ↔ mapa v místě / jako nová, importy a exporty z poznámky, návrhy větví od Jarvise a podíl ponechaných / smazaných) (z `note_created`, `note_converted`, `note_map_suggested`, `note_map_suggestion_resolved`, `note_template_used`, `note_deleted`, `note_linked`, `note_unlinked`, `note_saved_from_jarvis`, `note_mention_added`, `note_mention_opened`, `jarvis_notes_intro`; nikdy názvy ani obsah)
+**Poznámky** — založené (prázdné / ze šablony, podle klíče šablony a oboru, odkud: seznam, úkol, milník, Grady), smazané, uživatelé s aspoň jednou poznámkou, propojení s úkoly a milníky (připojená / zapsaná, podle šablony), uložené odpovědi Gradyho (nová / připojená), představení Poznámek Gradym (zobrazeno / otevřeno / zavřeno), smazání podle místa (otevřená poznámka / popelnice v seznamu / klávesa), odkazy na záznamy v textu (kontakt / obchod / událost / pracovník, napsáním @ / tlačítkem) a jejich otevření z čipu, myšlenkové mapy v poznámkách (založené mapy podle `kind`, převody text ↔ mapa v místě / jako nová, importy a exporty z poznámky, návrhy větví od Gradyho a podíl ponechaných / smazaných) (z `note_created`, `note_converted`, `note_map_suggested`, `note_map_suggestion_resolved`, `note_template_used`, `note_deleted`, `note_linked`, `note_unlinked`, `note_saved_from_jarvis`, `note_mention_added`, `note_mention_opened`, `jarvis_notes_intro`; nikdy názvy ani obsah)
 
 **Pipeline** — obchody vytvořené, přesuny, výhry, prohry, míra výhry, průměrná a celková hodnota po měnách, medián času ve fázi, uživatelé s upravenými fázemi, použité „znovu oslovit"
 
@@ -69,9 +69,9 @@ U každé sekce: adopce (% aktivních, kteří ji použili), počet akcí, akce 
 
 **E-mail** — odeslané, vyžádané a použité AI návrhy
 
-**Nastavení** — rozdělení jazyka, měny, země, motivu; vypnuté animace, zvuky a Jarvisova iniciativa
+**Nastavení** — rozdělení jazyka, měny, země, motivu; vypnuté animace, zvuky a Gradyho iniciativa
 
-## 5. AI a Jarvis
+## 5. AI a Grady
 
 - Volání podle funkce (chat, hodnocení milníku, noční analýza, hlídání, návrh e-mailu, rozbor schůzek, nastavení odměn) a podle modelu
 - Tokeny vstup / z mezipaměti / výstup, míra zásahu mezipaměti
@@ -81,7 +81,7 @@ U každé sekce: adopce (% aktivních, kteří ji použili), počet akcí, akce 
 - Latence p50 a p95, chybovost podle kódu
 - Soubory — počet, typy, velikost, odmítnuté a proč
 - Proaktivní bubliny — zobrazeno, Udělat, Ukázat, Později, Zavřít, bez reakce; míra přijetí podle typu (postřeh / návrh / otázka)
-- Automatické akce Jarvise a kolik z nich uživatel vrátil
+- Automatické akce Gradyho a kolik z nich uživatel vrátil
 - Hodnocení odpovědí palcem nahoru / dolů
 - Uživatelé na AI stropu (%)
 
@@ -122,10 +122,10 @@ U každé sekce: adopce (% aktivních, kteří ji použili), počet akcí, akce 
 ## 9. Zpětná vazba
 
 - Hlášení chyb ze stránky chyby — seznam s kódem chyby (GR-…), hledání podle kódu; událost `bug_report_sent`, kód je i v `client_error`
-- Hlášení od testerů (dialog Nahlásit problém) — záložka Hlášení: seznam s filtry (stav, typ, odkud), detail s konzolí a snímkem, změna stavu. Události `bug_report_opened` (odkud: nabídka, panel Více, Jarvis, zkratka), `bug_report_sent` (typ, snímek, počet řádků konzole), `bug_report_status_changed` (stav, zda šel e-mail autorovi), `welcome_email_sent` (uvítací e-mail po registraci s pozvánkou); nikdy texty
+- Hlášení od testerů (dialog Nahlásit problém) — záložka Hlášení: seznam s filtry (stav, typ, odkud), detail s konzolí a snímkem, změna stavu. Události `bug_report_opened` (odkud: nabídka, panel Více, Grady, zkratka), `bug_report_sent` (typ, snímek, počet řádků konzole), `bug_report_status_changed` (stav, zda šel e-mail autorovi), `welcome_email_sent` (uvítací e-mail po registraci s pozvánkou); nikdy texty
 - Nápady od uživatelů — seznam a stav
 - Dotazník spokojenosti na Přehledu (po 14 dnech používání, pak 30 dní po odpovědi): spokojenost 1–5, „Co se ti fakt líbí?“ a „Co vylepšit?“ → průměrná spokojenost (`satisfaction_avg`), rozdělení (`satisfaction`), odpovědi s textem. Události `satisfaction_submitted` (známka a zda je vyplněný text, nikdy text) a `satisfaction_dismissed`. Dřívější NPS (0–10) zůstává jen jako historie v `nps_responses`
-- Hodnocení Jarvisových odpovědí
+- Hodnocení Gradyho odpovědí
 
 ## 10. Detail uživatele
 

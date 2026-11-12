@@ -115,7 +115,7 @@ describe("ErrorScreen", () => {
     expect(JSON.parse(reportCalls()[1]![1].body).description).toBe("I saved a contact");
   });
 
-  it("keeps Jarvis away while it is on screen", () => {
+  it("keeps Grady away while it is on screen", () => {
     function Probe() {
       return <span data-testid="probe">{useErrorScreenShown() ? "hidden" : "shown"}</span>;
     }

@@ -155,7 +155,7 @@ const BODIES: Record<ScreenshotName, React.ReactNode> = {
       </div>
     </div>
   ),
-  jarvis: (
+  grady: (
     <div className="flex w-full flex-col justify-end gap-[3%]">
       <span className="h-[12%] w-[45%] self-end rounded-2xl bg-violet/60" />
       <span className={cn(tile, "h-[22%] w-[60%] rounded-2xl")} />

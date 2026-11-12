@@ -1,7 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 import { exact, text, type Locale } from "./i18n";
 
-/** Picks a tutorial on Jarvis's "How do you want to start?" (after onboarding or on request). */
+/** Picks a tutorial on Grady's "How do you want to start?" (after onboarding or on request). */
 export async function chooseTutorial(page: Page, mode: "none" | "quick" | "full") {
   const choice = page.getByTestId("tutorial-choice");
   await expect(choice).toBeVisible({ timeout: 30_000 });

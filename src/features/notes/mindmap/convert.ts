@@ -265,7 +265,7 @@ export function replaceMapWithTree(doc: MapDoc, tree: MindMapTree): MapDoc {
 }
 
 /**
- * One of Jarvis's answers kept in a map note: a new branch named `heading`
+ * One of Grady's answers kept in a map note: a new branch named `heading`
  * with the answer's lines below it, nested by their indent.
  */
 export function appendTextToMap(doc: MapDoc, heading: string, answer: string): MapDoc {

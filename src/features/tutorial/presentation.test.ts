@@ -17,7 +17,7 @@ function step(key: string, chapter: TutorialChapter): PlannedStep {
     chapter,
     section: "dashboard",
     path: null,
-    jarvisSays: `steps.${key}.text`,
+    gradySays: `steps.${key}.text`,
     highlight: [],
     action: "look",
     skippable: true,

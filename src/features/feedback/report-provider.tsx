@@ -15,13 +15,14 @@ import { track } from "@/lib/analytics/client";
 import { installConsoleBuffer } from "./console-buffer";
 import { ReportDialog } from "./report-dialog";
 
+/** `jarvis` = from Grady's panel: DB name kept from Jarvis. */
 export type ReportVia = "account_menu" | "more_panel" | "jarvis" | "shortcut";
 
 type ReportContextValue = { open: (via: ReportVia) => void };
 
 const ReportContext = createContext<ReportContextValue>({ open: () => {} });
 
-/** Opens the "Report a problem" dialog from the account menu, the More panel and Jarvis. */
+/** Opens the "Report a problem" dialog from the account menu, the More panel and Grady. */
 export function useReportProblem(): ReportContextValue {
   return useContext(ReportContext);
 }

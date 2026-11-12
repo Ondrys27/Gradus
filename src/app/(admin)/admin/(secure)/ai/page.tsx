@@ -18,23 +18,23 @@ import {
   aiTiles,
   aiTopSpaces,
   aiTopUsers,
-  jarvisConversations,
+  gradyConversations,
   type AiUsageRow,
 } from "@/features/admin/server/page-data";
 import { loadAiCapsOverview, loadPeriodSpend } from "@/features/admin/server/ai-caps-data";
 import { budgetPeriod, describePeriod } from "@/features/admin/ai-budget-period";
-import { loadBudget } from "@/features/jarvis/server/budget";
-import { loadAiCaps } from "@/features/jarvis/server/caps";
-import { loadJarvisRules } from "@/features/jarvis/server/rules";
-import { toJarvisRulesForm } from "@/features/jarvis/rules";
+import { loadBudget } from "@/features/grady/server/budget";
+import { loadAiCaps } from "@/features/grady/server/caps";
+import { loadGradyRules } from "@/features/grady/server/rules";
+import { toGradyRulesForm } from "@/features/grady/rules";
 import { AdminViewLink } from "@/features/admin/ui/admin-view";
-import { JarvisRulesForm } from "@/features/admin/ui/jarvis-rules-form";
+import { GradyRulesForm } from "@/features/admin/ui/grady-rules-form";
 import { viewQuery, parseAdminView } from "@/features/admin/view-state";
 import { cn } from "@/lib/utils";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AdminChart } from "@/features/admin/ui/admin-chart";
 import { AiCapsForm } from "@/features/admin/ui/ai-caps-form";
-import { JarvisPingCard } from "@/features/admin/ui/jarvis-ping-card";
+import { GradyPingCard } from "@/features/admin/ui/grady-ping-card";
 import { BudgetCard } from "@/features/admin/ui/budget-card";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
 import {
@@ -74,7 +74,7 @@ export default async function AdminAiPage({ searchParams }: Props) {
   const query = viewQuery(parseAdminView(params));
   const t = await getTranslations("admin.ai");
 
-  // The overview (numbers, budget, caps) and Jarvis's rules, as two tabs in the address.
+  // The overview (numbers, budget, caps) and Grady's rules, as two tabs in the address.
   const tabs = (
     <nav aria-label={t("tabs")} className="flex gap-1">
       {AI_TABS.map((value) => {
@@ -105,8 +105,8 @@ export default async function AdminAiPage({ searchParams }: Props) {
         <AdminPageHeader section="ai" q={q} extra={tabs} />
         <Suspense fallback={<CardSkeleton height={520} />}>
           <Rules
-            readOnly={!adminCan(context.role, "editJarvisRules")}
-            canTest={adminCan(context.role, "testJarvis")}
+            readOnly={!adminCan(context.role, "editGradyRules")}
+            canTest={adminCan(context.role, "testGrady")}
           />
         </Suspense>
       </>
@@ -137,12 +137,12 @@ export default async function AdminAiPage({ searchParams }: Props) {
             </BlockGrid>
           </Suspense>
         </div>
-        {/* The caps change what Jarvis may spend: the one action with consequences, at the end. */}
+        {/* The caps change what Grady may spend: the one action with consequences, at the end. */}
         <Suspense fallback={<CardSkeleton height={260} />}>
           <Caps q={q} readOnly={!adminCan(context.role, "editAiCaps")} />
         </Suspense>
         {/* One paid call to the model: only the owner may spend it. */}
-        {adminCan(context.role, "testJarvis") && <ConnectionTest />}
+        {adminCan(context.role, "testGrady") && <ConnectionTest />}
       </div>
     </>
   );
@@ -161,7 +161,7 @@ async function Tiles({ q }: { q: AdminQuery }) {
 async function BudgetAndCost({ q }: { q: AdminQuery }) {
   const period = budgetPeriod(q.view, q.range, q.today);
   const [budget, chart, t] = await Promise.all([
-    safe("jarvis budget", async () => {
+    safe("grady budget", async () => {
       const admin = createAdminClient();
       const [month, spend] = await Promise.all([
         loadAiCaps(admin, { fresh: true }).then((caps) => loadBudget(admin, new Date(), caps)),
@@ -227,21 +227,21 @@ async function Caps({ q, readOnly }: { q: AdminQuery; readOnly: boolean }) {
 }
 
 /**
- * Jarvis's rules: the switches of what he brings up on his own, the numbers
- * of the timing and the owner's instructions (docs/jarvis-pravidla.md).
+ * Grady's rules: the switches of what he brings up on his own, the numbers
+ * of the timing and the owner's instructions (docs/grady-pravidla.md).
  * Read fresh here; the app reads them with a 30-second cache.
  */
 async function Rules({ readOnly, canTest }: { readOnly: boolean; canTest: boolean }) {
   const [loaded, t] = await Promise.all([
-    safe("jarvis rules", () => loadJarvisRules(createAdminClient(), { fresh: true })),
+    safe("grady rules", () => loadGradyRules(createAdminClient(), { fresh: true })),
     getTranslations("admin.ai.rules"),
   ]);
   return (
     <AdminCard title={t("title")} description={t("description")} id="pravidla">
       <Show loaded={loaded}>
         {(rules) => (
-          <JarvisRulesForm
-            saved={toJarvisRulesForm(rules)}
+          <GradyRulesForm
+            saved={toGradyRulesForm(rules)}
             fromDefaults={rules.source === "default"}
             readOnly={readOnly}
             canTest={canTest && !readOnly}
@@ -256,7 +256,7 @@ async function ConnectionTest() {
   const t = await getTranslations("admin.ai.connection");
   return (
     <AdminCard title={t("title")} description={t("description")}>
-      <JarvisPingCard />
+      <GradyPingCard />
     </AdminCard>
   );
 }
@@ -345,7 +345,7 @@ async function More({ q }: { q: AdminQuery }) {
   const [breakdowns, errors, conversations, t, tItems] = await Promise.all([
     safe("ai breakdowns", () => aiBreakdowns(q)),
     safe("ai errors", () => aiErrors(q)),
-    safe("jarvis conversations", () => jarvisConversations(q)),
+    safe("grady conversations", () => gradyConversations(q)),
     getTranslations("admin.ai"),
     getTranslations("metrics.items"),
   ]);

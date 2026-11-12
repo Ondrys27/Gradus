@@ -10,7 +10,7 @@ import {
 } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
 import { useWorkspaceId } from "@/features/account/workspace-queries";
-import { JarvisJobError, postJarvisJob } from "@/features/jarvis/queries";
+import { GradyJobError, postGradyJob } from "@/features/grady/queries";
 import { track } from "@/lib/analytics/client";
 import type { MindMapFormat, MindMapParseResult, MindMapTree } from "@/lib/mindmap/formats";
 import { createClient } from "@/lib/supabase/client";
@@ -149,7 +149,7 @@ function toTaskRow(input: TaskInput) {
 const REVIEW_MUTATION = ["milestones", "review"] as const;
 
 /**
- * Jarvis reviews a new milestone (through /api/jarvis). The result lands in
+ * Grady reviews a new milestone (through /api/grady). The result lands in
  * the cache even when the dialog that created the milestone is gone.
  */
 export function useReviewMilestone() {
@@ -159,11 +159,11 @@ export function useReviewMilestone() {
     mutationKey: REVIEW_MUTATION,
     mutationFn: async (id: string) => {
       track("milestone_review_requested", { auto: true });
-      const result = await postJarvisJob<{ feedback: string }>({
+      const result = await postGradyJob<{ feedback: string }>({
         kind: "milestoneReview",
         milestoneId: id,
       });
-      if (!result.ok) throw new JarvisJobError(result.code);
+      if (!result.ok) throw new GradyJobError(result.code);
       return { id, feedback: result.feedback };
     },
     onSuccess: ({ id, feedback }) => {
@@ -177,7 +177,7 @@ export function useReviewMilestone() {
   });
 }
 
-/** Whether Jarvis is reviewing this milestone right now. */
+/** Whether Grady is reviewing this milestone right now. */
 export function useMilestoneReviewPending(id: string) {
   return useMutationState({
     filters: { mutationKey: REVIEW_MUTATION, status: "pending" },
@@ -210,7 +210,7 @@ export function useCreateMilestone() {
         has_target_date: Boolean(row.target_date),
       });
       queryClient.setQueryData(milestoneKeys.detail(user.id, row.id), row);
-      // Jarvis looks at every new milestone once; a failure only means no feedback.
+      // Grady looks at every new milestone once; a failure only means no feedback.
       review.mutate(row.id);
       return queryClient.invalidateQueries({ queryKey: milestoneKeys.list(user.id) });
     },
@@ -617,7 +617,7 @@ function siblingsOfRoot(tasks: Task[]): string[] {
 
 /**
  * A new milestone straight from a mind map: the milestone, then its tasks.
- * If the tasks can not be added the milestone goes again. Jarvis reviews it
+ * If the tasks can not be added the milestone goes again. Grady reviews it
  * once the tasks are in, like every new milestone.
  */
 export function useCreateMilestoneFromImport() {

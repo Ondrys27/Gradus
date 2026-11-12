@@ -1,11 +1,11 @@
 import "server-only";
-import { MAX_FILE_BYTES, MAX_FILES_PER_MESSAGE } from "@/features/jarvis/files";
-import { detectFileKind } from "@/features/jarvis/server/file-type";
+import { MAX_FILE_BYTES, MAX_FILES_PER_MESSAGE } from "@/features/grady/files";
+import { detectFileKind } from "@/features/grady/server/file-type";
 import { escapeHtml, type EmailAttachment } from "@/lib/email/resend";
 import { EmailError } from "./errors";
 
 /**
- * Sending an e-mail's attachments: the same bucket as Jarvis's files, under
+ * Sending an e-mail's attachments: the same bucket as Grady's files, under
  * the sender's own `<user id>/email/<uuid>` folder (storage RLS already
  * restricts the bucket to each user's own top folder). Nothing is kept after
  * the e-mail is sent; there is no mailbox to browse later.

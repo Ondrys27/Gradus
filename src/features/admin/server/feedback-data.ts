@@ -213,7 +213,7 @@ export async function loadSatisfactionSummary(q: AdminQuery): Promise<Satisfacti
   return { average: satisfactionAverage(distribution.items), responses, distribution };
 }
 
-export async function jarvisAnswerRatings(q: AdminQuery): Promise<BreakdownData> {
+export async function gradyAnswerRatings(q: AdminQuery): Promise<BreakdownData> {
   return breakdown(q, "jarvis_answer_ratings");
 }
 

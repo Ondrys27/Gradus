@@ -19,7 +19,7 @@ type BottomSheetProps = {
 
 /**
  * Phone dialogs open as a panel from the bottom edge. Swipe down, the backdrop or the
- * close button dismisses it. The bottom-right corner stays Jarvis's once it closes.
+ * close button dismisses it. The bottom-right corner stays Grady's once it closes.
  */
 export function BottomSheet({
   open,

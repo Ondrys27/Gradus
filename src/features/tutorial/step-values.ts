@@ -6,7 +6,7 @@ import { useProfile } from "@/features/account/queries";
 import { industryKeyOf } from "@/features/onboarding/industries";
 
 /**
- * What Jarvis fills into the steps so they talk about the user's own
+ * What Grady fills into the steps so they talk about the user's own
  * business: the branch picked in onboarding and its first milestone and
  * task (the onboarding suggestions), the first sample contact and the
  * sample deal (the rows the full tutorial seeded). Every step text may use

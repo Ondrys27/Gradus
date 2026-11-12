@@ -28,7 +28,7 @@ import { WelcomeStep } from "./steps/welcome-step";
 /**
  * First-login wizard: welcome, how to use the app (game or tool), branch,
  * then the path (game) or a first milestone (tool), region, first contact and
- * a short Jarvis intro before the completion celebration. Any step can be
+ * a short Grady intro before the completion celebration. Any step can be
  * bypassed at once with "Skip"; the wizard still finishes (in game mode with
  * the path for the branch, unless tool mode was picked) so it never comes back.
  *

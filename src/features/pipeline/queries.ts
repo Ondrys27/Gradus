@@ -426,8 +426,8 @@ export function useMoveDeal() {
       void queryClient.invalidateQueries({ queryKey: pipelineKeys.dealSignals(user.id) });
       // The database books a deposit or the rest of the deal, or flags what it booked.
       void invalidateFinance(queryClient, user.id);
-      // A won deal is one of Jarvis's instant triggers.
-      void queryClient.invalidateQueries({ queryKey: ["jarvis", user.id, "suggestions"] });
+      // A won deal is one of Grady's instant triggers.
+      void queryClient.invalidateQueries({ queryKey: ["grady", user.id, "suggestions"] });
     },
     mutationKey: ["pipeline", "move"],
   });

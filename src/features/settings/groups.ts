@@ -16,7 +16,7 @@ export const SETTINGS_PATH = "/app/nastaveni";
 export const SETTINGS_GROUPS = [
   "account",
   "subscription",
-  "jarvis",
+  "grady",
   "appearance",
   "work",
   "calendar",
@@ -27,7 +27,7 @@ export type SettingsGroup = (typeof SETTINGS_GROUPS)[number];
 /**
  * Who sees a group or an item. `owner` is the owner of the workspace,
  * `notWorker` any account that is not somebody's worker (the game and
- * Jarvis are the owner's), `caller` whoever may call and make deals.
+ * Grady are the owner's), `caller` whoever may call and make deals.
  */
 export type SettingsAudience = "all" | "owner" | "notWorker" | "caller";
 
@@ -41,7 +41,7 @@ export type SettingsGroupDef = {
 export const SETTINGS_GROUP_DEFS: readonly SettingsGroupDef[] = [
   { key: "account", href: `${SETTINGS_PATH}/ucet`, icon: UserRoundIcon, who: "all" },
   { key: "subscription", href: PLAN_PATH, icon: CreditCardIcon, who: "owner" },
-  { key: "jarvis", href: `${SETTINGS_PATH}/jarvis`, icon: SparklesIcon, who: "all" },
+  { key: "grady", href: `${SETTINGS_PATH}/grady`, icon: SparklesIcon, who: "all" },
   { key: "appearance", href: `${SETTINGS_PATH}/vzhled`, icon: PaletteIcon, who: "all" },
   { key: "work", href: `${SETTINGS_PATH}/prace`, icon: WrenchIcon, who: "all" },
   // Subscribed calendars (busy times for the scheduler) and the Gradus calendar as a feed.
@@ -91,12 +91,12 @@ export const SETTINGS_ITEMS: readonly SettingsItemDef[] = [
   { id: "promoCode", group: "subscription", target: "settings-promo", who: "owner" },
   { id: "payments", group: "subscription", target: "settings-payments", who: "owner" },
   { id: "billing", group: "subscription", target: "settings-billing", who: "owner" },
-  { id: "jarvisProactive", group: "jarvis", target: "settings-jarvis-proactive", who: "notWorker" },
-  { id: "jarvisFrequency", group: "jarvis", target: "settings-jarvis-frequency", who: "notWorker" },
-  { id: "jarvisQuiet", group: "jarvis", target: "settings-jarvis-quiet", who: "notWorker" },
-  { id: "chatEmail", group: "jarvis", target: "settings-chat-email", who: "all" },
-  { id: "chatSound", group: "jarvis", target: "settings-chat-sound", who: "all" },
-  { id: "tour", group: "jarvis", target: "settings-help-tour", who: "all" },
+  { id: "gradyProactive", group: "grady", target: "settings-grady-proactive", who: "notWorker" },
+  { id: "gradyFrequency", group: "grady", target: "settings-grady-frequency", who: "notWorker" },
+  { id: "gradyQuiet", group: "grady", target: "settings-grady-quiet", who: "notWorker" },
+  { id: "chatEmail", group: "grady", target: "settings-chat-email", who: "all" },
+  { id: "chatSound", group: "grady", target: "settings-chat-sound", who: "all" },
+  { id: "tour", group: "grady", target: "settings-help-tour", who: "all" },
   { id: "theme", group: "appearance", target: "settings-theme", who: "all" },
   { id: "sound", group: "appearance", target: "settings-sound", who: "all" },
   { id: "animations", group: "appearance", target: "settings-animations", who: "all" },
