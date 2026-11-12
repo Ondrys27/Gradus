@@ -92,7 +92,7 @@ const PAGE_LOADERS: Record<AdminSectionKey, Loader[]> = {
     pd.aiByModel,
     pd.aiBreakdowns,
     pd.aiErrors,
-    pd.jarvisConversations,
+    pd.gradyConversations,
     pd.aiTopUsers,
   ],
   game: [pd.gameTiles, pd.gameChart, pd.gameBreakdowns, pd.xpSources],
@@ -100,7 +100,7 @@ const PAGE_LOADERS: Record<AdminSectionKey, Loader[]> = {
   health: [pd.healthTiles, pd.healthChart, pd.routeLatency, pd.pageLoad, pd.healthBreakdowns, pd.cronRuns],
   feedback: [
     (q) => import("./feedback-data").then((m) => m.loadSatisfactionSummary(q)),
-    (q) => import("./feedback-data").then((m) => m.jarvisAnswerRatings(q)),
+    (q) => import("./feedback-data").then((m) => m.gradyAnswerRatings(q)),
     (q) => import("./feedback-data").then((m) => m.featureRequestCounts(q)),
     (q) => loadFeatureRequests(q, null),
     (q) => loadSatisfactionAnswers(q),

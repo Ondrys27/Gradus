@@ -24,7 +24,7 @@ export async function homeMetadata(locale: SiteLocale): Promise<Metadata> {
 
 /**
  * The home page in six blocks: the promise with the app under it, three
- * stories (pipeline, cold calling, Jarvis), the game, the plans, and the
+ * stories (pipeline, cold calling, Grady), the game, the plans, and the
  * questions together with the last call.
  */
 export async function HomePage({ locale }: { locale: SiteLocale }) {

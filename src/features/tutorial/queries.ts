@@ -27,7 +27,7 @@ export function useTutorialState(): TutorialState | null {
   return useMemo(() => parseTutorialState(profile.tutorial), [profile.tutorial]);
 }
 
-/** Stores the state on the profile; an end also stamps tour_completed_at (Jarvis waits for it). */
+/** Stores the state on the profile; an end also stamps tour_completed_at (Grady waits for it). */
 export function useSaveTutorial() {
   const update = useUpdateProfile();
   return useMemo(
@@ -99,7 +99,7 @@ export function useDeleteDemo() {
   });
 }
 
-/** Whether the user's own space still holds sample data (Settings → Jarvis offers to delete it). */
+/** Whether the user's own space still holds sample data (Settings → Grady offers to delete it). */
 export function useHasDemoData(enabled: boolean) {
   const { user } = useSession();
   const workspaceId = useWorkspaceId();

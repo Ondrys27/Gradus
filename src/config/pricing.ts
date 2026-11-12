@@ -41,7 +41,7 @@ export type Money = { EUR: number } & Record<PriceCurrency, number>;
 
 /**
  * Limits of a plan. The four counts are what current_plan() enforces (the
- * contacts per day and per calendar month, Jarvis's answers and files per
+ * contacts per day and per calendar month, Grady's answers and files per
  * month); workers and storage are what an account holds, null = no limit.
  */
 export type PlanLimits = {
@@ -119,10 +119,10 @@ export type PlanCatalog = CatalogPlan[];
 /** Translation keys under `plans.features`, used only to build the seed's texts. */
 export type PlanFeature =
   | "allSections"
-  | "jarvis"
+  | "grady"
   | "generatedContacts"
   | "meetingAnalysis"
-  | "jarvisFiles"
+  | "gradyFiles"
   | "calendarSync"
   | "prioritySupport"
   | "everythingInPro"
@@ -155,7 +155,7 @@ export const PAID_PLANS: readonly PaidPlan[] = [
       storage_mb: null,
       scheduler_types: 1,
     },
-    features: ["allSections", "generatedContacts", "jarvis"],
+    features: ["allSections", "generatedContacts", "grady"],
   },
   {
     key: "pro",
@@ -173,7 +173,7 @@ export const PAID_PLANS: readonly PaidPlan[] = [
     features: [
       "generatedContacts",
       "meetingAnalysis",
-      "jarvisFiles",
+      "gradyFiles",
       "calendarSync",
       "prioritySupport",
     ],

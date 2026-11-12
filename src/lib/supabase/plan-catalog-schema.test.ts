@@ -20,6 +20,26 @@ import { PGLITE_EXTENSIONS } from "./pglite-extensions";
 
 const MIGRATIONS_DIR = path.resolve(__dirname, "../../../supabase/migrations");
 
+/**
+ * The first version was published while the assistant was still called
+ * Jarvis (renamed to Grady in 26.1); the seed now says Grady, the stored
+ * history keeps its words. Compare the two with the name swapped back.
+ */
+const ASSISTANT_RENAMED: Record<string, string> = {
+  "Asistent Jarvis": "Asistent Grady",
+  "Jarvis, your assistant": "Grady, your assistant",
+  "Soubory do Jarvise": "Soubory do Gradyho",
+  "Files for Jarvis": "Files for Grady",
+};
+function withGrady(catalog: PlanCatalog | false): PlanCatalog | false {
+  if (!catalog) return catalog;
+  return JSON.parse(
+    JSON.stringify(catalog, (_key, value: unknown) =>
+      typeof value === "string" ? (ASSISTANT_RENAMED[value] ?? value) : value,
+    ),
+  ) as PlanCatalog;
+}
+
 const SUPABASE_STUBS = `
 create role anon nologin;
 create role authenticated nologin;
@@ -153,7 +173,7 @@ describe("the first version", () => {
     expect(all[0].status).toBe("published");
     // Published before step 22.5: no included_workers, which reads as 0.
     const parsed = validatePlanCatalog(all[0].payload);
-    expect(parsed.ok && parsed.catalog).toEqual(seedPlanCatalog());
+    expect(withGrady(parsed.ok && parsed.catalog)).toEqual(seedPlanCatalog());
   });
 
   it("gets a draft with the workers agreed in step 22.5, never published by itself", async () => {
@@ -385,7 +405,7 @@ describe("the writers", () => {
     expect(now.id).not.toBe(original.id);
     // The first version, as published before included_workers existed.
     const restored = validatePlanCatalog(now.payload);
-    expect(restored.ok && restored.catalog).toEqual(seedPlanCatalog());
+    expect(withGrady(restored.ok && restored.catalog)).toEqual(seedPlanCatalog());
     expect((await one<{ ai_calls_limit: number }>(`select * from current_plan($1)`, [user])).ai_calls_limit).toBe(1000);
     expect(
       (await one<{ n: number }>(`select count(*)::int as n from plan_catalog_versions where status = 'published'`)).n,

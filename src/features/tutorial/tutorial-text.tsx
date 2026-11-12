@@ -3,13 +3,13 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { CheckIcon } from "lucide-react";
-import { useTypewriter } from "@/components/jarvis/speech-bubble";
+import { useTypewriter } from "@/components/grady/speech-bubble";
 import { useReducedMotionSafe } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
 import { emphasize, plainText, sliceParts, type TextPart } from "./presentation";
 
 /**
- * What Jarvis says in a step: the verb of the action stands out (`**verb**`
+ * What Grady says in a step: the verb of the action stands out (`**verb**`
  * in the translation), the line is typed out when asked for (reduced motion
  * shows it at once; screen readers always get the whole sentence).
  */
@@ -45,7 +45,7 @@ export function StepText({
 }
 
 /**
- * Jarvis's short reaction once a hands-on step is done: pops in with a tick,
+ * Grady's short reaction once a hands-on step is done: pops in with a tick,
  * then the Next button lights up. Still with reduced motion.
  */
 export function Reaction({ text }: { text: string }) {

@@ -11,7 +11,7 @@ import type { DealContact } from "./types";
 /**
  * The three tiles above the pipeline (and on the dashboard) that only ever
  * show what is wrong; the goal is a zero everywhere. Shared by the board,
- * the dashboard and Jarvis, so all of them count the same.
+ * the dashboard and Grady, so all of them count the same.
  *
  * - closePast: open deals whose Close Date has passed (won and lost ones are done).
  * - overdueTasks: open tasks of deals past their due moment, counted as tasks,
@@ -184,7 +184,7 @@ export function healthIsClear(health: PipelineHealth): boolean {
 }
 
 /**
- * A few deals of each tile for Jarvis: names, days and dates, nothing more.
+ * A few deals of each tile for Grady: names, days and dates, nothing more.
  * The id is never shown to the model; it tells later whether the deal still burns.
  */
 export type HealthDigest = {

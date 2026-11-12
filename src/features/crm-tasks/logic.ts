@@ -13,7 +13,7 @@ import {
 
 /**
  * The rules of sales tasks, shared by the list, the dialog, the calendar and
- * Jarvis: when a task is overdue, which group it falls into, how the list is
+ * Grady: when a task is overdue, which group it falls into, how the list is
  * ordered and what the filters in the address mean. Days are the user's, in
  * their time zone; "overdue" is to the minute.
  */

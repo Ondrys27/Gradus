@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ErrorScreen } from "@/features/errors/error-screen";
 import { APP_HOME_PATH } from "@/lib/routes";
 
-/** A page of the app crashed: the error page inside the app's frame, without Jarvis. */
+/** A page of the app crashed: the error page inside the app's frame, without Grady. */
 export default function AppError({
   error,
   reset,

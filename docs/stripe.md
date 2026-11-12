@@ -39,7 +39,7 @@ Settings → Billing → **Subscriptions and emails** (v novějším rozhraní B
    - zapni **Send emails when card payments fail** (e-mail o selhání s odkazem na zaplacení / změnu karty),
    - u odkazu v e-mailu vyber **Customer portal** (Use your customer portal), ať zákazník mění kartu tam, kde ji Gradus nabízí,
    - volitelně **Send reminders when cards are about to expire** (Expiring cards).
-5. Během opakování má účet stav `past_due`: aplikace běží dál, majitel vidí nad obsahem banner „Platba se nepovedla, aktualizuj kartu“ s odkazem do portálu, pracovník nic. Jarvis to v rozhovoru jednou připomene. Jakmile projde opakování (`invoice.paid`), banner zmizí.
+5. Během opakování má účet stav `past_due`: aplikace běží dál, majitel vidí nad obsahem banner „Platba se nepovedla, aktualizuj kartu“ s odkazem do portálu, pracovník nic. Grady to v rozhovoru jednou připomene. Jakmile projde opakování (`invoice.paid`), banner zmizí.
 6. Po posledním neúspěšném pokusu Stripe předplatné zruší: v Gradusu skončí k tomu okamžiku (ne ke konci nezaplaceného období), účet je jen pro čtení jako po zkušebce, data se nemažou a „Zaplatit a pokračovat“ založí nové předplatné. Tobě přijde e-mail v denním souhrnu.
 
 Vyzkoušení v testovacím režimu: karta `4000 0000 0000 0341` se k zákazníkovi připojí, ale každá platba selže. Opakování za 2 týdny jde zrychlit přes **Test clocks** (Billing → Subscriptions → Test clocks), nebo ručně: v detailu faktury Retry / v detailu předplatného Cancel subscription.

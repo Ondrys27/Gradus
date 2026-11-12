@@ -102,7 +102,7 @@ export async function createAccount(options: AccountOptions): Promise<Account> {
         timezone: options.timezone ?? "Europe/Prague",
         country_code: "CZ",
         currency: "CZK",
-        // Proactive Jarvis would fly in on its own schedule and cover what a test clicks.
+        // Proactive Grady would fly in on its own schedule and cover what a test clicks.
         jarvis_proactive: false,
       })
       .eq("user_id", id);
@@ -117,7 +117,7 @@ export async function createAccount(options: AccountOptions): Promise<Account> {
           mode,
           onboarding_completed_at: now,
           tour_completed_at: now,
-          // Jarvis's one-time Notes introduction would fly in over what a test clicks.
+          // Grady's one-time Notes introduction would fly in over what a test clicks.
           notes_intro_seen_at: now,
         })
         .eq("id", id);

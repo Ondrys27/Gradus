@@ -8,8 +8,8 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { fieldA11y, FormField } from "@/components/ui/form-field";
 import { Textarea } from "@/components/ui/input";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
-import { NOTE_MAP_REQUEST_MAX } from "@/features/jarvis/protocol";
-import { JarvisJobError } from "@/features/jarvis/queries";
+import { NOTE_MAP_REQUEST_MAX } from "@/features/grady/protocol";
+import { GradyJobError } from "@/features/grady/queries";
 import type { SuggestedBranch } from "./map-ops";
 import { useSuggestBranches } from "./use-map-suggest";
 
@@ -21,7 +21,7 @@ type Props = {
   onSuggested: (nodeId: string, branches: SuggestedBranch[]) => void;
 };
 
-/** "Suggest branches": what Jarvis should add under the selected node, then his proposal. */
+/** "Suggest branches": what Grady should add under the selected node, then his proposal. */
 export function SuggestDialog({ open, onOpenChange, noteId, node, onSuggested }: Props) {
   const t = useTranslations("notes.map.suggest");
   return (
@@ -60,7 +60,7 @@ function SuggestForm({
   onSuggested: (branches: SuggestedBranch[]) => void;
 }) {
   const t = useTranslations("notes.map.suggest");
-  const tError = useTranslations("jarvis.error");
+  const tError = useTranslations("grady.error");
   const [request, setRequest] = useState("");
   const suggest = useSuggestBranches();
 
@@ -69,7 +69,7 @@ function SuggestForm({
     suggest.mutate({ noteId, nodeId: node.id, request }, { onSuccess: onSuggested });
   }
 
-  const code = suggest.error instanceof JarvisJobError ? suggest.error.code : suggest.error ? "unknown" : null;
+  const code = suggest.error instanceof GradyJobError ? suggest.error.code : suggest.error ? "unknown" : null;
   const error =
     code === null
       ? null

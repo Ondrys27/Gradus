@@ -143,7 +143,7 @@ test("17 · milestones scroll after an in-app move, a dialog and the map", async
   await expectPageScrolls(page, "menu again");
 });
 
-test("17 · milestones scroll right after onboarding and Jarvis's tour", async ({ page, accounts }) => {
+test("17 · milestones scroll right after onboarding and Grady's tour", async ({ page, accounts }) => {
   const account = await accounts.create({ label: "scroll-tour", mode: "game", onboarded: false });
   await signIn(page, account);
 
@@ -163,7 +163,7 @@ test("17 · milestones scroll right after onboarding and Jarvis's tour", async (
   await expect(wizard).toBeHidden();
 
   // The celebration (a Base UI dialog with its own scroll lock) comes first;
-  // Jarvis asks how to start only once it is closed. Then the quick look.
+  // Grady asks how to start only once it is closed. Then the quick look.
   const celebration = page.getByRole("dialog", { name: t("game.celebration.onboardingCompleted.title") });
   await expect(celebration).toBeVisible();
   await celebration.getByRole("button", { name: exact(L, "celebration.continue") }).dispatchEvent("click");

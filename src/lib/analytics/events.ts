@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { FILE_KINDS } from "@/features/jarvis/files";
-import { PROACTIVE_KINDS } from "@/features/jarvis/proactive";
-import { PROACTIVE_REACTIONS } from "@/features/jarvis/protocol";
+import { FILE_KINDS } from "@/features/grady/files";
+import { PROACTIVE_KINDS } from "@/features/grady/proactive";
+import { PROACTIVE_REACTIONS } from "@/features/grady/protocol";
 import { INDUSTRY_KEYS } from "@/features/onboarding/industries";
 import { XP_REASONS } from "@/features/game/rules";
 import { NOTE_TEMPLATE_KEYS } from "@/features/notes/templates";
@@ -70,7 +70,7 @@ const ONBOARDING_STEPS = [
 const TOUR_STEPS = [
   "dashboard",
   "milestones",
-  "jarvis",
+  "jarvis", // DB name kept from Jarvis (stored tour and tutorial step key)
   "level",
   "search",
   "settings",
@@ -392,7 +392,7 @@ export const EVENTS = {
       "task",
       "milestone",
       "deal",
-      "jarvis",
+      "jarvis", // from Grady's answer: DB name kept from Jarvis
       "convert",
     ]),
     kind: optional(oneOf(NOTE_KINDS)),
@@ -409,12 +409,12 @@ export const EVENTS = {
     how: oneOf(["replace", "new"]),
     nodes: count(5000),
   }),
-  /** Jarvis suggested branches for a map note on request (written by /api/jarvis). */
+  /** Grady suggested branches for a map note on request (written by /api/grady). */
   note_map_suggested: event("notes", "server", true, {
     branches: count(50),
     with_request: bool(),
   }),
-  /** What the user did with Jarvis's suggested branches: kept or deleted, one or all. */
+  /** What the user did with Grady's suggested branches: kept or deleted, one or all. */
   note_map_suggestion_resolved: event("notes", "client", true, {
     action: oneOf(["accept", "reject"]),
     scope: oneOf(["one", "all"]),
@@ -443,7 +443,7 @@ export const EVENTS = {
   note_mention_opened: event("notes", "client", true, {
     target: oneOf(["contact", "deal", "event", "worker"]),
   }),
-  /** One of Jarvis's answers kept in the notes, as a new note or added to one. */
+  /** One of Grady's answers kept in the notes, as a new note or added to one. */
   note_saved_from_jarvis: event("notes", "client", true, { mode: oneOf(["new", "append"]) }),
 
   // --- pipeline ------------------------------------------------------------
@@ -846,7 +846,9 @@ export const EVENTS = {
     error_code: optional(key()),
   }),
 
-  // --- Jarvis --------------------------------------------------------------
+  // --- Grady --------------------------------------------------------------
+  // Event names and their area "jarvis" are rows of analytics_event_catalog:
+  // DB name kept from Jarvis.
   jarvis_opened: event("jarvis", "client", false, {}),
   jarvis_message_sent: event("jarvis", "server", true, {
     new_conversation: bool(),
@@ -881,18 +883,18 @@ export const EVENTS = {
     tasks_created: optional(count(100)),
     question: optional(key()),
   }),
-  /** A card in Jarvis's panel: used (open, ask, undo) or dismissed. */
+  /** A card in Grady's panel: used (open, ask, undo) or dismissed. */
   jarvis_suggestion_reacted: event("jarvis", "client", false, {
     reaction: oneOf(["used", "dismissed"]),
     action: oneOf(["open", "ask", "undoTask"]),
   }),
-  /** Something Jarvis did on his own, shown with an Undo. */
+  /** Something Grady did on his own, shown with an Undo. */
   jarvis_auto_action: event("jarvis", "server", false, { action: key() }),
   jarvis_auto_action_undone: event("jarvis", "client", true, { action: key() }),
   sales_analysis_requested: event("jarvis", "client", true, { ok: bool() }),
-  /** Thumb up/down on one of Jarvis's answers. */
+  /** Thumb up/down on one of Grady's answers. */
   jarvis_message_rated: event("jarvis", "server", false, { rating: oneOf(["up", "down"]) }),
-  /** Jarvis's one-time introduction of Notes: shown, then opened or closed. */
+  /** Grady's one-time introduction of Notes: shown, then opened or closed. */
   jarvis_notes_intro: event("jarvis", "client", false, {
     action: oneOf(["shown", "open", "close"]),
   }),
@@ -927,6 +929,7 @@ export const EVENTS = {
   }),
   /** The "Report a problem" dialog opened, and from where. */
   bug_report_opened: event("platform", "client", false, {
+    // "jarvis" = Grady's panel: DB name kept from Jarvis.
     via: oneOf(["account_menu", "more_panel", "jarvis", "shortcut"]),
   }),
   /** The administration moved a report to another status. */

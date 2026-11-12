@@ -119,14 +119,14 @@ describe("docs/funkce.md", () => {
   const root = path.resolve(__dirname, "../..");
   const markdown = readFileSync(path.join(root, "docs/funkce.md"), "utf8");
 
-  it("describes every section, page, Jarvis catalog entry and plan limit of the code", () => {
+  it("describes every section, page, Grady catalog entry and plan limit of the code", () => {
     const expected = expectedKeys(root);
     const keys = docKeys(markdown);
     expect(missingKeys(expected, keys).map((item) => item.key)).toEqual([]);
     expect(staleKeys(expected, keys)).toEqual([]);
   });
 
-  it("shows Jarvis prices that match the tokens and src/config/costs.ts, most expensive first", () => {
+  it("shows Grady prices that match the tokens and src/config/costs.ts, most expensive first", () => {
     const rows = pricedRows(markdown);
     expect(rows.length).toBeGreaterThan(0);
     expect(priceIssues(rows, PRICE_TOOLS)).toEqual([]);

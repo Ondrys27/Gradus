@@ -69,7 +69,7 @@ const doc: DocNode = {
 };
 
 describe("mentions in the plain text", () => {
-  it("writes a chip as [kind: label], so search and Jarvis read the name", () => {
+  it("writes a chip as [kind: label], so search and Grady read the name", () => {
     expect(extractText(doc, { mentionText: czech })).toBe(
       [
         "Schůzka s [kontakt: Jan Novák]",

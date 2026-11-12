@@ -8,7 +8,7 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { FormField } from "@/components/ui/form-field";
 import { Input, Textarea } from "@/components/ui/input";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
-import { uploadContentType } from "@/features/jarvis/files";
+import { uploadContentType } from "@/features/grady/files";
 import { formatNumber } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { errorCodeOf, type EmailErrorCode } from "./errors";
@@ -115,7 +115,7 @@ function ComposeForm({
   );
   const [showAiHelper, setShowAiHelper] = useState(false);
   const [receivedEmail, setReceivedEmail] = useState("");
-  // Whether the body started from Jarvis's draft, for "used AI drafts" (never the text).
+  // Whether the body started from Grady's draft, for "used AI drafts" (never the text).
   const [usedAiDraft, setUsedAiDraft] = useState(false);
 
   const sendCode = send.error ? errorCodeOf(send.error).code : null;
@@ -205,7 +205,7 @@ function ComposeForm({
         />
       </FormField>
 
-      {/* Jarvis: a meeting is easier with the booking link; one click puts it in. */}
+      {/* Grady: a meeting is easier with the booking link; one click puts it in. */}
       {!body.includes("/s/") && (
         <MeetingLinkHint
           purpose="meeting"

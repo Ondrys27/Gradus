@@ -1,6 +1,6 @@
 # Co Gradus umí a co nás to stojí
 
-Tenhle přehled je pro návrh tarifů. Popisuje, co aplikace a Jarvis umí, kdo co používá a kolik nás stojí provoz. Píše se z kódu a drží se aktuální: kdo přidá funkci, připíše ji sem. `bun run docs:funkce` porovná dokument s kódem a vypíše, co v něm chybí (v textu jsou na to skryté značky `<!-- kód: … -->`, při čtení nejsou vidět).
+Tenhle přehled je pro návrh tarifů. Popisuje, co aplikace a Grady umí, kdo co používá a kolik nás stojí provoz. Píše se z kódu a drží se aktuální: kdo přidá funkci, připíše ji sem. `bun run docs:funkce` porovná dokument s kódem a vypíše, co v něm chybí (v textu jsou na to skryté značky `<!-- kód: … -->`, při čtení nejsou vidět).
 
 Stav k 9. 11. 2026.
 
@@ -9,7 +9,7 @@ Stav k 9. 11. 2026.
 | Štítek | Co znamená |
 |---|---|
 | **žádný** | Jen naše databáze a server. Za jedno použití neplatíme nic navíc. |
-| **AI** | Volá model Claude (Jarvis). Platíme za tokeny, každé volání je zapsané v `ai_usage` s cenou. |
+| **AI** | Volá model Claude (Grady). Platíme za tokeny, každé volání je zapsané v `ai_usage` s cenou. |
 | **Google Maps** | Volá Google Places API. 0,035 USD za jeden požadavek (do 20 firem). |
 | **e-mail** | Odejde e-mail přes Resend. Asi 0,0009 USD za kus, k tomu paušál Resendu. |
 | **úložiště** | Uloží soubor (PDF, obrázek, dokument). V praxi skoro zadarmo, viz tabulka nákladů. |
@@ -33,7 +33,7 @@ Stav k 9. 11. 2026.
 | Co hoří | Tři dlaždice ukazují, co je v obchodech špatně: obchody po termínu uzavření, úkoly po termínu a obchody bez dalšího kroku. Klik vede do pipeline. | majitel, pracovník s pipeline | žádný |
 | Co dnes udělat | Dnešní úkoly, schůzky, lidé k ozvání a obchody, které stojí. Po pracovní době místo výzvy volat řekne, že lidé teď nezvedají. | majitel | žádný |
 | Šest čísel | Příjem za měsíc, splněné úkoly, úspěšnost obchodů, aktivní obchody, nové kontakty a čas volání. Každé číslo jde rozkliknout na graf. | majitel | žádný |
-| Rozbor obchodních schůzek | V detailu úspěšnosti obchodů napíše Jarvis rozbor dotazníků ze schůzek: co funguje, co ne a co zkusit jinak. Odemkne se po 5 dotaznících. | majitel, pracovník | AI (Opus) |
+| Rozbor obchodních schůzek | V detailu úspěšnosti obchodů napíše Grady rozbor dotazníků ze schůzek: co funguje, co ne a co zkusit jinak. Odemkne se po 5 dotaznících. | majitel, pracovník | AI (Opus) |
 | Dotazník spokojenosti | Po 14 dnech se zeptá na spokojenost 1–5 a co zlepšit, pak znovu po 30 dnech. | majitel, pracovník | žádný |
 | Nástěnka pracovníka | Pracovník má vlastní nástěnku: odpracované hodiny, výdělek, otevřené úkoly a časovač práce. | pracovník | žádný |
 
@@ -45,7 +45,7 @@ Stav k 9. 11. 2026.
 | Milníky a úkoly | Velké cíle rozdělené na úkoly a podúkoly do libovolné hloubky. Milník jde dokončit, až je všechno hotové. | majitel, pracovník s právem milníky | žádný |
 | Cesta podle oboru | Po výběru oboru se založí připravené milníky s úkoly. V herním režimu postupně odemykají další části aplikace. | majitel | žádný |
 | Odměna za milník | Majitel si k milníku napíše vlastní odměnu, při dokončení ji uvidí v oslavě. | majitel | žádný |
-| Jarvisův pohled | Hned po založení milníku k němu Jarvis napíše krátké hodnocení, a to u každého milníku jen jednou. | majitel, pracovník | AI (Sonnet) |
+| Gradyho pohled | Hned po založení milníku k němu Grady napíše krátké hodnocení, a to u každého milníku jen jednou. | majitel, pracovník | AI (Sonnet) |
 | Myšlenková mapa úkolů | Úkoly milníku jako mapa: přetahování, zoom, sbalování větví, celá obrazovka. | majitel, pracovník | žádný |
 | Import mapy | Načte plán z Markdownu, OPML, FreeMindu, XMindu nebo textu s odsazením a udělá z něj úkoly. Soubor zpracuje server a nic z něj neukládá. | majitel, pracovník | žádný |
 | Export mapy | Uloží úkoly jako Markdown, OPML, FreeMind nebo obrázek PNG. | majitel, pracovník | žádný |
@@ -60,8 +60,8 @@ Stav k 9. 11. 2026.
 | Myšlenková mapa místo textu | Poznámka jde psát jako mapa s barvami, poznámkami u uzlů a odkazy. Jde ji převést na text a zpátky. | jen majitel | žádný |
 | Odkazy na záznamy | Přes `@` jde do textu vložit kontakt, obchod, událost nebo pracovníka. U záznamu je pak vidět „Zmíněno v poznámkách“. | jen majitel | žádný |
 | Hledání a koš | Fulltext bez diakritiky. Smazané poznámky leží 30 dní v koši. | jen majitel | žádný |
-| Navrhnout větve | U uzlu mapy Jarvis navrhne 3–8 nových větví, uživatel je ponechá nebo smaže. | jen majitel | AI (Sonnet) |
-| Jarvis čte poznámky | V chatu Jarvis vychází z poznámek uživatele, ať se neptá na to, co už je zapsané. | jen majitel | AI (v ceně chatu) |
+| Navrhnout větve | U uzlu mapy Grady navrhne 3–8 nových větví, uživatel je ponechá nebo smaže. | jen majitel | AI (Sonnet) |
+| Grady čte poznámky | V chatu Grady vychází z poznámek uživatele, ať se neptá na to, co už je zapsané. | jen majitel | AI (v ceně chatu) |
 
 ### Kontakty
 <!-- kód: nav:contacts route:/app/kontakty route:/app/kontakty/[id] route:/app/kontakty/tabulky -->
@@ -74,7 +74,7 @@ Stav k 9. 11. 2026.
 | Klienti | Systémová tabulka, plní se sama z vyhraných obchodů. | majitel, pracovník | žádný |
 | Generování kontaktů | Podle oboru a místa najde firmy v Google Maps a uloží je, bez duplicit. Jedno stisknutí dá nejvýš 60 firem ze 3 požadavků. Google nevrací e-maily. | majitel, pracovník s právem generovat | Google Maps |
 | Poslat e-mail kontaktu | E-mail přímo z kontaktu nebo obchodu, až se 3 přílohami. Zapíše se do aktivit. | majitel, pracovník | e-mail |
-| Navrhnout odpověď | Uživatel vloží e-mail, který dostal, a Jarvis k němu napíše odpověď, kterou si upraví a pošle sám. | majitel, pracovník | AI (Sonnet) |
+| Navrhnout odpověď | Uživatel vloží e-mail, který dostal, a Grady k němu napíše odpověď, kterou si upraví a pošle sám. | majitel, pracovník | AI (Sonnet) |
 
 ### Cold Calling
 <!-- kód: nav:coldCalling route:/app/cold-calling -->
@@ -135,7 +135,7 @@ Stav k 9. 11. 2026.
 | Po schůzce | Proběhlá rezervace s obchodem nabídne v „Čeká na tebe“ dotazník o schůzce (stejný jako při posunu obchodu ze Schůzky), Nepřišel nebo Přeskočit; „Nepřišel“ jde označit i v Rezervacích. | majitel, pracovník (své) | žádný |
 | Rezervace | Nadcházející a minulé se stavem a filtrem, detail s odpověďmi a akcemi (Potvrdit, Odmítnout, Přesunout, Zrušit, Nepřišel); majitel přepne na „Všichni“ (jen čtení). | majitel, pracovník (své) | žádný |
 | Všichni | Majitel vidí rezervační stránky a typy pracovníků a jejich rezervace, typ může jen vypnout. | jen majitel | žádný |
-| Jarvis a odkaz na schůzku | Jarvis zná nadcházející rezervace a čekající schválení; u kontaktu v Cold Callingu ve stavu Ozvat se a v e-mailu nabídne „pošli odkaz na schůzku“ s nejvhodnějším typem (úvodní hovor nejkratší, schůzka nejblíž 30 min). | majitel, pracovník (své) | žádný (v návrhu odpovědi e-mailem součást volání AI) |
+| Grady a odkaz na schůzku | Grady zná nadcházející rezervace a čekající schválení; u kontaktu v Cold Callingu ve stavu Ozvat se a v e-mailu nabídne „pošli odkaz na schůzku“ s nejvhodnějším typem (úvodní hovor nejkratší, schůzka nejblíž 30 min). | majitel, pracovník (své) | žádný (v návrhu odpovědi e-mailem součást volání AI) |
 
 ### Finance a faktury
 <!-- kód: nav:finance route:/app/finance route:/app/finance/faktury/nova route:/app/finance/faktury/[id] -->
@@ -156,7 +156,7 @@ Stav k 9. 11. 2026.
 
 | Funkce | Co dělá | Pro koho | Náklad |
 |---|---|---|---|
-| Pozvat pracovníka | Krátkým ID nebo e-mailem existujícího účtu: pozvánka čeká v jeho aplikaci (zvonek, e-mail, Jarvis). E-mailem novému člověku: odkaz na registraci jako dřív (i e-mailem). S nadřízeným, skupinami, právy a odměnami. | jen majitel | e-mail |
+| Pozvat pracovníka | Krátkým ID nebo e-mailem existujícího účtu: pozvánka čeká v jeho aplikaci (zvonek, e-mail, Grady). E-mailem novému člověku: odkaz na registraci jako dřív (i e-mailem). S nadřízeným, skupinami, právy a odměnami. | jen majitel | e-mail |
 | Pozvánky | Pozvaný vidí „Novák s.r.o. · Václav Novák tě zve jako Obchodník“, co tam uvidí a odměny; přijme (firma je v přepínači) nebo odmítne. Majitel vidí stav a dostane oznámení. | kdokoli s pozvánkou | žádný |
 | Odejít z firmy | Pracovník sám v Nastavení → Účet; majitel dostane oznámení a e-mail, práce zůstává ve firmě. | pracovník | e-mail |
 | Kdo za koho platí | Kdo má vlastní platný tarif, je ve firmě zdarma; za ostatní platí majitel: pracovníci v ceně tarifu, pak cena za každého dalšího. Štítek u pracovníka a řádek v Předplatném; ve Stripe druhá položka předplatného, počet se srovná denně a platí od dalšího období. | jen majitel | Stripe |
@@ -166,7 +166,7 @@ Stav k 9. 11. 2026.
 | Dashboard pracovníka | Přehled, práva, obchody a úkoly s grafy plnění, dokumenty, tým, odměny. | majitel, pracovník (sám sebe) | žádný |
 | Dokumenty pracovníka | Smlouvy a doklady k pracovníkovi (do 20 MB). | majitel | úložiště |
 | Systém odměn | Majitel nakreslí, za co pracovníci dostanou zaplaceno (úkol, schůzka, vyhraný obchod, hodina), a schvaluje výdělky. | jen majitel | žádný |
-| Nastavit odměny s AI | Jarvis převede poznámky ve stromu odměn na pravidla a vysvětlí je. Platí až po potvrzení. | jen majitel | AI (Sonnet) |
+| Nastavit odměny s AI | Grady převede poznámky ve stromu odměn na pravidla a vysvětlí je. Platí až po potvrzení. | jen majitel | AI (Sonnet) |
 | Moje odměny | Pracovník vidí své výdělky: čeká na schválení, schváleno, vyplaceno. | pracovník | žádný |
 | Odstranit z firmy | Ukončí přístup hned, data zůstanou, otevřenou práci předá někomu jinému. | jen majitel | žádný |
 
@@ -175,29 +175,29 @@ Stav k 9. 11. 2026.
 
 | Funkce | Co dělá | Pro koho | Náklad |
 |---|---|---|---|
-| Chat ve firmě | Skupinové a osobní konverzace jako WhatsApp Web: zmínky, odpovědi, přečteno, připnutí, ztlumení. Jarvis zprávy nikdy nečte. | majitel, pracovník (vždy) | žádný |
+| Chat ve firmě | Skupinové a osobní konverzace jako WhatsApp Web: zmínky, odpovědi, přečteno, připnutí, ztlumení. Grady zprávy nikdy nečte. | majitel, pracovník (vždy) | žádný |
 | Přílohy | Až 5 souborů po 10 MB ke zprávě. Rok neotevřené jdou do koše. | majitel, pracovník | úložiště |
 | Upozornění e-mailem | Kdo 10 minut není v aplikaci, dostane e-mail o osobní zprávě nebo zmínce, nejvýš jeden za hodinu. Jde vypnout. | majitel, pracovník | e-mail |
 | Export konverzace | Stažení konverzace jako CSV. | jen majitel | žádný |
 
-### Jarvis
+### Grady
 
-AI pomocník v pravém dolním rohu: chat, souhrny dne, návrhy a hodnocení. Všechno, co dělá, s modelem a cenou je v [kapitole 2](#2-jarvis). Majitel i pracovník mají každý vlastního Jarvise a vlastní konverzace.
+AI pomocník v pravém dolním rohu: chat, souhrny dne, návrhy a hodnocení. Všechno, co dělá, s modelem a cenou je v [kapitole 2](#2-grady). Majitel i pracovník mají každý vlastního Gradyho a vlastní konverzace.
 
 ### Nastavení
-<!-- kód: route:/app/nastaveni route:/app/nastaveni/ucet route:/app/nastaveni/vzhled route:/app/nastaveni/prace route:/app/nastaveni/jarvis route:/app/nastaveni/soukromi route:/app/nastaveni/predplatne route:/app/tarif route:/app/nastaveni/kalendar -->
+<!-- kód: route:/app/nastaveni route:/app/nastaveni/ucet route:/app/nastaveni/vzhled route:/app/nastaveni/prace route:/app/nastaveni/grady route:/app/nastaveni/soukromi route:/app/nastaveni/predplatne route:/app/tarif route:/app/nastaveni/kalendar -->
 
 | Funkce | Co dělá | Pro koho | Náklad |
 |---|---|---|---|
 | Účet | Fotka, jméno, uživatelské jméno, krátké ID účtu (kopírovat, QR), e-mail, jazyk, heslo; ve vlastní firmě její název a logo. | majitel, pracovník | úložiště (fotka, logo) |
 | Vzhled | Šest barevných témat (v herním režimu se odemykají úrovní), zvuky, animace, země, pásmo, měna a formáty. Měna je jakákoli platná podle ISO 4217 (hledání podle kódu i názvu, měna země a nejčastější nahoře); mění jen zobrazení, uložené částky zůstávají v měně, ve které vznikly. | majitel, pracovník | žádný |
 | Práce | Herní nebo nástrojový režim, cesta oboru, kdy znovu oslovit ztracené obchody a údaje na faktury. | majitel (část i pracovník) | žádný |
-| Jarvis | Zapnutí proaktivního Jarvise, jak často se ozývá, tichý režim, e-maily ze Zpráv, znovu spustit tutoriál, smazat ukázková data. | majitel, pracovník | žádný |
+| Grady | Zapnutí proaktivního Gradyho, jak často se ozývá, tichý režim, e-maily ze Zpráv, znovu spustit tutoriál, smazat ukázková data. | majitel, pracovník | žádný |
 | Kalendář | Odebírané kalendáře: tajná adresa iCal (Google, Apple, Outlook) s návodem, název, barva; server ji stáhne (jen https, 5 MB, 10 s, veřejné adresy), uloží šifrovaně a drží jen obsazené časy na 60 dní, obnova denně, ručně a při otevření rezervační stránky. Odkaz pro odběr kalendáře Gradusu (ICS s tajným tokenem, ukáže se jednou, jde obnovit a vypnout). | majitel, pracovník | žádný |
 | Soukromí | Export všech dat (ZIP s CSV), smazání účtu, podmínky a ochrana soukromí. | majitel, pracovník | žádný |
 | Předplatné | Tarif, změna, zrušení a obnovení, historie plateb s doklady, fakturační údaje (propíšou se do Stripe), promo kód. Stará adresa /app/tarif sem přesměruje. | jen majitel | e-mail (nám o změně) |
 | Platební metoda a doklady | „Spravovat platební metodu a doklady“ otevře Stripe Customer Portal: změna karty, fakturační adresa a seznam dokladů (tarif se mění a ruší jen v Gradusu). Historie plateb ukazuje datum, tarif, období, částku, stav (i vráceno) a doklad od Stripe. | jen majitel | Stripe |
-| Neúspěšná platba | Když platba selže, majitel vidí nad aplikací „Platba se nepovedla, aktualizuj kartu“ s odkazem do portálu; aplikace běží dál, Stripe platbu opakuje a posílá vlastní e-maily. Když neprojde ani poslední pokus, předplatné skončí a účet je jen pro čtení jako po zkušebce, nic se nesmaže. Jarvis to v rozhovoru jednou připomene. Pracovník nic nevidí. | jen majitel | Stripe, e-mail (nám souhrnem 1× denně) |
+| Neúspěšná platba | Když platba selže, majitel vidí nad aplikací „Platba se nepovedla, aktualizuj kartu“ s odkazem do portálu; aplikace běží dál, Stripe platbu opakuje a posílá vlastní e-maily. Když neprojde ani poslední pokus, předplatné skončí a účet je jen pro čtení jako po zkušebce, nic se nesmaže. Grady to v rozhovoru jednou připomene. Pracovník nic nevidí. | jen majitel | Stripe, e-mail (nám souhrnem 1× denně) |
 | Doplňky | V Předplatném přepínač „Bez značky Gradus“ (0,99 € měsíčně, 29 Kč ručně, jinde podle kurzu). Ve Stripe se zapnutím přidá položka předplatného se zbytkem období hned, vypnutím odebere; během zkušebky se zaplatí spolu s tarifem, beta neplatí. Skrytí značky použije plánovač schůzek (24.3). | jen majitel | Stripe |
 | Zaplatit a pokračovat | Placení přes Stripe Checkout: zkušebka je bez karty, kdo zaplatí během ní, platí až od jejího konce, po expiraci hned. Tlačítko je v Předplatném, v liště posledních 3 dnů zkušebky a na kartě po expiraci. Promo kód se uplatní jako kupon, jiné kódy ve Stripe zadat nejde. Vyšší tarif ve Stripe hned s doplatkem, nižší od konce období, zrušení ke konci období. Ceny jen ze zveřejněného katalogu, testovací a ostrý režim se nemíchají. | jen majitel | Stripe |
 
@@ -229,9 +229,9 @@ AI pomocník v pravém dolním rohu: chat, souhrny dne, návrhy a hodnocení. V�
 
 ---
 
-## 2. Jarvis
+## 2. Grady
 
-Model vybírá kód podle druhu práce (`src/features/jarvis/models.ts`):
+Model vybírá kód podle druhu práce (`src/features/grady/models.ts`):
 - **Haiku** dělá rutinu, třídění a hlídání.
 - **Sonnet** píše chat, souhrny, hodnocení a návrhy.
 - **Opus** píše velké rozbory.
@@ -244,23 +244,23 @@ Ceny za milion tokenů jsou v `src/config/costs.ts`:
 | Sonnet | 2 USD | 2,50 USD | 0,10 USD | 10 USD |
 | Opus | 4 USD | 5 USD | 0,20 USD | 20 USD |
 
-Tokeny jsou odhad z délky promptů v kódu a běžných dat, ne měření; jeden token je asi 4 znaky. Stálá část chatu, tedy povaha Jarvise a pravidla (asi 2 500 tokenů), se ukládá do cache. Od druhé zprávy během 5 minut ji proto platíme za desetinu ceny. Každé úspěšné volání, i automatické (souhrn, hlídání, hodnocení milníku, třídění nápadů), se počítá do měsíčního limitu odpovědí Jarvise v tarifu.
+Tokeny jsou odhad z délky promptů v kódu a běžných dat, ne měření; jeden token je asi 4 znaky. Stálá část chatu, tedy povaha Gradyho a pravidla (asi 2 500 tokenů), se ukládá do cache. Od druhé zprávy během 5 minut ji proto platíme za desetinu ceny. Každé úspěšné volání, i automatické (souhrn, hlídání, hodnocení milníku, třídění nápadů), se počítá do měsíčního limitu odpovědí Gradyho v tarifu.
 
 ### Co volá model, od nejdražšího
 <!-- kód: ai:analysis ai:chat ai:milestone_review ai:reward_setup ai:briefing ai:email_reply ai:ping ai:note_map_suggest ai:opportunity_scan ai:classify -->
 <!-- kód: kind:salesAnalysis kind:milestoneReview kind:rewardSetup kind:emailReply kind:ping kind:rulesTest kind:noteMapSuggest -->
 
-| Co Jarvis dělá | Kdy a pro koho | Model | Typické tokeny | Cena 1 použití | Běžný uživatel za měsíc |
+| Co Grady dělá | Kdy a pro koho | Model | Typické tokeny | Cena 1 použití | Běžný uživatel za měsíc |
 |---|---|---|---|---|---|
 | Rozbor obchodních schůzek | Na požádání, po 5 dotaznících ze schůzek. Čte až 150 posledních. | Opus | 2 200 do cache · 3 500 vstup · 1 200 výstup | 0,049 USD <!-- cena: ai=analysis in=3500 read=0 write=2200 out=1200 --> | 0–1× (se 150 dotazníky až 0,13 USD) |
 | Chat se souborem | Zpráva s PDF, obrázkem, Wordem nebo Excelem (nejvýš 3 soubory po 10 MB). | Sonnet | 2 500 z cache · 9 000 vstup · 550 výstup | 0,024 USD <!-- cena: ai=chat in=9000 read=2500 write=0 out=550 --> | 3–5× |
-| Chat: první zpráva konverzace | Otázka v panelu Jarvise. V kontextu je souhrn situace, tarify, poznámky (až 12 000 znaků) a odpovědi na otázky. | Sonnet | 2 500 do cache · 3 500 vstup · 450 výstup | 0,018 USD <!-- cena: ai=chat in=3500 read=0 write=2500 out=450 --> | 15× |
+| Chat: první zpráva konverzace | Otázka v panelu Gradyho. V kontextu je souhrn situace, tarify, poznámky (až 12 000 znaků) a odpovědi na otázky. | Sonnet | 2 500 do cache · 3 500 vstup · 450 výstup | 0,018 USD <!-- cena: ai=chat in=3500 read=0 write=2500 out=450 --> | 15× |
 | Chat: další zpráva | Pokračování konverzace. S ní jde i historie, nejvýš 20 zpráv. | Sonnet | 2 500 z cache · 4 500 vstup · 450 výstup | 0,014 USD <!-- cena: ai=chat in=4500 read=2500 write=0 out=450 --> | 45× |
-| Hodnocení milníku („Jarvisův pohled“) | Samo po založení milníku, jednou za milník. Bere i propojené poznámky. Když je milník dobrý, řekne to. | Sonnet | 2 200 do cache · 700 vstup · 350 výstup | 0,010 USD <!-- cena: ai=milestone_review in=700 read=0 write=2200 out=350 --> | 3–4× |
+| Hodnocení milníku („Gradyho pohled“) | Samo po založení milníku, jednou za milník. Bere i propojené poznámky. Když je milník dobrý, řekne to. | Sonnet | 2 200 do cache · 700 vstup · 350 výstup | 0,010 USD <!-- cena: ai=milestone_review in=700 read=0 write=2200 out=350 --> | 3–4× |
 | Nastavit odměny s AI | Ve Správě firmy → Systém odměn, na požádání. | Sonnet | 1 500 vstup · 700 výstup | 0,010 USD <!-- cena: ai=reward_setup in=1500 read=0 write=0 out=700 --> | 0–1× (jen firmy s pracovníky) |
 | Souhrn týdne nebo měsíce | Při prvním příchodu v týdnu nebo měsíci u frekvence „týdně“ nebo „měsíčně“: co se povedlo, co stojí, 3 věci na období. | Sonnet | 2 200 vstup · 450 výstup | 0,0089 USD <!-- cena: ai=briefing in=2200 read=0 write=0 out=450 --> | 1–4× (místo denních) |
 | Návrh odpovědi na e-mail | V okně e-mailu ke kontaktu nebo obchodu, na požádání. | Sonnet | 1 700 vstup · 400 výstup | 0,0074 USD <!-- cena: ai=email_reply in=1700 read=0 write=0 out=400 --> | 5× |
-| Test spojení a pokynů | Administrace → AI a Jarvis (Otestovat, Vyzkoušet pokyny). Jen majitel aplikace. | Sonnet | 2 200 do cache · 30 vstup · 30 výstup | 0,0059 USD <!-- cena: ai=ping in=30 read=0 write=2200 out=30 --> | jen my |
+| Test spojení a pokynů | Administrace → AI a Grady (Otestovat, Vyzkoušet pokyny). Jen majitel aplikace. | Sonnet | 2 200 do cache · 30 vstup · 30 výstup | 0,0059 USD <!-- cena: ai=ping in=30 read=0 write=2200 out=30 --> | jen my |
 | Navrhnout větve mapy | U uzlu myšlenkové mapy v Poznámkách, na požádání. Navrhne 3–8 větví. | Sonnet | 1 400 vstup · 300 výstup | 0,0058 USD <!-- cena: ai=note_map_suggest in=1400 read=0 write=0 out=300 --> | 2–4× |
 | Souhrn dne (ranní shrnutí) | Ráno ho napíše noční úloha, při prvním příchodu dne se ukáže. Když už fakta nesedí, přepíše se. Prázdný den nic. | Sonnet | 1 300 vstup · 200 výstup | 0,0046 USD <!-- cena: ai=briefing in=1300 read=0 write=0 out=200 --> | 20–25× |
 | Hlídání příležitostí | Jednou denně (10:00 UTC), jen u účtů, kde se od minula něco změnilo. Návrh se ukáže v bublině nebo v panelu. | Haiku | 2 200 vstup · 300 výstup | 0,0004 USD <!-- cena: ai=opportunity_scan in=2200 read=0 write=0 out=300 --> | 15–20× |
@@ -270,21 +270,21 @@ Pokyny majitele z administrace (až 2 000 znaků, asi 500 tokenů) jdou navíc d
 
 Druhy `check` a `summary` jsou v kódu připravené, ale dnes je nic nevolá. <!-- kód: ai:check ai:summary -->
 
-### Co Jarvis dělá bez modelu (0 USD)
+### Co Grady dělá bez modelu (0 USD)
 <!-- kód: kind:proactive kind:rateMessage -->
 
 | Co | Jak to funguje | Pro koho |
 |---|---|---|
-| Pravidlové návrhy | Jarvis sám přiletí s věcí, kterou spočítá z dat: obchod vyhrán, komu se ozvat, obchod stojí, úkol po termínu, milník připravený k dokončení, faktura po splatnosti, obchodní úkol po termínu, další krok cesty, pozvánka do cizí firmy, docházející peníze podle plánu měsíce (kdy kapitál klesne pod nulu nebo rezervu a proč), rezervace ke schválení a nová rezervace z plánovače. Před ukázáním se vždy přepočítá. <!-- kód: proactive:dealWon proactive:followUps proactive:stalledDeal proactive:overdueTask proactive:milestoneReady proactive:overdueInvoice proactive:overdueCrmTask proactive:pathReady proactive:workerInvite proactive:cashLow proactive:bookingPending proactive:bookingNew proactive:insight --> | majitel |
+| Pravidlové návrhy | Grady sám přiletí s věcí, kterou spočítá z dat: obchod vyhrán, komu se ozvat, obchod stojí, úkol po termínu, milník připravený k dokončení, faktura po splatnosti, obchodní úkol po termínu, další krok cesty, pozvánka do cizí firmy, docházející peníze podle plánu měsíce (kdy kapitál klesne pod nulu nebo rezervu a proč), rezervace ke schválení a nová rezervace z plánovače. Před ukázáním se vždy přepočítá. <!-- kód: proactive:dealWon proactive:followUps proactive:stalledDeal proactive:overdueTask proactive:milestoneReady proactive:overdueInvoice proactive:overdueCrmTask proactive:pathReady proactive:workerInvite proactive:cashLow proactive:bookingPending proactive:bookingNew proactive:insight --> | majitel |
 | Návrh z hlídání | Postřeh z hlídání příležitostí, může nést úkoly k přidání. Model stojí jen to hlídání (viz výše), samotné ukázání nic. | majitel |
 | Otázky | Nejvýš dvě týdně: cíl měsíce, kolik hodin chce volat, co ho brzdí, ideální zákazník. Odpovědi jdou do kontextu chatu. <!-- kód: question:monthlyGoal question:callingHours question:obstacle question:idealCustomer --> | majitel |
 | Návrhy otázek v chatu | Tlačítka podle situace: naplánovat den, další krok, komu se ozvat, obchody, co stojí, úkoly a faktury po termínu, první milník, první obchod, finance měsíce, začít volat. Po kliknutí je to obyčejná zpráva chatu. <!-- kód: chip:planDay chip:planNext chip:followUps chip:stalledDeals chip:overdueTasks chip:overdueCrmTasks chip:overdueInvoices chip:nextMilestoneStep chip:firstMilestone chip:firstDeal chip:monthFinance chip:startCalling --> | majitel, pracovník |
 | Jak často se ozývá | Často (2 h), Občas (6 h, výchozí), Jednou denně, týdně, měsíčně. Řídí, kolik souhrnů a návrhů za měsíc vznikne. <!-- kód: frequency:every_2h frequency:every_6h frequency:daily frequency:weekly frequency:monthly --> | majitel |
 | Časové okno | Volání a schůzky navrhuje jen v pracovní dny 8:00–17:30 v pásmu uživatele, mimo svátky ČR. | majitel, pracovník |
-| Tutoriál a průvodce | Jarvis provází tutoriálem. Texty jsou z překladů, žádný model. | majitel, pracovník |
+| Tutoriál a průvodce | Grady provází tutoriálem. Texty jsou z překladů, žádný model. | majitel, pracovník |
 | Představení Poznámek | Jednou za život účtu, pevný text. | majitel |
-| Uložit do poznámek | Odpověď Jarvise jde jedním tlačítkem do poznámky. | majitel |
-| Palec nahoru / dolů | Hodnocení odpovědi Jarvise, pro naši kontrolu kvality. | majitel, pracovník |
+| Uložit do poznámek | Odpověď Gradyho jde jedním tlačítkem do poznámky. | majitel |
+| Palec nahoru / dolů | Hodnocení odpovědi Gradyho, pro naši kontrolu kvality. | majitel, pracovník |
 | Reakce na návrh | Přidat, Později, Zavřít. Úkoly z návrhu vzniknou až po Přidat. | majitel |
 
 ---
@@ -294,13 +294,13 @@ Druhy `check` a `summary` jsou v kódu připravené, ale dnes je nic nevolá. <!
 Je to odhad podle kapitoly 2 a sazeb z `src/config/costs.ts` (1 USD = 21,50 Kč).
 
 **Profily:**
-- **Lehký** se párkrát týdně podívá, napíše pár zpráv Jarvisovi a negeneruje kontakty.
-- **Běžný** pracuje skoro denně, Jarvisovi napíše asi 60 zpráv a vygeneruje 100 kontaktů.
-- **Intenzivní** má Jarvise otevřeného pořád (asi 250 zpráv) a vyčerpá 300 vygenerovaných kontaktů jako na Pro.
+- **Lehký** se párkrát týdně podívá, napíše pár zpráv Gradymu a negeneruje kontakty.
+- **Běžný** pracuje skoro denně, Gradymu napíše asi 60 zpráv a vygeneruje 100 kontaktů.
+- **Intenzivní** má Gradyho otevřeného pořád (asi 250 zpráv) a vyčerpá 300 vygenerovaných kontaktů jako na Pro.
 
 | Náklad | Lehký | Běžný | Intenzivní | Z čeho |
 |---|---|---|---|---|
-| AI (Jarvis) | 0,30 USD | 1,20 USD | 4,80 USD | Lehký: 15 zpráv, 2 milníky, 8 souhrnů. Běžný: 60 zpráv (5 se souborem), 4 milníky, 25 souhrnů, 5 e-mailů, 1 rozbor. Intenzivní: 250 zpráv (30 se souborem), 10 milníků, 40 souhrnů, 30 e-mailů, 15 map, 4 rozbory. |
+| AI (Grady) | 0,30 USD | 1,20 USD | 4,80 USD | Lehký: 15 zpráv, 2 milníky, 8 souhrnů. Běžný: 60 zpráv (5 se souborem), 4 milníky, 25 souhrnů, 5 e-mailů, 1 rozbor. Intenzivní: 250 zpráv (30 se souborem), 10 milníků, 40 souhrnů, 30 e-mailů, 15 map, 4 rozbory. |
 | Google Maps | 0 USD | 0,18–0,30 USD | 0,53–0,88 USD | 20 firem na požadavek po 0,035 USD. Duplicity stojí požadavek navíc. |
 | E-maily | 0,003 USD | 0,02 USD | 0,09 USD | Upozornění ze Zpráv, faktury, e-maily kontaktům, asi 3 / 20 / 100 kusů |
 | Úložiště | 0 USD | 0 USD | ~0,01 USD | Faktury v PDF, přílohy, dokumenty: asi 5 / 50 / 500 MB |
@@ -330,19 +330,19 @@ Tyhle odhady je dobré jednou za měsíc porovnat s Náklady (období 30 dní) a
 |---|---|---|
 | Vygenerované kontakty za den | Počet uložených kontaktů z Google Maps za den. Solo 30, Pro a Team 100. | Administrace → Tarify (koncept → zveřejnit) |
 | Vygenerované kontakty za měsíc | Totéž za kalendářní měsíc. Solo 100, Pro a Team 300. | Administrace → Tarify |
-| Odpovědi Jarvise za měsíc | Každé úspěšné volání modelu včetně automatických. Solo 300, Pro 1 000, Team 1 500. | Administrace → Tarify |
-| Soubory do Jarvise za měsíc | Přiložené soubory v chatu. Solo 0 (soubory vypnuté), Pro 100, Team 150. | Administrace → Tarify |
+| Odpovědi Gradyho za měsíc | Každé úspěšné volání modelu včetně automatických. Solo 300, Pro 1 000, Team 1 500. | Administrace → Tarify |
+| Soubory do Gradyho za měsíc | Přiložené soubory v chatu. Solo 0 (soubory vypnuté), Pro 100, Team 150. | Administrace → Tarify |
 | Počet pracovníků | Kolik pracovníků účet má. Dnes všude bez limitu. Nad limitem režim jen pro čtení od další půlnoci. | Administrace → Tarify |
-| Úložiště v MB | Dnes všude bez limitu. **Počítá jen soubory poslané Jarvisovi**, ne faktury, přílohy Zpráv ani dokumenty pracovníků. | Administrace → Tarify |
+| Úložiště v MB | Dnes všude bez limitu. **Počítá jen soubory poslané Gradymu**, ne faktury, přílohy Zpráv ani dokumenty pracovníků. | Administrace → Tarify |
 | Aktivní typy schůzek | Kolik typů schůzek v Plánovači může mít jeden člověk zapnutých. Solo 1, Pro a Team bez limitu (verze katalogu před 24.3 a beta podle tabulky `plans`). Nad limitem nový typ začne vypnutý, zapnutí odmítne DB s nabídkou vyššího tarifu. | Administrace → Tarify |
 | Cena za pracovníka a pracovníci v ceně | `per_worker` = cena za každého pracovníka navíc, `included_workers` = kolik jich je v ceně (starší verze bez pole = 0). Platí jen za pracovníky bez vlastního platného tarifu. Koncept z 22.5: Solo 0 a bez ceny, Pro 0 + 290 Kč / 12 EUR, Team 10 v ceně + 290 Kč; beta (tabulka `plans`) 0 + 290 Kč. Jen se počítá a ukazuje, platby zatím neběží. | Administrace → Tarify |
-| Celkový strop AI | Měsíční útrata za AI všech účtů (výchozí 90 USD). Nad ním Jarvis do konce měsíce nevolá model. | Administrace → AI a Jarvis → Strop využití AI |
-| Strop AI na uživatele | Měsíční útrata jednoho účtu v USD. Výchozí bez limitu. Platí dvakrát: na všechno, co účet utratil kdekoli, a jako strop jeho prostoru na všechna volání v něm (i jeho pracovníků, platí majitel). | Administrace → AI a Jarvis → Strop využití AI |
+| Celkový strop AI | Měsíční útrata za AI všech účtů (výchozí 90 USD). Nad ním Grady do konce měsíce nevolá model. | Administrace → AI a Grady → Strop využití AI |
+| Strop AI na uživatele | Měsíční útrata jednoho účtu v USD. Výchozí bez limitu. Platí dvakrát: na všechno, co účet utratil kdekoli, a jako strop jeho prostoru na všechna volání v něm (i jeho pracovníků, platí majitel). | Administrace → AI a Grady → Strop využití AI |
 | Výjimka pro uživatele | Vlastní strop nebo úplně vypnutá AI pro jeden účet. | Administrace → Uživatelé → detail |
-| Práh upozornění | Od kolika procent stropu přijde e-mail (výchozí 80 %). | Administrace → AI a Jarvis |
-| Pravidla Jarvise | Vypínač u každého druhu proaktivního návrhu a u otázek, rozestupy, otázek týdně, stáří návrhu, pokyny. | Administrace → AI a Jarvis → Pravidla |
+| Práh upozornění | Od kolika procent stropu přijde e-mail (výchozí 80 %). | Administrace → AI a Grady |
+| Pravidla Gradyho | Vypínač u každého druhu proaktivního návrhu a u otázek, rozestupy, otázek týdně, stáří návrhu, pokyny. | Administrace → AI a Grady → Pravidla |
 | Zkušební období | 14 dní tarifu Pro bez karty. Po něm jen pro čtení. | V kódu (`TRIAL_DAYS`), změna = nasazení |
-| Tarif beta | Testeři a **každý pozvaný pracovník** dostanou tarif beta bez konce: 500 / 5 000 kontaktů, 3 000 odpovědí Jarvise, 500 souborů. Beta pracovníka z pozvánky je „přes firmu“ (`via_worker_invite`), za vlastní tarif se nepočítá. Odpovědi Jarvise v cizí firmě se počítají podle tarifu té firmy. | Jen v databázi (tabulka `plans`), v administraci ne |
+| Tarif beta | Testeři a **každý pozvaný pracovník** dostanou tarif beta bez konce: 500 / 5 000 kontaktů, 3 000 odpovědí Gradyho, 500 souborů. Beta pracovníka z pozvánky je „přes firmu“ (`via_worker_invite`), za vlastní tarif se nepočítá. Odpovědi Gradyho v cizí firmě se počítají podle tarifu té firmy. | Jen v databázi (tabulka `plans`), v administraci ne |
 | Promo kódy | Dny zkoušky navíc, sleva z první platby, měsíce zdarma. | Administrace → Promo kódy |
 | Ceny v měnách | Základ v EUR, ruční ceny v libovolných měnách (dnes CZK), ostatní z kurzu se „prodejním“ zaokrouhlením (`psychologicalPrice`, nejvýš 8 % od přesného přepočtu). Platí se jen v EUR a v měnách s ruční cenou. Náhled v libovolné měně, „Přepsat ručně“, varování nad 15 % od kurzu. | Administrace → Tarify |
 | Doplňky | Položky katalogu navíc k tarifu (dnes `no_branding`), cena měsíčně v EUR a ručních měnách. | Administrace → Tarify |
@@ -350,7 +350,7 @@ Tyhle odhady je dobré jednou za měsíc porovnat s Náklady (období 30 dní) a
 | Práva pracovníka | Co pracovník smí v každé sekci, včetně generování kontaktů. | Aplikace → Správa firmy (majitel) |
 
 Pevné hranice v kódu, stejné pro všechny:
-- Jarvis bere nejvýš 3 soubory po 10 MB na zprávu.
+- Grady bere nejvýš 3 soubory po 10 MB na zprávu.
 - Zprávy berou nejvýš 5 příloh po 10 MB.
 - Dokument pracovníka může mít nejvýš 20 MB.
 - Import mapy založí nejvýš 1 000 úkolů najednou a 2 000 úkolů v milníku.
@@ -362,10 +362,10 @@ Pevné hranice v kódu, stejné pro všechny:
 | Co | Dnes | Jak snadno |
 |---|---|---|
 | Pracovníci jen v Team | Pozvat pracovníky jde na kterémkoli tarifu, limit `workers` je všude prázdný. | Vyplnit limit v katalogu (např. Solo a Pro 0). Hlídání už existuje. |
-| Rozbor schůzek jen v Pro | Karta tarifu ho slibuje v Pro, ale funguje na všech tarifech. | Kontrola tarifu před voláním, jedno místo v `/api/jarvis`. |
-| Úložiště všech souborů | Limit počítá jen soubory pro Jarvise. | Přičíst faktury, přílohy Zpráv a dokumenty pracovníků (velikosti v úložišti známe). |
+| Rozbor schůzek jen v Pro | Karta tarifu ho slibuje v Pro, ale funguje na všech tarifech. | Kontrola tarifu před voláním, jedno místo v `/api/grady`. |
+| Úložiště všech souborů | Limit počítá jen soubory pro Gradyho. | Přičíst faktury, přílohy Zpráv a dokumenty pracovníků (velikosti v úložišti známe). |
 | E-maily kontaktům a faktury e-mailem | Bez počtu. | Měsíční počet podle `usage_events` jako u generování. |
-| Proaktivní Jarvis podle tarifu | Souhrny a hlídání mají všechny tarify stejně. | Přepínač podle tarifu vedle pravidel Jarvise. |
+| Proaktivní Grady podle tarifu | Souhrny a hlídání mají všechny tarify stejně. | Přepínač podle tarifu vedle pravidel Gradyho. |
 | Počty záznamů | Kontakty, obchody, milníky, poznámky a faktury nemají strop. | Kontrola při zakládání. Spíš nedoporučujeme, nic nás nestojí. |
 | Google požadavky místo kontaktů | Limit počítá uložené kontakty. Duplicity stojí požadavek, ale do limitu se nepočítají. | Počítat i požadavky z `usage_events`. |
 
@@ -375,10 +375,10 @@ Pevné hranice v kódu, stejné pro všechny:
 
 ## Jak dokument udržovat
 
-- Nová funkce, sekce, stránka nebo schopnost Jarvise = nový řádek tady: co dělá, pro koho, náklad.
+- Nová funkce, sekce, stránka nebo schopnost Gradyho = nový řádek tady: co dělá, pro koho, náklad.
 - U AI patří řádek do tabulky v kapitole 2 i s modelem, tokeny a cenou, seřazený od nejdražšího.
 - `bun run docs:funkce` vypíše:
-  - stránky, položky menu, Jarvisovy katalogy a limity tarifů, které tu chybí;
+  - stránky, položky menu, Gradyho katalogy a limity tarifů, které tu chybí;
   - co tu zůstalo, i když to kód už nemá;
   - ceny, které nesedí na tokeny a `src/config/costs.ts`.
 - Značky `<!-- kód: … -->` a `<!-- cena: … -->` jsou pro skript a čtenář je nevidí.

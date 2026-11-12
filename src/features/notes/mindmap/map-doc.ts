@@ -2,12 +2,12 @@
  * A note that is a mind map (notes.kind = 'mindmap'). Its content is the tree
  * of the shared mind map formats (src/lib/mindmap/formats) with an id on every
  * node and what a note's map adds: a small note under a node, a branch colour,
- * one link (a web address or a record chip) and the mark of a branch Jarvis
+ * one link (a web address or a record chip) and the mark of a branch Grady
  * suggested that the user has not accepted yet.
  *
  *   { type: "mindmap", version: 1, root: { id, title, children: [...] } }
  *
- * The root's title is the note's title. content_text (search, Jarvis) is the
+ * The root's title is the note's title. content_text (search, Grady) is the
  * indented outline of the tree; suggestions are not in it until accepted.
  */
 import { NOTE_LIMITS, type NoteDraft } from "../document";
@@ -39,7 +39,7 @@ export type MapNode = {
   /** Set on a node, it colours it and everything below it. */
   color?: BranchColor;
   link?: MapLink;
-  /** Proposed by Jarvis, shown grey until the user accepts or deletes it. */
+  /** Proposed by Grady, shown grey until the user accepts or deletes it. */
   suggested?: true;
   children: MapNode[];
 };
@@ -168,7 +168,7 @@ export function countMapNodes(doc: MapDoc): number {
   return count;
 }
 
-/** The map without the branches Jarvis suggested and nobody accepted. */
+/** The map without the branches Grady suggested and nobody accepted. */
 export function acceptedRoot(node: MapNode): MapNode {
   return {
     ...node,

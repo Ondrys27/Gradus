@@ -2,14 +2,14 @@ import "server-only";
 import { cache } from "react";
 import { METRICS_TIMEZONE, shiftDay } from "@/lib/analytics/metrics";
 import { zonedWallClockToInstant, type IsoDate } from "@/lib/format";
-import { utcMonthStart } from "@/features/jarvis/budget";
-import { userLimit, type AiCaps, type UserCapOverride, type UserLimit } from "@/features/jarvis/caps";
+import { utcMonthStart } from "@/features/grady/budget";
+import { userLimit, type AiCaps, type UserCapOverride, type UserLimit } from "@/features/grady/caps";
 import {
   loadAiCaps,
   loadTopUserSpend,
   loadUserOverride,
   loadUserSpend,
-} from "@/features/jarvis/server/caps";
+} from "@/features/grady/server/caps";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 /**

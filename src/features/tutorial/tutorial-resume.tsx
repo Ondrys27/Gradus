@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Jarvis } from "@/components/jarvis/jarvis";
+import { Grady } from "@/components/grady/grady";
 import { Button } from "@/components/ui/button";
 import type { DemoResolution, RunningMode } from "./types";
 
 const SHOW_AFTER_MS = 1500;
 
 /**
- * Jarvis's offer to go on with a tutorial left half way (the next day, or a
+ * Grady's offer to go on with a tutorial left half way (the next day, or a
  * while after a reload): where it stopped, Go on or End. Ending the full
  * tutorial asks first what happens to the sample data, as its own End does.
  * Bottom left of the content, never over a dialog.
@@ -45,7 +45,7 @@ export function TutorialResume({
       className="fixed inset-x-2 bottom-[calc(env(safe-area-inset-bottom)+76px)] z-nav flex items-end gap-2 md:inset-x-auto md:bottom-6 md:left-[calc(var(--app-sidebar-width)+24px)] md:w-[380px]"
     >
       <div className="shrink-0">
-        <Jarvis size={56} state="waving" variant="head" />
+        <Grady size={56} state="waving" variant="head" />
       </div>
       <div className="min-w-0 flex-1 rounded-2xl border border-line-strong bg-surface/95 p-3 shadow-popover backdrop-blur-md">
         <h2 id="tutorial-resume-title" className="text-sm font-semibold text-teal">

@@ -1,6 +1,6 @@
 /**
- * The Jarvis chat on the website plays itself in a loop: the user's question
- * is typed, Jarvis thinks, his answer streams in, the action button appears,
+ * The Grady chat on the website plays itself in a loop: the user's question
+ * is typed, Grady thinks, his answer streams in, the action button appears,
  * everything holds for a moment and fades before it starts again. Pure
  * timing, so the component only maps a clock to what is visible.
  */

@@ -410,7 +410,7 @@ export const workerInviteFields = (q: AdminQuery) =>
     { name: "workers_per_owner", unit: "count" },
   ]);
 
-// --- AI and Jarvis -------------------------------------------------------------------
+// --- AI and Grady -------------------------------------------------------------------
 
 export const AI_TILE_KEYS = [
   "ai_calls",
@@ -514,7 +514,7 @@ export async function aiTopSpaces(q: AdminQuery): Promise<AiTopSpace[]> {
   }));
 }
 
-export const jarvisConversations = (q: AdminQuery) =>
+export const gradyConversations = (q: AdminQuery) =>
   fields(q, "jarvis_conversations", [
     { name: "conversations", unit: "count" },
     { name: "users", unit: "users" },

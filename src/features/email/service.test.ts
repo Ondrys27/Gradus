@@ -12,7 +12,7 @@ const PDF_HEADER = new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x3
 describe("isOwnEmailUploadPath", () => {
   it("accepts only the user's own email folder with a uuid object name", () => {
     expect(isOwnEmailUploadPath(`${USER}/email/${crypto.randomUUID()}`, USER)).toBe(true);
-    expect(isOwnEmailUploadPath(`${USER}/jarvis/${crypto.randomUUID()}`, USER)).toBe(false);
+    expect(isOwnEmailUploadPath(`${USER}/grady/${crypto.randomUUID()}`, USER)).toBe(false);
     expect(isOwnEmailUploadPath(`other-user/email/${crypto.randomUUID()}`, USER)).toBe(false);
     expect(isOwnEmailUploadPath(`${USER}/email/not-a-uuid`, USER)).toBe(false);
   });

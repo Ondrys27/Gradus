@@ -230,7 +230,7 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back, 
     if (editor && !editor.isDestroyed && targets.data) refreshMentionLabels(editor, targets.data);
   }, [editor, targets.data]);
 
-  // Text added from outside (one of Jarvis's answers) shows in the open editor
+  // Text added from outside (one of Grady's answers) shows in the open editor
   // too, so the next keystroke does not save over it.
   useEffect(() => {
     if (!editor) return;

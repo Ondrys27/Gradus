@@ -2,8 +2,8 @@
 
 import { CheckIcon, SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Jarvis } from "@/components/jarvis/jarvis";
-import { SpeechBubble } from "@/components/jarvis/speech-bubble";
+import { Grady } from "@/components/grady/grady";
+import { SpeechBubble } from "@/components/grady/speech-bubble";
 import { FormAlert } from "@/components/ui/form-alert";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { cn } from "@/lib/utils";
@@ -18,7 +18,7 @@ const LEARN = [0, 1, 2] as const;
  * tutorial on sample data as two cards that differ at a glance (a small
  * preview, the time, what you'll be able to do), and skipping as a quiet
  * line underneath. At the end of onboarding (after the celebration) and
- * whenever asked for (Settings → Jarvis, Jarvis's panel). The full one only
+ * whenever asked for (Settings → Grady, Grady's panel). The full one only
  * in the user's own space while it can be written to.
  */
 export function TutorialChoice({
@@ -52,7 +52,7 @@ export function TutorialChoice({
       <div data-testid="tutorial-choice" className="flex flex-col gap-4">
         <div className="flex items-end gap-2">
           <div className="shrink-0">
-            <Jarvis size={64} state="waving" variant="head" />
+            <Grady size={64} state="waving" variant="head" />
           </div>
           <SpeechBubble tail={{ side: "left", align: "end" }} className="flex-1">
             <p className="text-[15px] leading-relaxed text-ink">{t("intro")}</p>
@@ -158,7 +158,7 @@ function ModeCard({
   );
 }
 
-/** A small app frame: the menu with one item lit and Jarvis pointing at it. */
+/** A small app frame: the menu with one item lit and Grady pointing at it. */
 function QuickPreview({ label }: { label: string }) {
   return (
     <span
@@ -200,7 +200,7 @@ function QuickPreview({ label }: { label: string }) {
         <rect x="64" y="0" width="176" height="120" className="fill-black/35" />
       </svg>
       <span className="absolute bottom-1 left-[68px]">
-        <Jarvis size={44} state="pointing" direction="up-left" />
+        <Grady size={44} state="pointing" direction="up-left" />
       </span>
     </span>
   );
@@ -281,7 +281,7 @@ function FullPreview({ label }: { label: string }) {
         />
       </svg>
       <span className="absolute right-1 bottom-1">
-        <Jarvis size={40} state="happy" variant="head" />
+        <Grady size={40} state="happy" variant="head" />
       </span>
     </span>
   );

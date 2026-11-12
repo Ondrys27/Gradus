@@ -13,7 +13,7 @@ import {
   USER_CAP_MODES,
   userCapFormSchema,
   type UserCapMode,
-} from "@/features/jarvis/caps";
+} from "@/features/grady/caps";
 import { formatUsd } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ADMIN_FORMAT_SETTINGS } from "../format-metric";

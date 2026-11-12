@@ -1,7 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ADMIN_PATH } from "@/features/admin/access";
-import { ownerContact } from "@/features/jarvis/server/owner";
+import { ownerContact } from "@/features/grady/server/owner";
 import { sendEmail, type EmailResult } from "@/lib/email/resend";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Database } from "@/types/database";

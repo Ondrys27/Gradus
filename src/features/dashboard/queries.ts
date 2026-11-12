@@ -506,7 +506,7 @@ export function useSaveMeetingSurvey() {
       Promise.all([
         queryClient.invalidateQueries({ queryKey: dashboardKeys.surveys(user.id) }),
         // The survey count unlocks the AI analysis.
-        queryClient.invalidateQueries({ queryKey: ["jarvis", user.id, "sales-analysis"] }),
+        queryClient.invalidateQueries({ queryKey: ["grady", user.id, "sales-analysis"] }),
         // A booked meeting answered leaves "Waiting for you".
         queryClient.invalidateQueries({ queryKey: ["scheduler", user.id, "bookings", "surveys"] }),
       ]),

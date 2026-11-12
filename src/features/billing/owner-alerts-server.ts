@@ -2,7 +2,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ADMIN_PATH } from "@/features/admin/access";
 import { ADMIN_FORMAT_SETTINGS } from "@/features/admin/format-metric";
-import { ownerContact } from "@/features/jarvis/server/owner";
+import { ownerContact } from "@/features/grady/server/owner";
 import { planName } from "@/features/plan/catalog";
 import { getPublishedPlans } from "@/features/plan/catalog-server";
 import { serverTranslator } from "@/i18n/server-translator";

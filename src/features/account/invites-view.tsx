@@ -29,7 +29,7 @@ import { useSwitchSpace } from "./space-switch";
  * Václav Novák invites you as a Sales rep"), what the person will see there
  * and the rewards the owner set, until when. Accept puts the company into
  * the switcher (and offers to go there now); decline asks first. Reached
- * from the bell, the e-mail and Jarvis.
+ * from the bell, the e-mail and Grady.
  */
 export function InvitesView() {
   const t = useTranslations("invites");

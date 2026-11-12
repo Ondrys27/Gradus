@@ -60,7 +60,7 @@
       "controls": "Form controls",
       "empty": "Empty state",
       "skeleton": "Loading skeleton",
-      "jarvis": "Jarvis"
+      "grady": "Grady"
     },
     "colors": {
       "canvas": "Background",
@@ -71,7 +71,7 @@
       "line": "Border",
       "lineStrong": "Light border",
       "violet": "Primary",
-      "teal": "Progress · success · Jarvis",
+      "teal": "Progress · success · Grady",
       "gold": "Rewards · XP",
       "green": "Won",
       "pink": "Lost · errors",
@@ -148,10 +148,10 @@
     },
     "empty": {
       "title": "No contacts yet",
-      "description": "Add your first contact or let Jarvis find businesses near you.",
+      "description": "Add your first contact or let Grady find businesses near you.",
       "action": "Add contact"
     },
-    "jarvis": {
+    "grady": {
       "idle": "Idle",
       "thinking": "Thinking",
       "happy": "Happy",
@@ -159,10 +159,10 @@
       "pointing": "Pointing",
       "surprised": "Surprised",
       "sleeping": "Sleeping",
-      "playground": "Open the Jarvis playground"
+      "playground": "Open the Grady playground"
     },
-    "jarvisPage": {
-      "title": "Jarvis",
+    "gradyPage": {
+      "title": "Grady",
       "description": "Every state and size side by side. Switch them to tune the animation.",
       "back": "Design system",
       "px": "{size} px",
@@ -394,17 +394,17 @@
     },
     "untitled": "Draft"
   },
-  "jarvis": {
-    "open": "Open Jarvis",
-    "close": "Close Jarvis",
-    "title": "Jarvis",
+  "grady": {
+    "open": "Open Grady",
+    "close": "Close Grady",
+    "title": "Grady",
     "subtitle": "Your business guide",
     "newChat": "New conversation",
-    "greeting": "Hi, I'm Jarvis. I can see your milestones, deals, contacts and calendar. What shall we move forward today?",
-    "inputLabel": "Message to Jarvis",
-    "placeholder": "Ask Jarvis…",
+    "greeting": "Hi, I'm Grady. I can see your milestones, deals, contacts and calendar. What shall we move forward today?",
+    "inputLabel": "Message to Grady",
+    "placeholder": "Ask Grady…",
     "send": "Send",
-    "typing": "Jarvis is typing",
+    "typing": "Grady is typing",
     "usage": "{used} of {limit} messages this month",
     "suggestions": "Suggestions",
     "loadFailed": "The conversation couldn't be loaded.",
@@ -423,16 +423,16 @@
       "overdueInvoices": "Help me chase overdue invoices"
     },
     "error": {
-      "limitReached": "You've used all {limit} Jarvis messages for this month. They renew on the 1st.",
-      "notConfigured": "Jarvis isn't connected yet. Try again later.",
-      "paused": "Jarvis is taking a break until the end of the month. The rest of the app works as usual.",
-      "busy": "Jarvis has too much going on right now. Try again in a minute.",
-      "unavailable": "Jarvis can't answer right now. Try again in a while.",
+      "limitReached": "You've used all {limit} Grady messages for this month. They renew on the 1st.",
+      "notConfigured": "Grady isn't connected yet. Try again later.",
+      "paused": "Grady is taking a break until the end of the month. The rest of the app works as usual.",
+      "busy": "Grady has too much going on right now. Try again in a minute.",
+      "unavailable": "Grady can't answer right now. Try again in a while.",
       "notFound": "This conversation no longer exists. Your next message starts a new one.",
       "network": "The connection dropped. Check your internet and try again.",
       "unknown": "Something went wrong. Try again.",
       "dismiss": "Dismiss",
-      "fileType": "Jarvis can read PDF, Word (DOCX), Excel (XLSX), text, CSV, PNG and JPG files. This file is none of them.",
+      "fileType": "Grady can read PDF, Word (DOCX), Excel (XLSX), text, CSV, PNG and JPG files. This file is none of them.",
       "fileTooLarge": "A file can have at most {max} MB.",
       "fileUnreadable": "The file couldn't be read. It may be damaged or password-protected.",
       "fileMissing": "The file didn't arrive. Attach it again.",
@@ -440,7 +440,7 @@
       "fileUpload": "The file couldn't be uploaded. Check your connection and try again.",
       "tooManyFiles": "You can attach at most {max} files to one message.",
       "userLimit": "The AI assistant has used up its limit for your account this month. A higher plan gives more room (Settings → Subscription); the rest of the app works as usual.",
-      "spaceLimit": "The AI assistant has used up this company's limit for the month. The owner raises it with a higher plan; in your own company Jarvis works on."
+      "spaceLimit": "The AI assistant has used up this company's limit for the month. The owner raises it with a higher plan; in your own company Grady works on."
     },
     "files": {
       "attach": "Attach files",
@@ -453,7 +453,7 @@
       "down": "Not a good answer"
     },
     "suggestion": {
-      "heading": "Jarvis noticed",
+      "heading": "Grady noticed",
       "do": "Do it",
       "undo": "Undo",
       "keep": "Keep it",
@@ -513,20 +513,20 @@
       "close": "Close",
       "later": "Later",
       "show": "Show me",
-      "ask": "Ask Jarvis",
+      "ask": "Ask Grady",
       "add": "Add tasks",
       "thanks": "Thanks",
       "send": "Send",
       "answerPlaceholder": "Or write your own answer…",
       "answerLabel": "Your answer",
       "options": "Answers",
-      "tasksPreview": "Tasks Jarvis suggests",
+      "tasksPreview": "Tasks Grady suggests",
       "failed": "That didn't work. Try again.",
       "answered": "Thanks, I'll keep it in mind.",
       "added": "Added to the milestone.",
       "heading": {
         "briefing": "Good morning",
-        "suggestion": "Jarvis noticed",
+        "suggestion": "Grady noticed",
         "question": "Quick question"
       },
       "questions": {
@@ -586,7 +586,7 @@
       "settings": "Set how often"
     },
     "queue": {
-      "label": "Jarvis's notices",
+      "label": "Grady's notices",
       "position": "{current} of {total}",
       "previous": "Previous",
       "next": "Next"
@@ -621,14 +621,14 @@
   },
   "sections": {
     "dashboard": {
-      "description": "Your day at a glance: progress, next steps and what Jarvis noticed.",
+      "description": "Your day at a glance: progress, next steps and what Grady noticed.",
       "emptyTitle": "Nothing here yet",
       "emptyDescription": "Once you add milestones, contacts and deals, your overview shows up here."
     },
     "contacts": {
       "description": "Everyone you work with, sorted into your own tables.",
       "emptyTitle": "No contacts yet",
-      "emptyDescription": "Add your first contact or let Jarvis find businesses near you."
+      "emptyDescription": "Add your first contact or let Grady find businesses near you."
     },
     "pipeline": {
       "description": "Every deal and the stage it is in.",
@@ -824,7 +824,7 @@
   },
   "settings": {
     "title": "Settings",
-    "description": "Account, Jarvis, appearance, work and data in one place.",
+    "description": "Account, Grady, appearance, work and data in one place.",
     "status": {
       "saving": "Saving…",
       "saved": "Saved",
@@ -961,10 +961,10 @@
       "locked": "Locked",
       "theme": "Theme"
     },
-    "jarvis": {
+    "grady": {
       "title": "On his own",
-      "description": "When Jarvis speaks up on his own. The chat in the corner always works.",
-      "proactive": "Jarvis speaks up",
+      "description": "When Grady speaks up on his own. The chat in the corner always works.",
+      "proactive": "Grady speaks up",
       "proactiveHint": "On your first visit of the day he flies in with a summary; with Often or Now and then also with a suggestion or a question in between. Never while the call timer runs.",
       "frequency": "How often",
       "frequencies": {
@@ -977,13 +977,13 @@
       "frequencyHint": {
         "every_2h": "A summary on your first visit of the day, and suggestions in between at most every 2 hours.",
         "every_6h": "A summary on your first visit of the day, and suggestions in between at most every 6 hours.",
-        "daily": "Only the summary of the day on your first visit. Suggestions wait in Jarvis's panel.",
+        "daily": "Only the summary of the day on your first visit. Suggestions wait in Grady's panel.",
         "weekly": "Only the summary of the week on your first visit of the week: last week's numbers and a plan for this one. Suggestions wait in the panel.",
         "monthly": "Only the summary of the month on your first visit of the month. Suggestions wait in the panel."
       },
       "quiet": {
         "title": "Quiet hours",
-        "hint": "Jarvis stays silent in these hours. Times are in your time zone.",
+        "hint": "Grady stays silent in these hours. Times are in your time zone.",
         "from": "From",
         "to": "To",
         "hours": "From when to when"
@@ -993,7 +993,7 @@
       "title": "Help",
       "description": "Find your way around the app.",
       "tour": "Tutorial",
-      "tourHint": "Jarvis shows you around again: quickly, or all of it on sample data.",
+      "tourHint": "Grady shows you around again: quickly, or all of it on sample data.",
       "start": "Start the tutorial",
       "demo": "Sample data",
       "demoHint": "The tutorial's contacts, deal, milestone, tasks, meeting and note, labelled “sample”.",
@@ -1070,8 +1070,8 @@
         "title": "Subscription",
         "description": "Plan, payments and billing details."
       },
-      "jarvis": {
-        "title": "Jarvis",
+      "grady": {
+        "title": "Grady",
         "description": "When he speaks up, how often, when he stays quiet, and message notifications."
       },
       "appearance": {
@@ -1148,16 +1148,16 @@
         "label": "Billing details",
         "keywords": "subscription company address"
       },
-      "jarvisProactive": {
-        "label": "Jarvis speaks up",
+      "gradyProactive": {
+        "label": "Grady speaks up",
         "keywords": "assistant summary suggestions proactive"
       },
-      "jarvisFrequency": {
-        "label": "How often Jarvis speaks up",
+      "gradyFrequency": {
+        "label": "How often Grady speaks up",
         "keywords": "assistant frequency summary daily weekly monthly"
       },
-      "jarvisQuiet": {
-        "label": "Jarvis's quiet hours",
+      "gradyQuiet": {
+        "label": "Grady's quiet hours",
         "keywords": "assistant silent night"
       },
       "tour": {
@@ -1280,7 +1280,7 @@
         "hint": "Deletes the account, all data and uploaded files for good. This can't be undone.",
         "action": "Delete account",
         "title": "Delete the account for good?",
-        "point1": "All your data is deleted: milestones, tasks, contacts, deals, events, finances, invoices, notes, conversations with Jarvis and uploaded files.",
+        "point1": "All your data is deleted: milestones, tasks, contacts, deals, events, finances, invoices, notes, conversations with Grady and uploaded files.",
         "pointWorker": "What you created in the owner's team stays with the owner.",
         "point2": "Usage statistics of the app stay only anonymously, with no link to you.",
         "point3": "Deleting can't be undone. If you want to keep the data, download it first.",
@@ -1497,8 +1497,8 @@
       "completedTitle": "Milestone completed",
       "completedDescription": "You can reopen it if something is still missing.",
       "statusFailed": "Could not change the milestone. Try again.",
-      "jarvisFeedback": "Jarvis's view",
-      "jarvisReviewing": "Jarvis is looking at your milestone…"
+      "gradyFeedback": "Grady's view",
+      "gradyReviewing": "Grady is looking at your milestone…"
     },
     "tasks": {
       "heading": "Tasks",
@@ -1884,9 +1884,9 @@
       "templateHint": "This step is best written down: “Write in notes” starts a note with the “{outline}” outline.",
       "failed": "That did not work. Try again in a moment."
     },
-    "fromJarvis": {
+    "fromGrady": {
       "save": "Save to notes",
-      "heading": "From Jarvis, {date}",
+      "heading": "From Grady, {date}",
       "newNote": "New note",
       "orAppend": "Or add it to the end of a note:",
       "pickLabel": "Notes to add the answer to",
@@ -1973,31 +1973,31 @@
         "instructions": "Drag a node onto another (it becomes its child), between nodes (changes the order) or onto the centre. On a phone, press and hold it first. Keys: ⌘ or Ctrl with ←/→ changes the level, ↑/↓ the order."
       },
       "suggestions": {
-        "banner": "Jarvis suggested {count, plural, one {# branch} other {# branches}}. Keep the grey nodes or delete them.",
+        "banner": "Grady suggested {count, plural, one {# branch} other {# branches}}. Keep the grey nodes or delete them.",
         "acceptAll": "Keep all",
         "rejectAll": "Delete all",
         "accept": "Keep",
         "reject": "Delete",
         "acceptOne": "Keep the suggestion “{title}”",
         "rejectOne": "Delete the suggestion “{title}”",
-        "added": "Jarvis added {count, plural, one {# suggestion} other {# suggestions}}."
+        "added": "Grady added {count, plural, one {# suggestion} other {# suggestions}}."
       },
       "suggest": {
-        "button": "Suggest branches (Jarvis)",
-        "title": "Jarvis suggests branches",
+        "button": "Suggest branches (Grady)",
+        "title": "Grady suggests branches",
         "close": "Close",
-        "intro": "Jarvis adds new branches under “{title}”. They show grey, and you keep or delete each.",
+        "intro": "Grady adds new branches under “{title}”. They show grey, and you keep or delete each.",
         "untitledNode": "untitled",
         "requestLabel": "What to add",
-        "requestHint": "Optional. Jarvis sees the whole map.",
+        "requestHint": "Optional. Grady sees the whole map.",
         "requestPlaceholder": "For example: fill in my competitors map",
-        "note": "Jarvis never writes into a note on his own; suggestions are only an offer.",
+        "note": "Grady never writes into a note on his own; suggestions are only an offer.",
         "cancel": "Cancel",
         "submit": "Suggest",
-        "thinking": "Jarvis is thinking…",
+        "thinking": "Grady is thinking…",
         "errors": {
-          "limitReached": "Jarvis's messages for this month are used up. They renew on the first day of next month.",
-          "empty": "Jarvis has nothing new to suggest right now. Try saying what to add.",
+          "limitReached": "Grady's messages for this month are used up. They renew on the first day of next month.",
+          "empty": "Grady has nothing new to suggest right now. Try saying what to add.",
           "notFound": "The node or the note could not be found. Reload the page and try again."
         }
       },
@@ -2061,7 +2061,7 @@
         },
         "text": {
           "title": "Turn the map into text",
-          "text": "The centre becomes the heading and the branches bullets under it. This cannot be undone: branch colours go, and Jarvis's suggestions nobody kept are not converted. As a new note, the map stays as it is.",
+          "text": "The centre becomes the heading and the branches bullets under it. This cannot be undone: branch colours go, and Grady's suggestions nobody kept are not converted. As a new note, the map stays as it is.",
           "replace": "Turn into text"
         }
       }
@@ -3398,7 +3398,7 @@
         "warningReserve": "In week {week} the capital drops below the reserve of {reserve}.",
         "reserve": "Reserve ({currency})",
         "reservePlaceholder": "no reserve",
-        "reserveHint": "Below this amount the summary and Jarvis warn you.",
+        "reserveHint": "Below this amount the summary and Grady warn you.",
         "closingHint": "at the end of the month",
         "sparkline": "Closing capital by week",
         "weekPoint": "Week {week}: {value}",
@@ -3553,15 +3553,15 @@
         "aiAnalysis": "AI analysis",
         "open": "Open pipeline",
         "aiAgain": "New AI analysis",
-        "aiRunning": "Jarvis is analysing your meetings. It can take a minute.",
+        "aiRunning": "Grady is analysing your meetings. It can take a minute.",
         "aiLocked": "{count, plural, one {Unlocks after {needed} more survey.} other {Unlocks after {needed} more surveys.}}",
         "aiLatest": "Analysis of {date}",
         "aiError": {
-          "limitReached": "You've used all Jarvis calls for this month.",
-          "notConfigured": "Jarvis isn't connected yet. Try again later.",
-          "busy": "Jarvis has too much going on right now. Try again in a minute.",
+          "limitReached": "You've used all Grady calls for this month.",
+          "notConfigured": "Grady isn't connected yet. Try again later.",
+          "busy": "Grady has too much going on right now. Try again in a minute.",
           "unavailable": "The analysis couldn't be made right now. Try again in a while.",
-          "paused": "Jarvis is taking a break until the end of the month. The rest of the app works as usual.",
+          "paused": "Grady is taking a break until the end of the month. The rest of the app works as usual.",
           "userLimit": "The AI assistant has used up its limit for your account this month. A higher plan gives more room; the rest of the app works as usual.",
           "spaceLimit": "The AI assistant has used up this company's limit for the month. The owner raises it with a higher plan."
         }
@@ -3714,12 +3714,12 @@
     }
   },
   "email": {
-    "jarvisBudget": {
-      "nearSubject": "{appName}: Jarvis has used {share} of this month's budget",
-      "pausedSubject": "{appName}: Jarvis is paused until the end of the month",
-      "nearIntro": "Jarvis has used more than {threshold} of this month's AI budget. At 100 % it stops calling the model until the month ends.",
-      "pausedIntro": "Jarvis has used up this month's AI budget and does not call the model until the month ends. Users see a kind note about a break; the opportunity watch runs on rules only and no morning briefs are written.",
-      "creditsIntro": "The AI API refused a call for lack of credit or because a spend limit was reached ({code}). Jarvis does not call the model until the credit is back. Users see a kind note about a break.",
+    "gradyBudget": {
+      "nearSubject": "{appName}: Grady has used {share} of this month's budget",
+      "pausedSubject": "{appName}: Grady is paused until the end of the month",
+      "nearIntro": "Grady has used more than {threshold} of this month's AI budget. At 100 % it stops calling the model until the month ends.",
+      "pausedIntro": "Grady has used up this month's AI budget and does not call the model until the month ends. Users see a kind note about a break; the opportunity watch runs on rules only and no morning briefs are written.",
+      "creditsIntro": "The AI API refused a call for lack of credit or because a spend limit was reached ({code}). Grady does not call the model until the credit is back. Users see a kind note about a break.",
       "spent": "Spent this month: {spent} of {budget} ({share}).",
       "projected": "At the pace so far: {projected} by the end of the month.",
       "calls": "Model calls this month: {calls}.",
@@ -3728,7 +3728,7 @@
     },
     "featureRequest": {
       "subject": "{appName}: new idea – {title}",
-      "intro": "A user of {appName} told Jarvis what they miss in the app.",
+      "intro": "A user of {appName} told Grady what they miss in the app.",
       "title": "Idea",
       "description": "In short",
       "from": "From",
@@ -3748,13 +3748,13 @@
       "aiReceivedLabel": "Paste the e-mail you received",
       "aiReceivedPlaceholder": "Paste the message you're replying to…",
       "aiSuggest": "Suggest a reply",
-      "aiWorking": "Jarvis is thinking…",
+      "aiWorking": "Grady is thinking…",
       "aiError": {
-        "notConfigured": "Jarvis isn't connected yet, so it can't draft a reply. Write it yourself.",
-        "busy": "Jarvis is busy right now. Try again in a minute.",
-        "unavailable": "Jarvis can't answer right now. Try again later.",
-        "limitReached": "Jarvis's calls for this month are used up.",
-        "paused": "Jarvis is taking a break until the end of the month, so write the reply yourself. The rest of the app works as usual.",
+        "notConfigured": "Grady isn't connected yet, so it can't draft a reply. Write it yourself.",
+        "busy": "Grady is busy right now. Try again in a minute.",
+        "unavailable": "Grady can't answer right now. Try again later.",
+        "limitReached": "Grady's calls for this month are used up.",
+        "paused": "Grady is taking a break until the end of the month, so write the reply yourself. The rest of the app works as usual.",
         "network": "The connection dropped. Check the internet and try again.",
         "unknown": "Something went wrong. Try again, or write the reply yourself.",
         "userLimit": "The AI assistant has used up its limit for your account this month, so write the reply yourself. The rest of the app works as usual.",
@@ -4292,10 +4292,10 @@
     },
     "rewards": {
       "title": "Reward system",
-      "description": "Triggers are what your workers do, rules how much it pays. Jarvis turns it into rules and explains them; nothing runs until you confirm.",
+      "description": "Triggers are what your workers do, rules how much it pays. Grady turns it into rules and explains them; nothing runs until you confirm.",
       "back": "Company",
       "askAi": "Let AI set it up",
-      "aiWorking": "Jarvis is reading…",
+      "aiWorking": "Grady is reading…",
       "withoutAi": "Set up without AI",
       "mapLabel": "Reward tree",
       "root": "Rewards",
@@ -4383,21 +4383,21 @@
         "maxPerMonth": "{count, plural, one {at most once a month} other {at most {shown}× a month}}"
       },
       "aiError": {
-        "notConfigured": "Jarvis is not connected yet, so it cannot set up the rules now. You can set them up without AI; conditions in notes will not be applied.",
-        "busy": "Jarvis is busy right now. Try again in a minute, or set up without AI.",
-        "unavailable": "Jarvis could not answer right now. Try again later, or set up without AI.",
-        "limitReached": "This month's Jarvis calls are used up. You can set up without AI.",
+        "notConfigured": "Grady is not connected yet, so it cannot set up the rules now. You can set them up without AI; conditions in notes will not be applied.",
+        "busy": "Grady is busy right now. Try again in a minute, or set up without AI.",
+        "unavailable": "Grady could not answer right now. Try again later, or set up without AI.",
+        "limitReached": "This month's Grady calls are used up. You can set up without AI.",
         "network": "The connection dropped. Check your internet and try again.",
         "empty": "Add at least one rule first.",
         "unknown": "Something went wrong. Try again, or set up without AI.",
         "userLimit": "The AI assistant has used up its limit for your account this month. You can set up without AI.",
-        "paused": "Jarvis is taking a break until the end of the month. You can set up without AI.",
+        "paused": "Grady is taking a break until the end of the month. You can set up without AI.",
         "spaceLimit": "The AI assistant has used up this company's limit for the month. You can set up without AI."
       },
       "proposal": {
         "title": "How it will work",
-        "withoutAi": "Set up without Jarvis: the rules exactly as in the tree.",
-        "ignored": "Jarvis could not set this up:",
+        "withoutAi": "Set up without Grady: the rules exactly as in the tree.",
+        "ignored": "Grady could not set this up:",
         "notesDropped": "Without AI these conditions are not applied:",
         "approvalNote": "Every earning waits for your approval before it counts. Confirming replaces the rules in force.",
         "confirm": "Confirm and start",
@@ -4874,6 +4874,11 @@
       },
       "emptyTitle": "No path yet",
       "emptyDescription": "Pick a path in Settings → Work → Game and its milestones show up here."
+    },
+    "skillText": {
+      "morningBrief": "Grady sums up your day every morning: meetings, calls back, tasks.",
+      "weeklyAnalysis": "Every week Grady looks at your calls, deals and money and says what to change.",
+      "industryAdvice": "Grady recommends which industries to target next, based on your own results."
     }
   },
   "onboarding": {
@@ -4966,7 +4971,7 @@
       "description": "A person or company you might do business with. You can always add more later, or skip this for now."
     },
     "closing": {
-      "title": "I'm Jarvis",
+      "title": "I'm Grady",
       "description": "You'll find me in the bottom right corner of every screen. Ask me anything, and I'll check in on your progress a few times a day.",
       "descriptionGame": "Your path is waiting in Milestones. You'll find me in the bottom right corner of every screen. Ask me anything, and I'll check in on your progress a few times a day."
     },
@@ -5057,16 +5062,16 @@
             "2": "you name the tables yourself, these are the defaults"
           }
         },
-        "jarvis": {
-          "title": "Jarvis reads your deals and speaks up only when he has something to say.",
+        "grady": {
+          "title": "Grady reads your deals and speaks up only when he has something to say.",
           "text": "He sees your pipeline, contacts and calendar. In the morning he writes that the 76 000 Kč conference catering has been waiting for a reply to the quote for a week and suggests what to send the customer. When you win a deal he reminds you to ask for a referral while it is fresh. When nothing is happening, he is quiet.",
-          "alt": "Jarvis in {appName}: a panel of remarks about deals and a conversation with the assistant",
+          "alt": "Grady in {appName}: a panel of remarks about deals and a conversation with the assistant",
           "notes": {
             "1": "he wrote this himself, you didn't ask",
             "2": "one tap and the task is on your list"
           },
           "chat": {
-            "name": "Jarvis",
+            "name": "Grady",
             "you": "You",
             "caption": "Example",
             "line": "{who}: {text}",
@@ -5122,7 +5127,7 @@
             "answer": "No. Switch the game mode off in settings and {appName} is a plain tool. Nothing gets locked and you lose nothing."
           },
           "ai": {
-            "question": "What does Jarvis do with my data?",
+            "question": "What does Grady do with my data?",
             "answer": "He sees only your deals, contacts and calendar and uses them only for your answers. Nothing is trained on customer data."
           },
           "notFor": {
@@ -5194,7 +5199,7 @@
         "terms": {
           "intro": {
             "p1": "These terms govern the use of the {appName} app and subscriptions to its paid plans. They form a contract between you and the seller named in the next section.",
-            "p2": "{appName} is a web app for people starting a business: milestones and tasks, deals, contacts, cold calling, a calendar, finances with invoices, workers and the AI assistant Jarvis. When you register you expressly agree to these terms and the privacy policy; we record when, and which version."
+            "p2": "{appName} is a web app for people starting a business: milestones and tasks, deals, contacts, cold calling, a calendar, finances with invoices, workers and the AI assistant Grady. When you register you expressly agree to these terms and the privacy policy; we record when, and which version."
           },
           "seller": {
             "p1": "The seller and operator of {appName} is {name}, company ID {companyId}, registered at {address}, e-mail {email}.",
@@ -5256,7 +5261,7 @@
           },
           "liability": {
             "p1": "To the extent the law allows, we are not liable for lost profits, lost data or other indirect damage caused by using the app. This does not affect rights the law guarantees you and that cannot be limited.",
-            "p2": "Jarvis's recommendations and other output of artificial intelligence may be inaccurate. Decisions about your business are yours."
+            "p2": "Grady's recommendations and other output of artificial intelligence may be inaccurate. Decisions about your business are yours."
           },
           "termination": {
             "p1": "You can close your account at any time yourself under Settings → Privacy and data → Delete account. This deletes all your data; cancel a running subscription first under Settings → Subscription.",
@@ -5280,25 +5285,25 @@
           },
           "data": {
             "p1": "Account data: e-mail, name, password (only as a secure hash, never readable), profile photo, language, time zone and other settings.",
-            "p2": "Content you put into the app: milestones, tasks, contacts, deals, events, finances, invoices, notes, files and messages to Jarvis. For the personal data of your contacts you are the controller, and we process it for you as a processor.",
+            "p2": "Content you put into the app: milestones, tasks, contacts, deals, events, finances, invoices, notes, files and messages to Grady. For the personal data of your contacts you are the controller, and we process it for you as a processor.",
             "p3": "Usage and technical data: which screens and actions of the app you use, the type of device and browser, and error records. For sign-ins to the administration and attempts at invite or promo codes we store only an encoded fingerprint of the IP address.",
             "p4": "Problem reports: your description, technical details about the browser, the app's latest error messages and a screenshot, if you attach one.",
             "p5": "Subscription and payments: the plan, the period, billing details (name or company, company ID, VAT ID, address, e-mail for receipts), amounts and the state of payments. We never see the card number; Stripe processes it.",
             "p6": "Consents from registration: when and which version of the terms and this policy you accepted, and whether you want news by e-mail."
           },
           "purpose": {
-            "p1": "To provide the app under the terms (performance of a contract): your account and sign-in, storing your data, the subscription and payments, e-mails about your account (such as a password reset or a receipt), Jarvis and contact generation.",
+            "p1": "To provide the app under the terms (performance of a contract): your account and sign-in, storing your data, the subscription and payments, e-mails about your account (such as a password reset or a receipt), Grady and contact generation.",
             "p2": "Based on legitimate interest: security (including limiting attempts at codes), finding and fixing errors, measuring usage and improving the app.",
             "p3": "With consent: the waitlist and news by e-mail, if you ticked it when registering. You can withdraw consent at any time through the link in the e-mail or by writing to {email}; an unconfirmed waitlist sign-up is deleted after 30 days.",
             "p4": "Under a legal obligation: accounting and tax records of payments."
           },
           "usage": {
             "p1": "To learn which parts of {appName} help and what needs to get better, we record how the app is used: which screens you open, which actions you take (such as creating a milestone or moving a contact), how long you spend in the app, what kind of device you use and which errors happened.",
-            "p2": "We store only types of actions, counts, times and states, never content: no names, phone numbers, e-mails, company, deal or task names, and no messages to Jarvis. The records are linked to your account, only the operator of {appName} can see them, and we use no tracking cookies or third-party services for this.",
+            "p2": "We store only types of actions, counts, times and states, never content: no names, phone numbers, e-mails, company, deal or task names, and no messages to Grady. The records are linked to your account, only the operator of {appName} can see them, and we use no tracking cookies or third-party services for this.",
             "p3": "Usage records and sessions are deleted automatically after 13 months. After you delete your account, they stay only anonymously, with no link to you."
           },
           "ai": {
-            "p1": "When you use Jarvis, we send your message and the context it needs from your data (such as a summary of your situation, notes or an attached file) to Anthropic, which runs the language model. The same goes for the morning brief and the suggestions Jarvis prepares on his own.",
+            "p1": "When you use Grady, we send your message and the context it needs from your data (such as a summary of your situation, notes or an attached file) to Anthropic, which runs the language model. The same goes for the morning brief and the suggestions Grady prepares on his own.",
             "p2": "Anthropic does not use data sent through its API to train its models and keeps it only for a limited time under its commercial terms. We don't use your data to train artificial intelligence either.",
             "p3": "When generating contacts, we send Google Maps Platform only the industry and place you search for, none of your data."
           },
@@ -5306,7 +5311,7 @@
             "p1": "These processors handle data for us, each only as far as their work needs:",
             "p2": "Supabase: database, sign-in and file storage. The data is stored in the EU (Ireland).",
             "p3": "Vercel: running the website and the app. The server part runs in the EU (Frankfurt); static parts of the website are delivered through a global network.",
-            "p4": "Anthropic: the language model behind Jarvis. USA.",
+            "p4": "Anthropic: the language model behind Grady. USA.",
             "p5": "Google Maps Platform: finding businesses when generating contacts. Google, worldwide including the USA.",
             "p6": "Resend: sending e-mails (password reset, invoices, notifications). USA.",
             "p7": "Stripe: the payment gateway for subscriptions (card payments, receipts, managing the payment method). Stripe Payments Europe, Ireland, with transfers to the USA.",
@@ -5397,10 +5402,10 @@
     "trialNote": "Every plan starts with 14 days free. No card.",
     "features": {
       "allSections": "Every section of the app",
-      "jarvis": "Jarvis, your assistant",
+      "grady": "Grady, your assistant",
       "generatedContacts": "{count} generated contacts a month",
       "meetingAnalysis": "AI meeting analysis",
-      "jarvisFiles": "Files for Jarvis",
+      "gradyFiles": "Files for Grady",
       "calendarSync": "Calendar sync",
       "prioritySupport": "Priority support",
       "everythingInPro": "Everything in Pro",
@@ -5451,7 +5456,7 @@
       "activation": "Activation",
       "retention": "Retention",
       "features": "Features",
-      "ai": "AI and Jarvis",
+      "ai": "AI and Grady",
       "game": "Game",
       "costs": "Costs",
       "health": "Health",
@@ -5547,7 +5552,7 @@
         "description": "The step where people skipped onboarding."
       },
       "tour_outcome": {
-        "name": "Jarvis's tour",
+        "name": "Grady's tour",
         "description": "Completed or skipped."
       },
       "tour_skipped_at": {
@@ -5623,7 +5628,7 @@
         "description": "Users who opened the app from a link in an e-mail."
       },
       "returns_from_jarvis": {
-        "name": "Reactions to Jarvis's bubble",
+        "name": "Reactions to Grady's bubble",
         "description": "Users by their reaction to a proactive bubble."
       },
       "feature_adoption": {
@@ -5668,7 +5673,7 @@
       },
       "milestone_reviews": {
         "name": "AI milestone reviews",
-        "description": "Milestone reviews requested from Jarvis."
+        "description": "Milestone reviews requested from Grady."
       },
       "deals_created": {
         "name": "Deals created",
@@ -5880,7 +5885,7 @@
       },
       "email_drafts_requested": {
         "name": "AI drafts requested",
-        "description": "E-mail drafts requested from Jarvis."
+        "description": "E-mail drafts requested from Grady."
       },
       "email_drafts_used": {
         "name": "AI drafts used",
@@ -5903,7 +5908,7 @@
         "description": "Sounds on and off."
       },
       "settings_jarvis_proactive": {
-        "name": "Jarvis's initiative",
+        "name": "Grady's initiative",
         "description": "Proactive messages on and off."
       },
       "ai_calls": {
@@ -5935,7 +5940,7 @@
         "description": "The 10 accounts with the highest AI cost, identifier and plan only."
       },
       "jarvis_conversations": {
-        "name": "Conversations with Jarvis",
+        "name": "Conversations with Grady",
         "description": "Conversations, messages per user and median messages per conversation."
       },
       "ai_errors": {
@@ -5964,7 +5969,7 @@
       },
       "jarvis_auto_actions": {
         "name": "Automatic actions",
-        "description": "What Jarvis did on his own."
+        "description": "What Grady did on his own."
       },
       "jarvis_auto_actions_undone": {
         "name": "Undone actions",
@@ -5976,7 +5981,7 @@
       },
       "ai_cap_users": {
         "name": "At the AI cap",
-        "description": "Share of Jarvis users who hit the monthly cap."
+        "description": "Share of Grady users who hit the monthly cap."
       },
       "users_by_mode": {
         "name": "Game / tool mode",
@@ -6184,7 +6189,7 @@
         "activation": "Activation",
         "retention": "Retention",
         "features": "Features",
-        "ai": "AI and Jarvis",
+        "ai": "AI and Grady",
         "game": "Game",
         "costs": "Costs",
         "health": "Health",
@@ -6340,10 +6345,10 @@
       }
     },
     "ai": {
-      "title": "AI and Jarvis",
-      "description": "Calls, tokens, cost, latency and how people react to Jarvis.",
+      "title": "AI and Grady",
+      "description": "Calls, tokens, cost, latency and how people react to Grady.",
       "budget": {
-        "title": "Jarvis budget",
+        "title": "Grady budget",
         "description": "Spend of all accounts, internal ones too, in the period chosen above against the monthly cap scaled to that period (for 30 days the calendar month in UTC, as the check before a model call counts it). Status and estimate are always for this month.",
         "meter": "Budget used",
         "projected": "Estimate by month end",
@@ -6354,7 +6359,7 @@
           "paused": "Paused"
         },
         "statusHint": {
-          "ok": "Jarvis calls the model as usual.",
+          "ok": "Grady calls the model as usual.",
           "near": "Above the warning threshold: the owner gets one e-mail a day.",
           "paused": "At 100 %: no model calls until the month ends; the watch runs on rules only."
         },
@@ -6387,7 +6392,7 @@
       "caps": {
         "title": "AI usage caps",
         "description": "Changes apply within a minute, without a new deployment. Every change is written to the audit with its old and new value.",
-        "defaults": "Nothing saved yet, the defaults apply: JARVIS_MONTHLY_BUDGET_USD ({budget}), no per-user cap, warning at {percent} %.",
+        "defaults": "Nothing saved yet, the defaults apply: GRADY_MONTHLY_BUDGET_USD ({budget}), no per-user cap, warning at {percent} %.",
         "monthlyLabel": "Monthly cap for the whole app (USD)",
         "monthlyHint": "All accounts together, internal ones too. 0 stops every model call. At most {max}.",
         "perUserLabel": "Monthly cap per user (USD)",
@@ -6425,7 +6430,7 @@
           "failed": "The change could not be saved. Try again."
         },
         "sectionTitle": "Caps",
-        "sectionDescription": "Changing a cap changes what Jarvis may spend from the next minute on.",
+        "sectionDescription": "Changing a cap changes what Grady may spend from the next minute on.",
         "periodNote": "The fields are monthly caps. The meters below compare the spend {period} with the caps scaled to this period (monthly cap / days of the month for each day)."
       },
       "period": {
@@ -6438,14 +6443,14 @@
       },
       "connection": {
         "title": "Test the connection",
-        "description": "Sends Jarvis a short question and shows whether it answered, how long it took and what it cost. It counts towards the spend.",
+        "description": "Sends Grady a short question and shows whether it answered, how long it took and what it cost. It counts towards the spend.",
         "test": "Test the connection",
-        "testing": "Asking Jarvis…",
-        "ok": "Jarvis answered",
+        "testing": "Asking Grady…",
+        "ok": "Grady answered",
         "duration": "In {seconds} s",
         "cost": "Cost {cost}",
         "model": "Model {model}",
-        "failed": "Jarvis didn't answer",
+        "failed": "Grady didn't answer",
         "failedAfter": "The error came after {seconds} s."
       },
       "tabs": "Parts",
@@ -6454,15 +6459,15 @@
         "rules": "Rules"
       },
       "rules": {
-        "title": "Jarvis's rules",
-        "description": "When Jarvis speaks up on his own, with what, and what you tell him. Applies to the whole app within a minute. The full description is in docs/jarvis-pravidla.md.",
+        "title": "Grady's rules",
+        "description": "When Grady speaks up on his own, with what, and what you tell him. Applies to the whole app within a minute. The full description is in docs/grady-pravidla.md.",
         "defaults": "Nothing saved yet: the app's defaults are shown.",
         "typesTitle": "What may come up on its own",
-        "typesHint": "A type switched off no longer comes up on its own. It stays in Jarvis's panel; the summary of the day does not change.",
+        "typesHint": "A type switched off no longer comes up on its own. It stays in Grady's panel; the summary of the day does not change.",
         "types": {
           "insight": {
             "label": "Insights from the watch",
-            "description": "What Jarvis writes himself in the daily opportunity watch (model)."
+            "description": "What Grady writes himself in the daily opportunity watch (model)."
           },
           "stalledDeal": {
             "label": "Deal stalled",
@@ -6533,30 +6538,30 @@
           }
         },
         "instructions": {
-          "label": "Instructions for Jarvis",
-          "hint": "Your text goes into the system prompt of the chat and the summaries as the block “Instructions from the app's owner”, right after Jarvis's persona. The safety rules (no made-up numbers, notes are data, no personal data out) always take precedence.",
+          "label": "Instructions for Grady",
+          "hint": "Your text goes into the system prompt of the chat and the summaries as the block “Instructions from the app's owner”, right after Grady's persona. The safety rules (no made-up numbers, notes are data, no personal data out) always take precedence.",
           "placeholder": "E.g. Keep it short and informal. For deals, always suggest one concrete next step.",
           "counter": "{used} / {max} characters",
           "length": "{count, plural, =0 {empty} one {# character} other {# characters}}"
         },
         "test": {
           "title": "Try it",
-          "description": "Sends Jarvis a message with the instructions as they are in the field now (saved or not) and shows the answer. No user data; counts towards the spend.",
+          "description": "Sends Grady a message with the instructions as they are in the field now (saved or not) and shows the answer. No user data; counts towards the spend.",
           "messageLabel": "Test message",
           "defaultMessage": "I have three deals in progress and don't know which to start with. What do you suggest?",
           "run": "Try it",
-          "running": "Jarvis is writing…",
+          "running": "Grady is writing…",
           "meta": "In {seconds} s · {cost} · {model}",
-          "failed": "Jarvis did not answer",
+          "failed": "Grady did not answer",
           "invalid": "The instructions are longer than the allowed 2,000 characters.",
-          "limitReached": "Your account has used up its Jarvis answers."
+          "limitReached": "Your account has used up its Grady answers."
         },
         "on": "on",
         "off": "off",
         "save": "Save rules",
         "saved": "Saved. Applies within a minute.",
         "noChanges": "Nothing changed.",
-        "confirmTitle": "Save Jarvis's rules?",
+        "confirmTitle": "Save Grady's rules?",
         "confirmDescription": "The change applies to every account right away.",
         "confirmDefaults": "You save the defaults as the first setting.",
         "confirm": "Save",
@@ -6635,7 +6640,7 @@
     },
     "feedback": {
       "title": "Feedback",
-      "description": "Bug reports, ideas, satisfaction and how people rate Jarvis's answers.",
+      "description": "Bug reports, ideas, satisfaction and how people rate Grady's answers.",
       "answersTitle": "Satisfaction survey answers",
       "answersDescription": "The most recent answers where people wrote something.",
       "noAnswers": "Nobody has written anything yet.",
@@ -6643,9 +6648,9 @@
       "liked": "Likes",
       "improve": "Improve",
       "ideasTitle": "Ideas",
-      "ideasDescription": "Submitted through Jarvis; change the status as you triage them.",
+      "ideasDescription": "Submitted through Grady; change the status as you triage them.",
       "emptyTitle": "No ideas yet",
-      "emptyDescription": "Ideas people send Jarvis show up here.",
+      "emptyDescription": "Ideas people send Grady show up here.",
       "ideaMeta": "From {name} · {date}",
       "statusFailed": "Could not be saved. Try again.",
       "status": {
@@ -6820,7 +6825,7 @@
         "search": "Search",
         "email": "E-mail",
         "settings": "Settings",
-        "jarvis": "Jarvis",
+        "jarvis": "Grady",
         "game": "Game",
         "plan": "Plan",
         "messages": "Messages"
@@ -6866,7 +6871,7 @@
       "yes": "Yes",
       "no": "No",
       "changesTitle": "Changes to the account",
-      "changesDescription": "What changes how this account is counted or what Jarvis may spend for it. Each change is written to the audit.",
+      "changesDescription": "What changes how this account is counted or what Grady may spend for it. Each change is written to the audit.",
       "internalTitle": "Internal account",
       "internalDescription": "An internal account (the owner, demo, tests) is left out of every metric unless the controls include it.",
       "subscription": {
@@ -7340,7 +7345,7 @@
         "saved": "Draft saved. The website still shows the published version.",
         "noChanges": "Nothing to save.",
         "discarded": "Draft discarded.",
-        "published": "Published. The website, the app and Jarvis show the new version.",
+        "published": "Published. The website, the app and Grady show the new version.",
         "restored": "Version brought back and published."
       },
       "actions": {
@@ -7359,7 +7364,7 @@
         "prices": "Prices without VAT",
         "perWorker": "Price per worker",
         "limits": "Limits",
-        "limitsHint": "Contacts and Jarvis are limits per day or month. Workers and storage limit what an account holds; empty = no limit. An account above a lower limit turns read-only from the next day; nothing is deleted.",
+        "limitsHint": "Contacts and Grady are limits per day or month. Workers and storage limit what an account holds; empty = no limit. An account above a lower limit turns read-only from the next day; nothing is deleted.",
         "unlimited": "no limit",
         "features": "Lines on the card",
         "line": "Line {n} ({locale})",
@@ -7388,8 +7393,8 @@
       "limits": {
         "daily_contacts": "Contacts a day",
         "monthly_contacts": "Contacts a month",
-        "ai_calls": "Jarvis answers a month",
-        "ai_files": "Files for Jarvis a month",
+        "ai_calls": "Grady answers a month",
+        "ai_files": "Files for Grady a month",
         "workers": "Workers",
         "storage_mb": "Storage (MB)",
         "scheduler_types": "Active meeting types (Scheduler)"
@@ -7423,7 +7428,7 @@
       },
       "publishConfirm": {
         "title": "Publish the plans?",
-        "description": "This changes on the website, in the app and in Jarvis compared with the published version:",
+        "description": "This changes on the website, in the app and in Grady compared with the published version:",
         "confirm": "Publish"
       },
       "restoreConfirm": {
@@ -8153,8 +8158,8 @@
         "workers": "Workers: you have {used}, the plan allows {allowed}",
         "storage_mb": "Storage: you use {used} MB, the plan allows {allowed} MB",
         "monthly_contacts": "Contacts generated this month: {used}, the plan allows {allowed}",
-        "ai_calls": "Jarvis answers this month: {used}, the plan allows {allowed}",
-        "ai_files": "Files for Jarvis this month: {used}, the plan allows {allowed}"
+        "ai_calls": "Grady answers this month: {used}, the plan allows {allowed}",
+        "ai_files": "Files for Grady this month: {used}, the plan allows {allowed}"
       },
       "locksNote": "Over the workers or storage limit your account becomes read-only from the next midnight until you are within it. Nothing is deleted.",
       "monthlyNote": "Over a monthly limit nothing new is added this month.",
@@ -8430,14 +8435,14 @@
       "calendar": "Calendar",
       "finance": "Finance",
       "company": "Company",
-      "jarvis": "Jarvis",
+      "grady": "Grady",
       "end": "End"
     },
     "demo": {
       "question": "What about the sample data?",
       "deleted": "Delete it",
       "kept": "Keep it",
-      "footnote": "Whatever you created yourself during the tutorial stays either way. You can delete the sample data later in Settings → Jarvis.",
+      "footnote": "Whatever you created yourself during the tutorial stays either way. You can delete the sample data later in Settings → Grady.",
       "note": {
         "intro": "A sample note from the tutorial. Rewrite it in your own words.",
         "answers": {
@@ -8533,8 +8538,8 @@
     },
     "endConfirm": {
       "title": "End the tutorial?",
-      "text": "You can start it again any time in Settings → Jarvis.",
-      "textFull": "Delete the sample data now, or keep it and delete it later in Settings → Jarvis.",
+      "text": "You can start it again any time in Settings → Grady.",
+      "textFull": "Delete the sample data now, or keep it and delete it later in Settings → Grady.",
       "back": "Back",
       "keep": "End and keep the data",
       "delete": "End and delete the data"
@@ -8562,7 +8567,7 @@
       "failed": "It couldn't start. Please try again.",
       "none": {
         "title": "Skip and dive in on your own",
-        "text": "You can start the tutorial any time in Settings → Jarvis."
+        "text": "You can start the tutorial any time in Settings → Grady."
       },
       "quick": {
         "title": "Quick look",
@@ -8572,7 +8577,7 @@
           "1": "What I watch for you",
           "2": "How and when I speak up"
         },
-        "previewAlt": "Preview of the quick look: a lit menu item and Jarvis pointing at it"
+        "previewAlt": "Preview of the quick look: a lit menu item and Grady pointing at it"
       },
       "full": {
         "title": "Full tutorial",
@@ -9345,7 +9350,7 @@
       "noTypes": "No meeting type yet."
     },
     "hint": {
-      "text": "Jarvis: send a link to book “{name}” ({duration})",
+      "text": "Grady: send a link to book “{name}” ({duration})",
       "insert": "Insert link",
       "copy": "Copy link",
       "copied": "Copied",

@@ -13,6 +13,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { parseAwardResult, parseGameState } from "./parse";
 import { tierForLevel, type XpReason } from "./rules";
+import { unlockDescription } from "./skill-text";
 import { localized, type AwardResult, type GameMode, type GameState } from "./types";
 
 export const gameKeys = {
@@ -112,7 +113,7 @@ function useCelebrateAward() {
             .map((item) => ({
               key: item.key,
               name: localized(item.name, locale),
-              description: localized(item.description, locale),
+              description: unlockDescription(item.key, item.description, locale, t),
               icon: item.icon,
             })),
         },

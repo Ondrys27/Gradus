@@ -14,7 +14,7 @@ import {
   MAX_MONTHLY_USD,
   MAX_USER_USD,
   remainingUsd,
-} from "@/features/jarvis/caps";
+} from "@/features/grady/caps";
 import { formatUsd } from "@/lib/format";
 import { ADMIN_FORMAT_SETTINGS } from "../format-metric";
 import { saveAiCaps, type CapsActionResult } from "../server/ai-caps-actions";

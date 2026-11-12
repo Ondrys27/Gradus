@@ -18,8 +18,8 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | `mutations.setFeatureRequestStatus` | owner + admin | třídění zpětné vazby |
 | `ai-caps-actions.saveAiCaps` | owner | stropy AI; admin je vidí jen ke čtení |
 | `ai-caps-actions.saveUserAiCap` | owner | výjimky AI; admin je vidí jen ke čtení |
-| `jarvis-rules-actions.saveJarvisRules` | owner | pravidla Jarvise (přepínače typů a otázek, časování, Pokyny pro Jarvise); admin je vidí jen ke čtení |
-| `POST /api/jarvis` `kind: rulesTest` | owner (aal2, živá relace) | „Vyzkoušet“ u pravidel, jedno placené volání modelu; ostatním 404 |
+| `grady-rules-actions.saveGradyRules` | owner | pravidla Gradyho (přepínače typů a otázek, časování, Pokyny pro Gradyho); admin je vidí jen ke čtení |
+| `POST /api/grady` `kind: rulesTest` | owner (aal2, živá relace) | „Vyzkoušet“ u pravidel, jedno placené volání modelu; ostatním 404 |
 | `plans-actions.savePlanDraft`, `discardPlanDraft`, `planCatalogImpact`, `publishPlanCatalog`, `restorePlanVersion` | owner | katalog tarifů; admin vidí zveřejněnou verzi a historii jen ke čtení |
 | `promo-actions.savePromoCode`, `setPromoCodeActive` | owner + admin | promo kódy partnerů (marketing); DB to ověří znovu v `admin_promo_code_save` / `_set_active` (živá relace s aal2), audit `settings.promo_codes` bez jména a e-mailu partnera |
 | `promo-actions.setPayoutStatus` | owner | výplaty provizí (peníze): schválit, vrátit ke schválení, vyplaceno; admin je vidí jen ke čtení |
@@ -44,9 +44,9 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | Stránka | Kdo |
 |---|---|
 | Přehled, Růst, Aktivace, Retence, Funkce, Hra, Náklady, Zdraví, Zpětná vazba, Uživatelé, Průzkumník, Audit | owner + admin |
-| AI a Jarvis — karta stropů | owner upravuje, admin čte |
-| AI a Jarvis — karta Vyzkoušet připojení (jedno volání modelu přes `/api/jarvis`, `kind: ping`) | owner; adminovi se neukáže |
-| AI a Jarvis → Pravidla (`/admin/ai?tab=rules`) | owner upravuje, admin čte; „Vyzkoušet“ (`kind: rulesTest`) jen owner, adminovi se neukáže |
+| AI a Grady — karta stropů | owner upravuje, admin čte |
+| AI a Grady — karta Vyzkoušet připojení (jedno volání modelu přes `/api/grady`, `kind: ping`) | owner; adminovi se neukáže |
+| AI a Grady → Pravidla (`/admin/ai?tab=rules`) | owner upravuje, admin čte; „Vyzkoušet“ (`kind: rulesTest`) jen owner, adminovi se neukáže |
 | Detail uživatele — karta Účet (e-mail, registrace, poslední přihlášení, zařízení, tarif, zkouška, akce podpory) a Hlášení | owner + admin; akce podpory podle řádku výše, jinak jen věta, kdo účet spravuje |
 | Uživatelé — sloupec E-mail | owner + admin; Export CSV jen owner |
 | Detail uživatele — výjimka AI | owner upravuje, admin čte |

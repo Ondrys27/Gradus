@@ -1,11 +1,11 @@
-import type { JarvisDirection } from "@/components/jarvis/jarvis-pose";
-import { pointDirection, type Box, type Size } from "@/features/jarvis/tour";
+import type { GradyDirection } from "@/components/grady/grady-pose";
+import { pointDirection, type Box, type Size } from "@/features/grady/tour";
 import type { PlannedStep } from "./engine";
 import type { TutorialChapter } from "./steps";
 
 /**
  * How the tutorial is presented, without React: the chapter rail at the top
- * instead of "step 7 of 31", the emphasised verb in what Jarvis says, which
+ * instead of "step 7 of 31", the emphasised verb in what Grady says, which
  * short reaction he gives once a hands-on step is done, where he stands next
  * to the element of a hands-on step and which end of a phone the bubble
  * takes so it never covers the button the user has to press.
@@ -117,10 +117,10 @@ export function phoneBubbleEnd(box: Box | null, viewport: Size): "top" | "bottom
   return centre < viewport.height / 2 ? "bottom" : "top";
 }
 
-export type Companion = { left: number; top: number; direction: JarvisDirection };
+export type Companion = { left: number; top: number; direction: GradyDirection };
 
 /**
- * Where Jarvis stands next to the element of a hands-on step on a larger
+ * Where Grady stands next to the element of a hands-on step on a larger
  * screen: below it when it sits in the upper part of the page (a header
  * button: the room below is usually free, the buttons beside it are not),
  * else to its left when there is room, else to its right, else below

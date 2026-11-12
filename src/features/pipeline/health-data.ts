@@ -13,7 +13,7 @@ import {
  * What the pipeline tiles read besides the deals: every open task of a deal
  * (with the deal, so one beyond the board still shows) and when each open
  * deal last had a task finished. Shared by the browser (the user's client)
- * and the server (Jarvis, the user's or the admin client filtered by the
+ * and the server (Grady, the user's or the admin client filtered by the
  * space); RLS of the user's client keeps it to what they may see.
  */
 
@@ -30,7 +30,7 @@ export type DealTaskSignals = {
   lastDone: Map<string, string>;
 };
 
-/** Jarvis's own summaries leave the tutorial's sample data out (the tiles on screen show it). */
+/** Grady's own summaries leave the tutorial's sample data out (the tiles on screen show it). */
 export type HealthReadOptions = { excludeDemo?: boolean };
 
 export async function fetchDealTaskSignals(
@@ -73,7 +73,7 @@ export async function fetchDealTaskSignals(
   };
 }
 
-/** Open deals of a space for the tiles, where the board is not loaded (Jarvis). */
+/** Open deals of a space for the tiles, where the board is not loaded (Grady). */
 export async function fetchOpenHealthDeals(
   supabase: SupabaseClient<Database>,
   workspaceId: string,
@@ -93,7 +93,7 @@ export async function fetchOpenHealthDeals(
 }
 
 /**
- * The tiles as Jarvis sees them, read on the server: the user's client in a
+ * The tiles as Grady sees them, read on the server: the user's client in a
  * chat (RLS), the admin client for the morning brief (filtered by the space).
  * `assigneeId` null counts the whole space; a worker's id only theirs.
  */

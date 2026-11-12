@@ -14,7 +14,7 @@ export const SCREENSHOT_NAMES = [
   "cold-calling",
   "calendar",
   "finance",
-  "jarvis",
+  "grady",
 ] as const;
 export type ScreenshotName = (typeof SCREENSHOT_NAMES)[number];
 

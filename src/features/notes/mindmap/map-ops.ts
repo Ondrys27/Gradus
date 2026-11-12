@@ -243,7 +243,7 @@ export function stepSelection(
 }
 
 // ---------------------------------------------------------------------------
-// Jarvis's suggestions
+// Grady's suggestions
 // ---------------------------------------------------------------------------
 
 export type SuggestedBranch = { title: string; children?: SuggestedBranch[] };

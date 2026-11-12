@@ -169,7 +169,7 @@ describe("notes written from a task or a milestone", () => {
   });
 });
 
-describe("Jarvis's answers in notes", () => {
+describe("Grady's answers in notes", () => {
   const answer = "Tvůj ceník:\n\n- Konzultace 1 500 Kč\n- Balíček 5 000 Kč\n\n1. Zavolej\n2. Pošli nabídku\nHotovo.";
 
   it("turns the answer's lines into paragraphs and lists", () => {
@@ -183,15 +183,15 @@ describe("Jarvis's answers in notes", () => {
   });
 
   it("starts a new note with a title line", () => {
-    const draft = draftFromDoc(docWithTitle("Od Jarvise, 17. 10. 2026", blocksFromPlainText(answer)));
-    expect(draft.title).toBe("Od Jarvise, 17. 10. 2026");
+    const draft = draftFromDoc(docWithTitle("Od Gradyho, 17. 10. 2026", blocksFromPlainText(answer)));
+    expect(draft.title).toBe("Od Gradyho, 17. 10. 2026");
     expect(draft.content_text).toContain("Balíček 5 000 Kč");
   });
 
   it("adds to the end of a note under a small heading, keeping what was there", () => {
     const doc: DocNode = { type: "doc", content: [p("Ceník"), p("Stará cena"), { type: "paragraph" }] };
-    const next = appendToDoc(doc, "Od Jarvise", blocksFromPlainText("Nová cena 2 000 Kč"));
-    expect(extractText(next)).toBe("Ceník\nStará cena\nOd Jarvise\nNová cena 2 000 Kč");
+    const next = appendToDoc(doc, "Od Gradyho", blocksFromPlainText("Nová cena 2 000 Kč"));
+    expect(extractText(next)).toBe("Ceník\nStará cena\nOd Gradyho\nNová cena 2 000 Kč");
     expect(next.content?.[2]).toMatchObject({ type: "heading", attrs: { level: 3 } });
     expect(doc.content).toHaveLength(3);
   });

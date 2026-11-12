@@ -33,7 +33,7 @@ export type TutorialCheck =
       since: string;
       /** Only the user's own rows, never the samples (tables with is_demo). */
       realOnly?: boolean;
-      /** Whose rows: the space (user_id = workspace) or the account itself (Jarvis's chat). */
+      /** Whose rows: the space (user_id = workspace) or the account itself (Grady's chat). */
       owner?: "workspace" | "user";
       where?: CheckFilter[];
     }
@@ -78,14 +78,14 @@ export const TUTORIAL_CHECKS = {
     since: "created_at",
     where: [{ column: "kind", op: "eq", value: "invoice" }],
   },
-  jarvisAsked: {
+  gradyAsked: {
     kind: "row",
     table: "jarvis_messages",
     since: "created_at",
     owner: "user",
     where: [{ column: "role", op: "eq", value: "user" }],
   },
-  jarvisFrequency: { kind: "signal", signal: "jarvisFrequency" },
+  gradyFrequency: { kind: "signal", signal: "gradyFrequency" },
 } as const satisfies Record<string, TutorialCheck>;
 
 export type TutorialCheckKey = keyof typeof TUTORIAL_CHECKS;

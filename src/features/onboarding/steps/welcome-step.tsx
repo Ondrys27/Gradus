@@ -12,7 +12,7 @@ export function WelcomeStep({ onNext }: { onNext: () => void }) {
   const tActions = useTranslations("onboarding.actions");
   return (
     <StepShell
-      jarvisState="happy"
+      gradyState="happy"
       title={t("title", { appName: APP_NAME })}
       description={t("description", { appName: APP_NAME })}
       footer={

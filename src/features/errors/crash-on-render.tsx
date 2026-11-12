@@ -10,7 +10,7 @@ const subscribe = () => () => {};
  * the error is the browser's own, like most real ones), inside the page, where
  * the app's error boundary catches it. With `later`, the page first renders
  * normally and throws when the window gets CRASH_TEST_EVENT, so a test can
- * open Jarvis (or anything else) before the crash, as a real one happens.
+ * open Grady (or anything else) before the crash, as a real one happens.
  */
 export function CrashOnRender({
   later = false,

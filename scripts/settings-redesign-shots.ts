@@ -27,7 +27,7 @@ const PAGES: Record<typeof phase, [string, string][]> = {
     ["settings", "/app/nastaveni"],
     ["account", "/app/nastaveni/ucet"],
     ["subscription", "/app/nastaveni/predplatne"],
-    ["jarvis", "/app/nastaveni/jarvis"],
+    ["grady", "/app/nastaveni/grady"],
     ["appearance", "/app/nastaveni/vzhled"],
     ["work", "/app/nastaveni/prace"],
     ["privacy", "/app/nastaveni/soukromi"],

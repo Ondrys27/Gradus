@@ -30,7 +30,7 @@ export function useBookingLink(purpose: LinkPurpose) {
 }
 
 /**
- * Jarvis's quiet suggestion "send a link to book a meeting" with the best
+ * Grady's quiet suggestion "send a link to book a meeting" with the best
  * type: insert it into an e-mail, copy it, or open a mail to the contact.
  */
 export function MeetingLinkHint({

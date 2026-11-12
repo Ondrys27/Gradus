@@ -7,7 +7,7 @@
  *   <!-- cena: ai=chat in=3500 read=2500 write=0 out=450 -->
  *
  * A `kód` comment lists code keys (prefix:value) the text around it
- * describes. A `cena` comment sits on one row of the Jarvis table: the model
+ * describes. A `cena` comment sits on one row of the Grady table: the model
  * job and its typical tokens, from which the price shown on the same row is
  * recomputed with the prices of src/config/costs.ts.
  */
@@ -62,7 +62,7 @@ export function routeOf(pageFile: string): string {
   return `/${segments.join("/")}`;
 }
 
-/** The `kind`s the Jarvis route answers to, from its source (`kind === "…"`). */
+/** The `kind`s the Grady route answers to, from its source (`kind === "…"`). */
 export function routeKinds(source: string): string[] {
   const kinds = new Set<string>();
   for (const match of source.matchAll(/\bkind === "([a-zA-Z]+)"/g)) kinds.add(match[1]);

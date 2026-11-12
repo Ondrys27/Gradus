@@ -379,7 +379,7 @@ export function NotesView() {
     <p className="pt-24 text-center text-sm text-ink-muted">{t("selectNote")}</p>
   );
 
-  // Bottom left of the content, where floating controls go (the right belongs to Jarvis).
+  // Bottom left of the content, where floating controls go (the right belongs to Grady).
   const undoBar = undo && (
     <div
       role="status"

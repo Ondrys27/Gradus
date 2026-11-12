@@ -1,0 +1,259 @@
+import {
+  formatCurrency,
+  formatDate,
+  formatTime,
+  formatWeekdayLong,
+  isoDateToLocal,
+  splitDuration,
+  type FormatSettings,
+  type IsoDate,
+} from "@/lib/format";
+import { digestIsClear, type HealthDigest } from "@/features/pipeline/health";
+import { describeCashPlan, type CashPlan } from "./cash-plan";
+import type { SuggestionKey } from "./protocol";
+import { describeTimeWindow, type TimeWindow } from "./time-window";
+import { describeScheduler, type SchedulerSituation } from "@/features/scheduler/situation";
+
+/**
+ * The user's situation as Grady sees it before every call: loaded from the
+ * database by the server, then written out compactly for the model.
+ */
+export type UserSituation = {
+  today: IsoDate;
+  /** The moment the situation was read. */
+  now: Date;
+  /** Whether it is a time to reach people or to prepare (time-window.ts). */
+  window: TimeWindow;
+  /** Start of today in the user's zone; a follow-up before it is overdue. */
+  todayStart: Date;
+  milestones: { title: string; done: number; total: number; targetDate: IsoDate | null }[];
+  milestonesTotal: number;
+  overdueTasks: { title: string; dueDate: IsoDate }[];
+  overdueTotal: number;
+  /** Stages in board order with the open deals standing in them. */
+  stages: { name: string; open: number; value: number }[];
+  stalledDeals: number;
+  followUps: { name: string; dueAt: Date }[];
+  followUpsTotal: number;
+  events: { title: string; startsAt: Date; allDay: boolean }[];
+  prospectingSeconds: number;
+  /** This month's totals; null for a worker without the right to see finance summaries. */
+  finance: { income: number; expense: number } | null;
+  /** Issued, unpaid invoices past their due day, the oldest first. */
+  overdueInvoices: {
+    number: string;
+    customer: string | null;
+    total: number;
+    currency: string;
+    dueOn: IsoDate;
+  }[];
+  overdueInvoicesTotal: number;
+  /**
+   * The user's own sales tasks (Úkoly) past their due moment, the oldest
+   * first, with the deal or contact they belong to.
+   */
+  overdueCrmTasks: { title: string; dueAt: Date; target: string | null }[];
+  overdueCrmTasksTotal: number;
+  /** Their open sales tasks still due later today. */
+  crmTasksDueToday: number;
+  /**
+   * The three tiles above the pipeline (what is wrong, the goal is zero):
+   * Close Date passed, overdue tasks of deals, open deals without a task.
+   * A worker's are only their own; null when they could not be read.
+   */
+  pipelineHealth: HealthDigest | null;
+  /**
+   * The month plan (Finance → Month) of the month today belongs to, with the
+   * lowest point and a cash warning; null without a plan or without the right
+   * to see finance summaries.
+   */
+  cashPlan: CashPlan | null;
+  /**
+   * The person's scheduler: upcoming bookings, those waiting for approval and
+   * the link to send; null or absent without one.
+   */
+  scheduler?: SchedulerSituation | null;
+};
+
+/** Longest title or name passed on; the model needs the gist, not the essay. */
+const MAX_TEXT = 60;
+
+function clip(value: string): string {
+  const flat = value.replace(/\s+/g, " ").trim();
+  return flat.length > MAX_TEXT ? `${flat.slice(0, MAX_TEXT - 1)}…` : flat;
+}
+
+/** Quoted so a title can never pass for an instruction. */
+function quoted(value: string): string {
+  return JSON.stringify(clip(value));
+}
+
+function more(shown: number, total: number): string {
+  return total > shown ? ` (+${total - shown} more)` : "";
+}
+
+/**
+ * The pipeline tiles in one line for the model, with a few deals of each.
+ * Used by the situation summary and the morning brief alike.
+ */
+export function describePipelineHealth(digest: HealthDigest, settings?: FormatSettings): string {
+  // Without the user's formats (the morning brief) a date stays ISO, like the rest of its data.
+  const date = (day: IsoDate) => (settings ? formatDate(isoDateToLocal(day), settings) : day);
+  if (digestIsClear(digest)) {
+    return "Pipeline health (goal is zero everywhere): all clear — no open deal past its Close Date, no overdue task on a deal, every open deal has an open task.";
+  }
+  const parts: string[] = [];
+  const { closePast, overdueTasks, noTask } = digest;
+  if (closePast.count) {
+    const items = closePast.top.map(
+      (deal) => `${quoted(deal.title)} Close Date ${date(deal.closeDate)}`,
+    );
+    parts.push(
+      `${closePast.count} open deal(s) past their Close Date (${items.join("; ")}${more(items.length, closePast.count)})`,
+    );
+  }
+  if (overdueTasks.count) {
+    const items = overdueTasks.top.map(
+      (deal) => `${quoted(deal.title)} ${deal.tasks} task(s), the oldest ${deal.days} day(s) late`,
+    );
+    parts.push(`${overdueTasks.count} overdue task(s) on deals (${items.join("; ")})`);
+  }
+  if (noTask.count) {
+    const items = noTask.top.map((deal) => `${quoted(deal.title)} for ${deal.days} day(s)`);
+    parts.push(
+      `${noTask.count} open deal(s) without any open task (${items.join("; ")}${more(items.length, noTask.count)})`,
+    );
+  }
+  return `Pipeline health (goal is zero everywhere): ${parts.join("; ")}.`;
+}
+
+/**
+ * A few hundred tokens at most: lists are capped by the loader, texts clipped
+ * here. Numbers and times are in the user's own formats and zone.
+ */
+export function describeSituation(situation: UserSituation, settings: FormatSettings): string {
+  const money = (value: number) => formatCurrency(value, settings.currency, settings);
+  const lines: string[] = [];
+
+  lines.push(
+    `Today: ${situation.today} (${formatWeekdayLong(isoDateToLocal(situation.today), "en")}), time zone ${settings.timeZone}, currency ${settings.currency}.`,
+  );
+  lines.push(describeTimeWindow(situation.window, situation.now, settings));
+
+  if (situation.milestones.length) {
+    const items = situation.milestones.map((m) => {
+      const target = m.targetDate ? `, target ${m.targetDate}` : "";
+      return `${quoted(m.title)} ${m.done}/${m.total} tasks${target}`;
+    });
+    lines.push(
+      `Active milestones: ${items.join("; ")}${more(situation.milestones.length, situation.milestonesTotal)}.`,
+    );
+  } else {
+    lines.push("Active milestones: none.");
+  }
+
+  if (situation.overdueTotal) {
+    const items = situation.overdueTasks.map((t) => `${quoted(t.title)} due ${t.dueDate}`);
+    lines.push(
+      `Open tasks due today or overdue: ${items.join("; ")}${more(items.length, situation.overdueTotal)}.`,
+    );
+  }
+
+  const openStages = situation.stages.filter((stage) => stage.open > 0);
+  if (openStages.length) {
+    const items = openStages.map(
+      (s) => `${quoted(s.name)} ${s.open}${s.value ? ` (${money(s.value)})` : ""}`,
+    );
+    const stalled = situation.stalledDeals
+      ? ` ${situation.stalledDeals} stuck in their stage over 14 days.`
+      : "";
+    lines.push(`Open deals by stage: ${items.join("; ")}.${stalled}`);
+  } else {
+    lines.push("Open deals: none.");
+  }
+
+  if (situation.pipelineHealth) {
+    lines.push(describePipelineHealth(situation.pipelineHealth, settings));
+  }
+
+  if (situation.followUpsTotal) {
+    const items = situation.followUps.map(
+      (f) =>
+        `${quoted(f.name)} ${f.dueAt < situation.todayStart ? "overdue" : formatTime(f.dueAt, settings)}`,
+    );
+    lines.push(
+      `Contacts to follow up today or overdue: ${items.join("; ")}${more(items.length, situation.followUpsTotal)}.`,
+    );
+  }
+
+  if (situation.events.length) {
+    const items = situation.events.map(
+      (e) => `${e.allDay ? "all day" : formatTime(e.startsAt, settings)} ${quoted(e.title)}`,
+    );
+    lines.push(`Today's calendar: ${items.join("; ")}.`);
+  } else {
+    lines.push("Today's calendar: empty.");
+  }
+
+  const { hours, minutes } = splitDuration(situation.prospectingSeconds);
+  lines.push(`Calling time today: ${hours} h ${minutes} min.`);
+
+  if (situation.overdueInvoicesTotal) {
+    const items = situation.overdueInvoices.map(
+      (invoice) =>
+        `${quoted(invoice.number)}${invoice.customer ? ` for ${quoted(invoice.customer)}` : ""} ${formatCurrency(invoice.total, invoice.currency, settings, 2)} due ${invoice.dueOn}`,
+    );
+    lines.push(
+      `Unpaid invoices past their due date: ${items.join("; ")}${more(items.length, situation.overdueInvoicesTotal)}.`,
+    );
+  }
+
+  if (situation.overdueCrmTasksTotal) {
+    const items = situation.overdueCrmTasks.map((task) => {
+      const due = `${formatDate(task.dueAt, settings)} ${formatTime(task.dueAt, settings)}`;
+      return `${quoted(task.title)}${task.target ? ` for ${quoted(task.target)}` : ""} due ${due}`;
+    });
+    lines.push(
+      `Your sales tasks past their due time: ${items.join("; ")}${more(items.length, situation.overdueCrmTasksTotal)}.`,
+    );
+  }
+  if (situation.crmTasksDueToday) {
+    lines.push(`Your sales tasks still due today: ${situation.crmTasksDueToday}.`);
+  }
+
+  if (situation.finance) {
+    const { income, expense } = situation.finance;
+    lines.push(
+      `This month: income ${money(income)}, expenses ${money(expense)}, balance ${money(income - expense)}.`,
+    );
+  }
+
+  if (situation.cashPlan) lines.push(describeCashPlan(situation.cashPlan, settings));
+
+  if (situation.scheduler) lines.push(...describeScheduler(situation.scheduler, settings));
+
+  return lines.join("\n");
+}
+
+/** Most pressing first; three chips at most, so the panel stays calm. */
+export function suggestionsFor(situation: UserSituation, limit = 3): SuggestionKey[] {
+  const keys: SuggestionKey[] = [];
+  if (situation.followUpsTotal) keys.push("followUps");
+  if (situation.overdueCrmTasksTotal) keys.push("overdueCrmTasks");
+  if (situation.overdueTotal) keys.push("overdueTasks");
+  if (situation.overdueInvoicesTotal) keys.push("overdueInvoices");
+  // Money running short this month: the month's finances are worth a question.
+  if (situation.cashPlan?.finding) keys.push("monthFinance");
+  if (situation.stalledDeals) keys.push("stalledDeals");
+  // Late in the day, at the weekend or on a holiday the next working day is what to plan.
+  const plan: SuggestionKey =
+    situation.window.open || situation.window.reason === "beforeHours" ? "planDay" : "planNext";
+  if (situation.events.length) keys.push(plan);
+  if (!situation.milestonesTotal) keys.push("firstMilestone");
+  else keys.push("nextMilestoneStep");
+  if (!situation.stages.some((stage) => stage.open > 0)) keys.push("firstDeal");
+  if (situation.prospectingSeconds === 0) keys.push("startCalling");
+  if (!keys.includes("monthFinance")) keys.push("monthFinance");
+  if (!keys.includes(plan)) keys.push(plan);
+  return keys.slice(0, limit);
+}

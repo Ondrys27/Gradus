@@ -30,7 +30,7 @@
 
   /* Brand */
   --color-violet: #7c5cff; /* primary */
-  --color-teal: #2fe3c8; /* progress, success, Jarvis */
+  --color-teal: #2fe3c8; /* progress, success, Grady */
   --color-gold: #ffc64b; /* rewards, XP */
   --color-green: #3ddc97; /* won */
   --color-orange: #ff9f43; /* in progress */
@@ -115,11 +115,11 @@
 }
 
 /*
- * Jarvis's antenna pulse as a CSS animation, so the idle loop never runs the
+ * Grady's antenna pulse as a CSS animation, so the idle loop never runs the
  * JavaScript frame loop on pages with the task map or charts. The element sets
  * --glow-lo and --glow-hi.
  */
-@keyframes jarvis-glow {
+@keyframes grady-glow {
   0%,
   100% {
     opacity: var(--glow-lo);
@@ -376,7 +376,7 @@
 
 /*
  * Width of the app's left menu, for the shell's padding and for whatever
- * sits at the bottom left of the content (Jarvis's bubbles, the notes undo
+ * sits at the bottom left of the content (Grady's bubbles, the notes undo
  * toast). Phones have none; from md an icon rail; from lg the full menu, or
  * the rail again when the user collapsed it (`data-sidebar` on the shell,
  * from user_settings.sidebar_collapsed, already in the server HTML).
@@ -402,10 +402,10 @@
  * pickers sit above every dialog, sheet and the onboarding takeover.
  */
 @utility z-nav {
-  z-index: 40; /* sidebar, bottom bar, Jarvis button, notices */
+  z-index: 40; /* sidebar, bottom bar, Grady button, notices */
 }
 @utility z-overlay {
-  z-index: 50; /* dialogs, bottom sheets, side panels, Jarvis panel, full-screen map */
+  z-index: 50; /* dialogs, bottom sheets, side panels, Grady panel, full-screen map */
 }
 @utility z-takeover {
   z-index: 60; /* onboarding */

@@ -140,8 +140,8 @@ async function main() {
     await shoot(desktop, "/app/cold-calling", "cold-calling");
     await shoot(desktop, "/app/kalendar", "calendar");
     await shoot(desktop, "/app/finance", "finance");
-    await shoot(desktop, "/app", "jarvis", async (page) => {
-      await page.locator('[data-tour="jarvis"]').click();
+    await shoot(desktop, "/app", "grady", async (page) => {
+      await page.locator('[data-tour="grady"]').click();
       await page.waitForTimeout(600);
     });
 

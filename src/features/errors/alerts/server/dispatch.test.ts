@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
-vi.mock("@/features/jarvis/server/owner", () => ({
+vi.mock("@/features/grady/server/owner", () => ({
   ownerContact: async () => ({ email: "owner@gradus.cz", locale: "cs" }),
 }));
 

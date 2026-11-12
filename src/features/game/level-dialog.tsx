@@ -25,6 +25,7 @@ import { todaySources, xpSuggestions, type SourceProgress, type XpSuggestion } f
 import { useGameState } from "./queries";
 import { levelProgress, MAX_LEVEL, tierForLevel } from "./rules";
 import { localized, SECTION_UNLOCK_KEYS, type LockableSection } from "./types";
+import { unlockDescription } from "./skill-text";
 import { GameIcon } from "./unlock-icon";
 import { track } from "@/lib/analytics/client";
 
@@ -315,6 +316,7 @@ function suggestionText(
 
 function RewardCard({ item, locked }: { item: UnlockDefinition; locked?: boolean }) {
   const locale = useLocale();
+  const t = useTranslations("game");
   return (
     <li className="flex items-center gap-3 rounded-2xl border border-line bg-canvas-deep/50 px-3 py-3">
       <span
@@ -327,7 +329,9 @@ function RewardCard({ item, locked }: { item: UnlockDefinition; locked?: boolean
       </span>
       <span className="min-w-0">
         <span className="block text-sm font-semibold text-ink">{localized(item.name, locale)}</span>
-        <span className="block text-xs text-ink-soft">{localized(item.description, locale)}</span>
+        <span className="block text-xs text-ink-soft">
+          {unlockDescription(item.key, item.description, locale, t)}
+        </span>
       </span>
     </li>
   );

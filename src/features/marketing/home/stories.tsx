@@ -2,13 +2,13 @@ import { getTranslations } from "next-intl/server";
 import { APP_NAME } from "@/lib/constants";
 import { homeAnchorId, type SiteLocale } from "@/lib/routes";
 import { cn } from "@/lib/utils";
-import { JarvisChat } from "./jarvis-chat";
+import { GradyChat } from "./grady-chat";
 import { NoteList, NotesOverlay, type Note } from "./notes";
 import { Screenshot } from "./screenshot";
 import type { MobileScreenshotName, ScreenshotName } from "./screenshots";
 
 type Story = {
-  key: "pipeline" | "calling" | "jarvis";
+  key: "pipeline" | "calling" | "grady";
   shot: ScreenshotName;
   mobileShot?: MobileScreenshotName;
   /** Which side the words sit on; the picture takes the whole width under them. */
@@ -38,8 +38,8 @@ const STORIES: readonly Story[] = [
     ],
   },
   {
-    key: "jarvis",
-    shot: "jarvis",
+    key: "grady",
+    shot: "grady",
     side: "left",
     notes: [
       { at: [73.5, 28.5], label: [44, 72], align: "start", tilt: -2 },
@@ -51,7 +51,7 @@ const STORIES: readonly Story[] = [
 /**
  * 2–4. Three things the app does, told one at a time: a few sentences on one
  * side, the real screen across the whole width with handwritten notes at the
- * details that matter. Jarvis's story ends with a chat that plays itself.
+ * details that matter. Grady's story ends with a chat that plays itself.
  */
 export async function Stories({ locale }: { locale: SiteLocale }) {
   const t = await getTranslations({ locale, namespace: "marketing.home.stories" });
@@ -74,7 +74,7 @@ export async function Stories({ locale }: { locale: SiteLocale }) {
             className={cn(
               "grid gap-8 md:gap-10 lg:grid-cols-12",
               // Room for the chat that hangs below the last picture.
-              story.key === "jarvis" && "lg:pb-24",
+              story.key === "grady" && "lg:pb-24",
             )}
           >
             <div
@@ -112,8 +112,8 @@ export async function Stories({ locale }: { locale: SiteLocale }) {
                 notes={notes}
                 className={cn("mt-4 md:hidden", story.mobileShot && "mx-auto w-[min(78vw,320px)]")}
               />
-              {story.key === "jarvis" && (
-                <JarvisChat className="mt-8 w-full max-w-[27rem] lg:absolute lg:-bottom-24 lg:left-[4%] lg:mt-0" />
+              {story.key === "grady" && (
+                <GradyChat className="mt-8 w-full max-w-[27rem] lg:absolute lg:-bottom-24 lg:left-[4%] lg:mt-0" />
               )}
             </div>
           </article>

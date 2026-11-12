@@ -19,7 +19,7 @@ import { peopleNamer } from "@/features/admin/server/people";
 import {
   countNewBugReports,
   featureRequestCounts,
-  jarvisAnswerRatings,
+  gradyAnswerRatings,
   loadBugReport,
   loadBugReports,
   reportScreenshotUrl,
@@ -654,12 +654,12 @@ async function Satisfaction({ q }: { q: AdminQuery }) {
   );
 }
 
-/** What people wrote in the satisfaction survey, its spread, and how they rate Jarvis's answers. */
+/** What people wrote in the satisfaction survey, its spread, and how they rate Grady's answers. */
 async function Voices({ q }: { q: AdminQuery }) {
   const [answers, summary, ratings, t, tSpread, tRatings] = await Promise.all([
     safe("satisfaction answers", () => loadSatisfactionAnswers(q)),
     safe("satisfaction spread", () => loadSatisfactionSummary(q)),
-    safe("jarvis answer ratings", () => jarvisAnswerRatings(q)),
+    safe("grady answer ratings", () => gradyAnswerRatings(q)),
     getTranslations("admin.feedback"),
     getTranslations("metrics.items.satisfaction"),
     getTranslations("metrics.items.jarvis_answer_ratings"),

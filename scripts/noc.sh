@@ -46,7 +46,7 @@ WAIT_STUCK=600      # po neúspěšném běhu počká 10 minut
 MAX_LIMIT_WAITS=14  # vyčerpaný limit předplatného: čeká po 30 min, nejvýš 7 hodin v kuse (po hotové položce znovu od nuly)
 WAIT_LIMIT=1800
 
-# Claude Code má jet z předplatného Max, ne z API kreditů Jarvise.
+# Claude Code má jet z předplatného Max, ne z API kreditů Gradyho.
 unset ANTHROPIC_API_KEY
 
 # claude -p po posledním tahu čeká na úlohy na pozadí jen 10 minut, pak je zabije

@@ -11,6 +11,7 @@ export function localized(text: LocalizedText | null | undefined, locale: string
   return locale === "cs" ? text.cs || text.en : text.en || text.cs;
 }
 
+/** `jarvis_skill` = one of Grady's skills: DB name kept from Jarvis. */
 export type UnlockKind = "section" | "feature" | "theme" | "jarvis_skill";
 
 /** One thing just unlocked, as award_xp() returns it. */
@@ -73,7 +74,7 @@ export type GameState = {
   sections: SectionState[];
 };
 
-/** Sections that can be locked in game mode; Dashboard, Milestones, Jarvis and Settings never are. */
+/** Sections that can be locked in game mode; Dashboard, Milestones, Grady and Settings never are. */
 export type LockableSection = Extract<
   NavKey,
   "contacts" | "coldCalling" | "pipeline" | "calendar" | "finance" | "workers"

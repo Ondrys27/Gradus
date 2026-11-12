@@ -18,7 +18,7 @@ export function ClosingStep({
   const tActions = useTranslations("onboarding.actions");
   return (
     <StepShell
-      jarvisState="happy"
+      gradyState="happy"
       title={t("title")}
       description={mode === "game" ? t("descriptionGame") : t("description")}
       onBack={onBack}

@@ -4,7 +4,7 @@ import type { MapBranch } from "@/components/tree-map/tree-map-layout";
 /**
  * The reward system as the owner draws it: a root, triggers as branches, rules
  * as leaves. Each rule has a kind and an amount the owner typed, plus a note in
- * plain words for conditions. Jarvis only turns the notes into the supported
+ * plain words for conditions. Grady only turns the notes into the supported
  * conditions and explains the result; kinds and amounts never come from the model.
  */
 
@@ -209,7 +209,7 @@ export const compiledRuleSchema = z.object({
 });
 export type CompiledRule = z.infer<typeof compiledRuleSchema>;
 
-/** Jarvis's answer: per rule a name and conditions read from the note, plus a summary. */
+/** Grady's answer: per rule a name and conditions read from the note, plus a summary. */
 export const setupAnswerSchema = z.object({
   summary: z.string().trim().min(1).max(SUMMARY_MAX),
   rules: z
@@ -227,7 +227,7 @@ export type SetupAnswer = z.infer<typeof setupAnswerSchema>;
 
 export type RewardProposal = {
   rules: CompiledRule[];
-  /** Jarvis's explanation; null when the rules were set up without it. */
+  /** Grady's explanation; null when the rules were set up without it. */
   summary: string | null;
   /** Parts of notes no supported condition could express. */
   ignored: string[];
@@ -263,7 +263,7 @@ function defaultName(branch: RewardBranch, leaf: RewardLeaf): string {
 
 /**
  * One reward_rules row per leaf. Trigger, worker, kind and amount come from the
- * tree; names and conditions from Jarvis's answer when there is one.
+ * tree; names and conditions from Grady's answer when there is one.
  */
 export function compileRewardTree(tree: RewardTree, answer: SetupAnswer | null): RewardProposal {
   const byLeaf = new Map(answer?.rules.map((rule) => [rule.leafId, rule]) ?? []);
@@ -290,7 +290,7 @@ export function compileRewardTree(tree: RewardTree, answer: SetupAnswer | null):
   return { rules, summary: answer?.summary ?? null, ignored };
 }
 
-/** Rules whose note would be lost when saving without Jarvis. */
+/** Rules whose note would be lost when saving without Grady. */
 export function notesWithoutAi(tree: RewardTree): string[] {
   return tree.branches.flatMap((branch) =>
     branch.leaves.map((leaf) => leaf.note.trim()).filter(Boolean),

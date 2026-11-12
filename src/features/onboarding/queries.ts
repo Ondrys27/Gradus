@@ -6,7 +6,7 @@ import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { PROFILE_COLUMNS } from "@/features/account/types";
 import { fetchPaths, gameKeys, pathForIndustry } from "@/features/game/queries";
 import type { GameMode } from "@/features/game/types";
-import { jarvisKeys } from "@/features/jarvis/queries";
+import { gradyKeys } from "@/features/grady/queries";
 import { milestoneKeys } from "@/features/milestones/queries";
 import { MILESTONE_COLUMNS } from "@/features/milestones/types";
 import { contactKeys } from "@/features/contacts/queries";
@@ -267,7 +267,7 @@ export type FinishOnboardingInput = {
 /**
  * Saves the branch and the mode and marks the wizard done for good. In game
  * mode the account gets the chosen path, so its milestones lead to the locked
- * sections, and Jarvis points to them. A retried finish adds nothing twice
+ * sections, and Grady points to them. A retried finish adds nothing twice
  * (choose_path skips steps the account already has).
  */
 export function useFinishOnboarding() {
@@ -325,8 +325,8 @@ export function useFinishOnboarding() {
       queryClient.removeQueries({ queryKey: ["onboarding", user.id] });
       void queryClient.invalidateQueries({ queryKey: milestoneKeys.all(user.id) });
       void queryClient.invalidateQueries({ queryKey: gameKeys.all(user.id) });
-      // Asking for suggestions lets the server add Jarvis's note about the new path.
-      void queryClient.invalidateQueries({ queryKey: jarvisKeys.suggestions(user.id) });
+      // Asking for suggestions lets the server add Grady's note about the new path.
+      void queryClient.invalidateQueries({ queryKey: gradyKeys.suggestions(user.id) });
     },
   });
 }

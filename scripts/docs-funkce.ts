@@ -1,8 +1,8 @@
 /**
- * Compares docs/funkce.md (what Gradus and Jarvis can do and what it costs)
+ * Compares docs/funkce.md (what Gradus and Grady can do and what it costs)
  * with the code and prints what the document is missing: pages of the route
- * groups, sidebar sections, Jarvis's catalogs and plan limits it does not
- * mention, keys it still mentions that the code no longer has, and Jarvis
+ * groups, sidebar sections, Grady's catalogs and plan limits it does not
+ * mention, keys it still mentions that the code no longer has, and Grady
  * prices that no longer match the tokens and src/config/costs.ts. Exits with
  * 1 when anything is off. How the document marks what it covers is in
  * scripts/docs-funkce/check.ts.
@@ -33,7 +33,7 @@ if (stale.length) {
   for (const key of stale) console.log(`  ${key}`);
 }
 if (prices.length) {
-  console.log(`Jarvis prices (${prices.length}):`);
+  console.log(`Grady prices (${prices.length}):`);
   for (const issue of prices) console.log(`  ${issue}`);
 }
 

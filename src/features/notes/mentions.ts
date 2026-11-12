@@ -16,7 +16,7 @@ export type MentionKind = (typeof MENTION_KINDS)[number];
 
 export type MentionAttrs = { type: MentionKind; id: string; label: string };
 
-/** How a mention reads in the note's plain text (search, Jarvis): "[kontakt: Jan Novák]". */
+/** How a mention reads in the note's plain text (search, Grady): "[kontakt: Jan Novák]". */
 export type MentionTextFn = (kind: MentionKind, label: string) => string;
 
 /** Without the interface language at hand: the kind's code ("[contact: Jan Novák]"). */

@@ -211,7 +211,7 @@ function useBookingMutation<I>(action: (input: I) => Promise<BookingActionResult
       const result = await action(input);
       if (!result.ok) throw new BookingActionError(result.problem);
     },
-    // A decision touches the calendar, the contact, the deal and Jarvis: everything reads again.
+    // A decision touches the calendar, the contact, the deal and Grady: everything reads again.
     onSettled: () => queryClient.invalidateQueries(),
   });
 }

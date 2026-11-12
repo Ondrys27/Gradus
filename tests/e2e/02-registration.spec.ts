@@ -5,8 +5,8 @@ import { exact, text, type Locale } from "./support/i18n";
 import { finishTour, mainNav, openApp } from "./support/ui";
 
 const journeys: { title: string; locale: Locale; mode: "game" | "tool"; industry: string }[] = [
-  { title: "2 · invite → game onboarding → Jarvis tour → dashboard", locale: "cs", mode: "game", industry: "realEstate" },
-  { title: "3 · invite → tool onboarding in English → Jarvis tour → dashboard", locale: "en", mode: "tool", industry: "coaching" },
+  { title: "2 · invite → game onboarding → Grady tour → dashboard", locale: "cs", mode: "game", industry: "realEstate" },
+  { title: "3 · invite → tool onboarding in English → Grady tour → dashboard", locale: "en", mode: "tool", industry: "coaching" },
 ];
 
 for (const journey of journeys) {

@@ -4,7 +4,7 @@ import type { RunningMode } from "./types";
 
 /**
  * The tutorial as data. Each step says where it happens (`section`, `path`
- * opened when it starts), what Jarvis says (a fixed text under
+ * opened when it starts), what Grady says (a fixed text under
  * `tutorial.steps.<key>` in en.json / cs.json, never a model), what lights up
  * (`highlight`: `data-tutorial` / `data-tour` names or a CSS selector, the
  * first one visible wins), whether the user only looks or does it, and for
@@ -13,7 +13,7 @@ import type { RunningMode } from "./types";
  * section; the full tutorial lets the user try it on sample data.
  */
 
-export type TutorialSection = NavKey | "jarvis" | "settings";
+export type TutorialSection = NavKey | "grady" | "settings";
 
 export type TutorialChapter =
   | "start"
@@ -25,17 +25,22 @@ export type TutorialChapter =
   | "calendar"
   | "finance"
   | "company"
-  | "jarvis"
+  | "grady"
   | "end";
 
 type StepBase = {
+  /**
+   * Stored in `profiles.tutorial.step` and sent as `tutorial_step.key`, so the
+   * steps about the assistant keep their keys (`jarvis`, `jarvisAsk`,
+   * `jarvisFrequency`): DB name kept from Jarvis.
+   */
   key: string;
   section: TutorialSection;
   chapter: TutorialChapter;
   /** Opened when the step begins, unless the user is already on it or below it; null stays put. */
   path: string | null;
-  /** The translation key of what Jarvis says (under `tutorial`). */
-  jarvisSays: string;
+  /** The translation key of what Grady says (under `tutorial`). */
+  gradySays: string;
   highlight: readonly string[];
   skippable: boolean;
 };
@@ -62,7 +67,7 @@ function look(
     chapter,
     section,
     path,
-    jarvisSays: `steps.${key}.text`,
+    gradySays: `steps.${key}.text`,
     highlight,
     action: "look",
     skippable: true,
@@ -82,7 +87,7 @@ function act(
     chapter,
     section,
     path,
-    jarvisSays: `steps.${key}.text`,
+    gradySays: `steps.${key}.text`,
     highlight,
     action: "do",
     check: TUTORIAL_CHECKS[checkKey],
@@ -104,8 +109,8 @@ const QUICK_OWNER: readonly TutorialStep[] = [
   look("finance", "finance", "finance", "/app/finance", ["nav-finance"]),
   look("company", "company", "workers", "/app/firma", ["nav-workers"]),
   look("messages", "company", "messages", "/app/zpravy", ["nav-messages"]),
-  look("jarvis", "jarvis", "jarvis", null, ["jarvis"]),
-  look("level", "jarvis", "dashboard", null, ["level"]),
+  look("jarvis", "grady", "grady", null, ["grady"]),
+  look("level", "grady", "dashboard", null, ["level"]),
   look("settings", "end", "settings", null, ["account"]),
   look("finish", "end", "dashboard", null, []),
 ];
@@ -115,7 +120,7 @@ const QUICK_WORKER: readonly TutorialStep[] = [
   look("workerDashboard", "start", "dashboard", "/app", ["nav-dashboard"]),
   look("workerTasks", "tasks", "tasks", "/app/ukoly-crm", ["nav-tasks"]),
   look("messages", "company", "messages", "/app/zpravy", ["nav-messages"]),
-  look("jarvis", "jarvis", "jarvis", null, ["jarvis"]),
+  look("jarvis", "grady", "grady", null, ["grady"]),
   look("settings", "end", "settings", null, ["account"]),
   look("workerFinish", "end", "dashboard", null, []),
 ];
@@ -152,14 +157,14 @@ const FULL: readonly TutorialStep[] = [
   ),
   look("companyLook", "company", "workers", "/app/firma", ["nav-workers"]),
   look("messagesLook", "company", "messages", "/app/zpravy", ["nav-messages"]),
-  act("jarvisAsk", "jarvis", "jarvis", null, ["jarvis"], "jarvisAsked"),
+  act("jarvisAsk", "grady", "grady", null, ["grady"], "gradyAsked"),
   act(
     "jarvisFrequency",
-    "jarvis",
+    "grady",
     "settings",
-    "/app/nastaveni/jarvis",
-    ["#settings-jarvis-frequency"],
-    "jarvisFrequency",
+    "/app/nastaveni/grady",
+    ["#settings-grady-frequency"],
+    "gradyFrequency",
   ),
   look("settingsLook", "end", "settings", null, ["account"]),
   look("finish", "end", "dashboard", null, []),

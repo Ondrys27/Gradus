@@ -20,7 +20,7 @@ import { getPublishedPlans } from "@/features/plan/catalog-server";
 import { notifyPlanRequest } from "@/features/plan/server-interest";
 import { catalogWorkerTerms, storedWorkerTerms, type WorkerTerms } from "@/features/plan/worker-seats";
 import { loadGenerationUsage } from "@/features/contacts/server/generation-usage";
-import { loadAiUsage, loadFileUsage } from "@/features/jarvis/server/usage";
+import { loadAiUsage, loadFileUsage } from "@/features/grady/server/usage";
 import { captureServerError } from "@/features/errors/alerts/server/capture";
 import { track } from "@/lib/analytics/track";
 import { getLocale } from "next-intl/server";
@@ -273,7 +273,7 @@ export async function setSubscriptionAddOn(input: {
 
 /**
  * The account's workers, stored files and this month's generated contacts,
- * Jarvis answers and files. analytics_events and ai_usage are server-only,
+ * Grady answers and files. analytics_events and ai_usage are server-only,
  * read with the admin client filtered by the session's user id.
  */
 export async function loadPlanUsage(): Promise<SubscriptionResult<PlanUsage>> {

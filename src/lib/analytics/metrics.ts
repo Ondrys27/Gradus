@@ -832,7 +832,7 @@ export const METRICS: readonly MetricDefinition[] = [
   metric("settings_sounds", "features", "users", dist("sounds"), S("settings")),
   metric("settings_jarvis_proactive", "features", "users", dist("jarvis_proactive"), S("settings")),
 
-  // --- 5. AI and Jarvis ------------------------------------------------------
+  // --- 5. AI and Grady ------------------------------------------------------
   metric("ai_calls", "ai", "count", daily("ai_calls")),
   metric("ai_by_feature", "ai", "table", fn("metric_ai_usage", { args: { _by: "purpose" } })),
   metric("ai_by_model", "ai", "table", fn("metric_ai_usage", { args: { _by: "model" } })),

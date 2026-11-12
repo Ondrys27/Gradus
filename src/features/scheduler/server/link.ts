@@ -5,7 +5,7 @@ import { pickEventType, type LinkPurpose } from "../event-type-form";
 import { bookingUrl } from "../handle";
 
 /**
- * The booking link Jarvis offers ("send a link to book a meeting"): the
+ * The booking link Grady offers ("send a link to book a meeting"): the
  * person's own profile in the space and the best of their active types for
  * the purpose. Read with the user's own client, so RLS decides; null without
  * a profile or an active type.

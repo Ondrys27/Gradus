@@ -1,5 +1,5 @@
 /**
- * Screenshots of Jarvis's tutorial as a new user sees it, at 1440 and 390 px,
+ * Screenshots of Grady's tutorial as a new user sees it, at 1440 and 390 px,
  * into docs/tutorial/<before|after>/: the choice of how to start, every step
  * of the quick look and the first steps of the full tutorial (hands-on steps
  * are skipped, the sample data deleted at the end). Makes throw-away
@@ -38,7 +38,7 @@ async function shot(page: Page, name: string, suffix: string) {
 }
 
 async function openChoice(page: Page) {
-  await page.goto(`${BASE_URL}/app/nastaveni/jarvis`, { waitUntil: "networkidle" }).catch(() => {});
+  await page.goto(`${BASE_URL}/app/nastaveni/grady`, { waitUntil: "networkidle" }).catch(() => {});
   await settle(page, 400);
   await page.getByRole("button", { name: exact(L, "settings.help.start") }).click();
   const choice = page.getByTestId("tutorial-choice");
@@ -81,7 +81,7 @@ async function walkFull(page: Page, suffix: string) {
     const next = button(page, "tutorial.next");
     const skip = button(page, "tutorial.skipStep");
     if ((await overlay(page).getAttribute("data-tutorial-step")) === "milestoneCreate") {
-      // The hands-on step done in the app: Jarvis's reaction and the lit Next.
+      // The hands-on step done in the app: Grady's reaction and the lit Next.
       await page
         .getByRole("button", { name: exact(L, "milestones.actions.new") })
         .first()

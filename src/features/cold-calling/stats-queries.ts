@@ -59,7 +59,7 @@ export function useDailyMeetings(range: Range, actor: string | null = null) {
 
 /**
  * The shared "best time to call" statistics of a country: no user data, read
- * by every signed-in user, rebuilt once a day. Also feeds Jarvis's time window.
+ * by every signed-in user, rebuilt once a day. Also feeds Grady's time window.
  */
 export function useCallTimeStats(country: string | null) {
   return useQuery({

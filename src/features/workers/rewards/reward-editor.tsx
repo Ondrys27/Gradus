@@ -12,7 +12,7 @@ import { GlowCard } from "@/components/ui/glow-card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Stagger, StaggerItem } from "@/components/ui/stagger";
-import { JarvisJobError } from "@/features/jarvis/queries";
+import { GradyJobError } from "@/features/grady/queries";
 import { COMPANY_PATH } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { useWorkers } from "../queries";
@@ -63,7 +63,7 @@ const noop = () => {};
 
 /**
  * The reward system as a tree: root, triggers, rules. Every edit is saved as a
- * draft; "Let AI set it up" has Jarvis turn the tree into rules and explain
+ * draft; "Let AI set it up" has Grady turn the tree into rules and explain
  * them, and nothing runs until the owner confirms.
  */
 export function RewardEditor() {
@@ -104,7 +104,7 @@ export function RewardEditor() {
     save.mutate(next);
   }
 
-  function askJarvis() {
+  function askGrady() {
     if (!tree) return;
     setConfirmed(false);
     setup.mutate(tree, {
@@ -115,7 +115,7 @@ export function RewardEditor() {
     });
   }
 
-  function withoutJarvis() {
+  function withoutGrady() {
     if (!tree) return;
     setDroppedNotes(notesWithoutAi(tree));
     setProposal(compileRewardTree(tree, null));
@@ -133,7 +133,7 @@ export function RewardEditor() {
   }
 
   const aiCode =
-    setup.error instanceof JarvisJobError ? setup.error.code : setup.error ? "unknown" : null;
+    setup.error instanceof GradyJobError ? setup.error.code : setup.error ? "unknown" : null;
   const openBranch = tree?.branches.find((branch) => branch.id === branchDialog.id) ?? null;
   const leafBranch = tree?.branches.find((branch) => branch.id === leafDialog.branchId) ?? null;
   const openLeaf =
@@ -156,7 +156,7 @@ export function RewardEditor() {
           title={t("title")}
           description={t("description")}
           actions={
-            <Button onClick={askJarvis} disabled={!tree || rules === 0 || setup.isPending}>
+            <Button onClick={askGrady} disabled={!tree || rules === 0 || setup.isPending}>
               <SparklesIcon aria-hidden data-icon="inline-start" />
               {setup.isPending ? t("aiWorking") : t("askAi")}
             </Button>
@@ -172,7 +172,7 @@ export function RewardEditor() {
                 {t(`aiError.${AI_ERRORS.includes(aiCode) ? aiCode : "unknown"}`)}
               </p>
               {aiCode !== "empty" && (
-                <Button variant="outline" onClick={withoutJarvis} className="shrink-0">
+                <Button variant="outline" onClick={withoutGrady} className="shrink-0">
                   {t("withoutAi")}
                 </Button>
               )}

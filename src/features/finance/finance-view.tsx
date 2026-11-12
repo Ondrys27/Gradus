@@ -104,7 +104,7 @@ export function FinanceView({
     if (initialMonth) setMonth(initialMonth);
   }
 
-  /** The month stays in the address, so a link (Jarvis, a reload) opens the same one. */
+  /** The month stays in the address, so a link (Grady, a reload) opens the same one. */
   function changeMonth(next: PlanMonthKey) {
     setMonth(next);
     const url = new URL(window.location.href);

@@ -16,8 +16,8 @@ import { summarize, toBars } from "@/features/cold-calling/stats-logic";
 import { contactName } from "@/features/contacts/types";
 import { periodRange as monthRange } from "@/features/finance/finance-logic";
 import { useTotals } from "@/features/finance/queries";
-import { SALES_ANALYSIS_MIN_SURVEYS } from "@/features/jarvis/protocol";
-import { JarvisJobError, useRunSalesAnalysis, useSalesAnalysis } from "@/features/jarvis/queries";
+import { SALES_ANALYSIS_MIN_SURVEYS } from "@/features/grady/protocol";
+import { GradyJobError, useRunSalesAnalysis, useSalesAnalysis } from "@/features/grady/queries";
 import { useStages } from "@/features/pipeline/queries";
 import { sortStages } from "@/features/pipeline/board-logic";
 import { stageTone } from "@/features/pipeline/types";
@@ -349,14 +349,14 @@ function SalesAnalysisSection() {
   const settings = useFormatSettings();
   const state = useSalesAnalysis(true);
   const run = useRunSalesAnalysis();
-  const running = useIsMutating({ mutationKey: ["jarvis", "sales-analysis"] }) > 0;
+  const running = useIsMutating({ mutationKey: ["grady", "sales-analysis"] }) > 0;
 
   if (state.isError) return <Failed />;
   if (!state.data) return <Skeleton className="h-20 w-full" />;
   const { surveys, latest } = state.data;
   const locked = surveys < SALES_ANALYSIS_MIN_SURVEYS;
   const failure =
-    run.error instanceof JarvisJobError ? run.error.code : run.error ? "unknown" : null;
+    run.error instanceof GradyJobError ? run.error.code : run.error ? "unknown" : null;
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-line p-3">

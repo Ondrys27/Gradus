@@ -43,7 +43,7 @@ type ErrorScreenProps = {
  * What a person sees when a page breaks: an apology, the error's code (to
  * copy, and to find the error in the administration), Try again, Send
  * feedback (one report per code, with an optional note) and a way home.
- * The error is recorded as client_error with the same code. Jarvis stays away
+ * The error is recorded as client_error with the same code. Grady stays away
  * while it is on screen.
  *
  * It is the top layer of the page (portalled to <body>, `z-error`, over the

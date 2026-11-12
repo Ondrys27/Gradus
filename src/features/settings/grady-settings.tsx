@@ -1,0 +1,273 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { GraduationCapIcon, Trash2Icon } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { useSession, useUserSettings } from "@/features/account/queries";
+import { gradyOverlay } from "@/features/grady/overlay-store";
+import { useDeleteDemo, useHasDemoData } from "@/features/tutorial/queries";
+import { emitTutorialSignal } from "@/features/tutorial/signals";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { GRADY_FREQUENCIES, toGradyFrequency } from "@/features/grady/proactive";
+import { formatIsoTime } from "@/lib/format";
+import { useFormatSettings } from "@/lib/use-format-settings";
+import { useSettingsSave } from "./save-state";
+import { ActionRow, ChoiceGrid, ChoiceTile, SettingRow, SettingsPage, SettingsSection } from "./ui";
+
+/** Quiet hours offered when the user turns them on. */
+const DEFAULT_QUIET = { from: 21, to: 8 } as const;
+const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
+
+/**
+ * Settings → Grady: whether he speaks up on his own, how often (every 2 or
+ * 6 hours besides the summary of the day, or only a summary once a day,
+ * week or month), quiet hours in the user's zone, the notifications of
+ * Messages (e-mail when away, sound), the tutorial again and deleting its
+ * sample data. A worker has no Grady of their own; they get the
+ * notifications and the tutorial.
+ */
+export function GradyView() {
+  const t = useTranslations("settings");
+  const { worker } = useSession();
+  return (
+    <SettingsPage title={t("groups.grady.title")} description={t("groups.grady.description")}>
+      {!worker && <ProactiveSection />}
+      <MessagesSection />
+      <SettingsSection title={t("help.title")} description={t("help.description")}>
+        <ActionRow
+          id="settings-help-tour"
+          label={t("help.tour")}
+          hint={t("help.tourHint")}
+          action={
+            <Button
+              id="settings-help-tour"
+              variant="secondary"
+              onClick={() => gradyOverlay.requestTutorial()}
+            >
+              <GraduationCapIcon aria-hidden />
+              {t("help.start")}
+            </Button>
+          }
+        />
+        {!worker && <DemoDataRow />}
+      </SettingsSection>
+    </SettingsPage>
+  );
+}
+
+function ProactiveSection() {
+  const t = useTranslations("settings.grady");
+  const settings = useUserSettings();
+  const format = useFormatSettings();
+  const { save } = useSettingsSave();
+  const on = settings.jarvis_proactive;
+  const frequency = toGradyFrequency(settings.jarvis_frequency);
+  const quiet = settings.jarvis_quiet_from !== null && settings.jarvis_quiet_to !== null;
+
+  const hourItems = useMemo(
+    () =>
+      HOURS.map((hour) => ({
+        value: String(hour),
+        label: formatIsoTime(`${String(hour).padStart(2, "0")}:00`, format),
+      })),
+    [format],
+  );
+
+  const hourSelect = (id: string, value: number, other: number, field: "from" | "to") => (
+    <label className="flex min-w-0 flex-1 flex-col gap-1">
+      <span className="text-xs text-ink-muted">{t(`quiet.${field}`)}</span>
+      <Select
+        value={String(value)}
+        items={hourItems}
+        disabled={!on}
+        onValueChange={(next) => {
+          const hour = Number(next);
+          if (!Number.isInteger(hour) || hour === value || hour === other) return;
+          save(field === "from" ? { jarvis_quiet_from: hour } : { jarvis_quiet_to: hour });
+        }}
+      >
+        <SelectTrigger id={id} aria-label={t(`quiet.${field}`)}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent className="max-h-[min(var(--available-height),320px)]">
+          {hourItems.map((item) => (
+            <SelectItem key={item.value} value={item.value} disabled={Number(item.value) === other}>
+              {item.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </label>
+  );
+
+  return (
+    <SettingsSection title={t("title")} description={t("description")}>
+      <SettingRow
+        id="settings-grady-proactive"
+        label={t("proactive")}
+        hint={t("proactiveHint")}
+        fields={["jarvis_proactive"]}
+      >
+        <div className="flex md:justify-end">
+          <Switch
+            id="settings-grady-proactive"
+            checked={on}
+            onCheckedChange={(checked) => save({ jarvis_proactive: checked })}
+          />
+        </div>
+      </SettingRow>
+
+      <SettingRow
+        id="settings-grady-frequency"
+        label={t("frequency")}
+        hint={t(`frequencyHint.${frequency}`)}
+        fields={["jarvis_frequency"]}
+        group
+        layout="stack"
+      >
+        <ChoiceGrid id="settings-grady-frequency" label={t("frequency")} columns={3}>
+          {GRADY_FREQUENCIES.map((value) => (
+            <ChoiceTile
+              key={value}
+              checked={frequency === value}
+              disabled={!on}
+              onSelect={() => {
+                emitTutorialSignal("gradyFrequency");
+                save({ jarvis_frequency: value });
+              }}
+              title={t(`frequencies.${value}`)}
+            />
+          ))}
+        </ChoiceGrid>
+      </SettingRow>
+
+      <SettingRow
+        id="settings-grady-quiet"
+        label={t("quiet.title")}
+        hint={t("quiet.hint")}
+        fields={["jarvis_quiet_from", "jarvis_quiet_to"]}
+      >
+        <div className="flex md:justify-end">
+          <Switch
+            id="settings-grady-quiet"
+            checked={quiet}
+            disabled={!on}
+            onCheckedChange={(checked) =>
+              save(
+                checked
+                  ? { jarvis_quiet_from: DEFAULT_QUIET.from, jarvis_quiet_to: DEFAULT_QUIET.to }
+                  : { jarvis_quiet_from: null, jarvis_quiet_to: null },
+              )
+            }
+          />
+        </div>
+      </SettingRow>
+      {quiet && (
+        <SettingRow id="settings-grady-quiet-from" label={t("quiet.hours")} group>
+          <div className="flex gap-2">
+            {hourSelect(
+              "settings-grady-quiet-from",
+              settings.jarvis_quiet_from!,
+              settings.jarvis_quiet_to!,
+              "from",
+            )}
+            {hourSelect(
+              "settings-grady-quiet-to",
+              settings.jarvis_quiet_to!,
+              settings.jarvis_quiet_from!,
+              "to",
+            )}
+          </div>
+        </SettingRow>
+      )}
+    </SettingsSection>
+  );
+}
+
+/** The full tutorial's sample data, while any is left: deleted on request, with what hangs on it. */
+function DemoDataRow() {
+  const t = useTranslations("settings.help");
+  const has = useHasDemoData(true);
+  const remove = useDeleteDemo();
+  const [confirming, setConfirming] = useState(false);
+  if (!has.data) return null;
+  return (
+    <>
+      <ActionRow
+        id="settings-help-demo"
+        label={t("demo")}
+        hint={t("demoHint")}
+        action={
+          <Button
+            id="settings-help-demo"
+            variant="secondary"
+            disabled={remove.isPending}
+            onClick={() => setConfirming(true)}
+          >
+            <Trash2Icon aria-hidden />
+            {t("demoDelete")}
+          </Button>
+        }
+      />
+      <ConfirmDialog
+        open={confirming}
+        onOpenChange={setConfirming}
+        title={t("demoConfirm")}
+        description={t("demoConfirmText")}
+        confirmLabel={t("demoDelete")}
+        cancelLabel={t("demoCancel")}
+        closeLabel={t("demoCancel")}
+        pending={remove.isPending}
+        onConfirm={() => remove.mutate(undefined, { onSuccess: () => setConfirming(false) })}
+      />
+    </>
+  );
+}
+
+/** Messages: an e-mail about direct messages and mentions while away, and the sound of a new one. */
+function MessagesSection() {
+  const t = useTranslations("settings.chat");
+  const settings = useUserSettings();
+  const { save } = useSettingsSave();
+  return (
+    <SettingsSection title={t("title")} description={t("description")}>
+      <SettingRow
+        id="settings-chat-email"
+        label={t("email")}
+        hint={t("emailHint")}
+        fields={["chat_email_notifications"]}
+      >
+        <div className="flex md:justify-end">
+          <Switch
+            id="settings-chat-email"
+            checked={settings.chat_email_notifications}
+            onCheckedChange={(checked) => save({ chat_email_notifications: checked })}
+          />
+        </div>
+      </SettingRow>
+      <SettingRow
+        id="settings-chat-sound"
+        label={t("sound")}
+        hint={t("soundHint")}
+        fields={["chat_sound"]}
+      >
+        <div className="flex md:justify-end">
+          <Switch
+            id="settings-chat-sound"
+            checked={settings.chat_sound}
+            onCheckedChange={(checked) => save({ chat_sound: checked })}
+          />
+        </div>
+      </SettingRow>
+    </SettingsSection>
+  );
+}

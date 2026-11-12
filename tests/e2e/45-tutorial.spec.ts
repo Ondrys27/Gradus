@@ -7,7 +7,7 @@ import { chooseTutorial, openApp } from "./support/ui";
 const L = "cs" as const;
 const t = (key: string, values?: Record<string, string | number>) => text(L, key, values);
 
-// Jarvis flies between the steps; with reduced motion he is just there.
+// Grady flies between the steps; with reduced motion he is just there.
 test.use({ reducedMotion: "reduce" });
 
 const SAMPLE_TABLES = [
@@ -29,7 +29,7 @@ const skipButton = (page: Page) =>
   overlay(page).getByRole("button", { name: exact(L, "tutorial.skipStep") });
 
 async function startFromSettings(page: Page) {
-  await openApp(page, "/app/nastaveni/jarvis");
+  await openApp(page, "/app/nastaveni/grady");
   await page.getByRole("button", { name: exact(L, "settings.help.start") }).click();
 }
 
@@ -59,7 +59,7 @@ async function tutorialOf(userId: string) {
 
 /**
  * 20.4: the quick look walks every section with Next only and is stored as
- * finished; the stored progress is what Jarvis picks up after a reload.
+ * finished; the stored progress is what Grady picks up after a reload.
  */
 test("45 · quick look: every section with Next, stored as finished", async ({ page, accounts }) => {
   const account = await accounts.create({ label: "tutorial-quick" });
