@@ -21,7 +21,8 @@ import {
 } from "@/features/currency/visitor-currency";
 import { HOME_PATH, loginUrlFor, routeKind, safeNextPath } from "@/lib/auth/routes";
 import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, URL_LOCALE_HEADER } from "@/i18n/locale-cookie";
-import { localizedPath, pageForPath, type SiteLocale } from "@/lib/routes";
+import { inviteAcceptPath } from "@/features/auth/invite-link";
+import { INVITES_PATH, localizedPath, pageForPath, type SiteLocale } from "@/lib/routes";
 import { prefersEnglish } from "@/lib/site-locale";
 import { supabasePublicKey, supabaseUrl } from "@/lib/supabase/env";
 import type { Database } from "@/types/database";
@@ -131,6 +132,16 @@ async function route(request: NextRequest) {
     return redirectKeepingCookies(request, response, loginUrlFor(pathname + search, storedLocale));
   }
   if (kind === "guest" && signedIn) {
+    // A worker's invite link opened while signed in (as the owner, as anybody):
+    // the invites page says whose it is; nothing is used up on the way.
+    const inviteCode = page?.page === "register" ? request.nextUrl.searchParams.get("invite") : null;
+    if (inviteCode?.trim()) {
+      return redirectKeepingCookies(
+        request,
+        response,
+        inviteAcceptPath(INVITES_PATH, inviteCode.trim().slice(0, 64)),
+      );
+    }
     const next = safeNextPath(request.nextUrl.searchParams.get("next"));
     return redirectKeepingCookies(request, response, next);
   }

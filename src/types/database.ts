@@ -851,6 +851,7 @@ export type Database = {
           app_version: string | null
           browser: string | null
           console_errors: Json
+          contact_email: string | null
           created_at: string
           description: string | null
           device: string | null
@@ -875,6 +876,7 @@ export type Database = {
           app_version?: string | null
           browser?: string | null
           console_errors?: Json
+          contact_email?: string | null
           created_at?: string
           description?: string | null
           device?: string | null
@@ -899,6 +901,7 @@ export type Database = {
           app_version?: string | null
           browser?: string | null
           console_errors?: Json
+          contact_email?: string | null
           created_at?: string
           description?: string | null
           device?: string | null
@@ -5018,6 +5021,33 @@ export type Database = {
         }
         Relationships: []
       }
+      worker_invite_tombstones: {
+        Row: {
+          code: string
+          ended_at: string
+          expires_at: string
+          owner_id: string
+          reason: string
+          worker_id: string | null
+        }
+        Insert: {
+          code: string
+          ended_at?: string
+          expires_at: string
+          owner_id: string
+          reason: string
+          worker_id?: string | null
+        }
+        Update: {
+          code?: string
+          ended_at?: string
+          expires_at?: string
+          owner_id?: string
+          reason?: string
+          worker_id?: string | null
+        }
+        Relationships: []
+      }
       worker_invites: {
         Row: {
           accepted_at: string | null
@@ -5030,6 +5060,8 @@ export type Database = {
           id: string
           invitee_id: string | null
           owner_id: string
+          replaced_at: string | null
+          replaced_by: string | null
           updated_at: string
           worker_id: string
         }
@@ -5044,6 +5076,8 @@ export type Database = {
           id?: string
           invitee_id?: string | null
           owner_id: string
+          replaced_at?: string | null
+          replaced_by?: string | null
           updated_at?: string
           worker_id: string
         }
@@ -5058,10 +5092,19 @@ export type Database = {
           id?: string
           invitee_id?: string | null
           owner_id?: string
+          replaced_at?: string | null
+          replaced_by?: string | null
           updated_at?: string
           worker_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "worker_invites_replaced_by_fkey"
+            columns: ["replaced_by"]
+            isOneToOne: false
+            referencedRelation: "worker_invites"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "worker_invites_worker_id_owner_id_fkey"
             columns: ["worker_id", "owner_id"]
@@ -5824,6 +5867,25 @@ export type Database = {
           _device?: string
           _expected?: string
           _kind: string
+          _limit_user?: number
+          _locale?: string
+          _page: string
+          _user_id: string
+          _viewport?: string
+        }
+        Returns: string
+      }
+      bug_report_support: {
+        Args: {
+          _app_version?: string
+          _browser?: string
+          _contact_email?: string
+          _description: string
+          _device?: string
+          _expected?: string
+          _ip_hash: string
+          _kind: string
+          _limit_anonymous?: number
           _limit_user?: number
           _locale?: string
           _page: string
@@ -7718,8 +7780,13 @@ export type Database = {
         Args: { _invite: string; _invitee: string; _owner: string }
         Returns: string
       }
+      worker_invite_request_new: { Args: { _code: string }; Returns: string }
       worker_invite_respond: {
         Args: { _accept: boolean; _invite: string }
+        Returns: string
+      }
+      worker_invite_respond_code: {
+        Args: { _accept: boolean; _code: string }
         Returns: string
       }
       worker_month_stats: {

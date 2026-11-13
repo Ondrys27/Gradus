@@ -16,7 +16,7 @@ import { installConsoleBuffer } from "./console-buffer";
 import { ReportDialog } from "./report-dialog";
 
 /** `jarvis` = from Grady's panel: DB name kept from Jarvis. */
-export type ReportVia = "account_menu" | "more_panel" | "jarvis" | "shortcut";
+export type ReportVia = "account_menu" | "more_panel" | "jarvis" | "grady_chat" | "shortcut";
 
 type ReportContextValue = { open: (via: ReportVia) => void };
 

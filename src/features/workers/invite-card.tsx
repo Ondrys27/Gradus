@@ -42,6 +42,17 @@ export function InviteCard({
   useEffect(() => setLink(inviteUrl(invite.code, siteOrigin(), locale)), [invite.code, locale]);
   const state = inviteState(invite, new Date());
   if (state === "accepted") return null;
+  if (invite.replaced_at) {
+    return (
+      <section
+        aria-label={t("title", { name: workerName })}
+        data-testid="invite-replaced"
+        className={cn("rounded-card border border-line bg-surface/60 p-5 text-sm text-ink-soft", className)}
+      >
+        {t("replaced")}
+      </section>
+    );
+  }
   // An existing account: the invite waits in their app, there is no link to send.
   if (invite.invitee_id) {
     return (

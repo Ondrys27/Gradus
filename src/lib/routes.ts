@@ -28,6 +28,8 @@ export const LOCALIZED_PAGES = {
   pricing: { cs: "/cenik", en: "/en/pricing" },
   terms: { cs: "/podminky", en: "/en/terms" },
   privacy: { cs: "/soukromi", en: "/en/privacy" },
+  /** The support form, for anybody signed in or not (27.1). */
+  support: { cs: "/podpora", en: "/en/support" },
   login: { cs: "/prihlaseni", en: "/en/login" },
   register: { cs: "/registrace", en: "/en/register" },
   forgotPassword: { cs: "/zapomenute-heslo", en: "/en/forgot-password" },
@@ -64,6 +66,7 @@ export const MARKETING_PAGES = [
   "pricing",
   "terms",
   "privacy",
+  "support",
   "waitlistConfirmed",
 ] as const satisfies readonly LocalizedPage[];
 

@@ -6,6 +6,10 @@ const createUser = vi.fn();
 const deleteUser = vi.fn();
 const signInWithPassword = vi.fn();
 const resend = vi.fn();
+type Sent = { ok: true } | { ok: false; reason: "rateLimited" | "failed" };
+type OpenInvite = { workerName: string; email: string | null; ownerName: string | null };
+const sendConfirmation = vi.fn<(email: string, locale: string | null) => Promise<Sent>>(async () => ({ ok: true }));
+const openInvite = vi.fn<(code: string) => Promise<OpenInvite | null>>(async () => null);
 const confirmationRequired = vi.fn(async () => false);
 const track = vi.fn(async () => {});
 const codesLocked = vi.fn(async () => false);
@@ -35,7 +39,10 @@ vi.mock("./code-attempts-server", () => ({
 }));
 vi.mock("next-intl/server", () => ({ getLocale: async () => "cs" }));
 vi.mock("@/lib/site-origin", () => ({ siteOrigin: async () => "http://localhost:3000" }));
-vi.mock("./worker-invite", () => ({ findOpenWorkerInvite: async () => null }));
+vi.mock("./worker-invite", () => ({ findOpenWorkerInvite: (code: string) => openInvite(code) }));
+vi.mock("./server/confirmation", () => ({
+  sendSignupConfirmation: (email: string, locale: string | null) => sendConfirmation(email, locale),
+}));
 vi.mock("./email-confirmation", () => ({
   isEmailConfirmationRequired: () => confirmationRequired(),
 }));
@@ -80,6 +87,8 @@ beforeEach(() => {
   rpc.mockResolvedValue({ error: null });
   signInWithPassword.mockResolvedValue({ error: null });
   resend.mockResolvedValue({ error: null });
+  sendConfirmation.mockResolvedValue({ ok: true });
+  openInvite.mockResolvedValue(null);
   confirmationRequired.mockResolvedValue(false);
 });
 
@@ -147,7 +156,7 @@ describe("e-mail confirmation", () => {
       "redirect:/app",
     );
     expect(createUser).toHaveBeenCalledWith(expect.objectContaining({ email_confirm: true }));
-    expect(resend).not.toHaveBeenCalled();
+    expect(sendConfirmation).not.toHaveBeenCalled();
   });
 
   it("with confirmation on, leaves the account unconfirmed and asks to check the inbox", async () => {
@@ -157,11 +166,30 @@ describe("e-mail confirmation", () => {
     expect(createUser).toHaveBeenCalledWith(expect.objectContaining({ email_confirm: false }));
     // The account is set up in full (beta), it only waits for the link.
     expect(rpc).toHaveBeenCalledWith("grant_beta_plan", { _user_id: "new-user" });
-    expect(resend).toHaveBeenCalledWith(
-      expect.objectContaining({ type: "signup", email: "jana@example.com" }),
-    );
+    // Gradus's own e-mail in the person's language (27.1), not Supabase's English one.
+    expect(sendConfirmation).toHaveBeenCalledWith("jana@example.com", "cs");
+    expect(resend).not.toHaveBeenCalled();
     expect(signInWithPassword).not.toHaveBeenCalled();
     expect(deleteUser).not.toHaveBeenCalled();
+  });
+
+  it("a worker registering with the very e-mail of the invite needs no second confirmation", async () => {
+    confirmationRequired.mockResolvedValue(true);
+    openInvite.mockResolvedValue({ workerName: "Jana", email: "Jana@Example.com", ownerName: "Ondřej" });
+    const code = "0123456789abcdef0123";
+    await expect(signUp({}, form({ ...person, inviteCode: code }))).rejects.toThrow("redirect:/app");
+    expect(createUser).toHaveBeenCalledWith(expect.objectContaining({ email_confirm: true }));
+    expect(rpc).toHaveBeenCalledWith("accept_worker_invite", { _code: code, _user_id: "new-user" });
+    expect(sendConfirmation).not.toHaveBeenCalled();
+  });
+
+  it("a worker invite without an e-mail still asks for the confirmation", async () => {
+    confirmationRequired.mockResolvedValue(true);
+    openInvite.mockResolvedValue({ workerName: "Jana", email: null, ownerName: null });
+    const state = await signUp({}, form({ ...person, inviteCode: "0123456789abcdef0123" }));
+    expect(state.success).toBe(true);
+    expect(createUser).toHaveBeenCalledWith(expect.objectContaining({ email_confirm: false }));
+    expect(sendConfirmation).toHaveBeenCalledWith("jana@example.com", "cs");
   });
 
   it("confirms the end-to-end tests' accounts at once outside production", async () => {
@@ -171,7 +199,7 @@ describe("e-mail confirmation", () => {
       "redirect:/app",
     );
     expect(createUser).toHaveBeenCalledWith(expect.objectContaining({ email_confirm: true }));
-    expect(resend).not.toHaveBeenCalled();
+    expect(sendConfirmation).not.toHaveBeenCalled();
 
     createUser.mockClear();
     vi.stubEnv("VERCEL_ENV", "production");
@@ -182,7 +210,7 @@ describe("e-mail confirmation", () => {
 
   it("keeps the account when the confirmation e-mail fails; a new link can be sent", async () => {
     confirmationRequired.mockResolvedValue(true);
-    resend.mockResolvedValue({ error: { code: "unexpected_failure", status: 500 } });
+    sendConfirmation.mockResolvedValue({ ok: false, reason: "failed" });
     const state = await signUp({}, form({ ...person, inviteCode: "beta-2026" }));
     expect(state.success).toBe(true);
     expect(deleteUser).not.toHaveBeenCalled();
@@ -199,14 +227,16 @@ describe("e-mail confirmation", () => {
   });
 
   it("resends the link and never reveals whether the account exists", async () => {
-    resend.mockResolvedValue({ error: { code: "user_not_found", status: 400 } });
+    sendConfirmation.mockResolvedValue({ ok: true });
     const state = await resendConfirmation({}, form({ email: "nobody@example.com" }));
     expect(state.success).toBe(true);
-    expect(resend).toHaveBeenCalledWith(expect.objectContaining({ type: "signup" }));
+    expect(sendConfirmation).toHaveBeenCalledWith("nobody@example.com", null);
+    sendConfirmation.mockResolvedValue({ ok: false, reason: "failed" });
+    expect((await resendConfirmation({}, form({ email: "nobody@example.com" }))).success).toBe(true);
   });
 
   it("reports a rate limit on resend", async () => {
-    resend.mockResolvedValue({ error: { code: "over_email_send_rate_limit", status: 429 } });
+    sendConfirmation.mockResolvedValue({ ok: false, reason: "rateLimited" });
     const state = await resendConfirmation({}, form({ email: "jana@example.com" }));
     expect(state.error).toBe("rateLimited");
   });

@@ -26,11 +26,11 @@ export function clearClientState(queryClient: QueryClient) {
  * Signs out on this device, wipes client state and reloads into the login page
  * so no in-memory state of the previous user survives.
  */
-export async function signOutEverywhereInTab(queryClient: QueryClient) {
+export async function signOutEverywhereInTab(queryClient: QueryClient, target?: string) {
   try {
     await createClient().auth.signOut({ scope: "local" });
   } finally {
     clearClientState(queryClient);
-    window.location.replace(loginPath(document.documentElement.lang));
+    window.location.replace(target ?? loginPath(document.documentElement.lang));
   }
 }

@@ -97,25 +97,58 @@ export type BugReportFilters = {
 
 type ListArgs = BugReportFilters & { code?: string | null; id?: string | null; limit?: number };
 
-async function listBugReports(q: AdminQuery, args: ListArgs): Promise<BugReportRow[]> {
+/** What the list adds to each row: whether the sender is internal, and a support request's e-mail. */
+async function reportExtras(rows: { id: string; user_id: string | null }[]) {
+  const admin = createAdminClient();
+  const users = [...new Set(rows.flatMap((row) => (row.user_id ? [row.user_id] : [])))];
+  const [profiles, contacts] = await Promise.all([
+    users.length
+      ? admin.from("profiles").select("id, is_internal").in("id", users)
+      : Promise.resolve({ data: [], error: null }),
+    rows.length
+      ? admin.from("bug_reports").select("id, contact_email").in("id", rows.map((row) => row.id))
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+  if (profiles.error) throw new Error(`profiles: ${profiles.error.message}`);
+  if (contacts.error) throw new Error(`bug_reports: ${contacts.error.message}`);
+  const internal = new Set((profiles.data ?? []).filter((row) => row.is_internal).map((row) => row.id));
+  const contact = new Map((contacts.data ?? []).map((row) => [row.id, row.contact_email]));
+  return { internal, contact };
+}
+
+function sourceOf(value: string): BugReportSource {
+  return value === "report" || value === "support" ? value : "error_page";
+}
+
+/**
+ * Reports and errors belong to no metric: every report is listed, internal
+ * accounts' too (labelled "internal"), whatever the view's internal switch
+ * says, so the owner and every admin see the same list (27.1).
+ */
+async function listBugReports(_q: AdminQuery, args: ListArgs): Promise<BugReportRow[]> {
   const { data, error } = await createAdminClient().rpc("admin_bug_report_list", {
     _code: args.code ?? undefined,
     _id: args.id ?? undefined,
     _status: args.status ?? undefined,
     _kind: args.kind ?? undefined,
     _source: args.source ?? undefined,
-    _include_internal: viewArgs(q)._include_internal,
+    _include_internal: true,
     _limit: args.limit ?? 100,
   });
   if (error) throw new Error(`admin_bug_report_list: ${error.message}`);
   const rows = data ?? [];
-  const nameOf = await peopleNamer(rows.map((row) => row.user_id));
+  const [nameOf, extras] = await Promise.all([
+    peopleNamer(rows.map((row) => row.user_id)),
+    reportExtras(rows),
+  ]);
   return rows.map((row) => ({
     id: row.id,
     userId: row.user_id,
     userName: row.user_id ? nameOf(row.user_id) : null,
+    internal: Boolean(row.user_id && extras.internal.has(row.user_id)),
+    contactEmail: extras.contact.get(row.id) ?? null,
     kind: isKind(row.kind) ? row.kind : "bug",
-    source: row.source === "report" ? "report" : "error_page",
+    source: sourceOf(row.source),
     status: isBugReportStatus(row.status) ? row.status : "new",
     code: row.error_code,
     description: row.description,
@@ -154,10 +187,25 @@ export async function loadBugReport(q: AdminQuery, id: string): Promise<BugRepor
   return rows[0] ?? null;
 }
 
-/** How many reports wait for a first look (status new), of the accounts in the view. */
+/** How many reports wait for a first look (status new), internal accounts' included. */
 export async function countNewBugReports(q: AdminQuery): Promise<number> {
-  const rows = await listBugReports(q, { status: "new", kind: null, source: null, limit: 200 });
-  return rows.length;
+  void q;
+  const { count, error } = await createAdminClient()
+    .from("bug_reports")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "new");
+  if (error) throw new Error(`bug_reports: ${error.message}`);
+  return count ?? 0;
+}
+
+/** Reports that came in after `since` (the newest one on screen): the list offers to refresh. */
+export async function countBugReportsSince(since: string): Promise<number> {
+  const { count, error } = await createAdminClient()
+    .from("bug_reports")
+    .select("id", { count: "exact", head: true })
+    .gt("created_at", since);
+  if (error) throw new Error(`bug_reports: ${error.message}`);
+  return count ?? 0;
 }
 
 /** A link to a report's screenshot that works for two minutes; the bucket is private. */

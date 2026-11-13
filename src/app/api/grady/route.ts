@@ -10,6 +10,7 @@ import {
 } from "@/features/grady/models";
 import {
   featureRequestNote,
+  problemReportNote,
   GRADY_PERSONA,
   situationBlock,
   withOwnerInstructions,
@@ -49,6 +50,7 @@ import { suggestEmailReply } from "@/features/grady/server/email-reply";
 import { linkOrigin, loadBookingLink } from "@/features/scheduler/server/link";
 import { siteOrigin } from "@/lib/site-origin";
 import { handleFeatureRequest } from "@/features/grady/server/feature-requests";
+import { mightBeProblemReport } from "@/features/grady/problem-report";
 import { loadSituation } from "@/features/grady/server/load-situation";
 import { reviewMilestone } from "@/features/grady/server/milestone-review";
 import { createAnthropic, streamModel } from "@/features/grady/server/model";
@@ -955,6 +957,7 @@ async function chat(ctx: Context, body: unknown, request: Request) {
     (notes ? `\n${notes}` : "") +
     (answers ? `\n${answers}` : "") +
     (idea ? `\n${featureRequestNote()}` : "") +
+    (mightBeProblemReport(message) ? `\n${problemReportNote()}` : "") +
     toolsNote;
 
   const encoder = new TextEncoder();

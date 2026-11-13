@@ -163,10 +163,11 @@ export function useUpdateProfile() {
 
 export function useSignOut() {
   const queryClient = useQueryClient();
-  return () => {
+  /** `target`: where the tab goes after signing out (the login page by default). */
+  return (target?: string) => {
     track("signed_out", {});
     // The queue goes out before the tab leaves the app.
     flush({ beacon: true });
-    return signOutEverywhereInTab(queryClient);
+    return signOutEverywhereInTab(queryClient, target);
   };
 }

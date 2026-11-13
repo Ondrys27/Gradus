@@ -352,7 +352,13 @@ export function useCreateWorker() {
         groups: Math.min(groupIds.length, 200),
         target: bound ? "account" : "link",
       });
-      return { worker, invite, bound };
+      // An earlier open invite to the same e-mail stopped working (the database replaced it).
+      const { count: replaced } = await supabase
+        .from("worker_invites")
+        .select("id", { count: "exact", head: true })
+        .eq("owner_id", user.id)
+        .eq("replaced_by", created.id);
+      return { worker, invite, bound, replaced: (replaced ?? 0) > 0 };
     },
     onSettled: () => {
       invalidateAll(queryClient, user.id);
@@ -386,18 +392,20 @@ export function useRenewInvite(workerId: string) {
   return useMutation({
     mutationFn: async (email: string | null) => {
       const supabase = createClient();
-      const { error: deleteError } = await supabase
-        .from("worker_invites")
-        .delete()
-        .eq("worker_id", workerId)
-        .is("accepted_at", null);
-      if (deleteError) throw deleteError;
+      // The new one first, so the old link can say it was replaced (27.1).
       const { data, error } = await supabase
         .from("worker_invites")
         .insert({ owner_id: user.id, worker_id: workerId, email })
         .select(INVITE_COLUMNS)
         .single();
       if (error) throw error;
+      const { error: deleteError } = await supabase
+        .from("worker_invites")
+        .delete()
+        .eq("worker_id", workerId)
+        .neq("id", data.id)
+        .is("accepted_at", null);
+      if (deleteError) throw deleteError;
       track("worker_invite_renewed", {});
       return data;
     },

@@ -158,6 +158,7 @@ Stav k 9. 11. 2026.
 |---|---|---|---|
 | Pozvat pracovníka | Krátkým ID nebo e-mailem existujícího účtu: pozvánka čeká v jeho aplikaci (zvonek, e-mail, Grady). E-mailem novému člověku: odkaz na registraci jako dřív (i e-mailem). S nadřízeným, skupinami, právy a odměnami. | jen majitel | e-mail |
 | Pozvánky | Pozvaný vidí „Novák s.r.o. · Václav Novák tě zve jako Obchodník“, co tam uvidí a odměny; přijme (firma je v přepínači) nebo odmítne. Majitel vidí stav a dostane oznámení. | kdokoli s pozvánkou | žádný |
+| Odkaz pozvánky | Otevření odkazu pozvánku nikdy nespotřebuje (ani náhled nebo sken e-mailového klienta), jen dokončená registrace nebo přijetí. Přihlášený jiným účtem vidí „Jsi přihlášený jako X. Pozvánka je pro Y.“ (Odhlásit a pokračovat / Zůstat), existující účet se přihlásí a přijme. Neplatný odkaz řekne proč (vypršela dne…, použita, zrušena majitelem, nahrazena novější) a nabídne Požádat o novou (oznámení majiteli). Nová pozvánka na stejný e-mail starou nahradí. Registrace na pozvaný e-mail nežádá druhé potvrzení, ostatní potvrzení přijde v šabloně Gradusu a jazyce člověka. | kdokoli s pozvánkou | e-mail |
 | Odejít z firmy | Pracovník sám v Nastavení → Účet; majitel dostane oznámení a e-mail, práce zůstává ve firmě. | pracovník | e-mail |
 | Kdo za koho platí | Kdo má vlastní platný tarif, je ve firmě zdarma; za ostatní platí majitel: pracovníci v ceně tarifu, pak cena za každého dalšího. Štítek u pracovníka a řádek v Předplatném; ve Stripe druhá položka předplatného, počet se srovná denně a platí od dalšího období. | jen majitel | Stripe |
 | Lidé, strom a mapa | Hierarchie firmy jako seznam nebo organizační mapa, přesun tažením. | majitel; pracovník svou větev (s právem celou firmu) | žádný |
@@ -211,12 +212,13 @@ AI pomocník v pravém dolním rohu: chat, souhrny dne, návrhy a hodnocení. Na
 | Tutoriál | Rychlá ukázka (≈ 2 min) nebo úplný tutoriál na ukázkových datech (≈ 15 min). Texty jsou pevné, bez AI. | majitel; pracovník zkrácenou ukázku | žádný |
 | Hledání ⌘K | Najde kontakty, obchody, milníky, úkoly, poznámky, události, faktury, pracovníky i nastavení, bez diakritiky. | majitel, pracovník (co vidí) | žádný |
 | Hra | XP, 30 úrovní, odznaky, série, oslavy, odemykání sekcí a témat. Nástrojový režim to vypne. | majitel, pracovník | žádný |
-| Nahlásit problém | Hlášení chyby nebo nápadu i se snímkem obrazovky, majitel aplikace dostane e-mail. | majitel, pracovník | e-mail, úložiště |
+| Nahlásit problém | Hlášení chyby nebo nápadu i se snímkem obrazovky, majitel aplikace dostane e-mail. Grady hlášení sám nezakládá: na stížnost nabídne tlačítko Nahlásit problém. V administraci jsou vidět všechna hlášení včetně interních účtů (štítek interní), nová s tlačítkem Obnovit. | majitel, pracovník | e-mail, úložiště |
 | Upozornění na chyby | Každá zachycená chyba přijde majiteli aplikace e-mailem (s ochranou proti záplavě). Stránka /app/test-chyby je jen pro naše testy. | jen my | e-mail |
 | Kurzy měn | Jednou denně kurzy proti EUR z ECB (frankfurter.app) a open.er-api.com, oba zdarma a bez klíče. Jen pro zobrazení cen tarifů a souhrnů napříč měnami („orientačně podle kurzu z …“); uložené částky se nikdy nepřepočítávají, kurz starší než 7 dní se pro cenu nepoužije. Stav zdrojů v Administraci → Zdraví. | všichni | žádný |
 
 ### Web
 <!-- kód: route:/ route:/cenik route:/podminky route:/soukromi route:/cekaci-listina route:/en route:/en/pricing route:/en/terms route:/en/privacy route:/en/waitlist -->
+<!-- kód: route:/podpora route:/en/support -->
 <!-- kód: route:/prihlaseni route:/registrace route:/zapomenute-heslo route:/nove-heslo route:/zmena-emailu route:/en/login route:/en/register route:/en/forgot-password route:/en/reset-password route:/en/change-email -->
 
 | Funkce | Co dělá | Pro koho | Náklad |
@@ -226,6 +228,7 @@ AI pomocník v pravém dolním rohu: chat, souhrny dne, návrhy a hodnocení. Na
 | Podmínky a soukromí | Právní stránky v obou jazycích, s oddíly pro placení (prodávající, cena a Stripe, obnovování, zrušení, odstoupení, reklamace). Údaje prodávajícího z proměnných prostředí; dokud některý chybí, build v produkci selže. | návštěvník | žádný |
 | Přihlášení a registrace | Přihlášení, registrace s pozvánkou nebo kódem, a při veřejné registraci i bez kódu (14 dní zdarma). Povinný souhlas s podmínkami a zásadami (server uloží kdy a kterou verzi), nepovinný souhlas s novinkami. Tarif vybraný na webu se ukáže v Předplatném jako „Vybraný tarif, zaplatíš po zkušebce“ a zaplatí ho tlačítko Zaplatit. Špatné pozvánkové a promo kódy mají limit pokusů podle IP a e-mailu. Zapomenuté heslo, nové heslo, potvrzení změny e-mailu. | každý | e-mail (Supabase přes Resend) |
 | Odkaz partnera | `/?kod=XYZ` si zapamatuje promo kód na 30 dní a registrace ho předvyplní. | návštěvník | žádný |
+| Podpora | `/podpora` (`/en/support`), odkaz v patičce webu, v nabídce u avatara a ve Více: formulář (o co jde, co se stalo, co jsi čekal, e-mail pro odpověď) i bez přihlášení, zapisuje do stejných hlášení jako Nahlásit problém, majitel aplikace dostane e-mail. Bez přihlášení nejvýš 5 za hodinu z jedné adresy. | každý | e-mail |
 
 ---
 
@@ -357,7 +360,7 @@ Pevné hranice v kódu, stejné pro všechny:
 - Dokument pracovníka může mít nejvýš 20 MB.
 - Import mapy založí nejvýš 1 000 úkolů najednou a 2 000 úkolů v milníku.
 - Jedno generování přinese nejvýš 60 firem (3 požadavky na Google).
-- Nahlásit problém jde nejvýš 20× za hodinu.
+- Nahlásit problém jde nejvýš 20× za hodinu; formulář Podpora bez přihlášení 5× za hodinu z jedné adresy.
 
 ### Co by šlo omezit snadno, ale dnes limit nemá
 

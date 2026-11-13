@@ -34,7 +34,7 @@ export type PendingInvite = {
 
 export type AccountNotification = {
   id: string;
-  kind: "invite_accepted" | "invite_declined" | "worker_left";
+  kind: "invite_accepted" | "invite_declined" | "worker_left" | "invite_requested";
   workerId: string | null;
   workerName: string | null;
   createdAt: string;
@@ -53,7 +53,7 @@ export class InboxActionError extends Error {
   }
 }
 
-const KINDS = new Set(["invite_accepted", "invite_declined", "worker_left"]);
+const KINDS = new Set(["invite_accepted", "invite_declined", "worker_left", "invite_requested"]);
 
 function asRows<T>(value: unknown): T[] {
   return Array.isArray(value) ? (value as T[]) : [];

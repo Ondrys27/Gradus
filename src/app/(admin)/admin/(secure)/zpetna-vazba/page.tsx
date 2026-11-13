@@ -5,6 +5,7 @@ import { SearchIcon } from "lucide-react";
 import { StatusPill } from "@/components/ui/status-pill";
 import { AdminViewLink } from "@/features/admin/ui/admin-view";
 import { ReportStatusSelect } from "@/features/admin/ui/report-status";
+import { NewReportsNotice } from "@/features/admin/ui/new-reports-notice";
 import { UserDetailLink } from "@/features/admin/ui/user-link";
 import type { Tone } from "@/components/ui/tone";
 import { isErrorCode, normalizeErrorCodeQuery } from "@/features/errors/error-code";
@@ -322,6 +323,8 @@ async function BugReports({
 }) {
   const code = normalizeErrorCodeQuery(rawCode);
   const invalid = Boolean(rawCode) && !code;
+  // Reports newer than this render come in without a reload: a button with their count.
+  const renderedAt = new Date().toISOString();
   const [rows, t, tControls] = await Promise.all([
     invalid ? null : safe("bug reports", () => loadBugReports(q, code, filters)),
     getTranslations("admin.feedback"),
@@ -336,6 +339,7 @@ async function BugReports({
 
   return (
     <AdminCard title={t("reportsTitle")} description={t("reportsDescription")} wide>
+      <NewReportsNotice since={renderedAt} />
       <form
         action={`${ADMIN_PATH}/zpetna-vazba`}
         className="mb-3 flex flex-wrap items-end gap-2"
@@ -408,9 +412,11 @@ async function BugReports({
                     openLabel={t("openReport")}
                     openUserLabel={t("openUser")}
                     meta={t("reportMeta", {
-                      name: row.userName ?? t("anonymous"),
+                      name: row.userName ?? row.contactEmail ?? t("anonymous"),
                       date: formatDateTime(new Date(row.createdAt), ADMIN_FORMAT_SETTINGS),
                     })}
+                    internalLabel={t("internal")}
+                    sourceLabel={row.source === "support" ? t("reportSource.support") : null}
                     noDescription={t("noDescription")}
                     labels={{
                       page: t("pageLabel"),
@@ -445,8 +451,13 @@ function BugReportItem({
   noDescription,
   labels,
   browser,
+  internalLabel,
+  sourceLabel,
 }: {
   row: BugReportRow;
+  internalLabel: string;
+  /** Shown for a request from the support page, which no one sends from inside the app. */
+  sourceLabel: string | null;
   selected: boolean;
   href: string;
   statusLabel: string;
@@ -479,6 +490,16 @@ function BugReportItem({
           </StatusPill>
           {row.code && (
             <code className="font-mono text-sm font-semibold text-ink select-all">{row.code}</code>
+          )}
+          {row.internal && (
+            <StatusPill tone="violet" className="h-5 px-2" data-testid="report-internal">
+              {internalLabel}
+            </StatusPill>
+          )}
+          {sourceLabel && (
+            <StatusPill tone="teal" className="h-5 px-2">
+              {sourceLabel}
+            </StatusPill>
           )}
         </div>
         <StatusPill tone={REPORT_STATUS_TONE[row.status]} className="h-5 px-2">
@@ -554,12 +575,18 @@ async function ReportDetail({ q, id, role }: { q: AdminQuery; id: string; role: 
       row.userId ? (
         <span className="inline-flex flex-wrap items-center gap-x-2">
           {nameOf(row.userId)}
+          {row.internal && (
+            <StatusPill tone="violet" className="h-5 px-2">
+              {t("internal")}
+            </StatusPill>
+          )}
           <UserDetailLink userId={row.userId} label={t("openUser")} />
         </span>
       ) : (
         t("anonymous")
       ),
     ],
+    [t("detail.contact"), row.contactEmail],
     [t("detail.sent"), formatDateTime(new Date(row.createdAt), ADMIN_FORMAT_SETTINGS)],
     [t("pageLabel"), row.page],
     [t("browserLabel"), [browser, device, row.viewport].filter(Boolean).join(" · ") || null],

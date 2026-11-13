@@ -24,6 +24,7 @@ export async function SiteFooter() {
     { href: localizedPath("login", locale), label: tNav("login") },
     { href: localizedPath("terms", locale), label: t("terms") },
     { href: localizedPath("privacy", locale), label: t("privacy") },
+    { href: localizedPath("support", locale), label: t("support") },
   ];
 
   return (

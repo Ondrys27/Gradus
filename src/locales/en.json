@@ -238,7 +238,8 @@
     },
     "messages": "Messages",
     "unread": "{count, plural, one {# unread message} other {# unread messages}}",
-    "scheduler": "Scheduler"
+    "scheduler": "Scheduler",
+    "support": "Support"
   },
   "topBar": {
     "home": "Go to dashboard",
@@ -267,7 +268,8 @@
       },
       "report": "Report a problem",
       "reportShortcut": "Ctrl+Shift+B",
-      "reportShortcutMac": "⌘⇧B"
+      "reportShortcutMac": "⌘⇧B",
+      "support": "Support"
     }
   },
   "search": {
@@ -877,7 +879,6 @@
       "haveAccount": "Already have an account? <link>Sign in</link>",
       "workerInvite": "You are joining {owner}'s team. Sign up with the e-mail they invited.",
       "workerInviteNoOwner": "You are joining a team. Sign up with the e-mail you were invited with.",
-      "workerInviteInvalid": "This invite has expired or was already used. Ask for a new link.",
       "descriptionPublic": "14 days free, no credit card.",
       "inviteOptional": "Invite code (optional)",
       "inviteOptionalHint": "If you have an invite, enter it. Otherwise you start a 14-day trial.",
@@ -940,6 +941,36 @@
         "taken": "Another account uses this e-mail already. Your account's e-mail stayed the same.",
         "failed": "The e-mail could not be changed. Try opening the link again."
       }
+    },
+    "inviteLink": {
+      "problemTitle": "This invite no longer works",
+      "problem": {
+        "expired": "The invite expired on {date}. The owner can send you a new one.",
+        "used": "The invite was already used: an account was created with it. If it is yours, sign in.",
+        "declined": "The invite was declined. If you want to join the team, ask the owner for a new one.",
+        "replaced": "The owner has since sent you a newer invite and this one stopped working. Open the link from the latest e-mail.",
+        "revoked": "The owner cancelled this invite.",
+        "unknown": "We don't know this invite link. Check that it is complete, or ask whoever invited you for a new one."
+      },
+      "requestNew": "Ask for a new one",
+      "requested": "Done. The owner got a notification that you want a new invite.",
+      "requestedAlready": "The owner already knows, the request went out recently.",
+      "requestFailed": "The request could not be sent. Try again in a moment.",
+      "signIn": "Sign in",
+      "signInTitle": "You already have a {appName} account for {email}",
+      "signInTitleNoEmail": "The invite is waiting for your {appName} account",
+      "signInText": "Sign in and accept the invite to the team. You don't need a new account.",
+      "signInButton": "Sign in and accept",
+      "otherTitle": "You are signed in as {current}.",
+      "otherFor": "The invite is for {target}.",
+      "otherText": "An invite is accepted with the account it is for. Sign out and continue, or stay signed in.",
+      "otherOwner": "This is your own invite: send the link to the person you are inviting.",
+      "signOutContinue": "Sign out and continue",
+      "stay": "Stay",
+      "acceptHere": "Accept as {current}",
+      "linkTitle": "Invite to {who}'s team",
+      "linkTitleNoName": "Invite to a team",
+      "linkText": "Once you accept, you work in the company with this account. You will find it in the switcher at the top right; your own data stays separate."
     }
   },
   "profile": {
@@ -4340,7 +4371,9 @@
       "waitingTitle": "{name} has the invite in the app",
       "waitingText": "They see it under the bell and by e-mail and accept or decline it. Valid until {date}.",
       "waitingExpired": "The invite expired. Remove the worker and invite them again.",
-      "declined": "They declined the invite."
+      "declined": "They declined the invite.",
+      "replaced": "A newer invite to the same e-mail replaced this one. The old link no longer works.",
+      "replacedOld": "The earlier invite to this e-mail stopped working (replaced by a newer one)."
     },
     "detail": {
       "loadFailed": "This worker could not be loaded. Try again.",
@@ -4747,7 +4780,10 @@
         "extra": "extra {price}",
         "extraNoPrice": "beyond the plan",
         "declined": "declined the invite",
-        "waiting": "waiting for an answer"
+        "waiting": "waiting for an answer",
+        "replaced": "replaced by a newer one",
+        "extraBeforeSales": "extra {price} once payments start",
+        "extraBeforeSalesHint": "Payments run in test mode only for now, so you pay nothing for this worker yet."
       }
     },
     "dashboard": {
@@ -5541,7 +5577,8 @@
       "terms": "Terms",
       "privacy": "Privacy",
       "contact": "Contact",
-      "copyright": "© {year} {appName}"
+      "copyright": "© {year} {appName}",
+      "support": "Support"
     },
     "waitlist": {
       "title": "We'll let you know when we launch",
@@ -5570,6 +5607,29 @@
       "intro": "Thanks for your interest in {appName}. Please confirm we may write to you once the app opens to everyone:",
       "button": "Confirm e-mail",
       "ignore": "If you didn't ask for this, just ignore this e-mail. Without confirming, we won't send you anything else."
+    },
+    "support": {
+      "title": "Support",
+      "description": "Tell us what doesn't work in {appName}, what is confusing or what would help.",
+      "intro": "Something in {appName} doesn't work, is confusing, or you have an idea? Write us a few words. If you are signed in to the app, \"Report a problem\" in the avatar menu is quicker: it attaches a screenshot too.",
+      "orEmail": "Or write to <link>{email}</link>.",
+      "kindLabel": "What is it about",
+      "kind": {
+        "bug": "Bug",
+        "idea": "Idea",
+        "confusing": "Confusing"
+      },
+      "whatLabel": "What happened",
+      "whatPlaceholder": "For example: nothing happens after clicking Save.",
+      "whatRequired": "Write at least a few words.",
+      "expectedLabel": "What did you expect (optional)",
+      "emailLabel": "E-mail for the answer (optional)",
+      "emailHint": "We only reply to this address and use it for nothing else. When you are signed in, the account's e-mail is enough.",
+      "send": "Send",
+      "sending": "Sending…",
+      "thanks": "Thanks, we got it. We'll look at it as soon as we can.",
+      "failed": "Sending failed. Check the e-mail and try again.",
+      "limited": "Lots of messages came from here in the last hour. Please try again in a while."
     }
   },
   "plans": {
@@ -6861,7 +6921,7 @@
         "declined": "Declined"
       },
       "reportsTitle": "Bug reports",
-      "reportsDescription": "Sent from the error page, newest first. An error code finds a report from internal accounts too.",
+      "reportsDescription": "From the error page, Report a problem and the Support page, newest first. Internal accounts always included (labelled internal).",
       "searchPlaceholder": "Search by error code (GR-…)",
       "reportsEmpty": "No reports yet.",
       "reportsNotFound": "No report with the code {code}.",
@@ -6923,7 +6983,8 @@
       },
       "reportSource": {
         "report": "Report a problem",
-        "error_page": "Error page"
+        "error_page": "Error page",
+        "support": "Support"
       },
       "filter": {
         "status": "Status",
@@ -6948,9 +7009,12 @@
         "consoleEmpty": "None were recorded.",
         "screenshot": "Screenshot",
         "screenshotGone": "The screenshot could not be loaded.",
-        "screenshotOwnerOnly": "A screenshot is attached; only the owner can see it."
+        "screenshotOwnerOnly": "A screenshot is attached; only the owner can see it.",
+        "contact": "Reply to"
       },
-      "openUser": "Account detail"
+      "openUser": "Account detail",
+      "internal": "internal",
+      "newReports": "Refresh · {count, plural, one {# new report} other {# new reports}}"
     },
     "users": {
       "title": "Users",
@@ -9069,7 +9133,9 @@
       "alreadyMember": "You work in this company already.",
       "readOnly": "The company is read-only right now; the invite cannot be accepted yet.",
       "signedOut": "Sign in again and try once more.",
-      "unknown": "Something went wrong. Try again."
+      "unknown": "Something went wrong. Try again.",
+      "self": "This is an invite to your own company.",
+      "otherAccount": "The invite is for another account."
     }
   },
   "inbox": {
@@ -9083,7 +9149,8 @@
     "notes": {
       "invite_accepted": "{name} accepted the invite into the company",
       "invite_declined": "{name} declined the invite",
-      "worker_left": "{name} left the company"
+      "worker_left": "{name} left the company",
+      "invite_requested": "{name} asks for a new invite"
     }
   },
   "billing": {

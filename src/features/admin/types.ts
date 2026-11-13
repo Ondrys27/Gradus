@@ -97,7 +97,7 @@ export type BugReportStatus = (typeof BUG_REPORT_STATUSES)[number];
 
 export const BUG_REPORT_KINDS = ["bug", "idea", "confusing"] as const;
 export type BugReportKind = (typeof BUG_REPORT_KINDS)[number];
-export const BUG_REPORT_SOURCES = ["report", "error_page"] as const;
+export const BUG_REPORT_SOURCES = ["report", "error_page", "support"] as const;
 export type BugReportSource = (typeof BUG_REPORT_SOURCES)[number];
 
 /** One line of the console a report carries (scrubbed by the server). */
@@ -117,6 +117,10 @@ export type BugReportRow = {
   /** Null for a report sent signed out. */
   userId: string | null;
   userName: string | null;
+  /** The sender is an internal account (the owner, a tester): shown, labelled "internal". */
+  internal: boolean;
+  /** The e-mail a support request asks to be answered at (source support). */
+  contactEmail: string | null;
   status: BugReportStatus;
   code: string | null;
   description: string | null;

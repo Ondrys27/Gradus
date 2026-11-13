@@ -38,6 +38,7 @@ export type InviteErrorCode =
   | "self"
   | "alreadyMember"
   | "readOnly"
+  | "otherAccount"
   | "unknown";
 
 export type InviteResult<T> = { ok: true; data: T } | { ok: false; error: InviteErrorCode };
@@ -71,6 +72,8 @@ async function owner(): Promise<{ supabase: Client; userId: string }> {
 function fromDatabase(error: { code?: string; message?: string }): InviteErrorCode | null {
   const message = error.message ?? "";
   if (message.includes("invite_invalid")) return "invalid";
+  if (message.includes("invite_self")) return "self";
+  if (message.includes("invite_other_account")) return "otherAccount";
   if (message.includes("already_member")) return "alreadyMember";
   if (message.includes("not_member")) return "notFound";
   if (message.includes("read_only")) return "readOnly";
@@ -270,6 +273,32 @@ export async function respondToInvite(input: {
     }
     const { data: spaceId, error } = await supabase.rpc("worker_invite_respond", {
       _invite: input.inviteId,
+      _accept: input.accept,
+    });
+    if (error) throw error;
+    const admin = createAdminClient();
+    if (input.accept) await track("worker_invite_accepted", { via: "app" }, { userId, admin });
+    else await track("worker_invite_declined", {}, { userId, admin });
+    return { spaceId: spaceId as string };
+  });
+}
+
+/**
+ * Answers the invite of a link the signed-in account opened (27.1): the
+ * database checks it is meant for this account (its e-mail, or the account
+ * it names; an invite naming nobody only accepts) and binds it on the way.
+ */
+export async function respondToInviteCode(input: {
+  code: string;
+  accept: boolean;
+}): Promise<InviteResult<{ spaceId: string }>> {
+  return run("respondCode", async () => {
+    const { supabase, userId } = await signedIn();
+    if (typeof input.code !== "string" || typeof input.accept !== "boolean" || input.code.length > 64) {
+      throw new InviteError("invalid");
+    }
+    const { data: spaceId, error } = await supabase.rpc("worker_invite_respond_code", {
+      _code: input.code.trim(),
       _accept: input.accept,
     });
     if (error) throw error;

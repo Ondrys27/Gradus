@@ -56,7 +56,8 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | Promo kódy (`/admin/promo-kody`, detail `/admin/promo-kody/[id]`) | owner + admin zakládají, upravují a deaktivují kódy; výplaty schvaluje, označuje a exportuje jen owner, admin je čte |
 | Upozornění na chyby (`/admin/upozorneni`) | owner upravuje a posílá zkušební e-mail, admin čte |
 | Zpětná vazba — karta Záznam chyby (hledání podle kódu) | owner + admin |
-| Zpětná vazba → Hlášení (seznam, filtry, detail, změna stavu) | owner + admin; snímek obrazovky ve detailu jen owner (adminovi se ukáže jen, že je přiložen) |
+| Zpětná vazba → Hlášení (seznam, filtry, detail, změna stavu) | owner + admin, oba vidí totéž: všechna hlášení včetně interních účtů se štítkem „interní“ (přepínač interních účtů se na hlášení nevztahuje), u Podpory e-mail pro odpověď; snímek obrazovky ve detailu jen owner (adminovi se ukáže jen, že je přiložen) |
+| Zpětná vazba → Hlášení: „Obnovit · N nových“ (`GET /api/admin-reports/new`, jen počet hlášení od vykreslení, nepočítá se jako aktivita relace, bez `admin_audit`) | owner + admin |
 | Administrátoři (`/admin/administratori`) | owner; adminovi 404, v menu chybí |
 | `/admin/prihlaseni`, `/admin/pozvanka/<token>` | kdokoli (stránka sama ověřuje heslo, roli nebo token) |
 
@@ -88,6 +89,7 @@ Pravidla v kódu: `src/features/admin/roles.ts` (`adminCan`, `mayExport`, `PERSO
 | `error_event_record`, `error_alert_claim`, `error_alert_digest_claim`, `purge_error_events` | jen service role (server) | záznamy chyb a rozhodnutí o e-mailech, bez klientského přístupu |
 | `admin_bug_report_list`, `admin_bug_report_set_status` | jen service role (server po stráži) | Zpětná vazba → Hlášení: seznam s filtry a detail; změna stavu (`feedback.report`), při prvním „Opraveno“ vrátí autora pro e-mail s poděkováním; owner + admin |
 | `bug_report_create` | jen service role (server) | hlášení z dialogu Nahlásit problém, hodinový limit na účet |
+| `bug_report_support` | jen service role (server) | formulář `/podpora` i bez přihlášení: hodinový limit na účet, nepřihlášeně na adresu (otisk IP) |
 | `admin_bug_reports` | jen service role (server po stráži) | Zpětná vazba → Hlášení chyb, hledání podle kódu chyby; owner + admin |
 | `app_overview` | owner | v aplikaci, ne v administraci; beze změny |
 

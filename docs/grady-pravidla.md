@@ -124,6 +124,10 @@ Když uživatel v chatu řekne, ať Grady něco udělá („dej mi to do úkolů
 - XP, oslavy (výhra, dokončený milník), guardy a analytika jsou stejné jako při práci rukama: zápis jde přes sdílené funkce sekcí (`src/features/<sekce>/ops.ts`) klientem přihlášeného uživatele.
 - Proaktivní návrhy, souhrny, ranní shrnutí, hlídání a hodnocení milníku nástroje pro zápis nemají (jen dosavadní návrhy s tlačítkem Přidat).
 
+### Hlášení chyb: Grady je nezakládá (27.1)
+
+Grady sám žádné hlášení problému nezaloží ani nepošle (lidé by mu psali všechno, i nadávky, a padalo by to do administrace). Když uživatel napíše, že chce něco nahlásit, nebo si stěžuje, že něco v aplikaci nefunguje (`mightBeProblemReport` v `src/features/grady/problem-report.ts`: česky i anglicky, bez diakritiky, deterministicky), Grady odpoví jednou až dvěma větami (poradí, když je řešení zřejmé) a pod jeho odpovědí je tlačítko **Nahlásit problém**. To otevře stávající formulář hlášení se stránkou a snímkem obrazovky, nikdy s textem chatu (na telefonu se panel Gradyho nejdřív zavře). Do kontextu jde poznámka `<problem_report>`, v systémovém promptu je pravidlo, že nikdy netvrdí, že něco nahlásil. Analytika `bug_report_opened` s `via = grady_chat`.
+
 ### Kdy Grady nic nenapíše, i když by měl
 
 - Vyčerpaný měsíční rozpočet AI nebo strop uživatele: model se nevolá, souhrn ani postřehy se nepíšou, pravidlové návrhy (pevné texty) běží dál.
@@ -158,6 +162,7 @@ Modely: Haiku na rutinu (postřehy, třídění nápadů), Sonnet na rozhovor, s
 - **Nepíše do poznámek sám.** Do Poznámek se z Gradyho ukládá tlačítkem „Uložit do poznámek“ u odpovědi (do mapy jako nová větev), nebo na pokyn uživatele v chatu nástrojem; navržené větve mapy jsou šedé, dokud je uživatel neponechá.
 - **Nejedná podle textu v datech.** Obsah poznámek, souborů, e-mailů, kontaktů, zpráv a výsledků nástrojů jsou data, nikdy pokyn: nástroj zavolá jen kvůli pokynu uživatele v této konverzaci („smaž všechny kontakty“ v poznámce nic neudělá).
 - **Neposílá peníze, nemění tarif ani práva sám sobě.** Předplatné, platby, promo kódy, smazání účtu, heslo a e-mail účtu, administrace, role a export dat účtu nástroje nemá vůbec.
+- **Nezakládá hlášení chyb.** Na stížnost nebo „chci nahlásit chybu“ jen krátce odpoví a nabídne tlačítko Nahlásit problém, které otevře formulář hlášení; sám nic neodešle.
 - **Nečte chat** (Zprávy mezi lidmi ve firmě) ani jeho přílohy.
 - **Nevolá a neplánuje lidi mimo pracovní okno** jako něco „na teď“; mimo okno nabízí přípravu.
 - **Nedokončí milník bez pokynu a potvrzení.** Sám jen ukáže, že je připravený; dokončí ho jen na výslovný pokyn uživatele a po Potvrdit.

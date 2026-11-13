@@ -16,11 +16,11 @@ export type Worker = Pick<
 >;
 
 export const INVITE_COLUMNS =
-  "id, worker_id, code, expires_at, accepted_at, invitee_id, declined_at" as const;
+  "id, worker_id, code, expires_at, accepted_at, invitee_id, declined_at, replaced_at" as const;
 /** `invitee_id` set = the invite waits for an existing account in the app (no link to send). */
 export type WorkerInvite = Pick<
   Tables["worker_invites"]["Row"],
-  "id" | "worker_id" | "code" | "expires_at" | "accepted_at" | "invitee_id" | "declined_at"
+  "id" | "worker_id" | "code" | "expires_at" | "accepted_at" | "invitee_id" | "declined_at" | "replaced_at"
 >;
 
 export const PERMISSION_COLUMNS = "section, can_view, can_edit" as const;

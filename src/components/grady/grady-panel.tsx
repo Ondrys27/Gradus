@@ -30,6 +30,7 @@ import { ActionCard } from "@/components/grady/action-card";
 import { Grady } from "@/components/grady/grady";
 import { NoticePager, NoticeSlide, queueKeyDown } from "@/components/grady/notice-queue";
 import { useReportProblem } from "@/features/feedback/report-provider";
+import { mightBeProblemReport } from "@/features/grady/problem-report";
 import { gradyOverlay } from "@/features/grady/overlay-store";
 import { SaveAnswerToNotes } from "@/features/notes/save-answer";
 import { SuggestionCard, useSuggestionActions } from "@/components/grady/suggestion-card";
@@ -340,7 +341,7 @@ export function GradyPanel({ chat, onClose }: GradyPanelProps) {
         {conversation.isError && messages.length === 0 && (
           <p className="text-xs text-ink-muted">{t("loadFailed")}</p>
         )}
-        {messages.map((message) =>
+        {messages.map((message, index) =>
           message.role === "user" ? (
             <UserBubble
               key={message.id}
@@ -365,6 +366,23 @@ export function GradyPanel({ chat, onClose }: GradyPanelProps) {
                   savable
                 />
               )}
+              {/* Grady files no reports himself: the usual form, with the page and a screenshot. */}
+              {messages[index - 1]?.role === "user" &&
+                mightBeProblemReport(messages[index - 1]?.content) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // On a phone the panel covers the page the report is about.
+                      if (isPhone) onClose();
+                      report.open("grady_chat");
+                    }}
+                    data-testid="grady-report-problem"
+                    className="inline-flex min-h-11 items-center gap-2 self-start rounded-full border border-pink/40 bg-pink/10 px-3.5 text-sm text-ink outline-none transition-colors hover:bg-pink/20 focus-visible:ring-3 focus-visible:ring-pink/50 mouse:min-h-9"
+                  >
+                    <FlagIcon aria-hidden className="size-4 text-pink" />
+                    {t("reportProblem")}
+                  </button>
+                )}
             </div>
           ),
         )}

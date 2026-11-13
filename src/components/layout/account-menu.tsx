@@ -3,8 +3,9 @@
 import { useCallback, useState } from "react";
 import Link from "next/link";
 import { Menu } from "@base-ui/react/menu";
-import { CheckIcon, FlagIcon, LogOutIcon, SettingsIcon, UserRoundIcon } from "lucide-react";
+import { CheckIcon, FlagIcon, LifeBuoyIcon, LogOutIcon, SettingsIcon, UserRoundIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { localizedPath } from "@/lib/routes";
 import { Avatar } from "@/components/ui/avatar";
 import {
   useProfile,
@@ -97,6 +98,14 @@ export function AccountMenu() {
               </span>
               <FlagIcon aria-hidden className="size-4 text-ink-muted" />
             </Menu.Item>
+            <Menu.LinkItem
+              closeOnClick
+              render={<a href={localizedPath("support", settings.locale)} target="_blank" rel="noopener" />}
+              className={itemClass}
+            >
+              {t("support")}
+              <LifeBuoyIcon aria-hidden className="size-4 text-ink-muted" />
+            </Menu.LinkItem>
 
             <Menu.Separator className="my-1.5 h-px bg-line" />
 
@@ -132,7 +141,7 @@ export function AccountMenu() {
 
             <Menu.Separator className="my-1.5 h-px bg-line" />
 
-            <Menu.Item onClick={signOut} className={cn(itemClass, "data-highlighted:text-pink")}>
+            <Menu.Item onClick={() => void signOut()} className={cn(itemClass, "data-highlighted:text-pink")}>
               {t("signOut")}
               <LogOutIcon aria-hidden className="size-4" />
             </Menu.Item>

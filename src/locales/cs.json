@@ -238,7 +238,8 @@
     },
     "messages": "Zprávy",
     "unread": "{count, plural, one {# nepřečtená zpráva} few {# nepřečtené zprávy} other {# nepřečtených zpráv}}",
-    "scheduler": "Plánovač schůzek"
+    "scheduler": "Plánovač schůzek",
+    "support": "Podpora"
   },
   "topBar": {
     "home": "Přejít na přehled",
@@ -267,7 +268,8 @@
       },
       "report": "Nahlásit problém",
       "reportShortcut": "Ctrl+Shift+B",
-      "reportShortcutMac": "⌘⇧B"
+      "reportShortcutMac": "⌘⇧B",
+      "support": "Podpora"
     }
   },
   "search": {
@@ -877,7 +879,6 @@
       "haveAccount": "Už máte účet? <link>Přihlásit se</link>",
       "workerInvite": "Přidáváš se k týmu: {owner}. Zaregistruj se e-mailem, na který tě pozval.",
       "workerInviteNoOwner": "Přidáváš se k týmu. Zaregistruj se e-mailem, na který jsi dostal pozvánku.",
-      "workerInviteInvalid": "Pozvánka vypršela nebo už byla použita. Požádej o nový odkaz.",
       "descriptionPublic": "14 dní zdarma, bez platební karty.",
       "inviteOptional": "Pozvánkový kód (nepovinné)",
       "inviteOptionalHint": "Máte-li pozvánku, zadejte ji. Jinak začnete 14denní zkušební období.",
@@ -940,6 +941,36 @@
         "taken": "Tenhle e-mail už používá jiný účet. E-mail tvého účtu zůstal stejný.",
         "failed": "E-mail se nepodařilo změnit. Zkus odkaz otevřít znovu."
       }
+    },
+    "inviteLink": {
+      "problemTitle": "Tahle pozvánka už neplatí",
+      "problem": {
+        "expired": "Pozvánka vypršela {date}. Majitel ti může poslat novou.",
+        "used": "Pozvánka už byla použita: účet z ní je založený. Pokud je tvůj, přihlas se.",
+        "declined": "Pozvánka byla odmítnuta. Pokud do týmu chceš, požádej majitele o novou.",
+        "replaced": "Majitel ti mezitím poslal novější pozvánku a tahle přestala platit. Otevři odkaz z posledního e-mailu.",
+        "revoked": "Majitel tuhle pozvánku zrušil.",
+        "unknown": "Tenhle odkaz pozvánky neznáme. Zkontroluj, že je celý, nebo požádej toho, kdo tě zval, o nový."
+      },
+      "requestNew": "Požádat o novou",
+      "requested": "Hotovo. Majitel dostal oznámení, že chceš novou pozvánku.",
+      "requestedAlready": "Majitel už o tom ví, žádost odešla nedávno.",
+      "requestFailed": "Žádost se nepodařilo odeslat. Zkus to za chvíli.",
+      "signIn": "Přihlásit se",
+      "signInTitle": "Pro {email} už účet v {appName} máš",
+      "signInTitleNoEmail": "Pozvánka čeká na tvůj účet v {appName}",
+      "signInText": "Přihlas se a pozvánku do týmu přijmeš. Nový účet zakládat nemusíš.",
+      "signInButton": "Přihlásit se a přijmout",
+      "otherTitle": "Jsi přihlášený jako {current}.",
+      "otherFor": "Pozvánka je pro {target}.",
+      "otherText": "Pozvánku přijmeš pod účtem, pro který je. Odhlas se a pokračuj, nebo zůstaň přihlášený.",
+      "otherOwner": "Je to tvoje vlastní pozvánka: pošli odkaz člověku, kterého zveš.",
+      "signOutContinue": "Odhlásit a pokračovat",
+      "stay": "Zůstat",
+      "acceptHere": "Přijmout jako {current}",
+      "linkTitle": "Pozvánka do týmu {who}",
+      "linkTitleNoName": "Pozvánka do týmu",
+      "linkText": "Přijetím budeš ve firmě pracovat pod tímhle účtem. Firmu pak najdeš v přepínači vpravo nahoře, tvoje vlastní data zůstanou oddělená."
     }
   },
   "profile": {
@@ -4340,7 +4371,9 @@
       "waitingTitle": "{name} má pozvánku v aplikaci",
       "waitingText": "Uvidí ji ve zvonku a v e-mailu a přijme ji nebo odmítne. Platí do {date}.",
       "waitingExpired": "Pozvánka vypršela. Odeber pracovníka a pozvi ho znovu.",
-      "declined": "Pozvánku odmítl."
+      "declined": "Pozvánku odmítl.",
+      "replaced": "Tuhle pozvánku nahradila novější na stejný e-mail. Starý odkaz už nefunguje.",
+      "replacedOld": "Předchozí pozvánka na tenhle e-mail přestala platit (nahrazena novější)."
     },
     "detail": {
       "loadFailed": "Pracovníka se nepodařilo načíst. Zkus to znovu.",
@@ -4747,7 +4780,10 @@
         "extra": "navíc {price}",
         "extraNoPrice": "nad rámec tarifu",
         "declined": "odmítl pozvánku",
-        "waiting": "čeká na přijetí"
+        "waiting": "čeká na přijetí",
+        "replaced": "nahrazena novější",
+        "extraBeforeSales": "navíc {price} po spuštění plateb",
+        "extraBeforeSalesHint": "Platby zatím běží jen v testovacím režimu, za pracovníka teď nic neplatíš."
       }
     },
     "dashboard": {
@@ -5541,7 +5577,8 @@
       "terms": "Podmínky",
       "privacy": "Soukromí",
       "contact": "Kontakt",
-      "copyright": "© {year} {appName}"
+      "copyright": "© {year} {appName}",
+      "support": "Podpora"
     },
     "waitlist": {
       "title": "Dáme ti vědět o spuštění",
@@ -5570,6 +5607,29 @@
       "intro": "Díky za zájem o {appName}. Potvrď prosím, že ti můžeme napsat, až se aplikace otevře všem:",
       "button": "Potvrdit e-mail",
       "ignore": "Pokud jsi o nic nežádal, tenhle e-mail ignoruj. Bez potvrzení ti nic dalšího nepošleme."
+    },
+    "support": {
+      "title": "Podpora",
+      "description": "Napiš nám, co v {appName} nefunguje, co je matoucí nebo co by se hodilo.",
+      "intro": "Něco v {appName} nefunguje, je matoucí, nebo máš nápad? Napiš nám pár slov. Jsi-li přihlášený v aplikaci, je rychlejší „Nahlásit problém“ v nabídce u avatara: přiloží i snímek obrazovky.",
+      "orEmail": "Nebo napiš na <link>{email}</link>.",
+      "kindLabel": "O co jde",
+      "kind": {
+        "bug": "Chyba",
+        "idea": "Nápad",
+        "confusing": "Matoucí"
+      },
+      "whatLabel": "Co se stalo",
+      "whatPlaceholder": "Např. po kliknutí na Uložit se nic nestane.",
+      "whatRequired": "Napiš aspoň pár slov.",
+      "expectedLabel": "Co jsi čekal (nepovinné)",
+      "emailLabel": "E-mail pro odpověď (nepovinné)",
+      "emailHint": "Odpovíme jen na tuhle adresu, k ničemu jinému ji nepoužijeme. Když jsi přihlášený, stačí e-mail účtu.",
+      "send": "Odeslat",
+      "sending": "Odesílám…",
+      "thanks": "Díky, máme to. Podíváme se na to co nejdřív.",
+      "failed": "Odeslat se nepodařilo. Zkontroluj e-mail a zkus to znovu.",
+      "limited": "Za poslední hodinu přišlo odsud hodně zpráv. Zkus to prosím za chvíli."
     }
   },
   "plans": {
@@ -6861,7 +6921,7 @@
         "declined": "Zamítnuto"
       },
       "reportsTitle": "Hlášení chyb",
-      "reportsDescription": "Odeslané ze stránky chyby, nejnovější nahoře. Kód chyby najde hlášení i od interních účtů.",
+      "reportsDescription": "Ze stránky chyby, z Nahlásit problém a ze stránky Podpora, nejnovější nahoře. Vždy včetně interních účtů (štítek interní).",
       "searchPlaceholder": "Hledat podle kódu chyby (GR-…)",
       "reportsEmpty": "Zatím žádná hlášení.",
       "reportsNotFound": "Žádné hlášení s kódem {code}.",
@@ -6923,7 +6983,8 @@
       },
       "reportSource": {
         "report": "Nahlásit problém",
-        "error_page": "Stránka chyby"
+        "error_page": "Stránka chyby",
+        "support": "Podpora"
       },
       "filter": {
         "status": "Stav",
@@ -6948,9 +7009,12 @@
         "consoleEmpty": "Žádné se nezachytily.",
         "screenshot": "Snímek obrazovky",
         "screenshotGone": "Snímek se nepodařilo načíst.",
-        "screenshotOwnerOnly": "Snímek je přiložený, vidí ho jen majitel."
+        "screenshotOwnerOnly": "Snímek je přiložený, vidí ho jen majitel.",
+        "contact": "Odpovědět na"
       },
-      "openUser": "Detail účtu"
+      "openUser": "Detail účtu",
+      "internal": "interní",
+      "newReports": "Obnovit · {count, plural, one {# nové hlášení} few {# nová hlášení} other {# nových hlášení}}"
     },
     "users": {
       "title": "Uživatelé",
@@ -9069,7 +9133,9 @@
       "alreadyMember": "V téhle firmě už pracuješ.",
       "readOnly": "Firma je teď jen pro čtení, pozvánku zatím nejde přijmout.",
       "signedOut": "Přihlas se znovu a zkus to.",
-      "unknown": "Něco se pokazilo. Zkus to znovu."
+      "unknown": "Něco se pokazilo. Zkus to znovu.",
+      "self": "Tohle je pozvánka do tvé vlastní firmy.",
+      "otherAccount": "Pozvánka je pro jiný účet."
     }
   },
   "inbox": {
@@ -9083,7 +9149,8 @@
     "notes": {
       "invite_accepted": "{name} přijal pozvánku do firmy",
       "invite_declined": "{name} pozvánku odmítl",
-      "worker_left": "{name} odešel z firmy"
+      "worker_left": "{name} odešel z firmy",
+      "invite_requested": "{name} žádá o novou pozvánku"
     }
   },
   "billing": {

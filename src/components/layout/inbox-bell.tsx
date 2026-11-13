@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import Link from "next/link";
 import { Menu } from "@base-ui/react/menu";
-import { BellIcon, LogOutIcon, MailPlusIcon, UserCheckIcon, UserXIcon } from "lucide-react";
+import { BellIcon, LogOutIcon, MailPlusIcon, MailQuestionIcon, UserCheckIcon, UserXIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   inboxCount,
@@ -22,6 +22,7 @@ const NOTE_ICON: Record<AccountNotification["kind"], typeof BellIcon> = {
   invite_accepted: UserCheckIcon,
   invite_declined: UserXIcon,
   worker_left: LogOutIcon,
+  invite_requested: MailQuestionIcon,
 };
 
 const itemClass =

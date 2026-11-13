@@ -62,10 +62,14 @@ export function WorkerFormDialog({
   defaultManagerId = null,
 }: Props) {
   const t = useTranslations("workers.form");
+  const tInvite = useTranslations("workers.invite");
   const generation = useFreshOnOpen(open);
-  const [created, setCreated] = useState<{ name: string; invite: WorkerInvite; bound: boolean } | null>(
-    null,
-  );
+  const [created, setCreated] = useState<{
+    name: string;
+    invite: WorkerInvite;
+    bound: boolean;
+    replaced: boolean;
+  } | null>(null);
 
   function change(next: boolean) {
     if (!next) setCreated(null);
@@ -90,6 +94,11 @@ export function WorkerFormDialog({
     >
       {created ? (
         <div className="flex flex-col gap-4">
+          {created.replaced && (
+            <p className="text-sm text-ink-soft" data-testid="invite-replaced-old">
+              {tInvite("replacedOld")}
+            </p>
+          )}
           <InviteCard invite={created.invite} workerName={created.name} />
           <Button onClick={() => change(false)} className="self-end">
             {t("done")}
@@ -122,7 +131,7 @@ function Fields({
   permissions?: PermissionGrants;
   defaultManagerId: string | null;
   onCancel: () => void;
-  onCreated: (result: { name: string; invite: WorkerInvite; bound: boolean }) => void;
+  onCreated: (result: { name: string; invite: WorkerInvite; bound: boolean; replaced: boolean }) => void;
   onSaved: () => void;
 }) {
   const t = useTranslations("workers.form");
@@ -172,7 +181,7 @@ function Fields({
     }
     setErrors({});
     try {
-      const { worker: saved, invite, bound } = await create.mutateAsync({
+      const { worker: saved, invite, bound, replaced } = await create.mutateAsync({
         worker: {
           ...result.data,
           email: target.target.kind === "email" ? target.target.email : null,
@@ -182,7 +191,7 @@ function Fields({
         groupIds: [...groupIds],
         target: target.target,
       });
-      onCreated({ name: saved.name, invite, bound });
+      onCreated({ name: saved.name, invite, bound, replaced });
     } catch (error) {
       const code = error instanceof InviteActionError ? TARGET_ERRORS[error.code] : undefined;
       if (code) setErrors({ email: code });

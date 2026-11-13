@@ -727,6 +727,17 @@ export const EVENTS = {
     via: optional(oneOf(["signup", "app"])),
   }),
   worker_invite_declined: event("workers", "server", false, {}),
+  /** An invite link opened (27.1): what it said and what it offered; opening never uses it up. */
+  worker_invite_link_opened: event("workers", "server", false, {
+    state: oneOf(["open", "expired", "used", "declined", "replaced", "revoked", "unknown"]),
+    view: oneOf(["register", "sign_in", "accept", "other_account", "problem"]),
+    signed_in: bool(),
+  }),
+  /** "Ask for a new one" on a link that no longer works; the owner gets a notification. */
+  worker_invite_new_requested: event("workers", "server", false, {
+    state: oneOf(["expired", "used", "declined", "replaced", "revoked", "unknown"]),
+    sent: bool(),
+  }),
   worker_updated: event("workers", "client", true, {}),
   worker_permissions_saved: event("workers", "client", true, {
     view_sections: count(20),
@@ -935,7 +946,7 @@ export const EVENTS = {
    * screenshot came with it, how many console lines).
    */
   bug_report_sent: event("platform", "server", false, {
-    source: oneOf(["error_page", "report"]),
+    source: oneOf(["error_page", "report", "support"]),
     described: bool(),
     signed_in: bool(),
     kind: optional(oneOf(["bug", "idea", "confusing"])),
@@ -944,8 +955,8 @@ export const EVENTS = {
   }),
   /** The "Report a problem" dialog opened, and from where. */
   bug_report_opened: event("platform", "client", false, {
-    // "jarvis" = Grady's panel: DB name kept from Jarvis.
-    via: oneOf(["account_menu", "more_panel", "jarvis", "shortcut"]),
+    // "jarvis" = Grady's panel: DB name kept from Jarvis; "grady_chat" = the button under his answer.
+    via: oneOf(["account_menu", "more_panel", "jarvis", "grady_chat", "shortcut"]),
   }),
   /** The administration moved a report to another status. */
   bug_report_status_changed: event("platform", "server", false, {

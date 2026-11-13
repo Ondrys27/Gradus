@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { CheckIcon, MailOpenIcon, ShieldCheckIcon, XIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { CheckIcon, LogOutIcon, MailOpenIcon, ShieldCheckIcon, UserRoundIcon, XIcon } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -21,8 +22,28 @@ import {
 import { RuleText } from "@/features/workers/rewards/rule-text";
 import { formatDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
+import { InviteProblemCard } from "@/features/auth/invite-link-card";
+import type { InviteLinkView } from "@/features/auth/invite-link";
+import { respondToInviteCode } from "@/features/workers/server/invites";
+import { INVITES_PATH, localizedPath } from "@/lib/routes";
 import { InboxActionError, inviterName, useInbox, useRespondInvite, type PendingInvite } from "./inbox";
+import { useSignOut } from "./queries";
 import { useSwitchSpace } from "./space-switch";
+
+/** An invite link opened while signed in (`/app/pozvanky?kod=…`), as the server read it. */
+export type LinkInvite = {
+  code: string;
+  view: InviteLinkView;
+  since: string | null;
+  /** The company or its owner. */
+  who: string | null;
+  /** Whom the invite is for: its e-mail, else the name the owner gave. */
+  target: string | null;
+  /** The signed-in account's e-mail. */
+  current: string | null;
+  /** The signed-in account is the owner who made the invite. */
+  own: boolean;
+};
 
 /**
  * Invites into other companies (step 22.5): who invites ("Novák s.r.o. ·
@@ -31,7 +52,7 @@ import { useSwitchSpace } from "./space-switch";
  * the switcher (and offers to go there now); decline asks first. Reached
  * from the bell, the e-mail and Grady.
  */
-export function InvitesView() {
+export function InvitesView({ linkInvite = null }: { linkInvite?: LinkInvite | null }) {
   const t = useTranslations("invites");
   const inbox = useInbox();
   const [accepted, setAccepted] = useState<{ spaceId: string; name: string } | null>(null);
@@ -40,6 +61,7 @@ export function InvitesView() {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <PageHeader title={t("title")} description={t("description")} />
       {accepted && <AcceptedCard {...accepted} />}
+      {linkInvite && !accepted && <LinkInviteCard invite={linkInvite} onAccepted={setAccepted} />}
       {inbox.isPending ? (
         <Skeleton className="h-56 w-full rounded-card" />
       ) : inbox.isError ? (
@@ -216,11 +238,131 @@ function AcceptedCard({ spaceId, name }: { spaceId: string; name: string }) {
       <p className="text-sm text-ink-soft">{t("acceptedText")}</p>
       {state === "failed" && <FormAlert>{t("switchFailed")}</FormAlert>}
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <Button variant="ghost" onClick={() => window.location.reload()}>
+        <Button variant="ghost" onClick={() => window.location.replace(INVITES_PATH)}>
           {t("stay")}
         </Button>
         <Button onClick={() => void switchTo(spaceId)} disabled={state === "switching"} data-testid="invite-switch">
           {t("switch", { name })}
+        </Button>
+      </div>
+    </GlowCard>
+  );
+}
+
+/**
+ * The invite of a link opened while signed in (27.1): accept it when it is
+ * this account's; as anybody else "You are signed in as X. The invite is for
+ * Y." with Sign out and continue (to the registration, or the sign-in when Y
+ * has an account) and Stay. A link that no longer works says why.
+ */
+function LinkInviteCard({
+  invite,
+  onAccepted,
+}: {
+  invite: LinkInvite;
+  onAccepted: (value: { spaceId: string; name: string }) => void;
+}) {
+  const t = useTranslations("auth.inviteLink");
+  const tInvites = useTranslations("invites");
+  const locale = useLocale();
+  const router = useRouter();
+  const signOut = useSignOut();
+  const [pending, startTransition] = useTransition();
+  const [failure, setFailure] = useState<string | null>(null);
+  const [declining, setDeclining] = useState(false);
+  const { view } = invite;
+
+  if (view.kind === "problem") {
+    return <InviteProblemCard code={invite.code} state={view.state} since={invite.since} signedIn />;
+  }
+
+  function answer(accept: boolean) {
+    setFailure(null);
+    startTransition(async () => {
+      const result = await respondToInviteCode({ code: invite.code, accept });
+      if (!result.ok) {
+        setFailure(tInvites(`errors.${result.error}`));
+        return;
+      }
+      setDeclining(false);
+      if (accept) onAccepted({ spaceId: result.data.spaceId, name: invite.who ?? tInvites("someone") });
+      else router.replace(INVITES_PATH);
+    });
+  }
+
+  const title = invite.who ? t("linkTitle", { who: invite.who }) : t("linkTitleNoName");
+  const registration = `${localizedPath("register", locale)}?invite=${encodeURIComponent(invite.code)}`;
+
+  if (view.kind === "accept") {
+    return (
+      <GlowCard interactive={false} className="flex flex-col gap-4 md:p-6" data-testid="invite-link-accept">
+        <h2 className="text-lg font-semibold text-balance text-ink">{title}</h2>
+        <p className="text-sm text-ink-soft">{t("linkText")}</p>
+        {failure && <FormAlert>{failure}</FormAlert>}
+        <div className="flex flex-col-reverse gap-2 border-t border-line/60 pt-4 sm:flex-row sm:justify-end">
+          {view.canDecline && (
+            <Button variant="ghost" onClick={() => setDeclining(true)} disabled={pending}>
+              <XIcon aria-hidden data-icon="inline-start" />
+              {tInvites("decline")}
+            </Button>
+          )}
+          <Button onClick={() => answer(true)} disabled={pending} data-testid="invite-link-accept-button">
+            <CheckIcon aria-hidden data-icon="inline-start" />
+            {tInvites("accept")}
+          </Button>
+        </div>
+        <ConfirmDialog
+          open={declining}
+          onOpenChange={setDeclining}
+          title={tInvites("declineTitle")}
+          description={tInvites("declineText", { who: invite.who ?? tInvites("someone") })}
+          confirmLabel={tInvites("decline")}
+          cancelLabel={tInvites("cancel")}
+          closeLabel={tInvites("cancel")}
+          pending={pending}
+          error={declining ? failure : null}
+          onConfirm={() => answer(false)}
+        />
+      </GlowCard>
+    );
+  }
+
+  // view.kind === "other_account" or "sign_in" (a signed-in viewer never gets "sign_in").
+  const canAcceptHere = view.kind === "other_account" && view.canAcceptHere;
+  return (
+    <GlowCard
+      interactive={false}
+      className="flex flex-col gap-4 border-orange/40 md:p-6"
+      data-testid="invite-other-account"
+    >
+      <div className="flex items-start gap-3">
+        <UserRoundIcon aria-hidden className="mt-0.5 size-5 shrink-0 text-orange" />
+        <div className="flex min-w-0 flex-col gap-1">
+          <h2 className="font-semibold break-words text-ink" data-testid="invite-other-current">
+            {t("otherTitle", { current: invite.current ?? tInvites("someone") })}
+          </h2>
+          {invite.target && (
+            <p className="text-sm break-words text-ink" data-testid="invite-other-target">
+              {t("otherFor", { target: invite.target })}
+            </p>
+          )}
+          <p className="text-sm text-ink-soft">{invite.own ? t("otherOwner") : t("otherText")}</p>
+        </div>
+      </div>
+      {failure && <FormAlert>{failure}</FormAlert>}
+      <div className="flex flex-col-reverse gap-2 border-t border-line/60 pt-4 sm:flex-row sm:flex-wrap sm:justify-end">
+        <Button variant="ghost" onClick={() => router.replace(INVITES_PATH)} data-testid="invite-stay">
+          {t("stay")}
+        </Button>
+        {canAcceptHere && (
+          <Button variant="secondary" onClick={() => answer(true)} disabled={pending} data-testid="invite-accept-here">
+            <CheckIcon aria-hidden data-icon="inline-start" />
+            {t("acceptHere", { current: invite.current ?? tInvites("someone") })}
+          </Button>
+        )}
+        <Button onClick={() => void signOut(registration)} data-testid="invite-sign-out-continue">
+          <LogOutIcon aria-hidden data-icon="inline-start" />
+          {t("signOutContinue")}
         </Button>
       </div>
     </GlowCard>

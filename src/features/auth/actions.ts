@@ -30,6 +30,8 @@ import { decideSignup, signupSource, wantsE2ePublicSignup } from "./signup-mode"
 import { parseSignupPlan } from "./signup-plan";
 import { checkPromo, redeemPromo } from "@/features/promo/server/promo";
 import { findOpenWorkerInvite, type OpenWorkerInvite } from "./worker-invite";
+import { registrationNeedsConfirmation } from "./invite-link";
+import { sendSignupConfirmation } from "./server/confirmation";
 import {
   authErrorKey,
   fieldErrorsFrom,
@@ -154,8 +156,14 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
   const locale = await getLocale();
   const admin = createAdminClient();
   // The tests' own accounts have no inbox; outside production they start confirmed.
+  // A worker invited to this very address needs no second confirmation: the invite came there.
   const confirmEmail =
-    !isE2eTestAccount(parsed.data.email) && (await isEmailConfirmationRequired());
+    !isE2eTestAccount(parsed.data.email) &&
+    registrationNeedsConfirmation({
+      confirmationRequired: await isEmailConfirmationRequired(),
+      workerInviteEmail: decision.kind === "worker" ? workerInvite?.email : null,
+      email: parsed.data.email,
+    });
   const { data: created, error: createError } = await admin.auth.admin.createUser({
     email: parsed.data.email,
     password: parsed.data.password,
@@ -288,9 +296,10 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
 
   await setLocaleCookie(locale);
   if (confirmEmail) {
-    // A failed send only shows in the log: the sign-in page offers a new link.
-    const sent = await sendConfirmationEmail(parsed.data.email);
-    if (!sent.ok) console.error("[auth] confirmation e-mail failed", sent.error);
+    // Gradus's own e-mail in the person's language. A failed send only shows
+    // in the log: the sign-in page offers a new link.
+    const sent = await sendSignupConfirmation(parsed.data.email, locale);
+    if (!sent.ok) console.error("[auth] confirmation e-mail failed", sent.reason);
     return { success: true, values: { email: parsed.data.email } };
   }
 
@@ -305,31 +314,19 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
   redirect(HOME_PATH, RedirectType.replace);
 }
 
-/** Supabase's "Confirm signup" e-mail; its link lands on /auth/confirm and then in the app. */
-async function sendConfirmationEmail(email: string) {
-  const supabase = await createClient();
-  const origin = await siteOrigin();
-  const { error } = await supabase.auth.resend({
-    type: "signup",
-    email,
-    options: { emailRedirectTo: `${origin}/auth/confirm?next=${encodeURIComponent(HOME_PATH)}` },
-  });
-  return error ? { ok: false as const, error } : { ok: true as const };
-}
-
 /**
- * A new confirmation link. Always reports success (except a rate limit) so the
- * form cannot be used to find out who has an account.
+ * A new confirmation link, in Gradus's template and the account's language.
+ * Always reports success (except the one-minute pause) so the form cannot be
+ * used to find out who has an account.
  */
 export async function resendConfirmation(_prev: FormState, formData: FormData): Promise<FormState> {
   const parsed = forgotPasswordSchema.safeParse(Object.fromEntries(formData));
   const values = { email: String(formData.get("email") ?? "") };
   if (!parsed.success) return { fieldErrors: fieldErrorsFrom(parsed.error), values };
-  const sent = await sendConfirmationEmail(parsed.data.email);
+  const sent = await sendSignupConfirmation(parsed.data.email, null);
   if (!sent.ok) {
-    const key = authErrorKey(sent.error);
-    if (key === "rateLimited") return { error: key, values };
-    console.error("[auth] resend confirmation failed", sent.error);
+    if (sent.reason === "rateLimited") return { error: "rateLimited", values };
+    console.error("[auth] resend confirmation failed");
   }
   return { success: true, values };
 }

@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import {
   EllipsisIcon,
   FlagIcon,
+  LifeBuoyIcon,
   LockIcon,
   LogOutIcon,
   SettingsIcon,
@@ -15,7 +16,8 @@ import {
 import { useTranslations } from "next-intl";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { SpaceList } from "./space-switcher";
-import { useSignOut } from "@/features/account/queries";
+import { useSignOut, useUserSettings } from "@/features/account/queries";
+import { localizedPath } from "@/lib/routes";
 import { useCloseOnErrorScreen } from "@/features/errors/error-screen-state";
 import { useReportProblem } from "@/features/feedback/report-provider";
 import { cn } from "@/lib/utils";
@@ -45,6 +47,7 @@ export function BottomNav() {
   const closeMore = useCallback(() => setMoreOpen(false), []);
   useCloseOnErrorScreen(closeMore);
   const signOut = useSignOut();
+  const settings = useUserSettings();
   const report = useReportProblem();
   const { primary: primaryItems, more: moreItems } = useNavItems();
   const moreActive = [...moreItems, ...accountItems].some((item) =>
@@ -181,9 +184,21 @@ export function BottomNav() {
             </button>
           </li>
           <li>
+            <a
+              href={localizedPath("support", settings.locale)}
+              target="_blank"
+              rel="noopener"
+              onClick={() => setMoreOpen(false)}
+              className="flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-[15px] font-medium text-ink-soft outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <LifeBuoyIcon aria-hidden className="size-5" />
+              {t("support")}
+            </a>
+          </li>
+          <li>
             <button
               type="button"
-              onClick={signOut}
+              onClick={() => void signOut()}
               className="flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-xl px-3 text-[15px] font-medium text-pink outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               <LogOutIcon aria-hidden className="size-5" />
