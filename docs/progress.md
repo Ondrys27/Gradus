@@ -140,7 +140,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 26.2 | architect | env: ANTHROPIC_API_KEY — 2026-11-12: Grady v chatu na pokyn pracuje v aplikaci nástroji (okamžité kroky s Vrátit, mazání, odeslání a finanční kroky po Potvrdit, tabulka grady_actions, jen práva účtu).
 - [x] K26 | reviewer | 2026-11-13: Kontrola fáze 26 opravila Vrátit u odmítnutých zápisů a novějších změn, update_note bez ztráty formátování, telefon od modelu a „Jarvis“ v zveřejněném katalogu.
 - [x] STOP | Konec fáze 26. V chatu napiš Gradymu „založ milník Firemní e-mail s úkoly koupit doménu, nastavit schránku a podpis“, zkontroluj milník a dej Vrátit. Požádej o smazání ukázkového kontaktu (Potvrdit i Zrušit), o obchod z kontaktu a o událost na zítra v 10:00. Přihlas se jako pracovník bez práva pipeline a ověř, že Grady obchod nezaloží. Projdi texty: nikde Jarvis. Co nesedí, napiš Claude Code rovnou, pak /pokracuj. · přeskočeno nočním během 2026-11-13, zkontroluj ručně (.noc/zkontroluj.md)
-- [ ] 27.1 | architect | env: RESEND_API_KEY
+- [x] 27.1 | architect | env: RESEND_API_KEY — 2026-11-13: Odkaz pozvánky pracovníka spotřebuje až registrace nebo přijetí (otevření přihlášeným ukáže, čí je; neplatný řekne proč a nabídne novou; nová pozvánka starou nahradí), hlášení interních účtů jsou v administraci vidět se štítkem a tlačítkem Obnovit, Grady hlášení nezakládá a nabízí formulář, veřejná stránka /podpora.
 - [ ] 27.2 | architect |
 - [ ] 27.3 | architect | env: ANTHROPIC_API_KEY
 - [ ] 27.4 | architect |
