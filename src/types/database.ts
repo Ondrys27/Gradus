@@ -5875,25 +5875,6 @@ export type Database = {
         }
         Returns: string
       }
-      bug_report_support: {
-        Args: {
-          _app_version?: string
-          _browser?: string
-          _contact_email?: string
-          _description: string
-          _device?: string
-          _expected?: string
-          _ip_hash: string
-          _kind: string
-          _limit_anonymous?: number
-          _limit_user?: number
-          _locale?: string
-          _page: string
-          _user_id: string
-          _viewport?: string
-        }
-        Returns: string
-      }
       bug_report_submit: {
         Args: {
           _app_version?: string
@@ -5909,6 +5890,25 @@ export type Database = {
           _locale?: string
           _page: string
           _source: string
+          _user_id: string
+          _viewport?: string
+        }
+        Returns: string
+      }
+      bug_report_support: {
+        Args: {
+          _app_version?: string
+          _browser?: string
+          _contact_email?: string
+          _description: string
+          _device?: string
+          _expected?: string
+          _ip_hash: string
+          _kind: string
+          _limit_anonymous?: number
+          _limit_user?: number
+          _locale?: string
+          _page: string
           _user_id: string
           _viewport?: string
         }
