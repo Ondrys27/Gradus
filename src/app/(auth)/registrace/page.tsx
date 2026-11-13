@@ -74,6 +74,10 @@ export default async function RegisterPage({
     ) : view?.kind === "sign_in" ? (
       <InviteSignInCard code={code} email={link?.email ?? null} />
     ) : null;
+  // A link that stopped working, or one for an existing account, replaces the
+  // form. An unknown code (a mangled link, or no worker link at all) keeps it:
+  // the person may still have a beta code to type.
+  const showForm = !inviteNotice || (view?.kind === "problem" && view.state === "unknown");
 
   // The tests' own run may show the public form outside production (signup-mode.ts).
   const publicSignup = isPublicSignupEnabled() || wantsE2ePublicSignup(await headers());
@@ -98,7 +102,8 @@ export default async function RegisterPage({
         ),
       })}
     >
-      {inviteNotice ?? (
+      {inviteNotice && <div className={showForm ? "mb-4" : undefined}>{inviteNotice}</div>}
+      {showForm && (
         <RegisterForm
           invite={invite}
           codeOptional={publicSignup && !invite}

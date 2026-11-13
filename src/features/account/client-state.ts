@@ -6,10 +6,14 @@ import { resetSoundPreference } from "@/lib/sound-preference";
 import { loginPath } from "@/lib/auth/routes";
 import { createClient } from "@/lib/supabase/client";
 
-/** Forgets everything the signed-in user left in this tab. */
+/**
+ * Forgets everything the signed-in user left in this tab. Every caller leaves
+ * the page right after (replace or reload), which drops the in-memory query
+ * cache with it; emptying the cache here would re-render the app with no
+ * profile or settings for a moment and crash the readers that rely on them.
+ */
 export function clearClientState(queryClient: QueryClient) {
   queryClient.cancelQueries();
-  queryClient.clear();
   resetSoundPreference();
   resetAnimationsPreference();
   try {
