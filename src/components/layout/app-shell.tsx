@@ -15,6 +15,7 @@ import { SearchProvider } from "@/features/search/search-provider";
 import { AnalyticsProvider } from "@/lib/analytics/analytics-provider";
 import { ThemeSync } from "@/features/settings/theme";
 import { BottomNav } from "./bottom-nav";
+import { useClearNavigatingOnArrival, usePendingHref } from "./nav-pending";
 import { PageLockGuard } from "./page-lock-guard";
 import { SectionGuard } from "./section-guard";
 import { Sidebar } from "./sidebar";
@@ -35,6 +36,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   // Seeded from the server with the rest of the settings, so the first HTML
   // already has the width the user left the menu at.
   const sidebarCollapsed = useUserSettings().sidebar_collapsed;
+  // A menu click answers at once: while the next page is on its way the
+  // content dims a little (only after 150 ms, so a fast change never flickers).
+  useClearNavigatingOnArrival();
+  const navigating = usePendingHref() !== null;
   return (
     <SearchProvider>
       <ReportProvider>
@@ -46,7 +51,10 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Sidebar />
           <div className="flex min-h-dvh min-w-0 flex-col">
             <TopBar />
-            <main className="mx-auto w-full max-w-6xl flex-1 pt-6 pr-[max(--spacing(4),env(safe-area-inset-right))] pb-[calc(12px+64px+32px+env(safe-area-inset-bottom))] pl-[max(--spacing(4),env(safe-area-inset-left))] md:pr-[max(--spacing(8),env(safe-area-inset-right))] md:pl-8 md:pt-8 md:pb-28">
+            <main
+              data-navigating={navigating ? "" : undefined}
+              className="mx-auto w-full max-w-6xl flex-1 transition-opacity duration-200 data-[navigating]:opacity-60 data-[navigating]:delay-150 pt-6 pr-[max(--spacing(4),env(safe-area-inset-right))] pb-[calc(12px+64px+32px+env(safe-area-inset-bottom))] pl-[max(--spacing(4),env(safe-area-inset-left))] md:pr-[max(--spacing(8),env(safe-area-inset-right))] md:pl-8 md:pt-8 md:pb-28"
+            >
               <TrialNotice />
               <PastDueNotice />
               <SectionGuard>{children}</SectionGuard>

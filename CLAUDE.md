@@ -282,7 +282,7 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - **Pravý dolní roh patří Gradymu.** Plovoucí ovládání vlevo dolů, hlavní akce nahoru k nadpisu.
 - Oslava (konfety, zvuk) jen pro velké okamžiky; drobnosti mají malou animaci.
 - Telefon < 768 px: spodní lišta, dialogy jako spodní panely, plochy ≥ 44 px, nic jen na hover, žádný vodorovný posun stránky.
-- Přihlášení se ověřuje jednou při startu; přechody stránek nikdy nečekají a nezobrazují načítání.
+- Přihlášení se ověřuje jednou při startu; přechody stránek nikdy nečekají a nezobrazují načítání. Menu jen přes `NavLink` (`components/layout/nav-link.tsx`): najetí myší nebo dotyk stránku celou přednačte (`unstable_dynamicOnHover`), kliknutá položka se hned rozsvítí a obsah se po 150 ms lehce ztlumí, dokud nová stránka nedorazí (`nav-pending.ts`, pojistka 10 s). Přednačtenou stránku drží prohlížeč 5 minut. `staleTimes.dynamic` nezapínat: registrace, pozvánky a přepnutí firmy po přesměrování potřebují čerstvou stránku ze serveru (rozbilo e2e 47–49).
 - Stromová mapa: spojnice ve dvou vrstvách (plná čára + lesk), žádný `objectBoundingBox` přechod, rozvržení z naměřených rozměrů, celá obrazovka jako overlay (iOS), ResizeObserver, nikdy neukládat nulové rozměry.
 - `prefers-reduced-motion` všude.
 - **Barevná témata** přes `data-theme` na `html`, tokeny v `@theme` pro každé téma, volba v `user_settings`. Šest témat: Gradus (výchozí), Půlnoc, Les, Západ, Ocel, Světlé. V game režimu je odemyká úroveň (Půlnoc 3, Les 7, Západ 12, Ocel 18, Světlé 25), v tool režimu jsou všechna hned; zamčené téma hlídá i DB trigger.

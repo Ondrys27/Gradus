@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -21,6 +20,8 @@ import { useCloseOnErrorScreen } from "@/features/errors/error-screen-state";
 import { useReportProblem } from "@/features/feedback/report-provider";
 import { cn } from "@/lib/utils";
 import { isActivePath } from "./nav-items";
+import { NavLink } from "./nav-link";
+import { usePendingHref } from "./nav-pending";
 import { useNavItems, type NavItemState } from "./use-nav";
 import { LockedSectionPopover } from "./lock-hint";
 import { NavBadge } from "./nav-badge";
@@ -36,7 +37,10 @@ const accountItems = [
  */
 export function BottomNav() {
   const t = useTranslations("nav");
-  const pathname = usePathname();
+  // The tapped item lights up at once, before its page arrives.
+  const currentPath = usePathname();
+  const pendingHref = usePendingHref();
+  const pathname = pendingHref ?? currentPath;
   const [moreOpen, setMoreOpen] = useState(false);
   const closeMore = useCallback(() => setMoreOpen(false), []);
   useCloseOnErrorScreen(closeMore);
@@ -112,7 +116,7 @@ export function BottomNav() {
             }
             return (
               <li key={item.key}>
-                <Link
+                <NavLink
                   href={item.href}
                   onClick={() => setMoreOpen(false)}
                   aria-current={active ? "page" : undefined}
@@ -137,7 +141,7 @@ export function BottomNav() {
                   </span>
                   {t(item.key)}
                   {item.fresh && <span className="sr-only">{t("justUnlocked")}</span>}
-                </Link>
+                </NavLink>
               </li>
             );
           })}
@@ -148,7 +152,7 @@ export function BottomNav() {
             const active = isActivePath(pathname, href);
             return (
               <li key={key}>
-                <Link
+                <NavLink
                   href={href}
                   onClick={() => setMoreOpen(false)}
                   aria-current={active ? "page" : undefined}
@@ -159,7 +163,7 @@ export function BottomNav() {
                 >
                   <Icon aria-hidden className={cn("size-5", active && "text-violet")} />
                   {t(key)}
-                </Link>
+                </NavLink>
               </li>
             );
           })}
@@ -268,14 +272,14 @@ const itemClass = (active: boolean) =>
 
 function BottomNavLink({ href, tour, ...props }: ItemProps & { href: string; tour?: string }) {
   return (
-    <Link
+    <NavLink
       href={href}
       data-tour={tour}
       aria-current={props.active ? "page" : undefined}
       className={itemClass(props.active)}
     >
       <ItemBody {...props} />
-    </Link>
+    </NavLink>
   );
 }
 

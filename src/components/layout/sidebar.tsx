@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, type ReactElement } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { Tooltip } from "@base-ui/react/tooltip";
@@ -11,6 +10,8 @@ import { useUpdateSettings, useUserSettings } from "@/features/account/queries";
 import { APP_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { isActivePath } from "./nav-items";
+import { NavLink } from "./nav-link";
+import { usePendingHref } from "./nav-pending";
 import { useNavItems, type NavItemState } from "./use-nav";
 import { LockedSectionPopover } from "./lock-hint";
 import { BetaBadge } from "./beta-badge";
@@ -28,7 +29,10 @@ import { useIsWide, useReducedMotionSafe, WIDE_QUERY } from "@/lib/use-media-que
  */
 export function Sidebar() {
   const t = useTranslations("nav");
-  const pathname = usePathname();
+  // The clicked item lights up at once, before its page arrives.
+  const currentPath = usePathname();
+  const pendingHref = usePendingHref();
+  const pathname = pendingHref ?? currentPath;
   const reduceMotion = useReducedMotionSafe();
   const { items } = useNavItems();
   const { collapsed, toggle } = useSidebarCollapse();
@@ -39,7 +43,7 @@ export function Sidebar() {
 
   return (
     <aside className="fixed inset-y-0 left-0 z-nav hidden w-(--app-sidebar-width) flex-col overflow-hidden border-r border-line/70 bg-sidebar/85 pl-[env(safe-area-inset-left)] backdrop-blur-xl transition-[width] duration-200 ease-out motion-reduce:transition-none md:flex">
-      <Link
+      <NavLink
         href="/app"
         className={cn(
           "flex h-18 shrink-0 items-center justify-center gap-3 px-5",
@@ -56,7 +60,7 @@ export function Sidebar() {
           {APP_NAME}
         </span>
         <BetaBadge className={cn("hidden", !collapsed && "lg:inline-flex")} />
-      </Link>
+      </NavLink>
 
       <Tooltip.Provider delay={250}>
         <nav
@@ -70,7 +74,7 @@ export function Sidebar() {
             const active = isActivePath(pathname, item.href);
             return (
               <NavTooltip key={item.key} label={t(item.key)} enabled={tooltips}>
-                <Link
+                <NavLink
                   href={item.href}
                   data-tour={`nav-${item.key}`}
                   aria-current={active ? "page" : undefined}
@@ -109,7 +113,7 @@ export function Sidebar() {
                     {t(item.key)}
                   </span>
                   {item.fresh && <span className="sr-only">{t("justUnlocked")}</span>}
-                </Link>
+                </NavLink>
               </NavTooltip>
             );
           })}
