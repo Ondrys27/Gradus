@@ -21,3 +21,6 @@ test-results/
 *.tsbuildinfo
 next-env.d.ts
 .noc/
+
+# Marketing videos from bun run demo:record
+marketing/videa/

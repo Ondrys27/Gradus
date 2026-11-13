@@ -1,331 +1,308 @@
-# Plánovač schůzek, světové měny a jazyky — kolo 16
+# Po schůzce 13. 11.: chyby, administrace pro Vášu, modely AI, ukázkový režim — kolo 17
 
 Instrukce pro Claude Code. Proveď kroky 1 až 3 přesně a doslova. Obsah k vložení je vždy mezi řádky `=== ZAČÁTEK` a `=== KONEC`. Prompty samotné neprováděj — provedou se příkazem `/pokracuj` (nebo nočním během `scripts/noc.sh`).
 
 ---
 
-## Krok 1 — Na konec `docs/plan.md` přidej tohle
+## Krok 1 — Do `docs/plan.md` přidej tohle PŘED sekci `## Odloženo` (když tam není, na konec)
 
 === ZAČÁTEK
 
 ---
 
-# FÁZE 23 — Plánovač schůzek, měny a jazyky
+# FÁZE 27 — Po schůzce 13. 11.
 
-*Rozhodnutí ze dne 8. 11.: plánovač pracuje jen s kalendářem Gradusu (cizí kalendáře jednosměrně přes odběr ICS; obousměrné propojení s Googlem až po ověření aplikace u Googlu, samostatné kolo). Odkaz na videohovor je trvalý odkaz uživatele (automatický Google Meet později). Pořadí: 23.4 (měny) a 23.5 (jazyky) jdou PŘED plánovačem, protože veřejná stránka plánovače potřebuje obojí. Vercel Hobby: plánované úlohy jen jednou denně — připomínky proto plánuje Resend (scheduled_at), ne cron.*
+*Od pondělí 16. 11. pouští Ondřej i Váša do Gradusu své lidi (ostrý provoz v malém). Proto jdou první dvě chyby, na které se při schůzce narazilo. Odloženo a nedělat: vyšší tarif s lepším modelem, vlastní klíč Claude uživatele, automatický Google Meet (čeká na ověření u Googlu), odpovídání na hlášení z administrace.*
 
-## Prompt 23.1 — Světové měny · **Opus 5.5**
-
-```
-Gradus má být celosvětový: jakákoli měna v nastavení uživatele,
-ve financích, fakturách i v cenách tarifů.
-
-1. SEZNAM MĚN. Místo ručního CURRENCIES v src/lib/format.ts použij
-   všechny platné kódy ISO 4217 (Intl.supportedValuesOf("currency")
-   na serveru při buildu → vygenerovaný soubor src/config/currencies.ts
-   s kódem, počtem desetinných míst a názvem přes
-   Intl.DisplayNames v jazyce uživatele; skript bun run gen:currencies).
-   Výběr měny v nastavení: hledání podle kódu i názvu, nejčastější
-   nahoře podle země uživatele. Formátování všude přes src/lib/format.ts
-   (symbol, desetinná místa, oddělovače podle jazyka; nulová místa
-   u JPY/HUF/KRW…). Projdi všechna místa, kde je CZK nebo EUR
-   napevno (grep), a odstraň je kromě seedu katalogu.
-2. KURZY. Tabulka exchange_rates (base EUR, code, rate, fetched_at,
-   source). Denní cron (Vercel Hobby, jednou denně) stáhne kurzy
-   z ECB (frankfurter.app, bez klíče, ~30 měn) a pro ostatní z
-   open.er-api.com (bez klíče, ~160 měn); když zdroj selže, zůstane
-   poslední kurz a administrace Zdraví to ukáže. Žádný kurz starší
-   než 7 dní se nepoužije pro cenu — místo něj EUR. Přepočet jen
-   pro zobrazení cen a souhrnů; uložené částky se nikdy nepřepočítávají
-   (finance zůstávají v měně, ve které vznikly; souhrn napříč měnami
-   ukáže přepočet s poznámkou „orientačně podle kurzu z <datum>").
-3. CENY TARIFŮ V KAŽDÉ MĚNĚ. Katalog tarifů (15.5) má základní
-   ceny v EUR a ruční ceny pro měny, které majitel zadá (CZK dnes,
-   dál libovolné). Pro všechny ostatní měny se cena odvodí z EUR
-   kurzem a zaokrouhlí „prodejně" funkcí psychologicalPrice(amount,
-   currency) se zdokumentovanými pravidly: měny s desetinnými místy
-   a částkou do 20 → x,99; do 100 → x9 (např. 49); do 1 000 → x9
-   nebo x90 podle velikosti; nad 1 000 → x90 / x900; měny bez
-   desetinných míst analogicky (JPY 2 990). Výsledek se od přesného
-   přepočtu nesmí lišit o víc než 8 %. Testy na EUR→CZK (0,99 € →
-   29 Kč, 19 € → 490 Kč v rozumném rozmezí), USD, GBP, PLN, JPY,
-   INR, BRL. Administrace → Tarify: náhled ceny v libovolné měně,
-   možnost přepsat ručně (ruční cena má přednost a kurz ji nemění),
-   upozornění, když se ruční cena vzdálí od kurzu o víc než 15 %.
-4. WEB A APLIKACE. Ceník na webu a v aplikaci ukazuje měnu podle
-   země návštěvníka (hlavička Vercelu x-vercel-ip-country → měna
-   země z tabulky země→měna v src/config/currencies.ts) s přepínačem;
-   přihlášený uživatel vidí svou měnu. SEO offers v měně stránky.
-5. DOPLNĚK „BEZ ZNAČKY GRADUS" (použije 23.3): položka katalogu
-   add_ons s klíčem no_branding, cena 0,99 € měsíčně, ruční CZK
-   29, ostatní měny odvozené (USD 0,99, GBP 0,89, PLN 3,99…
-   podle funkce). Zobrazení v Nastavení → Předplatné jako
-   přepínatelný doplněk (bez platby, jako ostatní; TODO(payments)).
-6. Vitest pro zaokrouhlování a přepočty, E2E: změnit měnu na JPY →
-   finance a ceník správně formátované; ceník z IP jiné země.
-   Doplň CLAUDE.md (Texty a formáty, Tarify).
-```
-
----
-
-## Prompt 23.2 — Jazyky: libovolný jazyk a automatický překlad · **Opus 5.5**
+## Prompt 27.1 — Pozvánka pracovníka „vypršela" a hlášení, které se neukázalo · **Opus 5.5**
 
 ```
-Aplikace má být dostupná ve světových jazycích. Dnes CS a EN,
-~6 000 textů na jazyk v src/locales/*.json. Překlad všech jazyků
-ručně nejde; udělej infrastrukturu pro libovolný jazyk a strojový
-překlad s kontrolou.
+Dvě chyby ze schůzky 13. 11. Obě nejdřív reprodukuj a najdi
+příčinu; v souhrnu napiš jednou větou, co to bylo.
 
-1. INFRASTRUKTURA. src/i18n/locales.ts se stane seznamem všech
-   podporovaných jazyků s metadaty (kód BCP 47, název v daném
-   jazyce, směr psaní, výchozí měna a formát data, stav: published |
-   draft). Načítání zpráv po jazyce líně (dynamický import), ne
-   všechny do bundle. Výběr jazyka v nastavení a na webu (návštěvník
-   podle Accept-Language, s přepínačem; URL /en, /de… pro web,
-   aplikace podle nastavení). RTL: layout musí fungovat s dir="rtl"
-   (logické CSS vlastnosti místo left/right; projdi Tailwind třídy
-   ml-/mr-/pl-/pr-/left-/right- a nahraď ms-/me-/ps-/pe-/start-/end-).
-   Jarvis odpovídá v jazyce uživatele (už umí? ověř a doplň
-   instrukci do promptu), e-maily, PDF faktur (fonty pro latinku,
-   cyrilici, řečtinu; CJK a arabština přes vhodný font — ověř, že
-   PDF nezobrazí čtverečky) a Jarvisovy pevné texty tutoriálu
-   a pravidel jdou ze stejných souborů.
-2. PŘEKLADOVÝ KANÁL. Skript bun run i18n:translate <jazyk>:
-   vezme en.json jako zdroj, přeloží jen klíče, které v cílovém
-   jazyce chybí nebo mají starší hash zdroje (ulož hash každého
-   zdrojového textu do locales/.hashes.json), přes Claude API
-   (Sonnet, dávky po ~150 klíčích, s glosářem pojmů Gradusu:
-   Jarvis, milník, pipeline, Close Date… v docs/i18n-glosar.md,
-   kde pro každý jazyk je i rozhodnutí, co se nepřekládá). Zachová
-   zástupné symboly {name}, ICU plurály a HTML značky — validace po
-   překladu, selhání se opraví druhým průchodem. Výsledek označí
-   jako draft; bun run i18n:check vypíše chybějící a zastaralé
-   klíče ve všech jazycích; bun run i18n:translate --all přeloží
-   všechny jazyky se stavem published nebo draft. Odhadni a napiš
-   do souhrnu cenu jednoho jazyka (orientačně do 2 USD).
-3. PRVNÍ SADA. Přelož a zapni (published) tyto jazyky: de, sk,
-   pl, es, fr, it, pt-BR, nl, uk, ro, hu, tr. Připrav jako draft
-   (přeložené, ale skryté): ru, ja, zh-CN, ko, ar (RTL), hi, id,
-   vi, sv, da, nb, fi, el, cs/en zůstávají. Další jazyk = jeden
-   příkaz a přepnutí stavu v administraci → Nastavení → Jazyky
-   (seznam, stav, procento přeloženého, datum překladu, tlačítko
-   Přeložit chybějící). Jazyk ve stavu draft jde zapnout pro
-   konkrétní účet (interní testeři) v detailu uživatele.
-4. KVALITA. V aplikaci u každého textu v draft jazyce nenápadná
-   možnost „Navrhnout lepší překlad" (jen přihlášený; návrhy do
-   tabulky i18n_suggestions, administrace je schválí → zapíše do
-   JSON přes skript). Překlady nikdy nemění klíče ani strukturu.
-5. Vitest pro validaci zástupných symbolů a plurálů, i18n:check
-   v CI (bun run lint ho volá), E2E: přepnutí do de a ar →
-   aplikace i web bez anglických zbytků na nástěnce, RTL rozvržení
-   bez překryvů. Doplň CLAUDE.md (Texty a formáty: každý nový text
-   jde do en.json a cs.json, ostatní jazyky doplní skript).
+A) POZVÁNKA PRACOVNÍKA. Majitel pozval pracovníka (šablona
+Obchodník) na svůj druhý e-mail, odkaz z e-mailu otevřel nejdřív
+v okně, kde byl přihlášený jako majitel, potom v anonymním okně —
+registrace hlásila „Pozvánka vypršela nebo už byla použita".
+Druhá pozvánka na stejný e-mail taky. Třetí pokus s jiným e-mailem
+prošel (přes „Confirm your email").
+1. Reprodukuj v Playwrightu tyhle cesty: odkaz otevřený přihlášeným
+   majitelem; přihlášeným jiným účtem; dvakrát po sobě; po
+   opětovném odeslání pozvánky; pozvánka na e-mail, který už v
+   Gradusu účet má; pozvánka na adresu, pod kterou už jedna
+   nepřijatá pozvánka existuje; odkaz přepsaný e-mailovým klientem
+   (náhled odkazu / bezpečnostní sken, který odkaz „navštíví" dřív
+   než člověk — GET nesmí pozvánku nikdy spotřebovat).
+2. Pravidla po opravě: pozvánku spotřebuje až dokončená registrace
+   nebo přijetí, nikdy pouhé otevření. Otevření přihlášeným jiným
+   účtem ukáže „Jsi přihlášený jako X. Pozvánka je pro Y." s
+   tlačítky Odhlásit a pokračovat / Zůstat. Existující účet se
+   stejným e-mailem → přihlášení a přijetí (22.5), ne registrace.
+   Nová pozvánka na stejný e-mail starou zneplatní a majitel to
+   vidí („nahrazena novější"). Chybová hláška říká skutečný důvod
+   (vypršela dne…, už použita, zrušena majitelem, nahrazena) a
+   nabízí „Požádat o novou" (pošle majiteli oznámení).
+3. Ověřovací e-mail po registraci z pozvánky je v jazyce pozvaného
+   a v šabloně Gradusu (při schůzce přišel anglický „Confirm your
+   email"); pozvánka sama e-mail ověřuje, takže druhé potvrzení
+   nevyžaduj, pokud se e-mail shoduje s adresou pozvánky.
+4. Štítek „navíc 290 Kč" u pozvaného pracovníka ve Správě firmy:
+   dokud se neprodává (platby v testovacím režimu), ukaž ho jen
+   s vysvětlením „po spuštění plateb" nebo ho skryj podle
+   přepínače prodeje.
+
+B) HLÁŠENÍ SE NEUKÁZALO. Ondřej nahlásil problém z aplikace (přes
+Gradyho), Váša v administraci → Zpětná vazba → Hlášení nic neviděl
+ani po obnovení.
+1. Zjisti, kde hlášení skončilo: nezapsalo se (Grady hlášení
+   neumí a jen to řekl?), zapsalo se a skrývá ho výchozí filtr
+   interních účtů, nebo ho role admin nevidí.
+2. Po opravě: hlášení z interních účtů jsou v seznamu vždy vidět
+   se štítkem „interní" (filtr interních se na Hlášení a chyby
+   nevztahuje); admin i majitel vidí totéž; nové hlášení se objeví
+   bez obnovení stránky nebo s tlačítkem Obnovit a počtem nových.
+3. GRADY CHYBY NEHLÁSÍ. Rozhodnutí: Grady sám hlášení nezakládá
+   (lidé by mu psali nadávky a všechno by padalo do administrace).
+   Když uživatel chce něco nahlásit nebo si stěžuje na chybu,
+   Grady odpoví krátce a nabídne tlačítko „Nahlásit problém",
+   které otevře stávající formulář hlášení (ten se snímkem
+   obrazovky) předvyplněný stránkou, ne textem chatu. Odeber
+   případnou Gradyho akci, která hlášení zakládá sama; doplň
+   pravidlo do docs/grady-pravidla.md a do promptu.
+4. Na veřejném webu a v patičce aplikace odkaz Podpora →
+   stránka /podpora s formulářem (i pro nepřihlášené, limit podle
+   IP), která zapisuje do stejných hlášení.
+5. Chyba ze schůzky: v administraci po „Zrušit filtry" zmizely
+   ikony/ovládání nahoře a vrátily se až po přidání filtru —
+   reprodukuj a oprav.
+E2E pro A (všechny cesty z bodu 1) i B (hlášení interního účtu je
+vidět adminovi).
 ```
 
 ---
 
-## Prompt 23.3 — Plánovač schůzek: typy, dostupnost, odběry · **Opus 5.5**
+## Prompt 27.2 — Plný administrátor a log chyb · **Opus 5.5**
 
 ```
-Nová sekce Plánovač schůzek (menu za Kalendářem, ikona CalendarClock,
-adresa /app/planovac, EN „Scheduler"). Uživatel nastaví typy schůzek
-a dostupnost; klient si pak přes veřejný odkaz (23.4) vybere termín,
-který je v kalendáři Gradusu volný.
+Váša je spolumajitel a má v administraci dělat totéž co Ondřej.
+Dnes role admin spoustu věcí jen čte (docs/admin-roles.md).
 
-1. DATA (RLS podle prostoru a vlastníka; pracovník jen své):
-   - scheduler_profiles (user_id, space_id, handle unikátní globálně
-     [a-z0-9-], 3–30 znaků, výchozí z jména; display_name, headline,
-     bio, photo z profilu, time_zone z nastavení, video_link —
-     trvalý odkaz na Google Meet/Teams/Zoom/Jitsi, branding_hidden
-     odvozené z doplňku no_branding),
-   - event_types (profile_id, slug, name, description, duration_min
-     15/20/30/45/60/90/120/vlastní, location_kind video|phone|
-     in_person|custom, location_text, color, active, position,
-     requires_approval bool, buffer_before_min, buffer_after_min,
-     min_notice_hours, max_days_ahead, max_per_day, slot_step_min
-     (15/30/60), questions JSON [{key,label,type text|textarea|
-     phone|email|select|checkbox, required, options}], deal_stage_id
-     null (založit obchod ve fázi), reminders JSON [{offset_minutes,
-     channel email}], confirmation_note),
-   - availability_rules (profile_id, weekday 0–6, start_time,
-     end_time; více intervalů za den) + availability_overrides
-     (profile_id, date, start/end nebo celý den blokovaný; dovolená),
-   - calendar_subscriptions (user_id, name, ics_url šifrovaná
-     INTEGRATIONS_ENCRYPTION_KEY, last_fetched_at, last_status,
-     busy JSON cache intervalů na 60 dní),
-   - bookings (event_type_id, host_user_id, space_id, starts_at,
-     ends_at, guest_name, guest_email, guest_phone, guest_company,
-     guest_time_zone, answers JSON, status held|pending|confirmed|
-     cancelled|declined|rescheduled, hold_expires_at, manage_token_hash,
-     contact_id, calendar_event_id, deal_id, reminder_ids JSON,
-     cancelled_by host|guest, cancel_reason, created_at).
-2. VÝPOČET VOLNÝCH TERMÍNŮ (čistá funkce src/features/scheduler/
-   slots.ts, testy): pracovní doba podle pravidel v pásmu hostitele
-   → mínus výjimky → mínus události kalendáře Gradusu hostitele
-   (včetně schůzek pracovníků? ne — jen vlastní; úkoly s časem
-   ano, celodenní ne) → mínus obsazenost z odběrů ICS → mínus
-   aktivní bookings a held → aplikuj buffer před/po, min_notice,
-   max_days_ahead, max_per_day → sloty po slot_step → převést do
-   pásma hosta. Přechody letního času a půlnoc testovat.
-3. ODBĚRY ICS. Nastavení → Kalendář → Odebírané kalendáře: vložit
-   tajný ICS odkaz (Google: „Tajná adresa ve formátu iCal", Apple,
-   Outlook — nápověda s obrázky), název, barva. Server stáhne ICS
-   (limit 5 MB, timeout 10 s, jen https), rozparsuje VEVENT včetně
-   opakování (RRULE, EXDATE) na 60 dní dopředu, uloží busy intervaly.
-   Obnova: při otevření veřejné stránky, když je cache starší než
-   10 minut (na pozadí, stránka použije cache), a denním cronem.
-   Události z odběru se v kalendáři Gradusu zobrazují šedě jen pro
-   čtení (přepínatelné), nikdy se neukládají jako calendar_events.
-   Export: Nastavení → Kalendář → „Odkaz pro odběr kalendáře
-   Gradusu" (ICS feed s tokenem, obnovitelný) pro Google/Apple.
-4. ROZHRANÍ SEKCE: seznam typů schůzek jako karty (název, délka,
-   místo, odkaz Kopírovat, přepínač aktivní, počet rezervací za
-   30 dní), tlačítko Nový typ; editor typu se záložkami Základ ·
-   Dostupnost (výchozí z profilu, lze přepsat) · Otázky (výchozí
-   Jméno*, E-mail*, Telefon*, Firma; přidat, řadit, povinné) ·
-   Připomínky (výchozí 24 h a 1 h, přidat/odebrat, nejvýš 5) ·
-   Potvrzení (schvalovat ručně ano/ne, text po rezervaci, založit
-   obchod ve fázi) · Náhled. Záložka Dostupnost profilu: pracovní
-   doba po dnech (víc intervalů), pásmo, výjimky kalendářem. Záložka
-   Rezervace: seznam nadcházejících a minulých se stavem a filtrem.
-   Při prvním otevření tři přednastavené typy: Úvodní hovor 15 min,
-   Konzultace 30 min, Schůzka 60 min, a průvodce „nastav handle,
-   odkaz na videohovor, pracovní dobu".
-5. PRACOVNÍCI: každý pracovník s právem „plánovač: vlastní" má svůj
-   profil a typy; majitel vidí v sekci přepínač „Všichni" se
-   seznamem podle pracovníků a jejich rezervace (jen čtení, může
-   deaktivovat typ). Přidej akce do katalogu práv z 19.3.
-6. TARIF: Free 1 aktivní typ schůzky, Pro a vyšší neomezeně
-   (limit v katalogu tarifů, hláška s nabídkou).
-7. Jarvis: zná nadcházející rezervace a čekající schválení; v návrhu
-   e-mailu a u kontaktu v Cold Callingu ve stavu Ozvat se navrhne
-   „pošli odkaz na schůzku" s odkazem na nejvhodnější typ.
-   Analytika: scheduler_event_type_created, booking_* (bez PII).
-8. Vitest pro sloty (buffer, notice, max/den, DST, pásma, ICS
-   opakování), E2E: založit typ → nastavit dostupnost → odkaz →
-   (dokončí 23.4). Doplň CLAUDE.md sekci Plánovač schůzek.
+1. ÚROVNĚ ADMINISTRÁTORA. Role admin dostane úroveň: „plný"
+   (všechno jako majitel) a „omezený" (dnešní chování). Sloupec
+   level u role/ pozvánky; majitel ji nastaví při pozvání a změní
+   v sekci Administrátoři. Plný administrátor smí: tarify (koncept,
+   zveřejnění, historie), stropy AI a výjimky, pravidla Gradyho,
+   modely AI (27.3), předplatné uživatelů, promo kódy včetně výplat,
+   upozornění na chyby, jazyky, změnu e-mailu uživatele, exporty
+   s osobními údaji, ukázkový režim (27.4). Jen majiteli zůstává:
+   sekce Administrátoři (zvát, měnit úroveň, odebírat) a cokoli,
+   co by majitele odebralo nebo převedlo vlastnictví. Projdi
+   KAŽDÝ řádek tabulky v docs/admin-roles.md, uprav adminCan /
+   requireOwnerFor / admin_require_owner() na „owner nebo plný
+   admin" a tabulku přepiš (sloupce: majitel · plný · omezený).
+   Databázové funkce ověřují úroveň samy, ne jen rozhraní.
+   Stávajícího admina (Váša) migrace nastaví na plný.
+2. Audit u každé změny ukazuje, kdo ji udělal (jméno, ne role);
+   u zveřejnění tarifů a změny stropů přijde druhému z dvojice
+   e-mail „Váša změnil…", vypnutelný.
+3. LOG CHYB. Administrace → Provoz → Chyby (dnes je v Upozornění
+   na chyby jen nastavení e-mailů): seznam všech zachycených chyb,
+   seskupených podle otisku: kód posledního výskytu, zpráva, kde
+   (stránka/akce), kolikrát, kolik uživatelů, poprvé a naposledy,
+   verze nasazení, stav Nová · Řeší se · Vyřešená · Ignorovat.
+   Rozklik: jednotlivé výskyty (čas, uživatel s odkazem na detail,
+   prohlížeč, stack prvních 10 řádků), odeslané e-maily k této
+   chybě (kdy, komu), navázaná hlášení uživatelů se stejným kódem.
+   Hledání podle kódu GR-…, filtr stavu, období a „jen po posledním
+   nasazení". Vyřešená chyba, která se objeví znovu, se vrátí do
+   Nových se štítkem „vrátila se". Nastavení e-mailů zůstane jako
+   záložka téže stránky. Žádný obsah uživatelských dat.
+4. KDE CO JE. Administrace je přeplněná a i majitel v ní hledá.
+   Přidej: a) ⌘K v administraci hledá i jednotlivá nastavení a
+   akce („strop AI", „promo kód", „reset hesla", „zveřejnit tarify")
+   a skočí přímo na ně se zvýrazněním; b) stránku Nápověda v menu
+   administrace generovanou z jednoho souboru
+   (src/features/admin/help-index.ts): pro každou sekci 1–2 věty
+   co v ní je a seznam věcí, které se tam nastavují, s odkazy;
+   Vitest hlídá, že každá sekce z nav.ts v indexu je.
+5. E2E: plný admin změní cenu v konceptu tarifu a zveřejní;
+   omezený admin totéž nevidí; RPC voláno přímo omezeným adminem
+   = odmítnuto; log chyb ukáže uměle vyvolanou chybu, změna stavu,
+   návrat po novém výskytu. Aktualizuj CLAUDE.md a
+   docs/admin-roles.md.
 ```
 
 ---
 
-## Prompt 23.4 — Veřejná rezervační stránka a rezervace · **Opus 5.5**
+## Prompt 27.3 — Model AI pro každou funkci, nastavitelný v administraci · **Opus 5.5**
 
 ```
-Veřejná stránka bez přihlášení, přes kterou si klient vybere termín.
-Adresa /s/<handle> (seznam aktivních typů hostitele) a
-/s/<handle>/<slug> (konkrétní typ). Vzhled dodělá 23.5; tady
-funkčnost, data a e-maily.
+Dnes je přiřazení modelů napevno v src/features/grady/models.ts
+(classify/check/summary/opportunity_scan → Haiku; chat,
+milestone_review, reward_setup, email_reply, briefing,
+note_map_suggest… → Sonnet; analysis → Opus). Majitelé chtějí
+náklady řídit sami z administrace.
 
-1. STRÁNKA TYPU: hlavička hostitele (foto, jméno, headline, firma),
-   název a popis schůzky, délka, místo; měsíční kalendář s dny,
-   které mají volný termín; po výběru dne sloupec časů v pásmu
-   hosta (auto z prohlížeče, přepínač se seznamem pásem); formulář
-   s otázkami typu; shrnutí „Konzultace 30 min · út 12. 11. 14:00
-   (Europe/Prague) s Ondřejem"; tlačítko Rezervovat. Jazyk stránky
-   podle prohlížeče hosta (z published jazyků z 23.2, přepínač),
-   výchozí jazyk hostitele. Vlevo nahoře logo a název Gradus s
-   odkazem na web, dole „Vytvořeno v Gradusu"; obojí zmizí, když
-   hostitel má doplněk no_branding. Stránka indexovatelná jen
-   /s/<handle> (robots), typ ne. Bez cookies kromě pásma a jazyka.
-2. PODRŽENÍ TERMÍNU: po kliknutí na čas vznikne booking status
-   held s hold_expires_at = +5 min (tabulka + unikátní index na
-   (host, starts_at) pro aktivní stavy — dva lidé nikdy stejný
-   čas); vypršené holds uklízí dotaz na sloty. Odpočet na stránce.
-3. REZERVACE: validace odpovědí, limit podle IP (10 rezervací
-   za hodinu), honeypot proti botům. Po odeslání:
-   - status confirmed (nebo pending, když typ vyžaduje schválení),
-   - kontakt: spárovat podle e-mailu v prostoru, jinak založit
-     (jméno, e-mail, telefon, firma; zdroj „plánovač"); kontakt v
-     Cold Callingu přesunout do Domluvená schůzka (jen při confirmed),
-   - calendar_events kind meeting pro hostitele s odkazem na
-     booking a kontakt, popis s odpověďmi,
-   - obchod ve fázi z typu, pokud nastaveno (confirmed),
-   - e-mail hostovi: potvrzení (nebo „čeká na potvrzení") s ICS
-     přílohou, odkazem na videohovor (jen po confirmed), tlačítky
-     Přesunout a Zrušit (odkaz s manage tokenem, platný do konce
-     schůzky), v jazyce hosta,
-   - e-mail hostiteli (a Jarvisova bublina): nová rezervace / ke
-     schválení,
-   - připomínky: naplánované e-maily přes Resend scheduled_at
-     podle reminders typu (hostovi i hostiteli), id uložená;
-     při přesunu/zrušení se zruší a naplánují znovu; termíny dál
-     než 30 dní dopředu naplánuje denní cron, až se dostanou do
-     okna.
-4. SCHVÁLENÍ: na nástěnce nová sekce „Čeká na tebe" (karty: schůzky
-   ke schválení, pozvánky do firmy z 22.5, později další) s tlačítky
-   Potvrdit / Odmítnout (důvod, volitelná nabídka jiného času);
-   stejná akce v sekci Plánovač → Rezervace a z e-mailu (odkaz do
-   aplikace). Potvrzení pošle hostovi e-mail s odkazem na hovor
-   a spustí kroky z bodu 3, které čekaly.
-5. PŘESUN A ZRUŠENÍ: stránka /s/r/<token>: host vidí schůzku,
-   vybere nový termín (stejná logika slotů) nebo zruší s důvodem;
-   hostitel totéž z detailu události v kalendáři; obě strany
-   dostanou e-mail, kalendář a připomínky se aktualizují, zrušená
-   schůzka zůstane v historii kontaktu.
-6. PO SCHŮZCE: Jarvisův dotazník o schůzkách (existuje) se spustí
-   i pro rezervace z plánovače; no-show označitelný v Rezervacích.
-7. E2E ve dvou prohlížečích: host rezervuje → hostitel vidí v
-   kalendáři a na nástěnce → schválí → host dostane potvrzení
-   (mock Resend s naplánovanými připomínkami) → host přesune →
-   připomínky přeplánované; dva hosté stejný čas → druhý dostane
-   „termín už není volný". Vitest pro tokeny, holds a stavy.
+1. NASTAVENÍ. app_settings klíč grady_models: pro každou funkci
+   z katalogu model (haiku | sonnet | opus | fable | další, až
+   přibudou) + globální „úsporný režim". Výchozí = dnešní
+   přiřazení. Katalog funkcí je jeden zdroj pravdy v kódu
+   (klíč, český název, co dělá, doporučený model a proč,
+   minimální model — funkce, která potřebuje strukturovaný výstup
+   nebo dlouhý kontext, nesmí jít pod své minimum). models.ts čte
+   nastavení s cache 30 s; neznámý nebo nedostupný model → výchozí
+   a záznam do logu chyb.
+2. ADMINISTRACE → AI a Grady → záložka Modely: tabulka funkcí:
+   název · co dělá · model (výběr) · volání za 30 dní · průměrná
+   cena volání · útrata za 30 dní · odhad „kdyby běžela na
+   Haiku/Sonnet/Opus" (z tokenů v ai_usage a ceníku costs.ts).
+   Nahoře součet a tři tlačítka přednastavení: Úsporné (vše, co
+   smí, na Haiku) · Vyvážené (doporučené) · Kvalitní. Změna s
+   potvrzením a do admin_audit; platí do minuty. Dostupné modely
+   se berou z jednoho seznamu v costs.ts (id, název, ceny, datum
+   ověření) — přidání nového modelu = jeden řádek; ověř v
+   dokumentaci Anthropic aktuální id a ceny Haiku, Sonnet, Opus
+   a Fable a zapiš zdroj a datum.
+3. CHAT. U funkce chat tři volby: pevný model, nebo „automaticky":
+   před odpovědí levné rozhodnutí (pravidla bez modelu podle délky
+   zprávy, přítomnosti přílohy, klíčových záměrů typu „rozbor",
+   „plán", „spočítej"; jen když pravidla nerozhodnou, jedno
+   volání Haiku s max 20 výstupními tokeny), které vybere Haiku
+   nebo Sonnet; Opus/Fable automaticky nikdy, jen když je to v
+   nastavení výslovně povoleno pro „velké rozbory". Rozhodnutí se
+   loguje do ai_usage (sloupec routed_from), aby bylo vidět, kolik
+   to ušetřilo. Výchozí pro chat: automaticky.
+4. ÚSPORNÝ REŽIM MÍSTO VYPNUTÍ. Dnes při 100 % měsíčního stropu
+   Grady přestane. Nově: při dosažení prahu (výchozí 80 %) se
+   automaticky zapne úsporný režim — všechny funkce jdou na svůj
+   minimální model — a teprve při 100 % se pozastaví. Majitel
+   dostane e-mail „Grady přešel do úsporného režimu" (jednou).
+   Uživatel nic nepozná kromě kratších odpovědí. Totéž na úrovni
+   uživatele: při 80 % jeho stropu úsporný režim jen pro něj.
+   Přepínač „úsporný režim teď" jde zapnout i ručně.
+5. Strop na uživatele: v administraci je teď 10 USD/měsíc — nech,
+   jen ověř, že výpočet stropu podle období (15.4) a nové prahy
+   spolu sedí.
+6. Vitest pro výběr modelu (nastavení, minimum, úsporný režim,
+   auto-routing pravidel), E2E: přepnout chat na Haiku → další
+   zpráva má v ai_usage Haiku; přednastavení Úsporné. Doplň
+   CLAUDE.md, docs/grady-pravidla.md a docs/funkce.md (ceny podle
+   modelu).
 ```
 
 ---
 
-## Prompt 23.5 — Rezervační stránka, která dělá dojem · **Fable 5.1**
+## Prompt 27.4 — Ukázkový režim: aplikace, která se předvede sama · **Opus 5.5**
 
 ```
-Veřejná stránka z 23.4 je první, co klient uživatele Gradusu uvidí.
-Má působit jako Gradus: pečlivě, živě, bez šablony. Použij skill
-frontend-design; pravidla z CLAUDE.md (Web, Rozhraní) platí: jedna
-záře nejvýš, žádné rozmazané bubliny, typografie Gradusu.
+Pro marketingová videa: třetí režim tutoriálu „Ukázka" (pracovně
+Beta), ve kterém se aplikace ovládá sama — kurzor jezdí, kliká,
+píše — takže stačí nahrát obrazovku. A skript, kterým video
+nahraje Claude Code sám.
 
-1. Snímky před (1440 i 390 px) do docs/scheduler-design/before/,
-   krátká diagnóza: kde to vypadá jako formulář a ne jako pozvánka.
-2. Kompozice: vlevo karta hostitele a schůzky (foto, jméno, co
-   klient získá, délka, místo), vpravo kalendář a časy; na telefonu
-   kroky za sebou (den → čas → údaje) s plynulým přechodem a
-   tlačítkem zpět. Vybraný den a čas „sedí" (výrazný stav), neklik-
-   nutelné dny tiché.
-3. Pozadí v pohybu: jemné, pomalé, nikdy nepřekáží čtení — např.
-   tenké linky nebo body, které se lehce vlní, nebo pomalý přechod
-   barvy; respektuje reduced motion (statická verze stejně hezká);
-   nesmí stát víc než pár procent CPU na telefonu (zkontroluj).
-4. Potvrzení: oslava v duchu hry (krátké konfety jako v aplikaci),
-   shrnutí s velkým datem a časem, tlačítka „Přidat do kalendáře"
-   (Google, Apple/ICS, Outlook) a odkaz na videohovor; stav
-   „čeká na potvrzení" vysvětlený lidsky.
-5. Značka Gradus vlevo nahoře a „Vytvořeno v Gradusu" dole jako
-   součást designu, ne nálepka; po skrytí doplňkem rozvržení
-   nepoznamená díru.
-6. Jazykové verze: ověř 3 jazyky (cs, en, de) a RTL (ar) na
-   rozvržení. Snímky po do docs/scheduler-design/after/, E2E
-   z 23.4 projdou (jen selektory).
+1. REŽIM UKÁZKA v enginu tutoriálu (src/features/tutorial):
+   kroky jako data { key, section, akce: move | click | type |
+   drag | scroll | wait | caption }, s cíli přes data-tutorial
+   atributy. Viditelný falešný kurzor (plynulý pohyb po křivce,
+   zvýraznění kliknutí), psaní po znacích lidským tempem, titulky
+   dole (i18n, max 8 slov), žádná Gradyho bublina, žádné ztmavení.
+   Běží nad ukázkovými daty (is_demo z tutoriálu) v čistém demo
+   prostoru: realistická jména firem a kontaktů podle jazyka
+   (CS: české firmy, EN: anglické), částky v měně jazyka, žádná
+   skutečná data účtu. Po skončení nebo Esc se demo data smažou.
+2. SCÉNÁŘE (src/features/tutorial/demo-scripts.ts), každý
+   30–60 s, spustitelný zvlášť nebo všechny za sebou:
+   a) „Od nápadu k prvnímu klientovi": milník s mapou úkolů →
+      vygenerování kontaktů → Cold Calling přesun do Domluvená
+      schůzka → obchod v pipeline → výhra s oslavou;
+   b) „Grady": dotaz v chatu → odpověď z poznámek → zápis do
+      poznámek → ranní souhrn;
+   c) „Plánovač schůzek": typ schůzky → odkaz → veřejná stránka →
+      rezervace → kalendář a kontakt;
+   d) „Firma": pozvání pracovníka → práva → úkol → zprávy;
+   e) „Peníze": faktura s QR → plánovací tabulka financí;
+   f) „Celý Gradus za 60 sekund": sestřih toho nejlepšího.
+   Volání modelu se v ukázce nahrazují připravenými odpověďmi
+   (žádné náklady, vždy stejný výsledek).
+3. OVLÁDÁNÍ. Spouští se z /app/ukazka?scenar=a&jazyk=en&velikost=
+   1920x1080 (a 1080x1920 pro svislá videa, 1080x1080 čtverec):
+   stránka nastaví jazyk, velikost plátna, skryje štítek Beta,
+   oznámení, Gradyho a cokoli osobního, odpočítá 3-2-1 a hraje.
+   Mezerník pauza, R znovu. Dostupné jen účtům s rolí majitel/
+   admin aplikace a jen když je v administraci → Nastavení
+   zapnutý přepínač „Ukázkový režim" (app_settings; výchozí
+   vypnuto; vypnutím zmizí i volba v tutoriálu). Běžný uživatel
+   režim nevidí.
+4. NAHRÁVÁNÍ BEZ ČLOVĚKA. Skript bun run demo:record -- --scenar
+   a --jazyk cs,en --velikost 1920x1080,1080x1920: přes Playwright
+   se přihlásí interním @gradus.local účtem, otevře ukázku a uloží
+   video (recordVideo, webm → mp4 přes ffmpeg, pokud je v systému;
+   jinak nech webm a napiš jak převést) do
+   marketing/videa/<scenar>-<jazyk>-<velikost>.mp4 (složka v
+   .gitignore) + titulky jako .srt ze stejných textů. Spusť ho
+   jednou pro scénář f v cs a en a v souhrnu napiš, kde videa
+   jsou a jak vypadají (délka, velikost souboru).
+5. docs/marketing/scenare.md: ke každému scénáři text titulků
+   CS/EN, co se děje po vteřinách a doporučený text příspěvku —
+   podklad pro Vášu a střih.
+6. Vitest pro přehrávač kroků, E2E: scénář a doběhne bez chyby
+   v cs i en, po skončení nezůstanou demo data. Doplň CLAUDE.md
+   sekci Tutoriál.
 ```
 
 ---
 
-## Kontrola fáze 23 · **Opus 5.5**
+## Prompt 27.5 — Odkaz na videohovor u rezervace · **Opus 5.5**
 
 ```
-Zkontroluj fázi 23 podle CLAUDE.md:
-- měny: žádné CZK/EUR napevno mimo seed, zaokrouhlení v mezích,
-  staré kurzy se nepoužijí, uložené částky se nikdy nepřepisují,
-- jazyky: i18n:check čistý, zástupné symboly a plurály validní ve
-  všech jazycích, RTL bez překryvů, draft jazyk nevidí běžný účet,
-  skript nikdy nemění klíče,
-- plánovač: sloty respektují buffer, notice, max/den, výjimky, DST
-  a pásma; ICS odběr: jen https, limit velikosti, timeout, URL
-  šifrovaná, neukládá se jako události; dva hosté nikdy stejný
-  čas (souběh); manage token hashovaný, propadá; limit podle IP;
-  žádná PII v analytice; pracovník vidí jen své typy a rezervace,
-  majitel všechny; připomínky se při přesunu/zrušení skutečně ruší
-  (mock Resend), termíny nad 30 dní naplánuje cron,
-- veřejná stránka bez přihlášení neprozradí nic jiného než profil
-  hostitele a aktivní typy; /s/<handle> cizího uživatele 404 při
-  neaktivním profilu,
-- doplněk no_branding skrývá značku jen u účtu, který ho má,
+Plánovač posílá trvalý odkaz na videohovor z nastavení. Váša
+namítl, že jeden odkaz pro všechny je slabý a že po změně odkazu
+staré pozvánky vedou jinam. Než bude automatický Google Meet:
+
+1. E-mail s potvrzením, ICS pozvánka i připomínky neobsahují
+   přímo odkaz na hovor, ale odkaz „Připojit se ke schůzce" na
+   stránku rezervace (/s/r/<token>), která ukáže aktuální odkaz
+   na hovor a přesměruje na něj jedním klikem. Změna odkazu u
+   hostitele se tak projeví i u už odeslaných pozvánek.
+2. Hostitel může u konkrétní rezervace (detail v Plánovači i v
+   kalendáři) zadat vlastní odkaz jen pro tuhle schůzku; host
+   dostane e-mail „Odkaz na schůzku byl upraven" jen když do
+   schůzky zbývá víc než hodina.
+3. U typu schůzky volba „Jedinečná místnost pro každou
+   rezervaci": Gradus vygeneruje odkaz na Jitsi (meet.jit.si/
+   gradus-<náhodných 12 znaků>) pro každou rezervaci zvlášť —
+   bez účtu, zdarma. Výchozí zůstává trvalý odkaz z profilu;
+   v nápovědě vysvětli rozdíl.
+4. Když typ schůzky je video a není vyplněný žádný odkaz ani
+   Jitsi, editor na to upozorní a rezervace se potvrdí s textem
+   „Odkaz pošle <hostitel> před schůzkou" + úkol hostiteli.
+5. Stránka rezervace 15 minut před začátkem zvýrazní tlačítko
+   Připojit se; po skončení ukáže poděkování.
+E2E: rezervace → změna odkazu hostitelem → stará pozvánka vede
+na nový odkaz; Jitsi místnost je pro dvě rezervace různá.
+```
+
+---
+
+## Kontrola fáze 27 · **Opus 5.5**
+
+```
+Zkontroluj fázi 27 podle CLAUDE.md a docs/admin-roles.md:
+- pozvánky: GET nikdy nespotřebuje pozvánku; všechny cesty z 27.1
+  mají test; hlášení interních účtů vidí majitel i admin; Grady
+  nemá žádnou akci, která hlášení založí,
+- plný admin: každá akce z tabulky rolí ověřena na serveru i v DB
+  funkci; omezený admin nic z toho nespustí ani přes RPC; plný
+  admin nemůže spravovat administrátory ani odebrat majitele,
+- log chyb bez uživatelských dat; seskupení podle otisku stabilní
+  mezi nasazeními,
+- modely: žádná funkce pod svým minimem; neznámý model nespadne;
+  úsporný režim se zapne na prahu a vypne s novým měsícem;
+  auto-routing chatu nestojí víc, než ušetří (spočítej z testů),
+- ukázkový režim: nedostupný běžným účtům ani přes URL, žádné
+  volání modelu, žádná skutečná data na plátně, demo data po
+  skončení pryč,
+- odkaz na hovor: token stránky rezervace neprozradí nic dalšího,
 - migrace jen přidávací, bun run lint, test, build a e2e projdou.
 ```
 
@@ -333,20 +310,20 @@ Zkontroluj fázi 23 podle CLAUDE.md:
 
 ---
 
-## Krok 2 — Do `docs/progress.md` vlož tyhle řádky těsně PŘED řádek začínající `- [ ] 7.1`
+## Krok 2 — Do `docs/progress.md` vlož tyhle řádky těsně PŘED řádek začínající `- [ ] 23.4 | RUČNĚ`
 
 === ZAČÁTEK
-- [ ] 23.1 | architect |
-- [ ] 23.2 | architect | env: ANTHROPIC_API_KEY
-- [ ] 23.3 | architect | env: INTEGRATIONS_ENCRYPTION_KEY
-- [ ] 23.4 | architect | env: RESEND_API_KEY
-- [ ] 23.5 | designer |
-- [ ] K23 | reviewer |
-- [ ] STOP | Konec fáze 23. Přepni si měnu na USD a JPY a projdi finance a ceník; v administraci → Tarify zkontroluj odvozené ceny a doplněk Bez značky. Přepni aplikaci do němčiny a slovenštiny, zkus arabštinu z draftu na svém účtu. V Plánovači nastav handle, odkaz na videohovor a pracovní dobu, přidej odběr svého Google kalendáře (tajná iCal adresa) a ověř, že obsazené časy nejsou v nabídce. Pošli si odkaz na Konzultaci do e-mailu, rezervuj z telefonu v anonymním okně, schval na nástěnce, zkontroluj e-maily, kalendář, kontakt a Cold Calling, pak termín přesuň a zruš. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
+- [ ] 27.1 | architect | env: RESEND_API_KEY
+- [ ] 27.2 | architect |
+- [ ] 27.3 | architect | env: ANTHROPIC_API_KEY
+- [ ] 27.4 | architect |
+- [ ] 27.5 | architect | env: RESEND_API_KEY
+- [ ] K27 | reviewer |
+- [ ] STOP | Konec fáze 27. Pozvi pracovníka na svůj druhý e-mail a otevři odkaz schválně nejdřív přihlášený, pak v anonymním okně — registrace musí projít. Nahlas problém z aplikace a ověř s Vášou, že ho vidí v administraci; zeptej se Gradyho „chci nahlásit chybu". Váša jako plný admin změní cenu v konceptu tarifů. Projdi Provoz → Chyby. V AI a Grady → Modely zkus přednastavení Úsporné a pošli zprávu Gradymu. V administraci zapni Ukázkový režim, přehraj scénář f v češtině a angličtině a podívej se na videa v marketing/videa. Rezervuj si schůzku s Jitsi místností. V Tarifech nastav dohodnuté ceny (490 Kč měsíčně, 390 Kč měsíčně při roční platbě, 14 dní zdarma) a zveřejni. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 === KONEC
 
 ---
 
 ## Krok 3 — Dokončení
 
-Ověř `git check-ignore -v .env.local`, commitni, pushni a napiš uživateli česky, kolik položek přibylo a že může spustit `caffeinate -i bash scripts/noc.sh --bez-zastavek` nebo `/clear` a `/pokracuj`. První poběží 23.1. Upozorni ho, že 23.2 bude volat Claude API na překlady (orientačně do 2 USD na jazyk, ~24 jazyků) z API kreditů.
+Ověř `git check-ignore -v .env.local`, přidej `marketing/videa/` do `.gitignore`, commitni, pushni a napiš uživateli česky, kolik položek přibylo a že může spustit `caffeinate -i bash scripts/noc.sh --bez-zastavek` nebo `/clear` a `/pokracuj`. První poběží 27.1.
