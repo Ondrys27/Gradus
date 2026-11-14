@@ -10,8 +10,8 @@ import { fingerprint, requestInfo } from "./request-info";
 
 /**
  * Grady's rules changed from the administration (AI and Grady → Rules).
- * The owner's admin session (role owner, aal2) is checked first; an admin
- * only reads the rules. The database function checks it once more from the
+ * The admin session (the owner or a full admin, aal2) is checked first; a
+ * limited admin only reads the rules. The database function checks it once more from the
  * signed token, validates the value (valid_jarvis_rules), saves it and
  * writes who changed what from what to what into admin_audit, all in one
  * transaction. Other server instances pick the change up within 30 seconds.

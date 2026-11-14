@@ -94,8 +94,11 @@ export default async function AdminAuditPage({
           }}
         />
         {/* Asks first; the file download is written to the audit on the server. */}
-        {mayExport(context.role, "audit") && (
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4 text-sm">
+        {mayExport(context, "audit") && (
+          <div
+            id="audit-export"
+            className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4 text-sm"
+          >
             <span className="text-ink-muted">{t("exportHint")}</span>
             <AuditExportButton href={`${ADMIN_PATH}/audit/export`} label={t("export")} />
           </div>

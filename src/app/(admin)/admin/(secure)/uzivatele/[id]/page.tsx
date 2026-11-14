@@ -7,7 +7,7 @@ import { formatCalendarDate, formatDateTime, formatNumber } from "@/lib/format";
 import { ADMIN_FORMAT_SETTINGS, formatMetricValue } from "@/features/admin/format-metric";
 import { logAdminAction } from "@/features/admin/server/audit";
 import { requireAdmin } from "@/features/admin/server/guard";
-import { accountSupportBlock, adminCan, type AdminRole } from "@/features/admin/roles";
+import { accountSupportBlock, adminCan, type AdminActor } from "@/features/admin/roles";
 import { ADMIN_PATH } from "@/features/admin/access";
 import { availableSupportActions, trialState } from "@/features/admin/account-support";
 import { loadUserAccount, loadUserReports, type UserAccount, type UserReport } from "@/features/admin/server/account-data";
@@ -120,7 +120,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
                   plan={label(tControls, "plan", detail.plan)}
                   trial={trialState(subscription)}
                   block={accountSupportBlock(context, { id, roles: account.data.roles })}
-                  role={context.role}
+                  actor={context}
                   t={t}
                   tAdmin={tAdmin}
                 />
@@ -205,13 +205,13 @@ export default async function AdminUserDetailPage({ params }: Props) {
                 <UserStripePanel
                   userId={id}
                   link={stripe.data}
-                  canSync={adminCan(context.role, "editSubscriptions")}
+                  canSync={adminCan(context, "editSubscriptions")}
                   planLabel={Object.fromEntries(
                     ["beta", "solo", "pro", "team"].map((key) => [key, label(tControls, "plan", key)]),
                   )}
                 />
               )}
-              {adminCan(context.role, "editSubscriptions") && (
+              {adminCan(context, "editSubscriptions") && (
                 <UserSubscriptionForm
                   userId={id}
                   stripe={subscription?.gateway === "stripe"}
@@ -265,7 +265,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
                 />
               </dl>
               {/* An admin reads the exception above; changing it is the owner's. */}
-              {adminCan(context.role, "editAiCaps") && (
+              {adminCan(context, "editAiCaps") && (
                 <UserAiCapForm
                   userId={id}
                   mode={userCapModeOf(aiCap.override)}
@@ -342,7 +342,7 @@ function AccountFacts({
   plan,
   trial,
   block,
-  role,
+  actor,
   t,
   tAdmin,
 }: {
@@ -351,7 +351,7 @@ function AccountFacts({
   plan: string;
   trial: ReturnType<typeof trialState>;
   block: ReturnType<typeof accountSupportBlock>;
-  role: AdminRole;
+  actor: AdminActor;
   t: UsersT;
   tAdmin: Awaited<ReturnType<typeof getTranslations<"admin">>>;
 }) {
@@ -403,7 +403,7 @@ function AccountFacts({
         <AccountSupportActions
           userId={userId}
           email={account.email}
-          actions={availableSupportActions(account, role)}
+          actions={availableSupportActions(account, actor)}
         />
       )}
     </div>

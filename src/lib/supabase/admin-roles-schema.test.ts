@@ -413,3 +413,135 @@ describe("an account made from an invitation", () => {
     expect(counts.trial).toBe(true);
   });
 });
+
+describe("administrator levels (step 27.2)", () => {
+  const CAPS = '{"monthly_usd":50,"per_user_usd":null,"warn_percent":80}';
+  let full: string;
+  let limited: string;
+
+  async function inviteAs(level: "full" | "limited") {
+    const { hash } = newToken();
+    await asUser(owner);
+    await db.query(`select public.admin_invite_create($1, null, null, null, $2)`, [hash, level]);
+    const id = await createAuthUser();
+    await asUser(id);
+    await db.query(`select public.admin_invite_accept($1)`, [hash]);
+    return id;
+  }
+  async function level(): Promise<string | undefined> {
+    return (await one<{ r: { level?: string } }>(`select public.admin_session_touch(true) as r`)).r.level;
+  }
+
+  beforeAll(async () => {
+    full = await inviteAs("full");
+    limited = await inviteAs("limited");
+  });
+
+  it("the migration makes the administrator there is today full", () => {
+    const sql = readFileSync(path.join(MIGRATIONS_DIR, "20261120090000_admin_levels_error_log.sql"), "utf8");
+    expect(sql).toMatch(/update public\.user_roles set level = 'full' where role = 'admin' and level is null/);
+  });
+
+  it("the gate says the level: the invitation's, full for the owner, limited without one", async () => {
+    await asUser(full);
+    expect(await level()).toBe("full");
+    await asUser(limited);
+    expect(await level()).toBe("limited");
+    await asUser(owner);
+    expect(await level()).toBe("full");
+    // An admin row written without a level (before 27.2, or by hand) is limited.
+    const bare = await createAuthUser();
+    await asServer();
+    await db.query(`insert into public.user_roles (user_id, role) values ($1, 'admin')`, [bare]);
+    await asUser(bare);
+    expect(await level()).toBe("limited");
+    await expect(db.query(`select public.admin_set_app_setting('ai_caps', $1::jsonb)`, [CAPS])).rejects.toThrow(
+      /admin_required/,
+    );
+  });
+
+  it("refuses a level that does not exist", async () => {
+    await asUser(owner);
+    await expect(
+      db.query(`select public.admin_invite_create($1, null, null, null, 'super')`, [newToken().hash]),
+    ).rejects.toThrow(/invalid_value/);
+  });
+
+  it("a full administrator changes AI caps and exceptions, a limited one does not", async () => {
+    await asUser(full);
+    await db.query(`select public.admin_set_app_setting('ai_caps', $1::jsonb)`, [CAPS]);
+    await db.query(`select public.admin_set_ai_user_cap($1, 5, false)`, [user]);
+    await asUser(limited);
+    await expect(db.query(`select public.admin_set_app_setting('ai_caps', $1::jsonb)`, [CAPS])).rejects.toThrow(
+      /admin_required/,
+    );
+    await expect(db.query(`select public.admin_set_ai_user_cap($1, 6, false)`, [user])).rejects.toThrow(
+      /admin_required/,
+    );
+    await asServer();
+    const audit = await one<{ user_id: string }>(
+      `select user_id from public.admin_audit where target = 'settings.ai_caps' order by id desc limit 1`,
+    );
+    expect(audit.user_id).toBe(full);
+  });
+
+  it("only the owner invites, changes levels and removes, even a full administrator cannot", async () => {
+    await asUser(full);
+    await expect(db.query(`select public.admin_invite_create($1)`, [newToken().hash])).rejects.toThrow(
+      /admin_required/,
+    );
+    await expect(db.query(`select public.admin_set_level($1, 'full')`, [limited])).rejects.toThrow(/admin_required/);
+    await expect(db.query(`select public.admin_set_level($1, 'full')`, [full])).rejects.toThrow(/admin_required/);
+    await expect(db.query(`select public.admin_remove($1)`, [limited])).rejects.toThrow(/admin_required/);
+    await expect(db.query(`select public.admin_remove($1)`, [owner])).rejects.toThrow(/admin_required/);
+  });
+
+  it("the owner changes a level, audited, and it applies at once", async () => {
+    await asUser(owner);
+    await expect(db.query(`select public.admin_set_level($1, 'limited')`, [owner])).rejects.toThrow(
+      /not_changeable/,
+    );
+    await expect(db.query(`select public.admin_set_level($1, 'limited')`, [user])).rejects.toThrow(/not_admin/);
+    await expect(db.query(`select public.admin_set_level($1, 'boss')`, [full])).rejects.toThrow(/invalid_value/);
+    await db.query(`select public.admin_set_level($1, 'limited')`, [full]);
+
+    await asUser(full);
+    expect(await level()).toBe("limited");
+    await expect(db.query(`select public.admin_set_app_setting('ai_caps', $1::jsonb)`, [CAPS])).rejects.toThrow(
+      /admin_required/,
+    );
+
+    await asServer();
+    const audit = await one<{ detail: { user: string; from: { level: string }; to: { level: string } } }>(
+      `select detail from public.admin_audit where target = 'admins.level' order by id desc limit 1`,
+    );
+    expect(audit.detail).toMatchObject({ user: full, from: { level: "full" }, to: { level: "limited" } });
+    await db.exec(`set role service_role;`);
+    const members = await rows<{ user_id: string; role: string; level: string | null }>(
+      `select user_id, role, level from public.admin_members()`,
+    );
+    await asServer();
+    expect(members.find((m) => m.user_id === full)?.level).toBe("limited");
+    expect(members.find((m) => m.user_id === owner)?.level).toBeNull();
+
+    await asUser(owner);
+    await db.query(`select public.admin_set_level($1, 'full')`, [full]);
+    await asUser(full);
+    expect(await level()).toBe("full");
+  });
+
+  it("the client writes neither the level nor the e-mail preferences", async () => {
+    // No update policy: the row stays as it is, for the account itself too.
+    for (const actor of [full, limited]) {
+      await asUser(actor);
+      const changed = await db
+        .query(`update public.user_roles set level = 'full' where user_id = $1 returning id`, [limited])
+        .then((result) => result.rows.length)
+        .catch(() => 0);
+      expect(changed).toBe(0);
+    }
+    await asUser(limited);
+    expect(await level()).toBe("limited");
+    await expect(db.query(`select * from public.admin_notify_prefs`)).rejects.toThrow(/permission denied/);
+  });
+});

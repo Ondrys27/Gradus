@@ -8,6 +8,7 @@ import {
   AdminSidebar,
 } from "@/features/admin/ui/admin-nav";
 import { AdminViewMain, AdminViewProvider } from "@/features/admin/ui/admin-view";
+import { AdminAnchorHighlight } from "@/features/admin/ui/anchor-highlight";
 
 /**
  * Everything inside needs the owner or an admin with the second factor and a
@@ -22,7 +23,7 @@ export default async function AdminSecureLayout({ children }: { children: React.
     <AdminViewProvider>
       <div className="flex min-h-dvh bg-canvas">
         <Suspense>
-          <AdminSidebar role={context.role} />
+          <AdminSidebar actor={{ role: context.role, level: context.level }} />
         </Suspense>
         <div className="flex min-w-0 flex-1 flex-col">
           <AdminPhoneBar />
@@ -31,8 +32,9 @@ export default async function AdminSecureLayout({ children }: { children: React.
           </AdminViewMain>
         </div>
         <Suspense>
-          <AdminBottomNav role={context.role} />
-          <AdminHotkeys role={context.role} />
+          <AdminBottomNav actor={{ role: context.role, level: context.level }} />
+          <AdminHotkeys actor={{ role: context.role, level: context.level }} />
+          <AdminAnchorHighlight />
         </Suspense>
         <AdminIdleGuard expiresAt={context.expiresAt} />
       </div>

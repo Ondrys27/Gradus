@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(request: NextRequest) {
   const context = await adminAccess(true);
-  if (!context || !mayExport(context.role, "users")) return adminNotFound();
+  if (!context || !mayExport(context, "users")) return adminNotFound();
 
   const params = Object.fromEntries(request.nextUrl.searchParams.entries());
   const rawSort = params.sort ?? "";

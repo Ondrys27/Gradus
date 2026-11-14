@@ -42,33 +42,39 @@ describe("support links", () => {
   });
 });
 
+const OWNER = { role: "owner", level: "full" } as const;
+const FULL = { role: "admin", level: "full" } as const;
+const LIMITED = { role: "admin", level: "limited" } as const;
+
 describe("what the Account card offers", () => {
   it("offers the confirmation only while the e-mail is unconfirmed", () => {
-    expect(availableSupportActions({ email: "a@b.cz", emailConfirmed: true }, "owner")).toEqual([
+    expect(availableSupportActions({ email: "a@b.cz", emailConfirmed: true }, OWNER)).toEqual([
       "passwordReset",
       "signOut",
       "emailChange",
     ]);
-    expect(availableSupportActions({ email: "a@b.cz", emailConfirmed: false }, "owner")).toEqual([
+    expect(availableSupportActions({ email: "a@b.cz", emailConfirmed: false }, OWNER)).toEqual([
       "passwordReset",
       "confirmation",
       "signOut",
       "emailChange",
     ]);
-    expect(availableSupportActions({ email: null, emailConfirmed: false }, "owner")).toEqual([
+    expect(availableSupportActions({ email: null, emailConfirmed: false }, OWNER)).toEqual([
       "signOut",
     ]);
   });
 
-  it("leaves the e-mail change to the owner", () => {
-    expect(availableSupportActions({ email: "a@b.cz", emailConfirmed: false }, "admin")).toEqual([
+  it("leaves the e-mail change to the owner and a full admin", () => {
+    expect(availableSupportActions({ email: "a@b.cz", emailConfirmed: false }, LIMITED)).toEqual([
       "passwordReset",
       "confirmation",
       "signOut",
     ]);
-    expect(roleMaySupport("admin", "emailChange")).toBe(false);
-    expect(roleMaySupport("admin", "passwordReset")).toBe(true);
-    expect(roleMaySupport("owner", "emailChange")).toBe(true);
+    expect(availableSupportActions({ email: "a@b.cz", emailConfirmed: true }, FULL)).toContain("emailChange");
+    expect(roleMaySupport(LIMITED, "emailChange")).toBe(false);
+    expect(roleMaySupport(LIMITED, "passwordReset")).toBe(true);
+    expect(roleMaySupport(FULL, "emailChange")).toBe(true);
+    expect(roleMaySupport(OWNER, "emailChange")).toBe(true);
   });
 
   it("lets owner and admin help ordinary accounts, never themselves or the owner", () => {
@@ -84,9 +90,10 @@ describe("what the Account card offers", () => {
     expect(accountSupportBlock(admin, { id: "b", roles: ["admin"] })).toBe("privileged");
   });
 
-  it("exports the accounts with e-mails to the owner only", () => {
-    expect(mayExport("owner", "users")).toBe(true);
-    expect(mayExport("admin", "users")).toBe(false);
+  it("exports the accounts with e-mails to the owner and a full admin only", () => {
+    expect(mayExport(OWNER, "users")).toBe(true);
+    expect(mayExport(FULL, "users")).toBe(true);
+    expect(mayExport(LIMITED, "users")).toBe(false);
   });
 });
 

@@ -21,10 +21,11 @@ import {
 import { logAdminAction } from "./audit";
 import { adminAccessFor } from "./guard";
 import { fingerprint, requestInfo } from "./request-info";
+import type { AdminLevel } from "../roles";
 
 /**
- * The owner's actions in the Administrators section. Each checks the owner's
- * admin session first; the database function checks it again from the
+ * The owner's actions in the Administrators section (a full admin has none
+ * of them). Each checks the owner's admin session first; the database function checks it again from the
  * signed token, makes the change and writes admin_audit in one transaction.
  */
 
@@ -44,9 +45,12 @@ function refused(error: { code?: string; message: string }, what: string): Failu
   return { ok: false, error: "failed" };
 }
 
+const levelSchema = z.enum(["full", "limited"]);
+
 const inviteSchema = z.object({
   email: z.union([z.literal(""), z.string().trim().toLowerCase().email().max(254)]).default(""),
   note: z.string().trim().max(200).default(""),
+  level: levelSchema.default("limited"),
 });
 
 /**
@@ -56,6 +60,7 @@ const inviteSchema = z.object({
 export async function createAdminInvite(input: {
   email?: string;
   note?: string;
+  level?: AdminLevel;
 }): Promise<{ ok: true; id: string; url: string; expiresAt: string } | Failure> {
   const parsed = inviteSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid" };
@@ -68,6 +73,7 @@ export async function createAdminInvite(input: {
     _email: parsed.data.email || undefined,
     _note: parsed.data.note || undefined,
     _ip_hash: await ipHash(),
+    _level: parsed.data.level,
   });
   if (error || !id) return refused(error ?? { message: "no id" }, "creating an invitation");
   revalidatePath(SECTION_PATH);
@@ -149,6 +155,26 @@ export async function removeAdmin(userId: string): Promise<{ ok: true } | Failur
   const supabase = await createClient();
   const { error } = await supabase.rpc("admin_remove", { _user_id: userId, _ip_hash: await ipHash() });
   if (error) return refused(error, "removing an admin");
+  revalidatePath(SECTION_PATH);
+  return { ok: true };
+}
+
+/**
+ * Full or limited: what an administrator may change (roles.ts). Applies on
+ * their next request, the gate reads the level every time.
+ */
+export async function setAdminLevel(userId: string, level: AdminLevel): Promise<{ ok: true } | Failure> {
+  const id = z.uuid().safeParse(userId);
+  const parsed = levelSchema.safeParse(level);
+  if (!id.success || !parsed.success) return { ok: false, error: "invalid" };
+  if (!(await adminAccessFor("manageAdmins"))) return { ok: false, error: "forbidden" };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_set_level", {
+    _user_id: id.data,
+    _level: parsed.data,
+    _ip_hash: await ipHash(),
+  });
+  if (error) return refused(error, "changing an admin level");
   revalidatePath(SECTION_PATH);
   return { ok: true };
 }

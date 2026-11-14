@@ -5,7 +5,7 @@
  */
 
 import { safeNextPath, type NextPathScope } from "@/lib/auth/routes";
-import { parseAdminRole, type AdminRole } from "./roles";
+import { parseAdminLevel, parseAdminRole, type AdminLevel, type AdminRole } from "./roles";
 
 export const ADMIN_PATH = "/admin";
 export const ADMIN_LOGIN_PATH = "/admin/prihlaseni";
@@ -242,19 +242,24 @@ export function parseSessionStatus(data: unknown): {
   status: AdminSessionStatus;
   userId: string | null;
   role: AdminRole | null;
+  /** The owner is always full; an administrator without a level is limited. */
+  level: AdminLevel;
   expiresAt: string | null;
 } {
   const value = (data ?? {}) as {
     status?: unknown;
     user_id?: unknown;
     role?: unknown;
+    level?: unknown;
     expires_at?: unknown;
   };
   const status = (["ok", "idle", "expired", "ended"] as const).find((s) => s === value.status);
+  const role = parseAdminRole(value.role);
   return {
     status: status ?? "denied",
     userId: typeof value.user_id === "string" ? value.user_id : null,
-    role: parseAdminRole(value.role),
+    role,
+    level: parseAdminLevel(role, value.level),
     expiresAt: typeof value.expires_at === "string" ? value.expires_at : null,
   };
 }

@@ -6458,8 +6458,9 @@
         "explorer": "Průzkumník",
         "admins": "Administrátoři",
         "plans": "Tarify",
-        "errorAlerts": "Upozornění na chyby",
-        "promoCodes": "Promo kódy"
+        "promoCodes": "Promo kódy",
+        "errors": "Chyby",
+        "help": "Nápověda"
       },
       "soon": "Brzy",
       "groups": {
@@ -6472,11 +6473,11 @@
       "collapse": "Sbalit menu",
       "expand": "Rozbalit menu",
       "close": "Zavřít",
-      "switcherHint": "přepíná sekce",
+      "switcherHint": "hledá sekce a nastavení",
       "switcher": {
-        "title": "Přejít na sekci",
-        "placeholder": "Napiš název sekce…",
-        "empty": "Žádná sekce neodpovídá.",
+        "title": "Hledat v administraci",
+        "placeholder": "Sekce, nastavení nebo akce…",
+        "empty": "Nic neodpovídá. Zkus jiné slovo nebo stránku Nápověda.",
         "hint": "↑↓ vybírá, Enter otevře, Esc zavře. Lomítko skočí do hledání."
       }
     },
@@ -6691,7 +6692,8 @@
         },
         "sectionTitle": "Stropy",
         "sectionDescription": "Změna stropu mění, kolik Grady smí utratit, od příští minuty.",
-        "periodNote": "Pole jsou měsíční stropy. Ukazatele pod nimi porovnávají útratu {period} se stropy přepočtenými na toto období (měsíční strop / počet dní měsíce za každý den)."
+        "periodNote": "Pole jsou měsíční stropy. Ukazatele pod nimi porovnávají útratu {period} se stropy přepočtenými na toto období (měsíční strop / počet dní měsíce za každý den).",
+        "changedBy": "Naposledy změnil(a) {name}, {date}"
       },
       "period": {
         "month": "tento měsíc",
@@ -6831,9 +6833,10 @@
           "number": "Zadej celé číslo od {min} do {max}.",
           "instructions": "Nejvýš {max} znaků.",
           "invalid": "Některá hodnota neprošla kontrolou.",
-          "forbidden": "Pravidla mění jen majitel s ověřením druhým faktorem.",
+          "forbidden": "Pravidla mění majitel nebo plný administrátor s ověřením druhým faktorem.",
           "failed": "Uložení se nepovedlo. Zkus to znovu."
-        }
+        },
+        "changedBy": "Naposledy změnil(a) {name}, {date}"
       },
       "topSpacesTitle": "10 nejnákladnějších prostorů",
       "topSpacesDescription": "Útrata AI podle prostoru: každé volání ve firmě se počítá do ní, i pracovníka z jiného účtu (platí majitel). Vedle útrata podle uživatele, ať byl kdekoli."
@@ -7009,7 +7012,7 @@
         "consoleEmpty": "Žádné se nezachytily.",
         "screenshot": "Snímek obrazovky",
         "screenshotGone": "Snímek se nepodařilo načíst.",
-        "screenshotOwnerOnly": "Snímek je přiložený, vidí ho jen majitel.",
+        "screenshotOwnerOnly": "Snímek je přiložený, vidí ho majitel a plný administrátor.",
         "contact": "Odpovědět na"
       },
       "openUser": "Detail účtu",
@@ -7140,7 +7143,7 @@
       "internalDescription": "Interní účet (majitel, demo, testy) se do metrik nepočítá, dokud ho ovládání nezapne.",
       "subscription": {
         "title": "Předplatné",
-        "description": "Tarif, období a stav účtu, u plateb přes Stripe i odkazy do Stripe a poslední platby. Ručně ho mění majitel.",
+        "description": "Tarif, období a stav účtu, u plateb přes Stripe i odkazy do Stripe a poslední platby. Ručně ho mění majitel nebo plný administrátor.",
         "plan": "Tarif",
         "billing": "Období",
         "status": "Stav",
@@ -7521,7 +7524,7 @@
     },
     "admins": {
       "title": "Administrátoři",
-      "description": "Kdo smí do administrace. Administrátor vidí všechno kromě této sekce, nemění stropy AI a neexportuje osobní údaje.",
+      "description": "Kdo smí do administrace. Plný administrátor smí totéž co majitel kromě této sekce, omezený nastavení jen čte a neexportuje osobní údaje.",
       "membersTitle": "Majitel a administrátoři",
       "role": {
         "owner": "Majitel",
@@ -7587,6 +7590,26 @@
         "cancel": "Nechat",
         "failed": "Administrátora se nepodařilo odebrat. Zkus to znovu.",
         "hint": "Odebrání platí hned, i uprostřed otevřené relace."
+      },
+      "level": {
+        "label": "Úroveň",
+        "full": {
+          "title": "Plný",
+          "hint": "Všechno jako majitel: tarify, stropy AI, pravidla Gradyho, předplatné, výplaty, změna e-mailu, exporty. Kromě sekce Administrátoři."
+        },
+        "limited": {
+          "title": "Omezený",
+          "hint": "Vidí všechno, ale tarify, stropy, pravidla, předplatné a výplaty jen čte a neexportuje osobní údaje."
+        }
+      },
+      "changeLevel": {
+        "open": "Změnit úroveň",
+        "title": "Úroveň: {name}",
+        "hint": "Platí hned, od dalšího kroku v administraci.",
+        "save": "Uložit",
+        "cancel": "Zrušit",
+        "failed": "Úroveň se nepodařilo změnit. Zkus to znovu.",
+        "rowHint": "Co smí v administraci měnit."
       }
     },
     "table": {
@@ -7599,7 +7622,7 @@
     "plans": {
       "title": "Tarify",
       "description": "Ceny, limity a texty tarifů. Úpravy jsou koncept, web a aplikace je uvidí až po zveřejnění.",
-      "readOnly": "Tarify upravuje a zveřejňuje majitel.",
+      "readOnly": "Tarify upravuje a zveřejňuje majitel nebo plný administrátor.",
       "status": {
         "noDraft": "Upravuješ zveřejněnou verzi. Uložením vznikne koncept.",
         "draft": "Rozpracovaný koncept (založen {date}). Web ukazuje zveřejněnou verzi.",
@@ -7804,7 +7827,7 @@
       "save": "Uložit",
       "saving": "Ukládám…",
       "saved": "Uloženo.",
-      "readOnly": "Nastavení mění jen majitel.",
+      "readOnly": "Nastavení mění majitel nebo plný administrátor.",
       "updated": "Naposledy změnil(a) {name}, {date}",
       "unknownPerson": "neznámý účet",
       "errors": {
@@ -7965,7 +7988,7 @@
       "payouts": {
         "title": "Výplaty provizí",
         "description": "Vznikají samy při první platbě uživatele s kódem, z platby bez DPH.",
-        "readOnly": "Výplaty schvaluje a označuje majitel.",
+        "readOnly": "Výplaty schvaluje a označuje majitel nebo plný administrátor.",
         "empty": "Zatím žádná výplata.",
         "created": "Vznikla",
         "user": "Uživatel",
@@ -7983,12 +8006,332 @@
         "markPaid": "Označit Vyplaceno",
         "export": "Export CSV pro účetní",
         "errors": {
-          "forbidden": "Výplaty mění jen majitel s živou relací administrace.",
+          "forbidden": "Výplaty mění majitel nebo plný administrátor s živou relací administrace.",
           "transition": "Výplata už je v jiném stavu. Obnov stránku.",
           "invalid": "Neplatná výplata.",
           "failed": "Nepodařilo se to uložit. Zkus to znovu."
         }
       }
+    },
+    "help": {
+      "title": "Nápověda",
+      "description": "Co v které sekci najdeš a co se tam nastavuje.",
+      "searchHint": "Tip: ⌘K (Ctrl+K) hledá i jednotlivá nastavení a akce, třeba „strop AI“, „promo kód“ nebo „reset hesla“, a skočí rovnou na ně.",
+      "open": "Otevřít",
+      "sections": {
+        "overview": "Hlavní čísla na jednom místě: noví lidé, aktivní účty, peníze a upozornění, která chtějí pozornost.",
+        "growth": "Odkud lidé přicházejí a kolik se jich registruje, po dnech a zdrojích.",
+        "activation": "Jak daleko se noví lidé dostanou: průvodce, první milník, tutoriál, konverze registrace.",
+        "retention": "Kdo se vrací: kohorty, aktivní dny a relace.",
+        "users": "Seznam účtů s hledáním podle jména, e-mailu nebo ID. V detailu účtu podpora: reset hesla, nové potvrzení, odhlášení, změna e-mailu, předplatné a výjimka AI.",
+        "feedback": "Hlášení problémů od uživatelů, nápady a dotazník spokojenosti.",
+        "features": "Které sekce aplikace lidé používají a jak moc.",
+        "game": "XP, úrovně, série a odznaky.",
+        "ai": "Útrata za Gradyho, strop využití AI, nejnákladnější uživatelé a prostory. Na záložce Pravidla, kdy se Grady sám ozve a pokyny pro něj.",
+        "explorer": "Vlastní dotaz nad událostmi analytiky.",
+        "costs": "Náklady na uživatele, marže tarifů a platby za období.",
+        "health": "Zdraví provozu: odezva serveru, plánované úlohy a zdroje kurzů měn.",
+        "errors": "Všechny zachycené chyby seskupené podle otisku, se stavem a výskyty. Druhá záložka říká, kam chodí e-maily o chybách.",
+        "audit": "Kdo v administraci co viděl a změnil, nejnovější nahoře.",
+        "plans": "Katalog tarifů: koncept, zveřejnění, ceny v měnách, doplňky a historie verzí.",
+        "promoCodes": "Kódy partnerů, jejich registrace, platící a výplaty provizí.",
+        "admins": "Kdo smí do administrace: pozvánky, úrovně a odebrání administrátorů.",
+        "help": "Tahle stránka: co je kde, s odkazy rovnou na místo."
+      },
+      "items": {
+        "overviewNumbers": {
+          "title": "Hlavní čísla",
+          "keywords": "přehled dlaždice metriky"
+        },
+        "overviewWarnings": {
+          "title": "Upozornění na přehledu",
+          "keywords": "varování potvrzení e-mailu"
+        },
+        "growthSignups": {
+          "title": "Registrace a zdroje",
+          "keywords": "registrace zdroj návštěvy růst"
+        },
+        "activationFunnel": {
+          "title": "Trychtýř aktivace",
+          "keywords": "aktivace onboarding průvodce tutoriál konverze"
+        },
+        "retentionCohorts": {
+          "title": "Kohorty a návraty",
+          "keywords": "retence kohorta aktivní dny"
+        },
+        "usersSearch": {
+          "title": "Najít uživatele",
+          "keywords": "hledat účet e-mail jméno id"
+        },
+        "passwordReset": {
+          "title": "Reset hesla (v detailu uživatele)",
+          "keywords": "heslo zapomenuté obnovit podpora"
+        },
+        "confirmationResend": {
+          "title": "Poslat znovu potvrzení e-mailu",
+          "keywords": "potvrzení ověření e-mail podpora"
+        },
+        "signOutEverywhere": {
+          "title": "Ukončit všechna přihlášení",
+          "keywords": "odhlásit relace podpora"
+        },
+        "emailChange": {
+          "title": "Změnit e-mail uživatele",
+          "keywords": "změna e-mailu adresa podpora"
+        },
+        "userSubscription": {
+          "title": "Předplatné uživatele",
+          "keywords": "tarif ručně stripe srovnat"
+        },
+        "userAiCap": {
+          "title": "Výjimka AI u uživatele",
+          "keywords": "strop uživatele blokovat ai"
+        },
+        "userInternal": {
+          "title": "Interní účet",
+          "keywords": "interní testovací vyloučit z metrik"
+        },
+        "usersExport": {
+          "title": "Export uživatelů do CSV",
+          "keywords": "export csv e-maily osobní údaje"
+        },
+        "bugReports": {
+          "title": "Hlášení problémů",
+          "keywords": "hlášení chyba bug snímek stav"
+        },
+        "featureRequests": {
+          "title": "Nápady od uživatelů",
+          "keywords": "nápad zpětná vazba přání"
+        },
+        "satisfaction": {
+          "title": "Dotazník spokojenosti",
+          "keywords": "spokojenost nps dotazník"
+        },
+        "featureAdoption": {
+          "title": "Používání sekcí",
+          "keywords": "funkce sekce adopce"
+        },
+        "gameXp": {
+          "title": "XP a úrovně",
+          "keywords": "hra xp úroveň série odznaky"
+        },
+        "aiBudget": {
+          "title": "Rozpočet AI",
+          "keywords": "útrata kredit rozpočet grady"
+        },
+        "aiCaps": {
+          "title": "Strop využití AI",
+          "keywords": "strop ai limit útrata měsíční upozornění"
+        },
+        "aiTopUsers": {
+          "title": "Nejnákladnější uživatelé",
+          "keywords": "útrata uživatelé prostory ai"
+        },
+        "aiConnection": {
+          "title": "Vyzkoušet připojení Gradyho",
+          "keywords": "test připojení model ping"
+        },
+        "gradyRules": {
+          "title": "Pravidla Gradyho",
+          "keywords": "proaktivní návrhy otázky rozestup grady"
+        },
+        "gradyInstructions": {
+          "title": "Pokyny pro Gradyho",
+          "keywords": "pokyny prompt instrukce grady"
+        },
+        "explorerEvents": {
+          "title": "Vlastní dotaz nad událostmi",
+          "keywords": "průzkumník událost graf"
+        },
+        "costsMargin": {
+          "title": "Marže tarifů",
+          "keywords": "náklady marže mrr"
+        },
+        "costsPayments": {
+          "title": "Platby za období",
+          "keywords": "platby tržby vráceno"
+        },
+        "healthJobs": {
+          "title": "Plánované úlohy",
+          "keywords": "cron úlohy odezva"
+        },
+        "healthRates": {
+          "title": "Kurzy měn",
+          "keywords": "kurzy měny ecb zdroj"
+        },
+        "errorLog": {
+          "title": "Log chyb",
+          "keywords": "chyby log výskyty"
+        },
+        "errorSearch": {
+          "title": "Hledat chybu podle kódu GR-…",
+          "keywords": "kód chyby gr hledat"
+        },
+        "errorStatus": {
+          "title": "Stav chyby (Nová, Řeší se, Vyřešená)",
+          "keywords": "vyřešit ignorovat stav chyby"
+        },
+        "errorAlerts": {
+          "title": "Upozornění na chyby e-mailem",
+          "keywords": "e-mail adresy souhrn upozornění chyby"
+        },
+        "errorAlertsTest": {
+          "title": "Poslat zkušební e-mail o chybě",
+          "keywords": "zkušební test e-mail"
+        },
+        "peerNotices": {
+          "title": "E-maily o změnách tarifů a stropů",
+          "keywords": "e-mail změna kolega vypnout upozornění"
+        },
+        "auditLog": {
+          "title": "Kdo co udělal",
+          "keywords": "audit historie změny"
+        },
+        "auditExport": {
+          "title": "Export auditu",
+          "keywords": "export audit csv"
+        },
+        "plansDraft": {
+          "title": "Upravit koncept tarifů",
+          "keywords": "cena tarif koncept upravit"
+        },
+        "plansPublish": {
+          "title": "Zveřejnit tarify",
+          "keywords": "zveřejnit publikovat ceny tarify"
+        },
+        "plansCurrencies": {
+          "title": "Ceny v měnách a doplňky",
+          "keywords": "měna ruční cena doplněk bez značky"
+        },
+        "plansHistory": {
+          "title": "Historie verzí tarifů",
+          "keywords": "historie vrátit verze"
+        },
+        "plansAccounts": {
+          "title": "Účty na tarifech",
+          "keywords": "počet účtů tarif"
+        },
+        "promoCreate": {
+          "title": "Promo kód",
+          "keywords": "promo kód partner založit sleva"
+        },
+        "promoPayouts": {
+          "title": "Výplaty provizí",
+          "keywords": "výplata provize partner schválit"
+        },
+        "adminsInvite": {
+          "title": "Pozvat administrátora",
+          "keywords": "pozvánka admin administrátor"
+        },
+        "adminsLevel": {
+          "title": "Úroveň administrátora",
+          "keywords": "plný omezený úroveň práva"
+        },
+        "adminsRemove": {
+          "title": "Odebrat administrátora",
+          "keywords": "odebrat admin"
+        },
+        "helpSearch": {
+          "title": "Hledání ⌘K",
+          "keywords": "hledat nápověda zkratka"
+        }
+      }
+    },
+    "errors": {
+      "title": "Chyby",
+      "description": "Všechny zachycené chyby seskupené podle otisku, se stavem a výskyty.",
+      "tabs": "Části stránky",
+      "tab": {
+        "log": "Log chyb",
+        "alerts": "Upozornění e-mailem"
+      },
+      "filters": {
+        "code": "Kód chyby",
+        "status": "Stav",
+        "anyStatus": "Všechny stavy",
+        "latest": "Jen po posledním nasazení",
+        "submit": "Hledat",
+        "clear": "Zrušit filtry"
+      },
+      "status": {
+        "new": "Nová",
+        "in_progress": "Řeší se",
+        "resolved": "Vyřešená",
+        "ignored": "Ignorovat"
+      },
+      "statusLabel": "Stav chyby",
+      "statusFailed": "Stav se nepodařilo změnit. Zkus to znovu.",
+      "summary": "{count, plural, one {# chyba} few {# chyby} other {# chyb}}",
+      "versionNote": "jen verze {version}",
+      "codeNote": "hledání podle kódu nehledí na období",
+      "invalidCode": "Tohle není kód chyby.",
+      "invalidCodeHint": "Kód vypadá jako GR-7K3M9Q, stačí i jeho začátek.",
+      "emptyTitle": "Žádná chyba",
+      "emptyHint": "V tomhle období a s těmito filtry se nic nezachytilo.",
+      "columns": {
+        "code": "Poslední kód",
+        "message": "Zpráva",
+        "where": "Kde",
+        "count": "Kolikrát",
+        "users": "Uživatelů",
+        "seen": "Naposledy · poprvé",
+        "version": "Verze",
+        "status": "Stav"
+      },
+      "lastAt": "{at}",
+      "firstAt": "poprvé {at}",
+      "cameBack": "vrátila se",
+      "cameBackAt": "Vrátila se {at}",
+      "pagination": "Stránkování chyb",
+      "newer": "Novější",
+      "older": "Starší",
+      "page": "Strana {page}",
+      "detail": {
+        "title": "Chyba",
+        "description": "Výskyty, odeslané e-maily a hlášení k téhle chybě.",
+        "changedBy": "Stav naposledy změnil(a) {name}, {date}",
+        "missing": "Tahle chyba už v logu není (záznamy se mažou po 13 měsících).",
+        "occurrences": "{count, plural, one {Poslední # výskyt} few {Poslední # výskyty} other {Posledních # výskytů}}",
+        "openUser": "Otevřít účet",
+        "anonymous": "Nepřihlášený",
+        "stack": "Stack (prvních 10 řádků)",
+        "sends": "Odeslané e-maily",
+        "noSends": "K téhle chybě žádný e-mail neodešel.",
+        "recipients": "{count, plural, one {# adresa} few {# adresy} other {# adres}}",
+        "sendStatus": {
+          "sent": "odesláno",
+          "failed": "selhalo",
+          "pending": "čeká"
+        },
+        "mock": "test, neodešlo",
+        "reports": "Hlášení uživatelů se stejným kódem",
+        "noReports": "Nikdo tuhle chybu nenahlásil."
+      },
+      "peer": {
+        "title": "E-maily o změnách",
+        "description": "Když tarify zveřejní nebo stropy AI změní někdo jiný (majitel nebo plný administrátor), přijde ti e-mail s odkazem.",
+        "label": "Posílat mi e-mail o změnách tarifů a stropů AI",
+        "hint": "Platí jen pro tebe.",
+        "failed": "Nastavení se nepodařilo uložit. Zkus to znovu."
+      }
+    },
+    "peerNotice": {
+      "subject": {
+        "plansPublished": "{name} změnil tarify",
+        "plansRestored": "{name} vrátil starší verzi tarifů",
+        "aiCaps": "{name} změnil strop využití AI",
+        "aiUserCap": "{name} změnil výjimku AI u uživatele"
+      },
+      "body": {
+        "plansPublished": "{name} právě zveřejnil novou verzi tarifů v administraci {appName}. Platí hned na webu i v aplikaci.",
+        "plansRestored": "{name} právě vrátil starší verzi tarifů v administraci {appName}. Platí hned na webu i v aplikaci.",
+        "aiCaps": "{name} právě změnil strop využití AI v administraci {appName}. Platí do minuty.",
+        "aiUserCap": "{name} právě změnil výjimku AI u jednoho uživatele v administraci {appName}."
+      },
+      "open": "Otevřít v administraci",
+      "audit": "Co přesně se změnilo, z čeho na co, je v auditu:",
+      "auditLink": "Otevřít audit",
+      "off": "Tyhle e-maily si vypneš v administraci → Chyby → Upozornění e-mailem → E-maily o změnách."
     }
   },
   "invoices": {

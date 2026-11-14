@@ -84,7 +84,7 @@ async function prepare(
   const reason = supportReasonSchema.safeParse(rawReason);
   if (!userId.success || !reason.success) return { ok: false, error: "invalid" };
   const context = await adminAccess(true);
-  if (!context || !roleMaySupport(context.role, action)) return { ok: false, error: "forbidden" };
+  if (!context || !roleMaySupport(context, action)) return { ok: false, error: "forbidden" };
 
   const admin = createAdminClient();
   const [user, roles, settings] = await Promise.all([

@@ -110,8 +110,14 @@ const PAGE_LOADERS: Record<AdminSectionKey, Loader[]> = {
   audit: [],
   plans: [],
   promoCodes: [],
-  errorAlerts: [],
+  errors: [
+    (q) =>
+      import("./error-log-data").then((m) =>
+        m.loadErrorGroups(q, { status: null, code: null, latest: false, page: 0 }),
+      ),
+  ],
   admins: [],
+  help: [],
 };
 
 /** Queries that rightly ignore a filter their page offers, and why. */

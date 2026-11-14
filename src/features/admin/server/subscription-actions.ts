@@ -65,7 +65,7 @@ export type StripeSyncResult =
 /**
  * "Sync with Stripe" on an account's subscription (step 23.2): Stripe's
  * subscription loaded now and written through billing_apply_subscription(),
- * as the daily reconciliation does. The owner only (aal2, live admin
+ * as the daily reconciliation does. The owner or a full admin (aal2, live admin
  * session); the row in admin_audit goes first, and without it nothing runs.
  */
 export async function syncUserSubscriptionWithStripe(userId: string): Promise<StripeSyncResult> {

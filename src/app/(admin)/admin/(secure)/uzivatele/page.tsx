@@ -130,10 +130,14 @@ export default async function AdminUsersPage({ searchParams }: Props) {
         q={q}
         extra={
           <div className="flex flex-wrap items-center gap-2">
-            <div className="min-w-0 flex-1">{search}</div>
-            {/* With e-mails: the owner's export only; an admin does not see the button. */}
-            {mayExport(context.role, "users") && (
-              <AuditExportButton href={exportHref} label={t("export")} />
+            <div className="min-w-0 flex-1 rounded-xl" id="users-search">
+              {search}
+            </div>
+            {/* With e-mails: the owner's and a full admin's export; a limited admin does not see the button. */}
+            {mayExport(context, "users") && (
+              <div id="users-export" className="rounded-xl">
+                <AuditExportButton href={exportHref} label={t("export")} />
+              </div>
             )}
           </div>
         }

@@ -9,7 +9,7 @@ import {
   inviteState,
   isWellFormedInviteToken,
 } from "./invite-token";
-import { adminCan, mayExport, parseAdminRole } from "./roles";
+import { adminCan, mayExport, parseAdminLevel, parseAdminRole } from "./roles";
 import { browserLabel, splitBrowserLabel, truncateIp } from "./client-info";
 
 describe("invitation tokens", () => {
@@ -62,18 +62,51 @@ describe("invitation state", () => {
 });
 
 describe("roles", () => {
-  it("leave the owner-only things to the owner", () => {
-    expect(adminCan("owner", "manageAdmins")).toBe(true);
-    expect(adminCan("admin", "manageAdmins")).toBe(false);
-    expect(adminCan("admin", "editAiCaps")).toBe(false);
-    expect(adminCan("admin", "exportPersonalData")).toBe(false);
+  const owner = { role: "owner", level: "full" } as const;
+  const full = { role: "admin", level: "full" } as const;
+  const limited = { role: "admin", level: "limited" } as const;
+
+  it("leave the Administrators section to the owner alone, whatever the level", () => {
+    expect(adminCan(owner, "manageAdmins")).toBe(true);
+    expect(adminCan(full, "manageAdmins")).toBe(false);
+    expect(adminCan(limited, "manageAdmins")).toBe(false);
+    expect(adminCan(null, "editPlans")).toBe(false);
   });
 
-  it("let an admin export numbers but not people", () => {
-    expect(mayExport("admin", "chart.ai.cost.csv")).toBe(true);
-    expect(mayExport("admin", "table.ai.top_users.csv")).toBe(false);
-    expect(mayExport("admin", "audit")).toBe(false);
-    expect(mayExport("owner", "table.ai.top_users.csv")).toBe(true);
+  it("let a full admin do everything else the owner may, a limited one none of it", () => {
+    const powers = [
+      "editAiCaps",
+      "testGrady",
+      "editGradyRules",
+      "editPlans",
+      "editSubscriptions",
+      "managePayouts",
+      "changeEmails",
+      "editErrorAlerts",
+      "exportPersonalData",
+      "viewScreenshots",
+      "peerNotices",
+    ] as const;
+    for (const power of powers) {
+      expect(adminCan(owner, power), power).toBe(true);
+      expect(adminCan(full, power), power).toBe(true);
+      expect(adminCan(limited, power), power).toBe(false);
+    }
+  });
+
+  it("let a limited admin export numbers but not people; a full admin both", () => {
+    expect(mayExport(limited, "chart.ai.cost.csv")).toBe(true);
+    expect(mayExport(limited, "table.ai.top_users.csv")).toBe(false);
+    expect(mayExport(limited, "audit")).toBe(false);
+    expect(mayExport(full, "audit")).toBe(true);
+    expect(mayExport(owner, "table.ai.top_users.csv")).toBe(true);
+  });
+
+  it("read a missing level as limited, the owner always as full", () => {
+    expect(parseAdminLevel("admin", null)).toBe("limited");
+    expect(parseAdminLevel("admin", "boss")).toBe("limited");
+    expect(parseAdminLevel("admin", "full")).toBe("full");
+    expect(parseAdminLevel("owner", null)).toBe("full");
   });
 
   it("parse only the two roles", () => {

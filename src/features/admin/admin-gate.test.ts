@@ -14,6 +14,8 @@ const OWNER = "11111111-1111-4111-8111-111111111111";
 const USER = "22222222-2222-4222-8222-222222222222";
 /** Holds the admin role: through the gate like the owner, without the owner-only things. */
 const ADMIN = "44444444-4444-4444-8444-444444444444";
+/** A full administrator (step 27.2): everything the owner may, except the Administrators section. */
+const FULL_ADMIN = "55555555-5555-4555-8555-555555555555";
 
 type Claims = { sub: string; aal: "aal1" | "aal2"; session_id: string; email: string };
 const state = {
@@ -40,6 +42,18 @@ function userClient() {
       state.rpcCalls.push(name);
       const claims = state.claims;
       const owner = claims?.sub === OWNER && claims.aal === "aal2";
+      if (claims?.sub === FULL_ADMIN && claims.aal === "aal2") {
+        return {
+          data: {
+            status: "ok",
+            user_id: FULL_ADMIN,
+            role: "admin",
+            level: "full",
+            expires_at: "2026-10-08T20:00:00Z",
+          },
+          error: null,
+        };
+      }
       if (claims?.sub === ADMIN && claims.aal === "aal2") {
         return {
           data: { status: "ok", user_id: ADMIN, role: "admin", expires_at: "2026-10-08T20:00:00Z" },
@@ -127,7 +141,7 @@ vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "anon");
 vi.stubEnv("SUPABASE_SECRET_KEY", "test-secret");
 
 const { middleware } = await import("@/middleware");
-const { requireAdmin, requireOwnerFor } = await import("./server/guard");
+const { requireAdmin, requireAdminPower } = await import("./server/guard");
 const { recordExport } = await import("./server/export-actions");
 const { GET: exportAudit } = await import("@/app/(admin)/admin/(secure)/audit/export/route");
 const { ADMIN_PATH_HEADER } = await import("./access");
@@ -271,6 +285,7 @@ describe("requireAdmin", () => {
     await expect(requireAdmin()).resolves.toEqual({
       userId: OWNER,
       role: "owner",
+      level: "full",
       expiresAt: "2026-10-08T20:00:00Z",
     });
   });
@@ -322,9 +337,19 @@ describe("the admin role", () => {
 
   it("gets the 404 for the owner's pages", async () => {
     signIn(ADMIN, "aal2");
-    await expect(requireOwnerFor("manageAdmins")).rejects.toThrow("NEXT_NOT_FOUND");
+    await expect(requireAdminPower("manageAdmins")).rejects.toThrow("NEXT_NOT_FOUND");
     signIn(OWNER, "aal2");
-    await expect(requireOwnerFor("manageAdmins")).resolves.toMatchObject({ role: "owner" });
+    await expect(requireAdminPower("manageAdmins")).resolves.toMatchObject({ role: "owner" });
+  });
+
+  it("a full admin passes what the owner may, except the Administrators section", async () => {
+    signIn(FULL_ADMIN, "aal2");
+    await expect(requireAdmin()).resolves.toMatchObject({ role: "admin", level: "full" });
+    await expect(requireAdminPower("editPlans")).resolves.toMatchObject({ userId: FULL_ADMIN });
+    await expect(requireAdminPower("manageAdmins")).rejects.toThrow("NEXT_NOT_FOUND");
+    expect(await recordExport("table.ai.top_users.csv")).toEqual({ ok: true });
+    signIn(ADMIN, "aal2");
+    await expect(requireAdminPower("editPlans")).rejects.toThrow("NEXT_NOT_FOUND");
   });
 
   it("cannot export the audit or rows that name people, but exports numbers", async () => {

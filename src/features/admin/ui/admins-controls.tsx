@@ -12,12 +12,57 @@ import { Input } from "@/components/ui/input";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { formatDateTime } from "@/lib/format";
 import { ADMIN_FORMAT_SETTINGS } from "../format-metric";
+import { cn } from "@/lib/utils";
+import type { AdminLevel } from "../roles";
 import {
   createAdminInvite,
   removeAdmin,
   revokeAdminInvite,
   sendAdminInviteEmail,
+  setAdminLevel,
 } from "../server/admins-actions";
+
+const LEVELS: readonly AdminLevel[] = ["full", "limited"];
+
+/** Full or limited, each with one sentence of what it means. */
+function LevelChoice({
+  name,
+  value,
+  onChange,
+}: {
+  name: string;
+  value: AdminLevel;
+  onChange: (level: AdminLevel) => void;
+}) {
+  const t = useTranslations("admin.admins.level");
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="mb-1 text-sm font-medium text-ink">{t("label")}</legend>
+      {LEVELS.map((level) => (
+        <label
+          key={level}
+          className={cn(
+            "flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border px-3 py-2.5 text-sm has-focus-visible:ring-3 has-focus-visible:ring-violet/40",
+            value === level ? "border-violet/60 bg-violet/10" : "border-line",
+          )}
+        >
+          <input
+            type="radio"
+            name={name}
+            value={level}
+            checked={value === level}
+            onChange={() => onChange(level)}
+            className="mt-0.5 size-4 accent-violet"
+          />
+          <span className="flex flex-col gap-0.5">
+            <span className="font-medium text-ink">{t(`${level}.title`)}</span>
+            <span className="text-xs text-ink-muted">{t(`${level}.hint`)}</span>
+          </span>
+        </label>
+      ))}
+    </fieldset>
+  );
+}
 
 type Problem = "forbidden" | "invalid" | "failed";
 type Created = { id: string; url: string; expiresAt: string; email: string };
@@ -33,6 +78,7 @@ export function InviteAdminButton() {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [note, setNote] = useState("");
+  const [level, setLevel] = useState<AdminLevel>("limited");
   const [problem, setProblem] = useState<Problem | null>(null);
   const [created, setCreated] = useState<Created | null>(null);
   const [copied, setCopied] = useState(false);
@@ -51,6 +97,7 @@ export function InviteAdminButton() {
     if (!next) {
       setEmail("");
       setNote("");
+      setLevel("limited");
       setProblem(null);
       setCreated(null);
       setMail(null);
@@ -62,7 +109,7 @@ export function InviteAdminButton() {
     event.preventDefault();
     setProblem(null);
     startTransition(async () => {
-      const result = await createAdminInvite({ email, note }).catch(
+      const result = await createAdminInvite({ email, note, level }).catch(
         () => ({ ok: false, error: "failed" }) as const,
       );
       if (!result.ok) return setProblem(result.error);
@@ -153,6 +200,7 @@ export function InviteAdminButton() {
                 onChange={(event) => setNote(event.target.value)}
               />
             </FormField>
+            <LevelChoice name="invite-level" value={level} onChange={setLevel} />
             {problem && <FormAlert>{t(`errors.${problem}`)}</FormAlert>}
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button type="button" variant="ghost" onClick={() => reset(false)}>
@@ -239,6 +287,75 @@ export function RemoveAdminButton({ userId, name }: { userId: string; name: stri
         error={failed ? t("failed") : null}
         onConfirm={confirm}
       />
+    </>
+  );
+}
+
+/**
+ * "Change level" in an administrator's detail: the two levels and a save
+ * that applies on their next request.
+ */
+export function ChangeLevelButton({
+  userId,
+  name,
+  level,
+}: {
+  userId: string;
+  name: string;
+  level: AdminLevel;
+}) {
+  const t = useTranslations("admin.admins.changeLevel");
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [next, setNext] = useState<AdminLevel>(level);
+  const [failed, setFailed] = useState(false);
+  const [pending, startTransition] = useTransition();
+
+  function save(event: FormEvent) {
+    event.preventDefault();
+    setFailed(false);
+    startTransition(async () => {
+      const result = await setAdminLevel(userId, next).catch(() => ({ ok: false }) as const);
+      if (!result.ok) return setFailed(true);
+      setOpen(false);
+      router.refresh();
+    });
+  }
+
+  return (
+    <>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => {
+          setNext(level);
+          setFailed(false);
+          setOpen(true);
+        }}
+      >
+        {t("open")}
+      </Button>
+      <ResponsiveDialog
+        open={open}
+        onOpenChange={(value) => !pending && setOpen(value)}
+        title={t("title", { name })}
+        closeLabel={t("cancel")}
+      >
+        <form onSubmit={save} className="flex flex-col gap-4" data-testid="admin-level-form">
+          <LevelChoice name={`level-${userId}`} value={next} onChange={setNext} />
+          <p className="text-xs text-ink-muted">{t("hint")}</p>
+          {failed && <FormAlert>{t("failed")}</FormAlert>}
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+              {t("cancel")}
+            </Button>
+            <Button type="submit" disabled={pending || next === level}>
+              {t("save")}
+            </Button>
+          </div>
+        </form>
+      </ResponsiveDialog>
     </>
   );
 }

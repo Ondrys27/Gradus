@@ -6458,8 +6458,9 @@
         "explorer": "Explorer",
         "admins": "Administrators",
         "plans": "Plans",
-        "errorAlerts": "Error alerts",
-        "promoCodes": "Promo codes"
+        "promoCodes": "Promo codes",
+        "errors": "Errors",
+        "help": "Help"
       },
       "soon": "Soon",
       "groups": {
@@ -6472,11 +6473,11 @@
       "collapse": "Collapse menu",
       "expand": "Expand menu",
       "close": "Close",
-      "switcherHint": "switches sections",
+      "switcherHint": "finds sections and settings",
       "switcher": {
-        "title": "Go to section",
-        "placeholder": "Type a section name…",
-        "empty": "No section matches.",
+        "title": "Search the administration",
+        "placeholder": "A section, a setting or an action…",
+        "empty": "Nothing matches. Try another word or the Help page.",
         "hint": "↑↓ to choose, Enter to open, Esc to close. / jumps to the search field."
       }
     },
@@ -6691,7 +6692,8 @@
         },
         "sectionTitle": "Caps",
         "sectionDescription": "Changing a cap changes what Grady may spend from the next minute on.",
-        "periodNote": "The fields are monthly caps. The meters below compare the spend {period} with the caps scaled to this period (monthly cap / days of the month for each day)."
+        "periodNote": "The fields are monthly caps. The meters below compare the spend {period} with the caps scaled to this period (monthly cap / days of the month for each day).",
+        "changedBy": "Last changed by {name}, {date}"
       },
       "period": {
         "month": "this month",
@@ -6831,9 +6833,10 @@
           "number": "Enter a whole number from {min} to {max}.",
           "instructions": "At most {max} characters.",
           "invalid": "A value did not pass the check.",
-          "forbidden": "Only the owner with a second factor changes the rules.",
+          "forbidden": "Only the owner or a full administrator with a second factor changes the rules.",
           "failed": "Saving failed. Try again."
-        }
+        },
+        "changedBy": "Last changed by {name}, {date}"
       },
       "topSpacesTitle": "The 10 costliest spaces",
       "topSpacesDescription": "AI spend by space: every call in a company counts to it, a worker's from another account too (the owner pays). Next to it the spend by user, wherever they were."
@@ -7009,7 +7012,7 @@
         "consoleEmpty": "None were recorded.",
         "screenshot": "Screenshot",
         "screenshotGone": "The screenshot could not be loaded.",
-        "screenshotOwnerOnly": "A screenshot is attached; only the owner can see it.",
+        "screenshotOwnerOnly": "A screenshot is attached; the owner and full administrators can see it.",
         "contact": "Reply to"
       },
       "openUser": "Account detail",
@@ -7140,7 +7143,7 @@
       "internalDescription": "An internal account (the owner, demo, tests) is left out of every metric unless the controls include it.",
       "subscription": {
         "title": "Subscription",
-        "description": "The account's plan, billing period and state; with Stripe payments also the links to Stripe and the latest payments. The owner changes it by hand.",
+        "description": "The account's plan, billing period and state; with Stripe payments also the links to Stripe and the latest payments. The owner or a full administrator changes it by hand.",
         "plan": "Plan",
         "billing": "Billing",
         "status": "Status",
@@ -7521,7 +7524,7 @@
     },
     "admins": {
       "title": "Administrators",
-      "description": "Who may enter the administration. An administrator sees everything except this section, does not change AI caps and does not export personal data.",
+      "description": "Who may enter the administration. A full administrator may do what the owner may except this section; a limited one only reads the settings and exports no personal data.",
       "membersTitle": "Owner and administrators",
       "role": {
         "owner": "Owner",
@@ -7587,6 +7590,26 @@
         "cancel": "Keep",
         "failed": "The administrator could not be removed. Try again.",
         "hint": "Removing takes effect at once, even in an open session."
+      },
+      "level": {
+        "label": "Level",
+        "full": {
+          "title": "Full",
+          "hint": "Everything the owner may: plans, AI caps, Grady's rules, subscriptions, payouts, e-mail changes, exports. Except the Administrators section."
+        },
+        "limited": {
+          "title": "Limited",
+          "hint": "Sees everything, but only reads plans, caps, rules, subscriptions and payouts, and exports no personal data."
+        }
+      },
+      "changeLevel": {
+        "open": "Change level",
+        "title": "Level: {name}",
+        "hint": "Applies at once, from their next step in the administration.",
+        "save": "Save",
+        "cancel": "Cancel",
+        "failed": "The level could not be changed. Try again.",
+        "rowHint": "What they may change in the administration."
       }
     },
     "table": {
@@ -7599,7 +7622,7 @@
     "plans": {
       "title": "Plans",
       "description": "Prices, limits and texts of the plans. Changes stay a draft; the website and the app see them only once published.",
-      "readOnly": "The owner edits and publishes the plans.",
+      "readOnly": "The owner or a full administrator edits and publishes the plans.",
       "status": {
         "noDraft": "You're editing the published version. Saving creates a draft.",
         "draft": "Draft in progress (started {date}). The website shows the published version.",
@@ -7804,7 +7827,7 @@
       "save": "Save",
       "saving": "Saving…",
       "saved": "Saved.",
-      "readOnly": "Only the owner changes these settings.",
+      "readOnly": "The owner or a full administrator changes these settings.",
       "updated": "Last changed by {name}, {date}",
       "unknownPerson": "an unknown account",
       "errors": {
@@ -7965,7 +7988,7 @@
       "payouts": {
         "title": "Commission payouts",
         "description": "Made automatically on the first payment of a user with the code, from the payment without VAT.",
-        "readOnly": "The owner approves payouts and marks them paid.",
+        "readOnly": "The owner or a full administrator approves payouts and marks them paid.",
         "empty": "No payouts yet.",
         "created": "Created",
         "user": "User",
@@ -7983,12 +8006,332 @@
         "markPaid": "Mark paid",
         "export": "CSV export for the accountant",
         "errors": {
-          "forbidden": "Only the owner with a live admin session changes payouts.",
+          "forbidden": "Only the owner or a full administrator with a live admin session changes payouts.",
           "transition": "The payout has changed meanwhile. Reload the page.",
           "invalid": "Invalid payout.",
           "failed": "Could not save. Try again."
         }
       }
+    },
+    "help": {
+      "title": "Help",
+      "description": "What each section holds and what is set there.",
+      "searchHint": "Tip: ⌘K (Ctrl+K) also finds single settings and actions, such as “AI cap”, “promo code” or “password reset”, and goes straight to them.",
+      "open": "Open",
+      "sections": {
+        "overview": "The main numbers in one place: new people, active accounts, money and the warnings that need attention.",
+        "growth": "Where people come from and how many sign up, by day and source.",
+        "activation": "How far new people get: the onboarding, the first milestone, the tutorial, the sign-up conversion.",
+        "retention": "Who comes back: cohorts, active days and sessions.",
+        "users": "The accounts, searchable by name, e-mail or id. An account's detail has the support actions: password reset, a new confirmation, sign-out, e-mail change, subscription and AI exception.",
+        "feedback": "Problem reports from users, ideas and the satisfaction survey.",
+        "features": "Which sections of the app people use, and how much.",
+        "game": "XP, levels, streaks and badges.",
+        "ai": "What Grady costs, the AI usage cap, the costliest users and spaces. The Rules tab says when Grady speaks up on his own and holds the instructions for him.",
+        "explorer": "Your own question over the analytics events.",
+        "costs": "Cost per user, plan margins and payments for the period.",
+        "health": "How running it goes: server latency, scheduled jobs and the exchange-rate sources.",
+        "errors": "Every caught error grouped by fingerprint, with a state and its occurrences. The second tab says where the e-mails about errors go.",
+        "audit": "Who saw and changed what in the administration, newest first.",
+        "plans": "The plan catalog: the draft, publishing, prices in currencies, add-ons and the history of versions.",
+        "promoCodes": "Partners' codes, their sign-ups, paying accounts and commission payouts.",
+        "admins": "Who may enter the administration: invitations, levels and removal of administrators.",
+        "help": "This page: what is where, with links straight to the place."
+      },
+      "items": {
+        "overviewNumbers": {
+          "title": "Main numbers",
+          "keywords": "overview tiles metrics"
+        },
+        "overviewWarnings": {
+          "title": "Warnings on the overview",
+          "keywords": "warning e-mail confirmation"
+        },
+        "growthSignups": {
+          "title": "Sign-ups and sources",
+          "keywords": "signups source visits growth"
+        },
+        "activationFunnel": {
+          "title": "Activation funnel",
+          "keywords": "activation onboarding tutorial conversion"
+        },
+        "retentionCohorts": {
+          "title": "Cohorts and returns",
+          "keywords": "retention cohort active days"
+        },
+        "usersSearch": {
+          "title": "Find a user",
+          "keywords": "search account e-mail name id"
+        },
+        "passwordReset": {
+          "title": "Password reset (in a user's detail)",
+          "keywords": "password forgot reset support"
+        },
+        "confirmationResend": {
+          "title": "Send the confirmation again",
+          "keywords": "confirmation verify e-mail support"
+        },
+        "signOutEverywhere": {
+          "title": "Sign out everywhere",
+          "keywords": "sign out sessions support"
+        },
+        "emailChange": {
+          "title": "Change a user's e-mail",
+          "keywords": "e-mail change address support"
+        },
+        "userSubscription": {
+          "title": "A user's subscription",
+          "keywords": "plan by hand stripe sync"
+        },
+        "userAiCap": {
+          "title": "A user's AI exception",
+          "keywords": "user cap block ai"
+        },
+        "userInternal": {
+          "title": "Internal account",
+          "keywords": "internal test exclude metrics"
+        },
+        "usersExport": {
+          "title": "Export users to CSV",
+          "keywords": "export csv e-mails personal data"
+        },
+        "bugReports": {
+          "title": "Problem reports",
+          "keywords": "report bug screenshot status"
+        },
+        "featureRequests": {
+          "title": "Ideas from users",
+          "keywords": "idea feedback request"
+        },
+        "satisfaction": {
+          "title": "Satisfaction survey",
+          "keywords": "satisfaction nps survey"
+        },
+        "featureAdoption": {
+          "title": "Use of sections",
+          "keywords": "features sections adoption"
+        },
+        "gameXp": {
+          "title": "XP and levels",
+          "keywords": "game xp level streak badges"
+        },
+        "aiBudget": {
+          "title": "AI budget",
+          "keywords": "spend credit budget grady"
+        },
+        "aiCaps": {
+          "title": "AI usage cap",
+          "keywords": "ai cap limit spend monthly warning"
+        },
+        "aiTopUsers": {
+          "title": "Costliest users",
+          "keywords": "spend users spaces ai"
+        },
+        "aiConnection": {
+          "title": "Test Grady's connection",
+          "keywords": "test connection model ping"
+        },
+        "gradyRules": {
+          "title": "Grady's rules",
+          "keywords": "proactive suggestions questions gap grady"
+        },
+        "gradyInstructions": {
+          "title": "Instructions for Grady",
+          "keywords": "instructions prompt grady"
+        },
+        "explorerEvents": {
+          "title": "Your own query of events",
+          "keywords": "explorer event chart"
+        },
+        "costsMargin": {
+          "title": "Plan margins",
+          "keywords": "costs margin mrr"
+        },
+        "costsPayments": {
+          "title": "Payments for the period",
+          "keywords": "payments revenue refunded"
+        },
+        "healthJobs": {
+          "title": "Scheduled jobs",
+          "keywords": "cron jobs latency"
+        },
+        "healthRates": {
+          "title": "Exchange rates",
+          "keywords": "rates currencies ecb source"
+        },
+        "errorLog": {
+          "title": "Error log",
+          "keywords": "errors log occurrences"
+        },
+        "errorSearch": {
+          "title": "Find an error by its GR-… code",
+          "keywords": "error code gr search"
+        },
+        "errorStatus": {
+          "title": "An error's state (New, Being fixed, Resolved)",
+          "keywords": "resolve ignore error state"
+        },
+        "errorAlerts": {
+          "title": "E-mail alerts about errors",
+          "keywords": "e-mail addresses digest alerts errors"
+        },
+        "errorAlertsTest": {
+          "title": "Send a test error e-mail",
+          "keywords": "test e-mail"
+        },
+        "peerNotices": {
+          "title": "E-mails about changes of plans and caps",
+          "keywords": "e-mail change colleague switch off notice"
+        },
+        "auditLog": {
+          "title": "Who did what",
+          "keywords": "audit history changes"
+        },
+        "auditExport": {
+          "title": "Export the audit",
+          "keywords": "export audit csv"
+        },
+        "plansDraft": {
+          "title": "Edit the plans' draft",
+          "keywords": "price plan draft edit"
+        },
+        "plansPublish": {
+          "title": "Publish the plans",
+          "keywords": "publish prices plans"
+        },
+        "plansCurrencies": {
+          "title": "Prices in currencies and add-ons",
+          "keywords": "currency manual price add-on branding"
+        },
+        "plansHistory": {
+          "title": "History of plan versions",
+          "keywords": "history restore version"
+        },
+        "plansAccounts": {
+          "title": "Accounts on plans",
+          "keywords": "accounts count plan"
+        },
+        "promoCreate": {
+          "title": "Promo code",
+          "keywords": "promo code partner create discount"
+        },
+        "promoPayouts": {
+          "title": "Commission payouts",
+          "keywords": "payout commission partner approve"
+        },
+        "adminsInvite": {
+          "title": "Invite an administrator",
+          "keywords": "invitation admin administrator"
+        },
+        "adminsLevel": {
+          "title": "An administrator's level",
+          "keywords": "full limited level rights"
+        },
+        "adminsRemove": {
+          "title": "Remove an administrator",
+          "keywords": "remove admin"
+        },
+        "helpSearch": {
+          "title": "Search ⌘K",
+          "keywords": "search help shortcut"
+        }
+      }
+    },
+    "errors": {
+      "title": "Errors",
+      "description": "Every caught error grouped by fingerprint, with a state and its occurrences.",
+      "tabs": "Parts of the page",
+      "tab": {
+        "log": "Error log",
+        "alerts": "E-mail alerts"
+      },
+      "filters": {
+        "code": "Error code",
+        "status": "State",
+        "anyStatus": "Any state",
+        "latest": "Only since the last deployment",
+        "submit": "Search",
+        "clear": "Clear filters"
+      },
+      "status": {
+        "new": "New",
+        "in_progress": "Being fixed",
+        "resolved": "Resolved",
+        "ignored": "Ignore"
+      },
+      "statusLabel": "Error state",
+      "statusFailed": "The state could not be changed. Try again.",
+      "summary": "{count, plural, one {# error} other {# errors}}",
+      "versionNote": "version {version} only",
+      "codeNote": "a code search ignores the period",
+      "invalidCode": "This is not an error code.",
+      "invalidCodeHint": "A code looks like GR-7K3M9Q; its beginning is enough.",
+      "emptyTitle": "No errors",
+      "emptyHint": "Nothing was caught in this period with these filters.",
+      "columns": {
+        "code": "Last code",
+        "message": "Message",
+        "where": "Where",
+        "count": "Times",
+        "users": "Users",
+        "seen": "Last · first",
+        "version": "Version",
+        "status": "State"
+      },
+      "lastAt": "{at}",
+      "firstAt": "first {at}",
+      "cameBack": "came back",
+      "cameBackAt": "Came back {at}",
+      "pagination": "Error pages",
+      "newer": "Newer",
+      "older": "Older",
+      "page": "Page {page}",
+      "detail": {
+        "title": "Error",
+        "description": "The occurrences, the e-mails sent and the reports about this error.",
+        "changedBy": "State last changed by {name}, {date}",
+        "missing": "This error is no longer in the log (records are deleted after 13 months).",
+        "occurrences": "{count, plural, one {The last occurrence} other {The last # occurrences}}",
+        "openUser": "Open the account",
+        "anonymous": "Signed out",
+        "stack": "Stack (first 10 lines)",
+        "sends": "E-mails sent",
+        "noSends": "No e-mail went out about this error.",
+        "recipients": "{count, plural, one {# address} other {# addresses}}",
+        "sendStatus": {
+          "sent": "sent",
+          "failed": "failed",
+          "pending": "waiting"
+        },
+        "mock": "test, not sent",
+        "reports": "Users' reports with the same code",
+        "noReports": "Nobody reported this error."
+      },
+      "peer": {
+        "title": "E-mails about changes",
+        "description": "When someone else (the owner or a full administrator) publishes the plans or changes the AI caps, you get an e-mail with a link.",
+        "label": "E-mail me about changes of plans and AI caps",
+        "hint": "Applies to you only.",
+        "failed": "The setting could not be saved. Try again."
+      }
+    },
+    "peerNotice": {
+      "subject": {
+        "plansPublished": "{name} changed the plans",
+        "plansRestored": "{name} brought back an earlier version of the plans",
+        "aiCaps": "{name} changed the AI usage cap",
+        "aiUserCap": "{name} changed a user's AI exception"
+      },
+      "body": {
+        "plansPublished": "{name} just published a new version of the plans in the {appName} administration. It applies at once on the website and in the app.",
+        "plansRestored": "{name} just brought back an earlier version of the plans in the {appName} administration. It applies at once on the website and in the app.",
+        "aiCaps": "{name} just changed the AI usage cap in the {appName} administration. It applies within a minute.",
+        "aiUserCap": "{name} just changed one user's AI exception in the {appName} administration."
+      },
+      "open": "Open in the administration",
+      "audit": "What exactly changed, from what to what, is in the audit:",
+      "auditLink": "Open the audit",
+      "off": "Switch these e-mails off in the administration → Errors → E-mail alerts → E-mails about changes."
     }
   },
   "invoices": {

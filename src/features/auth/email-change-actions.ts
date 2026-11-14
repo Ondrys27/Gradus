@@ -3,7 +3,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { EMAIL_CHANGE_CONFIRMED_TARGET, roleMaySupport } from "@/features/admin/account-support";
 import { accountSupportBlock } from "@/features/admin/roles";
-import { loadAdminRoles } from "@/features/admin/server/account-data";
+import { loadAdminActor, loadAdminRoles } from "@/features/admin/server/account-data";
 import { fingerprint, requestInfo } from "@/features/admin/server/request-info";
 import { emailChangeStillApplies, readEmailChangeToken } from "./email-change-token";
 
@@ -17,8 +17,8 @@ export type EmailChangeOutcome =
  * e-mail (confirmed, since the link reached the new address). Any other link
  * gets the same neutral answer. Called from the page in the browser, so a
  * mail scanner that only fetches the link changes nothing. Whoever asked
- * must still be allowed to now (the owner; the account still one the owner
- * helps), so a link outlives no change of roles.
+ * must still be allowed to now (the owner or a full admin; the account still one
+ * they help), so a link outlives no change of roles or levels.
  */
 export async function confirmEmailChange(token: string): Promise<EmailChangeOutcome> {
   const secret = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -31,16 +31,15 @@ export async function confirmEmailChange(token: string): Promise<EmailChangeOutc
   if (readError || !user.user || !emailChangeStillApplies(claim, user.user.email)) {
     return { ok: false, error: "invalid" };
   }
-  const [askerRoles, accountRoles] = await Promise.all([
-    loadAdminRoles(claim.requestedBy),
+  const [asker, accountRoles] = await Promise.all([
+    loadAdminActor(claim.requestedBy),
     loadAdminRoles(claim.userId),
   ]).catch(() => [null, null] as const);
-  const askerRole = askerRoles?.includes("owner") ? "owner" : askerRoles?.includes("admin") ? "admin" : null;
   if (
-    !askerRole ||
+    !asker ||
     !accountRoles ||
-    !roleMaySupport(askerRole, "emailChange") ||
-    accountSupportBlock({ userId: claim.requestedBy, role: askerRole }, { id: claim.userId, roles: accountRoles })
+    !roleMaySupport(asker, "emailChange") ||
+    accountSupportBlock({ userId: claim.requestedBy, role: asker.role }, { id: claim.userId, roles: accountRoles })
   ) {
     return { ok: false, error: "invalid" };
   }

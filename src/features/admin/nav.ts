@@ -1,5 +1,5 @@
 import { ADMIN_PATH } from "./access";
-import { adminCan, type AdminRole } from "./roles";
+import { adminCan, type AdminActor } from "./roles";
 
 /**
  * The five groups of the administration, in menu order. The overview stands
@@ -24,10 +24,11 @@ export const ADMIN_SECTIONS = [
   { key: "explorer", group: "product", href: `${ADMIN_PATH}/pruzkumnik`, ready: true },
   { key: "costs", group: "operations", href: `${ADMIN_PATH}/naklady`, ready: true },
   { key: "health", group: "operations", href: `${ADMIN_PATH}/zdravi`, ready: true },
+  // The error log; the e-mails about errors are its second tab (step 27.2).
+  { key: "errors", group: "operations", href: `${ADMIN_PATH}/chyby`, ready: true },
   { key: "audit", group: "operations", href: `${ADMIN_PATH}/audit`, ready: true },
   { key: "plans", group: "settings", href: `${ADMIN_PATH}/tarify`, ready: true },
   { key: "promoCodes", group: "settings", href: `${ADMIN_PATH}/promo-kody`, ready: true },
-  { key: "errorAlerts", group: "settings", href: `${ADMIN_PATH}/upozorneni`, ready: true },
   {
     key: "admins",
     group: "settings",
@@ -35,21 +36,23 @@ export const ADMIN_SECTIONS = [
     ready: true,
     ownerOnly: true,
   },
+  // What is where, from help-index.ts.
+  { key: "help", group: "settings", href: `${ADMIN_PATH}/napoveda`, ready: true },
 ] as const;
 
 export type AdminSectionKey = (typeof ADMIN_SECTIONS)[number]["key"];
 export type AdminSection = (typeof ADMIN_SECTIONS)[number];
 
-/** The sections a role sees: an admin never sees the owner's (not even greyed out). */
-export function sectionsFor(role: AdminRole) {
+/** The sections an actor sees: an admin of any level never sees the owner's (not even greyed out). */
+export function sectionsFor(actor: AdminActor) {
   return ADMIN_SECTIONS.filter(
-    (section) => !("ownerOnly" in section && section.ownerOnly) || adminCan(role, "manageAdmins"),
+    (section) => !("ownerOnly" in section && section.ownerOnly) || adminCan(actor, "manageAdmins"),
   );
 }
 
-/** The groups a role sees with their sections; a group with nothing to show is left out. */
-export function groupsFor(role: AdminRole): { key: AdminGroupKey; sections: AdminSection[] }[] {
-  const sections = sectionsFor(role);
+/** The groups an actor sees with their sections; a group with nothing to show is left out. */
+export function groupsFor(actor: AdminActor): { key: AdminGroupKey; sections: AdminSection[] }[] {
+  const sections = sectionsFor(actor);
   return ADMIN_GROUPS.map((key) => ({
     key,
     sections: sections.filter((section) => section.group === key),

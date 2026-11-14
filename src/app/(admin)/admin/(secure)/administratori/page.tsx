@@ -5,10 +5,11 @@ import { splitBrowserLabel } from "@/features/admin/client-info";
 import { ADMIN_FORMAT_SETTINGS } from "@/features/admin/format-metric";
 import { loadAdminMembers, loadOpenInvites } from "@/features/admin/server/admins-data";
 import { logAdminAction } from "@/features/admin/server/audit";
-import { requireOwnerFor } from "@/features/admin/server/guard";
+import { requireAdminPower } from "@/features/admin/server/guard";
 import { loadPeople } from "@/features/admin/server/people";
 import { displayName } from "@/features/admin/display-name";
 import {
+  ChangeLevelButton,
   InviteAdminButton,
   RemoveAdminButton,
   RevokeInviteButton,
@@ -32,7 +33,7 @@ const when = (iso: string | null, empty: string) =>
  * administrator is inside the member's history, with confirmation.
  */
 export default async function AdminAdminsPage() {
-  const context = await requireOwnerFor("manageAdmins");
+  const context = await requireAdminPower("manageAdmins");
   await logAdminAction(context, "view", "admins");
 
   const [members, invites, t, tBrowser, tDevice, tPeople] = await Promise.all([
@@ -58,9 +59,17 @@ export default async function AdminAdminsPage() {
 
   return (
     <>
-      <AdminPageBar title={t("title")} description={t("description")} controls={<InviteAdminButton />} />
+      <AdminPageBar
+        title={t("title")}
+        description={t("description")}
+        controls={
+          <div id="admins-invite">
+            <InviteAdminButton />
+          </div>
+        }
+      />
       <div className="flex flex-col gap-4">
-        <AdminCard title={t("membersTitle")}>
+        <AdminCard title={t("membersTitle")} id="admins-members">
           <ul className="-mx-4 flex flex-col divide-y divide-line md:-mx-5" data-testid="admin-members">
             {members.map((member) => {
               const person = people.get(member.userId);
@@ -79,6 +88,11 @@ export default async function AdminAdminsPage() {
                       <StatusPill tone={member.role === "owner" ? "gold" : "violet"}>
                         {t(`role.${member.role}`)}
                       </StatusPill>
+                      {member.role === "admin" && member.active && (
+                        <StatusPill tone={member.level === "full" ? "teal" : "neutral"}>
+                          {t(`level.${member.level}.title`)}
+                        </StatusPill>
+                      )}
                       <StatusPill tone={member.active ? "green" : "neutral"}>
                         {t(member.active ? "status.active" : "status.removed")}
                       </StatusPill>
@@ -138,6 +152,12 @@ export default async function AdminAdminsPage() {
                       {/* The one action with consequences on this page: at the end of the member's detail. */}
                       {removable && (
                         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3 text-sm">
+                          <span className="text-ink-muted">{t("changeLevel.rowHint")}</span>
+                          <ChangeLevelButton userId={member.userId} name={name} level={member.level} />
+                        </div>
+                      )}
+                      {removable && (
+                        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3 text-sm">
                           <span className="text-ink-muted">{t("remove.hint")}</span>
                           <RemoveAdminButton userId={member.userId} name={name} />
                         </div>
@@ -158,7 +178,12 @@ export default async function AdminAdminsPage() {
               {invites.map((invite) => (
                 <li key={invite.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                   <div className="flex min-w-0 flex-col gap-0.5 text-sm">
-                    <span className="truncate font-medium text-ink">{invite.email ?? t("noEmail")}</span>
+                    <span className="flex flex-wrap items-center gap-2">
+                      <span className="truncate font-medium text-ink">{invite.email ?? t("noEmail")}</span>
+                      <StatusPill tone={invite.level === "full" ? "teal" : "neutral"}>
+                        {t(`level.${invite.level}.title`)}
+                      </StatusPill>
+                    </span>
                     {invite.note && <span className="truncate text-ink-soft">{invite.note}</span>}
                     <span className="text-xs text-ink-muted">
                       {t("inviteDates", {

@@ -1,7 +1,7 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { toSiteLocale, type SiteLocale } from "@/lib/routes";
-import { parseAdminRole, type AdminRole } from "../roles";
+import { parseAdminLevel, parseAdminRole, type AdminActor, type AdminRole } from "../roles";
 
 /**
  * The Account card of a user's detail (support, step 22.1): the sign-in
@@ -64,6 +64,20 @@ export async function loadAdminRoles(userId: string): Promise<AdminRole[]> {
     const role = parseAdminRole(row.role);
     return role ? [role] : [];
   });
+}
+
+/** An account's standing in the administration (role and level), or null without a role there. */
+export async function loadAdminActor(userId: string): Promise<AdminActor | null> {
+  const { data, error } = await createAdminClient()
+    .from("user_roles")
+    .select("role, level")
+    .eq("user_id", userId);
+  if (error) throw new Error(`user_roles: ${error.message}`);
+  const rows = data ?? [];
+  const owner = rows.find((row) => row.role === "owner");
+  if (owner) return { role: "owner", level: "full" };
+  const admin = rows.find((row) => row.role === "admin");
+  return admin ? { role: "admin", level: parseAdminLevel("admin", admin.level) } : null;
 }
 
 export type UserReport = {

@@ -80,7 +80,7 @@ export default async function AdminPromoCodesPage() {
           )}
         </AdminCard>
 
-        <AdminCard title={t("list.title")} description={t("list.description")}>
+        <AdminCard title={t("list.title")} description={t("list.description")} id="promo-codes">
           {codes.length === 0 ? (
             <p className="text-sm text-ink-muted">{t("list.empty")}</p>
           ) : (

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { APP_HOME_PATH, localizedPath, type SiteLocale } from "@/lib/routes";
-import { adminCan, type AdminRole } from "./roles";
+import { adminCan, type AdminActor } from "./roles";
 
 /**
  * Helping one account from its detail in the administration (step 22.1):
@@ -61,21 +61,21 @@ export type SupportResult = { ok: true } | { ok: false; error: SupportError };
 /** What the detail knows about an account when it offers the actions. */
 export type SupportAccount = { email: string | null; emailConfirmed: boolean };
 
-/** Whether this role may start the action at all (the e-mail change is the owner's). */
-export function roleMaySupport(role: AdminRole, action: SupportAction): boolean {
-  return action !== "emailChange" || adminCan(role, "changeEmails");
+/** Whether this actor may start the action at all (the e-mail change: the owner or a full admin). */
+export function roleMaySupport(actor: AdminActor, action: SupportAction): boolean {
+  return action !== "emailChange" || adminCan(actor, "changeEmails");
 }
 
 /**
- * The actions that can work for this account now and that this role may
+ * The actions that can work for this account now and that this actor may
  * start (the confirmation only while it is missing, the e-mail change only
- * for the owner).
+ * for the owner and a full admin).
  */
-export function availableSupportActions(account: SupportAccount, role: AdminRole): SupportAction[] {
+export function availableSupportActions(account: SupportAccount, actor: AdminActor): SupportAction[] {
   const possible: readonly SupportAction[] = account.email ? SUPPORT_ACTIONS : ["signOut"];
   return possible.filter(
     (action) =>
-      roleMaySupport(role, action) && (action !== "confirmation" || !account.emailConfirmed),
+      roleMaySupport(actor, action) && (action !== "confirmation" || !account.emailConfirmed),
   );
 }
 

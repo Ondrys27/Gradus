@@ -20,6 +20,6 @@ export async function recordExport(target: string): Promise<{ ok: boolean }> {
   if (!parsed.success) return { ok: false };
   const context = await adminAccess(true);
   // Exports that name people are the owner's (the button is not shown to an admin).
-  if (!context || !mayExport(context.role, parsed.data)) return { ok: false };
+  if (!context || !mayExport(context, parsed.data)) return { ok: false };
   return { ok: await logAdminAction(context, "export", parsed.data) };
 }

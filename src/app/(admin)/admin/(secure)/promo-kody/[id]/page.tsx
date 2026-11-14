@@ -76,8 +76,8 @@ export default async function AdminPromoCodePage({ params, searchParams }: Props
     ...users.map((u) => u.userId),
     ...payouts.map((p) => p.userId),
   ]);
-  const canPay = adminCan(context.role, "managePayouts");
-  const canExport = mayExport(context.role, "promo_payouts");
+  const canPay = adminCan(context, "managePayouts");
+  const canExport = mayExport(context, "promo_payouts");
   const date = (value: string) => formatDate(new Date(value), ADMIN_FORMAT_SETTINGS);
   const money = (value: number, currency: string) =>
     formatCurrency(value, currency, ADMIN_FORMAT_SETTINGS, 2);
