@@ -3931,7 +3931,10 @@
         "someone": "Someone",
         "accept": "Accept",
         "decline": "Decline",
-        "open": "See the invite"
+        "open": "See the invite",
+        "acceptedTitle": "You joined {who}'s team",
+        "goThere": "Go to the company",
+        "later": "Later"
       },
       "survey": {
         "title": "How did the meeting with {guest} go?",
@@ -4123,7 +4126,8 @@
       "outro": "What they say is only in the app.",
       "open": "Open Messages",
       "turnOff": "Turn these notifications off",
-      "someone": "Someone"
+      "someone": "Someone",
+      "inCompany": "{item} ({company})"
     },
     "workerInvite": {
       "subject": "{who} invites you into their team on {appName}",
@@ -4372,10 +4376,13 @@
       "renewFailed": "A new link could not be created. Try again.",
       "waitingTitle": "{name} has the invite in the app",
       "waitingText": "They see it under the bell and by e-mail and accept or decline it. Valid until {date}.",
-      "waitingExpired": "The invite expired. Remove the worker and invite them again.",
+      "waitingExpired": "The invite expired. Send it again and it waits in their app for another 30 days.",
+      "resend": "Send again",
       "declined": "They declined the invite.",
       "replaced": "A newer invite to the same e-mail replaced this one. The old link no longer works.",
-      "replacedOld": "The earlier invite to this e-mail stopped working (replaced by a newer one)."
+      "replacedOld": "The earlier invite to this e-mail stopped working (replaced by a newer one).",
+      "share": "Share the link",
+      "shareText": "Hi {name}, I am inviting you to our team on {appName}. Sign up with this link:"
     },
     "detail": {
       "loadFailed": "This worker could not be loaded. Try again.",
@@ -4731,7 +4738,7 @@
         "delete": "Delete group: {name}",
         "show": "Show in the tree",
         "deleteTitle": "Delete the group “{name}”?",
-        "deleteDescription": "The memberships end; the workers stay in the company as they are.",
+        "deleteDescription": "The memberships end; the workers stay in the company as they are. The group's conversation in Messages stays read-only.",
         "deleteConfirm": "Delete group",
         "cancel": "Cancel",
         "close": "Close",
@@ -4777,6 +4784,8 @@
         "groupsHint": "Optional, you can change it any time."
       },
       "seat": {
+        "expired": "invite expired",
+        "expiredHint": "The invite can no longer be accepted, so you pay nothing for them. Send a new one when they want to join.",
         "own": "has their own plan",
         "included": "in the price",
         "extra": "extra {price}",
@@ -4786,7 +4795,8 @@
         "replaced": "replaced by a newer one",
         "extraBeforeSales": "extra {price} once payments start",
         "extraBeforeSalesHint": "Payments run in test mode only for now, so you pay nothing for this worker yet."
-      }
+      },
+      "allEnded": "Nobody works in the company right now. Ended people are in the status filter."
     },
     "dashboard": {
       "overview": {
@@ -8673,6 +8683,18 @@
       "deleted": "Deleted",
       "yes": "yes",
       "filePrefix": "messages"
+    },
+    "failedReasons": {
+      "fileMissing": "The attachment was lost when the page reloaded. Discard the message and send the file again.",
+      "upload": "The attachment could not be uploaded.",
+      "network": "No connection. It goes out on its own once you are online.",
+      "readOnly": "The account is read-only, writing is not possible now.",
+      "archived": "The group was deleted; the conversation is read-only.",
+      "forbidden": "You can no longer write to this conversation.",
+      "member": "This person is no longer in the company.",
+      "notFound": "The conversation no longer exists.",
+      "invalid": "The message or attachment cannot be sent (type or size).",
+      "unknown": "The message could not be sent."
     }
   },
   "tutorial": {
@@ -9137,7 +9159,9 @@
       "signedOut": "Sign in again and try once more.",
       "unknown": "Something went wrong. Try again.",
       "self": "This is an invite to your own company.",
-      "otherAccount": "The invite is for another account."
+      "otherAccount": "The invite is for another account.",
+      "notFound": "We could not find the invite. Ask the owner for a new one.",
+      "ownerOnly": "Only the company owner can do this."
     }
   },
   "inbox": {

@@ -32,12 +32,22 @@ import { PersonAvatar, usePeople } from "./people";
 import {
   CHAT_BODY_MAX,
   CHAT_FILE_MAX_BYTES,
-  CHAT_FILE_TYPES,
+  CHAT_FILE_ACCEPT,
+  chatFileType,
+  type ChatFileType,
   CHAT_FILES_MAX,
   type ChatMessage,
 } from "./types";
 
-type Picked = { id: string; file: File; preview: string | null; width?: number; height?: number };
+type Picked = {
+  id: string;
+  file: File;
+  /** The type it is sent as (chatFileType), not always what the system reported. */
+  mime: ChatFileType;
+  preview: string | null;
+  width?: number;
+  height?: number;
+};
 
 export type ComposerHandle = { focus: () => void };
 
@@ -234,7 +244,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
         files: files.map((item) => ({
           id: item.id,
           name: item.file.name.slice(0, 200) || "file",
-          mime: item.file.type,
+          mime: item.mime,
           size: item.file.size,
           ...(item.width && item.height ? { width: item.width, height: item.height } : {}),
           uploaded: false,
@@ -302,7 +312,8 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
         setError(t("tooMany", { count: CHAT_FILES_MAX }));
         break;
       }
-      if (!(CHAT_FILE_TYPES as readonly string[]).includes(file.type)) {
+      const mime = chatFileType(file);
+      if (!mime) {
         setError(t("badType", { name: file.name }));
         continue;
       }
@@ -310,8 +321,8 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
         setError(t("tooLarge", { name: file.name, size: formatNumber(CHAT_FILE_MAX_BYTES / 1024 / 1024, {}, settings) }));
         continue;
       }
-      const picked: Picked = { id: crypto.randomUUID(), file, preview: null };
-      if (isImageType(file.type)) {
+      const picked: Picked = { id: crypto.randomUUID(), file, mime, preview: null };
+      if (isImageType(mime)) {
         picked.preview = URL.createObjectURL(file);
         try {
           const bitmap = await createImageBitmap(file);
@@ -431,7 +442,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
               multiple
               hidden
               data-testid="chat-file-input"
-              accept={CHAT_FILE_TYPES.join(",")}
+              accept={CHAT_FILE_ACCEPT}
               onChange={(event) => void addFiles(event.target.files)}
             />
             <button

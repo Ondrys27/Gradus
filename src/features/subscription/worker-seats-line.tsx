@@ -6,7 +6,7 @@ import { isPaidPlanKey, type Billing, type PlanCatalog, type PriceCurrency } fro
 import { moneyIn } from "@/features/plan/localized";
 import type { RateTable } from "@/lib/exchange-rates";
 import { perWorkerPrice } from "@/features/plan/catalog";
-import { extraWorkersCharge, workerSeats, type WorkerSeats } from "@/features/plan/worker-seats";
+import { extraWorkersCharge, holdsSeat, workerSeats, type WorkerSeats } from "@/features/plan/worker-seats";
 import { formatNumber } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { money } from "./plan-price";
@@ -39,7 +39,7 @@ export function useWorkerCharge(
   const query = useWorkerBilling(enabled);
   if (!query.data) return null;
   const { planKey, terms, workers } = query.data;
-  const counted = workers.filter((worker) => worker.status !== "inactive");
+  const counted = workers.filter(holdsSeat);
   const seats = workerSeats(
     terms,
     counted.map((worker) => ({ id: worker.workerId, ownPlan: worker.ownPlan })),

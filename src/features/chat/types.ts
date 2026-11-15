@@ -39,6 +39,57 @@ export const CHAT_FILE_TYPES = [
 ] as const;
 export type ChatFileType = (typeof CHAT_FILE_TYPES)[number];
 
+/** Names browsers and systems give the same kinds of file (Windows reports a zip as x-zip-compressed). */
+const TYPE_ALIASES: Record<string, ChatFileType> = {
+  "application/x-zip-compressed": "application/zip",
+  "application/x-zip": "application/zip",
+  "application/zip-compressed": "application/zip",
+  "application/csv": "text/csv",
+  "text/x-csv": "text/csv",
+  "image/jpg": "image/jpeg",
+  "image/pjpeg": "image/jpeg",
+};
+
+/** For a file the system names nothing, or wrongly (a csv as Excel), the extension decides. */
+const BY_EXTENSION: Record<string, ChatFileType> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+  gif: "image/gif",
+  pdf: "application/pdf",
+  doc: "application/msword",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  xls: "application/vnd.ms-excel",
+  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ppt: "application/vnd.ms-powerpoint",
+  pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  odt: "application/vnd.oasis.opendocument.text",
+  ods: "application/vnd.oasis.opendocument.spreadsheet",
+  odp: "application/vnd.oasis.opendocument.presentation",
+  zip: "application/zip",
+  txt: "text/plain",
+  csv: "text/csv",
+};
+
+/** The file picker's filter: the types and their extensions (a zip on Windows is not "application/zip"). */
+export const CHAT_FILE_ACCEPT = [...CHAT_FILE_TYPES, ...Object.keys(BY_EXTENSION).map((ext) => `.${ext}`)].join(",");
+
+/**
+ * The type a picked file is sent as, or null when the chat does not take it.
+ * The server checks the bytes against it anyway (file-check.ts).
+ */
+export function chatFileType(file: { name: string; type: string }): ChatFileType | null {
+  const extension = file.name.includes(".") ? file.name.split(".").pop()!.toLowerCase() : "";
+  // Windows names a csv "application/vnd.ms-excel"; its bytes are text.
+  if (extension === "csv") return "text/csv";
+  const reported = file.type.toLowerCase();
+  if ((CHAT_FILE_TYPES as readonly string[]).includes(reported)) return reported as ChatFileType;
+  if (TYPE_ALIASES[reported]) return TYPE_ALIASES[reported];
+  if (!reported || reported === "application/octet-stream") return BY_EXTENSION[extension] ?? null;
+  return null;
+}
+
 export type ChatKind = "group" | "direct";
 
 export type ChatAttachment = {
@@ -62,6 +113,8 @@ export type ChatMessage = {
   deleted_at: string | null;
   /** Only in the browser: on its way, or not through yet (sent again on its own). */
   pending?: "sending" | "failed";
+  /** Why a message could not be sent (the outbox's error code), shown under it. */
+  pendingError?: string;
 };
 
 export const CHAT_MESSAGE_COLUMNS =

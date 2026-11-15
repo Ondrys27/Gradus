@@ -348,6 +348,22 @@ function CompanyPeople({
       {activeGroup && shown.matches === 0 && (
         <p className="text-sm text-ink-muted">{tc("filteredEmpty")}</p>
       )}
+      {viewer.kind === "owner" &&
+        onInvite &&
+        status === "current" &&
+        !activeGroup &&
+        !people.some((person) => person.status !== "inactive") && (
+          <div
+            className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-dashed border-line p-4"
+            data-testid="company-all-ended"
+          >
+            <p className="text-sm text-ink-soft">{tc("allEnded")}</p>
+            <Button size="sm" onClick={onInvite}>
+              <UserPlusIcon aria-hidden data-icon="inline-start" />
+              {t("add")}
+            </Button>
+          </div>
+        )}
 
       {layout === "map" ? (
         <CompanyMap {...viewProps} />

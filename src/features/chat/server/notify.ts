@@ -110,10 +110,23 @@ async function mailOne(admin: Admin, userId: string, origin: string | null) {
 
   const lines = await digestLines(admin, digest);
   if (!lines.length) return;
+  // One company: the button opens Messages there (the person may have another
+  // one open). Several: each line names its company and the button the chat.
+  const spaces = [...new Set(lines.map((line) => line.space))];
+  const messages = `${MESSAGES_PATH}?ref=email`;
+  const appUrl = !origin
+    ? null
+    : spaces.length === 1
+      ? `${origin}/app/prostor/${spaces[0]}?next=${encodeURIComponent(messages)}`
+      : `${origin}${messages}`;
+  if (spaces.length > 1) {
+    const companies = await companyNames(admin, spaces);
+    for (const line of lines) line.company = companies.get(line.space) ?? null;
+  }
   const mail = chatDigestEmail(
     lines,
     {
-      appUrl: origin ? `${origin}${MESSAGES_PATH}?ref=email` : null,
+      appUrl,
       settingsUrl: origin ? `${origin}${settingsHref("chatEmail")}` : null,
     },
     settings?.locale ?? null,
@@ -135,7 +148,26 @@ async function mailOne(admin: Admin, userId: string, origin: string | null) {
 
 type DigestRow = Database["public"]["Functions"]["chat_email_digest"]["Returns"][number];
 
-async function digestLines(admin: Admin, rows: readonly DigestRow[]): Promise<ChatDigestLine[]> {
+/** A company's name as the switcher shows it: its name, the name on invoices, the owner. */
+async function companyNames(admin: Admin, spaces: readonly string[]): Promise<Map<string, string>> {
+  const [{ data: profiles }, { data: invoices }] = await Promise.all([
+    admin.from("profiles").select("id, display_name, company_name").in("id", [...spaces]),
+    admin.from("invoice_profiles").select("user_id, name").in("user_id", [...spaces]),
+  ]);
+  const out = new Map<string, string>();
+  for (const space of spaces) {
+    const profile = profiles?.find((row) => row.id === space);
+    const invoice = invoices?.find((row) => row.user_id === space);
+    const name =
+      profile?.company_name?.trim() || invoice?.name?.trim() || profile?.display_name?.trim() || null;
+    if (name) out.set(space, name);
+  }
+  return out;
+}
+
+type SpacedLine = ChatDigestLine & { space: string };
+
+async function digestLines(admin: Admin, rows: readonly DigestRow[]): Promise<SpacedLine[]> {
   // The names of the people of direct conversations, per space.
   const peersBySpace = new Map<string, string[]>();
   for (const row of rows) {
@@ -148,11 +180,13 @@ async function digestLines(admin: Admin, rows: readonly DigestRow[]): Promise<Ch
     const { data } = await admin.rpc("chat_member_names", { _owner: space, _members: members });
     for (const row of data ?? []) if (row.name) names.set(row.member, row.name);
   }
-  return rows.flatMap((row): ChatDigestLine[] => {
+  return rows.flatMap((row): SpacedLine[] => {
     if (row.kind === "direct") {
       const name = (row.peer && names.get(row.peer)) || null;
-      return [{ kind: "direct", name, messages: row.messages, mentions: row.mentions }];
+      return [{ kind: "direct", name, messages: row.messages, mentions: row.mentions, space: row.owner_id }];
     }
-    return row.mentions > 0 ? [{ kind: "group", name: row.name || null, mentions: row.mentions }] : [];
+    return row.mentions > 0
+      ? [{ kind: "group", name: row.name || null, mentions: row.mentions, space: row.owner_id }]
+      : [];
   });
 }

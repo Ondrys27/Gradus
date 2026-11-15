@@ -23,7 +23,12 @@ import {
 import { subscriptionKeys } from "@/features/subscription/queries";
 import type { InviteTarget } from "./invite-target";
 import { PAGE_SIZE, type PaymentInput, type WorkerInput, type WorkerTaskInput } from "./logic";
-import { bindWorkerInvite, checkInviteAccount, type InviteErrorCode } from "./server/invites";
+import {
+  bindWorkerInvite,
+  checkInviteAccount,
+  renewAccountInvite,
+  type InviteErrorCode,
+} from "./server/invites";
 import {
   EARNING_COLUMNS,
   INVITE_COLUMNS,
@@ -389,12 +394,17 @@ export function useUpdateWorker(workerId: string) {
   });
 }
 
-/** A fresh link; earlier unused ones stop working. */
+/**
+ * A fresh invite; earlier unused ones stop working. With `previous` naming an
+ * account's invite, the fresh one waits in that account's app again and the
+ * person gets an e-mail (renewAccountInvite).
+ */
 export function useRenewInvite(workerId: string) {
   const { user } = useSession();
+  const settings = useUserSettings();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (email: string | null) => {
+    mutationFn: async ({ email, previous }: { email: string | null; previous?: WorkerInvite | null }) => {
       const supabase = createClient();
       // The new one first, so the old link can say it was replaced (27.1).
       const { data, error } = await supabase
@@ -403,6 +413,24 @@ export function useRenewInvite(workerId: string) {
         .select(INVITE_COLUMNS)
         .single();
       if (error) throw error;
+      let invite: WorkerInvite = data;
+      if (previous?.invitee_id) {
+        const bound = await renewAccountInvite({
+          inviteId: data.id,
+          previousInviteId: previous.id,
+          locale: settings.locale,
+        });
+        if (!bound.ok) {
+          await supabase.from("worker_invites").delete().eq("id", data.id);
+          throw new InviteActionError(bound.error);
+        }
+        const { data: fresh } = await supabase
+          .from("worker_invites")
+          .select(INVITE_COLUMNS)
+          .eq("id", data.id)
+          .maybeSingle();
+        if (fresh) invite = fresh;
+      }
       const { error: deleteError } = await supabase
         .from("worker_invites")
         .delete()
@@ -411,9 +439,13 @@ export function useRenewInvite(workerId: string) {
         .is("accepted_at", null);
       if (deleteError) throw deleteError;
       track("worker_invite_renewed", {});
-      return data;
+      return invite;
     },
     onSuccess: (invite) => queryClient.setQueryData(workerKeys.invite(user.id, workerId), invite),
+    onSettled: () => {
+      invalidateAll(queryClient, user.id);
+      void queryClient.invalidateQueries({ queryKey: subscriptionKeys.workers(user.id) });
+    },
   });
 }
 

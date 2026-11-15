@@ -236,7 +236,7 @@ function OwnerInvite({ worker }: { worker: DashboardWorker }) {
     <InviteCard
       invite={invite.data}
       workerName={worker.name}
-      onRenew={() => renew.mutate(worker.email)}
+      onRenew={() => renew.mutate({ email: worker.email, previous: invite.data })}
       renewing={renew.isPending}
       renewFailed={renew.isError}
     />
