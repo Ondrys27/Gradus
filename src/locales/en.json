@@ -879,7 +879,7 @@
       "haveAccount": "Already have an account? <link>Sign in</link>",
       "workerInvite": "You are joining {owner}'s team. Sign up with the e-mail they invited.",
       "workerInviteNoOwner": "You are joining a team. Sign up with the e-mail you were invited with.",
-      "workerInviteCompany": "You are joining {company}. Sign up with the e-mail you were invited with.",
+      "workerInviteCompany": "You are joining “{company}”. Sign up with the e-mail you were invited with.",
       "descriptionPublic": "14 days free, no credit card.",
       "inviteOptional": "Invite code (optional)",
       "inviteOptionalHint": "If you have an invite, enter it. Otherwise you start a 14-day trial.",
