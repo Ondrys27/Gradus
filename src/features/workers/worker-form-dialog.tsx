@@ -68,6 +68,7 @@ export function WorkerFormDialog({
     name: string;
     invite: WorkerInvite;
     bound: boolean;
+    emailed: boolean;
     replaced: boolean;
   } | null>(null);
 
@@ -100,6 +101,11 @@ export function WorkerFormDialog({
             </p>
           )}
           <InviteCard invite={created.invite} workerName={created.name} />
+          {created.emailed && (
+            <p className="text-sm text-teal" data-testid="invite-emailed">
+              {tInvite("emailed")}
+            </p>
+          )}
           <Button onClick={() => change(false)} className="self-end">
             {t("done")}
           </Button>
@@ -131,7 +137,13 @@ function Fields({
   permissions?: PermissionGrants;
   defaultManagerId: string | null;
   onCancel: () => void;
-  onCreated: (result: { name: string; invite: WorkerInvite; bound: boolean; replaced: boolean }) => void;
+  onCreated: (result: {
+    name: string;
+    invite: WorkerInvite;
+    bound: boolean;
+    emailed: boolean;
+    replaced: boolean;
+  }) => void;
   onSaved: () => void;
 }) {
   const t = useTranslations("workers.form");
@@ -181,7 +193,7 @@ function Fields({
     }
     setErrors({});
     try {
-      const { worker: saved, invite, bound, replaced } = await create.mutateAsync({
+      const { worker: saved, invite, bound, emailed, replaced } = await create.mutateAsync({
         worker: {
           ...result.data,
           email: target.target.kind === "email" ? target.target.email : null,
@@ -191,7 +203,7 @@ function Fields({
         groupIds: [...groupIds],
         target: target.target,
       });
-      onCreated({ name: saved.name, invite, bound, replaced });
+      onCreated({ name: saved.name, invite, bound, emailed, replaced });
     } catch (error) {
       const code = error instanceof InviteActionError ? TARGET_ERRORS[error.code] : undefined;
       if (code) setErrors({ email: code });

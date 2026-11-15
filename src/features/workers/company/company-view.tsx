@@ -320,7 +320,7 @@ function CompanyPeople({
               <SelectTrigger
                 aria-labelledby="company-group-filter"
                 data-testid="company-group-filter"
-                className="min-w-48"
+                className="w-auto min-w-48"
               >
                 <SelectValue />
               </SelectTrigger>
@@ -333,9 +333,7 @@ function CompanyPeople({
               </SelectContent>
             </Select>
           </div>
-        ) : (
-          <span />
-        )}
+        ) : null}
         <div className="flex flex-wrap items-center gap-2">
           <StatusSelect value={status} onChange={onStatusChange} />
           <LayoutSwitch value={layout} onChange={setLayout} />
@@ -398,7 +396,7 @@ function StatusSelect({
         <SelectTrigger
           aria-labelledby="company-status-filter"
           data-testid="company-status-filter"
-          className="min-w-36"
+          className="w-auto min-w-36"
         >
           <SelectValue />
         </SelectTrigger>

@@ -45,7 +45,7 @@ export function DashboardHeader({
         <PhotoEditor worker={worker} canChange={photo} />
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           {editable ? (
-            <div className="grid grid-cols-1 gap-x-3 sm:grid-cols-2">
+            <div className="grid grid-cols-2 gap-x-3">
               <EditableText
                 id="worker-first-name"
                 value={worker.firstName}

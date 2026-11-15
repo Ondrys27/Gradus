@@ -325,6 +325,7 @@ export function useCreateWorker() {
       });
       let invite: WorkerInvite = created;
       let bound = false;
+      let emailed = false;
       if (target) {
         const result = await bindWorkerInvite({
           inviteId: created.id,
@@ -337,7 +338,10 @@ export function useCreateWorker() {
             await undo();
             throw new InviteActionError(result.error);
           }
-        } else if (result.data.bound) {
+        } else {
+          emailed = result.data.emailed;
+        }
+        if (result.ok && result.data.bound) {
           bound = true;
           const { data: fresh } = await supabase
             .from("worker_invites")
@@ -358,7 +362,7 @@ export function useCreateWorker() {
         .select("id", { count: "exact", head: true })
         .eq("owner_id", user.id)
         .eq("replaced_by", created.id);
-      return { worker, invite, bound, replaced: (replaced ?? 0) > 0 };
+      return { worker, invite, bound, emailed, replaced: (replaced ?? 0) > 0 };
     },
     onSettled: () => {
       invalidateAll(queryClient, user.id);

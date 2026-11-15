@@ -174,6 +174,8 @@ export async function checkInviteAccount(publicId: string): Promise<InviteResult
 export type BindOutcome = {
   /** The invite waits for an existing account in the app; false = a link for a new person. */
   bound: boolean;
+  /** The person got the invite by e-mail too (never for test addresses or past the hourly cap). */
+  emailed: boolean;
 };
 
 /**
@@ -226,6 +228,7 @@ export async function bindWorkerInvite(input: {
     }
 
     // The e-mail is a courtesy: a failure or the hourly cap leaves the invite as it is.
+    let emailed = false;
     const { count } = await admin
       .from("worker_invites")
       .select("id", { count: "exact", head: true })
@@ -250,10 +253,11 @@ export async function bindWorkerInvite(input: {
           locale,
         );
         const sent = await sendEmail({ to: contact.email, ...mail });
-        if (!sent.ok) console.error("[workers] invite e-mail failed", sent.error);
+        if (sent.ok) emailed = true;
+        else console.error("[workers] invite e-mail failed", sent.error);
       }
     }
-    return { bound };
+    return { bound, emailed };
   });
 }
 

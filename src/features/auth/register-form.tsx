@@ -30,6 +30,8 @@ export type RegisterInvite = {
   workerName: string;
   email: string | null;
   ownerName: string | null;
+  /** The company's name as the switcher shows it; the owner's name is the fallback. */
+  companyName?: string | null;
 };
 
 export function RegisterForm({
@@ -85,9 +87,11 @@ export function RegisterForm({
       )}
       {invite && (
         <p className="rounded-xl border border-teal/30 bg-teal/10 p-3 text-sm text-teal">
-          {invite.ownerName
-            ? t("register.workerInvite", { owner: invite.ownerName })
-            : t("register.workerInviteNoOwner")}
+          {invite.companyName
+            ? t("register.workerInviteCompany", { company: invite.companyName })
+            : invite.ownerName
+              ? t("register.workerInvite", { owner: invite.ownerName })
+              : t("register.workerInviteNoOwner")}
         </p>
       )}
       <FormField
