@@ -414,7 +414,21 @@ export function useRenewInvite(workerId: string) {
         .single();
       if (error) throw error;
       let invite: WorkerInvite = data;
-      if (previous?.invitee_id) {
+      let rebound = false;
+      if (!previous?.invitee_id && email) {
+        // A link for an e-mail: it goes out by e-mail again; an account made
+        // with that address since then gets it in the app instead.
+        const sent = await bindWorkerInvite({ inviteId: data.id, target: email, locale: settings.locale });
+        rebound = sent.ok && sent.data.bound;
+      }
+      if (rebound) {
+        const { data: fresh } = await supabase
+          .from("worker_invites")
+          .select(INVITE_COLUMNS)
+          .eq("id", data.id)
+          .maybeSingle();
+        if (fresh) invite = fresh;
+      } else if (previous?.invitee_id) {
         const bound = await renewAccountInvite({
           inviteId: data.id,
           previousInviteId: previous.id,
