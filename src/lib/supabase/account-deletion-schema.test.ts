@@ -334,6 +334,11 @@ describe("deleting an account", () => {
     ).toBe(1);
 
     const before = await footprint([boss, appOwner]);
+    // The deals the worker was on in the boss's space (deal_assignees).
+    const workerOnDeals = await count(
+      `select 1 from deal_assignees where user_id = $1 and assignee_id = $2`,
+      [boss, worker],
+    );
 
     await asServiceRole();
     await db.query(`select public.account_prepare_deletion($1)`, [worker]);
@@ -341,11 +346,14 @@ describe("deleting an account", () => {
     await db.query(`delete from auth.users where id = $1`, [worker]);
 
     // Every row of the boss and the app owner is still there; only the
-    // worker's own membership of the boss's space went with the account.
+    // worker's own membership of the boss's space and their places on its
+    // deals went with the account.
     const membershipKey = `memberships.space_id:${boss}`;
+    const assigneesKey = `deal_assignees.user_id:${boss}`;
     expect(await footprint([boss, appOwner])).toEqual({
       ...before,
       [membershipKey]: before[membershipKey] - 1,
+      [assigneesKey]: before[assigneesKey] - workerOnDeals,
     });
 
     expect(await count(`select 1 from deals where user_id = $1`, [boss])).toBe(bossDeals);

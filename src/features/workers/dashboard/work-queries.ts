@@ -56,13 +56,24 @@ export function useWorkerDeals(workerId: string, accountId: string | null) {
       if (!accountId) return [];
       const { data, error } = await createClient()
         .from("deals")
-        .select(WORK_DEAL_COLUMNS)
+        // Every deal the person is on, not only the ones they were first on.
+        .select(`${WORK_DEAL_COLUMNS}, on:deal_assignees!inner(assignee_id)`)
         .eq("user_id", workspaceId)
-        .eq("assignee_id", accountId)
+        .eq("on.assignee_id", accountId)
         .order("created_at", { ascending: false })
         .limit(DEALS_LIMIT);
       if (error) throw error;
-      return data.map((row) => ({ ...row, value: row.value === null ? null : Number(row.value) }));
+      return data.map((row) => ({
+        id: row.id,
+        title: row.title,
+        value: row.value === null ? null : Number(row.value),
+        currency: row.currency,
+        stage_id: row.stage_id,
+        expected_close_date: row.expected_close_date,
+        created_at: row.created_at,
+        won_at: row.won_at,
+        lost_at: row.lost_at,
+      }));
     },
   });
 }

@@ -12,6 +12,9 @@ import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { DemoBadge } from "@/features/tutorial/demo-badge";
 import { contactLabel } from "./board-logic";
+import { dealAssigneeIds } from "./assignees";
+import { PeopleFaces, usePeopleLabel } from "./deal-people";
+import { useAssignees } from "@/features/crm-tasks/queries";
 import type { Deal } from "./types";
 
 type BodyProps = {
@@ -27,7 +30,11 @@ export function DealCardBody({ deal, relaunchable, muted, className }: BodyProps
   const t = useTranslations("pipeline.card");
   const settings = useFormatSettings();
   const seeAmounts = useCan("pipeline", "see_amounts");
+  const peopleLabel = usePeopleLabel();
   const contact = contactLabel(deal.contact);
+  // Who works on it, once the space has more than one person.
+  const team = (useAssignees().data?.length ?? 0) > 1;
+  const people = dealAssigneeIds(deal);
 
   return (
     <div
@@ -56,6 +63,12 @@ export function DealCardBody({ deal, relaunchable, muted, className }: BodyProps
             <CalendarIcon aria-hidden className="size-3.5" />
             {formatCalendarDate(deal.expected_close_date, settings)}
           </span>
+        )}
+        {team && people.length > 0 && (
+          <>
+            <PeopleFaces ids={people} />
+            <span className="sr-only">{t("people", { people: peopleLabel(people) })}</span>
+          </>
         )}
       </div>
       {relaunchable && (

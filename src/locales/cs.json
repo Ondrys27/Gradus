@@ -658,6 +658,7 @@
       "deleted_contact": "Smazal jsem kontakt {name}",
       "create_deal": "Založil jsem obchod „{title}“",
       "update_deal": "Upravil jsem obchod „{title}“",
+      "set_deal_people": "Nastavil jsem lidi na obchodu „{title}“",
       "move_deal_stage": "Přesunul jsem obchod „{title}“ do fáze {stage}",
       "won_deal": "Obchod „{title}“ je vyhraný",
       "add_deal_contact": "Přidal jsem {name} k obchodu „{title}“",
@@ -748,6 +749,7 @@
         "delete_contact": "Připravuji smazání kontaktu…",
         "create_deal": "Zakládám obchod…",
         "update_deal": "Upravuji obchod…",
+        "set_deal_people": "Nastavuji lidi na obchodu…",
         "move_deal_stage": "Posouvám obchod…",
         "add_deal_contact": "Přidávám kontakt k obchodu…",
         "delete_deal": "Připravuji smazání obchodu…",
@@ -2316,7 +2318,8 @@
     "card": {
       "open": "Otevřít obchod {title}",
       "noContact": "Bez kontaktu",
-      "relaunch": "Možné znovu oslovit"
+      "relaunch": "Možné znovu oslovit",
+      "people": "Na obchodu: {people}"
     },
     "stage": {
       "rename": "Název fáze (nyní {name})",
@@ -2384,7 +2387,8 @@
       "assignee": "Pracovník",
       "deadline": "Datum realizace (deadline)",
       "deadlineHint": "Ukáže se v kalendáři jako celodenní událost.",
-      "created": "Vytvořeno"
+      "created": "Vytvořeno",
+      "people": "Lidé na obchodu"
     },
     "lost": {
       "title": "Označit jako ztracený",
@@ -2581,6 +2585,11 @@
       "loadFailed": "Fáze pipeline se nepodařilo načíst. Zkus to znovu.",
       "noStages": "Pipeline nemá žádnou otevřenou fázi. Přidej ji v Pipeline.",
       "cancel": "Zrušit"
+    },
+    "people": {
+      "label": "Lidé na obchodu: {people}",
+      "nobody": "Nikdo",
+      "andMore": "{name} a {count, plural, one {# další} few {# další} other {# dalších}}"
     }
   },
   "crmTasks": {
@@ -2877,7 +2886,7 @@
       "wonOn": "Vyhráno {date}",
       "lostOn": "Ztraceno {date}",
       "open": "Otevřít obchod {title}",
-      "assignee": "Pracovník: {name}"
+      "assignee": "Na obchodu: {name}"
     },
     "activity": {
       "title": "Historie aktivit",

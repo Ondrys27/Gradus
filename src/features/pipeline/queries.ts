@@ -4,10 +4,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
 import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { invalidateFinance } from "@/features/finance/queries";
+import { companyKeys } from "@/features/workers/company/queries";
 import { track } from "@/lib/analytics/client";
 import { clientOps } from "@/lib/ops-client";
 import { createClient } from "@/lib/supabase/client";
 import { applyMove, nextDealPosition, reorderStages, sortStages } from "./board-logic";
+import { dealAssigneeIds, nextAssignees } from "./assignees";
 import { fetchDealTaskSignals, type DealTaskSignals } from "./health-data";
 import {
   addDealContact,
@@ -15,6 +17,7 @@ import {
   deleteDeal,
   moveDeal,
   patchDeal,
+  setDealAssignees,
   type DealSource,
 } from "./ops";
 import { type DealInput, type DealPatch, type StageInput } from "./schemas";
@@ -273,6 +276,56 @@ export function usePatchDeal(id: string) {
         void queryClient.invalidateQueries({ queryKey: ["calendar", user.id] });
       }
       if ("title" in patch) void invalidateContacts(queryClient, user.id);
+    },
+  });
+}
+
+/**
+ * Everyone on a deal at once, shown at once on the board and in the detail;
+ * a refusal puts the list back. Their tasks, Company and the tiles follow.
+ */
+export function useSetDealAssignees(id: string) {
+  const { user } = useSession();
+  const queryClient = useQueryClient();
+  const key = pipelineKeys.deals(user.id);
+  return useMutation({
+    scope: { id: `deal-patch:${id}` },
+    mutationFn: ({ ids, before }: { ids: string[]; before: string[] }) =>
+      setDealAssignees(clientOps(), { dealId: id, before, ids, from: "detail" }),
+    onMutate: async ({ ids }) => {
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<Deal[]>(key);
+      const now = new Date().toISOString();
+      queryClient.setQueryData<Deal[]>(key, (deals) =>
+        deals?.map((deal) =>
+          deal.id === id
+            ? {
+                ...deal,
+                assignees: nextAssignees(
+                  (deal.assignees ?? []).length > 0
+                    ? deal.assignees!
+                    : dealAssigneeIds(deal).map((assignee_id) => ({ assignee_id, created_at: deal.created_at })),
+                  ids,
+                  now,
+                ),
+              }
+            : deal,
+        ),
+      );
+      return { previous };
+    },
+    onError: (_error, _vars, context) => {
+      if (context?.previous) queryClient.setQueryData(key, context.previous);
+    },
+    onSuccess: (row) => {
+      queryClient.setQueryData<Deal[]>(key, (deals) =>
+        deals?.map((deal) => (deal.id === row.id ? row : deal)),
+      );
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: pipelineKeys.deal(user.id, id) });
+      void queryClient.invalidateQueries({ queryKey: ["crmTasks", user.id] });
+      void queryClient.invalidateQueries({ queryKey: companyKeys.tree(user.id) });
     },
   });
 }

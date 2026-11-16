@@ -213,6 +213,23 @@ describe("a worker", () => {
     // "mine" has an open task (the owner's), so it is not without one.
     expect(result.noTask.count).toBe(0);
   });
+
+  it("counts a deal they share with others as theirs too", () => {
+    const result = health({
+      assigneeId: WORKER,
+      deals: [
+        deal("shared", {
+          expected_close_date: "2026-11-01",
+          assignees: [
+            { assignee_id: OWNER, created_at: "2026-10-01T00:00:00Z" },
+            { assignee_id: WORKER, created_at: "2026-10-02T00:00:00Z" },
+          ],
+        }),
+      ],
+      tasks: [],
+    });
+    expect(result.closePast.rows.map((row) => row.deal.id)).toEqual(["shared"]);
+  });
 });
 
 describe("helpers", () => {

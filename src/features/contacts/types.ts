@@ -1,3 +1,4 @@
+import type { DealAssignee } from "@/features/pipeline/assignees";
 import type { Database } from "@/types/database";
 import type { Tone } from "@/components/ui/tone";
 
@@ -18,7 +19,7 @@ export const ACTIVITY_COLUMNS =
  * database keeps deals.contact_id in it as the primary row).
  */
 export const CONTACT_DEAL_COLUMNS =
-  "is_primary, deal:deals(id, title, value, currency, expected_close_date, assignee_id, last_activity_at, won_at, lost_at, created_at, stage:pipeline_stages(id, name, color, is_won, is_lost))";
+  "is_primary, deal:deals(id, title, value, currency, expected_close_date, assignee_id, last_activity_at, won_at, lost_at, created_at, stage:pipeline_stages(id, name, color, is_won, is_lost), assignees:deal_assignees(assignee_id, created_at))";
 
 type ListRow = Views["contact_list"]["Row"];
 
@@ -107,6 +108,8 @@ export type ContactDeal = Pick<
   | "created_at"
 > & {
   stage: { id: string; name: string; color: string; is_won: boolean; is_lost: boolean } | null;
+  /** Everyone on the deal (deal_assignees). */
+  assignees?: DealAssignee[] | null;
   /** The contact is the deal's primary contact (else one added to it). */
   isPrimary: boolean;
 };

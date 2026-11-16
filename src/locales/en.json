@@ -658,6 +658,7 @@
       "deleted_contact": "Deleted the contact {name}",
       "create_deal": "Created the deal “{title}”",
       "update_deal": "Updated the deal “{title}”",
+      "set_deal_people": "Set the people on the deal “{title}”",
       "move_deal_stage": "Moved the deal “{title}” to {stage}",
       "won_deal": "The deal “{title}” is won",
       "add_deal_contact": "Added {name} to the deal “{title}”",
@@ -748,6 +749,7 @@
         "delete_contact": "Preparing to delete the contact…",
         "create_deal": "Creating the deal…",
         "update_deal": "Updating the deal…",
+        "set_deal_people": "Setting the people on the deal…",
         "move_deal_stage": "Moving the deal…",
         "add_deal_contact": "Adding the contact to the deal…",
         "delete_deal": "Preparing to delete the deal…",
@@ -2316,7 +2318,8 @@
     "card": {
       "open": "Open deal {title}",
       "noContact": "No contact",
-      "relaunch": "Could be approached again"
+      "relaunch": "Could be approached again",
+      "people": "On it: {people}"
     },
     "stage": {
       "rename": "Stage name (currently {name})",
@@ -2384,7 +2387,8 @@
       "assignee": "Worker",
       "deadline": "Delivery date (deadline)",
       "deadlineHint": "Shows in the calendar as an all-day event.",
-      "created": "Created"
+      "created": "Created",
+      "people": "People on the deal"
     },
     "lost": {
       "title": "Mark as lost",
@@ -2581,6 +2585,11 @@
       "loadFailed": "The pipeline stages could not be loaded. Try again.",
       "noStages": "The pipeline has no open stage. Add one in Pipeline.",
       "cancel": "Cancel"
+    },
+    "people": {
+      "label": "People on the deal: {people}",
+      "nobody": "Nobody",
+      "andMore": "{name} and {count} more"
     }
   },
   "crmTasks": {
@@ -2877,7 +2886,7 @@
       "wonOn": "Won {date}",
       "lostOn": "Lost {date}",
       "open": "Open deal {title}",
-      "assignee": "Assignee: {name}"
+      "assignee": "On it: {name}"
     },
     "activity": {
       "title": "Activity history",

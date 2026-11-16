@@ -1,5 +1,6 @@
 "use client";
 
+import { dealAssigneeIds } from "@/features/pipeline/assignees";
 import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -596,7 +597,7 @@ function DealsCard({ contact }: { contact: Contact }) {
               const details = [
                 deal.expected_close_date &&
                   t("closeDate", { date: formatCalendarDate(deal.expected_close_date, settings) }),
-                t("assignee", { name: nameOf(deal.assignee_id) }),
+                t("assignee", { name: dealAssigneeIds(deal).map(nameOf).join(", ") || nameOf(null) }),
                 t("lastActivity", {
                   when: formatRelativeTime(new Date(deal.last_activity_at), now, locale),
                 }),

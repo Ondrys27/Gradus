@@ -1,3 +1,4 @@
+import { MAX_DEAL_ASSIGNEES } from "./assignees";
 import { z } from "zod";
 import { isCurrencyShape } from "@/lib/currency";
 
@@ -47,6 +48,8 @@ export const dealSchema = z.object({
   lost_reason: z.string().trim().max(REASON_MAX, "reasonTooLong"),
   /** Who looks after it; without one the database gives it to whoever made it. */
   assignee_id: z.string().uuid().nullable().optional(),
+  /** Everyone on a new deal; empty or absent: whoever makes it. */
+  assignee_ids: z.array(z.string().uuid()).max(MAX_DEAL_ASSIGNEES).optional(),
 });
 export type DealInput = z.infer<typeof dealSchema>;
 

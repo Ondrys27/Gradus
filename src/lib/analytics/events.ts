@@ -469,6 +469,13 @@ export const EVENTS = {
       ]),
     ),
   }),
+  /** The people on a deal changed (counts only, never who). */
+  deal_assignees_changed: event("pipeline", "client", true, {
+    added: count(20),
+    removed: count(20),
+    total: count(20),
+    from: optional(oneOf(["detail", "create", "grady"])),
+  }),
   deal_moved: event("pipeline", "client", true, {
     from_position: count(1000),
     to_position: count(1000),

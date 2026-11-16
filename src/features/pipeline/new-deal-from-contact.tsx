@@ -63,7 +63,7 @@ export function NewDealFromContactForm({
     <NewDealForm
       stages={stages}
       stageId={startingStageId(stages, source === "cold_calling" ? preferred : null)}
-      initial={{ title: dealTitleFor(contact), contact, assigneeId: user.id }}
+      initial={{ title: dealTitleFor(contact), contact, assigneeIds: [user.id] }}
       showAssignee
       source={source}
       afterCreate={linkMeeting ? (deal) => link.mutateAsync(deal.id) : undefined}
