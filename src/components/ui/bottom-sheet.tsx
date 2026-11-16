@@ -33,7 +33,7 @@ export function BottomSheet({
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
-        <Drawer.Backdrop data-capture-ignore="" className="fixed inset-0 z-overlay min-h-dvh bg-canvas/70 opacity-[calc(1-var(--drawer-swipe-progress))] backdrop-blur-sm transition-opacity duration-300 data-ending-style:opacity-0 data-starting-style:opacity-0 data-swiping:duration-0" />
+        <Drawer.Backdrop data-capture-ignore="" className="fixed inset-0 z-overlay min-h-dvh bg-canvas/80 opacity-[calc(1-var(--drawer-swipe-progress))] transition-opacity duration-300 data-ending-style:opacity-0 data-starting-style:opacity-0 data-swiping:duration-0" />
         <Drawer.Viewport data-capture-ignore="" className="fixed inset-0 z-overlay flex items-end justify-center">
           <Drawer.Popup
             finalFocus={finalFocus}

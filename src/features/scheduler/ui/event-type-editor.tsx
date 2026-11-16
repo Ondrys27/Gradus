@@ -115,7 +115,7 @@ export function EventTypeEditor(props: Props) {
   return (
     <Dialog.Root open={props.open} onOpenChange={(open) => !open && close()}>
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-overlay bg-canvas/70 backdrop-blur-sm transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
+        <Dialog.Backdrop className="fixed inset-0 z-overlay max-md:bg-canvas/85 bg-canvas/70 md:backdrop-blur-sm transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
         <Dialog.Popup
           className={cn(
             "fixed z-overlay flex flex-col overflow-hidden bg-surface shadow-popover outline-none",

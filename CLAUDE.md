@@ -281,7 +281,7 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 - **Vyhledávání** (⌘K) prohledává přes klienta přihlášeného uživatele, nikdy admin; bez diakritiky přes unaccent a pg_trgm.
 - **Pravý dolní roh patří Gradymu.** Plovoucí ovládání vlevo dolů, hlavní akce nahoru k nadpisu.
 - Oslava (konfety, zvuk) jen pro velké okamžiky; drobnosti mají malou animaci.
-- Telefon < 768 px: spodní lišta, dialogy jako spodní panely, plochy ≥ 44 px, nic jen na hover, žádný vodorovný posun stránky.
+- Telefon < 768 px: spodní lišta, dialogy jako spodní panely, plochy ≥ 44 px, nic jen na hover, žádný vodorovný posun stránky. Překryv pod dialogem a panelem se na telefonu nerozmazává (`backdrop-blur` jen od `md:`, místo něj tmavší `max-md:bg-canvas/85`): rozmazání celé obrazovky se při animaci přepočítává v každém snímku a telefon (Safari) se na něm zasekne.
 - Přihlášení se ověřuje jednou při startu; přechody stránek nikdy nečekají a nezobrazují načítání. Menu jen přes `NavLink` (`components/layout/nav-link.tsx`): najetí myší nebo dotyk stránku celou přednačte (`unstable_dynamicOnHover`), kliknutá položka se hned rozsvítí a obsah se po 150 ms lehce ztlumí, dokud nová stránka nedorazí (`nav-pending.ts`, pojistka 10 s). Přednačtenou stránku drží prohlížeč 5 minut. `staleTimes.dynamic` nezapínat: registrace, pozvánky a přepnutí firmy po přesměrování potřebují čerstvou stránku ze serveru (rozbilo e2e 47–49).
 - Stromová mapa: spojnice ve dvou vrstvách (plná čára + lesk), žádný `objectBoundingBox` přechod, rozvržení z naměřených rozměrů, celá obrazovka jako overlay (iOS), ResizeObserver, nikdy neukládat nulové rozměry.
 - `prefers-reduced-motion` všude.
