@@ -756,8 +756,10 @@ export type Database = {
           hold_expires_at: string | null
           host_user_id: string | null
           id: string
+          link_task_id: string | null
           locale: string
           manage_token_hash: string | null
+          meeting_link: string | null
           no_show_at: string | null
           reminder_ids: Json
           reschedule_count: number
@@ -767,6 +769,7 @@ export type Database = {
           status: string
           survey_dismissed_at: string | null
           updated_at: string
+          video_room: string | null
         }
         Insert: {
           answers?: Json
@@ -788,8 +791,10 @@ export type Database = {
           hold_expires_at?: string | null
           host_user_id?: string | null
           id?: string
+          link_task_id?: string | null
           locale?: string
           manage_token_hash?: string | null
+          meeting_link?: string | null
           no_show_at?: string | null
           reminder_ids?: Json
           reschedule_count?: number
@@ -799,6 +804,7 @@ export type Database = {
           status?: string
           survey_dismissed_at?: string | null
           updated_at?: string
+          video_room?: string | null
         }
         Update: {
           answers?: Json
@@ -820,8 +826,10 @@ export type Database = {
           hold_expires_at?: string | null
           host_user_id?: string | null
           id?: string
+          link_task_id?: string | null
           locale?: string
           manage_token_hash?: string | null
+          meeting_link?: string | null
           no_show_at?: string | null
           reminder_ids?: Json
           reschedule_count?: number
@@ -831,6 +839,7 @@ export type Database = {
           status?: string
           survey_dismissed_at?: string | null
           updated_at?: string
+          video_room?: string | null
         }
         Relationships: [
           {
@@ -866,6 +875,13 @@ export type Database = {
             columns: ["event_type_id"]
             isOneToOne: false
             referencedRelation: "event_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_link_task_id_fkey"
+            columns: ["link_task_id"]
+            isOneToOne: false
+            referencedRelation: "crm_tasks"
             referencedColumns: ["id"]
           },
         ]
@@ -2209,6 +2225,7 @@ export type Database = {
           space_id: string
           updated_at: string
           user_id: string
+          video_source: string
         }
         Insert: {
           active?: boolean
@@ -2238,6 +2255,7 @@ export type Database = {
           space_id: string
           updated_at?: string
           user_id: string
+          video_source?: string
         }
         Update: {
           active?: boolean
@@ -2267,6 +2285,7 @@ export type Database = {
           space_id?: string
           updated_at?: string
           user_id?: string
+          video_source?: string
         }
         Relationships: [
           {
@@ -7730,6 +7749,16 @@ export type Database = {
         Returns: boolean
       }
       scheduler_host_lock: { Args: { _host: string }; Returns: undefined }
+      scheduler_link_task: {
+        Args: {
+          _booking: string
+          _description: string
+          _due_at: string
+          _title: string
+        }
+        Returns: string
+      }
+      scheduler_new_room: { Args: never; Returns: string }
       scheduler_profile_owner: {
         Args: { _profile: string }
         Returns: Record<string, unknown>
@@ -7749,6 +7778,10 @@ export type Database = {
       }
       scheduler_reschedule: {
         Args: { _booking: string; _starts_at: string }
+        Returns: Json
+      }
+      scheduler_set_meeting_link: {
+        Args: { _booking: string; _link: string }
         Returns: Json
       }
       scheduler_set_no_show: {

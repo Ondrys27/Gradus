@@ -203,6 +203,7 @@ export function BookingFlow({
           startsAt: body.startsAt,
           endsAt: body.endsAt,
           videoLink: body.videoLink ?? null,
+          linkLater: body.linkLater === true,
           icsUid: body.icsUid ?? `booking-${hold.id}`,
         });
         setHold(null);

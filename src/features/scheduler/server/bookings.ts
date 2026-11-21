@@ -15,6 +15,12 @@ import {
   planReminders,
   type ScheduledReminder,
 } from "../booking/reminders";
+import {
+  linkChangeMailDue,
+  linkTaskDue,
+  meetingLinkOf,
+  type MeetingLink,
+} from "../booking/meeting-link";
 import { bookingAppPath } from "../booking/paths";
 import { bookingProblem, type BookingProblem } from "../booking/state";
 import {
@@ -60,6 +66,12 @@ import {
  * in the calendar and the deal (scheduler_booking_effects), the e-mails with
  * the .ics, the scheduled reminders and Grady's bubble for the host.
  *
+ * The call's link (27.5) is never baked into what the guest keeps: their
+ * e-mails, the .ics and the reminders lead to the booking's page, which asks
+ * `meetingLinkOf` when it is opened. The host may give one meeting a link of
+ * its own; a video meeting without any link tells the guest the host sends
+ * it and gives the host a task.
+ *
  * Admin client throughout: the guest has no session, and the host's actions
  * reach this only after the caller checked the session (booking-actions.ts).
  * Every query names the booking or the person explicitly. Mail and effects
@@ -69,7 +81,7 @@ import {
 type Admin = SupabaseClient<Database>;
 
 export const BOOKING_FULL_COLUMNS =
-  "id, event_type_id, host_user_id, space_id, starts_at, ends_at, guest_name, guest_email, guest_phone, guest_company, guest_time_zone, answers, status, hold_expires_at, contact_id, calendar_event_id, deal_id, reminder_ids, cancelled_by, cancel_reason, locale, confirmed_at, rescheduled_at, reschedule_count, no_show_at, created_at";
+  "id, event_type_id, host_user_id, space_id, starts_at, ends_at, guest_name, guest_email, guest_phone, guest_company, guest_time_zone, answers, status, hold_expires_at, contact_id, calendar_event_id, deal_id, reminder_ids, cancelled_by, cancel_reason, locale, confirmed_at, rescheduled_at, reschedule_count, no_show_at, created_at, meeting_link, video_room, link_task_id";
 
 export type FullBooking = Pick<
   Database["public"]["Tables"]["bookings"]["Row"],
@@ -99,6 +111,9 @@ export type FullBooking = Pick<
   | "reschedule_count"
   | "no_show_at"
   | "created_at"
+  | "meeting_link"
+  | "video_room"
+  | "link_task_id"
 >;
 
 export type BookingContext = {
@@ -203,17 +218,33 @@ function guestZone(ctx: BookingContext): string {
   return zone && isValidTimeZone(zone) ? zone : (ctx.profile?.time_zone ?? "Europe/Prague");
 }
 
-function meetingOf(ctx: BookingContext, locale: string, withVideo: boolean): MailMeeting {
+/** The call's link of the meeting now; null for a meeting that is not a video call. */
+export function linkOf(ctx: Pick<BookingContext, "booking" | "type" | "profile">): MeetingLink | null {
+  return meetingLinkOf({
+    locationKind: ctx.type?.location_kind ?? "video",
+    videoSource: ctx.type?.video_source ?? "profile",
+    own: ctx.booking.meeting_link,
+    room: ctx.booking.video_room,
+    profileLink: ctx.profile?.video_link,
+  });
+}
+
+/**
+ * The meeting as an e-mail tells it. For the guest (`forGuest`) never the
+ * call's link, only whether there is one; for the host the link of now.
+ */
+function meetingOf(ctx: BookingContext, locale: string, forGuest: boolean): MailMeeting {
   const { booking, type } = ctx;
+  const link = linkOf(ctx);
   return {
     typeName: type?.name ?? serverTranslator(locale)("email.booking.meeting"),
     durationMin: Math.round((Date.parse(booking.ends_at) - Date.parse(booking.starts_at)) / 60_000),
     startsAt: booking.starts_at,
     locationKind: type?.location_kind ?? "video",
     locationText: type?.location_text ?? null,
-    // The call's link only for a video meeting, and only once it is confirmed.
-    videoLink:
-      withVideo && (type?.location_kind ?? "video") === "video" ? (ctx.profile?.video_link ?? null) : null,
+    videoLink: forGuest ? null : (link?.url ?? null),
+    videoState:
+      booking.status !== "confirmed" ? "unconfirmed" : link?.source === "none" ? "none" : "link",
     hostName: ctx.host?.name ?? ctx.profile?.handle ?? "",
     guestName: booking.guest_name ?? "",
     guestEmail: booking.guest_email ?? "",
@@ -254,7 +285,7 @@ async function runEffects(admin: Admin, ctx: BookingContext, confirming: boolean
   ];
   const location =
     type?.location_kind === "video"
-      ? (ctx.profile?.video_link ?? "")
+      ? (linkOf(ctx)?.url ?? "")
       : type?.location_kind === "phone"
         ? (phone ?? "")
         : (type?.location_text ?? "");
@@ -298,8 +329,11 @@ export function icsUidOf(bookingId: string): string {
 }
 
 function icsAttachment(ctx: BookingContext, status: BookingIcsStatus, locale: string, now: Date) {
-  const meeting = meetingOf(ctx, locale, status === "CONFIRMED");
+  const meeting = meetingOf(ctx, locale, true);
   const t = serverTranslator(locale);
+  // A video call: the booking's page, which shows the link of the moment it is opened.
+  const join =
+    meeting.locationKind === "video" && status !== "CANCELLED" ? manageUrlOf(ctx.booking.id, ctx.origin) : null;
   const ics = buildBookingIcs({
     uid: icsUidOf(ctx.booking.id),
     // Grows with every change, so a calendar updates the event it imported.
@@ -311,11 +345,16 @@ function icsAttachment(ctx: BookingContext, status: BookingIcsStatus, locale: st
     now,
     location:
       meeting.locationKind === "video"
-        ? meeting.videoLink
+        ? join
         : meeting.locationKind === "phone"
           ? null
           : meeting.locationText,
-    url: meeting.videoLink,
+    url: join,
+    description: join
+      ? meeting.videoState === "none"
+        ? `${t("email.booking.place.videoByHost", { host: meeting.hostName })}\n${t("email.booking.joinLine", { url: join })}`
+        : t("email.booking.joinLine", { url: join })
+      : null,
     product: ctx.host?.brandingHidden ? "Booking" : APP_NAME,
   });
   return { filename: "invite.ics", content: Buffer.from(ics, "utf8").toString("base64") };
@@ -337,12 +376,11 @@ async function emailGuest(
   if (!to) return { ok: false as const, error: "no address" };
   const locale = guestLocale(ctx);
   const settings = guestFormatSettings(locale, guestZone(ctx));
-  const live = ["confirmed", "pending", "approved", "rescheduled", "reminder"].includes(kind);
-  const withVideo = ctx.booking.status === "confirmed";
+  const live = ["confirmed", "pending", "approved", "rescheduled", "reminder", "linkChanged"].includes(kind);
   const profile = ctx.profile;
   const mail = guestBookingEmail({
     kind,
-    meeting: meetingOf(ctx, locale, withVideo),
+    meeting: meetingOf(ctx, locale, true),
     locale,
     settings,
     manageUrl: live ? manageUrlOf(ctx.booking.id, ctx.origin) : null,
@@ -377,7 +415,7 @@ async function emailHost(
   if (!ctx.hostEmail) return { ok: false as const, error: "no address" };
   const mail = hostBookingEmail({
     kind,
-    meeting: meetingOf(ctx, ctx.hostLocale, true),
+    meeting: meetingOf(ctx, ctx.hostLocale, false),
     locale: ctx.hostLocale,
     settings: ctx.hostSettings,
     country: ctx.host?.country ?? null,
@@ -517,6 +555,118 @@ export async function scheduleDueReminders(admin: Admin, origin: string, now = D
 }
 
 // ---------------------------------------------------------------------------
+// The call's link: the host's task when there is none
+// ---------------------------------------------------------------------------
+
+/**
+ * A confirmed video meeting without any link gives its host one task "send
+ * the link" (once per booking, an hour before the start, moved with the
+ * meeting). Once the meeting has a link the task is done; a cancelled or
+ * declined meeting takes its open task with it.
+ */
+export async function syncLinkTask(admin: Admin, ctx: BookingContext, now = Date.now()) {
+  const { booking } = ctx;
+  const link = linkOf(ctx);
+  const live = booking.status === "confirmed" && Date.parse(booking.ends_at) > now;
+  if (live && link?.source === "none") {
+    const t = serverTranslator(ctx.hostLocale);
+    const due = linkTaskDue(booking.starts_at, now);
+    const { data, error } = await admin.rpc("scheduler_link_task", {
+      _booking: booking.id,
+      _title: t("scheduler.linkTask.title", { guest: booking.guest_name ?? "" }),
+      _description: t("scheduler.linkTask.description", {
+        type: ctx.type?.name ?? t("email.booking.meeting"),
+        url: `${ctx.origin}${bookingAppPath(booking.id)}`,
+      }),
+      _due_at: due,
+    });
+    if (error) throw error;
+    const task = typeof data === "string" ? data : null;
+    if (task && booking.link_task_id === task) {
+      // A moved meeting moves its task.
+      const moved = await admin.from("crm_tasks").update({ due_at: due }).eq("id", task).eq("status", "open");
+      if (moved.error) throw moved.error;
+    }
+    ctx.booking = { ...booking, link_task_id: task };
+    return;
+  }
+  if (!booking.link_task_id) return;
+  if (booking.status === "confirmed" || booking.status === "pending") {
+    if (!link || link.source === "none") return;
+    const { error } = await admin
+      .from("crm_tasks")
+      .update({ status: "done", completed_by: booking.host_user_id })
+      .eq("id", booking.link_task_id)
+      .eq("status", "open");
+    if (error) throw error;
+    return;
+  }
+  const { error } = await admin.from("crm_tasks").delete().eq("id", booking.link_task_id).eq("status", "open");
+  if (error) throw error;
+}
+
+async function linkTaskSafely(admin: Admin, ctx: BookingContext) {
+  try {
+    await syncLinkTask(admin, ctx);
+  } catch (error) {
+    log("link task failed", error);
+  }
+}
+
+/**
+ * The host gives one meeting a link of its own, or an empty one to go back to
+ * the type's (the room or the profile's link). The host's calendar follows;
+ * the guest's page shows it at once, and the guest hears of it by e-mail
+ * only while the meeting is more than an hour away.
+ */
+export async function setMeetingLink(
+  admin: Admin,
+  bookingId: string,
+  link: string | null,
+  origin: string,
+  userId: string,
+  now = Date.now(),
+): Promise<FlowResult<{ emailed: boolean }>> {
+  const before = await loadBookingContext(admin, bookingId, origin);
+  if (!before) return { ok: false, problem: "notFound" };
+  const previous = linkOf(before)?.url ?? null;
+  const problem = await call(() =>
+    admin.rpc("scheduler_set_meeting_link", { _booking: bookingId, _link: link ?? "" }),
+  );
+  if (problem) return { ok: false, problem };
+  const ctx = await loadBookingContext(admin, bookingId, origin);
+  if (!ctx) return { ok: false, problem: "notFound" };
+  await effectsSafely(admin, ctx, false);
+  await linkTaskSafely(admin, ctx);
+  let emailed = false;
+  if (
+    linkChangeMailDue({
+      status: ctx.booking.status,
+      startsAt: ctx.booking.starts_at,
+      previous,
+      next: linkOf(ctx)?.url ?? null,
+      now,
+    })
+  ) {
+    try {
+      const result = await emailGuest(ctx, "linkChanged");
+      emailed = result.ok;
+      if (!result.ok && result.error !== "internal address" && result.error !== "no address") {
+        console.error("[scheduler] link changed e-mail failed", result.error);
+      }
+    } catch (error) {
+      log("link changed e-mail failed", error);
+    }
+  }
+  await track(
+    "booking_link_changed",
+    { link: ctx.booking.meeting_link ? "own" : "default", emailed },
+    { userId, admin },
+  );
+  return { ok: true, data: { emailed } };
+}
+
+// ---------------------------------------------------------------------------
 // Grady's bubble for the host
 // ---------------------------------------------------------------------------
 
@@ -613,8 +763,10 @@ export type BookResult = {
   manageUrl: string;
   startsAt: string;
   endsAt: string;
-  /** The meeting's video link, only for a confirmed booking. */
+  /** The call's link of now, only for a confirmed video meeting. */
   videoLink: string | null;
+  /** A confirmed video meeting without a link: the host sends it before the meeting. */
+  linkLater: boolean;
   /** The UID of the e-mail's .ics, so "Add to calendar" on the page makes the same event. */
   icsUid: string;
 };
@@ -679,10 +831,16 @@ export async function bookHold(
     await mailSafely("guest pending", () => emailGuest(ctx, "pending", { ics: "TENTATIVE" }));
     await mailSafely("host approval", () => emailHost(ctx, "approval"));
   }
+  if (status === "confirmed") await linkTaskSafely(admin, ctx);
   await tellGrady(admin, ctx);
+  const link = linkOf(ctx);
   await track(
     "booking_created",
-    { status, duration: Math.min(480, type.duration_min) },
+    {
+      status,
+      duration: Math.min(480, type.duration_min),
+      ...(link ? { link: link.source } : {}),
+    },
     { userId: ctx.booking.host_user_id, admin },
   );
   return {
@@ -692,8 +850,8 @@ export async function bookHold(
       manageUrl: manageUrlOf(held.id, input.origin),
       startsAt: ctx.booking.starts_at,
       endsAt: ctx.booking.ends_at,
-      videoLink:
-        status === "confirmed" && type.location_kind === "video" ? (profile.video_link ?? null) : null,
+      videoLink: status === "confirmed" ? (link?.url ?? null) : null,
+      linkLater: status === "confirmed" && link?.source === "none",
       icsUid: icsUidOf(held.id),
     },
   };
@@ -722,6 +880,7 @@ export async function approveBooking(
   if (!ctx) return { ok: false, problem: "notFound" };
   await effectsSafely(admin, ctx, true);
   await mailSafely("guest approved", () => emailGuest(ctx, "approved", { ics: "CONFIRMED" }));
+  await linkTaskSafely(admin, ctx);
   try {
     await scheduleReminders(admin, ctx);
   } catch (error) {
@@ -747,6 +906,7 @@ export async function declineBooking(
   if (!ctx) return { ok: false, problem: "notFound" };
   await effectsSafely(admin, ctx, false);
   await cancelReminders(admin, ctx).catch((error) => log("reminders cancel failed", error));
+  await linkTaskSafely(admin, ctx);
   await mailSafely("guest declined", () =>
     emailGuest(ctx, "declined", { reason, alternative, ics: "CANCELLED" }),
   );
@@ -770,6 +930,7 @@ export async function cancelBooking(
   if (!ctx) return { ok: false, problem: "notFound" };
   await effectsSafely(admin, ctx, false);
   await cancelReminders(admin, ctx).catch((error) => log("reminders cancel failed", error));
+  await linkTaskSafely(admin, ctx);
   await mailSafely("guest cancelled", () =>
     emailGuest(ctx, by === "host" ? "cancelledByHost" : "cancelledByGuest", {
       reason: by === "host" ? reason : null,
@@ -819,6 +980,7 @@ export async function rescheduleBooking(
   const ctx = await loadBookingContext(admin, bookingId, origin);
   if (!ctx) return { ok: false, problem: "notFound" };
   await effectsSafely(admin, ctx, false);
+  await linkTaskSafely(admin, ctx);
   try {
     await cancelReminders(admin, ctx);
     await scheduleReminders(admin, ctx);

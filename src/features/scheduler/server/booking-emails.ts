@@ -12,6 +12,11 @@ import type { LocationKind } from "../types";
  * own language and formats. Plain text and a simple HTML twin, like every
  * other e-mail of the app. The guest's e-mails never say where the host keeps
  * their calendar; "Made with Gradus" only without the no-branding add-on.
+ *
+ * The guest's e-mails never carry the call's link itself (27.5): "Join the
+ * meeting" opens the booking's page, which reads the link when it is opened,
+ * so a link the host changes later reaches every e-mail already sent and the
+ * reminders scheduled ahead. The host's own e-mails name the link of now.
  */
 
 export type BookingMail = { subject: string; text: string; html: string };
@@ -24,7 +29,8 @@ export type GuestMailKind =
   | "cancelledByHost"
   | "cancelledByGuest"
   | "rescheduled"
-  | "reminder";
+  | "reminder"
+  | "linkChanged";
 
 export type HostMailKind =
   | "booked"
@@ -39,8 +45,14 @@ export type MailMeeting = {
   startsAt: string;
   locationKind: LocationKind;
   locationText: string | null;
-  /** Only in an e-mail of a confirmed meeting. */
+  /** The call's link of now: only in the host's e-mails, never the guest's. */
   videoLink: string | null;
+  /**
+   * A video meeting for the guest: "link" (join through the booking's page),
+   * "none" (confirmed, the host sends the link before the meeting),
+   * "unconfirmed" (waits for the host).
+   */
+  videoState: "link" | "none" | "unconfirmed";
   hostName: string;
   guestName: string;
   guestEmail: string;
@@ -112,9 +124,16 @@ function placeLine(
 ): string | null {
   switch (meeting.locationKind) {
     case "video":
-      return meeting.videoLink
-        ? t("email.booking.place.video", { link: meeting.videoLink })
-        : t("email.booking.place.videoLater");
+      if (!forGuest) {
+        return meeting.videoLink
+          ? t("email.booking.place.video", { link: meeting.videoLink })
+          : t("email.booking.place.videoNone");
+      }
+      return meeting.videoState === "link"
+        ? t("email.booking.place.videoJoin")
+        : meeting.videoState === "none"
+          ? t("email.booking.place.videoByHost", { host: meeting.hostName })
+          : t("email.booking.place.videoLater");
     case "phone":
       return forGuest
         ? t("email.booking.place.phoneGuest", { host: meeting.hostName })
@@ -187,7 +206,9 @@ export function guestBookingEmail(input: {
       }),
     );
   }
-  const live = ["confirmed", "pending", "approved", "rescheduled", "reminder"].includes(input.kind);
+  const live = ["confirmed", "pending", "approved", "rescheduled", "reminder", "linkChanged"].includes(
+    input.kind,
+  );
   if ((input.kind === "confirmed" || input.kind === "approved") && meeting.confirmationNote) {
     paragraphs.push(meeting.confirmationNote);
   }
@@ -195,7 +216,10 @@ export function guestBookingEmail(input: {
 
   const buttons: Button[] = [];
   if (live && input.manageUrl) {
-    buttons.push({ label: t("email.booking.reschedule"), url: input.manageUrl });
+    // The booking's page shows the call's link of the moment it is opened.
+    const join = meeting.locationKind === "video" && meeting.videoState !== "unconfirmed";
+    if (join) buttons.push({ label: t("email.booking.join"), url: input.manageUrl });
+    buttons.push({ label: t("email.booking.reschedule"), url: input.manageUrl, quiet: join });
     buttons.push({ label: t("email.booking.cancel"), url: `${input.manageUrl}?cancel=1`, quiet: true });
   } else if (!live && input.bookAgainUrl) {
     buttons.push({ label: t("email.booking.bookAgain"), url: input.bookAgainUrl });

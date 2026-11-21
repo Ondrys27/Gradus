@@ -14,20 +14,25 @@ import {
   declineBooking,
   dismissSurvey,
   rescheduleBooking,
+  setMeetingLink,
   setNoShow,
 } from "./server/bookings";
+import { meetingLinkProblem } from "./booking/meeting-link";
 
 /**
  * The host's decisions on their bookings (24.4): approve, decline (with a
  * reason and maybe another time), move, cancel, mark a no-show, skip the
- * meeting survey. The booking must be the session's own as host (read with
- * the user's client, so RLS decides) in a space where they still have
+ * meeting survey, give one meeting a link of its own (27.5). The booking
+ * must be the session's own as host (read with the user's client, so RLS
+ * decides) in a space where they still have
  * "scheduler: own"; only then the work runs with the admin client
  * (server/bookings.ts). Approving and moving wait while the space is
  * read-only; declining and cancelling only free time and tell the guest.
  */
 
 export type BookingActionResult = { ok: true } | { ok: false; problem: BookingProblem };
+/** The guest heard of the new link by e-mail (more than an hour before the meeting). */
+export type LinkActionResult = { ok: true; emailed: boolean } | { ok: false; problem: BookingProblem };
 
 const id = z.uuid();
 const reason = z.string().trim().max(500).optional();
@@ -60,11 +65,11 @@ async function hostOf(bookingId: string, writes: boolean): Promise<Host> {
   return { ok: true, userId, booking };
 }
 
-function run(
+function run<R extends BookingActionResult = BookingActionResult>(
   name: string,
-  work: () => Promise<BookingActionResult>,
-): Promise<BookingActionResult> {
-  return measure(`scheduler.${name}`, async (): Promise<BookingActionResult> => {
+  work: () => Promise<R | Extract<BookingActionResult, { ok: false }>>,
+): Promise<R | Extract<BookingActionResult, { ok: false }>> {
+  return measure(`scheduler.${name}`, async (): Promise<R | Extract<BookingActionResult, { ok: false }>> => {
     try {
       return await work();
     } catch (error) {
@@ -159,5 +164,32 @@ export async function dismissSurveyAction(bookingId: string): Promise<BookingAct
     const host = await hostOf(bookingId, false);
     if (!host.ok) return host;
     return done(await dismissSurvey(createAdminClient(), bookingId, host.userId));
+  });
+}
+
+/**
+ * The host's own link of one video meeting (27.5), or none to go back to the
+ * type's; the guest's page shows it at once (an e-mail only while the
+ * meeting is more than an hour away). Waits while the space is read-only.
+ */
+export async function setBookingLinkAction(input: {
+  bookingId: string;
+  link: string | null;
+}): Promise<LinkActionResult> {
+  return run<LinkActionResult>("setBookingLink", async () => {
+    const link = typeof input.link === "string" ? input.link.trim() : "";
+    if (meetingLinkProblem(link)) return { ok: false, problem: "invalid" };
+    const host = await hostOf(input.bookingId, true);
+    if (!host.ok) return host;
+    const result = await setMeetingLink(
+      createAdminClient(),
+      input.bookingId,
+      link || null,
+      await siteOrigin(),
+      host.userId,
+    );
+    return result.ok
+      ? { ok: true as const, emailed: result.data.emailed }
+      : { ok: false as const, problem: result.problem };
   });
 }

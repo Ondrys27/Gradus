@@ -11,7 +11,8 @@ const MEETING = {
   startsAt: "2026-11-17T13:00:00Z",
   locationKind: "video" as const,
   locationText: null,
-  videoLink: "https://meet.jit.si/ondrej",
+  videoLink: null,
+  videoState: "link" as const,
   hostName: "Ondřej Otava",
   guestName: "Jan <b>Novák</b>",
   guestEmail: "jan@example.com",
@@ -21,7 +22,7 @@ const MEETING = {
 };
 
 describe("the guest's e-mails", () => {
-  it("a confirmation in the guest's language and zone, with the video link and the links to move or cancel", () => {
+  it("a confirmation in the guest's language and zone, joining through the booking's page, never the call's link", () => {
     const mail = guestBookingEmail({
       kind: "confirmed",
       meeting: MEETING,
@@ -33,17 +34,18 @@ describe("the guest's e-mails", () => {
     });
     expect(mail.subject).toContain("Konzultace");
     expect(mail.subject).toContain("14:00");
-    expect(mail.text).toContain("https://meet.jit.si/ondrej");
+    expect(mail.text).toContain("Připojit se ke schůzce: https://gradus.test/s/r/token");
+    expect(mail.text).not.toContain("meet.jit.si");
     expect(mail.text).toContain("https://gradus.test/s/r/token?cancel=1");
     expect(mail.text).toContain("Těším se.");
     expect(mail.text).toContain("Europe/Prague");
     expect(mail.text).toMatch(/Gradus/);
   });
 
-  it("without branding no Gradus; a pending one has no video link yet", () => {
+  it("without branding no Gradus; a pending one has nothing to join yet", () => {
     const mail = guestBookingEmail({
       kind: "pending",
-      meeting: { ...MEETING, videoLink: null },
+      meeting: { ...MEETING, videoState: "unconfirmed" },
       locale: "en",
       settings: guestFormatSettings("en", "America/New_York"),
       manageUrl: "https://gradus.test/s/r/token",
@@ -51,7 +53,7 @@ describe("the guest's e-mails", () => {
       brandingHidden: true,
     });
     expect(mail.text).not.toMatch(/Gradus/);
-    expect(mail.text).not.toContain("meet.jit.si");
+    expect(mail.text).not.toContain("Join the meeting");
     expect(mail.text).toContain("08:00");
     expect(mail.subject).toMatch(/^Waiting for confirmation/);
   });
@@ -86,10 +88,55 @@ describe("the guest's e-mails", () => {
       brandingHidden: false,
     });
     expect(mail.text).toContain("za hodinu");
+    // Scheduled ahead, so only the page: it shows the link of the moment it is opened.
+    expect(mail.text).toContain("Připojit se ke schůzce: https://gradus.test/s/r/token");
+  });
+
+  it("without a link: the host sends it, and the page still to join", () => {
+    const mail = guestBookingEmail({
+      kind: "confirmed",
+      meeting: { ...MEETING, videoState: "none" },
+      locale: "cs",
+      settings: guestFormatSettings("cs", "Europe/Prague"),
+      manageUrl: "https://gradus.test/s/r/token",
+      bookAgainUrl: null,
+      brandingHidden: false,
+    });
+    expect(mail.text).toContain("odkaz pošle Ondřej Otava před schůzkou");
+    expect(mail.text).toContain("Připojit se ke schůzce: https://gradus.test/s/r/token");
+  });
+
+  it("a changed link: the e-mail says so and leads to the page", () => {
+    const mail = guestBookingEmail({
+      kind: "linkChanged",
+      meeting: MEETING,
+      locale: "en",
+      settings: guestFormatSettings("en", "Europe/London"),
+      manageUrl: "https://gradus.test/s/r/token",
+      bookAgainUrl: null,
+      brandingHidden: false,
+    });
+    expect(mail.subject).toMatch(/^The meeting link was updated: Konzultace/);
+    expect(mail.text).toContain("Join the meeting: https://gradus.test/s/r/token");
   });
 });
 
 describe("the host's e-mails", () => {
+  it("name the call's link of now, or that there is none", () => {
+    const base = {
+      kind: "booked" as const,
+      locale: "cs",
+      settings: guestFormatSettings("cs", "Europe/Prague"),
+      country: "CZ",
+      appUrl: "https://gradus.test/app/planovac?tab=bookings&booking=1",
+      answers: [],
+    };
+    expect(
+      hostBookingEmail({ ...base, meeting: { ...MEETING, videoLink: "https://meet.jit.si/gradus-abcdefghjk23" } }).text,
+    ).toContain("Videohovor: https://meet.jit.si/gradus-abcdefghjk23");
+    expect(hostBookingEmail({ ...base, meeting: MEETING }).text).toContain("zatím bez odkazu");
+  });
+
   it("the HTML never carries the guest's markup", () => {
     const mail = hostBookingEmail({
       kind: "approval",

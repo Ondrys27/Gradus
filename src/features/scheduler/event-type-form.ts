@@ -1,5 +1,6 @@
 import type { Tone } from "@/components/ui/tone";
 import type { Json } from "@/types/database";
+import { isVideoSource } from "./booking/meeting-link";
 import { isValidSlug } from "./handle";
 import {
   BUFFER_MAX,
@@ -94,6 +95,7 @@ export function toEventType(row: EventTypeRow): EventType {
       ? (row.location_kind as LocationKind)
       : "video",
     color: (TYPE_TONES as readonly string[]).includes(row.color) ? (row.color as Tone) : "violet",
+    video_source: isVideoSource(row.video_source) ? row.video_source : "profile",
   };
 }
 
@@ -106,6 +108,7 @@ export type EventTypeDraft = Pick<
   | "duration_min"
   | "location_kind"
   | "location_text"
+  | "video_source"
   | "color"
   | "requires_approval"
   | "buffer_before_min"
@@ -129,6 +132,7 @@ export function draftOf(type: EventType): EventTypeDraft {
     duration_min: type.duration_min,
     location_kind: type.location_kind,
     location_text: type.location_text,
+    video_source: type.video_source,
     color: type.color,
     requires_approval: type.requires_approval,
     buffer_before_min: type.buffer_before_min,
@@ -251,6 +255,7 @@ export function draftToRow(draft: EventTypeDraft) {
       draft.location_kind === "phone"
         ? text(draft.location_text)
         : null,
+    video_source: draft.video_source,
     color: draft.color,
     requires_approval: draft.requires_approval,
     buffer_before_min: draft.buffer_before_min,

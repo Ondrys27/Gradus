@@ -1,5 +1,6 @@
 import type { Tone } from "@/components/ui/tone";
 import type { Database } from "@/types/database";
+import type { VideoSource } from "./booking/meeting-link";
 
 /**
  * The scheduler (24.3): a person's booking page, meeting types and hours.
@@ -27,7 +28,7 @@ export const PROFILE_COLUMNS =
 
 export type EventTypeRow = Tables["event_types"]["Row"];
 export const EVENT_TYPE_COLUMNS =
-  "id, profile_id, user_id, space_id, slug, name, description, duration_min, location_kind, location_text, color, active, position, requires_approval, buffer_before_min, buffer_after_min, min_notice_hours, max_days_ahead, max_per_day, slot_step_min, custom_availability, questions, deal_stage_id, reminders, confirmation_note, created_at, updated_at";
+  "id, profile_id, user_id, space_id, slug, name, description, duration_min, location_kind, location_text, color, active, position, requires_approval, buffer_before_min, buffer_after_min, min_notice_hours, max_days_ahead, max_per_day, slot_step_min, custom_availability, questions, deal_stage_id, reminders, confirmation_note, video_source, created_at, updated_at";
 
 export type AvailabilityRule = Pick<
   Tables["availability_rules"]["Row"],
@@ -68,9 +69,11 @@ export type BookingRow = Pick<
   | "rescheduled_at"
   | "no_show_at"
   | "survey_dismissed_at"
+  | "meeting_link"
+  | "video_room"
 >;
 export const BOOKING_COLUMNS =
-  "id, event_type_id, host_user_id, space_id, starts_at, ends_at, guest_name, guest_email, guest_phone, guest_company, guest_time_zone, status, hold_expires_at, contact_id, cancelled_by, cancel_reason, created_at, answers, deal_id, calendar_event_id, locale, confirmed_at, rescheduled_at, no_show_at, survey_dismissed_at";
+  "id, event_type_id, host_user_id, space_id, starts_at, ends_at, guest_name, guest_email, guest_phone, guest_company, guest_time_zone, status, hold_expires_at, contact_id, cancelled_by, cancel_reason, created_at, answers, deal_id, calendar_event_id, locale, confirmed_at, rescheduled_at, no_show_at, survey_dismissed_at, meeting_link, video_room";
 
 export type CalendarSubscription = Pick<
   Tables["calendar_subscriptions"]["Row"],
@@ -166,12 +169,14 @@ export const PER_DAY_MAX = 100;
 
 export type EventType = Omit<
   EventTypeRow,
-  "questions" | "reminders" | "location_kind" | "color"
+  "questions" | "reminders" | "location_kind" | "color" | "video_source"
 > & {
   questions: Question[];
   reminders: Reminder[];
   location_kind: LocationKind;
   color: Tone;
+  /** A video meeting: the permanent link of the profile, or a Jitsi room per booking (27.5). */
+  video_source: VideoSource;
 };
 
 // ---------------------------------------------------------------------------

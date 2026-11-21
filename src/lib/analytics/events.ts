@@ -19,6 +19,7 @@ import { BILLINGS, CANCEL_REASONS } from "@/features/subscription/state";
 import { PROMO_BENEFITS, PROMO_SOURCES } from "@/features/promo/codes";
 import { CHECKOUT_SOURCES, PORTAL_SOURCES } from "@/features/billing/stripe/sources";
 import { LOCATION_KINDS } from "@/features/scheduler/types";
+import { MEETING_LINK_SOURCES } from "@/features/scheduler/booking/meeting-link";
 import { CALENDAR_PROVIDERS, EVENT_TYPE_TABS, LINK_SOURCES } from "@/features/scheduler/analytics";
 import { Constants } from "@/types/database";
 import { field, isSafeField, isScrubbedTextField } from "./fields";
@@ -650,6 +651,8 @@ export const EVENTS = {
   booking_created: event("calendar", "server", true, {
     status: oneOf(["pending", "confirmed"]),
     duration: count(480),
+    // A video meeting: where its call's link comes from (27.5).
+    link: optional(oneOf(MEETING_LINK_SOURCES)),
   }),
   booking_confirmed: event("calendar", "server", true, {}),
   booking_declined: event("calendar", "server", true, {}),
@@ -657,6 +660,10 @@ export const EVENTS = {
   booking_rescheduled: event("calendar", "server", true, { by: oneOf(["host", "guest"]) }),
   booking_no_show: event("calendar", "server", true, { no_show: bool() }),
   booking_survey_dismissed: event("calendar", "server", false, {}),
+  booking_link_changed: event("calendar", "server", true, {
+    link: oneOf(["own", "default"]),
+    emailed: bool(),
+  }),
 
   // --- finance -------------------------------------------------------------
   transaction_created: event("finance", "client", true, {

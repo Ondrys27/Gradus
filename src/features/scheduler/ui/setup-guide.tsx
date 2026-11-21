@@ -10,16 +10,12 @@ import { Input } from "@/components/ui/input";
 import { track } from "@/lib/analytics/client";
 import { handleProblem, normalizeHandleInput } from "../handle";
 import { handleAvailable, useUpdateProfile, writeProblem } from "../queries";
+import { meetingLinkProblem } from "../booking/meeting-link";
 import { VIDEO_LINK_MAX, type SchedulerProfile } from "../types";
 import { bookingLink } from "./common";
 
 /** A video link the scheduler accepts: https with a host (Meet, Teams, Zoom, Jitsi, any other). */
-export function videoLinkProblem(value: string): "format" | null {
-  const link = value.trim();
-  if (!link) return null;
-  if (link.length > VIDEO_LINK_MAX || !/^https:\/\/[^\s/?#]+\.[^\s]+$/.test(link)) return "format";
-  return null;
-}
+export const videoLinkProblem = meetingLinkProblem;
 
 /**
  * The first open: three steps on one card — the handle of the public link,

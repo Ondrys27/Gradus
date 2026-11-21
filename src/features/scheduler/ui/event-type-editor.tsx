@@ -26,6 +26,7 @@ import { useFormatSettings } from "@/lib/use-format-settings";
 import { useIsPhone } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
 import { EVENT_TYPE_TABS, type EventTypeTab } from "../analytics";
+import { typeLacksLink, VIDEO_SOURCES } from "../booking/meeting-link";
 import {
   draftIssues,
   isBuiltinQuestion,
@@ -346,6 +347,7 @@ function draftFromType(type: EventType): EventTypeDraft {
     duration_min: type.duration_min,
     location_kind: type.location_kind,
     location_text: type.location_text,
+    video_source: type.video_source,
     color: type.color,
     requires_approval: type.requires_approval,
     buffer_before_min: type.buffer_before_min,
@@ -519,9 +521,7 @@ function BasicsTab({
           })}
         </div>
         {draft.location_kind === "video" ? (
-          <p className="text-xs text-ink-muted">
-            {profile.video_link ? t("videoUses", { link: profile.video_link }) : t("videoMissing")}
-          </p>
+          <VideoChoice draft={draft} set={set} profile={profile} />
         ) : (
           <FormField
             id="type-place"
@@ -546,6 +546,57 @@ function BasicsTab({
         labelOf={(tone) => tTones(tone)}
       />
     </>
+  );
+}
+
+/**
+ * A video meeting's link (27.5): the permanent one of the booking page, or a
+ * room of its own on Jitsi for every booking. Without either the editor says
+ * what the guest will read and that the host gets a task.
+ */
+function VideoChoice({
+  draft,
+  set,
+  profile,
+}: {
+  draft: EventTypeDraft;
+  set: SetDraft;
+  profile: SchedulerProfile;
+}) {
+  const t = useTranslations("scheduler.editor.video");
+  const missing = typeLacksLink({
+    location_kind: draft.location_kind,
+    video_source: draft.video_source,
+    profileLink: profile.video_link,
+  });
+  return (
+    <div className="flex flex-col gap-2" data-testid="type-video">
+      <p className="text-xs font-medium text-ink-soft">{t("label")}</p>
+      <div className="flex flex-wrap gap-2">
+        {VIDEO_SOURCES.map((source) => (
+          <Chip key={source} pressed={draft.video_source === source} onClick={() => set("video_source", source)}>
+            <span data-testid={`type-video-${source}`}>{t(`sources.${source}`)}</span>
+          </Chip>
+        ))}
+      </div>
+      <p className="text-xs text-ink-muted">
+        {draft.video_source === "jitsi"
+          ? t("jitsiUses")
+          : profile.video_link
+            ? t("profileUses", { link: profile.video_link })
+            : t("profileNone")}
+      </p>
+      <p className="text-xs text-ink-muted">{t("help")}</p>
+      {missing && (
+        <p
+          role="status"
+          className="rounded-xl border border-gold/50 bg-gold/10 px-3 py-2 text-sm text-ink"
+          data-testid="type-video-missing"
+        >
+          {t("missing", { host: profile.display_name ?? profile.handle })}
+        </p>
+      )}
+    </div>
   );
 }
 

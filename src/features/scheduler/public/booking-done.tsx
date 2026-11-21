@@ -19,7 +19,10 @@ export type BookingResult = {
   manageUrl: string;
   startsAt: string;
   endsAt: string;
+  /** The call's link of now (a confirmed video meeting). */
   videoLink: string | null;
+  /** A confirmed video meeting without a link: the host sends it before the meeting. */
+  linkLater: boolean;
   icsUid: string;
 };
 
@@ -28,6 +31,8 @@ export type BookingResult = {
  * confetti from the mark, none with reduced motion), the date and time large,
  * Add to calendar for Google, Apple (.ics) and Outlook, the call's link, and
  * for a meeting the host still confirms a plain word on what happens next.
+ * The calendar gets the booking's page as the place of a video call (27.5),
+ * never the call's link itself, so a link the host changes still holds.
  */
 export function BookingDone({
   result,
@@ -87,7 +92,7 @@ export function BookingDone({
   const end = new Date(result.endsAt);
   const place =
     type.location_kind === "video"
-      ? result.videoLink
+      ? result.manageUrl
       : type.location_kind === "phone"
         ? null
         : (type.location_text ?? null);
@@ -212,6 +217,12 @@ export function BookingDone({
             <VideoIcon aria-hidden data-icon="inline-start" />
             {t("result.video")}
           </a>
+        )}
+        {result.linkLater && (
+          <p className="flex items-center gap-2 text-sm text-ink-soft" data-testid="booking-link-later">
+            <VideoIcon aria-hidden className="size-4 text-ink-muted" />
+            {t("result.linkLater", { host: host.name })}
+          </p>
         )}
       </motion.div>
     </section>

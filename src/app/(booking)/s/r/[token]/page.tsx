@@ -4,6 +4,7 @@ import { guestCanManage } from "@/features/scheduler/booking/state";
 import { BookingFrame } from "@/features/scheduler/public/booking-frame";
 import { ManageView } from "@/features/scheduler/public/manage-view";
 import { loadManagePage, pageLocale } from "@/features/scheduler/public/page-data";
+import { linkOf } from "@/features/scheduler/server/bookings";
 import { getTranslations } from "next-intl/server";
 
 type Props = {
@@ -24,7 +25,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-/** /s/r/<token>: the guest moves or cancels their booking (24.4). */
+/**
+ * /s/r/<token>: the guest moves or cancels their booking (24.4), and joins
+ * the call (27.5): every e-mail, the .ics and the reminders lead here, and
+ * the page reads the call's link when it is opened, so a link the host
+ * changed reaches invitations sent before.
+ */
 export default async function ManageBookingPage({ params, searchParams }: Props) {
   const { token } = await params;
   const { cancel } = await searchParams;
@@ -33,7 +39,10 @@ export default async function ManageBookingPage({ params, searchParams }: Props)
   const locale = await pageLocale(ctx.booking.locale);
   const { booking } = ctx;
   const status = booking.status as "pending" | "confirmed" | "cancelled" | "declined";
-  const live = guestCanManage(booking, Date.now()) && Boolean(ctx.host?.available);
+  const now = Date.now();
+  const live = guestCanManage(booking, now) && Boolean(ctx.host?.available);
+  // The call's link only once the meeting is confirmed.
+  const link = status === "confirmed" ? linkOf(ctx) : null;
 
   return (
     <BookingFrame
@@ -45,6 +54,7 @@ export default async function ManageBookingPage({ params, searchParams }: Props)
         <ManageView
           token={token}
           startWithCancel={cancel === "1"}
+          renderedAt={now}
           booking={{
             typeName: ctx.type?.name ?? "",
             durationMin: Math.round((Date.parse(booking.ends_at) - Date.parse(booking.starts_at)) / 60_000),
@@ -52,7 +62,7 @@ export default async function ManageBookingPage({ params, searchParams }: Props)
             endsAt: booking.ends_at,
             status,
             hostName: ctx.host?.name ?? "",
-            videoLink: status === "confirmed" && ctx.type?.location_kind === "video" ? (ctx.profile?.video_link ?? null) : null,
+            video: link ? { url: link.url } : null,
             guestZone: booking.guest_time_zone ?? ctx.profile?.time_zone ?? "Europe/Prague",
             canManage: live,
           }}
