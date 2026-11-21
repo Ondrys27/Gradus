@@ -105,6 +105,8 @@ export function DealCard({ deal, relaunchable, muted, draggable, onOpen }: CardP
     <div
       ref={setNodeRef}
       {...attributes}
+      // Only dragging may be off; the card always opens the deal.
+      aria-disabled={undefined}
       {...listeners}
       onKeyDown={handleKeyDown}
       onClick={() => onOpen(deal)}
