@@ -5700,7 +5700,7 @@ export type Database = {
           added_at: string
           last_login_at: string
           last_seen_at: string
-          level: string | null
+          level: string
           logins_30d: number
           removed_at: string
           role: string
