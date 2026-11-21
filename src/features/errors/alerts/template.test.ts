@@ -27,7 +27,7 @@ const USER = {
   planStatus: "trialing",
   internal: false,
 };
-const URL = "https://gradus.app/admin/zpetna-vazba?code=GR-7K3M9Q";
+const URL = "https://gradus.app/admin/chyby?code=GR-7K3M9Q";
 
 describe("errorAlertEmail", () => {
   it("has the subject the owner asked for", () => {

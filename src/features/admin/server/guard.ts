@@ -10,12 +10,14 @@ import {
   claimsMayEnterAdmin,
   parseSessionStatus,
 } from "../access";
-import { adminCan, type AdminRole, type OwnerOnly } from "../roles";
+import { adminCan, type AdminLevel, type AdminPower, type AdminRole } from "../roles";
 
 export type AdminContext = {
   userId: string;
-  /** Owner or admin: both pass the gate, a few things are the owner's (roles.ts). */
+  /** Owner or admin: both pass the gate; what each may do is in roles.ts. */
   role: AdminRole;
+  /** Full or limited (the owner is always full), read by the database on every request. */
+  level: AdminLevel;
   /** When the 8-hour limit ends the admin session, ISO. */
   expiresAt: string;
 };
@@ -47,7 +49,12 @@ export const adminAccess = cache(
       ) {
         return null;
       }
-      return { userId: session.userId, role: session.role, expiresAt: session.expiresAt };
+      return {
+        userId: session.userId,
+        role: session.role,
+        level: session.level,
+        expiresAt: session.expiresAt,
+      };
     } catch (error) {
       console.error("[admin] session check threw", error);
       return null;
@@ -70,19 +77,20 @@ export async function requireAdmin(activity = false): Promise<AdminContext> {
 }
 
 /**
- * A page or action only the owner may use. An admin gets the ordinary 404,
- * the same as an address that does not exist.
+ * A page or action only some may use (roles.ts: the owner, and a full admin
+ * for everything but the Administrators section). Anyone else gets the
+ * ordinary 404, the same as an address that does not exist.
  */
-export async function requireOwnerFor(what: OwnerOnly, activity = false): Promise<AdminContext> {
+export async function requireAdminPower(what: AdminPower, activity = false): Promise<AdminContext> {
   const context = await requireAdmin(activity);
-  if (!adminCan(context.role, what)) notFound();
+  if (!adminCan(context, what)) notFound();
   return context;
 }
 
-/** For server actions: the context only when the role may do `what`. */
-export async function adminAccessFor(what: OwnerOnly): Promise<AdminContext | null> {
+/** For server actions: the context only when the role and level may do `what`. */
+export async function adminAccessFor(what: AdminPower): Promise<AdminContext | null> {
   const context = await adminAccess(true);
-  return context && adminCan(context.role, what) ? context : null;
+  return context && adminCan(context, what) ? context : null;
 }
 
 /** For route handlers: the same 404 as an unknown address. */

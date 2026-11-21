@@ -58,13 +58,23 @@ vi.mock("@/features/admin/ui/export-footer", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/admins-controls", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/copy-id", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/error-alerts-form", (load) => stubClientModule(load));
+vi.mock("@/features/admin/ui/error-log-controls", (load) => stubClientModule(load));
+vi.mock("@/features/admin/ui/anchor-highlight", (load) => stubClientModule(load));
+vi.mock("@/features/admin/ui/audit-export-button", (load) => stubClientModule(load));
 vi.mock("next/link", () => ({ default: clientStub("Link") }));
 
 // --- Session, audit and database --------------------------------------------------
 
+const CONTEXT = vi.hoisted(() => ({
+  userId: "00000000-0000-4000-8000-000000000001",
+  role: "owner" as const,
+  level: "full" as const,
+  expiresAt: "2026-10-10T00:00:00Z",
+}));
+
 vi.mock("@/features/admin/server/guard", () => ({
-  requireAdmin: async () => ({ userId: "00000000-0000-4000-8000-000000000001", expiresAt: "2026-10-10T00:00:00Z" }),
-  adminAccess: async () => ({ userId: "00000000-0000-4000-8000-000000000001", expiresAt: "2026-10-10T00:00:00Z" }),
+  requireAdmin: async () => CONTEXT,
+  adminAccess: async () => CONTEXT,
   isOwnerAccount: async () => true,
   adminNotFound: () => new Response(null, { status: 404 }),
 }));
@@ -270,7 +280,8 @@ const PAGES: Record<string, () => Promise<{ default: unknown }>> = {
   users: () => import("@/app/(admin)/admin/(secure)/uzivatele/page"),
   explorer: () => import("@/app/(admin)/admin/(secure)/pruzkumnik/page"),
   audit: () => import("@/app/(admin)/admin/(secure)/audit/page"),
-  errorAlerts: () => import("@/app/(admin)/admin/(secure)/upozorneni/page"),
+  errors: () => import("@/app/(admin)/admin/(secure)/chyby/page"),
+  help: () => import("@/app/(admin)/admin/(secure)/napoveda/page"),
 };
 
 let errors: string[] = [];
@@ -315,6 +326,19 @@ describe.each(["cs", "en"] as const)("admin pages in %s", (language) => {
     for (const tab of FEATURE_SECTIONS) {
       const result = await renderPage(PAGES.features, { tab });
       expect(result.problems, tab).toEqual([]);
+    }
+    expect(missing).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  it("errors renders the e-mail alerts tab and a group's detail", async () => {
+    for (const search of [
+      { tab: "alerts" },
+      { group: "0123456789abcdef0123456789abcdef" },
+      { code: "GR-AB" },
+    ] as Record<string, string>[]) {
+      const result = await renderPage(PAGES.errors, search);
+      expect(result.problems, JSON.stringify(search)).toEqual([]);
     }
     expect(missing).toEqual([]);
     expect(errors).toEqual([]);

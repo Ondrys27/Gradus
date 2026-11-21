@@ -18,7 +18,7 @@ import { fingerprint, requestInfo } from "./request-info";
 /**
  * Settings → Promo codes. Codes are made, edited and switched off by the
  * owner or an admin (partner marketing); payouts are approved and marked
- * paid by the owner only (money). Every write goes through an admin_*
+ * paid by the owner or a full admin (money). Every write goes through an admin_*
  * function with the user's own client, which checks the live admin session
  * from the signed token again and writes admin_audit in the same transaction.
  */

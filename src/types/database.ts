@@ -143,6 +143,7 @@ export type Database = {
           email: string | null
           expires_at: string
           id: string
+          level: string
           note: string | null
           revoked_at: string | null
           token_hash: string
@@ -157,6 +158,7 @@ export type Database = {
           email?: string | null
           expires_at?: string
           id?: string
+          level?: string
           note?: string | null
           revoked_at?: string | null
           token_hash: string
@@ -171,6 +173,7 @@ export type Database = {
           email?: string | null
           expires_at?: string
           id?: string
+          level?: string
           note?: string | null
           revoked_at?: string | null
           token_hash?: string
@@ -201,6 +204,24 @@ export type Database = {
           ip_hash?: string
           stage?: string
           success?: boolean
+        }
+        Relationships: []
+      }
+      admin_notify_prefs: {
+        Row: {
+          peer_changes: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          peer_changes?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          peer_changes?: boolean
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -2020,6 +2041,7 @@ export type Database = {
           recipients: number
           sent_at: string | null
           status: string
+          to_emails: string[] | null
           transport: string
         }
         Insert: {
@@ -2034,6 +2056,7 @@ export type Database = {
           recipients?: number
           sent_at?: string | null
           status?: string
+          to_emails?: string[] | null
           transport?: string
         }
         Update: {
@@ -2048,6 +2071,7 @@ export type Database = {
           recipients?: number
           sent_at?: string | null
           status?: string
+          to_emails?: string[] | null
           transport?: string
         }
         Relationships: [
@@ -2123,6 +2147,33 @@ export type Database = {
           transport?: string
           user_id?: string | null
           viewport?: string | null
+        }
+        Relationships: []
+      }
+      error_groups: {
+        Row: {
+          fingerprint: string
+          resolved_at: string | null
+          returned_at: string | null
+          status: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          fingerprint: string
+          resolved_at?: string | null
+          returned_at?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          fingerprint?: string
+          resolved_at?: string | null
+          returned_at?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }
@@ -4643,6 +4694,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          level: string | null
           role: Database["public"]["Enums"]["app_role"]
           updated_at: string
           user_id: string
@@ -4650,6 +4702,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          level?: string | null
           role: Database["public"]["Enums"]["app_role"]
           updated_at?: string
           user_id: string
@@ -4657,6 +4710,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          level?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
           user_id?: string
@@ -5564,6 +5618,45 @@ export type Database = {
         }[]
       }
       admin_email_taken: { Args: { _email: string }; Returns: boolean }
+      admin_error_group_reports: {
+        Args: { _fingerprint: string }
+        Returns: {
+          created_at: string
+          error_code: string
+          id: string
+          kind: string
+          source: string
+          status: string
+          user_id: string
+        }[]
+      }
+      admin_error_groups: {
+        Args: {
+          _code?: string
+          _from: string
+          _limit?: number
+          _offset?: number
+          _status?: string
+          _to: string
+          _version?: string
+        }
+        Returns: {
+          action: string
+          fingerprint: string
+          first_at: string
+          last_at: string
+          last_code: string
+          last_version: string
+          message: string
+          occurrences: number
+          page: string
+          returned_at: string
+          source: string
+          status: string
+          total: number
+          users: number
+        }[]
+      }
       admin_feature_requests: {
         Args: {
           _include_internal?: boolean
@@ -5590,6 +5683,7 @@ export type Database = {
         Args: {
           _email?: string
           _ip_hash?: string
+          _level?: string
           _note?: string
           _token_hash: string
         }
@@ -5606,6 +5700,7 @@ export type Database = {
           added_at: string
           last_login_at: string
           last_seen_at: string
+          level: string
           logins_30d: number
           removed_at: string
           role: string
@@ -5730,6 +5825,7 @@ export type Database = {
         Returns: undefined
       }
       admin_require_owner: { Args: never; Returns: undefined }
+      admin_require_sole_owner: { Args: never; Returns: undefined }
       admin_satisfaction_responses: {
         Args: {
           _from: string
@@ -5761,6 +5857,10 @@ export type Database = {
       admin_set_app_setting: {
         Args: { _ip_hash?: string; _key: string; _value: Json }
         Returns: Json
+      }
+      admin_set_level: {
+        Args: { _ip_hash?: string; _level: string; _user_id: string }
+        Returns: undefined
       }
       admin_subscription_set: {
         Args: {

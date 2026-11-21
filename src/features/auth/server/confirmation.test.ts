@@ -5,7 +5,7 @@ const rpc = vi.fn();
 const getUserById = vi.fn();
 const generateLink = vi.fn();
 const updateUserById = vi.fn(async () => ({ error: null }));
-const deliverEmail = vi.fn(async () => ({ ok: true, id: null }));
+const deliverEmail = vi.fn<(message: unknown) => Promise<{ ok: boolean; id: null }>>(async () => ({ ok: true, id: null }));
 
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/site-origin", () => ({ siteOrigin: async () => "https://gradus.test" }));

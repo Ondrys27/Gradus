@@ -53,7 +53,7 @@ import {
   type BugReportStatus,
   type FeatureRequestStatus,
 } from "@/features/admin/types";
-import type { AdminRole } from "@/features/admin/roles";
+import { adminCan, type AdminActor } from "@/features/admin/roles";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.feedback");
@@ -169,7 +169,7 @@ export default async function AdminFeedbackPage({ searchParams }: Props) {
             </Suspense>
             {reportId && (
               <Suspense fallback={<CardSkeleton height={320} />}>
-                <ReportDetail q={q} id={reportId} role={context.role} />
+                <ReportDetail q={q} id={reportId} actor={context} />
               </Suspense>
             )}
             <Suspense fallback={<CardSkeleton height={240} />}>
@@ -536,7 +536,7 @@ function BugReportItem({
 }
 
 /** One report in full: the text, the technical data, the console and (the owner) the screenshot. */
-async function ReportDetail({ q, id, role }: { q: AdminQuery; id: string; role: AdminRole }) {
+async function ReportDetail({ q, id, actor }: { q: AdminQuery; id: string; actor: AdminActor }) {
   const loaded = await safe("bug report", () => loadBugReport(q, id));
   const [t, tControls] = await Promise.all([
     getTranslations("admin.feedback"),
@@ -557,9 +557,10 @@ async function ReportDetail({ q, id, role }: { q: AdminQuery; id: string; role: 
       </AdminCard>
     );
   }
-  // The picture is the owner's and the author's: an admin sees only that there is one.
+  // The picture is the owner's, a full admin's and the author's: a limited admin sees only that there is one.
+  const canSee = adminCan(actor, "viewScreenshots");
   const shot =
-    row.screenshotPath && role === "owner" ? await reportScreenshotUrl(row.screenshotPath) : null;
+    row.screenshotPath && canSee ? await reportScreenshotUrl(row.screenshotPath) : null;
   const nameOf = await peopleNamer([row.userId]);
   const device =
     row.device && tControls.has(`segmentValues.device.${row.device}`)
@@ -655,7 +656,7 @@ async function ReportDetail({ q, id, role }: { q: AdminQuery; id: string; role: 
               />
             ) : (
               <p className="text-sm text-ink-muted">
-                {role === "owner" ? t("detail.screenshotGone") : t("detail.screenshotOwnerOnly")}
+                {canSee ? t("detail.screenshotGone") : t("detail.screenshotOwnerOnly")}
               </p>
             )}
           </div>

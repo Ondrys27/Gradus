@@ -111,11 +111,16 @@ describe("claims", () => {
       status: "ok",
       userId: "u",
       role: null,
+      level: "limited",
       expiresAt: "x",
     });
     expect(
-      parseSessionStatus({ status: "ok", user_id: "u", role: "admin", expires_at: "x" }).role,
-    ).toBe("admin");
+      parseSessionStatus({ status: "ok", user_id: "u", role: "admin", expires_at: "x" }),
+    ).toMatchObject({ role: "admin", level: "limited" });
+    expect(
+      parseSessionStatus({ status: "ok", user_id: "u", role: "admin", level: "full", expires_at: "x" }).level,
+    ).toBe("full");
+    expect(parseSessionStatus({ status: "ok", user_id: "u", role: "owner", expires_at: "x" }).level).toBe("full");
     expect(parseSessionStatus({ status: "ok", user_id: "u", role: "user" }).role).toBeNull();
   });
 });

@@ -36,7 +36,7 @@ const PREVIEW_MESSAGES: PreviewMessages = {
 export default async function AdminPlansPage() {
   const context = await requireAdmin();
   await logAdminAction(context, "view", "plans");
-  const canEdit = adminCan(context.role, "editPlans");
+  const canEdit = adminCan(context, "editPlans");
 
   const [versions, counts, rates, t, tControls] = await Promise.all([
     loadCatalogVersions(),
@@ -89,7 +89,7 @@ export default async function AdminPlansPage() {
             />
           </AdminCard>
         )}
-        <AdminCard title={t("counts.title")} description={t("counts.description")}>
+        <AdminCard title={t("counts.title")} description={t("counts.description")} id="plans-accounts">
           <PlanCounts
             counts={counts}
             t={t}
@@ -98,7 +98,7 @@ export default async function AdminPlansPage() {
             }
           />
         </AdminCard>
-        <AdminCard title={t("history.title")} description={t("history.description")}>
+        <AdminCard title={t("history.title")} description={t("history.description")} id="plans-history">
           <PlansHistory
             current={toHistory(versions.published)}
             history={versions.history.map(toHistory)}

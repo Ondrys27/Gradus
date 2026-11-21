@@ -39,8 +39,9 @@ export type AlertDeps = {
   spacingMs?: number;
 };
 
-export const ERROR_ALERTS_PATH = `${ADMIN_PATH}/upozorneni`;
-const FEEDBACK_PATH = `${ADMIN_PATH}/zpetna-vazba`;
+/** Operations → Errors: the log, its second tab the alert settings (step 27.2). */
+export const ERROR_LOG_PATH = `${ADMIN_PATH}/chyby`;
+export const ERROR_ALERTS_PATH = `${ERROR_LOG_PATH}?tab=alerts`;
 const DEFAULT_SPACING_MS = 600;
 
 /** The base of links in the e-mails: the configured site, else Vercel's production address. */
@@ -52,12 +53,12 @@ export function alertOrigin(): string | null {
   return null;
 }
 
-/** The administration's page that finds this error (and its bug report) by code. */
+/** The error log, searching this error's code (its group, occurrences and bug reports). */
 export function errorAdminUrl(origin: string | null, code?: string): string | null {
   if (!origin) return null;
   return code
-    ? `${origin}${FEEDBACK_PATH}?code=${encodeURIComponent(code)}`
-    : `${origin}${FEEDBACK_PATH}`;
+    ? `${origin}${ERROR_LOG_PATH}?code=${encodeURIComponent(code)}`
+    : `${origin}${ERROR_LOG_PATH}`;
 }
 
 function emailsOf(value: unknown): string[] {
@@ -90,6 +91,7 @@ async function deliver(
       .update({
         status: "sent",
         sent_at: now(),
+        to_emails: recipients,
         message: { to: recipients, subject: content.subject, text: content.text },
       })
       .eq("id", sendId);
@@ -116,7 +118,7 @@ async function deliver(
   if (failure) console.error("[error-alerts] e-mail failed", failure);
   const { error } = await admin
     .from("error_alert_sends")
-    .update({ status: sent > 0 ? "sent" : "failed", sent_at: now(), failure })
+    .update({ status: sent > 0 ? "sent" : "failed", sent_at: now(), failure, to_emails: recipients })
     .eq("id", sendId);
   if (error) console.error("[error-alerts] send row not finished", error.code ?? error.message);
   return { sent, total: recipients.length, failure };

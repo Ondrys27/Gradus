@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const context = await adminAccess(true);
   // It names people: the owner's only, an admin gets the 404.
-  if (!context || !mayExport(context.role, "audit")) return adminNotFound();
+  if (!context || !mayExport(context, "audit")) return adminNotFound();
 
   const rows = await loadAuditExport();
   if (!(await logAdminAction(context, "export", "audit"))) {

@@ -20,9 +20,11 @@ type Item = { event: string; props: Record<string, unknown> };
 const queue: Item[] = [];
 let timer: ReturnType<typeof setTimeout> | null = null;
 let listening = false;
+/** Set once the tab signs out: whatever comes after would reach /api/t without a session. */
+let stopped = false;
 
 function enabled(): boolean {
-  return typeof window !== "undefined" && process.env.NODE_ENV !== "test";
+  return typeof window !== "undefined" && process.env.NODE_ENV !== "test" && !stopped;
 }
 
 /** Records an event from the catalog. Invalid props are dropped (and reported while developing). */
@@ -84,6 +86,21 @@ export function flush(options: { beacon?: boolean; heartbeat?: boolean } = {}): 
   const body = JSON.stringify(options.heartbeat ? { events, heartbeat: true } : { events });
   send(body, options.beacon === true);
   if (queue.length) schedule();
+}
+
+/**
+ * Ends measuring for the rest of this page once the session is gone (sign-out
+ * leaves the page right after). Events tracked between the last flush and the
+ * page leaving would otherwise go out with the pagehide beacon, without a
+ * session, and come back 401.
+ */
+export function stopTracking(): void {
+  stopped = true;
+  queue.length = 0;
+  if (timer) {
+    clearTimeout(timer);
+    timer = null;
+  }
 }
 
 function listen() {

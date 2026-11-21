@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const context = await adminAccess(true);
-  if (!context || !mayExport(context.role, "promo_payouts")) return adminNotFound();
+  if (!context || !mayExport(context, "promo_payouts")) return adminNotFound();
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) return adminNotFound();
   const code = await loadPromoCode(id);

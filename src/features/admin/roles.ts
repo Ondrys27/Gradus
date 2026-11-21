@@ -1,47 +1,75 @@
 /**
- * Who may do what in the administration. Both roles pass the same gate
- * (password, TOTP, live admin session); a few things stay with the owner.
- * The database checks the same in its admin_* functions; this decides what
- * the pages show, so an admin never sees a control they cannot use.
+ * Who may do what in the administration. Everyone passes the same gate
+ * (password, TOTP, live admin session). The owner may do everything; an
+ * administrator has a level (step 27.2): a full one may do everything the
+ * owner may except the Administrators section, a limited one reads what the
+ * full one changes. The database checks the same in its admin_* functions
+ * (admin_require_owner() = owner or full administrator,
+ * admin_require_sole_owner() = the owner); this decides what the pages
+ * show, so nobody sees a control they cannot use.
  * The full table is in docs/admin-roles.md.
  */
 
 export type AdminRole = "owner" | "admin";
+export type AdminLevel = "full" | "limited";
 
-export type OwnerOnly =
-  /** The Administrators section: invitations, removal, history. */
+/** Who is acting: the role and, for an administrator, the level (the owner is always full). */
+export type AdminActor = { role: AdminRole; level: AdminLevel };
+
+export type AdminPower =
+  /** The Administrators section: invitations, levels, removal, history. The owner's alone. */
   | "manageAdmins"
-  /** AI caps and per-user exceptions; an admin reads them. */
+  /** AI caps and per-user exceptions; a limited admin reads them. */
   | "editAiCaps"
-  /** The connection test of Grady and the rules' "Try it" (one paid model call each); an admin does not see them. */
+  /** The connection test of Grady and the rules' "Try it" (one paid model call each). */
   | "testGrady"
-  /** Grady's rules (switches, timing, the owner's instructions); an admin reads them. */
+  /** Grady's rules (switches, timing, the owner's instructions); a limited admin reads them. */
   | "editGradyRules"
-  /** The plan catalog: draft, publishing, bringing back a version; an admin reads it. */
+  /** The plan catalog: draft, publishing, bringing back a version; a limited admin reads it. */
   | "editPlans"
-  /** An account's subscription set by hand (until payments exist); an admin reads it. */
+  /** An account's subscription set by hand, "Sync with Stripe"; a limited admin reads it. */
   | "editSubscriptions"
-  /** Partner payouts approved and marked paid; an admin reads them. */
+  /** Partner payouts approved and marked paid; a limited admin reads them. */
   | "managePayouts"
   /**
    * A changed sign-in e-mail of an account (support): with a password reset
-   * after it, it hands the account to whoever owns the new address, so only
-   * the owner starts it; an admin sends resets and confirmations.
+   * after it, it hands the account to whoever owns the new address; a
+   * limited admin sends resets and confirmations only.
    */
   | "changeEmails"
-  /** Where the error e-mails go and how often, the test e-mail; an admin reads it. */
+  /** Where the error e-mails go and how often, the test e-mail; a limited admin reads it. */
   | "editErrorAlerts"
   /** Exports whose rows name people (names, e-mails, account ids). */
-  | "exportPersonalData";
+  | "exportPersonalData"
+  /** The screenshot attached to a bug report (it may show anything on the user's screen). */
+  | "viewScreenshots"
+  /** The e-mails "X changed …" between the owner and the full admins, and switching them off. */
+  | "peerNotices";
+
+/** The powers that stay with the owner whatever an administrator's level. */
+const OWNER_ALONE: ReadonlySet<AdminPower> = new Set(["manageAdmins"]);
 
 export function parseAdminRole(value: unknown): AdminRole | null {
   return value === "owner" || value === "admin" ? value : null;
 }
 
-/** Owner-only things are the owner's; everything else in the administration is both roles'. */
-export function adminCan(role: AdminRole, what: OwnerOnly): boolean {
-  void what;
-  return role === "owner";
+/** An administrator without a stored level is limited; the owner is always full. */
+export function parseAdminLevel(role: AdminRole | null, value: unknown): AdminLevel {
+  if (role === "owner") return "full";
+  return value === "full" ? "full" : "limited";
+}
+
+/** The owner may everything; a full administrator everything but the owner's own; a limited one none of these. */
+export function adminCan(actor: AdminActor | null | undefined, what: AdminPower): boolean {
+  if (!actor) return false;
+  if (actor.role === "owner") return true;
+  if (OWNER_ALONE.has(what)) return false;
+  return actor.role === "admin" && actor.level === "full";
+}
+
+/** Which of the three standings an actor has, for labels and the table in docs/admin-roles.md. */
+export function adminStanding(actor: AdminActor): "owner" | "full" | "limited" {
+  return actor.role === "owner" ? "owner" : actor.level;
 }
 
 /**
@@ -60,8 +88,8 @@ export const PERSONAL_DATA_EXPORTS: ReadonlySet<string> = new Set([
   "promo_payouts",
 ]);
 
-export function mayExport(role: AdminRole, target: string): boolean {
-  return !PERSONAL_DATA_EXPORTS.has(target) || adminCan(role, "exportPersonalData");
+export function mayExport(actor: AdminActor | null | undefined, target: string): boolean {
+  return !PERSONAL_DATA_EXPORTS.has(target) || adminCan(actor, "exportPersonalData");
 }
 
 /**
@@ -70,7 +98,8 @@ export function mayExport(role: AdminRole, target: string): boolean {
  * for an account, or null when they are. Both roles may help an ordinary
  * account; nobody helps themselves this way (their own settings do it), and
  * an account that enters the administration is the owner's to help, never
- * another admin's: whoever changes an e-mail and resets a password could
+ * another admin's, whatever their level (managing administrators is the
+ * owner's alone): whoever changes an e-mail and resets a password could
  * take the account over.
  */
 export type AccountSupportBlock = "self" | "privileged";

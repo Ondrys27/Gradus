@@ -98,9 +98,15 @@ describe("dispatchErrorAlert", () => {
     expect(message.text).toContain("Jana · jana@firma.cz");
     expect(message.text).toContain("tarif beta (active) · interní: ano");
     expect(message.text).toContain("3× za posledních 24 h");
-    expect(message.text).toContain("https://gradus.app/admin/zpetna-vazba?code=GR-7K3M9Q");
+    expect(message.text).toContain("https://gradus.app/admin/chyby?code=GR-7K3M9Q");
     expect(updates).toEqual([
-      expect.objectContaining({ table: "error_alert_sends", status: "sent", failure: null }),
+      expect.objectContaining({
+        table: "error_alert_sends",
+        status: "sent",
+        failure: null,
+        // Who it went to, for the error log (step 27.2).
+        to_emails: ["owner@gradus.cz", "dev@gradus.cz"],
+      }),
     ]);
   });
 
@@ -157,9 +163,9 @@ describe("dispatchErrorAlert", () => {
 });
 
 describe("errorAdminUrl", () => {
-  it("links the Feedback page's search for the code", () => {
+  it("links the error log's search for the code", () => {
     expect(errorAdminUrl("https://gradus.app", "GR-7K3M9Q")).toBe(
-      "https://gradus.app/admin/zpetna-vazba?code=GR-7K3M9Q",
+      "https://gradus.app/admin/chyby?code=GR-7K3M9Q",
     );
     expect(errorAdminUrl(null, "GR-7K3M9Q")).toBeNull();
   });

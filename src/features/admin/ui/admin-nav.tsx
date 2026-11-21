@@ -6,15 +6,17 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
   ActivityIcon,
-  BellRingIcon,
   BotIcon,
+  BugIcon,
   BoxesIcon,
   ChevronDownIcon,
   CoinsIcon,
   CompassIcon,
+  CornerDownRightIcon,
   GamepadIcon,
   HeartPulseIcon,
   LayoutDashboardIcon,
+  LifeBuoyIcon,
   LogOutIcon,
   MessageSquareIcon,
   PanelLeftCloseIcon,
@@ -47,7 +49,8 @@ import {
   type AdminSectionKey,
 } from "../nav";
 import { parseAdminView, viewQuery } from "../view-state";
-import type { AdminRole } from "../roles";
+import type { AdminActor } from "../roles";
+import { ADMIN_HIGHLIGHT_EVENT, helpFor, helpItemHref, matchesSearch } from "../help-index";
 import { useAdminSignOut } from "../admin-session";
 
 const SECTION_ICONS: Record<AdminSectionKey, LucideIcon> = {
@@ -66,8 +69,9 @@ const SECTION_ICONS: Record<AdminSectionKey, LucideIcon> = {
   audit: ScrollTextIcon,
   plans: TagsIcon,
   promoCodes: TicketPercentIcon,
-  errorAlerts: BellRingIcon,
+  errors: BugIcon,
   admins: ShieldCheckIcon,
+  help: LifeBuoyIcon,
 };
 
 const GROUP_ICONS: Record<AdminGroupKey, LucideIcon> = {
@@ -120,7 +124,7 @@ function useKeptQuery(): string {
  * to a rail of icons; both are remembered in this browser. Links keep the
  * shared view so switching pages keeps the period and filters.
  */
-export function AdminSidebar({ role }: { role: AdminRole }) {
+export function AdminSidebar({ actor }: { actor: AdminActor }) {
   const t = useTranslations("admin.shell");
   const pathname = usePathname();
   const query = useKeptQuery();
@@ -137,7 +141,7 @@ export function AdminSidebar({ role }: { role: AdminRole }) {
     writeSidebar(next);
   }
 
-  const groups = groupsFor(role);
+  const groups = groupsFor(actor);
   const current = activeGroup(pathname);
   const { collapsed } = state;
 
@@ -313,13 +317,13 @@ function SignOutItem({ collapsed }: { collapsed: boolean }) {
  * one page opens it; the others open a sheet with their pages. There is no
  * Grady in the administration, so the bar may use the whole width.
  */
-export function AdminBottomNav({ role }: { role: AdminRole }) {
+export function AdminBottomNav({ actor }: { actor: AdminActor }) {
   const t = useTranslations("admin.shell");
   const pathname = usePathname();
   const router = useRouter();
   const query = useKeptQuery();
   const [openGroup, setOpenGroup] = useState<AdminGroupKey | null>(null);
-  const groups = groupsFor(role);
+  const groups = groupsFor(actor);
   const current = activeGroup(pathname);
   const sheet = groups.find((group) => group.key === openGroup);
 
@@ -450,12 +454,25 @@ function isTyping(target: EventTarget | null): boolean {
   );
 }
 
+/** One row of the ⌘K list: a section, or a setting or action inside one (help-index.ts). */
+type SwitcherRow = {
+  id: string;
+  label: string;
+  /** The section's name next to an item, the group's next to a section. */
+  where: string;
+  href: string;
+  icon: LucideIcon;
+  item: boolean;
+};
+
 /**
  * The keyboard of the administration and the ⌘K switcher: type a few
- * letters of a section, Enter opens it with the current view kept.
+ * letters of a section, a setting or an action ("strop AI", "reset hesla"),
+ * Enter opens it with the current view kept and highlights the place.
  */
-export function AdminHotkeys({ role }: { role: AdminRole }) {
+export function AdminHotkeys({ actor }: { actor: AdminActor }) {
   const t = useTranslations("admin.shell");
+  const tHelp = useTranslations("admin.help");
   const router = useRouter();
   const query = useKeptQuery();
   const [open, setOpen] = useState(false);
@@ -496,17 +513,53 @@ export function AdminHotkeys({ role }: { role: AdminRole }) {
     return () => window.clearTimeout(timer);
   }, [open]);
 
-  const needle = text.trim().toLocaleLowerCase();
-  const rows = groupsFor(role).flatMap((group) =>
-    group.sections
-      .map((section) => ({ section, group: group.key, label: t(`nav.${section.key}`) }))
-      .filter((row) => !needle || row.label.toLocaleLowerCase().includes(needle)),
-  );
+  const all = useMemo<(SwitcherRow & { haystack: string })[]>(() => {
+    const groups = groupsFor(actor);
+    const groupOf = new Map(groups.flatMap((group) => group.sections.map((section) => [section.key, group.key])));
+    return helpFor(actor).flatMap((section) => {
+      const name = t(`nav.${section.key}`);
+      const icon = SECTION_ICONS[section.key];
+      const group = groupOf.get(section.key);
+      const sectionRow = {
+        id: `section-${section.key}`,
+        label: name,
+        where: group ? t(`groups.${group}`) : "",
+        href: `${section.href}${query}`,
+        icon,
+        item: false,
+        haystack: name,
+      };
+      const items = section.items.map((item) => {
+        const label = tHelp(`items.${item.key}.title`);
+        return {
+          id: `item-${item.key}`,
+          label,
+          where: name,
+          href: helpItemHref(item, query),
+          icon,
+          item: true,
+          haystack: `${label} ${tHelp(`items.${item.key}.keywords`)} ${name}`,
+        };
+      });
+      return [sectionRow, ...items];
+    });
+  }, [actor, query, t, tHelp]);
+
+  const needle = text.trim();
+  // Without a query the sections only; with one, sections first, then the settings and actions.
+  const rows = needle
+    ? [
+        ...all.filter((row) => !row.item && matchesSearch(row.haystack, needle)),
+        ...all.filter((row) => row.item && matchesSearch(row.haystack, needle)),
+      ].slice(0, 40)
+    : all.filter((row) => !row.item);
   const selected = Math.min(cursor, Math.max(0, rows.length - 1));
 
-  function go(section: AdminSection) {
+  function go(row: SwitcherRow) {
     setOpen(false);
-    router.push(`${section.href}${query}`);
+    router.push(row.href);
+    // The page may be the one already open: ask it to highlight the place again.
+    window.setTimeout(() => window.dispatchEvent(new Event(ADMIN_HIGHLIGHT_EVENT)), 0);
   }
 
   function onListKey(event: KeyboardEvent<HTMLInputElement>) {
@@ -518,7 +571,7 @@ export function AdminHotkeys({ role }: { role: AdminRole }) {
       setCursor((current) => Math.max(0, current - 1));
     } else if (event.key === "Enter" && rows[selected]) {
       event.preventDefault();
-      go(rows[selected].section);
+      go(rows[selected]);
     }
   }
 
@@ -536,7 +589,7 @@ export function AdminHotkeys({ role }: { role: AdminRole }) {
             role="combobox"
             aria-expanded
             aria-controls="admin-switcher-list"
-            aria-activedescendant={rows[selected] ? `admin-switcher-${rows[selected].section.key}` : undefined}
+            aria-activedescendant={rows[selected] ? `admin-switcher-${rows[selected].id}` : undefined}
             aria-autocomplete="list"
             value={text}
             placeholder={t("switcher.placeholder")}
@@ -551,24 +604,24 @@ export function AdminHotkeys({ role }: { role: AdminRole }) {
         <ul id="admin-switcher-list" role="listbox" className="flex max-h-80 flex-col overflow-y-auto">
           {rows.length === 0 && <li className="px-3 py-2 text-sm text-ink-muted">{t("switcher.empty")}</li>}
           {rows.map((row, index) => {
-            const Icon = SECTION_ICONS[row.section.key];
+            const Icon = row.item ? CornerDownRightIcon : row.icon;
             const active = index === selected;
             return (
               <li
-                key={row.section.key}
-                id={`admin-switcher-${row.section.key}`}
+                key={row.id}
+                id={`admin-switcher-${row.id}`}
                 role="option"
                 aria-selected={active}
                 onMouseEnter={() => setCursor(index)}
-                onClick={() => go(row.section)}
+                onClick={() => go(row)}
                 className={cn(
-                  "flex min-h-10 cursor-pointer items-center gap-3 rounded-lg px-3 text-sm",
+                  "flex min-h-11 cursor-pointer items-center gap-3 rounded-lg px-3 text-sm mouse:min-h-10",
                   active ? "bg-surface-hover text-ink" : "text-ink-soft",
                 )}
               >
-                <Icon aria-hidden className={cn("size-4", active ? "text-violet" : "text-ink-muted")} />
-                <span className="flex-1">{row.label}</span>
-                <span className="text-xs text-ink-muted">{t(`groups.${row.group}`)}</span>
+                <Icon aria-hidden className={cn("size-4 shrink-0", active ? "text-violet" : "text-ink-muted")} />
+                <span className="min-w-0 flex-1 truncate">{row.label}</span>
+                <span className="shrink-0 text-xs text-ink-muted">{row.where}</span>
               </li>
             );
           })}

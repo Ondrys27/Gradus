@@ -269,7 +269,7 @@ export function PlansEditor({
     : false;
 
   return (
-    <div className="flex flex-col gap-6" data-testid="plans-editor">
+    <div className="flex flex-col gap-6" data-testid="plans-editor" id="plans-editor">
       <ManualCurrencies
         currencies={currencies}
         onAdd={(currency) => setManual(currency)}

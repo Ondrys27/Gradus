@@ -12,13 +12,14 @@ import { LOCALIZED_PAGES, PLAN_PATH } from "@/lib/routes";
 import { createClient } from "@/lib/supabase/server";
 import { ADMIN_PATH } from "../access";
 import { adminAccessFor } from "./guard";
+import { notifyPeers } from "./peer-notices";
 import { loadCatalogImpact, type PlanImpact } from "./plans-data";
 import { fingerprint, requestInfo } from "./request-info";
 
 /**
  * The plan catalog changed from the administration. Each action checks the
- * owner's admin session (role owner, aal2) first; an admin only reads the
- * catalog. The database function then checks it once more from the signed
+ * admin session (the owner or a full admin, aal2) first; a limited admin
+ * only reads the catalog. The database function then checks it once more from the signed
  * token, writes and records the step in admin_audit, all in one transaction.
  * Only publishing and bringing back a version touch what visitors see; then
  * the cached catalog and the pages built from it are revalidated.
@@ -153,7 +154,8 @@ export async function publishPlanCatalog(
   if (!parsed.ok) return parsed;
   const expectedId = idSchema.safeParse(expected);
   if (!expectedId.success) return { ok: false, error: "invalid" };
-  if (!(await adminAccessFor("editPlans"))) return { ok: false, error: "forbidden" };
+  const context = await adminAccessFor("editPlans");
+  if (!context) return { ok: false, error: "forbidden" };
   const supabase = await createClient();
   const { error } = await supabase.rpc("admin_plan_catalog_publish_full", {
     _payload: parsed.catalog,
@@ -164,6 +166,7 @@ export async function publishPlanCatalog(
   if (error) return refused(error);
   revalidatePublished();
   syncStripeLater();
+  await notifyPeers(context, "plansPublished");
   return { ok: true };
 }
 
@@ -175,7 +178,8 @@ export async function restorePlanVersion(
   const versionId = idSchema.safeParse(version);
   const expectedId = idSchema.safeParse(expected);
   if (!versionId.success || !expectedId.success) return { ok: false, error: "invalid" };
-  if (!(await adminAccessFor("editPlans"))) return { ok: false, error: "forbidden" };
+  const context = await adminAccessFor("editPlans");
+  if (!context) return { ok: false, error: "forbidden" };
   const supabase = await createClient();
   const { error } = await supabase.rpc("admin_plan_catalog_restore", {
     _version: versionId.data,
@@ -185,5 +189,6 @@ export async function restorePlanVersion(
   if (error) return refused(error);
   revalidatePublished();
   syncStripeLater();
+  await notifyPeers(context, "plansRestored");
   return { ok: true };
 }

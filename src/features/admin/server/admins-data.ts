@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { parseAdminRole, type AdminRole } from "../roles";
+import { parseAdminLevel, parseAdminRole, type AdminLevel, type AdminRole } from "../roles";
 
 /**
  * The Administrators section (owner only): the owner and every admin, active
@@ -19,6 +19,8 @@ export type AdminSessionRow = {
 export type AdminMember = {
   userId: string;
   role: AdminRole;
+  /** Full or limited; the owner is always full. */
+  level: AdminLevel;
   active: boolean;
   addedAt: string;
   removedAt: string | null;
@@ -30,6 +32,7 @@ export type AdminMember = {
 };
 export type OpenInvite = {
   id: string;
+  level: AdminLevel;
   email: string | null;
   note: string | null;
   createdAt: string;
@@ -68,6 +71,7 @@ export async function loadAdminMembers(): Promise<AdminMember[]> {
   return members.map((row) => ({
     userId: row.user_id,
     role: row.role,
+    level: parseAdminLevel(row.role, row.level),
     active: row.active,
     addedAt: row.added_at,
     removedAt: row.removed_at,
@@ -92,7 +96,7 @@ export async function loadAdminMembers(): Promise<AdminMember[]> {
 export async function loadOpenInvites(): Promise<OpenInvite[]> {
   const { data, error } = await createAdminClient()
     .from("admin_invites")
-    .select("id, email, note, created_at, expires_at")
+    .select("id, email, note, level, created_at, expires_at")
     .is("accepted_at", null)
     .is("revoked_at", null)
     .gt("expires_at", new Date().toISOString())
@@ -101,6 +105,7 @@ export async function loadOpenInvites(): Promise<OpenInvite[]> {
   if (error) throw new Error(`admin_invites: ${error.message}`);
   return data.map((row) => ({
     id: row.id,
+    level: parseAdminLevel("admin", row.level),
     email: row.email,
     note: row.note,
     createdAt: row.created_at,

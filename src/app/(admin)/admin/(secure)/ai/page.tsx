@@ -47,6 +47,7 @@ import {
 } from "@/features/admin/ui/blocks";
 import { buildTable } from "@/features/admin/table";
 import { peopleNamer } from "@/features/admin/server/people";
+import { lastSettingChange } from "@/features/admin/server/setting-change";
 import { BreakdownList, DataTable, FieldsGrid } from "@/features/admin/ui/data-blocks";
 import { Figures } from "@/features/admin/ui/metric-tile";
 import { ADMIN_FORMAT_SETTINGS, formatMetricValue, metricCsvValue } from "@/features/admin/format-metric";
@@ -105,8 +106,8 @@ export default async function AdminAiPage({ searchParams }: Props) {
         <AdminPageHeader section="ai" q={q} extra={tabs} />
         <Suspense fallback={<CardSkeleton height={520} />}>
           <Rules
-            readOnly={!adminCan(context.role, "editGradyRules")}
-            canTest={adminCan(context.role, "testGrady")}
+            readOnly={!adminCan(context, "editGradyRules")}
+            canTest={adminCan(context, "testGrady")}
           />
         </Suspense>
       </>
@@ -132,17 +133,17 @@ export default async function AdminAiPage({ searchParams }: Props) {
           </Suspense>
           <Suspense fallback={<GridSkeleton count={2} height={260} />}>
             <BlockGrid>
-              <TopUsers q={q} exportable={mayExport(context.role, "table.ai.top_users.csv")} />
-              <TopSpaces q={q} exportable={mayExport(context.role, "table.ai.top_spaces.csv")} />
+              <TopUsers q={q} exportable={mayExport(context, "table.ai.top_users.csv")} />
+              <TopSpaces q={q} exportable={mayExport(context, "table.ai.top_spaces.csv")} />
             </BlockGrid>
           </Suspense>
         </div>
         {/* The caps change what Grady may spend: the one action with consequences, at the end. */}
         <Suspense fallback={<CardSkeleton height={260} />}>
-          <Caps q={q} readOnly={!adminCan(context.role, "editAiCaps")} />
+          <Caps q={q} readOnly={!adminCan(context, "editAiCaps")} />
         </Suspense>
         {/* One paid call to the model: only the owner may spend it. */}
-        {adminCan(context.role, "testGrady") && <ConnectionTest />}
+        {adminCan(context, "testGrady") && <ConnectionTest />}
       </div>
     </>
   );
@@ -178,7 +179,11 @@ async function BudgetAndCost({ q }: { q: AdminQuery }) {
         <Show loaded={chart}>{(data) => <AdminChart data={data} title={t("name")} />}</Show>
       </AdminCard>
       <Show loaded={budget}>
-        {(data) => <BudgetCard budget={data.month} period={period} spend={data.spend} />}
+        {(data) => (
+          <div id="ai-budget" className="flex min-w-0 flex-col">
+            <BudgetCard budget={data.month} period={period} spend={data.spend} />
+          </div>
+        )}
       </Show>
     </BlockGrid>
   );
@@ -187,7 +192,7 @@ async function BudgetAndCost({ q }: { q: AdminQuery }) {
 /** The caps set here apply within a minute; under each the spend of the chosen period. */
 async function Caps({ q, readOnly }: { q: AdminQuery; readOnly: boolean }) {
   const period = budgetPeriod(q.view, q.range, q.today);
-  const [loaded, t, tPeriod] = await Promise.all([
+  const [loaded, t, tPeriod, changed] = await Promise.all([
     safe("ai caps", async () => {
       const [overview, spend] = await Promise.all([
         loadAiCapsOverview(),
@@ -197,6 +202,7 @@ async function Caps({ q, readOnly }: { q: AdminQuery; readOnly: boolean }) {
     }),
     getTranslations("admin.ai.caps"),
     getTranslations("admin.ai.period"),
+    lastSettingChange("ai_caps"),
   ]);
   return (
     <PageSection title={t("sectionTitle")} description={t("sectionDescription")}>
@@ -221,6 +227,11 @@ async function Caps({ q, readOnly }: { q: AdminQuery; readOnly: boolean }) {
             />
           )}
         </Show>
+        {changed && (
+          <p className="text-xs text-ink-muted" data-testid="caps-changed-by">
+            {t("changedBy", changed)}
+          </p>
+        )}
       </AdminCard>
     </PageSection>
   );
@@ -232,9 +243,10 @@ async function Caps({ q, readOnly }: { q: AdminQuery; readOnly: boolean }) {
  * Read fresh here; the app reads them with a 30-second cache.
  */
 async function Rules({ readOnly, canTest }: { readOnly: boolean; canTest: boolean }) {
-  const [loaded, t] = await Promise.all([
+  const [loaded, t, changed] = await Promise.all([
     safe("grady rules", () => loadGradyRules(createAdminClient(), { fresh: true })),
     getTranslations("admin.ai.rules"),
+    lastSettingChange("jarvis_rules"),
   ]);
   return (
     <AdminCard title={t("title")} description={t("description")} id="pravidla">
@@ -248,6 +260,7 @@ async function Rules({ readOnly, canTest }: { readOnly: boolean; canTest: boolea
           />
         )}
       </Show>
+      {changed && <p className="text-xs text-ink-muted">{t("changedBy", changed)}</p>}
     </AdminCard>
   );
 }
@@ -255,7 +268,7 @@ async function Rules({ readOnly, canTest }: { readOnly: boolean; canTest: boolea
 async function ConnectionTest() {
   const t = await getTranslations("admin.ai.connection");
   return (
-    <AdminCard title={t("title")} description={t("description")}>
+    <AdminCard title={t("title")} description={t("description")} id="ai-connection">
       <GradyPingCard />
     </AdminCard>
   );
@@ -398,7 +411,7 @@ async function TopUsers({ q, exportable }: { q: AdminQuery; exportable: boolean 
   ]);
   const nameOf = await peopleNamer(loaded.ok ? loaded.data.map((row) => row.userId) : []);
   return (
-    <AdminCard title={t("topUsersTitle")} description={t("topUsersDescription")}>
+    <AdminCard title={t("topUsersTitle")} description={t("topUsersDescription")} id="ai-top-users">
       <Show loaded={loaded}>
         {(rows) => (
           <DataTable

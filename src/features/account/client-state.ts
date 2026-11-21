@@ -3,6 +3,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { resetAnimationsPreference } from "@/lib/animation-preference";
 import { resetSoundPreference } from "@/lib/sound-preference";
+import { stopTracking } from "@/lib/analytics/client";
 import { loginPath } from "@/lib/auth/routes";
 import { createClient } from "@/lib/supabase/client";
 
@@ -34,6 +35,7 @@ export async function signOutEverywhereInTab(queryClient: QueryClient, target?: 
   try {
     await createClient().auth.signOut({ scope: "local" });
   } finally {
+    stopTracking();
     clearClientState(queryClient);
     window.location.replace(target ?? loginPath(document.documentElement.lang));
   }

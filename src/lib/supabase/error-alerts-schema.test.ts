@@ -471,3 +471,96 @@ describe("error_alert_digest_claim", () => {
     expect(await rows(`select * from public.error_alert_digest_claim()`)).toEqual([]);
   });
 });
+
+describe("the error log (step 27.2)", () => {
+  type Group = {
+    fingerprint: string;
+    status: string;
+    returned_at: Date | null;
+    last_code: string;
+    occurrences: number;
+    users: number;
+    last_version: string;
+    total: number;
+  };
+  const groups = async (args: { status?: string; code?: string; version?: string } = {}) => {
+    await asService();
+    return rows<Group>(
+      `select * from public.admin_error_groups(current_date - 1, current_date + 1, $1, $2, $3)`,
+      [args.status ?? null, args.code ?? null, args.version ?? null],
+    );
+  };
+
+  beforeEach(async () => {
+    await clearSends();
+    await asServer();
+    await db.exec(`delete from error_groups;`);
+  });
+
+  it("is closed to the browser", async () => {
+    for (const as of [() => asUser(user), () => asAnon()]) {
+      await as();
+      await expect(db.query(`select * from public.error_groups`)).rejects.toThrow(/permission denied/);
+      await expect(
+        db.query(`select * from public.admin_error_groups(current_date - 1, current_date)`),
+      ).rejects.toThrow(/permission denied/);
+      await expect(
+        db.query(`select * from public.admin_error_group_reports($1)`, [fp("x")]),
+      ).rejects.toThrow(/permission denied/);
+    }
+  });
+
+  it("groups occurrences by fingerprint with counts, users and the last code", async () => {
+    await record({ fingerprint: fp("log-a"), userId: user });
+    await record({ fingerprint: fp("log-a"), userId: user });
+    await record({ fingerprint: fp("log-a"), userId: owner });
+    const last = code();
+    await record({ fingerprint: fp("log-a"), errorCode: last });
+    await record({ fingerprint: fp("log-b") });
+    const list = await groups();
+    expect(list.map((group) => group.fingerprint).sort()).toEqual([fp("log-a"), fp("log-b")].sort());
+    const a = list.find((group) => group.fingerprint === fp("log-a"))!;
+    expect(a).toMatchObject({ status: "new", occurrences: 4, users: 2, last_version: "abc1234", total: 2 });
+    expect(a.last_code).toBe(last);
+    // A code finds its group, and only it.
+    expect((await groups({ code: last })).map((group) => group.fingerprint)).toEqual([fp("log-a")]);
+    expect((await groups({ code: last.slice(0, 5) })).length).toBeGreaterThan(0);
+    expect(await groups({ version: "other" })).toEqual([]);
+  });
+
+  it("brings a resolved error back to new when it happens again, never an ignored one", async () => {
+    await record({ fingerprint: fp("log-c") });
+    await record({ fingerprint: fp("log-d") });
+    await asServer();
+    await db.query(
+      `insert into error_groups (fingerprint, status, resolved_at) values ($1, 'resolved', now()), ($2, 'ignored', null)`,
+      [fp("log-c"), fp("log-d")],
+    );
+    expect((await groups({ status: "resolved" })).map((group) => group.fingerprint)).toEqual([fp("log-c")]);
+
+    await record({ fingerprint: fp("log-c") });
+    await record({ fingerprint: fp("log-d") });
+    const list = await groups();
+    const c = list.find((group) => group.fingerprint === fp("log-c"))!;
+    const d = list.find((group) => group.fingerprint === fp("log-d"))!;
+    expect(c.status).toBe("new");
+    expect(c.returned_at).not.toBeNull();
+    expect(d).toMatchObject({ status: "ignored", returned_at: null });
+  });
+
+  it("names the bug reports filed with one of the group's codes", async () => {
+    const reported = code();
+    await record({ fingerprint: fp("log-e"), errorCode: reported });
+    await asServer();
+    await db.query(
+      `insert into bug_reports (source, page, error_code) values ('error_page', '/app/finance', $1)`,
+      [reported],
+    );
+    await asService();
+    const reports = await rows<{ error_code: string }>(
+      `select * from public.admin_error_group_reports($1)`,
+      [fp("log-e")],
+    );
+    expect(reports.map((report) => report.error_code)).toEqual([reported]);
+  });
+});

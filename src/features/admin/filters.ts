@@ -44,9 +44,10 @@ export const PAGE_FILTERS: Record<AdminSectionKey, readonly AdminFilter[]> = {
   plans: [],
   // The ledger of partner codes: every account, its own 30-day summary.
   promoCodes: [],
-  // A setting: no period, no segments.
-  errorAlerts: [],
+  // Errors belong to no account: the period only (a code search ignores it).
+  errors: ["period"],
   admins: [],
+  help: [],
 };
 
 /** The section a path belongs to; one user's detail is a page of its own without filters. */
