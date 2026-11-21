@@ -1,17 +1,12 @@
 import "server-only";
 import type Anthropic from "@anthropic-ai/sdk";
-import {
-  EMPTY_USAGE,
-  maxTokensFor,
-  modelFor,
-  type GradyModel,
-  type TokenUsage,
-} from "../../models";
+import type { ModelChoice } from "../../model-settings";
+import { EMPTY_USAGE, maxTokensFor, modelFor, type GradyModel, type TokenUsage } from "../../models";
 import { GRADY_PERSONA } from "../../prompt";
 import type { ChatErrorCode } from "../../protocol";
 import { modelToolOf } from "../../tools/catalog";
 import type { AnyTool } from "../../tools/types";
-import { creditErrorCode, errorCode, type ModelCall } from "../model";
+import { creditErrorCode, errorCode, planCall, type ModelCall } from "../model";
 import { BULK_THRESHOLD, WRITES_PER_MESSAGE, type StepResult, type ToolCall } from "./actions";
 
 /**
@@ -63,7 +58,11 @@ function isWrite(tools: Map<string, AnyTool>, name: string) {
 
 export async function streamWithTools(call: ToolLoopCall): Promise<ToolLoopResult> {
   const feature = "chat" as const;
-  const model = modelFor(feature);
+  // The model is chosen once per message (the setting, the automatic choice
+  // or economy mode) and kept for every round: a round reads the last one's
+  // thinking, which only the same model can.
+  let choice: ModelChoice | null = null;
+  let model: GradyModel = modelFor(feature);
   const total: TokenUsage = { ...EMPTY_USAGE };
   const byName = new Map(call.tools.map((tool) => [tool.name, tool]));
   const modelTools = call.tools.map(modelToolOf);
@@ -74,10 +73,20 @@ export async function streamWithTools(call: ToolLoopCall): Promise<ToolLoopResul
   let rounds = 0;
 
   for (let round = 0; round <= MAX_TOOL_ROUNDS; round++) {
-    const verdict = call.client.budget
-      ? await call.client.budget.check(feature, call.userId)
-      : "ok";
-    if (verdict !== "ok") return { ok: false, model, code: verdict, text, tokens: total, rounds };
+    if (!choice) {
+      const plan = await planCall({ ...call, feature });
+      if (!plan.ok) {
+        return { ok: false, model: plan.model, code: plan.code, text, tokens: total, rounds };
+      }
+      choice = plan.choice;
+      model = choice.model.id;
+    } else {
+      const verdict = call.client.budget
+        ? await call.client.budget.check(feature, call.userId)
+        : "ok";
+      if (verdict !== "ok") return { ok: false, model, code: verdict, text, tokens: total, rounds };
+    }
+    const routedFrom = choice.routedFrom;
 
     // The last round has no tools left: the model answers with what it has.
     const lastRound = round === MAX_TOOL_ROUNDS;
@@ -85,7 +94,7 @@ export async function streamWithTools(call: ToolLoopCall): Promise<ToolLoopResul
     const started = Date.now();
     const params: Anthropic.MessageStreamParams = {
       model,
-      max_tokens: maxTokensFor(feature),
+      max_tokens: maxTokensFor(feature, model),
       // The tools come before the system prompt, so the cached prefix covers them too.
       ...(modelTools.length
         ? { tools: modelTools, tool_choice: lastRound ? { type: "none" } : { type: "auto" } }
@@ -141,13 +150,20 @@ export async function streamWithTools(call: ToolLoopCall): Promise<ToolLoopResul
       const reason = error instanceof Error ? error.message : String(error);
       console.error(`grady chat (tools) on ${model} failed: ${reason}`);
       add(total, tokens);
-      await call.log({ feature, model, tokens, durationMs: Date.now() - started, error: reason });
+      await call.log({
+        feature,
+        model,
+        routedFrom,
+        tokens,
+        durationMs: Date.now() - started,
+        error: reason,
+      });
       const credit = creditErrorCode(error);
       if (credit) await call.client.budget?.creditsExhausted(feature, credit);
       return { ok: false, model, code: errorCode(error), text, tokens: total, rounds };
     }
     add(total, tokens);
-    await call.log({ feature, model, tokens, durationMs: Date.now() - started });
+    await call.log({ feature, model, routedFrom, tokens, durationMs: Date.now() - started });
 
     const uses = message.content.filter(
       (block): block is Anthropic.ToolUseBlock => block.type === "tool_use",

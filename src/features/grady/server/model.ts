@@ -3,24 +3,37 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 import {
+  chooseModel,
+  economyFor,
+  needsAutoPick,
+  DEFAULT_GRADY_MODELS,
+  type AutoPick,
+  type GradyModelSettings,
+  type ModelChoice,
+} from "../model-settings";
+import {
   EMPTY_USAGE,
-  GRADY_MODELS,
   maxTokensFor,
-  modelFor,
   type GradyFeature,
   type GradyModel,
   type TokenUsage,
 } from "../models";
 import { GRADY_PERSONA } from "../prompt";
 import type { ChatErrorCode } from "../protocol";
-import { createBudgetGuard, type BudgetGuard } from "./budget";
+import { createBudgetGuard, type BudgetGuard, type BudgetVerdict } from "./budget";
+import { loadGradyModels } from "./model-settings";
 import type { AiUsageEntry } from "./usage";
 
 /**
- * The SDK's messages and the monthly budget that guards them. Every client
- * made by createAnthropic carries the guard; test doubles may leave it out.
+ * The SDK's messages, the monthly budget that guards them and the model
+ * settings of the administration (cached 30 s). Every client made by
+ * createAnthropic carries both; test doubles may leave them out (then the
+ * budget lets everything through and the defaults choose the model).
  */
-export type ModelClient = Pick<Anthropic, "messages"> & { budget?: BudgetGuard };
+export type ModelClient = Pick<Anthropic, "messages"> & {
+  budget?: BudgetGuard;
+  models?: () => Promise<GradyModelSettings>;
+};
 export type GradyClient = ModelClient & { budget: BudgetGuard };
 
 /**
@@ -36,7 +49,11 @@ export function createAnthropic(
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return null;
   const anthropic = new Anthropic({ apiKey, maxRetries: 1 });
-  return { messages: anthropic.messages, budget: createBudgetGuard(admin, { spaceId: options.spaceId }) };
+  return {
+    messages: anthropic.messages,
+    budget: createBudgetGuard(admin, { spaceId: options.spaceId }),
+    models: () => loadGradyModels(admin),
+  };
 }
 
 export type ModelCall = {
@@ -56,9 +73,66 @@ export type ModelCall = {
   context: string;
   messages: Anthropic.MessageParam[];
   onText?: (text: string) => void;
+  /**
+   * The chat's automatic choice (chat-route.ts), asked only when the chat is
+   * set to auto and no economy mode applies; without it the chat runs on Sonnet.
+   */
+  autoPick?: () => Promise<AutoPick>;
   /** Writes the ai_usage row; called exactly once, right when the call ends. */
   log: (entry: Omit<AiUsageEntry, "userId" | "conversationId">) => Promise<void>;
 };
+
+export type CallPlan =
+  | { ok: true; choice: ModelChoice }
+  | { ok: false; code: Exclude<BudgetVerdict, "ok">; model: GradyModel };
+
+/**
+ * Before a call: the budget (pause, a cap, economy mode), then the model —
+ * the job's setting, the chat's automatic choice or the job's minimum in
+ * economy mode. A failed automatic choice leaves the chat on Sonnet.
+ */
+export async function planCall(
+  call: Pick<ModelCall, "client" | "feature" | "userId" | "autoPick">,
+): Promise<CallPlan> {
+  const settings = call.client.models
+    ? await call.client.models().catch((error) => {
+        console.error("grady models failed", error);
+        return DEFAULT_GRADY_MODELS;
+      })
+    : DEFAULT_GRADY_MODELS;
+  const assessment = call.client.budget
+    ? await call.client.budget.assess(call.feature, call.userId)
+    : { verdict: "ok" as const, economy: null };
+  if (assessment.verdict !== "ok") {
+    return {
+      ok: false,
+      code: assessment.verdict,
+      model: chooseModel(call.feature, settings).model.id,
+    };
+  }
+  const economy = economyFor(settings, assessment.economy);
+  let auto: AutoPick | null = null;
+  if (call.autoPick && needsAutoPick(call.feature, settings, economy)) {
+    auto = await call.autoPick().catch((error) => {
+      console.error("grady chat route failed", error);
+      return "sonnet" as const;
+    });
+  }
+  return { ok: true, choice: chooseModel(call.feature, settings, { economy, auto }) };
+}
+
+/** The thinking and effort of one call by the model it runs on. */
+export function thinkingParams(
+  feature: GradyFeature,
+  choice: ModelChoice,
+): Pick<Anthropic.MessageStreamParams, "thinking" | "output_config"> {
+  // Routine Haiku work answers without thinking first, as it did before
+  // thinking came to Haiku; conversation stays quick on the others.
+  if (choice.model.thinkingOff) {
+    return { thinking: { type: "disabled" }, output_config: { effort: "low" } };
+  }
+  return { output_config: { effort: feature === "analysis" ? "high" : "low" } };
+}
 
 export type ModelResult =
   | { ok: true; model: GradyModel; text: string; tokens: TokenUsage }
@@ -70,19 +144,19 @@ export type ModelResult =
  * the stream events, so a call that fails midway is still counted.
  */
 export async function streamModel(call: ModelCall): Promise<ModelResult> {
-  const model = modelFor(call.feature);
   const tokens: TokenUsage = { ...EMPTY_USAGE };
-  const started = Date.now();
   let text = "";
 
-  const verdict = call.client.budget
-    ? await call.client.budget.check(call.feature, call.userId)
-    : "ok";
-  if (verdict !== "ok") return { ok: false, model, code: verdict, text, tokens };
+  const plan = await planCall(call);
+  if (!plan.ok) return { ok: false, model: plan.model, code: plan.code, text, tokens };
+  const { choice } = plan;
+  const model = choice.model.id;
+  const routedFrom = choice.routedFrom;
+  const started = Date.now();
 
   const params: Anthropic.MessageStreamParams = {
     model,
-    max_tokens: maxTokensFor(call.feature),
+    max_tokens: maxTokensFor(call.feature, model),
     system: [
       {
         type: "text",
@@ -92,11 +166,7 @@ export async function streamModel(call: ModelCall): Promise<ModelResult> {
       ...(call.context ? [{ type: "text" as const, text: call.context }] : []),
     ],
     messages: call.messages,
-    // Routine Haiku work answers without thinking first, as it did before
-    // thinking came to Haiku; conversation stays quick on the others.
-    ...(model === GRADY_MODELS.haiku
-      ? { thinking: { type: "disabled" }, output_config: { effort: "low" } }
-      : { output_config: { effort: call.feature === "analysis" ? "high" : "low" } }),
+    ...thinkingParams(call.feature, choice),
   };
 
   try {
@@ -131,13 +201,20 @@ export async function streamModel(call: ModelCall): Promise<ModelResult> {
       await call.log({
         feature: call.feature,
         model,
+        routedFrom,
         tokens,
         durationMs: Date.now() - started,
         error,
       });
       return { ok: false, model, code: "unavailable", text, tokens };
     }
-    await call.log({ feature: call.feature, model, tokens, durationMs: Date.now() - started });
+    await call.log({
+      feature: call.feature,
+      model,
+      routedFrom,
+      tokens,
+      durationMs: Date.now() - started,
+    });
     return { ok: true, model, text, tokens };
   } catch (error) {
     const reason = describeError(error);
@@ -146,6 +223,7 @@ export async function streamModel(call: ModelCall): Promise<ModelResult> {
     await call.log({
       feature: call.feature,
       model,
+      routedFrom,
       tokens,
       durationMs: Date.now() - started,
       error: reason,

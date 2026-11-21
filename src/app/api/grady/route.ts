@@ -1,13 +1,7 @@
 import { NextResponse } from "next/server";
 import { adminAccessFor, adminNotFound } from "@/features/admin/server/guard";
 import { toModelMessages, type StoredMessage } from "@/features/grady/history";
-import {
-  costUsd,
-  EMPTY_USAGE,
-  GRADY_MODELS,
-  modelFor,
-  type GradyFeature,
-} from "@/features/grady/models";
+import { costUsd, EMPTY_USAGE, modelFor, type GradyFeature } from "@/features/grady/models";
 import {
   featureRequestNote,
   problemReportNote,
@@ -53,6 +47,7 @@ import { handleFeatureRequest } from "@/features/grady/server/feature-requests";
 import { mightBeProblemReport } from "@/features/grady/problem-report";
 import { loadSituation } from "@/features/grady/server/load-situation";
 import { reviewMilestone } from "@/features/grady/server/milestone-review";
+import { pickChatModel } from "@/features/grady/server/chat-route";
 import { createAnthropic, streamModel } from "@/features/grady/server/model";
 import { loadMilestoneNotes, loadNotesContext } from "@/features/grady/server/notes";
 import {
@@ -169,7 +164,7 @@ async function logNotConfigured(ctx: Context, feature: GradyFeature) {
     spaceId: ctx.spaceId,
     conversationId: null,
     feature,
-    model: modelFor(feature) ?? GRADY_MODELS.sonnet,
+    model: modelFor(feature),
     tokens: EMPTY_USAGE,
     durationMs: 0,
     error: "ANTHROPIC_API_KEY is not set",
@@ -989,6 +984,12 @@ async function chat(ctx: Context, body: unknown, request: Request) {
           context: situationBlock(situation, locale) + extra,
           messages,
           onText: (text: string) => send({ type: "delta", text }),
+          // The chat on auto: rules first, one short Haiku call when they cannot tell.
+          autoPick: () =>
+            pickChatModel(
+              { message, attachments: files.length },
+              { client, userId, log },
+            ),
           log,
         };
         const result =

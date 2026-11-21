@@ -23,6 +23,7 @@ Sloupce: **M** = majitel · **P** = plný administrátor · **O** = omezený adm
 | `ai-caps-actions.saveAiCaps` | ✓ | ✓ | čte | stropy AI; po uložení e-mail ostatním (`notifyPeers`, `aiCaps`) |
 | `ai-caps-actions.saveUserAiCap` | ✓ | ✓ | čte | výjimky AI; po uložení e-mail ostatním (`aiUserCap`) |
 | `grady-rules-actions.saveGradyRules` | ✓ | ✓ | čte | pravidla Gradyho |
+| `grady-models-actions.saveGradyModels` | ✓ | ✓ | čte | `editGradyModels`: model každé funkce, přednastavení, úsporný režim ručně, velké rozbory v chatu; DB ověří znovu (`admin_set_app_setting` `grady_models`), audit `settings.grady_models` z → na |
 | `POST /api/grady` `kind: rulesTest` a `kind: ping` | ✓ | ✓ | – | `testGrady`, jedno placené volání modelu; ostatním 404 |
 | `plans-actions.savePlanDraft`, `discardPlanDraft`, `planCatalogImpact` | ✓ | ✓ | čte | koncept katalogu tarifů |
 | `plans-actions.publishPlanCatalog`, `restorePlanVersion` | ✓ | ✓ | čte | zveřejnění a vrácení verze; po něm e-mail ostatním (`plansPublished` / `plansRestored`) |
@@ -53,6 +54,7 @@ Sloupce: **M** = majitel · **P** = plný administrátor · **O** = omezený adm
 | AI a Grady — karta stropů | ✓ | ✓ | čte | pod kartou „Naposledy změnil(a) jméno, datum“ |
 | AI a Grady — karta Vyzkoušet připojení | ✓ | ✓ | – | |
 | AI a Grady → Pravidla (`/admin/ai?tab=rules`) | ✓ | ✓ | čte | „Vyzkoušet“ jen M a P |
+| AI a Grady → Modely (`/admin/ai?tab=models`) | ✓ | ✓ | čte | tabulka funkcí s útratou a odhady vidí všichni, výběr modelů, přednastavení a přepínače jen M a P |
 | AI a Grady — export nejnákladnějších uživatelů a prostorů | ✓ | ✓ | – | |
 | Detail uživatele — karta Účet a Hlášení | ✓ | ✓ | ✓ | akce podpory podle tabulky výše (Změnit e-mail jen M a P), jinak věta, kdo účet spravuje |
 | Uživatelé — sloupec E-mail | ✓ | ✓ | ✓ | Export CSV jen M a P |

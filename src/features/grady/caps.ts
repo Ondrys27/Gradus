@@ -80,6 +80,15 @@ export function userAllowed(limit: UserLimit, spentUsd: number): boolean {
   return true;
 }
 
+/**
+ * Whether this user (or company) runs in economy mode: from the warning
+ * threshold of their own monthly cap on (the same share as the application's
+ * threshold, 80 % by default) until the cap stops them. No cap, no economy.
+ */
+export function userInEconomy(limit: UserLimit, spentUsd: number, warnShare: number): boolean {
+  return limit.kind === "cap" && spentUsd >= limit.usd * warnShare && spentUsd < limit.usd;
+}
+
 /** What is left under a cap this month, never below zero. */
 export function remainingUsd(capUsd: number, spentUsd: number): number {
   return Math.max(0, capUsd - spentUsd);

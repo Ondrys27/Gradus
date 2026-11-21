@@ -263,6 +263,7 @@ export type Database = {
           model: string
           output_tokens: number
           purpose: string
+          routed_from: string | null
           space_id: string | null
           success: boolean
           user_id: string
@@ -280,6 +281,7 @@ export type Database = {
           model: string
           output_tokens?: number
           purpose: string
+          routed_from?: string | null
           space_id?: string | null
           success?: boolean
           user_id: string
@@ -297,6 +299,7 @@ export type Database = {
           model?: string
           output_tokens?: number
           purpose?: string
+          routed_from?: string | null
           space_id?: string | null
           success?: boolean
           user_id?: string
@@ -5559,6 +5562,21 @@ export type Database = {
       }
       add_interested_contact_table: { Args: never; Returns: string }
       add_on_keys: { Args: never; Returns: string[] }
+      admin_ai_model_usage: {
+        Args: { _since: string }
+        Returns: {
+          cache_read_tokens: number
+          cache_write_tokens: number
+          calls: number
+          cost_usd: number
+          input_tokens: number
+          long_prompt: boolean
+          model: string
+          output_tokens: number
+          purpose: string
+          routed_from: string
+        }[]
+      }
       admin_bug_report_list: {
         Args: {
           _code?: string
@@ -7861,6 +7879,7 @@ export type Database = {
       username_available: { Args: { _username: string }; Returns: boolean }
       valid_ai_caps: { Args: { _value: Json }; Returns: boolean }
       valid_error_alerts: { Args: { _value: Json }; Returns: boolean }
+      valid_grady_models: { Args: { _value: Json }; Returns: boolean }
       valid_jarvis_rules: { Args: { _value: Json }; Returns: boolean }
       valid_plan_add_ons: { Args: { _value: Json }; Returns: boolean }
       valid_plan_catalog: { Args: { _payload: Json }; Returns: boolean }

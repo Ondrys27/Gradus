@@ -52,6 +52,19 @@ describe("logAiUsage", () => {
     expect(inserts[0]).toMatchObject({ table: "ai_usage", row: { user_id: "u1", conversation_id: "c1" } });
   });
 
+  it("records the model a call was routed from, and still records the call before the column exists", async () => {
+    const routed = { ...entry, model: "claude-haiku-5-5" as const, routedFrom: "claude-sonnet-5-5" as const };
+    const ok = adminWith([]);
+    await logAiUsage(ok.admin, routed);
+    expect(ok.inserts[0].row).toMatchObject({ model: "claude-haiku-5-5", routed_from: "claude-sonnet-5-5" });
+
+    const before = adminWith([{ ai_usage: { code: "PGRST204" } }]);
+    await logAiUsage(before.admin, routed);
+    expect(before.inserts).toHaveLength(2);
+    expect(before.inserts[1].row.routed_from).toBeUndefined();
+    expect(before.inserts[1].row.model).toBe("claude-haiku-5-5");
+  });
+
   it("keeps the cost when the account was deleted during the call", async () => {
     const missing = { code: "23503" };
     const { admin, inserts } = adminWith([{ ai_usage: missing }, { ai_usage: missing }]);

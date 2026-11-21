@@ -235,23 +235,28 @@ AI pomocník v pravém dolním rohu: chat, souhrny dne, návrhy a hodnocení. Na
 
 ## 2. Grady
 
-Model vybírá kód podle druhu práce (`src/features/grady/models.ts`):
+Model každé funkce nastavuje majitel v Administraci → AI a Grady → Modely (`app_settings.grady_models`, katalog funkcí v `src/features/grady/model-settings.ts`, změna platí do minuty). Výchozí přiřazení, podle kterého jsou spočítané ceny níže:
 - **Haiku** dělá rutinu, třídění a hlídání.
-- **Sonnet** píše chat, souhrny, hodnocení a návrhy.
+- **Sonnet** píše souhrny, hodnocení a návrhy.
 - **Opus** píše velké rozbory.
+- **Chat** běží **automaticky**: jednoduché zprávy (pozdrav, díky, jedna malá změna v aplikaci) odpoví Haiku, rady, plány, výpočty a soubory Sonnet. Rozhodují pravidla bez modelu, jen když nerozhodnou, jedno volání Haiku (Výběr modelu pro chat níže). Opus nebo Fable jen pro „velké rozbory“, když to majitel povolí. Ceny chatu níže jsou za Sonnet; zpráva na Haiku stojí asi dvacetinu.
+- **Úsporný režim**: od prahu upozornění měsíčního stropu (výchozí 80 %), od stejného podílu stropu uživatele nebo firmy jen pro ně, nebo ručně jde každá funkce na svůj minimální model (většinou Haiku; rozbor schůzek a odměny nejméně Sonnet). Při 100 % se Grady pozastaví.
 
-Ceny za milion tokenů jsou v `src/config/costs.ts`:
+Ceny za milion tokenů jsou v `src/config/costs.ts` (`AI_MODELS`, ověřeno 21. 11. 2026 v ceníku Anthropic):
 
 | Model | Vstup | Zápis do cache | Čtení z cache | Výstup |
 |---|---|---|---|---|
-| Haiku | 0,10 USD | 0,125 USD | 0,01 USD | 0,50 USD |
-| Sonnet | 2 USD | 2,50 USD | 0,10 USD | 10 USD |
-| Opus | 4 USD | 5 USD | 0,20 USD | 20 USD |
+| Haiku 5.5 | 0,10 USD | 0,125 USD | 0,01 USD | 0,50 USD |
+| Sonnet 5.5 | 2 USD | 2,50 USD | 0,10 USD | 10 USD |
+| Opus 5.5 | 4 USD | 5 USD | 0,20 USD | 20 USD |
+| Fable 5.2 | 8 USD | 10 USD | 0,20 USD | 40 USD |
+
+Haiku nad 100 000 tokenů promptu stojí pětkrát víc. Stejná funkce na jiném modelu stojí zhruba poměrem cen: Sonnet je asi 20× dražší než Haiku, Opus 2× dražší než Sonnet a Fable 2× dražší než Opus. Administrace → Modely ukazuje u každé funkce skutečnou útratu za 30 dní a odhad na každém modelu z tokenů v `ai_usage`.
 
 Tokeny jsou odhad z délky promptů v kódu a běžných dat, ne měření; jeden token je asi 4 znaky. Stálá část chatu, tedy povaha Gradyho a pravidla (asi 2 500 tokenů), se ukládá do cache. Od druhé zprávy během 5 minut ji proto platíme za desetinu ceny. Každé úspěšné volání, i automatické (souhrn, hlídání, hodnocení milníku, třídění nápadů), se počítá do měsíčního limitu odpovědí Gradyho v tarifu.
 
 ### Co volá model, od nejdražšího
-<!-- kód: ai:analysis ai:chat ai:milestone_review ai:reward_setup ai:briefing ai:email_reply ai:ping ai:note_map_suggest ai:opportunity_scan ai:classify -->
+<!-- kód: ai:analysis ai:chat ai:milestone_review ai:reward_setup ai:briefing ai:email_reply ai:ping ai:note_map_suggest ai:opportunity_scan ai:classify ai:chat_route -->
 <!-- kód: kind:salesAnalysis kind:milestoneReview kind:rewardSetup kind:emailReply kind:ping kind:rulesTest kind:noteMapSuggest -->
 
 | Co Grady dělá | Kdy a pro koho | Model | Typické tokeny | Cena 1 použití | Běžný uživatel za měsíc |
@@ -270,6 +275,7 @@ Tokeny jsou odhad z délky promptů v kódu a běžných dat, ne měření; jede
 | Souhrn dne (ranní shrnutí) | Ráno ho napíše noční úloha, při prvním příchodu dne se ukáže. Když už fakta nesedí, přepíše se. Prázdný den nic. | Sonnet | 1 300 vstup · 200 výstup | 0,0046 USD <!-- cena: ai=briefing in=1300 read=0 write=0 out=200 --> | 20–25× |
 | Hlídání příležitostí | Jednou denně (10:00 UTC), jen u účtů, kde se od minula něco změnilo. Návrh se ukáže v bublině nebo v panelu. | Haiku | 2 200 vstup · 300 výstup | 0,0004 USD <!-- cena: ai=opportunity_scan in=2200 read=0 write=0 out=300 --> | 15–20× |
 | Třídění nápadů z chatu | Když zpráva zní jako přání nové funkce, Haiku to ověří a majitel aplikace dostane e-mail. | Haiku | 300 vstup · 60 výstup | 0,00006 USD <!-- cena: ai=classify in=300 read=0 write=0 out=60 --> | 1–3× |
+| Výběr modelu pro chat | Chat na „automaticky“: když pravidla nerozhodnou, Haiku jedním slovem řekne, jestli zpráva potřebuje Sonnet (nejvýš 20 výstupních tokenů). Nepočítá se do odpovědí v tarifu. | Haiku (pevně) | 180 vstup · 2 výstup | 0,00002 USD <!-- cena: ai=chat_route in=180 read=0 write=0 out=2 --> | 20–30× |
 
 Pokyny majitele z administrace (až 2 000 znaků, asi 500 tokenů) jdou navíc do každého chatu a souhrnu. Definice nástrojů Gradyho přidají chatu asi 8 000 tokenů ve stálé části (z cache za 0,0008 USD na volání, zápis do cache jednou za 5 minut asi 0,02 USD); zpráva bez nástrojů stojí jako dřív plus tato cache. Celý blok poznámek přidá chatu nejvýš asi 4 000 tokenů, tedy nejvýš 0,008 USD na zprávu.
 
@@ -320,7 +326,7 @@ Je to odhad podle kapitoly 2 a sazeb z `src/config/costs.ts` (1 USD = 21,50 Kč)
 
 **Kde jsou skutečná čísla.** Každé volání modelu je v `ai_usage` s cenou. Administrace z nich počítá skutečné náklady:
 - **/admin/naklady**: náklady celkem, na aktivního uživatele, podle funkce (chat, souhrn, hlídání…), 10 nejdražších účtů a marže podle tarifu.
-- **/admin/ai**: útrata měsíce proti stropu.
+- **/admin/ai**: útrata měsíce proti stropu; záložka Modely: útrata každé funkce za 30 dní, odhad na každém modelu a kolik ušetřil automatický výběr v chatu a úsporný režim (`ai_usage.routed_from`).
 - **/admin/uzivatele/[id]**: útrata jednoho účtu.
 
 Tyhle odhady je dobré jednou za měsíc porovnat s Náklady (období 30 dní) a tokeny v kapitole 2 upravit podle skutečnosti. Interní účty jsou z metrik vyloučené, ve stropu AI se počítají.
@@ -342,10 +348,11 @@ Tyhle odhady je dobré jednou za měsíc porovnat s Náklady (období 30 dní) a
 | Úložiště v MB | Dnes všude bez limitu. **Počítá jen soubory poslané Gradymu**, ne faktury, přílohy Zpráv ani dokumenty pracovníků. | Administrace → Tarify |
 | Aktivní typy schůzek | Kolik typů schůzek v Plánovači může mít jeden člověk zapnutých. Solo 1, Pro a Team bez limitu (verze katalogu před 24.3 a beta podle tabulky `plans`). Nad limitem nový typ začne vypnutý, zapnutí odmítne DB s nabídkou vyššího tarifu. | Administrace → Tarify |
 | Cena za pracovníka a pracovníci v ceně | `per_worker` = cena za každého pracovníka navíc, `included_workers` = kolik jich je v ceně (starší verze bez pole = 0). Platí jen za pracovníky bez vlastního platného tarifu. Koncept z 22.5: Solo 0 a bez ceny, Pro 0 + 290 Kč / 12 EUR, Team 10 v ceně + 290 Kč; beta (tabulka `plans`) 0 + 290 Kč. Jen se počítá a ukazuje, platby zatím neběží. | Administrace → Tarify |
-| Celkový strop AI | Měsíční útrata za AI všech účtů (výchozí 90 USD). Nad ním Grady do konce měsíce nevolá model. | Administrace → AI a Grady → Strop využití AI |
+| Celkový strop AI | Měsíční útrata za AI všech účtů (výchozí 90 USD). Od prahu upozornění úsporný režim, nad stropem Grady do konce měsíce nevolá model. | Administrace → AI a Grady → Strop využití AI |
 | Strop AI na uživatele | Měsíční útrata jednoho účtu v USD. Výchozí bez limitu. Platí dvakrát: na všechno, co účet utratil kdekoli, a jako strop jeho prostoru na všechna volání v něm (i jeho pracovníků, platí majitel). | Administrace → AI a Grady → Strop využití AI |
 | Výjimka pro uživatele | Vlastní strop nebo úplně vypnutá AI pro jeden účet. | Administrace → Uživatelé → detail |
-| Práh upozornění | Od kolika procent stropu přijde e-mail (výchozí 80 %). | Administrace → AI a Grady |
+| Práh upozornění a úsporného režimu | Od kolika procent stropu přijde e-mail a Grady přejde do úsporného režimu (výchozí 80 %). Stejný podíl stropu uživatele nebo firmy zapne úsporný režim jen pro ně. | Administrace → AI a Grady |
+| Modely Gradyho | Model každé funkce (Haiku · Sonnet · Opus · Fable, chat i automaticky), přednastavení Úsporné · Vyvážené · Kvalitní, úsporný režim ručně a model pro velké rozbory v chatu. Dnes platí pro celou aplikaci, ne podle tarifu. | Administrace → AI a Grady → Modely |
 | Pravidla Gradyho | Vypínač u každého druhu proaktivního návrhu a u otázek, rozestupy, otázek týdně, stáří návrhu, pokyny. | Administrace → AI a Grady → Pravidla |
 | Zkušební období | 14 dní tarifu Pro bez karty. Po něm jen pro čtení. | V kódu (`TRIAL_DAYS`), změna = nasazení |
 | Tarif beta | Testeři a **každý pozvaný pracovník** dostanou tarif beta bez konce: 500 / 5 000 kontaktů, 3 000 odpovědí Gradyho, 500 souborů. Beta pracovníka z pozvánky je „přes firmu“ (`via_worker_invite`), za vlastní tarif se nepočítá. Odpovědi Gradyho v cizí firmě se počítají podle tarifu té firmy. | Jen v databázi (tabulka `plans`), v administraci ne |

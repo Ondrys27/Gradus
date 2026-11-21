@@ -3957,14 +3957,17 @@
     "gradyBudget": {
       "nearSubject": "{appName}: Grady has used {share} of this month's budget",
       "pausedSubject": "{appName}: Grady is paused until the end of the month",
-      "nearIntro": "Grady has used more than {threshold} of this month's AI budget. At 100 % it stops calling the model until the month ends.",
+      "nearIntro": "Grady has used more than {threshold} of this month's AI budget and runs in economy mode (every job on its cheapest allowed model). At 100 % it stops calling the model until the month ends.",
       "pausedIntro": "Grady has used up this month's AI budget and does not call the model until the month ends. Users see a kind note about a break; the opportunity watch runs on rules only and no morning briefs are written.",
       "creditsIntro": "The AI API refused a call for lack of credit or because a spend limit was reached ({code}). Grady does not call the model until the credit is back. Users see a kind note about a break.",
       "spent": "Spent this month: {spent} of {budget} ({share}).",
       "projected": "At the pace so far: {projected} by the end of the month.",
       "calls": "Model calls this month: {calls}.",
       "appWorks": "The rest of {appName} works as usual. You get this e-mail at most once a day.",
-      "details": "Details: {url}"
+      "details": "Details: {url}",
+      "economySubject": "{appName}: Grady switched to economy mode ({share} of the budget)",
+      "economyIntro": "Grady has used more than {threshold} of this month's AI budget and switched to economy mode: every job now runs on its cheapest allowed model (Administration → AI and Grady → Models). Users only notice shorter answers. At 100 % Grady stops calling the model until the month ends.",
+      "economyOnce": "The rest of {appName} works as usual. You get this e-mail once a month; after it only the daily status."
     },
     "featureRequest": {
       "subject": "{appName}: new idea – {title}",
@@ -6637,12 +6640,12 @@
         "calls": "Calls {period}",
         "status": {
           "ok": "OK",
-          "near": "Close to the limit",
+          "near": "Economy mode",
           "paused": "Paused"
         },
         "statusHint": {
           "ok": "Grady calls the model as usual.",
-          "near": "Above the warning threshold: the owner gets one e-mail a day.",
+          "near": "Above the warning threshold: every job runs on its minimum model (economy mode); the owner gets one e-mail a day.",
           "paused": "At 100 %: no model calls until the month ends; the watch runs on rules only."
         },
         "headline": "Spend {period}: {spent} of the {capName} {cap}",
@@ -6679,8 +6682,8 @@
         "monthlyHint": "All accounts together, internal ones too. 0 stops every model call. At most {max}.",
         "perUserLabel": "Monthly cap per user (USD)",
         "perUserHint": "Empty = no limit. At most {max}. Exceptions for one user are set in their detail.",
-        "warnLabel": "Warning threshold (%)",
-        "warnHint": "From this share of the monthly cap the owner gets one e-mail a day.",
+        "warnLabel": "Warning and economy threshold (%)",
+        "warnHint": "From this share of the monthly cap Grady switches to economy mode (every job on its minimum model) and the owner gets one e-mail a day. The same share of a user's or company's cap switches economy mode on just for them.",
         "monthlyMeter": "Spent {period} against the app-wide cap",
         "perUserMeter": "The costliest user {period} against the per-user cap",
         "warnMeter": "Spent {period} against the warning threshold",
@@ -6701,7 +6704,7 @@
         "fields": {
           "monthlyUsd": "Monthly cap",
           "perUserUsd": "Per-user cap",
-          "warnPercent": "Warning threshold"
+          "warnPercent": "Warning and economy threshold"
         },
         "errors": {
           "monthlyUsd": "Enter an amount from 0 to {max} USD, at most two decimals.",
@@ -6739,6 +6742,7 @@
       "tabs": "Parts",
       "tab": {
         "overview": "Overview",
+        "models": "Models",
         "rules": "Rules"
       },
       "rules": {
@@ -6860,7 +6864,155 @@
         "changedBy": "Last changed by {name}, {date}"
       },
       "topSpacesTitle": "The 10 costliest spaces",
-      "topSpacesDescription": "AI spend by space: every call in a company counts to it, a worker's from another account too (the owner pays). Next to it the spend by user, wherever they were."
+      "topSpacesDescription": "AI spend by space: every call in a company counts to it, a worker's from another account too (the owner pays). Next to it the spend by user, wherever they were.",
+      "models": {
+        "title": "Grady's models",
+        "description": "Which model each of Grady's jobs runs on, what it cost over the last 30 days and what it would cost elsewhere. A change applies within a minute and is audited.",
+        "defaults": "Nothing saved yet: the default assignment applies (the chat automatic).",
+        "presetsLabel": "Presets",
+        "presets": {
+          "economy": "Economy",
+          "balanced": "Balanced",
+          "quality": "Quality"
+        },
+        "presetHint": {
+          "economy": "Everything that may on Haiku; jobs with a higher minimum on it.",
+          "balanced": "The recommended models: today's assignment and the chat automatic.",
+          "quality": "One step up where it pays; big analyses in the chat may use Opus.",
+          "custom": "Custom settings."
+        },
+        "economy": {
+          "label": "Economy mode now",
+          "description": "Every job runs on its minimum model until you switch it off. It switches on by itself at the warning threshold of the monthly cap, and for one user or company at the same share of their own cap; at 100 % Grady pauses."
+        },
+        "chatLarge": {
+          "label": "Big analyses in the automatic chat",
+          "never": "Never (Sonnet at most)",
+          "hint": "When a message asks for a big analysis (“detailed analysis”), the automatic choice may use this model. Otherwise never above Sonnet."
+        },
+        "status": {
+          "off": "Economy mode is off. It switches on by itself when this month's spend reaches {percent} of the monthly cap.",
+          "manual": "Economy mode is on by hand: every job runs on its minimum model.",
+          "budget": "Economy mode is on automatically: this month's spend passed {percent} of the monthly cap. Until the month ends every job runs on its minimum model."
+        },
+        "total": "Over 30 days: {calls} calls for {cost}.",
+        "totalOn": "On {model} it would be {cost}",
+        "routing": "The automatic choice and economy mode decided {calls} calls and saved {saved} (the decisions themselves cost {route}).",
+        "routingNone": "Neither the automatic choice nor economy mode decided anything in 30 days.",
+        "columns": {
+          "feature": "Job",
+          "model": "Model",
+          "calls": "Calls in 30 days",
+          "perThousand": "Avg. per 1,000 calls",
+          "spend": "Spend in 30 days",
+          "estimate": "On {model}"
+        },
+        "recommended": "Recommended: {model}. {why}",
+        "auto": "Automatic (Haiku or Sonnet)",
+        "fixed": "{model}, fixed",
+        "minimum": "At least {model}",
+        "modelFor": "Model for {feature}",
+        "estimatesNote": "The estimates price the same tokens with another model's prices. Every model writes answers of its own length, so take them as a guide.",
+        "on": "on",
+        "off": "off",
+        "fields": {
+          "economy": "Economy mode now",
+          "chatLarge": "Big analyses in the chat"
+        },
+        "save": "Save changes",
+        "noChanges": "Nothing to save, the settings are the same.",
+        "firstSave": "The default assignment is saved as you see it.",
+        "confirmTitle": "Change Grady's models?",
+        "confirmDescription": "The new models apply to every user within a minute and the change is audited.",
+        "confirm": "Change models",
+        "cancel": "Cancel",
+        "close": "Close",
+        "saved": "Saved. The change applies within a minute.",
+        "errors": {
+          "invalid": "A job may not use one of the models. Check the table.",
+          "forbidden": "The administration session ended. Sign in again.",
+          "failed": "The change could not be saved. Try again."
+        },
+        "changedBy": "Last changed by {name}, {date}",
+        "prices": {
+          "title": "Model prices",
+          "description": "USD per million tokens from Anthropic's price list (the list in src/config/costs.ts). A new model = one row in that list.",
+          "model": "Model",
+          "id": "API id",
+          "input": "Input",
+          "cacheWrite": "Cache write",
+          "cacheRead": "Cache read",
+          "output": "Output",
+          "verified": "Checked"
+        },
+        "features": {
+          "chat": {
+            "name": "Chat",
+            "does": "Answers in Grady's panel and, when asked, works in the app with tools.",
+            "why": "Automatic: Haiku handles simple messages, Sonnet advice, plans and numbers."
+          },
+          "milestone_review": {
+            "name": "Milestone review",
+            "does": "A short “Grady's take” right after a milestone is created, once per milestone.",
+            "why": "A review is only worth it well written, and it runs once per milestone."
+          },
+          "classify": {
+            "name": "Sorting ideas",
+            "does": "Tells whether a chat message is a feature request.",
+            "why": "A short JSON answer; a bigger model adds nothing."
+          },
+          "check": {
+            "name": "Check",
+            "does": "Ready for routine checks; nothing calls it yet.",
+            "why": "Routine."
+          },
+          "summary": {
+            "name": "Short summary",
+            "does": "Ready for short summaries; nothing calls it yet.",
+            "why": "Routine."
+          },
+          "opportunity_scan": {
+            "name": "Opportunity watch",
+            "does": "Once a day goes through an account's changes and suggests what deserves attention.",
+            "why": "Runs for many accounts daily; a cheap model is enough and returns JSON."
+          },
+          "analysis": {
+            "name": "Sales meeting analysis",
+            "does": "A large analysis of up to 150 meeting questionnaires, on request.",
+            "why": "Long context and a structured analysis; never below Sonnet."
+          },
+          "reward_setup": {
+            "name": "Set up rewards with AI",
+            "does": "Turns the notes in the reward tree into rules and explains them.",
+            "why": "Money rules for other people as JSON; never below Sonnet."
+          },
+          "email_reply": {
+            "name": "E-mail reply draft",
+            "does": "Writes a reply the user sends in their own name.",
+            "why": "A text in the user's name should be well written."
+          },
+          "ping": {
+            "name": "Connection and instructions test",
+            "does": "Administration: Test connection and Try the instructions.",
+            "why": "Checks the model the conversation runs on."
+          },
+          "briefing": {
+            "name": "Day, week and month summary",
+            "does": "The morning brief of the night job and the summaries at the first arrival.",
+            "why": "Picks the one thing worth noticing: a conversation model."
+          },
+          "note_map_suggest": {
+            "name": "Suggest map branches",
+            "does": "Suggests 3–8 new branches at a mind map node.",
+            "why": "Ideas for the user's own map, as JSON."
+          },
+          "chat_route": {
+            "name": "Chat model choice",
+            "does": "When the rules cannot tell, Haiku says in one word whether a message needs Sonnet.",
+            "why": "The cheapest possible decision, at most 20 output tokens."
+          }
+        }
+      }
     },
     "game": {
       "title": "Game",
@@ -8255,6 +8407,14 @@
         "helpSearch": {
           "title": "Search ⌘K",
           "keywords": "search help shortcut"
+        },
+        "gradyModels": {
+          "title": "Grady's models",
+          "keywords": "model ai haiku sonnet opus fable job preset economy balanced quality automatic price"
+        },
+        "gradyEconomy": {
+          "title": "Economy mode",
+          "keywords": "economy mode cheaper model cap threshold savings"
         }
       }
     },
