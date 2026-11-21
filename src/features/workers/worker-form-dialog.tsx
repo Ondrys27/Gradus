@@ -106,7 +106,7 @@ export function WorkerFormDialog({
               {tInvite("emailed")}
             </p>
           )}
-          <Button onClick={() => change(false)} className="self-end">
+          <Button onClick={() => change(false)} className="self-end" data-tutorial="worker-invite-done">
             {t("done")}
           </Button>
         </div>
@@ -266,7 +266,7 @@ function Fields({
         <Button type="button" variant="ghost" onClick={onCancel}>
           {t("cancel")}
         </Button>
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" data-tutorial="worker-submit" disabled={pending}>
           {worker ? t("save") : t("create")}
         </Button>
       </div>

@@ -458,6 +458,7 @@ export function PlanGrid(props: Props) {
       <table
         ref={tableRef}
         role="grid"
+        data-tutorial="plan-grid"
         aria-label={t("label")}
         className="w-full border-separate border-spacing-0 text-sm"
       >

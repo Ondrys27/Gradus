@@ -40,7 +40,13 @@ export function ConfirmDialog({
           <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
             {cancelLabel}
           </Button>
-          <Button type="button" variant="destructive" disabled={pending} onClick={onConfirm}>
+          <Button
+            type="button"
+            variant="destructive"
+            data-tutorial="confirm-dialog-confirm"
+            disabled={pending}
+            onClick={onConfirm}
+          >
             {confirmLabel}
           </Button>
         </div>

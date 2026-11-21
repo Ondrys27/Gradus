@@ -419,6 +419,28 @@
 @utility z-error {
   z-index: 90; /* the error page, above everything */
 }
+@utility z-showcase {
+  z-index: 95; /* the showcase's cursor, captions and countdown (27.4), above everything on the canvas */
+}
+
+/*
+ * The showcase (27.4): while the app plays itself for a video, the Beta label,
+ * the notifications, the space switcher, the sample labels and (unless the
+ * scenario needs him) Grady's button leave the canvas, and only the fake
+ * cursor points.
+ */
+html[data-showcase] [data-showcase-hide],
+html[data-showcase] [data-demo-badge],
+html[data-showcase] nextjs-portal {
+  display: none !important;
+}
+html[data-showcase]:not([data-showcase-grady]) [data-tour="grady"] {
+  display: none !important;
+}
+html[data-showcase],
+html[data-showcase] * {
+  cursor: none !important;
+}
 
 /*
  * Live ring: a conic orange border that slowly travels around the element, with

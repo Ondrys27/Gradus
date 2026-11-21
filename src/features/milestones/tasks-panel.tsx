@@ -383,6 +383,7 @@ function ViewSwitch({ view, onChange }: { view: TaskView; onChange: (view: TaskV
         <button
           key={value}
           type="button"
+          data-tutorial={`task-view-${value}`}
           aria-pressed={view === value}
           onClick={() => onChange(value)}
           className={cn(

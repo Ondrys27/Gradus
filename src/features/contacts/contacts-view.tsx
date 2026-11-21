@@ -119,7 +119,11 @@ export function ContactsView() {
                 </Link>
               )}
               {canGenerate && (
-                <Button variant="outline" onClick={() => setGenerating(true)}>
+                <Button
+                  variant="outline"
+                  data-tutorial="contact-generate"
+                  onClick={() => setGenerating(true)}
+                >
                   <SparklesIcon aria-hidden data-icon="inline-start" />
                   {t("actions.generate")}
                 </Button>

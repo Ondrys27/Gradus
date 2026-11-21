@@ -44,6 +44,8 @@ export const PAGE_FILTERS: Record<AdminSectionKey, readonly AdminFilter[]> = {
   plans: [],
   // The ledger of partner codes: every account, its own 30-day summary.
   promoCodes: [],
+  // One switch: no period, no segments.
+  showcase: [],
   // Errors belong to no account: the period only (a code search ignores it).
   errors: ["period"],
   admins: [],

@@ -28,6 +28,7 @@ import { useDeleteDemo, useSaveTutorial, useSeedDemo, useTutorialState } from ".
 import { tutorialSteps, type TutorialSection } from "./steps";
 import type { FirstAction } from "./tutorial-overlay";
 import { TutorialResume } from "./tutorial-resume";
+import { SHOWCASE_PATH } from "./showcase/params";
 import type { DemoResolution, RunningMode, TutorialMode, TutorialState } from "./types";
 
 /** Only while a tutorial runs; not in the app bundle. */
@@ -57,7 +58,7 @@ type Phase = "idle" | "choice" | "resume" | "running";
  */
 export function TutorialHost() {
   const t = useTranslations("tutorial");
-  const { worker } = useSession();
+  const { worker, showcase } = useSession();
   const profile = useProfile();
   const playing = useIsPlaying();
   const game = useGameState();
@@ -279,6 +280,14 @@ export function TutorialHost() {
           failed={failed}
           onChoose={(mode) => void choose(mode)}
           onClose={closeChoice}
+          onShowcase={
+            showcase === "presenter"
+              ? () => {
+                  setPhase("idle");
+                  router.push(SHOWCASE_PATH);
+                }
+              : undefined
+          }
         />
       )}
       {phase === "resume" && state && state.mode !== "none" && (

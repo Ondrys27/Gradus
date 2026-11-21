@@ -41,6 +41,8 @@ export const SessionContext = createContext<{
   spaces: SpaceMembership[];
   /** The workspace's plan as loaded when the app started; usePlan() keeps it current. */
   plan: PlanSnapshot;
+  /** The showcase (27.4): the app's owner or an admin with the mode on, or its stage account. */
+  showcase: "presenter" | "stage" | null;
 } | null>(null);
 
 export function useSession() {

@@ -44,6 +44,7 @@ function NoteRow({
     <li className="group relative">
       <button
         type="button"
+        data-tutorial="note-item"
         onClick={() => onSelect(note.id)}
         onKeyDown={(event) => {
           if (!onRequestDelete || (event.key !== "Delete" && event.key !== "Backspace")) return;

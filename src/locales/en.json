@@ -6426,6 +6426,20 @@
     }
   },
   "admin": {
+    "showcase": {
+      "title": "Showcase mode",
+      "description": "The app shows itself off: the cursor moves, clicks and types, so you only record the screen. For videos about {appName}.",
+      "switchTitle": "Showcase mode",
+      "switchDescription": "Only the app's owner and administrators see it when it is on: the page /app/ukazka and a third choice in the tutorial. Regular users see nothing. Switching it off removes the tutorial choice too.",
+      "switch": "Showcase mode",
+      "on": "On: start the showcase in the app.",
+      "off": "Off: the showcase does not exist in the app.",
+      "readOnly": "The owner or a full administrator can change it.",
+      "failed": "The setting could not be saved. Please try again.",
+      "scenariosTitle": "Scenarios",
+      "scenariosDescription": "Opens in the app, where you pick the language and the canvas. The showcase runs in a temporary sample account that is deleted when it ends.",
+      "recordHint": "bun run demo:record records a video without anybody (see docs/marketing/scenare.md)."
+    },
     "login": {
       "title": "Administration",
       "description": "Sign in with the owner account of {appName}. You will need the code from your authenticator app.",
@@ -6483,6 +6497,7 @@
         "admins": "Administrators",
         "plans": "Plans",
         "promoCodes": "Promo codes",
+          "showcase": "Showcase mode",
         "errors": "Errors",
         "help": "Help"
       },
@@ -8208,6 +8223,7 @@
         "audit": "Who saw and changed what in the administration, newest first.",
         "plans": "The plan catalog: the draft, publishing, prices in currencies, add-ons and the history of versions.",
         "promoCodes": "Partners' codes, their sign-ups, paying accounts and commission payouts.",
+        "showcase": "The app showing itself off for marketing videos: the switch and the scenarios.",
         "admins": "Who may enter the administration: invitations, levels and removal of administrators.",
         "help": "This page: what is where, with links straight to the place."
       },
@@ -8391,6 +8407,10 @@
         "promoPayouts": {
           "title": "Commission payouts",
           "keywords": "payout commission partner approve"
+        },
+        "showcaseMode": {
+          "title": "Showcase mode",
+          "keywords": "showcase video marketing recording demo beta mode"
         },
         "adminsInvite": {
           "title": "Invite an administrator",
@@ -9209,6 +9229,116 @@
       "unknown": "The message could not be sent."
     }
   },
+  "showcase": {
+    "title": "Showcase",
+    "description": "The app shows itself off: the cursor moves, clicks and types, you just record the screen. For videos about {appName}.",
+    "pick": {
+      "scenario": "Scenario",
+      "language": "Language",
+      "size": "Canvas"
+    },
+    "scenarios": {
+      "a": {
+        "title": "From an idea to a client",
+        "text": "A milestone with its task map, generated contacts, Cold Calling to Meeting booked, a deal in the pipeline and a win with a celebration."
+      },
+      "b": {
+        "title": "Grady",
+        "text": "A question in the chat, an answer from the notes, saved to the notes, and the morning summary."
+      },
+      "c": {
+        "title": "Meeting scheduler",
+        "text": "A meeting type, its link, the public page, a client's booking, and the meeting in the calendar and the contacts."
+      },
+      "d": {
+        "title": "The company",
+        "text": "A worker invited, their rights, a task for them and a message."
+      },
+      "e": {
+        "title": "Money",
+        "text": "An invoice with a QR payment and the month's finance plan."
+      },
+      "f": {
+        "title": "All of Gradus in 60 s",
+        "text": "The best bits: the task map, a win in the pipeline, Grady and the money plan."
+      },
+      "all": {
+        "title": "All in a row",
+        "text": "Scenarios a to f one after another."
+      }
+    },
+    "languages": {
+      "cs": "Czech",
+      "en": "English"
+    },
+    "sizes": {
+      "1920x1080": "1920 × 1080 landscape",
+      "1080x1920": "1080 × 1920 portrait",
+      "1080x1080": "1080 × 1080 square"
+    },
+    "keys": {
+      "space": "Space: pause and go on",
+      "restart": "R: play again with fresh data",
+      "escape": "Esc: stop and delete the sample data",
+      "size": "Set the canvas size with the browser window (device mode in the developer tools); the recording script sets it itself."
+    },
+    "stageNote": "The showcase runs in a temporary sample account, so your own data never shows on the canvas. Starting it signs you out; when it ends, the sample account and its data are deleted and you sign in again.",
+    "start": "Start the showcase",
+    "starting": "Getting the showcase ready…",
+    "startFailed": "The showcase could not be prepared. Please try again.",
+    "preparing": "Getting the showcase ready…",
+    "paused": "Paused · Space to go on",
+    "failed": "A step of the showcase could not be played",
+    "guestWindow": "{address}",
+    "guestTitle": "The booking page as the client sees it",
+    "outro": {
+      "tagline": "Business as a game. Step by step."
+    },
+    "ended": "The showcase has ended and its sample data is deleted.",
+    "signInAgain": "Sign in again",
+    "captions": {
+      "a": {
+        "goal": "A big goal split into small steps",
+        "contacts": "Find businesses to contact in one click",
+        "call": "Call and move contacts along",
+        "deal": "From a meeting straight to a deal",
+        "win": "Won a deal? Celebrate it properly!"
+      },
+      "b": {
+        "notes": "Everything about your business in notes",
+        "ask": "Ask Grady, he answers from your notes",
+        "save": "Save good advice in one click",
+        "morning": "A summary of the day every morning"
+      },
+      "c": {
+        "intro": "Clients book the meeting themselves",
+        "link": "Send them a link to your calendar",
+        "book": "They pick a time that suits you",
+        "calendar": "The meeting is in your calendar",
+        "contact": "And the client is in your contacts"
+      },
+      "d": {
+        "intro": "Your whole company in one place",
+        "invite": "Invite a colleague with one link",
+        "rights": "Set their rights in one click",
+        "task": "Hand them a task with a deadline",
+        "chat": "And talk it over in messages"
+      },
+      "e": {
+        "intro": "An invoice from a deal in one click",
+        "issue": "Issued and ready to send",
+        "plan": "Money planned weeks ahead"
+      },
+      "f": {
+        "intro": "Business as a game. Step by step.",
+        "plan": "A plan split into tasks on a map",
+        "win": "Celebrate every deal you win",
+        "grady": "An AI assistant who knows your business",
+        "money": "Money planned weeks ahead",
+        "end": "Try it on your own business"
+      }
+    }
+  },
   "tutorial": {
     "demoBadge": "sample",
     "next": "Next",
@@ -9357,6 +9487,11 @@
       "end": "End tutorial"
     },
     "choice": {
+      "showcase": {
+        "title": "Showcase (Beta)",
+        "text": "The app shows itself off. For marketing videos; only the administration sees it.",
+        "open": "Open the showcase"
+      },
       "title": "How do you want to start?",
       "close": "Close",
       "intro": "I can show you around. Pick how much time you have today.",

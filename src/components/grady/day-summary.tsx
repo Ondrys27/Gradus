@@ -134,7 +134,43 @@ export function DaySummary({ panelOpen }: { panelOpen: boolean }) {
   );
 }
 
-function SummaryCallout({ item, onDone }: { item: SummaryItem; onDone: () => void }) {
+/**
+ * The summary as the showcase plays it (27.4): the same bubble with the
+ * stage's prepared text, brought by the scenario instead of the first
+ * arrival; it is no suggestion row, so nothing is reported back.
+ */
+export function StagedSummary({
+  text,
+  links,
+  onDone,
+}: {
+  text: string;
+  links: SummaryLink[];
+  onDone: () => void;
+}) {
+  return (
+    <div aria-live="polite" className="pointer-events-none fixed inset-0 z-nav overflow-hidden">
+      <AnimatePresence>
+        <SummaryCallout
+          key="showcase"
+          item={{ id: "showcase", period: "day", text, links }}
+          onDone={onDone}
+          staged
+        />
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function SummaryCallout({
+  item,
+  onDone,
+  staged = false,
+}: {
+  item: SummaryItem;
+  onDone: () => void;
+  staged?: boolean;
+}) {
   const t = useTranslations("grady.summary");
   const router = useRouter();
   const reduceMotion = useReducedMotionSafe();
@@ -148,11 +184,11 @@ function SummaryCallout({ item, onDone }: { item: SummaryItem; onDone: () => voi
   }, []);
 
   const close = () => {
-    reaction.mutate({ id: item.id, reaction: "close" });
+    if (!staged) reaction.mutate({ id: item.id, reaction: "close" });
     onDone();
   };
   const open = (link: SummaryLink) => {
-    reaction.mutate({ id: item.id, reaction: "open" });
+    if (!staged) reaction.mutate({ id: item.id, reaction: "open" });
     router.push(link.href);
     onDone();
   };
@@ -186,7 +222,7 @@ function SummaryCallout({ item, onDone }: { item: SummaryItem; onDone: () => voi
           <TypedText text={item.text} />
           {item.links.length > 0 && <SummaryLinks item={item} onOpen={open} />}
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <Button size="sm" onClick={close}>
+            <Button size="sm" data-tutorial="summary-thanks" onClick={close}>
               {t("thanks")}
             </Button>
             <Link

@@ -50,6 +50,7 @@ function wrapper(worker: WorkerAccount | null, client: QueryClient) {
             spaceId: worker ? worker.ownerId : OWNER,
             spaces: [],
             plan: { planKey: "beta", status: "active", trialEndsAt: null, readOnly: false },
+            showcase: null,
           }}
         >
           {children}

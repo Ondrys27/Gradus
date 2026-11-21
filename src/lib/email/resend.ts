@@ -20,6 +20,19 @@ export function namedSender(name: string): string {
   return clean ? `"${clean}" <${address}>` : from;
 }
 
+/**
+ * The names kept for examples (RFC 2606, RFC 6761): example.com / .net /
+ * .org and anything under .example, .invalid or .test. No mail can ever
+ * arrive there, so sendEmail never tries.
+ */
+export function isReservedAddress(address: string): boolean {
+  const domain = address.trim().toLowerCase().split("@").pop() ?? "";
+  return (
+    /^(?:.+\.)?example\.(?:com|net|org)$/.test(domain) ||
+    /\.(?:example|invalid|test)$/.test(domain)
+  );
+}
+
 export type EmailResult = { ok: true; id: string | null } | { ok: false; error: string };
 
 /** One file attached to an outgoing e-mail; `content` is base64, no attachments have Resend limits by size. */
@@ -39,6 +52,9 @@ export async function sendEmail(message: {
   /** ISO instant: Resend sends it then (at most 30 days ahead); the id cancels it. */
   scheduledAt?: string;
 }): Promise<EmailResult> {
+  // Nobody can receive mail there (the showcase's made-up clients and guests): nothing is sent.
+  if (isReservedAddress(message.to)) return { ok: false, error: "reserved address" };
+  const cc = message.cc?.filter((address) => !isReservedAddress(address));
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return { ok: false, error: "RESEND_API_KEY is not set" };
   try {
@@ -48,7 +64,7 @@ export async function sendEmail(message: {
       body: JSON.stringify({
         from: message.fromName ? namedSender(message.fromName) : senderAddress(),
         to: [message.to],
-        ...(message.cc?.length ? { cc: message.cc } : {}),
+        ...(cc?.length ? { cc } : {}),
         ...(message.replyTo ? { reply_to: message.replyTo } : {}),
         subject: message.subject,
         text: message.text,

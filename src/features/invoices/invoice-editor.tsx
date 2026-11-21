@@ -378,6 +378,7 @@ export function InvoiceEditor({
             </Button>
             <Button
               type="button"
+              data-tutorial="invoice-issue"
               disabled={busy}
               onClick={() => {
                 const found = check();

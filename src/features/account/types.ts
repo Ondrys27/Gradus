@@ -60,4 +60,10 @@ export type AccountSnapshot = {
   spaces: SpaceMembership[];
   /** Plan of the active space (the owner's for a worker). */
   plan: PlanSnapshot;
+  /**
+   * The showcase (27.4): "presenter" for the app's owner or an admin while
+   * the mode is on, "stage" for the throw-away account a showcase plays in,
+   * otherwise null (the mode does not exist for the account).
+   */
+  showcase: "presenter" | "stage" | null;
 };

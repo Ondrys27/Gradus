@@ -110,6 +110,7 @@ export function DealCard({ deal, relaunchable, muted, draggable, onOpen }: CardP
       {...listeners}
       onKeyDown={handleKeyDown}
       onClick={() => onOpen(deal)}
+      data-tutorial="deal-card"
       aria-label={t("open", { title: deal.title })}
       className={cn(
         "cursor-pointer rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-violet/40",

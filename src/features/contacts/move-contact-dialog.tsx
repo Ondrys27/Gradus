@@ -188,6 +188,7 @@ function MoveSteps({
           <li key={table.id}>
             <button
               type="button"
+              data-tutorial={`move-table-${table.system_key ?? "custom"}`}
               disabled={fieldsQuery.isError}
               onClick={() => setTarget(table)}
               className="flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-xl border border-line px-4 text-left text-sm font-medium text-ink outline-none hover:border-line-strong hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-violet/40"
@@ -302,7 +303,7 @@ function AnswerForm({
         <Button type="button" variant="ghost" onClick={onDone}>
           {t("cancel")}
         </Button>
-        <Button type="submit" disabled={move.isPending}>
+        <Button type="submit" data-tutorial="move-confirm" disabled={move.isPending}>
           {t("confirm", { name: table.name })}
         </Button>
       </div>
@@ -355,7 +356,12 @@ function DealOffer({
         <Button type="button" variant="ghost" onClick={onDone}>
           {t("later")}
         </Button>
-        <Button type="button" autoFocus onClick={() => setMaking(true)}>
+        <Button
+          type="button"
+          autoFocus
+          data-tutorial="deal-offer-create"
+          onClick={() => setMaking(true)}
+        >
           <BriefcaseBusinessIcon aria-hidden data-icon="inline-start" />
           {t("create")}
         </Button>
@@ -442,6 +448,7 @@ function AnswerField({
       type="button"
       variant="outline"
       size="sm"
+      data-tutorial="move-today"
       onClick={() => {
         const today = todayIsoDate(settings);
         if (field.type === "date") {

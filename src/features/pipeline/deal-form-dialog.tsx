@@ -153,7 +153,7 @@ export function NewDealForm({
         <Button type="button" variant="ghost" onClick={onCancel}>
           {cancelLabel ?? t("cancel")}
         </Button>
-        <Button type="submit" disabled={create.isPending || finishing}>
+        <Button type="submit" data-tutorial="deal-create" disabled={create.isPending || finishing}>
           {t("create")}
         </Button>
       </div>

@@ -10,6 +10,8 @@ export function BetaBadge({ className }: { className?: string }) {
   if (!BETA_ENABLED) return null;
   return (
     <span
+      // The showcase's videos (27.4) never show it.
+      data-showcase-hide=""
       className={cn(
         "inline-flex h-5 shrink-0 items-center rounded-full border border-line-strong px-1.5 text-[10px] leading-none font-semibold tracking-wide text-ink-muted uppercase",
         className,

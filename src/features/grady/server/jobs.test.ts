@@ -77,7 +77,7 @@ function fakeDb(results: Record<string, Result | ((call: Call) => Result)> = {})
     },
     auth: {
       admin: {
-        getUserById: async () => ({ data: { user: { email: "owner@example.com" } } }),
+        getUserById: async () => ({ data: { user: { email: "owner@gradus-firma.cz" } } }),
       },
     },
   };
@@ -146,7 +146,7 @@ describe("feature requests", () => {
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe("https://api.resend.com/emails");
     const body = JSON.parse((init as RequestInit).body as string);
-    expect(body.to).toEqual(["owner@example.com"]);
+    expect(body.to).toEqual(["owner@gradus-firma.cz"]);
     expect(body.from).toContain("onboarding@resend.dev");
     expect(body.subject).toContain("Export do Excelu");
     expect(errors).toHaveBeenCalledWith(
@@ -192,7 +192,7 @@ describe("feature requests", () => {
   });
 
   it("prefers OWNER_EMAIL and RESEND_FROM when they are set", async () => {
-    vi.stubEnv("OWNER_EMAIL", "ondrej@example.com");
+    vi.stubEnv("OWNER_EMAIL", "ondrej@gradus-firma.cz");
     vi.stubEnv("RESEND_FROM", "Gradus <hi@example.com>");
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: "e1" })));
     vi.stubGlobal("fetch", fetchMock);
@@ -204,7 +204,7 @@ describe("feature requests", () => {
     });
     expect(result).toEqual({ ok: true, id: "e1" });
     const body = JSON.parse((fetchMock.mock.calls[0][1] as RequestInit).body as string);
-    expect(body.to).toEqual(["ondrej@example.com"]);
+    expect(body.to).toEqual(["ondrej@gradus-firma.cz"]);
     expect(body.from).toBe("Gradus <hi@example.com>");
     expect(body.html).toContain("&#60;b&#62;Idea");
   });

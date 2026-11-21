@@ -6426,6 +6426,20 @@
     }
   },
   "admin": {
+    "showcase": {
+      "title": "Ukázkový režim",
+      "description": "Aplikace se předvede sama: kurzor jezdí, kliká a píše, takže stačí nahrát obrazovku. Pro videa o {appName}.",
+      "switchTitle": "Ukázkový režim",
+      "switchDescription": "Zapnutý režim vidí jen majitel a administrátoři aplikace: stránku /app/ukazka a třetí volbu v tutoriálu. Běžný uživatel nevidí nic. Vypnutím zmizí i volba v tutoriálu.",
+      "switch": "Ukázkový režim",
+      "on": "Zapnuto: ukázku spustíš v aplikaci.",
+      "off": "Vypnuto: ukázka v aplikaci neexistuje.",
+      "readOnly": "Měnit ho může majitel nebo plný administrátor.",
+      "failed": "Nastavení se nepodařilo uložit. Zkus to prosím znovu.",
+      "scenariosTitle": "Scénáře",
+      "scenariosDescription": "Otevře se v aplikaci, kde vybereš jazyk a plátno. Ukázka běží v dočasném ukázkovém účtu, který se po skončení smaže.",
+      "recordHint": "Video bez člověka nahraje bun run demo:record (viz docs/marketing/scenare.md)."
+    },
     "login": {
       "title": "Administrace",
       "description": "Přihlas se majitelským účtem {appName}. Budeš potřebovat kód z autentizační aplikace.",
@@ -6483,6 +6497,7 @@
         "admins": "Administrátoři",
         "plans": "Tarify",
         "promoCodes": "Promo kódy",
+          "showcase": "Ukázkový režim",
         "errors": "Chyby",
         "help": "Nápověda"
       },
@@ -8208,6 +8223,7 @@
         "audit": "Kdo v administraci co viděl a změnil, nejnovější nahoře.",
         "plans": "Katalog tarifů: koncept, zveřejnění, ceny v měnách, doplňky a historie verzí.",
         "promoCodes": "Kódy partnerů, jejich registrace, platící a výplaty provizí.",
+        "showcase": "Aplikace, která se předvede sama, pro marketingová videa: přepínač a scénáře.",
         "admins": "Kdo smí do administrace: pozvánky, úrovně a odebrání administrátorů.",
         "help": "Tahle stránka: co je kde, s odkazy rovnou na místo."
       },
@@ -8391,6 +8407,10 @@
         "promoPayouts": {
           "title": "Výplaty provizí",
           "keywords": "výplata provize partner schválit"
+        },
+        "showcaseMode": {
+          "title": "Ukázkový režim",
+          "keywords": "ukázka video marketing nahrávání demo beta režim"
         },
         "adminsInvite": {
           "title": "Pozvat administrátora",
@@ -9209,6 +9229,116 @@
       "unknown": "Zprávu se nepodařilo odeslat."
     }
   },
+  "showcase": {
+    "title": "Ukázka",
+    "description": "Aplikace se předvede sama: kurzor jezdí, kliká a píše, stačí nahrát obrazovku. Pro videa o {appName}.",
+    "pick": {
+      "scenario": "Scénář",
+      "language": "Jazyk",
+      "size": "Plátno"
+    },
+    "scenarios": {
+      "a": {
+        "title": "Od nápadu ke klientovi",
+        "text": "Milník s mapou úkolů, vygenerované kontakty, Cold Calling do Domluvené schůzky, obchod v pipeline a výhra s oslavou."
+      },
+      "b": {
+        "title": "Grady",
+        "text": "Dotaz v chatu, odpověď z poznámek, uložení do poznámek a ranní souhrn."
+      },
+      "c": {
+        "title": "Plánovač schůzek",
+        "text": "Typ schůzky, odkaz, veřejná stránka, rezervace klienta a schůzka v kalendáři i v kontaktech."
+      },
+      "d": {
+        "title": "Firma",
+        "text": "Pozvání pracovníka, jeho práva, úkol pro něj a zpráva."
+      },
+      "e": {
+        "title": "Peníze",
+        "text": "Faktura s QR platbou a plánovací tabulka financí na měsíc."
+      },
+      "f": {
+        "title": "Celý Gradus za 60 s",
+        "text": "Sestřih toho nejlepšího: mapa úkolů, výhra v pipeline, Grady a plán peněz."
+      },
+      "all": {
+        "title": "Všechny za sebou",
+        "text": "Scénáře a až f jeden po druhém."
+      }
+    },
+    "languages": {
+      "cs": "Čeština",
+      "en": "Angličtina"
+    },
+    "sizes": {
+      "1920x1080": "1920 × 1080 na šířku",
+      "1080x1920": "1080 × 1920 na výšku",
+      "1080x1080": "1080 × 1080 čtverec"
+    },
+    "keys": {
+      "space": "Mezerník: pauza a pokračování",
+      "restart": "R: přehrát znovu s čerstvými daty",
+      "escape": "Esc: ukončit a smazat ukázková data",
+      "size": "Velikost plátna nastav oknem prohlížeče (režim zařízení ve vývojářských nástrojích); nahrávací skript ji nastaví sám."
+    },
+    "stageNote": "Ukázka běží v dočasném ukázkovém účtu, takže se na plátně nikdy neobjeví tvoje data. Spuštěním se odhlásíš; po skončení se ukázkový účet i s daty smaže a přihlásíš se znovu.",
+    "start": "Spustit ukázku",
+    "starting": "Připravuji ukázku…",
+    "startFailed": "Ukázku se nepodařilo připravit. Zkus to prosím znovu.",
+    "preparing": "Připravuji ukázku…",
+    "paused": "Pozastaveno · mezerník pokračuje",
+    "failed": "Krok ukázky se nepodařilo přehrát",
+    "guestWindow": "{address}",
+    "guestTitle": "Rezervační stránka, jak ji vidí klient",
+    "outro": {
+      "tagline": "Podnikání jako hra. Krok za krokem."
+    },
+    "ended": "Ukázka skončila, ukázková data jsou smazaná.",
+    "signInAgain": "Přihlásit se znovu",
+    "captions": {
+      "a": {
+        "goal": "Velký cíl rozdělený na malé kroky",
+        "contacts": "Firmy k oslovení najdeš jedním klikem",
+        "call": "Volej a posouvej kontakty dál",
+        "deal": "Ze schůzky rovnou obchod",
+        "win": "Vyhraný obchod? Pořádně ho oslav!"
+      },
+      "b": {
+        "notes": "Všechno o podnikání máš v poznámkách",
+        "ask": "Zeptej se Gradyho, odpoví z poznámek",
+        "save": "Dobrou radu uložíš jedním klikem",
+        "morning": "Ráno tě čeká souhrn dne"
+      },
+      "c": {
+        "intro": "Klient si schůzku zarezervuje sám",
+        "link": "Pošli mu odkaz na svůj kalendář",
+        "book": "Vybere si termín, který ti sedí",
+        "calendar": "Schůzka je hned v kalendáři",
+        "contact": "A klient rovnou v kontaktech"
+      },
+      "d": {
+        "intro": "Celá firma na jednom místě",
+        "invite": "Kolegu pozveš jedním odkazem",
+        "rights": "Práva nastavíš jedním klikem",
+        "task": "Úkol mu předáš s termínem",
+        "chat": "A domluvíte se ve zprávách"
+      },
+      "e": {
+        "intro": "Faktura z obchodu jedním klikem",
+        "issue": "S QR platbou, klient jen naskenuje",
+        "plan": "Peníze naplánované na týdny dopředu"
+      },
+      "f": {
+        "intro": "Podnikání jako hra. Krok za krokem.",
+        "plan": "Plán rozdělený na úkoly v mapě",
+        "win": "Každý vyhraný obchod oslavíš",
+        "grady": "AI pomocník, který zná tvoje podnikání",
+        "money": "Peníze naplánované na týdny dopředu",
+        "end": "Vyzkoušej to na svém podnikání"
+      }
+    }
+  },
   "tutorial": {
     "demoBadge": "ukázka",
     "next": "Další",
@@ -9357,6 +9487,11 @@
       "end": "Ukončit tutoriál"
     },
     "choice": {
+      "showcase": {
+        "title": "Ukázka (Beta)",
+        "text": "Aplikace se předvede sama. Pro marketingová videa, vidí ji jen administrace.",
+        "open": "Otevřít ukázku"
+      },
       "title": "Jak chceš začít?",
       "close": "Zavřít",
       "intro": "Můžu ti aplikaci ukázat. Vyber, kolik času na to dnes máš.",

@@ -29,6 +29,8 @@ export const ADMIN_SECTIONS = [
   { key: "audit", group: "operations", href: `${ADMIN_PATH}/audit`, ready: true },
   { key: "plans", group: "settings", href: `${ADMIN_PATH}/tarify`, ready: true },
   { key: "promoCodes", group: "settings", href: `${ADMIN_PATH}/promo-kody`, ready: true },
+  // The app playing itself for marketing videos (step 27.4).
+  { key: "showcase", group: "settings", href: `${ADMIN_PATH}/ukazka`, ready: true },
   {
     key: "admins",
     group: "settings",

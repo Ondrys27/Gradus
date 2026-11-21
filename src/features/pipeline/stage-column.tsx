@@ -86,6 +86,9 @@ export function StageColumn({
     <section
       ref={setNodeRef}
       aria-label={stage.name}
+      data-tutorial={
+        stage.is_won ? "stage-won" : stage.is_lost ? "stage-lost" : `stage-${stage.system_key ?? "custom"}`
+      }
       style={{ transform: CSS.Translate.toString(transform), transition }}
       className={cn(
         "flex w-[min(85vw,20rem)] shrink-0 snap-center flex-col gap-3 rounded-card border bg-surface/50 p-3 md:w-72 md:snap-align-none",

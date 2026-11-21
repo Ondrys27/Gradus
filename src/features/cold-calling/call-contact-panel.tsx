@@ -126,6 +126,7 @@ function PanelBody({
             size="lg"
             variant="outline"
             className="flex-1"
+            data-tutorial="call-move"
             disabled={tables.length === 0}
             onClick={() => setMoving(true)}
           >
