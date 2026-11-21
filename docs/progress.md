@@ -147,6 +147,18 @@ Formát: `- [ ] ID | agent | požadavek`
 - [ ] 27.5 | architect | env: RESEND_API_KEY
 - [ ] K27 | reviewer |
 - [ ] STOP | Konec fáze 27. Pozvi pracovníka na svůj druhý e-mail a otevři odkaz schválně nejdřív přihlášený, pak v anonymním okně — registrace musí projít. Nahlas problém z aplikace a ověř s Vášou, že ho vidí v administraci; zeptej se Gradyho „chci nahlásit chybu". Váša jako plný admin změní cenu v konceptu tarifů. Projdi Provoz → Chyby. V AI a Grady → Modely zkus přednastavení Úsporné a pošli zprávu Gradymu. V administraci zapni Ukázkový režim, přehraj scénář f v češtině a angličtině a podívej se na videa v marketing/videa. Rezervuj si schůzku s Jitsi místností. V Tarifech nastav dohodnuté ceny (490 Kč měsíčně, 390 Kč měsíčně při roční platbě, 14 dní zdarma) a zveřejni. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
+- [ ] 28.1 | architect | env: RESEND_API_KEY
+- [ ] 28.2 | architect |
+- [ ] 28.3 | architect |
+- [ ] 28.4 | architect |
+- [ ] 28.5 | architect |
+- [ ] 28.6 | designer |
+- [ ] 28.7 | architect | env: ANTHROPIC_API_KEY
+- [ ] 28.8 | architect |
+- [ ] 28.9 | architect | env: ANTHROPIC_API_KEY
+- [ ] K28 | reviewer |
+- [ ] STOP | Konec fáze 28 (bez kalendářů). Přečti docs/audit-pozvanky/nalezy.md. Pozvi Vášu přes @jmeno. Nastav pracovníkovi plán odměn ze šablony, zadej úkol s odměnou, splň ho jako pracovník, schval a vyplať. Nasdílej složku poznámek skupině a pište do jedné poznámky dva naráz. Poskládej si Přehled z widgetů na počítači i telefonu a nastav výchozí přehled pro skupinu. Vlož přepis schůzky do obchodu. V Nastavení → Připojené aplikace připoj Gradus do Claude podle návodu a řekni Claudovi, ať ti vypíše obchody a jeden úkol založí. V administraci → Modely zkus Porovnat modely. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
+- [ ] 28.10 | architect | env: GOOGLE_CLIENT_ID
 - [ ] 23.4 | RUČNĚ | Spuštění prodeje podle docs/spusteni.md: Vercel Pro, ověřený Stripe účet, live klíče a webhook ve Vercelu (Production), Invoicing s patičkou „Nejsem plátce DPH.", doplněné [DOPLNIT] v podmínkách, SMTP a potvrzení e-mailu v Supabase, PUBLIC_SIGNUP_ENABLED=true. Udělej jeden ostrý nákup vlastní kartou a vrať si peníze. Pak tuhle položku zaškrtni.
 - [ ] 7.1 | RUČNĚ | Aplikace běží na Vercel Hobby a každý push na main se nasadí sám. Až budeš mít doménu: nastav ji ve Vercelu, změň NEXT_PUBLIC_SITE_URL ve Vercelu, uprav Site URL a Redirect URLs v Supabase → URL Configuration a dej Redeploy. Projdi produkci v anonymním okně a pak tuhle položku zaškrtni ručně.
 

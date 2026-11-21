@@ -21,6 +21,24 @@ export type WorkerTerms = {
 /** One worker of the company, oldest first. */
 export type SeatWorker = { id: string; ownPlan: boolean };
 
+/** A worker record as worker_seats() returns it, with whether its invite is still open. */
+export type SeatCandidate = {
+  status: "invited" | "active" | "inactive";
+  /** An invited record has an invite that can still be accepted (not expired, declined or replaced). */
+  openInvite?: boolean;
+};
+
+/**
+ * Who takes a seat: an active worker, and an invited one while the invite can
+ * still be accepted. An ended record or an expired invite takes none, so the
+ * owner is never charged for somebody who cannot join. The screens and Stripe
+ * (billing/stripe/seats.ts) count with this one rule.
+ */
+export function holdsSeat(worker: SeatCandidate): boolean {
+  if (worker.status === "active") return true;
+  return worker.status === "invited" && worker.openInvite !== false;
+}
+
 /** How one worker is paid for: their own plan, in the owner's price, or extra. */
 export type Seat = "own" | "included" | "extra";
 

@@ -174,6 +174,8 @@ export async function checkInviteAccount(publicId: string): Promise<InviteResult
 export type BindOutcome = {
   /** The invite waits for an existing account in the app; false = a link for a new person. */
   bound: boolean;
+  /** The person got the invite by e-mail too (never for test addresses or past the hourly cap). */
+  emailed: boolean;
 };
 
 /**
@@ -226,6 +228,7 @@ export async function bindWorkerInvite(input: {
     }
 
     // The e-mail is a courtesy: a failure or the hourly cap leaves the invite as it is.
+    let emailed = false;
     const { count } = await admin
       .from("worker_invites")
       .select("id", { count: "exact", head: true })
@@ -250,10 +253,79 @@ export async function bindWorkerInvite(input: {
           locale,
         );
         const sent = await sendEmail({ to: contact.email, ...mail });
-        if (!sent.ok) console.error("[workers] invite e-mail failed", sent.error);
+        if (sent.ok) emailed = true;
+        else console.error("[workers] invite e-mail failed", sent.error);
       }
     }
-    return { bound };
+    return { bound, emailed };
+  });
+}
+
+/**
+ * A fresh invite for the account an earlier, expired or declined invite of
+ * the same worker record named: the owner's client made the new invite row,
+ * this binds it to that account (as bindWorkerInvite does for a short id)
+ * and e-mails them, so the owner never has to remove the person and invite
+ * them again (which made a second record).
+ */
+export async function renewAccountInvite(input: {
+  inviteId: string;
+  previousInviteId: string;
+  locale?: string;
+}): Promise<InviteResult<BindOutcome>> {
+  return run("bind", async () => {
+    const { supabase, userId } = await owner();
+    if (typeof input.inviteId !== "string" || typeof input.previousInviteId !== "string") {
+      throw new InviteError("invalid");
+    }
+    const { data: rows, error } = await supabase
+      .from("worker_invites")
+      .select("id, code, worker_id, invitee_id, accepted_at")
+      .eq("owner_id", userId)
+      .in("id", [input.inviteId, input.previousInviteId]);
+    if (error) throw error;
+    const fresh = rows?.find((row) => row.id === input.inviteId);
+    const previous = rows?.find((row) => row.id === input.previousInviteId);
+    if (!fresh || !previous || fresh.accepted_at || !previous.invitee_id || fresh.worker_id !== previous.worker_id) {
+      throw new InviteError("invalid");
+    }
+    const admin = createAdminClient();
+    const { data: result, error: bindError } = await admin.rpc("worker_invite_bind", {
+      _owner: userId,
+      _invite: fresh.id,
+      _invitee: previous.invitee_id,
+    });
+    if (bindError) throw bindError;
+    if (result === "self") throw new InviteError("self");
+    if (result === "already_member") throw new InviteError("alreadyMember");
+    if (result !== "bound") throw new InviteError("invalid");
+
+    let emailed = false;
+    const { data: worker } = await supabase
+      .from("workers")
+      .select("job_title")
+      .eq("id", fresh.worker_id)
+      .eq("owner_id", userId)
+      .maybeSingle();
+    const origin = await siteOrigin().catch(() => null);
+    const from = await companyOf(admin, userId);
+    const contact = await accountContact(admin, previous.invitee_id);
+    if (contact.email && !isTestAddress(contact.email)) {
+      const mail = workerInviteEmail(
+        {
+          company: from.company,
+          owner: from.owner,
+          jobTitle: worker?.job_title ?? null,
+          url: origin ? `${origin}${INVITES_PATH}` : null,
+          forAccount: true,
+        },
+        contact.locale ?? input.locale ?? from.locale,
+      );
+      const sent = await sendEmail({ to: contact.email, ...mail });
+      if (sent.ok) emailed = true;
+      else console.error("[workers] invite e-mail failed", sent.error);
+    }
+    return { bound: true, emailed };
   });
 }
 

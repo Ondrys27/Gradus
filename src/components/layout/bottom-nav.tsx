@@ -281,7 +281,7 @@ function LockedBottomNavItem({ item }: { item: NavItemState }) {
 
 const itemClass = (active: boolean) =>
   cn(
-    "relative flex min-w-11 flex-1 flex-col items-center justify-center gap-1 rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+    "relative flex min-w-11 flex-1 touch-manipulation flex-col items-center justify-center gap-1 rounded-xl outline-none transition-transform duration-100 select-none focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-90 motion-reduce:transition-none motion-reduce:active:scale-100",
     active ? "text-ink" : "text-ink-muted",
   );
 

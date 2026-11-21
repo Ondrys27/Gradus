@@ -82,7 +82,7 @@ export function CelebrationProvider({ children }: { children: ReactNode }) {
         disablePointerDismissal
       >
         <Dialog.Portal>
-          <Dialog.Backdrop className="fixed inset-0 z-celebration bg-canvas/75 backdrop-blur-md transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
+          <Dialog.Backdrop className="fixed inset-0 z-celebration max-md:bg-canvas/85 bg-canvas/75 md:backdrop-blur-md transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
           <Dialog.Popup
             initialFocus={false}
             className="fixed inset-0 z-celebration grid place-items-center overflow-y-auto p-4 outline-none transition-opacity duration-200 data-ending-style:opacity-0"

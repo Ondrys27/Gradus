@@ -21,7 +21,7 @@ import {
 export const OPEN_DEAL_TASK_LIMIT = 2000;
 
 const HEALTH_DEAL =
-  "id, title, stage_id, expected_close_date, created_at, assignee_id, won_at, lost_at, contact:contacts(id, company_name, first_name, last_name)";
+  "id, title, stage_id, expected_close_date, created_at, assignee_id, won_at, lost_at, contact:contacts(id, company_name, first_name, last_name), assignees:deal_assignees(assignee_id, created_at)";
 export const HEALTH_DEAL_COLUMNS = HEALTH_DEAL;
 const OPEN_DEAL_TASK_COLUMNS = `id, deal_id, due_at, assignee_id, deal:deals(${HEALTH_DEAL})`;
 

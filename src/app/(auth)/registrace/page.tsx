@@ -60,7 +60,13 @@ export default async function RegisterPage({
       accountForEmail,
     });
     if (view.kind === "register" && link?.workerName) {
-      invite = { code, workerName: link.workerName, email: link.email, ownerName: link.ownerName };
+      invite = {
+        code,
+        workerName: link.workerName,
+        email: link.email,
+        ownerName: link.ownerName,
+        companyName: link.companyName,
+      };
     }
     await track(
       "worker_invite_link_opened",

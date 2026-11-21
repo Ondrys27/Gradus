@@ -141,7 +141,7 @@ export function CompanySection() {
  */
 export function CompaniesSection() {
   const t = useTranslations("settings.account.companies");
-  const { spaces, spaceId } = useSession();
+  const { spaces, spaceId, user } = useSession();
   const leave = useLeaveCompany();
   const [leaving, setLeaving] = useState<SpaceMembership | null>(null);
   const companies = spaces.filter((space) => space.role === "worker");
@@ -194,8 +194,20 @@ export function CompaniesSection() {
           const space = leaving.spaceId;
           leave.mutate(space, {
             // A full load: the switcher, the session and the active space start over.
-            onSuccess: () =>
-              window.location.assign(space === spaceId ? APP_HOME_PATH : window.location.pathname),
+            onSuccess: async () => {
+              if (space !== spaceId) {
+                window.location.assign(window.location.pathname);
+                return;
+              }
+              // Left the company that was open: back to the account's own space,
+              // not to whichever other company the database would pick first.
+              await fetch("/api/space", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ space: user.id }),
+              }).catch(() => undefined);
+              window.location.assign(APP_HOME_PATH);
+            },
           });
         }}
       />

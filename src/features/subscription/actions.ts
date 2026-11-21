@@ -1,5 +1,6 @@
 "use server";
 
+import { openInviteWorkers } from "@/features/workers/server/open-invites";
 import { isAddOnKey, isPaidPlanKey, type AddOnKey } from "@/config/pricing";
 import {
   gatewayFor,
@@ -316,6 +317,8 @@ export type WorkerBillingRow = {
   declined: boolean;
   /** An invite waiting for an existing account in the app. */
   pendingAccount: boolean;
+  /** Invited and the invite can still be accepted (holdsSeat). */
+  openInvite: boolean;
 };
 
 export type WorkerBilling = { planKey: string; terms: WorkerTerms; workers: WorkerBillingRow[] };
@@ -328,11 +331,12 @@ export type WorkerBilling = { planKey: string; terms: WorkerTerms; workers: Work
  */
 export async function loadWorkerBilling(): Promise<SubscriptionResult<WorkerBilling>> {
   return run("workerBilling", async (ctx) => {
-    const [seats, current] = await Promise.all([
+    const [seats, current, open] = await Promise.all([
       rpc<Database["public"]["Functions"]["worker_seats"]["Returns"]>(
         ctx.supabase.rpc("worker_seats", { _owner: ctx.userId }),
       ),
       rpc<{ plan_key: string }[]>(ctx.supabase.rpc("current_plan", { _user_id: ctx.userId })),
+      openInviteWorkers(ctx.supabase, ctx.userId),
     ]);
     const planKey = current[0]?.plan_key ?? "beta";
     let terms: WorkerTerms;
@@ -360,6 +364,7 @@ export async function loadWorkerBilling(): Promise<SubscriptionResult<WorkerBill
         ownPlan: seat.own_plan,
         declined: seat.declined,
         pendingAccount: seat.pending_account,
+        openInvite: open.has(seat.worker_id),
       })),
     };
   });

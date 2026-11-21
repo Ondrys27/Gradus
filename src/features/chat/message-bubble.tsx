@@ -157,6 +157,11 @@ export const MessageBubble = memo(function MessageBubble({
               <Receipt message={message} kind={kind} readers={readers} others={others} />
             )}
           </p>
+          {message.pending === "failed" && (
+            <p className="mt-1 text-xs font-medium text-primary-foreground/90" data-testid="chat-failed-reason">
+              {failedReason(t, message.pendingError)}
+            </p>
+          )}
         </div>
         {!deleted && (writable || message.pending) && (
           <BubbleMenu
@@ -402,7 +407,11 @@ function BubbleMenu({
       <Menu.Trigger
         aria-label={t("label")}
         data-testid="chat-message-menu"
-        className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-full text-ink-muted outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40 data-popup-open:opacity-100 mouse:size-8 mouse:opacity-0 mouse:group-hover/bubble:opacity-100 mouse:focus-visible:opacity-100"
+        className={cn(
+          "grid size-11 shrink-0 cursor-pointer place-items-center rounded-full text-ink-muted outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40 data-popup-open:opacity-100 mouse:size-8 mouse:group-hover/bubble:opacity-100 mouse:focus-visible:opacity-100",
+          // A message that did not go is never hidden behind a hover: Retry / Discard wait.
+          failed ? "text-pink" : "mouse:opacity-0",
+        )}
       >
         <EllipsisVerticalIcon aria-hidden className="size-4" />
       </Menu.Trigger>
@@ -411,10 +420,12 @@ function BubbleMenu({
           <Menu.Popup className="min-w-44 rounded-xl border border-line-strong bg-surface p-1.5 shadow-popover outline-none">
             {failed ? (
               <>
-                <Menu.Item className={itemClass} onClick={() => actions.onRetry(message)}>
-                  <RotateCcwIcon aria-hidden />
-                  {t("retry")}
-                </Menu.Item>
+                {message.pendingError !== "fileMissing" && (
+                  <Menu.Item className={itemClass} onClick={() => actions.onRetry(message)}>
+                    <RotateCcwIcon aria-hidden />
+                    {t("retry")}
+                  </Menu.Item>
+                )}
                 <Menu.Item className={cn(itemClass, "text-pink")} onClick={() => actions.onDiscard(message)}>
                   <Trash2Icon aria-hidden />
                   {t("discard")}
@@ -448,4 +459,23 @@ function BubbleMenu({
       </Menu.Portal>
     </Menu.Root>
   );
+}
+
+/** Codes the outbox and POST /api/chat/messages give; anything else reads as a general failure. */
+const FAILED_REASONS = new Set([
+  "fileMissing",
+  "upload",
+  "network",
+  "readOnly",
+  "archived",
+  "forbidden",
+  "member",
+  "notFound",
+  "invalid",
+]);
+
+function failedReason(t: ReturnType<typeof useTranslations<"messages">>, code: string | undefined): string {
+  return FAILED_REASONS.has(code ?? "")
+    ? t(`failedReasons.${code as "network"}`)
+    : t("failedReasons.unknown");
 }

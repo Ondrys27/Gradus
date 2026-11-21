@@ -80,7 +80,7 @@ export function LevelDialog({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-overlay bg-canvas/75 backdrop-blur-md transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
+        <Dialog.Backdrop className="fixed inset-0 z-overlay max-md:bg-canvas/85 bg-canvas/75 md:backdrop-blur-md transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
         <Dialog.Popup
           className={cn(
             "fixed inset-0 z-overlay flex flex-col overflow-y-auto overscroll-contain bg-surface outline-none",

@@ -38,7 +38,7 @@ export function ResponsiveDialog({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Backdrop data-capture-ignore="" className="fixed inset-0 z-overlay bg-canvas/70 backdrop-blur-sm transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
+        <Dialog.Backdrop data-capture-ignore="" className="fixed inset-0 z-overlay max-md:bg-canvas/85 bg-canvas/70 md:backdrop-blur-sm transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
         <Dialog.Popup
           data-capture-ignore=""
           className={cn(

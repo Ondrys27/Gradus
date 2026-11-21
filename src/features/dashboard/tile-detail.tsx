@@ -94,7 +94,7 @@ export function TileDetail({ tile, onClose }: Props) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="absolute inset-0 bg-canvas/70 backdrop-blur-sm"
+        className="absolute inset-0 max-md:bg-canvas/85 bg-canvas/70 md:backdrop-blur-sm"
       />
       <motion.div
         layoutId={tileLayoutId(tile)}

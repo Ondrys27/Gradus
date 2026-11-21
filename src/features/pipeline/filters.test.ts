@@ -230,6 +230,18 @@ describe("who, contact and amount", () => {
     expect(ids(deals, filters({ who: OTHER }))).toEqual(["theirs"]);
   });
 
+  it("finds a deal for anyone on it", () => {
+    const shared = deal("shared", {
+      assignee_id: OTHER,
+      assignees: [
+        { assignee_id: OTHER, created_at: "2026-10-01T00:00:00Z" },
+        { assignee_id: ME, created_at: "2026-10-02T00:00:00Z" },
+      ],
+    });
+    expect(ids([shared], filters({ who: "me" }))).toEqual(["shared"]);
+    expect(ids([shared], filters({ who: OTHER }))).toEqual(["shared"]);
+  });
+
   it("finds a contact as the primary one or anywhere on the deal", () => {
     const deals = [deal("primary", { contact_id: CONTACT }), deal("second"), deal("none")];
     expect(ids(deals, filters({ contact: CONTACT }))).toEqual(["primary"]);

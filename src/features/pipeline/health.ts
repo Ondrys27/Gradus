@@ -1,3 +1,4 @@
+import { isOnDeal, type DealAssignee } from "./assignees";
 import { differenceInCalendarDays } from "date-fns";
 import {
   instantToZonedParts,
@@ -47,6 +48,8 @@ export type HealthDeal = {
   expected_close_date: IsoDate | null;
   created_at: string;
   assignee_id: string | null;
+  /** Everyone on the deal; without it, assignee_id alone. */
+  assignees?: DealAssignee[] | null;
   won_at: string | null;
   lost_at: string | null;
   contact: DealContact | null;
@@ -117,7 +120,10 @@ export function pipelineHealth(input: HealthInput): PipelineHealth {
   const today = todayIsoDate(settings, now);
   const mine = (owner: string | null) => assigneeId === null || owner === assigneeId;
   const board = new Map(deals.map((deal) => [deal.id, deal]));
-  const openDeals = deals.filter((deal) => isOpenDeal(deal) && mine(deal.assignee_id));
+  // A deal counts for everyone on it.
+  const openDeals = deals.filter(
+    (deal) => isOpenDeal(deal) && (assigneeId === null || isOnDeal(deal, assigneeId)),
+  );
 
   // Close Date in the past: open deals only, the oldest date first.
   const closePast: ClosePastRow[] = [];

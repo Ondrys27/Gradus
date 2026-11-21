@@ -18,7 +18,7 @@ export type DealFormInitial = {
   title?: string;
   contact?: DealContact | null;
   /** Null: whoever makes it looks after it. */
-  assigneeId?: string | null;
+  assigneeIds?: string[];
 };
 
 type Props = {
@@ -29,7 +29,7 @@ type Props = {
   stageId: string | null;
   onCreated: (deal: Deal, stage: Stage) => void;
   initial?: DealFormInitial;
-  /** Shows who looks after the deal (prefilled from `initial.assigneeId`). */
+  /** Shows who looks after the deal (prefilled from `initial.assigneeIds`). */
   showAssignee?: boolean;
   source?: DealSource;
 };
@@ -105,7 +105,7 @@ export function NewDealForm({
     ...emptyDraft(stageId ?? stages[0]?.id ?? "", defaultCurrency(settings.currency)),
     title: initial?.title ?? "",
     contact: initial?.contact ?? null,
-    assigneeId: initial?.assigneeId ?? null,
+    assigneeIds: initial?.assigneeIds ?? [],
   }));
   const [errors, setErrors] = useState<Partial<Record<string, PipelineErrorKey>>>({});
   const [failed, setFailed] = useState(false);

@@ -8,7 +8,7 @@ import { useSession, useUserSettings } from "@/features/account/queries";
 import { salesLive } from "@/features/billing/sales";
 import { useExchangeRates } from "@/features/currency/use-exchange-rates";
 import { moneyIn } from "@/features/plan/localized";
-import { workerSeats, type Seat } from "@/features/plan/worker-seats";
+import { holdsSeat, workerSeats, type Seat } from "@/features/plan/worker-seats";
 import { money } from "@/features/subscription/plan-price";
 import { useWorkerBilling } from "@/features/subscription/queries";
 import { BASE_CURRENCY } from "@/lib/currency";
@@ -16,7 +16,14 @@ import { createClient } from "@/lib/supabase/client";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import type { WorkerStatus } from "../types";
 
-type SeatInfo = { seat: Seat | null; declined: boolean; replaced: boolean; pendingAccount: boolean };
+type SeatInfo = {
+  seat: Seat | null;
+  declined: boolean;
+  replaced: boolean;
+  pendingAccount: boolean;
+  /** Invited, but the invite can no longer be accepted: no seat until a new one. */
+  expired: boolean;
+};
 
 /** Most records an owner's replaced invites are read for. */
 const REPLACED_LIMIT = 500;
@@ -58,7 +65,7 @@ export function useCompanySeats(): { seats: ReadonlyMap<string, SeatInfo>; price
     const out = new Map<string, SeatInfo>();
     if (!query.data) return { seats: out, price: null };
     const { terms, workers } = query.data;
-    const counted = workers.filter((row) => row.status !== "inactive");
+    const counted = workers.filter(holdsSeat);
     const result = workerSeats(
       terms,
       counted.map((row) => ({ id: row.workerId, ownPlan: row.ownPlan })),
@@ -69,6 +76,7 @@ export function useCompanySeats(): { seats: ReadonlyMap<string, SeatInfo>; price
         declined: row.declined,
         replaced: row.status === "inactive" && Boolean(replacedQuery.data?.has(row.workerId)),
         pendingAccount: row.pendingAccount,
+        expired: row.status === "invited" && !row.openInvite,
       });
     }
     // The user's currency (manual or at the day's rate), else EUR.
@@ -106,6 +114,13 @@ export function SeatChip({
     return (
       <StatusPill tone="neutral" data-testid="seat-chip" data-seat="replaced">
         {t("replaced")}
+      </StatusPill>
+    );
+  }
+  if (info.expired) {
+    return (
+      <StatusPill tone="neutral" data-testid="seat-chip" data-seat="expired" title={t("expiredHint")}>
+        {t("expired")}
       </StatusPill>
     );
   }

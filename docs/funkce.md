@@ -94,6 +94,7 @@ Stav k 9. 11. 2026.
 |---|---|---|---|
 | Tabule obchodů | Obchody ve fázích (Nový lead → Schůzka → Koncept nabídky → Nabídka odeslána → Vyhráno / Ztraceno). Fáze si uživatel upraví. | majitel, pracovník s právem pipeline (vše nebo jen své) | žádný |
 | Detail obchodu | Částka, termín uzavření, datum realizace (samo se objeví v kalendáři), kontakty s rolemi, úkoly, historie a poznámky. | majitel, pracovník | žádný |
+| Víc lidí na obchodu | Na obchodu může pracovat víc lidí najednou, všichni rovnocenně (zaškrtnou se v detailu nebo při založení). Každý z nich obchod vidí i s právem „jen své obchody“, má ho v dlaždicích, filtru, Správě firmy a na svém dashboardu; na kartě jsou jejich iniciály. Grady je nastaví na pokyn. | majitel, pracovník | žádný |
 | Co hoří a filtry | Dlaždice se špatnými věcmi a filtry (termín, aktivita, úkoly, pracovník, kontakt, částka) uložené v adrese. | majitel, pracovník | žádný |
 | Výhra a prohra | Výhra spustí oslavu a kontakt přejde do Klientů. U prohry se zapíše důvod a po čase se objeví štítek „znovu oslovit“. | majitel, pracovník | žádný |
 | Dotazník po schůzce | Když obchod opustí fázi Schůzka, krátký dotazník zachytí, jak schůzka proběhla. Z dotazníků pak vzniká rozbor schůzek. | majitel, pracovník | žádný |

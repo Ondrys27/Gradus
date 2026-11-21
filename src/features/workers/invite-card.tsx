@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BellRingIcon, CheckIcon, CopyIcon, MailPlusIcon, RefreshCwIcon } from "lucide-react";
+import { BellRingIcon, CheckIcon, CopyIcon, MailPlusIcon, RefreshCwIcon, Share2Icon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { Input } from "@/components/ui/input";
+import { APP_NAME } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
@@ -78,6 +79,19 @@ export function InviteCard({
                     date: formatDate(new Date(invite.expires_at), settings),
                   })}
           </p>
+          {state === "expired" && !invite.declined_at && onRenew && (
+            <Button
+              variant="outline"
+              onClick={onRenew}
+              disabled={renewing}
+              className="mt-2 self-start"
+              data-testid="invite-resend"
+            >
+              <RefreshCwIcon aria-hidden data-icon="inline-start" />
+              {t("resend")}
+            </Button>
+          )}
+          {renewFailed && <FormAlert>{t("renewFailed")}</FormAlert>}
         </div>
       </section>
     );
@@ -113,7 +127,7 @@ export function InviteCard({
         </div>
       ) : (
         <>
-          <CopyRow label={t("link")} value={link} />
+          <CopyRow label={t("link")} value={link} shareText={t("shareText", { name: workerName, appName: APP_NAME })} />
           <CopyRow label={t("code")} value={invite.code} mono />
           <p className="text-xs text-ink-muted">
             {t("validUntil", { date: formatDate(new Date(invite.expires_at), settings) })}
@@ -125,9 +139,30 @@ export function InviteCard({
   );
 }
 
-function CopyRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+function CopyRow({
+  label,
+  value,
+  mono,
+  shareText,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+  /** With it, a Share button opens the system's share sheet (phones: WhatsApp, SMS…). */
+  shareText?: string;
+}) {
   const t = useTranslations("workers.invite");
   const [copied, setCopied] = useState(false);
+  const [canShare, setCanShare] = useState(false);
+  useEffect(() => setCanShare(Boolean(shareText) && typeof navigator.share === "function"), [shareText]);
+
+  async function share() {
+    try {
+      await navigator.share({ text: shareText, url: value });
+    } catch {
+      // Closed or not allowed: copying still works.
+    }
+  }
 
   useEffect(() => {
     if (!copied) return;
@@ -163,6 +198,11 @@ function CopyRow({ label, value, mono }: { label: string; value: string; mono?: 
         >
           {copied ? <CheckIcon aria-hidden className="text-teal" /> : <CopyIcon aria-hidden />}
         </Button>
+        {canShare && (
+          <Button variant="outline" size="icon" onClick={() => void share()} aria-label={t("share")}>
+            <Share2Icon aria-hidden />
+          </Button>
+        )}
       </div>
       <span aria-live="polite" className="sr-only">
         {copied ? t("copied") : ""}

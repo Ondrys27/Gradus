@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   catalogWorkerTerms,
+  holdsSeat,
   extraWorkersCharge,
   storedWorkerTerms,
   workerSeats,
@@ -92,5 +93,26 @@ describe("terms", () => {
       perWorker: null,
     });
     expect(storedWorkerTerms(null)).toEqual(free);
+  });
+});
+
+describe("holdsSeat", () => {
+  it("counts active workers and open invites only", () => {
+    expect(holdsSeat({ status: "active" })).toBe(true);
+    expect(holdsSeat({ status: "invited", openInvite: true })).toBe(true);
+    expect(holdsSeat({ status: "invited", openInvite: false })).toBe(false);
+    expect(holdsSeat({ status: "inactive", openInvite: true })).toBe(false);
+  });
+
+  it("charges nobody who left or whose invite expired", () => {
+    const rows = [
+      { id: "a", status: "inactive" as const, openInvite: false, ownPlan: false },
+      { id: "b", status: "invited" as const, openInvite: false, ownPlan: false },
+      { id: "c", status: "active" as const, openInvite: false, ownPlan: false },
+    ];
+    const seats = workerSeats({ included: 0, perWorker: null }, rows.filter(holdsSeat));
+    expect(seats.extra).toBe(1);
+    expect(seats.seats.get("c")).toBe("extra");
+    expect(seats.seats.has("a")).toBe(false);
   });
 });

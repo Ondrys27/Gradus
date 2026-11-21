@@ -1803,6 +1803,38 @@ export type Database = {
           },
         ]
       }
+      deal_assignees: {
+        Row: {
+          assignee_id: string
+          created_at: string
+          created_by: string | null
+          deal_id: string
+          user_id: string
+        }
+        Insert: {
+          assignee_id: string
+          created_at?: string
+          created_by?: string | null
+          deal_id: string
+          user_id: string
+        }
+        Update: {
+          assignee_id?: string
+          created_at?: string
+          created_by?: string | null
+          deal_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_assignees_deal_fkey"
+            columns: ["deal_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
       deal_contacts: {
         Row: {
           contact_id: string
@@ -6334,6 +6366,10 @@ export type Database = {
         }[]
       }
       current_workspace_id: { Args: never; Returns: string }
+      deal_set_assignees: {
+        Args: { _assignees: string[]; _deal: string }
+        Returns: string[]
+      }
       deal_tasks_last_done: {
         Args: { _workspace: string }
         Returns: {
@@ -6580,6 +6616,7 @@ export type Database = {
         Returns: Record<string, unknown>
       }
       is_client_request: { Args: never; Returns: boolean }
+      is_deal_assignee: { Args: { _deal: string }; Returns: boolean }
       is_internal_account: { Args: { _user_id: string }; Returns: boolean }
       is_space_member: { Args: { _space: string }; Returns: boolean }
       is_workspace_member: {

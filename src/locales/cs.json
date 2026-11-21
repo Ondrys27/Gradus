@@ -658,6 +658,7 @@
       "deleted_contact": "Smazal jsem kontakt {name}",
       "create_deal": "Založil jsem obchod „{title}“",
       "update_deal": "Upravil jsem obchod „{title}“",
+      "set_deal_people": "Nastavil jsem lidi na obchodu „{title}“",
       "move_deal_stage": "Přesunul jsem obchod „{title}“ do fáze {stage}",
       "won_deal": "Obchod „{title}“ je vyhraný",
       "add_deal_contact": "Přidal jsem {name} k obchodu „{title}“",
@@ -748,6 +749,7 @@
         "delete_contact": "Připravuji smazání kontaktu…",
         "create_deal": "Zakládám obchod…",
         "update_deal": "Upravuji obchod…",
+        "set_deal_people": "Nastavuji lidi na obchodu…",
         "move_deal_stage": "Posouvám obchod…",
         "add_deal_contact": "Přidávám kontakt k obchodu…",
         "delete_deal": "Připravuji smazání obchodu…",
@@ -879,6 +881,7 @@
       "haveAccount": "Už máte účet? <link>Přihlásit se</link>",
       "workerInvite": "Přidáváš se k týmu: {owner}. Zaregistruj se e-mailem, na který tě pozval.",
       "workerInviteNoOwner": "Přidáváš se k týmu. Zaregistruj se e-mailem, na který jsi dostal pozvánku.",
+      "workerInviteCompany": "Přidáváš se do firmy „{company}“. Zaregistruj se e-mailem, na který jsi dostal pozvánku.",
       "descriptionPublic": "14 dní zdarma, bez platební karty.",
       "inviteOptional": "Pozvánkový kód (nepovinné)",
       "inviteOptionalHint": "Máte-li pozvánku, zadejte ji. Jinak začnete 14denní zkušební období.",
@@ -2315,7 +2318,8 @@
     "card": {
       "open": "Otevřít obchod {title}",
       "noContact": "Bez kontaktu",
-      "relaunch": "Možné znovu oslovit"
+      "relaunch": "Možné znovu oslovit",
+      "people": "Na obchodu: {people}"
     },
     "stage": {
       "rename": "Název fáze (nyní {name})",
@@ -2383,7 +2387,8 @@
       "assignee": "Pracovník",
       "deadline": "Datum realizace (deadline)",
       "deadlineHint": "Ukáže se v kalendáři jako celodenní událost.",
-      "created": "Vytvořeno"
+      "created": "Vytvořeno",
+      "people": "Lidé na obchodu"
     },
     "lost": {
       "title": "Označit jako ztracený",
@@ -2580,6 +2585,11 @@
       "loadFailed": "Fáze pipeline se nepodařilo načíst. Zkus to znovu.",
       "noStages": "Pipeline nemá žádnou otevřenou fázi. Přidej ji v Pipeline.",
       "cancel": "Zrušit"
+    },
+    "people": {
+      "label": "Lidé na obchodu: {people}",
+      "nobody": "Nikdo",
+      "andMore": "{name} a {count, plural, one {# další} few {# další} other {# dalších}}"
     }
   },
   "crmTasks": {
@@ -2876,7 +2886,7 @@
       "wonOn": "Vyhráno {date}",
       "lostOn": "Ztraceno {date}",
       "open": "Otevřít obchod {title}",
-      "assignee": "Pracovník: {name}"
+      "assignee": "Na obchodu: {name}"
     },
     "activity": {
       "title": "Historie aktivit",
@@ -3930,7 +3940,10 @@
         "someone": "Někdo",
         "accept": "Přijmout",
         "decline": "Odmítnout",
-        "open": "Zobrazit pozvánku"
+        "open": "Zobrazit pozvánku",
+        "acceptedTitle": "Jsi v týmu {who}",
+        "goThere": "Přejít do firmy",
+        "later": "Později"
       },
       "survey": {
         "title": "Jak dopadla schůzka s {guest}?",
@@ -4122,7 +4135,8 @@
       "outro": "Co v nich stojí, najdeš jen v aplikaci.",
       "open": "Otevřít Zprávy",
       "turnOff": "Vypnout tato upozornění",
-      "someone": "Někdo"
+      "someone": "Někdo",
+      "inCompany": "{item} ({company})"
     },
     "workerInvite": {
       "subject": "{who} tě zve do týmu v {appName}",
@@ -4136,8 +4150,8 @@
       "register": "Zaregistrovat se"
     },
     "workerLeft": {
-      "subject": "{worker} odešel z firmy v {appName}",
-      "intro": "{worker} právě odešel z tvé firmy v {appName}.",
+      "subject": "{worker} už ve tvé firmě v {appName} není",
+      "intro": "{worker} právě opustil(a) tvou firmu v {appName}.",
       "next": "Přístup k datům firmy skončil hned. Obchody a úkoly, které měl na starosti, zůstaly ve firmě; předat je můžeš ve Správě firmy nebo v detailu obchodu.",
       "open": "Otevřít Správu firmy"
     },
@@ -4365,15 +4379,19 @@
       "copy": "Zkopírovat {what}",
       "copied": "Zkopírováno",
       "validUntil": "Platí do {date}.",
+      "emailed": "Pozvánku jsme mu poslali i e-mailem.",
       "expired": "Pozvánka vypršela. Vytvoř nový odkaz a pošli ho znovu.",
       "renew": "Nový odkaz",
       "renewFailed": "Nový odkaz se nepodařilo vytvořit. Zkus to znovu.",
       "waitingTitle": "{name} má pozvánku v aplikaci",
       "waitingText": "Uvidí ji ve zvonku a v e-mailu a přijme ji nebo odmítne. Platí do {date}.",
-      "waitingExpired": "Pozvánka vypršela. Odeber pracovníka a pozvi ho znovu.",
-      "declined": "Pozvánku odmítl.",
+      "waitingExpired": "Pozvánka vypršela. Pošli ji znovu a počká mu v aplikaci dalších 30 dní.",
+      "resend": "Poslat znovu",
+      "declined": "Pozvánka byla odmítnuta.",
       "replaced": "Tuhle pozvánku nahradila novější na stejný e-mail. Starý odkaz už nefunguje.",
-      "replacedOld": "Předchozí pozvánka na tenhle e-mail přestala platit (nahrazena novější)."
+      "replacedOld": "Předchozí pozvánka na tenhle e-mail přestala platit (nahrazena novější).",
+      "share": "Sdílet odkaz",
+      "shareText": "Ahoj {name}, zvu tě do našeho týmu v aplikaci {appName}. Zaregistruj se tímhle odkazem:"
     },
     "detail": {
       "loadFailed": "Pracovníka se nepodařilo načíst. Zkus to znovu.",
@@ -4729,7 +4747,7 @@
         "delete": "Smazat skupinu: {name}",
         "show": "Ukázat ve stromu",
         "deleteTitle": "Smazat skupinu „{name}“?",
-        "deleteDescription": "Členství ve skupině zanikne, pracovníci zůstanou ve firmě beze změny.",
+        "deleteDescription": "Členství ve skupině zanikne, pracovníci zůstanou ve firmě beze změny. Konverzace skupiny ve Zprávách zůstane jen pro čtení.",
         "deleteConfirm": "Smazat skupinu",
         "cancel": "Zrušit",
         "close": "Zavřít",
@@ -4775,16 +4793,19 @@
         "groupsHint": "Nepovinné, jde to kdykoli změnit."
       },
       "seat": {
+        "expired": "pozvánka vypršela",
+        "expiredHint": "Pozvánka už nejde přijmout, takže za něj nic neplatíš. Pošli mu novou, až bude chtít nastoupit.",
         "own": "má vlastní tarif",
         "included": "v ceně",
         "extra": "navíc {price}",
         "extraNoPrice": "nad rámec tarifu",
-        "declined": "odmítl pozvánku",
+        "declined": "pozvánka odmítnuta",
         "waiting": "čeká na přijetí",
         "replaced": "nahrazena novější",
         "extraBeforeSales": "navíc {price} po spuštění plateb",
         "extraBeforeSalesHint": "Platby zatím běží jen v testovacím režimu, za pracovníka teď nic neplatíš."
-      }
+      },
+      "allEnded": "Ve firmě teď nikdo nepracuje. Ukončené lidi najdeš ve filtru stavu."
     },
     "dashboard": {
       "overview": {
@@ -8928,7 +8949,7 @@
     "unreadCount": "{count, plural, one {# nepřečtená} few {# nepřečtené} other {# nepřečtených}}",
     "back": "Zpět na konverzace",
     "memberCount": "{count, plural, one {{formatted} člen} few {{formatted} členové} other {{formatted} členů}}",
-    "invitedPeer": "Ještě nepřijal pozvánku, zprávy počkají",
+    "invitedPeer": "Pozvánku zatím nepřijal(a), zprávy počkají",
     "removedPeer": "Už ve firmě není",
     "readOnlyNotice": "Účet je jen pro čtení: zprávy jde číst, ne psát.",
     "archivedNotice": "Skupina byla smazána. Konverzace zůstává jen pro čtení.",
@@ -9014,6 +9035,18 @@
       "deleted": "Smazáno",
       "yes": "ano",
       "filePrefix": "zpravy"
+    },
+    "failedReasons": {
+      "fileMissing": "Příloha se po obnovení stránky ztratila. Zprávu zahoď a pošli soubor znovu.",
+      "upload": "Přílohu se nepodařilo nahrát.",
+      "network": "Bez připojení. Pošle se samo, až budeš online.",
+      "readOnly": "Účet je jen pro čtení, psát teď nejde.",
+      "archived": "Skupina byla smazána, do konverzace už psát nejde.",
+      "forbidden": "Do téhle konverzace už psát nemůžeš.",
+      "member": "Tenhle člověk už ve firmě není.",
+      "notFound": "Konverzace už neexistuje.",
+      "invalid": "Zpráva nebo příloha nejde poslat (typ nebo velikost).",
+      "unknown": "Zprávu se nepodařilo odeslat."
     }
   },
   "tutorial": {
@@ -9464,7 +9497,7 @@
     "accept": "Přijmout",
     "decline": "Odmítnout",
     "declineTitle": "Odmítnout pozvánku?",
-    "declineText": "{who} uvidí, že jsi pozvánku odmítl. Pokud si to rozmyslíš, musí tě pozvat znovu.",
+    "declineText": "{who} uvidí, že pozvánku odmítáš. Pokud si to rozmyslíš, musí tě pozvat znovu.",
     "cancel": "Zpět",
     "acceptedTitle": "Jsi v týmu {name}",
     "acceptedText": "Firma je teď v přepínači vpravo nahoře (na telefonu ve Více). Přepnout se můžeš kdykoli.",
@@ -9478,7 +9511,9 @@
       "signedOut": "Přihlas se znovu a zkus to.",
       "unknown": "Něco se pokazilo. Zkus to znovu.",
       "self": "Tohle je pozvánka do tvé vlastní firmy.",
-      "otherAccount": "Pozvánka je pro jiný účet."
+      "otherAccount": "Pozvánka je pro jiný účet.",
+      "notFound": "Pozvánku jsme nenašli. Požádej majitele o novou.",
+      "ownerOnly": "Tohle může udělat jen majitel firmy."
     }
   },
   "inbox": {
@@ -9490,9 +9525,9 @@
     "invite": "{who} tě zve do týmu",
     "inviteHint": "Přijmout nebo odmítnout",
     "notes": {
-      "invite_accepted": "{name} přijal pozvánku do firmy",
-      "invite_declined": "{name} pozvánku odmítl",
-      "worker_left": "{name} odešel z firmy",
+      "invite_accepted": "{name}: pozvánka do firmy přijata",
+      "invite_declined": "{name}: pozvánka odmítnuta",
+      "worker_left": "{name}: odchod z firmy",
       "invite_requested": "{name} žádá o novou pozvánku"
     }
   },

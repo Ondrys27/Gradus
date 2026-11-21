@@ -9,9 +9,13 @@ import { escapeHtml } from "@/lib/email/resend";
  * the app.
  */
 
-export type ChatDigestLine =
+export type ChatDigestLine = (
   | { kind: "direct"; name: string | null; messages: number; mentions: number }
-  | { kind: "group"; name: string | null; mentions: number };
+  | { kind: "group"; name: string | null; mentions: number }
+) & {
+  /** The company, only when the e-mail covers more than one. */
+  company?: string | null;
+};
 
 export type ChatDigestEmail = { subject: string; text: string; html: string };
 
@@ -22,17 +26,19 @@ export function chatDigestEmail(
 ): ChatDigestEmail {
   const t = serverTranslator(locale);
   const someone = t("email.chat.someone");
-  const items = lines.map((line) =>
-    line.kind === "direct"
-      ? line.mentions > 0
-        ? t("email.chat.directWithMentions", {
-            name: line.name ?? someone,
-            messages: line.messages,
-            mentions: line.mentions,
-          })
-        : t("email.chat.direct", { name: line.name ?? someone, messages: line.messages })
-      : t("email.chat.group", { name: line.name ?? someone, mentions: line.mentions }),
-  );
+  const items = lines.map((line) => {
+    const item =
+      line.kind === "direct"
+        ? line.mentions > 0
+          ? t("email.chat.directWithMentions", {
+              name: line.name ?? someone,
+              messages: line.messages,
+              mentions: line.mentions,
+            })
+          : t("email.chat.direct", { name: line.name ?? someone, messages: line.messages })
+        : t("email.chat.group", { name: line.name ?? someone, mentions: line.mentions });
+    return line.company ? t("email.chat.inCompany", { item, company: line.company }) : item;
+  });
   const intro = t("email.chat.intro", { appName: APP_NAME });
   const outro = t("email.chat.outro");
   const open = t("email.chat.open");

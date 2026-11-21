@@ -1,3 +1,4 @@
+import { isOnDeal } from "./assignees";
 import { instantToZonedParts, todayIsoDate, type FormatSettings, type IsoDate } from "@/lib/format";
 import { dayEdges } from "@/features/crm-tasks/logic";
 import { isOpenDeal, isTaskOverdue, type OpenDealTask } from "./health";
@@ -246,7 +247,7 @@ type FilterableDeal = Pick<
   | "assignee_id"
   | "won_at"
   | "lost_at"
->;
+> & { assignees?: Deal["assignees"] };
 
 function within(value: IsoDate, from: IsoDate | null, to: IsoDate | null): boolean {
   return (from === null || value >= from) && (to === null || value <= to);
@@ -318,7 +319,8 @@ export function dealMatches(
 
   if (filters.who) {
     const who = filters.who === "me" ? context.userId : filters.who;
-    if (deal.assignee_id !== who) return false;
+    // Anyone on the deal.
+    if (!isOnDeal(deal, who)) return false;
   }
 
   if (filters.contact) {

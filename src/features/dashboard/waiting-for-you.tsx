@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CalendarClockIcon, ClipboardListIcon, MailPlusIcon } from "lucide-react";
+import { CalendarClockIcon, ClipboardListIcon, MailOpenIcon, MailPlusIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { FormAlert } from "@/components/ui/form-alert";
 import { GlowCard } from "@/components/ui/glow-card";
 import { useSession } from "@/features/account/queries";
 import { InboxActionError, inviterName, useInbox, useRespondInvite } from "@/features/account/inbox";
+import { useSwitchSpace } from "@/features/account/space-switch";
 import { useCan, useWorkspace } from "@/features/account/workspace-queries";
 import {
   useBookingSurveys,
@@ -40,11 +42,13 @@ export function WaitingForYou() {
   const surveyRight = useCan("pipeline", "update");
   const surveys = useBookingSurveys(surveyRight && !workspace.readOnly);
   const [survey, setSurvey] = useState<SurveyTarget | null>(null);
+  // An accepted invite leaves the inbox; its card stays to offer the company.
+  const [accepted, setAccepted] = useState<{ spaceId: string; who: string } | null>(null);
 
   const pending = bookings.data ?? [];
   const invites = inbox.data?.invites ?? [];
   const asked = surveys.data ?? [];
-  if (!pending.length && !invites.length && !asked.length) return null;
+  if (!pending.length && !invites.length && !asked.length && !accepted) return null;
 
   return (
     <section aria-labelledby="waiting-title" className="flex flex-col gap-3" data-testid="waiting-for-you">
@@ -64,9 +68,18 @@ export function WaitingForYou() {
             </BookingCard>
           </li>
         ))}
+        {accepted && (
+          <li>
+            <AcceptedInviteCard spaceId={accepted.spaceId} who={accepted.who} />
+          </li>
+        )}
         {invites.map((invite) => (
           <li key={invite.id}>
-            <InviteCard inviteId={invite.id} who={inviterName(invite) ?? t("invite.someone")} />
+            <InviteCard
+              inviteId={invite.id}
+              who={inviterName(invite) ?? t("invite.someone")}
+              onAccepted={(spaceId, who) => setAccepted({ spaceId, who })}
+            />
           </li>
         ))}
         {asked.map((booking) => (
@@ -128,10 +141,19 @@ function BookingCard({
   );
 }
 
-function InviteCard({ inviteId, who }: { inviteId: string; who: string }) {
+function InviteCard({
+  inviteId,
+  who,
+  onAccepted,
+}: {
+  inviteId: string;
+  who: string;
+  onAccepted: (spaceId: string, who: string) => void;
+}) {
   const t = useTranslations("dashboard.waiting.invite");
   const tInvites = useTranslations("invites");
   const respond = useRespondInvite();
+  const [declining, setDeclining] = useState(false);
   const failure =
     respond.error instanceof InboxActionError
       ? tInvites(`errors.${respond.error.code}`)
@@ -148,21 +170,71 @@ function InviteCard({ inviteId, who }: { inviteId: string; who: string }) {
       </div>
       {failure && <FormAlert>{failure}</FormAlert>}
       <div className="flex flex-wrap gap-2">
-        <Button size="sm" disabled={respond.isPending} onClick={() => respond.mutate({ inviteId, accept: true })}>
-          {t("accept")}
-        </Button>
         <Button
           size="sm"
-          variant="outline"
           disabled={respond.isPending}
-          onClick={() => respond.mutate({ inviteId, accept: false })}
+          data-testid="waiting-invite-accept"
+          onClick={() =>
+            respond.mutate(
+              { inviteId, accept: true },
+              { onSuccess: (data) => onAccepted(data.spaceId, who) },
+            )
+          }
         >
+          {t("accept")}
+        </Button>
+        <Button size="sm" variant="outline" disabled={respond.isPending} onClick={() => setDeclining(true)}>
           {t("decline")}
         </Button>
       </div>
       <Link href={INVITES_PATH} className="text-sm text-violet hover:underline">
         {t("open")}
       </Link>
+      <ConfirmDialog
+        open={declining}
+        onOpenChange={setDeclining}
+        title={tInvites("declineTitle")}
+        description={tInvites("declineText", { who })}
+        confirmLabel={t("decline")}
+        cancelLabel={tInvites("cancel")}
+        closeLabel={tInvites("cancel")}
+        pending={respond.isPending}
+        error={declining ? failure : null}
+        onConfirm={() =>
+          respond.mutate({ inviteId, accept: false }, { onSuccess: () => setDeclining(false) })
+        }
+      />
+    </GlowCard>
+  );
+}
+
+/**
+ * Accepted on the dashboard: the company is now the person's, but the
+ * switcher was read when the app loaded, so both ways reload the page.
+ */
+function AcceptedInviteCard({ spaceId, who }: { spaceId: string; who: string }) {
+  const t = useTranslations("dashboard.waiting.invite");
+  const tInvites = useTranslations("invites");
+  const { state, switchTo } = useSwitchSpace();
+  return (
+    <GlowCard
+      interactive={false}
+      className="flex h-full flex-col gap-3 border-green/40 p-4"
+      data-testid="waiting-invite-accepted"
+    >
+      <p className="flex items-center gap-2 font-medium text-ink">
+        <MailOpenIcon aria-hidden className="size-4 shrink-0 text-green" />
+        {t("acceptedTitle", { who })}
+      </p>
+      {state === "failed" && <FormAlert>{tInvites("switchFailed")}</FormAlert>}
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" onClick={() => void switchTo(spaceId)} disabled={state === "switching"}>
+          {t("goThere")}
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => window.location.reload()}>
+          {t("later")}
+        </Button>
+      </div>
     </GlowCard>
   );
 }

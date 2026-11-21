@@ -320,7 +320,7 @@ function CompanyPeople({
               <SelectTrigger
                 aria-labelledby="company-group-filter"
                 data-testid="company-group-filter"
-                className="min-w-48"
+                className="w-auto min-w-48"
               >
                 <SelectValue />
               </SelectTrigger>
@@ -333,9 +333,7 @@ function CompanyPeople({
               </SelectContent>
             </Select>
           </div>
-        ) : (
-          <span />
-        )}
+        ) : null}
         <div className="flex flex-wrap items-center gap-2">
           <StatusSelect value={status} onChange={onStatusChange} />
           <LayoutSwitch value={layout} onChange={setLayout} />
@@ -350,6 +348,22 @@ function CompanyPeople({
       {activeGroup && shown.matches === 0 && (
         <p className="text-sm text-ink-muted">{tc("filteredEmpty")}</p>
       )}
+      {viewer.kind === "owner" &&
+        onInvite &&
+        status === "current" &&
+        !activeGroup &&
+        !people.some((person) => person.status !== "inactive") && (
+          <div
+            className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-dashed border-line p-4"
+            data-testid="company-all-ended"
+          >
+            <p className="text-sm text-ink-soft">{tc("allEnded")}</p>
+            <Button size="sm" onClick={onInvite}>
+              <UserPlusIcon aria-hidden data-icon="inline-start" />
+              {t("add")}
+            </Button>
+          </div>
+        )}
 
       {layout === "map" ? (
         <CompanyMap {...viewProps} />
@@ -398,7 +412,7 @@ function StatusSelect({
         <SelectTrigger
           aria-labelledby="company-status-filter"
           data-testid="company-status-filter"
-          className="min-w-36"
+          className="w-auto min-w-36"
         >
           <SelectValue />
         </SelectTrigger>

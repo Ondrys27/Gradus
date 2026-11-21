@@ -160,6 +160,12 @@ describe("a new invite to the same e-mail", () => {
     );
     await db.query(`select accept_worker_invite($1, $2)`, [second.code, someone]);
     expect((await workerStatus(second.workerId)).user_id).toBe(someone);
+    // The owner hears about it, as when an invite is accepted in the app.
+    const notices = await db.query<{ kind: string }>(
+      `select kind from account_notifications where user_id = $1 and worker_id = $2`,
+      [owner, second.workerId],
+    );
+    expect(notices.rows.map((row) => row.kind)).toEqual(["invite_accepted"]);
   });
 
   it("leaves other owners' invites and other addresses alone", async () => {

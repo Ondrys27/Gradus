@@ -5,7 +5,6 @@ import { Dialog } from "@base-ui/react/dialog";
 import { FileTextIcon, MailIcon, Trash2Icon, XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -21,9 +20,8 @@ import {
 import { StatusPill } from "@/components/ui/status-pill";
 import { toneFill } from "@/components/ui/tone";
 import { useUserSettings } from "@/features/account/queries";
-import { useCan, useWorkspace } from "@/features/account/workspace-queries";
+import { useCan } from "@/features/account/workspace-queries";
 import { TargetTasks } from "@/features/crm-tasks/target-tasks";
-import { useAssignees } from "@/features/crm-tasks/queries";
 import { useAssigneeName } from "@/features/crm-tasks/use-assignee-name";
 import { MoveContactDialog } from "@/features/contacts/move-contact-dialog";
 import { useContact, useContactEntry, useContactTables } from "@/features/contacts/queries";
@@ -41,7 +39,9 @@ import { useIsPhone } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
 import { DealActivityTimeline } from "./deal-activity-timeline";
 import { DealContacts } from "./deal-contacts";
-import { useDeleteDeal, usePatchDeal } from "./queries";
+import { DealPeopleSelect } from "./deal-people";
+import { dealAssigneeIds } from "./assignees";
+import { useDeleteDeal, usePatchDeal, useSetDealAssignees } from "./queries";
 import {
   DESCRIPTION_MAX,
   parseAmount,
@@ -82,7 +82,7 @@ export function DealDetail({ deal, stages, onClose, onRequestMove }: Props) {
   return (
     <Dialog.Root open={deal !== null} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-overlay bg-canvas/70 backdrop-blur-sm transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
+        <Dialog.Backdrop className="fixed inset-0 z-overlay max-md:bg-canvas/85 bg-canvas/70 md:backdrop-blur-sm transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
         <Dialog.Popup
           className={cn(
             "fixed z-overlay flex flex-col overflow-hidden bg-surface shadow-popover outline-none",
@@ -472,8 +472,8 @@ function DealProperties({
           <ValueField deal={deal} canEdit={canChangeAmount} onSave={onSave} />
         </Property>
       )}
-      <Property label={t("detail.assignee")} htmlFor="deal-assignee">
-        <AssigneeField deal={deal} canEdit={canEdit} onSave={onSave} />
+      <Property label={t("detail.people")} htmlFor="deal-assignee">
+        <PeopleField deal={deal} canEdit={canEdit} />
       </Property>
       <Property label={t("form.closeDate")} htmlFor="deal-close">
         <DatePicker
@@ -594,57 +594,17 @@ function ValueField({
   );
 }
 
-/** Exactly one person looks after the deal: the owner or an active worker of the space. */
-function AssigneeField({
-  deal,
-  canEdit,
-  onSave,
-}: {
-  deal: Deal;
-  canEdit: boolean;
-  onSave: (change: DealPatch) => void;
-}) {
-  const assignees = useAssignees();
-  const nameOf = useAssigneeName();
-  const { userId } = useWorkspace();
-  // Without "all deals" a worker hands a deal only to themself; given away, it would leave their sight.
-  const viewAll = useCan("pipeline", "view_all");
-  const value = deal.assignee_id ?? "";
-  const items = useMemo(() => {
-    const list = (assignees.data ?? [])
-      .filter((person) => viewAll || person.userId === userId)
-      .map((person) => ({
-        value: person.userId,
-        label: nameOf(person.userId),
-      }));
-    // Whoever has it stays offered, even after leaving the space.
-    if (value && !list.some((item) => item.value === value)) {
-      list.push({ value, label: nameOf(value) });
-    }
-    return list;
-  }, [assignees.data, nameOf, value, viewAll, userId]);
-
+/** Everyone who works on the deal, all equal; saved on each tick. */
+function PeopleField({ deal, canEdit }: { deal: Deal; canEdit: boolean }) {
+  const setPeople = useSetDealAssignees(deal.id);
+  const people = dealAssigneeIds(deal);
   return (
-    <Select
-      value={value}
-      items={items}
+    <DealPeopleSelect
+      id="deal-assignee"
+      value={people}
       disabled={!canEdit}
-      onValueChange={(next) => next && next !== deal.assignee_id && onSave({ assignee_id: next })}
-    >
-      <SelectTrigger id="deal-assignee" className="text-sm mouse:min-h-9">
-        <span className="flex min-w-0 items-center gap-2">
-          <Avatar name={nameOf(deal.assignee_id)} className="size-5 text-[9px]" />
-          <span className="truncate">{nameOf(deal.assignee_id)}</span>
-        </span>
-      </SelectTrigger>
-      <SelectContent>
-        {items.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+      onChange={(ids) => setPeople.mutate({ ids, before: people })}
+    />
   );
 }
 

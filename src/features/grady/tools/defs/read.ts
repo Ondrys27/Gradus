@@ -150,7 +150,7 @@ export const readTools = [
             ctx.db
               .from("deals")
               .select(
-                "id, title, description, value, currency, expected_close_date, deadline_date, assignee_id, won_at, lost_at, lost_reason, stage:pipeline_stages(id, name, is_won, is_lost), contacts:deal_contacts(contact_id, is_primary, note)",
+                "id, title, description, value, currency, expected_close_date, deadline_date, won_at, lost_at, lost_reason, stage:pipeline_stages(id, name, is_won, is_lost), contacts:deal_contacts(contact_id, is_primary, note), people:deal_assignees(assignee_id)",
               )
               .eq("user_id", ws)
               .eq("id", input.id)
@@ -407,7 +407,7 @@ export const readTools = [
       let query = ctx.db
         .from("deals")
         .select(
-          "id, title, value, currency, stage_id, expected_close_date, assignee_id, contact_id",
+          "id, title, value, currency, stage_id, expected_close_date, contact_id, people:deal_assignees(assignee_id)",
           { count: "exact" },
         )
         .eq("user_id", ctx.workspaceId)

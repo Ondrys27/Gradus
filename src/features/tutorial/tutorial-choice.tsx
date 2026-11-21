@@ -59,7 +59,7 @@ export function TutorialChoice({
           </SpeechBubble>
         </div>
         <ul
-          className={cn("grid gap-3", modes.length === 2 ? "md:grid-cols-2" : "md:max-w-[360px]")}
+          className={cn("grid gap-3", modes.length === 2 ? "md:grid-cols-2" : "md:mx-auto md:w-full md:max-w-[360px]")}
         >
           {modes.map((mode) => (
             <li key={mode} className="flex">

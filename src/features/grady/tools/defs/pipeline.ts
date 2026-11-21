@@ -8,7 +8,9 @@ import {
   moveDeal,
   nextDealPositionIn,
   patchDeal,
+  setDealAssignees,
 } from "@/features/pipeline/ops";
+import { MAX_DEAL_ASSIGNEES } from "@/features/pipeline/assignees";
 import { dealSchema, DESCRIPTION_MAX, REASON_MAX, TITLE_MAX } from "@/features/pipeline/schemas";
 import { STAGE_COLUMNS, type Stage } from "@/features/pipeline/types";
 import { isCurrencyShape } from "@/lib/currency";
@@ -135,7 +137,7 @@ export const pipelineTools = [
     kind: "write",
     risk: "instant",
     description:
-      "Change a deal's title, value, currency, Close Date, delivery date (deadlineDate), description or the worker it is assigned to. The stage changes only with move_deal_stage.",
+      "Change a deal's title, value, currency, Close Date, delivery date (deadlineDate) or description. The stage changes only with move_deal_stage, the people on it only with set_deal_people.",
     input: z.object({
       dealId: uuid,
       title: z.string().trim().min(1).max(TITLE_MAX).optional(),
@@ -144,7 +146,6 @@ export const pipelineTools = [
       closeDate: isoDate.nullable().optional(),
       deadlineDate: isoDate.nullable().optional(),
       description: z.string().trim().max(DESCRIPTION_MAX).optional(),
-      assigneeId: uuid.optional(),
     }),
     describe: (_input, t) => t("update_deal", { title: "" }),
     async execute(ctx, input) {
@@ -162,7 +163,6 @@ export const pipelineTools = [
         ...(input.closeDate !== undefined ? { expected_close_date: input.closeDate } : {}),
         ...(input.deadlineDate !== undefined ? { deadline_date: input.deadlineDate } : {}),
         ...(input.description !== undefined ? { description: input.description } : {}),
-        ...(input.assigneeId !== undefined ? { assignee_id: input.assigneeId } : {}),
       };
       if (!Object.keys(patch).length) throw new ToolError("invalid", "Nothing to change.");
       const saved = await patchDeal(ops(ctx), deal.id, patch);
@@ -175,6 +175,60 @@ export const pipelineTools = [
     },
     undoable: true,
     invalidates: ["pipeline", "calendar", "contacts"],
+  }),
+
+  defineTool({
+    name: "set_deal_people",
+    section: "pipeline",
+    action: "update",
+    kind: "write",
+    risk: "instant",
+    description:
+      "Set everyone who works on a deal, all equal (user ids of the owner and active workers, from list_people): the whole list, at least one. Add a person by passing the current people plus them; current people are in get_record / list_deals as people.",
+    input: z.object({
+      dealId: uuid,
+      assigneeIds: z.array(uuid).min(1).max(MAX_DEAL_ASSIGNEES),
+    }),
+    describe: (_input, t) => t("set_deal_people", { title: "" }),
+    async execute(ctx, input) {
+      const deal = await readDeal(ctx, input.dealId);
+      const { data: current, error } = await ctx.db
+        .from("deal_assignees")
+        .select("assignee_id")
+        .eq("deal_id", deal.id)
+        .limit(MAX_DEAL_ASSIGNEES);
+      if (error) throw error;
+      // Without "all deals" the user stays on it, as on the screen.
+      if (
+        !can(ctx.workspace, "pipeline", "view_all") &&
+        !input.assigneeIds.includes(ctx.userId)
+      ) {
+        throw new ToolError("forbidden", "The user must stay on the deal.");
+      }
+      try {
+        await setDealAssignees(ops(ctx), {
+          dealId: deal.id,
+          before: current.map((row) => row.assignee_id),
+          ids: input.assigneeIds,
+          from: "grady",
+        });
+      } catch (cause) {
+        const message = (cause as { message?: string } | null)?.message ?? "";
+        if (message.includes("deal_assignee_outside")) {
+          throw new ToolError("invalid", "Someone is not the owner or an active worker of the space.");
+        }
+        throw cause;
+      }
+      return {
+        output: { dealId: deal.id, people: input.assigneeIds.length },
+        records: [],
+        summary: ctx.t("set_deal_people", { title: quoted(deal.title) }),
+        href: hrefs.deal(deal.id),
+      };
+    },
+    // The whole list changes at once: taken back by setting it again.
+    undoable: false,
+    invalidates: ["pipeline", "dashboard"],
   }),
 
   defineTool({

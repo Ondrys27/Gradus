@@ -60,6 +60,7 @@ function pendingMessage(item: OutboxItem, me: string): ChatMessage {
     edited_at: null,
     deleted_at: null,
     pending: item.failed ? "failed" : "sending",
+    ...(item.failed && item.error ? { pendingError: item.error } : {}),
   };
 }
 

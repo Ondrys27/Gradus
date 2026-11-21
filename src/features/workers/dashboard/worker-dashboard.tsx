@@ -77,7 +77,7 @@ export function WorkerDashboard(props: Props) {
   return (
     <Dialog.Root open={workerId !== null} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-overlay bg-canvas/70 backdrop-blur-sm transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
+        <Dialog.Backdrop className="fixed inset-0 z-overlay max-md:bg-canvas/85 bg-canvas/70 md:backdrop-blur-sm transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
         <Dialog.Popup
           data-testid="worker-dashboard"
           className={cn(
@@ -236,7 +236,7 @@ function OwnerInvite({ worker }: { worker: DashboardWorker }) {
     <InviteCard
       invite={invite.data}
       workerName={worker.name}
-      onRenew={() => renew.mutate(worker.email)}
+      onRenew={() => renew.mutate({ email: worker.email, previous: invite.data })}
       renewing={renew.isPending}
       renewFailed={renew.isError}
     />

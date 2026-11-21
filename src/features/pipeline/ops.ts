@@ -1,4 +1,5 @@
 import type { OpsEnv } from "@/lib/ops";
+import { assigneeChange, dealAssigneeIds } from "./assignees";
 import { dealPatchSchema, type DealInput, type DealPatch, type DealPatchField } from "./schemas";
 import { DEAL_COLUMNS, type Deal, type Stage } from "./types";
 
@@ -20,7 +21,9 @@ export function toDealRow(input: DealInput) {
     currency: input.currency,
     expected_close_date: input.expected_close_date,
     description: input.description || null,
-    ...(input.assignee_id ? { assignee_id: input.assignee_id } : {}),
+    ...(input.assignee_ids?.[0] || input.assignee_id
+      ? { assignee_id: input.assignee_ids?.[0] ?? input.assignee_id }
+      : {}),
   };
 }
 
@@ -60,6 +63,12 @@ export async function createDeal(
     .select(DEAL_COLUMNS)
     .single();
   if (error) throw error;
+  // More people from the start: the rest join the one the deal was made with.
+  const people = args.input.assignee_ids ?? [];
+  const deal =
+    people.length > 1
+      ? await setDealAssignees(env, { dealId: data.id, before: dealAssigneeIds(data), ids: people, from: "create" })
+      : data;
   const value = data.value !== null ? { value: data.value } : {};
   env.track("deal_created", {
     currency: data.currency,
@@ -69,6 +78,42 @@ export async function createDeal(
   });
   if (args.stage?.is_won)
     env.track("deal_won", { currency: data.currency, ...value, days_open: 0 });
+  return deal;
+}
+
+/**
+ * Everyone on a deal at once (deal_set_assignees, under the policies): never
+ * empty; the database keeps deals.assignee_id in step. Returns the deal as
+ * it is now.
+ */
+export async function setDealAssignees(
+  env: OpsEnv,
+  args: {
+    dealId: string;
+    /** Who was on it, for the analytics. */
+    before: readonly string[];
+    ids: readonly string[];
+    from: "detail" | "create" | "grady";
+  },
+): Promise<Deal> {
+  const { error } = await env.db.rpc("deal_set_assignees", {
+    _deal: args.dealId,
+    _assignees: [...args.ids],
+  });
+  if (error) throw error;
+  const { data, error: readError } = await env.db
+    .from("deals")
+    .select(DEAL_COLUMNS)
+    .eq("id", args.dealId)
+    .single();
+  if (readError) throw readError;
+  const change = assigneeChange(args.before, dealAssigneeIds(data));
+  env.track("deal_assignees_changed", {
+    added: change.added.length,
+    removed: change.removed.length,
+    total: dealAssigneeIds(data).length,
+    from: args.from,
+  });
   return data;
 }
 
