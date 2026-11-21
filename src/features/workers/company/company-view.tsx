@@ -123,7 +123,7 @@ export function CompanyView() {
           description={tSections("description")}
           actions={
             canEdit ? (
-              <Button onClick={() => setInviting(true)}>
+              <Button data-tutorial="worker-invite" onClick={() => setInviting(true)}>
                 <UserPlusIcon aria-hidden data-icon="inline-start" />
                 {t("add")}
               </Button>

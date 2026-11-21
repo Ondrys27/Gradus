@@ -91,6 +91,7 @@ export function WorkerDashboard(props: Props) {
           <div className="flex shrink-0 items-center justify-between gap-3 px-4 pt-3 sm:px-6 sm:pt-4">
             <Dialog.Title className="micro-label">{t("title")}</Dialog.Title>
             <Dialog.Close
+              data-tutorial="worker-dashboard-close"
               aria-label={t("close")}
               className="-mr-2 grid size-11 cursor-pointer place-items-center rounded-full text-ink-soft outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-ring/50 mouse:size-9"
             >

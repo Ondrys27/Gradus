@@ -101,6 +101,8 @@ import { instrumentRoute, runCron } from "@/lib/analytics/instrument";
 import { track, trackLater } from "@/lib/analytics/track";
 import { todayIsoDate } from "@/lib/format";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isShowcaseStage, showcaseClient } from "@/features/grady/server/showcase-model";
+import type { Locale } from "@/i18n/locales";
 import { createClient } from "@/lib/supabase/server";
 import { toFormatSettings, USER_SETTINGS_COLUMNS } from "@/lib/user-settings";
 
@@ -113,6 +115,20 @@ const HISTORY_LIMIT = 20;
 const TITLE_LENGTH = 80;
 /** The watch stops taking new users this long before the function's limit. */
 const WATCH_MARGIN_MS = 45_000;
+
+const asLocale = (value: string): Locale => (value === "cs" ? "cs" : "en");
+
+/** Jobs that would call a model; the showcase's stage gets none of them (27.4). */
+const STAGE_REFUSED_JOBS: ReadonlySet<string> = new Set([
+  "milestoneReview",
+  "salesAnalysis",
+  "rewardSetup",
+  "noteMapSuggest",
+  "emailReply",
+  "ping",
+  "rulesTest",
+  "proactive",
+]);
 
 /** The signed-in user, their settings and both clients. The admin client is filtered by this id. */
 async function context() {
@@ -135,6 +151,8 @@ async function context() {
     userId,
     spaceId: typeof space === "string" && space ? space : userId,
     email: typeof email === "string" ? email : null,
+    // The showcase's stage (27.4) never reaches a model: prepared answers instead.
+    stage: isShowcaseStage(data.claims.app_metadata),
     row,
     settings: toFormatSettings(row),
     locale: row?.locale ?? "en",
@@ -205,9 +223,11 @@ export const GET = instrumentRoute("api.jarvis.get", async (request: Request) =>
 
   if (params.get("view") === "summary") {
     // Written on the spot when today's brief is missing or no longer true (budget guard included).
-    const client = wantsE2eEcho(request.headers, ctx.email, E2E_ECHO_SUMMARY)
-      ? e2eEchoClient(ctx.admin, E2E_ECHO_SUMMARY)
-      : createAnthropic(ctx.admin, { spaceId: ctx.spaceId });
+    const client = ctx.stage
+      ? showcaseClient(ctx.admin, asLocale(ctx.locale), "summary")
+      : wantsE2eEcho(request.headers, ctx.email, E2E_ECHO_SUMMARY)
+        ? e2eEchoClient(ctx.admin, E2E_ECHO_SUMMARY)
+        : createAnthropic(ctx.admin, { spaceId: ctx.spaceId });
     const body = await loadSummary({ ...ctx, client });
     return NextResponse.json(body, { headers: { "Cache-Control": "no-store" } });
   }
@@ -280,6 +300,10 @@ export const POST = instrumentRoute("api.jarvis.post", async (request: Request) 
   if (!ctx) return unauthorized();
   const body: unknown = await request.json().catch(() => null);
   const kind = (body as { kind?: unknown } | null)?.kind;
+  // The showcase's stage (27.4) has prepared chat answers only; nothing else may reach a model.
+  if (ctx.stage && STAGE_REFUSED_JOBS.has(String(kind))) {
+    return NextResponse.json({ error: "paused" }, { status: 503 });
+  }
   if (kind === "milestoneReview") return milestoneReview(ctx, body);
   if (kind === "salesAnalysis") return salesAnalysis(ctx, body);
   if (kind === "rewardSetup") return rewardSetup(ctx, body);
@@ -771,7 +795,9 @@ async function chat(ctx: Context, body: unknown, request: Request) {
 
   // Checked before anything is saved, so a missing key leaves no unanswered message.
   // The end-to-end tests' own accounts may ask for the echo stand-in (never in production).
-  const client = wantsE2eEcho(request.headers, ctx.email)
+  const client = ctx.stage
+    ? showcaseClient(ctx.admin, asLocale(ctx.locale), "chat")
+    : wantsE2eEcho(request.headers, ctx.email)
     ? e2eEchoClient(ctx.admin)
     : wantsE2eEcho(request.headers, ctx.email, E2E_TOOL_SCRIPT)
       ? e2eToolClient(ctx.admin, e2eToolScript(request.headers))

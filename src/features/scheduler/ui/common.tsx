@@ -52,6 +52,7 @@ export function CopyLinkButton({
       type="button"
       variant={variant}
       size={size}
+      data-tutorial="copy-link"
       onClick={(event) => {
         event.stopPropagation();
         void navigator.clipboard

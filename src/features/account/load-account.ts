@@ -4,6 +4,7 @@ import { GRANT_ROWS_LIMIT, grantsFromRows } from "@/features/workers/permissions
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { USER_SETTINGS_COLUMNS } from "@/lib/user-settings";
+import { showcaseRoleFor } from "@/features/tutorial/showcase/server/settings";
 import { toSpaces } from "./spaces";
 import { PROFILE_COLUMNS, type AccountSnapshot, type WorkerAccount } from "./types";
 
@@ -87,12 +88,21 @@ export async function loadAccount(): Promise<AccountSnapshot | null> {
   });
   if (planError) console.error("[account] current_plan failed", planError);
 
+  const roleNames = (roles.data ?? []).map((row) => row.role);
+  // The showcase (27.4): only the app's owner and admins and a stage account ever get one.
+  const showcase = await showcaseRoleFor({
+    roles: roleNames,
+    email: typeof claims.email === "string" ? claims.email : "",
+    appMetadata: claims.app_metadata,
+  }).catch(() => null);
+
   return {
     plan: toPlanSnapshot(planRows?.[0] ?? null),
     user: { id: userId, email: typeof claims.email === "string" ? claims.email : "" },
     profile: profile.data,
     settings: settings.data,
-    roles: (roles.data ?? []).map((row) => row.role),
+    roles: roleNames,
+    showcase,
     worker,
     spaceId: worker?.ownerId ?? userId,
     spaces: toSpaces(spaceRows.data),

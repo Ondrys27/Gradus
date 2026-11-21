@@ -7883,6 +7883,7 @@ export type Database = {
       valid_jarvis_rules: { Args: { _value: Json }; Returns: boolean }
       valid_plan_add_ons: { Args: { _value: Json }; Returns: boolean }
       valid_plan_catalog: { Args: { _payload: Json }; Returns: boolean }
+      valid_showcase_mode: { Args: { _value: Json }; Returns: boolean }
       valid_tutorial_state: { Args: { _state: Json }; Returns: boolean }
       work_seconds_between: {
         Args: { _from: string; _to: string; _worker_id: string }

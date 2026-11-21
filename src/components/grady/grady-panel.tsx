@@ -283,6 +283,7 @@ export function GradyPanel({ chat, onClose }: GradyPanelProps) {
         <button
           type="button"
           onClick={onClose}
+          data-tutorial="grady-close"
           aria-label={t("close")}
           className="-mr-2 grid size-11 place-items-center rounded-full text-ink-soft outline-none transition-colors hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-teal/50"
         >
@@ -483,6 +484,7 @@ export function GradyPanel({ chat, onClose }: GradyPanelProps) {
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={onInputKey}
+          data-tutorial="grady-input"
           rows={1}
           maxLength={MAX_MESSAGE_LENGTH}
           aria-label={t("inputLabel")}

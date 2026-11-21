@@ -141,7 +141,7 @@ export function TasksView() {
         description={t(worker ? "workerDescription" : "description")}
         actions={
           canAdd && (
-            <Button onClick={() => setAdding(true)}>
+            <Button data-tutorial="task-new" onClick={() => setAdding(true)}>
               <PlusIcon aria-hidden data-icon="inline-start" />
               {t("new")}
             </Button>

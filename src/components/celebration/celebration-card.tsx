@@ -183,6 +183,7 @@ export function CelebrationCard({
         {...fadeUp(BEAT.text + 0.2)}
         type="button"
         autoFocus
+        data-tutorial="celebration-continue"
         onClick={onContinue}
         className="h-12 w-full cursor-pointer rounded-xl bg-violet text-base font-semibold text-ink shadow-glow outline-none transition-[background-color,box-shadow] hover:bg-violet/90 hover:shadow-glow-strong focus-visible:ring-3 focus-visible:ring-ring/50"
       >

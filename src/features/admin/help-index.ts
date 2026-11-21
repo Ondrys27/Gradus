@@ -103,6 +103,7 @@ export const ADMIN_HELP: Record<AdminSectionKey, readonly HelpItem[]> = {
     { key: "promoCreate", href: PROMO, anchor: "promo-codes" },
     { key: "promoPayouts", href: PROMO, anchor: "promo-codes" },
   ],
+  showcase: [{ key: "showcaseMode", href: `${P}/ukazka`, anchor: "ukazkovy-rezim" }],
   admins: [
     { key: "adminsInvite", href: ADMINS, anchor: "admins-invite", power: "manageAdmins" },
     { key: "adminsLevel", href: ADMINS, anchor: "admins-members", power: "manageAdmins" },

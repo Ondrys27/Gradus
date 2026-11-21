@@ -55,6 +55,7 @@ export function InboxBell({ className }: { className?: string }) {
   return (
     <Menu.Root open={open} onOpenChange={change}>
       <Menu.Trigger
+        data-showcase-hide=""
         aria-label={count ? t("openCount", { count, shown: formatNumber(count, {}, settings) }) : t("open")}
         data-testid="inbox-bell"
         className={cn(

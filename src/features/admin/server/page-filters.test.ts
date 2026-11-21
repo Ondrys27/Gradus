@@ -110,6 +110,7 @@ const PAGE_LOADERS: Record<AdminSectionKey, Loader[]> = {
   audit: [],
   plans: [],
   promoCodes: [],
+  showcase: [],
   errors: [
     (q) =>
       import("./error-log-data").then((m) =>

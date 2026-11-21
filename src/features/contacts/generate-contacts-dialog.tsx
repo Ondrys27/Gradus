@@ -282,7 +282,7 @@ function ProgressButton({
   const n = (value: number) => formatNumber(value, {}, settings);
   if (!running) {
     return (
-      <Button type="submit" disabled={disabled}>
+      <Button type="submit" data-tutorial="generate-submit" disabled={disabled}>
         {label}
       </Button>
     );
@@ -334,6 +334,7 @@ function OutcomeMessage({ outcome, onShowNew }: { outcome: Outcome; onShowNew: (
           {outcome.created > 0 && (
             <button
               type="button"
+              data-tutorial="generate-show"
               onClick={onShowNew}
               className="min-h-11 cursor-pointer self-start text-left font-medium underline underline-offset-4 mouse:min-h-0"
             >

@@ -49,6 +49,8 @@ export function SessionProvider({
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT" || !session) {
+        // A finished showcase (27.4) signed its stage out on purpose; its end card stays.
+        if (document.documentElement.dataset.showcase === "ended") return;
         // Signed out here, in another tab, or the session could not be refreshed.
         clearClientState(queryClient);
         window.location.replace(
@@ -74,8 +76,17 @@ export function SessionProvider({
       spaceId: initial.spaceId,
       spaces: initial.spaces,
       plan: initial.plan,
+      showcase: initial.showcase,
     }),
-    [initial.user, initial.roles, initial.worker, initial.spaceId, initial.spaces, initial.plan],
+    [
+      initial.user,
+      initial.roles,
+      initial.worker,
+      initial.spaceId,
+      initial.spaces,
+      initial.plan,
+      initial.showcase,
+    ],
   );
 
   return (

@@ -19,6 +19,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { toFormatSettings, USER_SETTINGS_COLUMNS } from "@/lib/user-settings";
 import { serverCan } from "@/features/account/server/permissions";
+import { isStageMetadata as isShowcaseStage } from "@/features/tutorial/showcase/access";
+import { showcasePlaces } from "@/features/tutorial/showcase/server/places";
 
 export const runtime = "nodejs";
 /** Three Google pages and three database calls fit easily. */
@@ -53,6 +55,8 @@ async function context() {
     settings: toFormatSettings(row),
     locale: row?.locale ?? "en",
     country: row?.country_code ?? null,
+    // The showcase's stage (27.4) never calls Google: it "finds" its prepared places.
+    stage: isShowcaseStage(data?.claims?.app_metadata),
   };
 }
 
@@ -151,6 +155,8 @@ export const POST = instrumentRoute("api.generateContacts.post", async (request:
     const event: GenerationEvent = { type: "error", code: "limitReached", created: 0, usage };
     return NextResponse.json(event, { status: 429 });
   }
+  if (ctx.stage) return showcasePlaces(ctx, { industry, count });
+
   await countKeyword(admin, userId, industry);
 
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;

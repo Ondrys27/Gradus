@@ -46,6 +46,7 @@ export function CallList({ contacts, openId, onOpen, deals }: Props) {
             >
               <button
                 type="button"
+                data-tutorial="call-contact"
                 onClick={() => onOpen(contact)}
                 className="flex min-h-11 min-w-0 flex-1 cursor-pointer flex-col justify-center text-left outline-none after:absolute after:inset-0 after:rounded-card focus-visible:after:ring-3 focus-visible:after:ring-violet/40"
               >

@@ -24,6 +24,7 @@ Sloupce: **M** = majitel · **P** = plný administrátor · **O** = omezený adm
 | `ai-caps-actions.saveUserAiCap` | ✓ | ✓ | čte | výjimky AI; po uložení e-mail ostatním (`aiUserCap`) |
 | `grady-rules-actions.saveGradyRules` | ✓ | ✓ | čte | pravidla Gradyho |
 | `grady-models-actions.saveGradyModels` | ✓ | ✓ | čte | `editGradyModels`: model každé funkce, přednastavení, úsporný režim ručně, velké rozbory v chatu; DB ověří znovu (`admin_set_app_setting` `grady_models`), audit `settings.grady_models` z → na |
+| `showcase-actions.saveShowcaseMode` | ✓ | ✓ | čte | `editShowcase`: ukázkový režim zapnout / vypnout; DB ověří znovu (`admin_set_app_setting` `showcase_mode`, `valid_showcase_mode`), audit `settings.showcase_mode` z → na |
 | `POST /api/grady` `kind: rulesTest` a `kind: ping` | ✓ | ✓ | – | `testGrady`, jedno placené volání modelu; ostatním 404 |
 | `plans-actions.savePlanDraft`, `discardPlanDraft`, `planCatalogImpact` | ✓ | ✓ | čte | koncept katalogu tarifů |
 | `plans-actions.publishPlanCatalog`, `restorePlanVersion` | ✓ | ✓ | čte | zveřejnění a vrácení verze; po něm e-mail ostatním (`plansPublished` / `plansRestored`) |
@@ -66,7 +67,8 @@ Sloupce: **M** = majitel · **P** = plný administrátor · **O** = omezený adm
 | Zpětná vazba — karta Záznam chyby (hledání podle kódu) | ✓ | ✓ | ✓ | |
 | Zpětná vazba → Hlášení (seznam, filtry, detail, změna stavu, „Obnovit · N nových“) | ✓ | ✓ | ✓ | všichni vidí totéž; snímek obrazovky v detailu jen M a P (`viewScreenshots`), omezený vidí, že je přiložen |
 | Administrátoři (`/admin/administratori`) | ✓ | – | – | plnému i omezenému 404, v menu chybí |
-| Modely AI (27.3), Jazyky, Ukázkový režim (27.4) | ✓ | ✓ | čte / – | až vzniknou: zápis přes `admin_require_owner()` a `adminCan` jako ostatní nastavení |
+| Modely AI (27.3), Jazyky | ✓ | ✓ | čte / – | až vzniknou: zápis přes `admin_require_owner()` a `adminCan` jako ostatní nastavení |
+| Ukázkový režim (`/admin/ukazka`, 27.4) | ✓ | ✓ | čte | přepínač `app_settings.showcase_mode` mění M a P (`editShowcase`, `admin_set_app_setting` s aal2), omezený vidí stav; se zapnutým režimem mají ukázku v aplikaci (`/app/ukazka`, karta v tutoriálu) majitel i admin obou úrovní |
 | `/admin/prihlaseni`, `/admin/pozvanka/<token>` | kdokoli | | | stránka sama ověřuje heslo, roli nebo token |
 
 ## Funkce v databázi (SECURITY DEFINER `admin_*` a související)
@@ -77,7 +79,7 @@ Sloupce: **M** = majitel · **P** = plný administrátor · **O** = omezený adm
 | `admin_session_end` | ✓ | ✓ | ✓ | jen vlastní relace |
 | `admin_require_owner` | | | | jen uvnitř funkcí: propustí M a P s živou relací a aal2; bez práva EXECUTE pro klienty |
 | `admin_require_sole_owner` | | | | jen uvnitř funkcí sekce Administrátoři: jen M; bez EXECUTE pro klienty |
-| `admin_set_app_setting` | ✓ | ✓ | – | `admin_require_owner()`; klíče `ai_caps`, `error_alerts` (audit bez adres), `jarvis_rules` |
+| `admin_set_app_setting` | ✓ | ✓ | – | `admin_require_owner()`; klíče `ai_caps`, `error_alerts` (audit bez adres), `jarvis_rules`, `grady_models`, `showcase_mode` |
 | `admin_set_ai_user_cap` | ✓ | ✓ | – | totéž |
 | `admin_invite_create` (`_level` full / limited, výchozí limited) | ✓ | – | – | ukládá jen SHA-256 tokenu, audit `admins.invite` s úrovní |
 | `admin_invite_revoke` | ✓ | – | – | audit |

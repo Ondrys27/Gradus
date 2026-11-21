@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckIcon, SparklesIcon } from "lucide-react";
+import { CheckIcon, ClapperboardIcon, SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Grady } from "@/components/grady/grady";
 import { SpeechBubble } from "@/components/grady/speech-bubble";
@@ -28,9 +28,12 @@ export function TutorialChoice({
   failed,
   onChoose,
   onClose,
+  onShowcase,
 }: {
   open: boolean;
   allowFull: boolean;
+  /** The showcase (27.4): only for the app's owner and admins while its mode is on. */
+  onShowcase?: () => void;
   /** Which mode is being started (the sample data takes a moment). */
   pending: TutorialMode | null;
   failed: boolean;
@@ -67,6 +70,22 @@ export function TutorialChoice({
             </li>
           ))}
         </ul>
+        {onShowcase && (
+          <button
+            type="button"
+            data-tutorial-choice="showcase"
+            disabled={pending !== null}
+            onClick={onShowcase}
+            className="flex min-h-11 w-full items-center gap-3 rounded-2xl border border-dashed border-gold/50 bg-gold/5 px-3 py-2.5 text-left outline-none transition-colors hover:bg-gold/10 focus-visible:ring-3 focus-visible:ring-gold/50 disabled:opacity-60"
+          >
+            <ClapperboardIcon aria-hidden className="size-5 shrink-0 text-gold" />
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="text-sm font-semibold text-ink">{t("showcase.title")}</span>
+              <span className="text-xs text-ink-muted">{t("showcase.text")}</span>
+            </span>
+            <span className="shrink-0 text-xs font-semibold text-gold">{t("showcase.open")}</span>
+          </button>
+        )}
         <button
           type="button"
           data-tutorial-choice="none"

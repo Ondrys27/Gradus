@@ -1,8 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
+import dynamic from "next/dynamic";
 import { GradyDock } from "@/components/grady/grady-dock";
-import { useUserSettings } from "@/features/account/queries";
+import { useSession, useUserSettings } from "@/features/account/queries";
 import { ChatSync } from "@/features/chat/chat-sync";
 import { useErrorScreenShown } from "@/features/errors/error-screen-state";
 import { GameSessionStart } from "@/features/game/game-session-start";
@@ -11,12 +12,19 @@ import { OnboardingGate } from "@/features/onboarding/onboarding-gate";
 import { TrialNotice } from "@/features/plan/trial-notice";
 import { PastDueNotice } from "@/features/subscription/past-due-notice";
 import { TutorialHost } from "@/features/tutorial/tutorial-host";
+import { useStage } from "@/features/tutorial/showcase/stage-store";
 import { SearchProvider } from "@/features/search/search-provider";
 import { AnalyticsProvider } from "@/lib/analytics/analytics-provider";
 import { ThemeSync } from "@/features/settings/theme";
 import { BottomNav } from "./bottom-nav";
 import { useClearNavigatingOnArrival, usePendingHref } from "./nav-pending";
 import { PageLockGuard } from "./page-lock-guard";
+
+/** The showcase (27.4) plays only on its stage account; nobody else downloads it. */
+const ShowcaseHost = dynamic(
+  () => import("@/features/tutorial/showcase/showcase-host").then((module) => module.ShowcaseHost),
+  { ssr: false },
+);
 import { SectionGuard } from "./section-guard";
 import { Sidebar } from "./sidebar";
 import { TopBar } from "./top-bar";
@@ -36,10 +44,14 @@ export function AppShell({ children }: { children: ReactNode }) {
   // Seeded from the server with the rest of the settings, so the first HTML
   // already has the width the user left the menu at.
   const sidebarCollapsed = useUserSettings().sidebar_collapsed;
+  const stage = useSession().showcase === "stage";
+  // A finished showcase closes the app behind its end card (nothing calls the server any more).
+  const curtain = useStage((state) => state.curtain);
   // A menu click answers at once: while the next page is on its way the
   // content dims a little (only after 150 ms, so a fast change never flickers).
   useClearNavigatingOnArrival();
   const navigating = usePendingHref() !== null;
+  if (stage && curtain) return <ShowcaseHost />;
   return (
     <SearchProvider>
       <ReportProvider>
@@ -65,7 +77,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           <GameSessionStart />
           <ThemeSync />
           {!errorShown && <OnboardingGate />}
-          {!errorShown && <TutorialHost />}
+          {!errorShown && !stage && <TutorialHost />}
+          {stage && <ShowcaseHost />}
           <AnalyticsProvider />
           <ChatSync />
           <PageLockGuard />

@@ -67,6 +67,7 @@ export function SpaceSwitcher({ className }: { className?: string }) {
   return (
     <Menu.Root open={open} onOpenChange={setOpen}>
       <Menu.Trigger
+        data-showcase-hide=""
         aria-label={t("switcher.open", { space: label(active) })}
         data-testid="space-switcher"
         className={cn(

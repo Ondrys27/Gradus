@@ -158,6 +158,7 @@ export function TargetSearch({
               <li key={`${option.kind}:${option.id}`}>
                 <button
                   type="button"
+                  data-tutorial="task-target-option"
                   onClick={() => {
                     onPick(option);
                     setTerm("");

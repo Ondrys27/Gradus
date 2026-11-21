@@ -7,6 +7,8 @@ import { XP_REASONS } from "@/features/game/rules";
 import { NOTE_TEMPLATE_KEYS } from "@/features/notes/templates";
 import { NOTE_KINDS } from "@/features/notes/mindmap/map-doc";
 import { TUTORIAL_MODES } from "@/features/tutorial/types";
+import { SCENARIO_IDS, SHOWCASE_SIZES } from "@/features/tutorial/showcase/params";
+import { locales } from "@/i18n/locales";
 import { EXPORT_FORMATS, IMPORT_MODES } from "@/features/milestones/map-io";
 import { MINDMAP_FORMATS } from "@/lib/mindmap/formats";
 import { INVOICE_STYLES } from "@/features/invoices/types";
@@ -292,6 +294,19 @@ export const EVENTS = {
     index: count(60),
     total: count(60),
     demo: oneOf(["kept", "deleted", "none"]),
+  }),
+  // The showcase (27.4): the app playing itself for a video, in a throw-away
+  // stage account; counted for the presenter who started it.
+  showcase_started: event("onboarding", "server", false, {
+    scenario: oneOf([...SCENARIO_IDS, "all"]),
+    locale: oneOf(locales),
+    size: oneOf(SHOWCASE_SIZES),
+    replay: bool(),
+  }),
+  showcase_finished: event("onboarding", "server", false, {
+    scenario: oneOf([...SCENARIO_IDS, "all"]),
+    outcome: oneOf(["done", "stopped", "failed"]),
+    seconds: count(3600),
   }),
 
   // --- game ----------------------------------------------------------------

@@ -77,7 +77,7 @@ export function SaveAnswerToNotes({ text }: { text: string }) {
       <p role="status" className="flex items-center gap-1.5 pl-2 text-xs text-green">
         <CheckIcon aria-hidden className="size-3.5" />
         {t("saved")}
-        <Link href={noteHref(saved)} className="font-semibold text-violet underline-offset-2 hover:underline">
+        <Link href={noteHref(saved)} data-tutorial="grady-saved-open" className="font-semibold text-violet underline-offset-2 hover:underline">
           {t("open")}
         </Link>
       </p>

@@ -46,7 +46,9 @@ export type AdminPower =
   /** The screenshot attached to a bug report (it may show anything on the user's screen). */
   | "viewScreenshots"
   /** The e-mails "X changed …" between the owner and the full admins, and switching them off. */
-  | "peerNotices";
+  | "peerNotices"
+  /** The showcase mode (27.4) switched on or off; a limited admin reads it. */
+  | "editShowcase";
 
 /** The powers that stay with the owner whatever an administrator's level. */
 const OWNER_ALONE: ReadonlySet<AdminPower> = new Set(["manageAdmins"]);

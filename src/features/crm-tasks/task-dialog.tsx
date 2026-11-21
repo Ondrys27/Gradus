@@ -289,7 +289,7 @@ function Fields({
         <Button type="button" variant="ghost" onClick={onDone}>
           {t("cancel")}
         </Button>
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" data-tutorial="task-submit" disabled={pending}>
           {task ? t("save") : t("create")}
         </Button>
       </div>

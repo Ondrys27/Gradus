@@ -107,6 +107,7 @@ function ContactTableView({ contacts, tables, renderExtra, extraLabel }: Props) 
                 <td className="px-4 py-3">
                   <Link
                     href={href}
+                    data-tutorial="contact-row"
                     className="flex min-w-0 items-center gap-3 outline-none focus-visible:underline"
                   >
                     <Avatar name={name} className="size-8 text-xs" />
@@ -172,6 +173,7 @@ function ContactCard({ contact, tables, renderExtra }: Props & { contact: Contac
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <Link
           href={`/app/kontakty/${contact.id}`}
+          data-tutorial="contact-row"
           className="truncate font-medium text-ink outline-none after:absolute after:inset-0 after:rounded-card focus-visible:after:ring-3 focus-visible:after:ring-violet/40"
         >
           {name}

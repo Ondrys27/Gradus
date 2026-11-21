@@ -725,6 +725,7 @@ function DealActions({ deal, onClose }: { deal: Deal; onClose: () => void }) {
         <Button
           type="button"
           variant="secondary"
+          data-tutorial="deal-create-invoice"
           disabled={invoice.isPending}
           onClick={() =>
             invoice.mutate(deal.id, { onSuccess: (id) => router.push(invoicePath(id)) })
