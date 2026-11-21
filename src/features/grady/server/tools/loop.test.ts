@@ -41,6 +41,11 @@ function fakeClient(answer: Answer) {
     client: {
       messages: { stream } as unknown as Anthropic["messages"],
       budget: {
+        // The first round asks for the model too (assess), the next ones only check.
+        assess: async (feature: string) => {
+          checks.push(feature);
+          return { verdict: "ok" as const, economy: null };
+        },
         check: async (feature: string) => {
           checks.push(feature);
           return "ok" as const;

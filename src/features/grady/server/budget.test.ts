@@ -343,6 +343,87 @@ describe("caps from the administration", () => {
   });
 });
 
+describe("economy mode (27.3)", () => {
+  const caps = (over: Partial<Stored> = {}): Stored => ({
+    monthly_usd: 100,
+    per_user_usd: null,
+    warn_percent: 80,
+    ...over,
+  });
+
+  it("switches everyone to economy at the threshold and pauses only at 100 %", async () => {
+    const under = fakeAdmin(79.99, { caps: caps() });
+    expect(await createBudgetGuard(under.admin, { now: () => NOW, send: ok() }).assess("chat")).toEqual(
+      { verdict: "ok", economy: null },
+    );
+    const at = fakeAdmin(80, { caps: caps() });
+    expect(await createBudgetGuard(at.admin, { now: () => NOW, send: ok() }).assess("chat")).toEqual({
+      verdict: "ok",
+      economy: "budget",
+    });
+    const full = fakeAdmin(100, { caps: caps() });
+    expect(
+      await createBudgetGuard(full.admin, { now: () => NOW, send: ok() }).assess("chat"),
+    ).toEqual({ verdict: "paused", economy: null });
+  });
+
+  it("mails the owner 'switched to economy mode' once a month, then the daily status", async () => {
+    const { admin, alerts } = fakeAdmin(85, { caps: caps() });
+    const send = ok();
+    for (let request = 0; request < 3; request += 1) {
+      await createBudgetGuard(admin, { now: () => NOW, send }).assess("chat");
+    }
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(send.mock.calls[0][0].subject).toContain("úsporného režimu");
+    expect(alerts.has("2026-10-01:economy")).toBe(true);
+    // That day's daily e-mail counts as sent.
+    expect(alerts.has("2026-10-20:near_limit")).toBe(true);
+
+    const tomorrow = new Date("2026-10-21T09:00:00Z");
+    await createBudgetGuard(admin, { now: () => tomorrow, send }).assess("chat");
+    expect(send).toHaveBeenCalledTimes(2);
+    expect(send.mock.calls[1][0].subject).not.toContain("úsporného režimu");
+  });
+
+  it("puts one user in economy from the same share of their own cap, without an e-mail", async () => {
+    const { admin } = fakeAdmin(10, {
+      caps: caps({ per_user_usd: 5 }),
+      userSpend: new Map([
+        ["near", 4],
+        ["fine", 3.99],
+        ["over", 5],
+      ]),
+    });
+    const send = ok();
+    const guard = createBudgetGuard(admin, { now: () => NOW, send });
+    expect(await guard.assess("chat", "near")).toEqual({ verdict: "ok", economy: "user_cap" });
+    expect(await guard.assess("chat", "fine")).toEqual({ verdict: "ok", economy: null });
+    expect(await guard.assess("chat", "over")).toEqual({ verdict: "userLimit", economy: null });
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it("puts the calls in a company in economy from the same share of its owner's cap", async () => {
+    const { admin } = fakeAdmin(10, {
+      caps: caps({ per_user_usd: 5 }),
+      overrides: new Map([["boss", { cap_usd: 10, blocked: false }]]),
+      userSpend: new Map([["worker", 1]]),
+      spaceSpend: new Map([["boss", 8.5]]),
+    });
+    const inCompany = createBudgetGuard(admin, { now: () => NOW, send: ok(), spaceId: "boss" });
+    expect(await inCompany.assess("chat", "worker")).toEqual({
+      verdict: "ok",
+      economy: "space_cap",
+    });
+    const own = createBudgetGuard(admin, { now: () => NOW, send: ok() });
+    expect(await own.assess("chat", "worker")).toEqual({ verdict: "ok", economy: null });
+  });
+
+  it("keeps check() as the verdict alone", async () => {
+    const { admin } = fakeAdmin(85, { caps: caps() });
+    expect(await createBudgetGuard(admin, { now: () => NOW, send: ok() }).check("chat")).toBe("ok");
+  });
+});
+
 describe("alertOwner", () => {
   it("gives the day back when the e-mail fails, so a later call tries again", async () => {
     const { admin, alerts } = fakeAdmin(95);

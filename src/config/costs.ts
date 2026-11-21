@@ -27,30 +27,96 @@ export type ModelPrice = {
 };
 
 /**
- * Claude API list prices, first-party, global routing (no inference_geo).
- * Source: https://platform.claude.com/docs/en/about-claude/pricing and
- * https://platform.claude.com/docs/en/about-claude/models/overview (checked 2026-10-12).
- * Cache reads are 0.05× input on Opus 5.5 and Sonnet 5.5, 0.1× on Haiku 5.5;
- * a 5-minute cache write is 1.25× input. Haiku 5.5 costs more above a
- * 100,000-token prompt.
+ * The Claude models Grady may run on, cheapest first: the one list the
+ * administration offers (AI and Grady → Models) and the price of every call
+ * comes from. Adding a model = one row here (key, API id, name, prices,
+ * date checked); the administration, the cost estimates and the settings
+ * pick it up. `rank` orders the models from the cheapest: a feature never
+ * runs below its minimum (model-settings.ts).
+ *
+ * List prices, first-party Claude API, global routing (no inference_geo), USD
+ * per million tokens. Sources, checked 2026-11-21:
+ * https://platform.claude.com/docs/en/about-claude/pricing and
+ * https://platform.claude.com/docs/en/about-claude/models/overview
+ * A 5-minute cache write is 1.25× input; cache reads are 0.1× input on Haiku
+ * 5.5, 0.05× on Opus 5.5 and Sonnet 5.5 and 0.025× on Fable 5.2. Haiku 5.5
+ * costs more above a 100,000-token prompt (the whole request pays it).
+ * Fable 5.2 needs the organization's 30-day data retention (no ZDR).
  */
-export const MODEL_PRICES = {
-  "claude-haiku-5-5": {
-    input: 0.1,
-    cacheWrite: 0.125,
-    cacheRead: 0.01,
-    output: 0.5,
-    longPrompt: {
-      aboveTokens: 100_000,
-      input: 0.5,
-      cacheWrite: 0.625,
-      cacheRead: 0.05,
-      output: 2.5,
+export const AI_MODELS = [
+  {
+    key: "haiku",
+    id: "claude-haiku-5-5",
+    name: "Claude Haiku 5.5",
+    rank: 1,
+    /** Output cap of one call (maxTokensFor): routine answers stay short. */
+    maxTokens: 1024,
+    /** Routine work answers without thinking first (accepted at low effort). */
+    thinkingOff: true,
+    verifiedOn: "2026-11-21",
+    price: {
+      input: 0.1,
+      cacheWrite: 0.125,
+      cacheRead: 0.01,
+      output: 0.5,
+      longPrompt: {
+        aboveTokens: 100_000,
+        input: 0.5,
+        cacheWrite: 0.625,
+        cacheRead: 0.05,
+        output: 2.5,
+      },
     },
   },
-  "claude-sonnet-5-5": { input: 2, cacheWrite: 2.5, cacheRead: 0.1, output: 10 },
-  "claude-opus-5-5": { input: 4, cacheWrite: 5, cacheRead: 0.2, output: 20 },
-} as const satisfies Record<string, ModelPrice>;
+  {
+    key: "sonnet",
+    id: "claude-sonnet-5-5",
+    name: "Claude Sonnet 5.5",
+    rank: 2,
+    maxTokens: 4096,
+    thinkingOff: false,
+    verifiedOn: "2026-11-21",
+    price: { input: 2, cacheWrite: 2.5, cacheRead: 0.1, output: 10 },
+  },
+  {
+    key: "opus",
+    id: "claude-opus-5-5",
+    name: "Claude Opus 5.5",
+    rank: 3,
+    maxTokens: 16000,
+    thinkingOff: false,
+    verifiedOn: "2026-11-21",
+    price: { input: 4, cacheWrite: 5, cacheRead: 0.2, output: 20 },
+  },
+  {
+    key: "fable",
+    id: "claude-fable-5-2",
+    name: "Claude Fable 5.2",
+    rank: 4,
+    maxTokens: 16000,
+    thinkingOff: false,
+    verifiedOn: "2026-11-21",
+    price: { input: 8, cacheWrite: 10, cacheRead: 0.2, output: 40 },
+  },
+] as const satisfies readonly {
+  key: string;
+  id: string;
+  name: string;
+  rank: number;
+  maxTokens: number;
+  thinkingOff: boolean;
+  verifiedOn: string;
+  price: ModelPrice;
+}[];
+
+export type AiModel = (typeof AI_MODELS)[number];
+export type AiModelKey = AiModel["key"];
+export type AiModelId = AiModel["id"];
+
+/** USD per million tokens by model id (the prices of AI_MODELS). */
+export const MODEL_PRICES: Readonly<Record<AiModelId, ModelPrice>> = Object.fromEntries(
+  AI_MODELS.map((model) => [model.id, model.price]),
+) as Record<AiModelId, ModelPrice>;
 
 /**
  * Czech crowns for one US dollar. Update now and then from the ČNB rate:

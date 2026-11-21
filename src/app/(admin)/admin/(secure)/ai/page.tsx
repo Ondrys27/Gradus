@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { cacheHitRate } from "@/lib/analytics/metrics";
-import { formatNumber } from "@/lib/format";
+import { formatNumber, formatUsd } from "@/lib/format";
 import { ADMIN_PATH } from "@/features/admin/access";
 import { logAdminAction } from "@/features/admin/server/audit";
 import { requireAdmin } from "@/features/admin/server/guard";
@@ -29,6 +29,11 @@ import { loadGradyRules } from "@/features/grady/server/rules";
 import { toGradyRulesForm } from "@/features/grady/rules";
 import { AdminViewLink } from "@/features/admin/ui/admin-view";
 import { GradyRulesForm } from "@/features/admin/ui/grady-rules-form";
+import { GradyModelsForm, ModelPriceList } from "@/features/admin/ui/grady-models-form";
+import { loadModelsOverview } from "@/features/admin/server/ai-models-data";
+import { SHOWN_FEATURES, toGradyModelsForm } from "@/features/grady/model-settings";
+import { perThousandCalls } from "@/features/grady/model-usage";
+import { AI_MODELS } from "@/config/costs";
 import { viewQuery, parseAdminView } from "@/features/admin/view-state";
 import { cn } from "@/lib/utils";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -61,26 +66,31 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 
 const count = (value: number | null) => formatNumber(value ?? 0, {}, ADMIN_FORMAT_SETTINGS);
 
-const AI_TABS = ["overview", "rules"] as const;
+const AI_TABS = ["overview", "models", "rules"] as const;
 type AiTab = (typeof AI_TABS)[number];
+
+const AUDIT_TARGET: Record<AiTab, string> = { overview: "ai", models: "ai.models", rules: "ai.rules" };
 
 const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
 export default async function AdminAiPage({ searchParams }: Props) {
   const context = await requireAdmin();
   const params = await searchParams;
-  const tab: AiTab = first(params.tab) === "rules" ? "rules" : "overview";
-  await logAdminAction(context, "view", tab === "rules" ? "ai.rules" : "ai");
+  const asked = first(params.tab);
+  const tab: AiTab = AI_TABS.find((value) => value === asked && value !== "overview") ?? "overview";
+  await logAdminAction(context, "view", AUDIT_TARGET[tab]);
   const q = adminQuery(params, "ai");
   const query = viewQuery(parseAdminView(params));
   const t = await getTranslations("admin.ai");
 
-  // The overview (numbers, budget, caps) and Grady's rules, as two tabs in the address.
+  // The overview (numbers, budget, caps), the models of Grady's jobs and his rules, as tabs in the address.
   const tabs = (
     <nav aria-label={t("tabs")} className="flex gap-1">
       {AI_TABS.map((value) => {
         const active = value === tab;
-        const search = [value === "rules" ? "tab=rules" : "", query.slice(1)].filter(Boolean).join("&");
+        const search = [value === "overview" ? "" : `tab=${value}`, query.slice(1)]
+          .filter(Boolean)
+          .join("&");
         return (
           <AdminViewLink
             key={value}
@@ -99,6 +109,20 @@ export default async function AdminAiPage({ searchParams }: Props) {
       })}
     </nav>
   );
+
+  if (tab === "models") {
+    return (
+      <>
+        <AdminPageHeader section="ai" q={q} extra={tabs} />
+        <div className="flex flex-col gap-6">
+          <Suspense fallback={<CardSkeleton height={640} />}>
+            <Models readOnly={!adminCan(context, "editGradyModels")} />
+          </Suspense>
+          <PriceList />
+        </div>
+      </>
+    );
+  }
 
   if (tab === "rules") {
     return (
@@ -261,6 +285,90 @@ async function Rules({ readOnly, canTest }: { readOnly: boolean; canTest: boolea
         )}
       </Show>
       {changed && <p className="text-xs text-ink-muted">{t("changedBy", changed)}</p>}
+    </AdminCard>
+  );
+}
+
+/**
+ * The model of each of Grady's jobs (step 27.3) with what it cost over 30
+ * days and what it would cost elsewhere, the presets, economy mode and the
+ * savings of the chat's automatic choice. Read fresh here; the app reads the
+ * settings with a 30-second cache.
+ */
+async function Models({ readOnly }: { readOnly: boolean }) {
+  const [loaded, t, changed] = await Promise.all([
+    safe("grady models", () => loadModelsOverview()),
+    getTranslations("admin.ai.models"),
+    lastSettingChange("grady_models"),
+  ]);
+  const percent = (share: number) =>
+    formatNumber(share, { style: "percent" }, ADMIN_FORMAT_SETTINGS);
+  return (
+    <AdminCard title={t("title")} description={t("description")} id="modely">
+      <Show loaded={loaded}>
+        {({ settings, usage, economyByBudget, warnShare }) => {
+          const routing = usage.routing;
+          return (
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5 text-sm" id="usporny-rezim">
+                <p className="text-ink" data-testid="models-economy-status">
+                  {economyByBudget
+                    ? t("status.budget", { percent: percent(warnShare) })
+                    : settings.economy
+                      ? t("status.manual")
+                      : t("status.off", { percent: percent(warnShare) })}
+                </p>
+                <p className="text-ink-soft" data-testid="models-total">
+                  {t("total", {
+                    calls: count(usage.total.calls),
+                    cost: formatUsd(usage.total.costUsd, ADMIN_FORMAT_SETTINGS),
+                  })}{" "}
+                  {AI_MODELS.map((model) =>
+                    t("totalOn", {
+                      model: model.name,
+                      cost: formatUsd(usage.total.estimates[model.key], ADMIN_FORMAT_SETTINGS),
+                    }),
+                  ).join(" · ")}
+                </p>
+                <p className="text-ink-soft" data-testid="models-routing">
+                  {routing.calls > 0
+                    ? t("routing", {
+                        calls: count(routing.calls),
+                        saved: formatUsd(routing.savedUsd, ADMIN_FORMAT_SETTINGS),
+                        route: formatUsd(routing.routeCostUsd, ADMIN_FORMAT_SETTINGS),
+                      })
+                    : t("routingNone")}
+                </p>
+              </div>
+              <GradyModelsForm
+                saved={toGradyModelsForm(settings)}
+                fromDefaults={settings.source === "default"}
+                readOnly={readOnly}
+                rows={SHOWN_FEATURES.map((feature) => {
+                  const row = usage.features[feature];
+                  return {
+                    feature,
+                    calls: row.calls,
+                    costUsd: row.costUsd,
+                    perThousandUsd: perThousandCalls(row),
+                    estimates: row.estimates,
+                  };
+                })}
+              />
+            </div>
+          );
+        }}
+      </Show>
+      {changed && <p className="text-xs text-ink-muted">{t("changedBy", changed)}</p>}
+    </AdminCard>
+  );
+}
+
+async function PriceList() {
+  const t = await getTranslations("admin.ai.models.prices");
+  return (
+    <AdminCard title={t("title")} description={t("description")} id="cenik-modelu">
+      <ModelPriceList />
     </AdminCard>
   );
 }

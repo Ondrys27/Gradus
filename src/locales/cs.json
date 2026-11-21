@@ -3957,14 +3957,17 @@
     "gradyBudget": {
       "nearSubject": "{appName}: Grady vyčerpal {share} měsíčního rozpočtu",
       "pausedSubject": "{appName}: Grady má do konce měsíce pauzu",
-      "nearIntro": "Grady tento měsíc utratil přes {threshold} rozpočtu na AI. Při 100 % přestane volat model až do konce měsíce.",
+      "nearIntro": "Grady tento měsíc utratil přes {threshold} rozpočtu na AI a běží v úsporném režimu (každá funkce na svém nejlevnějším povoleném modelu). Při 100 % přestane volat model až do konce měsíce.",
       "pausedIntro": "Grady vyčerpal rozpočet na AI pro tento měsíc a do konce měsíce model nevolá. Uživatelé vidí vlídnou hlášku o pauze, hlídání příležitostí běží jen z pravidel a ranní shrnutí se nepíšou.",
       "creditsIntro": "API odmítlo volání kvůli nedostatku kreditu nebo dosaženému limitu útraty ({code}). Grady model nevolá, dokud kredit nebude zpátky. Uživatelé vidí vlídnou hlášku o pauze.",
       "spent": "Útrata tento měsíc: {spent} z {budget} ({share}).",
       "projected": "Při dosavadním tempu do konce měsíce: {projected}.",
       "calls": "Volání modelu tento měsíc: {calls}.",
       "appWorks": "Zbytek aplikace {appName} funguje dál. Tenhle e-mail přijde nejvýš jednou denně.",
-      "details": "Podrobnosti: {url}"
+      "details": "Podrobnosti: {url}",
+      "economySubject": "{appName}: Grady přešel do úsporného režimu ({share} rozpočtu)",
+      "economyIntro": "Grady tento měsíc utratil přes {threshold} rozpočtu na AI a přešel do úsporného režimu: každá funkce teď běží na svém nejlevnějším povoleném modelu (Administrace → AI a Grady → Modely). Uživatelé to poznají jen podle kratších odpovědí. Při 100 % Grady přestane volat model až do konce měsíce.",
+      "economyOnce": "Zbytek aplikace {appName} funguje dál. Tenhle e-mail přijde jednou za měsíc; dál chodí jen denní stav."
     },
     "featureRequest": {
       "subject": "{appName}: nový nápad – {title}",
@@ -6637,12 +6640,12 @@
         "calls": "Volání {period}",
         "status": {
           "ok": "V pořádku",
-          "near": "Blízko limitu",
+          "near": "Úsporný režim",
           "paused": "Pauza"
         },
         "statusHint": {
           "ok": "Grady volá model jako obvykle.",
-          "near": "Nad prahem upozornění: majitel dostává jeden e-mail denně.",
+          "near": "Nad prahem upozornění: všechny funkce běží na svém minimálním modelu (úsporný režim), majitel dostává jeden e-mail denně.",
           "paused": "Na 100 %: do konce měsíce žádné volání modelu, hlídání běží jen z pravidel."
         },
         "headline": "Útrata {period}: {spent} z {capName} {cap}",
@@ -6679,8 +6682,8 @@
         "monthlyHint": "Všechny účty dohromady, včetně interních. 0 zastaví každé volání modelu. Nejvýš {max}.",
         "perUserLabel": "Měsíční strop na jednoho uživatele (USD)",
         "perUserHint": "Prázdné = bez limitu. Nejvýš {max}. Výjimku pro jednoho uživatele nastavíš v jeho detailu.",
-        "warnLabel": "Práh upozornění (%)",
-        "warnHint": "Od tohoto podílu měsíčního stropu dostává majitel jeden e-mail denně.",
+        "warnLabel": "Práh upozornění a úsporného režimu (%)",
+        "warnHint": "Od tohoto podílu měsíčního stropu přejde Grady do úsporného režimu (každá funkce na svůj minimální model) a majitel dostává jeden e-mail denně. Stejný podíl stropu uživatele nebo firmy zapne úsporný režim jen pro ně.",
         "monthlyMeter": "Útrata {period} proti celkovému stropu",
         "perUserMeter": "Nejdražší uživatel {period} proti stropu na uživatele",
         "warnMeter": "Útrata {period} proti prahu upozornění",
@@ -6701,7 +6704,7 @@
         "fields": {
           "monthlyUsd": "Celkový strop",
           "perUserUsd": "Strop na uživatele",
-          "warnPercent": "Práh upozornění"
+          "warnPercent": "Práh upozornění a úsporného režimu"
         },
         "errors": {
           "monthlyUsd": "Zadej částku od 0 do {max} USD, nejvýš dvě desetinná místa.",
@@ -6739,6 +6742,7 @@
       "tabs": "Části",
       "tab": {
         "overview": "Přehled",
+        "models": "Modely",
         "rules": "Pravidla"
       },
       "rules": {
@@ -6860,7 +6864,155 @@
         "changedBy": "Naposledy změnil(a) {name}, {date}"
       },
       "topSpacesTitle": "10 nejnákladnějších prostorů",
-      "topSpacesDescription": "Útrata AI podle prostoru: každé volání ve firmě se počítá do ní, i pracovníka z jiného účtu (platí majitel). Vedle útrata podle uživatele, ať byl kdekoli."
+      "topSpacesDescription": "Útrata AI podle prostoru: každé volání ve firmě se počítá do ní, i pracovníka z jiného účtu (platí majitel). Vedle útrata podle uživatele, ať byl kdekoli.",
+      "models": {
+        "title": "Modely Gradyho",
+        "description": "Na jakém modelu běží každá funkce Gradyho, kolik za posledních 30 dní stála a kolik by stála jinde. Změna platí do minuty a zapíše se do auditu.",
+        "defaults": "Zatím nic uloženého: platí výchozí přiřazení (chat automaticky).",
+        "presetsLabel": "Přednastavení",
+        "presets": {
+          "economy": "Úsporné",
+          "balanced": "Vyvážené",
+          "quality": "Kvalitní"
+        },
+        "presetHint": {
+          "economy": "Všechno, co smí, na Haiku; funkce s vyšším minimem na něm.",
+          "balanced": "Doporučené modely: dnešní přiřazení a chat automaticky.",
+          "quality": "O stupeň lepší model, kde to má smysl; velké rozbory v chatu smí na Opus.",
+          "custom": "Vlastní nastavení."
+        },
+        "economy": {
+          "label": "Úsporný režim teď",
+          "description": "Všechny funkce jdou na svůj minimální model, dokud ho nevypneš. Sám se zapíná od prahu upozornění měsíčního stropu a pro jednoho uživatele nebo firmu od stejného podílu jejich stropu; při 100 % se Grady pozastaví."
+        },
+        "chatLarge": {
+          "label": "Velké rozbory v automatickém chatu",
+          "never": "Nikdy (nejvýš Sonnet)",
+          "hint": "Když zpráva žádá velký rozbor („detailní analýza“), automatický výběr smí použít tento model. Jinak nikdy nad Sonnet."
+        },
+        "status": {
+          "off": "Úsporný režim je vypnutý. Sám se zapne, až útrata tohoto měsíce dosáhne {percent} měsíčního stropu.",
+          "manual": "Úsporný režim je zapnutý ručně: všechny funkce běží na svém minimálním modelu.",
+          "budget": "Úsporný režim je teď zapnutý automaticky: útrata tohoto měsíce překročila {percent} měsíčního stropu. Do konce měsíce běží všechny funkce na svém minimálním modelu."
+        },
+        "total": "Za 30 dní: {calls} volání za {cost}.",
+        "totalOn": "Na {model} by to bylo {cost}",
+        "routing": "Automatický výběr a úsporný režim rozhodly {calls} volání a ušetřily {saved} (rozhodování samo stálo {route}).",
+        "routingNone": "Automatický výběr ani úsporný režim za 30 dní nic nerozhodly.",
+        "columns": {
+          "feature": "Funkce",
+          "model": "Model",
+          "calls": "Volání za 30 dní",
+          "perThousand": "Ø za 1 000 volání",
+          "spend": "Útrata za 30 dní",
+          "estimate": "Na {model}"
+        },
+        "recommended": "Doporučeno: {model}. {why}",
+        "auto": "Automaticky (Haiku nebo Sonnet)",
+        "fixed": "{model}, pevně",
+        "minimum": "Nejméně {model}",
+        "modelFor": "Model pro {feature}",
+        "estimatesNote": "Odhady počítají stejné tokeny s ceníkem jiného modelu. Každý model píše jinak dlouhé odpovědi, ber je jako vodítko.",
+        "on": "zapnuto",
+        "off": "vypnuto",
+        "fields": {
+          "economy": "Úsporný režim teď",
+          "chatLarge": "Velké rozbory v chatu"
+        },
+        "save": "Uložit změny",
+        "noChanges": "Není co ukládat, nastavení je stejné.",
+        "firstSave": "Uloží se výchozí přiřazení, jak ho vidíš.",
+        "confirmTitle": "Změnit modely Gradyho?",
+        "confirmDescription": "Nové modely začnou do minuty platit pro všechny uživatele a změna se zapíše do auditu.",
+        "confirm": "Změnit modely",
+        "cancel": "Zrušit",
+        "close": "Zavřít",
+        "saved": "Uloženo. Změna platí do minuty.",
+        "errors": {
+          "invalid": "Některý model funkce nesmí použít. Zkontroluj tabulku.",
+          "forbidden": "Relace administrace skončila. Přihlas se znovu.",
+          "failed": "Změnu se nepodařilo uložit. Zkus to znovu."
+        },
+        "changedBy": "Naposledy změnil(a) {name}, {date}",
+        "prices": {
+          "title": "Ceník modelů",
+          "description": "USD za milion tokenů podle ceníku Anthropic (seznam v src/config/costs.ts). Nový model = jeden řádek v tom seznamu.",
+          "model": "Model",
+          "id": "ID v API",
+          "input": "Vstup",
+          "cacheWrite": "Zápis do cache",
+          "cacheRead": "Čtení z cache",
+          "output": "Výstup",
+          "verified": "Ověřeno"
+        },
+        "features": {
+          "chat": {
+            "name": "Chat",
+            "does": "Odpovídá v panelu Gradyho a na pokyn pracuje v aplikaci nástroji.",
+            "why": "Automaticky: jednoduché zprávy zvládne Haiku, rady, plány a výpočty Sonnet."
+          },
+          "milestone_review": {
+            "name": "Hodnocení milníku",
+            "does": "Krátký „Gradyho pohled“ hned po založení milníku, jednou za milník.",
+            "why": "Hodnocení má smysl jen dobře napsané a běží jednou za milník."
+          },
+          "classify": {
+            "name": "Třídění nápadů",
+            "does": "Pozná, jestli zpráva v chatu je přání nové funkce.",
+            "why": "Krátká odpověď ve formátu JSON, větší model nic nepřidá."
+          },
+          "check": {
+            "name": "Kontrola",
+            "does": "Připravené pro rutinní kontroly, zatím ho nic nevolá.",
+            "why": "Rutina."
+          },
+          "summary": {
+            "name": "Krátký souhrn",
+            "does": "Připravené pro krátké souhrny, zatím ho nic nevolá.",
+            "why": "Rutina."
+          },
+          "opportunity_scan": {
+            "name": "Hlídání příležitostí",
+            "does": "Jednou denně projde změny účtu a navrhne, co stojí za pozornost.",
+            "why": "Běží u mnoha účtů denně, levný model stačí a vrací JSON."
+          },
+          "analysis": {
+            "name": "Rozbor obchodních schůzek",
+            "does": "Velký rozbor až 150 dotazníků ze schůzek na požádání.",
+            "why": "Dlouhý kontext a strukturovaný rozbor, nikdy pod Sonnet."
+          },
+          "reward_setup": {
+            "name": "Nastavit odměny s AI",
+            "does": "Převede poznámky ve stromu odměn na pravidla a vysvětlí je.",
+            "why": "Pravidla o penězích pro jiné lidi ve formátu JSON, nikdy pod Sonnet."
+          },
+          "email_reply": {
+            "name": "Návrh odpovědi na e-mail",
+            "does": "Napíše odpověď na e-mail, kterou uživatel pošle svým jménem.",
+            "why": "Text pod jménem uživatele má být dobře napsaný."
+          },
+          "ping": {
+            "name": "Test spojení a pokynů",
+            "does": "Administrace: Vyzkoušet připojení a Vyzkoušet pokyny.",
+            "why": "Ověřuje model, na kterém běží rozhovor."
+          },
+          "briefing": {
+            "name": "Souhrn dne, týdne a měsíce",
+            "does": "Ranní shrnutí z noční úlohy a souhrny při prvním příchodu.",
+            "why": "Vybírá jednu věc, která stojí za pozornost: model pro rozhovor."
+          },
+          "note_map_suggest": {
+            "name": "Navrhnout větve mapy",
+            "does": "U uzlu myšlenkové mapy navrhne 3–8 nových větví.",
+            "why": "Nápady do vlastní mapy uživatele, výstup ve formátu JSON."
+          },
+          "chat_route": {
+            "name": "Výběr modelu pro chat",
+            "does": "Když pravidla nerozhodnou, Haiku jedním slovem řekne, jestli zpráva potřebuje Sonnet.",
+            "why": "Nejlevnější možné rozhodnutí, nejvýš 20 výstupních tokenů."
+          }
+        }
+      }
     },
     "game": {
       "title": "Hra",
@@ -8255,6 +8407,14 @@
         "helpSearch": {
           "title": "Hledání ⌘K",
           "keywords": "hledat nápověda zkratka"
+        },
+        "gradyModels": {
+          "title": "Modely Gradyho",
+          "keywords": "model ai haiku sonnet opus fable funkce přednastavení úsporné vyvážené kvalitní automaticky cena"
+        },
+        "gradyEconomy": {
+          "title": "Úsporný režim",
+          "keywords": "úsporný režim levnější model strop práh úspora"
         }
       }
     },

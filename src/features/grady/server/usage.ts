@@ -109,10 +109,19 @@ export type AiUsageEntry = {
   conversationId: string | null;
   feature: GradyFeature;
   model: GradyModel;
+  /**
+   * The model the call would have run on when the chat's automatic choice or
+   * economy mode picked another (or the automatic choice ran at all); null
+   * when the setting decided. The administration counts the savings from it.
+   */
+  routedFrom?: GradyModel | null;
   tokens: TokenUsage;
   durationMs: number;
   error?: string | null;
 };
+
+/** Postgres / PostgREST: a column the database does not have (yet). */
+const UNKNOWN_COLUMN = new Set(["42703", "PGRST204"]);
 
 /** Postgres: a foreign key points at a row that is gone. */
 const MISSING_REFERENCE = "23503";
@@ -130,6 +139,7 @@ export async function logAiUsage(admin: Client, entry: AiUsageEntry): Promise<vo
     conversation_id: entry.conversationId,
     purpose: entry.feature,
     model: entry.model,
+    routed_from: entry.routedFrom ?? null,
     input_tokens: entry.tokens.inputTokens,
     cache_read_tokens: entry.tokens.cacheReadTokens,
     cache_write_tokens: entry.tokens.cacheWriteTokens,
@@ -140,6 +150,11 @@ export async function logAiUsage(admin: Client, entry: AiUsageEntry): Promise<vo
     error: entry.error ? entry.error.slice(0, 1000) : null,
   };
   let { error } = await admin.from("ai_usage").insert(row);
+  // Before the 27.3 migration the column is missing: the call still counts, without it.
+  if (error && UNKNOWN_COLUMN.has(error.code ?? "")) {
+    // An undefined value is left out of the request body.
+    ({ error } = await admin.from("ai_usage").insert({ ...row, routed_from: undefined }));
+  }
   if (error?.code === MISSING_REFERENCE && row.conversation_id) {
     ({ error } = await admin.from("ai_usage").insert({ ...row, conversation_id: null }));
   }

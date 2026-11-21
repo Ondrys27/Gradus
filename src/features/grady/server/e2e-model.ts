@@ -3,6 +3,7 @@ import type Anthropic from "@anthropic-ai/sdk";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 import { createBudgetGuard } from "./budget";
+import { loadGradyModels } from "./model-settings";
 import type { GradyClient } from "./model";
 
 /**
@@ -15,7 +16,8 @@ import type { GradyClient } from "./model";
  * It exists only outside production, only for the tests' own accounts
  * (e2e-…@gradus.local) and only when the request asks for it with this
  * header; every other request talks to Anthropic as always. The call still
- * goes through streamModel, so it is logged in ai_usage like any other.
+ * goes through streamModel, so it is logged in ai_usage like any other, with
+ * the model the administration's settings chose.
  */
 export const E2E_MODEL_HEADER = "x-gradus-e2e-model";
 export const E2E_ECHO_NOTES = "echo-notes";
@@ -103,6 +105,8 @@ export function e2eEchoClient(
   return {
     messages: { stream } as unknown as Anthropic["messages"],
     budget: createBudgetGuard(admin),
+    // The administration's model settings apply as for the real client (27.3 e2e).
+    models: () => loadGradyModels(admin),
   };
 }
 
@@ -215,5 +219,7 @@ export function e2eToolClient(admin: SupabaseClient<Database>, script: E2eToolCa
   return {
     messages: { stream } as unknown as Anthropic["messages"],
     budget: createBudgetGuard(admin),
+    // The administration's model settings apply as for the real client (27.3 e2e).
+    models: () => loadGradyModels(admin),
   };
 }

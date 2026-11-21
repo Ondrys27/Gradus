@@ -7,6 +7,7 @@ vi.mock("server-only", () => ({}));
 const { creditErrorCode, errorCode, streamModel } = await import("./model");
 const { GRADY_PERSONA } = await import("../prompt");
 const { GRADY_MODELS } = await import("../models");
+const { DEFAULT_GRADY_MODELS } = await import("../model-settings");
 
 type StreamEvent = Anthropic.MessageStreamEvent;
 
@@ -159,7 +160,11 @@ describe("streamModel", () => {
 
 describe("budget", () => {
   function guard(verdict: "ok" | "paused" | "userLimit") {
-    return { check: vi.fn().mockResolvedValue(verdict), creditsExhausted: vi.fn() };
+    return {
+      assess: vi.fn().mockResolvedValue({ verdict, economy: null }),
+      check: vi.fn().mockResolvedValue(verdict),
+      creditsExhausted: vi.fn(),
+    };
   }
 
   it("makes no call over the budget and answers with the pause", async () => {
@@ -175,7 +180,7 @@ describe("budget", () => {
       log,
     });
     expect(result).toMatchObject({ ok: false, code: "paused", text: "" });
-    expect(budget.check).toHaveBeenCalledWith("chat", "user-1");
+    expect(budget.assess).toHaveBeenCalledWith("chat", "user-1");
     expect(calls).toHaveLength(0);
     expect(log).not.toHaveBeenCalled();
   });
@@ -193,7 +198,7 @@ describe("budget", () => {
       log,
     });
     expect(result).toMatchObject({ ok: false, code: "userLimit", text: "" });
-    expect(budget.check).toHaveBeenCalledWith("milestone_review", "user-1");
+    expect(budget.assess).toHaveBeenCalledWith("milestone_review", "user-1");
     expect(calls).toHaveLength(0);
     expect(log).not.toHaveBeenCalled();
   });
@@ -297,5 +302,94 @@ describe("errorCode", () => {
     );
     expect(creditErrorCode(textOnly)).toBeNull();
     expect(errorCode(textOnly)).toBe("unavailable");
+  });
+});
+
+describe("the model of a call (27.3)", () => {
+  type Settings = typeof DEFAULT_GRADY_MODELS;
+  const settings = (changes: Partial<Settings> & { set?: Partial<Settings["features"]> } = {}) =>
+    ({
+      ...DEFAULT_GRADY_MODELS,
+      ...changes,
+      features: { ...DEFAULT_GRADY_MODELS.features, ...changes.set },
+      source: "database",
+    }) as Settings;
+  const budget = (economy: "budget" | "user_cap" | null = null) => ({
+    assess: vi.fn().mockResolvedValue({ verdict: "ok", economy }),
+    check: vi.fn().mockResolvedValue("ok"),
+    creditsExhausted: vi.fn(),
+  });
+
+  async function run(options: {
+    feature?: "chat" | "milestone_review" | "analysis";
+    models?: Settings;
+    economy?: "budget" | "user_cap" | null;
+    autoPick?: () => Promise<"haiku" | "sonnet" | "large">;
+  }) {
+    const { client, calls } = fakeClient([start(10), delta("ok"), end(1)]);
+    const log = vi.fn().mockResolvedValue(undefined);
+    const result = await streamModel({
+      client: {
+        ...client,
+        budget: budget(options.economy ?? null),
+        ...(options.models ? { models: async () => options.models! } : {}),
+      },
+      userId: "user-1",
+      feature: options.feature ?? "chat",
+      context: "",
+      messages: [{ role: "user", content: "hi" }],
+      autoPick: options.autoPick,
+      log,
+    });
+    return { result, params: calls[0], entry: log.mock.calls[0]?.[0] };
+  }
+
+  it("runs a job on the model set in the administration", async () => {
+    const { params, entry } = await run({ models: settings({ set: { chat: "haiku" } }) });
+    expect(params.model).toBe(GRADY_MODELS.haiku);
+    expect(params.thinking).toEqual({ type: "disabled" });
+    expect(entry).toMatchObject({ model: GRADY_MODELS.haiku, routedFrom: null });
+  });
+
+  it("takes the automatic choice for the chat and logs what it would have been", async () => {
+    const autoPick = vi.fn().mockResolvedValue("haiku");
+    const { params, entry } = await run({ models: settings(), autoPick });
+    expect(autoPick).toHaveBeenCalledTimes(1);
+    expect(params.model).toBe(GRADY_MODELS.haiku);
+    expect(entry).toMatchObject({ model: GRADY_MODELS.haiku, routedFrom: GRADY_MODELS.sonnet });
+  });
+
+  it("never picks Opus automatically unless big analyses may use it", async () => {
+    const large = vi.fn().mockResolvedValue("large");
+    expect((await run({ models: settings(), autoPick: large })).params.model).toBe(
+      GRADY_MODELS.sonnet,
+    );
+    expect(
+      (await run({ models: settings({ chatLarge: "opus" }), autoPick: large })).params.model,
+    ).toBe(GRADY_MODELS.opus);
+  });
+
+  it("puts every job on its minimum in economy mode, without asking the automatic choice", async () => {
+    const autoPick = vi.fn().mockResolvedValue("sonnet");
+    const chat = await run({ models: settings(), economy: "budget", autoPick });
+    expect(autoPick).not.toHaveBeenCalled();
+    expect(chat.params.model).toBe(GRADY_MODELS.haiku);
+    expect(chat.entry.routedFrom).toBe(GRADY_MODELS.sonnet);
+    const analysis = await run({ feature: "analysis", models: settings({ economy: true }) });
+    expect(analysis.params.model).toBe(GRADY_MODELS.sonnet);
+    expect(analysis.entry.routedFrom).toBe(GRADY_MODELS.opus);
+  });
+
+  it("keeps the defaults without settings: the chat on Sonnet when nothing picks", async () => {
+    expect((await run({})).params.model).toBe(GRADY_MODELS.sonnet);
+    expect((await run({ feature: "analysis" })).params.model).toBe(GRADY_MODELS.opus);
+  });
+
+  it("picks Sonnet when the automatic choice fails", async () => {
+    vi.spyOn(console, "error").mockImplementationOnce(() => {});
+    const failing = vi.fn().mockRejectedValue(new Error("down"));
+    expect((await run({ models: settings(), autoPick: failing })).params.model).toBe(
+      GRADY_MODELS.sonnet,
+    );
   });
 });

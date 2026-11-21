@@ -28,6 +28,7 @@ const P = ADMIN_PATH;
 const USERS = `${P}/uzivatele`;
 const AI = `${P}/ai`;
 const RULES = `${P}/ai?tab=rules`;
+const MODELS = `${P}/ai?tab=models`;
 const ERRORS = `${P}/chyby`;
 const ALERTS = `${P}/chyby?tab=alerts`;
 const PLANS = `${P}/tarify`;
@@ -65,6 +66,8 @@ export const ADMIN_HELP: Record<AdminSectionKey, readonly HelpItem[]> = {
     { key: "aiCaps", href: AI, anchor: "stropy" },
     { key: "aiTopUsers", href: AI, anchor: "ai-top-users" },
     { key: "aiConnection", href: AI, anchor: "ai-connection", power: "testGrady" },
+    { key: "gradyModels", href: MODELS, anchor: "modely" },
+    { key: "gradyEconomy", href: MODELS, anchor: "usporny-rezim" },
     { key: "gradyRules", href: RULES, anchor: "pravidla" },
     { key: "gradyInstructions", href: RULES, anchor: "pravidla" },
   ],

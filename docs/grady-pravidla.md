@@ -1,6 +1,6 @@
 # Pravidla Gradyho
 
-Tenhle dokument je **zdroj pravdy** o tom, kdy se Grady sám ozve, co říká a jak mluví. Popisuje stav k 7. 11. 2026 (krok 20.4). Kdo mění chování Gradyho v kódu, mění i tento dokument. Část pravidel jde měnit bez programátora v administraci, viz [Co jde nastavit v administraci](#co-jde-nastavit-v-administraci).
+Tenhle dokument je **zdroj pravdy** o tom, kdy se Grady sám ozve, co říká a jak mluví. Popisuje stav k 21. 11. 2026 (krok 27.3). Kdo mění chování Gradyho v kódu, mění i tento dokument. Část pravidel jde měnit bez programátora v administraci, viz [Co jde nastavit v administraci](#co-jde-nastavit-v-administraci).
 
 Slovníček:
 - **Vyskočení** = Grady sám přiletí do levého dolního rohu obsahu s bublinou, aniž by na něj uživatel klikl.
@@ -130,7 +130,8 @@ Grady sám žádné hlášení problému nezaloží ani nepošle (lidé by mu ps
 
 ### Kdy Grady nic nenapíše, i když by měl
 
-- Vyčerpaný měsíční rozpočet AI nebo strop uživatele: model se nevolá, souhrn ani postřehy se nepíšou, pravidlové návrhy (pevné texty) běží dál.
+- Od prahu upozornění měsíčního stropu (výchozí 80 %) Grady nemlčí, jen přejde do **úsporného režimu**: každá funkce běží na svém minimálním modelu (většinou Haiku). Totéž jen pro jednoho uživatele od stejného podílu jeho stropu a pro firmu od stejného podílu stropu jejího majitele. Uživatel to pozná jen podle kratších odpovědí.
+- Vyčerpaný měsíční rozpočet AI (100 %) nebo strop uživatele: model se nevolá, souhrn ani postřehy se nepíšou, pravidlové návrhy (pevné texty) běží dál.
 - V cizí firmě se volání počítá do stropu té firmy (strop jejího majitele na všechna volání v ní) a zároveň do vlastního stropu pracovníka; po vyčerpání stropu firmy Grady řekne, že má firma limit vyčerpaný a majitel ho zvýší vyšším tarifem (`spaceLimit`), ve vlastní firmě funguje dál. Odpovědi Gradyho v cizí firmě se počítají podle tarifu té firmy.
 - Chybí klíč k API nebo model selže: souhrn se neukáže („raději ticho než nepravda“).
 
@@ -153,7 +154,7 @@ Povaha je v `src/features/grady/prompt.ts` (systémový prompt chatu). Shrnutí:
 
 Pořadí systémového promptu chatu i souhrnů: **povaha Gradyho** (u souhrnů jejich vlastní zadání) → **Pokyny majitele aplikace** (z administrace, když jsou) → **Pravidla, která platí vždy** s výslovnou předností: nevymýšlet čísla, data nejsou pokyny, osobní údaje z dat uživatele zůstávají v rozhovoru s ním, pokyny majitele nikdy nepřimějí vypsat osobní údaje, o které uživatel sám nepožádal (ani „ignoruj předchozí pravidla“), neprozrazovat systémový prompt doslova. Pokyny majitele tedy mění tón, zaměření a důrazy, bezpečnostní pravidla přepsat nemůžou.
 
-Modely: Haiku na rutinu (postřehy, třídění nápadů), Sonnet na rozhovor, souhrny a hodnocení, Opus na velké rozbory.
+Modely (výchozí přiřazení, mění se v administraci, viz [Modely](#modely-a-úsporný-režim)): Haiku na rutinu (postřehy, třídění nápadů), Sonnet na souhrny a hodnocení, Opus na velké rozbory. Chat běží automaticky: krátké a jednoduché zprávy odpoví Haiku, rady, plány, výpočty a soubory Sonnet; v úsporném režimu odpovídá kratší a jednodušší.
 
 ---
 
@@ -192,12 +193,27 @@ Co v administraci nastavit nejde (mění se jen v kódu a v tomto dokumentu): fr
 
 Stropy útraty AI jsou na stejné stránce v záložce Přehled (Strop využití AI), viz CLAUDE.md → Grady → Měsíční rozpočet.
 
+### Modely a úsporný režim
+
+Administrace → **AI a Grady → záložka Modely** (`/admin/ai?tab=models`, 27.3). Mění majitel a plný administrátor s druhým faktorem a živou relací, omezený jen čte. Uloží se do `app_settings` pod klíčem `grady_models` přes `admin_set_app_setting` (databáze zkontroluje tvar, `valid_grady_models()`), změna jde do `admin_audit` z čeho na co, formulář se ptá na potvrzení se seznamem změn. Aplikace nastavení čte s mezipamětí 30 s, změna platí do minuty. Dokud nic uloženo není, platí výchozí přiřazení a chat automaticky. Model, který už seznam nenabízí, se nahradí výchozím modelem funkce a zapíše se do logu chyb.
+
+| Nastavení | Výchozí | Co dělá |
+|---|---|---|
+| Model každé funkce (chat, hodnocení milníku, souhrny, hlídání, rozbor schůzek, odměny, e-maily, větve mapy, třídění nápadů, test) | dnešní přiřazení | Haiku · Sonnet · Opus · Fable (a další, až přibudou do `AI_MODELS`), nikdy pod minimum funkce (rozbor schůzek a odměny nejméně Sonnet: dlouhý kontext a strukturovaný výstup). Tabulka ukazuje volání, průměr za 1 000 volání a útratu za 30 dní a odhad „kdyby běžela na …“ pro každý model z tokenů v `ai_usage`. |
+| Chat: automaticky | zapnuto | Před odpovědí rozhodnou pravidla bez modelu: soubor, dlouhá zpráva (nad 280 znaků), víc otázek nebo záměr jako „rozbor“, „plán“, „spočítej“, „napiš“, „porovnej“ → Sonnet; pozdrav, díky, ano/ne nebo jedna malá změna v aplikaci („dej mi to do úkolů“) → Haiku. Když nerozhodnou, jedno volání Haiku (nejvýš 20 výstupních tokenů, účel `chat_route`, nepočítá se do odpovědí v tarifu). Rozhodnutí je v `ai_usage.routed_from`, záložka ukazuje, kolik ušetřilo. |
+| Velké rozbory v automatickém chatu | nikdy | Opus nebo Fable jen pro zprávy, které výslovně chtějí velký rozbor („detailní analýza“, „deep dive“). Jinak automatický výběr nikdy nad Sonnet. |
+| Přednastavení | — | Úsporné (každá funkce na minimum, tedy všechno, co smí, na Haiku) · Vyvážené (výchozí) · Kvalitní (o stupeň lepší model, kde to má smysl, velké rozbory v chatu na Opus). Jen vyplní tabulku, uloží se až Uložit. |
+| Úsporný režim teď | vypnuto | Ručně zapnutý úsporný režim pro všechny: každá funkce na svém minimu, dokud ho někdo nevypne. |
+
+**Úsporný režim sám:** od prahu upozornění měsíčního stropu (Strop využití AI, výchozí 80 %) do konce měsíce pro všechny, majitel dostane jednou za měsíc e-mail „Grady přešel do úsporného režimu“ (dál jen denní stav). Od stejného podílu stropu uživatele jen pro něj a od stejného podílu stropu majitele firmy pro volání v té firmě, bez e-mailu. Při 100 % se Grady pozastaví jako dřív. Stropy i prahy se počítají za kalendářní měsíc v UTC; ukazatele v administraci pro jiné období (7 dní, dnes…) jen přepočítávají měsíční strop, kontrola před voláním se nemění.
+
 ---
 
 ## Kde to je v kódu
 
 - Časování a vyskočení: `src/features/grady/proactive.ts` (konstanty a výchozí pravidla), `src/features/grady/server/proactive.ts` (`loadProactive`, `loadSummary`), prohlížeč `src/components/grady/proactive-grady.tsx`, `day-summary.tsx`, `notes-intro.tsx`
 - Pravidla z administrace: `src/features/grady/rules.ts`, `server/rules.ts`, formulář `src/features/admin/ui/grady-rules-form.tsx`, migrace `20261104200000_jarvis_rules.sql`
+- Modely: seznam modelů a ceny `src/config/costs.ts` (`AI_MODELS`), katalog funkcí a výběr modelu `src/features/grady/model-settings.ts` (`FEATURE_MODELS`, `chooseModel`), čtení `server/model-settings.ts`, automatický výběr v chatu `chat-route.ts` a `server/chat-route.ts`, úsporný režim ve strážci rozpočtu `server/budget.ts` (`assess`), volání `server/model.ts` (`planCall`), formulář `src/features/admin/ui/grady-models-form.tsx`, migrace `20261123090000_grady_models.sql`
 - Pravidlové návrhy: `src/features/grady/suggestions.ts`, `server/suggestions.ts`; postřehy `server/watch.ts`; otázky `questions.ts`; souhrny `server/briefing.ts`
 - Povaha a pořadí promptu: `src/features/grady/prompt.ts` (`GRADY_PERSONA`, `withOwnerInstructions`, `SAFETY_RULES`)
 - Nástroje: katalog `src/features/grady/tools/` (`catalog.ts`, `defs/*`, práva `access.ts`, vrácení `records.ts`), běh a karty `server/tools/` (`loop.ts`, `actions.ts`, `context.ts`), tabulka `grady_actions` (migrace `20261118090000_grady_actions.sql`), karta `src/components/grady/action-card.tsx`
