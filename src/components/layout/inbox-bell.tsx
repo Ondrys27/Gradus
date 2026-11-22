@@ -3,15 +3,26 @@
 import { useCallback, useState } from "react";
 import Link from "next/link";
 import { Menu } from "@base-ui/react/menu";
-import { BellIcon, LogOutIcon, MailPlusIcon, MailQuestionIcon, UserCheckIcon, UserXIcon } from "lucide-react";
+import {
+  BellIcon,
+  FolderInputIcon,
+  LogOutIcon,
+  MailPlusIcon,
+  MailQuestionIcon,
+  NotebookPenIcon,
+  UserCheckIcon,
+  UserXIcon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   inboxCount,
   inviterName,
+  noteNotificationHref,
   useInbox,
   useMarkInboxRead,
   type AccountNotification,
 } from "@/features/account/inbox";
+import { useSession } from "@/features/account/queries";
 import { useCloseOnErrorScreen } from "@/features/errors/error-screen-state";
 import { formatDate, formatNumber } from "@/lib/format";
 import { COMPANY_PATH, INVITES_PATH } from "@/lib/routes";
@@ -23,6 +34,8 @@ const NOTE_ICON: Record<AccountNotification["kind"], typeof BellIcon> = {
   invite_declined: UserXIcon,
   worker_left: LogOutIcon,
   invite_requested: MailQuestionIcon,
+  note_shared: NotebookPenIcon,
+  notes_transferred: FolderInputIcon,
 };
 
 const itemClass =
@@ -36,6 +49,7 @@ const itemClass =
 export function InboxBell({ className }: { className?: string }) {
   const t = useTranslations("inbox");
   const settings = useFormatSettings();
+  const { spaceId } = useSession();
   const inbox = useInbox();
   const markRead = useMarkInboxRead();
   const [open, setOpen] = useState(false);
@@ -103,6 +117,18 @@ export function InboxBell({ className }: { className?: string }) {
             ))}
             {notes.map((note) => {
               const Icon = NOTE_ICON[note.kind];
+              const aboutNotes = note.kind === "note_shared" || note.kind === "notes_transferred";
+              const who = note.actorName ?? note.workerName ?? t("someone");
+              const text =
+                note.kind === "note_shared"
+                  ? note.folderId
+                    ? t("notes.folder_shared", { name: who, title: note.title ?? "…" })
+                    : note.title
+                      ? t("notes.note_shared", { name: who, title: note.title })
+                      : t("notes.note_shared_untitled", { name: who })
+                  : note.kind === "notes_transferred"
+                    ? t("notes.notes_transferred", { name: note.workerName ?? who, count: note.itemCount ?? 0 })
+                    : t(`notes.${note.kind}`, { name: note.workerName ?? t("someone") });
               return (
                 <Menu.LinkItem
                   key={note.id}
@@ -110,21 +136,32 @@ export function InboxBell({ className }: { className?: string }) {
                   className={itemClass}
                   render={
                     <Link
-                      href={note.workerId ? `${COMPANY_PATH}?worker=${note.workerId}` : COMPANY_PATH}
+                      href={
+                        aboutNotes
+                          ? noteNotificationHref(
+                              note.kind === "notes_transferred" ? { spaceId: note.spaceId } : note,
+                              spaceId,
+                            )
+                          : note.workerId
+                            ? `${COMPANY_PATH}?worker=${note.workerId}`
+                            : COMPANY_PATH
+                      }
                       prefetch={false}
                     />
                   }
+                  data-testid="inbox-notification"
+                  data-kind={note.kind}
                 >
                   <Icon
                     aria-hidden
                     className={cn(
                       "mt-0.5 size-4 shrink-0",
-                      note.kind === "invite_accepted" ? "text-green" : "text-ink-muted",
+                      note.kind === "invite_accepted" ? "text-green" : aboutNotes ? "text-teal" : "text-ink-muted",
                     )}
                   />
                   <span className="flex min-w-0 flex-col">
                     <span className={cn(note.read ? "text-ink-soft" : "font-medium text-ink")}>
-                      {t(`notes.${note.kind}`, { name: note.workerName ?? t("someone") })}
+                      {text}
                     </span>
                     <span className="text-xs text-ink-muted">
                       {formatDate(new Date(note.createdAt), settings)}

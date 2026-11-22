@@ -55,13 +55,16 @@ Stav k 9. 11. 2026.
 
 | Funkce | Co dělá | Pro koho | Náklad |
 |---|---|---|---|
-| Poznámky | Podklady k podnikání (ideální zákazník, ceník, konkurence, skript) na jednom místě, jako Apple Notes. Ukládá se samo. | jen majitel | žádný |
-| Šablony | Připravené osnovy (ideální zákazník, nabídka, ceník, konkurence, prodejní skript), každá i jako mapa. | jen majitel | žádný |
-| Myšlenková mapa místo textu | Poznámka jde psát jako mapa s barvami, poznámkami u uzlů a odkazy. Jde ji převést na text a zpátky. | jen majitel | žádný |
-| Odkazy na záznamy | Přes `@` jde do textu vložit kontakt, obchod, událost nebo pracovníka. U záznamu je pak vidět „Zmíněno v poznámkách“. | jen majitel | žádný |
-| Hledání a koš | Fulltext bez diakritiky. Smazané poznámky leží 30 dní v koši. | jen majitel | žádný |
-| Navrhnout větve | U uzlu mapy Grady navrhne 3–8 nových větví, uživatel je ponechá nebo smaže. | jen majitel | AI (Sonnet) |
-| Grady čte poznámky | V chatu Grady vychází z poznámek uživatele, ať se neptá na to, co už je zapsané. | jen majitel | AI (v ceně chatu) |
+| Poznámky | Podklady k podnikání (ideální zákazník, ceník, konkurence, skript) na jednom místě, jako Apple Notes. Ukládá se samo. Každý má své poznámky v každé firmě, kde pracuje. | majitel, pracovník | žádný |
+| Složky | Levý panel: Moje poznámky · Sdílené se mnou · složky (jedna úroveň podsložek, barva, přetažení poznámky do složky) · Koš. | majitel, pracovník | žádný |
+| Sdílení ve firmě | Poznámku nebo složku jde sdílet člověku, skupině nebo celé firmě jako „může číst“ / „může upravovat“, volitelně „mohou sdílet dál“; přehled, kdo má přístup a odkud (přímo / ze složky). Poznámka ve sdílené složce dědí sdílení, jde ji nechat „v této složce soukromou“. Sdílení přijde do zvonku. Kdo odejde z firmy, přístup ztratí hned; jeho sdílené poznámky zůstanou firmě. | majitel, pracovník | žádný |
+| Historie verzí | Kdo a kdy poznámku uložil (verze za člověka a 10 minut práce, posledních 50), starší verze jde obnovit. | majitel, pracovník | žádný |
+| Šablony | Připravené osnovy (ideální zákazník, nabídka, ceník, konkurence, prodejní skript), každá i jako mapa. | majitel, pracovník | žádný |
+| Myšlenková mapa místo textu | Poznámka jde psát jako mapa s barvami, poznámkami u uzlů a odkazy. Jde ji převést na text a zpátky. | majitel, pracovník | žádný |
+| Odkazy na záznamy | Přes `@` jde do textu vložit kontakt, obchod, událost nebo pracovníka. U záznamu je pak vidět „Zmíněno v poznámkách“. Čtenář sdílené poznámky bez práva k záznamu vidí „Skrytý záznam“. | majitel, pracovník | žádný |
+| Hledání a koš | Fulltext bez diakritiky, i ve sdílených poznámkách. Smazané poznámky leží 30 dní v koši; sdílenou maže jen vlastník, ostatní ji „Odeberou ze svých“. | majitel, pracovník | žádný |
+| Navrhnout větve | U uzlu mapy Grady navrhne 3–8 nových větví, uživatel je ponechá nebo smaže. | majitel, pracovník | AI (Sonnet) |
+| Grady čte poznámky | V chatu Grady vychází z poznámek uživatele i z těch, které s ním kolegové sdílejí (s autorem), ať se neptá na to, co už je zapsané. Upravuje jen tam, kde smí uživatel. | majitel, pracovník | AI (v ceně chatu) |
 
 ### Kontakty
 <!-- kód: nav:contacts route:/app/kontakty route:/app/kontakty/[id] route:/app/kontakty/tabulky -->

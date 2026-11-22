@@ -103,7 +103,8 @@ export function contactName(row: {
 /** What a looked-up record is now: its current name, or that it is gone. */
 export type MentionTarget =
   | { exists: true; label: string; startsAt?: string | null }
-  | { exists: false };
+  /** Gone, or (hidden) there but not open to the reader of a shared note. */
+  | { exists: false; hidden?: boolean };
 
 /**
  * The positions of mention nodes whose stored label differs from the record's

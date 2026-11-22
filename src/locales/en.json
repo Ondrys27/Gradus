@@ -1953,7 +1953,8 @@
       "saved": "Saved",
       "error": "Not saved yet, trying again",
       "offline": "Offline, saves once you are back",
-      "tooLarge": "Too long to save, shorten the note"
+      "tooLarge": "Too long to save, shorten the note",
+      "denied": "You can no longer edit this note; this change was not saved."
     },
     "trash": {
       "open": "Trash",
@@ -2157,7 +2158,9 @@
       "typeToSearch": "Type a name of a contact, deal, event or worker",
       "searching": "Searching…",
       "noResults": "Nothing found.",
-      "searchFailed": "Search failed. Try again."
+      "searchFailed": "Search failed. Try again.",
+      "hidden": "Hidden record",
+      "hiddenTitle": "You do not have access to this record"
     },
     "mentioned": {
       "title": "Mentioned in notes"
@@ -2301,6 +2304,123 @@
           "replace": "Turn into text"
         }
       }
+    },
+    "nav": {
+      "label": "Notes and folders",
+      "mine": "My notes",
+      "shared": "Shared with me",
+      "folders": "Folders",
+      "newFolder": "New folder",
+      "noFolders": "No folders yet.",
+      "dropHint": "Drop the note here",
+      "count": "{count, plural, one {# note} other {# notes}}",
+      "expand": "Show subfolders of {name}",
+      "collapse": "Hide subfolders of {name}",
+      "folderMenu": "Folder {name}: more",
+      "sharedFolder": "Shared folder",
+      "sharedBy": "Shared by {name}"
+    },
+    "folders": {
+      "newTitle": "New folder",
+      "editTitle": "Edit folder",
+      "name": "Name",
+      "namePlaceholder": "e.g. Sales materials",
+      "color": "Colour",
+      "colorName": {
+        "violet": "Violet",
+        "teal": "Teal",
+        "gold": "Gold",
+        "green": "Green",
+        "orange": "Orange",
+        "pink": "Pink"
+      },
+      "parent": "Inside",
+      "parentNone": "Top level",
+      "save": "Save",
+      "create": "Create folder",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "share": "Share",
+      "subfolder": "New subfolder",
+      "delete": "Delete folder",
+      "deleteTitle": "Delete the folder “{name}”?",
+      "deleteText": "{count, plural, =0 {The folder is empty.} one {Its note stays, just out of any folder.} other {Its # notes stay, just out of any folder.}} Its subfolders go too, and so does what was shared through it.",
+      "deleteConfirm": "Delete folder",
+      "nameRequired": "Give the folder a name.",
+      "error": "The folder could not be saved. Try again.",
+      "move": "Move to folder",
+      "moveNone": "Out of folders",
+      "moveEmpty": "Make a folder in the side panel first.",
+      "moved": "Moved to {name}",
+      "inheritedNotice": "This note is in the shared folder “{name}”: the people of the folder see it too.",
+      "inheritedHint": "Change it in Share.",
+      "empty": "The folder is empty. A new note made here goes into it."
+    },
+    "sharing": {
+      "share": "Share",
+      "shareTitle": "Share “{title}”",
+      "shareFolderTitle": "Share the folder “{name}”",
+      "private": "Private",
+      "shared": "Shared ({count})",
+      "accessLabel": "{count, plural, =0 {Only you} one {You and # more person} other {You and # more people}}",
+      "addLabel": "Add people or groups",
+      "choose": "Choose…",
+      "wholeCompany": "The whole company",
+      "groups": "Groups",
+      "people": "People",
+      "groupMembers": "{count, plural, one {# person} other {# people}}",
+      "role": {
+        "owner": "Owner",
+        "editor": "Can edit",
+        "viewer": "Can view"
+      },
+      "roleLabel": "Access of {name}",
+      "reshare": "Can share further",
+      "reshareShort": "shares further",
+      "add": "Share",
+      "whoHasAccess": "Who has access",
+      "you": "you",
+      "direct": "directly",
+      "fromFolder": "from the folder",
+      "folderOwner": "owner of the folder",
+      "remove": "Remove access of {name}",
+      "noPeople": "Everybody of the company already has access.",
+      "onlyMembers": "Only people who work in the company now.",
+      "privateInFolder": "Private in this folder",
+      "privateInFolderHint": "The people of the folder will not see this note; only whoever you share it with here.",
+      "overrideHint": "Sharing it with one person here decides for them, even less than the folder gives.",
+      "readOnlyHint": "You can see who has access; only the owner or someone allowed to shares further.",
+      "errors": {
+        "denied": "You can not share this further.",
+        "target": "This person or group is not in the company.",
+        "readOnly": "The company is read only now.",
+        "folder": "This folder can not be used.",
+        "generic": "That did not work. Try again."
+      },
+      "sharedBy": "{name}'s note",
+      "viewOnly": "You can view this note; only its owner or an editor can change it.",
+      "dismiss": "Remove from mine",
+      "dismissTitle": "Remove “{title}” from your notes?",
+      "dismissText": "It stays with its owner and the others; you just will not see it among your notes. When it is shared with you again, it comes back.",
+      "dismissed": "Removed from your notes",
+      "close": "Close",
+      "sharedNote": "Shared note",
+      "emptyShared": "Nothing is shared with you yet.",
+      "emptyMine": "No notes of your own here yet."
+    },
+    "versions": {
+      "open": "Version history",
+      "title": "Version history",
+      "hint": "A version for each person and ten minutes of work, the last 50.",
+      "empty": "No versions yet; they appear as the note is written.",
+      "current": "Current",
+      "savedBy": "{name}",
+      "someone": "Somebody",
+      "restore": "Restore",
+      "restored": "Version restored",
+      "preview": "Preview",
+      "error": "The version could not be restored. Try again.",
+      "close": "Close"
     }
   },
   "pipeline": {
@@ -4331,7 +4451,7 @@
       },
       "fixed": {
         "dashboard": "A worker always has their own dashboard.",
-        "notes": "Notes are private; they never see yours.",
+        "notes": "Their own notes, and yours only when you share them.",
         "settings": "Settings are yours alone; they manage their own account.",
         "always": "Always",
         "never": "Never"
@@ -9996,7 +10116,11 @@
       "invite_accepted": "{name} accepted the invite into the company",
       "invite_declined": "{name} declined the invite",
       "worker_left": "{name} left the company",
-      "invite_requested": "{name} asks for a new invite"
+      "invite_requested": "{name} asks for a new invite",
+      "note_shared": "{name} shared “{title}” with you",
+      "note_shared_untitled": "{name} shared a note with you",
+      "folder_shared": "{name} shared the folder “{title}” with you",
+      "notes_transferred": "{name} left the company: {count, plural, =0 {their shared folders are yours now} one {# shared note is yours now} other {# shared notes are yours now}}"
     }
   },
   "billing": {

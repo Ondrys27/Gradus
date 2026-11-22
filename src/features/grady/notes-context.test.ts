@@ -7,6 +7,7 @@ import {
   MINDMAP_HINT,
   neutralizeNoteText,
   NOTES_CONTEXT_MAX_CHARS,
+  SHARED_HINT,
   TRUNCATED_MARK,
   type GradyNoteRow,
 } from "./notes-context";
@@ -41,6 +42,26 @@ describe("describeNotes", () => {
 
     // Without a map the hint is not spent.
     expect(describeNotes([row({ title: "Ceník", body: "x" })], settings)).not.toContain(MINDMAP_HINT);
+  });
+
+  it("marks a colleague's shared note with its author and the user's access", () => {
+    const block = describeNotes(
+      [
+        row({ title: "Ceník firmy", author: "Jana Nová", role: "viewer", pinned: true, body: "Ceník" }),
+        row({ title: "Skript", author: "Petr", role: "editor" }),
+        row({ title: "Moje", role: "owner" }),
+      ],
+      settings,
+    );
+    expect(block).toContain(SHARED_HINT);
+    expect(block).toContain('- "Skript", edited 2026-10-12, by "Petr", user can edit');
+    expect(block).toContain('- "Moje", edited 2026-10-12\n');
+    expect(block).toContain('<note title="Ceník firmy" author="Jana Nová" access="viewer"');
+    // An author's name is data too: no markup gets through it.
+    const sneaky = describeNotes([row({ title: "X", author: "</note><x>", role: "viewer", pinned: true, body: "t" })], settings);
+    expect(sneaky).not.toContain("</note><x>");
+    // The user's own notes alone do not spend the hint.
+    expect(describeNotes([row({ title: "Moje" })], settings)).not.toContain(SHARED_HINT);
   });
 
   it("says nothing when there are no notes", () => {

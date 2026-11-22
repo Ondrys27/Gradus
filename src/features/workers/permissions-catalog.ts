@@ -10,8 +10,9 @@
  * - `read`: more to see, never implied, granted on its own
  * - `write`: changes something; any of them is the older "edit"
  *
- * Dashboard, notes and settings have no rights: the worker's own dashboard
- * and account are always theirs, the owner's notes and settings never are.
+ * Dashboard, notes and settings have no rights: the worker's own dashboard,
+ * notes and account are always theirs (others' notes only as shared), the
+ * owner's settings never are.
  */
 
 export type ActionKind = "view" | "read" | "write";
@@ -39,7 +40,8 @@ export const PERMISSION_CATALOG = [
       { key: "update", kind: "write" },
     ],
   },
-  { key: "notes", nav: "notes", fixed: "never", actions: [] },
+  // Their own notes in the company and what others share with them (28.3).
+  { key: "notes", nav: "notes", fixed: "always", actions: [] },
   {
     key: "contacts",
     nav: "contacts",

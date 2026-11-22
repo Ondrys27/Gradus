@@ -58,12 +58,16 @@ describe("tools offered to the model", () => {
     expect(move).not.toContain("delete_deal");
   });
 
-  it("in a company there are no notes, settings, company structure or finance without the right", () => {
+  it("in a company there are no settings, company structure or finance without the right", () => {
     const tools = names(
       toolsFor(workspaceFor(WORKER_ACCOUNT, worker, { tasks: ["view"] }), GRADY_TOOLS),
     );
+    // Notes: their own in the company and the shared ones (each note's role decides);
+    // tying a note to milestones and deals only in their own space.
+    expect(tools).toContain("create_note");
+    expect(tools).toContain("update_note");
+    expect(tools).not.toContain("link_note");
     for (const name of [
-      "create_note",
       "update_settings",
       "move_worker",
       "set_worker_permissions",

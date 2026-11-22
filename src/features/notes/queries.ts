@@ -9,10 +9,11 @@ import {
   type QueryClient,
 } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
+import { useWorkspace } from "@/features/account/workspace-queries";
 import { track } from "@/lib/analytics/client";
 import { clientOps } from "@/lib/ops-client";
 import { createClient } from "@/lib/supabase/client";
-import { setNotePinned, trashNote, writeNote } from "./ops";
+import { NoteNotWritableError, setNotePinned, trashNote, writeNote } from "./ops";
 import {
   appendToDoc,
   draftFromDoc,
@@ -26,11 +27,10 @@ import { isMapDoc, mapDraft, sanitizeMapDoc, type MapDoc, type NoteKind } from "
 import { noteContentOf, noteKindOf } from "./mindmap/note-row";
 import { NoteSaver, type BackupEntry, type DraftBackup } from "./note-saver";
 import { sortNotes, TRASH_DAYS } from "./notes-logic";
+import { noteRoleOf, type NoteRole } from "./sharing/logic";
 import type { NoteTemplateKey } from "./templates";
 import type { IndustryKey } from "@/features/onboarding/industries";
 
-/** A person keeps tens, maybe hundreds of notes; this only bounds the query. */
-const LIST_LIMIT = 500;
 const TRASH_LIMIT = 200;
 export const SEARCH_LIMIT = 50;
 
@@ -39,7 +39,22 @@ export const NOTE_REPLACED_EVENT = "gradus:note-replaced";
 
 export const NOTE_LIST_COLUMNS =
   "id, kind, title, preview, pinned, created_at, updated_at, is_demo" as const;
-const NOTE_DETAIL_COLUMNS = `${NOTE_LIST_COLUMNS}, content, content_text` as const;
+const NOTE_DETAIL_COLUMNS =
+  `${NOTE_LIST_COLUMNS}, content, content_text, user_id, space_id, folder_id, folder_private` as const;
+
+/** How the account reaches a note (28.3); a note of its own when absent (older reads). */
+export type NoteAccess = {
+  /** owner, editor (writes the text) or viewer (reads). */
+  role?: NoteRole;
+  can_reshare?: boolean;
+  /** The owner's account, and their name when the note is someone else's. */
+  owner_id?: string;
+  owner_name?: string | null;
+  folder_id?: string | null;
+  folder_private?: boolean;
+  /** Someone besides the owner reaches it (a share of it or of its folder). */
+  shared?: boolean;
+};
 
 export type NoteListItem = {
   id: string;
@@ -52,8 +67,12 @@ export type NoteListItem = {
   updated_at: string;
   /** Sample data of the tutorial (labelled "sample"); absent in older reads. */
   is_demo?: boolean | null;
+} & NoteAccess;
+export type NoteDetail = NoteListItem & {
+  content: DocNode | MapDoc;
+  content_text: string;
+  space_id?: string;
 };
-export type NoteDetail = NoteListItem & { content: DocNode | MapDoc; content_text: string };
 
 export type TrashedNote = { id: string; title: string; preview: string | null; deleted_at: string };
 export type NoteSearchHit = { id: string; title: string; rank: number };
@@ -113,6 +132,7 @@ export function getNoteSaver(userId: string): NoteSaver {
     save: (id, draft) => saveNote(userId, id, draft),
     backup: localBackup(userId),
     isOnline: () => typeof navigator === "undefined" || navigator.onLine !== false,
+    isDenied: (error) => error instanceof NoteNotWritableError,
   });
   savers.set(userId, saver);
 
@@ -159,6 +179,7 @@ export function applyDraftToCache(
     .getQueryData<NoteListItem[]>(noteKeys.list(userId))
     ?.find((note) => note.id === id);
   queryClient.setQueryData<NoteDetail | null>(noteKeys.detail(userId, id), (old) => ({
+    ...(old ?? listed ?? {}),
     id,
     kind: draft.kind ?? "text",
     pinned: old?.pinned ?? listed?.pinned ?? false,
@@ -194,18 +215,13 @@ export function applyDraftToCache(
 
 export function useNotes() {
   const { user } = useSession();
+  const { id: space } = useWorkspace();
   const queryClient = useQueryClient();
   return useQuery({
     queryKey: noteKeys.list(user.id),
     queryFn: async (): Promise<NoteListItem[]> => {
-      const { data, error } = await createClient()
-        .from("notes")
-        .select(NOTE_LIST_COLUMNS)
-        .eq("user_id", user.id)
-        .is("deleted_at", null)
-        .order("pinned", { ascending: false })
-        .order("updated_at", { ascending: false })
-        .limit(LIST_LIMIT);
+      // The account's own notes of the active space and the ones shared with it.
+      const { data, error } = await createClient().rpc("notes_list", { _space: space });
       if (error) throw error;
       // Text typed but not confirmed yet wins over what the server still has,
       // and a note made while offline stays in the list until it is saved.
@@ -216,7 +232,23 @@ export function useNotes() {
       ).filter((note) => !onServer.has(note.id) && saver.unsavedDraft(note.id));
       return sortNotes([
         ...data.map((row) => {
-          const note: NoteListItem = { ...row, kind: noteKindOf(row.kind) };
+          const note: NoteListItem = {
+            id: row.id,
+            kind: noteKindOf(row.kind),
+            title: row.title,
+            preview: row.preview ?? null,
+            pinned: row.pinned,
+            created_at: row.created_at,
+            updated_at: row.updated_at,
+            is_demo: row.is_demo,
+            role: noteRoleOf(row.role),
+            can_reshare: row.can_reshare,
+            owner_id: row.owner_id,
+            owner_name: row.owner_name ?? null,
+            folder_id: row.folder_id ?? null,
+            folder_private: row.folder_private,
+            shared: row.shared,
+          };
           const draft = saver.unsavedDraft(note.id);
           return draft
             ? {
@@ -230,25 +262,37 @@ export function useNotes() {
         ...notYetSaved,
       ]);
     },
+    // Sharing changes from elsewhere: a note shared or taken away shows soon.
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
   });
 }
 
-/** One note with its document; `null` when it does not exist, is not the user's or is deleted. */
+/**
+ * One note with its document and the account's role to it; `null` when it
+ * does not exist, is deleted or the account does not reach it.
+ */
 export function useNote(id: string | null) {
   const { user } = useSession();
   return useQuery({
     queryKey: noteKeys.detail(user.id, id ?? ""),
     queryFn: async (): Promise<NoteDetail | null> => {
-      const { data, error } = await createClient()
-        .from("notes")
-        .select(NOTE_DETAIL_COLUMNS)
-        .eq("user_id", user.id)
-        .eq("id", id!)
-        .is("deleted_at", null)
-        .maybeSingle();
+      const supabase = createClient();
+      const [row, access] = await Promise.all([
+        supabase
+          .from("notes")
+          .select(NOTE_DETAIL_COLUMNS)
+          .eq("id", id!)
+          .is("deleted_at", null)
+          .maybeSingle(),
+        supabase.rpc("note_role", { _note: id! }),
+      ]);
       // A malformed id (22P02) is just a note that does not exist.
-      if (error && error.code !== "22P02") throw error;
+      if (row.error && row.error.code !== "22P02") throw row.error;
+      if (access.error && access.error.code !== "22P02") throw access.error;
+      const data = row.data;
       if (!data) return null;
+      const role = access.data?.[0];
       const draft = getNoteSaver(user.id).latestDraft(data.id);
       const kind = draft ? (draft.kind ?? "text") : noteKindOf(data.kind);
       return {
@@ -257,6 +301,12 @@ export function useNote(id: string | null) {
         content: noteContentOf(kind, draft?.content ?? data.content),
         content_text: draft?.content_text ?? data.content_text,
         title: draft?.title ?? data.title,
+        role: data.user_id === user.id ? "owner" : noteRoleOf(role?.role),
+        can_reshare: data.user_id === user.id ? true : (role?.can_reshare ?? false),
+        owner_id: data.user_id,
+        folder_id: data.folder_id,
+        folder_private: data.folder_private,
+        space_id: data.space_id,
       };
     },
     enabled: !!id,
@@ -269,6 +319,7 @@ export function useNote(id: string | null) {
 
 export function useNotesTrash(enabled: boolean) {
   const { user } = useSession();
+  const { id: space } = useWorkspace();
   return useQuery({
     queryKey: noteKeys.trash(user.id),
     queryFn: async (): Promise<TrashedNote[]> => {
@@ -277,6 +328,7 @@ export function useNotesTrash(enabled: boolean) {
         .from("notes")
         .select("id, title, preview, deleted_at")
         .eq("user_id", user.id)
+        .eq("space_id", space)
         .not("deleted_at", "is", null)
         .gt("deleted_at", since)
         .order("deleted_at", { ascending: false })
@@ -291,11 +343,12 @@ export function useNotesTrash(enabled: boolean) {
 /** Full-text search of the user's notes (2+ characters), best first. */
 export function useNoteSearch(query: string) {
   const { user } = useSession();
+  const { id: space } = useWorkspace();
   return useQuery({
     queryKey: noteKeys.search(user.id, query),
     queryFn: async ({ signal }): Promise<NoteSearchHit[]> => {
       const { data, error } = await createClient()
-        .rpc("search_notes", { _query: query, _limit: SEARCH_LIMIT })
+        .rpc("search_notes", { _query: query, _limit: SEARCH_LIMIT, _space: space })
         .abortSignal(signal);
       if (error) throw error;
       return (data ?? []).map(({ id, title, rank }) => ({ id, title, rank }));
@@ -369,6 +422,8 @@ export type CreateNoteInput = {
   template?: { key: NoteTemplateKey; industry: IndustryKey | null };
   /** A note made from a file or from another note; by default blank or template. */
   source?: "import" | "convert";
+  /** The folder it goes into (the open one), or none. */
+  folderId?: string | null;
 };
 
 /**
@@ -377,10 +432,12 @@ export type CreateNoteInput = {
  */
 export function useCreateNote() {
   const { user } = useSession();
+  const { id: space } = useWorkspace();
   const queryClient = useQueryClient();
   return (input: CreateNoteInput): string => {
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
+    const folderId = input.folderId ?? null;
     const note: NoteDetail = {
       id,
       kind: input.draft.kind ?? "text",
@@ -391,13 +448,20 @@ export function useCreateNote() {
       updated_at: now,
       content: input.draft.content,
       content_text: input.draft.content_text,
+      role: "owner",
+      can_reshare: true,
+      owner_id: user.id,
+      owner_name: null,
+      folder_id: folderId,
+      folder_private: false,
+      space_id: space,
     };
     queryClient.setQueryData(noteKeys.detail(user.id, id), note);
     queryClient.setQueryData<NoteListItem[]>(noteKeys.list(user.id), (list) =>
       sortNotes([note, ...(list ?? [])]),
     );
     const saver = getNoteSaver(user.id);
-    saver.edit(id, input.draft);
+    saver.edit(id, { ...input.draft, place: { spaceId: space, folderId } });
     void saver.flush(id);
     const kind = input.draft.kind ?? "text";
     track("note_created", {
@@ -559,7 +623,6 @@ export function useAppendToNote() {
         const { data, error } = await createClient()
           .from("notes")
           .select("kind, content")
-          .eq("user_id", user.id)
           .eq("id", id)
           .is("deleted_at", null)
           .maybeSingle();

@@ -256,7 +256,7 @@ export function MapNoteEditor({ note, readOnly, autoFocus, isPhone, actions, bac
   const mentionsKey = mentionSetKey(mentions);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const stableMentions = useMemo(() => mentions, [mentionsKey]);
-  const targets = useMentionTargets(stableMentions);
+  const targets = useMentionTargets(stableMentions, { id: note.id, spaceId: note.space_id });
   const suggestions = useMemo(() => suggestedIds(doc), [doc]);
   const selected = selectedId ? findNode(doc, selectedId) : null;
 

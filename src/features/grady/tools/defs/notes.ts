@@ -19,25 +19,40 @@ import { defineTool, ToolError, type ToolContext } from "../types";
 import { hrefs, inserted, mustFind, ops, quoted, updated, uuid } from "./shared";
 
 /**
- * Notes are always the account's own (never a company's), so these tools are
- * offered only in the account's own space. A note's text is the user's data;
- * Grady writes into it only on the user's word in the chat.
+ * Notes of the active space the account reaches: its own and those shared
+ * with it (28.3). Grady works within the asking person's rights: an editor's
+ * shared note may be changed, a viewer's only read; pinning and the trash are
+ * the owner's. A note's text is the user's data; Grady writes into it only on
+ * the user's word in the chat.
  */
 
 const TEXT_MAX = 20_000;
 /** A note bigger than this is changed, but its old text is not kept for Undo. */
 const UNDO_CONTENT_MAX = 100_000;
 
-async function readNote(ctx: ToolContext, id: string) {
-  return mustFind(
+type NeedRole = "read" | "write" | "own";
+
+/** The note (RLS: only one the account reaches) when its role allows `need`. */
+async function readNote(ctx: ToolContext, id: string, need: NeedRole = "write") {
+  const note = await mustFind(
     ctx.db
       .from("notes")
-      .select("id, title, kind, content, content_text, pinned")
-      .eq("user_id", ctx.userId)
+      .select("id, title, kind, content, content_text, pinned, user_id")
       .eq("id", id)
       .is("deleted_at", null)
       .maybeSingle(),
   );
+  if (need === "read") return note;
+  const own = note.user_id === ctx.userId;
+  if (need === "own" && !own) throw new ToolError("noteOwnerOnly", "Only the owner of the note may do this.");
+  if (need === "write" && !own) {
+    const { data, error } = await ctx.db.rpc("note_role", { _note: note.id });
+    if (error) throw error;
+    if (data?.[0]?.role !== "editor") {
+      throw new ToolError("noteReadOnly", "The note is shared with the user for reading only.");
+    }
+  }
+  return note;
 }
 
 /** The document with its first text line (the title) replaced; the rest stays as it is. */
@@ -80,7 +95,6 @@ export const noteTools = [
     name: "create_note",
     section: "notes",
     action: null,
-    ownSpaceOnly: true,
     kind: "write",
     risk: "instant",
     description:
@@ -94,6 +108,9 @@ export const noteTools = [
     }),
     describe: (input, t) => t("create_note", { title: quoted(input.title) }),
     async execute(ctx, input) {
+      if (input.linkTo && ctx.workspace.id !== ctx.userId) {
+        throw new ToolError("ownSpaceOnly", "Notes are tied to milestones, tasks and deals only in the user's own space.");
+      }
       const id = crypto.randomUUID();
       const kind = input.kind ?? "text";
       const draft = checked(
@@ -101,7 +118,11 @@ export const noteTools = [
           ? mapDraft(newMapDoc(input.title, input.branches ?? []))
           : draftFromDoc(docWithTitle(input.title, blocksFromPlainText(input.text ?? ""))),
       );
-      await writeNote(ops(ctx), { userId: ctx.userId, id, draft });
+      await writeNote(ops(ctx), {
+        userId: ctx.userId,
+        id,
+        draft: { ...draft, place: { spaceId: ctx.workspace.id, folderId: null } },
+      });
       ctx.track("note_created", { source: "blank", where: "jarvis", kind });
       const records: UndoRecord[] = [inserted("notes", id)];
       if (input.linkTo) {
@@ -118,7 +139,6 @@ export const noteTools = [
     name: "append_to_note",
     section: "notes",
     action: null,
-    ownSpaceOnly: true,
     kind: "write",
     risk: "instant",
     description:
@@ -154,7 +174,6 @@ export const noteTools = [
     name: "update_note",
     section: "notes",
     action: null,
-    ownSpaceOnly: true,
     kind: "write",
     risk: "instant",
     description:
@@ -209,14 +228,13 @@ export const noteTools = [
     name: "pin_note",
     section: "notes",
     action: null,
-    ownSpaceOnly: true,
     kind: "write",
     risk: "instant",
     description: "Pin a note to the top of the list, or unpin it.",
     input: z.object({ noteId: uuid, pinned: z.boolean() }),
     describe: (input, t) => t(input.pinned ? "pin_note" : "unpin_note", { title: "" }),
     async execute(ctx, input) {
-      const note = await readNote(ctx, input.noteId);
+      const note = await readNote(ctx, input.noteId, "own");
       await setNotePinned(ops(ctx), { userId: ctx.userId, id: note.id, pinned: input.pinned });
       return {
         output: { noteId: note.id, pinned: input.pinned },
@@ -244,7 +262,7 @@ export const noteTools = [
     }),
     describe: (_input, t) => t("link_note", { title: "" }),
     async execute(ctx, input) {
-      const note = await readNote(ctx, input.noteId);
+      const note = await readNote(ctx, input.noteId, "read");
       const link = await linkNote(ops(ctx), {
         noteId: note.id,
         target: input.target,
@@ -265,7 +283,6 @@ export const noteTools = [
     name: "trash_note",
     section: "notes",
     action: null,
-    ownSpaceOnly: true,
     kind: "write",
     risk: "confirm",
     description:
@@ -273,14 +290,14 @@ export const noteTools = [
     input: z.object({ noteId: uuid }),
     describe: (_input, t) => t("trash_note", { title: "" }),
     async prepare(ctx, input) {
-      const note = await readNote(ctx, input.noteId);
+      const note = await readNote(ctx, input.noteId, "own");
       return {
         summary: ctx.t("trash_note", { title: quoted(note.title) }),
         href: hrefs.note(note.id),
       };
     },
     async execute(ctx, input) {
-      const note = await readNote(ctx, input.noteId);
+      const note = await readNote(ctx, input.noteId, "own");
       await trashNote(ops(ctx), { userId: ctx.userId, id: note.id, pinned: note.pinned });
       return {
         output: { noteId: note.id, trashed: true },

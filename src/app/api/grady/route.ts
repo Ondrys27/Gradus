@@ -592,7 +592,7 @@ async function salesAnalysis(ctx: Context, body: unknown) {
 /**
  * Sonnet suggests branches under one node of the user's mind map note
  * ("fill in my competitors map"). The map is read here with the user's own
- * client, so RLS keeps it to their own notes; the client saves its edits
+ * client, so RLS keeps it to notes the user reaches; the client saves its edits
  * first. Nothing is written: the branches go back to the map, grey, until
  * the user accepts or deletes them.
  */
@@ -605,7 +605,6 @@ async function noteMapSuggest(ctx: Context, body: unknown) {
     .from("notes")
     .select("kind, content")
     .eq("id", parsed.data.noteId)
-    .eq("user_id", userId)
     .is("deleted_at", null)
     .maybeSingle();
   if (error) throw error;
@@ -869,7 +868,7 @@ async function chat(ctx: Context, body: unknown, request: Request) {
       return "";
     }),
     // The user's notes as data: titles, and the texts that matter for this message.
-    loadNotesContext(supabase, message, settings, userId).catch((error) => {
+    loadNotesContext(supabase, message, settings).catch((error) => {
       console.error("grady notes failed", error);
       return "";
     }),

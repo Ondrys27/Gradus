@@ -117,7 +117,7 @@ export function SaveStatus({ noteId }: { noteId: string }) {
   useSyncExternalStore(saver.subscribe, saver.getSnapshot, saver.getSnapshot);
   const status = saver.statusOf(noteId);
   if (!status) return null;
-  const warn = status === "error" || status === "offline" || status === "tooLarge";
+  const warn = status === "error" || status === "offline" || status === "tooLarge" || status === "denied";
   return (
     <span
       role="status"
@@ -156,7 +156,7 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back, 
   const mentionText = useMentionText();
   const [menu] = useState(() => new MentionMenuBridge());
   const [mentions, setMentions] = useState(() => mentionsInDoc(note.content));
-  const targets = useMentionTargets(mentions);
+  const targets = useMentionTargets(mentions, { id: note.id, spaceId: note.space_id });
 
   const extensions = useMemo(
     () => [

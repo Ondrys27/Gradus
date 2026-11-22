@@ -21,7 +21,15 @@ export type NoteDraft = {
   title: string;
   content: DocNode | MapDoc;
   content_text: string;
+  /**
+   * Where a new note goes (its space and folder); used only when the first
+   * save creates the row, kept with the draft so a note made offline lands
+   * there too.
+   */
+  place?: NotePlace;
 };
+
+export type NotePlace = { spaceId: string; folderId: string | null };
 
 /** A text note's draft: the editor's document. */
 export type TextDraft = NoteDraft & { kind: "text"; content: DocNode };

@@ -1,6 +1,6 @@
 "use client";
 
-import { FileTextIcon, NetworkIcon, PinIcon, SearchIcon, Trash2Icon, XIcon } from "lucide-react";
+import { FileTextIcon, NetworkIcon, PinIcon, SearchIcon, Trash2Icon, UsersRoundIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatEditedAt } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
@@ -9,6 +9,7 @@ import { DemoBadge } from "@/features/tutorial/demo-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { groupNotes } from "./notes-logic";
 import type { NoteListItem } from "./queries";
+import { NOTE_DRAG_TYPE } from "./sharing/notes-nav";
 
 type Props = {
   notes: NoteListItem[] | undefined;
@@ -19,7 +20,10 @@ type Props = {
   onQueryChange: (query: string) => void;
   selectedId: string | null;
   onSelect: (id: string) => void;
-  onOpenTrash: () => void;
+  /** What the list shows when the open part of the panel holds no note. */
+  emptyText?: string;
+  /** The account's own notes can be dragged onto a folder. */
+  draggable?: boolean;
   /** Asks to move a note to the trash (its bin, or Delete / Backspace on its row); none when read-only. */
   onRequestDelete?: (note: NoteListItem, viaKeyboard: boolean) => void;
   loadError: boolean;
@@ -30,21 +34,31 @@ function NoteRow({
   note,
   selected,
   onSelect,
-  onRequestDelete,
+  onRequestDelete: requestDelete,
+  draggable,
 }: {
   note: NoteListItem;
   selected: boolean;
   onSelect: (id: string) => void;
   onRequestDelete?: (note: NoteListItem, viaKeyboard: boolean) => void;
+  draggable?: boolean;
 }) {
   const t = useTranslations("notes");
   const settings = useFormatSettings();
   const title = note.title || t("untitled");
+  const own = (note.role ?? "owner") === "owner";
+  // Only the owner moves a note to the trash; a shared one is removed from the list in the note.
+  const onRequestDelete = own ? requestDelete : undefined;
   return (
     <li className="group relative">
       <button
         type="button"
         data-tutorial="note-item"
+        draggable={draggable && own}
+        onDragStart={(event) => {
+          event.dataTransfer.setData(NOTE_DRAG_TYPE, note.id);
+          event.dataTransfer.effectAllowed = "move";
+        }}
         onClick={() => onSelect(note.id)}
         onKeyDown={(event) => {
           if (!onRequestDelete || (event.key !== "Delete" && event.key !== "Backspace")) return;
@@ -55,6 +69,7 @@ function NoteRow({
         aria-current={selected ? "true" : undefined}
         data-testid="note-row"
         data-note-row={note.id}
+        data-role={note.role ?? "owner"}
         className={cn(
           "flex min-h-14 w-full flex-col gap-0.5 rounded-xl px-3 py-2.5 text-left transition-colors",
           "focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
@@ -73,6 +88,13 @@ function NoteRow({
             <FileTextIcon aria-label={t("kind.text")} className="size-3.5 shrink-0 text-ink-muted" />
           )}
           {note.pinned && <PinIcon aria-label={t("pinnedLabel")} className="size-3 shrink-0 text-gold" />}
+          {note.shared && (
+            <UsersRoundIcon
+              aria-label={t("sharing.sharedNote")}
+              data-testid="note-row-shared"
+              className="size-3 shrink-0 text-teal"
+            />
+          )}
           <span className={cn("truncate font-semibold", note.title ? "text-ink" : "text-ink-muted")}>
             {title}
           </span>
@@ -82,7 +104,10 @@ function NoteRow({
           <span className="shrink-0 text-ink-soft tabular-nums">
             {formatEditedAt(new Date(note.updated_at), settings)}
           </span>
-          <span className="truncate text-ink-muted">{note.preview || t("noText")}</span>
+          <span className="truncate text-ink-muted">
+            {!own && note.owner_name ? `${note.owner_name} · ` : ""}
+            {note.preview || t("noText")}
+          </span>
         </span>
       </button>
       {onRequestDelete && (
@@ -112,12 +137,14 @@ function Group({
   selectedId,
   onSelect,
   onRequestDelete,
+  draggable,
 }: {
   label: string | null;
   notes: NoteListItem[];
   selectedId: string | null;
   onSelect: (id: string) => void;
   onRequestDelete?: (note: NoteListItem, viaKeyboard: boolean) => void;
+  draggable?: boolean;
 }) {
   if (notes.length === 0) return null;
   return (
@@ -131,6 +158,7 @@ function Group({
             selected={note.id === selectedId}
             onSelect={onSelect}
             onRequestDelete={onRequestDelete}
+            draggable={draggable}
           />
         ))}
       </ul>
@@ -147,7 +175,8 @@ export function NotesList({
   onQueryChange,
   selectedId,
   onSelect,
-  onOpenTrash,
+  emptyText,
+  draggable,
   onRequestDelete,
   loadError,
   onRetry,
@@ -213,6 +242,7 @@ export function NotesList({
             selectedId={selectedId}
             onSelect={onSelect}
             onRequestDelete={onRequestDelete}
+            draggable={draggable}
           />
         ) : (
           <p className="px-3 py-4 text-sm text-ink-muted">
@@ -227,6 +257,7 @@ export function NotesList({
             selectedId={selectedId}
             onSelect={onSelect}
             onRequestDelete={onRequestDelete}
+            draggable={draggable}
           />
           <Group
             label={groups.pinned.length > 0 ? t("notesGroup") : null}
@@ -234,19 +265,15 @@ export function NotesList({
             selectedId={selectedId}
             onSelect={onSelect}
             onRequestDelete={onRequestDelete}
+            draggable={draggable}
           />
+          {notes.length === 0 && emptyText && (
+            <p className="px-3 py-4 text-sm text-ink-muted" data-testid="notes-scope-empty">
+              {emptyText}
+            </p>
+          )}
         </>
       )}
-
-      <button
-        type="button"
-        onClick={onOpenTrash}
-        data-testid="notes-trash-open"
-        className="mt-2 flex min-h-11 items-center gap-2 self-start rounded-xl px-3 text-sm text-ink-muted transition-colors hover:text-ink"
-      >
-        <Trash2Icon className="size-4" />
-        {t("trash.open")}
-      </button>
     </div>
   );
 }

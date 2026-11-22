@@ -463,6 +463,43 @@ export const EVENTS = {
   }),
   /** One of Grady's answers kept in the notes, as a new note or added to one. */
   note_saved_from_jarvis: event("notes", "client", true, { mode: oneOf(["new", "append"]) }),
+  /** A folder of notes made (28.3): at the top or inside another one. */
+  note_folder_created: event("notes", "client", true, { nested: bool() }),
+  /** A folder renamed, recoloured or moved under another one. */
+  note_folder_updated: event("notes", "client", true, { field: oneOf(["name", "color", "parent"]) }),
+  /** A folder deleted; its notes stay, out of any folder. */
+  note_folder_deleted: event("notes", "client", true, { notes: count(5000) }),
+  /** A note put into a folder or out of every folder, by dragging or from the menu. */
+  note_moved: event("notes", "client", true, {
+    to: oneOf(["folder", "none"]),
+    via: oneOf(["drag", "menu"]),
+  }),
+  /** A note or a folder shared with a member, a group or the whole company. */
+  note_shared: event("notes", "client", true, {
+    on: oneOf(["note", "folder"]),
+    target: oneOf(["member", "group", "space"]),
+    role: oneOf(["viewer", "editor"]),
+    reshare: bool(),
+  }),
+  /** The role or "may share further" of an existing share changed. */
+  note_share_updated: event("notes", "client", true, {
+    on: oneOf(["note", "folder"]),
+    role: oneOf(["viewer", "editor"]),
+    reshare: bool(),
+  }),
+  note_share_removed: event("notes", "client", true, {
+    on: oneOf(["note", "folder"]),
+    target: oneOf(["member", "group", "space"]),
+  }),
+  /** "Private in this folder" switched on or off for a note in a shared folder. */
+  note_folder_private_set: event("notes", "client", true, { private: bool() }),
+  /** A note someone shares removed from the account's own lists. */
+  note_dismissed: event("notes", "client", true, {}),
+  /** An older version of a note brought back; whether the account saved it itself. */
+  note_version_restored: event("notes", "client", true, {
+    kind: oneOf(NOTE_KINDS),
+    own: bool(),
+  }),
 
   // --- pipeline ------------------------------------------------------------
   deal_created: event("pipeline", "client", true, {

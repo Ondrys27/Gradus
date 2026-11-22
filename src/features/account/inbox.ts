@@ -36,11 +36,26 @@ export type PendingInvite = {
 
 export type AccountNotification = {
   id: string;
-  kind: "invite_accepted" | "invite_declined" | "worker_left" | "invite_requested";
+  kind:
+    | "invite_accepted"
+    | "invite_declined"
+    | "worker_left"
+    | "invite_requested"
+    /** A note or a folder shared with the account (28.3). */
+    | "note_shared"
+    /** A departing worker's shared notes stay with the company, now the owner's. */
+    | "notes_transferred";
   workerId: string | null;
   workerName: string | null;
   createdAt: string;
   read: boolean;
+  /** Note notifications: the space, the note or folder, who did it and its title (while reachable). */
+  spaceId?: string | null;
+  noteId?: string | null;
+  folderId?: string | null;
+  actorName?: string | null;
+  title?: string | null;
+  itemCount?: number | null;
 };
 
 export type Inbox = { invites: PendingInvite[]; notifications: AccountNotification[] };
@@ -55,7 +70,28 @@ export class InboxActionError extends Error {
   }
 }
 
-const KINDS = new Set(["invite_accepted", "invite_declined", "worker_left", "invite_requested"]);
+const KINDS = new Set([
+  "invite_accepted",
+  "invite_declined",
+  "worker_left",
+  "invite_requested",
+  "note_shared",
+  "notes_transferred",
+]);
+
+/** Where a notification of notes leads: the note or folder, through its company when that is not the open one. */
+export function noteNotificationHref(
+  note: Pick<AccountNotification, "spaceId" | "noteId" | "folderId">,
+  activeSpace: string,
+): string {
+  const query = new URLSearchParams();
+  if (note.folderId) query.set("folder", note.folderId);
+  if (note.noteId) query.set("note", note.noteId);
+  const search = query.toString();
+  const path = search ? `/app/poznamky?${search}` : "/app/poznamky";
+  if (!note.spaceId || note.spaceId === activeSpace) return path;
+  return `/app/prostor/${encodeURIComponent(note.spaceId)}?next=${encodeURIComponent(path)}`;
+}
 
 function asRows<T>(value: unknown): T[] {
   return Array.isArray(value) ? (value as T[]) : [];
@@ -73,13 +109,25 @@ export function useInbox() {
         supabase.rpc("my_worker_invites"),
         supabase
           .from("account_notifications")
-          .select("id, kind, worker_id, created_at, read_at")
+          .select("id, kind, worker_id, created_at, read_at, space_id, note_id, folder_id, item_count")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })
           .limit(NOTIFICATIONS_LIMIT),
       ]);
       if (invites.error) throw invites.error;
       if (notes.error) throw notes.error;
+      // Who shared what: names and titles only while the account still reaches them.
+      const noteIds = notes.data
+        .filter((note) => note.kind === "note_shared" || note.kind === "notes_transferred")
+        .map((note) => note.id);
+      const labels = new Map<string, { actor: string | null; title: string | null }>();
+      if (noteIds.length) {
+        const { data, error } = await supabase.rpc("note_notification_labels", { _ids: noteIds });
+        if (error) throw error;
+        for (const row of data ?? []) {
+          labels.set(row.id, { actor: row.actor_name || null, title: row.title ?? null });
+        }
+      }
       // The people the notifications are about are the account's own workers.
       const workerIds = [...new Set(notes.data.flatMap((note) => (note.worker_id ? [note.worker_id] : [])))];
       const names = new Map<string, string>();
@@ -129,6 +177,12 @@ export function useInbox() {
                   workerName: note.worker_id ? (names.get(note.worker_id) ?? null) : null,
                   createdAt: note.created_at,
                   read: Boolean(note.read_at),
+                  spaceId: note.space_id ?? null,
+                  noteId: note.note_id ?? null,
+                  folderId: note.folder_id ?? null,
+                  actorName: labels.get(note.id)?.actor ?? null,
+                  title: labels.get(note.id)?.title ?? null,
+                  itemCount: note.item_count ?? null,
                 },
               ]
             : [],

@@ -62,26 +62,41 @@ export type Database = {
       }
       account_notifications: {
         Row: {
+          actor_id: string | null
           created_at: string
+          folder_id: string | null
           id: string
+          item_count: number | null
           kind: string
+          note_id: string | null
           read_at: string | null
+          space_id: string | null
           user_id: string
           worker_id: string | null
         }
         Insert: {
+          actor_id?: string | null
           created_at?: string
+          folder_id?: string | null
           id?: string
+          item_count?: number | null
           kind: string
+          note_id?: string | null
           read_at?: string | null
+          space_id?: string | null
           user_id: string
           worker_id?: string | null
         }
         Update: {
+          actor_id?: string | null
           created_at?: string
+          folder_id?: string | null
           id?: string
+          item_count?: number | null
           kind?: string
+          note_id?: string | null
           read_at?: string | null
+          space_id?: string | null
           user_id?: string
           worker_id?: string | null
         }
@@ -3394,18 +3409,159 @@ export type Database = {
           },
         ]
       }
+      note_dismissals: {
+        Row: {
+          created_at: string
+          note_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          note_id: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          note_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      note_folders: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          parent_id: string | null
+          position: number
+          space_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          parent_id?: string | null
+          position?: number
+          space_id: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          parent_id?: string | null
+          position?: number
+          space_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      note_shares: {
+        Row: {
+          can_reshare: boolean
+          created_at: string
+          created_by: string | null
+          folder_id: string | null
+          group_id: string | null
+          id: string
+          note_id: string | null
+          role: string
+          space_id: string
+          target_kind: string
+          target_user_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          can_reshare?: boolean
+          created_at?: string
+          created_by?: string | null
+          folder_id?: string | null
+          group_id?: string | null
+          id?: string
+          note_id?: string | null
+          role: string
+          space_id: string
+          target_kind: string
+          target_user_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          can_reshare?: boolean
+          created_at?: string
+          created_by?: string | null
+          folder_id?: string | null
+          group_id?: string | null
+          id?: string
+          note_id?: string | null
+          role?: string
+          space_id?: string
+          target_kind?: string
+          target_user_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      note_versions: {
+        Row: {
+          content: Json
+          content_text: string
+          created_at: string
+          id: string
+          kind: string
+          note_id: string
+          saved_by: string | null
+          space_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: Json
+          content_text?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          note_id: string
+          saved_by?: string | null
+          space_id: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          content_text?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          note_id?: string
+          saved_by?: string | null
+          space_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notes: {
         Row: {
           content: Json
           content_text: string
           created_at: string
           deleted_at: string | null
+          folder_id: string | null
+          folder_private: boolean
           id: string
           is_demo: boolean
           kind: string
           pinned: boolean
           preview: string | null
           search_vector: unknown
+          space_id: string
           title: string
           updated_at: string
           user_id: string
@@ -3415,12 +3571,15 @@ export type Database = {
           content_text?: string
           created_at?: string
           deleted_at?: string | null
+          folder_id?: string | null
+          folder_private?: boolean
           id?: string
           is_demo?: boolean
           kind?: string
           pinned?: boolean
           preview?: string | null
           search_vector?: unknown
+          space_id?: string
           title?: string
           updated_at?: string
           user_id?: string
@@ -3430,12 +3589,15 @@ export type Database = {
           content_text?: string
           created_at?: string
           deleted_at?: string | null
+          folder_id?: string | null
+          folder_private?: boolean
           id?: string
           is_demo?: boolean
           kind?: string
           pinned?: boolean
           preview?: string | null
           search_vector?: unknown
+          space_id?: string
           title?: string
           updated_at?: string
           user_id?: string
@@ -7098,14 +7260,17 @@ export type Database = {
         }[]
       }
       jarvis_notes: {
-        Args: { _body_chars?: number; _query?: string }
+        Args: { _body_chars?: number; _query?: string; _space?: string }
         Returns: {
+          author: string
           body: string
           id: string
+          kind: string
           links: Json
           match_rank: number
           pinned: boolean
           recent: boolean
+          role: string
           title: string
           updated_at: string
         }[]
@@ -7825,6 +7990,144 @@ export type Database = {
         Returns: string
       }
       normalize_phone: { Args: { _phone: string }; Returns: string }
+      note_access_list: {
+        Args: { _folder?: string; _note?: string }
+        Returns: {
+          avatar_url: string
+          can_reshare: boolean
+          created_by: string
+          entry: string
+          group_id: string
+          member_count: number
+          name: string
+          role: string
+          share_id: string
+          source: string
+          target_kind: string
+          user_id: string
+        }[]
+      }
+      note_folder_writable: {
+        Args: { _folder: string; _space: string }
+        Returns: boolean
+      }
+      note_folders_list: {
+        Args: { _space: string }
+        Returns: {
+          can_reshare: boolean
+          color: string
+          id: string
+          name: string
+          owner_id: string
+          owner_name: string
+          parent_id: string
+          position: number
+          role: string
+          shared: boolean
+        }[]
+      }
+      note_mention_states: {
+        Args: { _note: string }
+        Returns: {
+          target_id: string
+          target_type: string
+        }[]
+      }
+      note_my_folder_roles: {
+        Args: never
+        Returns: {
+          can_reshare: boolean
+          folder_id: string
+          role: string
+        }[]
+      }
+      note_my_roles: {
+        Args: never
+        Returns: {
+          can_reshare: boolean
+          note_id: string
+          role: string
+        }[]
+      }
+      note_notification_labels: {
+        Args: { _ids: string[] }
+        Returns: {
+          actor_name: string
+          id: string
+          title: string
+        }[]
+      }
+      note_people: {
+        Args: { _folder?: string; _note?: string }
+        Returns: {
+          avatar_url: string
+          name: string
+          role: string
+          user_id: string
+        }[]
+      }
+      note_role: {
+        Args: { _note: string }
+        Returns: {
+          can_reshare: boolean
+          dismissed: boolean
+          role: string
+        }[]
+      }
+      note_share_groups: {
+        Args: { _space: string }
+        Returns: {
+          color: string
+          id: string
+          member_count: number
+          name: string
+        }[]
+      }
+      note_share_remove: { Args: { _share: string }; Returns: boolean }
+      note_share_set: {
+        Args: {
+          _can_reshare?: boolean
+          _folder: string
+          _note: string
+          _role: string
+          _target: string
+          _target_kind: string
+        }
+        Returns: string
+      }
+      note_versions_list: {
+        Args: { _limit?: number; _note: string }
+        Returns: {
+          created_at: string
+          excerpt: string
+          id: string
+          kind: string
+          saved_by: string
+          saved_by_name: string
+          title: string
+          updated_at: string
+        }[]
+      }
+      notes_list: {
+        Args: { _space: string }
+        Returns: {
+          can_reshare: boolean
+          created_at: string
+          folder_id: string
+          folder_private: boolean
+          id: string
+          is_demo: boolean
+          kind: string
+          owner_id: string
+          owner_name: string
+          pinned: boolean
+          preview: string
+          role: string
+          shared: boolean
+          title: string
+          updated_at: string
+        }[]
+      }
       pause_prospecting: {
         Args: never
         Returns: {
@@ -8363,7 +8666,7 @@ export type Database = {
       }
       search_norm: { Args: { _value: string }; Returns: string }
       search_notes: {
-        Args: { _limit?: number; _query: string }
+        Args: { _limit?: number; _query: string; _space?: string }
         Returns: {
           data: Json
           id: string

@@ -1953,7 +1953,8 @@
       "saved": "Uloženo",
       "error": "Zatím neuloženo, zkouším znovu",
       "offline": "Offline, uložím po připojení",
-      "tooLarge": "Poznámka je moc dlouhá, zkrať ji"
+      "tooLarge": "Poznámka je moc dlouhá, zkrať ji",
+      "denied": "Tuhle poznámku už upravovat nemůžeš; změna se neuložila."
     },
     "trash": {
       "open": "Koš",
@@ -2157,7 +2158,9 @@
       "typeToSearch": "Piš jméno kontaktu, obchodu, události nebo pracovníka",
       "searching": "Hledám…",
       "noResults": "Nic nenalezeno.",
-      "searchFailed": "Hledání se nepovedlo, zkus to znovu."
+      "searchFailed": "Hledání se nepovedlo, zkus to znovu.",
+      "hidden": "Skrytý záznam",
+      "hiddenTitle": "K tomuhle záznamu nemáš přístup"
     },
     "mentioned": {
       "title": "Zmíněno v poznámkách"
@@ -2301,6 +2304,123 @@
           "replace": "Převést na text"
         }
       }
+    },
+    "nav": {
+      "label": "Poznámky a složky",
+      "mine": "Moje poznámky",
+      "shared": "Sdílené se mnou",
+      "folders": "Složky",
+      "newFolder": "Nová složka",
+      "noFolders": "Zatím žádné složky.",
+      "dropHint": "Pusť poznámku sem",
+      "count": "{count, plural, one {# poznámka} few {# poznámky} other {# poznámek}}",
+      "expand": "Ukázat podsložky {name}",
+      "collapse": "Skrýt podsložky {name}",
+      "folderMenu": "Složka {name}: další",
+      "sharedFolder": "Sdílená složka",
+      "sharedBy": "Sdílí {name}"
+    },
+    "folders": {
+      "newTitle": "Nová složka",
+      "editTitle": "Upravit složku",
+      "name": "Název",
+      "namePlaceholder": "např. Obchodní podklady",
+      "color": "Barva",
+      "colorName": {
+        "violet": "Fialová",
+        "teal": "Tyrkysová",
+        "gold": "Zlatá",
+        "green": "Zelená",
+        "orange": "Oranžová",
+        "pink": "Růžová"
+      },
+      "parent": "Uvnitř",
+      "parentNone": "Nejvyšší úroveň",
+      "save": "Uložit",
+      "create": "Založit složku",
+      "cancel": "Zrušit",
+      "edit": "Upravit",
+      "share": "Sdílet",
+      "subfolder": "Nová podsložka",
+      "delete": "Smazat složku",
+      "deleteTitle": "Smazat složku „{name}“?",
+      "deleteText": "{count, plural, =0 {Složka je prázdná.} one {Její poznámka zůstane, jen mimo složky.} few {Její # poznámky zůstanou, jen mimo složky.} other {Jejích # poznámek zůstane, jen mimo složky.}} Smažou se i podsložky a sdílení přes ni.",
+      "deleteConfirm": "Smazat složku",
+      "nameRequired": "Pojmenuj složku.",
+      "error": "Složku se nepodařilo uložit. Zkus to znovu.",
+      "move": "Přesunout do složky",
+      "moveNone": "Mimo složky",
+      "moveEmpty": "Nejdřív založ složku v levém panelu.",
+      "moved": "Přesunuto do {name}",
+      "inheritedNotice": "Poznámka je ve sdílené složce „{name}“: vidí ji i lidé, se kterými je složka sdílená.",
+      "inheritedHint": "Změníš to ve Sdílet.",
+      "empty": "Složka je prázdná. Nová poznámka založená tady půjde do ní."
+    },
+    "sharing": {
+      "share": "Sdílet",
+      "shareTitle": "Sdílet „{title}“",
+      "shareFolderTitle": "Sdílet složku „{name}“",
+      "private": "Soukromá",
+      "shared": "Sdílená ({count})",
+      "accessLabel": "{count, plural, =0 {Jen ty} one {Ty a # další člověk} few {Ty a # další lidé} other {Ty a # dalších lidí}}",
+      "addLabel": "Přidat lidi nebo skupiny",
+      "choose": "Vyber…",
+      "wholeCompany": "Celá firma",
+      "groups": "Skupiny",
+      "people": "Lidé",
+      "groupMembers": "{count, plural, one {# člověk} few {# lidé} other {# lidí}}",
+      "role": {
+        "owner": "Vlastník",
+        "editor": "Může upravovat",
+        "viewer": "Může číst"
+      },
+      "roleLabel": "Přístup: {name}",
+      "reshare": "Mohou sdílet dál",
+      "reshareShort": "sdílí dál",
+      "add": "Sdílet",
+      "whoHasAccess": "Kdo má přístup",
+      "you": "ty",
+      "direct": "přímo",
+      "fromFolder": "ze složky",
+      "folderOwner": "vlastník složky",
+      "remove": "Odebrat přístup: {name}",
+      "noPeople": "Přístup už má celá firma.",
+      "onlyMembers": "Jen lidé, kteří ve firmě teď pracují.",
+      "privateInFolder": "V této složce soukromá",
+      "privateInFolderHint": "Lidé ze složky tuhle poznámku neuvidí, jen ti, se kterými ji sdílíš tady.",
+      "overrideHint": "Když ji tady nasdílíš jednomu člověku, platí pro něj tohle právo, i když je menší než ze složky.",
+      "readOnlyHint": "Vidíš, kdo má přístup; sdílet dál smí vlastník nebo ten, komu to dovolil.",
+      "errors": {
+        "denied": "Tohle dál sdílet nemůžeš.",
+        "target": "Tenhle člověk nebo skupina ve firmě není.",
+        "readOnly": "Firma je teď jen pro čtení.",
+        "folder": "Tuhle složku nejde použít.",
+        "generic": "Nepovedlo se. Zkus to znovu."
+      },
+      "sharedBy": "Poznámka: {name}",
+      "viewOnly": "Poznámku můžeš číst; měnit ji může vlastník nebo ten, kdo smí upravovat.",
+      "dismiss": "Odebrat ze svých",
+      "dismissTitle": "Odebrat „{title}“ ze svých poznámek?",
+      "dismissText": "Vlastníkovi a ostatním zůstane, jen ji neuvidíš mezi svými poznámkami. Když ti ji někdo nasdílí znovu, vrátí se.",
+      "dismissed": "Odebráno ze tvých poznámek",
+      "close": "Zavřít",
+      "sharedNote": "Sdílená poznámka",
+      "emptyShared": "Zatím s tebou nikdo nic nesdílí.",
+      "emptyMine": "Zatím tu nemáš žádnou vlastní poznámku."
+    },
+    "versions": {
+      "open": "Historie verzí",
+      "title": "Historie verzí",
+      "hint": "Verze za každého člověka a deset minut práce, posledních 50.",
+      "empty": "Zatím žádné verze; přibudou, jak se poznámka píše.",
+      "current": "Současná",
+      "savedBy": "{name}",
+      "someone": "Někdo",
+      "restore": "Obnovit",
+      "restored": "Verze obnovena",
+      "preview": "Náhled",
+      "error": "Verzi se nepodařilo obnovit. Zkus to znovu.",
+      "close": "Zavřít"
     }
   },
   "pipeline": {
@@ -4331,7 +4451,7 @@
       },
       "fixed": {
         "dashboard": "Svůj přehled má pracovník vždy.",
-        "notes": "Poznámky jsou soukromé, tvoje nikdy neuvidí.",
+        "notes": "Své poznámky má vždy, tvoje uvidí, jen když mu je nasdílíš.",
         "settings": "Nastavení je jen tvoje; svůj účet si spravuje sám.",
         "always": "Vždy",
         "never": "Nikdy"
@@ -9996,7 +10116,11 @@
       "invite_accepted": "{name}: pozvánka do firmy přijata",
       "invite_declined": "{name}: pozvánka odmítnuta",
       "worker_left": "{name}: odchod z firmy",
-      "invite_requested": "{name} žádá o novou pozvánku"
+      "invite_requested": "{name} žádá o novou pozvánku",
+      "note_shared": "{name} s tebou sdílí „{title}“",
+      "note_shared_untitled": "{name} s tebou sdílí poznámku",
+      "folder_shared": "{name} s tebou sdílí složku „{title}“",
+      "notes_transferred": "{name} už ve firmě není: {count, plural, =0 {sdílené složky teď patří tobě} one {# sdílená poznámka teď patří tobě} few {# sdílené poznámky teď patří tobě} other {# sdílených poznámek teď patří tobě}}"
     }
   },
   "billing": {

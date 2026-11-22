@@ -12,36 +12,28 @@ const REVIEW_LINK_LIMIT = 20;
 
 /**
  * The notes block of a chat answer, read with the user's own client:
- * jarvis_notes() returns only the caller's notes (a worker's own, never the
- * owner's). The message picks the three best matching notes. Notes belong to
- * the space they were written in, the account's own: in a company the
- * account works for, Grady does not bring them along.
+ * jarvis_notes() returns the notes of the active space the user reaches,
+ * their own and the ones colleagues share with them (marked with the author
+ * and the user's access), never a note shared with someone else. The message
+ * picks the three best matching notes.
  */
 export async function loadNotesContext(
   supabase: Client,
   message: string,
   settings: FormatSettings,
-  userId: string,
 ): Promise<string> {
-  const space = await supabase.rpc("current_workspace_id");
-  if (space.error) throw space.error;
-  if (space.data && space.data !== userId) return "";
   const { data, error } = await supabase.rpc("jarvis_notes", {
     _query: message,
     _body_chars: NOTES_CONTEXT_MAX_CHARS,
   });
   if (error) throw error;
-  const rows = data ?? [];
-  // Which of them are mind maps (their text is the map's indented outline).
-  const ids = rows.map((row) => row.id);
-  let maps = new Set<string>();
-  if (ids.length > 0) {
-    const kinds = await supabase.from("notes").select("id").in("id", ids).eq("kind", "mindmap");
-    if (kinds.error) throw kinds.error;
-    maps = new Set(kinds.data.map((row) => row.id));
-  }
   return describeNotes(
-    rows.map((row) => ({ ...row, kind: maps.has(row.id) ? ("mindmap" as const) : ("text" as const) })),
+    (data ?? []).map((row) => ({
+      ...row,
+      kind: row.kind === "mindmap" ? ("mindmap" as const) : ("text" as const),
+      author: row.author ?? null,
+      role: row.role ?? null,
+    })),
     settings,
   );
 }

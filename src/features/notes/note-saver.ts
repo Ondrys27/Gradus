@@ -12,7 +12,7 @@
  */
 import { fitsLimits, type NoteDraft } from "./document";
 
-export type SaveStatus = "saved" | "pending" | "saving" | "error" | "offline" | "tooLarge";
+export type SaveStatus = "saved" | "pending" | "saving" | "error" | "offline" | "tooLarge" | "denied";
 
 export type BackupEntry = { draft: NoteDraft; editedAt: number };
 export type DraftBackup = {
@@ -27,6 +27,11 @@ type Options = {
   backup?: DraftBackup;
   isOnline?: () => boolean;
   now?: () => number;
+  /**
+   * A save the server refused for good (the note is no longer the account's to
+   * write, e.g. its share was removed): no retries and nothing kept for later.
+   */
+  isDenied?: (error: unknown) => boolean;
 };
 
 type Entry = {
@@ -39,6 +44,7 @@ type Entry = {
   inFlight: Promise<void> | null;
   again: boolean;
   attempt: number;
+  denied: boolean;
 };
 
 export const SAVE_DELAY_MS = 600;
@@ -72,11 +78,15 @@ export class NoteSaver {
       inFlight: null,
       again: false,
       attempt: 0,
+      denied: false,
     };
-    entry.draft = draft;
+    // Where a new note goes stays with it until the first save made the row.
+    entry.draft = draft.place || !entry.draft.place ? draft : { ...draft, place: entry.draft.place };
     entry.editedAt = editedAt;
     entry.version += 1;
     entry.attempt = 0;
+    // A new edit tries again: the right to write may be back.
+    entry.denied = false;
     if (entry.status !== "saving") entry.status = "pending";
     this.entries.set(id, entry);
     this.schedule(id, entry, this.delay);
@@ -121,7 +131,7 @@ export class NoteSaver {
   /** Every failed or offline note is tried again now (the browser is back online). */
   retryNow(): void {
     for (const [id, entry] of this.entries) {
-      if (entry.version !== entry.savedVersion && !entry.inFlight) {
+      if (entry.version !== entry.savedVersion && !entry.inFlight && !entry.denied) {
         if (entry.timer) clearTimeout(entry.timer);
         entry.timer = null;
         this.run(id);
@@ -146,7 +156,7 @@ export class NoteSaver {
 
   hasUnsaved(): boolean {
     for (const entry of this.entries.values()) {
-      if (entry.version !== entry.savedVersion) return true;
+      if (entry.version !== entry.savedVersion && !entry.denied) return true;
     }
     return false;
   }
@@ -165,7 +175,7 @@ export class NoteSaver {
     if (!this.options.backup) return;
     const unsaved: Record<string, BackupEntry> = {};
     for (const [id, entry] of this.entries) {
-      if (entry.version !== entry.savedVersion) {
+      if (entry.version !== entry.savedVersion && !entry.denied) {
         unsaved[id] = { draft: entry.draft, editedAt: entry.editedAt };
       }
     }
@@ -242,7 +252,13 @@ export class NoteSaver {
             entry.status = "pending";
           }
         },
-        () => {
+        (error: unknown) => {
+          if (this.options.isDenied?.(error)) {
+            entry.status = "denied";
+            entry.denied = true;
+            this.writeBackup();
+            return;
+          }
           entry.status = this.isOnline() ? "error" : "offline";
           const wait = this.retryDelays[Math.min(entry.attempt, this.retryDelays.length - 1)];
           entry.attempt += 1;

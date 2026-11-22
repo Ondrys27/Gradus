@@ -134,6 +134,18 @@ function LinkChip({
 
   const { type, id, label: stored } = link.attrs;
   const Icon = KIND_ICONS[type];
+  if (target && !target.exists && target.hidden) {
+    return (
+      <span
+        title={t("mention.hiddenTitle")}
+        data-testid="note-map-mention-hidden"
+        className={cn(chip, "bg-surface text-ink-muted")}
+      >
+        <Icon aria-hidden className="size-3 shrink-0" />
+        <span className="truncate">{t("mention.hidden")}</span>
+      </span>
+    );
+  }
   const label = (target?.exists ? target.label : stored) || t("mention.unnamed");
   if (target?.exists === false) {
     return (

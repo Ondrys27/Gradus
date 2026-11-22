@@ -53,9 +53,10 @@ describe("worker navigation", () => {
     },
   };
 
-  it("gives a worker their own four sections plus the ones they may see", () => {
+  it("gives a worker their own five sections plus the ones they may see", () => {
     expect(navItemsFor(worker).map((item) => item.key)).toEqual([
       "dashboard",
+      "notes",
       "tasks",
       "messages",
       "myRewards",
@@ -100,8 +101,8 @@ describe("worker navigation", () => {
     expect(isPathAllowed("/app/firma/abc", worker)).toBe(false);
     expect(isPathAllowed("/app/firma/odmeny", worker)).toBe(false);
     expect(isPathAllowed("/app/milniky", worker)).toBe(false);
-    // The owner's notes stay private, whatever the worker may see.
-    expect(isPathAllowed("/app/poznamky", worker)).toBe(false);
+    // Notes: their own in the company and what others share with them (28.3).
+    expect(isPathAllowed("/app/poznamky", worker)).toBe(true);
     expect(isPathAllowed("/app/poznamky", null)).toBe(true);
     expect(isPathAllowed("/app/nastaveni", worker)).toBe(true);
     expect(isPathAllowed("/app/tarif", worker)).toBe(true);

@@ -19,13 +19,15 @@ type Props = {
   /** Names the list for screen readers and tests. */
   label: string;
   className?: string;
+  /** Only notes the account may write (its own and shared ones it edits). */
+  writableOnly?: boolean;
 };
 
 /**
  * Choosing one of the user's notes: the newest ones, or the best matches of
  * what is typed (full text, without diacritics), one tap each.
  */
-export function NotePicker({ excludeIds = [], onPick, disabled, label, className }: Props) {
+export function NotePicker({ excludeIds = [], onPick, disabled, label, className, writableOnly }: Props) {
   const t = useTranslations("notes");
   const settings = useFormatSettings();
   const [query, setQuery] = useState("");
@@ -43,8 +45,10 @@ export function NotePicker({ excludeIds = [], onPick, disabled, label, className
           )
         : all;
     const excluded = new Set(excludeIds);
-    return list.filter((note) => !excluded.has(note.id)).slice(0, 30);
-  }, [debounced, excludeIds, notes.data, search.data]);
+    return list
+      .filter((note) => !excluded.has(note.id) && (!writableOnly || note.role !== "viewer"))
+      .slice(0, 30);
+  }, [debounced, excludeIds, notes.data, search.data, writableOnly]);
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>

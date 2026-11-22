@@ -74,8 +74,9 @@ function MentionChip({ node }: ReactNodeViewProps) {
   const { type, id, label: stored } = node.attrs as Partial<MentionAttrs>;
   const kind = isMentionKind(type) ? type : null;
   const target = kind && id ? targets?.get(mentionKey(kind, id)) : undefined;
-  const label = (target?.exists ? target.label : stored) || t("unnamed");
-  const missing = !kind || !id || target?.exists === false;
+  const hidden = !!target && !target.exists && !!target.hidden;
+  const label = hidden ? t("hidden") : (target?.exists ? target.label : stored) || t("unnamed");
+  const missing = !kind || !id || (target?.exists === false && !hidden);
   const Icon = kind ? KIND_ICONS[kind] : KIND_ICONS.contact;
 
   const chip = "inline-flex max-w-full items-baseline gap-1 rounded-md px-1.5 align-baseline text-[0.94em] font-medium leading-snug";
@@ -85,9 +86,14 @@ function MentionChip({ node }: ReactNodeViewProps) {
       as="span"
       data-testid="note-mention"
       data-mention-type={kind ?? undefined}
-      data-state={missing ? "missing" : "live"}
+      data-state={hidden ? "hidden" : missing ? "missing" : "live"}
     >
-      {missing ? (
+      {hidden ? (
+        <span title={t("hiddenTitle")} className={cn(chip, "cursor-default bg-surface text-ink-muted")}>
+          <Icon aria-hidden className="size-[0.9em] shrink-0 self-center" />
+          <span className="truncate">{label}</span>
+        </span>
+      ) : missing ? (
         <span
           title={t("missing")}
           aria-label={t("missingLabel", { label })}

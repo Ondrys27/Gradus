@@ -83,17 +83,20 @@ export type WorkerNavAccess = {
 /**
  * Every worker has Tasks: the ones given to them (sales tasks and tasks from
  * the owner) are theirs whatever sections they may see. Messages too: the
- * company chat is for everybody of the firm.
+ * company chat is for everybody of the firm. Notes as well (28.3): their own
+ * notes in the company and what others share with them, never more.
  */
-const WORKER_BASE: NavKey[] = ["dashboard", "tasks", "messages", "myRewards"];
+const WORKER_BASE: NavKey[] = ["dashboard", "notes", "tasks", "messages", "myRewards"];
+/** The phone bottom bar of a worker; Notes live under "More". */
+const WORKER_BOTTOM: NavKey[] = ["dashboard", "tasks", "messages", "myRewards"];
 /** A worker's Company shows their own branch, read only; it comes last, under "More" on a phone. */
 const WORKER_END: NavKey[] = ["workers"];
 
 /**
  * The sidebar of an account. An owner gets the eleven sections; a worker gets
- * their own Dashboard, Tasks, Messages and Rewards, then every section the
- * owner lets them see, and Company with their own branch. Notes and settings of the
- * owner are never among them.
+ * their own Dashboard, Notes, Tasks, Messages and Rewards, then every section
+ * the owner lets them see, and Company with their own branch. The owner's
+ * settings are never among them, the owner's notes only as far as shared.
  */
 export function navItemsFor(access: WorkerNavAccess): NavItem[] {
   if (!access) return navItems;
@@ -111,7 +114,7 @@ export function navItemsFor(access: WorkerNavAccess): NavItem[] {
 }
 
 export function bottomNavKeysFor(access: WorkerNavAccess): NavKey[] {
-  return access ? WORKER_BASE : bottomNavKeys;
+  return access ? WORKER_BOTTOM : bottomNavKeys;
 }
 
 /**

@@ -118,6 +118,7 @@ export function SaveAnswerToNotes({ text }: { text: string }) {
             label={t("pickLabel")}
             disabled={busy || append.isPending}
             onPick={addTo}
+            writableOnly
           />
         </div>
       )}

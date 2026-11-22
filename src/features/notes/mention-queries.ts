@@ -24,12 +24,14 @@ import {
 /**
  * Reading what notes mention: the records behind the chips of an open note
  * (their current names, or that they are gone), the search of the @ menu and
- * the notes that mention one record. Notes are private to the account's own
- * space, so everything here reads the signed-in user's own rows.
+ * the notes that mention one record. Records are read from the note's space
+ * with the user's own client, so row level security keeps a shared note's
+ * reader to what they may open; the rest shows as hidden.
  */
 
 export const mentionKeys = {
-  targets: (userId: string, set: string) => ["note-mentions", userId, "targets", set] as const,
+  targets: (userId: string, set: string, note = "") =>
+    ["note-mentions", userId, "targets", set, note] as const,
   search: (userId: string, query: string) => ["note-mentions", userId, "search", query] as const,
   notesOf: (userId: string, kind: MentionKind, id: string) =>
     ["note-mentions", userId, "notes", kind, id] as const,
@@ -64,15 +66,21 @@ export function mentionHref(
 }
 
 /**
- * The current state of every record the note mentions. A record that is not
- * found among the user's own rows is gone; when the lookup itself fails the
- * chips keep their stored labels and are not marked as gone.
+ * The current state of every record the note mentions, among the records of
+ * the note's space the reader may open. One that is not found is gone, or
+ * hidden when the note's mentions say it still exists (a shared note
+ * mentioning a record the reader has no right to); when the lookup itself
+ * fails the chips keep their stored labels and are not marked as gone.
  */
-export function useMentionTargets(mentions: readonly MentionAttrs[]) {
+export function useMentionTargets(
+  mentions: readonly MentionAttrs[],
+  note?: { id: string; spaceId?: string | null },
+) {
   const { user } = useSession();
   const set = mentionSetKey(mentions);
+  const space = note?.spaceId ?? user.id;
   return useQuery({
-    queryKey: mentionKeys.targets(user.id, set),
+    queryKey: mentionKeys.targets(user.id, set, note?.id),
     queryFn: async (): Promise<Map<string, MentionTarget>> => {
       const supabase = createClient();
       const ids = idsByKind(mentions);
@@ -82,21 +90,21 @@ export function useMentionTargets(mentions: readonly MentionAttrs[]) {
           ? supabase
               .from("contacts")
               .select("id, company_name, first_name, last_name")
-              .eq("user_id", user.id)
+              .eq("user_id", space)
               .in("id", ids.contact)
           : null,
         ids.deal.length
-          ? supabase.from("deals").select("id, title").eq("user_id", user.id).in("id", ids.deal)
+          ? supabase.from("deals").select("id, title").eq("user_id", space).in("id", ids.deal)
           : null,
         ids.event.length
           ? supabase
               .from("calendar_events")
               .select("id, title, starts_at")
-              .eq("user_id", user.id)
+              .eq("user_id", space)
               .in("id", ids.event)
           : null,
         ids.worker.length
-          ? supabase.from("workers").select("id, name").eq("owner_id", user.id).in("id", ids.worker)
+          ? supabase.from("workers").select("id, name").eq("owner_id", space).in("id", ids.worker)
           : null,
       ]);
       for (const result of [contacts, deals, events, workers]) if (result?.error) throw result.error;
@@ -116,9 +124,20 @@ export function useMentionTargets(mentions: readonly MentionAttrs[]) {
       for (const row of workers?.data ?? []) {
         found.set(mentionKey("worker", row.id), { exists: true, label: row.name });
       }
-      for (const mention of mentions) {
+      const unseen = mentions.filter((mention) => !found.has(mentionKey(mention.type, mention.id)));
+      // Still there but not the reader's to open: a hidden record, not a gone one.
+      const existing = new Set<string>();
+      if (unseen.length && note) {
+        const states = await supabase.rpc("note_mention_states", { _note: note.id });
+        if (!states.error) {
+          for (const row of states.data ?? []) {
+            if (isMentionKind(row.target_type)) existing.add(mentionKey(row.target_type, row.target_id));
+          }
+        }
+      }
+      for (const mention of unseen) {
         const key = mentionKey(mention.type, mention.id);
-        if (!found.has(key)) found.set(key, { exists: false });
+        found.set(key, existing.has(key) ? { exists: false, hidden: true } : { exists: false });
       }
       return found;
     },
@@ -202,14 +221,15 @@ const NOTES_OF_LIMIT = 50;
 
 /** The notes (not in the trash) that mention one record, last edited first. */
 export function useNotesMentioning(kind: MentionKind, id: string, enabled: boolean) {
-  const { user } = useSession();
+  const { user, spaceId } = useSession();
   return useQuery({
     queryKey: mentionKeys.notesOf(user.id, kind, id),
     queryFn: async (): Promise<MentioningNote[]> => {
+      // Every note of the space the account reaches (its own and shared ones).
       const { data, error } = await createClient()
         .from("note_mentions")
-        .select("note:notes(id, title, preview, updated_at, deleted_at)")
-        .eq("user_id", user.id)
+        .select("note:notes!inner(id, title, preview, updated_at, deleted_at, space_id)")
+        .eq("note.space_id", spaceId)
         .eq("target_type", kind)
         .eq("target_id", id)
         .limit(NOTES_OF_LIMIT);

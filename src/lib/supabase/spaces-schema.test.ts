@@ -520,7 +520,9 @@ async function sweepTargets(): Promise<Target[]> {
       for (const column of columns) {
         if (column.column_name === ownerColumn) continue;
         if (column.is_generated === "ALWAYS" || column.identity_generation === "ALWAYS") continue;
-        if (column.is_nullable === "YES" || column.column_default !== null) continue;
+        // A default of the signed-in account is null for the seed, so it is filled too.
+        const sessionDefault = column.column_default?.includes("auth.uid()") ?? false;
+        if (column.is_nullable === "YES" || (column.column_default !== null && !sessionDefault)) continue;
         filled.push([column.column_name, await sampleValue(column)]);
       }
       targets.push({

@@ -60,7 +60,8 @@ function mayRead(ctx: ToolContext, kind: RecordKind | (typeof SEARCH_KINDS)[numb
     case "invoice":
       return can(workspace, "invoices", "view");
     case "note":
-      return workspace.id === workspace.userId;
+      // Own notes of the space and the ones shared with the account (RLS decides).
+      return true;
     case "worker":
       return can(workspace, "company", "view");
   }
@@ -218,14 +219,21 @@ export const readTools = [
           const note = await mustFind(
             ctx.db
               .from("notes")
-              .select("id, title, kind, pinned, content_text, updated_at")
-              .eq("user_id", ctx.userId)
+              .select("id, title, kind, pinned, content_text, updated_at, user_id")
               .eq("id", input.id)
               .is("deleted_at", null)
               .maybeSingle(),
           );
           // Note text is the user's data, never instructions (the prompt says so).
-          return { output: { ...note, content_text: note.content_text.slice(0, 6000) } };
+          const { user_id: owner, ...rest } = note;
+          return {
+            output: {
+              ...rest,
+              content_text: note.content_text.slice(0, 6000),
+              // Someone else's note shared with the user: changes only as an editor.
+              sharedWithUser: owner !== ctx.userId,
+            },
+          };
         }
         case "transaction":
           return {

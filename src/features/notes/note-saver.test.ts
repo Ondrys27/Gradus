@@ -162,4 +162,37 @@ describe("NoteSaver", () => {
     const saver = new NoteSaver({ save: vi.fn(), backup });
     expect(saver.readBackup().a.draft.title).toBe("left behind");
   });
+
+  it("stops for good when the server refuses the note, and keeps nothing for later", async () => {
+    const denied = new Error("note_not_writable");
+    const save = vi.fn(() => Promise.reject(denied));
+    const backup = memoryBackup();
+    const saver = new NoteSaver({ save, backup, isDenied: (error) => error === denied });
+    saver.edit("shared", draft("Cizí poznámka"));
+    vi.advanceTimersByTime(600);
+    await vi.runAllTimersAsync();
+    expect(saver.statusOf("shared")).toBe("denied");
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(backup.stored).toEqual({});
+    expect(saver.hasUnsaved()).toBe(false);
+    // No retries, not even when the browser is back online.
+    saver.retryNow();
+    await vi.runAllTimersAsync();
+    expect(save).toHaveBeenCalledTimes(1);
+    // A new edit tries again (the right may be back).
+    saver.edit("shared", draft("Cizí poznámka 2"));
+    vi.advanceTimersByTime(600);
+    await vi.runAllTimersAsync();
+    expect(save).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps where a new note goes across later edits", async () => {
+    const { save, calls } = controlledSave();
+    const saver = new NoteSaver({ save });
+    saver.edit("n", { ...draft("Nová"), place: { spaceId: "company", folderId: "folder" } });
+    saver.edit("n", draft("Nová poznámka"));
+    vi.advanceTimersByTime(600);
+    expect(calls[0].draft.place).toEqual({ spaceId: "company", folderId: "folder" });
+    expect(calls[0].draft.title).toBe("Nová poznámka");
+  });
 });

@@ -14,11 +14,14 @@ type Right = { section: ToolSection; action: string | null };
 function rightHolds(workspace: Workspace, { section, action }: Right, write: boolean): boolean {
   // Messages: every member of the space, conversation by conversation (RLS).
   if (section === "chat") return !(write && workspace.readOnly);
-  // The account's own settings and notes: never a company's.
-  if (section === "settings" || section === "notes") {
+  // The account's own settings: never a company's.
+  if (section === "settings") {
     if (write && workspace.readOnly) return false;
     return workspace.role === "owner";
   }
+  // Notes: every member's own, and what others share with them; the role of
+  // each note (editor / viewer) is checked when a tool touches it.
+  if (section === "notes") return !(write && workspace.readOnly);
   if (section === "dashboard") return true;
   if (!isGrantSection(section) || !action || !isGrantAction(section, action)) return false;
   return can(workspace, section, action as never);
