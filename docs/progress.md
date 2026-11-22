@@ -147,7 +147,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 27.5 | architect | env: RESEND_API_KEY — 2026-11-22 Host se k videoschůzce připojí přes stránku rezervace s aktuálním odkazem, rezervace může mít vlastní odkaz a typ schůzky vlastní místnost Jitsi.
 - [x] K27 | reviewer | — 2026-11-22: Kontrola fáze 27 opravila seskupení chyb mezi nasazeními, Haiku v chatu bez přemýšlení a vynechání ukázkových účtů z denních úloh Gradyho.
 - [x] STOP | Konec fáze 27. Pozvi pracovníka na svůj druhý e-mail a otevři odkaz schválně nejdřív přihlášený, pak v anonymním okně — registrace musí projít. Nahlas problém z aplikace a ověř s Vášou, že ho vidí v administraci; zeptej se Gradyho „chci nahlásit chybu". Váša jako plný admin změní cenu v konceptu tarifů. Projdi Provoz → Chyby. V AI a Grady → Modely zkus přednastavení Úsporné a pošli zprávu Gradymu. V administraci zapni Ukázkový režim, přehraj scénář f v češtině a angličtině a podívej se na videa v marketing/videa. Rezervuj si schůzku s Jitsi místností. V Tarifech nastav dohodnuté ceny (490 Kč měsíčně, 390 Kč měsíčně při roční platbě, 14 dní zdarma) a zveřejni. Co nesedí, napiš Claude Code rovnou, pak /pokracuj. · přeskočeno nočním během 2026-11-22, zkontroluj ručně (.noc/zkontroluj.md)
-- [ ] 28.1 | architect | env: RESEND_API_KEY
+- [x] 28.1 | architect | env: RESEND_API_KEY — 2026-11-22: Ve výběrech jen aktivní členové firmy (active_members), pozvání přes @jméno nebo krátké ID, placení za pracovníky schované za přepínač a průchod celým životem pracovníka s nálezy v docs/audit-pozvanky/nalezy.md.
 - [ ] 28.2 | architect |
 - [ ] 28.3 | architect |
 - [ ] 28.4 | architect |
