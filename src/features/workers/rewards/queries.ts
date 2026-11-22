@@ -507,9 +507,12 @@ export function useSetRewardPrice() {
       const { error } = await createClient().rpc("reward_set_price", {
         _source_kind: input.source,
         _source_id: input.id,
-        _amount: input.amount,
-        _currency: input.amount === null ? null : input.currency,
-        ...(input.source === "milestone" ? { _worker_id: input.workerId ?? null } : {}),
+        // null clears the price (reward_set_price writes null to both columns);
+        // generated RPC arg types never mark nulls.
+        _amount: input.amount as unknown as number,
+        _currency: (input.amount === null ? null : input.currency) as unknown as string,
+        // Left out = the SQL default null (a milestone nobody in particular is paid for).
+        ...(input.source === "milestone" && input.workerId ? { _worker_id: input.workerId } : {}),
       });
       if (error) throw error;
       track("reward_price_set", {
