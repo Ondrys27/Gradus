@@ -132,6 +132,15 @@ test("40 · company: invite under a manager → map tree → drag → list agree
   await expect.poll(async () => (await idOf("E2E Vedoucí")).manager_id).toBe(report.id);
   await expect(row(lead.id)).toHaveAttribute("data-depth", "2");
 
+  // Groups offer only active members (28.1): the report accepts the invite.
+  const person = await accounts.create({ label: "company-report" });
+  const accepted = await db
+    .from("workers")
+    .update({ user_id: person.id, status: "active" })
+    .eq("id", report.id);
+  if (accepted.error) throw accepted.error;
+  await page.reload();
+
   // A group with the report in it.
   await page.getByRole("tab", { name: t("workers.company.tabs.groups") }).click();
   await page

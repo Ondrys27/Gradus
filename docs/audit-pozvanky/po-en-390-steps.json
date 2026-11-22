@@ -1,0 +1,132 @@
+{
+  "log": [
+    {
+      "step": "invite-new-by-email",
+      "ok": true,
+      "note": "the dialog says it went by e-mail"
+    },
+    {
+      "step": "invite-email",
+      "ok": true,
+      "note": "subject: E2E Audit Ltd · E2E Majitel invites you into their team on Gradus"
+    },
+    {
+      "step": "register-from-link",
+      "ok": true
+    },
+    {
+      "step": "first-view",
+      "ok": true
+    },
+    {
+      "step": "worker-dashboard",
+      "ok": true
+    },
+    {
+      "step": "worker-tasks",
+      "ok": true
+    },
+    {
+      "step": "worker-messages",
+      "ok": true
+    },
+    {
+      "step": "worker-company",
+      "ok": true
+    },
+    {
+      "step": "worker-rewards",
+      "ok": true
+    },
+    {
+      "step": "worker-switcher",
+      "ok": true,
+      "note": "switcher not visible at this width"
+    },
+    {
+      "step": "owner-assigns-task",
+      "ok": true
+    },
+    {
+      "step": "worker-completes-task",
+      "ok": false,
+      "note": "\u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed"
+    },
+    {
+      "step": "worker-writes",
+      "ok": true
+    },
+    {
+      "step": "owner-reads",
+      "ok": true
+    },
+    {
+      "step": "invite-existing",
+      "ok": true
+    },
+    {
+      "step": "existing-sees-invite",
+      "ok": true,
+      "note": "e-mail: E2E Audit Ltd · E2E Majitel invites you into their team on Gradus"
+    },
+    {
+      "step": "existing-accepts",
+      "ok": true
+    },
+    {
+      "step": "second-company-invites",
+      "ok": true
+    },
+    {
+      "step": "rights-live",
+      "ok": false,
+      "note": "\u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed"
+    },
+    {
+      "step": "move-under-manager",
+      "ok": true
+    },
+    {
+      "step": "worker-leaves",
+      "ok": true
+    },
+    {
+      "step": "owner-removes",
+      "ok": true
+    },
+    {
+      "step": "after-company",
+      "ok": true
+    },
+    {
+      "step": "after-ended",
+      "ok": true
+    },
+    {
+      "step": "after-rewards",
+      "ok": true
+    },
+    {
+      "step": "after-groups",
+      "ok": true
+    },
+    {
+      "step": "after-messages",
+      "ok": true
+    },
+    {
+      "step": "after-tasks",
+      "ok": true
+    },
+    {
+      "step": "after-rewards-former",
+      "ok": true,
+      "note": "no Show former switch"
+    },
+    {
+      "step": "reinvite-same-email",
+      "ok": true
+    }
+  ],
+  "consoleErrors": []
+}

@@ -3,7 +3,7 @@
 Playwright `tests/e2e/66-worker-lifecycle-audit.spec.ts` (spouští se jen s `AUDIT=1`), produkční build, dvě varianty: čeština na 1440 px a angličtina na 390 px. Každý krok = snímek a řádek v `*-steps.json`; krok, který selže, se zapíše a průchod jde dál.
 
 - `pred-*` = průchod kódem před 28.1 (commit bf86629) proti sdílené databázi, 22. 11. 2026. Z něj jsou nálezy níže.
-- `po-*` = stejný průchod po 28.1. **Ještě neproběhl:** kód 28.1 potřebuje migraci `20261126090000_company_members_invites.sql` (`active_members`, hledání podle @jména) a `bun run db:migrate` v běhu bez dozoru neprošel. Po migraci:
+- `po-*` = stejný průchod po 28.1 a migraci `20261126090000_company_members_invites.sql`, 22. 11. 2026. Prošly všechny kroky kromě dvou, které jsou vadou průchodu, ne aplikace: `worker-completes-task` (splněný úkol správně odjede do sbalených „Hotové 1“, viz Rozhodnutí; průchod hledá odškrtnutý řádek v otevřeném seznamu) a na 390 px `rights-live` (Pipeline se po změně práv objeví v panelu Více, ne ve spodní liště, takže ji průchod nevidí; na 1440 px krok prošel). E-mail s pozvánkou z mocku Resend, registrace z odkazu i pozvání přes @jméno už fungují. Spuštění znovu:
 
 ```
 NEXT_DIST_DIR=.next-e2e bun run build
