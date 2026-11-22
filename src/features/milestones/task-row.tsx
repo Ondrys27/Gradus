@@ -26,6 +26,7 @@ import { TaskCheckbox } from "./task-checkbox";
 import { taskVisualState } from "./task-status";
 import { TaskStatePill } from "./task-status-ui";
 import { openSubtasks, type FlatTask, type MoveDirection } from "./task-tree";
+import { RewardChip } from "@/features/workers/rewards/reward-chip";
 import type { Task } from "./types";
 
 export type TaskHandlers = {
@@ -181,9 +182,10 @@ export function TaskRow({
           >
             {task.title}
           </span>
-          {(inProgress || task.due_date || childCount > 0) && (
+          {(inProgress || task.due_date || childCount > 0 || task.reward_amount != null) && (
             <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-muted">
               {inProgress && <TaskStatePill state="in_progress" />}
+              <RewardChip amount={task.reward_amount} currency={task.reward_currency} />
               {task.due_date && (
                 <span className={cn(overdue && "text-pink")}>
                   {t(overdue ? "overdue" : "due", {

@@ -28,6 +28,7 @@ import {
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { DemoBadge } from "@/features/tutorial/demo-badge";
+import { RewardChip } from "@/features/workers/rewards/reward-chip";
 import { canTickTask } from "./access";
 import { isOverdue } from "./logic";
 import { contactHref, dealHref, type CrmTask } from "./types";
@@ -111,6 +112,7 @@ export function TaskRow({
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-muted">
           {showOrigin && <StatusPill tone="violet">{tOrigin("crm")}</StatusPill>}
           <DemoBadge show={task.is_demo} />
+          <RewardChip amount={task.reward_amount} currency={task.reward_currency} />
           {task.deal && hideTarget !== "deal" && (
             <Link
               href={dealHref(task.deal.id)}
@@ -221,6 +223,7 @@ export function OwnerTaskRow({
         )}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-muted">
           <StatusPill tone="teal">{tOrigin("owner")}</StatusPill>
+          <RewardChip amount={task.reward_amount} currency={task.reward_currency} />
           {task.due_date && (
             <span className={cn("inline-flex items-center gap-1", overdue && "text-pink")}>
               <CalendarClockIcon aria-hidden className="size-3.5 shrink-0" />

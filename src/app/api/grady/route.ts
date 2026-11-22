@@ -19,7 +19,6 @@ import {
   pingRequestSchema,
   proactiveRequestSchema,
   rateMessageRequestSchema,
-  rewardSetupRequestSchema,
   rulesTestRequestSchema,
   salesAnalysisRequestSchema,
   type ChatErrorCode,
@@ -80,13 +79,11 @@ import {
   loadSummary,
   reactToProactive,
 } from "@/features/grady/server/proactive";
-import { runRewardSetup } from "@/features/grady/server/reward-setup";
 import { runNoteMapSuggest } from "@/features/grady/server/note-map-suggest";
 import { noteContentOf, noteKindOf } from "@/features/notes/mindmap/note-row";
 import { isMapDoc } from "@/features/notes/mindmap/map-doc";
 import { loadGradyRules } from "@/features/grady/server/rules";
 import { maySeeDealAmounts, runSalesAnalysis } from "@/features/grady/server/sales-analysis";
-import { leafCount, rewardTreeSchema } from "@/features/workers/rewards/reward-tree";
 import { refreshSuggestions } from "@/features/grady/server/suggestions";
 import {
   limitReached,
@@ -123,7 +120,6 @@ const asLocale = (value: string): Locale => (value === "cs" ? "cs" : "en");
 const STAGE_REFUSED_JOBS: ReadonlySet<string> = new Set([
   "milestoneReview",
   "salesAnalysis",
-  "rewardSetup",
   "noteMapSuggest",
   "emailReply",
   "ping",
@@ -319,7 +315,6 @@ export const POST = instrumentRoute("api.jarvis.post", async (request: Request) 
   }
   if (kind === "milestoneReview") return milestoneReview(ctx, body);
   if (kind === "salesAnalysis") return salesAnalysis(ctx, body);
-  if (kind === "rewardSetup") return rewardSetup(ctx, body);
   if (kind === "noteMapSuggest") return noteMapSuggest(ctx, body);
   if (kind === "emailReply") return emailReply(ctx, body);
   if (kind === "ping") return ping(ctx, body);
@@ -592,52 +587,6 @@ async function salesAnalysis(ctx: Context, body: unknown) {
   });
   if (!result.ok) return jobError(result.code, result.code === "locked" ? 403 : 502);
   return NextResponse.json({ ok: true, analysis: result.analysis });
-}
-
-/**
- * Sonnet turns the owner's reward tree into rules and explains them. Nothing is
- * saved: the proposal goes back to the editor, where the owner confirms it.
- */
-async function rewardSetup(ctx: Context, body: unknown) {
-  const request = rewardSetupRequestSchema.safeParse(body);
-  const tree = request.success ? rewardTreeSchema.safeParse(request.data.tree) : null;
-  if (!tree?.success) return jobError("unknown", 400);
-  if (leafCount(tree.data) === 0) return jobError("empty", 400);
-  const { supabase, admin, userId, settings, locale } = ctx;
-
-  const usage = await loadAiUsage(supabase, admin, userId, settings, undefined, ctx.spaceId);
-  if (limitReached(usage)) {
-    limitHit(ctx, "reward_setup");
-    return jobError("limitReached", 429);
-  }
-  const client = createAnthropic(ctx.admin, { spaceId: ctx.spaceId });
-  if (!client) {
-    await logNotConfigured(ctx, "reward_setup");
-    return jobError("notConfigured", 503);
-  }
-
-  // Names only, read with the owner's own client: RLS keeps it to their workers.
-  // Only the people of the company now (28.1); a reward is for somebody who works.
-  const { data: workers, error } = await supabase
-    .from("workers")
-    .select("id, name")
-    .eq("owner_id", userId)
-    .eq("status", "active")
-    .limit(200);
-  if (error) throw error;
-
-  const result = await runRewardSetup({
-    client,
-    userId,
-    tree: tree.data,
-    workers,
-    currency: settings.currency,
-    locale,
-    log: (entry) =>
-      logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
-  });
-  if (!result.ok) return jobError(result.code, 502);
-  return NextResponse.json({ ok: true, proposal: result.proposal });
 }
 
 /**

@@ -55,8 +55,8 @@ export const FEATURE_MODELS: Record<GradyFeature, FeatureModelSpec> = {
   opportunity_scan: { recommended: "haiku", minimum: "haiku", quality: "sonnet", shown: true },
   // A large analysis of up to 150 questionnaires: long context and a structured write-up.
   analysis: { recommended: "opus", minimum: "sonnet", quality: "fable", shown: true },
-  // Money rules for other people as structured JSON: never below Sonnet.
-  reward_setup: { recommended: "sonnet", minimum: "sonnet", quality: "opus", shown: true },
+  // The drawn reward tree's setup; no caller since 28.2 (plans are built by hand), kept for history.
+  reward_setup: { recommended: "sonnet", minimum: "sonnet", quality: "opus", shown: false },
   email_reply: { recommended: "sonnet", minimum: "haiku", quality: "opus", shown: true },
   ping: { recommended: "sonnet", minimum: "haiku", quality: "sonnet", shown: true },
   briefing: { recommended: "sonnet", minimum: "haiku", quality: "opus", shown: true },

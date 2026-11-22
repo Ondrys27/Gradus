@@ -1,31 +1,28 @@
 "use client";
 
-import { useState } from "react";
-import { BanknoteIcon, ClockIcon, HourglassIcon, WalletIcon } from "lucide-react";
+import { useMemo, useState } from "react";
+import { PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { FormAlert } from "@/components/ui/form-alert";
-import { StatTile } from "@/components/ui/stat-tile";
 import { useWorkspace } from "@/features/account/workspace-queries";
-import { Segmented } from "@/features/finance/segmented";
-import { formatNumber, splitDuration, todayIsoDate } from "@/lib/format";
+import { todayIsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
-import { EarningsPanel } from "../earnings-panel";
-import { monthStartOf } from "../logic";
-import { PaymentDialog, PaymentsPanel } from "../payments";
-import { useWorkerBalance, useWorkerMonthStats } from "../queries";
+import { AddRewardDialog, type LinkOption } from "../rewards/entry-dialogs";
+import { MyRewards } from "../rewards/my-rewards";
+import { PayoutsPanel } from "../rewards/payouts-panel";
+import { PlanCard } from "../rewards/plan-card";
+import { useManagesRewards, useRewardPlan, useRewardTotals } from "../rewards/queries";
+import { RewardsTiles } from "../rewards/rewards-tiles";
+import { WorkTable } from "../rewards/work-table";
 import { TimePanel } from "../time-panel";
-import type { WorkerTask } from "../types";
-import { WorkerTaskDialog } from "../worker-task-dialog";
-import { WorkerTaskList } from "../worker-task-list";
+import { horizonRange } from "./chart-logic";
 import type { DashboardViewer, DashboardWorker } from "./types";
-
-const PANELS = ["earnings", "payments", "time", "tasks"] as const;
-type Panel = (typeof PANELS)[number];
+import { useWorkerDeals, useWorkerTasks } from "./work-queries";
 
 /**
- * Earnings, payouts and time. The owner approves and pays; the person sees
- * their own earnings, read only.
+ * Rewards of one person (28.2). Whoever manages them (the owner, or "company:
+ * rewards") sees the month at a glance, adds a reward by hand, builds the
+ * plan, approves the work and pays out; the person sees their own, read only.
  */
 export function RewardsTab({
   worker,
@@ -34,105 +31,75 @@ export function RewardsTab({
   worker: DashboardWorker;
   viewer: DashboardViewer;
 }) {
-  if (viewer === "owner") return <OwnerRewards worker={worker} />;
-  return <EarningsPanel workerId={worker.id} canApprove={false} />;
+  const manages = useManagesRewards();
+  if (viewer === "self") return <MyRewards workerId={worker.id} />;
+  if (!manages) return null;
+  return <ManagedRewards worker={worker} />;
 }
 
-function OwnerRewards({ worker }: { worker: DashboardWorker }) {
-  const t = useTranslations("workers");
+function ManagedRewards({ worker }: { worker: DashboardWorker }) {
+  const t = useTranslations("workers.rewardPlan");
   const settings = useFormatSettings();
   const workspace = useWorkspace();
-  const balance = useWorkerBalance(worker.id);
-  const stats = useWorkerMonthStats(monthStartOf(todayIsoDate(settings)));
-  const [panel, setPanel] = useState<Panel>("earnings");
-  const [paying, setPaying] = useState(false);
-  const [task, setTask] = useState<{ open: boolean; task: WorkerTask | null }>({
-    open: false,
-    task: null,
-  });
-  const month = stats.data?.get(worker.id);
-  const duration = splitDuration(month?.workSeconds ?? 0);
-  const owed = balance.data?.owed ?? 0;
+  const plan = useRewardPlan(worker.id);
+  const totals = useRewardTotals(worker.id);
+  const [adding, setAdding] = useState(false);
+  const links = useLinkOptions(worker, adding);
+  const currency = plan.data?.currency ?? settings.currency;
+  const canChange = !workspace.readOnly;
 
   return (
     <div className="flex flex-col gap-5" data-testid="worker-rewards">
-      {balance.isError ? (
-        <FormAlert>{t("detail.balanceFailed")}</FormAlert>
-      ) : (
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatTile
-            label={t("detail.owed")}
-            value={owed}
-            format={{ style: "currency" }}
-            tone="gold"
-            icon={<WalletIcon />}
-          />
-          <StatTile
-            label={t("detail.paidOut")}
-            value={balance.data?.paidOut ?? 0}
-            format={{ style: "currency" }}
-            tone="green"
-            icon={<BanknoteIcon />}
-          />
-          <StatTile
-            label={t("detail.pending")}
-            value={balance.data?.pending ?? 0}
-            format={{ style: "currency" }}
-            tone="violet"
-            icon={<HourglassIcon />}
-          />
-          <div className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5 shadow-glow">
-            <div className="flex items-center justify-between gap-3">
-              <span className="micro-label">{t("detail.workedThisMonth")}</span>
-              <span className="grid size-9 place-items-center rounded-xl border border-teal/30 bg-teal/10 text-teal [&_svg]:size-4.5">
-                <ClockIcon aria-hidden />
-              </span>
-            </div>
-            <span className="stat-number text-[clamp(22px,4vw,32px)] whitespace-nowrap text-ink">
-              {t("card.duration", {
-                hours: formatNumber(duration.hours, {}, settings),
-                minutes: formatNumber(duration.minutes, {}, settings),
-              })}
-            </span>
-          </div>
-        </div>
-      )}
-
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Segmented
-          label={t("detail.sections")}
-          value={panel}
-          options={PANELS.map((value) => ({ value, label: t(`detail.tab.${value}`) }))}
-          onChange={setPanel}
-          panelId={(value) => `worker-rewards-${value}`}
-        />
-        {/* A former worker gets nothing new (28.1); what they are owed can still be paid out. */}
-        {!workspace.readOnly && (worker.status !== "inactive" || owed > 0) && (
-          <Button onClick={() => setPaying(true)} disabled={!balance.data}>
-            <BanknoteIcon aria-hidden data-icon="inline-start" />
-            {t("payments.record")}
+        <p className="max-w-xl text-sm text-ink-soft">{t("intro")}</p>
+        {canChange && worker.status !== "inactive" && (
+          <Button onClick={() => setAdding(true)} data-testid="reward-add">
+            <PlusIcon aria-hidden data-icon="inline-start" />
+            {t("add.button")}
           </Button>
         )}
       </div>
-      <div id={`worker-rewards-${panel}`} role="tabpanel" aria-labelledby={`tab-${panel}`}>
-        {panel === "earnings" && <EarningsPanel workerId={worker.id} canApprove />}
-        {panel === "payments" && <PaymentsPanel workerId={worker.id} />}
-        {panel === "time" && <TimePanel workerId={worker.id} />}
-        {panel === "tasks" && (
-          <WorkerTaskList
-            workerId={worker.id}
-            mode="owner"
-            onOpen={(open) => setTask({ open: true, task: open })}
-          />
-        )}
-      </div>
-      <WorkerTaskDialog
-        open={task.open}
-        onOpenChange={(open) => setTask((current) => ({ ...current, open }))}
+      <RewardsTiles totals={totals.data} isError={totals.isError} currency={currency} />
+      <PlanCard workerId={worker.id} editable readOnly={workspace.readOnly} />
+      <WorkTable worker={worker} canReview={canChange} />
+      <PayoutsPanel workerId={worker.id} name={worker.name} canPay={canChange} />
+      <details className="rounded-card border border-line bg-surface px-5 py-3">
+        <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold text-ink outline-none">
+          {t("time")}
+        </summary>
+        <div className="pt-3 pb-2">
+          <TimePanel workerId={worker.id} />
+        </div>
+      </details>
+      <AddRewardDialog
+        open={adding}
+        onOpenChange={setAdding}
         workerId={worker.id}
-        task={task.task}
+        currency={currency}
+        links={links}
       />
-      <PaymentDialog open={paying} onOpenChange={setPaying} workerId={worker.id} owed={owed} />
     </div>
   );
+}
+
+/** This month's tasks and the open or won deals of the person, to hang a reward on. */
+function useLinkOptions(worker: DashboardWorker, enabled: boolean): LinkOption[] {
+  const settings = useFormatSettings();
+  const range = horizonRange({ kind: "month" }, todayIsoDate(settings), settings);
+  // The same queries as the work table below: read once.
+  const tasks = useWorkerTasks(worker.id, worker.userId, range);
+  const deals = useWorkerDeals(worker.id, worker.userId);
+  return useMemo(() => {
+    if (!enabled) return [];
+    const options: LinkOption[] = (tasks.data ?? []).map((task) => ({
+      value: `task-${task.id}`,
+      label: task.title,
+      link: { kind: task.origin === "crm" ? "crm_task" : "worker_task", id: task.id },
+    }));
+    for (const deal of deals.data ?? []) {
+      if (deal.lost_at) continue;
+      options.push({ value: `deal-${deal.id}`, label: deal.title, link: { kind: "deal", id: deal.id } });
+    }
+    return options.slice(0, 200);
+  }, [enabled, tasks.data, deals.data]);
 }

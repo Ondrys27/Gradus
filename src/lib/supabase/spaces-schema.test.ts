@@ -741,6 +741,13 @@ describe("isolation sweep: a space the account does not belong to", () => {
       [`select company_set_group_member($1, $2, true)`, [yWorker, yGroup]],
       [`select * from company_remove_worker($1, null)`, [yWorker]],
       [`select record_worker_payment($1, 1, now(), null)`, [yWorker]],
+      // Rewards (28.2): nobody outside the space prices, adds, pays or reads anything.
+      [`select reward_can_manage($1, $2)`, [ownerY, yWorker]],
+      [`select reward_manager_in($1)`, [ownerY]],
+      [`select reward_set_price('deal', $1, 100, 'CZK')`, [yDeal]],
+      [`select reward_add_manual($1, 100, 'CZK', current_date, 'x', null, null)`, [yWorker]],
+      [`select reward_payout_create($1, array[gen_random_uuid()], current_date, null, 'x')`, [yWorker]],
+      [`select * from reward_totals(now() - interval '1 year', now() + interval '1 day', $1)`, [yWorker]],
       [`select start_work_session($1)`, [yWorker]],
       [`select pause_work_session($1)`, [yWorker]],
       [`select issue_invoice($1)`, [yInvoice]],

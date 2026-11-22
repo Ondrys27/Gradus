@@ -15,17 +15,21 @@ export const maxDuration = 300;
  * run, with the extra workers' count for the next period. Last, the app
  * owner's digest of first payments and subscriptions ended for non-payment
  * that waited since yesterday's (step 23.2, one e-mail a day at most).
+ * Also the workers' monthly fixed rewards (step 28.2, reward_run_monthly()):
+ * the current month planned, a month that ended earned; nothing doubles.
  */
 export function GET(request: Request) {
   return runCron("recurring_payments", request, async () => {
     const admin = createAdminClient();
     const { data, error } = await admin.rpc("post_due_recurring_payments");
     if (error) throw error;
+    const rewards = await admin.rpc("reward_run_monthly");
+    if (rewards.error) throw rewards.error;
     const stripe = await reconcileStripeSubscriptions(admin);
     const digest = await sendOwnerDigest(admin);
     return {
-      processed: (data ?? 0) + stripe.checked,
-      body: { booked: data, stripe, digest },
+      processed: (data ?? 0) + stripe.checked + (rewards.data ?? 0),
+      body: { booked: data, rewards: rewards.data, stripe, digest },
     };
   });
 }

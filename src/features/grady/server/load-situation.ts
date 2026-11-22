@@ -11,6 +11,7 @@ import type { Database } from "@/types/database";
 import type { UserSituation } from "../situation";
 import { loadCashPlan } from "./cash-plan";
 import { loadTimeWindow } from "./time-window";
+import { loadRewardsSituation } from "./rewards";
 import { loadSchedulerSituation } from "@/features/scheduler/server/situation";
 
 type Client = SupabaseClient<Database>;
@@ -85,6 +86,8 @@ export async function loadSituation(
   const cashPlan = loadCashPlan(supabase, ws, settings, now);
   // The person's own scheduler (bookings, approvals, the link to send); never fails the rest.
   const scheduler = assigneeId && ws ? loadSchedulerSituation(supabase, assigneeId, ws, now) : Promise.resolve(null);
+  // Worker rewards: who is owed what, or the worker's own (28.2); never fails the rest.
+  const rewards = loadRewardsSituation(supabase, ws, assigneeId, settings, now);
 
   const [
     milestones,
@@ -300,6 +303,7 @@ export async function loadSituation(
     // Like the month's totals: a worker only with finance summaries.
     cashPlan: seeFinance ? await cashPlan : null,
     scheduler: await scheduler,
+    rewards: await rewards,
   };
 }
 

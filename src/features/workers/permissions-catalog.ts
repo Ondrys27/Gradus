@@ -1,6 +1,6 @@
 /**
  * What an owner can let a worker do, section by section. Mirrors
- * permission_catalog() in supabase/migrations/20261103200000_worker_dashboard.sql
+ * permission_catalog() in supabase/migrations/20261127090000_reward_plans.sql
  * (a Vitest compares them); the database decides with has_permission(), this
  * file only shapes the interface (useCan, the Rights tab, the templates).
  *
@@ -133,6 +133,8 @@ export const PERMISSION_CATALOG = [
       { key: "view", kind: "view" },
       { key: "view_all", kind: "read" },
       { key: "update", kind: "write" },
+      // Plans, prices, approvals and payouts of the people they see, never their own (28.2).
+      { key: "rewards", kind: "write" },
     ],
   },
   { key: "settings", nav: "settings", fixed: "never", actions: [] },

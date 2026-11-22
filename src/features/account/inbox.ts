@@ -1,7 +1,8 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { storedRule, type CompiledRule } from "@/features/workers/rewards/reward-tree";
+import { parseRule } from "@/features/workers/rewards/rules";
+import type { SentenceRule } from "@/features/workers/rewards/rule-sentence";
 import { grantsFromRows, type GrantRow, type PermissionGrants } from "@/features/workers/permissions-catalog";
 import { leaveCompany, respondToInvite, type InviteErrorCode } from "@/features/workers/server/invites";
 import { createClient } from "@/lib/supabase/client";
@@ -27,7 +28,8 @@ export type PendingInvite = {
   ownerName: string | null;
   jobTitle: string | null;
   grants: PermissionGrants;
-  rewards: CompiledRule[];
+  /** The rules of the plan the owner set for this person, in its currency. */
+  rewards: Array<SentenceRule & { currency: string }>;
   expiresAt: string;
   createdAt: string;
 };
@@ -99,12 +101,21 @@ export function useInbox() {
           ownerName: row.owner_name?.trim() || null,
           jobTitle: row.job_title?.trim() || null,
           grants: grantsFromRows(asRows<GrantRow>(row.grants)),
-          rewards: asRows<{ name: string; worker_id: string | null; rules: unknown }>(row.rewards).flatMap(
-            (rule) => {
-              const parsed = storedRule(rule);
-              return parsed ? [parsed] : [];
-            },
-          ),
+          rewards: asRows<Record<string, unknown>>(row.rewards).flatMap((rule) => {
+            // Only the shape of a rule; the plan's id and position are not in the invite.
+            const parsed = parseRule({
+              ...rule,
+              id: "",
+              plan_id: "",
+              worker_id: "",
+              cap_per_period: rule.cap ?? null,
+              active: true,
+              position: 0,
+            });
+            return parsed && typeof rule.currency === "string"
+              ? [{ ...parsed, currency: rule.currency }]
+              : [];
+          }),
           expiresAt: row.expires_at,
           createdAt: row.created_at,
         })),

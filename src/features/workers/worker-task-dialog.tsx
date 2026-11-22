@@ -10,6 +10,7 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { fieldA11y, FormField } from "@/components/ui/form-field";
 import { Input, Textarea } from "@/components/ui/input";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
+import { RewardPriceField, useRewardPrice } from "./rewards/reward-price-field";
 import { useFreshOnOpen } from "@/features/milestones/use-fresh-on-open";
 import type { IsoDate } from "@/lib/format";
 import {
@@ -58,6 +59,7 @@ function Fields({
 }) {
   const t = useTranslations("workers.taskForm");
   const tErrors = useTranslations("workers.errors");
+  const tPrice = useTranslations("workers.rewardPrice");
   const save = useSaveWorkerTask(workerId);
   const remove = useDeleteWorkerTask();
   const [title, setTitle] = useState(task?.title ?? "");
@@ -66,6 +68,13 @@ function Fields({
   const [errors, setErrors] = useState<Partial<Record<string, WorkerErrorKey>>>({});
   const [failed, setFailed] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  // The reward for completion (28.2), saved right after the task.
+  const price = useRewardPrice(
+    { kind: "worker_task", workerId },
+    task ? { amount: task.reward_amount ?? null, currency: task.reward_currency ?? null } : null,
+  );
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const [priceFailed, setPriceFailed] = useState(false);
   const err = (key: string) => (errors[key] ? tErrors(errors[key]) : undefined);
 
   async function submit(event: FormEvent) {
@@ -76,12 +85,22 @@ function Fields({
       setErrors(result.errors);
       return;
     }
+    if (price.invalid) return;
     setErrors({});
+    setPriceFailed(false);
+    let id: string;
     try {
-      await save.mutateAsync({ id: task?.id, input: result.data });
-      onDone();
+      id = await save.mutateAsync({ id: task?.id ?? savedId ?? undefined, input: result.data });
+      setSavedId(id);
     } catch {
       setFailed(true);
+      return;
+    }
+    try {
+      await price.commit("worker_task", id);
+      onDone();
+    } catch {
+      setPriceFailed(true);
     }
   }
 
@@ -121,7 +140,9 @@ function Fields({
         <FormField id="worker-task-due" label={t("dueDate")}>
           <DatePicker id="worker-task-due" value={dueDate} onValueChange={setDueDate} />
         </FormField>
+        <RewardPriceField state={price} id="worker-task-reward" />
         {failed && <FormAlert>{t("saveFailed")}</FormAlert>}
+        {priceFailed && <FormAlert>{tPrice("saveFailed")}</FormAlert>}
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           {task && (
             <Button

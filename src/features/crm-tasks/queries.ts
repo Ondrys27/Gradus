@@ -339,9 +339,8 @@ export function useCreateTask(origin: TaskOrigin) {
   const workspaceId = useWorkspaceId();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: TaskInput) => {
-      await createCrmTask(clientOps(), { workspaceId, userId: user.id, input, from: origin });
-    },
+    mutationFn: async (input: TaskInput): Promise<{ id: string }> =>
+      createCrmTask(clientOps(), { workspaceId, userId: user.id, input, from: origin }),
     onSettled: () => invalidateTasks(queryClient, user.id),
   });
 }

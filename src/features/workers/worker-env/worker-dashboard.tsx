@@ -10,10 +10,12 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Stagger, StaggerItem } from "@/components/ui/stagger";
 import { StatTile } from "@/components/ui/stat-tile";
 import { useProfile, useSession } from "@/features/account/queries";
-import { formatCurrency, formatNumber, splitDuration, todayIsoDate } from "@/lib/format";
+import { formatNumber, formatPrice, splitDuration, todayIsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { monthStartOf } from "../logic";
 import { useOpenWorkerTasks, useWorkerMonthStats } from "../queries";
+import { useRewardPlan, useRewardTotals } from "../rewards/queries";
+import { totalsByCurrency } from "../rewards/summary";
 import { WorkTimerCard } from "./work-timer-card";
 
 /** The worker's month: what they earned, how long they worked, and the timer. */
@@ -24,9 +26,15 @@ export function WorkerDashboard() {
   const settings = useFormatSettings();
   const stats = useWorkerMonthStats(monthStartOf(todayIsoDate(settings)));
   const openTasks = useOpenWorkerTasks(worker?.id ?? null);
+  const plan = useRewardPlan(worker?.id ?? null);
+  const totals = useRewardTotals(worker?.id ?? null, Boolean(worker));
   if (!worker) return null;
 
   const month = stats.data?.get(worker.id);
+  // The rewards of the month in the plan's currency (28.2); others are on the Rewards page.
+  const sums = totalsByCurrency(totals.data ?? []);
+  const currency = plan.data?.currency ?? sums[0]?.currency ?? settings.currency;
+  const earned = sums.find((item) => item.currency === currency);
   const worked = splitDuration(month?.workSeconds ?? 0);
   const name = profile.display_name || worker.name;
 
@@ -36,7 +44,7 @@ export function WorkerDashboard() {
         <PageHeader title={t("title", { name })} description={t("description")} />
       </StaggerItem>
 
-      {stats.isError && (
+      {(stats.isError || totals.isError) && (
         <StaggerItem>
           <FormAlert>{t("loadFailed")}</FormAlert>
         </StaggerItem>
@@ -45,15 +53,13 @@ export function WorkerDashboard() {
       <StaggerItem className="grid gap-4 md:grid-cols-2">
         <StatTile
           label={t("earnedThisMonth")}
-          value={month?.earned ?? 0}
-          format={{ style: "currency" }}
+          value={earned?.earned ?? 0}
+          format={{ style: "currency", currency }}
           tone="gold"
           icon={<CoinsIcon />}
           hint={
-            month && month.pendingAmount > 0
-              ? t("pendingHint", {
-                  amount: formatCurrency(month.pendingAmount, undefined, settings),
-                })
+            earned && earned.pending > 0
+              ? t("pendingHint", { amount: formatPrice(earned.pending, currency, settings) })
               : undefined
           }
         />

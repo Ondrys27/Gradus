@@ -40,6 +40,7 @@ import { cn } from "@/lib/utils";
 import { DealActivityTimeline } from "./deal-activity-timeline";
 import { DealContacts } from "./deal-contacts";
 import { DealPeopleSelect } from "./deal-people";
+import { CompletionReward } from "@/features/workers/rewards/completion-reward";
 import { dealAssigneeIds } from "./assignees";
 import { useDeleteDeal, usePatchDeal, useSetDealAssignees } from "./queries";
 import {
@@ -456,6 +457,7 @@ function DealProperties({
   const seeAmounts = useCan("pipeline", "see_amounts");
 
   return (
+    <>
     <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-3">
       {showStage && (
         <Property label={t("detail.stage")} htmlFor="deal-stage">
@@ -512,6 +514,15 @@ function DealProperties({
         </p>
       </Property>
     </dl>
+    <CompletionReward
+      key={`${deal.id}-${deal.reward_amount ?? ""}-${deal.reward_currency ?? ""}`}
+      kind="deal"
+      dealId={deal.id}
+      amount={deal.reward_amount ?? null}
+      currency={deal.reward_currency ?? null}
+      people={[...dealAssigneeIds(deal), ...(deal.created_by ? [deal.created_by] : [])]}
+    />
+    </>
   );
 }
 

@@ -422,7 +422,8 @@
       "firstDeal": "How do I land my first deal?",
       "monthFinance": "How am I doing financially this month?",
       "startCalling": "Give me a short call script",
-      "overdueInvoices": "Help me chase overdue invoices"
+      "overdueInvoices": "Help me chase overdue invoices",
+      "rewardsOwed": "Who do I owe rewards to?"
     },
     "error": {
       "limitReached": "You've used all {limit} Grady messages for this month. They renew on the 1st.",
@@ -3375,7 +3376,8 @@
       "travel": "Travel",
       "taxes": "Taxes",
       "salaries": "Salaries",
-      "otherExpense": "Other expense"
+      "otherExpense": "Other expense",
+      "rewards": "Rewards"
     },
     "transactions": {
       "category": "Category",
@@ -4261,7 +4263,6 @@
   },
   "workers": {
     "add": "Invite worker",
-    "rewardSystem": "Reward system",
     "loadFailed": "The company could not be loaded. Try again.",
     "statsFailed": "This month's numbers could not be loaded.",
     "back": "Company",
@@ -4382,7 +4383,8 @@
           "issue": "Issue, send and cancel"
         },
         "company": {
-          "update": "Edit people in their part of the company"
+          "update": "Edit people in their part of the company",
+          "rewards": "Reward plans, approvals and payouts of the people in their part of the company"
         },
         "scheduler": {
           "own": "Own booking page, meeting types and bookings"
@@ -4425,24 +4427,6 @@
       "share": "Share the link",
       "shareText": "Hi {name}, I am inviting you to our team on {appName}. Sign up with this link:"
     },
-    "detail": {
-      "loadFailed": "This worker could not be loaded. Try again.",
-      "notFoundTitle": "Worker not found",
-      "notFoundDescription": "They may have been removed, or the link is wrong.",
-      "edit": "Edit",
-      "balanceFailed": "The balance could not be loaded.",
-      "owed": "I still owe",
-      "paidOut": "Paid out",
-      "pending": "To approve",
-      "workedThisMonth": "Worked this month",
-      "sections": "Worker sections",
-      "tab": {
-        "tasks": "Tasks",
-        "earnings": "Earnings",
-        "payments": "Payments",
-        "time": "Time"
-      }
-    },
     "tasks": {
       "new": "New task",
       "loadFailed": "Tasks could not be loaded. Try again.",
@@ -4480,46 +4464,6 @@
       "deleteDescription": "The task disappears for the worker too. Earnings it already produced stay.",
       "deleteFailed": "The task could not be deleted.",
       "saveFailed": "Saving failed. Try again."
-    },
-    "earnings": {
-      "filter": "Filter earnings",
-      "all": "All",
-      "status": {
-        "pending": "To approve",
-        "approved": "Approved",
-        "paid": "Paid"
-      },
-      "approve": "Approve",
-      "approveAll": "{count, plural, one {Approve #} other {Approve all #}}",
-      "approveFailed": "Approving failed. Try again.",
-      "loadFailed": "Earnings could not be loaded. Try again.",
-      "emptyTitle": "No earnings here",
-      "emptyOwner": "Earnings appear by themselves from the reward system once the worker gets things done.",
-      "emptyWorker": "What you earn appears here by itself, first waiting for approval.",
-      "source": {
-        "task_completed": "Task done",
-        "meeting_booked": "Meeting booked",
-        "deal_won": "Deal won",
-        "hour_worked": "Hours worked",
-        "manual": "Reward"
-      },
-      "hoursDetail": "{hours} h",
-      "dealDetail": "{name} · {value}"
-    },
-    "payments": {
-      "record": "Record payment",
-      "recordTitle": "Record a payment",
-      "owedNow": "You owe {amount} for approved earnings right now.",
-      "amount": "Amount paid",
-      "date": "Paid on",
-      "note": "Note (optional)",
-      "settleHint": "Approved earnings are marked paid from the oldest, as far as the payments cover them.",
-      "cancel": "Cancel",
-      "close": "Close",
-      "saveFailed": "The payment could not be recorded. Try again.",
-      "loadFailed": "Payments could not be loaded. Try again.",
-      "emptyTitle": "No payments yet",
-      "emptyDescription": "Record every payment to see what you still owe."
     },
     "time": {
       "loadFailed": "Work time could not be loaded. Try again.",
@@ -4563,128 +4507,7 @@
     },
     "myRewards": {
       "title": "Rewards",
-      "description": "Everything you earned: waiting for approval, approved, paid.",
-      "loadFailed": "Your balance could not be loaded.",
-      "toBePaid": "To be paid",
-      "paidOut": "Paid out",
-      "pending": "Waiting for approval"
-    },
-    "rewards": {
-      "title": "Reward system",
-      "description": "Triggers are what your workers do, rules how much it pays. Grady turns it into rules and explains them; nothing runs until you confirm.",
-      "back": "Company",
-      "askAi": "Let AI set it up",
-      "aiWorking": "Grady is reading…",
-      "withoutAi": "Set up without AI",
-      "mapLabel": "Reward tree",
-      "root": "Rewards",
-      "ruleCount": "{count, plural, =0 {No rules yet} one {{shown} rule} other {{shown} rules}}",
-      "addTrigger": "Add a trigger",
-      "addRule": "Add a rule to “{trigger}”",
-      "editTrigger": "Edit trigger “{trigger}”",
-      "editRule": "Edit rule {amount}",
-      "collapse": "Hide rules",
-      "expand": "{count, plural, one {Show # hidden rule} other {Show # hidden rules}}",
-      "startHint": "Start with the + on “Rewards”: pick what your workers do, then add how much it pays.",
-      "loadFailed": "The reward system could not be loaded. Try again.",
-      "saveFailed": "The last change was not saved. Try again.",
-      "confirmed": "The rules are running. New earnings wait for your approval.",
-      "activeTitle": "Rules in force",
-      "noActiveTitle": "No rules in force",
-      "noActiveDescription": "Until you confirm rules, no earnings are created.",
-      "perHour": "{amount}/h",
-      "trigger": {
-        "task_completed": "Task done",
-        "meeting_booked": "Meeting booked",
-        "deal_won": "Deal won",
-        "hour_worked": "Hour worked"
-      },
-      "triggerHint": {
-        "task_completed": "A task you gave the worker is ticked off.",
-        "meeting_booked": "The worker moves a contact into “Meeting scheduled”.",
-        "deal_won": "The worker moves a deal into a won stage.",
-        "hour_worked": "Time on the worker's own timer."
-      },
-      "kind": {
-        "fixed": "Fixed amount",
-        "percent": "Share of the deal",
-        "hourly": "Per hour"
-      },
-      "kindLabel": "How it pays",
-      "amountLabel": {
-        "fixed": "Amount",
-        "percent": "Share in %",
-        "hourly": "Amount per hour"
-      },
-      "amountInvalid": "Enter an amount above zero.",
-      "percentInvalid": "Enter a share between 0 and 100.",
-      "noteLabel": "Conditions (optional)",
-      "noteHint": {
-        "task_completed": "In plain words, e.g. “only when done by the deadline, at most 10 a month”.",
-        "meeting_booked": "In plain words, e.g. “at most 20 a month”.",
-        "deal_won": "In plain words, e.g. “only deals over 10 000”.",
-        "hour_worked": "In plain words, e.g. “at most 160 hours a month”."
-      },
-      "triggerLabel": "Trigger",
-      "scopeLabel": "For",
-      "scope": {
-        "all": "All workers",
-        "removed": "Removed worker",
-        "former": "{name} (no longer in the company)"
-      },
-      "kindChangeHint": "Rules this trigger cannot pay switch to a kind it can.",
-      "newTriggerTitle": "New trigger",
-      "editTriggerTitle": "Edit trigger",
-      "newRuleTitle": "New rule for “{trigger}”",
-      "editRuleTitle": "Edit rule",
-      "deleteTrigger": "Delete trigger",
-      "deleteRule": "Delete rule",
-      "save": "Save",
-      "cancel": "Cancel",
-      "close": "Close",
-      "sentence": {
-        "task_completed": {
-          "fixed": "{amount} for every task done"
-        },
-        "meeting_booked": {
-          "fixed": "{amount} for every meeting booked"
-        },
-        "deal_won": {
-          "fixed": "{amount} for every deal won",
-          "percent": "{amount} of every won deal's value"
-        },
-        "hour_worked": {
-          "hourly": "{amount} for every hour worked"
-        }
-      },
-      "condition": {
-        "minDealValue": "deals from {value}",
-        "onlyBeforeDue": "only when done by the deadline",
-        "maxPerMonth": "{count, plural, one {at most once a month} other {at most {shown}× a month}}"
-      },
-      "aiError": {
-        "notConfigured": "Grady is not connected yet, so it cannot set up the rules now. You can set them up without AI; conditions in notes will not be applied.",
-        "busy": "Grady is busy right now. Try again in a minute, or set up without AI.",
-        "unavailable": "Grady could not answer right now. Try again later, or set up without AI.",
-        "limitReached": "This month's Grady calls are used up. You can set up without AI.",
-        "network": "The connection dropped. Check your internet and try again.",
-        "empty": "Add at least one rule first.",
-        "unknown": "Something went wrong. Try again, or set up without AI.",
-        "userLimit": "The AI assistant has used up its limit for your account this month. You can set up without AI.",
-        "paused": "Grady is taking a break until the end of the month. You can set up without AI.",
-        "spaceLimit": "The AI assistant has used up this company's limit for the month. You can set up without AI."
-      },
-      "proposal": {
-        "title": "How it will work",
-        "withoutAi": "Set up without Grady: the rules exactly as in the tree.",
-        "ignored": "Grady could not set this up:",
-        "notesDropped": "Without AI these conditions are not applied:",
-        "approvalNote": "Every earning waits for your approval before it counts. Confirming replaces the rules in force.",
-        "confirm": "Confirm and start",
-        "back": "Back to editing",
-        "close": "Close",
-        "saveFailed": "The rules could not be saved. Try again."
-      }
+      "description": "What you earned, what waits for approval and the payout, what is coming and by which rules."
     },
     "errors": {
       "nameRequired": "Enter a name.",
@@ -4816,12 +4639,6 @@
         "green": "Green",
         "pink": "Pink",
         "neutral": "Grey"
-      },
-      "rewards": {
-        "description": "Time worked, earnings and what waits for approval this month. Details, payouts and time are on each worker's page.",
-        "system": "Reward system",
-        "empty": "Once your workers accept their invites, their rewards and payouts show here.",
-        "showFormer": "Show former too"
       },
       "invite": {
         "manager": "Manager",
@@ -5051,6 +4868,327 @@
         "assigneeOutside": "Deals cannot be handed to this person.",
         "saveFailed": "The change was not saved. Try again."
       }
+    },
+    "rewardPlan": {
+      "defaultName": "Reward plan",
+      "title": "Reward plan",
+      "intro": "What the worker is paid for and how much. Rewards come from the work on their own; here you approve and pay them.",
+      "time": "Time worked",
+      "loadFailed": "The reward plan could not be loaded. Try again.",
+      "saveFailed": "The change could not be saved. Try again.",
+      "emptyTitle": "No reward plan yet",
+      "emptyOwner": "Set what the worker is paid for: tasks, meetings, deals, hours or a monthly fixed amount. Start from a template or an empty plan.",
+      "emptyWorker": "The owner has not set a reward plan for you yet.",
+      "fromTemplate": "From a template",
+      "createEmpty": "Empty plan",
+      "validity": "Valid from {from} to {to}",
+      "validAlways": "Valid without limit",
+      "template": "Template",
+      "addRule": "Add rule",
+      "approvalLabel": "Approve every reward",
+      "approvalManual": "New rewards wait for your approval.",
+      "approvalAuto": "New rewards are approved on their own and wait for the payout.",
+      "notesDismiss": "Hide note",
+      "noRulesOwner": "The plan has no rule yet. Add the first one or use a template.",
+      "noRulesWorker": "The plan has no rule yet.",
+      "ruleOff": "Switch the rule off",
+      "ruleOn": "Switch the rule on",
+      "ruleEdit": "Edit rule",
+      "ruleDelete": "Delete rule",
+      "settings": "Currency and validity of the plan",
+      "currency": "Currency",
+      "activeFrom": "Valid from",
+      "activeTo": "Valid until",
+      "currencyHint": "The currency is for new rewards from the rules; a task, deal or milestone with its own price pays in that price's currency. Nothing is converted.",
+      "deleteTitle": "Delete the rule?",
+      "deleteDescription": "Rewards it already made stay. No new ones will come from it.",
+      "cancel": "Cancel",
+      "close": "Close",
+      "sentence": {
+        "task_fixed": "The amount set on the task for every done task with a price",
+        "task_default": "{amount} for every done task without its own price",
+        "project_done": "{amount} for every finished project (milestone)",
+        "per_meeting": "{amount} for every booked meeting",
+        "per_call": "{amount} for every call",
+        "per_contact": "{amount} for every new qualified contact",
+        "deal_percent": "{percent} of won deals",
+        "deal_fixed": "{amount} for every won deal",
+        "hourly": "{amount} per hour worked",
+        "monthly_fixed": "{amount} a month"
+      },
+      "limit": {
+        "cap": "at most {amount} a month",
+        "onTimeOnly": "only when done on time",
+        "minDealValue": "only deals from {amount}"
+      },
+      "kind": {
+        "task_fixed": "Price on the task",
+        "task_default": "Every done task",
+        "project_done": "Finished project",
+        "per_meeting": "Booked meeting",
+        "per_call": "Call",
+        "per_contact": "Qualified contact",
+        "deal_percent": "Share of a deal",
+        "deal_fixed": "Amount per deal",
+        "hourly": "Hourly rate",
+        "monthly_fixed": "Fixed monthly"
+      },
+      "kindHint": {
+        "task_fixed": "You write on each task how much it pays. The reward shows as planned right away.",
+        "task_default": "The same amount for every done task that has no price of its own.",
+        "project_done": "For a milestone where the worker is set as the one the project belongs to.",
+        "per_meeting": "A contact moved to Meeting scheduled in Cold Calling, or a booking confirmed in the Scheduler.",
+        "per_call": "Every contact the worker moves on from Not contacted or No answer.",
+        "per_contact": "A contact the worker first moves to Interested or to a meeting.",
+        "deal_percent": "A share of the value of a won deal (without VAT) the worker is on.",
+        "deal_fixed": "The same amount for every won deal the worker is on.",
+        "hourly": "For the time on the worker's own timer.",
+        "monthly_fixed": "The same amount every month; planned from the start of the month, earned at its end."
+      },
+      "errors": {
+        "amountInvalid": "Enter an amount above zero.",
+        "percentInvalid": "Enter a share above 0 and at most 100.",
+        "capInvalid": "The cap has to be above zero.",
+        "minDealInvalid": "Enter zero or a positive amount.",
+        "tooManyRules": "A plan holds 30 rules at most.",
+        "amountNonZero": "Enter an amount; a negative one is a deduction.",
+        "noteRequired": "Write the reason.",
+        "noteTooLong": "The reason is too long (300 characters at most)."
+      },
+      "status": {
+        "planned": "Planned",
+        "pending": "Waiting for approval",
+        "approved": "Waiting for payout",
+        "rejected": "Rejected",
+        "paid": "Paid"
+      },
+      "source": {
+        "crm_task": "Sales task",
+        "worker_task": "Task from the owner",
+        "task": "Milestone task",
+        "milestone": "Project",
+        "deal": "Deal",
+        "meeting": "Meeting from Cold Calling",
+        "booking": "Meeting from the Scheduler",
+        "call": "Call",
+        "contact": "Qualified contact",
+        "work_session": "Time worked",
+        "month": "Monthly reward",
+        "manual": "By hand"
+      },
+      "wizard": {
+        "newTitle": "New rule",
+        "editTitle": "Edit rule",
+        "close": "Close",
+        "steps": "Steps",
+        "step": {
+          "what": "For what",
+          "amount": "How much",
+          "limits": "Limits"
+        },
+        "group": {
+          "tasks": "Tasks and projects",
+          "sales": "Deals",
+          "calls": "Cold Calling",
+          "time": "Time"
+        },
+        "priceExplained": "You write the amount on each task (the Reward for completion field).",
+        "amountLabel": {
+          "item": "Amount ({currency})",
+          "hourly": "Amount per hour ({currency})",
+          "monthly": "Amount per month ({currency})"
+        },
+        "percentLabel": "Share in %",
+        "capLabel": "Monthly cap ({currency}, optional)",
+        "capHint": "No more than this comes from this rule in a calendar month.",
+        "minDealLabel": "Only deals from ({currency}, optional)",
+        "minDealHint": "Applies only to deals in the plan's currency.",
+        "onTimeLabel": "Only when the task is done on time",
+        "noLimits": "This rule has no limits.",
+        "saveFailed": "The rule could not be saved. Try again.",
+        "cancel": "Cancel",
+        "back": "Back",
+        "save": "Save",
+        "add": "Add rule",
+        "next": "Next"
+      },
+      "templates": {
+        "title": "Reward plan template",
+        "close": "Close",
+        "fillIn": "Fill in the amount",
+        "percent": "Share in %",
+        "amount": "Amount ({currency})",
+        "suggestion": "The amounts are a suggestion converted to the plan's currency and rounded. Change them as you need.",
+        "saveFailed": "The template could not be used. Try again.",
+        "cancel": "Cancel",
+        "apply": "Use template",
+        "coldCaller": {
+          "name": "Cold caller",
+          "description": "For calls, qualified contacts and booked meetings."
+        },
+        "salesCommission": {
+          "name": "Salesperson on commission",
+          "description": "A monthly fixed amount and a share of won deals."
+        },
+        "developer": {
+          "name": "Developer per project",
+          "description": "A price on each task and a reward for a finished project."
+        },
+        "assistant": {
+          "name": "Hourly assistant",
+          "description": "An hourly rate and a price on chosen tasks."
+        }
+      },
+      "tiles": {
+        "loadFailed": "The rewards could not be loaded. Try again.",
+        "earned": "Earned this month",
+        "pending": "Waiting for approval",
+        "approved": "Waiting for payout",
+        "planned": "Planned",
+        "count": "{count, plural, one {{shown} reward} other {{shown} rewards}}",
+        "other": "{currency}: earned {earned}, to approve {pending}, to pay {approved}, planned {planned}"
+      },
+      "add": {
+        "button": "Add reward",
+        "title": "Add reward",
+        "close": "Close",
+        "amount": "Amount",
+        "amountHint": "A negative amount is a deduction.",
+        "currency": "Currency",
+        "note": "Reason",
+        "notePlaceholder": "E.g. a bonus for a great month",
+        "day": "Date",
+        "link": "Belongs to (optional)",
+        "noLink": "Nothing",
+        "saveFailed": "The reward could not be added. Try again.",
+        "cancel": "Cancel",
+        "submit": "Add"
+      },
+      "edit": {
+        "title": "Edit reward",
+        "close": "Close",
+        "amount": "Amount ({currency})",
+        "note": "Note",
+        "saveFailed": "The reward could not be changed. Try again.",
+        "cancel": "Cancel",
+        "save": "Save"
+      },
+      "payout": {
+        "title": "Mark paid",
+        "close": "Close",
+        "line": "{name}: {count, plural, one {# reward} other {# rewards}}",
+        "day": "Payout date",
+        "note": "Note (optional)",
+        "financeHint": "The payout is booked as an expense in Finance (category Rewards) and in the month plan.",
+        "saveFailed": "Could not pay out: {names}. Try again.",
+        "cancel": "Cancel",
+        "submit": "Mark paid"
+      },
+      "payouts": {
+        "title": "Payouts",
+        "export": "Export CSV",
+        "exportFailed": "The export failed. Try again.",
+        "loadFailed": "The payouts could not be loaded. Try again.",
+        "nothingApproved": "Nothing approved waits for a payout now.",
+        "toPay": "To pay",
+        "noNote": "No description",
+        "total": "You pay {amount}",
+        "problem": {
+          "empty": "Choose rewards to pay.",
+          "mixed": "Choose rewards in one currency.",
+          "notPositive": "The deductions are larger than the rewards; choose rewards too.",
+          "notApproved": "Only approved rewards can be paid."
+        },
+        "markPaid": "Mark paid",
+        "empty": "No payouts yet.",
+        "history": "Payout history",
+        "period": "{from} – {to}",
+        "entries": "{count, plural, one {# reward} other {# rewards}}",
+        "csv": {
+          "paidOn": "Paid on",
+          "worker": "Worker",
+          "from": "Period from",
+          "to": "Period to",
+          "entries": "Rewards",
+          "amount": "Amount",
+          "currency": "Currency",
+          "note": "Note",
+          "file": "payouts"
+        }
+      },
+      "work": {
+        "title": "Work and rewards",
+        "approveAll": "{count, plural, one {Approve # waiting} other {Approve # waiting}}",
+        "period": "Period",
+        "periods": {
+          "month": "This month",
+          "quarter": "Quarter",
+          "year": "Year"
+        },
+        "reviewFailed": "The change failed. Try again.",
+        "loadFailed": "The rewards could not be loaded. Try again.",
+        "empty": "Nothing here in this period.",
+        "approve": "Approve",
+        "reject": "Reject",
+        "restore": "Back to approval",
+        "edit": "Edit reward",
+        "outcome": {
+          "onTime": "Done on time",
+          "late": "Done late",
+          "missed": "Not done, overdue",
+          "open": "In progress"
+        },
+        "deal": {
+          "won": "Won",
+          "lost": "Lost",
+          "open": "Open"
+        }
+      },
+      "mine": {
+        "coming": "{amount} waits for you{tasks, plural, =0 {} one { for {tasksShown} task} other { for {tasksShown} tasks}}{other, plural, =0 {} other { and more}}",
+        "recent": "Your rewards",
+        "empty": "Nothing this month yet. What you earn shows up here on its own."
+      },
+      "company": {
+        "loadFailed": "The rewards could not be loaded. Try again.",
+        "description": "What everyone earned this month, what waits for approval and for the payout, and what is planned. Click a person for their plan and work.",
+        "selectAll": "Select everyone",
+        "selected": "{count, plural, one {# person selected} other {# people selected}}",
+        "people": "{count, plural, one {# person} other {# people}}",
+        "approve": "Approve waiting ({count})",
+        "pay": "Pay approved ({count})",
+        "reviewFailed": "The approval failed. Try again.",
+        "empty": "Once you invite workers and they accept, their rewards and payouts show up here.",
+        "columns": {
+          "person": "Who",
+          "earned": "Earned this month",
+          "pending": "Waiting for approval",
+          "approved": "Waiting for payout",
+          "planned": "Planned"
+        },
+        "select": "Select {name}",
+        "former": "Former worker",
+        "payouts": "Payout history",
+        "export": "Export CSV",
+        "exportFailed": "The export failed. Try again."
+      }
+    },
+    "rewardPrice": {
+      "label": "Reward for completion",
+      "hint": "From {name}'s reward plan; you can change it. Empty = no price.",
+      "hintMilestoneTask": "The worker with a reward plan who completes the task gets it.",
+      "currency": "Reward currency",
+      "readOnly": "Reward for completion: {amount}",
+      "saveFailed": "The task is saved, but the reward could not be set. Try again.",
+      "invalid": "Enter a positive amount, or leave the field empty.",
+      "dealLabel": "Reward when won",
+      "dealHint": "Every worker with a reward plan who is on the deal gets it.",
+      "milestoneLabel": "Reward for finishing the project",
+      "milestoneWorker": "Whose project it is",
+      "milestoneNobody": "Nobody",
+      "milestoneHint": "The worker gets the amount and the rewards of the Finished project rule once you complete the milestone.",
+      "save": "Save reward",
+      "saved": "Saved"
     }
   },
   "game": {
@@ -9823,7 +9961,6 @@
     "rightsTitle": "What you will see there",
     "rightsNone": "The dashboard, your tasks and Messages; the owner may allow more later.",
     "rewardsTitle": "Rewards",
-    "forYou": "only for you",
     "free": "Working in the company costs you nothing: the owner has it in their plan. Your own account and data stay yours.",
     "accept": "Accept",
     "decline": "Decline",

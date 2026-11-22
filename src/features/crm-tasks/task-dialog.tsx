@@ -38,6 +38,7 @@ import { useAssignees, useCreateTask, useUpdateTask } from "./queries";
 import { TargetPicker } from "./target-picker";
 import type { CrmTask, TaskOrigin, TaskTarget } from "./types";
 import { useAssigneeName } from "./use-assignee-name";
+import { RewardPriceField, useRewardPrice } from "@/features/workers/rewards/reward-price-field";
 
 type Props = {
   open: boolean;
@@ -90,6 +91,7 @@ function Fields({
 }) {
   const t = useTranslations("crmTasks.form");
   const tErrors = useTranslations("crmTasks.errors");
+  const tPrice = useTranslations("workers.rewardPrice");
   const settings = useFormatSettings();
   const { user } = useSession();
   const workspace = useWorkspace();
@@ -114,6 +116,14 @@ function Fields({
   );
   const [errors, setErrors] = useState<Partial<Record<string, TaskErrorKey>>>({});
   const [failed, setFailed] = useState(false);
+  // The reward for completion (28.2), saved right after the task.
+  const price = useRewardPrice(
+    { kind: "crm_task", assigneeAccountId: assignee },
+    task ? { amount: task.reward_amount ?? null, currency: task.reward_currency ?? null } : null,
+  );
+  // A new task that saved while its price did not: a retry updates it, never makes a second one.
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const [priceFailed, setPriceFailed] = useState(false);
   const locked = !task && origin !== "tasks";
   const err = (key: string) => (errors[key] ? tErrors(errors[key]) : undefined);
 
@@ -151,13 +161,25 @@ function Fields({
       setErrors(result.errors);
       return;
     }
+    if (price.invalid) return;
     setErrors({});
+    setPriceFailed(false);
+    let id = task?.id ?? savedId;
     try {
-      if (task) await update.mutateAsync({ id: task.id, input: result.data });
-      else await create.mutateAsync(result.data);
-      onDone();
+      if (id) await update.mutateAsync({ id, input: result.data });
+      else {
+        id = (await create.mutateAsync(result.data)).id;
+        setSavedId(id);
+      }
     } catch {
       setFailed(true);
+      return;
+    }
+    try {
+      await price.commit("crm_task", id);
+      onDone();
+    } catch {
+      setPriceFailed(true);
     }
   }
 
@@ -274,6 +296,8 @@ function Fields({
         </Select>
       </FormField>
 
+      <RewardPriceField state={price} id="crm-task-reward" />
+
       <FormField id="crm-task-description" label={t("description")} error={err("description")}>
         <Textarea
           {...fieldA11y("crm-task-description", err("description"))}
@@ -285,6 +309,7 @@ function Fields({
       </FormField>
 
       {failed && <FormAlert>{t("saveFailed")}</FormAlert>}
+      {priceFailed && <FormAlert>{tPrice("saveFailed")}</FormAlert>}
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button type="button" variant="ghost" onClick={onDone}>
           {t("cancel")}

@@ -93,8 +93,10 @@ test("9 · a worker joins through the invite: with the contacts right sees conta
     await expect(worker.getByRole("tab", { name: t("workers.company.tabs.groups") })).toHaveCount(
       0,
     );
+    // The old reward system page leads to Company; without "company: rewards" there is no Rewards tab (28.2).
     await worker.goto("/app/firma/odmeny");
-    await expect(worker).toHaveURL(/\/app$/);
+    await expect(worker).toHaveURL(/\/app(\/firma(\?tab=rewards)?)?$/);
+    await expect(worker.getByRole("tab", { name: t("workers.company.tabs.rewards") })).toHaveCount(0);
 
     await openApp(worker, "/app/kontakty");
     await expect(worker.locator("main").getByText("E2E Klient majitele").first()).toBeVisible();

@@ -775,7 +775,8 @@ export const METRICS: readonly MetricDefinition[] = [
     "worker_earnings_approved",
     "features",
     "count",
-    ev(count("worker_earnings_approved")),
+    // Since 28.2 rewards are approved in the reward plans; the key stays for the history.
+    ev(count("reward_entries_reviewed", { action: "approve" })),
     S("workers"),
   ),
   metric("workers_per_owner", "features", "users", dist("workers_per_owner"), S("workers")),

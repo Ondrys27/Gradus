@@ -28,6 +28,7 @@ import { WorkerFormDialog } from "../worker-form-dialog";
 import { CompanyGroups } from "./company-groups";
 import { CompanyList, type CompanyViewer } from "./company-list";
 import { CompanyMap } from "./company-map";
+import { useManagesRewards } from "../rewards/queries";
 import { CompanyRewards } from "./company-rewards";
 import { MoveWorkerDialog } from "./move-worker-dialog";
 import {
@@ -92,7 +93,13 @@ export function CompanyView() {
     worker: openWorker,
     workerTab,
   } = useMemo(() => parseCompanySearch(new URLSearchParams(search)), [search]);
-  const tab = isOwner ? requestedTab : "people";
+  // A worker with "company: rewards" also has Rewards and payouts (28.2); groups stay the owner's.
+  const managesRewards = useManagesRewards();
+  const tab = isOwner
+    ? requestedTab
+    : managesRewards && requestedTab === "rewards"
+      ? "rewards"
+      : "people";
   function replaceSearch(next: Partial<CompanySearch>) {
     const text = companySearchString(new URLSearchParams(search), next);
     router.replace(text ? `${pathname}?${text}` : pathname, { scroll: false });
@@ -132,15 +139,15 @@ export function CompanyView() {
         />
       </StaggerItem>
 
-      {isOwner && (
+      {(isOwner || managesRewards) && (
         <StaggerItem>
           <Segmented
             label={tc("tabs.label")}
             value={tab}
             options={[
-              { value: "people", label: tc("tabs.people") },
-              { value: "groups", label: tc("tabs.groups") },
-              { value: "rewards", label: tc("tabs.rewards") },
+              { value: "people" as const, label: tc("tabs.people") },
+              ...(isOwner ? [{ value: "groups" as const, label: tc("tabs.groups") }] : []),
+              { value: "rewards" as const, label: tc("tabs.rewards") },
             ]}
             onChange={(next) => replaceSearch({ tab: next })}
           />
@@ -171,7 +178,11 @@ export function CompanyView() {
             onShow={(group) => replaceSearch({ tab: "people", group })}
           />
         ) : (
-          <CompanyRewards />
+          <CompanyRewards
+            people={people.data}
+            failed={people.isError}
+            onOpen={(id) => replaceSearch({ worker: id, workerTab: "rewards" })}
+          />
         )}
       </StaggerItem>
 

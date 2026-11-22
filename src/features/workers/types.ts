@@ -30,7 +30,7 @@ export type WorkerPermission = Pick<
 >;
 
 export const WORKER_TASK_COLUMNS =
-  "id, worker_id, title, description, due_date, status, completed_at, created_at" as const;
+  "id, worker_id, title, description, due_date, status, completed_at, created_at, reward_amount, reward_currency" as const;
 export type WorkerTask = Pick<
   Tables["worker_tasks"]["Row"],
   | "id"
@@ -41,7 +41,11 @@ export type WorkerTask = Pick<
   | "status"
   | "completed_at"
   | "created_at"
->;
+> & {
+  /** The reward for completing it (28.2); absent in older reads. */
+  reward_amount?: number | null;
+  reward_currency?: string | null;
+};
 
 export const EARNING_COLUMNS =
   "id, worker_id, amount, currency, description, status, source, basis, approved_at, paid_at, created_at" as const;

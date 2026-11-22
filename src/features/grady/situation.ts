@@ -13,6 +13,7 @@ import { describeCashPlan, type CashPlan } from "./cash-plan";
 import type { SuggestionKey } from "./protocol";
 import { describeTimeWindow, type TimeWindow } from "./time-window";
 import { describeScheduler, type SchedulerSituation } from "@/features/scheduler/situation";
+import { describeRewards, type RewardsSituation } from "@/features/workers/rewards/situation";
 
 /**
  * The user's situation as Grady sees it before every call: loaded from the
@@ -73,6 +74,12 @@ export type UserSituation = {
    * the link to send; null or absent without one.
    */
   scheduler?: SchedulerSituation | null;
+  /**
+   * Worker rewards (28.2): who the user owes what and what waits for their
+   * approval (whoever manages rewards), or their own as a worker; null or
+   * absent without any.
+   */
+  rewards?: RewardsSituation | null;
 };
 
 /** Longest title or name passed on; the model needs the gist, not the essay. */
@@ -232,6 +239,8 @@ export function describeSituation(situation: UserSituation, settings: FormatSett
 
   if (situation.scheduler) lines.push(...describeScheduler(situation.scheduler, settings));
 
+  if (situation.rewards) lines.push(...describeRewards(situation.rewards, settings));
+
   return lines.join("\n");
 }
 
@@ -242,6 +251,7 @@ export function suggestionsFor(situation: UserSituation, limit = 3): SuggestionK
   if (situation.overdueCrmTasksTotal) keys.push("overdueCrmTasks");
   if (situation.overdueTotal) keys.push("overdueTasks");
   if (situation.overdueInvoicesTotal) keys.push("overdueInvoices");
+  if (situation.rewards?.owed.some((person) => person.approved.length > 0)) keys.push("rewardsOwed");
   // Money running short this month: the month's finances are worth a question.
   if (situation.cashPlan?.finding) keys.push("monthFinance");
   if (situation.stalledDeals) keys.push("stalledDeals");

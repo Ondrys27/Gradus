@@ -41,6 +41,8 @@ import { countTasks, milestoneCompletion, progressOf } from "./task-tree";
 import { TasksPanel } from "./tasks-panel";
 import { useNotesInWork } from "@/features/notes/link-queries";
 import { WorkNotes } from "@/features/notes/work-notes";
+import { CompletionReward } from "@/features/workers/rewards/completion-reward";
+import { useManagesRewards } from "@/features/workers/rewards/queries";
 import type { Milestone } from "./types";
 
 const RING_SIZE = 220;
@@ -279,6 +281,8 @@ export function MilestoneDetail({ id }: { id: string }) {
 
       <TasksPanel milestone={milestone} tasks={tasks} />
 
+      <MilestoneReward milestone={milestone} />
+
       <MilestoneNotes milestone={milestone} />
 
       <MilestoneFormDialog open={editing} onOpenChange={setEditing} milestone={milestone} />
@@ -297,6 +301,24 @@ export function MilestoneDetail({ id }: { id: string }) {
         }
       />
     </div>
+  );
+}
+
+/** The project's reward for a worker (28.2), for whoever manages rewards; nothing without plans. */
+function MilestoneReward({ milestone }: { milestone: Milestone }) {
+  const manages = useManagesRewards();
+  if (!manages && milestone.reward_amount == null) return null;
+  return (
+    <GlowCard interactive={false} className="p-4 sm:p-5 empty:hidden">
+      <CompletionReward
+        key={`${milestone.id}-${milestone.reward_amount ?? ""}-${milestone.reward_worker_id ?? ""}`}
+        kind="milestone"
+        milestoneId={milestone.id}
+        amount={milestone.reward_amount ?? null}
+        currency={milestone.reward_currency ?? null}
+        workerId={milestone.reward_worker_id ?? null}
+      />
+    </GlowCard>
   );
 }
 

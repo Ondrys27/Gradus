@@ -1776,6 +1776,8 @@ export type Database = {
           duration_minutes: number
           id: string
           is_demo: boolean
+          reward_amount: number | null
+          reward_currency: string | null
           status: Database["public"]["Enums"]["crm_task_status"]
           title: string
           updated_at: string
@@ -1795,6 +1797,8 @@ export type Database = {
           duration_minutes?: number
           id?: string
           is_demo?: boolean
+          reward_amount?: number | null
+          reward_currency?: string | null
           status?: Database["public"]["Enums"]["crm_task_status"]
           title: string
           updated_at?: string
@@ -1814,6 +1818,8 @@ export type Database = {
           duration_minutes?: number
           id?: string
           is_demo?: boolean
+          reward_amount?: number | null
+          reward_currency?: string | null
           status?: Database["public"]["Enums"]["crm_task_status"]
           title?: string
           updated_at?: string
@@ -1991,6 +1997,8 @@ export type Database = {
           lost_at: string | null
           lost_reason: string | null
           position: number
+          reward_amount: number | null
+          reward_currency: string | null
           stage_id: string
           title: string
           updated_at: string
@@ -2014,6 +2022,8 @@ export type Database = {
           lost_at?: string | null
           lost_reason?: string | null
           position?: number
+          reward_amount?: number | null
+          reward_currency?: string | null
           stage_id: string
           title: string
           updated_at?: string
@@ -2037,6 +2047,8 @@ export type Database = {
           lost_at?: string | null
           lost_reason?: string | null
           position?: number
+          reward_amount?: number | null
+          reward_currency?: string | null
           stage_id?: string
           title?: string
           updated_at?: string
@@ -3216,6 +3228,9 @@ export type Database = {
           is_demo: boolean
           position: number
           reward: string | null
+          reward_amount: number | null
+          reward_currency: string | null
+          reward_worker_id: string | null
           status: Database["public"]["Enums"]["milestone_status"]
           tag: string | null
           target_date: string | null
@@ -3235,6 +3250,9 @@ export type Database = {
           is_demo?: boolean
           position?: number
           reward?: string | null
+          reward_amount?: number | null
+          reward_currency?: string | null
+          reward_worker_id?: string | null
           status?: Database["public"]["Enums"]["milestone_status"]
           tag?: string | null
           target_date?: string | null
@@ -3254,6 +3272,9 @@ export type Database = {
           is_demo?: boolean
           position?: number
           reward?: string | null
+          reward_amount?: number | null
+          reward_currency?: string | null
+          reward_worker_id?: string | null
           status?: Database["public"]["Enums"]["milestone_status"]
           tag?: string | null
           target_date?: string | null
@@ -4127,6 +4148,230 @@ export type Database = {
         }
         Relationships: []
       }
+      reward_entries: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          corrects_id: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          id: string
+          note: string | null
+          occurred_at: string
+          paid_at: string | null
+          payout_id: string | null
+          reversed_at: string | null
+          rule_id: string | null
+          rule_kind: string
+          source_id: string | null
+          source_kind: string
+          space_id: string
+          status: string
+          updated_at: string
+          worker_id: string
+        }
+        Insert: {
+          amount: number
+          approved_at?: string | null
+          approved_by?: string | null
+          corrects_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency: string
+          id?: string
+          note?: string | null
+          occurred_at?: string
+          paid_at?: string | null
+          payout_id?: string | null
+          reversed_at?: string | null
+          rule_id?: string | null
+          rule_kind: string
+          source_id?: string | null
+          source_kind: string
+          space_id: string
+          status?: string
+          updated_at?: string
+          worker_id: string
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          corrects_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          id?: string
+          note?: string | null
+          occurred_at?: string
+          paid_at?: string | null
+          payout_id?: string | null
+          reversed_at?: string | null
+          rule_id?: string | null
+          rule_kind?: string
+          source_id?: string | null
+          source_kind?: string
+          space_id?: string
+          status?: string
+          updated_at?: string
+          worker_id?: string
+        }
+        Relationships: []
+      }
+      reward_payouts: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          currency: string
+          entries: number
+          id: string
+          note: string | null
+          paid_at: string
+          period_from: string | null
+          period_to: string | null
+          space_id: string
+          total: number
+          transaction_id: string | null
+          worker_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          currency: string
+          entries?: number
+          id?: string
+          note?: string | null
+          paid_at?: string
+          period_from?: string | null
+          period_to?: string | null
+          space_id: string
+          total: number
+          transaction_id?: string | null
+          worker_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          entries?: number
+          id?: string
+          note?: string | null
+          paid_at?: string
+          period_from?: string | null
+          period_to?: string | null
+          space_id?: string
+          total?: number
+          transaction_id?: string | null
+          worker_id?: string
+        }
+        Relationships: []
+      }
+      reward_plan_rules: {
+        Row: {
+          active: boolean
+          amount: number | null
+          cap_per_period: number | null
+          created_at: string
+          filter: Json
+          id: string
+          kind: string
+          percent: number | null
+          plan_id: string
+          position: number
+          space_id: string
+          unit: string
+          updated_at: string
+          worker_id: string
+        }
+        Insert: {
+          active?: boolean
+          amount?: number | null
+          cap_per_period?: number | null
+          created_at?: string
+          filter?: Json
+          id?: string
+          kind: string
+          percent?: number | null
+          plan_id: string
+          position?: number
+          space_id: string
+          unit?: string
+          updated_at?: string
+          worker_id: string
+        }
+        Update: {
+          active?: boolean
+          amount?: number | null
+          cap_per_period?: number | null
+          created_at?: string
+          filter?: Json
+          id?: string
+          kind?: string
+          percent?: number | null
+          plan_id?: string
+          position?: number
+          space_id?: string
+          unit?: string
+          updated_at?: string
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_plan_rules_plan_fkey"
+            columns: ["plan_id", "space_id"]
+            isOneToOne: false
+            referencedRelation: "reward_plans"
+            referencedColumns: ["id", "space_id"]
+          },
+        ]
+      }
+      reward_plans: {
+        Row: {
+          active_from: string | null
+          active_to: string | null
+          approval: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          id: string
+          name: string
+          notes: string | null
+          space_id: string
+          updated_at: string
+          worker_id: string
+        }
+        Insert: {
+          active_from?: string | null
+          active_to?: string | null
+          approval?: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          space_id: string
+          updated_at?: string
+          worker_id: string
+        }
+        Update: {
+          active_from?: string | null
+          active_to?: string | null
+          approval?: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          space_id?: string
+          updated_at?: string
+          worker_id?: string
+        }
+        Relationships: []
+      }
       reward_rules: {
         Row: {
           created_at: string
@@ -4477,6 +4722,8 @@ export type Database = {
           milestone_id: string
           parent_task_id: string | null
           position: number
+          reward_amount: number | null
+          reward_currency: string | null
           status: Database["public"]["Enums"]["task_status"]
           template_id: string | null
           title: string
@@ -4494,6 +4741,8 @@ export type Database = {
           milestone_id: string
           parent_task_id?: string | null
           position?: number
+          reward_amount?: number | null
+          reward_currency?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           template_id?: string | null
           title: string
@@ -4511,6 +4760,8 @@ export type Database = {
           milestone_id?: string
           parent_task_id?: string | null
           position?: number
+          reward_amount?: number | null
+          reward_currency?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           template_id?: string | null
           title?: string
@@ -5412,6 +5663,8 @@ export type Database = {
           due_date: string | null
           id: string
           owner_id: string
+          reward_amount: number | null
+          reward_currency: string | null
           status: Database["public"]["Enums"]["task_status"]
           title: string
           updated_at: string
@@ -5425,6 +5678,8 @@ export type Database = {
           due_date?: string | null
           id?: string
           owner_id: string
+          reward_amount?: number | null
+          reward_currency?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           title: string
           updated_at?: string
@@ -5438,6 +5693,8 @@ export type Database = {
           due_date?: string | null
           id?: string
           owner_id?: string
+          reward_amount?: number | null
+          reward_currency?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           title?: string
           updated_at?: string
@@ -7729,7 +7986,69 @@ export type Database = {
         }
         Returns: undefined
       }
+      reward_add_manual: {
+        Args: {
+          _amount: number
+          _currency: string
+          _note: string
+          _occurred_on: string
+          _source_id?: string
+          _source_kind?: string
+          _worker_id: string
+        }
+        Returns: string
+      }
+      reward_can_manage: {
+        Args: { _space: string; _worker: string }
+        Returns: boolean
+      }
+      reward_convert_legacy_rules: { Args: never; Returns: number }
+      reward_entry_update: {
+        Args: { _amount: number; _id: string; _note: string }
+        Returns: undefined
+      }
+      reward_manager_in: { Args: { _space: string }; Returns: boolean }
+      reward_payout_create: {
+        Args: {
+          _entry_ids: string[]
+          _note: string
+          _paid_on: string
+          _row_label: string
+          _worker_id: string
+        }
+        Returns: string
+      }
+      reward_review: {
+        Args: { _action: string; _ids: string[] }
+        Returns: number
+      }
       reward_rule_is_valid: { Args: { _rule: Json }; Returns: boolean }
+      reward_run_monthly: { Args: never; Returns: number }
+      reward_set_price: {
+        Args: {
+          _amount: number | null
+          _currency: string | null
+          _source_id: string
+          _source_kind: string
+          _worker_id?: string | null
+        }
+        Returns: undefined
+      }
+      reward_totals: {
+        Args: { _from: string; _until: string; _worker_id?: string }
+        Returns: {
+          approved: number
+          approved_count: number
+          currency: string
+          earned: number
+          paid: number
+          pending: number
+          pending_count: number
+          planned: number
+          planned_count: number
+          worker_id: string
+        }[]
+      }
       scheduler_book: {
         Args: {
           _answers: Json

@@ -10,6 +10,7 @@ import { Input, Textarea } from "@/components/ui/input";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { useTaskNoteTemplates } from "@/features/notes/link-queries";
 import { WorkNotes } from "@/features/notes/work-notes";
+import { RewardPriceField, useRewardPrice } from "@/features/workers/rewards/reward-price-field";
 import { useCreateTask, useUpdateTask } from "./queries";
 import {
   DESCRIPTION_MAX,
@@ -68,6 +69,7 @@ function TaskFields({
   onDone: () => void;
 }) {
   const t = useTranslations("milestones");
+  const tPrice = useTranslations("workers.rewardPrice");
   const create = useCreateTask(milestoneId);
   const update = useUpdateTask(milestoneId);
   const editing = mode.kind === "edit" ? mode.task : null;
@@ -77,6 +79,13 @@ function TaskFields({
   const [dueDate, setDueDate] = useState<string | null>(editing?.due_date ?? null);
   const [errors, setErrors] = useState<Partial<Record<string, MilestoneErrorKey>>>({});
   const [failed, setFailed] = useState(false);
+  // The reward for completion (28.2): whoever of the workers ticks the task off gets it.
+  const price = useRewardPrice(
+    { kind: "task" },
+    editing ? { amount: editing.reward_amount ?? null, currency: editing.reward_currency ?? null } : null,
+  );
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const [priceFailed, setPriceFailed] = useState(false);
   const pending = create.isPending || update.isPending;
   const locked = editing ? openSubtasks(tasks, editing.id) > 0 : false;
   const noteTemplates = useTaskNoteTemplates(milestoneId, !!editing);
@@ -89,19 +98,30 @@ function TaskFields({
       setErrors(fieldErrors(parsed.error));
       return;
     }
+    if (price.invalid) return;
     setErrors({});
+    setPriceFailed(false);
+    let id = editing?.id ?? savedId;
     try {
-      if (editing) {
-        await update.mutateAsync({ id: editing.id, input: parsed.data });
+      if (id) {
+        await update.mutateAsync({ id, input: parsed.data });
       } else {
-        await create.mutateAsync({
+        const row = await create.mutateAsync({
           parentId: mode.kind === "create" ? (mode.parent?.id ?? null) : null,
           input: parsed.data,
         });
+        id = row.id;
+        setSavedId(id);
       }
-      onDone();
     } catch {
       setFailed(true);
+      return;
+    }
+    try {
+      await price.commit("task", id);
+      onDone();
+    } catch {
+      setPriceFailed(true);
     }
   }
 
@@ -142,6 +162,7 @@ function TaskFields({
           placeholder={t("tasks.form.dueDatePlaceholder")}
         />
       </FormField>
+      <RewardPriceField state={price} id="task-reward" />
       {editing && (
         <WorkNotes
           target={{ kind: "task", id: editing.id, milestoneId }}
@@ -152,6 +173,7 @@ function TaskFields({
         />
       )}
       {failed && <FormAlert>{t("tasks.errors.saveFailed")}</FormAlert>}
+      {priceFailed && <FormAlert>{tPrice("saveFailed")}</FormAlert>}
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button type="button" variant="ghost" onClick={onDone}>
           {t("tasks.form.cancel")}

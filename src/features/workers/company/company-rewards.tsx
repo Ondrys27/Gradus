@@ -1,103 +1,235 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import { GiftIcon, CoinsIcon } from "lucide-react";
+import { BanknoteIcon, CheckCheckIcon, CoinsIcon, DownloadIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { buttonVariants } from "@/components/ui/button";
+import { Avatar } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormAlert } from "@/components/ui/form-alert";
-import { Switch } from "@/components/ui/switch";
-import { activeWorkerIds, useActiveMembers } from "@/features/account/active-members";
+import { GlowCard } from "@/components/ui/glow-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { todayIsoDate } from "@/lib/format";
-import { COMPANY_PATH } from "@/lib/routes";
+import { useWorkspace } from "@/features/account/workspace-queries";
+import { formatPrice } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
-import { monthStartOf } from "../logic";
-import { useWorkerMonthStats, useWorkerProfiles, useWorkers } from "../queries";
-import { WorkerCard } from "../worker-card";
-import { formerCount, rewardsRoster } from "./rewards-roster";
-
-const EMPTY_MONTH = {
-  workSeconds: 0,
-  earned: 0,
-  pendingAmount: 0,
-  pendingCount: 0,
-  tasksTotal: 0,
-  tasksDone: 0,
-};
+import { PayoutDialog, type PayoutRequest } from "../rewards/entry-dialogs";
+import { PayoutHistory, useExportPayouts } from "../rewards/payouts-panel";
+import { useOpenEntries, useReviewEntries, useRewardTotals } from "../rewards/queries";
+import { RewardsTiles } from "../rewards/rewards-tiles";
+import { payoutGroups, totalsByCurrency } from "../rewards/summary";
+import type { RewardTotals } from "../rewards/types";
+import type { CompanyPerson } from "./tree";
 
 /**
- * Rewards and payouts of everyone at a glance: this month's time, earnings and
- * what waits for approval, with the reward system one click away. Payouts and
- * time of one worker are on their page. Only the people of the company now
- * (28.1); "Show former too" adds those who left, for their payout history.
+ * Rewards and payouts of everyone at once (28.2): this month's earnings, what
+ * waits for approval and for the payout, and what is planned, per person;
+ * approve and pay out several people in one go. Only the people of the
+ * company now; a manager with "company: rewards" sees the people they see in
+ * Company, never themself. A row opens the person's rewards.
  */
-export function CompanyRewards() {
-  const t = useTranslations("workers");
-  const tc = useTranslations("workers.company.rewards");
+export function CompanyRewards({
+  people,
+  failed,
+  onOpen,
+}: {
+  people: CompanyPerson[] | undefined;
+  failed: boolean;
+  onOpen: (workerId: string) => void;
+}) {
+  const t = useTranslations("workers.rewardPlan.company");
   const settings = useFormatSettings();
-  const workers = useWorkers();
-  const members = useActiveMembers();
-  const [showFormer, setShowFormer] = useState(false);
-  const activeIds = useMemo(() => activeWorkerIds(members.data), [members.data]);
+  const workspace = useWorkspace();
+  const totals = useRewardTotals(null);
+  const open = useOpenEntries();
+  const review = useReviewEntries("company");
+  const exportCsv = useExportPayouts();
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [requests, setRequests] = useState<PayoutRequest[]>([]);
+  const [exportFailed, setExportFailed] = useState(false);
+  const canChange = !workspace.readOnly;
+
   const roster = useMemo(
-    () => rewardsRoster(workers.data ?? [], activeIds, showFormer),
-    [workers.data, activeIds, showFormer],
+    () =>
+      (people ?? []).filter(
+        (person) => person.status === "active" && person.id !== workspace.workerId,
+      ),
+    [people, workspace.workerId],
   );
-  const former = useMemo(() => formerCount(workers.data ?? [], activeIds), [workers.data, activeIds]);
-  const stats = useWorkerMonthStats(monthStartOf(todayIsoDate(settings)));
-  const accountIds = roster.flatMap(({ worker }) => (worker.user_id ? [worker.user_id] : []));
-  const profiles = useWorkerProfiles(accountIds);
+  const names = useMemo(() => new Map((people ?? []).map((person) => [person.id, person.name])), [people]);
+  const nameOf = (id: string) => names.get(id) ?? t("former");
+  const byWorker = useMemo(() => {
+    const map = new Map<string, RewardTotals[]>();
+    for (const item of totals.data ?? []) map.set(item.workerId, [...(map.get(item.workerId) ?? []), item]);
+    return map;
+  }, [totals.data]);
+  const rosterIds = new Set(roster.map((person) => person.id));
+  const companyTotals = (totals.data ?? []).filter((item) => rosterIds.has(item.workerId));
+  const mainCurrency = totalsByCurrency(companyTotals)[0]?.currency ?? settings.currency;
+
+  const chosen = roster.filter((person) => selected.has(person.id));
+  const chosenEntries = (open.data ?? []).filter((entry) => selected.has(entry.worker_id));
+  const pendingIds = chosenEntries.filter((entry) => entry.status === "pending" && !entry.corrects_id).map((entry) => entry.id);
+  const payable: PayoutRequest[] = chosen.flatMap((person) =>
+    payoutGroups(chosenEntries.filter((entry) => entry.worker_id === person.id))
+      .filter((group) => group.total > 0)
+      .map((group) => ({ workerId: person.id, name: person.name, ...group })),
+  );
+
+  function toggle(id: string, on: boolean) {
+    setSelected((current) => {
+      const next = new Set(current);
+      if (on) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }
+
+  if (failed || totals.isError) return <FormAlert>{t("loadFailed")}</FormAlert>;
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="max-w-2xl text-sm text-ink-soft">{tc("description")}</p>
-        <div className="flex flex-wrap items-center gap-4 self-start sm:self-auto">
-          {former > 0 && (
-            <label className="flex min-h-11 cursor-pointer items-center gap-2.5 text-sm text-ink-soft">
-              <Switch
-                checked={showFormer}
-                onCheckedChange={setShowFormer}
-                data-testid="rewards-show-former"
+    <div className="flex flex-col gap-5" data-testid="company-rewards">
+      <p className="max-w-2xl text-sm text-ink-soft">{t("description")}</p>
+      <RewardsTiles totals={totals.data ? companyTotals : undefined} isError={false} currency={mainCurrency} />
+
+      <GlowCard interactive={false} className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-ink-soft">
+            {canChange && roster.length > 0 && (
+              <Checkbox
+                checked={roster.length > 0 && chosen.length === roster.length}
+                indeterminate={chosen.length > 0 && chosen.length < roster.length}
+                onCheckedChange={(on) =>
+                  setSelected(on === true ? new Set(roster.map((person) => person.id)) : new Set())
+                }
+                aria-label={t("selectAll")}
               />
-              {tc("showFormer")}
-            </label>
+            )}
+            {chosen.length > 0 ? t("selected", { count: chosen.length }) : t("people", { count: roster.length })}
+          </label>
+          {canChange && (
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={pendingIds.length === 0 || review.isPending}
+                onClick={() => review.mutate({ ids: pendingIds, action: "approve" })}
+                data-testid="company-rewards-approve"
+              >
+                <CheckCheckIcon aria-hidden data-icon="inline-start" />
+                {t("approve", { count: pendingIds.length })}
+              </Button>
+              <Button
+                size="sm"
+                disabled={payable.length === 0}
+                onClick={() => setRequests(payable)}
+                data-testid="company-rewards-pay"
+              >
+                <BanknoteIcon aria-hidden data-icon="inline-start" />
+                {t("pay", { count: payable.length })}
+              </Button>
+            </div>
           )}
-          <Link href={`${COMPANY_PATH}/odmeny`} className={buttonVariants({ variant: "outline" })}>
-            <GiftIcon aria-hidden data-icon="inline-start" />
-            {tc("system")}
-          </Link>
         </div>
-      </div>
-      {workers.isError || members.isError ? (
-        <FormAlert>{t("loadFailed")}</FormAlert>
-      ) : !workers.data || !members.data ? (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" aria-hidden>
-          {[0, 1, 2].map((key) => (
-            <Skeleton key={key} className="h-52 w-full rounded-card" />
-          ))}
-        </div>
-      ) : roster.length === 0 ? (
-        <EmptyState icon={<CoinsIcon />} title={tc("empty")} />
-      ) : (
-        <>
-          {stats.isError && <FormAlert>{t("statsFailed")}</FormAlert>}
-          <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {roster.map(({ worker, former: isFormer }) => (
-              <li key={worker.id}>
-                <WorkerCard
-                  worker={worker}
-                  former={isFormer}
-                  profile={worker.user_id ? profiles.data?.get(worker.user_id) : undefined}
-                  stats={stats.data ? (stats.data.get(worker.id) ?? EMPTY_MONTH) : undefined}
-                />
-              </li>
+        {review.isError && <FormAlert>{t("reviewFailed")}</FormAlert>}
+
+        {!people || !totals.data ? (
+          <div className="flex flex-col gap-2" aria-hidden>
+            {[0, 1, 2].map((key) => (
+              <Skeleton key={key} className="h-14 w-full rounded-xl" />
             ))}
-          </ul>
-        </>
-      )}
+          </div>
+        ) : roster.length === 0 ? (
+          <EmptyState icon={<CoinsIcon />} title={t("empty")} />
+        ) : (
+          <div className="-mx-2 overflow-x-auto">
+            <table className="w-full min-w-[640px] text-sm">
+              <thead>
+                <tr className="text-left text-xs text-ink-muted">
+                  <th className="w-10 px-2 py-2 font-normal" />
+                  <th className="px-2 py-2 font-normal">{t("columns.person")}</th>
+                  <th className="px-2 py-2 text-right font-normal">{t("columns.earned")}</th>
+                  <th className="px-2 py-2 text-right font-normal">{t("columns.pending")}</th>
+                  <th className="px-2 py-2 text-right font-normal">{t("columns.approved")}</th>
+                  <th className="px-2 py-2 text-right font-normal">{t("columns.planned")}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line/50">
+                {roster.map((person) => {
+                  const own = byWorker.get(person.id) ?? [];
+                  const cell = (pick: (item: RewardTotals) => number) =>
+                    own.length === 0
+                      ? "—"
+                      : own
+                          .filter((item) => pick(item) !== 0)
+                          .map((item) => formatPrice(pick(item), item.currency, settings))
+                          .join(" · ") || "—";
+                  return (
+                    <tr key={person.id} data-testid="company-rewards-row">
+                      <td className="px-2 py-2">
+                        {canChange && (
+                          <Checkbox
+                            checked={selected.has(person.id)}
+                            onCheckedChange={(on) => toggle(person.id, on === true)}
+                            aria-label={t("select", { name: person.name })}
+                          />
+                        )}
+                      </td>
+                      <td className="px-2 py-2">
+                        <button
+                          type="button"
+                          onClick={() => onOpen(person.id)}
+                          className="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl text-left outline-none focus-visible:ring-3 focus-visible:ring-violet/40"
+                        >
+                          <Avatar src={person.avatarUrl} name={person.name} className="size-8" />
+                          <span className="flex flex-col">
+                            <span className="font-medium text-ink">{person.name}</span>
+                            {person.jobTitle && <span className="text-xs text-ink-muted">{person.jobTitle}</span>}
+                          </span>
+                        </button>
+                      </td>
+                      <td className="px-2 py-2 text-right tabular-nums text-ink">{cell((item) => item.earned)}</td>
+                      <td className="px-2 py-2 text-right tabular-nums text-violet">{cell((item) => item.pending)}</td>
+                      <td className="px-2 py-2 text-right tabular-nums text-teal">{cell((item) => item.approved)}</td>
+                      <td className="px-2 py-2 text-right tabular-nums text-ink-soft">{cell((item) => item.planned)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </GlowCard>
+
+      <GlowCard interactive={false} className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <h3 className="text-base font-semibold text-ink">{t("payouts")}</h3>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setExportFailed(false);
+              exportCsv(null, nameOf).catch(() => setExportFailed(true));
+            }}
+          >
+            <DownloadIcon aria-hidden data-icon="inline-start" />
+            {t("export")}
+          </Button>
+        </div>
+        {exportFailed && <FormAlert>{t("exportFailed")}</FormAlert>}
+        <PayoutHistory workerId={null} nameOf={nameOf} />
+      </GlowCard>
+
+      <PayoutDialog
+        requests={requests}
+        from="company"
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setRequests([]);
+            setSelected(new Set());
+          }
+        }}
+      />
     </div>
   );
 }

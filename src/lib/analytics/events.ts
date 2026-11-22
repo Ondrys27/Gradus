@@ -21,6 +21,8 @@ import { CHECKOUT_SOURCES, PORTAL_SOURCES } from "@/features/billing/stripe/sour
 import { LOCATION_KINDS } from "@/features/scheduler/types";
 import { MEETING_LINK_SOURCES } from "@/features/scheduler/booking/meeting-link";
 import { CALENDAR_PROVIDERS, EVENT_TYPE_TABS, LINK_SOURCES } from "@/features/scheduler/analytics";
+import { REWARD_TEMPLATES, RULES_PER_PLAN } from "@/features/workers/rewards/rules";
+import { RULE_KINDS } from "@/features/workers/rewards/types";
 import { Constants } from "@/types/database";
 import { field, isSafeField, isScrubbedTextField } from "./fields";
 import { APP_ROUTES, ANALYTICS_SECTIONS, type AnalyticsSection } from "./routes";
@@ -791,6 +793,47 @@ export const EVENTS = {
   work_timer_started: event("workers", "client", true, {}),
   work_timer_paused: event("workers", "client", true, { found_idle: bool() }),
   reward_rules_confirmed: event("workers", "client", true, { rules: count(1000) }),
+  /** Worker reward plans (28.2): never amounts, names or notes. */
+  reward_plan_created: event("workers", "client", true, {
+    template: oneOf(["none", ...REWARD_TEMPLATES]),
+    rules: count(RULES_PER_PLAN),
+  }),
+  reward_plan_updated: event("workers", "client", true, {
+    field: oneOf(["approval", "dates", "notes", "name", "currency"]),
+    approval: optional(oneOf(["auto", "manual"])),
+  }),
+  reward_rule_saved: event("workers", "client", true, {
+    kind: oneOf(RULE_KINDS),
+    created: bool(),
+    capped: bool(),
+    filtered: bool(),
+    active: bool(),
+  }),
+  reward_rule_deleted: event("workers", "client", true, { kind: oneOf(RULE_KINDS) }),
+  reward_template_applied: event("workers", "client", true, {
+    template: oneOf(REWARD_TEMPLATES),
+    rules: count(RULES_PER_PLAN),
+  }),
+  reward_manual_added: event("workers", "client", true, {
+    deduction: bool(),
+    linked: optional(oneOf(["crm_task", "worker_task", "task", "deal", "milestone"])),
+  }),
+  reward_entries_reviewed: event("workers", "client", true, {
+    action: oneOf(["approve", "reject", "pending"]),
+    count: count(10_000),
+    from: oneOf(["worker", "company"]),
+  }),
+  reward_entry_edited: event("workers", "client", true, {}),
+  reward_payout_recorded: event("workers", "client", true, {
+    entries: count(10_000),
+    from: oneOf(["worker", "company"]),
+  }),
+  reward_payouts_exported: event("workers", "client", false, { rows: count(100_000) }),
+  reward_price_set: event("workers", "client", true, {
+    source: oneOf(["crm_task", "worker_task", "task", "deal", "milestone"]),
+    cleared: bool(),
+    from_default: bool(),
+  }),
   /** A worker put under another manager (or right under the owner), their branch along. */
   worker_moved: event("workers", "client", true, {
     via: oneOf(["list", "map", "menu"]),

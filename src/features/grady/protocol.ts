@@ -33,11 +33,6 @@ export const milestoneReviewRequestSchema = z.object({
   milestoneId: z.uuid(),
 });
 export const salesAnalysisRequestSchema = z.object({ kind: z.literal("salesAnalysis") });
-/** The reward tree travels as-is; the route checks it against the tree schema. */
-export const rewardSetupRequestSchema = z.object({
-  kind: z.literal("rewardSetup"),
-  tree: z.unknown(),
-});
 /** Branches for one node of a mind map note; the route reads the map itself with the user's client. */
 export const NOTE_MAP_REQUEST_MAX = 300;
 export const noteMapSuggestRequestSchema = z.object({
@@ -173,6 +168,7 @@ export const SUGGESTION_KEYS = [
   "overdueTasks",
   "overdueCrmTasks",
   "overdueInvoices",
+  "rewardsOwed",
   "nextMilestoneStep",
   "firstMilestone",
   "firstDeal",

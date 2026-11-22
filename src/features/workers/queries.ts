@@ -8,7 +8,7 @@ import {
   type QueryClient,
 } from "@tanstack/react-query";
 import { useSession, useUserSettings } from "@/features/account/queries";
-import { zonedWallClockToInstant, type IsoDate } from "@/lib/format";
+import type { IsoDate } from "@/lib/format";
 import { track } from "@/lib/analytics/client";
 import { clientOps } from "@/lib/ops-client";
 import { createClient } from "@/lib/supabase/client";
@@ -22,7 +22,7 @@ import {
 } from "./permissions-catalog";
 import { subscriptionKeys } from "@/features/subscription/queries";
 import { accountTargetValue, type InviteTarget } from "./invite-target";
-import { PAGE_SIZE, type PaymentInput, type WorkerInput, type WorkerTaskInput } from "./logic";
+import { PAGE_SIZE, type WorkerInput, type WorkerTaskInput } from "./logic";
 import {
   bindWorkerInvite,
   checkInviteAccount,
@@ -32,17 +32,12 @@ import {
   type InviteErrorCode,
 } from "./server/invites";
 import {
-  EARNING_COLUMNS,
   INVITE_COLUMNS,
-  PAYMENT_COLUMNS,
   WORKER_COLUMNS,
   WORKER_TASK_COLUMNS,
-  type Earning,
   type EarningStatus,
-  type Payment,
   type TaskStatus,
   type Worker,
-  type WorkerBalance,
   type WorkerInvite,
   type WorkerMonthStats,
   type WorkerProfile,
@@ -527,15 +522,22 @@ export function useSaveWorkerTask(workerId: string) {
   const { user } = useSession();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, input }: { id?: string; input: WorkerTaskInput }) => {
+    mutationFn: async ({ id, input }: { id?: string; input: WorkerTaskInput }): Promise<string> => {
       const supabase = createClient();
-      const { error } = id
-        ? await supabase.from("worker_tasks").update(input).eq("id", id)
-        : await supabase
-            .from("worker_tasks")
-            .insert({ ...input, owner_id: user.id, worker_id: workerId, assigned_by: user.id });
+      if (id) {
+        const { error } = await supabase.from("worker_tasks").update(input).eq("id", id);
+        if (error) throw error;
+        track("worker_task_saved", { created: false });
+        return id;
+      }
+      const { data, error } = await supabase
+        .from("worker_tasks")
+        .insert({ ...input, owner_id: user.id, worker_id: workerId, assigned_by: user.id })
+        .select("id")
+        .single();
       if (error) throw error;
-      track("worker_task_saved", { created: !id });
+      track("worker_task_saved", { created: true });
+      return data.id;
     },
     onSettled: () => invalidateAll(queryClient, user.id),
   });
@@ -566,125 +568,6 @@ export function useSetWorkerTaskStatus() {
         status: status === "done" ? "done" : "open",
         by: worker ? "worker" : "owner",
       });
-    },
-    onSettled: () => invalidateAll(queryClient, user.id),
-  });
-}
-
-// ---------------------------------------------------------------------------
-// Earnings and payments (owner and worker)
-// ---------------------------------------------------------------------------
-
-export function useEarnings(workerId: string | null, status: EarningStatus | null, page: number) {
-  const { user } = useSession();
-  return useQuery({
-    queryKey: workerKeys.earningsPage(user.id, workerId ?? "", status, page),
-    enabled: Boolean(workerId),
-    placeholderData: keepPreviousData,
-    queryFn: async (): Promise<{ rows: Earning[]; total: number }> => {
-      let query = createClient()
-        .from("worker_earnings")
-        .select(EARNING_COLUMNS, { count: "exact" })
-        .eq("worker_id", workerId!)
-        .order("created_at", { ascending: false })
-        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
-      if (status) query = query.eq("status", status);
-      const { data, error, count } = await query;
-      if (error) throw error;
-      return {
-        rows: data.map((row) => ({
-          ...row,
-          amount: toNumber(row.amount),
-          basis: row.basis === null ? null : toNumber(row.basis),
-        })),
-        total: count ?? data.length,
-      };
-    },
-  });
-}
-
-export function useWorkerBalance(workerId: string | null) {
-  const { user } = useSession();
-  return useQuery({
-    queryKey: workerKeys.balance(user.id, workerId ?? ""),
-    enabled: Boolean(workerId),
-    queryFn: async (): Promise<WorkerBalance> => {
-      const { data, error } = await createClient().rpc("worker_balance", {
-        _worker_id: workerId!,
-      });
-      if (error) throw error;
-      const row = data[0];
-      return {
-        earned: toNumber(row?.earned),
-        pending: toNumber(row?.pending),
-        paidOut: toNumber(row?.paid_out),
-        owed: toNumber(row?.owed),
-      };
-    },
-  });
-}
-
-/** Approves the given pending earnings, or every pending one of the worker. */
-export function useApproveEarnings(workerId: string) {
-  const { user } = useSession();
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (ids: string[] | "all") => {
-      let query = createClient()
-        .from("worker_earnings")
-        .update({ status: "approved" })
-        .eq("worker_id", workerId)
-        .eq("status", "pending");
-      if (ids !== "all") query = query.in("id", ids);
-      const { error } = await query;
-      if (error) throw error;
-      track(
-        "worker_earnings_approved",
-        ids === "all" ? { all: true } : { all: false, count: ids.length },
-      );
-    },
-    onSettled: () => invalidateAll(queryClient, user.id),
-  });
-}
-
-export function usePayments(workerId: string, page: number) {
-  const { user } = useSession();
-  return useQuery({
-    queryKey: workerKeys.payments(user.id, workerId, page),
-    placeholderData: keepPreviousData,
-    queryFn: async (): Promise<{ rows: Payment[]; total: number }> => {
-      const { data, error, count } = await createClient()
-        .from("worker_payments")
-        .select(PAYMENT_COLUMNS, { count: "exact" })
-        .eq("worker_id", workerId)
-        .order("paid_at", { ascending: false })
-        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
-      if (error) throw error;
-      return {
-        rows: data.map((row) => ({ ...row, amount: toNumber(row.amount) })),
-        total: count ?? data.length,
-      };
-    },
-  });
-}
-
-/** Records a payment; the database marks approved earnings paid, oldest first. */
-export function useRecordPayment(workerId: string) {
-  const { user } = useSession();
-  const { timeZone } = useFormatSettings();
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (input: PaymentInput) => {
-      // Noon of the chosen day in the user's zone; the database never takes a future time.
-      const paidAt = zonedWallClockToInstant(input.paid_on, "12:00", timeZone);
-      const { error } = await createClient().rpc("record_worker_payment", {
-        _worker_id: workerId,
-        _amount: input.amount,
-        _paid_at: paidAt.toISOString(),
-        _note: input.note,
-      });
-      if (error) throw error;
-      track("worker_payment_recorded", {});
     },
     onSettled: () => invalidateAll(queryClient, user.id),
   });

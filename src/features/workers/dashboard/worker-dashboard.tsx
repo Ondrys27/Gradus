@@ -15,6 +15,7 @@ import { useIsPhone } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
 import { InviteCard } from "../invite-card";
 import { useRenewInvite, useWorkerInvite } from "../queries";
+import { useManagesRewards } from "../rewards/queries";
 import { WorkerTaskDialog } from "../worker-task-dialog";
 import { DashboardHeader } from "./dashboard-header";
 import { DocumentsTab } from "./documents-tab";
@@ -46,8 +47,15 @@ type Props = {
   onShowGroups: () => void;
 };
 
-/** The tabs each viewer gets: the owner all, the person their own, others what they may see. */
-export function tabsFor(viewer: DashboardViewer, worker: DashboardWorker): DashboardTab[] {
+/**
+ * The tabs each viewer gets: the owner all, the person their own, others what
+ * they may see (rewards only with "company: rewards", 28.2).
+ */
+export function tabsFor(
+  viewer: DashboardViewer,
+  worker: DashboardWorker,
+  managesRewards = false,
+): DashboardTab[] {
   if (viewer === "owner") return [...DASHBOARD_TABS];
   if (viewer === "self") return [...DASHBOARD_TABS];
   return DASHBOARD_TABS.filter(
@@ -55,7 +63,8 @@ export function tabsFor(viewer: DashboardViewer, worker: DashboardWorker): Dashb
       tab === "overview" ||
       tab === "work" ||
       tab === "team" ||
-      (tab === "documents" && worker.canEdit),
+      (tab === "documents" && worker.canEdit) ||
+      (tab === "rewards" && managesRewards),
   );
 }
 
@@ -116,10 +125,11 @@ function DashboardBody({
   const t = useTranslations("workers.dashboard");
   const workspace = useWorkspace();
   const query = useCompanyWorker(workerId);
+  const managesRewards = useManagesRewards();
   const worker = query.data;
   const viewer: DashboardViewer =
     workspace.role === "owner" ? "owner" : worker?.isSelf ? "self" : "other";
-  const tabs = worker ? tabsFor(viewer, worker) : [];
+  const tabs = worker ? tabsFor(viewer, worker, managesRewards) : [];
   const tab = tabs.includes(requestedTab) ? requestedTab : "overview";
 
   // Once per opening, with the tab it opened on.

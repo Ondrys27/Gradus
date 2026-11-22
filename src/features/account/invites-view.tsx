@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { CheckIcon, LogOutIcon, MailOpenIcon, ShieldCheckIcon, UserRoundIcon, XIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -19,7 +19,7 @@ import {
   templateOf,
   type PermissionGrants,
 } from "@/features/workers/permissions-catalog";
-import { RuleText } from "@/features/workers/rewards/rule-text";
+import { RuleSentence } from "@/features/workers/rewards/rule-sentence";
 import { formatDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { InviteProblemCard } from "@/features/auth/invite-link-card";
@@ -114,11 +114,6 @@ function InviteItem({
   const who = inviter(invite);
   const failure =
     respond.error instanceof InboxActionError ? t(`errors.${respond.error.code}`) : respond.error ? t("errors.unknown") : null;
-  // Rewards set for this worker come back with their record's id: "for you".
-  const names = useMemo(
-    () => new Map(invite.rewards.flatMap((rule) => (rule.workerId ? [[rule.workerId, t("forYou")]] : []))),
-    [invite.rewards, t],
-  );
 
   function answer(accept: boolean) {
     respond.mutate(
@@ -155,8 +150,8 @@ function InviteItem({
       {invite.rewards.length > 0 && (
         <section aria-label={t("rewardsTitle")} className="flex flex-col gap-3">
           <h3 className="micro-label">{t("rewardsTitle")}</h3>
-          {invite.rewards.slice(0, 6).map((rule, index) => (
-            <RuleText key={`${rule.name}-${index}`} rule={rule} workerNames={names} />
+          {invite.rewards.slice(0, 8).map((rule, index) => (
+            <RuleSentence key={`${rule.kind}-${index}`} rule={rule} currency={rule.currency} />
           ))}
         </section>
       )}

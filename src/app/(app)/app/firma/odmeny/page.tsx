@@ -1,12 +1,10 @@
-import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
-import { RewardEditor } from "@/features/workers/rewards/reward-editor";
+import { redirect } from "next/navigation";
+import { COMPANY_PATH } from "@/lib/routes";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("workers.rewards");
-  return { title: t("title") };
-}
-
+/**
+ * The drawn reward system gave way to a plan per worker (28.2): their
+ * dashboard → Rewards, and everyone at once in Company → Rewards and payouts.
+ */
 export default function RewardsSetupPage() {
-  return <RewardEditor />;
+  redirect(`${COMPANY_PATH}?tab=rewards`);
 }
