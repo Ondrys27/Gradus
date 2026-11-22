@@ -47,6 +47,7 @@ export function EditableText({
   type = "text",
   className,
   testId,
+  fit = false,
   onSave,
 }: {
   id: string;
@@ -58,6 +59,8 @@ export function EditableText({
   type?: "text" | "email";
   className?: string;
   testId?: string;
+  /** As wide as its text (a first and a last name side by side), not the whole line. */
+  fit?: boolean;
   onSave: (value: string | null) => void;
 }) {
   const saved = value ?? "";
@@ -83,7 +86,8 @@ export function EditableText({
       onChange={(event) => setText(event.target.value)}
       onBlur={commit}
       onKeyDown={editKeys(text !== saved, () => setText(saved))}
-      className={cn(fieldClass, className)}
+      size={fit ? Math.max(text.length, placeholder?.length ?? 0, 3) + 1 : undefined}
+      className={cn(fieldClass, fit && "w-auto max-w-full", className)}
     />
   );
 }

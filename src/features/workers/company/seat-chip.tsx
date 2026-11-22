@@ -124,7 +124,7 @@ export function SeatChip({
   }
   if (info.expired) {
     return (
-      <StatusPill tone="neutral" data-testid="seat-chip" data-seat="expired" title={t("expiredHint")}>
+      <StatusPill tone="neutral" data-testid="seat-chip" data-seat="expired" title={workerBilling ? t("expiredHint") : t("expiredHintPlain")}>
         {t("expired")}
       </StatusPill>
     );

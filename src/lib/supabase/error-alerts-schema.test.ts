@@ -516,6 +516,9 @@ describe("the error log (step 27.2)", () => {
     await record({ fingerprint: fp("log-a"), userId: owner });
     const last = code();
     await record({ fingerprint: fp("log-a"), errorCode: last });
+    // The last one is the newest even when the inserts share a clock tick.
+    await asServer();
+    await db.query(`update error_events set created_at = created_at + interval '1 second' where code = $1`, [last]);
     await record({ fingerprint: fp("log-b") });
     const list = await groups();
     expect(list.map((group) => group.fingerprint).sort()).toEqual([fp("log-a"), fp("log-b")].sort());

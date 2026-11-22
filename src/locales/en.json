@@ -4840,7 +4840,8 @@
         "waiting": "waiting for an answer",
         "replaced": "replaced by a newer one",
         "extraBeforeSales": "extra {price} once payments start",
-        "extraBeforeSalesHint": "Payments run in test mode only for now, so you pay nothing for this worker yet."
+        "extraBeforeSalesHint": "Payments run in test mode only for now, so you pay nothing for this worker yet.",
+        "expiredHintPlain": "The invite can no longer be accepted. Send a new one when they want to join."
       },
       "allEnded": "Nobody works in the company right now. Ended people are in the status filter."
     },

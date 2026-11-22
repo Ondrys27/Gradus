@@ -4840,7 +4840,8 @@
         "waiting": "čeká na přijetí",
         "replaced": "nahrazena novější",
         "extraBeforeSales": "navíc {price} po spuštění plateb",
-        "extraBeforeSalesHint": "Platby zatím běží jen v testovacím režimu, za pracovníka teď nic neplatíš."
+        "extraBeforeSalesHint": "Platby zatím běží jen v testovacím režimu, za pracovníka teď nic neplatíš.",
+        "expiredHintPlain": "Pozvánka už nejde přijmout. Pošli mu novou, až bude chtít nastoupit."
       },
       "allEnded": "Ve firmě teď nikdo nepracuje. Ukončené lidi najdeš ve filtru stavu."
     },

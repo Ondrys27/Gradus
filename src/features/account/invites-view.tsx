@@ -27,7 +27,7 @@ import type { InviteLinkView } from "@/features/auth/invite-link";
 import { respondToInviteCode } from "@/features/workers/server/invites";
 import { INVITES_PATH, localizedPath } from "@/lib/routes";
 import { InboxActionError, inviterName, useInbox, useRespondInvite, type PendingInvite } from "./inbox";
-import { useSignOut } from "./queries";
+import { useSession, useSignOut } from "./queries";
 import { useSwitchSpace } from "./space-switch";
 
 /** An invite link opened while signed in (`/app/pozvanky?kod=…`), as the server read it. */
@@ -104,6 +104,7 @@ function InviteItem({
   onAccepted: (value: { spaceId: string; name: string }) => void;
 }) {
   const t = useTranslations("invites");
+  const { workerBilling } = useSession();
   const settings = useFormatSettings();
   const respond = useRespondInvite();
   const inviter = useInviterName();
@@ -160,10 +161,16 @@ function InviteItem({
         </section>
       )}
 
-      <p className="text-xs text-ink-muted">{t("free")}</p>
+      {/* Who pays for the work only with WORKER_BILLING_VISIBLE (28.1). */}
+      {workerBilling && <p className="text-xs text-ink-muted">{t("free")}</p>}
       {failure && <FormAlert>{failure}</FormAlert>}
       <div className="flex flex-col-reverse gap-2 border-t border-line/60 pt-4 sm:flex-row sm:justify-end">
-        <Button variant="ghost" onClick={() => setDeclining(true)} disabled={respond.isPending}>
+        <Button
+          variant="ghost"
+          onClick={() => setDeclining(true)}
+          disabled={respond.isPending}
+          data-testid="invite-decline"
+        >
           <XIcon aria-hidden data-icon="inline-start" />
           {t("decline")}
         </Button>

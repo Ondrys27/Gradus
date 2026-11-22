@@ -45,7 +45,8 @@ export function DashboardHeader({
         <PhotoEditor worker={worker} canChange={photo} />
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           {editable ? (
-            <div className="grid grid-cols-2 gap-x-3">
+            // The name reads as one: first and last name next to each other (28.1 audit).
+            <div className="flex flex-wrap items-baseline gap-x-2">
               <EditableText
                 id="worker-first-name"
                 value={worker.firstName}
@@ -54,6 +55,7 @@ export function DashboardHeader({
                 maxLength={FIRST_NAME_MAX}
                 required={!worker.lastName}
                 className="text-xl font-semibold sm:text-2xl"
+                fit
                 onSave={(value) => update.mutate({ first_name: value })}
               />
               <EditableText
@@ -64,6 +66,7 @@ export function DashboardHeader({
                 maxLength={LAST_NAME_MAX}
                 required={!worker.firstName}
                 className="text-xl font-semibold sm:text-2xl"
+                fit
                 onSave={(value) => update.mutate({ last_name: value })}
               />
             </div>
