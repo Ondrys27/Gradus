@@ -21,7 +21,7 @@ import {
   type SessionUser,
   type WorkerAccount,
 } from "./types";
-import { flush, track } from "@/lib/analytics/client";
+import { endTracking, track } from "@/lib/analytics/client";
 import { clientOps } from "@/lib/ops-client";
 import { updateSettings } from "@/features/settings/ops";
 
@@ -168,10 +168,11 @@ export function useUpdateProfile() {
 export function useSignOut() {
   const queryClient = useQueryClient();
   /** `target`: where the tab goes after signing out (the login page by default). */
-  return (target?: string) => {
+  return async (target?: string) => {
     track("signed_out", {});
-    // The queue goes out before the tab leaves the app.
-    flush({ beacon: true });
+    // The queue reaches the server while the session still exists; only then
+    // does the session end (a beacon could leave after it, without cookies).
+    await endTracking();
     return signOutEverywhereInTab(queryClient, target);
   };
 }

@@ -14,6 +14,10 @@ const FLUSH_DELAY_MS = 4000;
 const FLUSH_AT = 20;
 /** Never more than this waits; the oldest go first when a broken network piles them up. */
 const QUEUE_MAX = 200;
+/** One request carries at most this many events. */
+const BATCH_MAX = 50;
+/** How long signing out waits for the last batch before it gives up on it. */
+export const END_TIMEOUT_MS = 3000;
 
 type Item = { event: string; props: Record<string, unknown> };
 
@@ -82,7 +86,7 @@ export function flush(options: { beacon?: boolean; heartbeat?: boolean } = {}): 
     timer = null;
   }
   if (!queue.length && !options.heartbeat) return;
-  const events = queue.splice(0, 50);
+  const events = queue.splice(0, BATCH_MAX);
   const body = JSON.stringify(options.heartbeat ? { events, heartbeat: true } : { events });
   send(body, options.beacon === true);
   if (queue.length) schedule();
@@ -100,6 +104,40 @@ export function stopTracking(): void {
   if (timer) {
     clearTimeout(timer);
     timer = null;
+  }
+}
+
+/**
+ * Sends the last events of a session and waits until the server has them,
+ * then stops measuring for the rest of the page. Signing out calls it before
+ * the session ends: a beacon fired just before sign-out is not on its way yet
+ * (the browser may hold it behind the page's other requests and attaches the
+ * cookies only when it finally goes), so it could leave after the session
+ * cookies were removed and come back 401. Events tracked meanwhile are
+ * dropped; a request still not answered after `timeoutMs` is cancelled, so it
+ * never goes out late without the session.
+ */
+export async function endTracking(timeoutMs = END_TIMEOUT_MS): Promise<void> {
+  if (!enabled()) return;
+  // Never more than FLUSH_AT wait: one request carries them all.
+  const events = queue.splice(0, BATCH_MAX);
+  stopTracking();
+  if (!events.length) return;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    await fetch(ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ events }),
+      keepalive: true,
+      credentials: "same-origin",
+      signal: controller.signal,
+    });
+  } catch {
+    // Offline or cancelled: these few events are lost, the sign-out is not.
+  } finally {
+    clearTimeout(timeout);
   }
 }
 

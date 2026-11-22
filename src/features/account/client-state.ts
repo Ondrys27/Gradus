@@ -14,6 +14,10 @@ import { createClient } from "@/lib/supabase/client";
  * profile or settings for a moment and crash the readers that rely on them.
  */
 export function clearClientState(queryClient: QueryClient) {
+  // The session is gone or belongs to someone else now: nothing more of this
+  // user's measuring may leave the page (a pagehide beacon would 401 or land
+  // on the next account).
+  stopTracking();
   queryClient.cancelQueries();
   resetSoundPreference();
   resetAnimationsPreference();
@@ -32,10 +36,11 @@ export function clearClientState(queryClient: QueryClient) {
  * so no in-memory state of the previous user survives.
  */
 export async function signOutEverywhereInTab(queryClient: QueryClient, target?: string) {
+  // Measuring ends before the session does (the caller sent the last batch).
+  stopTracking();
   try {
     await createClient().auth.signOut({ scope: "local" });
   } finally {
-    stopTracking();
     clearClientState(queryClient);
     window.location.replace(target ?? loginPath(document.documentElement.lang));
   }
