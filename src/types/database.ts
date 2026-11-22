@@ -4710,27 +4710,6 @@ export type Database = {
         }
         Relationships: []
       }
-      username_reservations: {
-        Row: {
-          created_at: string
-          reserved_until: string
-          user_id: string
-          username: string
-        }
-        Insert: {
-          created_at?: string
-          reserved_until: string
-          user_id: string
-          username: string
-        }
-        Update: {
-          created_at?: string
-          reserved_until?: string
-          user_id?: string
-          username?: string
-        }
-        Relationships: []
-      }
       user_achievements: {
         Row: {
           achievement_key: string
@@ -4881,6 +4860,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      username_reservations: {
+        Row: {
+          created_at: string
+          reserved_until: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          reserved_until: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          reserved_until?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
       }
       waitlist: {
         Row: {
@@ -5625,6 +5625,18 @@ export type Database = {
           name: string
         }[]
       }
+      active_members: {
+        Args: { _space: string }
+        Returns: {
+          avatar_url: string
+          is_owner: boolean
+          job_title: string
+          name: string
+          user_id: string
+          username: string
+          worker_id: string
+        }[]
+      }
       add_interested_contact_table: { Args: never; Returns: string }
       add_on_keys: { Args: never; Returns: string[] }
       admin_ai_model_usage: {
@@ -5936,18 +5948,6 @@ export type Database = {
           _user_id: string
         }
         Returns: Json
-      }
-      active_members: {
-        Args: { _space: string }
-        Returns: {
-          avatar_url: string
-          is_owner: boolean
-          job_title: string
-          name: string
-          user_id: string
-          username: string
-          worker_id: string
-        }[]
       }
       admin_set_app_setting: {
         Args: { _ip_hash?: string; _key: string; _value: Json }
@@ -6698,6 +6698,10 @@ export type Database = {
         Args: { _locale?: string; _user_id: string }
         Returns: undefined
       }
+      invite_account_lookup: {
+        Args: { _actor: string; _value: string }
+        Returns: Json
+      }
       invoice_items_valid: { Args: { _items: Json }; Returns: boolean }
       invoice_pdf_readable: { Args: { _name: string }; Returns: boolean }
       invoice_supplier_snapshot: {
@@ -6709,10 +6713,6 @@ export type Database = {
       invoice_totals: {
         Args: { _currency: string; _items: Json; _vat_mode: string }
         Returns: Record<string, unknown>
-      }
-      invite_account_lookup: {
-        Args: { _actor: string; _value: string }
-        Returns: Json
       }
       is_client_request: { Args: never; Returns: boolean }
       is_deal_assignee: { Args: { _deal: string }; Returns: boolean }
@@ -7980,6 +7980,7 @@ export type Database = {
       valid_plan_catalog: { Args: { _payload: Json }; Returns: boolean }
       valid_showcase_mode: { Args: { _value: Json }; Returns: boolean }
       valid_tutorial_state: { Args: { _state: Json }; Returns: boolean }
+      valid_worker_billing: { Args: { _value: Json }; Returns: boolean }
       work_seconds_between: {
         Args: { _from: string; _to: string; _worker_id: string }
         Returns: number
