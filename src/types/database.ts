@@ -3285,6 +3285,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "milestones_reward_worker_fkey"
+            columns: ["reward_worker_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id", "owner_id"]
+          },
+          {
             foreignKeyName: "milestones_template_id_fkey"
             columns: ["template_id"]
             isOneToOne: false
@@ -4218,7 +4225,36 @@ export type Database = {
           updated_at?: string
           worker_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reward_entries_corrects_id_fkey"
+            columns: ["corrects_id"]
+            isOneToOne: false
+            referencedRelation: "reward_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_entries_payout_fkey"
+            columns: ["payout_id", "space_id"]
+            isOneToOne: false
+            referencedRelation: "reward_payouts"
+            referencedColumns: ["id", "space_id"]
+          },
+          {
+            foreignKeyName: "reward_entries_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "reward_plan_rules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_entries_worker_fkey"
+            columns: ["worker_id", "space_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
       }
       reward_payouts: {
         Row: {
@@ -4266,7 +4302,22 @@ export type Database = {
           transaction_id?: string | null
           worker_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reward_payouts_transaction_fkey"
+            columns: ["transaction_id", "space_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "reward_payouts_worker_fkey"
+            columns: ["worker_id", "space_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
       }
       reward_plan_rules: {
         Row: {
@@ -4370,7 +4421,15 @@ export type Database = {
           updated_at?: string
           worker_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reward_plans_worker_fkey"
+            columns: ["worker_id", "space_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
       }
       reward_rules: {
         Row: {
@@ -8002,9 +8061,39 @@ export type Database = {
         Args: { _space: string; _worker: string }
         Returns: boolean
       }
+      reward_capped: {
+        Args: {
+          _amount: number
+          _at: string
+          _cap: number
+          _currency: string
+          _rule_id: string
+          _space: string
+        }
+        Returns: number
+      }
       reward_convert_legacy_rules: { Args: never; Returns: number }
+      reward_correct: {
+        Args: {
+          _entry: Database["public"]["Tables"]["reward_entries"]["Row"]
+          _note: string
+        }
+        Returns: undefined
+      }
       reward_entry_update: {
         Args: { _amount: number; _id: string; _note: string }
+        Returns: undefined
+      }
+      reward_event: {
+        Args: {
+          _at: string
+          _note: string
+          _rule_kind: string
+          _source_id: string
+          _source_kind: string
+          _units?: number
+          _worker: string
+        }
         Returns: undefined
       }
       reward_manager_in: { Args: { _space: string }; Returns: boolean }
@@ -8018,21 +8107,101 @@ export type Database = {
         }
         Returns: string
       }
+      reward_plan_for: {
+        Args: { _at: string; _worker: string }
+        Returns: {
+          active_from: string | null
+          active_to: string | null
+          approval: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          id: string
+          name: string
+          notes: string | null
+          space_id: string
+          updated_at: string
+          worker_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "reward_plans"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      reward_reconcile: {
+        Args: {
+          _mode?: string
+          _source_id: string
+          _source_kind: string
+          _space: string
+          _wishes: Database["public"]["CompositeTypes"]["reward_wish"][]
+        }
+        Returns: undefined
+      }
+      reward_resync_planned: { Args: { _worker: string }; Returns: undefined }
       reward_review: {
         Args: { _action: string; _ids: string[] }
         Returns: number
       }
       reward_rule_is_valid: { Args: { _rule: Json }; Returns: boolean }
+      reward_rule_ok: {
+        Args: {
+          _amount: number
+          _cap: number
+          _filter: Json
+          _kind: string
+          _percent: number
+        }
+        Returns: boolean
+      }
       reward_run_monthly: { Args: never; Returns: number }
       reward_set_price: {
         Args: {
-          _amount: number | null
-          _currency: string | null
+          _amount: number
+          _currency: string
           _source_id: string
           _source_kind: string
-          _worker_id?: string | null
+          _worker_id?: string
         }
         Returns: undefined
+      }
+      reward_status_for: {
+        Args: { _plan: Database["public"]["Tables"]["reward_plans"]["Row"] }
+        Returns: string
+      }
+      reward_sync_crm_task: {
+        Args: { _id: string; _space: string }
+        Returns: undefined
+      }
+      reward_sync_deal: {
+        Args: { _id: string; _space: string }
+        Returns: undefined
+      }
+      reward_sync_milestone: {
+        Args: { _id: string; _space: string }
+        Returns: undefined
+      }
+      reward_sync_task: {
+        Args: { _id: string; _space: string }
+        Returns: undefined
+      }
+      reward_sync_worker_task: {
+        Args: { _id: string; _space: string }
+        Returns: undefined
+      }
+      reward_task_wishes: {
+        Args: {
+          _at: string
+          _done: boolean
+          _note: string
+          _on_time: boolean
+          _price: number
+          _price_currency: string
+          _worker: string
+        }
+        Returns: Database["public"]["CompositeTypes"]["reward_wish"][]
       }
       reward_totals: {
         Args: { _from: string; _until: string; _worker_id?: string }
@@ -8049,6 +8218,11 @@ export type Database = {
           worker_id: string
         }[]
       }
+      reward_worker_of: {
+        Args: { _account: string; _space: string }
+        Returns: string
+      }
+      reward_zone: { Args: { _space: string }; Returns: string }
       scheduler_book: {
         Args: {
           _answers: Json
@@ -8478,7 +8652,17 @@ export type Database = {
       worker_status: "invited" | "active" | "inactive"
     }
     CompositeTypes: {
-      [_ in never]: never
+      reward_wish: {
+        worker_id: string | null
+        rule_kind: string | null
+        rule_id: string | null
+        amount: number | null
+        currency: string | null
+        status: string | null
+        occurred_at: string | null
+        note: string | null
+        cap: number | null
+      }
     }
   }
 }
