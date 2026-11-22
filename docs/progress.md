@@ -144,7 +144,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 27.2 | architect | 2026-11-21 Plní a omezení administrátoři, log chyb seskupený podle otisku se stavy a nápověda administrace s ⌘K.
 - [x] 27.3 | architect | env: ANTHROPIC_API_KEY — 2026-11-21: Model každé funkce Gradyho se nastavuje v Administraci → AI a Grady → Modely (přednastavení, útrata a odhady po modelech), chat volí model automaticky a od prahu upozornění běží úsporný režim.
 - [x] 27.4 | architect | — 2026-11-22: Ukázkový režim (Beta) přehrává aplikaci sám na dočasném účtu s ukázkovými daty pro marketingová videa, se zapínáním v administraci a skriptem pro nahrávání videí s titulky.
-- [ ] 27.5 | architect | env: RESEND_API_KEY
+- [x] 27.5 | architect | env: RESEND_API_KEY — 2026-11-22 Host se k videoschůzce připojí přes stránku rezervace s aktuálním odkazem, rezervace může mít vlastní odkaz a typ schůzky vlastní místnost Jitsi.
 - [ ] K27 | reviewer |
 - [ ] STOP | Konec fáze 27. Pozvi pracovníka na svůj druhý e-mail a otevři odkaz schválně nejdřív přihlášený, pak v anonymním okně — registrace musí projít. Nahlas problém z aplikace a ověř s Vášou, že ho vidí v administraci; zeptej se Gradyho „chci nahlásit chybu". Váša jako plný admin změní cenu v konceptu tarifů. Projdi Provoz → Chyby. V AI a Grady → Modely zkus přednastavení Úsporné a pošli zprávu Gradymu. V administraci zapni Ukázkový režim, přehraj scénář f v češtině a angličtině a podívej se na videa v marketing/videa. Rezervuj si schůzku s Jitsi místností. V Tarifech nastav dohodnuté ceny (490 Kč měsíčně, 390 Kč měsíčně při roční platbě, 14 dní zdarma) a zveřejni. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [ ] 28.1 | architect | env: RESEND_API_KEY
