@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { VideoIcon } from "lucide-react";
+import { HeartHandshakeIcon, VideoIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
@@ -15,6 +15,7 @@ import { formatNumber, formatSlotMoment, formatSpokenDate, formatTime, formatUtc
 import { browserTimeZone } from "@/lib/region";
 import { FormatSettingsContext } from "@/lib/use-format-settings";
 import { guestFormatSettings } from "../booking/guest-format";
+import { JOIN_SOON_MINUTES, joinPhase, nextPhaseAt } from "../booking/meeting-link";
 import { BOOKING_ZONE_COOKIE, bookingCookie, isBookingLocale, readCookie } from "../booking/page-locale";
 import type { GuestDay, GuestSlot } from "../slots";
 import { isValidTimeZone } from "../zoned";
@@ -26,7 +27,11 @@ import { ZoneLine } from "./zone-line";
  * and when with the date large and the state as a pill, then move it to
  * another free time (the same slots as booking) or cancel it with a reason.
  * The token in the address is the only proof; after the meeting the page
- * only shows what it was.
+ * only shows what it was, and thanks for a meeting that took place.
+ *
+ * A confirmed video meeting (27.5): the call's link of now and "Join the
+ * meeting", one click to the call; 15 minutes before the start it lights up.
+ * Without a link yet the page says the host sends it before the meeting.
  */
 
 export type ManagedBooking = {
@@ -36,7 +41,8 @@ export type ManagedBooking = {
   endsAt: string;
   status: "pending" | "confirmed" | "cancelled" | "declined";
   hostName: string;
-  videoLink: string | null;
+  /** A confirmed video meeting: the call's link of now (null: the host sends it). */
+  video: { url: string | null } | null;
   guestZone: string;
   /** Still live and before its end. */
   canManage: boolean;
@@ -50,10 +56,13 @@ export function ManageView({
   token,
   booking,
   startWithCancel,
+  renderedAt,
 }: {
   token: string;
   booking: ManagedBooking;
   startWithCancel: boolean;
+  /** When the server drew the page (the clock starts there). */
+  renderedAt: number;
 }) {
   const t = useTranslations("booking.manage");
   const tBooking = useTranslations("booking");
@@ -65,6 +74,8 @@ export function ManageView({
   const [reason, setReason] = useState("");
   const [sending, setSending] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
+  const now = useNowAtPhases(booking.startsAt, booking.endsAt, renderedAt);
+  const phase = joinPhase(booking.startsAt, booking.endsAt, now);
 
   useEffect(() => {
     const remembered = readCookie(document.cookie, BOOKING_ZONE_COOKIE);
@@ -117,6 +128,9 @@ export function ManageView({
   const start = new Date(booking.startsAt);
   const end = new Date(booking.endsAt);
   const over = booking.status === "cancelled" || booking.status === "declined";
+  // A confirmed meeting that has ended (also while the page stayed open).
+  const held = booking.status === "confirmed" && phase === "over";
+  const canManage = booking.canManage && !held;
 
   return (
     <FormatSettingsContext.Provider value={settings}>
@@ -170,16 +184,27 @@ export function ManageView({
         )}
         {problem && <FormAlert>{problem === "taken" ? tBooking("notice.taken") : t("failed")}</FormAlert>}
 
-        {!booking.canManage && mode === "view" && <p className="text-sm text-ink-muted">{t("over")}</p>}
+        {held && (
+          <div
+            className="flex items-start gap-3 rounded-2xl border border-teal/40 bg-teal/10 p-5"
+            data-testid="booking-thanks"
+          >
+            <HeartHandshakeIcon aria-hidden className="mt-0.5 size-6 shrink-0 text-teal" />
+            <div className="flex flex-col gap-1">
+              <p className="font-display text-lg font-bold text-ink">{t("thanks.title")}</p>
+              <p className="text-sm text-ink-soft">{t("thanks.text", { host: booking.hostName })}</p>
+            </div>
+          </div>
+        )}
+        {!canManage && !held && mode === "view" && <p className="text-sm text-ink-muted">{t("over")}</p>}
 
-        {booking.canManage && (mode === "view" || mode === "rescheduled") && (
+        {/* Joining needs no right to change it: a read-only host still meets. */}
+        {booking.video && !held && (mode === "view" || mode === "rescheduled") && (
+          <JoinCard url={booking.video.url} soon={phase === "soon"} host={booking.hostName} />
+        )}
+
+        {canManage && (mode === "view" || mode === "rescheduled") && (
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-            {booking.videoLink && (
-              <a href={booking.videoLink} target="_blank" rel="noopener noreferrer" className={buttonVariants()}>
-                <VideoIcon aria-hidden data-icon="inline-start" />
-                {tBooking("result.video")}
-              </a>
-            )}
             <Button variant="outline" onClick={() => setMode("reschedule")} data-testid="booking-manage-reschedule">
               {t("reschedule")}
             </Button>
@@ -244,5 +269,75 @@ export function ManageView({
         )}
       </section>
     </FormatSettingsContext.Provider>
+  );
+}
+
+/**
+ * The clock of the page, ticking only when the meeting's phase changes (15
+ * minutes before the start, the end). It starts at the server's moment, so
+ * the server's and the browser's first render agree.
+ */
+function useNowAtPhases(startsAt: string, endsAt: string, renderedAt: number): number {
+  const [now, setNow] = useState(renderedAt);
+  useEffect(() => {
+    let timer: number | undefined;
+    const tick = () => {
+      const current = Date.now();
+      setNow(current);
+      const next = nextPhaseAt(startsAt, endsAt, current);
+      // setTimeout holds at most ~24.8 days; check again then.
+      if (next !== null) timer = window.setTimeout(tick, Math.min(next - current + 250, 2 ** 31 - 1));
+    };
+    tick();
+    // A phone that slept wakes up with the right phase.
+    const onVisible = () => document.visibilityState === "visible" && tick();
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      if (timer) window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [startsAt, endsAt]);
+  return now;
+}
+
+/** "Join the meeting": the link of now, one click to the call; lit up from 15 minutes before. */
+function JoinCard({ url, soon, host }: { url: string | null; soon: boolean; host: string }) {
+  const t = useTranslations("booking.manage.join");
+  if (!url) {
+    return (
+      <div className="flex items-start gap-3 rounded-2xl border border-line bg-canvas/50 p-4" data-testid="booking-join-later">
+        <VideoIcon aria-hidden className="mt-0.5 size-5 shrink-0 text-ink-muted" />
+        <p className="text-sm text-ink-soft">{t("later", { host })}</p>
+      </div>
+    );
+  }
+  return (
+    <div
+      className={
+        soon
+          ? "flex flex-col gap-3 rounded-2xl border border-teal/60 bg-teal/10 p-5 shadow-[0_0_36px_-10px_var(--color-teal)]"
+          : "flex flex-col gap-3 rounded-2xl border border-line bg-canvas/50 p-5"
+      }
+      data-testid="booking-join-card"
+      data-phase={soon ? "soon" : "later"}
+    >
+      {soon && <p className="micro-label text-teal">{t("now")}</p>}
+      <a
+        href={url}
+        rel="noopener noreferrer"
+        className={buttonVariants({
+          size: soon ? "lg" : "default",
+          variant: soon ? "default" : "outline",
+          className: "w-full sm:w-fit",
+        })}
+        data-testid="booking-join"
+      >
+        <VideoIcon aria-hidden data-icon="inline-start" />
+        {t("button")}
+      </a>
+      <p className="text-xs break-all text-ink-muted">
+        {soon ? url : t("hint", { minutes: JOIN_SOON_MINUTES, url })}
+      </p>
+    </div>
   );
 }

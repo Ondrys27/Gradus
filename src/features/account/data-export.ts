@@ -313,6 +313,7 @@ export const EXPORT_TABLES = [
     "duration_min",
     "location_kind",
     "location_text",
+    "video_source",
     "active",
     "requires_approval",
     "buffer_before_min",
@@ -353,6 +354,7 @@ export const EXPORT_TABLES = [
     "status",
     "cancelled_by",
     "cancel_reason",
+    "meeting_link",
     "created_at",
   ]),
   // Never the secret link; only where it points.

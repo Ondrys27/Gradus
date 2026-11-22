@@ -51,6 +51,7 @@ function newDraft(): EventTypeDraft {
     duration_min: 30,
     location_kind: "video",
     location_text: null,
+    video_source: "profile",
     color: "violet",
     requires_approval: false,
     buffer_before_min: 0,

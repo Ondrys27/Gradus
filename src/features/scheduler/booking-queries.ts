@@ -10,9 +10,11 @@ import {
   declineBookingAction,
   dismissSurveyAction,
   rescheduleBookingAction,
+  setBookingLinkAction,
   setNoShowAction,
   type BookingActionResult,
 } from "./booking-actions";
+import { isVideoSource, type VideoSource } from "./booking/meeting-link";
 import type { BookingProblem } from "./booking/state";
 import { SURVEY_DAYS } from "./booking/state";
 import type { GuestDay } from "./slots";
@@ -27,7 +29,14 @@ import { BOOKING_COLUMNS, type BookingRow, type Question } from "./types";
  * history share these.
  */
 
-export type BookingWithType = BookingRow & { typeName: string | null; questions: Question[] };
+export type BookingWithType = BookingRow & {
+  typeName: string | null;
+  questions: Question[];
+  /** What the call's link of the meeting comes from (27.5); null with a deleted type. */
+  locationKind: string | null;
+  videoSource: VideoSource;
+  profileLink: string | null;
+};
 
 export const bookingKeys = {
   all: (userId: string) => ["scheduler", userId, "bookings"] as const,
@@ -39,9 +48,17 @@ export const bookingKeys = {
   slots: (userId: string, id: string, zone: string) => ["scheduler", userId, "bookings", "slots", id, zone] as const,
 };
 
-const SELECT = `${BOOKING_COLUMNS}, event_type:event_types(name, questions)`;
+const SELECT = `${BOOKING_COLUMNS}, event_type:event_types(name, questions, location_kind, video_source, profile:scheduler_profiles(video_link))`;
 
-type Joined = BookingRow & { event_type: { name: string; questions: unknown } | null };
+type Joined = BookingRow & {
+  event_type: {
+    name: string;
+    questions: unknown;
+    location_kind: string;
+    video_source: string;
+    profile: { video_link: string | null } | null;
+  } | null;
+};
 
 function withType(row: Joined): BookingWithType {
   const { event_type, ...booking } = row;
@@ -49,6 +66,9 @@ function withType(row: Joined): BookingWithType {
     ...booking,
     typeName: event_type?.name ?? null,
     questions: event_type ? parseQuestions(event_type.questions) : [],
+    locationKind: event_type?.location_kind ?? null,
+    videoSource: isVideoSource(event_type?.video_source) ? event_type.video_source : "profile",
+    profileLink: event_type?.profile?.video_link ?? null,
   };
 }
 
@@ -222,3 +242,17 @@ export const useCancelBooking = () => useBookingMutation(cancelBookingAction);
 export const useRescheduleBooking = () => useBookingMutation(rescheduleBookingAction);
 export const useSetNoShow = () => useBookingMutation(setNoShowAction);
 export const useDismissSurvey = () => useBookingMutation(dismissSurveyAction);
+
+/** The host's own link of one meeting, or null back to the type's (27.5); resolves to whether the guest got an e-mail. */
+export function useSetBookingLink() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { bookingId: string; link: string | null }) => {
+      const result = await setBookingLinkAction(input);
+      if (!result.ok) throw new BookingActionError(result.problem);
+      return result.emailed;
+    },
+    // The calendar's meeting shows the link too.
+    onSettled: () => queryClient.invalidateQueries(),
+  });
+}

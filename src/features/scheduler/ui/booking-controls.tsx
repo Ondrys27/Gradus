@@ -5,18 +5,20 @@ import Link from "next/link";
 import {
   CalendarClockIcon,
   CheckIcon,
+  LinkIcon,
   MailIcon,
   PhoneIcon,
   UserIcon,
   UserXIcon,
+  VideoIcon,
   XIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { FormAlert } from "@/components/ui/form-alert";
-import { FormField } from "@/components/ui/form-field";
-import { Textarea } from "@/components/ui/input";
+import { FormField, fieldA11y } from "@/components/ui/form-field";
+import { Input, Textarea } from "@/components/ui/input";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusPill } from "@/components/ui/status-pill";
@@ -26,6 +28,7 @@ import { formatSlotMoment, formatTime } from "@/lib/format";
 import { formatPhone, telHref } from "@/lib/phone";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { answerLines } from "../booking/answers";
+import { MEETING_LINK_MAX, meetingLinkOf, meetingLinkProblem } from "../booking/meeting-link";
 import {
   bookingLabel,
   canApprove,
@@ -43,6 +46,7 @@ import {
   useDeclineBooking,
   useRescheduleBooking,
   useRescheduleSlots,
+  useSetBookingLink,
   useSetNoShow,
   type BookingWithType,
 } from "../booking-queries";
@@ -346,6 +350,136 @@ export function BookingSummary({ booking, country }: { booking: BookingWithType;
   );
 }
 
+/**
+ * The call's link of a video meeting (27.5): which link the guest's page
+ * shows now and where it comes from; the host gives this one meeting a link
+ * of its own or goes back to the type's. The guest sees it at once on the
+ * page of their booking, by e-mail only while the meeting is more than an
+ * hour away.
+ */
+export function BookingMeetingLink({ booking, isHost }: { booking: BookingWithType; isHost: boolean }) {
+  const t = useTranslations("scheduler.bookings.link");
+  const problemText = useProblemText();
+  const workspace = useWorkspace();
+  const canEdit = useCan("scheduler", "own") || booking.space_id !== workspace.id;
+  const save = useSetBookingLink();
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(booking.meeting_link ?? "");
+  const [saved, setSaved] = useState<"emailed" | "page" | null>(null);
+  const link = meetingLinkOf({
+    locationKind: booking.locationKind,
+    videoSource: booking.videoSource,
+    own: booking.meeting_link,
+    room: booking.video_room,
+    profileLink: booking.profileLink,
+  });
+  if (!link) return null;
+  const live = (booking.status === "pending" || booking.status === "confirmed") && Date.parse(booking.ends_at) > Date.now();
+  const editable = isHost && canEdit && live;
+  const formatError = meetingLinkProblem(value) ? t("format") : undefined;
+
+  function submit(next: string | null) {
+    setSaved(null);
+    save.mutate(
+      { bookingId: booking.id, link: next },
+      {
+        onSuccess: (emailed) => {
+          setSaved(emailed ? "emailed" : "page");
+          setEditing(false);
+          if (next === null) setValue("");
+        },
+      },
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-2 rounded-xl border border-line p-3" data-testid="booking-link" data-source={link.source}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="flex items-center gap-2 text-sm font-medium text-ink">
+          <VideoIcon aria-hidden className="size-4 text-ink-muted" />
+          {t("title")}
+        </p>
+        <span className="text-xs text-ink-muted">{t(`source.${link.source}`)}</span>
+      </div>
+      {link.url ? (
+        <a
+          href={link.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm break-all text-violet hover:underline"
+          data-testid="booking-link-url"
+        >
+          {link.url}
+        </a>
+      ) : (
+        <p className="text-sm text-ink-soft">{t("none")}</p>
+      )}
+      {saved && (
+        <p className="text-xs text-green" aria-live="polite" data-testid="booking-link-saved">
+          {t(saved === "emailed" ? "savedEmailed" : "savedPage")}
+        </p>
+      )}
+      {editable && !editing && (
+        <div className="flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setValue(booking.meeting_link ?? "");
+              setSaved(null);
+              setEditing(true);
+            }}
+            data-testid="booking-link-edit"
+          >
+            <LinkIcon aria-hidden data-icon="inline-start" />
+            {t(link.source === "own" ? "change" : "set")}
+          </Button>
+          {booking.meeting_link && (
+            <Button size="sm" variant="ghost" disabled={save.isPending} onClick={() => submit(null)} data-testid="booking-link-reset">
+              {t("reset")}
+            </Button>
+          )}
+        </div>
+      )}
+      {editable && editing && (
+        <form
+          className="flex flex-col gap-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!formatError && value.trim()) submit(value.trim());
+          }}
+        >
+          <FormField id={`booking-link-${booking.id}`} label={t("label")} error={formatError} hint={t("hint")}>
+            <Input
+              {...fieldA11y(`booking-link-${booking.id}`, formatError, true)}
+              type="url"
+              inputMode="url"
+              placeholder="https://"
+              maxLength={MEETING_LINK_MAX}
+              value={value}
+              onChange={(event) => setValue(event.target.value)}
+              autoFocus
+            />
+          </FormField>
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button type="button" variant="ghost" onClick={() => setEditing(false)} disabled={save.isPending}>
+              {t("cancel")}
+            </Button>
+            <Button
+              type="submit"
+              disabled={save.isPending || Boolean(formatError) || !value.trim()}
+              data-testid="booking-link-save"
+            >
+              {t("save")}
+            </Button>
+          </div>
+        </form>
+      )}
+      {save.error && <FormAlert>{problemText(save.error)}</FormAlert>}
+    </div>
+  );
+}
+
 /** One booking in a dialog (`?booking=<id>` in the scheduler, a link from the e-mail). */
 export function BookingDetailDialog({
   bookingId,
@@ -375,6 +509,7 @@ export function BookingDetailDialog({
         ) : (
           <>
             <BookingSummary booking={booking.data} country={country} />
+            <BookingMeetingLink booking={booking.data} isHost={booking.data.host_user_id === userId} />
             <BookingControls booking={booking.data} isHost={booking.data.host_user_id === userId} />
           </>
         )}

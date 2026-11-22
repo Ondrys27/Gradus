@@ -110,7 +110,15 @@ export function BookingsTab({
               const end = new Date(booking.ends_at);
               const typeName = booking.event_type_id ? typeNames.get(booking.event_type_id) : null;
               const host = booking.host_user_id ? hostNames.get(booking.host_user_id) : null;
-              const row = { ...booking, typeName: typeName ?? null, questions: [] };
+              // The list's buttons need no questions and no link (the detail reads them).
+              const row = {
+                ...booking,
+                typeName: typeName ?? null,
+                questions: [],
+                locationKind: null,
+                videoSource: "profile" as const,
+                profileLink: null,
+              };
               return (
                 <li
                   key={booking.id}

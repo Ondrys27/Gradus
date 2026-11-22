@@ -4169,7 +4169,10 @@
         "phoneGuest": "Telefonicky: {host} vám zavolá na vaše číslo",
         "phoneHost": "Telefonicky na {phone}",
         "phoneNone": "Telefonicky (host nezadal číslo)",
-        "at": "Kde: {place}"
+        "at": "Kde: {place}",
+        "videoJoin": "Videohovor: připojíte se tlačítkem „Připojit se ke schůzce“",
+        "videoByHost": "Videohovor: odkaz pošle {host} před schůzkou",
+        "videoNone": "Videohovor: zatím bez odkazu. Přidej ho v detailu rezervace."
       },
       "previous": "Původní termín: {when}",
       "reason": "Důvod: {reason}",
@@ -4218,6 +4221,10 @@
         "reminder": {
           "subject": "Připomínka: {type} · {when}",
           "intro": "Připomínáme schůzku {type} s {host} za {minutes, plural, =60 {hodinu} =120 {2 hodiny} =1440 {den} =2880 {2 dny} =10080 {týden} one {# minutu} few {# minuty} other {# minut}}."
+        },
+        "linkChanged": {
+          "subject": "Odkaz na schůzku byl upraven: {type} · {when}",
+          "intro": "{host} upravil(a) odkaz na schůzku {type}. Připojíte se tlačítkem níže, vede vždy na aktuální odkaz."
         }
       },
       "host": {
@@ -4242,7 +4249,9 @@
           "subject": "Připomínka: {type} s {guest} · {when}",
           "intro": "Za {minutes, plural, =60 {hodinu} =120 {2 hodiny} =1440 {den} =2880 {2 dny} =10080 {týden} one {# minutu} few {# minuty} other {# minut}} máš schůzku {type} s {guest}."
         }
-      }
+      },
+      "join": "Připojit se ke schůzce",
+      "joinLine": "Připojit se ke schůzce: {url}"
     }
   },
   "workers": {
@@ -6497,7 +6506,7 @@
         "admins": "Administrátoři",
         "plans": "Tarify",
         "promoCodes": "Promo kódy",
-          "showcase": "Ukázkový režim",
+        "showcase": "Ukázkový režim",
         "errors": "Chyby",
         "help": "Nápověda"
       },
@@ -10045,8 +10054,6 @@
         "custom": "Třeba odkaz na vlastní místnost.",
         "video": ""
       },
-      "videoUses": "Klient dostane tvůj odkaz na videohovor: {link}",
-      "videoMissing": "Přidej odkaz na videohovor na rezervační stránku (Upravit stránku), klient ho dostane v potvrzení.",
       "color": "Barva",
       "customHours": "Vlastní pracovní doba",
       "customHoursHint": "Vypnuto: typ používá pracovní dobu z Dostupnosti.",
@@ -10140,6 +10147,18 @@
           "range": "Od 5 minut do 7 dní předem.",
           "duplicate": "Dvě připomínky ve stejný čas."
         }
+      },
+      "video": {
+        "label": "Odkaz na videohovor",
+        "sources": {
+          "profile": "Trvalý odkaz",
+          "jitsi": "Jedinečná místnost pro každou rezervaci"
+        },
+        "profileUses": "Všichni klienti dostanou tvůj trvalý odkaz ze stránky: {link}",
+        "profileNone": "Na rezervační stránce zatím nemáš trvalý odkaz (Upravit stránku).",
+        "jitsiUses": "Každá rezervace dostane vlastní místnost na Jitsi Meet (meet.jit.si/gradus-…), zdarma a bez účtu.",
+        "help": "Rozdíl: trvalý odkaz je pořád stejná místnost (tvůj Google Meet, Zoom nebo Teams) pro všechny klienty, takže se další klient může připojit dřív, než skončí předchozí. Jedinečná místnost je pro každou schůzku jiná a nic nezakládáš. Klient se v obou případech připojuje přes stránku své rezervace, která vždy ukáže aktuální odkaz, i když ho později změníš.",
+        "missing": "Tenhle typ zatím nemá žádný odkaz na videohovor. Rezervace se potvrdí s textem „Odkaz pošle {host} před schůzkou“ a ty dostaneš úkol odkaz poslat. Přidej trvalý odkaz na stránku, nebo zapni jedinečnou místnost."
       }
     },
     "questions": {
@@ -10280,7 +10299,27 @@
       "detailTitle": "Rezervace",
       "close": "Zavřít",
       "notFound": "Rezervaci se nepodařilo najít.",
-      "history": "Rezervace: {type}"
+      "history": "Rezervace: {type}",
+      "link": {
+        "title": "Odkaz na schůzku",
+        "source": {
+          "own": "Vlastní odkaz této schůzky",
+          "room": "Jedinečná místnost (Jitsi)",
+          "profile": "Trvalý odkaz ze stránky",
+          "none": "Bez odkazu"
+        },
+        "none": "Zatím žádný. Host na stránce rezervace čte, že odkaz pošleš před schůzkou.",
+        "set": "Zadat odkaz",
+        "change": "Změnit odkaz",
+        "reset": "Použít výchozí",
+        "label": "Odkaz jen pro tuhle schůzku",
+        "hint": "Host ho hned uvidí na stránce své rezervace. E-mailem mu dáme vědět, jen když do schůzky zbývá víc než hodina.",
+        "format": "Zadej celý odkaz začínající https://",
+        "cancel": "Zrušit",
+        "save": "Uložit",
+        "savedEmailed": "Uloženo. Host dostal e-mail „Odkaz na schůzku byl upraven“.",
+        "savedPage": "Uloženo. Host ho uvidí na stránce své rezervace."
+      }
     },
     "team": {
       "hint": "Rezervační stránky lidí ve tvé firmě. Typ můžeš vypnout; zbytek si mění sami.",
@@ -10301,6 +10340,10 @@
     "bookingEvent": {
       "title": "{type} · {guest}",
       "bookedVia": "Rezervace z plánovače."
+    },
+    "linkTask": {
+      "title": "Pošli odkaz na schůzku: {guest}",
+      "description": "Schůzka {type} zatím nemá odkaz na videohovor. Vlož ho v detailu rezervace, host ho hned uvidí na stránce své rezervace: {url}"
     }
   },
   "booking": {
@@ -10395,7 +10438,8 @@
       "addToCalendar": "Přidat do kalendáře",
       "google": "Google",
       "apple": "Apple / ICS",
-      "outlook": "Outlook"
+      "outlook": "Outlook",
+      "linkLater": "Odkaz na videohovor pošle {host} před schůzkou."
     },
     "errors": {
       "slots": "Volné termíny se nepodařilo načíst. Zkuste to prosím za chvíli.",
@@ -10420,7 +10464,17 @@
       "cancelled": "Schůzka je zrušená. Potvrzení přišlo e-mailem.",
       "over": "Tuhle rezervaci už nejde změnit.",
       "failed": "Nepodařilo se to. Zkuste to prosím znovu.",
-      "meetingLine": "{type} · {duration} min · {host}"
+      "meetingLine": "{type} · {duration} min · {host}",
+      "join": {
+        "button": "Připojit se ke schůzce",
+        "now": "Schůzka začíná",
+        "hint": "Tlačítko se rozsvítí {minutes} minut před začátkem. Odkaz: {url}",
+        "later": "Odkaz na videohovor pošle {host} před schůzkou. Objeví se tady."
+      },
+      "thanks": {
+        "title": "Díky za schůzku",
+        "text": "Schůzka s {host} proběhla. Díky, že jste si udělali čas."
+      }
     }
   }
 }

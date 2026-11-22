@@ -3,7 +3,7 @@ import type { Browser, BrowserContext, Page } from "@playwright/test";
 import { admin, e2eEmail, signIn } from "./support/accounts";
 import { requiredEnv } from "./support/env";
 import { expect, test, watchConsole } from "./support/fixtures";
-import { exact } from "./support/i18n";
+import { exact, text } from "./support/i18n";
 import { dismissCelebrationsAutomatically, openApp } from "./support/ui";
 
 /**
@@ -154,14 +154,17 @@ test("56 · scheduler: a guest books, the host approves, the guest moves it; one
   await card.getByTestId("booking-approve").click();
   await expect(card).toHaveCount(0, { timeout: 20_000 });
 
-  // The confirmation with the call's link, and reminders scheduled for the guest.
+  // The confirmation joins through the booking's page (never the call's link, 27.5),
+  // and reminders are scheduled for the guest.
   await expect
     .poll(async () => (await outbox(guest, guestEmail)).filter((mail) => mail.scheduledAt).length, {
       timeout: 15_000,
     })
     .toBeGreaterThan(0);
   const confirmed = await outbox(guest, guestEmail);
-  expect(confirmed.some((mail) => mail.text.includes("https://meet.jit.si/gradus-e2e"))).toBe(true);
+  const joinLine = `${text(L, "email.booking.join")}: ${manageHref}`;
+  expect(confirmed.some((mail) => mail.text.includes(joinLine))).toBe(true);
+  expect(confirmed.some((mail) => mail.text.includes("https://meet.jit.si/gradus-e2e"))).toBe(false);
   const firstReminders = confirmed.filter((mail) => mail.scheduledAt && !mail.cancelled);
   expect(firstReminders.length).toBeGreaterThan(0);
 

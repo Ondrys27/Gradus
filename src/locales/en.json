@@ -4169,7 +4169,10 @@
         "phoneGuest": "By phone: {host} will call you on your number",
         "phoneHost": "By phone on {phone}",
         "phoneNone": "By phone (no number given)",
-        "at": "Where: {place}"
+        "at": "Where: {place}",
+        "videoJoin": "Video call: join with the “Join the meeting” button",
+        "videoByHost": "Video call: {host} will send the link before the meeting",
+        "videoNone": "Video call: no link yet. Add it in the booking's detail."
       },
       "previous": "Previous time: {when}",
       "reason": "Reason: {reason}",
@@ -4218,6 +4221,10 @@
         "reminder": {
           "subject": "Reminder: {type} · {when}",
           "intro": "A reminder of your {type} with {host} in {minutes, plural, =60 {an hour} =120 {2 hours} =1440 {a day} =2880 {2 days} =10080 {a week} one {# minute} other {# minutes}}."
+        },
+        "linkChanged": {
+          "subject": "The meeting link was updated: {type} · {when}",
+          "intro": "{host} updated the link of your {type} meeting. Join with the button below; it always leads to the current link."
         }
       },
       "host": {
@@ -4242,7 +4249,9 @@
           "subject": "Reminder: {type} with {guest} · {when}",
           "intro": "In {minutes, plural, =60 {an hour} =120 {2 hours} =1440 {a day} =2880 {2 days} =10080 {a week} one {# minute} other {# minutes}} you meet {guest} for a {type}."
         }
-      }
+      },
+      "join": "Join the meeting",
+      "joinLine": "Join the meeting: {url}"
     }
   },
   "workers": {
@@ -6497,7 +6506,7 @@
         "admins": "Administrators",
         "plans": "Plans",
         "promoCodes": "Promo codes",
-          "showcase": "Showcase mode",
+        "showcase": "Showcase mode",
         "errors": "Errors",
         "help": "Help"
       },
@@ -10045,8 +10054,6 @@
         "custom": "For example: a link to your own room.",
         "video": ""
       },
-      "videoUses": "Clients get your video link: {link}",
-      "videoMissing": "Add your video link to the booking page (Edit page), clients get it in the confirmation.",
       "color": "Colour",
       "customHours": "Own working hours",
       "customHoursHint": "Off: this type uses the hours of Availability.",
@@ -10140,6 +10147,18 @@
           "range": "From 5 minutes to 7 days before.",
           "duplicate": "Two reminders at the same time."
         }
+      },
+      "video": {
+        "label": "Video link",
+        "sources": {
+          "profile": "Permanent link",
+          "jitsi": "A unique room for every booking"
+        },
+        "profileUses": "Every client gets the permanent link of your page: {link}",
+        "profileNone": "Your booking page has no permanent link yet (Edit page).",
+        "jitsiUses": "Every booking gets its own room on Jitsi Meet (meet.jit.si/gradus-…), free and without an account.",
+        "help": "The difference: a permanent link is always the same room (your Google Meet, Zoom or Teams) for every client, so the next client may join before the previous meeting ends. A unique room is different for every meeting and you set nothing up. Either way the client joins through their booking page, which always shows the current link, even if you change it later.",
+        "missing": "This type has no video link yet. Bookings will be confirmed saying “{host} will send the link before the meeting” and you get a task to send it. Add a permanent link to your page, or switch on unique rooms."
       }
     },
     "questions": {
@@ -10280,7 +10299,27 @@
       "detailTitle": "Booking",
       "close": "Close",
       "notFound": "The booking could not be found.",
-      "history": "Booking: {type}"
+      "history": "Booking: {type}",
+      "link": {
+        "title": "Meeting link",
+        "source": {
+          "own": "This meeting's own link",
+          "room": "Unique room (Jitsi)",
+          "profile": "Permanent link of your page",
+          "none": "No link"
+        },
+        "none": "None yet. On their booking page the guest reads that you'll send it before the meeting.",
+        "set": "Add a link",
+        "change": "Change the link",
+        "reset": "Use the default",
+        "label": "Link for this meeting only",
+        "hint": "The guest sees it on their booking page at once. We e-mail them only when the meeting is more than an hour away.",
+        "format": "Enter the whole link, starting with https://",
+        "cancel": "Cancel",
+        "save": "Save",
+        "savedEmailed": "Saved. The guest got the e-mail “The meeting link was updated”.",
+        "savedPage": "Saved. The guest sees it on their booking page."
+      }
     },
     "team": {
       "hint": "The booking pages of the people in your company. You can switch a type off; they change the rest themselves.",
@@ -10301,6 +10340,10 @@
     "bookingEvent": {
       "title": "{type} · {guest}",
       "bookedVia": "Booked through the scheduler."
+    },
+    "linkTask": {
+      "title": "Send the meeting link: {guest}",
+      "description": "The {type} meeting has no video link yet. Add it in the booking's detail and the guest sees it on their booking page at once: {url}"
     }
   },
   "booking": {
@@ -10395,7 +10438,8 @@
       "addToCalendar": "Add to calendar",
       "google": "Google",
       "apple": "Apple / ICS",
-      "outlook": "Outlook"
+      "outlook": "Outlook",
+      "linkLater": "{host} will send the video link before the meeting."
     },
     "errors": {
       "slots": "The free times could not be loaded. Please try again in a while.",
@@ -10420,7 +10464,17 @@
       "cancelled": "The meeting is cancelled. The confirmation is in your e-mail.",
       "over": "This booking can no longer be changed.",
       "failed": "That did not work. Please try again.",
-      "meetingLine": "{type} · {duration} min · {host}"
+      "meetingLine": "{type} · {duration} min · {host}",
+      "join": {
+        "button": "Join the meeting",
+        "now": "The meeting is starting",
+        "hint": "The button lights up {minutes} minutes before the start. Link: {url}",
+        "later": "{host} will send the video link before the meeting. It will show up here."
+      },
+      "thanks": {
+        "title": "Thanks for the meeting",
+        "text": "Your meeting with {host} is over. Thanks for taking the time."
+      }
     }
   }
 }

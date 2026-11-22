@@ -93,7 +93,8 @@ async function createAuthUser(email = `${crypto.randomUUID()}@example.com`) {
 const testAccount = () => createAuthUser(`e2e-${crypto.randomUUID().slice(0, 8)}@gradus.local`);
 
 const iso = (offsetDays: number) => new Date(Date.now() + offsetDays * 86_400_000).toISOString();
-const today = () => new Date().toISOString().slice(0, 10);
+// The metrics count days in Prague; a UTC date is a day behind between 0:00 and 1:00 (2:00 in summer).
+const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Prague" }).format(new Date());
 
 async function record(user: string, invoice: string, values: Partial<Record<string, unknown>> = {}) {
   await asServiceRole();
