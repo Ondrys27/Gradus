@@ -10,6 +10,7 @@ import {
 import { useSession } from "@/features/account/queries";
 import { useWorkspace, useWorkspaceId } from "@/features/account/workspace-queries";
 import { clientOps } from "@/lib/ops-client";
+import { activeMemberKeys, fetchActiveMembers } from "@/features/account/active-members-data";
 import { createClient } from "@/lib/supabase/client";
 import { type FormatSettings, type IsoDate } from "@/lib/format";
 import { dayRangeToInstants } from "@/features/calendar/calendar-logic";
@@ -57,7 +58,6 @@ export const crmTaskKeys = {
     ["crmTasks", userId, "calendar", from, to] as const,
   targets: (userId: string, term: string) => ["crmTasks", userId, "targets", term] as const,
   // Under "workers", so saving a worker refreshes the names too.
-  assignees: (userId: string) => ["workers", userId, "assignees"] as const,
 };
 
 function invalidateTasks(queryClient: QueryClient, userId: string) {
@@ -220,21 +220,19 @@ export function useCalendarTasks(
   });
 }
 
-/** The owner and the active workers of the space, for "Kdo" and the names in the list. */
+/**
+ * The owner and the active workers of the space, for "Kdo", the deal people,
+ * the filters and the names in the list: the shared activeMembers list
+ * (28.1), one query for all of them.
+ */
 export function useAssignees() {
-  const { user } = useSession();
+  const { user, spaceId } = useSession();
   return useQuery({
-    queryKey: crmTaskKeys.assignees(user.id),
-    staleTime: 5 * 60_000,
-    queryFn: async (): Promise<Assignee[]> => {
-      const { data, error } = await createClient().rpc("crm_task_assignees");
-      if (error) throw error;
-      return (data ?? []).map((row) => ({
-        userId: row.user_id,
-        name: row.name,
-        isOwner: row.is_owner,
-      }));
-    },
+    queryKey: activeMemberKeys.space(user.id, spaceId),
+    staleTime: 60_000,
+    queryFn: () => fetchActiveMembers(createClient(), spaceId),
+    select: (members): Assignee[] =>
+      members.map((member) => ({ userId: member.userId, name: member.name, isOwner: member.isOwner })),
   });
 }
 

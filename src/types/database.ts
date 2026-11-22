@@ -39,6 +39,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_lookup_attempts: {
+        Row: {
+          created_at: string
+          found: boolean
+          id: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          found: boolean
+          id?: never
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          found?: boolean
+          id?: never
+          user_id?: string
+        }
+        Relationships: []
+      }
       account_notifications: {
         Row: {
           created_at: string
@@ -3829,6 +3850,7 @@ export type Database = {
           tutorial: Json | null
           updated_at: string
           username: string | null
+          username_changed_at: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -3856,6 +3878,7 @@ export type Database = {
           tutorial?: Json | null
           updated_at?: string
           username?: string | null
+          username_changed_at?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -3883,6 +3906,7 @@ export type Database = {
           tutorial?: Json | null
           updated_at?: string
           username?: string | null
+          username_changed_at?: string | null
         }
         Relationships: [
           {
@@ -4683,6 +4707,27 @@ export type Database = {
           quantity?: number
           success?: boolean
           user_id?: string
+        }
+        Relationships: []
+      }
+      username_reservations: {
+        Row: {
+          created_at: string
+          reserved_until: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          reserved_until: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          reserved_until?: string
+          user_id?: string
+          username?: string
         }
         Relationships: []
       }
@@ -5564,6 +5609,7 @@ export type Database = {
       }
       account_by_email: { Args: { _email: string }; Returns: string }
       account_by_public_id: { Args: { _public_id: string }; Returns: string }
+      account_by_username: { Args: { _username: string }; Returns: string }
       account_deletion_blockers: { Args: { _user: string }; Returns: string[] }
       account_has_add_on: {
         Args: { _key: string; _user_id: string }
@@ -5890,6 +5936,18 @@ export type Database = {
           _user_id: string
         }
         Returns: Json
+      }
+      active_members: {
+        Args: { _space: string }
+        Returns: {
+          avatar_url: string
+          is_owner: boolean
+          job_title: string
+          name: string
+          user_id: string
+          username: string
+          worker_id: string
+        }[]
       }
       admin_set_app_setting: {
         Args: { _ip_hash?: string; _key: string; _value: Json }
@@ -6651,6 +6709,10 @@ export type Database = {
       invoice_totals: {
         Args: { _currency: string; _items: Json; _vat_mode: string }
         Returns: Record<string, unknown>
+      }
+      invite_account_lookup: {
+        Args: { _actor: string; _value: string }
+        Returns: Json
       }
       is_client_request: { Args: never; Returns: boolean }
       is_deal_assignee: { Args: { _deal: string }; Returns: boolean }

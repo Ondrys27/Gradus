@@ -90,7 +90,11 @@ export function useCompanySeats(): { seats: ReadonlyMap<string, SeatInfo>; price
   }, [query.data, replacedQuery.data, settings.currency, format, rates]);
 }
 
-/** "has their own plan" / "in the price" / "extra 290 Kč", and a declined or waiting invite. */
+/**
+ * A declined, replaced, expired or waiting invite, and (only with
+ * WORKER_BILLING_VISIBLE) who pays for the seat: "has their own plan" /
+ * "in the price" / "extra 290 Kč".
+ */
 export function SeatChip({
   workerId,
   status,
@@ -101,6 +105,7 @@ export function SeatChip({
   seats: ReturnType<typeof useCompanySeats>;
 }) {
   const t = useTranslations("workers.company.seat");
+  const { workerBilling } = useSession();
   const info = seats.seats.get(workerId);
   if (!info) return null;
   if (info.declined) {
@@ -132,7 +137,8 @@ export function SeatChip({
           {t("waiting")}
         </StatusPill>
       )}
-      <StatusPill
+      {/* WORKER_BILLING_VISIBLE (28.1): who pays for the seat only once it is on. */}
+      {workerBilling && <StatusPill
         tone={info.seat === "own" ? "green" : info.seat === "included" ? "teal" : "gold"}
         data-testid="seat-chip"
         data-seat={info.seat}
@@ -147,7 +153,7 @@ export function SeatChip({
               : salesLive()
                 ? t("extra", { price: seats.price })
                 : t("extraBeforeSales", { price: seats.price })}
-      </StatusPill>
+      </StatusPill>}
     </>
   );
 }

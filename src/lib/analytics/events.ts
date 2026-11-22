@@ -751,6 +751,11 @@ export const EVENTS = {
     target: optional(oneOf(["account", "link"])),
   }),
   worker_invite_renewed: event("workers", "client", true, {}),
+  /** The owner looked somebody up to invite by @username or short id (28.1); never what was typed. */
+  worker_invite_lookup: event("workers", "server", false, {
+    outcome: oneOf(["found", "not_found", "limited", "invalid"]),
+    kind: oneOf(["username", "id"]),
+  }),
   /** At the registration with the code, or in the app by an existing account. */
   worker_invite_accepted: event("workers", "server", false, {
     via: optional(oneOf(["signup", "app"])),

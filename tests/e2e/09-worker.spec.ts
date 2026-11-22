@@ -37,6 +37,7 @@ test("9 · a worker joins through the invite: with the contacts right sees conta
     .first()
     .click();
   const form = page.getByRole("dialog", { name: t("workers.form.newTitle") });
+  await form.locator('[data-tutorial="worker-invite-new"]').click();
   await form.locator("#worker-name").fill("E2E Pracovník");
   await form.locator("#worker-email").fill(workerEmail);
   const contactsName = t("nav.contacts");

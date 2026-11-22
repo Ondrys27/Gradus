@@ -144,7 +144,7 @@ function CurrentPlan({
   const locale = useLocale();
   const settings = useUserSettings();
   const format = useFormatSettings();
-  const { user } = useSession();
+  const { user, workerBilling } = useSession();
   const queryClient = useQueryClient();
   const query = useSubscription({ poll: checkout === "success" });
   const resume = useResumeSubscription();
@@ -164,7 +164,14 @@ function CurrentPlan({
   const managed = sub ? isPaidPlanKey(sub.planKey) : false;
   // Beta and other plans outside the catalog count workers by the month.
   const seatBilling = managed && sub ? sub.billing : "monthly";
-  const workers = useWorkerCharge(plans, seatBilling, currency, Boolean(sub), useExchangeRates(rates));
+  // WORKER_BILLING_VISIBLE (28.1): nothing about paying for workers until it is on.
+  const workers = useWorkerCharge(
+    plans,
+    seatBilling,
+    currency,
+    Boolean(sub) && workerBilling,
+    useExchangeRates(rates),
+  );
 
   if (query.isPending) return <Skeleton className="h-72 w-full rounded-card" />;
   if (query.isError) return <FormAlert>{t("loadFailed")}</FormAlert>;
@@ -244,7 +251,17 @@ function CurrentPlan({
       ) : (
         <dl className="grid gap-4 sm:grid-cols-3">
           <Fact label={t("current.price")}>
-            {plan ? <PlanPrice plan={plan} billing={sub.billing} currency={currency} format={format} /> : "–"}
+            {plan ? (
+              <PlanPrice
+                plan={plan}
+                billing={sub.billing}
+                currency={currency}
+                format={format}
+                showWorkers={workerBilling}
+              />
+            ) : (
+              "–"
+            )}
             {plan && prices.derived && prices.rateAt && (
               <RateNote at={prices.rateAt} charged={chargeCurrency(plan, settings.currency)} />
             )}
@@ -269,7 +286,7 @@ function CurrentPlan({
         </dl>
       )}
 
-      {workers && (workers.workers > 0 || workers.includedInPlan > 0 || workers.price !== null) && (
+      {workerBilling && workers && (workers.workers > 0 || workers.includedInPlan > 0 || workers.price !== null) && (
         <WorkerSeatsLine data={workers} billing={seatBilling} currency={currency} />
       )}
 

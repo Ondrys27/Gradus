@@ -69,8 +69,14 @@ describe("SoftwareApplication", () => {
     expect(data.offers.map((offer) => offer.name)).toEqual(["Solo", "Pro", "Tým"]);
   });
 
-  it("uses EUR in English and adds the per-worker price for Team", () => {
+  it("leaves the per-worker price out while WORKER_BILLING_VISIBLE is off (28.1)", () => {
     const data = softwareApplicationJsonLd({ locale: "en", description: "D", plans: PLANS });
+    const team = data.offers.find((offer) => offer.name === "Team");
+    expect(Array.isArray(team?.priceSpecification)).toBe(false);
+  });
+
+  it("uses EUR in English and adds the per-worker price for Team once it is visible", () => {
+    const data = softwareApplicationJsonLd({ locale: "en", description: "D", plans: PLANS, workerPrices: true });
     const plan = PLANS.find((candidate) => candidate.key === "team")!;
     const team = data.offers.find((offer) => offer.name === "Team");
     expect(team?.priceCurrency).toBe("EUR");

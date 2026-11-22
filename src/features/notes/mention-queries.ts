@@ -137,6 +137,8 @@ function text(value: unknown): string | null {
 /** A search hit as a choice of the @ menu, with a quiet second line where it helps. */
 export function optionFromHit(hit: SearchHit): MentionOption | null {
   if (!isMentionKind(hit.kind)) return null;
+  // Only the people of the company now are offered (28.1); old chips keep working.
+  if (hit.kind === "worker" && hit.data?.status && hit.data.status !== "active") return null;
   const label = hit.title?.trim();
   if (!label) return null;
   const data = hit.data ?? {};

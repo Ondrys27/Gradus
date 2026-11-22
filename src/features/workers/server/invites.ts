@@ -1,16 +1,16 @@
 "use server";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { isTestAddress } from "@/features/feedback/server/notify";
+import { loadWorkerBillingVisible } from "@/features/plan/worker-billing-server";
 import { measure } from "@/lib/analytics/instrument";
 import { track } from "@/lib/analytics/track";
-import { sendEmail } from "@/lib/email/resend";
+import { deliverEmail } from "@/lib/email/e2e-outbox";
 import { COMPANY_PATH, INVITES_PATH } from "@/lib/routes";
 import { siteOrigin } from "@/lib/site-origin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
-import { parseInviteTarget } from "../invite-target";
+import { parseAccountTarget, parseInviteTarget, type InviteTarget } from "../invite-target";
 import { inviteUrl } from "../logic";
 import { workerInviteEmail, workerLeftEmail } from "./invite-emails";
 
@@ -39,6 +39,7 @@ export type InviteErrorCode =
   | "alreadyMember"
   | "readOnly"
   | "otherAccount"
+  | "limited"
   | "unknown";
 
 export type InviteResult<T> = { ok: true; data: T } | { ok: false; error: InviteErrorCode };
@@ -116,16 +117,70 @@ async function accountContact(admin: Client, userId: string) {
   return { email: user.user?.email ?? null, locale: settings?.locale ?? null };
 }
 
-/** The account a short id or e-mail names, or null. */
+/**
+ * The account a short id, username or e-mail names, or null. Exact only; a
+ * short id that names nobody is tried as a username of the same letters, as
+ * invite_account_lookup() does.
+ */
+async function accountOf(admin: Client, target: InviteTarget): Promise<string | null> {
+  if (target.kind === "email") {
+    const { data, error } = await admin.rpc("account_by_email", { _email: target.email });
+    if (error) throw error;
+    return data ?? null;
+  }
+  if (target.kind === "id") {
+    const { data, error } = await admin.rpc("account_by_public_id", { _public_id: target.publicId });
+    if (error) throw error;
+    if (data) return data;
+    // Six letters of the short id alphabet are a username too ("abc234").
+    const { data: byName, error: nameError } = await admin.rpc("account_by_username", {
+      _username: target.publicId.toLowerCase(),
+    });
+    if (nameError) throw nameError;
+    return byName ?? null;
+  }
+  const { data, error } = await admin.rpc("account_by_username", { _username: target.username });
+  if (error) throw error;
+  return data ?? null;
+}
+
 async function findAccount(admin: Client, value: string): Promise<string | null> {
   const parsed = parseInviteTarget(value);
   if (!parsed.ok) throw new InviteError("invalid");
-  const { data, error } =
-    parsed.target.kind === "id"
-      ? await admin.rpc("account_by_public_id", { _public_id: parsed.target.publicId })
-      : await admin.rpc("account_by_email", { _email: parsed.target.email });
-  if (error) throw error;
-  return data ?? null;
+  return accountOf(admin, parsed.target);
+}
+
+/** The owner already has this account in the company, or an open invite for it. */
+async function alreadyInCompany(supabase: Client, ownerId: string, account: string): Promise<boolean> {
+  // Their own client: the owner reads their workers and invites (row level security).
+  const [taken, waiting] = await Promise.all([
+    supabase
+      .from("workers")
+      .select("id")
+      .eq("owner_id", ownerId)
+      .eq("user_id", account)
+      .neq("status", "inactive")
+      .limit(1),
+    supabase
+      .from("worker_invites")
+      .select("id")
+      .eq("owner_id", ownerId)
+      .eq("invitee_id", account)
+      .is("accepted_at", null)
+      .is("declined_at", null)
+      .gt("expires_at", new Date().toISOString())
+      .limit(1),
+  ]);
+  if (taken.error) throw taken.error;
+  if (waiting.error) throw waiting.error;
+  return taken.data.length > 0 || waiting.data.length > 0;
+}
+
+/** E-mails an invite: the outbox for the tests' accounts, nothing for other internal addresses. */
+async function mailInvite(to: string, mail: { subject: string; text: string; html: string }): Promise<boolean> {
+  const sent = await deliverEmail({ to, ...mail });
+  if (!sent.ok && sent.error !== "internal address") console.error("[workers] invite e-mail failed", sent.error);
+  return sent.ok;
 }
 
 // ---------------------------------------------------------------------------
@@ -133,41 +188,68 @@ async function findAccount(admin: Client, value: string): Promise<string | null>
 // ---------------------------------------------------------------------------
 
 /**
- * Before the worker record exists: whether a short id names somebody who can
- * be invited. Nothing about the account comes back, not even its name.
+ * Before the worker record exists: whether a short id or username names
+ * somebody who can be invited. Nothing about the account comes back.
  */
-export async function checkInviteAccount(publicId: string): Promise<InviteResult<true>> {
+export async function checkInviteAccount(value: string): Promise<InviteResult<true>> {
   return run("check", async () => {
     const { supabase, userId } = await owner();
-    const parsed = parseInviteTarget(publicId);
-    if (!parsed.ok || parsed.target.kind !== "id") throw new InviteError("invalid");
-    const admin = createAdminClient();
-    const account = await findAccount(admin, parsed.target.publicId);
+    const parsed = parseAccountTarget(typeof value === "string" ? value : "");
+    if (!parsed.ok) throw new InviteError("invalid");
+    const account = await accountOf(createAdminClient(), parsed.target);
     if (!account) throw new InviteError("notFound");
     if (account === userId) throw new InviteError("self");
-    // Their own client: the owner reads their workers and invites (row level security).
-    const [taken, waiting] = await Promise.all([
-      supabase
-        .from("workers")
-        .select("id")
-        .eq("owner_id", userId)
-        .eq("user_id", account)
-        .neq("status", "inactive")
-        .limit(1),
-      supabase
-        .from("worker_invites")
-        .select("id")
-        .eq("owner_id", userId)
-        .eq("invitee_id", account)
-        .is("accepted_at", null)
-        .is("declined_at", null)
-        .gt("expires_at", new Date().toISOString())
-        .limit(1),
-    ]);
-    if (taken.error) throw taken.error;
-    if (waiting.error) throw waiting.error;
-    if (taken.data.length || waiting.data.length) throw new InviteError("alreadyMember");
+    if (await alreadyInCompany(supabase, userId, account)) throw new InviteError("alreadyMember");
     return true as const;
+  });
+}
+
+/** Who the owner found to invite (28.1): what the card shows, nothing else. */
+export type FoundAccount = {
+  name: string | null;
+  avatarUrl: string | null;
+  username: string | null;
+};
+
+/**
+ * The owner looks somebody up to invite by @username or short id: an exact
+ * match only, never a list of people, at most 10 misses and 40 searches an
+ * hour (invite_account_lookup). The card shows their photo, name and
+ * username; it says nothing about anybody who cannot be invited.
+ */
+export async function lookupInviteAccount(value: string): Promise<InviteResult<FoundAccount>> {
+  return run("lookup", async () => {
+    const { supabase, userId } = await owner();
+    const parsed = parseAccountTarget(typeof value === "string" ? value.slice(0, 64) : "");
+    if (!parsed.ok) throw new InviteError("invalid");
+    const admin = createAdminClient();
+    const { data, error } = await admin.rpc("invite_account_lookup", {
+      _actor: userId,
+      _value: value.trim(),
+    });
+    if (error) throw error;
+    const result = (data ?? {}) as {
+      outcome?: string;
+      id?: string;
+      name?: string | null;
+      avatar_url?: string | null;
+      username?: string | null;
+    };
+    const outcome =
+      result.outcome === "found" || result.outcome === "not_found" || result.outcome === "limited"
+        ? result.outcome
+        : "invalid";
+    await track("worker_invite_lookup", { outcome, kind: parsed.target.kind }, { userId, admin });
+    if (outcome === "limited") throw new InviteError("limited");
+    if (outcome === "invalid") throw new InviteError("invalid");
+    if (outcome === "not_found" || !result.id) throw new InviteError("notFound");
+    if (result.id === userId) throw new InviteError("self");
+    if (await alreadyInCompany(supabase, userId, result.id)) throw new InviteError("alreadyMember");
+    return {
+      name: result.name ?? null,
+      avatarUrl: result.avatar_url ?? null,
+      username: result.username ?? null,
+    };
   });
 }
 
@@ -211,7 +293,7 @@ export async function bindWorkerInvite(input: {
 
     const admin = createAdminClient();
     const account = await findAccount(admin, input.target);
-    if (!account && parsed.target.kind === "id") throw new InviteError("notFound");
+    if (!account && parsed.target.kind !== "email") throw new InviteError("notFound");
 
     let bound = false;
     if (account) {
@@ -241,7 +323,7 @@ export async function bindWorkerInvite(input: {
         ? await accountContact(admin, account)
         : { email: parsed.target.kind === "email" ? parsed.target.email : null, locale: null };
       const locale = contact.locale ?? input.locale ?? from.locale;
-      if (contact.email && !isTestAddress(contact.email)) {
+      if (contact.email) {
         const mail = workerInviteEmail(
           {
             company: from.company,
@@ -249,12 +331,11 @@ export async function bindWorkerInvite(input: {
             jobTitle: worker?.job_title ?? null,
             url: origin ? (account ? `${origin}${INVITES_PATH}` : inviteUrl(invite.code, origin, locale ?? undefined)) : null,
             forAccount: Boolean(account),
+            billingVisible: await loadWorkerBillingVisible(admin),
           },
           locale,
         );
-        const sent = await sendEmail({ to: contact.email, ...mail });
-        if (sent.ok) emailed = true;
-        else console.error("[workers] invite e-mail failed", sent.error);
+        emailed = await mailInvite(contact.email, mail);
       }
     }
     return { bound, emailed };
@@ -310,7 +391,7 @@ export async function renewAccountInvite(input: {
     const origin = await siteOrigin().catch(() => null);
     const from = await companyOf(admin, userId);
     const contact = await accountContact(admin, previous.invitee_id);
-    if (contact.email && !isTestAddress(contact.email)) {
+    if (contact.email) {
       const mail = workerInviteEmail(
         {
           company: from.company,
@@ -318,12 +399,11 @@ export async function renewAccountInvite(input: {
           jobTitle: worker?.job_title ?? null,
           url: origin ? `${origin}${INVITES_PATH}` : null,
           forAccount: true,
+          billingVisible: await loadWorkerBillingVisible(admin),
         },
         contact.locale ?? input.locale ?? from.locale,
       );
-      const sent = await sendEmail({ to: contact.email, ...mail });
-      if (sent.ok) emailed = true;
-      else console.error("[workers] invite e-mail failed", sent.error);
+      emailed = await mailInvite(contact.email, mail);
     }
     return { bound: true, emailed };
   });
@@ -400,13 +480,12 @@ export async function leaveCompany(spaceId: string): Promise<InviteResult<true>>
       companyOf(admin, spaceId),
       siteOrigin().catch(() => null),
     ]);
-    if (worker && contact.email && !isTestAddress(contact.email)) {
+    if (worker && contact.email) {
       const mail = workerLeftEmail(
         { worker: worker.name, company: from.company, url: origin ? `${origin}${COMPANY_PATH}` : null },
         contact.locale,
       );
-      const sent = await sendEmail({ to: contact.email, ...mail });
-      if (!sent.ok) console.error("[workers] leave e-mail failed", sent.error);
+      await mailInvite(contact.email, mail);
     }
     return true as const;
   });

@@ -13,8 +13,12 @@ async function inviteById(page: Page, name: string, publicId: string) {
   await openApp(page, "/app/firma");
   await page.getByRole("button", { name: exact(L, "workers.add") }).first().click();
   const form = page.getByRole("dialog", { name: t("workers.form.newTitle") });
-  await form.locator("#worker-name").fill(name);
-  await form.locator("#worker-email").fill(publicId);
+  // 28.1: somebody who already uses the app, found by the exact short id.
+  await form.locator('[data-tutorial="worker-invite-existing"]').click();
+  await form.locator("#worker-account").fill(publicId);
+  await form.getByTestId("worker-find").click();
+  // The card shows who it found; the worker record takes their name.
+  await expect(form.getByTestId("invite-found-name")).toHaveText(name);
   await form.getByRole("button", { name: exact(L, "workers.form.create") }).click();
   const sent = page.getByRole("dialog", { name: t("workers.form.inviteSent") });
   await sent.getByRole("button", { name: exact(L, "workers.form.done") }).click();
@@ -36,6 +40,7 @@ test("61 · expired invite: no seat, send again · dashboard: decline asks, acce
   const person = await accounts.create({ label: "polish-person" });
   const db = admin();
   await db.from("profiles").update({ company_name: "E2E Firma Doladění" }).eq("id", boss.id);
+  await db.from("profiles").update({ display_name: "E2E Prošlý" }).eq("id", person.id);
   const { data: profile, error } = await db.from("profiles").select("public_id").eq("id", person.id).single();
   if (error) throw error;
 

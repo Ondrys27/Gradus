@@ -48,11 +48,14 @@ export function WebPricing({
   rates,
   signupEnabled,
   faqHref,
+  showWorkerPrices = false,
 }: {
   plans: readonly CatalogPlan[];
   rates: RateTable;
   signupEnabled: boolean;
   faqHref: string;
+  /** WORKER_BILLING_VISIBLE (28.1). */
+  showWorkerPrices?: boolean;
 }) {
   const locale = useLocale();
   const t = useTranslations("plans");
@@ -92,6 +95,7 @@ export function WebPricing({
       </div>
       <PricingCards
         flat
+        showWorkerPrices={showWorkerPrices}
         plans={prices.plans}
         currency={prices.currency}
         formatSettings={format}

@@ -26,6 +26,7 @@ async function invite(page: Page, name: string, email: string): Promise<string> 
     .first()
     .click();
   const form = page.getByRole("dialog", { name: t("workers.form.newTitle") });
+  await form.locator('[data-tutorial="worker-invite-new"]').click();
   await form.locator("#worker-name").fill(name);
   await form.locator("#worker-email").fill(email);
   await form.getByRole("button", { name: exact(L, "workers.form.create") }).click();
@@ -174,6 +175,7 @@ test("58b · a new invite to the same e-mail replaces the old one, and the old l
     .first()
     .click();
   const form = page.getByRole("dialog", { name: t("workers.form.newTitle") });
+  await form.locator('[data-tutorial="worker-invite-new"]').click();
   await form.locator("#worker-name").fill("E2E Podruhé");
   await form.locator("#worker-email").fill(email);
   await form.getByRole("button", { name: exact(L, "workers.form.create") }).click();

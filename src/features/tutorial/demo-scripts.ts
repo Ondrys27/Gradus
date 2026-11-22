@@ -247,6 +247,7 @@ const D = script("d", (b) => {
     .until('[data-testid="company-list"]', 1600)
     .caption("invite")
     .click("worker-invite")
+    .click("worker-invite-new")
     .type("#worker-name", "{newWorker}")
     .type("#worker-email", "{workerEmail}")
     .click("worker-submit")
@@ -255,7 +256,7 @@ const D = script("d", (b) => {
     .caption("rights")
     .click({ name: '[data-testid="company-open-person"]', text: "{worker}" })
     .click('[data-testid="worker-tab-rights"]')
-    .click('[data-testid="rights-template-sales"]', { after: 1500 })
+    .click('[data-testid="rights-template-sales"]', { after: 1100 })
     .click("worker-dashboard-close")
     .caption("task")
     .in("tasks")
@@ -271,9 +272,9 @@ const D = script("d", (b) => {
     .in("messages")
     .click("nav-messages")
     .click({ name: '[data-testid="chat-person"]', text: "{worker}" })
-    .type('[data-testid="chat-input"]', "{chatMessage}", { enter: true, after: 1800 })
+    .type('[data-testid="chat-input"]', "{chatMessage}", { enter: true, after: 1200 })
     .caption(null)
-    .wait(600);
+    .wait(300);
 });
 
 /** A cell of the month's plan: Marketing in week 4 (every month has one). */

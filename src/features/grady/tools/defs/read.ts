@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { fetchActiveMembers } from "@/features/account/active-members-data";
 import { can, canAccessContacts } from "@/features/account/workspace";
 import { addDaysIso, dayRangeToInstants } from "@/features/calendar/calendar-logic";
 import { FIELD_COLUMNS, TABLE_COLUMNS } from "@/features/contacts/types";
@@ -607,9 +608,14 @@ export const readTools = [
     input: z.object({}),
     describe: (_input, t) => t("list_people"),
     async execute(ctx) {
-      const { data, error } = await ctx.db.rpc("crm_task_assignees");
-      if (error) throw error;
-      return { output: { people: (data ?? []).slice(0, 50) } };
+      const people = await fetchActiveMembers(ctx.db, ctx.workspaceId);
+      return {
+        output: {
+          people: people
+            .slice(0, 50)
+            .map((person) => ({ user_id: person.userId, name: person.name, is_owner: person.isOwner })),
+        },
+      };
     },
     undoable: false,
     invalidates: [],

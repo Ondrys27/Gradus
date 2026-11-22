@@ -144,6 +144,7 @@ function PreviewCards({
   return (
     <PricingCards
       flat
+      showWorkerPrices
       plans={plans}
       currency={currency}
       formatSettings={webFormatSettings(locale)}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { clampPan, cropSquare, sniffImageType } from "./avatar-image";
-import { normalizeUsernameInput, usernameProblem } from "./username";
+import { normalizeUsernameInput, usernameProblem, usernameUnlocksAt } from "./username";
 
 describe("username rules", () => {
   it("lowercases and removes spaces while typing", () => {
@@ -67,5 +67,16 @@ describe("clampPan", () => {
     expect(clampPan(image, 1, -9999, -10)).toEqual({ x: -250, y: 0 });
     expect(clampPan(image, 2, -300, -200)).toEqual({ x: -300, y: -200 });
     expect(clampPan(image, 2, -300, -400)).toEqual({ x: -300, y: -250 });
+  });
+});
+
+describe("usernameUnlocksAt (28.1)", () => {
+  const now = new Date("2026-11-22T12:00:00Z");
+  it("is free without a change and 30 days after the last one", () => {
+    expect(usernameUnlocksAt(null, now)).toBeNull();
+    expect(usernameUnlocksAt("2026-10-23T11:00:00Z", now)).toBeNull();
+  });
+  it("waits until 30 days after the last change", () => {
+    expect(usernameUnlocksAt("2026-11-20T12:00:00Z", now)?.toISOString()).toBe("2026-12-20T12:00:00.000Z");
   });
 });

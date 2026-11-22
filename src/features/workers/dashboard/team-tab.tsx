@@ -35,10 +35,12 @@ export function TeamTab({
   const t = useTranslations("workers.dashboard.team");
   const settings = useFormatSettings();
   const people = useCompanyTree();
-  const team = useMemo(
-    () => (people.data ? teamOf(people.data, worker.id) : null),
+  // The team of somebody is who works there now (28.1): nobody who left.
+  const current = useMemo(
+    () => people.data?.filter((person) => person.status !== "inactive" || person.id === worker.id),
     [people.data, worker.id],
   );
+  const team = useMemo(() => (current ? teamOf(current, worker.id) : null), [current, worker.id]);
   const manager = worker.managerId
     ? people.data?.find((person) => person.id === worker.managerId)
     : undefined;

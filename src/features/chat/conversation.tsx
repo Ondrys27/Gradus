@@ -195,9 +195,11 @@ export function Conversation({
   );
   const candidates = useMemo(
     () =>
-      (channel ? memberTokens : peer ? [peer] : []).filter(
-        (member) => member !== me && byMember.get(member)?.status !== "inactive",
-      ),
+      // @ offers only the people of the company now (28.1): the owner (no status) or an active worker.
+      (channel ? memberTokens : peer ? [peer] : []).filter((member) => {
+        const status = byMember.get(member)?.status;
+        return member !== me && (status === null || status === "active");
+      }),
     [channel, memberTokens, peer, me, byMember],
   );
 

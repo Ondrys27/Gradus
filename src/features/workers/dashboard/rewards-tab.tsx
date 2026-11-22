@@ -106,7 +106,8 @@ function OwnerRewards({ worker }: { worker: DashboardWorker }) {
           onChange={setPanel}
           panelId={(value) => `worker-rewards-${value}`}
         />
-        {!workspace.readOnly && (
+        {/* A former worker gets nothing new (28.1); what they are owed can still be paid out. */}
+        {!workspace.readOnly && (worker.status !== "inactive" || owed > 0) && (
           <Button onClick={() => setPaying(true)} disabled={!balance.data}>
             <BanknoteIcon aria-hidden data-icon="inline-start" />
             {t("payments.record")}

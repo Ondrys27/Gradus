@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { CatalogPlan } from "@/config/pricing";
+import { loadWorkerBillingVisible } from "@/features/plan/worker-billing-server";
 import { catalogWorkerTerms, holdsSeat, workerSeats } from "@/features/plan/worker-seats";
 import { openInviteWorkers } from "@/features/workers/server/open-invites";
 import type { Database } from "@/types/database";
@@ -14,10 +15,13 @@ type Admin = SupabaseClient<Database>;
  * beyond the seats in the price.
  * Zero when the plan takes no extra workers (they are over its terms, not
  * charged). worker_seats() answers per worker, oldest first.
+ * Zero while WORKER_BILLING_VISIBLE is off (28.1): nobody pays for what the
+ * app does not show.
  */
 export async function extraWorkerQuantity(admin: Admin, workspace: string, plan: CatalogPlan): Promise<number> {
   const terms = catalogWorkerTerms(plan);
   if (!terms.perWorker) return 0;
+  if (!(await loadWorkerBillingVisible(admin))) return 0;
   const [{ data, error }, open] = await Promise.all([
     admin.rpc("worker_seats", { _owner: workspace }),
     openInviteWorkers(admin, workspace),

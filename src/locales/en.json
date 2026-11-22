@@ -1005,14 +1005,15 @@
       "displayNameHint": "Shown in the app instead of your e-mail.",
       "username": {
         "label": "Username",
-        "hint": "3–20 characters: lowercase letters, digits, dot and underscore.",
+        "hint": "3–20 characters: lowercase letters, digits, dot and underscore. Companies find you by it when they invite you. It can change once in 30 days; your old one stays reserved for you for 30 days.",
         "tooShort": "At least 3 characters.",
         "tooLong": "At most 20 characters.",
         "invalidChars": "Only lowercase letters, digits, dot and underscore.",
-        "taken": "This username is already taken.",
+        "taken": "This username is taken or reserved.",
         "available": "Available.",
         "checking": "Checking availability…",
-        "checkFailed": "Availability could not be checked right now."
+        "checkFailed": "Availability could not be checked right now.",
+        "locked": "You can change it again on {date}."
       },
       "email": "E-mail",
       "emailHint": "The e-mail you sign in with."
@@ -1255,12 +1256,16 @@
         "action": "Sign out"
       },
       "publicId": {
-        "title": "Your ID",
+        "title": "How people find you",
         "label": "Short ID",
-        "hint": "A company owner finds you by it when they want to add you to their team. It is not a secret and opens nothing by itself.",
+        "hint": "Not a secret, and it opens nothing by itself.",
         "copy": "Copy",
         "copied": "Copied",
-        "qr": "QR code with your ID {id}"
+        "qr": "QR code with your ID {id}",
+        "description": "When somebody wants to invite you to their company in Gradus, they enter your @name or short ID. Only an exact match is found.",
+        "usernameLabel": "Username",
+        "usernameHint": "The same name is used by the meeting scheduler (your booking link) and messages.",
+        "usernameMissing": "You don't have one yet. Set it above in Profile."
       },
       "company": {
         "title": "Company",
@@ -4270,7 +4275,8 @@
       "tasksDone": "{done} / {total}",
       "hours": "Worked",
       "earned": "Earned",
-      "duration": "{hours} h {minutes} min"
+      "duration": "{hours} h {minutes} min",
+      "former": "Former worker"
     },
     "form": {
       "newTitle": "Invite worker",
@@ -4278,18 +4284,32 @@
       "inviteReady": "Invite ready",
       "name": "Name",
       "email": "E-mail",
-      "emailHint": "They sign up with this address.",
+      "emailHint": "The sign-up link goes to this address. If someone already has an account with it, the invite waits for them in the app.",
       "jobTitle": "Role",
       "jobTitlePlaceholder": "e.g. Sales rep",
-      "create": "Create invite",
+      "create": "Invite",
       "save": "Save",
       "cancel": "Cancel",
       "close": "Close",
       "done": "Done",
       "saveFailed": "Saving failed. Try again.",
-      "target": "Short ID or e-mail",
-      "targetHint": "Already has an account? Their short ID from Settings → Account is enough; the invite waits for them in the app. Someone new gets a link to sign up.",
-      "inviteSent": "Invite sent"
+      "inviteSent": "Invite sent",
+      "choice": {
+        "question": "Who are you inviting?",
+        "existing": "Already uses Gradus",
+        "existingHint": "Find them by their @name or short ID. The invite waits for them in the app and goes out by e-mail too.",
+        "new": "Doesn't have Gradus yet",
+        "newHint": "Enter their name and e-mail; they get a link to sign up.",
+        "back": "Back"
+      },
+      "account": {
+        "label": "Username or short ID",
+        "placeholder": "@name or 7K3M9Q",
+        "hint": "Only an exact match is found. Everyone has both in Settings → Account.",
+        "find": "Find",
+        "change": "Change",
+        "noName": "No name"
+      }
     },
     "permissions": {
       "title": "What they may do",
@@ -4609,7 +4629,8 @@
       "scopeLabel": "For",
       "scope": {
         "all": "All workers",
-        "removed": "Removed worker"
+        "removed": "Removed worker",
+        "former": "{name} (no longer in the company)"
       },
       "kindChangeHint": "Rules this trigger cannot pay switch to a kind it can.",
       "newTriggerTitle": "New trigger",
@@ -4676,11 +4697,13 @@
       "amountInvalid": "Enter an amount above zero.",
       "noteTooLong": "The note is too long.",
       "dateRequired": "Pick a date.",
-      "targetRequired": "Enter a short ID or an e-mail.",
-      "targetInvalid": "This is neither a short ID (6 characters) nor an e-mail.",
-      "targetNotFound": "No account has this ID. Check it in their Settings → Account.",
       "targetSelf": "That is you.",
-      "targetAlreadyMember": "They are in the company already or have an invite."
+      "targetAlreadyMember": "They are in the company already or have an invite.",
+      "accountRequired": "Enter an @name or a short ID.",
+      "accountInvalid": "That's neither a username (3–20 characters a–z, 0–9, _ .) nor a short ID (6 characters).",
+      "accountNotFound": "Nobody with that name or ID. Only an exact match is found; ask them to send it from Settings → Account.",
+      "accountLimited": "Too many tries in a row. Try again in an hour.",
+      "emailRequired": "Enter an e-mail."
     },
     "company": {
       "tabs": {
@@ -4741,7 +4764,8 @@
         "readOnly": "The company does not change in read-only mode.",
         "saveFailed": "Saving failed. Try again.",
         "nameTaken": "A group with this name already exists.",
-        "loadFailed": "The company could not be loaded. Try again."
+        "loadFailed": "The company could not be loaded. Try again.",
+        "inactive": "Somebody who left can have nobody under them and be in no group."
       },
       "empty": {
         "title": "It is just you so far",
@@ -4796,7 +4820,8 @@
       "rewards": {
         "description": "Time worked, earnings and what waits for approval this month. Details, payouts and time are on each worker's page.",
         "system": "Reward system",
-        "empty": "Once you invite workers, their rewards and payouts show here."
+        "empty": "Once your workers accept their invites, their rewards and payouts show here.",
+        "showFormer": "Show former too"
       },
       "invite": {
         "manager": "Manager",

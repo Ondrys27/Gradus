@@ -1005,14 +1005,15 @@
       "displayNameHint": "Zobrazuje se v aplikaci místo e-mailu.",
       "username": {
         "label": "Uživatelské jméno",
-        "hint": "3–20 znaků: malá písmena, číslice, tečka a podtržítko.",
+        "hint": "3–20 znaků: malá písmena, číslice, tečka a podtržítko. Podle něj tě najdou, když tě zvou do firmy. Měnit jde jednou za 30 dní, staré jméno ti 30 dní zůstane rezervované.",
         "tooShort": "Alespoň 3 znaky.",
         "tooLong": "Nejvýše 20 znaků.",
         "invalidChars": "Jen malá písmena, číslice, tečka a podtržítko.",
-        "taken": "Toto uživatelské jméno už je obsazené.",
+        "taken": "Toto uživatelské jméno už je obsazené nebo rezervované.",
         "available": "Volné.",
         "checking": "Ověřuji dostupnost…",
-        "checkFailed": "Dostupnost se teď nepodařilo ověřit."
+        "checkFailed": "Dostupnost se teď nepodařilo ověřit.",
+        "locked": "Jméno jde znovu změnit {date}."
       },
       "email": "E-mail",
       "emailHint": "E-mail, kterým se přihlašujete."
@@ -1255,12 +1256,16 @@
         "action": "Odhlásit se"
       },
       "publicId": {
-        "title": "Tvoje ID",
+        "title": "Jak tě najdou",
         "label": "Krátké ID",
-        "hint": "Podle něj tě majitel firmy najde, když tě bude chtít přidat do týmu. Není tajné a samo nic neotevře.",
+        "hint": "Není tajné a samo nic neotevře.",
         "copy": "Kopírovat",
         "copied": "Zkopírováno",
-        "qr": "QR kód s tvým ID {id}"
+        "qr": "QR kód s tvým ID {id}",
+        "description": "Když tě někdo chce pozvat do své firmy v Gradusu, zadá tvoje @jméno nebo krátké ID. Najde se jen přesná shoda.",
+        "usernameLabel": "Uživatelské jméno",
+        "usernameHint": "Stejné jméno používá i plánovač schůzek (odkaz na tvou stránku) a zprávy.",
+        "usernameMissing": "Zatím ho nemáš. Nastavíš ho nahoře v Profilu."
       },
       "company": {
         "title": "Firma",
@@ -4270,7 +4275,8 @@
       "tasksDone": "{done} / {total}",
       "hours": "Odpracováno",
       "earned": "Vyděláno",
-      "duration": "{hours} h {minutes} min"
+      "duration": "{hours} h {minutes} min",
+      "former": "Bývalý pracovník"
     },
     "form": {
       "newTitle": "Pozvat pracovníka",
@@ -4278,18 +4284,32 @@
       "inviteReady": "Pozvánka je připravená",
       "name": "Jméno",
       "email": "E-mail",
-      "emailHint": "S touhle adresou se zaregistruje.",
+      "emailHint": "Na tuhle adresu přijde odkaz na registraci. Když s ní už někdo účet má, pozvánka na něj počká v aplikaci.",
       "jobTitle": "Role",
       "jobTitlePlaceholder": "např. Obchodník",
-      "create": "Vytvořit pozvánku",
+      "create": "Pozvat",
       "save": "Uložit",
       "cancel": "Zrušit",
       "close": "Zavřít",
       "done": "Hotovo",
       "saveFailed": "Uložení se nepovedlo. Zkus to znovu.",
-      "target": "Krátké ID nebo e-mail",
-      "targetHint": "Má už účet? Stačí jeho krátké ID z Nastavení → Účet, pozvánka na něj počká v aplikaci. Nový člověk dostane odkaz na registraci.",
-      "inviteSent": "Pozvánka odeslána"
+      "inviteSent": "Pozvánka odeslána",
+      "choice": {
+        "question": "Koho zveš?",
+        "existing": "Už používá Gradus",
+        "existingHint": "Najdeš ho podle @jména nebo krátkého ID. Pozvánka na něj počká v aplikaci a přijde mu i e-mailem.",
+        "new": "Ještě Gradus nemá",
+        "newHint": "Zadáš jméno a e-mail, přijde mu odkaz na registraci.",
+        "back": "Zpět"
+      },
+      "account": {
+        "label": "Uživatelské jméno nebo krátké ID",
+        "placeholder": "@jmeno nebo 7K3M9Q",
+        "hint": "Najde se jen přesná shoda. Obojí má každý v Nastavení → Účet.",
+        "find": "Najít",
+        "change": "Změnit",
+        "noName": "Bez jména"
+      }
     },
     "permissions": {
       "title": "Co může dělat",
@@ -4609,7 +4629,8 @@
       "scopeLabel": "Pro koho",
       "scope": {
         "all": "Všichni pracovníci",
-        "removed": "Odebraný pracovník"
+        "removed": "Odebraný pracovník",
+        "former": "{name} (už ve firmě není)"
       },
       "kindChangeHint": "Pravidla, která tenhle spouštěč neumí platit, se přepnou na způsob, který umí.",
       "newTriggerTitle": "Nový spouštěč",
@@ -4676,11 +4697,13 @@
       "amountInvalid": "Zadej částku větší než nula.",
       "noteTooLong": "Poznámka je moc dlouhá.",
       "dateRequired": "Vyber datum.",
-      "targetRequired": "Zadej krátké ID nebo e-mail.",
-      "targetInvalid": "Tohle není krátké ID (6 znaků) ani e-mail.",
-      "targetNotFound": "Účet s tímhle ID neexistuje. Zkontroluj ho v jeho Nastavení → Účet.",
       "targetSelf": "Tohle jsi ty.",
-      "targetAlreadyMember": "Ve firmě už je, nebo už má pozvánku."
+      "targetAlreadyMember": "Ve firmě už je, nebo už má pozvánku.",
+      "accountRequired": "Zadej @jméno nebo krátké ID.",
+      "accountInvalid": "Tohle není uživatelské jméno (3–20 znaků a–z, 0–9, _ .) ani krátké ID (6 znaků).",
+      "accountNotFound": "Nikoho s tímhle jménem nebo ID jsme nenašli. Hledá se jen přesná shoda, ať ti ho pošle z Nastavení → Účet.",
+      "accountLimited": "Moc pokusů za sebou. Zkus to znovu za hodinu.",
+      "emailRequired": "Zadej e-mail."
     },
     "company": {
       "tabs": {
@@ -4741,7 +4764,8 @@
         "readOnly": "V režimu jen pro čtení se firma nemění.",
         "saveFailed": "Uložení se nepovedlo. Zkus to znovu.",
         "nameTaken": "Skupina s tímhle názvem už existuje.",
-        "loadFailed": "Firmu se nepodařilo načíst. Zkus to znovu."
+        "loadFailed": "Firmu se nepodařilo načíst. Zkus to znovu.",
+        "inactive": "Kdo už ve firmě není, nemůže mít nikoho pod sebou ani být ve skupině."
       },
       "empty": {
         "title": "Ve firmě jsi zatím sám",
@@ -4796,7 +4820,8 @@
       "rewards": {
         "description": "Odpracovaný čas, výdělky a co čeká na schválení za tento měsíc. Podrobnosti, výplaty a čas jsou v detailu pracovníka.",
         "system": "Systém odměn",
-        "empty": "Až pozveš pracovníky, uvidíš tu jejich odměny a výplaty."
+        "empty": "Až pozveš pracovníky a přijmou pozvánku, uvidíš tu jejich odměny a výplaty.",
+        "showFormer": "Zobrazit i bývalé"
       },
       "invite": {
         "manager": "Nadřízený",

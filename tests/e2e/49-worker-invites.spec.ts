@@ -9,27 +9,34 @@ const t = (key: string, values?: Record<string, string | number>) => text(L, key
 
 test.use({ reducedMotion: "reduce" });
 
-/** Opens "Invite a worker" in Company and fills the name and the short id or e-mail. */
-async function invite(page: Page, name: string, target: string) {
+/** Opens "Invite a worker" in Company and picks who: somebody with the app, or somebody new. */
+async function openInvite(page: Page, kind: "existing" | "new") {
   await openApp(page, "/app/firma");
   await page
     .getByRole("button", { name: exact(L, "workers.add") })
     .first()
     .click();
   const form = page.getByRole("dialog", { name: t("workers.form.newTitle") });
-  await form.locator("#worker-name").fill(name);
-  await form.locator("#worker-email").fill(target);
-  await form.getByRole("button", { name: exact(L, "workers.form.create") }).click();
+  await form.locator(`[data-tutorial="worker-invite-${kind}"]`).click();
+  return form;
+}
+
+/** Somebody who already uses the app, by @username or short id: the lookup only. */
+async function lookUp(page: Page, handle: string) {
+  const form = await openInvite(page, "existing");
+  await form.locator("#worker-account").fill(handle);
+  await form.getByTestId("worker-find").click();
+  return form;
 }
 
 /**
- * 22.5: the owner invites an existing account by its short id → the invite
- * waits in that account's app (bell) → it is accepted there → the company is
- * in the switcher → the owner's subscription shows nothing extra for a
- * worker with a plan of their own. Then a new person by e-mail: a link, and
- * 290 Kč extra on the owner's beta.
+ * 22.5 + 28.1: the owner finds an existing account by its short id (exact
+ * only) → a card with its name → Invite → the invite waits in that account's
+ * app (bell) → it is accepted there → the company is in the switcher. Nothing
+ * about paying for workers shows while WORKER_BILLING_VISIBLE is off. Then
+ * a username lookup and a new person by e-mail (a link).
  */
-test("49 · invite by short id → accept → in the switcher → 0 Kč extra; a new person → 290 Kč extra", async ({
+test("49 · find by short id → card → accept → in the switcher; @username; a new person by e-mail; no worker prices", async ({
   page,
   browser,
   accounts,
@@ -40,22 +47,40 @@ test("49 · invite by short id → accept → in the switcher → 0 Kč extra; a
   const db = admin();
   const named = await db.from("profiles").update({ company_name: "E2E Firma Pozvánka" }).eq("id", boss.id);
   if (named.error) throw named.error;
+  const handle = `e2e_${Date.now().toString(36)}`.slice(0, 20);
+  const renamed = await db
+    .from("profiles")
+    .update({ display_name: "E2E Pozvaný", username: handle })
+    .eq("id", person.id);
+  if (renamed.error) throw renamed.error;
   const { data: profile, error } = await db.from("profiles").select("public_id").eq("id", person.id).single();
   if (error) throw error;
   expect(profile.public_id).toMatch(/^[2-9A-HJKMNP-TV-Z]{6}$/);
 
   // An id nobody has is refused in the field, nothing is created.
   await signIn(page, boss);
-  await invite(page, "E2E Nikdo", "ZZZZZZ");
-  await expect(page.getByText(t("workers.errors.targetNotFound"))).toBeVisible();
+  let form = await lookUp(page, "ZZZZZZ");
+  await expect(form.getByText(t("workers.errors.accountNotFound"))).toBeVisible();
+  // Only an exact username: a part of it finds nobody.
+  await form.locator("#worker-account").fill(`@${handle.slice(0, -2)}`);
+  await form.getByTestId("worker-find").click();
+  await expect(form.getByText(t("workers.errors.accountNotFound"))).toBeVisible();
   await page.keyboard.press("Escape");
 
-  // The short id, typed in lower case: the invite waits in the person's app.
-  await invite(page, "E2E Pozvaný", profile.public_id!.toLowerCase());
+  // The short id, typed in lower case: the card, then the invite waits in the person's app.
+  form = await lookUp(page, profile.public_id!.toLowerCase());
+  await expect(form.getByTestId("invite-found-name")).toHaveText("E2E Pozvaný");
+  await expect(form.getByTestId("invite-found-username")).toHaveText(`@${handle}`);
+  await form.getByRole("button", { name: exact(L, "workers.form.create") }).click();
   const sent = page.getByRole("dialog", { name: t("workers.form.inviteSent") });
   await expect(sent.getByTestId("invite-waiting-card")).toBeVisible();
   await sent.getByRole("button", { name: exact(L, "workers.form.done") }).click();
   await expect(page.getByTestId("invite-waiting").first()).toBeVisible();
+
+  // Asked again: already invited.
+  form = await lookUp(page, `@${handle}`);
+  await expect(form.getByText(t("workers.errors.targetAlreadyMember"))).toBeVisible();
+  await page.keyboard.press("Escape");
 
   const personContext = await browser.newContext({ locale: "cs-CZ", timezoneId: "Europe/Prague" });
   watchConsole(personContext, consoleErrors);
@@ -80,18 +105,21 @@ test("49 · invite by short id → accept → in the switcher → 0 Kč extra; a
     await personContext.close();
   }
 
-  // The owner: the person has a plan of their own (beta from a code), so nothing extra.
+  // Nothing about paying for workers (WORKER_BILLING_VISIBLE off).
   await openApp(page, "/app/firma");
-  await expect(page.locator('[data-testid="seat-chip"][data-seat="own"]')).toHaveText(t("workers.company.seat.own"));
+  await expect(page.locator('[data-testid="seat-chip"][data-seat="own"]')).toHaveCount(0);
   await openApp(page, "/app/nastaveni/predplatne");
-  await expect(page.getByTestId("subscription-workers-extra")).toHaveText(/\b0\s*Kč/);
+  await expect(page.getByTestId("subscription-current")).toBeVisible();
+  await expect(page.getByTestId("subscription-workers-extra")).toHaveCount(0);
 
-  // A new person by e-mail: the link as before, and the owner pays for the seat.
-  await invite(page, "E2E Nový", e2eEmail("invite-new"));
+  // A new person by e-mail: the link as before, and no price on them.
+  form = await openInvite(page, "new");
+  await form.locator("#worker-name").fill("E2E Nový");
+  await form.locator("#worker-email").fill(`  ${e2eEmail("invite-new").toUpperCase()} `);
+  await form.getByRole("button", { name: exact(L, "workers.form.create") }).click();
   const ready = page.getByRole("dialog", { name: t("workers.form.inviteReady") });
   await expect(ready.getByRole("textbox", { name: t("workers.invite.link") })).toHaveValue(/invite=/);
   await ready.getByRole("button", { name: exact(L, "workers.form.done") }).click();
-  await expect(page.locator('[data-testid="seat-chip"][data-seat="extra"]')).toContainText(/290\s*Kč/);
-  await openApp(page, "/app/nastaveni/predplatne");
-  await expect(page.getByTestId("subscription-workers-extra")).toHaveText(/290\s*Kč/);
+  await expect(page.locator('[data-testid="seat-chip"][data-seat="extra"]')).toHaveCount(0);
+  await expect(page.getByText(/290\s*Kč/)).toHaveCount(0);
 });

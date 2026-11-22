@@ -27,17 +27,11 @@ export function PublicIdSection() {
   const t = useTranslations("settings.account.publicId");
   const profile = useProfile();
   const id = profile.public_id;
-  const [copied, setCopied] = useState(false);
-  useEffect(() => {
-    if (!copied) return;
-    const timer = window.setTimeout(() => setCopied(false), 2000);
-    return () => window.clearTimeout(timer);
-  }, [copied]);
   const qr = useMemo(() => (id ? qrPath(id) : null), [id]);
   if (!id) return null;
 
   return (
-    <SettingsSection title={t("title")}>
+    <SettingsSection title={t("title")} description={t("description")}>
       <SettingRow id="settings-public-id" label={t("label")} hint={t("hint")} group layout="stack">
         <div
           id="settings-public-id"
@@ -61,22 +55,53 @@ export function PublicIdSection() {
             >
               {id}
             </p>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                void navigator.clipboard
-                  ?.writeText(id)
-                  .then(() => setCopied(true))
-                  .catch(() => undefined);
-              }}
-            >
-              {copied ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}
-              {copied ? t("copied") : t("copy")}
-            </Button>
+            <CopyButton value={id} testId="public-id-copy" />
           </div>
         </div>
       </SettingRow>
+      {/* The same name companies, the scheduler and messages know them by (28.1). */}
+      <SettingRow id="settings-username-copy" label={t("usernameLabel")} hint={t("usernameHint")} group layout="stack">
+        {profile.username ? (
+          <div className="flex flex-wrap items-center gap-3">
+            <p data-testid="public-username" className="text-2xl font-semibold text-ink">
+              @{profile.username}
+            </p>
+            <CopyButton value={`@${profile.username}`} testId="public-username-copy" />
+          </div>
+        ) : (
+          <p className="text-sm text-ink-muted" data-testid="public-username-missing">
+            {t("usernameMissing")}
+          </p>
+        )}
+      </SettingRow>
     </SettingsSection>
+  );
+}
+
+/** Copies a value and says so for two seconds. */
+function CopyButton({ value, testId }: { value: string; testId: string }) {
+  const t = useTranslations("settings.account.publicId");
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (!copied) return;
+    const timer = window.setTimeout(() => setCopied(false), 2000);
+    return () => window.clearTimeout(timer);
+  }, [copied]);
+  return (
+    <Button
+      variant="secondary"
+      className="self-start"
+      data-testid={testId}
+      onClick={() => {
+        void navigator.clipboard
+          ?.writeText(value)
+          .then(() => setCopied(true))
+          .catch(() => undefined);
+      }}
+    >
+      {copied ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}
+      {copied ? t("copied") : t("copy")}
+    </Button>
   );
 }
 

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { BellOffIcon, PaperclipIcon, PinIcon, SearchIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useActiveMembers } from "@/features/account/active-members";
 import { formatEditedAt } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
@@ -32,8 +33,17 @@ export function ConversationList({
 }) {
   const t = useTranslations("messages");
   const settings = useFormatSettings();
-  const { me, space, isOwner } = useChatMe();
+  const { me, space } = useChatMe();
   const { people, byMember, nameOf } = usePeople();
+  // A new conversation only with the people of the company now (28.1).
+  const members = useActiveMembers(space);
+  const current = useMemo(
+    () =>
+      new Map(
+        (members.data ?? []).map((member) => [member.isOwner ? member.userId : member.workerId!, member]),
+      ),
+    [members.data],
+  );
   const titleOf = useChannelTitle();
   const [query, setQuery] = useState("");
 
@@ -46,8 +56,8 @@ export function ConversationList({
     (person) =>
       person.member !== me &&
       !talkedTo.has(person.member) &&
-      (person.status === "active" || person.isOwner || (isOwner && person.status === "invited")) &&
-      matchesSearch(query, nameOf(person.member), person.jobTitle),
+      current.has(person.member) &&
+      matchesSearch(query, nameOf(person.member), person.jobTitle, current.get(person.member)?.username),
   );
 
   const preview = (channel: ChatChannel) => {
@@ -181,11 +191,14 @@ export function ConversationList({
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-[15px] font-medium text-ink">{name}</span>
                         <span className="block truncate text-xs text-ink-muted">
-                          {person.status === "invited"
-                            ? t("invitedPeer")
-                            : person.isOwner
-                              ? t("owner")
-                              : (person.jobTitle ?? t("startConversation"))}
+                          {[
+                            person.isOwner ? t("owner") : (person.jobTitle ?? t("startConversation")),
+                            current.get(person.member)?.username
+                              ? `@${current.get(person.member)!.username}`
+                              : null,
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
                         </span>
                       </span>
                     </button>

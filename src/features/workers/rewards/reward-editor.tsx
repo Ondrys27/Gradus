@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeftIcon, GiftIcon, SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { activeWorkerIds, useActiveMembers } from "@/features/account/active-members";
 import { TreeMap } from "@/components/tree-map/tree-map";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -71,6 +72,7 @@ export function RewardEditor() {
   const draft = useRewardDraft();
   const save = useSaveRewardDraft();
   const workers = useWorkers();
+  const members = useActiveMembers();
   const active = useActiveRewardRules();
   const setup = useRewardSetup();
   const confirm = useConfirmRewardRules();
@@ -89,13 +91,17 @@ export function RewardEditor() {
   const [confirmed, setConfirmed] = useState(false);
 
   const tree = draft.data;
-  const workerList = useMemo(
-    () => (workers.data ?? []).map((worker) => ({ id: worker.id, name: worker.name })),
-    [workers.data],
-  );
+  // A trigger is for somebody who works in the company now (28.1); names of
+  // the others stay for triggers made before they left.
+  const workerList = useMemo(() => {
+    const ids = activeWorkerIds(members.data);
+    return (workers.data ?? [])
+      .filter((worker) => ids.has(worker.id))
+      .map((worker) => ({ id: worker.id, name: worker.name }));
+  }, [workers.data, members.data]);
   const workerNames = useMemo(
-    () => new Map(workerList.map((worker) => [worker.id, worker.name])),
-    [workerList],
+    () => new Map((workers.data ?? []).map((worker) => [worker.id, worker.name])),
+    [workers.data],
   );
   const mapTree = useMemo(() => (tree ? toMapBranch(tree) : null), [tree]);
 
@@ -277,7 +283,19 @@ export function RewardEditor() {
         open={branchDialog.open}
         onOpenChange={(open) => setBranchDialog((current) => ({ ...current, open }))}
         branch={openBranch}
-        workers={workerList}
+        workers={
+          openBranch?.workerId && !workerList.some((worker) => worker.id === openBranch.workerId)
+            ? [
+                ...workerList,
+                {
+                  id: openBranch.workerId,
+                  name: t("scope.former", {
+                    name: workerNames.get(openBranch.workerId) ?? t("scope.removed"),
+                  }),
+                },
+              ]
+            : workerList
+        }
         onSave={(value) => {
           if (!tree) return;
           if (openBranch) commit(updateBranch(tree, openBranch.id, value));

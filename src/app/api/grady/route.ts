@@ -617,10 +617,12 @@ async function rewardSetup(ctx: Context, body: unknown) {
   }
 
   // Names only, read with the owner's own client: RLS keeps it to their workers.
+  // Only the people of the company now (28.1); a reward is for somebody who works.
   const { data: workers, error } = await supabase
     .from("workers")
     .select("id, name")
     .eq("owner_id", userId)
+    .eq("status", "active")
     .limit(200);
   if (error) throw error;
 

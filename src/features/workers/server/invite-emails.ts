@@ -43,6 +43,8 @@ export function workerInviteEmail(
     /** The invites in the app (an existing account) or the registration link (a new person). */
     url: string | null;
     forAccount: boolean;
+    /** WORKER_BILLING_VISIBLE (28.1): says the owner pays for the work. */
+    billingVisible?: boolean;
   },
   locale: string | null,
 ): InviteEmail {
@@ -53,7 +55,7 @@ export function workerInviteEmail(
     : t("email.workerInvite.intro", { who, appName: APP_NAME });
   const how = data.forAccount ? t("email.workerInvite.inApp") : t("email.workerInvite.signUp");
   const label = data.forAccount ? t("email.workerInvite.open") : t("email.workerInvite.register");
-  const paragraphs = [intro, how, t("email.workerInvite.free")];
+  const paragraphs = [intro, how, ...(data.billingVisible ? [t("email.workerInvite.free")] : [])];
   const text = [...paragraphs, ...(data.url ? [`${label}: ${data.url}`] : [])].join("\n\n");
   return {
     subject: t("email.workerInvite.subject", { who, appName: APP_NAME }),

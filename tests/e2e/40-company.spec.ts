@@ -68,6 +68,7 @@ test("40 · company: invite under a manager → map tree → drag → list agree
       .first()
       .click();
     const form = page.getByRole("dialog", { name: t("workers.form.newTitle") });
+    await form.locator('[data-tutorial="worker-invite-new"]').click();
     await form.locator("#worker-name").fill(name);
     await form.locator("#worker-email").fill(e2eEmail("company-worker"));
     if (manager) {

@@ -19,15 +19,18 @@ export function PlanPrice({
   billing,
   currency,
   format,
+  showWorkers = false,
 }: {
   plan: CatalogPlan;
   billing: Billing;
   currency: PriceCurrency;
   format: FormatSettings;
+  /** The price of a worker under it (WORKER_BILLING_VISIBLE, 28.1). */
+  showWorkers?: boolean;
 }) {
   const t = useTranslations("subscription.current");
   const price = money(priceOf(plan, billing, currency), currency, format);
-  const worker = perWorkerPrice(plan, currency, billing);
+  const worker = showWorkers ? perWorkerPrice(plan, currency, billing) : null;
   return (
     <span className="flex flex-col">
       <span>{billing === "yearly" ? t("perYear", { price }) : t("perMonth", { price })}</span>

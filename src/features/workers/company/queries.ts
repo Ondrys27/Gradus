@@ -16,12 +16,13 @@ export const companyKeys = {
 };
 
 /** Why a write did not happen, as the screen says it. */
-export type CompanyError = "cycle" | "nameTaken" | "readOnly" | "saveFailed";
+export type CompanyError = "cycle" | "inactive" | "nameTaken" | "readOnly" | "saveFailed";
 
 export function companyErrorOf(cause: unknown): CompanyError {
   const error = cause as { message?: string; code?: string } | null;
   const message = error?.message ?? "";
   if (message.includes("worker_manager_cycle")) return "cycle";
+  if (message.includes("worker_inactive")) return "inactive";
   if (message.includes("read_only")) return "readOnly";
   if (error?.code === "23505") return "nameTaken";
   return "saveFailed";

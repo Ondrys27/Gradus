@@ -3,6 +3,7 @@ import {
   bookingUrl,
   handleCandidates,
   handleFromName,
+  handleFromUsername,
   handleProblem,
   isValidSlug,
   normalizeHandleInput,
@@ -59,5 +60,15 @@ describe("handles", () => {
     expect(activePresetCount(null)).toBe(3);
     expect(activePresetCount(0)).toBe(0);
     expect(activePresetCount(10)).toBe(3);
+  });
+});
+
+describe("handleFromUsername (28.1)", () => {
+  it("makes the username a handle, or nothing", () => {
+    expect(handleFromUsername("jana.novak")).toBe("jana-novak");
+    expect(handleFromUsername("ondra_otava_1")).toBe("ondra-otava-1");
+    expect(handleFromUsername("_x_")).toBeNull();
+    expect(handleFromUsername("admin")).toBeNull();
+    expect(handleFromUsername(null)).toBeNull();
   });
 });

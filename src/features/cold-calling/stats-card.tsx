@@ -7,7 +7,8 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { GlowCard } from "@/components/ui/glow-card";
 import { Avatar } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useWorkspaceMembers, type WorkspaceMember } from "@/features/account/members";
+import { useActiveMembers } from "@/features/account/active-members";
+import type { WorkspaceMember } from "@/features/account/members";
 import { useSession } from "@/features/account/queries";
 import {
   formatCalendarDate,
@@ -47,15 +48,27 @@ export function StatsCard() {
   // The owner (and a worker allowed to see the others' statistics) sees the
   // whole space or one person; any other worker only ever themself.
   const [actor, setActor] = useState<string | null>(null);
-  const members = useWorkspaceMembers();
+  const members = useActiveMembers();
   const workspace = useWorkspace();
   const { user } = useSession();
   const seesOthers =
     workspace.role === "worker" && canDo(workspace, "cold_calling", "view_others_stats");
   const assignees = useAssignees();
   const nameOf = useAssigneeName();
+  // The people of the company now (28.1), the same list for owner and worker.
   const people = useMemo<WorkspaceMember[] | null>(() => {
-    if (workspace.role === "owner") return members.data ? [...members.data.values()] : null;
+    if (workspace.role === "owner") {
+      return members.data
+        ? members.data
+            .filter((member) => !member.isOwner && member.workerId)
+            .map((member) => ({
+              userId: member.userId,
+              workerId: member.workerId!,
+              name: member.name,
+              avatarUrl: member.avatarUrl,
+            }))
+        : null;
+    }
     if (!seesOthers || !assignees.data) return null;
     return assignees.data
       .filter((person) => person.userId !== user.id)

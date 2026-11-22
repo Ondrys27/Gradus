@@ -39,4 +39,12 @@ describe("optionFromHit", () => {
     expect(optionFromHit({ kind: "task", id: ID, title: "Úkol", rank: 1, data: {} })).toBeNull();
     expect(optionFromHit({ kind: "deal", id: ID, title: "  ", rank: 1, data: {} })).toBeNull();
   });
+
+  it("offers only workers of the company now (28.1)", () => {
+    const worker = (status: string) =>
+      optionFromHit({ kind: "worker", id: ID, title: "Jana", rank: 1, data: { status, jobTitle: "Obchod" } });
+    expect(worker("active")).toMatchObject({ type: "worker", detail: "Obchod" });
+    expect(worker("inactive")).toBeNull();
+    expect(worker("invited")).toBeNull();
+  });
 });

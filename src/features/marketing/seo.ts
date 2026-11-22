@@ -89,10 +89,13 @@ export function softwareApplicationJsonLd({
   locale,
   description,
   plans,
+  workerPrices = false,
 }: {
   locale: SiteLocale;
   description: string;
   plans: readonly CatalogPlan[];
+  /** WORKER_BILLING_VISIBLE (28.1): the price of a worker as a second offer part. */
+  workerPrices?: boolean;
 }) {
   // The page's own currency (CZK on the Czech site, EUR on the English one), only
   // with a manual price: a converted one moves with the rate. Else EUR.
@@ -107,7 +110,7 @@ export function softwareApplicationJsonLd({
     url: absoluteUrl(LOCALIZED_PAGES.home[locale]),
     description,
     offers: sortedPlans(priced).map((plan) => {
-      const perWorker = perWorkerPrice(plan, currency, "monthly");
+      const perWorker = workerPrices ? perWorkerPrice(plan, currency, "monthly") : null;
       const monthly = {
         "@type": "UnitPriceSpecification",
         price: monthlyPrice(plan, currency, "monthly"),

@@ -9,9 +9,11 @@ import { useProfile, useUpdateProfile } from "@/features/account/queries";
 import { DISPLAY_NAME_MAX } from "@/features/auth/schemas";
 import { useSaveMarks } from "@/features/settings/save-state";
 import { SettingRow } from "@/features/settings/ui";
+import { formatDate } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
-import { normalizeUsernameInput, USERNAME_MAX, usernameProblem } from "./username";
+import { useFormatSettings } from "@/lib/use-format-settings";
+import { normalizeUsernameInput, USERNAME_MAX, usernameProblem, usernameUnlocksAt } from "./username";
 
 type Availability =
   | "unchanged"
@@ -78,7 +80,10 @@ export function ProfileFields() {
   }
 
   const [username, setUsername] = useState(profile.username ?? "");
-  const [usernameSaveError, setUsernameSaveError] = useState<"taken" | null>(null);
+  const [usernameSaveError, setUsernameSaveError] = useState<"taken" | "cooldown" | null>(null);
+  const format = useFormatSettings();
+  // One change in 30 days (28.1); the database stamps it and refuses earlier ones.
+  const unlocksAt = usernameUnlocksAt(profile.username_changed_at, new Date());
   useEffect(() => setUsername(profile.username ?? ""), [profile.username]);
   const availability = useUsernameAvailability(username, profile.username);
   const problem = username ? usernameProblem(username) : null;
@@ -92,10 +97,13 @@ export function ProfileFields() {
     const next = username || null;
     let taken = false;
     const ok = await marks.run(["username"], () =>
-      updateProfile.mutateAsync({ username: next }).catch((error: { code?: string }) => {
+      updateProfile.mutateAsync({ username: next }).catch((error: { code?: string; message?: string }) => {
         if (error.code === "23505") {
           taken = true;
           setUsernameSaveError("taken");
+        } else if (error.message?.includes("username_cooldown")) {
+          taken = true;
+          setUsernameSaveError("cooldown");
         }
         throw error;
       }),
@@ -105,7 +113,14 @@ export function ProfileFields() {
   }
 
   const usernameMessage =
-    availability === "invalid" && problem
+    unlocksAt && availability === "unchanged"
+      ? { tone: "muted", text: t("username.locked", { date: formatDate(unlocksAt, format) }) }
+      : usernameSaveError === "cooldown"
+        ? {
+            tone: "error",
+            text: t("username.locked", { date: formatDate(unlocksAt ?? new Date(), format) }),
+          }
+        : availability === "invalid" && problem
       ? { tone: "error", text: t(`username.${problem}`) }
       : availability === "taken" || usernameSaveError === "taken"
         ? { tone: "error", text: t("username.taken") }
@@ -174,6 +189,7 @@ export function ProfileFields() {
             autoCapitalize="none"
             spellCheck={false}
             aria-invalid={usernameInvalid || undefined}
+            readOnly={Boolean(unlocksAt)}
             aria-describedby="settings-username-message"
             className="pr-11 pl-8"
             onChange={(event) => {

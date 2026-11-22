@@ -94,6 +94,8 @@ describe("cycles", () => {
     expect(planManagerMove(people, "b", "d")).toEqual({ ok: false, error: "cycle" });
     expect(planManagerMove(people, "b", "nobody")).toEqual({ ok: false, error: "unknown" });
     expect(planManagerMove(people, "nobody", "a")).toEqual({ ok: false, error: "unknown" });
+    const gone = people.map((p) => (p.id === "f" ? { ...p, status: "inactive" as const } : p));
+    expect(planManagerMove(gone, "e", "f")).toEqual({ ok: false, error: "inactive" });
     expect(planManagerMove(people, "b", "a")).toEqual({ ok: true, changed: false, managerId: "a" });
     expect(planManagerMove(people, "b", OWNER_ROOT)).toEqual({
       ok: true,

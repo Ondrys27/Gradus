@@ -77,6 +77,7 @@ export function SessionProvider({
       spaces: initial.spaces,
       plan: initial.plan,
       showcase: initial.showcase,
+      workerBilling: initial.workerBilling,
     }),
     [
       initial.user,
@@ -86,6 +87,7 @@ export function SessionProvider({
       initial.spaces,
       initial.plan,
       initial.showcase,
+      initial.workerBilling,
     ],
   );
 

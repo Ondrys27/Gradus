@@ -11,6 +11,7 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { formatCurrency, formatNumber, splitDuration } from "@/lib/format";
 import { COMPANY_PATH } from "@/lib/routes";
 import { useFormatSettings } from "@/lib/use-format-settings";
+import { cn } from "@/lib/utils";
 import { taskProgress } from "./logic";
 import type { Worker, WorkerMonthStats, WorkerProfile } from "./types";
 
@@ -19,10 +20,12 @@ type Props = {
   profile: WorkerProfile | undefined;
   /** Undefined while the month is loading. */
   stats: WorkerMonthStats | undefined;
+  /** Left or was removed (28.1): shown for the payout history only. */
+  former?: boolean;
 };
 
 /** One worker at a glance: this month's tasks, hours and earnings, and what waits for approval. */
-export function WorkerCard({ worker, profile, stats }: Props) {
+export function WorkerCard({ worker, profile, stats, former = false }: Props) {
   const t = useTranslations("workers.card");
   const settings = useFormatSettings();
   const invited = worker.status === "invited";
@@ -33,7 +36,7 @@ export function WorkerCard({ worker, profile, stats }: Props) {
       href={`${COMPANY_PATH}?worker=${worker.id}`}
       className="block rounded-card outline-none focus-visible:ring-3 focus-visible:ring-violet/40"
     >
-      <GlowCard className="flex h-full flex-col gap-4">
+      <GlowCard className={cn("flex h-full flex-col gap-4", former && "opacity-75")}>
         <div className="flex items-start gap-3">
           <Avatar src={profile?.avatarUrl} name={worker.name} className="size-12 text-base" />
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -42,7 +45,9 @@ export function WorkerCard({ worker, profile, stats }: Props) {
               {worker.job_title ?? t("noJobTitle")}
             </span>
           </div>
-          {invited ? (
+          {former ? (
+            <StatusPill data-testid="worker-former">{t("former")}</StatusPill>
+          ) : invited ? (
             <StatusPill tone="violet">{t("invited")}</StatusPill>
           ) : worker.status === "inactive" ? (
             <StatusPill>{t("inactive")}</StatusPill>

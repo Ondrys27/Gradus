@@ -247,7 +247,7 @@ function CompanyPeople({
     if (!people || !canEdit) return;
     const plan = planManagerMove(people, workerId, managerId ?? OWNER_ROOT);
     if (!plan.ok) {
-      setError(plan.error === "cycle" ? "cycle" : "saveFailed");
+      setError(plan.error === "unknown" ? "saveFailed" : plan.error);
       return;
     }
     if (!plan.changed) return;

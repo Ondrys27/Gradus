@@ -30,12 +30,15 @@ export function PricingCards({
   footnote,
   flat = false,
   initialBilling = "monthly",
+  showWorkerPrices = false,
 }: {
   plans: readonly CatalogPlan[];
   currency: PriceCurrency;
   formatSettings: FormatSettings;
   /** The button of a card; `billing` is the period the visitor picked above the cards. */
   action: (plan: CatalogPlan, billing: Billing) => ReactNode;
+  /** The price of a worker on a card (WORKER_BILLING_VISIBLE, 28.1; the administration's preview always). */
+  showWorkerPrices?: boolean;
   /** Replaces the default line under the cards (trial and VAT). */
   footnote?: ReactNode;
   /** No glow under the cards (the website, which has one light only). */
@@ -117,7 +120,7 @@ export function PricingCards({
                   {t("billedYearly", { price: money(yearlyPrice(plan, currency)) })}
                 </p>
               )}
-              {plan.per_worker && (
+              {showWorkerPrices && plan.per_worker && (
                 <p className="text-sm text-ink-soft">
                   {plan.included_workers > 0
                     ? t("perWorkerIncluded", {

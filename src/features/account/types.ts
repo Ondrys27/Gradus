@@ -12,6 +12,7 @@ export type Profile = Pick<
   Database["public"]["Tables"]["profiles"]["Row"],
   | "id"
   | "username"
+  | "username_changed_at"
   | "display_name"
   | "avatar_url"
   | "industry"
@@ -31,7 +32,7 @@ export type Profile = Pick<
 >;
 
 export const PROFILE_COLUMNS =
-  "id, username, display_name, avatar_url, industry, created_at, onboarding_completed_at, mode, path_key, seen_level, tour_completed_at, tutorial, notes_intro_seen_at, nps_snoozed_until, nps_dismiss_streak, public_id, company_name, company_logo_url" as const;
+  "id, username, username_changed_at, display_name, avatar_url, industry, created_at, onboarding_completed_at, mode, path_key, seen_level, tour_completed_at, tutorial, notes_intro_seen_at, nps_snoozed_until, nps_dismiss_streak, public_id, company_name, company_logo_url" as const;
 
 /** Section of the owner's app a worker may be given, and what they may do there. */
 export type WorkerAccess = { view: boolean; edit: boolean };
@@ -66,4 +67,6 @@ export type AccountSnapshot = {
    * otherwise null (the mode does not exist for the account).
    */
   showcase: "presenter" | "stage" | null;
+  /** WORKER_BILLING_VISIBLE (28.1): the app shows what workers cost. */
+  workerBilling: boolean;
 };

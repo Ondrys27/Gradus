@@ -3,6 +3,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { CheckIcon, FilterIcon, PencilIcon, PlusIcon, Trash2Icon, TagsIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { activeWorkerIds, useActiveMembers } from "@/features/account/active-members";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -57,8 +58,15 @@ export function CompanyGroups({ people, groups, failed, canEdit, onShow }: Props
     open: false,
     group: null,
   });
-  const members = useMemo(() => membersByGroup(people ?? []), [people]);
-  const byId = useMemo(() => new Map((people ?? []).map((p) => [p.id, p])), [people]);
+  const active = useActiveMembers();
+  // A group lists the people of the company now (28.1); an invite placed in
+  // it waits there unseen until it is accepted.
+  const current = useMemo(() => {
+    const ids = activeWorkerIds(active.data);
+    return (people ?? []).filter((person) => ids.has(person.id));
+  }, [people, active.data]);
+  const members = useMemo(() => membersByGroup(current), [current]);
+  const byId = useMemo(() => new Map(current.map((p) => [p.id, p])), [current]);
 
   const add = (
     <Button onClick={() => setEditing({ open: true, group: null })}>
@@ -151,12 +159,12 @@ export function CompanyGroups({ people, groups, failed, canEdit, onShow }: Props
                       )}
                       <span className="text-xs text-ink-muted">
                         {t("members", {
-                          count: group.memberCount,
-                          shown: formatNumber(group.memberCount, {}, settings),
+                          count: ids.length,
+                          shown: formatNumber(ids.length, {}, settings),
                         })}
                       </span>
                     </span>
-                    {group.memberCount > 0 && (
+                    {ids.length > 0 && (
                       <Button variant="ghost" size="sm" onClick={() => onShow(group.id)}>
                         <FilterIcon aria-hidden data-icon="inline-start" />
                         {t("show")}
@@ -271,7 +279,13 @@ function GroupFields({
   const [members, setMembers] = useState<ReadonlySet<string>>(() => new Set(memberIds));
   const [errors, setErrors] = useState<FieldErrors>({});
   const [failure, setFailure] = useState<CompanyError | null>(null);
-  const sorted = useMemo(() => [...people].sort((a, b) => a.name.localeCompare(b.name)), [people]);
+  const active = useActiveMembers();
+  // Only the people of the company now are offered (28.1); members picked at
+  // their invite stay in `members` unseen, so saving keeps them.
+  const sorted = useMemo(() => {
+    const ids = activeWorkerIds(active.data);
+    return people.filter((person) => ids.has(person.id)).sort((a, b) => a.name.localeCompare(b.name));
+  }, [people, active.data]);
   const err = (key: keyof FieldErrors) => (errors[key] ? t(`errors.${errors[key]}`) : undefined);
 
   function toggle(id: string) {

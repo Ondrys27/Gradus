@@ -12,7 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Json } from "@/types/database";
 import { calendarProvider } from "./analytics";
 import { clientInsert } from "./client-insert";
-import { handleCandidates, handleFromName, uniqueSlug } from "./handle";
+import { handleCandidates, handleFromName, handleFromUsername, uniqueSlug } from "./handle";
 import {
   activePresetCount,
   DEFAULT_HOURS,
@@ -140,7 +140,7 @@ export async function ensureSchedulerSetup(input: {
     let profileId = existing.data?.id ?? null;
     if (!profileId) {
       const [{ data: profile }, { data: settings }] = await Promise.all([
-        supabase.from("profiles").select("display_name").eq("id", userId).maybeSingle(),
+        supabase.from("profiles").select("display_name, username").eq("id", userId).maybeSingle(),
         supabase.from("user_settings").select("timezone").eq("user_id", userId).maybeSingle(),
       ]);
       const zone =
@@ -148,7 +148,13 @@ export async function ensureSchedulerSetup(input: {
           ? settings.timezone
           : "Europe/Prague";
       const displayName = profile?.display_name?.trim().slice(0, NAME_MAX) || null;
-      for (const handle of handleCandidates(handleFromName(displayName), 12)) {
+      // The username first, so the booking link is the name people know (28.1).
+      const fromUsername = handleFromUsername(profile?.username);
+      const candidates = [
+        ...(fromUsername ? [fromUsername] : []),
+        ...handleCandidates(handleFromName(displayName), 12),
+      ];
+      for (const handle of candidates) {
         const { data: available } = await supabase.rpc("scheduler_handle_available", {
           _handle: handle,
         });

@@ -290,6 +290,8 @@ function Groups({
   onShowGroups: () => void;
 }) {
   const t = useTranslations("workers.dashboard.groups");
+  // Somebody who left joins no group (28.1; the database refuses it too).
+  const canChange = editable && worker.status !== "inactive";
   const tErrors = useTranslations("workers.dashboard.errors");
   const people = useCompanyTree();
   const groups = useCompanyGroups();
@@ -322,12 +324,12 @@ function Groups({
             className={cn(
               "inline-flex min-h-8 items-center gap-1.5 rounded-full border pr-1 pl-3 text-sm font-medium",
               toneSoft[group.color],
-              !editable && "pr-3",
+              !canChange && "pr-3",
             )}
           >
             <span aria-hidden className={cn("size-2 rounded-full", toneFill[group.color])} />
             {group.name}
-            {editable && (
+            {canChange && (
               <button
                 type="button"
                 aria-label={t("remove", { group: group.name })}
@@ -340,7 +342,7 @@ function Groups({
             )}
           </span>
         ))}
-        {editable && others.length > 0 && (
+        {canChange && others.length > 0 && (
           <Menu.Root>
             <Menu.Trigger
               data-testid="worker-group-add"
@@ -370,7 +372,7 @@ function Groups({
             </Menu.Portal>
           </Menu.Root>
         )}
-        {editable && all.length === 0 && viewer === "owner" && (
+        {canChange && all.length === 0 && viewer === "owner" && (
           <span className="text-sm text-ink-muted">{t("noGroupsYet")}</span>
         )}
       </div>

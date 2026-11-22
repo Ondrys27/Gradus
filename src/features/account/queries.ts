@@ -43,6 +43,8 @@ export const SessionContext = createContext<{
   plan: PlanSnapshot;
   /** The showcase (27.4): the app's owner or an admin with the mode on, or its stage account. */
   showcase: "presenter" | "stage" | null;
+  /** WORKER_BILLING_VISIBLE (28.1): the app shows what workers cost. */
+  workerBilling: boolean;
 } | null>(null);
 
 export function useSession() {

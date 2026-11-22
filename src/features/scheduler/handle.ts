@@ -77,6 +77,17 @@ export function handleFromName(name: string | null | undefined): string {
   return isValidHandle(padded) ? padded : "meet";
 }
 
+/**
+ * The account's username as a handle (28.1): the same name everywhere, with
+ * dots and underscores as hyphens ("jana.novak" → "jana-novak"); null when
+ * there is none or it does not make a valid handle.
+ */
+export function handleFromUsername(username: string | null | undefined): string | null {
+  if (!username) return null;
+  const handle = slugify(username.replace(/[._]+/g, "-"), HANDLE_MAX);
+  return isValidHandle(handle) ? handle : null;
+}
+
 /** Candidates in order: the handle, then -2, -3 …, every one within 30 characters. */
 export function handleCandidates(base: string, count = 20): string[] {
   const out: string[] = [];

@@ -12,6 +12,7 @@ import {
   type PaidPlanKey,
   type PlanCatalog,
 } from "@/config/pricing";
+import { useSession } from "@/features/account/queries";
 import { PricingCards } from "@/features/marketing/pricing-cards";
 import { planText } from "@/features/plan/catalog";
 import { formatDate, formatNumber } from "@/lib/format";
@@ -104,9 +105,11 @@ function Picker({
 }) {
   const t = useTranslations("subscription.change");
   const format = useFormatSettings();
+  const { workerBilling } = useSession();
   return (
     <PricingCards
       plans={plans}
+      showWorkerPrices={workerBilling}
       currency={currency}
       formatSettings={format}
       initialBilling={subscription.billing}
@@ -155,6 +158,7 @@ function Confirm({
   const tPlans = useTranslations("plans");
   const locale = useLocale();
   const format = useFormatSettings();
+  const { workerBilling } = useSession();
   const request = useRequestChange();
   const usage = usePlanUsage(true);
   const [error, setError] = useState<string | null>(null);
@@ -195,7 +199,13 @@ function Confirm({
             {tPlans(`billing.${subscription.billing}`)}
           </p>
           {current && (
-            <PlanPrice plan={current} billing={subscription.billing} currency={currency} format={format} />
+            <PlanPrice
+              plan={current}
+              billing={subscription.billing}
+              currency={currency}
+              format={format}
+              showWorkers={workerBilling}
+            />
           )}
         </Side>
         <ArrowRightIcon aria-hidden className="mx-auto hidden size-5 text-ink-muted sm:block" />
@@ -203,7 +213,13 @@ function Confirm({
           <p className="font-semibold text-ink">
             {targetName} · {tPlans(`billing.${choice.billing}`)}
           </p>
-          <PlanPrice plan={target} billing={choice.billing} currency={currency} format={format} />
+          <PlanPrice
+            plan={target}
+            billing={choice.billing}
+            currency={currency}
+            format={format}
+            showWorkers={workerBilling}
+          />
         </Side>
       </div>
 

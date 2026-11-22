@@ -51,6 +51,7 @@ function wrapper(worker: WorkerAccount | null, client: QueryClient) {
             spaces: [],
             plan: { planKey: "beta", status: "active", trialEndsAt: null, readOnly: false },
             showcase: null,
+            workerBilling: false,
           }}
         >
           {children}

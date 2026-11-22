@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { USER_SETTINGS_COLUMNS } from "@/lib/user-settings";
 import { showcaseRoleFor } from "@/features/tutorial/showcase/server/settings";
+import { loadWorkerBillingVisible } from "@/features/plan/worker-billing-server";
 import { toSpaces } from "./spaces";
 import { PROFILE_COLUMNS, type AccountSnapshot, type WorkerAccount } from "./types";
 
@@ -95,6 +96,7 @@ export async function loadAccount(): Promise<AccountSnapshot | null> {
     email: typeof claims.email === "string" ? claims.email : "",
     appMetadata: claims.app_metadata,
   }).catch(() => null);
+  const workerBilling = await loadWorkerBillingVisible().catch(() => false);
 
   return {
     plan: toPlanSnapshot(planRows?.[0] ?? null),
@@ -103,6 +105,7 @@ export async function loadAccount(): Promise<AccountSnapshot | null> {
     settings: settings.data,
     roles: roleNames,
     showcase,
+    workerBilling,
     worker,
     spaceId: worker?.ownerId ?? userId,
     spaces: toSpaces(spaceRows.data),

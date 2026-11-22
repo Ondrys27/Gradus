@@ -131,7 +131,7 @@ export function wouldCreateCycle(
 
 export type ManagerMove =
   | { ok: true; changed: boolean; managerId: string | null }
-  | { ok: false; error: "unknown" | "cycle" };
+  | { ok: false; error: "unknown" | "cycle" | "inactive" };
 
 /**
  * What a drop or a pick of "Move under…" means: the new manager (null = right
@@ -146,9 +146,10 @@ export function planManagerMove(
   const managerId = target === OWNER_ROOT ? null : target;
   const worker = people.find((person) => person.id === workerId);
   if (!worker) return { ok: false, error: "unknown" };
-  if (managerId !== null && !people.some((person) => person.id === managerId)) {
-    return { ok: false, error: "unknown" };
-  }
+  const manager = managerId === null ? null : people.find((person) => person.id === managerId);
+  if (managerId !== null && !manager) return { ok: false, error: "unknown" };
+  // Nobody goes under somebody who left (28.1; the database refuses it too).
+  if (manager?.status === "inactive") return { ok: false, error: "inactive" };
   if (wouldCreateCycle(people, workerId, managerId)) return { ok: false, error: "cycle" };
   return { ok: true, changed: worker.managerId !== managerId, managerId };
 }

@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tansta
 import { useWorkspace } from "@/features/account/workspace-queries";
 import { track } from "@/lib/analytics/client";
 import { clientOps } from "@/lib/ops-client";
+import { fetchActiveMembers } from "@/features/account/active-members-data";
 import { createClient } from "@/lib/supabase/client";
 import {
   addAvailabilityOverrides,
@@ -559,7 +560,7 @@ export function useTeamScheduler(enabled: boolean) {
     enabled,
     queryFn: async (): Promise<TeamProfile[]> => {
       const supabase = createClient();
-      const [profiles, types, workers] = await Promise.all([
+      const [profiles, types, members] = await Promise.all([
         supabase
           .from("scheduler_profiles")
           .select(PROFILE_COLUMNS)
@@ -571,13 +572,10 @@ export function useTeamScheduler(enabled: boolean) {
           .eq("space_id", workspace.id)
           .order("position")
           .limit(TEAM_LIMIT),
-        supabase
-          .from("workers")
-          .select("user_id, name")
-          .eq("owner_id", workspace.id)
-          .limit(TEAM_LIMIT),
+        // Only the people of the company now (28.1): somebody who left drops out.
+        fetchActiveMembers(supabase, workspace.id),
       ]);
-      const names = new Map((must(workers) ?? []).map((row) => [row.user_id, row.name]));
+      const names = new Map(members.map((member) => [member.userId, member.name]));
       const byProfile = new Map<string, EventType[]>();
       for (const row of (must(types) ?? []) as EventTypeRow[]) {
         const list = byProfile.get(row.profile_id) ?? [];
@@ -585,7 +583,7 @@ export function useTeamScheduler(enabled: boolean) {
         byProfile.set(row.profile_id, list);
       }
       return ((must(profiles) ?? []) as SchedulerProfile[])
-        .filter((profile) => profile.user_id !== workspace.userId)
+        .filter((profile) => profile.user_id !== workspace.userId && names.has(profile.user_id))
         .map((profile) => ({
           ...profile,
           name: names.get(profile.user_id) ?? profile.display_name,

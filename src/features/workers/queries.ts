@@ -21,12 +21,14 @@ import {
   type PermissionTemplate,
 } from "./permissions-catalog";
 import { subscriptionKeys } from "@/features/subscription/queries";
-import type { InviteTarget } from "./invite-target";
+import { accountTargetValue, type InviteTarget } from "./invite-target";
 import { PAGE_SIZE, type PaymentInput, type WorkerInput, type WorkerTaskInput } from "./logic";
 import {
   bindWorkerInvite,
   checkInviteAccount,
+  lookupInviteAccount,
   renewAccountInvite,
+  type FoundAccount,
   type InviteErrorCode,
 } from "./server/invites";
 import {
@@ -268,6 +270,20 @@ export class InviteActionError extends Error {
 }
 
 /**
+ * The owner looks up somebody who already uses the app by their exact
+ * @username or short id (28.1): their card, or why not (InviteActionError).
+ */
+export function useLookupInviteAccount() {
+  return useMutation({
+    mutationFn: async (value: string): Promise<FoundAccount> => {
+      const result = await lookupInviteAccount(value);
+      if (!result.ok) throw new InviteActionError(result.error);
+      return result.data;
+    },
+  });
+}
+
+/**
  * Worker, permissions, place in the company (manager, groups) and invite in
  * one go; the database picks the invite code and refuses a manager of
  * another owner. With a short id or an e-mail (`target`) the server then
@@ -292,8 +308,8 @@ export function useCreateWorker() {
       const supabase = createClient();
       const groupIds = input.groupIds ?? [];
       const target = input.target;
-      if (target?.kind === "id") {
-        const check = await checkInviteAccount(target.publicId);
+      if (target && target.kind !== "email") {
+        const check = await checkInviteAccount(accountTargetValue(target));
         if (!check.ok) throw new InviteActionError(check.error);
       }
       const { data: worker, error } = await supabase
@@ -334,12 +350,12 @@ export function useCreateWorker() {
       if (target) {
         const result = await bindWorkerInvite({
           inviteId: created.id,
-          target: target.kind === "id" ? target.publicId : target.email,
+          target: target.kind === "email" ? target.email : accountTargetValue(target),
           locale: settings.locale,
         });
         if (!result.ok) {
-          // A short id must reach its account; an e-mail keeps the link for a new person.
-          if (target.kind === "id" || result.error === "self" || result.error === "alreadyMember") {
+          // A short id or username must reach its account; an e-mail keeps the link for a new person.
+          if (target.kind !== "email" || result.error === "self" || result.error === "alreadyMember") {
             await undo();
             throw new InviteActionError(result.error);
           }
