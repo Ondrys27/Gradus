@@ -16,7 +16,7 @@ Sloupce: **M** = majitel · **P** = plný administrátor · **O** = omezený adm
 |---|---|---|---|---|
 | `mutations.toggleUserInternal` | ✓ | ✓ | ✓ | údržba metrik, žádná osobní data ven |
 | `account-support-actions.sendPasswordReset`, `resendEmailConfirmation`, `signOutEverywhere` | ✓ | ✓ | ✓ | admin (obě úrovně) ne u účtu majitele ani jiného admina, nikdo u sebe (`accountSupportBlock`); povinný důvod, řádek v `admin_audit` (`users.password_reset` / `users.confirmation_resend` / `users.sign_out`, `detail` = `{ user, reason }`) ještě před akcí, nejvýš 5 e-mailů za hodinu na účet; odkaz jde jen do e-mailu |
-| `account-support-actions.requestEmailChange` | ✓ | ✓ | – | `changeEmails`; omezenému se tlačítko neukáže a akce vrátí `forbidden`; u účtu majitele a adminů nikdy (převod účtu); důvod, audit `users.email_change` před akcí, odkaz jen do e-mailu na novou adresu |
+| `account-support-actions.requestEmailChange` | ✓ | ✓ | – | `changeEmails`; omezenému se tlačítko neukáže a akce vrátí `forbidden`; u účtu majitele nikdy, u adminů jen majitel (`accountSupportBlock`, převod účtu), nikdo u sebe; důvod, audit `users.email_change` před akcí, odkaz jen do e-mailu na novou adresu |
 | `auth/email-change-actions.confirmEmailChange` (stránka `/zmena-emailu`) | kdokoli s platným podepsaným odkazem | | | ověří, že ten, kdo změnu spustil, ji smí spustit i teď (role i úroveň); zapíše `users.email_change.confirmed` pod něj |
 | `GET /admin/uzivatele/export` | ✓ | ✓ | – | jména a e-maily (`users` v `PERSONAL_DATA_EXPORTS`); omezenému 404 |
 | `mutations.setFeatureRequestStatus` | ✓ | ✓ | ✓ | třídění zpětné vazby |

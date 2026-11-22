@@ -26,6 +26,25 @@ describe("errorFingerprint", () => {
     expect(normalizeForFingerprint("Index 12 out of range  ")).toBe("index # out of range");
   });
 
+  it("stays the same across deployments, whose built files have other hashes", () => {
+    expect(
+      errorFingerprint({
+        ...base,
+        message:
+          "ChunkLoadError: Loading chunk 8392 failed. (error: https://gradus.app/_next/static/chunks/8392-3f9a1b2c4d5e6f70.js)",
+      }),
+    ).toBe(
+      errorFingerprint({
+        ...base,
+        message:
+          "ChunkLoadError: Loading chunk 517 failed. (error: https://gradus.app/_next/static/chunks/517-a0b1c2d3e4f5a6b7.js)",
+      }),
+    );
+    expect(normalizeForFingerprint("build 9f86d081884c7d65 broke")).toBe("build :hash broke");
+    // Plain words stay words.
+    expect(normalizeForFingerprint("decade facade")).toBe("decade facade");
+  });
+
   it("tells apart another message, page, source or action", () => {
     const value = errorFingerprint(base);
     expect(errorFingerprint({ ...base, message: "TypeError: y is undefined" })).not.toBe(value);

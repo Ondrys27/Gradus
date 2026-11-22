@@ -171,7 +171,7 @@ async function listBugReports(_q: AdminQuery, args: ListArgs): Promise<BugReport
 /**
  * The newest bug reports with the filters, or the ones whose code begins with
  * `code` (already normalized, GR-…). Searching by code finds internal
- * accounts' reports too; the list itself follows the view's internal accounts switch.
+ * accounts' reports too, as the list does (it always shows them, labelled).
  */
 export async function loadBugReports(
   q: AdminQuery,

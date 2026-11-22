@@ -227,8 +227,25 @@ async function recordOne(browser: Browser, params: ShowcaseParams, ffmpeg: boole
     rmSync(work, { recursive: true, force: true });
     await deleteAccount(presenter.id).catch(() => undefined);
     // The stage deletes itself at the end; a run cut short leaves it to this.
-    if (stageId) await deleteAccount(stageId).catch(() => undefined);
+    if (stageId) await deleteStageLeftover(stageId).catch(() => undefined);
   }
+}
+
+/** A stage left by a run cut short, with its colleague (…-team@gradus.local). */
+async function deleteStageLeftover(stageId: string) {
+  const { data: workers } = await admin()
+    .from("workers")
+    .select("user_id")
+    .eq("owner_id", stageId)
+    .not("user_id", "is", null)
+    .limit(20);
+  for (const worker of workers ?? []) {
+    if (!worker.user_id) continue;
+    const { data } = await admin().auth.admin.getUserById(worker.user_id);
+    const email = data?.user?.email ?? "";
+    if (/^showcase-[a-z0-9-]+@gradus\.local$/i.test(email)) await deleteAccount(worker.user_id);
+  }
+  await deleteAccount(stageId);
 }
 
 async function main() {

@@ -5662,7 +5662,8 @@
       "sending": "Sending…",
       "thanks": "Thanks, we got it. We'll look at it as soon as we can.",
       "failed": "Sending failed. Check the e-mail and try again.",
-      "limited": "Lots of messages came from here in the last hour. Please try again in a while."
+      "limited": "Lots of messages came from here in the last hour. Please try again in a while.",
+      "honeypotLabel": "Website"
     }
   },
   "plans": {

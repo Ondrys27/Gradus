@@ -478,6 +478,8 @@ export async function runWatch(args: {
   admin: Client;
   deadline: number;
   now?: Date;
+  /** Accounts the job leaves out (showcase stages, which never call the model). */
+  skipUsers?: ReadonlySet<string>;
 }) {
   const now = args.now ?? new Date();
   const { data: candidates, error } = await args.admin.rpc("jarvis_watch_candidates", {
@@ -495,7 +497,7 @@ export async function runWatch(args: {
     insights: 0,
     completed: 0,
   };
-  const queue = [...(candidates ?? [])];
+  const queue = (candidates ?? []).filter((row) => !args.skipUsers?.has(row.user_id));
   const worker = async () => {
     for (;;) {
       if (Date.now() > args.deadline) return;

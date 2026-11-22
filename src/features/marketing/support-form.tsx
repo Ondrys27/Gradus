@@ -156,7 +156,7 @@ export function SupportForm() {
 
       {/* Hidden from people and screen readers; bots fill it in. */}
       <div aria-hidden className="absolute -left-[9999px] h-px w-px overflow-hidden">
-        <label htmlFor={ids.website}>Website</label>
+        <label htmlFor={ids.website}>{t("honeypotLabel")}</label>
         <input
           id={ids.website}
           name="website"

@@ -966,6 +966,8 @@ export async function runBriefings(args: {
   admin: Client;
   deadline: number;
   now?: Date;
+  /** Accounts the job leaves out (showcase stages, which never call the model). */
+  skipUsers?: ReadonlySet<string>;
 }) {
   const now = args.now ?? new Date();
   const summary = { users: 0, written: 0, empty: 0, skipped: 0, failed: 0 };
@@ -977,7 +979,7 @@ export async function runBriefings(args: {
   });
   if (error) throw error;
 
-  const queue = [...(data ?? [])];
+  const queue = (data ?? []).filter((row) => !args.skipUsers?.has(row.user_id));
   const worker = async () => {
     for (;;) {
       if (Date.now() > args.deadline) return;

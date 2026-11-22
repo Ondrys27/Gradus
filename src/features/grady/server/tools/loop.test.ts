@@ -166,6 +166,32 @@ describe("the chat with tools", () => {
     expect(seen.at(-1)).toBe("none");
   });
 
+  it("runs Haiku without thinking first, as every other Haiku call does", async () => {
+    const seen: Anthropic.MessageStreamParams[] = [];
+    const fake = fakeClient((params) => {
+      seen.push(params);
+      return text("Ok.");
+    });
+    // Economy mode puts chat on its minimum, Haiku.
+    (fake.client.budget as unknown as { assess: unknown }).assess = async () => ({
+      verdict: "ok" as const,
+      economy: "budget" as const,
+    });
+    const outcome = await streamWithTools({
+      client: fake.client,
+      userId: "u",
+      context: "",
+      messages: [{ role: "user", content: "hi" }],
+      tools,
+      runTool: vi.fn(async () => step),
+      runBulk: vi.fn(async () => step),
+      log: vi.fn(async () => undefined),
+    });
+    expect(outcome.ok).toBe(true);
+    expect(seen[0]?.model).toMatch(/haiku/);
+    expect(seen[0]?.thinking).toEqual({ type: "disabled" });
+  });
+
   it("the e2e stand-in calls only the tools the account was offered", () => {
     const offered = {
       messages: [{ role: "user" as const, content: "x" }],

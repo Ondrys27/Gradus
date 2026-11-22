@@ -108,6 +108,9 @@ export async function streamWithTools(call: ToolLoopCall): Promise<ToolLoopResul
         ...(call.context ? [{ type: "text" as const, text: call.context }] : []),
       ],
       messages,
+      // Haiku answers without thinking first (as streamModel does), so it
+      // never spends its token budget thinking and returns an empty answer.
+      ...(choice.model.thinkingOff ? { thinking: { type: "disabled" as const } } : {}),
       output_config: { effort: modelTools.length ? "medium" : "low" },
     };
 

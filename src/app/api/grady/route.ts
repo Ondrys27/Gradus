@@ -95,6 +95,7 @@ import {
   logAiUsage,
 } from "@/features/grady/server/usage";
 import { runWatch } from "@/features/grady/server/watch";
+import { sweepStaleStages } from "@/features/tutorial/showcase/server/stage";
 import { getExchangeRates } from "@/features/currency/server/rates";
 import { getPublishedPlans } from "@/features/plan/catalog-server";
 import { instrumentRoute, runCron } from "@/lib/analytics/instrument";
@@ -264,6 +265,16 @@ async function cronClient(admin: ReturnType<typeof createAdminClient>, feature: 
   return client && (await client.budget.check(feature)) === "ok" ? client : null;
 }
 
+/** The showcase stages still playing, after the stale ones are gone; an empty set when listing fails. */
+async function liveStages(admin: ReturnType<typeof createAdminClient>) {
+  try {
+    return await sweepStaleStages(admin);
+  } catch (error) {
+    console.error("showcase stages could not be listed", error);
+    return new Set<string>();
+  }
+}
+
 function watch(request: Request) {
   return runCron("jarvis_watch", request, async () => {
     const started = Date.now();
@@ -271,6 +282,7 @@ function watch(request: Request) {
     const summary = await runWatch({
       client: await cronClient(admin, "opportunity_scan"),
       admin,
+      skipUsers: await liveStages(admin),
       deadline: started + maxDuration * 1000 - WATCH_MARGIN_MS,
     });
     return { processed: summary.checked, body: { ...summary, ms: Date.now() - started } };
@@ -284,6 +296,7 @@ function briefing(request: Request) {
     const summary = await runBriefings({
       client: await cronClient(admin, "briefing"),
       admin,
+      skipUsers: await liveStages(admin),
       deadline: started + maxDuration * 1000 - WATCH_MARGIN_MS,
     });
     return { processed: summary.written, body: { ...summary, ms: Date.now() - started } };

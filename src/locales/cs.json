@@ -5662,7 +5662,8 @@
       "sending": "Odesílám…",
       "thanks": "Díky, máme to. Podíváme se na to co nejdřív.",
       "failed": "Odeslat se nepodařilo. Zkontroluj e-mail a zkus to znovu.",
-      "limited": "Za poslední hodinu přišlo odsud hodně zpráv. Zkus to prosím za chvíli."
+      "limited": "Za poslední hodinu přišlo odsud hodně zpráv. Zkus to prosím za chvíli.",
+      "honeypotLabel": "Web"
     }
   },
   "plans": {

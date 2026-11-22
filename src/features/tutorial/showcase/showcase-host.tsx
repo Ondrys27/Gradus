@@ -68,6 +68,10 @@ export function ShowcaseHost() {
   const [config, setConfig] = useState<ShowcaseParams | null>(null);
   const player = useRef<ShowcasePlayer | null>(null);
   const started = useRef(false);
+  // R asked for a fresh stage: the old one goes with the new stage's sweep,
+  // so a finish still pending must not go out (with the new stage's cookies
+  // it would delete the fresh stage and sign it out).
+  const replaying = useRef(false);
   const phase = useStage((state) => state.phase);
 
   // The scenario comes from /app/ukazka (this tab), now or right after it loads.
@@ -103,6 +107,7 @@ export function ShowcaseHost() {
       // The app closes behind the end card and its last requests finish before the stage goes.
       stage.set({ curtain: true });
       await pause(900);
+      if (replaying.current) return;
       await fetch("/api/showcase/finish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -197,14 +202,20 @@ export function ShowcaseHost() {
         if (current === "ending") return;
         event.preventDefault();
         event.stopPropagation();
+        replaying.current = true;
         player.current?.stop();
         void fetch("/api/showcase/stage", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(Object.fromEntries(new URLSearchParams(showcaseSearch(config)))),
-        }).then((response) => {
-          if (response.ok) window.location.assign(showcaseHref(config));
-        });
+        })
+          .then((response) => {
+            if (response.ok) window.location.assign(showcaseHref(config));
+            else replaying.current = false;
+          })
+          .catch(() => {
+            replaying.current = false;
+          });
       }
     };
     window.addEventListener("keydown", onKey, true);

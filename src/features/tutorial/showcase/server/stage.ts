@@ -81,6 +81,28 @@ export async function sweepStages(admin: Db, presenterId: string, now = Date.now
   return gone.length;
 }
 
+/**
+ * For the daily Grady jobs: deletes stages older than STALE_MS (a closed tab,
+ * a broken recording, a switch turned off mid-show) and returns the ids of
+ * the ones still playing, which the jobs skip: a stage never calls the model.
+ */
+export async function sweepStaleStages(admin: Db, now = Date.now()): Promise<Set<string>> {
+  const live = new Set<string>();
+  for (const stage of await listStages(admin)) {
+    if (now - stage.at <= STALE_MS) {
+      live.add(stage.id);
+      continue;
+    }
+    try {
+      await deleteStage(admin, stage.id);
+    } catch (error) {
+      console.error("showcase stage sweep failed", error);
+      live.add(stage.id);
+    }
+  }
+  return live;
+}
+
 /** A stage of this presenter's, made now, filled, ready to sign in to. */
 export async function createStage(input: {
   presenterId: string;
