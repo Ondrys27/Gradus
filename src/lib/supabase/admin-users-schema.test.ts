@@ -337,14 +337,16 @@ describe("administration filters (step 14.5)", () => {
     const comments = async (from: string, includeInternal: boolean, segment: Record<string, string>) =>
       (
         await rows<{ comment: string }>(
-          `select comment from admin_nps_comments($1::date, current_date, 'Europe/Prague', $2, $3::jsonb)`,
-          [from, includeInternal, JSON.stringify(segment)],
+          `select comment from admin_nps_comments($1::date, $4::date, 'Europe/Prague', $2, $3::jsonb)`,
+          [from, includeInternal, JSON.stringify(segment), today],
         )
       )
         .map((r) => r.comment)
         .sort();
-    const today = new Date().toISOString().slice(0, 10);
-    const longAgo = new Date(Date.now() - 90 * 86_400_000).toISOString().slice(0, 10);
+    // Days are Prague days; a UTC date is a day behind between 0:00 and 1:00 (2:00 in summer).
+    const pragueDate = (at: number) => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Prague" }).format(at);
+    const today = pragueDate(Date.now());
+    const longAgo = pragueDate(Date.now() - 90 * 86_400_000);
     expect(await comments(today, false, {})).toEqual(["beta now", "trial now"]);
     expect(await comments(longAgo, false, { plan: "beta" })).toEqual(["beta long ago", "beta now"]);
     expect(await comments(today, true, { plan: "beta" })).toEqual(["beta now", "internal now"]);
@@ -360,8 +362,8 @@ describe("administration filters (step 14.5)", () => {
       (
         await rows<{ text: string }>(
           `select coalesce(liked, improve) as text
-           from admin_satisfaction_responses($1::date, current_date, 'Europe/Prague', $2, $3::jsonb)`,
-          [from, includeInternal, JSON.stringify(segment)],
+           from admin_satisfaction_responses($1::date, $4::date, 'Europe/Prague', $2, $3::jsonb)`,
+          [from, includeInternal, JSON.stringify(segment), today],
         )
       )
         .map((r) => r.text)
