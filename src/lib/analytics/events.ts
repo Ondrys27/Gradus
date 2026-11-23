@@ -500,6 +500,19 @@ export const EVENTS = {
     kind: oneOf(NOTE_KINDS),
     own: bool(),
   }),
+  /** A note opened for live writing (28.4): may this person write, how many others were there. */
+  note_live_opened: event("notes", "client", false, {
+    writer: bool(),
+    others: count(),
+  }),
+  /** Live writing stopped at a limit: ten people at once, or the size of the note. */
+  note_live_limited: event("notes", "client", false, {
+    reason: oneOf(["people", "size"]),
+  }),
+  /** Own changes merged with a newer stored state (a save after someone else's) or carried onto a rebuilt note. */
+  note_live_merged: event("notes", "client", false, {
+    from: oneOf(["save", "reopen"]),
+  }),
 
   // --- pipeline ------------------------------------------------------------
   deal_created: event("pipeline", "client", true, {

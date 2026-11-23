@@ -3,6 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
 import { GradyJobError, postGradyJob } from "@/features/grady/queries";
+import { flushSession } from "../collab/registry";
 import { getNoteSaver } from "../queries";
 import type { SuggestedBranch } from "./map-ops";
 
@@ -24,6 +25,8 @@ export function useSuggestBranches() {
       const saver = getNoteSaver(user.id);
       await saver.flush(input.noteId);
       if (saver.unsavedDraft(input.noteId)) throw new GradyJobError("network");
+      // The live map's last changes too: the server reads the stored note.
+      if (!(await flushSession(user.id, input.noteId))) throw new GradyJobError("network");
       const result = await postGradyJob<{ branches: SuggestedBranch[] }>({
         kind: "noteMapSuggest",
         noteId: input.noteId,

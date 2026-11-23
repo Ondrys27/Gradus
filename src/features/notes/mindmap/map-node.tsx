@@ -85,6 +85,17 @@ export type NoteMapNodeProps = {
   /** Keep or delete a suggestion; absent when read-only. */
   onAccept?: () => void;
   onReject?: () => void;
+  /** Others who have this node selected right now (live writing), in their colours. */
+  peers?: { name: string; color: BranchColor }[];
+};
+
+const PEER_BORDER: Record<BranchColor, string> = {
+  violet: "border-violet",
+  teal: "border-teal",
+  gold: "border-gold",
+  green: "border-green",
+  orange: "border-orange",
+  pink: "border-pink",
 };
 
 function LinkChip({
@@ -249,6 +260,7 @@ export function NoteMapNode({
   onKeyDown,
   onAccept,
   onReject,
+  peers,
 }: NoteMapNodeProps) {
   const t = useTranslations("notes.map");
   const settings = useFormatSettings();
@@ -314,6 +326,28 @@ export function NoteMapNode({
           aria-hidden
           className={cn("absolute top-2.5 bottom-2.5 left-1 w-1 rounded-full", COLOR_FILL[color])}
         />
+      )}
+      {!measuring && peers && peers.length > 0 && (
+        <>
+          <span
+            aria-hidden
+            data-map-capture-skip=""
+            className={cn(
+              "pointer-events-none absolute -inset-1 z-10 rounded-[18px] border-2 border-dashed",
+              PEER_BORDER[peers[0].color],
+            )}
+          />
+          <span
+            data-map-capture-skip=""
+            data-testid="note-map-node-peer"
+            className={cn(
+              "pointer-events-none absolute -top-2.5 right-2 z-20 max-w-32 truncate rounded-md px-1.5 text-[10px] leading-4 font-semibold text-canvas",
+              COLOR_FILL[peers[0].color],
+            )}
+          >
+            {peers.map((peer) => peer.name).join(", ")}
+          </span>
+        </>
       )}
       {editing ? (
         <TitleField editing={editing} root={root} />

@@ -1956,6 +1956,26 @@
       "tooLarge": "Poznámka je moc dlouhá, zkrať ji",
       "denied": "Tuhle poznámku už upravovat nemůžeš; změna se neuložila."
     },
+    "live": {
+      "here": "Teď tu: {names}",
+      "status": {
+        "saved": "Synchronizováno",
+        "pending": "Ukládám…",
+        "saving": "Ukládám…",
+        "error": "Zatím neuloženo, zkouším znovu",
+        "offline": "Offline — změny se uloží po připojení",
+        "tooLarge": "Poznámka je na společné psaní moc velká",
+        "denied": "Tuhle poznámku už upravovat nemůžeš; změna se neuložila."
+      },
+      "typing": {
+        "one": "Píše {name}…",
+        "two": "Píšou {first} a {second}…",
+        "more": "Píše {name} a {count, plural, one {# další} few {# další} other {# dalších}}…"
+      },
+      "gone": "K poznámce už nemáš přístup nebo je v koši. Co jsi napsal po posledním uložení, se neuložilo.",
+      "limitPeople": "Poznámku teď píše {max} lidí naráz. Změny vidíš živě, psát půjde, až se místo uvolní.",
+      "limitSize": "Poznámka je na společné psaní moc velká, a tak je jen pro čtení. Zkrať ji v kopii nebo vrať starší verzi z historie."
+    },
     "trash": {
       "open": "Koš",
       "title": "Koš",

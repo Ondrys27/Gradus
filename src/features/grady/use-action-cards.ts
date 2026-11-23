@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useSession } from "@/features/account/queries";
 import { useAwardXp, useGameCelebrate } from "@/features/game/queries";
+import { pullSessions } from "@/features/notes/collab/registry";
 import type { ActionCard } from "./actions";
 import type { ActionDecisionResult } from "./protocol";
 import { gradyKeys, postGradyJob, type Conversation } from "./queries";
@@ -26,6 +27,8 @@ export function useApplyActionCard() {
       for (const root of card.invalidate) {
         void queryClient.invalidateQueries({ queryKey: [root, user.id] });
       }
+      // An open note Grady wrote into (or whose change was undone) reads its stored state again.
+      if (card.invalidate.includes("notes")) pullSessions(user.id);
       // A finished milestone or a won deal is also one of Grady's instant triggers.
       void queryClient.invalidateQueries({ queryKey: gradyKeys.suggestions(user.id) });
       if (!awards) return;

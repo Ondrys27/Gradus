@@ -49,21 +49,37 @@ export function realtimeTopic(name: string): string {
  * Joins a Realtime channel with the signed-in session's token. Joined before
  * the session is read from the cookies, Realtime checks the subscription as
  * anon, refuses every table the policies keep from anon and stays silent.
- * Returns the cleanup for the effect.
+ * `leave()` resolves once the channel is removed (a channel of the same name
+ * made after that is a new one).
  */
-export function subscribeSignedIn(
+export function joinSignedIn(
   supabase: SupabaseClient<Database>,
   channel: RealtimeChannel,
-): () => void {
+  onStatus?: Parameters<RealtimeChannel["subscribe"]>[0],
+): { leave: () => Promise<void> } {
   let live = true;
   void supabase.realtime
     .setAuth()
     .catch(() => undefined)
     .then(() => {
-      if (live) channel.subscribe();
+      if (live) channel.subscribe(onStatus);
     });
+  return {
+    leave: async () => {
+      live = false;
+      await supabase.removeChannel(channel);
+    },
+  };
+}
+
+/** joinSignedIn for an effect: returns the cleanup. */
+export function subscribeSignedIn(
+  supabase: SupabaseClient<Database>,
+  channel: RealtimeChannel,
+  onStatus?: Parameters<RealtimeChannel["subscribe"]>[0],
+): () => void {
+  const { leave } = joinSignedIn(supabase, channel, onStatus);
   return () => {
-    live = false;
-    void supabase.removeChannel(channel);
+    void leave();
   };
 }

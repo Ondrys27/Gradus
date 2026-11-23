@@ -10,7 +10,6 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import {
   CornerDownRightIcon,
   FileCodeIcon,
@@ -29,7 +28,6 @@ import { useTranslations } from "next-intl";
 import { MindMap, type MindMapDrag } from "@/components/mindmap/mind-map";
 import { captureMindMap } from "@/components/mindmap/capture";
 import { branchDropTarget, branchKeyboardTarget } from "@/components/mindmap/mind-map-tree";
-import { useSession } from "@/features/account/queries";
 import { track } from "@/lib/analytics/client";
 import { downloadBlob } from "@/lib/download";
 import { mapFileName } from "@/features/milestones/map-io";
@@ -41,28 +39,18 @@ import { cn } from "@/lib/utils";
 import { draftFromDoc, type NoteDraft } from "../document";
 import { useMentionTargets, useMentionText } from "../mention-queries";
 import { mentionKey, mentionSetKey } from "../mentions";
-import { Backlinks, SaveStatus } from "../note-editor";
-import { applyDraftToCache, NOTE_REPLACED_EVENT, useNoteSaver, type NoteDetail } from "../queries";
+import { Skeleton } from "@/components/ui/skeleton";
+import { MapBinding } from "../collab/map-binding";
+import { LiveNotice, LivePeople, LiveStatus } from "../collab/live-bar";
+import type { CollabColor } from "../collab/provider";
+import type { CollabSession, SessionSnapshot } from "../collab/session";
+import { useCollabSession } from "../collab/use-collab";
+import { Backlinks } from "../note-editor";
+import { useNoteSaver, type NoteDetail } from "../queries";
 import { ConvertDialog } from "./convert-dialog";
 import { appendTreeToMap, mapToMindTree, mapToTextDoc, replaceMapWithTree } from "./convert";
-import {
-  isMapDoc,
-  MAP_LIMITS,
-  mapDraft,
-  mentionsInMap,
-  sanitizeMapDoc,
-  type MapDoc,
-} from "./map-doc";
-import {
-  canRedo,
-  canUndo,
-  historyKeyOf,
-  pushHistory,
-  redoHistory,
-  startHistory,
-  undoHistory,
-  type MapHistory,
-} from "./map-history";
+import { MAP_LIMITS, mentionsInMap, type BranchColor, type MapDoc } from "./map-doc";
+import { historyKeyOf } from "./map-history";
 import { NoteMapImportDialog, type NoteImport } from "./map-import-dialog";
 import { NoteMapDragPreview, NoteMapNode } from "./map-node";
 import {
@@ -152,23 +140,88 @@ function ToolButton({
  * step back and forth while the note is open. On a phone a node is edited in
  * a bottom panel; two fingers move and zoom the map.
  */
-export function MapNoteEditor({ note, readOnly, autoFocus, isPhone, actions, back, onConvert }: Props) {
+export function MapNoteEditor(props: Props) {
+  // The map is written live with everyone who has it open (28.4).
+  const live = useCollabSession(props.note, !props.readOnly);
+  const session = live.session && live.snapshot.phase !== "loading" ? live.session : null;
+  if (!session) {
+    return (
+      <div className="flex min-h-full flex-col">
+        <div className="sticky top-0 z-10 flex items-center gap-1 px-1 py-1">
+          {props.isPhone && props.back}
+          <span className="flex-1" />
+          {props.actions}
+        </div>
+        <Skeleton className="mt-6 h-72 w-full rounded-2xl" data-testid="note-editor-loading" />
+      </div>
+    );
+  }
+  return (
+    <LiveMapEditor
+      key={`${session.doc.guid}:${live.snapshot.generation}`}
+      {...props}
+      session={session}
+      snapshot={live.snapshot}
+      readOnly={props.readOnly || !live.snapshot.writable}
+    />
+  );
+}
+
+/** Who else has which node selected, from the cursors (awareness) of the others. */
+function usePeerSelections(session: CollabSession): Map<string, { name: string; color: BranchColor }[]> {
+  const [selections, setSelections] = useState(() => new Map<string, { name: string; color: BranchColor }[]>());
+  useEffect(() => {
+    const awareness = session.awareness;
+    const read = () => {
+      const next = new Map<string, { name: string; color: BranchColor }[]>();
+      for (const [clientId, state] of awareness.getStates()) {
+        if (clientId === awareness.clientID) continue;
+        const node = typeof state.node === "string" ? state.node : null;
+        const user = state.user as { name?: string; color?: string } | undefined;
+        if (!node || !user?.name) continue;
+        const color = (/--color-([a-z]+)/.exec(user.color ?? "")?.[1] ?? "violet") as CollabColor;
+        next.set(node, [...(next.get(node) ?? []), { name: user.name, color }]);
+      }
+      setSelections(next);
+    };
+    awareness.on("change", read);
+    return () => awareness.off("change", read);
+  }, [session]);
+  return selections;
+}
+
+function LiveMapEditor({
+  note,
+  readOnly,
+  autoFocus,
+  isPhone,
+  actions,
+  back,
+  onConvert,
+  session,
+  snapshot,
+}: Props & { session: CollabSession; snapshot: SessionSnapshot }) {
   const t = useTranslations("notes.map");
   const tNotes = useTranslations("notes");
   const tio = useTranslations("milestones.mapIo");
-  const { user } = useSession();
-  const queryClient = useQueryClient();
   const saver = useNoteSaver();
   const settings = useFormatSettings();
   const mentionText = useMentionText();
   const reduceMotion = useReducedMotionSafe() ?? false;
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const historyRef = useRef<MapHistory>(
-    startHistory(isMapDoc(note.content) ? note.content : sanitizeMapDoc(note.content)),
-  );
+  const [binding] = useState(() => new MapBinding(session.doc));
   const [, rerender] = useReducer((count: number) => count + 1, 0);
-  const doc = historyRef.current.present;
+  useEffect(() => {
+    const detach = binding.attach();
+    const unsubscribe = binding.subscribe(rerender);
+    return () => {
+      unsubscribe();
+      detach();
+    };
+  }, [binding]);
+  const doc = binding.current();
+  const peerSelections = usePeerSelections(session);
 
   const [selectedId, setSelectedId] = useState<string | null>(() => doc.root.id);
   const [editing, setEditing] = useState<{ id: string; value: string } | null>(() =>
@@ -190,63 +243,42 @@ export function MapNoteEditor({ note, readOnly, autoFocus, isPhone, actions, bac
 
   // --- saving -------------------------------------------------------------
 
-  const persist = useCallback(
-    (next: MapDoc) => {
-      const draft = mapDraft(next, { mentionText });
-      saver.edit(note.id, draft);
-      applyDraftToCache(queryClient, user.id, note.id, draft);
-    },
-    [mentionText, note.id, queryClient, saver, user.id],
-  );
-
-  /** One step: the map changes, is saved, and can be undone. */
+  /** One step: the map changes in the shared document (saved by the session) and can be undone. */
   const change = useCallback(
     (next: MapDoc) => {
-      if (readOnly || next === historyRef.current.present) return;
-      historyRef.current = pushHistory(historyRef.current, next);
-      persist(next);
-      rerender();
+      if (readOnly || next === binding.current()) return;
+      binding.change(next);
     },
-    [persist, readOnly],
+    [binding, readOnly],
   );
 
   const undo = useCallback(() => {
-    if (readOnly || !canUndo(historyRef.current)) return;
-    historyRef.current = undoHistory(historyRef.current);
-    persist(historyRef.current.present);
+    if (readOnly || !binding.canUndo()) return;
+    binding.undo();
     setEditing(null);
-    setSelectedId((id) => (id && findNode(historyRef.current.present, id) ? id : historyRef.current.present.root.id));
-    rerender();
-  }, [persist, readOnly]);
+    setSelectedId((id) => (id && findNode(binding.current(), id) ? id : binding.current().root.id));
+  }, [binding, readOnly]);
 
   const redo = useCallback(() => {
-    if (readOnly || !canRedo(historyRef.current)) return;
-    historyRef.current = redoHistory(historyRef.current);
-    persist(historyRef.current.present);
+    if (readOnly || !binding.canRedo()) return;
+    binding.redo();
     setEditing(null);
-    setSelectedId((id) => (id && findNode(historyRef.current.present, id) ? id : historyRef.current.present.root.id));
-    rerender();
-  }, [persist, readOnly]);
+    setSelectedId((id) => (id && findNode(binding.current(), id) ? id : binding.current().root.id));
+  }, [binding, readOnly]);
 
   // Leaving the note sends its last change right away.
   useEffect(() => {
     const id = note.id;
     return () => {
       void saver.flush(id);
+      void session.flush();
     };
-  }, [note.id, saver]);
+  }, [note.id, saver, session]);
 
-  // A branch added from outside (one of Grady's answers) shows here too.
+  // The others see which node this person has selected.
   useEffect(() => {
-    const onReplaced = (event: Event) => {
-      const detail = (event as CustomEvent<{ id: string; content: unknown }>).detail;
-      if (detail?.id !== note.id || !isMapDoc(detail.content)) return;
-      historyRef.current = pushHistory(historyRef.current, sanitizeMapDoc(detail.content));
-      rerender();
-    };
-    window.addEventListener(NOTE_REPLACED_EVENT, onReplaced);
-    return () => window.removeEventListener(NOTE_REPLACED_EVENT, onReplaced);
-  }, [note.id]);
+    session.setSelectedNode(selectedId);
+  }, [session, selectedId]);
 
   // --- derived ------------------------------------------------------------
 
@@ -265,21 +297,21 @@ export function MapNoteEditor({ note, readOnly, autoFocus, isPhone, actions, bac
   /** The typed title goes into the map (one undo step) and typing stops. */
   const commitEdit = useCallback((): MapDoc => {
     const current = editingRef.current;
-    if (!current) return historyRef.current.present;
+    if (!current) return binding.current();
     editingRef.current = null;
     setEditing(null);
-    const node = findNode(historyRef.current.present, current.id);
+    const node = findNode(binding.current(), current.id);
     if (node && node.title !== current.value.replace(/\s+/g, " ").trim()) {
-      const max = node.id === historyRef.current.present.root.id ? MAP_LIMITS.rootTitle : MAP_LIMITS.title;
-      change(updateNode(historyRef.current.present, current.id, { title: current.value.replace(/\s+/g, " ").trim().slice(0, max) }));
+      const max = node.id === binding.current().root.id ? MAP_LIMITS.rootTitle : MAP_LIMITS.title;
+      change(updateNode(binding.current(), current.id, { title: current.value.replace(/\s+/g, " ").trim().slice(0, max) }));
     }
-    return historyRef.current.present;
-  }, [change]);
+    return binding.current();
+  }, [binding, change]);
 
   const startEdit = useCallback(
     (id: string) => {
       if (readOnly) return;
-      const node = findNode(historyRef.current.present, id);
+      const node = findNode(binding.current(), id);
       if (!node) return;
       setSelectedId(id);
       if (isPhone) {
@@ -289,7 +321,7 @@ export function MapNoteEditor({ note, readOnly, autoFocus, isPhone, actions, bac
       commitEdit();
       setEditing({ id, value: node.title });
     },
-    [commitEdit, isPhone, readOnly],
+    [binding, commitEdit, isPhone, readOnly],
   );
 
   const expand = (id: string) => {
@@ -332,10 +364,10 @@ export function MapNoteEditor({ note, readOnly, autoFocus, isPhone, actions, bac
 
   const outdent = useCallback(
     (id: string) => {
-      const target = outdentTarget(historyRef.current.present, id);
-      if (target) change(moveNode(historyRef.current.present, id, target));
+      const target = outdentTarget(binding.current(), id);
+      if (target) change(moveNode(binding.current(), id, target));
     },
-    [change],
+    [binding, change],
   );
 
   function onFieldKey(event: KeyboardEvent<HTMLTextAreaElement>) {
@@ -343,7 +375,7 @@ export function MapNoteEditor({ note, readOnly, autoFocus, isPhone, actions, bac
     event.stopPropagation();
     const current = editingRef.current;
     if (!current || event.nativeEvent.isComposing) return;
-    const isRoot = current.id === historyRef.current.present.root.id;
+    const isRoot = current.id === binding.current().root.id;
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       if (!current.value.trim()) {
@@ -360,7 +392,7 @@ export function MapNoteEditor({ note, readOnly, autoFocus, isPhone, actions, bac
         if (isRoot) return;
         commitEdit();
         outdent(current.id);
-        setEditing({ id: current.id, value: findNode(historyRef.current.present, current.id)?.title ?? "" });
+        setEditing({ id: current.id, value: findNode(binding.current(), current.id)?.title ?? "" });
         return;
       }
       add("child", current.id);
@@ -374,14 +406,14 @@ export function MapNoteEditor({ note, readOnly, autoFocus, isPhone, actions, bac
     }
     if ((event.key === "Backspace" || event.key === "Delete") && current.value === "" && !isRoot) {
       event.preventDefault();
-      const base = historyRef.current.present;
+      const base = binding.current();
       const previous = focusAfterRemove(base, current.id);
       editingRef.current = null;
       setEditing(null);
       change(removeNode(base, current.id));
       if (previous && previous !== base.root.id) {
         setSelectedId(previous);
-        setEditing({ id: previous, value: findNode(historyRef.current.present, previous)?.title ?? "" });
+        setEditing({ id: previous, value: findNode(binding.current(), previous)?.title ?? "" });
       } else {
         setSelectedId(previous);
         focusSelected.current = true;
@@ -463,7 +495,7 @@ export function MapNoteEditor({ note, readOnly, autoFocus, isPhone, actions, bac
   // --- suggestions, import, export, conversion -----------------------------
 
   function suggested(nodeId: string, branches: SuggestedBranch[]) {
-    const result = insertSuggestions(historyRef.current.present, nodeId, branches);
+    const result = insertSuggestions(binding.current(), nodeId, branches);
     if (result.ids.length === 0) return;
     expand(nodeId);
     change(result.doc);
@@ -638,6 +670,7 @@ export function MapNoteEditor({ note, readOnly, autoFocus, isPhone, actions, bac
               onKeyDown={(event) => onNodeKey(id, event)}
               onAccept={readOnly ? undefined : () => resolve("accept", "one", id)}
               onReject={readOnly ? undefined : () => resolve("reject", "one", id)}
+              peers={peerSelections.get(id)}
             />
           );
         }}
@@ -649,7 +682,6 @@ export function MapNoteEditor({ note, readOnly, autoFocus, isPhone, actions, bac
 
   const at = selected ?? doc.root;
   const isRootSelected = at.id === doc.root.id;
-  const history = historyRef.current;
   const menu = (
     <NoteMenu
       label={t("menu")}
@@ -709,10 +741,10 @@ export function MapNoteEditor({ note, readOnly, autoFocus, isPhone, actions, bac
 
   const editTools = !readOnly && (
     <>
-      <ToolButton label={t("undo")} onClick={undo} disabled={!canUndo(history)} testId="note-map-undo">
+      <ToolButton label={t("undo")} onClick={undo} disabled={!binding.canUndo()} testId="note-map-undo">
         <Undo2Icon aria-hidden />
       </ToolButton>
-      <ToolButton label={t("redo")} onClick={redo} disabled={!canRedo(history)} testId="note-map-redo">
+      <ToolButton label={t("redo")} onClick={redo} disabled={!binding.canRedo()} testId="note-map-redo">
         <Redo2Icon aria-hidden />
       </ToolButton>
       <span aria-hidden className="mx-1 h-5 w-px shrink-0 bg-line/70" />
@@ -751,12 +783,13 @@ export function MapNoteEditor({ note, readOnly, autoFocus, isPhone, actions, bac
         <div className="sticky top-0 z-10 flex items-center gap-1 bg-canvas px-4 pt-[max(4px,env(safe-area-inset-top))] pb-1">
           {back}
           <span className="flex-1" />
+          <LivePeople snapshot={snapshot} />
           {!readOnly && (
             <>
-              <ToolButton label={t("undo")} onClick={undo} disabled={!canUndo(history)}>
+              <ToolButton label={t("undo")} onClick={undo} disabled={!binding.canUndo()}>
                 <Undo2Icon aria-hidden />
               </ToolButton>
-              <ToolButton label={t("redo")} onClick={redo} disabled={!canRedo(history)}>
+              <ToolButton label={t("redo")} onClick={redo} disabled={!binding.canRedo()}>
                 <Redo2Icon aria-hidden />
               </ToolButton>
             </>
@@ -771,6 +804,7 @@ export function MapNoteEditor({ note, readOnly, autoFocus, isPhone, actions, bac
           className="sticky top-0 z-10 -mx-2 flex items-center gap-1 rounded-2xl bg-canvas/50 px-1 py-1 backdrop-blur-xl"
         >
           <div className="flex min-w-0 flex-1 items-center overflow-x-auto">{editTools}</div>
+          <LivePeople snapshot={snapshot} />
           {menu}
           <div className="flex shrink-0 items-center">{actions}</div>
         </div>
@@ -781,8 +815,9 @@ export function MapNoteEditor({ note, readOnly, autoFocus, isPhone, actions, bac
         <p className="mt-3 text-center text-xs text-ink-muted">
           <time dateTime={note.updated_at}>{formatDateTime(new Date(note.updated_at), settings)}</time>
           <span className="mx-2">·</span>
-          <SaveStatus noteId={note.id} />
+          <LiveStatus snapshot={snapshot} />
         </p>
+        <LiveNotice snapshot={snapshot} />
 
         {suggestions.length > 0 && !readOnly && (
           <div
@@ -860,7 +895,7 @@ export function MapNoteEditor({ note, readOnly, autoFocus, isPhone, actions, bac
             ? targets.data?.get(mentionKey(detailsNode.link.attrs.type, detailsNode.link.attrs.id))
             : undefined
         }
-        onSave={(patch) => detailsNode && change(updateNode(historyRef.current.present, detailsNode.id, patch))}
+        onSave={(patch) => detailsNode && change(updateNode(binding.current(), detailsNode.id, patch))}
       />
       <SuggestDialog
         open={suggestFor !== null && !!suggestNode}

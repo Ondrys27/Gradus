@@ -1,6 +1,5 @@
 import { z } from "zod";
 import {
-  appendToDoc,
   blocksFromPlainText,
   docWithTitle,
   draftFromDoc,
@@ -9,9 +8,10 @@ import {
   type DocNode,
   type NoteDraft,
 } from "@/features/notes/document";
-import { appendTextToMap } from "@/features/notes/mindmap/convert";
-import { isMapDoc, mapDraft, newMapDoc, sanitizeMapDoc } from "@/features/notes/mindmap/map-doc";
-import { noteContentOf, noteKindOf } from "@/features/notes/mindmap/note-row";
+import { appendAnswer } from "@/features/notes/collab/append";
+import type { ParticipantChange } from "@/features/notes/collab/server";
+import { mapDraft, newMapDoc, sanitizeMapDoc } from "@/features/notes/mindmap/map-doc";
+import { noteKindOf } from "@/features/notes/mindmap/note-row";
 import { linkNote, setNotePinned, trashNote, writeNote } from "@/features/notes/ops";
 import type { Json } from "@/types/database";
 import type { UndoRecord } from "../records";
@@ -85,6 +85,20 @@ function textBefore(note: {
   ];
 }
 
+/**
+ * A change of an existing note, written by the server into its live document
+ * as one more participant (28.4) with the asking person's rights.
+ */
+async function participantWrite(ctx: ToolContext, noteId: string, change: ParticipantChange) {
+  const { writeAsParticipant } = await import("@/features/notes/collab/server");
+  const result = await writeAsParticipant(ctx.db, { noteId, userId: ctx.userId, change });
+  if (result.ok) return result;
+  if (result.reason === "tooLong") throw new ToolError("tooLong");
+  if (result.reason === "notFound") throw new ToolError("notFound", "The note is not there any more.");
+  if (result.reason === "denied") throw new ToolError("noteReadOnly", "The note is shared with the user for reading only.");
+  throw new ToolError("busy", "Others are saving the note right now; try again.");
+}
+
 function checked(draft: NoteDraft): NoteDraft {
   if (!fitsLimits(draft)) throw new ToolError("tooLong");
   return draft;
@@ -151,14 +165,9 @@ export const noteTools = [
     describe: (_input, t) => t("append_to_note", { title: "" }),
     async execute(ctx, input) {
       const note = await readNote(ctx, input.noteId);
-      const content = noteContentOf(noteKindOf(note.kind), note.content);
-      const heading = input.heading ?? "";
-      const next = isMapDoc(content)
-        ? appendTextToMap(sanitizeMapDoc(content), heading, input.text)
-        : appendToDoc(content as DocNode, heading, blocksFromPlainText(input.text));
-      const draft = checked(isMapDoc(next) ? mapDraft(next) : draftFromDoc(next as DocNode));
       const records = textBefore(note);
-      await writeNote(ops(ctx), { userId: ctx.userId, id: note.id, draft });
+      // Into the live document as one more participant: whoever has the note open keeps typing.
+      await participantWrite(ctx, note.id, (current) => appendAnswer(current, input.heading ?? "", input.text));
       return {
         output: { noteId: note.id },
         records,
@@ -186,33 +195,22 @@ export const noteTools = [
     describe: (_input, t) => t("update_note", { title: "" }),
     async execute(ctx, input) {
       const note = await readNote(ctx, input.noteId);
-      if (noteKindOf(note.kind) === "mindmap") {
-        if (input.text !== undefined)
-          throw new ToolError("mindMapNote", "A mind map note is changed in the map, not as text.");
-        const map = sanitizeMapDoc(noteContentOf("mindmap", note.content));
-        const draft = checked(
-          mapDraft({ ...map, root: { ...map.root, title: input.title ?? map.root.title } }),
-        );
-        const records = textBefore(note);
-        await writeNote(ops(ctx), { userId: ctx.userId, id: note.id, draft });
-        return {
-          output: { noteId: note.id },
-          records,
-          summary: ctx.t("update_note", { title: quoted(draft.title) }),
-          href: hrefs.note(note.id),
-        };
+      if (noteKindOf(note.kind) === "mindmap" && input.text !== undefined) {
+        throw new ToolError("mindMapNote", "A mind map note is changed in the map, not as text.");
       }
-      const title = input.title ?? note.title;
-      // Only a new title: the document keeps its formatting, chips and lists, the first line changes.
-      const draft = checked(
-        draftFromDoc(
-          input.text === undefined
-            ? withFirstLine(noteContentOf("text", note.content) as DocNode, title)
-            : docWithTitle(title, blocksFromPlainText(input.text)),
-        ),
-      );
       const records = textBefore(note);
-      await writeNote(ops(ctx), { userId: ctx.userId, id: note.id, draft });
+      let title = input.title ?? note.title;
+      await participantWrite(ctx, note.id, (current) => {
+        if (current.kind === "mindmap") {
+          const map = sanitizeMapDoc(current.content);
+          return { ...map, root: { ...map.root, title: input.title ?? map.root.title } };
+        }
+        title = input.title ?? note.title;
+        // Only a new title: the document keeps its formatting, chips and lists, the first line changes.
+        return input.text === undefined
+          ? withFirstLine(current.content as DocNode, title)
+          : docWithTitle(title, blocksFromPlainText(input.text));
+      });
       return {
         output: { noteId: note.id },
         records,

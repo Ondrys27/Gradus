@@ -3563,6 +3563,8 @@ export type Database = {
       }
       note_versions: {
         Row: {
+          authors: string[]
+          closed: boolean
           content: Json
           content_text: string
           created_at: string
@@ -3575,6 +3577,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          authors?: string[]
+          closed?: boolean
           content: Json
           content_text?: string
           created_at?: string
@@ -3587,6 +3591,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          authors?: string[]
+          closed?: boolean
           content?: Json
           content_text?: string
           created_at?: string
@@ -3626,6 +3632,8 @@ export type Database = {
           title: string
           updated_at: string
           user_id: string
+          ydoc: string | null
+          ydoc_version: number
         }
         Insert: {
           content?: Json
@@ -3644,6 +3652,8 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+          ydoc?: string | null
+          ydoc_version?: number
         }
         Update: {
           content?: Json
@@ -3662,6 +3672,8 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+          ydoc?: string | null
+          ydoc_version?: number
         }
         Relationships: [
           {
@@ -8076,6 +8088,28 @@ export type Database = {
           user_id: string
         }[]
       }
+      note_collab_save: {
+        Args: {
+          _authors?: string[]
+          _base: number
+          _content: Json
+          _content_text: string
+          _kind: string
+          _note: string
+          _title: string
+          _ydoc: string
+        }
+        Returns: {
+          kind: string
+          status: string
+          version: number
+          ydoc: string
+        }[]
+      }
+      note_collab_topic_allowed: {
+        Args: { _send: boolean; _topic: string }
+        Returns: boolean
+      }
       note_folder_exists: { Args: { _folder: string }; Returns: boolean }
       note_folder_roles_of: {
         Args: { _only?: string; _user: string }
@@ -8181,9 +8215,11 @@ export type Database = {
         }
         Returns: string
       }
+      note_version_checkpoint: { Args: { _note: string }; Returns: undefined }
       note_versions_list: {
         Args: { _limit?: number; _note: string }
         Returns: {
+          author_names: string[]
           created_at: string
           excerpt: string
           id: string

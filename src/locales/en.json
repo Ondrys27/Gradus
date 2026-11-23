@@ -1956,6 +1956,26 @@
       "tooLarge": "Too long to save, shorten the note",
       "denied": "You can no longer edit this note; this change was not saved."
     },
+    "live": {
+      "here": "Here now: {names}",
+      "status": {
+        "saved": "Synced",
+        "pending": "Saving…",
+        "saving": "Saving…",
+        "error": "Not saved yet, trying again",
+        "offline": "Offline — changes will be saved once you're back",
+        "tooLarge": "This note is too big to write together",
+        "denied": "You can no longer edit this note; the change was not saved."
+      },
+      "typing": {
+        "one": "{name} is typing…",
+        "two": "{first} and {second} are typing…",
+        "more": "{name} and {count, plural, one {# other} other {# others}} are typing…"
+      },
+      "gone": "You no longer have access to this note, or it is in the trash. What you wrote after the last save was not saved.",
+      "limitPeople": "{max} people are writing this note right now. You see their changes live and can write once a place frees up.",
+      "limitSize": "This note is too big to write together, so it is read-only. Shorten a copy of it or restore an older version from the history."
+    },
     "trash": {
       "open": "Trash",
       "title": "Trash",

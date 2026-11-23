@@ -142,6 +142,8 @@ export type NoteVersion = {
   id: string;
   savedBy: string | null;
   savedByName: string;
+  /** Everyone who wrote this version (live writing puts several people into one). */
+  authorNames: string[];
   createdAt: string;
   updatedAt: string;
   kind: "text" | "mindmap";
@@ -160,6 +162,7 @@ export function useNoteVersions(noteId: string | null, enabled = true) {
         id: row.id,
         savedBy: row.saved_by ?? null,
         savedByName: row.saved_by_name ?? "",
+        authorNames: row.author_names ?? [],
         createdAt: row.created_at,
         updatedAt: row.updated_at,
         kind: row.kind === "mindmap" ? "mindmap" : "text",

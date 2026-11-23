@@ -10,6 +10,7 @@ import { KIND_ICONS } from "@/features/search/use-search-rows";
 import { track } from "@/lib/analytics/client";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
+import { mentionTypeAttribute } from "./collab/schema";
 import { mentionHref } from "./mention-queries";
 import {
   isMentionKind,
@@ -132,15 +133,8 @@ function MentionChip({ node }: ReactNodeViewProps) {
 export function createRecordMention(bridge: MentionMenuBridge) {
   return Mention.extend({
     addAttributes() {
-      return {
-        ...this.parent?.(),
-        type: {
-          default: null,
-          parseHTML: (element: HTMLElement) => element.getAttribute("data-mention-type"),
-          renderHTML: (attributes: Record<string, unknown>) =>
-            typeof attributes.type === "string" ? { "data-mention-type": attributes.type } : {},
-        },
-      };
+      // The same attributes as the schema on the server (collab/schema.ts).
+      return { ...this.parent?.(), ...mentionTypeAttribute };
     },
     addNodeView() {
       return ReactNodeViewRenderer(MentionChip, { as: "span" });
