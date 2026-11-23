@@ -150,7 +150,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 28.1 | architect | env: RESEND_API_KEY — 2026-11-22: Ve výběrech jen aktivní členové firmy (active_members), pozvání přes @jméno nebo krátké ID, placení za pracovníky schované za přepínač a průchod celým životem pracovníka s nálezy v docs/audit-pozvanky/nalezy.md.
 - [x] 28.2 | architect | — 2026-11-22: Odměny pracovníků jako plán pravidel (průvodce a šablony, odměny za úkoly, obchody, milníky, schůzky i hodiny se schvalováním, výplatami do Financí a přehledem ve Správě firmy), převod starého stromu odměn migrací.
 - [x] 28.3 | architect | — 2026-11-23: Poznámky mají složky a sdílení v rámci firmy (člověk, skupina, celá firma; čtenář / editor, sdílet dál), historii verzí, panel Moje / Sdílené se mnou / složky / Koš a Grady čte sdílené poznámky.
-- [ ] 28.4 | architect |
+- [x] 28.4 | architect | — 2026-11-23: Poznámky a myšlenkové mapy píše víc lidí najednou (Yjs přes Supabase Realtime, barevné kurzory se jmény, práce offline se sloučením po návratu, čtenáři vidí změny živě, verze po 10 minutách a Grady jako další účastník).
 - [ ] 28.5 | architect |
 - [ ] 28.6 | designer |
 - [ ] 28.7 | architect | env: ANTHROPIC_API_KEY
