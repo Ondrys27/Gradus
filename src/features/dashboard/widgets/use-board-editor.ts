@@ -35,6 +35,8 @@ export function useBoardEditor({
   const shown = useRef<LayoutItem[] | undefined>(source);
   /** What is to be saved: the screen, except while a drag is only previewed. */
   const latest = useRef<LayoutItem[] | undefined>(source);
+  /** A drag is being previewed: a layout from the server must not jump in under it. */
+  const previewing = useRef(false);
   const saveRef = useRef(save);
   useEffect(() => {
     saveRef.current = save;
@@ -49,11 +51,12 @@ export function useBoardEditor({
     setItems(source);
     setHistory([]);
     dirty.current = false;
+    previewing.current = false;
     shown.current = source;
     latest.current = source;
   } else if (source !== seenSource) {
     setSeenSource(source);
-    if (!dirty.current && source && !(items && sameItems(items, source))) {
+    if (!dirty.current && !previewing.current && source && !(items && sameItems(items, source))) {
       setItems(source);
       shown.current = source;
       latest.current = source;
@@ -109,12 +112,14 @@ export function useBoardEditor({
 
   /** A step only on screen (a drag in progress); `commit` saves it as one step. */
   const preview = useCallback((next: LayoutItem[]) => {
+    previewing.current = true;
     setItems(next);
     shown.current = next;
   }, []);
 
   const commit = useCallback(
     (before: LayoutItem[], next: LayoutItem[]) => {
+      previewing.current = false;
       if (sameItems(before, next)) {
         setItems(before);
         shown.current = before;
@@ -125,6 +130,9 @@ export function useBoardEditor({
     },
     [remember, store],
   );
+
+  /** What is on screen right now, even between renders (a drag's many steps). */
+  const current = useCallback(() => shown.current, []);
 
   const undo = useCallback(() => {
     const previous = history[history.length - 1];
@@ -150,6 +158,7 @@ export function useBoardEditor({
     apply,
     preview,
     commit,
+    current,
     undo,
     canUndo: history.length > 0,
     saving,

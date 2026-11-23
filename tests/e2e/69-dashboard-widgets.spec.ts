@@ -18,6 +18,12 @@ async function order(page: Page): Promise<string[]> {
 
 /** Drags a widget onto another one, with steps so dnd-kit sees a real drag. */
 async function drag(page: Page, from: string, onto: string) {
+  // Both widgets must be on screen at once: a widget added at the end sits
+  // below a laptop-sized window, and the mouse cannot press what it cannot see.
+  const viewport = page.viewportSize();
+  if (viewport && viewport.height < 2000) {
+    await page.setViewportSize({ width: viewport.width, height: 2000 });
+  }
   const source = page.getByTestId("widget-grid").locator(`[data-widget="${from}"]`).first();
   const target = page.getByTestId("widget-grid").locator(`[data-widget="${onto}"]`).first();
   const a = (await source.boundingBox())!;
@@ -56,7 +62,9 @@ test("69a · widgets: add from the gallery, move, resize, open the detail, saved
   const gallery = page.getByTestId("widget-gallery");
   await expect(gallery).toBeVisible();
   // Finance widgets are offered to the owner.
-  await expect(gallery.locator('[data-widget="financeMonth"]')).toHaveCount(1);
+  await expect(
+    gallery.locator('[data-testid="gallery-widget"][data-widget="financeMonth"]'),
+  ).toHaveCount(1);
   const meetings = gallery.locator('[data-testid="gallery-widget"][data-widget="meetings"]');
   await meetings.getByTestId("gallery-size-M").click();
   await meetings.getByTestId("gallery-add").click();

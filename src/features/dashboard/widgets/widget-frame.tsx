@@ -104,7 +104,9 @@ function WidgetCode({
   settings: WidgetSettings;
 }) {
   const def = useWidgetDef(widget);
-  return <WidgetBody def={def} size={size} settings={settings} />;
+  // Each widget calls its own data hooks: a different widget in the same place
+  // must mount afresh, or React would see a different order of hooks.
+  return <WidgetBody key={widget} def={def} size={size} settings={settings} />;
 }
 
 /** Loads the widget's data (once mounted) and draws it in the widget's size. */
@@ -304,7 +306,12 @@ export const WidgetFrame = forwardRef<HTMLDivElement, FrameProps>(function Widge
           inert={editing || undefined}
         >
           {near && !ghost ? (
-            <LazyWidgetBody widget={meta.key as WidgetKey} size={item.size} settings={settings} />
+            <LazyWidgetBody
+              key={meta.key}
+              widget={meta.key as WidgetKey}
+              size={item.size}
+              settings={settings}
+            />
           ) : (
             <WidgetSkeleton size={item.size} />
           )}
@@ -460,7 +467,7 @@ export function WidgetDetail({
         </div>
         <ChunkBoundary>
           <Suspense fallback={<WidgetSkeleton size="L" />}>
-            <DetailContent meta={meta} settings={settings} onClose={onClose} />
+            <DetailContent key={meta.key} meta={meta} settings={settings} onClose={onClose} />
           </Suspense>
         </ChunkBoundary>
       </motion.div>

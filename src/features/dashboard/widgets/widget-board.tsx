@@ -294,7 +294,7 @@ export function WidgetBoard({
             dragStart.current = items;
           }}
           onDragOver={(activeId, overId) => {
-            const current = editor.items ?? items;
+            const current = editor.current() ?? items;
             const index = current.findIndex((item) => item.id === overId);
             if (index >= 0) editor.preview(moveItem(current, activeId, index));
           }}
@@ -306,7 +306,7 @@ export function WidgetBoard({
               editor.commit(before, before);
               return;
             }
-            const after = editor.items ?? before;
+            const after = editor.current() ?? before;
             editor.commit(before, after);
             const moved = after.find((item) => item.id === activeId);
             const changed =
