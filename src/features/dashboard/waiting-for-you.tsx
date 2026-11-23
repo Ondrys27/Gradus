@@ -25,6 +25,61 @@ import { INVITES_PATH } from "@/lib/routes";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { MeetingSurveyDialog, type SurveyTarget } from "./meeting-survey-dialog";
 
+export type WaitingItem = {
+  key: string;
+  kind: "booking" | "invite" | "survey";
+  /** Who it is about: the guest, the company, the deal. */
+  who: string;
+  /** When the meeting is or was; invites have none. */
+  when: string | null;
+  href: string;
+};
+
+/**
+ * What waits, as one flat list for the dashboard widget's small sizes (28.6):
+ * the same reads as the cards below, so both agree and share the cache.
+ */
+export function useWaitingItems() {
+  const t = useTranslations("dashboard.waiting");
+  const workspace = useWorkspace();
+  const bookings = useWaitingBookings();
+  const inbox = useInbox();
+  const surveyRight = useCan("pipeline", "update");
+  const surveys = useBookingSurveys(surveyRight && !workspace.readOnly);
+  const queries = [bookings, inbox, ...(surveyRight && !workspace.readOnly ? [surveys] : [])];
+  const items: WaitingItem[] = [
+    ...(bookings.data ?? []).map((booking) => ({
+      key: `booking-${booking.id}`,
+      kind: "booking" as const,
+      who: booking.guest_name ?? booking.typeName ?? t("booking.meeting"),
+      when: booking.starts_at,
+      href: bookingAppPath(booking.id),
+    })),
+    ...(inbox.data?.invites ?? []).map((invite) => ({
+      key: `invite-${invite.id}`,
+      kind: "invite" as const,
+      who: inviterName(invite) ?? t("invite.someone"),
+      when: null,
+      href: INVITES_PATH,
+    })),
+    ...(surveys.data ?? []).map((booking) => ({
+      key: `survey-${booking.id}`,
+      kind: "survey" as const,
+      who: booking.guest_name ?? booking.dealTitle ?? "",
+      when: booking.starts_at,
+      href: bookingAppPath(booking.id),
+    })),
+  ];
+  return {
+    items,
+    pending: queries.some((query) => query.isPending),
+    failed: queries.some((query) => query.isError && query.data === undefined),
+    refetch: () => {
+      for (const query of queries) void query.refetch();
+    },
+  };
+}
+
 /**
  * "Waiting for you" on the dashboard (24.4): what only the person can decide,
  * as cards with the decision right on them. Meetings to approve (Confirm /

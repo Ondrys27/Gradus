@@ -1,115 +1,316 @@
 "use client";
 
+import { useMemo } from "react";
 import dynamic from "next/dynamic";
-import { CoinsIcon, FileWarningIcon } from "lucide-react";
+import { differenceInCalendarDays, getDaysInMonth } from "date-fns";
+import { FileWarningIcon, LineChartIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { AnimatedNumber } from "@/components/ui/animated-number";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toneFill, toneText, type Tone } from "@/components/ui/tone";
 import { useSession } from "@/features/account/queries";
 import { RateNote } from "@/features/currency/rate-note";
 import { compareToPrevious } from "@/features/dashboard/dashboard-logic";
-import { Trend } from "@/features/dashboard/dashboard-tile";
 import { useToday } from "@/features/dashboard/queries";
 import { IncomeDetail } from "@/features/dashboard/tile-detail";
-import { periodRange as monthRange, type Totals } from "@/features/finance/finance-logic";
-import { useTotals } from "@/features/finance/queries";
+import {
+  periodRange as monthRange,
+  type DailyRow,
+  type Totals,
+} from "@/features/finance/finance-logic";
+import { capitalSeries, type CapitalPoint } from "@/features/finance/plan/capital-series";
+import { usePlanMonths, usePlanRangeTransactions } from "@/features/finance/plan/queries";
+import { monthSpan, planWeekOf, shiftMonth } from "@/features/finance/plan/weeks";
+import { useDailyTotals, useTotals } from "@/features/finance/queries";
 import { useInvoiceList } from "@/features/invoices/queries";
 import { useManagesRewards, useRewardTotals } from "@/features/workers/rewards/queries";
 import { totalsByCurrency } from "@/features/workers/rewards/summary";
-import { formatCalendarDate, formatCurrency, formatPrice } from "@/lib/format";
-import { useFormatSettings } from "@/lib/use-format-settings";
 import {
-  BigValue,
+  formatDayMonth,
+  formatNumber,
+  formatPrice,
+  isoDateToLocal,
+  type IsoDate,
+  type NumberFormat,
+} from "@/lib/format";
+import { useFormatSettings } from "@/lib/use-format-settings";
+import { cn } from "@/lib/utils";
+import {
+  Actions,
+  Columns,
   combine,
   defineWidget,
+  Delta,
   Empty,
   Figure,
-  Hint,
-  READY,
+  Hero,
+  Legend,
+  LiveNumber,
   Row,
   RowList,
+  Segments,
+  Side,
+  Sparkline,
+  Stack,
+  Sub,
+  useAppeared,
   type WidgetQuery,
+  type WidgetViewProps,
 } from "../kit";
 
-// The charts library loads only when a chart widget is on screen.
-const IncomeChart = dynamic(
-  () => import("@/features/finance/income-chart").then((module) => module.IncomeChart),
-  { ssr: false, loading: () => <Skeleton className="h-40 rounded-xl" /> },
-);
+// The charts library loads only when the wide capital widget is on screen.
 const CapitalChart = dynamic(
   () => import("@/features/finance/plan/capital-chart").then((module) => module.CapitalChart),
-  { ssr: false, loading: () => <Skeleton className="h-40 rounded-xl" /> },
+  { ssr: false, loading: () => <Skeleton className="h-36 rounded-xl" /> },
 );
+
+const FINANCE_PATH = "/app/finance";
+const PLAN_HREF = `${FINANCE_PATH}?tab=month`;
+
+/** Money as a `LiveNumber` format: whole amounts without decimals, others with them. */
+function moneyFormat(value: number, currency?: string): NumberFormat {
+  return { style: "currency", currency, decimals: Number.isInteger(value) ? 0 : 2 };
+}
 
 // ---------------------------------------------------------------------------
 // The month's money: income, expenses and balance, against last month
 // ---------------------------------------------------------------------------
 
-type MonthData = { current: Totals; previous: Totals };
+type MonthData = { current: Totals; previous: Totals; days: DailyRow[] };
 
 function useMonthMoney(): WidgetQuery<MonthData> {
   const { today } = useToday();
-  const current = useTotals(monthRange("thisMonth", today), null);
+  const range = monthRange("thisMonth", today);
+  const current = useTotals(range, null);
   const previous = useTotals(monthRange("lastMonth", today), null);
-  return combine([current, previous], () => ({ current: current.data!, previous: previous.data! }));
+  const days = useDailyTotals(range);
+  return combine([current, previous, days], () => ({
+    current: current.data!,
+    previous: previous.data!,
+    days: days.data!,
+  }));
 }
 
-function MonthView({ size, data }: { size: string; data: MonthData }) {
+type WeekBucket = { from: number; to: number; income: number; expense: number };
+
+/** The month in weeks of seven days from the 1st (1–7, 8–14, …), the last one shorter. */
+function weekBuckets(days: DailyRow[], today: IsoDate): { weeks: WeekBucket[]; current: number } {
+  const date = isoDateToLocal(today);
+  const inMonth = getDaysInMonth(date);
+  const weeks: WeekBucket[] = Array.from({ length: Math.ceil(inMonth / 7) }, (_, index) => ({
+    from: index * 7 + 1,
+    to: Math.min(index * 7 + 7, inMonth),
+    income: 0,
+    expense: 0,
+  }));
+  for (const row of days) {
+    const index = Math.floor((Number(row.day.slice(8, 10)) - 1) / 7);
+    const week = weeks[index];
+    if (!week) continue;
+    week.income += row.income;
+    week.expense += row.expense;
+  }
+  return { weeks, current: Math.floor((date.getDate() - 1) / 7) };
+}
+
+/**
+ * Two columns per week, income in the accent and expenses in grey, the
+ * current week full and the others in their wash (the kit's `Columns` draws
+ * one series; this is the paired version for the wide widget).
+ */
+function PairedColumns({
+  pairs,
+  tone,
+  label,
+  current,
+  labels,
+  height = 64,
+}: {
+  pairs: readonly { a: number; b: number }[];
+  tone: Tone;
+  label: string;
+  current: number;
+  labels: readonly string[];
+  height?: number;
+}) {
+  const appeared = useAppeared();
+  const max = Math.max(1, ...pairs.flatMap((pair) => [pair.a, pair.b]));
+  const grow = (value: number) =>
+    appeared ? `${Math.max(value > 0 ? 6 : 2, (value / max) * 100)}%` : "2%";
+  return (
+    <div role="img" aria-label={label} className="flex min-w-0 flex-col gap-1">
+      <div className="flex items-end gap-1.5 border-b border-line/70" style={{ height }}>
+        {pairs.map((pair, index) => (
+          <span key={index} className="flex min-w-0 flex-1 items-end justify-center gap-[2px]">
+            <span
+              className={cn(
+                "w-full max-w-5 rounded-t-[4px] transition-[height] duration-700 ease-out",
+                toneFill[tone],
+                index !== current && "opacity-35",
+              )}
+              style={{ height: grow(pair.a) }}
+            />
+            <span
+              className={cn(
+                "w-full max-w-5 rounded-t-[4px] transition-[height] duration-700 ease-out",
+                toneFill.neutral,
+                index !== current && "opacity-35",
+              )}
+              style={{ height: grow(pair.b) }}
+            />
+          </span>
+        ))}
+      </div>
+      <div className="flex gap-1.5" aria-hidden>
+        {labels.map((text, index) => (
+          <span
+            key={index}
+            className={cn(
+              "min-w-0 flex-1 truncate text-center text-[10px] tabular-nums",
+              index === current ? "font-semibold text-ink" : "text-ink-muted",
+            )}
+          >
+            {text}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MonthView({ size, data, tone }: WidgetViewProps<MonthData>) {
   const t = useTranslations("dashboard.widgets.financeMonth");
   const tIncome = useTranslations("dashboard.tiles.income");
   const format = useFormatSettings();
   const { today } = useToday();
   const { current, previous } = data;
-  const money = (value: number) =>
-    formatCurrency(value, undefined, format, Number.isInteger(value) ? 0 : 2);
+  const money = (value: number) => formatNumber(value, moneyFormat(value), format);
+  const balance = current.income - current.expense;
   const change = compareToPrevious(current.income, previous.income);
-  const trend = (
-    <Trend direction={change.direction}>
+  const { weeks, current: thisWeek } = useMemo(() => weekBuckets(data.days, today), [data.days, today]);
+  const weekLabels = weeks.map((week) =>
+    t("weekLabel", {
+      from: formatNumber(week.from, {}, format),
+      to: formatNumber(week.to, {}, format),
+    }),
+  );
+
+  const hero = (heroSize: "lg" | "md") => (
+    <Hero size={heroSize}>
+      <LiveNumber value={current.income} format={moneyFormat(current.income)} />
+    </Hero>
+  );
+  const delta = (
+    <Delta direction={change.direction}>
       {change.direction === "same"
         ? tIncome("same")
         : tIncome(change.direction, { amount: money(change.difference) })}
-    </Trend>
+    </Delta>
   );
   const note = current.converted && current.asOf ? <RateNote at={current.asOf} /> : null;
+  const figures = (
+    <div className="grid grid-cols-3 gap-2">
+      <Figure label={t("income")} value={money(current.income)} className={toneText[tone]} />
+      <Figure label={t("expense")} value={money(current.expense)} />
+      <Figure
+        label={t("balance")}
+        value={money(balance)}
+        className={balance < 0 ? "text-pink" : undefined}
+      />
+    </div>
+  );
+
   if (size === "S") {
     return (
-      <div className="flex flex-col gap-1.5">
-        <BigValue>
-          <AnimatedNumber value={current.income} format={{ style: "currency" }} />
-        </BigValue>
-        <Hint>{t("income")}</Hint>
+      <Stack>
+        {hero("lg")}
+        <Sub>{t("incomeMonth")}</Sub>
         {note}
-      </div>
+      </Stack>
     );
   }
+
+  if (size === "M") {
+    return (
+      <Stack className="gap-1">
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">{hero("lg")}</div>
+          {delta}
+        </div>
+        <Segments
+          parts={[
+            { key: "income", value: current.income, tone },
+            { key: "expense", value: current.expense, tone: "neutral" },
+          ]}
+          label={t("split")}
+        />
+        <Sub>
+          {t("expense")} {money(current.expense)} · {t("balance")}{" "}
+          <span className={cn("tabular-nums", balance < 0 ? "text-pink" : "text-ink")}>
+            {money(balance)}
+          </span>
+        </Sub>
+        {note}
+      </Stack>
+    );
+  }
+
+  if (size === "L") {
+    return (
+      <Stack between>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0 flex-1">{hero("md")}</div>
+            {delta}
+          </div>
+          {figures}
+          {note}
+        </div>
+        <Columns
+          values={weeks.map((week) => week.income)}
+          tone={tone}
+          label={t("weeksChart")}
+          current={thisWeek}
+          labels={weekLabels}
+          height={64}
+        />
+      </Stack>
+    );
+  }
+
   return (
-    <div className="flex min-h-0 flex-col gap-3">
-      <div className="grid grid-cols-3 gap-2">
-        <div className="flex min-w-0 flex-col">
-          <span className="micro-label">{t("income")}</span>
-          <span className="truncate text-lg font-semibold text-green tabular-nums">
-            {money(current.income)}
-          </span>
+    <Stack>
+      <div className="grid min-h-0 flex-1 gap-4 @3xl:grid-cols-2">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0 flex-1">{hero("md")}</div>
+            {delta}
+          </div>
+          {figures}
+          {note}
         </div>
-        <div className="flex min-w-0 flex-col">
-          <span className="micro-label">{t("expense")}</span>
-          <span className="truncate text-lg font-semibold text-ink tabular-nums">
-            {money(current.expense)}
-          </span>
-        </div>
-        <div className="flex min-w-0 flex-col">
-          <span className="micro-label">{t("balance")}</span>
-          <span
-            className={`truncate text-lg font-semibold tabular-nums ${current.income - current.expense < 0 ? "text-pink" : "text-ink"}`}
-          >
-            {money(current.income - current.expense)}
-          </span>
+        <div className="flex flex-col justify-between gap-2">
+          <PairedColumns
+            pairs={weeks.map((week) => ({ a: week.income, b: week.expense }))}
+            tone={tone}
+            label={t("chart")}
+            current={thisWeek}
+            labels={weekLabels}
+          />
+          <Legend
+            items={[
+              { key: "income", label: t("income"), tone, value: money(current.income) },
+              { key: "expense", label: t("expense"), tone: "neutral", value: money(current.expense) },
+            ]}
+          />
         </div>
       </div>
-      {trend}
-      {note}
-      {size === "XL" && <IncomeChart today={today} />}
-    </div>
+      <Actions
+        items={[
+          { label: t("openFinance"), href: `${FINANCE_PATH}?tab=transactions`, primary: true },
+          { label: t("openPlan"), href: PLAN_HREF },
+        ]}
+      />
+    </Stack>
   );
 }
 
@@ -124,19 +325,150 @@ export const financeMonthWidget = defineWidget<MonthData>({
 // Capital over the weeks: plan and reality (Finance → Overview's chart)
 // ---------------------------------------------------------------------------
 
-export const capitalWidget = defineWidget<true>({
-  key: "capital",
-  useData: () => READY,
-  View: ({ size }) => {
-    const { today } = useToday();
+type CapitalData = { points: CapitalPoint[] };
+
+/** The same points as the Overview chart, from the plan queries (the chart library stays out). */
+function useCapital(): WidgetQuery<CapitalData> {
+  const { today } = useToday();
+  const current = planWeekOf(today).month;
+  const months = useMemo(
+    () => Array.from({ length: 7 }, (_, index) => shiftMonth(current, index - 3)),
+    [current],
+  );
+  const plans = usePlanMonths(months);
+  const from = monthSpan(months[0]).from;
+  const to = monthSpan(months[6]).to;
+  const transactions = usePlanRangeTransactions(from, to, Boolean(plans.data?.length));
+  const points = useMemo(
+    () => (plans.data ? capitalSeries(plans.data, transactions.data ?? [], today) : []),
+    [plans.data, transactions.data, today],
+  );
+  return combine([plans], () => ({ points }));
+}
+
+/** Both lines on one scale, 0–1, so they can lie over each other. */
+function normalise(points: CapitalPoint[]) {
+  const values = points.flatMap((point) =>
+    point.actual === null ? [point.plan] : [point.plan, point.actual],
+  );
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const scale = (value: number) => (max === min ? 0.5 : (value - min) / (max - min));
+  return {
+    plan: points.map((point) => scale(point.plan)),
+    actual: points.map((point) => (point.actual === null ? null : scale(point.actual))),
+  };
+}
+
+function CapitalView({ size, data, tone }: WidgetViewProps<CapitalData>) {
+  const t = useTranslations("dashboard.widgets.capital");
+  const format = useFormatSettings();
+  const { today } = useToday();
+  const { points } = data;
+
+  if (points.length === 0) {
     return (
-      <CapitalChart
-        today={today}
-        bare
-        chartClassName={size === "M" ? "h-20" : size === "L" ? "h-52" : "h-56"}
+      <Empty
+        icon={LineChartIcon}
+        tone={tone}
+        title={t("noPlanTitle")}
+        hint={size === "M" ? undefined : t("noPlanHint")}
+        action={{ label: t("createPlan"), href: PLAN_HREF }}
+        compact
       />
     );
-  },
+  }
+
+  const currency = points[0].currency;
+  const money = (value: number) => formatPrice(value, currency, format);
+  const latest = [...points].reverse().find((point) => point.actual !== null);
+  const heroValue = latest?.actual ?? points[0].plan;
+  const ahead = points.filter((point) => point.end >= today);
+  const lowest = (ahead.length ? ahead : points).reduce((low, point) =>
+    point.plan < low.plan ? point : low,
+  );
+  const lowestLine = t("lowest", { amount: money(lowest.plan), date: formatDayMonth(lowest.end, format) });
+  const lines = normalise(points);
+  const hero = (heroSize: "lg" | "md") => (
+    <Hero size={heroSize} status={heroValue < 0 ? "bad" : undefined}>
+      <LiveNumber value={heroValue} format={moneyFormat(heroValue, currency)} />
+    </Hero>
+  );
+
+  if (size === "M") {
+    return (
+      <Side
+        aside={
+          <Sparkline values={lines.plan} tone={tone} label={t("chart")} className="h-10 w-28" />
+        }
+      >
+        {hero("lg")}
+        <Sub>{lowestLine}</Sub>
+      </Side>
+    );
+  }
+
+  if (size === "L") {
+    return (
+      <Stack between>
+        <div className="flex flex-col gap-1">
+          {hero("md")}
+          <Sub>
+            {t("current")} · {lowestLine}
+          </Sub>
+        </div>
+        <div className="flex flex-col gap-2">
+          <div className="relative h-24" role="img" aria-label={t("chart")}>
+            <Sparkline
+              values={lines.plan}
+              tone="neutral"
+              label={t("plan")}
+              className="absolute inset-0 h-full"
+            />
+            <Sparkline
+              values={lines.actual}
+              tone={tone}
+              label={t("actual")}
+              className="absolute inset-0 h-full"
+            />
+          </div>
+          <Legend
+            items={[
+              {
+                key: "actual",
+                label: t("actual"),
+                tone,
+                value: latest ? money(latest.actual ?? 0) : undefined,
+              },
+              { key: "plan", label: t("plan"), tone: "neutral", value: money(points.at(-1)!.plan) },
+            ]}
+          />
+        </div>
+      </Stack>
+    );
+  }
+
+  return (
+    <Stack>
+      <div className="flex items-baseline justify-between gap-3">
+        {hero("md")}
+        <Sub className="text-right">{lowestLine}</Sub>
+      </div>
+      <CapitalChart today={today} bare chartClassName="h-32" />
+      <Actions
+        items={[
+          { label: t("openPlan"), href: PLAN_HREF, primary: true },
+          { label: t("openOverview"), href: `${FINANCE_PATH}?tab=overview` },
+        ]}
+      />
+    </Stack>
+  );
+}
+
+export const capitalWidget = defineWidget<CapitalData>({
+  key: "capital",
+  useData: useCapital,
+  View: CapitalView,
   Detail: () => {
     const { today } = useToday();
     return <CapitalChart today={today} bare chartClassName="h-72" />;
@@ -147,17 +479,16 @@ export const capitalWidget = defineWidget<true>({
 // Invoices past due (computed, never stored)
 // ---------------------------------------------------------------------------
 
-type InvoicesData = {
-  rows: {
-    id: string;
-    number: string | null;
-    customer_name: string | null;
-    due_on: string | null;
-    total: number;
-    currency: string;
-  }[];
+type InvoiceRow = {
+  id: string;
+  number: string | null;
+  customer_name: string | null;
+  due_on: string | null;
   total: number;
+  currency: string;
 };
+
+type InvoicesData = { rows: InvoiceRow[]; total: number };
 
 function useOverdueInvoices(): WidgetQuery<InvoicesData> {
   const { today } = useToday();
@@ -165,9 +496,48 @@ function useOverdueInvoices(): WidgetQuery<InvoicesData> {
   return combine([list], () => ({ rows: list.data!.rows, total: list.data!.total }));
 }
 
-function InvoiceRows({ data, limit }: { data: InvoicesData; limit: number }) {
+/** Amounts per currency, the currency with most invoices first. Currencies never add up. */
+function sumsByCurrency(rows: InvoiceRow[]) {
+  const map = new Map<string, { currency: string; total: number; count: number }>();
+  for (const row of rows) {
+    const sum = map.get(row.currency) ?? { currency: row.currency, total: 0, count: 0 };
+    sum.total += row.total;
+    sum.count += 1;
+    map.set(row.currency, sum);
+  }
+  return [...map.values()].sort((a, b) => b.count - a.count || b.total - a.total);
+}
+
+function daysOverdue(dueOn: string | null, today: IsoDate): number {
+  if (!dueOn) return 0;
+  return Math.max(0, differenceInCalendarDays(isoDateToLocal(today), isoDateToLocal(dueOn)));
+}
+
+function useInvoiceWords() {
   const t = useTranslations("dashboard.widgets.overdueInvoices");
   const format = useFormatSettings();
+  const { today } = useToday();
+  return {
+    t,
+    format,
+    today,
+    customer: (row: InvoiceRow) => row.customer_name ?? t("noCustomer"),
+    overdue: (row: InvoiceRow) => t("daysOverdue", { days: daysOverdue(row.due_on, today) }),
+    /** "Total 12 000 Kč · + 2 in EUR", only when every overdue invoice is in the list. */
+    sums: (data: InvoicesData) => {
+      if (data.rows.length < data.total) return null;
+      const [main, ...others] = sumsByCurrency(data.rows);
+      if (!main) return null;
+      return [
+        t("total", { amount: formatPrice(main.total, main.currency, format) }),
+        ...others.map((sum) => t("moreCurrencies", { count: sum.count, currency: sum.currency })),
+      ].join(" · ");
+    },
+  };
+}
+
+function InvoiceRows({ data, limit }: { data: InvoicesData; limit: number }) {
+  const { format, customer, overdue } = useInvoiceWords();
   return (
     <RowList>
       {data.rows.slice(0, limit).map((invoice) => (
@@ -176,54 +546,93 @@ function InvoiceRows({ data, limit }: { data: InvoicesData; limit: number }) {
           href={`/app/finance/faktury/${invoice.id}`}
           lead={invoice.number ?? ""}
           trail={
-            <span className="text-pink">
+            <span className="font-medium text-pink">
               {formatPrice(invoice.total, invoice.currency, format)}
             </span>
           }
         >
-          {invoice.customer_name ?? t("noCustomer")}
-          {invoice.due_on && (
-            <span className="ml-2 text-xs text-ink-muted">
-              {formatCalendarDate(invoice.due_on, format)}
-            </span>
-          )}
+          {customer(invoice)}
+          <span className="ml-2 text-xs text-ink-muted">{overdue(invoice)}</span>
         </Row>
       ))}
     </RowList>
   );
 }
 
+function InvoicesView({ size, data }: WidgetViewProps<InvoicesData>) {
+  const { t, format, customer, overdue, sums } = useInvoiceWords();
+  if (data.total === 0) {
+    return (
+      <Empty
+        icon={FileWarningIcon}
+        tone="green"
+        zero={formatNumber(0, {}, format)}
+        title={t("count", { count: 0 })}
+        hint={t("emptyHint")}
+        compact={size === "S"}
+      />
+    );
+  }
+  const count = <LiveNumber value={data.total} />;
+  const word = t("count", { count: data.total });
+  const oldest = data.rows[0];
+  const sumLine = sums(data);
+
+  if (size === "S") {
+    return (
+      <Stack>
+        <Hero status="bad">{count}</Hero>
+        <Sub>{word}</Sub>
+      </Stack>
+    );
+  }
+
+  if (size === "M") {
+    return (
+      <Stack className="gap-1">
+        <Hero status="bad" unit={word}>
+          {count}
+        </Hero>
+        {sumLine && <Sub>{sumLine}</Sub>}
+        {oldest && (
+          <Sub className="text-xs text-ink-muted">
+            {t("oldest", {
+              number: oldest.number ?? "",
+              customer: customer(oldest),
+              overdue: overdue(oldest),
+            })}
+          </Sub>
+        )}
+      </Stack>
+    );
+  }
+
+  return (
+    <Stack>
+      <Hero size="md" status="bad" unit={word}>
+        {count}
+      </Hero>
+      {sumLine && <Sub>{sumLine}</Sub>}
+      <InvoiceRows data={data} limit={4} />
+    </Stack>
+  );
+}
+
 export const overdueInvoicesWidget = defineWidget<InvoicesData>({
   key: "overdueInvoices",
   useData: useOverdueInvoices,
-  View: ({ size, data }) => {
-    const t = useTranslations("dashboard.widgets.overdueInvoices");
+  View: InvoicesView,
+  Detail: ({ data }) => {
+    const { t, format } = useInvoiceWords();
     if (data.total === 0) {
       return (
         <Empty
           icon={FileWarningIcon}
           tone="green"
-          title={t("emptyTitle")}
-          hint={size === "S" ? undefined : t("emptyHint")}
-          compact={size !== "L"}
+          zero={formatNumber(0, {}, format)}
+          title={t("count", { count: 0 })}
+          hint={t("emptyHint")}
         />
-      );
-    }
-    return (
-      <div className="flex min-h-0 flex-col gap-1.5">
-        <BigValue className="text-pink">
-          <AnimatedNumber value={data.total} />
-        </BigValue>
-        <Hint>{t("count", { count: data.total })}</Hint>
-        {size !== "S" && <InvoiceRows data={data} limit={size === "L" ? 4 : 1} />}
-      </div>
-    );
-  },
-  Detail: ({ data }) => {
-    const t = useTranslations("dashboard.widgets.overdueInvoices");
-    if (data.total === 0) {
-      return (
-        <Empty icon={FileWarningIcon} tone="green" title={t("emptyTitle")} hint={t("emptyHint")} />
       );
     }
     return <InvoiceRows data={data} limit={20} />;
@@ -255,51 +664,105 @@ function useRewardsData(): WidgetQuery<RewardsData> {
   return combine([totals], () => ({ manages, sums: totalsByCurrency(totals.data ?? []) }));
 }
 
-function RewardsBody({ size, data }: { size: string; data: RewardsData }) {
+function RewardsView({ size, data, tone }: WidgetViewProps<RewardsData>) {
   const t = useTranslations("dashboard.widgets.rewards");
   const format = useFormatSettings();
   const main = data.sums[0];
   const money = (value: number, currency: string) => formatPrice(value, currency, format);
+  const mainWord = data.manages ? t("toPay") : t("earned");
+
   if (!main) {
     return (
-      <Empty
-        icon={CoinsIcon}
-        tone="gold"
-        title={data.manages ? t("emptyOwnerTitle") : t("emptyWorkerTitle")}
-        hint={size === "S" ? undefined : data.manages ? t("emptyOwnerHint") : t("emptyWorkerHint")}
-        compact={size !== "L"}
-      />
+      <Stack>
+        <Hero className={toneText[tone]}>{money(0, format.currency)}</Hero>
+        <Sub>{data.manages ? t("emptyOwnerTitle") : t("emptyWorkerTitle")}</Sub>
+        {size === "L" && (
+          <Sub lines={2} className="text-xs text-ink-muted">
+            {data.manages ? t("emptyOwnerHint") : t("emptyWorkerHint")}
+          </Sub>
+        )}
+      </Stack>
     );
   }
+
   const big = data.manages ? main.approved : main.earned;
-  const second = data.manages
-    ? t("pendingApproval", { amount: money(main.pending, main.currency) })
-    : t("planned", { amount: money(main.planned, main.currency) });
+  const other = data.manages ? main.pending : main.planned;
+  const otherLabel = data.manages ? t("toApprove") : t("plannedLabel");
+  const hero = (heroSize: "lg" | "md") => (
+    <Hero size={heroSize} className={toneText[tone]}>
+      <LiveNumber value={big} format={moneyFormat(big, main.currency)} />
+    </Hero>
+  );
+
+  if (size === "S") {
+    return (
+      <Stack>
+        {hero("lg")}
+        <Sub>{mainWord}</Sub>
+      </Stack>
+    );
+  }
+
+  if (size === "M") {
+    return (
+      <Stack>
+        {hero("lg")}
+        <Sub>
+          {mainWord} · {otherLabel} {money(other, main.currency)}
+        </Sub>
+        <Segments
+          parts={[
+            { key: "main", value: big, tone },
+            { key: "other", value: other, tone: "neutral" },
+          ]}
+          label={data.manages ? t("split") : t("splitWorker")}
+        />
+      </Stack>
+    );
+  }
+
   return (
-    <div className="flex min-h-0 flex-col gap-1.5">
-      <BigValue className="text-gold">{money(big, main.currency)}</BigValue>
-      <Hint>{data.manages ? t("toPay") : t("earned")}</Hint>
-      {size !== "S" && <p className="text-sm text-ink-soft">{second}</p>}
-      {size === "L" && data.sums.length > 1 && (
-        <p className="text-xs text-ink-muted">
-          {data.sums
-            .slice(1)
-            .map((sum) => money(data.manages ? sum.approved : sum.earned, sum.currency))
-            .join(" · ")}
-        </p>
+    <Stack>
+      {hero("md")}
+      <Sub>{mainWord}</Sub>
+      <div className="grid grid-cols-2 gap-2">
+        <Figure
+          label={data.manages ? t("toPayLabel") : t("earnedLabel")}
+          value={money(big, main.currency)}
+          className={toneText[tone]}
+        />
+        <Figure label={otherLabel} value={money(other, main.currency)} />
+      </div>
+      {data.sums.length > 1 && (
+        <RowList>
+          {data.sums.slice(1).map((sum) => (
+            <Row
+              key={sum.currency}
+              trail={
+                <span className={cn("font-medium", toneText[tone])}>
+                  {money(data.manages ? sum.approved : sum.earned, sum.currency)}
+                </span>
+              }
+            >
+              {sum.currency}
+            </Row>
+          ))}
+        </RowList>
       )}
-    </div>
+    </Stack>
   );
 }
 
 export const rewardsWidget = defineWidget<RewardsData>({
   key: "rewards",
   useData: useRewardsData,
-  View: RewardsBody,
-  Detail: ({ data }) => {
+  View: RewardsView,
+  Detail: ({ data, tone }) => {
     const t = useTranslations("dashboard.widgets.rewards");
     const format = useFormatSettings();
-    if (data.sums.length === 0) return <RewardsBody size="L" data={data} />;
+    if (data.sums.length === 0) {
+      return <RewardsView size="L" data={data} settings={{}} tone={tone} />;
+    }
     return (
       <div className="flex flex-col gap-4">
         {data.sums.map((sum) => (
@@ -307,9 +770,9 @@ export const rewardsWidget = defineWidget<RewardsData>({
             {data.manages ? (
               <>
                 <Figure
-                  label={t("toPay")}
+                  label={t("toPayLabel")}
                   value={formatPrice(sum.approved, sum.currency, format)}
-                  className="text-gold"
+                  className={toneText[tone]}
                 />
                 <Figure
                   label={t("toApprove")}
@@ -319,9 +782,9 @@ export const rewardsWidget = defineWidget<RewardsData>({
             ) : (
               <>
                 <Figure
-                  label={t("earned")}
+                  label={t("earnedLabel")}
                   value={formatPrice(sum.earned, sum.currency, format)}
-                  className="text-gold"
+                  className={toneText[tone]}
                 />
                 <Figure
                   label={t("plannedLabel")}
