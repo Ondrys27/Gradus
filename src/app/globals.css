@@ -678,6 +678,49 @@ html[data-showcase] * {
 }
 
 /*
+ * Live writing (28.4): the cursors and selections of others, each in their
+ * colour (a theme token set by the editor as --caret-color), with the name
+ * above the cursor. Never part of the text.
+ */
+.collab-caret {
+  position: relative;
+  margin-inline: -1px;
+  border-inline-start: 2px solid var(--caret-color);
+  word-break: normal;
+  pointer-events: none;
+}
+.collab-caret__label {
+  position: absolute;
+  bottom: 100%;
+  left: -2px;
+  padding: 0 6px;
+  border-radius: 6px 6px 6px 0;
+  background: var(--caret-color);
+  color: var(--color-canvas);
+  font-family: var(--font-sans, inherit);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  white-space: nowrap;
+  user-select: none;
+  animation: collab-caret-in 160ms ease-out;
+}
+.collab-selection {
+  background: color-mix(in oklab, var(--caret-color) 24%, transparent);
+}
+@keyframes collab-caret-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .collab-caret__label {
+    animation: none;
+  }
+}
+
+/*
  * Notes: calm, paper-like text. The first line of a note is its title, so it
  * reads as one whatever block it is. Checklists use the app's colours.
  */

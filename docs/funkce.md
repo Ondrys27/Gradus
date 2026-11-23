@@ -58,7 +58,8 @@ Stav k 9. 11. 2026.
 | Poznámky | Podklady k podnikání (ideální zákazník, ceník, konkurence, skript) na jednom místě, jako Apple Notes. Ukládá se samo. Každý má své poznámky v každé firmě, kde pracuje. | majitel, pracovník | žádný |
 | Složky | Levý panel: Moje poznámky · Sdílené se mnou · složky (jedna úroveň podsložek, barva, přetažení poznámky do složky) · Koš. | majitel, pracovník | žádný |
 | Sdílení ve firmě | Poznámku nebo složku jde sdílet člověku, skupině nebo celé firmě jako „může číst“ / „může upravovat“, volitelně „mohou sdílet dál“; přehled, kdo má přístup a odkud (přímo / ze složky). Poznámka ve sdílené složce dědí sdílení, jde ji nechat „v této složce soukromou“. Sdílení přijde do zvonku. Kdo odejde z firmy, přístup ztratí hned; jeho sdílené poznámky zůstanou firmě. | majitel, pracovník | žádný |
-| Historie verzí | Kdo a kdy poznámku uložil (verze za člověka a 10 minut práce, posledních 50), starší verze jde obnovit. | majitel, pracovník | žádný |
+| Psaní víc lidí naráz | Sdílenou poznámku (text i mapu) píše víc lidí najednou jako v Google Docs: barevné kurzory a výběry se jménem, tváře právě přítomných, „Píše Váša…“, změny se slévají bez konfliktů. Čtenář vidí změny živě. Bez spojení se píše dál a po připojení se změny sloučí. Do 10 lidí naráz, další čte, dokud se místo neuvolní. Zpět vrací jen vlastní změny. | majitel, pracovník | žádný |
+| Historie verzí | Kdo a kdy poznámku psal (verze za 10 minut práce se jmény všech autorů, nová i při zavření poznámky, posledních 50), starší verze jde obnovit. | majitel, pracovník | žádný |
 | Šablony | Připravené osnovy (ideální zákazník, nabídka, ceník, konkurence, prodejní skript), každá i jako mapa. | majitel, pracovník | žádný |
 | Myšlenková mapa místo textu | Poznámka jde psát jako mapa s barvami, poznámkami u uzlů a odkazy. Jde ji převést na text a zpátky. | majitel, pracovník | žádný |
 | Odkazy na záznamy | Přes `@` jde do textu vložit kontakt, obchod, událost nebo pracovníka. U záznamu je pak vidět „Zmíněno v poznámkách“. Čtenář sdílené poznámky bez práva k záznamu vidí „Skrytý záznam“. | majitel, pracovník | žádný |
@@ -301,7 +302,7 @@ Druhy `check` a `summary` jsou v kódu připravené, ale dnes je nic nevolá. <!
 | Časové okno | Volání a schůzky navrhuje jen v pracovní dny 8:00–17:30 v pásmu uživatele, mimo svátky ČR. | majitel, pracovník |
 | Tutoriál a průvodce | Grady provází tutoriálem. Texty jsou z překladů, žádný model. | majitel, pracovník |
 | Představení Poznámek | Jednou za život účtu, pevný text. | majitel |
-| Uložit do poznámek | Odpověď Gradyho jde jedním tlačítkem do poznámky. | majitel |
+| Uložit do poznámek | Odpověď Gradyho jde jedním tlačítkem do poznámky; do otevřené sdílené poznámky ji server vloží jako další účastník, nic nepřepíše. | majitel |
 | Palec nahoru / dolů | Hodnocení odpovědi Gradyho, pro naši kontrolu kvality. | majitel, pracovník |
 | Potvrdit, Zrušit, Vrátit | Karta změny pod odpovědí Gradyho: Potvrdit spustí čekající krok (server znovu ověří vlastníka, práva a vstup, návrh propadá po 30 min), Zrušit ho zahodí, Vrátit vezme zpět hotovou změnu do 24 h a nic nepřepíše, když se záznam mezitím změnil jinak. XP a oslavy jako při práci rukama. | majitel, pracovník |
 | Reakce na návrh | Přidat, Později, Zavřít. Úkoly z návrhu vzniknou až po Přidat. | majitel |

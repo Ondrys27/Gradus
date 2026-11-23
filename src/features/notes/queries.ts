@@ -13,17 +13,10 @@ import { useWorkspace } from "@/features/account/workspace-queries";
 import { track } from "@/lib/analytics/client";
 import { clientOps } from "@/lib/ops-client";
 import { createClient } from "@/lib/supabase/client";
+import { closeSession, flushSession, pullSessions } from "./collab/registry";
 import { NoteNotWritableError, setNotePinned, trashNote, writeNote } from "./ops";
-import {
-  appendToDoc,
-  draftFromDoc,
-  previewFromText,
-  type DocNode,
-  type NoteDraft,
-} from "./document";
-import { useMentionText } from "./mention-queries";
-import { appendTextToMap } from "./mindmap/convert";
-import { isMapDoc, mapDraft, sanitizeMapDoc, type MapDoc, type NoteKind } from "./mindmap/map-doc";
+import { previewFromText, type DocNode, type NoteDraft } from "./document";
+import type { MapDoc, NoteKind } from "./mindmap/map-doc";
 import { noteContentOf, noteKindOf } from "./mindmap/note-row";
 import { NoteSaver, type BackupEntry, type DraftBackup } from "./note-saver";
 import { sortNotes, TRASH_DAYS } from "./notes-logic";
@@ -33,9 +26,6 @@ import type { IndustryKey } from "@/features/onboarding/industries";
 
 const TRASH_LIMIT = 200;
 export const SEARCH_LIMIT = 50;
-
-/** Sent with { id, content } when a note's text was changed outside its editor. */
-export const NOTE_REPLACED_EVENT = "gradus:note-replaced";
 
 export const NOTE_LIST_COLUMNS =
   "id, kind, title, preview, pinned, created_at, updated_at, is_demo" as const;
@@ -523,7 +513,9 @@ export function useDeleteNote() {
       from: "editor" | "list" | "keyboard";
     }) => {
       await getNoteSaver(user.id).flush(id);
+      await flushSession(user.id, id);
       await trashNote(clientOps(), { userId: user.id, id, pinned, from });
+      void closeSession(user.id, id);
     },
     onMutate: ({ id }) => {
       const previous = queryClient.getQueryData<NoteListItem[]>(key);
@@ -574,7 +566,9 @@ export function useRemoveBlankNote() {
       // check below sees the note as blank; a note with text is never removed.
       const saver = getNoteSaver(user.id);
       await saver.flush(id);
+      await flushSession(user.id, id);
       saver.discard(id);
+      await closeSession(user.id, id);
       const { error } = await createClient()
         .from("notes")
         .delete()
@@ -596,52 +590,38 @@ export function useRemoveBlankNote() {
 }
 
 /**
- * Adds a small heading and blocks at the end of an existing note (one of
- * Grady's answers), through the autosave like any edit. An open editor of
- * the note takes the new text over, so its next keystroke keeps it.
+ * Adds a small heading and the text at the end of an existing note (one of
+ * Grady's answers). The server writes it into the note's live document as
+ * one more participant (28.4), so whoever has the note open sees it arrive
+ * and nothing they type meanwhile is overwritten.
  */
 export function useAppendToNote() {
   const { user } = useSession();
   const queryClient = useQueryClient();
-  const mentionText = useMentionText();
   return useMutation({
     mutationFn: async ({
       id,
       heading,
-      blocks,
       text,
     }: {
       id: string;
       heading: string;
-      blocks: DocNode[];
-      /** The answer as plain text, for a map note. */
+      /** The answer as plain text; the server makes the blocks (or a map's branch) from it. */
       text: string;
     }) => {
-      const saver = getNoteSaver(user.id);
-      let content = saver.latestDraft(id)?.content;
-      if (!content) {
-        const { data, error } = await createClient()
-          .from("notes")
-          .select("kind, content")
-          .eq("id", id)
-          .is("deleted_at", null)
-          .maybeSingle();
-        if (error) throw error;
-        if (!data) throw new Error("note_not_found");
-        content = noteContentOf(noteKindOf(data.kind), data.content);
-      }
-      // A map gets the answer as a new branch, a text note at its end.
-      const next = isMapDoc(content)
-        ? appendTextToMap(sanitizeMapDoc(content), heading, text)
-        : appendToDoc(content as DocNode, heading, blocks);
-      const draft = isMapDoc(next)
-        ? mapDraft(next, { mentionText })
-        : draftFromDoc(next, { mentionText });
-      saver.edit(id, draft);
-      applyDraftToCache(queryClient, user.id, id, draft);
-      window.dispatchEvent(new CustomEvent(NOTE_REPLACED_EVENT, { detail: { id, content: next } }));
-      await saver.flush(id);
-      if (saver.unsavedDraft(id)) throw new Error("note_not_saved");
+      // Own unsaved typing reaches the database first, so the addition lands after it.
+      await getNoteSaver(user.id).flush(id);
+      await flushSession(user.id, id);
+      const response = await fetch("/api/notes/append", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ noteId: id, heading, text }),
+      });
+      if (!response.ok) throw new Error("note_not_saved");
+      pullSessions(user.id);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: noteKeys.list(user.id) });
     },
   });
 }

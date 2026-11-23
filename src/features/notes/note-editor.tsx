@@ -1,28 +1,32 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useQueryClient } from "@tanstack/react-query";
 import { Extension } from "@tiptap/core";
+import Collaboration from "@tiptap/extension-collaboration";
+import CollaborationCaret from "@tiptap/extension-collaboration-caret";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { Placeholder } from "@tiptap/extensions";
 import { FileCodeIcon, FileTextIcon, NetworkIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { track } from "@/lib/analytics/client";
 import { countNodes } from "@/lib/mindmap/formats";
-import { useSession } from "@/features/account/queries";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatDateTime } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
-import { draftFromDoc, type DocNode, type NoteDraft } from "./document";
+import type { DocNode, NoteDraft } from "./document";
+import { Y_TEXT } from "./collab/limits";
+import { LiveNotice, LivePeople, LiveStatus } from "./collab/live-bar";
+import { renderCaret, renderSelection } from "./collab/people";
+import { noteStarterKit } from "./collab/schema";
+import { useCollabSession } from "./collab/use-collab";
 import { ConvertDialog } from "./mindmap/convert-dialog";
 import { mapToMindTree, textDocToMap } from "./mindmap/convert";
 import { mapDraft } from "./mindmap/map-doc";
 import { downloadTree, NoteMenu, TEXT_EXPORTS, type TextExport } from "./mindmap/note-menu";
 import { EditorToolbar, LINK_SHORTCUT_EVENT } from "./editor-toolbar";
-import { isAllowedLink } from "./links";
 import { useNoteBacklinks } from "./link-queries";
 import { createRecordMention, MentionMenuBridge, MentionTargetsContext } from "./mention-extension";
 import { MentionMenu } from "./mention-menu";
@@ -35,7 +39,7 @@ import {
   type MentionAttrs,
   type MentionTarget,
 } from "./mentions";
-import { applyDraftToCache, NOTE_REPLACED_EVENT, useNoteSaver, type NoteDetail } from "./queries";
+import { useNoteSaver, type NoteDetail } from "./queries";
 import { useKeyboardInset } from "./use-keyboard-inset";
 
 /** ⌘⇧K opens the link field (⌘K is the app's search). */
@@ -91,7 +95,8 @@ export function Backlinks({ noteId }: { noteId: string }) {
 /**
  * Chips show the record's current name: a renamed contact reads its new name
  * as soon as the note opens. The stored label is brought in line quietly
- * (no save, no undo step); the next edit saves it with the text.
+ * (no undo step), by someone who may write; in a live note the others get it
+ * like any change.
  */
 function refreshMentionLabels(editor: Editor, targets: ReadonlyMap<string, MentionTarget>) {
   const nodes: { pos: number; attrs: MentionAttrs }[] = [];
@@ -110,44 +115,11 @@ function refreshMentionLabels(editor: Editor, targets: ReadonlyMap<string, Menti
   editor.view.dispatch(tr);
 }
 
-/** Saving state of the open note, quietly next to its date. */
-export function SaveStatus({ noteId }: { noteId: string }) {
-  const t = useTranslations("notes.saveStatus");
-  const saver = useNoteSaver();
-  useSyncExternalStore(saver.subscribe, saver.getSnapshot, saver.getSnapshot);
-  const status = saver.statusOf(noteId);
-  if (!status) return null;
-  const warn = status === "error" || status === "offline" || status === "tooLarge" || status === "denied";
-  return (
-    <span
-      role="status"
-      aria-live="polite"
-      data-testid="note-save-status"
-      data-status={status}
-      className={cn(
-        "inline-flex items-center gap-1.5 text-xs transition-colors",
-        warn ? "text-orange" : "text-ink-muted",
-      )}
-    >
-      <span
-        aria-hidden
-        className={cn(
-          "size-1.5 rounded-full",
-          status === "saved" ? "bg-green/70" : warn ? "bg-orange" : "animate-pulse bg-ink-muted motion-reduce:animate-none",
-        )}
-      />
-      {t(status)}
-    </span>
-  );
-}
-
 export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back, onConvert }: Props) {
   const t = useTranslations("notes");
   const tMap = useTranslations("notes.map");
   const tio = useTranslations("milestones.mapIo");
   const [converting, setConverting] = useState(false);
-  const { user } = useSession();
-  const queryClient = useQueryClient();
   const saver = useNoteSaver();
   const settings = useFormatSettings();
   const [focused, setFocused] = useState(false);
@@ -158,21 +130,17 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back, 
   const [mentions, setMentions] = useState(() => mentionsInDoc(note.content));
   const targets = useMentionTargets(mentions, { id: note.id, spaceId: note.space_id });
 
+  // The note is written live with everyone who has it open (28.4).
+  const live = useCollabSession(note, !readOnly);
+  const snapshot = live.snapshot;
+  const session = live.session && snapshot.phase !== "loading" ? live.session : null;
+  const doc = session?.doc ?? null;
+  const writable = !readOnly && !!session && snapshot.writable;
+  const me = session?.awareness.getLocalState()?.user as { name?: string; color?: string } | undefined;
+
   const extensions = useMemo(
     () => [
-      StarterKit.configure({
-        heading: { levels: [1, 2, 3] },
-        codeBlock: false,
-        link: {
-          openOnClick: true,
-          autolink: true,
-          linkOnPaste: true,
-          defaultProtocol: "https",
-          protocols: ["mailto"],
-          isAllowedUri: (url) => isAllowedLink(url),
-          HTMLAttributes: { rel: "noopener noreferrer nofollow", target: "_blank" },
-        },
-      }),
+      noteStarterKit(),
       TaskList,
       TaskItem.configure({ nested: true }),
       Placeholder.configure({
@@ -181,17 +149,29 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back, 
       }),
       LinkShortcut,
       createRecordMention(menu),
+      ...(session && doc
+        ? [
+            Collaboration.configure({ document: doc, field: Y_TEXT }),
+            CollaborationCaret.configure({
+              provider: { awareness: session.awareness },
+              user: { name: me?.name ?? "", color: me?.color ?? "var(--color-violet)" },
+              render: renderCaret,
+              selectionRender: renderSelection,
+            }),
+          ]
+        : []),
     ],
-    [t, menu],
+    // The document is the session's; a new one (a rebuilt note) makes a new editor.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [t, menu, session, doc],
   );
 
   const editor = useEditor(
     {
       extensions,
-      content: note.content as DocNode as object,
-      editable: !readOnly,
+      editable: writable,
       immediatelyRender: false,
-      autofocus: autoFocus && !readOnly ? "end" : false,
+      autofocus: autoFocus && writable ? "end" : false,
       editorProps: {
         attributes: {
           class: "note-prose",
@@ -200,11 +180,8 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back, 
         },
       },
       onUpdate: ({ editor: e }) => {
-        const doc = e.getJSON() as DocNode;
-        const draft = draftFromDoc(doc, { mentionText });
-        saver.edit(note.id, draft);
-        applyDraftToCache(queryClient, user.id, note.id, draft);
-        const next = mentionsInDoc(doc);
+        // Own and others' changes alike; the session saves, the list follows through the cache.
+        const next = mentionsInDoc(e.getJSON() as DocNode);
         setMentions((previous) =>
           mentionSetKey(previous) === mentionSetKey(next) ? previous : next,
         );
@@ -219,29 +196,18 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back, 
         blurTimer.current = setTimeout(() => setFocused(false), 200);
       },
     },
-    [note.id],
+    // A new editor for another note or another live document, never for a re-render.
+    [note.id, session, doc],
   );
 
   useEffect(() => {
-    editor?.setEditable(!readOnly);
-  }, [editor, readOnly]);
+    editor?.setEditable(writable);
+  }, [editor, writable]);
 
+  // Stored chip names follow the records; only someone who may write changes them.
   useEffect(() => {
-    if (editor && !editor.isDestroyed && targets.data) refreshMentionLabels(editor, targets.data);
-  }, [editor, targets.data]);
-
-  // Text added from outside (one of Grady's answers) shows in the open editor
-  // too, so the next keystroke does not save over it.
-  useEffect(() => {
-    if (!editor) return;
-    const onReplaced = (event: Event) => {
-      const detail = (event as CustomEvent<{ id: string; content: DocNode }>).detail;
-      if (detail?.id !== note.id) return;
-      editor.commands.setContent(detail.content as object, { emitUpdate: false });
-    };
-    window.addEventListener(NOTE_REPLACED_EVENT, onReplaced);
-    return () => window.removeEventListener(NOTE_REPLACED_EVENT, onReplaced);
-  }, [editor, note.id]);
+    if (writable && editor && !editor.isDestroyed && targets.data) refreshMentionLabels(editor, targets.data);
+  }, [editor, targets.data, writable]);
 
   // Leaving the note (another note, another page) sends its text right away.
   useEffect(() => {
@@ -250,8 +216,14 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back, 
       void saver.flush(id);
     };
   }, [note.id, saver]);
+  useEffect(() => {
+    if (!session) return;
+    return () => {
+      void session.flush();
+    };
+  }, [session]);
 
-  const showToolbar = !!editor && !readOnly;
+  const showToolbar = !!editor && !!session && writable;
 
   /** The text as it is now (the editor's, or the stored one before it loads), as a map. */
   const asMap = () =>
@@ -277,7 +249,7 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back, 
     <NoteMenu
       label={tMap("menu")}
       groups={[
-        ...(onConvert && !readOnly
+        ...(onConvert && writable
           ? [
               {
                 items: [
@@ -319,6 +291,7 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back, 
         <div className="sticky top-0 z-10 flex items-center gap-1 bg-canvas px-4 pt-[max(4px,env(safe-area-inset-top))] pb-1">
           {back}
           <span className="flex-1" />
+          <LivePeople snapshot={snapshot} />
           {moreMenu}
           {actions}
         </div>
@@ -334,6 +307,7 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back, 
             <span className="flex-1" />
           )}
           <div className="flex shrink-0 items-center">
+            <LivePeople snapshot={snapshot} />
             {moreMenu}
             {actions}
           </div>
@@ -345,12 +319,21 @@ export function NoteEditor({ note, readOnly, autoFocus, isPhone, actions, back, 
         <p className="mt-3 mb-5 text-center text-xs text-ink-muted">
           <time dateTime={note.updated_at}>{formatDateTime(new Date(note.updated_at), settings)}</time>
           <span className="mx-2">·</span>
-          <SaveStatus noteId={note.id} />
+          <LiveStatus snapshot={snapshot} />
         </p>
-        <MentionTargetsContext.Provider value={targets.data}>
-          <EditorContent editor={editor} />
-        </MentionTargetsContext.Provider>
-        {!readOnly && <MentionMenu bridge={menu} />}
+        <LiveNotice snapshot={snapshot} />
+        {session && editor ? (
+          <MentionTargetsContext.Provider value={targets.data}>
+            <EditorContent editor={editor} />
+          </MentionTargetsContext.Provider>
+        ) : (
+          <div className="flex flex-col gap-3 pt-2" aria-hidden data-testid="note-editor-loading">
+            <Skeleton className="h-8 w-2/3" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-5/6" />
+          </div>
+        )}
+        {writable && <MentionMenu bridge={menu} />}
       </div>
 
       {showToolbar && isPhone && focused && (

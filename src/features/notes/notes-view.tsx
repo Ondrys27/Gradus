@@ -36,6 +36,7 @@ import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/client";
 import { countNodes } from "@/lib/mindmap/formats";
 import { draftFromDoc, EMPTY_DOC, isBlank, type DocNode, type NoteDraft } from "./document";
+import { closeSession, openSession } from "./collab/registry";
 import { useMentionText } from "./mention-queries";
 import { mindTreeToMap } from "./mindmap/convert";
 import { NoteMapImportDialog, type NoteImport } from "./mindmap/map-import-dialog";
@@ -243,9 +244,14 @@ export function NotesView() {
   const dropIfBlank = useCallback(
     (id: string) => {
       if (readOnly) return;
-      const text =
-        saver.latestDraft(id)?.content_text ??
-        queryClient.getQueryData<NoteDetail | null>(noteKeys.detail(user.id, id))?.content_text;
+      // The live document knows best what is in the note now (others may be writing too).
+      const live = openSession(user.id, id);
+      const text = live
+        ? live.getSnapshot().phase === "ready"
+          ? live.draft().content_text
+          : undefined
+        : (saver.latestDraft(id)?.content_text ??
+          queryClient.getQueryData<NoteDetail | null>(noteKeys.detail(user.id, id))?.content_text);
       if (text !== undefined && isBlank({ content_text: text })) removeBlank.mutate(id);
     },
     [queryClient, readOnly, removeBlank, saver, user.id],
@@ -321,9 +327,17 @@ export function NotesView() {
         openNew(createNote({ draft, where: "convert", source: "convert", folderId: targetFolder }));
         return;
       }
-      saver.edit(id, draft);
-      applyDraftToCache(queryClient, user.id, id, draft);
-      void saver.flush(id);
+      // The last live changes are saved first; the note then becomes the other kind in the
+      // database (its live state starts again from that), and only then on the screen.
+      void (async () => {
+        const live = openSession(user.id, id);
+        if (live) await live.flush();
+        saver.edit(id, draft);
+        await saver.flush(id);
+        live?.announceReset();
+        applyDraftToCache(queryClient, user.id, id, draft);
+        await closeSession(user.id, id);
+      })();
     },
     [createNote, openNew, queryClient, readOnly, saver, targetFolder, user.id],
   );
@@ -441,6 +455,15 @@ export function NotesView() {
     const kind = noteKindOf(stored.kind);
     const content = noteContentOf(kind, stored.content) as DocNode | MapDoc;
     const draft: NoteDraft = { kind, title: stored.title, content, content_text: stored.content_text };
+    // In the live note the old version is one more change: everyone sees it at once, Undo works.
+    const live = openSession(user.id, detail.id);
+    if (live && live.noteKind === kind && live.getSnapshot().writable) {
+      live.applyContent(content);
+      await live.flush();
+      track("note_version_restored", { kind, own: version.savedBy === user.id });
+      return;
+    }
+    if (live) await closeSession(user.id, detail.id);
     saver.edit(detail.id, draft);
     applyDraftToCache(queryClient, user.id, detail.id, draft);
     await saver.flush(detail.id);

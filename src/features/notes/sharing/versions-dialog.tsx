@@ -11,8 +11,9 @@ import { cn } from "@/lib/utils";
 import { useNoteVersions, type NoteVersion } from "./queries";
 
 /**
- * Who saved the note and when, newest first; any older version comes back
- * with Restore (a normal save, so the state it replaces stays a version too).
+ * Who wrote the note and when, newest first (live writing puts everyone who
+ * wrote in those ten minutes into one version); any older version comes back
+ * with Restore (one more change, so the state it replaces stays a version too).
  * Readers see the history, only the owner and editors restore.
  */
 export function VersionsDialog({
@@ -85,7 +86,11 @@ export function VersionsDialog({
                 )}
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <span className="flex flex-wrap items-baseline gap-x-2 text-sm">
-                    <span className="font-medium text-ink">{version.savedByName || t("someone")}</span>
+                    <span className="font-medium text-ink" data-testid="note-version-authors">
+                      {(version.authorNames.length > 0 ? version.authorNames : [version.savedByName])
+                        .filter(Boolean)
+                        .join(", ") || t("someone")}
+                    </span>
                     <time dateTime={version.updatedAt} className="text-ink-muted tabular-nums">
                       {formatDateTime(new Date(version.updatedAt), settings)}
                     </time>
