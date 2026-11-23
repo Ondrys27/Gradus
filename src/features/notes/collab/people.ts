@@ -27,6 +27,7 @@ export function renderCaret(user: Record<string, unknown>): HTMLElement {
   caret.style.setProperty("--caret-color", String(user.color ?? "var(--color-violet)"));
   const label = document.createElement("span");
   label.classList.add("collab-caret__label");
+  label.setAttribute("aria-hidden", "true");
   label.textContent = String(user.name ?? "");
   caret.append(label);
   return caret;

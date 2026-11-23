@@ -20,7 +20,19 @@ async function openNote(browser: Browser, account: Account, noteId: string, cons
   return { context, page };
 }
 
-const editorText = (page: Page) => page.getByTestId("note-editor").innerText();
+/** The text of the note without the cursors of others (their name labels sit inside the editor) and trailing breaks. */
+const editorText = (page: Page) =>
+  page.getByTestId("note-editor").evaluate((element) => {
+    const copy = element.cloneNode(true) as HTMLElement;
+    copy.querySelectorAll(".collab-caret").forEach((caret) => caret.remove());
+    // innerText needs layout; the detached copy is measured off-screen.
+    copy.style.position = "fixed";
+    copy.style.left = "-10000px";
+    document.body.append(copy);
+    const text = copy.innerText;
+    copy.remove();
+    return text.replace(/[ \t]+$/gm, "").trimEnd();
+  });
 
 /** Puts the cursor at the end of the note and types on a new line. */
 async function typeAtEnd(page: Page, text: string, newLine = false) {
