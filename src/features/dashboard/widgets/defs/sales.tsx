@@ -789,18 +789,16 @@ function NewContactsView({ size, data }: WidgetViewProps<ContactsData>) {
   if (size === "M") {
     const change = signedChange(data.count, data.previous);
     const latest = data.latest[0];
+    // Three short lines, so nothing wraps out of a one-row widget on a phone.
     return (
-      <Stack between>
-        <div className="flex flex-col gap-1.5">
-          <Hero>{hero}</Hero>
-          <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <Delta direction={change.direction}>
-              {tw("vsLastMonth", { value: formatNumber(change.value, { signed: true }, format) })}
-            </Delta>
-            <Sub className="flex-1">{t("hint")}</Sub>
-          </div>
+      <Stack>
+        <Hero unit={t("hint")}>{hero}</Hero>
+        <div className="flex min-w-0 items-center gap-2">
+          <Delta direction={change.direction}>
+            {tw("vsLastMonth", { value: formatNumber(change.value, { signed: true }, format) })}
+          </Delta>
+          {latest && <Sub className="flex-1">{tw("latest", { name: name(latest) })}</Sub>}
         </div>
-        {latest && <Sub>{tw("latest", { name: name(latest) })}</Sub>}
       </Stack>
     );
   }

@@ -230,12 +230,11 @@ function MonthView({ size, data, tone }: WidgetViewProps<MonthData>) {
   }
 
   if (size === "M") {
+    // The hero keeps the whole row; the change is the signed amount alone,
+    // so it fits beside "Expenses · Balance" even on a phone.
     return (
       <Stack className="gap-1">
-        <div className="flex items-center justify-between gap-2">
-          <div className="min-w-0 flex-1">{hero("lg")}</div>
-          {delta}
-        </div>
+        {hero("lg")}
         <Segments
           parts={[
             { key: "income", value: current.income, tone },
@@ -243,12 +242,23 @@ function MonthView({ size, data, tone }: WidgetViewProps<MonthData>) {
           ]}
           label={t("split")}
         />
-        <Sub>
-          {t("expense")} {money(current.expense)} · {t("balance")}{" "}
-          <span className={cn("tabular-nums", balance < 0 ? "text-pink" : "text-ink")}>
-            {money(balance)}
-          </span>
-        </Sub>
+        <div className="flex min-w-0 items-center gap-2">
+          {change.direction !== "same" && (
+            <Delta direction={change.direction}>
+              {formatNumber(
+                change.direction === "down" ? -change.difference : change.difference,
+                { ...moneyFormat(change.difference), signed: true },
+                format,
+              )}
+            </Delta>
+          )}
+          <Sub className="flex-1">
+            {t("expense")} {money(current.expense)} · {t("balance")}{" "}
+            <span className={cn("tabular-nums", balance < 0 ? "text-pink" : "text-ink")}>
+              {money(balance)}
+            </span>
+          </Sub>
+        </div>
         {note}
       </Stack>
     );

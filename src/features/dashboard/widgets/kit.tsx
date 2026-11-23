@@ -210,7 +210,9 @@ export function Hero({
     <div
       className={cn(
         "flex items-baseline gap-1.5 leading-none font-bold tracking-[-0.02em] whitespace-nowrap tabular-nums",
-        size === "lg" ? "text-[clamp(26px,16cqi,42px)]" : "text-[clamp(22px,9cqi,30px)]",
+        // Grows with the widget's width, but never so far that the line under
+        // it and a chart fall out of a one-row widget on a phone.
+        size === "lg" ? "text-[clamp(26px,11cqi,40px)]" : "text-[clamp(22px,9cqi,30px)]",
         status === "bad" && "text-pink",
         status === "warn" && "text-gold",
         status === "good" && "text-green",
@@ -719,8 +721,9 @@ export function Empty({
       </Stack>
     );
   }
+  // Top aligned like a hero, never floating in the middle of a tall card.
   return (
-    <div className="flex h-full min-h-0 flex-col justify-center gap-2">
+    <div className="flex min-h-0 flex-col gap-2">
       <div className="flex items-center gap-2.5">
         {!compact && (
           <span className={cn("grid size-8 shrink-0 place-items-center rounded-lg border", toneSoft[tone])}>

@@ -343,7 +343,7 @@ export const quickActionsWidget = defineWidget<true>({
 function SatisfactionIdle({ size }: { size: WidgetSize }) {
   const t = useTranslations("dashboard.widgets.satisfaction");
   return (
-    <div className="flex min-h-0 flex-1 flex-col justify-center gap-1.5">
+    <div className="flex min-h-0 flex-1 flex-col gap-1.5">
       <div className="flex items-center gap-2">
         <SmileIcon aria-hidden className="size-4 shrink-0 text-ink-muted" />
         <p className="min-w-0 truncate text-sm font-semibold text-ink">{t("emptyTitle")}</p>

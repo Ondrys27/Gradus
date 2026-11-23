@@ -268,7 +268,9 @@ function TodayM({ overview, tone }: { overview: Overview; tone: Tone }) {
         <LiveNumber value={counts.tasks} />
       </Hero>
       <ul className="flex flex-wrap gap-x-4 gap-y-1">
-        {others.map(({ key, icon: Icon, count }) => (
+        {others
+          .filter((part) => part.count > 0)
+          .map(({ key, icon: Icon, count }) => (
           <li key={key} className="flex items-center gap-1.5 text-sm">
             <Icon
               aria-hidden
@@ -614,12 +616,15 @@ function OverdueView({
         <Hero status="bad" unit={unit}>
           <LiveNumber value={count} />
         </Hero>
-        <Sub>{oldest.title}</Sub>
-        <Sub className="text-xs text-ink-muted">
-          {t("oldestAgo", {
-            count: oldestDays,
-            formatted: formatNumber(oldestDays, {}, settings),
-          })}
+        <Sub>
+          {oldest.title}
+          <span className="text-xs text-ink-muted">
+            {" · "}
+            {t("oldestAgo", {
+              count: oldestDays,
+              formatted: formatNumber(oldestDays, {}, settings),
+            })}
+          </span>
         </Sub>
       </Stack>
     );
