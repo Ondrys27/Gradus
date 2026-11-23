@@ -45,17 +45,26 @@ export async function writeNote(
   if (updated.error) throw updated.error;
   if (updated.data.length > 0) return { created: false };
   const place = args.draft.place;
-  const inserted = await env.db.from("notes").insert({
-    id: args.id,
-    user_id: args.userId,
-    // Without a place the note lives in the account's own space (the guard
-    // trigger would pick the same); the column is required in the types.
-    space_id: place?.spaceId ?? args.userId,
-    ...(place ? { folder_id: place.folderId } : {}),
-    ...text,
-  });
-  if (!inserted.error) return { created: true };
-  if (inserted.error.code !== "23505") throw inserted.error;
+  // ON CONFLICT DO NOTHING: when the id exists (someone else's shared note,
+  // or one whose access just ended) nothing is inserted and nothing fails
+  // with a 409 in the console; the second update then decides.
+  const inserted = await env.db
+    .from("notes")
+    .upsert(
+      {
+        id: args.id,
+        user_id: args.userId,
+        // Without a place the note lives in the account's own space (the guard
+        // trigger would pick the same); the column is required in the types.
+        space_id: place?.spaceId ?? args.userId,
+        ...(place ? { folder_id: place.folderId } : {}),
+        ...text,
+      },
+      { onConflict: "id", ignoreDuplicates: true },
+    )
+    .select("id");
+  if (inserted.error) throw inserted.error;
+  if (inserted.data.length > 0) return { created: true };
   const again = await update();
   if (again.error) throw again.error;
   if (again.data.length === 0) throw new NoteNotWritableError();

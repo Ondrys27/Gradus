@@ -793,6 +793,7 @@ export function NotesView() {
           onTemplate={(key, kind) => newNote("empty_state", key, kind)}
           onBlank={(kind) => newNote("empty_state", undefined, kind)}
           onOpenTrash={() => setTrashOpen(true)}
+          onNewFolder={() => setFolderDialog({ mode: "new", parentId: null })}
         />
       ) : isPhone ? (
         <>

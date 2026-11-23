@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  FolderPlusIcon,
   MessageSquareQuoteIcon,
   NetworkIcon,
   PackageIcon,
@@ -29,10 +30,12 @@ type Props = {
   onTemplate: (key: NoteTemplateKey, kind: NoteKind) => void;
   onBlank: (kind: NoteKind) => void;
   onOpenTrash: () => void;
+  /** No folders yet either: the side panel is hidden, so a folder starts here. */
+  onNewFolder: () => void;
 };
 
 /** No notes yet: five prepared outlines (as text or as a mind map), or a blank page or map. */
-export function NotesEmpty({ readOnly, onTemplate, onBlank, onOpenTrash }: Props) {
+export function NotesEmpty({ readOnly, onTemplate, onBlank, onOpenTrash, onNewFolder }: Props) {
   const t = useTranslations("notes");
   return (
     <section className="mx-auto flex w-full max-w-2xl flex-col gap-6 py-4 md:py-10">
@@ -104,6 +107,15 @@ export function NotesEmpty({ readOnly, onTemplate, onBlank, onOpenTrash }: Props
             >
               <NetworkIcon className="size-4" />
               {t("empty.blankMap")}
+            </button>
+            <button
+              type="button"
+              onClick={onNewFolder}
+              data-testid="notes-folder-new"
+              className="flex min-h-11 items-center gap-2 text-sm text-ink-muted hover:text-ink"
+            >
+              <FolderPlusIcon className="size-4" />
+              {t("nav.newFolder")}
             </button>
           </>
         )}
