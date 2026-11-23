@@ -3,6 +3,7 @@
 import {
   Component,
   forwardRef,
+  memo,
   Suspense,
   useEffect,
   useLayoutEffect,
@@ -86,8 +87,13 @@ class ChunkBoundary extends Component<{ children: ReactNode }, { failed: boolean
   }
 }
 
-/** The widget's code, then its data, in the widget's size; skeletons in its shape meanwhile. */
-export function LazyWidgetBody({
+/**
+ * The widget's code, then its data, in the widget's size; skeletons in its
+ * shape meanwhile. Memoised: a drag re-renders the grid many times a second,
+ * and the content of twenty widgets must not render along (their props do
+ * not change).
+ */
+export const LazyWidgetBody = memo(function LazyWidgetBody({
   widget,
   size,
   settings,
@@ -103,7 +109,7 @@ export function LazyWidgetBody({
       </Suspense>
     </ChunkBoundary>
   );
-}
+});
 
 function WidgetCode({
   widget,
@@ -188,276 +194,280 @@ type Flight = { x: number; y: number; scaleX: number; scaleY: number; opacity: n
  * the new size fades in over the morph), flies in from the gallery and
  * shrinks away when removed.
  */
-export const WidgetFrame = forwardRef<HTMLDivElement, FrameProps>(function WidgetFrame(
-  {
-    item,
-    meta,
-    name,
-    settings,
-    editing,
-    scope,
-    eager = false,
-    arrival = null,
-    onOpen,
-    onLongPress,
-    onRemove,
-    onResize,
-    onSettings,
-    dragProps,
-    style,
-    className,
-    ghost = false,
-    lifted = false,
-  },
-  forwardedRef,
-) {
-  const t = useTranslations("dashboard.board");
-  const tSizes = useTranslations("dashboard.board.sizes");
-  const reduceMotion = useReducedMotionSafe();
-  const { ref, near } = useNearScreen<HTMLDivElement>(eager);
-  const press = useRef<{ x: number; y: number; timer: number } | null>(null);
-  const pressed = useRef(false);
-  const { icon: Icon, tone } = WIDGET_APPEARANCE[meta.key as WidgetKey];
-  const fresh = arrival?.id === item.id;
+export const WidgetFrame = memo(
+  forwardRef<HTMLDivElement, FrameProps>(function WidgetFrame(
+    {
+      item,
+      meta,
+      name,
+      settings,
+      editing,
+      scope,
+      eager = false,
+      arrival = null,
+      onOpen,
+      onLongPress,
+      onRemove,
+      onResize,
+      onSettings,
+      dragProps,
+      style,
+      className,
+      ghost = false,
+      lifted = false,
+    },
+    forwardedRef,
+  ) {
+    const t = useTranslations("dashboard.board");
+    const tSizes = useTranslations("dashboard.board.sizes");
+    const reduceMotion = useReducedMotionSafe();
+    const { ref, near } = useNearScreen<HTMLDivElement>(eager);
+    const press = useRef<{ x: number; y: number; timer: number } | null>(null);
+    const pressed = useRef(false);
+    const { icon: Icon, tone } = WIDGET_APPEARANCE[meta.key as WidgetKey];
+    const fresh = arrival?.id === item.id;
 
-  // The flight from the gallery: measured where the widget landed, before paint.
-  const [flight, setFlight] = useState<Flight | null>(null);
-  const flown = useRef(false);
-  useLayoutEffect(() => {
-    if (!fresh || flown.current || reduceMotion || !ref.current) return;
-    flown.current = true;
-    const node = ref.current;
-    node.scrollIntoView({ block: "nearest", inline: "nearest" });
-    const to = node.getBoundingClientRect();
-    if (arrival?.from) {
-      setFlight({ ...flightFrom(arrival.from, to), opacity: 0.7 });
-    } else {
-      setFlight({ x: 0, y: -16, scaleX: 0.6, scaleY: 0.6, opacity: 0 });
-    }
-  }, [fresh, arrival, reduceMotion, ref]);
-
-  // The content of the size fades in over the morph; the first size does not.
-  const [sizeSeen, setSizeSeen] = useState(item.size);
-  const sizeChanged = sizeSeen !== item.size;
-  if (sizeChanged) setSizeSeen(item.size);
-
-  function setRefs(node: HTMLDivElement | null) {
-    ref.current = node;
-    if (typeof forwardedRef === "function") forwardedRef(node);
-    else if (forwardedRef) forwardedRef.current = node;
-  }
-
-  function cancelPress() {
-    if (press.current) window.clearTimeout(press.current.timer);
-    press.current = null;
-  }
-  function onPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
-    if (editing || !onLongPress || event.button !== 0) return;
-    pressed.current = false;
-    const { clientX, clientY } = event;
-    press.current = {
-      x: clientX,
-      y: clientY,
-      timer: window.setTimeout(() => {
-        pressed.current = true;
-        press.current = null;
-        haptic("lift");
-        onLongPress();
-      }, LONG_PRESS_MS),
-    };
-  }
-  function onPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
-    const start = press.current;
-    if (!start) return;
-    if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > LONG_PRESS_SLOP_PX)
-      cancelPress();
-  }
-  useEffect(() => cancelPress, []);
-
-  const sizes = meta.sizes;
-  const wiggle = wiggleOf(item.id);
-  const hiddenUntilFlight = fresh && !flown.current && !reduceMotion;
-  return (
-    <motion.div
-      ref={setRefs}
-      layoutId={editing || ghost || lifted ? undefined : widgetLayoutId(item.id, scope)}
-      layout={editing && !lifted ? true : undefined}
-      exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.5 }}
-      transition={
-        reduceMotion
-          ? { layout: { duration: 0 }, default: { duration: 0.01 } }
-          : { layout: LAYOUT_SPRING, default: { duration: SHRINK_SECONDS, ease: [0.4, 0, 1, 1] } }
+    // The flight from the gallery: measured where the widget landed, before paint.
+    const [flight, setFlight] = useState<Flight | null>(null);
+    const flown = useRef(false);
+    useLayoutEffect(() => {
+      if (!fresh || flown.current || reduceMotion || !ref.current) return;
+      flown.current = true;
+      const node = ref.current;
+      node.scrollIntoView({ block: "nearest", inline: "nearest" });
+      const to = node.getBoundingClientRect();
+      if (arrival?.from) {
+        setFlight({ ...flightFrom(arrival.from, to), opacity: 0.7 });
+      } else {
+        setFlight({ x: 0, y: -16, scaleX: 0.6, scaleY: 0.6, opacity: 0 });
       }
-      data-testid="widget"
-      data-widget={meta.key}
-      data-size={item.size}
-      data-tutorial={`widget-${meta.key}`}
-      style={{ ...style, ...(hiddenUntilFlight ? { visibility: "hidden" } : {}) }}
-      className={cn("group/widget relative h-full min-w-0", className)}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={cancelPress}
-      onPointerCancel={cancelPress}
-      onContextMenu={(event) => {
-        if (pressed.current) event.preventDefault();
-      }}
-      onClickCapture={(event) => {
-        // The click that ends a long press only starts editing.
-        if (pressed.current) {
-          pressed.current = false;
-          event.preventDefault();
-          event.stopPropagation();
-        }
-      }}
-    >
+    }, [fresh, arrival, reduceMotion, ref]);
+
+    // The content of the size fades in over the morph; the first size does not.
+    const [sizeSeen, setSizeSeen] = useState(item.size);
+    const sizeChanged = sizeSeen !== item.size;
+    if (sizeChanged) setSizeSeen(item.size);
+
+    function setRefs(node: HTMLDivElement | null) {
+      ref.current = node;
+      if (typeof forwardedRef === "function") forwardedRef(node);
+      else if (forwardedRef) forwardedRef.current = node;
+    }
+
+    function cancelPress() {
+      if (press.current) window.clearTimeout(press.current.timer);
+      press.current = null;
+    }
+    function onPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+      if (editing || !onLongPress || event.button !== 0) return;
+      pressed.current = false;
+      const { clientX, clientY } = event;
+      press.current = {
+        x: clientX,
+        y: clientY,
+        timer: window.setTimeout(() => {
+          pressed.current = true;
+          press.current = null;
+          haptic("lift");
+          onLongPress();
+        }, LONG_PRESS_MS),
+      };
+    }
+    function onPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+      const start = press.current;
+      if (!start) return;
+      if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > LONG_PRESS_SLOP_PX)
+        cancelPress();
+    }
+    useEffect(() => cancelPress, []);
+
+    const sizes = meta.sizes;
+    const wiggle = wiggleOf(item.id);
+    const hiddenUntilFlight = fresh && !flown.current && !reduceMotion;
+    return (
       <motion.div
-        key={flight ? "flown" : "still"}
-        initial={flight ?? false}
-        animate={{ x: 0, y: 0, scaleX: 1, scaleY: 1, opacity: 1 }}
-        transition={ARRIVE_SPRING}
-        className="h-full"
-      >
-        <div
-          {...(editing ? dragProps : {})}
-          onClick={(event) => {
-            if (editing || !onOpen || isInteractive(event.target)) return;
-            onOpen();
-          }}
-          style={
-            editing && !ghost && !lifted
-              ? ({
-                  animationDelay: `${wiggle.delay}s`,
-                  animationDuration: `${wiggle.duration}s`,
-                  "--wiggle-angle": `${wiggle.angle}deg`,
-                } as CSSProperties)
-              : undefined
+        ref={setRefs}
+        layoutId={editing || ghost || lifted ? undefined : widgetLayoutId(item.id, scope)}
+        layout={editing && !lifted ? true : undefined}
+        exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.5 }}
+        transition={
+          reduceMotion
+            ? { layout: { duration: 0 }, default: { duration: 0.01 } }
+            : { layout: LAYOUT_SPRING, default: { duration: SHRINK_SECONDS, ease: [0.4, 0, 1, 1] } }
+        }
+        data-testid="widget"
+        data-widget={meta.key}
+        data-size={item.size}
+        data-tutorial={`widget-${meta.key}`}
+        style={{ ...style, ...(hiddenUntilFlight ? { visibility: "hidden" } : {}) }}
+        className={cn("group/widget relative h-full min-w-0", className)}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={cancelPress}
+        onPointerCancel={cancelPress}
+        onContextMenu={(event) => {
+          if (pressed.current) event.preventDefault();
+        }}
+        onClickCapture={(event) => {
+          // The click that ends a long press only starts editing.
+          if (pressed.current) {
+            pressed.current = false;
+            event.preventDefault();
+            event.stopPropagation();
           }
-          className={cn(
-            "@container flex h-full flex-col gap-3 overflow-hidden rounded-card border border-line bg-surface p-4 shadow-glow transition-[border-color,background-color,box-shadow] duration-200",
-            !editing && onOpen && "cursor-pointer hover:border-line-strong hover:bg-surface-hover",
-            !editing && "[-webkit-touch-callout:none]",
-            editing && "cursor-grab touch-none select-none active:cursor-grabbing",
-            editing && !ghost && !lifted && "motion-safe:animate-wiggle",
-            ghost && "border-dashed border-violet/50 bg-violet/5 opacity-50 shadow-none",
-            lifted && "border-line-strong bg-surface-hover shadow-glow-strong",
-          )}
+        }}
+      >
+        <motion.div
+          key={flight ? "flown" : "still"}
+          initial={flight ?? false}
+          animate={{ x: 0, y: 0, scaleX: 1, scaleY: 1, opacity: 1 }}
+          transition={ARRIVE_SPRING}
+          className="h-full"
         >
-          <div className="flex min-w-0 items-center gap-2">
-            <span
-              className={cn(
-                "grid size-7 shrink-0 place-items-center rounded-lg border [&_svg]:size-3.5",
-                toneSoft[tone],
+          <div
+            {...(editing ? dragProps : {})}
+            onClick={(event) => {
+              if (editing || !onOpen || isInteractive(event.target)) return;
+              onOpen();
+            }}
+            style={
+              editing && !ghost && !lifted
+                ? ({
+                    animationDelay: `${wiggle.delay}s`,
+                    animationDuration: `${wiggle.duration}s`,
+                    "--wiggle-angle": `${wiggle.angle}deg`,
+                  } as CSSProperties)
+                : undefined
+            }
+            className={cn(
+              "@container flex h-full flex-col gap-3 overflow-hidden rounded-card border border-line bg-surface p-4 shadow-glow transition-[border-color,background-color,box-shadow] duration-200",
+              !editing &&
+                onOpen &&
+                "cursor-pointer hover:border-line-strong hover:bg-surface-hover",
+              !editing && "[-webkit-touch-callout:none]",
+              editing && "cursor-grab touch-none select-none active:cursor-grabbing",
+              editing &&
+                !ghost &&
+                !lifted &&
+                "motion-safe:animate-wiggle motion-safe:[will-change:transform]",
+              ghost && "border-dashed border-violet/50 bg-violet/5 opacity-50 shadow-none",
+              lifted && "border-line-strong bg-surface-hover shadow-glow-strong",
+            )}
+          >
+            <div className="flex min-w-0 items-center gap-2">
+              <span
+                className={cn(
+                  "grid size-7 shrink-0 place-items-center rounded-lg border [&_svg]:size-3.5",
+                  toneSoft[tone],
+                )}
+              >
+                <Icon aria-hidden />
+              </span>
+              {onOpen && !editing ? (
+                <button
+                  type="button"
+                  aria-haspopup="dialog"
+                  onClick={onOpen}
+                  className="micro-label min-w-0 cursor-pointer truncate text-left outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40"
+                >
+                  {name}
+                </button>
+              ) : (
+                <span className="micro-label min-w-0 truncate">{name}</span>
               )}
+            </div>
+            <motion.div
+              key={item.size}
+              initial={sizeChanged && !reduceMotion ? { opacity: 0 } : false}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.28, delay: 0.06 }}
+              className={cn("flex min-h-0 flex-1 flex-col", editing && "pointer-events-none")}
+              inert={editing || undefined}
             >
-              <Icon aria-hidden />
-            </span>
-            {onOpen && !editing ? (
+              {near && !ghost ? (
+                <LazyWidgetBody
+                  key={meta.key}
+                  widget={meta.key as WidgetKey}
+                  size={item.size}
+                  settings={settings}
+                />
+              ) : (
+                <WidgetSkeleton size={item.size} />
+              )}
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {editing && !ghost && !lifted && (
+          <>
+            {onRemove && (
               <button
                 type="button"
-                aria-haspopup="dialog"
-                onClick={onOpen}
-                className="micro-label min-w-0 cursor-pointer truncate text-left outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40"
+                onClick={() => {
+                  haptic("remove");
+                  onRemove();
+                }}
+                aria-label={t("remove", { name })}
+                data-testid="widget-remove"
+                className={cn(editButton, "-top-2.5 -left-2.5 hover:bg-pink hover:text-canvas")}
               >
-                {name}
+                <XIcon aria-hidden className="size-4" />
               </button>
-            ) : (
-              <span className="micro-label min-w-0 truncate">{name}</span>
             )}
-          </div>
-          <motion.div
-            key={item.size}
-            initial={sizeChanged && !reduceMotion ? { opacity: 0 } : false}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.28, delay: 0.06 }}
-            className={cn("flex min-h-0 flex-1 flex-col", editing && "pointer-events-none")}
-            inert={editing || undefined}
-          >
-            {near && !ghost ? (
-              <LazyWidgetBody
-                key={meta.key}
-                widget={meta.key as WidgetKey}
-                size={item.size}
-                settings={settings}
-              />
-            ) : (
-              <WidgetSkeleton size={item.size} />
-            )}
-          </motion.div>
-        </div>
-      </motion.div>
-
-      {editing && !ghost && !lifted && (
-        <>
-          {onRemove && (
-            <button
-              type="button"
-              onClick={() => {
-                haptic("remove");
-                onRemove();
-              }}
-              aria-label={t("remove", { name })}
-              data-testid="widget-remove"
-              className={cn(
-                editButton,
-                "-top-2.5 -left-2.5 hover:bg-pink hover:text-canvas",
-              )}
-            >
-              <XIcon aria-hidden className="size-4" />
-            </button>
-          )}
-          {onSettings && meta.settings.length > 0 && (
-            <button
-              type="button"
-              onClick={onSettings}
-              aria-label={t("settings", { name })}
-              data-testid="widget-settings"
-              className={cn(editButton, "-top-2.5 -right-2.5 hover:text-violet")}
-            >
-              <SettingsIcon aria-hidden className="size-4" />
-            </button>
-          )}
-          {onResize && sizes.length > 1 && (
-            <Menu.Root>
-              <Menu.Trigger
-                aria-label={t("resize", { name })}
-                data-testid="widget-resize"
-                className={cn(editButton, "-right-2.5 -bottom-2.5 hover:text-violet")}
+            {onSettings && meta.settings.length > 0 && (
+              <button
+                type="button"
+                onClick={onSettings}
+                aria-label={t("settings", { name })}
+                data-testid="widget-settings"
+                className={cn(editButton, "-top-2.5 -right-2.5 hover:text-violet")}
               >
-                <Maximize2Icon aria-hidden className="size-3.5" />
-              </Menu.Trigger>
-              <Menu.Portal>
-                <Menu.Positioner sideOffset={6} align="end" className="z-popover">
-                  <Menu.Popup className="min-w-48 rounded-xl border border-line-strong bg-surface p-1.5 shadow-popover outline-none">
-                    {sizes.map((size) => (
-                      <Menu.Item
-                        key={size}
-                        onClick={() => {
-                          haptic();
-                          onResize(size);
-                        }}
-                        data-testid={`widget-size-${size}`}
-                        className={cn(
-                          "flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-lg px-3 text-[15px] text-ink-soft outline-none select-none data-highlighted:bg-surface-hover data-highlighted:text-ink mouse:min-h-9",
-                          size === item.size && "text-violet",
-                        )}
-                      >
-                        <span className="flex items-center gap-2.5">
-                          <SizeGlyph size={size} current={size === item.size} />
-                          {tSizes(size)}
-                        </span>
-                        <span className="text-xs text-ink-muted">{tSizes(`${size}Span`)}</span>
-                      </Menu.Item>
-                    ))}
-                  </Menu.Popup>
-                </Menu.Positioner>
-              </Menu.Portal>
-            </Menu.Root>
-          )}
-        </>
-      )}
-    </motion.div>
-  );
-});
+                <SettingsIcon aria-hidden className="size-4" />
+              </button>
+            )}
+            {onResize && sizes.length > 1 && (
+              <Menu.Root>
+                <Menu.Trigger
+                  aria-label={t("resize", { name })}
+                  data-testid="widget-resize"
+                  className={cn(editButton, "-right-2.5 -bottom-2.5 hover:text-violet")}
+                >
+                  <Maximize2Icon aria-hidden className="size-3.5" />
+                </Menu.Trigger>
+                <Menu.Portal>
+                  <Menu.Positioner sideOffset={6} align="end" className="z-popover">
+                    <Menu.Popup className="min-w-48 rounded-xl border border-line-strong bg-surface p-1.5 shadow-popover outline-none">
+                      {sizes.map((size) => (
+                        <Menu.Item
+                          key={size}
+                          onClick={() => {
+                            haptic();
+                            onResize(size);
+                          }}
+                          data-testid={`widget-size-${size}`}
+                          className={cn(
+                            "flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-lg px-3 text-[15px] text-ink-soft outline-none select-none data-highlighted:bg-surface-hover data-highlighted:text-ink mouse:min-h-9",
+                            size === item.size && "text-violet",
+                          )}
+                        >
+                          <span className="flex items-center gap-2.5">
+                            <SizeGlyph size={size} current={size === item.size} />
+                            {tSizes(size)}
+                          </span>
+                          <span className="text-xs text-ink-muted">{tSizes(`${size}Span`)}</span>
+                        </Menu.Item>
+                      ))}
+                    </Menu.Popup>
+                  </Menu.Positioner>
+                </Menu.Portal>
+              </Menu.Root>
+            )}
+          </>
+        )}
+      </motion.div>
+    );
+  }),
+);
 
 const editButton =
   "absolute z-10 grid size-11 cursor-pointer place-items-center rounded-full border border-line-strong bg-surface-hover text-ink shadow-popover outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:size-8";

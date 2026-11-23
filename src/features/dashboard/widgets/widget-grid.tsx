@@ -35,6 +35,7 @@ import { WidgetFrame, type Arrival } from "./widget-frame";
 /** Height of one row of the grid; two narrow columns get a little less. */
 const ROW_HEIGHT = { [FULL_COLUMNS]: 164, [NARROW_COLUMNS]: 150 } as Record<number, number>;
 const GAP_PX = 16;
+const NO_STYLE: CSSProperties = {};
 /** Widgets of the first rows load at once; the rest when they scroll near. */
 const EAGER_ROWS = 4;
 
@@ -71,17 +72,30 @@ export function useGridEntries(
   effective: (item: LayoutItem) => WidgetSettings,
 ): GridEntry[] {
   const t = useTranslations("dashboard.widgets");
+  // The effective settings keep their identity while the stored ones do, so
+  // a reorder (new item objects) does not re-render the content of every widget.
+  const cache = useRef<{
+    by: (item: LayoutItem) => WidgetSettings;
+    seen: Map<string, { stored: LayoutItem["settings"]; result: WidgetSettings }>;
+  }>({ by: effective, seen: new Map() });
+  if (cache.current.by !== effective) cache.current = { by: effective, seen: new Map() };
   return useMemo(
     () =>
       items.flatMap((item) => {
         const meta = widgetMeta(item.widget);
         if (!meta) return [];
+        const seen = cache.current.seen;
+        let entry = seen.get(item.id);
+        if (!entry || entry.stored !== item.settings) {
+          entry = { stored: item.settings, result: effective(item) };
+          seen.set(item.id, entry);
+        }
         return [
           {
             item,
             meta,
             name: t(`${meta.key}.name` as "today.name"),
-            settings: effective(item),
+            settings: entry.result,
           },
         ];
       }),
@@ -146,6 +160,16 @@ export function WidgetGrid({
         ).map((p) => [p.id, p]),
       ),
     [entries, cols],
+  );
+  const styles = useMemo(
+    () =>
+      new Map(
+        [...placements.values()].map((p) => [
+          p.id,
+          { gridColumn: `${p.x + 1} / span ${p.w}`, gridRow: `${p.y + 1} / span ${p.h}` },
+        ]),
+      ),
+    [placements],
   );
   const [activeId, setActiveId] = useState<string | null>(null);
   const sensors = useSensors(
@@ -213,10 +237,7 @@ export function WidgetGrid({
                   scope={scope}
                   eager={p.y < EAGER_ROWS}
                   arrival={arrival}
-                  style={{
-                    gridColumn: `${p.x + 1} / span ${p.w}`,
-                    gridRow: `${p.y + 1} / span ${p.h}`,
-                  }}
+                  style={styles.get(entry.item.id) ?? NO_STYLE}
                   onOpen={onOpen && entry.meta.detail !== false ? () => onOpen(entry) : undefined}
                   onLongPress={onLongPress}
                   onRemove={onRemove ? () => onRemove(entry) : undefined}
@@ -286,6 +307,9 @@ function SortableWidget({
     id: entry.item.id,
     disabled: !editing,
   });
+  // dnd-kit re-renders every sortable on each pointer move; the frame is
+  // memoised, so it needs the same props as before unless something changed.
+  const dragProps = useMemo(() => ({ ...attributes, ...listeners }), [attributes, listeners]);
   return (
     <WidgetFrame
       ref={setNodeRef}
@@ -304,7 +328,7 @@ function SortableWidget({
       onRemove={onRemove}
       onResize={onResize}
       onSettings={onSettings}
-      dragProps={{ ...attributes, ...listeners }}
+      dragProps={dragProps}
     />
   );
 }
