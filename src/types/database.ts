@@ -5599,6 +5599,35 @@ export type Database = {
           },
         ]
       }
+      worker_dashboard_widgets: {
+        Row: {
+          owner_id: string
+          updated_at: string
+          widgets: string[]
+          worker_id: string
+        }
+        Insert: {
+          owner_id: string
+          updated_at?: string
+          widgets?: string[]
+          worker_id: string
+        }
+        Update: {
+          owner_id?: string
+          updated_at?: string
+          widgets?: string[]
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worker_dashboard_widgets_worker_fk"
+            columns: ["worker_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
       worker_documents: {
         Row: {
           created_at: string
@@ -5741,35 +5770,6 @@ export type Database = {
             columns: ["worker_task_id", "owner_id"]
             isOneToOne: false
             referencedRelation: "worker_tasks"
-            referencedColumns: ["id", "owner_id"]
-          },
-        ]
-      }
-      worker_dashboard_widgets: {
-        Row: {
-          owner_id: string
-          updated_at: string
-          widgets: string[]
-          worker_id: string
-        }
-        Insert: {
-          owner_id: string
-          updated_at?: string
-          widgets?: string[]
-          worker_id: string
-        }
-        Update: {
-          owner_id?: string
-          updated_at?: string
-          widgets?: string[]
-          worker_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "worker_dashboard_widgets_worker_fk"
-            columns: ["worker_id", "owner_id"]
-            isOneToOne: false
-            referencedRelation: "workers"
             referencedColumns: ["id", "owner_id"]
           },
         ]
