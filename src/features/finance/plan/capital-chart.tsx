@@ -14,7 +14,16 @@ import { usePlanMonths, usePlanRangeTransactions } from "./queries";
 import { monthSpan, planWeekOf, shiftMonth } from "./weeks";
 
 /** The capital at the end of each week, planned and real, three months back and three ahead. */
-export function CapitalChart({ today }: { today: IsoDate }) {
+export function CapitalChart({
+  today,
+  bare = false,
+  chartClassName = "h-56",
+}: {
+  today: IsoDate;
+  /** Without its heading (the dashboard widget has its own). */
+  bare?: boolean;
+  chartClassName?: string;
+}) {
   const t = useTranslations("finance.plan.chart");
   const settings = useFormatSettings();
   const names = useMonthNames();
@@ -34,22 +43,28 @@ export function CapitalChart({ today }: { today: IsoDate }) {
   const label = (point: (typeof points)[number]) => `${t("week", { week: point.week })} · ${names.title(point.month)}`;
 
   return (
-    <section className="flex flex-col gap-3" aria-labelledby="capital-chart-title">
-      <div>
-        <h2 id="capital-chart-title" className="text-base font-semibold text-ink">
-          {t("title")}
-        </h2>
-        <p className="text-sm text-ink-muted">{t("description")}</p>
-      </div>
+    <section
+      className="flex flex-col gap-3"
+      aria-labelledby={bare ? undefined : "capital-chart-title"}
+      aria-label={bare ? t("title") : undefined}
+    >
+      {!bare && (
+        <div>
+          <h2 id="capital-chart-title" className="text-base font-semibold text-ink">
+            {t("title")}
+          </h2>
+          <p className="text-sm text-ink-muted">{t("description")}</p>
+        </div>
+      )}
       {plans.isError ? (
         <FormAlert>{t("loadFailed")}</FormAlert>
       ) : !plans.data ? (
-        <Skeleton className="h-56 rounded-card" />
+        <Skeleton className={`${chartClassName} rounded-card`} />
       ) : points.length === 0 ? (
         <p className="text-sm text-ink-muted">{t("empty")}</p>
       ) : (
         <>
-          <div className="h-56">
+          <div className={chartClassName}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={points} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
                 <CartesianGrid vertical={false} stroke="var(--color-line)" strokeOpacity={0.5} />

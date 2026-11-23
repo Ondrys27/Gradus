@@ -27,7 +27,14 @@ const PAUSED_TICK_MS = 30_000;
  * prospecting timer — the browser counts on locally and never writes while it
  * runs; 15 minutes without touching a task end the session by themselves.
  */
-export function WorkTimerCard({ workerId }: { workerId: string }) {
+export function WorkTimerCard({
+  workerId,
+  bare = false,
+}: {
+  workerId: string;
+  /** Without the card (the dashboard widget has its own frame). */
+  bare?: boolean;
+}) {
   const t = useTranslations("workers.timer");
   const settings = useFormatSettings();
   const reading = useWorkReading();
@@ -81,7 +88,12 @@ export function WorkTimerCard({ workerId }: { workerId: string }) {
   }
 
   return (
-    <GlowCard interactive={false} className="flex flex-col gap-4">
+    <GlowCard
+      interactive={false}
+      className={
+        bare ? "flex flex-col gap-4 border-0 bg-transparent p-0 shadow-none" : "flex flex-col gap-4"
+      }
+    >
       <div className="flex items-center justify-between gap-3">
         <h2 className="micro-label">{t("title")}</h2>
         <span

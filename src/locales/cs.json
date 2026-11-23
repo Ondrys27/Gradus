@@ -4098,6 +4098,318 @@
         "noShow": "Nepřišel",
         "skip": "Přeskočit"
       }
+    },
+    "board": {
+      "tabs": "Přehledy",
+      "mainTab": "Přehled",
+      "newTab": "Nový přehled",
+      "renameTab": "Přejmenovat přehled",
+      "deleteTab": "Smazat přehled",
+      "deleteTabConfirm": "Smazat přehled „{name}“? Widgety z něj zmizí, data zůstanou.",
+      "tabName": "Název přehledu",
+      "tabPlaceholder": "Třeba Obchod nebo Finance",
+      "edit": "Upravit",
+      "done": "Hotovo",
+      "add": "Přidat widget",
+      "undo": "Zpět",
+      "undoHint": "Vrátí poslední změnu (⌘Z)",
+      "reset": "Obnovit výchozí",
+      "resetCompany": "Vrátit na firemní",
+      "resetConfirm": "Přehled se vrátí do výchozí podoby. Tvoje úpravy na něm zmizí, data zůstanou.",
+      "offer": "Firma má nový přehled. Chceš ho místo svého?",
+      "offerAdopt": "Použít firemní",
+      "offerKeep": "Nechat můj",
+      "emptyTitle": "Přehled je zatím prázdný",
+      "emptyDescription": "Poskládej si ho z widgetů: úkoly, obchody, peníze, kalendář a další.",
+      "saveFailed": "Změny přehledu se nepodařilo uložit.",
+      "loadFailed": "Nepodařilo se načíst.",
+      "retry": "Zkusit znovu",
+      "save": "Uložit",
+      "cancel": "Zrušit",
+      "close": "Zavřít",
+      "openSection": "Otevřít sekci",
+      "remove": "Odebrat widget {name}",
+      "settings": "Nastavení widgetu {name}",
+      "resize": "Velikost widgetu {name}",
+      "settingsTitle": "Nastavení: {name}",
+      "multiHint": "Vyber {min} až {max}.",
+      "dragInstructions": "Widget zvedneš mezerníkem, šipkami ho posuneš a mezerníkem položíš. Esc přesun zruší.",
+      "galleryTitle": "Přidat widget",
+      "gallerySearch": "Hledat widget",
+      "galleryCategories": "Kategorie",
+      "galleryAll": "Vše",
+      "galleryEmpty": "Takový widget tu není.",
+      "galleryAdd": "Přidat · {size}",
+      "gallerySizes": "Velikost",
+      "categories": {
+        "today": "Dnes",
+        "sales": "Obchod",
+        "money": "Peníze",
+        "team": "Tým",
+        "progress": "Postup",
+        "tools": "Nástroje"
+      },
+      "sizes": {
+        "S": "Malý",
+        "M": "Střední",
+        "L": "Velký",
+        "XL": "Široký",
+        "SSpan": "1 × 1",
+        "MSpan": "2 × 1",
+        "LSpan": "2 × 2",
+        "XLSpan": "4 × 2"
+      }
+    },
+    "widgets": {
+      "today": {
+        "name": "Dnes",
+        "description": "Dnešní úkoly, schůzky, komu zavolat a obchody, které stojí.",
+        "emptyTitle": "Dnes nic nečeká",
+        "emptyHint": "Čas na nového klienta nebo krok v milníku.",
+        "parts": {
+          "tasks": "{count, plural, one {úkol} few {úkoly} many {úkolu} other {úkolů}}",
+          "events": "{count, plural, one {schůzka} few {schůzky} many {schůzky} other {schůzek}}",
+          "followUps": "{count, plural, one {zavolat} few {zavolat} many {zavolat} other {zavolat}}",
+          "deals": "{count, plural, one {obchod stojí} few {obchody stojí} many {obchodu stojí} other {obchodů stojí}}"
+        }
+      },
+      "waiting": {
+        "name": "Čeká na tebe",
+        "description": "Schůzky ke schválení, pozvánky do firem a dotazníky po schůzkách.",
+        "emptyTitle": "Nic nečeká",
+        "emptyHint": "Jakmile bude potřeba tvoje rozhodnutí, objeví se tady."
+      },
+      "overdueTasks": {
+        "name": "Úkoly po termínu",
+        "description": "Obchodní úkoly, kterým už utekl termín.",
+        "emptyTitle": "Nic po termínu",
+        "emptyHint": "Všechno stíháš. Tak dál.",
+        "count": "{count, plural, one {úkol po termínu} few {úkoly po termínu} many {úkolu po termínu} other {úkolů po termínu}}",
+        "first": "Nejstarší: {title}",
+        "settings": {
+          "scope": {
+            "label": "Čí úkoly",
+            "mine": "Moje",
+            "all": "Všech"
+          }
+        }
+      },
+      "meetings": {
+        "name": "Nejbližší schůzky",
+        "description": "Schůzky v kalendáři na příští dny.",
+        "allDay": "celý den",
+        "todayAt": "dnes {time}",
+        "tomorrowAt": "zítra {time}",
+        "emptyTitle": "Na {days} dní žádná schůzka",
+        "emptyHint": "Domluv si schůzku nebo pošli odkaz na plánovač.",
+        "plan": "Naplánovat schůzku",
+        "settings": {
+          "days": {
+            "label": "Na kolik dní dopředu",
+            "7": "7 dní",
+            "14": "14 dní",
+            "30": "30 dní"
+          }
+        }
+      },
+      "calendarWeek": {
+        "name": "Týden v kalendáři",
+        "description": "Tento týden po dnech s událostmi.",
+        "emptyTitle": "Týden je volný",
+        "emptyHint": "V kalendáři zatím nic není.",
+        "events": "{count, plural, one {{count} událost} few {{count} události} many {{count} události} other {{count} událostí}}",
+        "more": "+{count}",
+        "free": "Volno",
+        "allDay": "celý den"
+      },
+      "tasksDone": {
+        "name": "Splněné úkoly dnes",
+        "description": "Kolik dnešních úkolů z milníků máš hotových."
+      },
+      "pipeline": {
+        "name": "Pipeline",
+        "description": "Otevřené obchody podle fází: hodnota nebo počet.",
+        "emptyTitle": "Žádný otevřený obchod",
+        "emptyHint": "Založ obchod a sleduj, jak postupuje.",
+        "newDeal": "Nový obchod",
+        "valueHint": "{count, plural, one {v {count} obchodu} few {ve {count} obchodech} many {v {count} obchodu} other {v {count} obchodech}}",
+        "valueOthers": "{count, plural, one {v {count} obchodu} few {ve {count} obchodech} many {v {count} obchodu} other {v {count} obchodech}}, další měny: {others}",
+        "countHint": "{count, plural, one {otevřený obchod} few {otevřené obchody} many {otevřeného obchodu} other {otevřených obchodů}}",
+        "totals": "Celkem po měnách",
+        "settings": {
+          "measure": {
+            "label": "Ukazovat",
+            "value": "Hodnotu",
+            "count": "Počet"
+          }
+        }
+      },
+      "onFire": {
+        "name": "Co hoří",
+        "description": "Tři dlaždice toho, co je v obchodech špatně. Cíl je všude nula."
+      },
+      "winRate": {
+        "name": "Úspěšnost obchodů",
+        "description": "Kolik uzavřených obchodů jsi za 90 dní vyhrál."
+      },
+      "newContacts": {
+        "name": "Nové kontakty",
+        "description": "Kolik kontaktů přibylo tento měsíc.",
+        "emptyTitle": "Tento měsíc zatím žádný",
+        "add": "Přidat kontakt",
+        "unnamed": "Bez jména"
+      },
+      "coldCalling": {
+        "name": "Cold Calling dnes",
+        "description": "Čas hledání klientů dnes a tento týden.",
+        "today": "dnes hledáš klienty",
+        "week": "Tento týden"
+      },
+      "bookings": {
+        "name": "Rezervace z plánovače",
+        "description": "Kdo si u tebe zarezervoval schůzku a co čeká na schválení.",
+        "emptyTitle": "Žádná rezervace",
+        "emptyHint": "Pošli klientům odkaz na svůj plánovač.",
+        "share": "Otevřít plánovač",
+        "pending": "{count, plural, one {{count} čeká na schválení} few {{count} čekají na schválení} many {{count} čeká na schválení} other {{count} čeká na schválení}}",
+        "upcoming": "{count, plural, one {nadcházející rezervace} few {nadcházející rezervace} many {nadcházející rezervace} other {nadcházejících rezervací}}",
+        "guest": "Host",
+        "toApprove": "ke schválení"
+      },
+      "financeMonth": {
+        "name": "Finance měsíce",
+        "description": "Příjmy, výdaje a bilance tohoto měsíce proti minulému.",
+        "income": "Příjmy",
+        "expense": "Výdaje",
+        "balance": "Bilance"
+      },
+      "capital": {
+        "name": "Vývoj kapitálu",
+        "description": "Kapitál po týdnech: plán a skutečnost, 3 měsíce zpět a 3 dopředu."
+      },
+      "overdueInvoices": {
+        "name": "Faktury po splatnosti",
+        "description": "Vystavené faktury, které ještě nikdo nezaplatil.",
+        "emptyTitle": "Vše zaplaceno",
+        "emptyHint": "Žádná faktura není po splatnosti.",
+        "count": "{count, plural, one {faktura po splatnosti} few {faktury po splatnosti} many {faktury po splatnosti} other {faktur po splatnosti}}",
+        "noCustomer": "Bez odběratele"
+      },
+      "rewards": {
+        "name": "Odměny",
+        "description": "Majitel: k vyplacení a ke schválení. Pracovník: vyděláno a v plánu.",
+        "toPay": "k vyplacení",
+        "toApprove": "Ke schválení",
+        "earned": "vyděláno tento měsíc",
+        "plannedLabel": "V plánu",
+        "pendingApproval": "Ke schválení: {amount}",
+        "planned": "V plánu: {amount}",
+        "emptyOwnerTitle": "Nic k vyplacení",
+        "emptyOwnerHint": "Odměny pracovníků se objeví, jakmile je někdo vydělá.",
+        "emptyWorkerTitle": "Zatím bez odměn",
+        "emptyWorkerHint": "Odměny za úkoly a obchody se ukážou tady."
+      },
+      "workTimer": {
+        "name": "Odpracovaný čas",
+        "description": "Časovač tvé práce ve firmě: spustit a pozastavit."
+      },
+      "team": {
+        "name": "Tým",
+        "description": "Kdo má kolik otevřených úkolů a obchodů.",
+        "load": "{tasks} úkolů · {deals} obchodů",
+        "emptyTitle": "Zatím jsi tu sám",
+        "emptyHint": "Pozvi pracovníka a uvidíš, kdo má co rozdělané.",
+        "invite": "Pozvat pracovníka",
+        "busiest": "Nejvíc má {name}: {count, plural, one {# věc} few {# věci} many {# věci} other {# věcí}}"
+      },
+      "activity": {
+        "name": "Aktivita ve firmě",
+        "description": "Poslední hovory, e-maily, schůzky a přesuny kontaktů a kdo je udělal.",
+        "someone": "Někdo",
+        "line": "{who}: {what} – {contact}",
+        "unnamed": "bez jména",
+        "emptyTitle": "Zatím žádná aktivita",
+        "emptyHint": "Hovory a schůzky s kontakty se ukážou tady."
+      },
+      "milestones": {
+        "name": "Milníky a postup",
+        "description": "Rozpracované milníky a kolik úkolů v nich je hotových.",
+        "tasks": "{done} z {total}",
+        "emptyTitle": "Žádný rozpracovaný milník",
+        "emptyHint": "Rozděl velký cíl na kroky.",
+        "add": "Nový milník",
+        "more": "{count, plural, one {a další {count}} few {a další {count}} many {a dalších {count}} other {a dalších {count}}}",
+        "active": "Rozpracované",
+        "completed": "Hotové"
+      },
+      "level": {
+        "name": "Úroveň a série",
+        "description": "Tvoje úroveň, kolik XP chybí do další a série dní.",
+        "progress": "Postup na další úroveň",
+        "level": "úroveň",
+        "toNext": "ještě {xp} XP",
+        "top": "Nejvyšší úroveň",
+        "streak": "{count, plural, one {{formatted} den v řadě} few {{formatted} dny v řadě} many {{formatted} dne v řadě} other {{formatted} dní v řadě}}",
+        "totalXp": "XP celkem",
+        "freeze": "Záchrana série",
+        "freezeReady": "Připravená",
+        "freezeUsed": "Tento týden použitá"
+      },
+      "grady": {
+        "name": "Grady",
+        "description": "Co pro tebe Grady má a rychlá otázka.",
+        "placeholder": "Zeptej se Gradyho…",
+        "send": "Poslat Gradymu",
+        "nothing": "Grady teď nic nehlásí.",
+        "ready": "Grady má připraveno",
+        "prompts": {
+          "today": "Co mám dnes udělat?",
+          "pipeline": "Shrň mi pipeline",
+          "followUp": "Komu mám zavolat?"
+        }
+      },
+      "pinnedNote": {
+        "name": "Připnutá poznámka",
+        "description": "Poznámka, kterou chceš mít na očích.",
+        "emptyTitle": "Žádná připnutá poznámka",
+        "emptyHint": "Připni si poznámku v Poznámkách.",
+        "open": "Otevřít Poznámky",
+        "untitled": "Bez názvu",
+        "settings": {
+          "note": {
+            "label": "Která poznámka",
+            "auto": "První připnutá",
+            "none": "Zatím nemáš žádnou připnutou poznámku."
+          }
+        }
+      },
+      "quickActions": {
+        "name": "Rychlé akce",
+        "description": "Tlačítka na to, co děláš nejčastěji.",
+        "emptyTitle": "Žádná akce",
+        "emptyHint": "Vyber si akce v nastavení widgetu.",
+        "actions": {
+          "newContact": "Nový kontakt",
+          "newDeal": "Nový obchod",
+          "newTask": "Nový úkol",
+          "newEvent": "Nová událost",
+          "newMilestone": "Nový milník",
+          "newNote": "Nová poznámka",
+          "startTimer": "Spustit časovač",
+          "generateContacts": "Najít kontakty"
+        },
+        "settings": {
+          "actions": {
+            "label": "Které akce"
+          }
+        }
+      },
+      "satisfaction": {
+        "name": "Spokojenost",
+        "description": "Krátký dotazník, jak se ti s aplikací pracuje.",
+        "emptyTitle": "Teď se nic neptáme",
+        "emptyHint": "Dotazník se ukáže, až bude na řadě."
+      }
     }
   },
   "email": {
@@ -4543,7 +4855,14 @@
         }
       },
       "loadFailed": "Práva se nepodařilo načíst. Zkus to za chvíli.",
-      "saveFailed": "Změna se neuložila. Zkus to znovu."
+      "saveFailed": "Změna se neuložila. Zkus to znovu.",
+      "widgets": {
+        "title": "Widgety na přehledu",
+        "description": "Které widgety smí používat. Nabízí se jen ty, ke kterým má data podle práv výše.",
+        "all": "Všechny, ke kterým má data",
+        "loadFailed": "Seznam widgetů se nepodařilo načíst.",
+        "saveFailed": "Seznam widgetů se nepodařilo uložit."
+      }
     },
     "invite": {
       "title": "Pozvánka pro {name}",
@@ -4673,7 +4992,8 @@
         "label": "Části Správy firmy",
         "people": "Lidé",
         "groups": "Skupiny",
-        "rewards": "Odměny a výplaty"
+        "rewards": "Odměny a výplaty",
+        "dashboards": "Přehledy"
       },
       "view": {
         "label": "Zobrazit firmu jako",
@@ -4800,7 +5120,26 @@
         "extraBeforeSalesHint": "Platby zatím běží jen v testovacím režimu, za pracovníka teď nic neplatíš.",
         "expiredHintPlain": "Pozvánka už nejde přijmout. Pošli mu novou, až bude chtít nastoupit."
       },
-      "allEnded": "Ve firmě teď nikdo nepracuje. Ukončené lidi najdeš ve filtru stavu."
+      "allEnded": "Ve firmě teď nikdo nepracuje. Ukončené lidi najdeš ve filtru stavu.",
+      "dashboards": {
+        "intro": "Přehled, na kterém pracovník začíná. Platí ten pro člověka, jinak pro jeho skupinu, jinak pro celou firmu. Kdo si přehled upravil, dostane nový jen nabídnutý.",
+        "target": "Upravuješ přehled pro",
+        "targets": {
+          "space": "Celou firmu",
+          "group": "Skupinu {name}",
+          "worker": "{name}"
+        },
+        "editing": {
+          "space": "Upravuješ přehled celé firmy",
+          "group": "Upravuješ přehled skupiny {name}",
+          "worker": "Upravuješ přehled pro {name}"
+        },
+        "set": "Nastavený",
+        "notSet": "Zatím nenastavený, pracovníci mají výchozí",
+        "loadFailed": "Výchozí přehledy se nepodařilo načíst.",
+        "remove": "Zrušit tento přehled",
+        "readOnly": "Výchozí přehledy nastavuje majitel."
+      }
     },
     "dashboard": {
       "overview": {
@@ -9843,7 +10182,7 @@
     "steps": {
       "dashboard": {
         "title": "Nástěnka",
-        "text": "Tady začíná každý den: úkoly, komu zavolat a kolik jsi tenhle měsíc vydělal. Cokoliv najdeš přes ⌘K nebo Ctrl+K."
+        "text": "Tady začíná každý den: widgety s úkoly, obchody a penězi. **Upravit** je přeskládá, jak potřebuješ, a cokoliv najdeš přes ⌘K nebo Ctrl+K."
       },
       "milestones": {
         "title": "Milníky a mapa",
@@ -9899,7 +10238,7 @@
       },
       "workerDashboard": {
         "title": "Tvoje nástěnka",
-        "text": "Tvůj den na jeden pohled: úkoly, odpracovaný čas a co sis vydělal."
+        "text": "Tvůj den na jeden pohled: úkoly, odpracovaný čas a odměny ve widgetech. **Upravit** je přeskládá po svém."
       },
       "workerTasks": {
         "title": "Tvoje úkoly",

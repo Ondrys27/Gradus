@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PermissionsEditor } from "../permissions-editor";
 import { useSaveWorkerGrants, useWorkerGrants } from "../queries";
 import type { DashboardViewer, DashboardWorker } from "./types";
+import { WorkerWidgetsCard } from "./widgets-card";
 
 /**
  * What the person may do. The owner switches it, every switch saving at once
@@ -27,22 +28,27 @@ export function RightsTab({
   const ended = worker.status === "inactive";
 
   return (
-    <GlowCard interactive={false} className="flex flex-col gap-3" data-testid="worker-rights">
-      {ended && <p className="text-sm text-ink-muted">{t("endedHint")}</p>}
-      {grants.isError ? (
-        <FormAlert>{t("loadFailed")}</FormAlert>
-      ) : !grants.data ? (
-        <Skeleton className="h-96 rounded-xl" />
-      ) : (
-        <PermissionsEditor
-          value={grants.data}
-          readOnly={!owner}
-          disabled={ended}
-          onChange={(next, template) => save.mutate({ grants: next, template })}
-          hint={owner ? t("liveHint") : t("ownHint")}
-        />
+    <div className="flex flex-col gap-4">
+      <GlowCard interactive={false} className="flex flex-col gap-3" data-testid="worker-rights">
+        {ended && <p className="text-sm text-ink-muted">{t("endedHint")}</p>}
+        {grants.isError ? (
+          <FormAlert>{t("loadFailed")}</FormAlert>
+        ) : !grants.data ? (
+          <Skeleton className="h-96 rounded-xl" />
+        ) : (
+          <PermissionsEditor
+            value={grants.data}
+            readOnly={!owner}
+            disabled={ended}
+            onChange={(next, template) => save.mutate({ grants: next, template })}
+            hint={owner ? t("liveHint") : t("ownHint")}
+          />
+        )}
+        {save.isError && <FormAlert>{t("saveFailed")}</FormAlert>}
+      </GlowCard>
+      {owner && grants.data && (
+        <WorkerWidgetsCard workerId={worker.id} grants={grants.data} disabled={ended} />
       )}
-      {save.isError && <FormAlert>{t("saveFailed")}</FormAlert>}
-    </GlowCard>
+    </div>
   );
 }

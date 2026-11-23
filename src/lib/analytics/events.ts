@@ -23,6 +23,8 @@ import { MEETING_LINK_SOURCES } from "@/features/scheduler/booking/meeting-link"
 import { CALENDAR_PROVIDERS, EVENT_TYPE_TABS, LINK_SOURCES } from "@/features/scheduler/analytics";
 import { REWARD_TEMPLATES, RULES_PER_PLAN } from "@/features/workers/rewards/rules";
 import { RULE_KINDS } from "@/features/workers/rewards/types";
+import { WIDGET_KEYS } from "@/features/dashboard/widgets/catalog";
+import { WIDGET_SIZES } from "@/features/dashboard/widgets/grid";
 import { Constants } from "@/types/database";
 import { field, isSafeField, isScrubbedTextField } from "./fields";
 import { APP_ROUTES, ANALYTICS_SECTIONS, type AnalyticsSection } from "./routes";
@@ -412,6 +414,7 @@ export const EVENTS = {
       "deal",
       "jarvis", // from Grady's answer: DB name kept from Jarvis
       "convert",
+      "dashboard", // the quick action of the dashboard (28.5)
     ]),
     kind: optional(oneOf(NOTE_KINDS)),
   }),
@@ -1050,6 +1053,54 @@ export const EVENTS = {
   /** Grady's one-time introduction of Notes: shown, then opened or closed. */
   jarvis_notes_intro: event("jarvis", "client", false, {
     action: oneOf(["shown", "open", "close"]),
+  }),
+
+  // --- dashboard of widgets (28.5) -----------------------------------------
+  /** Editing began: the Edit button or a long press on a widget. */
+  dashboard_edit_started: event("dashboard", "client", false, {
+    via: oneOf(["button", "long_press"]),
+    /** Editing the owner's default of the company, a group or a person. */
+    template: optional(oneOf(["space", "group", "worker"])),
+  }),
+  dashboard_widget_added: event("dashboard", "client", true, {
+    widget: oneOf(WIDGET_KEYS),
+    size: oneOf(WIDGET_SIZES),
+    count: count(40),
+  }),
+  dashboard_widget_removed: event("dashboard", "client", true, { widget: oneOf(WIDGET_KEYS) }),
+  dashboard_widget_resized: event("dashboard", "client", true, {
+    widget: oneOf(WIDGET_KEYS),
+    size: oneOf(WIDGET_SIZES),
+  }),
+  dashboard_widget_moved: event("dashboard", "client", true, { widget: oneOf(WIDGET_KEYS) }),
+  dashboard_widget_settings_saved: event("dashboard", "client", true, {
+    widget: oneOf(WIDGET_KEYS),
+  }),
+  /** A widget opened into its detail (a tap, or a link `?widget=`). */
+  dashboard_widget_opened: event("dashboard", "client", false, {
+    widget: oneOf(WIDGET_KEYS),
+    size: oneOf(WIDGET_SIZES),
+  }),
+  dashboard_layout_created: event("dashboard", "client", true, { count: count(6) }),
+  dashboard_layout_renamed: event("dashboard", "client", true, {}),
+  dashboard_layout_deleted: event("dashboard", "client", true, { count: count(6) }),
+  /** "Reset to default" / "Back to the company's": to the system's or the company's default. */
+  dashboard_layout_reset: event("dashboard", "client", true, {
+    to: oneOf(["system", "company"]),
+  }),
+  /** "The company has a new dashboard": taken or kept the own one. */
+  dashboard_default_offer: event("dashboard", "client", true, {
+    action: oneOf(["adopted", "kept"]),
+  }),
+  /** The owner saved a default dashboard for the company, a group or a person. */
+  dashboard_default_saved: event("workers", "client", true, {
+    target: oneOf(["space", "group", "worker"]),
+    widgets: count(40),
+  }),
+  /** The owner set which widgets a worker may use (`all`: no limit). */
+  dashboard_widgets_allowed: event("workers", "client", true, {
+    allowed: count(60),
+    all: bool(),
   }),
 
   // --- feedback --------------------------------------------------------------

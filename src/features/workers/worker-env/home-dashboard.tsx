@@ -1,11 +1,12 @@
 "use client";
 
-import { DashboardView } from "@/features/dashboard/dashboard-view";
-import { useSession } from "@/features/account/queries";
-import { WorkerDashboard } from "./worker-dashboard";
+import { DashboardHome } from "@/features/dashboard/dashboard-home";
 
-/** An owner gets the business dashboard, a worker their own. */
+/**
+ * The dashboard of widgets (28.5) for everyone: an owner starts on the
+ * system's default, a worker on the one their company set (or the system's
+ * for a worker); what a worker may not see is never on it.
+ */
 export function HomeDashboard() {
-  const { worker } = useSession();
-  return worker ? <WorkerDashboard /> : <DashboardView />;
+  return <DashboardHome />;
 }

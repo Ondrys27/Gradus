@@ -1879,6 +1879,93 @@ export type Database = {
           },
         ]
       }
+      dashboard_defaults: {
+        Row: {
+          group_id: string | null
+          id: string
+          items: Json
+          space_id: string
+          target: string
+          updated_at: string
+          updated_by: string | null
+          worker_id: string | null
+        }
+        Insert: {
+          group_id?: string | null
+          id?: string
+          items?: Json
+          space_id: string
+          target: string
+          updated_at?: string
+          updated_by?: string | null
+          worker_id?: string | null
+        }
+        Update: {
+          group_id?: string | null
+          id?: string
+          items?: Json
+          space_id?: string
+          target?: string
+          updated_at?: string
+          updated_by?: string | null
+          worker_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dashboard_defaults_group_fk"
+            columns: ["group_id", "space_id"]
+            isOneToOne: false
+            referencedRelation: "worker_groups"
+            referencedColumns: ["id", "owner_id"]
+          },
+          {
+            foreignKeyName: "dashboard_defaults_worker_fk"
+            columns: ["worker_id", "space_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
+      dashboard_layouts: {
+        Row: {
+          based_on: string | null
+          created_at: string
+          id: string
+          is_default: boolean
+          items: Json | null
+          name: string | null
+          position: number
+          space_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          based_on?: string | null
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          items?: Json | null
+          name?: string | null
+          position?: number
+          space_id: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          based_on?: string | null
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          items?: Json | null
+          name?: string | null
+          position?: number
+          space_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       deal_assignees: {
         Row: {
           assignee_id: string
@@ -5658,6 +5745,35 @@ export type Database = {
           },
         ]
       }
+      worker_dashboard_widgets: {
+        Row: {
+          owner_id: string
+          updated_at: string
+          widgets: string[]
+          worker_id: string
+        }
+        Insert: {
+          owner_id: string
+          updated_at?: string
+          widgets?: string[]
+          worker_id: string
+        }
+        Update: {
+          owner_id?: string
+          updated_at?: string
+          widgets?: string[]
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worker_dashboard_widgets_worker_fk"
+            columns: ["worker_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
       worker_group_members: {
         Row: {
           created_at: string
@@ -7020,6 +7136,8 @@ export type Database = {
         }[]
       }
       current_workspace_id: { Args: never; Returns: string }
+      dashboard_context: { Args: { _space: string }; Returns: Json }
+      dashboard_items_valid: { Args: { _items: Json }; Returns: boolean }
       deal_set_assignees: {
         Args: { _assignees: string[]; _deal: string }
         Returns: string[]

@@ -32,6 +32,7 @@ import { useWorkspace } from "@/features/account/workspace-queries";
 import { industryKeyOf, type IndustryKey } from "@/features/onboarding/industries";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { useIsPhone } from "@/lib/use-media-query";
+import { useUrlIntent } from "@/lib/use-url-intent";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/client";
 import { countNodes } from "@/lib/mindmap/formats";
@@ -293,7 +294,7 @@ export function NotesView() {
 
   const newNote = useCallback(
     (
-      where: "list" | "empty_state" | "shortcut",
+      where: "list" | "empty_state" | "shortcut" | "dashboard",
       template?: NoteTemplateKey,
       kind: NoteKind = "text",
     ) => {
@@ -318,6 +319,12 @@ export function NotesView() {
     },
     [createNote, industry, openNew, readOnly, t, targetFolder],
   );
+
+  // The dashboard's quick action opens a new note here (28.5); after the
+  // intent has cleaned the address, so opening the note is the last word.
+  useUrlIntent("new", (value) => {
+    if (value === "note") window.setTimeout(() => newNote("dashboard"), 0);
+  });
 
   /** A note turned into the other kind: in place, or next to the original as a new note. */
   const convertNote = useCallback(

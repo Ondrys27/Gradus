@@ -121,7 +121,19 @@ function TaskRow({
   );
 }
 
-export function TodayCard({ overview }: { overview: Overview }) {
+/**
+ * What to do today. `bare` drops the card and its heading (the dashboard
+ * widget has its own frame); `perSection` caps the rows of each part.
+ */
+export function TodayCard({
+  overview,
+  bare = false,
+  perSection = SHOWN_PER_SECTION,
+}: {
+  overview: Overview;
+  bare?: boolean;
+  perSection?: number;
+}) {
   const t = useTranslations("dashboard.today");
   const settings = useFormatSettings();
   const { today, from } = useToday();
@@ -129,9 +141,9 @@ export function TodayCard({ overview }: { overview: Overview }) {
   const [saveFailed, setSaveFailed] = useState(false);
   const { tasks, events, followUps, stalled, counts } = overview;
 
-  const openTasks = (tasks.data?.open ?? []).slice(0, SHOWN_PER_SECTION);
+  const openTasks = (tasks.data?.open ?? []).slice(0, perSection);
   const hiddenTasks = counts.tasks - openTasks.length;
-  const doneTasks = tasks.data?.done ?? [];
+  const doneTasks = (tasks.data?.done ?? []).slice(0, Math.max(0, perSection - openTasks.length));
   const taskRows = [...openTasks, ...doneTasks];
   const eventRows = events.data ?? [];
   const followUpRows = followUps.data ?? [];
@@ -143,9 +155,10 @@ export function TodayCard({ overview }: { overview: Overview }) {
     stalledRows.length === 0;
   const now = Date.now();
 
+  const Wrapper = bare ? BareCard : GlowCard;
   return (
-    <GlowCard interactive={false} className="flex flex-col gap-5">
-      <h2 className="text-lg font-semibold text-ink">{t("title")}</h2>
+    <Wrapper interactive={false} className="flex flex-col gap-5">
+      {!bare && <h2 className="text-lg font-semibold text-ink">{t("title")}</h2>}
 
       {saveFailed && <FormAlert>{t("saveFailed")}</FormAlert>}
       {overview.failed && <FormAlert>{t("loadFailed")}</FormAlert>}
@@ -204,7 +217,7 @@ export function TodayCard({ overview }: { overview: Overview }) {
               title={t("events")}
               count={eventRows.length}
             >
-              {eventRows.slice(0, SHOWN_PER_SECTION).map((event) => (
+              {eventRows.slice(0, perSection).map((event) => (
                 <li key={event.id} className="flex min-h-11 items-center gap-3 py-1">
                   <span className="w-14 shrink-0 text-sm text-ink-muted tabular-nums">
                     {event.all_day ? t("allDay") : formatTime(new Date(event.starts_at), settings)}
@@ -224,7 +237,7 @@ export function TodayCard({ overview }: { overview: Overview }) {
               count={followUpRows.length}
               note={<CallWindowNotice className="my-1" />}
             >
-              {followUpRows.slice(0, SHOWN_PER_SECTION).map((entry) => (
+              {followUpRows.slice(0, perSection).map((entry) => (
                 <li key={entry.entryId} className="flex min-h-11 items-center gap-3 py-1">
                   <span className="w-14 shrink-0 text-sm text-ink-muted tabular-nums">
                     {formatTime(entry.dueAt, settings)}
@@ -246,7 +259,7 @@ export function TodayCard({ overview }: { overview: Overview }) {
               title={t("stalledDeals")}
               count={counts.deals}
             >
-              {stalledRows.map((deal) => {
+              {stalledRows.slice(0, perSection).map((deal) => {
                 const days = Math.floor((now - Date.parse(deal.entered_stage_at)) / DAY_MS);
                 return (
                   <li key={deal.id} className="flex min-h-11 items-center gap-3 py-1">
@@ -266,6 +279,17 @@ export function TodayCard({ overview }: { overview: Overview }) {
           )}
         </>
       )}
-    </GlowCard>
+    </Wrapper>
   );
+}
+
+function BareCard({
+  className,
+  children,
+}: {
+  interactive?: boolean;
+  className?: string;
+  children: ReactNode;
+}) {
+  return <div className={className}>{children}</div>;
 }

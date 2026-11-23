@@ -8,6 +8,8 @@ import { dayRangeToInstants } from "@/features/calendar/calendar-logic";
 import { useContactTables } from "@/features/contacts/queries";
 import { contactName } from "@/features/contacts/types";
 import { useFields } from "@/features/contacts/table-queries";
+import { periodRange as weekRange } from "@/features/cold-calling/stats-logic";
+import { useDailySeconds } from "@/features/cold-calling/stats-queries";
 import { periodRange } from "@/features/finance/finance-logic";
 import { milestoneKeys } from "@/features/milestones/queries";
 import { track } from "@/lib/analytics/client";
@@ -493,13 +495,15 @@ export function useSaveMeetingSurvey() {
       bookingId?: string;
       answers: SurveyAnswers;
     }) => {
-      const { error } = await createClient().from("meeting_surveys").insert({
-        user_id: workspaceId,
-        deal_id: input.dealId,
-        stage_id: input.stageId,
-        answers: input.answers,
-        ...(input.bookingId ? { booking_id: input.bookingId } : {}),
-      });
+      const { error } = await createClient()
+        .from("meeting_surveys")
+        .insert({
+          user_id: workspaceId,
+          deal_id: input.dealId,
+          stage_id: input.stageId,
+          answers: input.answers,
+          ...(input.bookingId ? { booking_id: input.bookingId } : {}),
+        });
       if (error) throw error;
     },
     onSuccess: () =>
@@ -511,4 +515,17 @@ export function useSaveMeetingSurvey() {
         queryClient.invalidateQueries({ queryKey: ["scheduler", user.id, "bookings", "surveys"] }),
       ]),
   });
+}
+
+// ---------------------------------------------------------------------------
+// Finding clients this week
+// ---------------------------------------------------------------------------
+
+/** Seconds spent finding clients this week, day-clipped in the user's zone by the database. */
+export function useWeekProspecting() {
+  const settings = useFormatSettings();
+  const { today } = useToday();
+  const range = weekRange({ kind: "week", offset: 0 }, today, settings.weekStartsOn);
+  const query = useDailySeconds(range);
+  return { query, range, today };
 }

@@ -31,25 +31,32 @@ export function DashboardPipelineHealth() {
 
 function Tiles() {
   const t = useTranslations("pipeline.health");
-  const router = useRouter();
-  const { health, pending, failed, retry } = usePipelineHealth();
   return (
     <section aria-labelledby="dashboard-pipeline-health" className="flex flex-col gap-2">
       <h2 id="dashboard-pipeline-health" className="micro-label">
         {t("label")}
       </h2>
-      <HealthTiles
-        health={health}
-        pending={pending}
-        failed={failed}
-        onRetry={retry}
-        linksToPipeline
-        onSelect={(tile) => {
-          if (health)
-            track("pipeline_health_opened", { tile, from: "dashboard", count: health[tile].count });
-          router.push(pipelineTileHref(tile));
-        }}
-      />
+      <PipelineHealthTiles />
     </section>
+  );
+}
+
+/** The three tiles leading into the pipeline (the dashboard's "On fire" widget). */
+export function PipelineHealthTiles() {
+  const router = useRouter();
+  const { health, pending, failed, retry } = usePipelineHealth();
+  return (
+    <HealthTiles
+      health={health}
+      pending={pending}
+      failed={failed}
+      onRetry={retry}
+      linksToPipeline
+      onSelect={(tile) => {
+        if (health)
+          track("pipeline_health_opened", { tile, from: "dashboard", count: health[tile].count });
+        router.push(pipelineTileHref(tile));
+      }}
+    />
   );
 }

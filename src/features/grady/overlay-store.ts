@@ -17,6 +17,8 @@ type State = {
   proactiveShown: boolean;
   summaryOpen: boolean;
   noticeOpen: boolean;
+  /** A question to send from elsewhere (the dashboard's Grady widget); grows with each. */
+  askRequest: { id: number; prompt: string } | null;
 };
 
 const INITIAL: State = {
@@ -25,6 +27,7 @@ const INITIAL: State = {
   proactiveShown: false,
   summaryOpen: false,
   noticeOpen: false,
+  askRequest: null,
 };
 
 let state: State = INITIAL;
@@ -47,6 +50,8 @@ export const gradyOverlay = {
     if (state.tourActive !== tourActive) set({ tourActive });
   },
   requestTutorial: () => set({ tutorialRequest: state.tutorialRequest + 1 }),
+  /** Opens Grady's panel and sends the question, as if typed there. */
+  ask: (prompt: string) => set({ askRequest: { id: (state.askRequest?.id ?? 0) + 1, prompt } }),
   markProactiveShown: () => set({ proactiveShown: true }),
   setSummaryOpen: (summaryOpen: boolean) => {
     if (state.summaryOpen !== summaryOpen) set({ summaryOpen });

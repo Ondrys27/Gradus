@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { CalendarClockIcon, ClipboardListIcon, MailOpenIcon, MailPlusIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -32,7 +32,15 @@ import { MeetingSurveyDialog, type SurveyTarget } from "./meeting-survey-dialog"
  * meetings that are over and wait for the meeting survey. Hidden when
  * nothing waits; more kinds join later.
  */
-export function WaitingForYou() {
+export function WaitingForYou({
+  variant = "section",
+  empty = null,
+}: {
+  /** "widget": inside the dashboard widget, without its own heading. */
+  variant?: "section" | "widget";
+  /** Shown instead when nothing waits (the widget's empty state). */
+  empty?: ReactNode;
+} = {}) {
   const t = useTranslations("dashboard.waiting");
   const { user } = useSession();
   const workspace = useWorkspace();
@@ -48,14 +56,28 @@ export function WaitingForYou() {
   const pending = bookings.data ?? [];
   const invites = inbox.data?.invites ?? [];
   const asked = surveys.data ?? [];
-  if (!pending.length && !invites.length && !asked.length && !accepted) return null;
+  if (!pending.length && !invites.length && !asked.length && !accepted) return empty;
+  const widget = variant === "widget";
 
   return (
-    <section aria-labelledby="waiting-title" className="flex flex-col gap-3" data-testid="waiting-for-you">
-      <h2 id="waiting-title" className="micro-label">
-        {t("title")}
-      </h2>
-      <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+    <section
+      aria-labelledby={widget ? undefined : "waiting-title"}
+      aria-label={widget ? t("title") : undefined}
+      className="flex flex-col gap-3"
+      data-testid="waiting-for-you"
+    >
+      {!widget && (
+        <h2 id="waiting-title" className="micro-label">
+          {t("title")}
+        </h2>
+      )}
+      <ul
+        className={
+          widget
+            ? "grid gap-3 @2xl:grid-cols-2 @5xl:grid-cols-3"
+            : "grid gap-3 md:grid-cols-2 xl:grid-cols-3"
+        }
+      >
         {pending.map((booking) => (
           <li key={booking.id}>
             <BookingCard

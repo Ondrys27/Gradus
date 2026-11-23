@@ -408,7 +408,8 @@ export type CreateNoteInput = {
     | "milestone"
     | "deal"
     | "jarvis" // from Grady's answer: DB name kept from Jarvis (note_created.where)
-    | "convert";
+    | "convert"
+    | "dashboard";
   template?: { key: NoteTemplateKey; industry: IndustryKey | null };
   /** A note made from a file or from another note; by default blank or template. */
   source?: "import" | "convert";

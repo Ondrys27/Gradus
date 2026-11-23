@@ -25,6 +25,7 @@ import { useViewTracking } from "@/lib/analytics/use-view-tracking";
 import { createViewPreference } from "@/lib/view-preference";
 import { cn } from "@/lib/utils";
 import { WorkerFormDialog } from "../worker-form-dialog";
+import { CompanyDashboards } from "./company-dashboards";
 import { CompanyGroups } from "./company-groups";
 import { CompanyList, type CompanyViewer } from "./company-list";
 import { CompanyMap } from "./company-map";
@@ -148,6 +149,7 @@ export function CompanyView() {
               { value: "people" as const, label: tc("tabs.people") },
               ...(isOwner ? [{ value: "groups" as const, label: tc("tabs.groups") }] : []),
               { value: "rewards" as const, label: tc("tabs.rewards") },
+              ...(isOwner ? [{ value: "dashboards" as const, label: tc("tabs.dashboards") }] : []),
             ]}
             onChange={(next) => replaceSearch({ tab: next })}
           />
@@ -177,6 +179,8 @@ export function CompanyView() {
             canEdit={canEdit}
             onShow={(group) => replaceSearch({ tab: "people", group })}
           />
+        ) : tab === "dashboards" ? (
+          <CompanyDashboards people={people.data} groups={groups.data} canEdit={isOwner} />
         ) : (
           <CompanyRewards
             people={people.data}
