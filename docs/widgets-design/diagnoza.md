@@ -44,3 +44,21 @@ Snímky v `before/` (1440, 820, 390 px): `board-*` = všechny widgety ve výchoz
 ## Cíl 28.6
 
 S = jedno číslo nebo jeden stav, čitelné z dálky. M = číslo + kontext (trend, segment, další položka). L = seznam nebo graf. XL = graf s legendou a akcemi. Jedna anatomie (`Hero`, `Sub`, `Delta`), tabulární číslice, barva podle sekce, grafy podle dataviz (sparkline 2 px, sloupce ≤ 24 px se zakulaceným koncem, prstenec, mini kalendář s hustotou, segmentový bar s mezerou 2 px). Prázdný stav vždy jako číslo „0“ nebo jedna věta s akcí, nikdy ikona uprostřed prázdné plochy.
+
+## Po 28.6
+
+Snímky v `after/` (stejné scény a šířky). Co se změnilo:
+
+- **Každá velikost má vlastní kompozici** (`defs/*.tsx`): S = jedno číslo nebo jeden stav, M = číslo + kontext (změna proti období, segmentový bar, další položka, mini kalendář), L = seznam nebo graf, XL = graf s legendou a tlačítky (`Actions`). Žádná velikost není zmenšenina jiné.
+- **Jedna anatomie** (`kit.tsx`): `Hero` (tabulární číslice, roste s šířkou widgetu přes `cqi`, nikdy nevytlačí řádek pod sebou), `Sub`, `Delta` (ikona směru, barva jen jako druhý signál), `Stack`, `Side`, `Row`/`RowList`, `Legend`, `Actions`. Barva widgetu jen podle sekce (`appearance.ts`), `Hero` má barvu jen jako stav (růžová po termínu, zelená čistá nula).
+- **Grafy podle dataviz**: `Columns` (sloupce ≤ 24 px, zakulacený konec, dnešek plný a ostatní v nádechu), `Segments` (mezera 2 px), `Ring`, `Sparkline`, `MiniCalendar` (hustota teček), `Bar` (řazený seznam), v XL Financí párové sloupce příjmy × výdaje. Žádný graf bez popisku pro čtečku.
+- **Prázdné stavy**: čistá nula je `Hero` „0“ se slovem, jinak jedna věta s akcí zarovnaná nahoru k titulku; nikdy ikona uprostřed prázdné plochy.
+- **Živost**: `LiveNumber` ukáže hodnotu hned a animuje jen změnu dat (žádné počítání od nuly při návratu); Dnes a Splněné úkoly odškrtávají přímo na ploše; Grady widget má postavu (`Grady` head / full) v póze podle toho, zda něco má.
+- **Pohyb** (`motion.ts`, `widget-frame.tsx`, `widget-grid.tsx`): vlnění s fází a periodou z id widgetu (FNV-1a), zvednutí s pružinou a stínem, uhýbání ostatních přes `layout` pružinu, přichycení na mřížku, změna velikosti = morph rámu a prolnutí nového obsahu, přidání z galerie = let z náhledu (`flightFrom`), odebrání = smrsknutí, detail = sdílené `layoutId`. Haptika `navigator.vibrate` jen tam, kde je. `prefers-reduced-motion` = okamžité přechody bez vlnění.
+- **60 fps**: změřeno `bun scripts/widgets-design-shots.ts fps` (výsledky v `fps/README.md`): 20 widgetů v úpravách 60 fps vlnění i tažení bez škrcení, při CPU ×4 vlnění 60 fps a tažení 45 fps.
+- **Galerie** (`widget-gallery.tsx`): velké náhledy ze skutečných dat, tečky pro velikosti, popis, Doporučené podle používaných sekcí (`recommend.ts`), na telefonu spodní panel.
+
+### Co zůstává otevřené
+
+- Rezervace, Faktury po splatnosti, Odměny a Tým mají v L seznam, který s málo daty nezaplní výšku; XL u nich není (záměrně, nemají graf).
+- Vývoj kapitálu bez plánu měsíce je věta s akcí, graf se objeví až s plánem.
