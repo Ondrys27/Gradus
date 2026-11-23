@@ -100,7 +100,22 @@ export type Database = {
           user_id?: string
           worker_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "account_notifications_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "note_folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_notifications_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       achievements: {
         Row: {
@@ -3315,6 +3330,76 @@ export type Database = {
           },
         ]
       }
+      note_dismissals: {
+        Row: {
+          created_at: string
+          note_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          note_id: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          note_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_dismissals_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      note_folders: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          parent_id: string | null
+          position: number
+          space_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          parent_id?: string | null
+          position?: number
+          space_id: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          parent_id?: string | null
+          position?: number
+          space_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_folders_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "note_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       note_links: {
         Row: {
           created_at: string
@@ -3409,60 +3494,6 @@ export type Database = {
           },
         ]
       }
-      note_dismissals: {
-        Row: {
-          created_at: string
-          note_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          note_id: string
-          user_id?: string
-        }
-        Update: {
-          created_at?: string
-          note_id?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      note_folders: {
-        Row: {
-          color: string
-          created_at: string
-          id: string
-          name: string
-          parent_id: string | null
-          position: number
-          space_id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          color?: string
-          created_at?: string
-          id?: string
-          name: string
-          parent_id?: string | null
-          position?: number
-          space_id: string
-          updated_at?: string
-          user_id?: string
-        }
-        Update: {
-          color?: string
-          created_at?: string
-          id?: string
-          name?: string
-          parent_id?: string | null
-          position?: number
-          space_id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       note_shares: {
         Row: {
           can_reshare: boolean
@@ -3506,7 +3537,29 @@ export type Database = {
           target_user_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "note_shares_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "note_folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "note_shares_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "worker_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "note_shares_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       note_versions: {
         Row: {
@@ -3545,7 +3598,15 @@ export type Database = {
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "note_versions_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notes: {
         Row: {
@@ -3579,7 +3640,7 @@ export type Database = {
           pinned?: boolean
           preview?: string | null
           search_vector?: unknown
-          space_id?: string
+          space_id: string
           title?: string
           updated_at?: string
           user_id?: string
@@ -3602,7 +3663,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "notes_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "note_folders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       nps_responses: {
         Row: {
@@ -8007,6 +8076,15 @@ export type Database = {
           user_id: string
         }[]
       }
+      note_folder_exists: { Args: { _folder: string }; Returns: boolean }
+      note_folder_roles_of: {
+        Args: { _only?: string; _user: string }
+        Returns: {
+          can_reshare: boolean
+          folder_id: string
+          role: string
+        }[]
+      }
       note_folder_writable: {
         Args: { _folder: string; _space: string }
         Returns: boolean
@@ -8074,6 +8152,14 @@ export type Database = {
           role: string
         }[]
       }
+      note_roles_of: {
+        Args: { _only?: string; _user: string }
+        Returns: {
+          can_reshare: boolean
+          note_id: string
+          role: string
+        }[]
+      }
       note_share_groups: {
         Args: { _space: string }
         Returns: {
@@ -8107,6 +8193,10 @@ export type Database = {
           title: string
           updated_at: string
         }[]
+      }
+      notes_hand_over: {
+        Args: { _space: string; _user: string; _worker: string }
+        Returns: number
       }
       notes_list: {
         Args: { _space: string }
@@ -8688,6 +8778,14 @@ export type Database = {
       }
       settle_idle_work_sessions: { Args: never; Returns: number }
       space_leave: { Args: { _space: string }; Returns: string }
+      space_member_of: {
+        Args: { _space: string; _user: string }
+        Returns: boolean
+      }
+      space_person_name: {
+        Args: { _space: string; _user: string }
+        Returns: string
+      }
       start_prospecting: {
         Args: never
         Returns: {

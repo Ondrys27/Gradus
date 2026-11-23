@@ -95,6 +95,7 @@ test("26 · notes: the list's bin asks first, Undo and the Delete key", async ({
     ]) {
       const { error } = await client.from("notes").insert({
         user_id: account.id,
+        space_id: account.id,
         title,
         content: noteDoc(title, body),
         content_text: `${title}\n${body}`,

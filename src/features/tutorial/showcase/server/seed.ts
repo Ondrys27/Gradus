@@ -349,6 +349,7 @@ export async function seedStage(input: {
     const draft = draftFromDoc(textDoc(note.title, note.blocks));
     const inserted = await admin.from("notes").insert({
       user_id: userId,
+      space_id: userId,
       title: draft.title,
       content: draft.content as unknown as Json,
       content_text: draft.content_text,

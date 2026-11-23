@@ -48,7 +48,10 @@ export async function writeNote(
   const inserted = await env.db.from("notes").insert({
     id: args.id,
     user_id: args.userId,
-    ...(place ? { space_id: place.spaceId, folder_id: place.folderId } : {}),
+    // Without a place the note lives in the account's own space (the guard
+    // trigger would pick the same); the column is required in the types.
+    space_id: place?.spaceId ?? args.userId,
+    ...(place ? { folder_id: place.folderId } : {}),
     ...text,
   });
   if (!inserted.error) return { created: true };
