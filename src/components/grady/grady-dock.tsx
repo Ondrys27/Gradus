@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 import { GradyButton } from "@/components/layout/grady-button";
 import { useCloseOnErrorScreen } from "@/features/errors/error-screen-state";
+import { useGradyOverlay } from "@/features/grady/overlay-store";
 import { useGradySuggestions } from "@/features/grady/queries";
 import { useGradyChat } from "@/features/grady/use-grady-chat";
 import { track } from "@/lib/analytics/client";
@@ -44,6 +45,15 @@ export function GradyDock() {
     },
     [send],
   );
+
+  // A question asked elsewhere (the dashboard's Grady widget) goes out here, once.
+  const askRequest = useGradyOverlay((value) => value.askRequest);
+  const askedId = useRef(0);
+  useEffect(() => {
+    if (!askRequest || askRequest.id === askedId.current) return;
+    askedId.current = askRequest.id;
+    ask(askRequest.prompt);
+  }, [askRequest, ask]);
 
   // Fetched once the browser is idle, so the first tap on Grady opens at once.
   useEffect(() => whenIdle(loadPanel), []);

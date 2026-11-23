@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslations } from "next-intl";
@@ -52,7 +52,20 @@ function useLastAnswer(userId: string) {
  * days after each answer. A close hides it until tomorrow; three closes in a
  * row hide it for a month (satisfaction-trigger.ts).
  */
-export function SatisfactionCard() {
+/** The survey is due for the signed-in person now (after 14 days, 30 after an answer, not snoozed). */
+export function useSatisfactionDue(): boolean | undefined {
+  const { user } = useSession();
+  const profile = useProfile();
+  const lastAnswer = useLastAnswer(user.id);
+  if (!lastAnswer.isSuccess) return undefined;
+  return surveyDue({
+    createdAt: profile.created_at,
+    lastAnswerAt: lastAnswer.data,
+    snoozedUntil: profile.nps_snoozed_until,
+  });
+}
+
+export function SatisfactionCard({ empty = null }: { empty?: ReactNode } = {}) {
   const t = useTranslations("dashboard.satisfaction");
   const reduceMotion = useReducedMotionSafe();
   const settings = useFormatSettings();
@@ -119,7 +132,7 @@ export function SatisfactionCard() {
     );
   }
 
-  return (
+  const card = (
     <AnimatePresence>
       {show && (
         <motion.section
@@ -217,4 +230,5 @@ export function SatisfactionCard() {
       )}
     </AnimatePresence>
   );
+  return show || !empty ? card : <>{empty}</>;
 }

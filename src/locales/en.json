@@ -4098,6 +4098,318 @@
         "noShow": "No-show",
         "skip": "Skip"
       }
+    },
+    "board": {
+      "tabs": "Dashboards",
+      "mainTab": "Overview",
+      "newTab": "New dashboard",
+      "renameTab": "Rename dashboard",
+      "deleteTab": "Delete dashboard",
+      "deleteTabConfirm": "Delete the “{name}” dashboard? Its widgets go, your data stays.",
+      "tabName": "Dashboard name",
+      "tabPlaceholder": "For example Sales or Money",
+      "edit": "Edit",
+      "done": "Done",
+      "add": "Add widget",
+      "undo": "Undo",
+      "undoHint": "Takes back the last change (⌘Z)",
+      "reset": "Reset to default",
+      "resetCompany": "Back to the company's",
+      "resetConfirm": "The dashboard goes back to its default. Your changes to it go, your data stays.",
+      "offer": "Your company has a new dashboard. Use it instead of yours?",
+      "offerAdopt": "Use the company's",
+      "offerKeep": "Keep mine",
+      "emptyTitle": "This dashboard is empty",
+      "emptyDescription": "Build it from widgets: tasks, deals, money, calendar and more.",
+      "saveFailed": "The dashboard changes could not be saved.",
+      "loadFailed": "Could not load.",
+      "retry": "Try again",
+      "save": "Save",
+      "cancel": "Cancel",
+      "close": "Close",
+      "openSection": "Open section",
+      "remove": "Remove the {name} widget",
+      "settings": "Settings of the {name} widget",
+      "resize": "Size of the {name} widget",
+      "settingsTitle": "Settings: {name}",
+      "multiHint": "Pick {min} to {max}.",
+      "dragInstructions": "Press Space to pick up a widget, the arrow keys to move it and Space to drop it. Esc cancels.",
+      "galleryTitle": "Add widget",
+      "gallerySearch": "Search widgets",
+      "galleryCategories": "Categories",
+      "galleryAll": "All",
+      "galleryEmpty": "No widget like that.",
+      "galleryAdd": "Add · {size}",
+      "gallerySizes": "Size",
+      "categories": {
+        "today": "Today",
+        "sales": "Sales",
+        "money": "Money",
+        "team": "Team",
+        "progress": "Progress",
+        "tools": "Tools"
+      },
+      "sizes": {
+        "S": "Small",
+        "M": "Medium",
+        "L": "Large",
+        "XL": "Wide",
+        "SSpan": "1 × 1",
+        "MSpan": "2 × 1",
+        "LSpan": "2 × 2",
+        "XLSpan": "4 × 2"
+      }
+    },
+    "widgets": {
+      "today": {
+        "name": "Today",
+        "description": "Today's tasks, meetings, people to call back and deals that stand still.",
+        "emptyTitle": "Nothing waits today",
+        "emptyHint": "Time for a new client or a step of a milestone.",
+        "parts": {
+          "tasks": "{count, plural, one {task} other {tasks}}",
+          "events": "{count, plural, one {meeting} other {meetings}}",
+          "followUps": "{count, plural, one {to call} other {to call}}",
+          "deals": "{count, plural, one {deal standing} other {deals standing}}"
+        }
+      },
+      "waiting": {
+        "name": "Waiting for you",
+        "description": "Meetings to approve, company invites and surveys after meetings.",
+        "emptyTitle": "Nothing waits",
+        "emptyHint": "Whatever needs your decision shows up here."
+      },
+      "overdueTasks": {
+        "name": "Overdue tasks",
+        "description": "Sales tasks past their due time.",
+        "emptyTitle": "Nothing overdue",
+        "emptyHint": "You're on top of everything. Keep going.",
+        "count": "{count, plural, one {overdue task} other {overdue tasks}}",
+        "first": "Oldest: {title}",
+        "settings": {
+          "scope": {
+            "label": "Whose tasks",
+            "mine": "Mine",
+            "all": "Everyone's"
+          }
+        }
+      },
+      "meetings": {
+        "name": "Upcoming meetings",
+        "description": "Meetings in the calendar for the next days.",
+        "allDay": "all day",
+        "todayAt": "today {time}",
+        "tomorrowAt": "tomorrow {time}",
+        "emptyTitle": "No meeting in {days} days",
+        "emptyHint": "Set one up or send your scheduling link.",
+        "plan": "Plan a meeting",
+        "settings": {
+          "days": {
+            "label": "How many days ahead",
+            "7": "7 days",
+            "14": "14 days",
+            "30": "30 days"
+          }
+        }
+      },
+      "calendarWeek": {
+        "name": "Week in the calendar",
+        "description": "This week day by day with its events.",
+        "emptyTitle": "The week is free",
+        "emptyHint": "Nothing in the calendar yet.",
+        "events": "{count, plural, one {{count} event} other {{count} events}}",
+        "more": "+{count}",
+        "free": "Free",
+        "allDay": "all day"
+      },
+      "tasksDone": {
+        "name": "Tasks done today",
+        "description": "How many of today's milestone tasks you have done."
+      },
+      "pipeline": {
+        "name": "Pipeline",
+        "description": "Open deals by stage: value or count.",
+        "emptyTitle": "No open deal",
+        "emptyHint": "Add a deal and watch it move.",
+        "newDeal": "New deal",
+        "valueHint": "{count, plural, one {in {count} deal} other {in {count} deals}}",
+        "valueOthers": "{count, plural, one {in {count} deal} other {in {count} deals}}, other currencies: {others}",
+        "countHint": "{count, plural, one {open deal} other {open deals}}",
+        "totals": "Totals by currency",
+        "settings": {
+          "measure": {
+            "label": "Show",
+            "value": "Value",
+            "count": "Count"
+          }
+        }
+      },
+      "onFire": {
+        "name": "On fire",
+        "description": "Three tiles of what is wrong in your deals. The goal is zero everywhere."
+      },
+      "winRate": {
+        "name": "Win rate",
+        "description": "How many deals closed in 90 days you won."
+      },
+      "newContacts": {
+        "name": "New contacts",
+        "description": "How many contacts came in this month.",
+        "emptyTitle": "None this month yet",
+        "add": "Add contact",
+        "unnamed": "No name"
+      },
+      "coldCalling": {
+        "name": "Cold calling today",
+        "description": "Time spent finding clients today and this week.",
+        "today": "finding clients today",
+        "week": "This week"
+      },
+      "bookings": {
+        "name": "Scheduler bookings",
+        "description": "Who booked a meeting with you and what waits for approval.",
+        "emptyTitle": "No bookings",
+        "emptyHint": "Send clients the link to your scheduler.",
+        "share": "Open scheduler",
+        "pending": "{count, plural, one {{count} waits for approval} other {{count} wait for approval}}",
+        "upcoming": "{count, plural, one {upcoming booking} other {upcoming bookings}}",
+        "guest": "Guest",
+        "toApprove": "to approve"
+      },
+      "financeMonth": {
+        "name": "Month's money",
+        "description": "Income, expenses and balance of this month against last month.",
+        "income": "Income",
+        "expense": "Expenses",
+        "balance": "Balance"
+      },
+      "capital": {
+        "name": "Capital over time",
+        "description": "Capital by week: plan and reality, 3 months back and 3 ahead."
+      },
+      "overdueInvoices": {
+        "name": "Overdue invoices",
+        "description": "Issued invoices nobody has paid yet.",
+        "emptyTitle": "All paid",
+        "emptyHint": "No invoice is overdue.",
+        "count": "{count, plural, one {overdue invoice} other {overdue invoices}}",
+        "noCustomer": "No customer"
+      },
+      "rewards": {
+        "name": "Rewards",
+        "description": "Owner: to pay out and to approve. Worker: earned and planned.",
+        "toPay": "to pay out",
+        "toApprove": "To approve",
+        "earned": "earned this month",
+        "plannedLabel": "Planned",
+        "pendingApproval": "To approve: {amount}",
+        "planned": "Planned: {amount}",
+        "emptyOwnerTitle": "Nothing to pay out",
+        "emptyOwnerHint": "Your people's rewards show up once someone earns them.",
+        "emptyWorkerTitle": "No rewards yet",
+        "emptyWorkerHint": "Rewards for tasks and deals show up here."
+      },
+      "workTimer": {
+        "name": "Time worked",
+        "description": "The timer of your work in the company: start and pause."
+      },
+      "team": {
+        "name": "Team",
+        "description": "Who has how many open tasks and deals.",
+        "load": "{tasks} tasks · {deals} deals",
+        "emptyTitle": "It's just you so far",
+        "emptyHint": "Invite a worker and see who has what on their plate.",
+        "invite": "Invite a worker",
+        "busiest": "Busiest: {name} with {count, plural, one {# thing} other {# things}}"
+      },
+      "activity": {
+        "name": "Company activity",
+        "description": "The latest calls, e-mails, meetings and contact moves, and who did them.",
+        "someone": "Someone",
+        "line": "{who}: {what} – {contact}",
+        "unnamed": "no name",
+        "emptyTitle": "No activity yet",
+        "emptyHint": "Calls and meetings with contacts show up here."
+      },
+      "milestones": {
+        "name": "Milestones and progress",
+        "description": "Milestones in progress and how many of their tasks are done.",
+        "tasks": "{done} of {total}",
+        "emptyTitle": "No milestone in progress",
+        "emptyHint": "Break a big goal into steps.",
+        "add": "New milestone",
+        "more": "{count, plural, one {and {count} more} other {and {count} more}}",
+        "active": "In progress",
+        "completed": "Done"
+      },
+      "level": {
+        "name": "Level and streak",
+        "description": "Your level, the XP to the next one and your streak of days.",
+        "progress": "Progress to the next level",
+        "level": "level",
+        "toNext": "{xp} XP to go",
+        "top": "Top level",
+        "streak": "{count, plural, one {{formatted} day in a row} other {{formatted} days in a row}}",
+        "totalXp": "Total XP",
+        "freeze": "Streak freeze",
+        "freezeReady": "Ready",
+        "freezeUsed": "Used this week"
+      },
+      "grady": {
+        "name": "Grady",
+        "description": "What Grady has for you, and a quick question.",
+        "placeholder": "Ask Grady…",
+        "send": "Send to Grady",
+        "nothing": "Grady has nothing to report right now.",
+        "ready": "Grady has ready",
+        "prompts": {
+          "today": "What should I do today?",
+          "pipeline": "Sum up my pipeline",
+          "followUp": "Who should I call?"
+        }
+      },
+      "pinnedNote": {
+        "name": "Pinned note",
+        "description": "A note you want to keep in sight.",
+        "emptyTitle": "No pinned note",
+        "emptyHint": "Pin a note in Notes.",
+        "open": "Open Notes",
+        "untitled": "Untitled",
+        "settings": {
+          "note": {
+            "label": "Which note",
+            "auto": "The first pinned",
+            "none": "You have no pinned note yet."
+          }
+        }
+      },
+      "quickActions": {
+        "name": "Quick actions",
+        "description": "Buttons for what you do most.",
+        "emptyTitle": "No action",
+        "emptyHint": "Pick actions in the widget's settings.",
+        "actions": {
+          "newContact": "New contact",
+          "newDeal": "New deal",
+          "newTask": "New task",
+          "newEvent": "New event",
+          "newMilestone": "New milestone",
+          "newNote": "New note",
+          "startTimer": "Start timer",
+          "generateContacts": "Find contacts"
+        },
+        "settings": {
+          "actions": {
+            "label": "Which actions"
+          }
+        }
+      },
+      "satisfaction": {
+        "name": "Satisfaction",
+        "description": "A short survey on how the app works for you.",
+        "emptyTitle": "No question right now",
+        "emptyHint": "The survey shows up when it is due."
+      }
     }
   },
   "email": {
@@ -4543,7 +4855,14 @@
         }
       },
       "loadFailed": "Rights could not be loaded. Try again in a moment.",
-      "saveFailed": "The change was not saved. Try again."
+      "saveFailed": "The change was not saved. Try again.",
+      "widgets": {
+        "title": "Widgets on the dashboard",
+        "description": "Which widgets they may use. Only the ones their rights above give data to are offered.",
+        "all": "All they have data for",
+        "loadFailed": "The list of widgets could not be loaded.",
+        "saveFailed": "The list of widgets could not be saved."
+      }
     },
     "invite": {
       "title": "Invite for {name}",
@@ -4673,7 +4992,8 @@
         "label": "Parts of Company",
         "people": "People",
         "groups": "Groups",
-        "rewards": "Rewards and payouts"
+        "rewards": "Rewards and payouts",
+        "dashboards": "Dashboards"
       },
       "view": {
         "label": "Show the company as",
@@ -4800,7 +5120,26 @@
         "extraBeforeSalesHint": "Payments run in test mode only for now, so you pay nothing for this worker yet.",
         "expiredHintPlain": "The invite can no longer be accepted. Send a new one when they want to join."
       },
-      "allEnded": "Nobody works in the company right now. Ended people are in the status filter."
+      "allEnded": "Nobody works in the company right now. Ended people are in the status filter.",
+      "dashboards": {
+        "intro": "The dashboard a worker starts on. A person's applies first, then their group's, then the whole company's. Whoever changed their own only gets the new one offered.",
+        "target": "Editing the dashboard for",
+        "targets": {
+          "space": "The whole company",
+          "group": "Group {name}",
+          "worker": "{name}"
+        },
+        "editing": {
+          "space": "You are editing the whole company's dashboard",
+          "group": "You are editing the dashboard of the group {name}",
+          "worker": "You are editing the dashboard for {name}"
+        },
+        "set": "Set",
+        "notSet": "Not set yet, workers get the default",
+        "loadFailed": "The default dashboards could not be loaded.",
+        "remove": "Remove this dashboard",
+        "readOnly": "Default dashboards are set by the owner."
+      }
     },
     "dashboard": {
       "overview": {
@@ -9843,7 +10182,7 @@
     "steps": {
       "dashboard": {
         "title": "Dashboard",
-        "text": "Every day starts here: tasks, who to call and what you've earned this month. Find anything with ⌘K or Ctrl+K."
+        "text": "Every day starts here: widgets with your tasks, deals and money. **Edit** rearranges them your way, and ⌘K or Ctrl+K finds anything."
       },
       "milestones": {
         "title": "Milestones and the map",
@@ -9899,7 +10238,7 @@
       },
       "workerDashboard": {
         "title": "Your dashboard",
-        "text": "Your day at a glance: tasks, time worked and what you've earned."
+        "text": "Your day at a glance: tasks, time worked and rewards in widgets. **Edit** rearranges them your way."
       },
       "workerTasks": {
         "title": "Your tasks",

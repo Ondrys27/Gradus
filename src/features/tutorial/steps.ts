@@ -99,7 +99,7 @@ function act(
 
 /** The quick look of an owner: one step per section, 1–2 sentences each. */
 const QUICK_OWNER: readonly TutorialStep[] = [
-  look("dashboard", "start", "dashboard", "/app", ["nav-dashboard"]),
+  look("dashboard", "start", "dashboard", "/app", ["dashboard-widgets", "nav-dashboard"]),
   look("milestones", "milestones", "milestones", "/app/milniky", ["nav-milestones"]),
   look("notes", "notes", "notes", "/app/poznamky", ["nav-notes"]),
   look("contacts", "contacts", "contacts", "/app/kontakty", ["nav-contacts"]),
@@ -117,7 +117,7 @@ const QUICK_OWNER: readonly TutorialStep[] = [
 
 /** A worker's own environment, short. */
 const QUICK_WORKER: readonly TutorialStep[] = [
-  look("workerDashboard", "start", "dashboard", "/app", ["nav-dashboard"]),
+  look("workerDashboard", "start", "dashboard", "/app", ["dashboard-widgets", "nav-dashboard"]),
   look("workerTasks", "tasks", "tasks", "/app/ukoly-crm", ["nav-tasks"]),
   look("messages", "company", "messages", "/app/zpravy", ["nav-messages"]),
   look("jarvis", "grady", "grady", null, ["grady"]),
@@ -128,7 +128,7 @@ const QUICK_WORKER: readonly TutorialStep[] = [
 /** The full tutorial: the user tries every part on the sample data. */
 const FULL: readonly TutorialStep[] = [
   look("welcome", "start", "dashboard", "/app", []),
-  look("dashboard", "start", "dashboard", "/app", ["nav-dashboard"]),
+  look("dashboard", "start", "dashboard", "/app", ["dashboard-widgets", "nav-dashboard"]),
   look("milestonesLook", "milestones", "milestones", "/app/milniky", ["demo-milestone", "nav-milestones"]),
   act("milestoneCreate", "milestones", "milestones", "/app/milniky", ["milestone-new"], "milestoneCreated"),
   act("taskAdd", "milestones", "milestones", "/app/milniky", ["task-add"], "taskCreated"),

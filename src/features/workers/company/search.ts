@@ -6,7 +6,7 @@ import { isDashboardTab, type DashboardTab } from "../dashboard/types";
  * and the person whose dashboard is open (`worker`, with its tab `wtab`).
  */
 
-export const COMPANY_TABS = ["people", "groups", "rewards"] as const;
+export const COMPANY_TABS = ["people", "groups", "rewards", "dashboards"] as const;
 export type CompanyTab = (typeof COMPANY_TABS)[number];
 
 /** "current" (active and invited) is the default; ended people show through the filter. */

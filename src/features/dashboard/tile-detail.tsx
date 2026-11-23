@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { createPortal } from "react-dom";
+import { useState, type ReactNode } from "react";
 import { useIsMutating } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { ChevronDownIcon, CircleCheckIcon, SparklesIcon, XIcon } from "lucide-react";
+import { ChevronDownIcon, CircleCheckIcon, SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { AnimatedNumber } from "@/components/ui/animated-number";
-import { buttonVariants, Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { summarize, toBars } from "@/features/cold-calling/stats-logic";
@@ -18,10 +16,6 @@ import { periodRange as monthRange } from "@/features/finance/finance-logic";
 import { useTotals } from "@/features/finance/queries";
 import { SALES_ANALYSIS_MIN_SURVEYS } from "@/features/grady/protocol";
 import { GradyJobError, useRunSalesAnalysis, useSalesAnalysis } from "@/features/grady/queries";
-import { useStages } from "@/features/pipeline/queries";
-import { sortStages } from "@/features/pipeline/board-logic";
-import { stageTone } from "@/features/pipeline/types";
-import { toneFill } from "@/components/ui/tone";
 import {
   formatCalendarDate,
   formatCurrency,
@@ -29,25 +23,22 @@ import {
   formatNumber,
   splitDuration,
 } from "@/lib/format";
-import { lockPageScroll } from "@/lib/scroll-lock";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { compareToPrevious, winRate, winRateSeries, WIN_RATE_DAYS } from "./dashboard-logic";
 import { Trend } from "./dashboard-tile";
 import {
-  useActiveDealCount,
-  useActiveDealsByStage,
   useClosedDeals,
   useMeetingSurveys,
   useNewContactCount,
   useNewContacts,
   useToday,
   useTodayTasks,
+  useWeekProspecting,
   type MeetingSurvey,
 } from "./queries";
 import { Sparkline } from "./sparkline";
 import { SurveyAnswerList } from "./survey-answers";
-import { tileLayoutId, useWeekProspecting, type TileKey } from "./tiles";
 
 // The charts library loads only when this detail is opened.
 const DailyBarChart = dynamic(
@@ -58,84 +49,6 @@ const IncomeChart = dynamic(
   () => import("@/features/finance/income-chart").then((module) => module.IncomeChart),
   { ssr: false, loading: () => <Skeleton className="h-64 rounded-xl" /> },
 );
-
-type Props = { tile: TileKey; onClose: () => void };
-
-/**
- * The detail of a tile: a large window that grows straight out of the tapped
- * card through a shared `layoutId` and shrinks back into it on close. Esc and a
- * tap outside close it; on a phone it fills the whole screen.
- */
-export function TileDetail({ tile, onClose }: Props) {
-  const t = useTranslations("dashboard.tiles");
-  const panelRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const previouslyFocused = document.activeElement as HTMLElement | null;
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", onKeyDown);
-    const release = lockPageScroll();
-    panelRef.current?.focus();
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      release();
-      previouslyFocused?.focus?.();
-    };
-  }, [onClose]);
-
-  return createPortal(
-    <div className="fixed inset-0 z-overlay flex items-center justify-center md:p-6">
-      <motion.div
-        aria-hidden
-        onClick={onClose}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
-        className="absolute inset-0 max-md:bg-canvas/85 bg-canvas/70 md:backdrop-blur-sm"
-      />
-      <motion.div
-        layoutId={tileLayoutId(tile)}
-        transition={{ layout: { duration: 0.35, ease: [0.32, 0.72, 0, 1] } }}
-        role="dialog"
-        aria-modal="true"
-        aria-label={t(`${tile}.label`)}
-        ref={panelRef}
-        tabIndex={-1}
-        className="relative z-10 flex h-[100dvh] max-h-[100dvh] w-full flex-col overflow-y-auto overscroll-contain rounded-none border-0 bg-surface p-6 pt-[calc(env(safe-area-inset-top)+24px)] pb-[calc(env(safe-area-inset-bottom)+24px)] shadow-none outline-none md:h-auto md:max-h-[85dvh] md:w-[min(100%,960px)] md:rounded-3xl md:border md:border-line-strong md:p-6 md:pt-6 md:pb-6 md:shadow-popover"
-      >
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="min-w-0 truncate text-lg font-semibold text-ink">{t(`${tile}.label`)}</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={t("close")}
-            className="-mr-2 grid size-10 shrink-0 cursor-pointer place-items-center rounded-full text-ink-soft outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            <XIcon aria-hidden className="size-5" />
-          </button>
-        </div>
-        {tile === "income" && <IncomeDetail />}
-        {tile === "tasks" && <TasksDetail />}
-        {tile === "winRate" && <WinRateDetail />}
-        {tile === "activeDeals" && <ActiveDealsDetail />}
-        {tile === "newContacts" && <NewContactsDetail />}
-        {tile === "prospecting" && <ProspectingDetail />}
-      </motion.div>
-    </div>,
-    document.body,
-  );
-}
-
-function OpenLink({ href, children }: { href: string; children: ReactNode }) {
-  return (
-    <Link href={href} className={cn(buttonVariants({ variant: "outline" }), "self-start")}>
-      {children}
-    </Link>
-  );
-}
 
 function Heading({ children }: { children: ReactNode }) {
   return <h3 className="micro-label">{children}</h3>;
@@ -161,7 +74,7 @@ function Failed() {
 
 // ---------------------------------------------------------------------------
 
-function IncomeDetail() {
+export function IncomeDetail() {
   const t = useTranslations("dashboard.detail.income");
   const settings = useFormatSettings();
   const { today } = useToday();
@@ -193,15 +106,13 @@ function IncomeDetail() {
       </Trend>
 
       <IncomeChart today={today} />
-
-      <OpenLink href="/app/finance">{t("open")}</OpenLink>
     </Body>
   );
 }
 
 // ---------------------------------------------------------------------------
 
-function TasksDetail() {
+export function TasksDetail() {
   const t = useTranslations("dashboard.detail.tasks");
   const settings = useFormatSettings();
   const { today } = useToday();
@@ -263,14 +174,13 @@ function TasksDetail() {
           </ul>
         )}
       </div>
-      <OpenLink href="/app/milniky">{t("open")}</OpenLink>
     </Body>
   );
 }
 
 // ---------------------------------------------------------------------------
 
-function WinRateDetail() {
+export function WinRateDetail() {
   const t = useTranslations("dashboard.detail.winRate");
   const settings = useFormatSettings();
   const closed = useClosedDeals();
@@ -338,7 +248,6 @@ function WinRateDetail() {
       </div>
 
       <SalesAnalysisSection />
-      <OpenLink href="/app/pipeline">{t("open")}</OpenLink>
     </Body>
   );
 }
@@ -456,46 +365,9 @@ function SurveyItem({ survey }: { survey: MeetingSurvey }) {
 
 // ---------------------------------------------------------------------------
 
-function ActiveDealsDetail() {
-  const t = useTranslations("dashboard.detail.activeDeals");
-  const settings = useFormatSettings();
-  const total = useActiveDealCount();
-  const stagesQuery = useStages();
-  const byStage = useActiveDealsByStage(true);
-
-  if (total.isError || stagesQuery.isError || byStage.isError) return <Failed />;
-  if (total.data === undefined || !stagesQuery.data || !byStage.data) return <Loading />;
-  const stages = sortStages(stagesQuery.data).filter((stage) => !stage.is_won && !stage.is_lost);
-
-  return (
-    <Body>
-      <div className="stat-number text-4xl text-ink">
-        <AnimatedNumber value={total.data} />
-      </div>
-      {stages.length > 0 && (
-        <ul className="flex flex-col divide-y divide-line">
-          {stages.map((stage) => (
-            <li key={stage.id} className="flex min-h-11 items-center gap-3 py-2">
-              <span
-                aria-hidden
-                className={cn("size-2.5 shrink-0 rounded-full", toneFill[stageTone(stage.color)])}
-              />
-              <span className="min-w-0 flex-1 truncate text-sm text-ink">{stage.name}</span>
-              <span className="text-sm font-semibold text-ink tabular-nums">
-                {formatNumber(byStage.data.get(stage.id) ?? 0, {}, settings)}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-      <OpenLink href="/app/pipeline">{t("open")}</OpenLink>
-    </Body>
-  );
-}
-
 // ---------------------------------------------------------------------------
 
-function NewContactsDetail() {
+export function NewContactsDetail() {
   const t = useTranslations("dashboard.detail.newContacts");
   const settings = useFormatSettings();
   const count = useNewContactCount();
@@ -533,14 +405,13 @@ function NewContactsDetail() {
           </ul>
         </div>
       )}
-      <OpenLink href="/app/kontakty">{t("open")}</OpenLink>
     </Body>
   );
 }
 
 // ---------------------------------------------------------------------------
 
-function ProspectingDetail() {
+export function ProspectingDetail() {
   const t = useTranslations("dashboard.detail.prospecting");
   const tTile = useTranslations("dashboard.tiles.prospecting");
   const settings = useFormatSettings();
@@ -584,7 +455,6 @@ function ProspectingDetail() {
         formatTick={(value) => formatNumber(value, {}, settings)}
       />
       <p className="text-xs text-ink-muted">{t("axisMinutes")}</p>
-      <OpenLink href="/app/cold-calling">{t("open")}</OpenLink>
     </Body>
   );
 }

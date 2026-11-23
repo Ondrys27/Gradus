@@ -75,6 +75,10 @@ export function TasksView() {
   useUrlIntent("task", (id) => {
     setRequested(id);
   });
+  // The dashboard's quick action (28.5): a new task right away.
+  useUrlIntent("new", (value) => {
+    if (value === "task" && canCreateTask(workspace, "any")) setAdding(true);
+  });
   const openTask = actions.open;
   useEffect(() => {
     if (!requested || requestedTask.data === undefined) return;
