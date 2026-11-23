@@ -62,7 +62,7 @@
   --animate-ring-spin: ring-spin 3.6s linear infinite;
   /* A recomputed cell of the month plan lights up for a moment after a number is typed. */
   --animate-plan-flash: plan-flash 0.9s ease-out forwards;
-  /* A widget in edit mode of the dashboard; the element sets its own animation-delay. */
+  /* A widget in edit mode of the dashboard; the element sets its own delay, duration and --wiggle-angle. */
   --animate-wiggle: wiggle 0.34s ease-in-out infinite alternate;
 
   @keyframes shimmer {
@@ -107,10 +107,10 @@
 
   @keyframes wiggle {
     from {
-      transform: rotate(-0.7deg);
+      transform: rotate(calc(-1 * var(--wiggle-angle, 0.7deg)));
     }
     to {
-      transform: rotate(0.7deg);
+      transform: rotate(var(--wiggle-angle, 0.7deg));
     }
   }
 

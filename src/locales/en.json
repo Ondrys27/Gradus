@@ -4141,6 +4141,11 @@
       "galleryEmpty": "No widget like that.",
       "galleryAdd": "Add · {size}",
       "gallerySizes": "Size",
+      "galleryRecommended": "Suggested",
+      "galleryRecommendedHint": "by what you use",
+      "galleryAllWidgets": "More widgets",
+      "galleryOnBoard": "On the board",
+      "galleryAddShort": "Add",
       "categories": {
         "today": "Today",
         "sales": "Sales",

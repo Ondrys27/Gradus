@@ -4141,6 +4141,11 @@
       "galleryEmpty": "Takový widget tu není.",
       "galleryAdd": "Přidat · {size}",
       "gallerySizes": "Velikost",
+      "galleryRecommended": "Doporučené",
+      "galleryRecommendedHint": "podle toho, co používáš",
+      "galleryAllWidgets": "Další widgety",
+      "galleryOnBoard": "Na přehledu",
+      "galleryAddShort": "Přidat",
       "categories": {
         "today": "Dnes",
         "sales": "Obchod",

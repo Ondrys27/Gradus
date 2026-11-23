@@ -16,9 +16,9 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { SortableContext, sortableKeyboardCoordinates, useSortable } from "@dnd-kit/sortable";
+import { AnimatePresence, motion } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { useMediaQuery } from "@/lib/use-media-query";
-import { cn } from "@/lib/utils";
+import { useMediaQuery, useReducedMotionSafe } from "@/lib/use-media-query";
 import { widgetMeta, type WidgetMeta } from "./catalog";
 import {
   arrange,
@@ -29,7 +29,8 @@ import {
   type WidgetSize,
 } from "./grid";
 import type { WidgetSettings } from "./kit";
-import { WidgetFrame } from "./widget-frame";
+import { haptic, LIFT_SPRING } from "./motion";
+import { WidgetFrame, type Arrival } from "./widget-frame";
 
 /** Height of one row of the grid; two narrow columns get a little less. */
 const ROW_HEIGHT = { [FULL_COLUMNS]: 164, [NARROW_COLUMNS]: 150 } as Record<number, number>;
@@ -92,8 +93,8 @@ type Props = {
   entries: GridEntry[];
   editing: boolean;
   scope: string;
-  /** The widget just added: it flies in. */
-  fresh?: string | null;
+  /** The widget just added: it flies in from its gallery preview. */
+  arrival?: Arrival | null;
   onOpen?: (entry: GridEntry) => void;
   onLongPress?: () => void;
   onRemove?: (entry: GridEntry) => void;
@@ -113,15 +114,17 @@ const collision: CollisionDetection = (args) => {
 
 /**
  * The widgets on the grid (28.5): four columns on a computer, two on a tablet
- * and a phone, by the width of the grid itself. In editing they wiggle and
- * move by dragging; the others make room as the dragged one passes over them
- * (the order changes live, and every widget glides to its new place).
+ * and a phone, by the width of the grid itself. In editing they wiggle, each
+ * with its own phase, and move by dragging: the grabbed one lifts with a
+ * shadow, the others make room with a spring as it passes over them (the
+ * order changes live), and on drop it settles into the grid. A removed widget
+ * shrinks away; a widget from the gallery flies in.
  */
 export function WidgetGrid({
   entries,
   editing,
   scope,
-  fresh = null,
+  arrival = null,
   onOpen,
   onLongPress,
   onRemove,
@@ -132,6 +135,7 @@ export function WidgetGrid({
   onDragEnd,
 }: Props) {
   const t = useTranslations("dashboard.board");
+  const reduceMotion = useReducedMotionSafe();
   const { ref, cols } = useColumns();
   const placements = useMemo(
     () =>
@@ -153,6 +157,7 @@ export function WidgetGrid({
 
   function start(event: DragStartEvent) {
     setActiveId(String(event.active.id));
+    haptic("lift");
     onDragStart?.();
   }
   function over(event: DragOverEvent) {
@@ -161,6 +166,7 @@ export function WidgetGrid({
   }
   function end(event: DragEndEvent) {
     setActiveId(null);
+    haptic("drop");
     onDragEnd?.(true, String(event.active.id));
   }
   function cancel() {
@@ -195,44 +201,56 @@ export function WidgetGrid({
             gap: GAP_PX,
           }}
         >
-          {entries.map((entry, index) => {
-            const p = placements.get(entry.item.id);
-            if (!p) return null;
-            return (
-              <SortableWidget
-                key={entry.item.id}
-                entry={entry}
-                editing={editing}
-                scope={scope}
-                eager={p.y < EAGER_ROWS}
-                fresh={fresh === entry.item.id}
-                wiggleDelay={-((index * 0.13) % 0.34)}
-                style={{
-                  gridColumn: `${p.x + 1} / span ${p.w}`,
-                  gridRow: `${p.y + 1} / span ${p.h}`,
-                }}
-                onOpen={onOpen && entry.meta.detail !== false ? () => onOpen(entry) : undefined}
-                onLongPress={onLongPress}
-                onRemove={onRemove ? () => onRemove(entry) : undefined}
-                onResize={onResize ? (size) => onResize(entry, size) : undefined}
-                onSettings={onSettings ? () => onSettings(entry) : undefined}
-              />
-            );
-          })}
+          <AnimatePresence initial={false}>
+            {entries.map((entry) => {
+              const p = placements.get(entry.item.id);
+              if (!p) return null;
+              return (
+                <SortableWidget
+                  key={entry.item.id}
+                  entry={entry}
+                  editing={editing}
+                  scope={scope}
+                  eager={p.y < EAGER_ROWS}
+                  arrival={arrival}
+                  style={{
+                    gridColumn: `${p.x + 1} / span ${p.w}`,
+                    gridRow: `${p.y + 1} / span ${p.h}`,
+                  }}
+                  onOpen={onOpen && entry.meta.detail !== false ? () => onOpen(entry) : undefined}
+                  onLongPress={onLongPress}
+                  onRemove={onRemove ? () => onRemove(entry) : undefined}
+                  onResize={onResize ? (size) => onResize(entry, size) : undefined}
+                  onSettings={onSettings ? () => onSettings(entry) : undefined}
+                />
+              );
+            })}
+          </AnimatePresence>
         </div>
       </SortableContext>
-      <DragOverlay dropAnimation={{ duration: 180, easing: "cubic-bezier(0.32, 0.72, 0, 1)" }}>
+      <DragOverlay
+        dropAnimation={
+          reduceMotion ? null : { duration: 220, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" }
+        }
+      >
         {active ? (
-          <WidgetFrame
-            item={active.item}
-            meta={active.meta}
-            name={active.name}
-            settings={active.settings}
-            editing
-            scope={`${scope}-overlay`}
-            eager
-            className={cn("rotate-1 shadow-glow-strong", "scale-[1.03]")}
-          />
+          <motion.div
+            initial={reduceMotion ? false : { scale: 1, rotate: 0 }}
+            animate={{ scale: 1.05, rotate: 1.2 }}
+            transition={LIFT_SPRING}
+            className="h-full"
+          >
+            <WidgetFrame
+              item={active.item}
+              meta={active.meta}
+              name={active.name}
+              settings={active.settings}
+              editing
+              lifted
+              scope={`${scope}-overlay`}
+              eager
+            />
+          </motion.div>
         ) : null}
       </DragOverlay>
     </DndContext>
@@ -244,8 +262,7 @@ function SortableWidget({
   editing,
   scope,
   eager,
-  fresh,
-  wiggleDelay,
+  arrival,
   style,
   onOpen,
   onLongPress,
@@ -257,8 +274,7 @@ function SortableWidget({
   editing: boolean;
   scope: string;
   eager: boolean;
-  fresh: boolean;
-  wiggleDelay: number;
+  arrival: Arrival | null;
   style: CSSProperties;
   onOpen?: () => void;
   onLongPress?: () => void;
@@ -280,8 +296,7 @@ function SortableWidget({
       editing={editing}
       scope={scope}
       eager={eager}
-      fresh={fresh}
-      wiggleDelay={wiggleDelay}
+      arrival={arrival}
       style={style}
       ghost={isDragging}
       onOpen={onOpen}
