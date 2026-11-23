@@ -8088,6 +8088,28 @@ export type Database = {
           user_id: string
         }[]
       }
+      note_collab_save: {
+        Args: {
+          _authors?: string[]
+          _base: number
+          _content: Json
+          _content_text: string
+          _kind: string
+          _note: string
+          _title: string
+          _ydoc: string
+        }
+        Returns: {
+          kind: string
+          status: string
+          version: number
+          ydoc: string
+        }[]
+      }
+      note_collab_topic_allowed: {
+        Args: { _send: boolean; _topic: string }
+        Returns: boolean
+      }
       note_folder_exists: { Args: { _folder: string }; Returns: boolean }
       note_folder_roles_of: {
         Args: { _only?: string; _user: string }
@@ -8155,28 +8177,6 @@ export type Database = {
           role: string
           user_id: string
         }[]
-      }
-      note_collab_save: {
-        Args: {
-          _authors?: string[]
-          _base: number
-          _content: Json
-          _content_text: string
-          _kind: string
-          _note: string
-          _title: string
-          _ydoc: string
-        }
-        Returns: {
-          kind: string
-          status: string
-          version: number
-          ydoc: string
-        }[]
-      }
-      note_collab_topic_allowed: {
-        Args: { _send: boolean; _topic: string }
-        Returns: boolean
       }
       note_role: {
         Args: { _note: string }
