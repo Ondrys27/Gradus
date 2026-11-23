@@ -4183,12 +4183,7 @@
         "description": "Meetings to approve, company invites and surveys after meetings.",
         "emptyTitle": "Nothing waits",
         "emptyHint": "Whatever needs your decision shows up here.",
-        "unit": "{count, plural, one {waits for you} other {wait for you}}",
-        "kind": {
-          "booking": "Approve a meeting: {who}",
-          "invite": "Company invite: {who}",
-          "survey": "Meeting survey: {who}"
-        }
+        "more": "{count, plural, one {and {formatted} more} other {and {formatted} more}}"
       },
       "overdueTasks": {
         "name": "Overdue tasks",

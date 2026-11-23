@@ -30,7 +30,7 @@ import {
 } from "@/features/dashboard/queries";
 import { TasksDetail } from "@/features/dashboard/tile-detail";
 import { TodayCard, useTodayOverview } from "@/features/dashboard/today-card";
-import { useWaitingItems, WaitingForYou } from "@/features/dashboard/waiting-for-you";
+import { useWaitingItems, WaitingCompact, WaitingForYou } from "@/features/dashboard/waiting-for-you";
 import { CallWindowNotice } from "@/features/grady/call-window";
 import { TaskCheckbox } from "@/features/milestones/task-checkbox";
 import {
@@ -475,27 +475,12 @@ function WaitingEmpty({ compact }: { compact: boolean }) {
   );
 }
 
-function WaitingM({ data }: { data: WaitingData }) {
-  const t = useTranslations("dashboard.widgets.waiting");
-  const count = data.items.length;
-  if (count === 0) return <WaitingEmpty compact />;
-  const first = data.items[0];
-  return (
-    <Stack>
-      <Hero unit={t("unit", { count })}>
-        <LiveNumber value={count} />
-      </Hero>
-      <Sub>{t(`kind.${first.kind}`, { who: first.who })}</Sub>
-    </Stack>
-  );
-}
-
 export const waitingWidget = defineWidget<WaitingData>({
   key: "waiting",
   useData: useWaitingData,
-  View: ({ size, data }) =>
+  View: ({ size }) =>
     size === "M" ? (
-      <WaitingM data={data} />
+      <WaitingCompact empty={<WaitingEmpty compact />} />
     ) : (
       <div className="-mx-1 min-h-0 flex-1 overflow-y-auto px-1">
         <WaitingForYou variant="widget" empty={<WaitingEmpty compact={false} />} />

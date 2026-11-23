@@ -56,6 +56,7 @@ import { stageTone, type Stage } from "@/features/pipeline/types";
 import { useWaitingBookings } from "@/features/scheduler/booking-queries";
 import { bookingAppPath } from "@/features/scheduler/booking/paths";
 import { useBookings } from "@/features/scheduler/queries";
+import { track } from "@/lib/analytics/client";
 import { createClient } from "@/lib/supabase/client";
 import {
   formatCurrency,
@@ -377,6 +378,11 @@ const LEVEL_TEXT: Record<HealthLevel, string> = {
 /** How many deals of a tile the tall and wide sizes list. */
 const FIRE_ROWS = 4;
 
+/**
+ * The three figures, each a link into the pipeline with that tile's list open.
+ * They carry the same `data-tile` / `data-level` / `data-count` as the tiles
+ * in the pipeline (`HealthTiles`), so the dashboard and the pipeline read alike.
+ */
 function HealthFigures({ health }: { health: PipelineHealth }) {
   const t = useTranslations("dashboard.widgets.onFire");
   const th = useTranslations("pipeline.health");
@@ -385,6 +391,7 @@ function HealthFigures({ health }: { health: PipelineHealth }) {
     <ul aria-label={th("label")} className="grid grid-cols-3 gap-2">
       {HEALTH_TILES.map((tile) => {
         const count = health[tile].count;
+        const level = healthLevel(count);
         return (
           <li key={tile} className="min-w-0">
             <Link
@@ -393,12 +400,16 @@ function HealthFigures({ health }: { health: PipelineHealth }) {
                 label: th(`tiles.${tile}.label`),
                 count: formatNumber(count, {}, format),
               })}
+              data-tile={tile}
+              data-level={level}
+              data-count={count}
+              onClick={() => track("pipeline_health_opened", { tile, from: "dashboard", count })}
               className="block rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-violet/40"
             >
               <Figure
                 label={t(`short.${tile}`)}
                 value={<LiveNumber value={count} />}
-                className={cn("tabular-nums", LEVEL_TEXT[healthLevel(count)])}
+                className={cn("tabular-nums", LEVEL_TEXT[level])}
               />
             </Link>
           </li>

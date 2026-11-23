@@ -4183,12 +4183,7 @@
         "description": "Schůzky ke schválení, pozvánky do firem a dotazníky po schůzkách.",
         "emptyTitle": "Nic nečeká",
         "emptyHint": "Jakmile bude potřeba tvoje rozhodnutí, objeví se tady.",
-        "unit": "{count, plural, one {čeká na tebe} few {čekají na tebe} many {čeká na tebe} other {čeká na tebe}}",
-        "kind": {
-          "booking": "Schválit schůzku: {who}",
-          "invite": "Pozvánka do firmy: {who}",
-          "survey": "Dotazník po schůzce: {who}"
-        }
+        "more": "{count, plural, one {a ještě {formatted} další} few {a ještě {formatted} další} other {a ještě {formatted} dalších}}"
       },
       "overdueTasks": {
         "name": "Úkoly po termínu",
