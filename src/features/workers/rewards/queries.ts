@@ -12,7 +12,9 @@ import { createClient } from "@/lib/supabase/client";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { grantAllows } from "../permissions-catalog";
 import { workerKeys } from "../queries";
-import { normalizeRule, parseRule, type RewardTemplate, type RuleInput } from "./rules";
+import { normalizeDefinition, type RuleDefinition, type SpaceRefs } from "./definition";
+import type { EventSubject } from "./evaluate";
+import { parseRule, type RewardTemplate } from "./rules";
 import { monthBounds, totalsFromRows } from "./summary";
 import {
   ENTRY_COLUMNS,
@@ -49,6 +51,10 @@ export const rewardKeys = {
   approved: (userId: string, space: string) => [...rewardKeys.all(userId, space), "open"] as const,
   payouts: (userId: string, space: string, workerId: string | null, page: number) =>
     [...rewardKeys.all(userId, space), "payouts", workerId, page] as const,
+  refs: (userId: string, space: string, workerId: string) =>
+    [...rewardKeys.all(userId, space), "refs", workerId] as const,
+  history: (userId: string, space: string, workerId: string) =>
+    [...rewardKeys.all(userId, space), "history", workerId] as const,
 };
 
 function useKeys() {
@@ -136,7 +142,7 @@ export function useCreatePlan() {
       approval?: Approval;
       currency?: string;
       template?: RewardTemplate;
-      rules?: RuleInput[];
+      rules?: RuleDefinition[];
     }) => {
       const supabase = createClient();
       const { data, error } = await supabase
@@ -151,11 +157,12 @@ export function useCreatePlan() {
         .select("id")
         .single();
       if (error) throw error;
-      const rules = (input.rules ?? []).map(normalizeRule);
+      const rules = (input.rules ?? []).map(normalizeDefinition);
       if (rules.length > 0) {
         const { error: rulesError } = await supabase.from("reward_plan_rules").insert(
-          rules.map((rule, position) => ({
-            ...rule,
+          rules.map((definition, position) => ({
+            kind: "event",
+            definition,
             plan_id: data.id,
             space_id: space,
             worker_id: input.workerId,
@@ -213,22 +220,23 @@ export function useSaveRule() {
     mutationFn: async (input: {
       plan: Pick<RewardPlan, "id" | "worker_id" | "rules">;
       ruleId: string | null;
-      rule: RuleInput;
+      definition: RuleDefinition;
       active?: boolean;
     }) => {
-      const rule = normalizeRule(input.rule);
+      const definition = normalizeDefinition(input.definition);
       const supabase = createClient();
       const active = input.active ?? true;
       if (input.ruleId) {
         const { error } = await supabase
           .from("reward_plan_rules")
-          .update({ ...rule, active })
+          .update({ definition, active })
           .eq("id", input.ruleId);
         if (error) throw error;
       } else {
         const position = input.plan.rules.reduce((max, item) => Math.max(max, item.position + 1), 0);
         const { error } = await supabase.from("reward_plan_rules").insert({
-          ...rule,
+          kind: "event",
+          definition,
           active,
           plan_id: input.plan.id,
           space_id: space,
@@ -237,25 +245,31 @@ export function useSaveRule() {
         });
         if (error) throw error;
       }
-      track("reward_rule_saved", {
-        kind: rule.kind,
-        created: !input.ruleId,
-        capped: rule.cap_per_period !== null,
-        filtered: Object.keys(rule.filter).length > 0,
-        active,
-      });
+      track("reward_rule_saved", ruleProps(definition, { created: !input.ruleId, active }));
     },
     onSettled: refresh,
   });
 }
 
+/** What analytics may say about a rule: the event and the shape, never amounts. */
+function ruleProps(definition: RuleDefinition, extra: { created: boolean; active: boolean }) {
+  return {
+    event: definition.event.key,
+    reward: definition.reward.type,
+    capped: definition.limits.cap !== undefined,
+    bonus: definition.limits.bonus !== undefined,
+    filtered: Object.keys(definition.conditions).some((key) => key !== "once" && key !== "who"),
+    ...extra,
+  };
+}
+
 export function useDeleteRule() {
   const refresh = useRefresh();
   return useMutation({
-    mutationFn: async (rule: { id: string; kind: RuleInput["kind"] }) => {
+    mutationFn: async (rule: { id: string; definition: RuleDefinition }) => {
       const { error } = await createClient().from("reward_plan_rules").delete().eq("id", rule.id);
       if (error) throw error;
-      track("reward_rule_deleted", { kind: rule.kind });
+      track("reward_rule_deleted", { event: rule.definition.event.key });
     },
     onSettled: refresh,
   });
@@ -269,14 +283,15 @@ export function useAddTemplateRules() {
     mutationFn: async (input: {
       plan: Pick<RewardPlan, "id" | "worker_id" | "rules">;
       template: RewardTemplate;
-      rules: RuleInput[];
+      rules: RuleDefinition[];
     }) => {
       const start = input.plan.rules.reduce((max, item) => Math.max(max, item.position + 1), 0);
       const { error } = await createClient()
         .from("reward_plan_rules")
         .insert(
-          input.rules.map(normalizeRule).map((rule, index) => ({
-            ...rule,
+          input.rules.map(normalizeDefinition).map((definition, index) => ({
+            kind: "event",
+            definition,
             plan_id: input.plan.id,
             space_id: space,
             worker_id: input.plan.worker_id,
@@ -287,6 +302,130 @@ export function useAddTemplateRules() {
       track("reward_template_applied", { template: input.template, rules: input.rules.length });
     },
     onSettled: refresh,
+  });
+}
+
+/** Two (or more) rules on the same event: they add up, or only the highest pays. */
+export function useSetRulesStack() {
+  const refresh = useRefresh();
+  return useMutation({
+    mutationFn: async (input: { rules: ReadonlyArray<{ id: string; definition: RuleDefinition }>; stack: "sum" | "max" }) => {
+      const supabase = createClient();
+      for (const rule of input.rules) {
+        const { error } = await supabase
+          .from("reward_plan_rules")
+          .update({ definition: normalizeDefinition({ ...rule.definition, stack: input.stack }) })
+          .eq("id", rule.id);
+        if (error) throw error;
+      }
+      track("reward_rules_stacked", { stack: input.stack, rules: input.rules.length });
+    },
+    onSettled: refresh,
+  });
+}
+
+/** A change Grady proposed (29.1) as the owner confirmed it. */
+export type RuleOp =
+  | { op: "add"; definition: RuleDefinition }
+  | { op: "update"; ruleId: string; definition: RuleDefinition }
+  | { op: "remove"; ruleId: string };
+
+/**
+ * The changes the owner confirmed, in order, through row level security; a
+ * plan is made first when the person has none. Nothing runs before Confirm.
+ */
+export function useApplyRuleOps() {
+  const space = useWorkspaceId();
+  const settings = useFormatSettings();
+  const t = useTranslations("workers.rewardPlan");
+  const refresh = useRefresh();
+  return useMutation({
+    mutationFn: async (input: {
+      workerId: string;
+      plan: Pick<RewardPlan, "id" | "rules"> | null;
+      currency: string;
+      ops: RuleOp[];
+      from: "plan" | "grady";
+    }) => {
+      const supabase = createClient();
+      let planId = input.plan?.id ?? null;
+      if (!planId) {
+        const { data, error } = await supabase
+          .from("reward_plans")
+          .insert({
+            space_id: space,
+            worker_id: input.workerId,
+            name: t("defaultName"),
+            approval: "manual",
+            currency: input.currency || settings.currency,
+          })
+          .select("id")
+          .single();
+        if (error) throw error;
+        planId = data.id;
+      }
+      let position = (input.plan?.rules ?? []).reduce((max, item) => Math.max(max, item.position + 1), 0);
+      for (const op of input.ops) {
+        if (op.op === "remove") {
+          const { error } = await supabase.from("reward_plan_rules").delete().eq("id", op.ruleId);
+          if (error) throw error;
+        } else if (op.op === "update") {
+          const { error } = await supabase
+            .from("reward_plan_rules")
+            .update({ definition: normalizeDefinition(op.definition) })
+            .eq("id", op.ruleId);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from("reward_plan_rules").insert({
+            kind: "event",
+            definition: normalizeDefinition(op.definition),
+            plan_id: planId,
+            space_id: space,
+            worker_id: input.workerId,
+            position: position++,
+          });
+          if (error) throw error;
+        }
+      }
+      track("reward_setup_applied", {
+        from: input.from,
+        added: input.ops.filter((op) => op.op === "add").length,
+        updated: input.ops.filter((op) => op.op === "update").length,
+        removed: input.ops.filter((op) => op.op === "remove").length,
+      });
+    },
+    onSettled: refresh,
+  });
+}
+
+/** The space's tables and stages by id and name, for the sentences of a person's rules. */
+export function usePlanRefs(workerId: string | null) {
+  const { userId, space } = useKeys();
+  return useQuery({
+    queryKey: rewardKeys.refs(userId, space, workerId ?? ""),
+    enabled: workerId !== null,
+    staleTime: 60_000,
+    queryFn: async (): Promise<SpaceRefs> => {
+      const { data, error } = await createClient().rpc("reward_plan_refs", { _worker: workerId! });
+      if (error) throw error;
+      const refs = (data ?? {}) as Partial<SpaceRefs>;
+      return { tables: refs.tables ?? [], stages: refs.stages ?? [] };
+    },
+  });
+}
+
+/** The person's events of the last 30 days, for "Try it" (a dry run in the browser). */
+export function useRewardHistory(workerId: string, enabled: boolean) {
+  const { userId, space } = useKeys();
+  return useQuery({
+    queryKey: rewardKeys.history(userId, space, workerId),
+    enabled,
+    staleTime: 60_000,
+    queryFn: async (): Promise<EventSubject[]> => {
+      const { data, error } = await createClient().rpc("reward_history", { _worker: workerId, _days: 30 });
+      if (error) throw error;
+      return Array.isArray(data) ? (data as EventSubject[]) : [];
+    },
   });
 }
 

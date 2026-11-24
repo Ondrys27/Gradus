@@ -20,7 +20,7 @@ import { useFreshOnOpen } from "@/features/milestones/use-fresh-on-open";
 import { formatPrice, todayIsoDate, type IsoDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { useAddManualReward, useCreatePayout, useEditEntry, type ManualRewardInput } from "./queries";
-import { useAmountText } from "./rule-wizard";
+import { useAmountText } from "./amount-text";
 import { AMOUNT_MAX, NOTE_MAX } from "./rules";
 import type { RewardEntry } from "./types";
 

@@ -119,6 +119,9 @@ s katalogem (každá operace právě jednou, právo, úroveň, vratnost) a s tí
 | Odměny: čeká na schválení / výplatu | `list_reward_entries` | company.rewards | read | ne | ano | ne |
 | Odměny: schválit / zamítnout | `review_reward_entries` | company.rewards | write | ano | ano | ne |
 | Odměny: přidat ručně (i srážka) | `add_manual_reward` | company.rewards | delete | ne | ano | ne |
+| Odměny: plán a pravidla pracovníka | `get_reward_plan` | company.rewards | read | ne | ano | ne |
+| Odměny: vyzkoušet pravidlo (30 dní, nic nezapíše) | `try_reward_rule` | company.rewards | read | ne | ano | ne |
+| Odměny: nastavit pravidla (přidat, změnit, odebrat) | `save_reward_rules` | company.rewards | write | ano | ano | ne |
 | Přehled: přidat widget | `place_widget` | dashboard | write | ano | ano | ano |
 | Přehled: odebrat widget | `hide_widget` | dashboard | write | ano | ano | ano |
 | Nastavení (vzhled, formáty, Grady) | `update_settings` | settings | write | ano | ano | ne |
@@ -138,7 +141,10 @@ Poznámky k právům:
   vlastním prostoru (`note_links` jsou majitelovy).
 - **Zprávy** jdou po konverzacích (`chat_is_member`), práva katalogu nemají.
 - **Odměny** (`company.rewards`) spravují lidi, které uživatel vidí, nikdy sebe
-  (`reward_can_manage` v DB u každého záznamu znovu).
+  (`reward_can_manage` v DB u každého záznamu znovu). Pravidla plánu (29.1)
+  jdou přes stejný tvar jako věty v plánu (`definitionSchema`, kontroly
+  `definitionErrors`, jen tabulky a fáze prostoru); `save_reward_rules` vždy
+  s Potvrdit, `try_reward_rule` je suchý běh nad `reward_history()`.
 - **Majitel** v cizí firmě je pracovník: platí jeho práva tam. Režim jen pro
   čtení nechá jen operace `read`.
 

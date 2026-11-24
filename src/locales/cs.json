@@ -726,6 +726,11 @@
       "reviewed_reward_entries": "{action, select, approve {Schválil jsem} other {Zamítl jsem}} {count, plural, one {# odměnu} few {# odměny} other {# odměn}}{total}",
       "add_manual_reward": "Přidat {amount} do odměn: {name}",
       "added_manual_reward": "Přidal jsem {amount} do odměn: {name}",
+      "get_reward_plan": "Čtu plán odměn",
+      "try_reward_rule": "Zkouším pravidlo odměny na posledních 30 dnech",
+      "save_reward_rules": "Nastavit pravidla odměn: {count, plural, one {# změna} few {# změny} other {# změn}}",
+      "save_reward_rules_for": "Nastavit pravidla odměn pro {name}: {count, plural, one {# změna} few {# změny} other {# změn}}",
+      "saved_reward_rules": "Nastavil jsem pravidla odměn pro {name}: {count, plural, one {# změna} few {# změny} other {# změn}}",
       "place_widget": "Dal jsem „{widget}“ na přehled",
       "hide_widget": "Odebral jsem „{widget}“ z přehledu",
       "meeting_notes": "Zápis ze schůzky: {count, plural, one {# změna} few {# změny} other {# změn}}",
@@ -808,6 +813,9 @@
         "list_reward_entries": "Dívám se na odměny…",
         "review_reward_entries": "Připravuji schválení…",
         "add_manual_reward": "Připravuji odměnu…",
+        "get_reward_plan": "Čtu plán odměn…",
+        "try_reward_rule": "Zkouším pravidlo…",
+        "save_reward_rules": "Připravuji pravidla odměn…",
         "place_widget": "Dávám widget na přehled…",
         "hide_widget": "Odebírám widget…",
         "list_trash": "Dívám se do koše…",
@@ -5702,45 +5710,95 @@
       "cancel": "Zrušit",
       "close": "Zavřít",
       "sentence": {
-        "task_fixed": "Částka uvedená u úkolu za každý splněný úkol s cenou",
-        "task_default": "{amount} za každý splněný úkol bez vlastní ceny",
-        "project_done": "{amount} za každý dokončený projekt (milník)",
-        "per_meeting": "{amount} za každou domluvenou schůzku",
-        "per_call": "{amount} za každý hovor",
-        "per_contact": "{amount} za každý nový kvalifikovaný kontakt",
-        "deal_percent": "{percent} z vyhraných obchodů",
-        "deal_fixed": "{amount} za každý vyhraný obchod",
-        "hourly": "{amount} za odpracovanou hodinu",
-        "monthly_fixed": "{amount} měsíčně"
-      },
-      "limit": {
+        "when": "Když",
+        "gets": "dostane",
+        "everyMonth": "Každý měsíc",
+        "who": {
+          "self": "pracovník",
+          "record": "kdokoli na jeho záznamu"
+        },
+        "verb": {
+          "contact_moved": "přesune kontakt",
+          "meeting_booked": "domluví schůzku",
+          "meeting_held": "odvede schůzku",
+          "booking_received": "dostane rezervaci",
+          "call_logged": "zapíše hovor",
+          "contact_created": "založí",
+          "deal_moved": "posune obchod",
+          "deal_won": "vyhraje obchod",
+          "deal_lost": "uzavře obchod jako ztracený",
+          "task_done": "splní",
+          "milestone_done": "dokončí projekt (milník)",
+          "invoice_issued": "vystaví fakturu",
+          "invoice_paid": "označí fakturu jako zaplacenou",
+          "time_hour": "odpracuje hodinu",
+          "time_month": "pracuje celý měsíc"
+        },
+        "taskKind": {
+          "all": "jakýkoli úkol",
+          "crm_task": "obchodní úkol",
+          "worker_task": "úkol od majitele",
+          "task": "úkol milníku"
+        },
+        "onTime": {
+          "any": "kdykoli",
+          "onTime": "v termínu"
+        },
+        "require": {
+          "none": "nový kontakt",
+          "phone": "kontakt s telefonem",
+          "email": "kontakt s e-mailem",
+          "phone_or_email": "kontakt s telefonem nebo e-mailem"
+        },
+        "from": {
+          "any": "odkudkoli",
+          "only": "z {names}",
+          "except": "odkudkoli kromě {names}"
+        },
+        "to": {
+          "any": "kamkoli",
+          "only": "do {names}"
+        },
+        "via": {
+          "all": "v Cold Callingu, plánovači nebo kalendáři",
+          "calls": "v Cold Callingu",
+          "scheduler": "v plánovači",
+          "calendar": "v kalendáři"
+        },
+        "reward": {
+          "unit": "{amount} za hodinu",
+          "percent": "{percent} z hodnoty bez DPH",
+          "price": "cenu uvedenou u úkolu",
+          "tierRange": "{amount} za {from}.–{to}. v měsíci",
+          "tierFrom": "{amount} od {from}. dál"
+        },
+        "once": {
+          "contact": "jen poprvé u kontaktu",
+          "deal": "jen poprvé u obchodu",
+          "every": "pokaždé"
+        },
+        "value": {
+          "range": "jen při hodnotě {min} až {max}",
+          "min": "jen při hodnotě od {min}",
+          "max": "jen při hodnotě do {max}"
+        },
+        "tags": "jen kontakty se štítkem {tags}",
+        "window": {
+          "range": "od {from} do {to}",
+          "from": "od {from}",
+          "to": "do {to}",
+          "none": "v libovolné dny"
+        },
         "cap": "nejvýš {amount} měsíčně",
-        "onTimeOnly": "jen když je hotový v termínu",
-        "minDealValue": "jen obchody od {amount}"
-      },
-      "kind": {
-        "task_fixed": "Cena u úkolu",
-        "task_default": "Každý splněný úkol",
-        "project_done": "Dokončený projekt",
-        "per_meeting": "Domluvená schůzka",
-        "per_call": "Hovor",
-        "per_contact": "Kvalifikovaný kontakt",
-        "deal_percent": "Procento z obchodu",
-        "deal_fixed": "Částka za obchod",
-        "hourly": "Hodinová sazba",
-        "monthly_fixed": "Pevně měsíčně"
-      },
-      "kindHint": {
-        "task_fixed": "U každého úkolu napíšeš, kolik za něj dostane. Odměna se ukáže hned jako budoucí.",
-        "task_default": "Stejná částka za každý splněný úkol, který nemá vlastní cenu.",
-        "project_done": "Za milník, u kterého je pracovník uvedený jako ten, komu projekt patří.",
-        "per_meeting": "Kontakt přesunutý do Domluvená schůzka z Cold Callingu nebo potvrzená rezervace v Plánovači.",
-        "per_call": "Každý kontakt, který pracovník přesune z Neoslovených nebo Nezvedá dál.",
-        "per_contact": "Kontakt, který pracovník poprvé posune do Zájmu nebo na schůzku.",
-        "deal_percent": "Podíl z hodnoty vyhraného obchodu (bez DPH), na kterém pracovník je.",
-        "deal_fixed": "Stejná částka za každý vyhraný obchod, na kterém pracovník je.",
-        "hourly": "Za čas na vlastním časovači pracovníka.",
-        "monthly_fixed": "Stejná částka každý měsíc; v plánu je od začátku měsíce, vydělaná na jeho konci."
+        "noCap": "bez stropu",
+        "bonus": "a za {count} v měsíci navíc {amount}",
+        "noBonus": "bez bonusu",
+        "undo": {
+          "cancel": "vrácení přesunu odměnu zruší",
+          "keep": "odměna zůstane i po vrácení"
+        },
+        "missingName": "(smazáno)",
+        "nothingChosen": "(nic nevybráno)"
       },
       "errors": {
         "amountInvalid": "Zadej částku větší než nula.",
@@ -5750,7 +5808,16 @@
         "tooManyRules": "Plán může mít nejvýš 30 pravidel.",
         "amountNonZero": "Zadej částku, záporná je srážka.",
         "noteRequired": "Napiš důvod.",
-        "noteTooLong": "Důvod je moc dlouhý (nejvýš 300 znaků)."
+        "noteTooLong": "Důvod je moc dlouhý (nejvýš 300 znaků).",
+        "tiersInvalid": "Stupně musí začínat od 1., zvyšovat se a mít kladné částky (2 až 10 stupňů).",
+        "bonusInvalid": "Bonus potřebuje počet 1–1 000 a kladnou částku.",
+        "valueInvalid": "Hodnota od musí být menší než do.",
+        "tagsInvalid": "Štítek může mít nejvýš 50 znaků.",
+        "windowInvalid": "Konec musí být po začátku.",
+        "fromEmpty": "Vyber aspoň jednu tabulku nebo fázi, odkud.",
+        "toEmpty": "Vyber aspoň jednu tabulku nebo fázi, kam.",
+        "viaEmpty": "Vyber aspoň jeden zdroj schůzky.",
+        "rewardInvalid": "Tahle odměna k události nepatří."
       },
       "status": {
         "planned": "V plánu",
@@ -5771,43 +5838,13 @@
         "contact": "Kvalifikovaný kontakt",
         "work_session": "Odpracovaný čas",
         "month": "Měsíční odměna",
-        "manual": "Ručně"
-      },
-      "wizard": {
-        "newTitle": "Nové pravidlo",
-        "editTitle": "Upravit pravidlo",
-        "close": "Zavřít",
-        "steps": "Kroky",
-        "step": {
-          "what": "Za co",
-          "amount": "Kolik",
-          "limits": "Omezení"
-        },
-        "group": {
-          "tasks": "Úkoly a projekty",
-          "sales": "Obchody",
-          "calls": "Cold Calling",
-          "time": "Čas"
-        },
-        "priceExplained": "Částku napíšeš u každého úkolu zvlášť (pole Odměna za splnění).",
-        "amountLabel": {
-          "item": "Částka ({currency})",
-          "hourly": "Částka za hodinu ({currency})",
-          "monthly": "Částka za měsíc ({currency})"
-        },
-        "percentLabel": "Podíl v %",
-        "capLabel": "Strop za měsíc ({currency}, nepovinné)",
-        "capHint": "Víc než tolik podle tohohle pravidla za kalendářní měsíc nevznikne.",
-        "minDealLabel": "Jen obchody od ({currency}, nepovinné)",
-        "minDealHint": "Platí jen pro obchody ve stejné měně jako plán.",
-        "onTimeLabel": "Jen když je úkol hotový v termínu",
-        "noLimits": "Tohle pravidlo žádná omezení nemá.",
-        "saveFailed": "Pravidlo se nepodařilo uložit. Zkus to znovu.",
-        "cancel": "Zrušit",
-        "back": "Zpět",
-        "save": "Uložit",
-        "add": "Přidat pravidlo",
-        "next": "Dál"
+        "manual": "Ručně",
+        "contact_move": "Přesun kontaktu",
+        "deal_event": "Posun obchodu",
+        "calendar_event": "Schůzka v kalendáři",
+        "activity": "Hovor",
+        "invoice": "Faktura",
+        "bonus": "Bonus"
       },
       "templates": {
         "title": "Šablona plánu odměn",
@@ -5969,6 +6006,153 @@
         "payouts": "Historie výplat",
         "export": "Export CSV",
         "exportFailed": "Export se nepodařil. Zkus to znovu."
+      },
+      "needsReview": "Potřebuje úpravu: tabulka nebo fáze, na kterou pravidlo míří, už neexistuje.",
+      "bonusProgress": "Bonus: {done} z {goal} {noun}",
+      "bonusReached": "Bonus za {goal} tento měsíc splněn",
+      "events": {
+        "contact_moved": "přesunů",
+        "meeting_booked": "schůzek",
+        "meeting_held": "schůzek",
+        "booking_received": "rezervací",
+        "call_logged": "hovorů",
+        "contact_created": "kontaktů",
+        "deal_moved": "posunů obchodu",
+        "deal_won": "vyhraných obchodů",
+        "deal_lost": "ztracených obchodů",
+        "task_done": "úkolů",
+        "milestone_done": "projektů",
+        "invoice_issued": "faktur",
+        "invoice_paid": "zaplacených faktur",
+        "time_hour": "hodin",
+        "time_month": "měsíců"
+      },
+      "editor": {
+        "newTitle": "Nové pravidlo",
+        "editTitle": "Upravit pravidlo",
+        "close": "Zavřít",
+        "cancel": "Zrušit",
+        "save": "Uložit",
+        "addRule": "Přidat pravidlo",
+        "saveFailed": "Pravidlo se nepodařilo uložit. Zkus to znovu.",
+        "overlap": "{count, plural, one {Na stejnou událost platí i jiné pravidlo} few {Na stejnou událost platí i # další pravidla} other {Na stejnou událost platí i # dalších pravidel}}. Mají zaplatit obě, nebo jen to vyšší?",
+        "remove": "Odebrat",
+        "add": {
+          "value": "Hodnota",
+          "tags": "Štítek kontaktu",
+          "window": "Od–do"
+        },
+        "label": {
+          "who": "Kdo",
+          "from": "Odkud",
+          "to": "Kam",
+          "via": "Odkud schůzka",
+          "taskKinds": "Druh úkolu",
+          "onTime": "Kdy",
+          "require": "Jaký kontakt",
+          "once": "Jak často",
+          "undo": "Po vrácení",
+          "cap": "Strop za měsíc ({currency}, prázdné = bez stropu)",
+          "valueMin": "Hodnota od ({currency})",
+          "valueMax": "Hodnota do ({currency})",
+          "tags": "Štítky (oddělené čárkou)",
+          "windowFrom": "Platí od",
+          "windowTo": "Platí do",
+          "reward": "Odměna",
+          "amount": "Částka ({currency})",
+          "perHour": "Částka za hodinu ({currency})",
+          "percent": "Podíl v %",
+          "tierFrom": "Od kolikáté v měsíci",
+          "bonusCount": "Kolik v měsíci",
+          "bonusAmount": "Bonus navíc ({currency})"
+        },
+        "group": {
+          "coldCalling": "Cold Calling",
+          "meetings": "Schůzky a plánovač",
+          "contacts": "Kontakty",
+          "pipeline": "Pipeline",
+          "tasks": "Úkoly a projekty",
+          "invoices": "Faktury",
+          "time": "Čas"
+        },
+        "event": {
+          "contact_moved": "Přesun kontaktu",
+          "meeting_booked": "Domluvená schůzka",
+          "meeting_held": "Schůzka proběhla",
+          "booking_received": "Přijatá rezervace",
+          "call_logged": "Zapsaný hovor",
+          "contact_created": "Nový kontakt",
+          "deal_moved": "Posun obchodu",
+          "deal_won": "Vyhraný obchod",
+          "deal_lost": "Ztracený obchod",
+          "task_done": "Splněný úkol",
+          "milestone_done": "Dokončený projekt",
+          "invoice_issued": "Vystavená faktura",
+          "invoice_paid": "Zaplacená faktura",
+          "time_hour": "Odpracovaná hodina",
+          "time_month": "Každý měsíc"
+        },
+        "fromMode": {
+          "any": "Odkudkoli",
+          "only": "Jen z vybraných",
+          "except": "Odkudkoli kromě vybraných"
+        },
+        "toMode": {
+          "only": "Do vybraných",
+          "any": "Kamkoli"
+        },
+        "rewardType": {
+          "fixed": "Pevná částka",
+          "percent": "Procento z hodnoty",
+          "unit": "Za hodinu",
+          "tiers": "Stupně podle počtu",
+          "price": "Cena u úkolu"
+        },
+        "priceHint": "Částku napíšeš u každého úkolu zvlášť (pole Odměna za splnění). Úkoly bez vlastní ceny platí ostatní pravidla.",
+        "tierAdd": "Přidat stupeň",
+        "tierRemove": "Odebrat stupeň",
+        "tiersHint": "Počítá se podle pořadí v kalendářním měsíci; po jeho konci se stupně přepočítají.",
+        "bonusHint": "Jednou za měsíc, jakmile počet dosáhne hranice; když klesne pod ni, nevyplacený bonus zmizí.",
+        "valueHint": "Porovnává se jen hodnota ve stejné měně jako plán."
+      },
+      "try": {
+        "button": "Vyzkoušet",
+        "failed": "Vyzkoušení se nepovedlo. Zkus to znovu.",
+        "nothing": "Za posledních 30 dní by pravidlo nezaplatilo nic.",
+        "total": "Za posledních 30 dní by vyneslo {amount} ({count, plural, one {# událost} few {# události} other {# událostí}}).",
+        "bonus": "Bonus",
+        "noName": "Bez názvu",
+        "hint": "Na skutečných datech pracovníka, nic se neuložilo ani nezapsalo."
+      },
+      "overlap": {
+        "label": "Dvě pravidla na stejnou událost",
+        "sum": "Sčítat",
+        "max": "Jen nejvyšší",
+        "title": "Tahle pravidla můžou zaplatit stejnou událost:"
+      },
+      "setup": {
+        "title": "Popiš, jak chceš odměňovat",
+        "label": "Tvými slovy",
+        "hint": "Grady z toho navrhne pravidla. Nic se neuloží, dokud je nepotvrdíš.",
+        "placeholder": "Třeba: 400 za každou domluvenou schůzku, 1 000 navíc, když schůzka proběhne, a 3 % z obchodu, nejvýš 30 tisíc měsíčně.",
+        "submit": "Navrhnout pravidla",
+        "errors": {
+          "limitReached": "Odpovědi Gradyho jsou pro tenhle měsíc vyčerpané.",
+          "empty": "Grady z popisu žádné pravidlo nesestavil. Zkus to napsat jinak."
+        },
+        "op": {
+          "add": "Nové pravidlo",
+          "update": "Změna pravidla",
+          "remove": "Odebrat pravidlo"
+        },
+        "gone": "Pravidlo už v plánu není.",
+        "answerFirst": "Nejdřív vyber odpověď na otázku nahoře.",
+        "unsupported": "Tohle pravidla neumí:",
+        "nearest": "nejblíž: {nearest}",
+        "tooMany": "Plán může mít nejvýš {max} pravidel.",
+        "saveFailed": "Pravidla se nepodařilo uložit. Zkus to znovu.",
+        "discard": "Zahodit",
+        "save": "{count, plural, one {Uložit # pravidlo} few {Uložit # pravidla} other {Uložit # pravidel}}"
       }
     },
     "rewardPrice": {
@@ -7980,8 +8164,8 @@
             "why": "Dlouhý kontext a strukturovaný rozbor, nikdy pod Sonnet."
           },
           "reward_setup": {
-            "name": "Nastavit odměny s AI",
-            "does": "Převede poznámky ve stromu odměn na pravidla a vysvětlí je.",
+            "name": "Nastavit odměny větou",
+            "does": "Z popisu majitele navrhne pravidla plánu odměn pracovníka (i úpravu existujících); nic se neuloží bez potvrzení.",
             "why": "Pravidla o penězích pro jiné lidi ve formátu JSON, nikdy pod Sonnet."
           },
           "email_reply": {

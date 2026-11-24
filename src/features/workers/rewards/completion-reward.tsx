@@ -19,7 +19,7 @@ import { formatPrice } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { useCompanyTree } from "../company/queries";
 import { useManagesRewards, useRewardPlans, useSetRewardPrice } from "./queries";
-import { useAmountText } from "./rule-wizard";
+import { useAmountText } from "./amount-text";
 import { AMOUNT_MAX } from "./rules";
 
 type Props = {

@@ -54,6 +54,10 @@ import { handleFeatureRequest } from "@/features/grady/server/feature-requests";
 import { mightBeProblemReport } from "@/features/grady/problem-report";
 import { loadSituation } from "@/features/grady/server/load-situation";
 import { reviewMilestone } from "@/features/grady/server/milestone-review";
+import { runRewardSetup } from "@/features/grady/server/reward-setup";
+import type { SpaceRefs } from "@/features/workers/rewards/definition";
+import { parseRule } from "@/features/workers/rewards/rules";
+import { rewardSetupRequestSchema } from "@/features/workers/rewards/setup";
 import { pickChatModel } from "@/features/grady/server/chat-route";
 import { runCompareCell } from "@/features/grady/server/compare";
 import { compareSample, isCompareFeature } from "@/features/grady/compare/samples";
@@ -144,6 +148,7 @@ const STAGE_REFUSED_JOBS: ReadonlySet<string> = new Set([
   "milestoneReview",
   "salesAnalysis",
   "noteMapSuggest",
+  "rewardSetup",
   "emailReply",
   "ping",
   "rulesTest",
@@ -365,6 +370,7 @@ export const POST = instrumentRoute("api.jarvis.post", async (request: Request) 
   if (kind === "milestoneReview") return milestoneReview(ctx, body);
   if (kind === "salesAnalysis") return salesAnalysis(ctx, body);
   if (kind === "noteMapSuggest") return noteMapSuggest(ctx, body);
+  if (kind === "rewardSetup") return rewardSetup(ctx, body);
   if (kind === "emailReply") return emailReply(ctx, body);
   if (kind === "ping") return ping(ctx, body);
   if (kind === "rulesTest") return rulesTest(ctx, body);
@@ -872,6 +878,77 @@ async function noteMapSuggest(ctx: Context, body: unknown) {
     { userId, admin },
   );
   return NextResponse.json({ ok: true, branches: result.branches });
+}
+
+/**
+ * "Describe how you reward" (29.1): Sonnet turns the owner's words into
+ * rules of one person's reward plan, against the space's own tables and
+ * stages and the person's existing rules (read with the user's client and
+ * reward_can_manage, so only whoever manages the person's rewards gets
+ * here). Nothing is written: the proposal goes back to the plan, where the
+ * owner tries, changes and confirms each rule.
+ */
+async function rewardSetup(ctx: Context, body: unknown) {
+  const parsed = rewardSetupRequestSchema.safeParse(body);
+  if (!parsed.success) return jobError("unknown", 400);
+  const { supabase, admin, userId, settings, locale } = ctx;
+  const { workerId, request } = parsed.data;
+
+  const { data: manages, error: manageError } = await supabase.rpc("reward_can_manage", {
+    _space: ctx.spaceId,
+    _worker: workerId,
+  });
+  if (manageError) throw manageError;
+  if (!manages) return jobError("notFound", 404);
+  const [{ data: refsData, error: refsError }, { data: planRow, error: planError }] = await Promise.all([
+    supabase.rpc("reward_plan_refs", { _worker: workerId }),
+    supabase
+      .from("reward_plans")
+      .select("currency, rules:reward_plan_rules(id, plan_id, worker_id, kind, definition, active, position)")
+      .eq("space_id", ctx.spaceId)
+      .eq("worker_id", workerId)
+      .maybeSingle(),
+  ]);
+  if (refsError) throw refsError;
+  if (planError) throw planError;
+  const refs = (refsData ?? {}) as Partial<SpaceRefs>;
+  const rules = (planRow?.rules ?? []).flatMap((row) => {
+    const rule = parseRule(row);
+    return rule ? [{ id: rule.id, definition: rule.definition, active: rule.active }] : [];
+  });
+
+  const usage = await loadAiUsage(supabase, admin, userId, settings, undefined, ctx.spaceId);
+  if (limitReached(usage)) {
+    limitHit(ctx, "reward_setup");
+    return jobError("limitReached", 429);
+  }
+  const client = createAnthropic(ctx.admin, { spaceId: ctx.spaceId });
+  if (!client) {
+    await logNotConfigured(ctx, "reward_setup");
+    return jobError("notConfigured", 503);
+  }
+  const result = await runRewardSetup({
+    client,
+    userId,
+    refs: { tables: refs.tables ?? [], stages: refs.stages ?? [] },
+    rules,
+    currency: planRow?.currency ?? settings.currency,
+    locale,
+    request,
+    log: (entry) => logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
+  });
+  if (!result.ok) return jobError(result.code, result.code === "empty" ? 422 : 502);
+  await track(
+    "reward_setup_suggested",
+    {
+      changes: result.proposal.changes.length,
+      questions: result.proposal.questions.length,
+      unsupported: result.proposal.unsupported.length,
+      editing: rules.length > 0,
+    },
+    { userId, admin },
+  );
+  return NextResponse.json({ ok: true, proposal: result.proposal });
 }
 
 /**

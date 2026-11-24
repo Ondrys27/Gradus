@@ -79,8 +79,8 @@ export const FEATURE_MODELS: Record<GradyFeature, FeatureModelSpec> = {
     shown: true,
     interactive: true,
   },
-  // The drawn reward tree's setup; no caller since 28.2 (plans are built by hand), kept for history.
-  reward_setup: { recommended: "sonnet", minimum: "sonnet", quality: "opus", shown: false },
+  // "Describe how you reward" (29.1): money rules for other people as JSON against the catalog, never Haiku.
+  reward_setup: { recommended: "sonnet", minimum: "sonnet", quality: "opus", shown: true, interactive: true },
   email_reply: {
     recommended: "sonnet",
     minimum: "haiku",

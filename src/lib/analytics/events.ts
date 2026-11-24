@@ -22,7 +22,7 @@ import { LOCATION_KINDS } from "@/features/scheduler/types";
 import { MEETING_LINK_SOURCES } from "@/features/scheduler/booking/meeting-link";
 import { CALENDAR_PROVIDERS, EVENT_TYPE_TABS, LINK_SOURCES } from "@/features/scheduler/analytics";
 import { REWARD_TEMPLATES, RULES_PER_PLAN } from "@/features/workers/rewards/rules";
-import { RULE_KINDS } from "@/features/workers/rewards/types";
+import { REWARD_EVENTS, REWARD_TYPES } from "@/features/workers/rewards/catalog";
 import { WIDGET_KEYS } from "@/features/dashboard/widgets/catalog";
 import { WIDGET_SIZES } from "@/features/dashboard/widgets/grid";
 import { MEETING_TARGETS } from "@/features/meeting-notes/logic";
@@ -885,14 +885,41 @@ export const EVENTS = {
     field: oneOf(["approval", "dates", "notes", "name", "currency"]),
     approval: optional(oneOf(["auto", "manual"])),
   }),
+  /** A rule of the plan saved (29.1: an event with conditions and a reward); never amounts. */
   reward_rule_saved: event("workers", "client", true, {
-    kind: oneOf(RULE_KINDS),
+    event: oneOf(REWARD_EVENTS),
+    reward: oneOf(REWARD_TYPES),
     created: bool(),
     capped: bool(),
+    bonus: bool(),
     filtered: bool(),
     active: bool(),
   }),
-  reward_rule_deleted: event("workers", "client", true, { kind: oneOf(RULE_KINDS) }),
+  reward_rule_deleted: event("workers", "client", true, { event: oneOf(REWARD_EVENTS) }),
+  /** "Try it": a dry run of a rule on the person's last 30 days (nothing written). */
+  reward_rule_tried: event("workers", "client", true, {
+    event: oneOf(REWARD_EVENTS),
+    from: oneOf(["editor", "grady"]),
+  }),
+  /** Two rules on one event: they add up, or only the highest pays. */
+  reward_rules_stacked: event("workers", "client", true, {
+    stack: oneOf(["sum", "max"]),
+    rules: count(RULES_PER_PLAN),
+  }),
+  /** Grady turned the owner's description into proposed rules (reward_setup). */
+  reward_setup_suggested: event("workers", "server", true, {
+    changes: count(50),
+    questions: count(10),
+    unsupported: count(20),
+    editing: bool(),
+  }),
+  /** The owner saved Grady's proposed rules (in the plan or through the chat). */
+  reward_setup_applied: event("workers", "client", true, {
+    from: oneOf(["plan", "grady"]),
+    added: count(50),
+    updated: count(50),
+    removed: count(50),
+  }),
   reward_template_applied: event("workers", "client", true, {
     template: oneOf(REWARD_TEMPLATES),
     rules: count(RULES_PER_PLAN),

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { PencilIcon, PlusIcon, SparklesIcon, Trash2Icon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -14,12 +14,28 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { formatCalendarDate } from "@/lib/format";
-import { useCreatePlan, useDeleteRule, useRewardPlan, useSaveRule, useUpdatePlan } from "./queries";
-import { RuleSentence } from "./rule-sentence";
-import { RuleWizard } from "./rule-wizard";
+import { eventMessageKey } from "./catalog";
+import { needsReview, type SpaceRefs } from "./definition";
+import { bonusProgress } from "./evaluate";
+import {
+  useCreatePlan,
+  useDeleteRule,
+  usePlanRefs,
+  useRewardEntries,
+  useRewardPlan,
+  useSaveRule,
+  useUpdatePlan,
+} from "./queries";
+import { RewardSetup } from "./reward-setup";
+import { RuleEditor } from "./rule-editor";
+import { OverlapNotes } from "./rule-overlap";
+import { RuleSentence, type NameOf } from "./rule-sentence";
 import { RULES_PER_PLAN } from "./rules";
+import { monthBounds } from "./summary";
 import { TemplateDialog } from "./template-dialog";
 import type { RewardPlan, RewardRule } from "./types";
+
+const NO_REFS: SpaceRefs = { tables: [], stages: [] };
 
 /**
  * "Plan of rewards": the rules of one person as sentences, automatic approval
@@ -40,6 +56,7 @@ export function PlanCard({
   const t = useTranslations("workers.rewardPlan");
   const settings = useFormatSettings();
   const query = useRewardPlan(workerId);
+  const refs = usePlanRefs(workerId);
   const create = useCreatePlan();
   const [template, setTemplate] = useState(false);
   const canEdit = editable && !readOnly;
@@ -75,26 +92,37 @@ export function PlanCard({
           </div>
         )}
         {create.isError && <FormAlert>{t("saveFailed")}</FormAlert>}
+        {canEdit && (
+          <RewardSetup workerId={workerId} plan={null} currency={settings.currency} refs={refs.data ?? NO_REFS} />
+        )}
         <TemplateDialog
           open={template}
           onOpenChange={setTemplate}
           workerId={workerId}
           plan={null}
           currency={settings.currency}
+          refs={refs.data ?? NO_REFS}
         />
       </GlowCard>
     );
   }
 
-  return <PlanBody plan={plan} canEdit={canEdit} />;
+  return <PlanBody plan={plan} canEdit={canEdit} refs={refs.data ?? null} />;
 }
 
-function PlanBody({ plan, canEdit }: { plan: RewardPlan; canEdit: boolean }) {
+function PlanBody({ plan, canEdit, refs }: { plan: RewardPlan; canEdit: boolean; refs: SpaceRefs | null }) {
   const t = useTranslations("workers.rewardPlan");
   const settings = useFormatSettings();
   const update = useUpdatePlan();
   const save = useSaveRule();
   const remove = useDeleteRule();
+  const range = useMemo(() => monthBounds(settings), [settings]);
+  const month = useRewardEntries(plan.worker_id, range);
+  const names = useMemo(
+    () => new Map([...(refs?.tables ?? []), ...(refs?.stages ?? [])].map((item) => [item.id, item.name])),
+    [refs],
+  );
+  const nameOf: NameOf = (id) => names.get(id) ?? null;
   const [wizard, setWizard] = useState<{ open: boolean; rule: RewardRule | null }>({ open: false, rule: null });
   const [template, setTemplate] = useState(false);
   const [deleting, setDeleting] = useState<RewardRule | null>(null);
@@ -177,16 +205,37 @@ function PlanBody({ plan, canEdit }: { plan: RewardPlan; canEdit: boolean }) {
         <p className="text-sm text-ink-soft">{canEdit ? t("noRulesOwner") : t("noRulesWorker")}</p>
       ) : (
         <ul className="flex flex-col divide-y divide-line/60" data-testid="reward-rules">
-          {plan.rules.map((rule) => (
-            <li key={rule.id} className="flex items-center gap-3 py-2.5">
-              <RuleSentence rule={rule} currency={plan.currency} muted={!rule.active} className="flex-1" />
+          {plan.rules.map((rule) => {
+            const progress = bonusProgress(rule.definition, month.data ?? [], rule.id);
+            return (
+            <li key={rule.id} className="flex items-center gap-3 py-2.5" data-testid="reward-rule">
+              <RuleSentence
+                definition={rule.definition}
+                currency={plan.currency}
+                nameOf={nameOf}
+                muted={!rule.active}
+                needsReview={needsReview(rule.definition, refs)}
+                className="flex-1"
+              >
+                {progress && rule.active && (
+                  <span className="text-xs text-teal" data-testid="reward-bonus-progress">
+                    {progress.reached
+                      ? t("bonusReached", { goal: progress.goal })
+                      : t("bonusProgress", {
+                          done: progress.done,
+                          goal: progress.goal,
+                          noun: t(`events.${eventMessageKey(rule.definition.event.key)}`),
+                        })}
+                  </span>
+                )}
+              </RuleSentence>
               {canEdit && (
                 <div className="flex shrink-0 items-center gap-1">
                   <Switch
                     checked={rule.active}
                     aria-label={rule.active ? t("ruleOff") : t("ruleOn")}
                     onCheckedChange={(active) =>
-                      save.mutate({ plan, ruleId: rule.id, rule, active })
+                      save.mutate({ plan, ruleId: rule.id, definition: rule.definition, active })
                     }
                   />
                   <button
@@ -208,9 +257,13 @@ function PlanBody({ plan, canEdit }: { plan: RewardPlan; canEdit: boolean }) {
                 </div>
               )}
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
+
+      <OverlapNotes rules={plan.rules} currency={plan.currency} nameOf={nameOf} canEdit={canEdit} />
+      {canEdit && <RewardSetup workerId={plan.worker_id} plan={plan} currency={plan.currency} refs={refs ?? NO_REFS} />}
 
       {canEdit && (
         <details className="group rounded-2xl border border-line px-4 py-2">
@@ -249,11 +302,12 @@ function PlanBody({ plan, canEdit }: { plan: RewardPlan; canEdit: boolean }) {
       )}
       {failed && <FormAlert>{t("saveFailed")}</FormAlert>}
 
-      <RuleWizard
+      <RuleEditor
         open={wizard.open}
         onOpenChange={(open) => setWizard((current) => ({ ...current, open }))}
         plan={plan}
         rule={wizard.rule}
+        refs={refs ?? NO_REFS}
       />
       <TemplateDialog
         open={template}
@@ -261,6 +315,7 @@ function PlanBody({ plan, canEdit }: { plan: RewardPlan; canEdit: boolean }) {
         workerId={plan.worker_id}
         plan={plan}
         currency={plan.currency}
+        refs={refs ?? NO_REFS}
       />
       <ConfirmDialog
         open={deleting !== null}
@@ -275,7 +330,7 @@ function PlanBody({ plan, canEdit }: { plan: RewardPlan; canEdit: boolean }) {
         onConfirm={() =>
           deleting &&
           remove.mutate(
-            { id: deleting.id, kind: deleting.kind },
+            { id: deleting.id, definition: deleting.definition },
             { onSuccess: () => setDeleting(null) },
           )
         }

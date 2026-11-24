@@ -38,6 +38,8 @@ export const UNDO_TABLES = {
   dashboard_layouts: true,
   deal_attachments: true,
   reward_entries: true,
+  reward_plans: true,
+  reward_plan_rules: true,
   workers: true,
   user_settings: true,
   profiles: true,

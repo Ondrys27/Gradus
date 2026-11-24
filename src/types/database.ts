@@ -1993,6 +1993,7 @@ export type Database = {
           company_reg_no: string | null
           country_code: string | null
           created_at: string
+          created_by: string | null
           deleted_at: string | null
           deleted_by: string | null
           email: string | null
@@ -2020,6 +2021,7 @@ export type Database = {
           company_reg_no?: string | null
           country_code?: string | null
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
           email?: string | null
@@ -2047,6 +2049,7 @@ export type Database = {
           company_reg_no?: string | null
           country_code?: string | null
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
           email?: string | null
@@ -5123,6 +5126,7 @@ export type Database = {
           id: string
           note: string | null
           occurred_at: string
+          once: boolean
           paid_at: string | null
           payout_id: string | null
           reversed_at: string | null
@@ -5132,6 +5136,7 @@ export type Database = {
           source_kind: string
           space_id: string
           status: string
+          subject_id: string | null
           updated_at: string
           worker_id: string
         }
@@ -5146,6 +5151,7 @@ export type Database = {
           id?: string
           note?: string | null
           occurred_at?: string
+          once?: boolean
           paid_at?: string | null
           payout_id?: string | null
           reversed_at?: string | null
@@ -5155,6 +5161,7 @@ export type Database = {
           source_kind: string
           space_id: string
           status?: string
+          subject_id?: string | null
           updated_at?: string
           worker_id: string
         }
@@ -5169,6 +5176,7 @@ export type Database = {
           id?: string
           note?: string | null
           occurred_at?: string
+          once?: boolean
           paid_at?: string | null
           payout_id?: string | null
           reversed_at?: string | null
@@ -5178,6 +5186,7 @@ export type Database = {
           source_kind?: string
           space_id?: string
           status?: string
+          subject_id?: string | null
           updated_at?: string
           worker_id?: string
         }
@@ -5281,6 +5290,7 @@ export type Database = {
           amount: number | null
           cap_per_period: number | null
           created_at: string
+          definition: Json | null
           filter: Json
           id: string
           kind: string
@@ -5297,6 +5307,7 @@ export type Database = {
           amount?: number | null
           cap_per_period?: number | null
           created_at?: string
+          definition?: Json | null
           filter?: Json
           id?: string
           kind: string
@@ -5313,6 +5324,7 @@ export type Database = {
           amount?: number | null
           cap_per_period?: number | null
           created_at?: string
+          definition?: Json | null
           filter?: Json
           id?: string
           kind?: string
@@ -9435,9 +9447,21 @@ export type Database = {
         }
         Returns: string
       }
+      reward_bonus_sync: {
+        Args: { _at: string; _rule_id: string }
+        Returns: undefined
+      }
       reward_can_manage: {
         Args: { _space: string; _worker: string }
         Returns: boolean
+      }
+      reward_candidates: {
+        Args: { _actor: string; _record: string[]; _space: string }
+        Returns: {
+          did: boolean
+          on_record: boolean
+          worker: string
+        }[]
       }
       reward_capped: {
         Args: {
@@ -9450,6 +9474,7 @@ export type Database = {
         }
         Returns: number
       }
+      reward_contact_facts: { Args: { _contact: string }; Returns: Json }
       reward_convert_legacy_rules: { Args: never; Returns: number }
       reward_correct: {
         Args: {
@@ -9458,6 +9483,9 @@ export type Database = {
         }
         Returns: undefined
       }
+      reward_deal_people: { Args: { _deal: string }; Returns: string[] }
+      reward_default_who: { Args: { _event: string }; Returns: string }
+      reward_definition_ok: { Args: { _d: Json }; Returns: boolean }
       reward_entry_update: {
         Args: { _amount: number; _id: string; _note: string }
         Returns: undefined
@@ -9474,7 +9502,49 @@ export type Database = {
         }
         Returns: undefined
       }
+      reward_fire: {
+        Args: {
+          _at: string
+          _mode?: string
+          _s: Json
+          _source_id: string
+          _source_kind: string
+          _worker: string
+        }
+        Returns: undefined
+      }
+      reward_fire_people: {
+        Args: {
+          _actor: string
+          _at: string
+          _record: string[]
+          _s: Json
+          _source_id: string
+          _source_kind: string
+          _space: string
+        }
+        Returns: undefined
+      }
+      reward_history: {
+        Args: { _days?: number; _worker: string }
+        Returns: Json
+      }
+      reward_legacy_definition: {
+        Args: {
+          _amount: number
+          _cap: number
+          _filter: Json
+          _kind: string
+          _percent: number
+          _space: string
+        }
+        Returns: Json
+      }
       reward_manager_in: { Args: { _space: string }; Returns: boolean }
+      reward_money_ok: {
+        Args: { _max: number; _v: Json; _zero?: boolean }
+        Returns: boolean
+      }
       reward_payout_create: {
         Args: {
           _entry_ids: string[]
@@ -9508,6 +9578,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      reward_plan_refs: { Args: { _worker: string }; Returns: Json }
       reward_reconcile: {
         Args: {
           _mode?: string
@@ -9523,7 +9594,15 @@ export type Database = {
         Args: { _action: string; _ids: string[] }
         Returns: number
       }
+      reward_rule_count: {
+        Args: { _at: string; _rule: string; _space: string }
+        Returns: number
+      }
       reward_rule_is_valid: { Args: { _rule: Json }; Returns: boolean }
+      reward_rule_matches: {
+        Args: { _d: Json; _plan_currency: string; _s: Json; _zone: string }
+        Returns: boolean
+      }
       reward_rule_ok: {
         Args: {
           _amount: number
@@ -9534,6 +9613,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      reward_rule_once: { Args: { _d: Json }; Returns: boolean }
       reward_run_monthly: { Args: never; Returns: number }
       reward_set_price: {
         Args: {
@@ -9545,6 +9625,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      reward_side_ok: { Args: { _modes: string[]; _s: Json }; Returns: boolean }
       reward_status_for: {
         Args: { _plan: Database["public"]["Tables"]["reward_plans"]["Row"] }
         Returns: string
@@ -9581,6 +9662,21 @@ export type Database = {
         }
         Returns: Database["public"]["CompositeTypes"]["reward_wish"][]
       }
+      reward_task_wishes_for: {
+        Args: {
+          _at: string
+          _done: boolean
+          _facts: Json
+          _kind: string
+          _note: string
+          _on_time: boolean
+          _price: number
+          _price_currency: string
+          _record: string
+          _self: string
+        }
+        Returns: Database["public"]["CompositeTypes"]["reward_wish"][]
+      }
       reward_totals: {
         Args: { _from: string; _until: string; _worker_id?: string }
         Returns: {
@@ -9595,6 +9691,28 @@ export type Database = {
           planned_count: number
           worker_id: string
         }[]
+      }
+      reward_undo_meeting_call: {
+        Args: { _contact: string; _space: string }
+        Returns: undefined
+      }
+      reward_undo_move: {
+        Args: {
+          _event: string
+          _from: string
+          _space: string
+          _subject: string
+          _to: string
+        }
+        Returns: undefined
+      }
+      reward_undo_source: {
+        Args: { _all: boolean; _source_id: string; _source_kind: string }
+        Returns: undefined
+      }
+      reward_wishes_for: {
+        Args: { _at: string; _s: Json; _status?: string; _worker: string }
+        Returns: Database["public"]["CompositeTypes"]["reward_wish"][]
       }
       reward_worker_of: {
         Args: { _account: string; _space: string }
@@ -10061,6 +10179,8 @@ export type Database = {
         occurred_at: string | null
         note: string | null
         cap: number | null
+        subject_id: string | null
+        once: boolean | null
       }
     }
   }
