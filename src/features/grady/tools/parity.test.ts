@@ -64,6 +64,8 @@ const rightOf = (tool: (typeof GRADY_TOOLS)[number]) =>
 const WRITES_WITHOUT_UNDO: Record<string, string> = {
   move_contact: "a move is a step of the contact's history; moving back is a move of its own",
   share_note: "the person it was shared with may already have it open",
+  restore_from_trash:
+    "restoring takes a deletion back itself; deleting again sends it back to the trash",
 };
 
 describe("docs/grady-operace.md and the catalog", () => {

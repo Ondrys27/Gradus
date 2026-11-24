@@ -152,6 +152,7 @@ export type Database = {
           actor_id: string | null
           created_at: string
           id: string
+          mcp_grant_id: string | null
           object_id: string | null
           object_kind: string
           space_id: string
@@ -163,6 +164,7 @@ export type Database = {
           actor_id?: string | null
           created_at?: string
           id?: string
+          mcp_grant_id?: string | null
           object_id?: string | null
           object_kind: string
           space_id: string
@@ -174,6 +176,7 @@ export type Database = {
           actor_id?: string | null
           created_at?: string
           id?: string
+          mcp_grant_id?: string | null
           object_id?: string | null
           object_kind?: string
           space_id?: string
@@ -181,7 +184,15 @@ export type Database = {
           verb?: string
           via?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "activity_log_mcp_grant_id_fkey"
+            columns: ["mcp_grant_id"]
+            isOneToOne: false
+            referencedRelation: "mcp_grants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       admin_audit: {
         Row: {
@@ -1757,6 +1768,8 @@ export type Database = {
           company_reg_no: string | null
           country_code: string | null
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           email: string | null
           external_place_id: string | null
           first_name: string | null
@@ -1782,6 +1795,8 @@ export type Database = {
           company_reg_no?: string | null
           country_code?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           email?: string | null
           external_place_id?: string | null
           first_name?: string | null
@@ -1807,6 +1822,8 @@ export type Database = {
           company_reg_no?: string | null
           country_code?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           email?: string | null
           external_place_id?: string | null
           first_name?: string | null
@@ -2185,6 +2202,8 @@ export type Database = {
           created_by: string | null
           currency: string
           deadline_date: string | null
+          deleted_at: string | null
+          deleted_by: string | null
           description: string | null
           entered_stage_at: string
           expected_close_date: string | null
@@ -2210,6 +2229,8 @@ export type Database = {
           created_by?: string | null
           currency?: string
           deadline_date?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           entered_stage_at?: string
           expected_close_date?: string | null
@@ -2235,6 +2256,8 @@ export type Database = {
           created_by?: string | null
           currency?: string
           deadline_date?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           entered_stage_at?: string
           expected_close_date?: string | null
@@ -3287,6 +3310,153 @@ export type Database = {
           },
         ]
       }
+      mcp_calls: {
+        Row: {
+          created_at: string
+          error: string | null
+          grant_id: string
+          id: string
+          level: string
+          ok: boolean
+          space_id: string
+          summary: string | null
+          tool: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          grant_id: string
+          id?: string
+          level: string
+          ok: boolean
+          space_id: string
+          summary?: string | null
+          tool: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          grant_id?: string
+          id?: string
+          level?: string
+          ok?: boolean
+          space_id?: string
+          summary?: string | null
+          tool?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mcp_calls_grant_id_fkey"
+            columns: ["grant_id"]
+            isOneToOne: false
+            referencedRelation: "mcp_grants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mcp_grants: {
+        Row: {
+          client_id: string
+          client_name: string
+          created_at: string
+          id: string
+          last_used_at: string | null
+          level: string
+          redirect_host: string | null
+          revoked_at: string | null
+          session_cipher: string | null
+          space_id: string
+          space_ids: string[]
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          client_name: string
+          created_at?: string
+          id?: string
+          last_used_at?: string | null
+          level: string
+          redirect_host?: string | null
+          revoked_at?: string | null
+          session_cipher?: string | null
+          space_id: string
+          space_ids: string[]
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          client_name?: string
+          created_at?: string
+          id?: string
+          last_used_at?: string | null
+          level?: string
+          redirect_host?: string | null
+          revoked_at?: string | null
+          session_cipher?: string | null
+          space_id?: string
+          space_ids?: string[]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mcp_grants_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "oauth_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mcp_rate: {
+        Row: {
+          bucket: string
+          grant_id: string
+          hits: number
+        }
+        Insert: {
+          bucket: string
+          grant_id: string
+          hits?: number
+        }
+        Update: {
+          bucket?: string
+          grant_id?: string
+          hits?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mcp_rate_grant_id_fkey"
+            columns: ["grant_id"]
+            isOneToOne: false
+            referencedRelation: "mcp_grants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mcp_space_settings: {
+        Row: {
+          enabled: boolean
+          space_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          enabled?: boolean
+          space_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          enabled?: boolean
+          space_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       meeting_surveys: {
         Row: {
           answers: Json
@@ -3875,6 +4045,121 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      oauth_clients: {
+        Row: {
+          client_name: string
+          client_uri: string | null
+          created_at: string
+          fetched_at: string | null
+          id: string
+          kind: string
+          last_used_at: string | null
+          redirect_uris: string[]
+        }
+        Insert: {
+          client_name: string
+          client_uri?: string | null
+          created_at?: string
+          fetched_at?: string | null
+          id: string
+          kind: string
+          last_used_at?: string | null
+          redirect_uris: string[]
+        }
+        Update: {
+          client_name?: string
+          client_uri?: string | null
+          created_at?: string
+          fetched_at?: string | null
+          id?: string
+          kind?: string
+          last_used_at?: string | null
+          redirect_uris?: string[]
+        }
+        Relationships: []
+      }
+      oauth_codes: {
+        Row: {
+          client_id: string
+          code_challenge: string
+          code_hash: string
+          created_at: string
+          expires_at: string
+          grant_id: string
+          redirect_uri: string
+          resource: string
+          used_at: string | null
+        }
+        Insert: {
+          client_id: string
+          code_challenge: string
+          code_hash: string
+          created_at?: string
+          expires_at: string
+          grant_id: string
+          redirect_uri: string
+          resource: string
+          used_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          code_challenge?: string
+          code_hash?: string
+          created_at?: string
+          expires_at?: string
+          grant_id?: string
+          redirect_uri?: string
+          resource?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oauth_codes_grant_id_fkey"
+            columns: ["grant_id"]
+            isOneToOne: false
+            referencedRelation: "mcp_grants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oauth_tokens: {
+        Row: {
+          created_at: string
+          expires_at: string
+          grant_id: string
+          kind: string
+          resource: string
+          token_hash: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          grant_id: string
+          kind: string
+          resource: string
+          token_hash: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          grant_id?: string
+          kind?: string
+          resource?: string
+          token_hash?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oauth_tokens_grant_id_fkey"
+            columns: ["grant_id"]
+            isOneToOne: false
+            referencedRelation: "mcp_grants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       partner_payouts: {
         Row: {
@@ -5337,6 +5622,45 @@ export type Database = {
           },
         ]
       }
+      trash_items: {
+        Row: {
+          deleted_at: string
+          id: string
+          kind: string
+          record_id: string
+          records: Json | null
+          restored_at: string | null
+          space_id: string
+          title: string | null
+          user_id: string
+          via: string
+        }
+        Insert: {
+          deleted_at?: string
+          id?: string
+          kind: string
+          record_id: string
+          records?: Json | null
+          restored_at?: string | null
+          space_id: string
+          title?: string | null
+          user_id: string
+          via?: string
+        }
+        Update: {
+          deleted_at?: string
+          id?: string
+          kind?: string
+          record_id?: string
+          records?: Json | null
+          restored_at?: string | null
+          space_id?: string
+          title?: string | null
+          user_id?: string
+          via?: string
+        }
+        Relationships: []
+      }
       unlock_definitions: {
         Row: {
           created_at: string
@@ -6449,6 +6773,7 @@ export type Database = {
         Args: { _kind: string; _space: string; _summary: Json }
         Returns: Json
       }
+      activity_mcp_grant: { Args: never; Returns: string }
       activity_title: { Args: { _text: string }; Returns: string }
       activity_via: { Args: never; Returns: string }
       activity_visible_actors: { Args: { _space: string }; Returns: string[] }
@@ -7125,6 +7450,14 @@ export type Database = {
           position: number
         }[]
       }
+      company_mcp_clients: {
+        Args: never
+        Returns: {
+          clients: number
+          last_used_at: string
+          worker_id: string
+        }[]
+      }
       company_remove_worker: {
         Args: { _assignee?: string; _worker_id: string }
         Returns: {
@@ -7195,6 +7528,7 @@ export type Database = {
         Returns: string
       }
       contact_tables_untouched: { Args: { _ws: string }; Returns: boolean }
+      contact_trashed: { Args: { _id: string }; Returns: boolean }
       count_generation_keyword: {
         Args: { _keyword: string }
         Returns: undefined
@@ -7289,6 +7623,7 @@ export type Database = {
           last_done_at: string
         }[]
       }
+      deal_trashed: { Args: { _id: string }; Returns: boolean }
       default_space_id: { Args: never; Returns: string }
       error_alert_claim: {
         Args: {
@@ -7699,6 +8034,8 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      mcp_rate_hit: { Args: { _grant: string }; Returns: number }
+      mcp_space_open: { Args: { _space: string }; Returns: boolean }
       meetings_daily: {
         Args: { _actor?: string; _from: string; _timezone: string; _to: string }
         Returns: {
@@ -8576,6 +8913,7 @@ export type Database = {
         Args: { _country: string; _phone: string }
         Returns: string
       }
+      plan_allows_mcp: { Args: { _space: string }; Returns: boolean }
       plan_catalog_count_ok: {
         Args: { _nullable: boolean; _value: Json }
         Returns: boolean
@@ -8679,6 +9017,8 @@ export type Database = {
       }
       purge_deleted_notes: { Args: never; Returns: number }
       purge_error_events: { Args: never; Returns: number }
+      purge_mcp: { Args: never; Returns: number }
+      purge_trash: { Args: never; Returns: number }
       record_worker_payment: {
         Args: {
           _amount: number
@@ -9155,6 +9495,17 @@ export type Database = {
         Args: { _browser: string; _device: string; _user_id: string }
         Returns: string
       }
+      trash_mark_restored: { Args: { _id: string }; Returns: boolean }
+      trash_may_delete: {
+        Args: { _id: string; _kind: string }
+        Returns: boolean
+      }
+      trash_record: { Args: { _id: string; _kind: string }; Returns: string }
+      trash_restore_record: {
+        Args: { _id: string; _kind: string }
+        Returns: boolean
+      }
+      trash_retention_days: { Args: never; Returns: number }
       tutorial_delete_demo: { Args: never; Returns: Json }
       tutorial_instant: { Args: { _value: Json }; Returns: string }
       tutorial_seed_demo: { Args: { _payload: Json }; Returns: Json }
@@ -9168,6 +9519,7 @@ export type Database = {
       valid_plan_add_ons: { Args: { _value: Json }; Returns: boolean }
       valid_plan_catalog: { Args: { _payload: Json }; Returns: boolean }
       valid_showcase_mode: { Args: { _value: Json }; Returns: boolean }
+      valid_trash_retention: { Args: { _value: Json }; Returns: boolean }
       valid_tutorial_state: { Args: { _state: Json }; Returns: boolean }
       valid_worker_billing: { Args: { _value: Json }; Returns: boolean }
       work_seconds_between: {

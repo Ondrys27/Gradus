@@ -41,6 +41,8 @@ export type FormPlan = {
   limits: Record<PlanLimitKey, string>;
   features: FormFeature[];
   recommended: boolean;
+  /** Connected apps (MCP, 28.8) for the plan's accounts; on unless switched off. */
+  mcp: boolean;
 };
 
 let nextId = 0;
@@ -56,20 +58,27 @@ const moneyText = (money: Money | null, currencies: readonly string[]): FormMone
   Object.fromEntries(currencies.map((currency) => [currency, text(money?.[currency])]));
 
 /** EUR, then every manual currency of the plans and add-ons A–Z. */
-function catalogCurrencies(catalog: readonly CatalogPlan[], addOns: readonly CatalogAddOn[] = []): string[] {
+function catalogCurrencies(
+  catalog: readonly CatalogPlan[],
+  addOns: readonly CatalogAddOn[] = [],
+): string[] {
   const all = new Set<string>();
   for (const plan of catalog) {
     for (const money of [plan.monthly, plan.yearly, plan.per_worker]) {
       for (const currency of money ? moneyCurrencies(money) : []) all.add(currency);
     }
   }
-  for (const addOn of addOns) for (const currency of moneyCurrencies(addOn.monthly)) all.add(currency);
+  for (const addOn of addOns)
+    for (const currency of moneyCurrencies(addOn.monthly)) all.add(currency);
   all.delete(BASE_CURRENCY);
   return [BASE_CURRENCY, ...[...all].sort()];
 }
 
 /** The cards in order, numbers as text. `addOns` adds their manual currencies to every card. */
-export function toForm(catalog: readonly CatalogPlan[], addOns: readonly CatalogAddOn[] = []): FormPlan[] {
+export function toForm(
+  catalog: readonly CatalogPlan[],
+  addOns: readonly CatalogAddOn[] = [],
+): FormPlan[] {
   const currencies = catalogCurrencies(catalog, addOns);
   return sortedPlans(catalog).map((plan) => ({
     key: plan.key,
@@ -85,6 +94,7 @@ export function toForm(catalog: readonly CatalogPlan[], addOns: readonly Catalog
     ) as Record<PlanLimitKey, string>,
     features: plan.features.map((feature) => ({ ...feature, id: featureId() })),
     recommended: plan.recommended,
+    mcp: plan.mcp !== false,
   }));
 }
 
@@ -123,20 +133,22 @@ export function fromForm(form: readonly FormPlan[]): PlanCatalog {
       plan.perWorkerOn ? [plan.monthly, plan.yearly, plan.per_worker] : [plan.monthly, plan.yearly],
     );
     return {
-    key: plan.key,
-    name: { ...plan.name },
-    tagline: { ...plan.tagline },
-    monthly: moneyValue(plan.monthly, currencies),
-    yearly: moneyValue(plan.yearly, currencies),
-    per_worker: plan.perWorkerOn ? moneyValue(plan.per_worker, currencies) : null,
-    // Empty is none in the price.
-    included_workers: parseAmount(plan.included_workers) ?? 0,
-    limits: Object.fromEntries(
-      PLAN_LIMIT_KEYS.map((limit) => [limit, parseAmount(plan.limits[limit])]),
-    ),
-    features: plan.features.map(({ cs, en, highlight }) => ({ cs, en, highlight })),
-    recommended: plan.recommended,
-    order,
+      key: plan.key,
+      name: { ...plan.name },
+      tagline: { ...plan.tagline },
+      monthly: moneyValue(plan.monthly, currencies),
+      yearly: moneyValue(plan.yearly, currencies),
+      per_worker: plan.perWorkerOn ? moneyValue(plan.per_worker, currencies) : null,
+      // Empty is none in the price.
+      included_workers: parseAmount(plan.included_workers) ?? 0,
+      limits: Object.fromEntries(
+        PLAN_LIMIT_KEYS.map((limit) => [limit, parseAmount(plan.limits[limit])]),
+      ),
+      features: plan.features.map(({ cs, en, highlight }) => ({ cs, en, highlight })),
+      recommended: plan.recommended,
+      order,
+      // Only "off" is written: a version without the flag has connected apps on.
+      ...(plan.mcp === false ? { mcp: false } : {}),
     };
   }) as PlanCatalog;
 }
@@ -165,7 +177,9 @@ export function addCurrency(
   form: { plans: readonly FormPlan[]; addOns: readonly FormAddOn[] },
   currency: string,
   prefill?: {
-    plans?: Partial<Record<PaidPlanKey, Partial<Record<"monthly" | "yearly" | "per_worker", number>>>>;
+    plans?: Partial<
+      Record<PaidPlanKey, Partial<Record<"monthly" | "yearly" | "per_worker", number>>>
+    >;
     addOns?: Partial<Record<AddOnKey, number>>;
   },
 ): { plans: FormPlan[]; addOns: FormAddOn[] } {
@@ -200,7 +214,10 @@ export function removeCurrency(
       yearly: withoutCurrency(plan.yearly, currency),
       per_worker: withoutCurrency(plan.per_worker, currency),
     })),
-    addOns: form.addOns.map((addOn) => ({ ...addOn, monthly: withoutCurrency(addOn.monthly, currency) })),
+    addOns: form.addOns.map((addOn) => ({
+      ...addOn,
+      monthly: withoutCurrency(addOn.monthly, currency),
+    })),
   };
 }
 
@@ -216,7 +233,10 @@ export type FormAddOn = {
 };
 
 /** The add-ons in their order, with the same currencies as the cards. */
-export function toAddOnsForm(addOns: readonly CatalogAddOn[], catalog: readonly CatalogPlan[] = []): FormAddOn[] {
+export function toAddOnsForm(
+  addOns: readonly CatalogAddOn[],
+  catalog: readonly CatalogPlan[] = [],
+): FormAddOn[] {
   const currencies = catalogCurrencies(catalog, addOns);
   return [...addOns]
     .sort((a, b) => a.order - b.order)
@@ -249,7 +269,11 @@ export function moveCard(form: readonly FormPlan[], index: number, step: -1 | 1)
 }
 
 /** Moves a line of a card to where another one was (dragging). */
-export function moveFeature(features: readonly FormFeature[], from: string, to: string): FormFeature[] {
+export function moveFeature(
+  features: readonly FormFeature[],
+  from: string,
+  to: string,
+): FormFeature[] {
   const start = features.findIndex((feature) => feature.id === from);
   const end = features.findIndex((feature) => feature.id === to);
   if (start < 0 || end < 0) return [...features];
@@ -260,7 +284,11 @@ export function moveFeature(features: readonly FormFeature[], from: string, to: 
 }
 
 /** Only one card carries the badge: switching it on takes it from the others. */
-export function setRecommended(form: readonly FormPlan[], key: PaidPlanKey, on: boolean): FormPlan[] {
+export function setRecommended(
+  form: readonly FormPlan[],
+  key: PaidPlanKey,
+  on: boolean,
+): FormPlan[] {
   return form.map((plan) => ({
     ...plan,
     recommended: plan.key === key ? on : on ? false : plan.recommended,

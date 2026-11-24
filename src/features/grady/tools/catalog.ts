@@ -9,6 +9,7 @@ import { pipelineTools } from "./defs/pipeline";
 import { readTools } from "./defs/read";
 import { rewardTools } from "./defs/rewards";
 import { schedulerTools, settingsTools } from "./defs/settings";
+import { trashTools } from "./defs/trash";
 import { calendarTools, crmTaskTools } from "./defs/work";
 import type { AnyTool } from "./types";
 
@@ -41,6 +42,7 @@ export const GRADY_TOOLS: readonly AnyTool[] = [
   ...rewardTools,
   ...dashboardTools,
   ...settingsTools,
+  ...trashTools,
 ];
 
 const BY_NAME = new Map(GRADY_TOOLS.map((tool) => [tool.name, tool]));

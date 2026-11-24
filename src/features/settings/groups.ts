@@ -2,6 +2,7 @@ import {
   CalendarDaysIcon,
   CreditCardIcon,
   PaletteIcon,
+  PlugZapIcon,
   ShieldIcon,
   SparklesIcon,
   UserRoundIcon,
@@ -20,6 +21,7 @@ export const SETTINGS_GROUPS = [
   "appearance",
   "work",
   "calendar",
+  "integrations",
   "privacy",
 ] as const;
 export type SettingsGroup = (typeof SETTINGS_GROUPS)[number];
@@ -46,6 +48,8 @@ export const SETTINGS_GROUP_DEFS: readonly SettingsGroupDef[] = [
   { key: "work", href: `${SETTINGS_PATH}/prace`, icon: WrenchIcon, who: "all" },
   // Subscribed calendars (busy times for the scheduler) and the Gradus calendar as a feed.
   { key: "calendar", href: `${SETTINGS_PATH}/kalendar`, icon: CalendarDaysIcon, who: "all" },
+  // Connected apps (MCP, 28.8): Claude and other clients, and the trash of what they deleted.
+  { key: "integrations", href: `${SETTINGS_PATH}/integrace`, icon: PlugZapIcon, who: "all" },
   { key: "privacy", href: `${SETTINGS_PATH}/soukromi`, icon: ShieldIcon, who: "all" },
 ];
 
@@ -119,6 +123,9 @@ export const SETTINGS_ITEMS: readonly SettingsItemDef[] = [
     who: "all",
   },
   { id: "calendarFeed", group: "calendar", target: "settings-calendar-feed", who: "all" },
+  { id: "mcpAddress", group: "integrations", target: "settings-mcp-address", who: "all" },
+  { id: "connectedApps", group: "integrations", target: "settings-connected-apps", who: "all" },
+  { id: "trash", group: "integrations", target: "settings-trash", who: "all" },
   { id: "export", group: "privacy", target: "settings-account-export", who: "all" },
   { id: "legal", group: "privacy", target: "settings-legal", who: "all" },
   { id: "deleteAccount", group: "privacy", target: "settings-account-delete", who: "all" },

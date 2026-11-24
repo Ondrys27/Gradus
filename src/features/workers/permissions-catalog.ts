@@ -27,6 +27,8 @@ type SectionDef = {
   readonly fixed?: "always" | "never";
   /** "view" is on without a row (Tasks: own tasks; Company: own branch). */
   readonly viewByDefault?: boolean;
+  /** Further actions on without a row (Integrations: connecting an app, 28.8). */
+  readonly defaultOn?: readonly string[];
   readonly actions: readonly ActionDef[];
 };
 
@@ -139,6 +141,18 @@ export const PERMISSION_CATALOG = [
       { key: "rewards", kind: "write" },
     ],
   },
+  {
+    // Connected apps (MCP, 28.8): "mcp" = may connect Claude or another MCP
+    // client in this company. On until the owner switches it off.
+    key: "integrations",
+    nav: "integrations",
+    viewByDefault: true,
+    defaultOn: ["mcp"],
+    actions: [
+      { key: "view", kind: "view" },
+      { key: "mcp", kind: "read" },
+    ],
+  },
   { key: "settings", nav: "settings", fixed: "never", actions: [] },
 ] as const satisfies readonly SectionDef[];
 
@@ -193,7 +207,9 @@ export function actionsOf<S extends GrantSection>(section: S): GrantAction<S>[] 
 
 /** What holds without a stored row (mirrors permission_default()). */
 export function defaultAllowed(section: GrantSection, action: string): boolean {
-  return action === "view" && Boolean(sectionDef(section)?.viewByDefault);
+  const def = sectionDef(section);
+  if (action === "view") return Boolean(def?.viewByDefault);
+  return Boolean(def?.defaultOn?.includes(action));
 }
 
 // ---------------------------------------------------------------------------
@@ -333,6 +349,7 @@ const TEMPLATE_GRANTS: Record<Exclude<PermissionTemplate, "all">, PermissionGran
     calendar: ["view", "create", "update"],
     scheduler: ["view", "own"],
     company: ["view"],
+    integrations: ["view", "mcp"],
   },
   // Keeps the plan and the diary: milestones, everyone's tasks and events, contacts.
   assistant: {
@@ -341,6 +358,7 @@ const TEMPLATE_GRANTS: Record<Exclude<PermissionTemplate, "all">, PermissionGran
     tasks: ["view", "view_all", "create", "update", "assign_others"],
     calendar: ["view", "view_all", "create", "update"],
     company: ["view"],
+    integrations: ["view", "mcp"],
   },
   // Keeps the books: finance and invoices, deals and contacts to look up.
   accountant: {
@@ -349,6 +367,7 @@ const TEMPLATE_GRANTS: Record<Exclude<PermissionTemplate, "all">, PermissionGran
     finance: ["view", "summaries", "write"],
     invoices: ["view", "issue"],
     company: ["view"],
+    integrations: ["view", "mcp"],
   },
 };
 
@@ -370,7 +389,9 @@ export function templateOf(grants: PermissionGrants): PermissionTemplate | null 
 
 export function sameGrants(a: PermissionGrants, b: PermissionGrants): boolean {
   return GRANT_SECTIONS.every((section) =>
-    actionsOf(section).every((action) => hasGrant(a, section, action) === hasGrant(b, section, action)),
+    actionsOf(section).every(
+      (action) => hasGrant(a, section, action) === hasGrant(b, section, action),
+    ),
   );
 }
 

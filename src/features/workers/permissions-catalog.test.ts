@@ -11,15 +11,19 @@ import {
 } from "./permissions-catalog";
 
 describe("grants", () => {
-  it("reads missing rows as the defaults: own tasks and own branch", () => {
-    expect(grantsFromRows([])).toEqual({ tasks: ["view"], company: ["view"] });
+  it("reads missing rows as the defaults: own tasks, own branch and connected apps", () => {
+    expect(grantsFromRows([])).toEqual({
+      tasks: ["view"],
+      company: ["view"],
+      integrations: ["view", "mcp"],
+    });
     expect(
       grantsFromRows([
         { section: "company", action: "view", allowed: false },
         { section: "pipeline", action: "view", allowed: true },
         { section: "pipeline", action: "fly", allowed: true },
       ]),
-    ).toEqual({ pipeline: ["view"], tasks: ["view"] });
+    ).toEqual({ pipeline: ["view"], tasks: ["view"], integrations: ["view", "mcp"] });
   });
 
   it("stores every right as a row, so a closed one is stored as closed", () => {

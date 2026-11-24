@@ -239,7 +239,8 @@
     "messages": "Zprávy",
     "unread": "{count, plural, one {# nepřečtená zpráva} few {# nepřečtené zprávy} other {# nepřečtených zpráv}}",
     "scheduler": "Plánovač schůzek",
-    "support": "Podpora"
+    "support": "Podpora",
+    "integrations": "Integrace"
   },
   "topBar": {
     "home": "Přejít na přehled",
@@ -655,16 +656,16 @@
       "update_contact": "Upravil jsem kontakt {name}",
       "move_contact": "Přesunul jsem kontakt {name} do tabulky {table}",
       "add_contact_activity": "Zapsal jsem {type, select, call {hovor} email {e-mail} meeting {schůzku} sms {SMS} other {poznámku}} ke kontaktu {name}",
-      "delete_contact": "Smazat kontakt {name}",
-      "deleted_contact": "Smazal jsem kontakt {name}",
+      "delete_contact": "Přesunout kontakt {name} do koše",
+      "deleted_contact": "Kontakt {name} je v koši",
       "create_deal": "Založil jsem obchod „{title}“",
       "update_deal": "Upravil jsem obchod „{title}“",
       "set_deal_people": "Nastavil jsem lidi na obchodu „{title}“",
       "move_deal_stage": "Přesunul jsem obchod „{title}“ do fáze {stage}",
       "won_deal": "Obchod „{title}“ je vyhraný",
       "add_deal_contact": "Přidal jsem {name} k obchodu „{title}“",
-      "delete_deal": "Smazat obchod „{title}“",
-      "deleted_deal": "Smazal jsem obchod „{title}“",
+      "delete_deal": "Přesunout obchod „{title}“ do koše",
+      "deleted_deal": "Obchod „{title}“ je v koši",
       "create_crm_task": "Založil jsem úkol „{title}“",
       "update_crm_task": "Upravil jsem úkol „{title}“",
       "complete_crm_task": "Úkol „{title}“ je hotový",
@@ -762,13 +763,13 @@
         "update_contact": "Upravuji kontakt…",
         "move_contact": "Přesouvám kontakt…",
         "add_contact_activity": "Zapisuji aktivitu…",
-        "delete_contact": "Připravuji smazání kontaktu…",
+        "delete_contact": "Připravuji přesun kontaktu do koše…",
         "create_deal": "Zakládám obchod…",
         "update_deal": "Upravuji obchod…",
         "set_deal_people": "Nastavuji lidi na obchodu…",
         "move_deal_stage": "Posouvám obchod…",
         "add_deal_contact": "Přidávám kontakt k obchodu…",
-        "delete_deal": "Připravuji smazání obchodu…",
+        "delete_deal": "Připravuji přesun obchodu do koše…",
         "create_crm_task": "Zakládám úkol…",
         "update_crm_task": "Upravuji úkol…",
         "complete_crm_task": "Odškrtávám úkol…",
@@ -808,8 +809,12 @@
         "review_reward_entries": "Připravuji schválení…",
         "add_manual_reward": "Připravuji odměnu…",
         "place_widget": "Dávám widget na přehled…",
-        "hide_widget": "Odebírám widget…"
-      }
+        "hide_widget": "Odebírám widget…",
+        "list_trash": "Dívám se do koše…",
+        "restore_from_trash": "Obnovuji z koše…"
+      },
+      "list_trash": "Dívám se do koše",
+      "restore_from_trash": "Obnovil jsem z koše „{title}“"
     },
     "actions": {
       "status": {
@@ -1351,6 +1356,10 @@
       "calendar": {
         "title": "Kalendář",
         "description": "Další kalendáře, které se mají držet volné, a tvůj kalendář jako odkaz k odběru."
+      },
+      "integrations": {
+        "title": "Integrace",
+        "description": "Připojené aplikace: {appName} v Claudovi a dalších klientech MCP, a koš toho, co smazaly."
       }
     },
     "items": {
@@ -1513,6 +1522,18 @@
       "calendarFeed": {
         "label": "Odkaz pro odběr tvého kalendáře",
         "keywords": "ics feed export google apple outlook odebírat kalendář odkaz"
+      },
+      "mcpAddress": {
+        "label": "Adresa serveru MCP",
+        "keywords": "mcp claude konektor connector adresa url server ai"
+      },
+      "connectedApps": {
+        "label": "Připojené aplikace",
+        "keywords": "claude mcp konektor připojené aplikace odpojit úroveň přístup tokeny"
+      },
+      "trash": {
+        "label": "Koš",
+        "keywords": "koš smazané obnovit grady claude mcp vrátit"
       }
     },
     "work": {
@@ -4949,6 +4970,9 @@
         },
         "scheduler": {
           "own": "Vlastní rezervační stránka, typy schůzek a rezervace"
+        },
+        "integrations": {
+          "mcp": "Připojit Clauda a jiné aplikace (MCP)"
         }
       },
       "scope": {
@@ -6188,6 +6212,16 @@
             "answer": "Nabídku jsi poslal před 8 dny a od té doby ticho. Zavolej jim zítra dopoledne a zeptej se, jestli v ní něco nechybí. Když budou váhat, nabídni první měsíc za poloviční cenu.",
             "action": "Připomenout zítra v 9:00"
           }
+        },
+        "claude": {
+          "title": "{appName} v Claudovi",
+          "text": "Připoj {appName} do Clauda jako konektor a pracuj s ním slovy: Claude přečte tvoje obchody, úkoly a poznámky a zapíše, co mu řekneš. Vždy jen to, co smíš ty, a s úrovní, kterou si vybereš.",
+          "examples": {
+            "1": "„Zapiš mi tenhle přepis schůzky k obchodu Novák a založ úkoly.“",
+            "2": "„Co mi dnes hoří a komu mám zavolat?“",
+            "3": "„Naplánuj schůzku s Janou ve čtvrtek v deset.“"
+          },
+          "note": "Smazané jde 7 dní obnovit. E-maily a faktury odejdou jen s plným přístupem a s tvým potvrzením."
         }
       },
       "game": {
@@ -7886,6 +7920,18 @@
             "why": "Nejlevnější možné rozhodnutí, nejvýš 20 výstupních tokenů."
           }
         }
+      },
+      "trash": {
+        "title": "Koš Gradyho a připojených aplikací",
+        "description": "Kolik dní jde obnovit, co Grady nebo připojená aplikace (Claude) smazali. Potom se to smaže natrvalo. Poznámky mají vlastní koš na 30 dní.",
+        "label": "Dní v koši",
+        "save": "Uložit",
+        "confirm": "Koš bude držet smazané {days} dní. Pokračovat?",
+        "invalid": "Zadej celé číslo od {min} do {max}.",
+        "invalidShort": "Takový počet dní nejde.",
+        "failed": "Nepodařilo se uložit. Zkus to znovu.",
+        "readOnly": "Měnit to může majitel nebo plný administrátor.",
+        "changedBy": "Naposledy změnil(a) {name}, {date}"
       }
     },
     "game": {
@@ -8710,7 +8756,8 @@
         "includedWorkersHint": "Pracovníci bez vlastního tarifu, které cena pokrývá. Každý další stojí cenu za pracovníka (bez ní se do tarifu nevejde); kdo má vlastní tarif, je ve firmě zdarma.",
         "deviationAbove": "O {percent} víc než podle kurzu ({exact}).",
         "deviationBelow": "O {percent} míň než podle kurzu ({exact}).",
-        "derivedPlaceholder": "z kurzu"
+        "derivedPlaceholder": "z kurzu",
+        "mcp": "Připojené aplikace (Claude, MCP)"
       },
       "fields": {
         "name": "Název",
@@ -9294,6 +9341,10 @@
         "gradyEconomy": {
           "title": "Úsporný režim",
           "keywords": "úsporný režim levnější model strop práh úspora"
+        },
+        "trashRetention": {
+          "title": "Koš Gradyho a připojených aplikací",
+          "keywords": "koš smazané obnovit dny mcp claude grady retence"
         }
       }
     },
@@ -11408,6 +11459,143 @@
       "deleteConfirm": "Smazat",
       "deleteFailed": "Přílohu se nepodařilo smazat.",
       "cancel": "Zrušit"
+    }
+  },
+  "mcp": {
+    "consent": {
+      "pageTitle": "Připojit aplikaci k {appName}",
+      "title": "{client} chce přístup k tvému {appName}",
+      "description": "Aplikace bude v {appName} číst a měnit jen to, co smíš ty, v rozsahu, který tu vybereš.",
+      "errorTitle": "Tuhle aplikaci nejde připojit",
+      "error": {
+        "client": "Aplikaci se nepodařilo ověřit. Zkus ji v Claudovi přidat znovu.",
+        "redirect": "Aplikace chce vrátit přihlášení na adresu, kterou si neregistrovala. Z bezpečnostních důvodů ji nepřipojíme."
+      },
+      "verifiedClient": "Ověřená identita aplikace",
+      "returnsTo": "Po povolení se vrátíš na {host}.",
+      "levelLabel": "Co smí dělat",
+      "levels": {
+        "read": {
+          "title": "Jen čtení",
+          "description": "Hledá a čte kontakty, obchody, úkoly, kalendář, poznámky, finance a faktury."
+        },
+        "write": {
+          "title": "Čtení a zápis",
+          "description": "Navíc zakládá a upravuje: úkoly, poznámky, obchody, schůzky, zápisy do historie."
+        },
+        "full": {
+          "title": "Plný přístup",
+          "description": "Navíc maže (do koše), posílá e-maily a zprávy a vystavuje faktury."
+        }
+      },
+      "fullWarning": "S plným přístupem může aplikace posílat e-maily a vystavovat faktury. Claude se tě na takové kroky má vždy zeptat.",
+      "spacesLabel": "Ve kterých firmách",
+      "spacesHint": "Aplikace uvidí jen vybrané firmy a v každé jen to, co tam smíš.",
+      "spaceClosed": "Připojené aplikace tu majitel firmy vypnul.",
+      "ownCompany": "Moje firma",
+      "company": "Firma",
+      "deny": "Zamítnout",
+      "allow": "Povolit",
+      "revokeHint": "Kdykoli to zrušíš v Nastavení → Integrace.",
+      "secondFactorHint": "Tvůj účet má druhý faktor. Opiš kód z aplikace pro ověřování.",
+      "secondFactorLabel": "Kód z aplikace pro ověřování",
+      "secondFactorSubmit": "Ověřit",
+      "errors": {
+        "invalid": "Žádost o připojení už neplatí. Zkus to v aplikaci znovu.",
+        "spaces": "Vyber aspoň jednu firmu, kde jsou připojené aplikace povolené.",
+        "secondFactor": "Kód nesedí. Zkus nový.",
+        "failed": "Připojení se nepovedlo. Zkus to znovu."
+      }
+    },
+    "settings": {
+      "addressTitle": "Adresa serveru",
+      "addressHint": "Tuhle adresu vložíš do Clauda (nebo jiné aplikace MCP) jako vlastní konektor {appName}.",
+      "copy": "Kopírovat",
+      "copied": "Zkopírováno",
+      "appsTitle": "Připojené aplikace",
+      "appsHint": "Každá vidí jen vybrané firmy a dělá jen to, co smíš ty. Odpojením přestane fungovat hned.",
+      "loadFailed": "Seznam se nepodařilo načíst.",
+      "none": "Zatím žádná aplikace není připojená.",
+      "ownCompany": "Moje firma",
+      "company": "Firma",
+      "summary": "{level} · {company}",
+      "companies": "{active} a další ({count})",
+      "dates": "Připojeno {connected} · naposledy {used}",
+      "never": "zatím nikdy",
+      "actions": "{count, plural, one {# akce} few {# akce} other {# akcí}}",
+      "levelLabel": "Úroveň přístupu",
+      "historyTitle": "Poslední akce",
+      "historyNone": "Zatím nic neudělala.",
+      "callFailed": "nepovedlo se",
+      "disconnect": "Odpojit",
+      "disconnectTitle": "Odpojit {name}?",
+      "disconnectHint": "Aplikace ztratí přístup hned. Znovu ji připojíš, až ji v ní přidáš.",
+      "cancel": "Zrušit",
+      "errors": {
+        "forbidden": "Na tohle nemáš právo.",
+        "notFound": "Tohle připojení už neexistuje.",
+        "invalid": "Neplatná volba.",
+        "changed": "Záznam se mezitím změnil.",
+        "failed": "Nepovedlo se. Zkus to znovu."
+      }
+    },
+    "steps": {
+      "title": "Jak připojit do Clauda",
+      "hint": "Čtyři kroky na claude.ai nebo v aplikaci Claude. Funguje i v jiných aplikacích, které umí vlastní konektory MCP.",
+      "items": {
+        "settings": "V Claudovi otevři Nastavení → Konektory.",
+        "add": "Klikni na Přidat vlastní konektor.",
+        "paste": "Pojmenuj ho {appName}, vlož adresu serveru výš a klikni na Přidat.",
+        "connect": "Klikni na Připojit, přihlas se do {appName} a vyber úroveň a firmu."
+      },
+      "teams": "V Claudu pro týmy přidává vlastní konektor vlastník organizace v Nastavení organizace → Konektory; ostatní pak jen kliknou na Připojit.",
+      "pictures": {
+        "profile": "Profil",
+        "settings": "Nastavení",
+        "connectors": "Konektory",
+        "addCustom": "Přidat vlastní konektor",
+        "name": "Název",
+        "url": "Adresa vzdáleného serveru MCP",
+        "addButton": "Přidat",
+        "connect": "Připojit",
+        "consent": "Přihlášení do {appName}"
+      }
+    },
+    "trash": {
+      "title": "Koš",
+      "hint": "Co smazal Grady nebo připojená aplikace, tady {days, plural, one {# den} few {# dny} other {# dní}} počká. Pak se to smaže natrvalo.",
+      "empty": "Koš je prázdný.",
+      "line": "{kind} · {via} · {when}",
+      "restore": "Obnovit",
+      "restoring": "Obnovuji…",
+      "kinds": {
+        "deal": "Obchod",
+        "contact": "Kontakt",
+        "crm_task": "Úkol",
+        "task": "Úkol milníku",
+        "event": "Událost",
+        "transaction": "Transakce",
+        "recurring_payment": "Automatická platba"
+      },
+      "via": {
+        "app": "v aplikaci",
+        "grady": "přes Gradyho",
+        "mcp": "přes Clauda"
+      },
+      "errors": {
+        "forbidden": "Na obnovení už nemáš právo.",
+        "notFound": "Tohle už v koši není.",
+        "invalid": "Nepovedlo se.",
+        "changed": "Mezitím vzniklo něco se stejným záznamem, obnovit to nejde.",
+        "failed": "Obnovení se nepovedlo. Zkus to znovu."
+      }
+    },
+    "company": {
+      "title": "Připojené aplikace ve firmě",
+      "off": "Vypnuto: pracovníci tu Clauda ani jiné aplikace nepoužijí.",
+      "nobody": "Zatím je nikdo z firmy nepřipojil.",
+      "connected": "{count, plural, one {Připojenou aplikaci má} few {Připojenou aplikaci mají} other {Připojenou aplikaci má}} {names}.",
+      "switch": "Povolit ve firmě"
     }
   }
 }

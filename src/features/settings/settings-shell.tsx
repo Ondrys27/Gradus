@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeftIcon, ChevronRightIcon, SearchIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
+import { APP_NAME } from "@/lib/constants";
 import { normalizeText } from "@/features/search/search-logic";
 import { useReducedMotionSafe } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
@@ -142,7 +143,7 @@ export function SettingsGroupList({ groups }: { groups: SettingsGroupDef[] }) {
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="text-sm font-medium text-ink">{t(`${item.key}.title`)}</span>
                 <span className="text-[13px] leading-5 text-ink-muted">
-                  {t(`${item.key}.description`)}
+                  {t(`${item.key}.description`, { appName: APP_NAME })}
                 </span>
               </span>
               <ChevronRightIcon

@@ -20,6 +20,7 @@ import { Stagger, StaggerItem } from "@/components/ui/stagger";
 import { useProfile, useSession } from "@/features/account/queries";
 import { useWorkspace } from "@/features/account/workspace-queries";
 import { Segmented } from "@/features/finance/segmented";
+import { CompanyMcpPanel } from "@/features/mcp/company-mcp-panel";
 import { MarkSeenOnVisit } from "@/features/game/mark-seen-on-visit";
 import { useViewTracking } from "@/lib/analytics/use-view-tracking";
 import { createViewPreference } from "@/lib/view-preference";
@@ -164,6 +165,7 @@ export function CompanyView() {
       )}
 
       <StaggerItem>
+        {tab === "people" && isOwner && <CompanyMcpPanel people={people.data} />}
         {tab === "people" ? (
           <CompanyPeople
             people={people.data}

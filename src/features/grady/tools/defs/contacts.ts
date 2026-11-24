@@ -3,7 +3,6 @@ import { answerErrors } from "@/features/contacts/move-form";
 import {
   addActivity,
   createContact,
-  deleteContact,
   moveContactToTable,
   updateContact,
 } from "@/features/contacts/ops";
@@ -27,6 +26,7 @@ import {
   updated,
   uuid,
 } from "./shared";
+import { restoreTrashed, trashed, trashRecord } from "./trash";
 
 const text = (max: number) => z.string().trim().max(max);
 
@@ -265,7 +265,7 @@ export const contactTools = [
     kind: "write",
     risk: "confirm",
     description:
-      "Delete a contact for good (its deals stay without it, its tasks that hang only on it go). The user confirms it first.",
+      "Move a contact to the trash (its deals stay without it, its tasks that hang only on it go with it); restore_from_trash brings it back within the trash's retention (7 days by default). The user confirms it first.",
     input: z.object({ contactId: uuid }),
     count: () => 1,
     describe: (_input, t) => t("delete_contact", { name: "" }),
@@ -278,13 +278,16 @@ export const contactTools = [
     },
     async execute(ctx, input) {
       const contact = await readContact(ctx, input.contactId);
-      await deleteContact(ops(ctx), { workspaceId: ctx.workspaceId, id: contact.id });
+      await trashRecord(ctx, "contact", contact.id);
+      ctx.track("contact_deleted", {});
       return {
-        output: { deleted: true },
+        output: { deleted: true, inTrash: true },
         summary: ctx.t("deleted_contact", { name: quoted(contactName(contact)) }),
+        records: [trashed("contacts", contact.id)],
       };
     },
-    undoable: false,
+    undoable: true,
+    undo: (ctx, records) => restoreTrashed(ctx, "contact", records),
     invalidates: ["contacts", "pipeline", "crmTasks", "cold-calling"],
   }),
 ];

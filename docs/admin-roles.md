@@ -69,6 +69,7 @@ Sloupce: **M** = majitel · **P** = plný administrátor · **O** = omezený adm
 | Administrátoři (`/admin/administratori`) | ✓ | – | – | plnému i omezenému 404, v menu chybí |
 | Modely AI (27.3), Jazyky | ✓ | ✓ | čte / – | až vzniknou: zápis přes `admin_require_owner()` a `adminCan` jako ostatní nastavení |
 | Ukázkový režim (`/admin/ukazka`, 27.4) | ✓ | ✓ | čte | přepínač `app_settings.showcase_mode` mění M a P (`editShowcase`, `admin_set_app_setting` s aal2), omezený vidí stav; se zapnutým režimem mají ukázku v aplikaci (`/app/ukazka`, karta v tutoriálu) majitel i admin obou úrovní |
+| Koš Gradyho a připojených aplikací (AI a Grady → Pravidla, 28.8) | ✓ | ✓ | čte | `app_settings.trash_retention` (1–90 dní, výchozí 7) mění M a P (`editGradyRules`, `admin_set_app_setting` s aal2), omezený vidí hodnotu |
 | `/admin/prihlaseni`, `/admin/pozvanka/<token>` | kdokoli | | | stránka sama ověřuje heslo, roli nebo token |
 
 ## Funkce v databázi (SECURITY DEFINER `admin_*` a související)

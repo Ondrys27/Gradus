@@ -64,6 +64,11 @@ export async function middleware(request: NextRequest) {
       secure: request.nextUrl.protocol === "https:",
     });
   }
+  // The consent screen of connected apps (28.8) is never framed by another site.
+  if (request.nextUrl.pathname.startsWith("/oauth/")) {
+    response.headers.set("X-Frame-Options", "DENY");
+    response.headers.set("Content-Security-Policy", "frame-ancestors 'none'");
+  }
   // The administration is never indexed.
   if (isAdminPath(request.nextUrl.pathname)) {
     response.headers.set("X-Robots-Tag", "noindex, nofollow");
@@ -134,7 +139,8 @@ async function route(request: NextRequest) {
   if (kind === "guest" && signedIn) {
     // A worker's invite link opened while signed in (as the owner, as anybody):
     // the invites page says whose it is; nothing is used up on the way.
-    const inviteCode = page?.page === "register" ? request.nextUrl.searchParams.get("invite") : null;
+    const inviteCode =
+      page?.page === "register" ? request.nextUrl.searchParams.get("invite") : null;
     if (inviteCode?.trim()) {
       return redirectKeepingCookies(
         request,
