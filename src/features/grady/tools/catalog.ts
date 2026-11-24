@@ -7,7 +7,7 @@ import { noteTools } from "./defs/notes";
 import { chatTools, companyTools } from "./defs/people";
 import { pipelineTools } from "./defs/pipeline";
 import { readTools } from "./defs/read";
-import { rewardTools } from "./defs/rewards";
+import { rewardRuleTools, rewardTools } from "./defs/rewards";
 import { schedulerTools, settingsTools } from "./defs/settings";
 import { trashTools } from "./defs/trash";
 import { calendarTools, crmTaskTools } from "./defs/work";
@@ -40,6 +40,7 @@ export const GRADY_TOOLS: readonly AnyTool[] = [
   ...chatTools,
   ...companyTools,
   ...rewardTools,
+  ...rewardRuleTools,
   ...dashboardTools,
   ...settingsTools,
   ...trashTools,

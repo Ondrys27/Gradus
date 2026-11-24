@@ -469,3 +469,8 @@ export function formatUtcOffset(timeZone: string, at: Date = new Date()): string
 export function formatList(items: string[], uiLocale: string): string {
   return new Intl.ListFormat(uiLocale, { style: "long", type: "conjunction" }).format(items);
 }
+
+/** A choice in the UI language, e.g. "a, b or c" / "a, b nebo c". */
+export function formatOrList(items: string[], uiLocale: string): string {
+  return new Intl.ListFormat(uiLocale, { style: "long", type: "disjunction" }).format(items);
+}

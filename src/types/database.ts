@@ -1993,6 +1993,7 @@ export type Database = {
           company_reg_no: string | null
           country_code: string | null
           created_at: string
+          created_by: string | null
           deleted_at: string | null
           deleted_by: string | null
           email: string | null
@@ -2020,6 +2021,7 @@ export type Database = {
           company_reg_no?: string | null
           country_code?: string | null
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
           email?: string | null
@@ -2047,6 +2049,7 @@ export type Database = {
           company_reg_no?: string | null
           country_code?: string | null
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
           email?: string | null
@@ -5123,6 +5126,7 @@ export type Database = {
           id: string
           note: string | null
           occurred_at: string
+          once: boolean
           paid_at: string | null
           payout_id: string | null
           reversed_at: string | null
@@ -5132,6 +5136,7 @@ export type Database = {
           source_kind: string
           space_id: string
           status: string
+          subject_id: string | null
           updated_at: string
           worker_id: string
         }
@@ -5146,6 +5151,7 @@ export type Database = {
           id?: string
           note?: string | null
           occurred_at?: string
+          once?: boolean
           paid_at?: string | null
           payout_id?: string | null
           reversed_at?: string | null
@@ -5155,6 +5161,7 @@ export type Database = {
           source_kind: string
           space_id: string
           status?: string
+          subject_id?: string | null
           updated_at?: string
           worker_id: string
         }
@@ -5169,6 +5176,7 @@ export type Database = {
           id?: string
           note?: string | null
           occurred_at?: string
+          once?: boolean
           paid_at?: string | null
           payout_id?: string | null
           reversed_at?: string | null
@@ -5178,6 +5186,7 @@ export type Database = {
           source_kind?: string
           space_id?: string
           status?: string
+          subject_id?: string | null
           updated_at?: string
           worker_id?: string
         }
@@ -5281,6 +5290,7 @@ export type Database = {
           amount: number | null
           cap_per_period: number | null
           created_at: string
+          definition: Json | null
           filter: Json
           id: string
           kind: string
@@ -5297,6 +5307,7 @@ export type Database = {
           amount?: number | null
           cap_per_period?: number | null
           created_at?: string
+          definition?: Json | null
           filter?: Json
           id?: string
           kind: string
@@ -5313,6 +5324,7 @@ export type Database = {
           amount?: number | null
           cap_per_period?: number | null
           created_at?: string
+          definition?: Json | null
           filter?: Json
           id?: string
           kind?: string
@@ -9474,6 +9486,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      reward_history: { Args: { _days?: number; _worker: string }; Returns: Json }
       reward_manager_in: { Args: { _space: string }; Returns: boolean }
       reward_payout_create: {
         Args: {
@@ -9508,6 +9521,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      reward_plan_refs: { Args: { _worker: string }; Returns: Json }
       reward_reconcile: {
         Args: {
           _mode?: string

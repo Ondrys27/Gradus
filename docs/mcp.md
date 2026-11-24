@@ -112,6 +112,8 @@ vstupy zod → JSON Schema, seznamy po 25 s `offset`. Vlastní nástroje serveru
 | `list_conversations` | Zprávy: konverzace a lidé | chat |
 | `list_workers` | Správa firmy: lidé a skupiny | company.view |
 | `list_reward_entries` | Odměny: čeká na schválení / výplatu | company.rewards |
+| `get_reward_plan` | Odměny: plán a pravidla pracovníka | company.rewards |
+| `try_reward_rule` | Odměny: vyzkoušet pravidlo (30 dní, nic nezapíše) | company.rewards |
 | `list_trash` | Koš: co smazal Grady nebo připojená aplikace | dashboard |
 
 ### Čtení a zápis (`write`)
@@ -161,6 +163,7 @@ vstupy zod → JSON Schema, seznamy po 25 s `offset`. Vlastní nástroje serveru
 | `save_worker_group` | Skupina (založit, upravit, členové) | company.update |
 | `set_worker_permissions` | Práva pracovníka | company.update |
 | `review_reward_entries` | Odměny: schválit / zamítnout | company.rewards |
+| `save_reward_rules` | Odměny: nastavit pravidla (přidat, změnit, odebrat) | company.rewards |
 | `place_widget` | Přehled: přidat widget | dashboard |
 | `hide_widget` | Přehled: odebrat widget | dashboard |
 | `update_settings` | Nastavení (vzhled, formáty, Grady) | settings |

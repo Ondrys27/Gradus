@@ -726,6 +726,11 @@
       "reviewed_reward_entries": "{action, select, approve {Approved} other {Rejected}} {count, plural, one {# reward} other {# rewards}}{total}",
       "add_manual_reward": "Add {amount} to the rewards of {name}",
       "added_manual_reward": "Added {amount} to the rewards of {name}",
+      "get_reward_plan": "Reading the reward plan",
+      "try_reward_rule": "Trying a reward rule on the last 30 days",
+      "save_reward_rules": "Set reward rules: {count, plural, one {# change} other {# changes}}",
+      "save_reward_rules_for": "Set reward rules for {name}: {count, plural, one {# change} other {# changes}}",
+      "saved_reward_rules": "Set reward rules for {name}: {count, plural, one {# change} other {# changes}}",
       "place_widget": "Put “{widget}” on the dashboard",
       "hide_widget": "Took “{widget}” off the dashboard",
       "meeting_notes": "Meeting notes: {count, plural, one {# change} other {# changes}}",
@@ -808,6 +813,9 @@
         "list_reward_entries": "Looking at rewards…",
         "review_reward_entries": "Preparing the approval…",
         "add_manual_reward": "Preparing the reward…",
+        "get_reward_plan": "Reading the reward plan…",
+        "try_reward_rule": "Trying the rule…",
+        "save_reward_rules": "Preparing the reward rules…",
         "place_widget": "Placing the widget…",
         "hide_widget": "Taking the widget off…",
         "list_trash": "Looking into the trash…",
@@ -5702,45 +5710,95 @@
       "cancel": "Cancel",
       "close": "Close",
       "sentence": {
-        "task_fixed": "The amount set on the task for every done task with a price",
-        "task_default": "{amount} for every done task without its own price",
-        "project_done": "{amount} for every finished project (milestone)",
-        "per_meeting": "{amount} for every booked meeting",
-        "per_call": "{amount} for every call",
-        "per_contact": "{amount} for every new qualified contact",
-        "deal_percent": "{percent} of won deals",
-        "deal_fixed": "{amount} for every won deal",
-        "hourly": "{amount} per hour worked",
-        "monthly_fixed": "{amount} a month"
-      },
-      "limit": {
+        "when": "When",
+        "gets": "they get",
+        "everyMonth": "Every month",
+        "who": {
+          "self": "the worker",
+          "record": "anyone on their record"
+        },
+        "verb": {
+          "contact_moved": "moves a contact",
+          "meeting_booked": "books a meeting",
+          "meeting_held": "holds a meeting",
+          "booking_received": "gets a booking",
+          "call_logged": "logs a call",
+          "contact_created": "adds",
+          "deal_moved": "moves a deal",
+          "deal_won": "wins a deal",
+          "deal_lost": "closes a deal as lost",
+          "task_done": "completes",
+          "milestone_done": "completes a project (milestone)",
+          "invoice_issued": "issues an invoice",
+          "invoice_paid": "marks an invoice paid",
+          "time_hour": "works an hour",
+          "time_month": "works a whole month"
+        },
+        "taskKind": {
+          "all": "any task",
+          "crm_task": "a sales task",
+          "worker_task": "a task from the owner",
+          "task": "a milestone task"
+        },
+        "onTime": {
+          "any": "any time",
+          "onTime": "on time"
+        },
+        "require": {
+          "none": "a new contact",
+          "phone": "a contact with a phone",
+          "email": "a contact with an email",
+          "phone_or_email": "a contact with a phone or an email"
+        },
+        "from": {
+          "any": "from anywhere",
+          "only": "from {names}",
+          "except": "from anywhere except {names}"
+        },
+        "to": {
+          "any": "anywhere",
+          "only": "into {names}"
+        },
+        "via": {
+          "all": "in Cold Calling, the scheduler or the calendar",
+          "calls": "in Cold Calling",
+          "scheduler": "in the scheduler",
+          "calendar": "in the calendar"
+        },
+        "reward": {
+          "unit": "{amount} an hour",
+          "percent": "{percent} of the value without VAT",
+          "price": "the price written on the task",
+          "tierRange": "{amount} for the {from}th–{to}th in a month",
+          "tierFrom": "{amount} from the {from}th on"
+        },
+        "once": {
+          "contact": "only the first time per contact",
+          "deal": "only the first time per deal",
+          "every": "every time"
+        },
+        "value": {
+          "range": "only for a value of {min} to {max}",
+          "min": "only for a value from {min}",
+          "max": "only for a value up to {max}"
+        },
+        "tags": "only contacts tagged {tags}",
+        "window": {
+          "range": "from {from} to {to}",
+          "from": "from {from}",
+          "to": "until {to}",
+          "none": "on any day"
+        },
         "cap": "at most {amount} a month",
-        "onTimeOnly": "only when done on time",
-        "minDealValue": "only deals from {amount}"
-      },
-      "kind": {
-        "task_fixed": "Price on the task",
-        "task_default": "Every done task",
-        "project_done": "Finished project",
-        "per_meeting": "Booked meeting",
-        "per_call": "Call",
-        "per_contact": "Qualified contact",
-        "deal_percent": "Share of a deal",
-        "deal_fixed": "Amount per deal",
-        "hourly": "Hourly rate",
-        "monthly_fixed": "Fixed monthly"
-      },
-      "kindHint": {
-        "task_fixed": "You write on each task how much it pays. The reward shows as planned right away.",
-        "task_default": "The same amount for every done task that has no price of its own.",
-        "project_done": "For a milestone where the worker is set as the one the project belongs to.",
-        "per_meeting": "A contact moved to Meeting scheduled in Cold Calling, or a booking confirmed in the Scheduler.",
-        "per_call": "Every contact the worker moves on from Not contacted or No answer.",
-        "per_contact": "A contact the worker first moves to Interested or to a meeting.",
-        "deal_percent": "A share of the value of a won deal (without VAT) the worker is on.",
-        "deal_fixed": "The same amount for every won deal the worker is on.",
-        "hourly": "For the time on the worker's own timer.",
-        "monthly_fixed": "The same amount every month; planned from the start of the month, earned at its end."
+        "noCap": "no cap",
+        "bonus": "and for {count} in a month {amount} extra",
+        "noBonus": "no bonus",
+        "undo": {
+          "cancel": "moving it back cancels the reward",
+          "keep": "the reward stays when moved back"
+        },
+        "missingName": "(deleted)",
+        "nothingChosen": "(nothing chosen)"
       },
       "errors": {
         "amountInvalid": "Enter an amount above zero.",
@@ -5750,7 +5808,16 @@
         "tooManyRules": "A plan holds 30 rules at most.",
         "amountNonZero": "Enter an amount; a negative one is a deduction.",
         "noteRequired": "Write the reason.",
-        "noteTooLong": "The reason is too long (300 characters at most)."
+        "noteTooLong": "The reason is too long (300 characters at most).",
+        "tiersInvalid": "Tiers must start at 1, go up and have positive amounts (2 to 10 tiers).",
+        "bonusInvalid": "A bonus needs a count of 1–1,000 and a positive amount.",
+        "valueInvalid": "The lower value must be below the upper one.",
+        "tagsInvalid": "A tag can have at most 50 characters.",
+        "windowInvalid": "The end must be after the start.",
+        "fromEmpty": "Choose at least one table or stage to move from.",
+        "toEmpty": "Choose at least one table or stage to move into.",
+        "viaEmpty": "Choose at least one source of the meeting.",
+        "rewardInvalid": "This reward does not fit the event."
       },
       "status": {
         "planned": "Planned",
@@ -5771,43 +5838,13 @@
         "contact": "Qualified contact",
         "work_session": "Time worked",
         "month": "Monthly reward",
-        "manual": "By hand"
-      },
-      "wizard": {
-        "newTitle": "New rule",
-        "editTitle": "Edit rule",
-        "close": "Close",
-        "steps": "Steps",
-        "step": {
-          "what": "For what",
-          "amount": "How much",
-          "limits": "Limits"
-        },
-        "group": {
-          "tasks": "Tasks and projects",
-          "sales": "Deals",
-          "calls": "Cold Calling",
-          "time": "Time"
-        },
-        "priceExplained": "You write the amount on each task (the Reward for completion field).",
-        "amountLabel": {
-          "item": "Amount ({currency})",
-          "hourly": "Amount per hour ({currency})",
-          "monthly": "Amount per month ({currency})"
-        },
-        "percentLabel": "Share in %",
-        "capLabel": "Monthly cap ({currency}, optional)",
-        "capHint": "No more than this comes from this rule in a calendar month.",
-        "minDealLabel": "Only deals from ({currency}, optional)",
-        "minDealHint": "Applies only to deals in the plan's currency.",
-        "onTimeLabel": "Only when the task is done on time",
-        "noLimits": "This rule has no limits.",
-        "saveFailed": "The rule could not be saved. Try again.",
-        "cancel": "Cancel",
-        "back": "Back",
-        "save": "Save",
-        "add": "Add rule",
-        "next": "Next"
+        "manual": "By hand",
+        "contact_move": "Contact moved",
+        "deal_event": "Deal moved",
+        "calendar_event": "Calendar meeting",
+        "activity": "Call",
+        "invoice": "Invoice",
+        "bonus": "Bonus"
       },
       "templates": {
         "title": "Reward plan template",
@@ -5969,6 +6006,153 @@
         "payouts": "Payout history",
         "export": "Export CSV",
         "exportFailed": "The export failed. Try again."
+      },
+      "needsReview": "Needs an edit: a table or stage this rule points at no longer exists.",
+      "bonusProgress": "Bonus: {done} of {goal} {noun}",
+      "bonusReached": "Bonus for {goal} reached this month",
+      "events": {
+        "contact_moved": "moves",
+        "meeting_booked": "meetings",
+        "meeting_held": "meetings",
+        "booking_received": "bookings",
+        "call_logged": "calls",
+        "contact_created": "contacts",
+        "deal_moved": "deal moves",
+        "deal_won": "won deals",
+        "deal_lost": "lost deals",
+        "task_done": "tasks",
+        "milestone_done": "projects",
+        "invoice_issued": "invoices",
+        "invoice_paid": "paid invoices",
+        "time_hour": "hours",
+        "time_month": "months"
+      },
+      "editor": {
+        "newTitle": "New rule",
+        "editTitle": "Edit rule",
+        "close": "Close",
+        "cancel": "Cancel",
+        "save": "Save",
+        "addRule": "Add rule",
+        "saveFailed": "The rule could not be saved. Try again.",
+        "overlap": "{count, plural, one {Another rule pays the same event} other {# other rules pay the same event}}. Should both pay, or only the higher one?",
+        "remove": "Remove",
+        "add": {
+          "value": "Value",
+          "tags": "Contact tag",
+          "window": "From–to"
+        },
+        "label": {
+          "who": "Who",
+          "from": "From",
+          "to": "Into",
+          "via": "Where the meeting comes from",
+          "taskKinds": "Kind of task",
+          "onTime": "When",
+          "require": "Which contact",
+          "once": "How often",
+          "undo": "When moved back",
+          "cap": "Monthly cap ({currency}, empty = no cap)",
+          "valueMin": "Value from ({currency})",
+          "valueMax": "Value up to ({currency})",
+          "tags": "Tags (separated by commas)",
+          "windowFrom": "Valid from",
+          "windowTo": "Valid until",
+          "reward": "Reward",
+          "amount": "Amount ({currency})",
+          "perHour": "Amount per hour ({currency})",
+          "percent": "Share in %",
+          "tierFrom": "From which in the month",
+          "bonusCount": "How many in a month",
+          "bonusAmount": "Extra bonus ({currency})"
+        },
+        "group": {
+          "coldCalling": "Cold Calling",
+          "meetings": "Meetings and scheduler",
+          "contacts": "Contacts",
+          "pipeline": "Pipeline",
+          "tasks": "Tasks and projects",
+          "invoices": "Invoices",
+          "time": "Time"
+        },
+        "event": {
+          "contact_moved": "Contact moved",
+          "meeting_booked": "Meeting booked",
+          "meeting_held": "Meeting held",
+          "booking_received": "Booking received",
+          "call_logged": "Call logged",
+          "contact_created": "New contact",
+          "deal_moved": "Deal moved",
+          "deal_won": "Deal won",
+          "deal_lost": "Deal lost",
+          "task_done": "Task completed",
+          "milestone_done": "Project completed",
+          "invoice_issued": "Invoice issued",
+          "invoice_paid": "Invoice paid",
+          "time_hour": "Hour worked",
+          "time_month": "Every month"
+        },
+        "fromMode": {
+          "any": "From anywhere",
+          "only": "Only from the chosen",
+          "except": "From anywhere except the chosen"
+        },
+        "toMode": {
+          "only": "Into the chosen",
+          "any": "Anywhere"
+        },
+        "rewardType": {
+          "fixed": "Fixed amount",
+          "percent": "Share of the value",
+          "unit": "Per hour",
+          "tiers": "Tiers by count",
+          "price": "Price on the task"
+        },
+        "priceHint": "You write the amount on each task (Reward for completing). Tasks without a price of their own are paid by the other rules.",
+        "tierAdd": "Add a tier",
+        "tierRemove": "Remove tier",
+        "tiersHint": "Counted in order within a calendar month; recounted once the month ends.",
+        "bonusHint": "Once a month, as soon as the count reaches it; an unpaid bonus goes when the count drops below.",
+        "valueHint": "Only a value in the plan's currency is compared."
+      },
+      "try": {
+        "button": "Try it",
+        "failed": "The try did not work. Try again.",
+        "nothing": "In the last 30 days the rule would have paid nothing.",
+        "total": "In the last 30 days it would have paid {amount} ({count, plural, one {# event} other {# events}}).",
+        "bonus": "Bonus",
+        "noName": "Untitled",
+        "hint": "On the worker's real data; nothing was saved or written."
+      },
+      "overlap": {
+        "label": "Two rules on the same event",
+        "sum": "Add up",
+        "max": "Only the highest",
+        "title": "These rules can pay the same event:"
+      },
+      "setup": {
+        "title": "Describe how you reward",
+        "label": "In your own words",
+        "hint": "Grady proposes rules from it. Nothing is saved until you confirm.",
+        "placeholder": "For example: 400 for every meeting booked, 1,000 extra when the meeting happens, and 3 % of the deal, at most 30,000 a month.",
+        "submit": "Propose rules",
+        "errors": {
+          "limitReached": "Grady's answers for this month are used up.",
+          "empty": "Grady could not build any rule from the description. Try saying it differently."
+        },
+        "op": {
+          "add": "New rule",
+          "update": "Changed rule",
+          "remove": "Remove rule"
+        },
+        "gone": "The rule is no longer in the plan.",
+        "answerFirst": "First pick an answer to the question above.",
+        "unsupported": "Rules cannot do this:",
+        "nearest": "nearest: {nearest}",
+        "tooMany": "A plan can have at most {max} rules.",
+        "saveFailed": "The rules could not be saved. Try again.",
+        "discard": "Discard",
+        "save": "{count, plural, one {Save # rule} other {Save # rules}}"
       }
     },
     "rewardPrice": {
@@ -7980,8 +8164,8 @@
             "why": "Long context and a structured analysis; never below Sonnet."
           },
           "reward_setup": {
-            "name": "Set up rewards with AI",
-            "does": "Turns the notes in the reward tree into rules and explains them.",
+            "name": "Set up rewards from a sentence",
+            "does": "Turns the owner's description into reward rules of a worker's plan (or changes to existing ones); nothing is saved without confirming.",
             "why": "Money rules for other people as JSON; never below Sonnet."
           },
           "email_reply": {

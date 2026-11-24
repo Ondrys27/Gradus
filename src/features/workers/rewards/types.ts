@@ -1,9 +1,19 @@
+import type { RuleDefinition } from "./definition";
+
 /**
- * Worker rewards (28.2): a plan of rules per person, rewards as entries the
- * database makes from events. Mirrors supabase/migrations/20261127090000_reward_plans.sql.
+ * Worker rewards (28.2, rules with any trigger since 29.1): a plan of rules
+ * per person, rewards as entries the database makes from events. Mirrors
+ * supabase/migrations/20261127090000_reward_plans.sql and
+ * 20261205090000_reward_event_rules.sql.
  */
 
-export const RULE_KINDS = [
+/**
+ * What an entry was paid by: a rule (every rule is an event rule since 29.1;
+ * entries of 28.2 whose rule is gone keep its old kind), a price on a task,
+ * deal or milestone, or by hand.
+ */
+export const ENTRY_RULE_KINDS = [
+  "event",
   "task_fixed",
   "task_default",
   "project_done",
@@ -14,11 +24,10 @@ export const RULE_KINDS = [
   "deal_fixed",
   "hourly",
   "monthly_fixed",
+  "price",
+  "manual",
 ] as const;
-export type RuleKind = (typeof RULE_KINDS)[number];
-
-/** What an entry was paid by: a rule kind, a price on a deal or milestone, or by hand. */
-export type EntryRuleKind = RuleKind | "price" | "manual";
+export type EntryRuleKind = (typeof ENTRY_RULE_KINDS)[number];
 
 export const ENTRY_STATUSES = ["planned", "pending", "approved", "rejected", "paid"] as const;
 export type EntryStatus = (typeof ENTRY_STATUSES)[number];
@@ -36,6 +45,12 @@ export const SOURCE_KINDS = [
   "work_session",
   "month",
   "manual",
+  "contact_move",
+  "deal_event",
+  "calendar_event",
+  "activity",
+  "invoice",
+  "bonus",
 ] as const;
 export type SourceKind = (typeof SOURCE_KINDS)[number];
 
@@ -44,17 +59,11 @@ export type PricedSource = "crm_task" | "worker_task" | "task" | "deal" | "miles
 
 export type Approval = "auto" | "manual";
 
-export type RuleFilter = { onTimeOnly?: boolean; minDealValue?: number };
-
 export type RewardRule = {
   id: string;
   plan_id: string;
   worker_id: string;
-  kind: RuleKind;
-  amount: number | null;
-  percent: number | null;
-  filter: RuleFilter;
-  cap_per_period: number | null;
+  definition: RuleDefinition;
   active: boolean;
   position: number;
 };
@@ -122,7 +131,6 @@ export const ENTRY_COLUMNS =
   "id, worker_id, source_kind, source_id, rule_id, rule_kind, amount, currency, status, occurred_at, approved_at, paid_at, payout_id, note, corrects_id" as const;
 export const PAYOUT_COLUMNS =
   "id, worker_id, period_from, period_to, total, currency, paid_at, note, entries" as const;
-export const RULE_COLUMNS =
-  "id, plan_id, worker_id, kind, amount, percent, filter, cap_per_period, active, position" as const;
+export const RULE_COLUMNS = "id, plan_id, worker_id, kind, definition, active, position" as const;
 export const PLAN_COLUMNS =
   "id, space_id, worker_id, name, approval, currency, active_from, active_to, notes" as const;

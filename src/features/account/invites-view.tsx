@@ -151,7 +151,12 @@ function InviteItem({
         <section aria-label={t("rewardsTitle")} className="flex flex-col gap-3">
           <h3 className="micro-label">{t("rewardsTitle")}</h3>
           {invite.rewards.slice(0, 8).map((rule, index) => (
-            <RuleSentence key={`${rule.kind}-${index}`} rule={rule} currency={rule.currency} />
+            <RuleSentence
+              key={`${rule.definition.event.key}-${index}`}
+              definition={rule.definition}
+              currency={rule.currency}
+              nameOf={(id) => rule.names[id] ?? null}
+            />
           ))}
         </section>
       )}

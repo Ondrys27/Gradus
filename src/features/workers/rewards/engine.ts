@@ -1,12 +1,9 @@
-import type { EntryRuleKind, EntryStatus, RewardPlan, RewardRule } from "./types";
+import type { EntryRuleKind, EntryStatus, RewardPlan } from "./types";
 
 /**
- * How an event turns into reward entries: the rules of the TypeScript side of
- * the engine the database runs (reward_task_wishes(), reward_sync_deal(),
- * reward_event(), reward_capped() and reward_reconcile() in
- * supabase/migrations/20261127090000_reward_plans.sql). The database is what
- * runs; these pure functions say the same thing in one readable place and
- * are tested with the same cases as src/lib/supabase/reward-plans-schema.test.ts.
+ * How the entries of one source follow its events: the TypeScript side of
+ * reward_reconcile() and reward_capped() in the migrations of 28.2 and 29.1.
+ * Which rules pay an event and how much is evaluate.ts (reward_wishes_for()).
  *
  * An event first becomes wishes (what the source should have: one per person
  * and rule), then reconcile() says what to do so the stored entries match:
@@ -47,161 +44,9 @@ export type ReconcileAction =
 
 export type ReconcileMode = "sync" | "add";
 
-type PlanWithRules = Pick<RewardPlan, "approval" | "currency"> & {
-  rules: Array<Pick<RewardRule, "id" | "kind" | "amount" | "percent" | "filter" | "cap_per_period" | "active" | "position">>;
-};
-
 /** The status of something done under this plan. */
 export function earnedStatus(plan: Pick<RewardPlan, "approval">): "pending" | "approved" {
   return plan.approval === "auto" ? "approved" : "pending";
-}
-
-function activeRules(plan: PlanWithRules, kind: RewardRule["kind"]) {
-  return plan.rules
-    .filter((rule) => rule.active && rule.kind === kind)
-    .sort((a, b) => a.position - b.position);
-}
-
-/**
- * A task of any kind for one person: its own price (planned while open, the
- * task_fixed rule's on-time filter and cap apply), else every task_default
- * rule once it is done.
- */
-export function taskWishes(input: {
-  plan: PlanWithRules | null;
-  workerId: string | null;
-  done: boolean;
-  at: string;
-  onTime: boolean;
-  price: number | null;
-  priceCurrency: string | null;
-}): Wish[] {
-  const { plan, workerId } = input;
-  if (!plan || !workerId) return [];
-  const status = input.done ? earnedStatus(plan) : "planned";
-  if (input.price !== null) {
-    const rule = activeRules(plan, "task_fixed")[0];
-    if (input.done && rule?.filter.onTimeOnly && !input.onTime) return [];
-    return [
-      {
-        workerId,
-        ruleKind: "task_fixed",
-        ruleId: rule?.id ?? null,
-        amount: input.price,
-        currency: input.priceCurrency ?? plan.currency,
-        status,
-        occurredAt: input.at,
-        cap: rule?.cap_per_period ?? null,
-      },
-    ];
-  }
-  if (!input.done) return [];
-  return activeRules(plan, "task_default")
-    .filter((rule) => !(rule.filter.onTimeOnly && !input.onTime))
-    .map((rule) => ({
-      workerId,
-      ruleKind: "task_default" as const,
-      ruleId: rule.id,
-      amount: rule.amount ?? 0,
-      currency: plan.currency,
-      status,
-      occurredAt: input.at,
-      cap: rule.cap_per_period,
-    }));
-}
-
-/** The share of a deal's value (without VAT), on haléře. */
-export function dealShare(value: number, percent: number): number {
-  return Math.round(value * percent) / 100;
-}
-
-/**
- * A deal for one person on it: its own price (planned while open), and once
- * won the deal_fixed and deal_percent rules. A minimum value is in the plan's
- * currency, so it only lets through a deal in that currency; a share is in
- * the deal's currency, its cap only counts in the plan's.
- */
-export function dealWishes(input: {
-  plan: PlanWithRules | null;
-  workerId: string;
-  state: "open" | "won" | "lost";
-  at: string;
-  value: number | null;
-  currency: string;
-  price: number | null;
-  priceCurrency: string | null;
-}): Wish[] {
-  const { plan } = input;
-  if (!plan || input.state === "lost") return [];
-  const status = input.state === "won" ? earnedStatus(plan) : "planned";
-  const wishes: Wish[] = [];
-  if (input.price !== null) {
-    wishes.push({
-      workerId: input.workerId,
-      ruleKind: "price",
-      ruleId: null,
-      amount: input.price,
-      currency: input.priceCurrency ?? input.currency,
-      status,
-      occurredAt: input.at,
-      cap: null,
-    });
-  }
-  if (input.state !== "won") return wishes;
-  const value = input.value ?? 0;
-  for (const rule of plan.rules
-    .filter((item) => item.active && (item.kind === "deal_fixed" || item.kind === "deal_percent"))
-    .sort((a, b) => a.position - b.position)) {
-    const min = rule.filter.minDealValue;
-    if (min !== undefined && (input.currency !== plan.currency || value < min)) continue;
-    if (rule.kind === "deal_fixed") {
-      wishes.push({
-        workerId: input.workerId,
-        ruleKind: "deal_fixed",
-        ruleId: rule.id,
-        amount: rule.amount ?? 0,
-        currency: plan.currency,
-        status,
-        occurredAt: input.at,
-        cap: rule.cap_per_period,
-      });
-    } else if (value > 0 && rule.percent !== null) {
-      wishes.push({
-        workerId: input.workerId,
-        ruleKind: "deal_percent",
-        ruleId: rule.id,
-        amount: dealShare(value, rule.percent),
-        currency: input.currency,
-        status,
-        occurredAt: input.at,
-        cap: input.currency === plan.currency ? rule.cap_per_period : null,
-      });
-    }
-  }
-  return wishes;
-}
-
-/** A call, a meeting, a contact or hours: every active rule of the kind, `units` times. */
-export function eventWishes(input: {
-  plan: PlanWithRules | null;
-  workerId: string;
-  kind: "per_call" | "per_meeting" | "per_contact" | "hourly";
-  at: string;
-  units?: number;
-}): Wish[] {
-  const { plan } = input;
-  if (!plan) return [];
-  const units = input.units ?? 1;
-  return activeRules(plan, input.kind).map((rule) => ({
-    workerId: input.workerId,
-    ruleKind: input.kind,
-    ruleId: rule.id,
-    amount: Math.round((rule.amount ?? 0) * units * 100) / 100,
-    currency: plan.currency,
-    status: earnedStatus(plan),
-    occurredAt: input.at,
-    cap: rule.cap_per_period,
-  }));
 }
 
 /** What is still under a monthly cap, given what the rule already paid this month. */

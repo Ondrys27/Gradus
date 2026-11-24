@@ -146,9 +146,13 @@ async function plan(
 }
 async function entries(worker: string, sourceId?: string): Promise<Entry[]> {
   return rows<Entry>(
-    `select source_kind, rule_kind, amount::text, currency, status, corrects_id is not null as corrects
-     from reward_entries where worker_id = $1 and ($2::uuid is null or source_id = $2::uuid)
-     order by created_at, amount`,
+    // An entry of a rule (29.1: every rule is an event rule) is labelled by its event.
+    `select e.source_kind,
+            case when e.rule_kind = 'event' then coalesce(r.definition -> 'event' ->> 'key', 'event') else e.rule_kind end as rule_kind,
+            e.amount::text, e.currency, e.status, e.corrects_id is not null as corrects
+     from reward_entries e left join reward_plan_rules r on r.id = e.rule_id
+     where e.worker_id = $1 and ($2::uuid is null or e.source_id = $2::uuid)
+     order by e.created_at, e.amount`,
     [worker, sourceId ?? null],
   );
 }
@@ -207,7 +211,10 @@ describe("who manages a plan", () => {
     // The worker reads their own plan and rules, changes nothing.
     await as(caller, async () => {
       expect(await rows(`select id from reward_plans`)).toEqual([{ id: callerPlan }]);
-      expect(await rows(`select kind from reward_plan_rules`)).toEqual([{ kind: "per_call" }]);
+      // An old kind written by a client becomes an event rule (29.1).
+      expect(await rows(`select kind, definition -> 'event' ->> 'key' as event from reward_plan_rules`)).toEqual([
+        { kind: "event", event: "contact.moved" },
+      ]);
       const changed = await db.query(`update reward_plans set approval = 'auto'`);
       expect(changed.affectedRows).toBe(0);
       await expect(
@@ -276,7 +283,7 @@ describe("prices on tasks", () => {
 
     await as(owner, () => db.query(`select reward_set_price('crm_task', $1, 500, 'CZK')`, [task]));
     expect(await entries(worker, task)).toEqual([
-      { source_kind: "crm_task", rule_kind: "task_fixed", amount: "500.00", currency: "CZK", status: "planned", corrects: false },
+      { source_kind: "crm_task", rule_kind: "task.done", amount: "500.00", currency: "CZK", status: "planned", corrects: false },
     ]);
 
     await as(account, () => db.query(`update crm_tasks set status = 'done' where id = $1`, [task]));
@@ -348,9 +355,9 @@ describe("prices on tasks", () => {
       `${a.status}${a.amount}`.localeCompare(`${b.status}${b.amount}`),
     );
     expect(sorted).toEqual([
-      { source_kind: "worker_task", rule_kind: "task_fixed", amount: "-2000.00", currency: "CZK", status: "approved", corrects: true },
-      { source_kind: "worker_task", rule_kind: "task_fixed", amount: "2000.00", currency: "CZK", status: "paid", corrects: false },
-      { source_kind: "worker_task", rule_kind: "task_fixed", amount: "2000.00", currency: "CZK", status: "planned", corrects: false },
+      { source_kind: "worker_task", rule_kind: "task.done", amount: "-2000.00", currency: "CZK", status: "approved", corrects: true },
+      { source_kind: "worker_task", rule_kind: "task.done", amount: "2000.00", currency: "CZK", status: "paid", corrects: false },
+      { source_kind: "worker_task", rule_kind: "task.done", amount: "2000.00", currency: "CZK", status: "planned", corrects: false },
     ]);
   });
 });
@@ -379,11 +386,11 @@ describe("deals, calls, meetings and hours", () => {
     await as(owner, () => db.query(`update deals set stage_id = $1 where id = $2`, [won, small.id]));
     const byDeal = async (id: string) =>
       (await entries(worker, id)).map((e) => `${e.rule_kind}:${e.amount}:${e.status}`).sort();
-    expect(await byDeal(big.id)).toEqual(["deal_fixed:500.00:pending", "deal_percent:2500.00:pending"]);
+    expect(await byDeal(big.id)).toEqual(["deal.won:2500.00:pending", "deal.won:500.00:pending"]);
     // 10 % of 20 000 is 2 000, only 500 is left under the 3 000 cap.
-    expect(await byDeal(second.id)).toEqual(["deal_fixed:500.00:pending", "deal_percent:500.00:pending"]);
+    expect(await byDeal(second.id)).toEqual(["deal.won:500.00:pending", "deal.won:500.00:pending"]);
     // Under the minimum: no share, the fixed amount yes.
-    expect(await byDeal(small.id)).toEqual(["deal_fixed:500.00:pending"]);
+    expect(await byDeal(small.id)).toEqual(["deal.won:500.00:pending"]);
 
     await as(owner, () => db.query(`update deals set stage_id = $1 where id = $2`, [lost, big.id]));
     expect(await byDeal(big.id)).toEqual([]);
@@ -420,10 +427,10 @@ describe("deals, calls, meetings and hours", () => {
     }
     const list = (await entries(worker)).map((e) => `${e.rule_kind}:${e.amount}:${e.status}`).sort();
     expect(list).toEqual([
-      "per_call:10.00:approved",
-      "per_call:10.00:approved",
-      "per_contact:100.00:approved",
-      "per_meeting:2000.00:approved",
+      "contact.moved:10.00:approved",
+      "contact.moved:10.00:approved",
+      "contact.moved:100.00:approved",
+      "meeting.booked:2000.00:approved",
     ]);
   });
 
@@ -440,7 +447,7 @@ describe("deals, calls, meetings and hours", () => {
     );
     await as(account, () => db.query(`select * from pause_work_session($1)`, [worker]));
     const [entry] = await entries(worker);
-    expect(entry?.rule_kind).toBe("hourly");
+    expect(entry?.rule_kind).toBe("time.hour");
     expect(Number(entry?.amount)).toBeGreaterThan(0);
   });
 });
@@ -514,7 +521,7 @@ describe("prices of deals, milestones and their tasks", () => {
     );
     expect(
       (await entries(worker, milestone)).map((e) => `${e.rule_kind}:${e.amount}:${e.status}`).sort(),
-    ).toEqual(["price:5000.00:pending", "project_done:10000.00:pending"]);
+    ).toEqual(["milestone.done:10000.00:pending", "price:5000.00:pending"]);
   });
 });
 
@@ -606,15 +613,47 @@ describe("the drawn rules become plans", () => {
       one<{ n: number }>(`select reward_convert_legacy_rules() as n`),
     );
     expect(skipped.n).toBe(1);
-    const converted = await rows<{ kind: string; amount: string | null; percent: string | null; filter: unknown; cap: string | null }>(
-      `select r.kind, r.amount::text, r.percent::text, r.filter, r.cap_per_period::text as cap
-       from reward_plan_rules r join reward_plans p on p.id = r.plan_id where p.worker_id = $1 order by r.kind desc`,
+    // The drawn rules become rules of 28.2, which 29.1 keeps as event rules.
+    const converted = await rows<{ kind: string; definition: unknown }>(
+      `select r.kind, r.definition
+       from reward_plan_rules r join reward_plans p on p.id = r.plan_id where p.worker_id = $1
+       order by r.definition -> 'event' ->> 'key' desc`,
       [worker],
     );
     expect(converted).toEqual([
-      { kind: "task_default", amount: "200.00", percent: null, filter: { onTimeOnly: true }, cap: "1000.00" },
-      { kind: "hourly", amount: "300.00", percent: null, filter: {}, cap: null },
-      { kind: "deal_percent", amount: null, percent: "5.00", filter: { minDealValue: 10000 }, cap: null },
+      {
+        kind: "event",
+        definition: {
+          event: { key: "time.hour" },
+          conditions: {},
+          reward: { type: "unit", amount: 300 },
+          limits: {},
+          stack: "sum",
+          undo: "keep",
+        },
+      },
+      {
+        kind: "event",
+        definition: {
+          event: { key: "task.done", onTime: true },
+          conditions: {},
+          reward: { type: "fixed", amount: 200 },
+          limits: { cap: 1000 },
+          stack: "sum",
+          undo: "keep",
+        },
+      },
+      {
+        kind: "event",
+        definition: {
+          event: { key: "deal.won" },
+          conditions: { value: { min: 10000 } },
+          reward: { type: "percent", percent: 5 },
+          limits: {},
+          stack: "sum",
+          undo: "keep",
+        },
+      },
     ]);
     const notes = await one<{ notes: string }>(`select notes from reward_plans where worker_id = $1`, [worker]);
     expect(notes.notes).toMatch(/Hodina/);

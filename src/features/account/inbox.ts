@@ -1,8 +1,8 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { RuleDefinition } from "@/features/workers/rewards/definition";
 import { parseRule } from "@/features/workers/rewards/rules";
-import type { SentenceRule } from "@/features/workers/rewards/rule-sentence";
 import { grantsFromRows, type GrantRow, type PermissionGrants } from "@/features/workers/permissions-catalog";
 import { leaveCompany, respondToInvite, type InviteErrorCode } from "@/features/workers/server/invites";
 import { createClient } from "@/lib/supabase/client";
@@ -29,7 +29,8 @@ export type PendingInvite = {
   jobTitle: string | null;
   grants: PermissionGrants;
   /** The rules of the plan the owner set for this person, in its currency. */
-  rewards: Array<SentenceRule & { currency: string }>;
+  /** The person's rules with the names of the tables and stages they point at (the invitee has no access to them yet). */
+  rewards: Array<{ definition: RuleDefinition; currency: string; names: Record<string, string> }>;
   expiresAt: string;
   createdAt: string;
 };
@@ -160,8 +161,9 @@ export function useInbox() {
               active: true,
               position: 0,
             });
+            const names = rule.names && typeof rule.names === "object" ? (rule.names as Record<string, string>) : {};
             return parsed && typeof rule.currency === "string"
-              ? [{ ...parsed, currency: rule.currency }]
+              ? [{ definition: parsed.definition, currency: rule.currency, names }]
               : [];
           }),
           expiresAt: row.expires_at,

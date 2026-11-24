@@ -1,25 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_FORMAT_SETTINGS } from "@/lib/format";
 import type { RateTable } from "@/lib/exchange-rates";
-import {
-  capped,
-  dealShare,
-  dealWishes,
-  eventWishes,
-  reconcile,
-  taskWishes,
-  type EngineEntry,
-  type Wish,
-} from "./engine";
-import {
-  defaultTaskPrice,
-  niceAmount,
-  normalizeRule,
-  planActiveOn,
-  ruleErrors,
-  sentenceOf,
-  templateRules,
-} from "./rules";
+import { newDefinition } from "./definition";
+import { capped, reconcile, type EngineEntry, type Wish } from "./engine";
+import { defaultTaskPrice, niceAmount, parseRule, planActiveOn, templateRules } from "./rules";
 import {
   payoutCheck,
   payoutGroups,
@@ -34,19 +18,8 @@ import type { RewardPlan, RewardRule, RewardTotals } from "./types";
 
 const AT = "2026-11-20T10:00:00.000Z";
 
-function rule(partial: Partial<RewardRule> & Pick<RewardRule, "kind">): RewardRule {
-  return {
-    id: partial.id ?? `r-${partial.kind}`,
-    plan_id: "p",
-    worker_id: "w",
-    amount: null,
-    percent: null,
-    filter: {},
-    cap_per_period: null,
-    active: true,
-    position: 0,
-    ...partial,
-  };
+function rule(partial: Partial<RewardRule> & Pick<RewardRule, "definition">): RewardRule {
+  return { id: "r", plan_id: "p", worker_id: "w", active: true, position: 0, ...partial };
 }
 
 function plan(rules: RewardRule[], approval: "auto" | "manual" = "manual"): RewardPlan {
@@ -75,86 +48,7 @@ function entry(partial: Partial<EngineEntry> & Pick<EngineEntry, "status">): Eng
   };
 }
 
-describe("taskWishes", () => {
-  const priced = { workerId: "w", at: AT, onTime: true, price: 500, priceCurrency: "CZK" };
-
-  it("a priced task is planned while open and pending once done", () => {
-    const p = plan([]);
-    expect(taskWishes({ ...priced, plan: p, done: false })[0]).toMatchObject({
-      ruleKind: "task_fixed",
-      amount: 500,
-      status: "planned",
-    });
-    expect(taskWishes({ ...priced, plan: p, done: true })[0]?.status).toBe("pending");
-    expect(taskWishes({ ...priced, plan: plan([], "auto"), done: true })[0]?.status).toBe("approved");
-  });
-
-  it("the task_fixed rule's on-time filter and cap travel with the price", () => {
-    const p = plan([rule({ kind: "task_fixed", filter: { onTimeOnly: true }, cap_per_period: 3000 })]);
-    expect(taskWishes({ ...priced, plan: p, done: true, onTime: false })).toEqual([]);
-    expect(taskWishes({ ...priced, plan: p, done: true })[0]).toMatchObject({
-      ruleId: "r-task_fixed",
-      cap: 3000,
-    });
-  });
-
-  it("without a price, every task_default rule once done, the on-time one only in time", () => {
-    const p = plan([
-      rule({ id: "a", kind: "task_default", amount: 100 }),
-      rule({ id: "b", kind: "task_default", amount: 50, filter: { onTimeOnly: true }, position: 1 }),
-    ]);
-    const base = { plan: p, workerId: "w", at: AT, price: null, priceCurrency: null };
-    expect(taskWishes({ ...base, done: false, onTime: true })).toEqual([]);
-    expect(taskWishes({ ...base, done: true, onTime: true }).map((w) => w.amount)).toEqual([100, 50]);
-    expect(taskWishes({ ...base, done: true, onTime: false }).map((w) => w.amount)).toEqual([100]);
-  });
-
-  it("nothing without a plan or a person", () => {
-    expect(taskWishes({ ...priced, plan: null, done: true })).toEqual([]);
-    expect(taskWishes({ ...priced, plan: plan([]), workerId: null, done: true })).toEqual([]);
-  });
-});
-
-describe("dealWishes", () => {
-  const p = plan([
-    rule({ id: "pct", kind: "deal_percent", percent: 5, cap_per_period: 30000, filter: { minDealValue: 10000 } }),
-    rule({ id: "fix", kind: "deal_fixed", amount: 1000, position: 1 }),
-  ]);
-  const base = { plan: p, workerId: "w", at: AT, price: null, priceCurrency: null };
-
-  it("a share and a fixed amount of a won deal, from the value without VAT", () => {
-    const wishes = dealWishes({ ...base, state: "won", value: 200000, currency: "CZK" });
-    expect(wishes.map((w) => [w.ruleKind, w.amount, w.cap])).toEqual([
-      ["deal_percent", 10000, 30000],
-      ["deal_fixed", 1000, null],
-    ]);
-  });
-
-  it("the minimum value lets through only a deal in the plan's currency", () => {
-    expect(dealWishes({ ...base, state: "won", value: 5000, currency: "CZK" }).map((w) => w.ruleKind)).toEqual(["deal_fixed"]);
-    expect(dealWishes({ ...base, state: "won", value: 50000, currency: "EUR" }).map((w) => w.ruleKind)).toEqual(["deal_fixed"]);
-  });
-
-  it("an open deal promises its own price; a lost one nothing", () => {
-    expect(dealWishes({ ...base, state: "open", value: 1, currency: "CZK", price: 2000, priceCurrency: "CZK" })).toMatchObject([
-      { ruleKind: "price", amount: 2000, status: "planned" },
-    ]);
-    expect(dealWishes({ ...base, state: "lost", value: 1, currency: "CZK", price: 2000, priceCurrency: "CZK" })).toEqual([]);
-  });
-
-  it("dealShare rounds to haléře", () => {
-    expect(dealShare(12345.67, 7.5)).toBe(925.93);
-  });
-});
-
-describe("eventWishes and caps", () => {
-  it("hours pay the rate times the hours", () => {
-    const p = plan([rule({ kind: "hourly", amount: 300 })], "auto");
-    expect(eventWishes({ plan: p, workerId: "w", kind: "hourly", at: AT, units: 1.5 })).toMatchObject([
-      { amount: 450, status: "approved" },
-    ]);
-  });
-
+describe("caps", () => {
   it("the monthly cap clips the last reward and stops the next", () => {
     expect(capped(2000, 3000, 2500)).toBe(500);
     expect(capped(2000, 3000, 3000)).toBe(0);
@@ -224,69 +118,62 @@ describe("reconcile", () => {
 });
 
 describe("rules", () => {
-  it("keeps only what the kind uses", () => {
+  it("reads a stored event rule, and a rule of 28.2 as the event it became", () => {
+    const definition = newDefinition("deal.won", 500);
+    expect(parseRule({ id: "r", plan_id: "p", worker_id: "w", kind: "event", definition, active: true, position: 1 }))
+      .toEqual({ id: "r", plan_id: "p", worker_id: "w", definition, active: true, position: 1 });
     expect(
-      normalizeRule({
-        kind: "task_fixed",
-        amount: 100,
-        percent: 5,
-        filter: { onTimeOnly: true, minDealValue: 10 },
-        cap_per_period: 1000,
-      }),
-    ).toEqual({ kind: "task_fixed", amount: null, percent: null, filter: { onTimeOnly: true }, cap_per_period: 1000 });
-    expect(
-      normalizeRule({ kind: "monthly_fixed", amount: 15000.555, percent: null, filter: {}, cap_per_period: 5 }),
-    ).toEqual({ kind: "monthly_fixed", amount: 15000.56, percent: null, filter: {}, cap_per_period: null });
+      parseRule({ id: "r", plan_id: "p", worker_id: "w", kind: "hourly", amount: "300", percent: null, filter: {}, cap_per_period: null, active: true, position: 0 })
+        ?.definition,
+    ).toMatchObject({ event: { key: "time.hour" }, reward: { type: "unit", amount: 300 } });
+    expect(parseRule({ id: "r", plan_id: "p", worker_id: "w", kind: "event", definition: { nope: 1 }, active: true, position: 0 })).toBeNull();
   });
 
-  it("checks amounts, shares and caps like the database", () => {
-    const base = { percent: null, filter: {}, cap_per_period: null };
-    expect(ruleErrors({ ...base, kind: "per_call", amount: 0 })).toEqual({ amount: "amountInvalid" });
-    expect(ruleErrors({ ...base, kind: "deal_percent", amount: null, percent: 101 })).toEqual({
-      percent: "percentInvalid",
-    });
-    expect(ruleErrors({ ...base, kind: "per_call", amount: 10, cap_per_period: -1 })).toEqual({
-      cap_per_period: "capInvalid",
-    });
-    expect(ruleErrors({ ...base, kind: "task_fixed", amount: null })).toEqual({});
-  });
-
-  it("reads as a sentence with its limits", () => {
-    expect(
-      sentenceOf(rule({ kind: "deal_percent", percent: 5, cap_per_period: 30000, filter: { minDealValue: 10000 } })),
-    ).toEqual({
-      key: "deal_percent",
-      amount: null,
-      percent: 5,
-      limits: [
-        { key: "minDealValue", value: 10000 },
-        { key: "cap", value: 30000 },
-      ],
-    });
-  });
-
-  it("a plan holds between its dates; the default price is the first task_default", () => {
-    const p = { ...plan([rule({ kind: "task_default", amount: 300 })]), active_from: "2026-11-01", active_to: "2026-11-30" };
+  it("a plan holds between its dates; the default price is the first fixed amount for any task", () => {
+    const byKind = { ...newDefinition("task.done", 50), event: { key: "task.done" as const, taskKinds: ["crm_task" as const] } };
+    const p = {
+      ...plan([rule({ id: "a", definition: byKind }), rule({ id: "b", definition: newDefinition("task.done", 300) })]),
+      active_from: "2026-11-01",
+      active_to: "2026-11-30",
+    };
     expect(planActiveOn(p, "2026-11-15")).toBe(true);
     expect(planActiveOn(p, "2026-12-01")).toBe(false);
     expect(defaultTaskPrice(p)).toBe(300);
     expect(defaultTaskPrice(null)).toBeNull();
   });
 
-  it("templates suggest nice amounts in the plan's currency, empty without a rate", () => {
+  it("templates suggest nice amounts in the plan's currency; the cold caller pays any move into the meeting table once", () => {
     const now = new Date("2026-11-20T10:00:00Z");
     const rates: RateTable = {
       EUR: { rate: 1, at: "2026-11-20", source: "ecb" },
       CZK: { rate: 25.1, at: "2026-11-20", source: "ecb" },
     };
-    const czk = templateRules("coldCaller", "CZK", rates, now);
-    expect(czk.map((r) => [r.kind, r.amount, r.cap_per_period])).toEqual([
-      ["per_call", 13, 5000],
-      ["per_contact", 50, null],
-      ["per_meeting", 500, null],
-    ]);
-    expect(templateRules("salesCommission", "PLN", rates, now)[1]).toMatchObject({ percent: 5, cap_per_period: null });
-    expect(templateRules("developer", "PLN", rates, now)[1]?.amount).toBeNull();
+    const refs = {
+      tables: [
+        { id: "00000000-0000-4000-8000-000000000001", name: "Neoslovení", system_key: "unreached" },
+        { id: "00000000-0000-4000-8000-000000000002", name: "Nezvedají", system_key: "no_answer" },
+        { id: "00000000-0000-4000-8000-000000000003", name: "Domluvená schůzka", system_key: "meeting_scheduled" },
+      ],
+      stages: [],
+    };
+    const [call, meeting] = templateRules("coldCaller", "CZK", rates, refs, now);
+    expect(call).toMatchObject({
+      event: { key: "contact.moved", from: { mode: "only", ids: [refs.tables[0]!.id, refs.tables[1]!.id] }, to: { mode: "any" } },
+      conditions: { once: false },
+      reward: { type: "fixed", amount: 13 },
+      limits: { cap: 5000 },
+    });
+    expect(meeting).toMatchObject({
+      event: { key: "contact.moved", from: { mode: "any" }, to: { mode: "only", ids: [refs.tables[2]!.id] } },
+      conditions: { once: true },
+      reward: { type: "fixed", amount: 500 },
+      undo: "cancel",
+    });
+    expect(templateRules("salesCommission", "PLN", rates, refs, now)[1]).toMatchObject({
+      reward: { type: "percent", percent: 5 },
+      limits: {},
+    });
+    expect(templateRules("developer", "PLN", rates, refs, now)[0]?.reward).toEqual({ type: "price" });
     expect(niceAmount(2481)).toBe(2500);
     expect(niceAmount(0.48)).toBe(0.48);
   });
