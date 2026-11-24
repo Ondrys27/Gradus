@@ -2822,42 +2822,6 @@ export type Database = {
         }
         Relationships: []
       }
-      grady_batches: {
-        Row: {
-          batch_id: string
-          collected_at: string | null
-          created_at: string
-          id: string
-          items: Json
-          kind: string
-          model: string
-          status: string
-          summary: Json | null
-        }
-        Insert: {
-          batch_id: string
-          collected_at?: string | null
-          created_at?: string
-          id?: string
-          items?: Json
-          kind: string
-          model: string
-          status?: string
-          summary?: Json | null
-        }
-        Update: {
-          batch_id?: string
-          collected_at?: string | null
-          created_at?: string
-          id?: string
-          items?: Json
-          kind?: string
-          model?: string
-          status?: string
-          summary?: Json | null
-        }
-        Relationships: []
-      }
       grady_actions: {
         Row: {
           conversation_id: string | null
@@ -2916,6 +2880,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      grady_batches: {
+        Row: {
+          batch_id: string
+          collected_at: string | null
+          created_at: string
+          id: string
+          items: Json
+          kind: string
+          model: string
+          status: string
+          summary: Json | null
+        }
+        Insert: {
+          batch_id: string
+          collected_at?: string | null
+          created_at?: string
+          id?: string
+          items?: Json
+          kind: string
+          model: string
+          status?: string
+          summary?: Json | null
+        }
+        Update: {
+          batch_id?: string
+          collected_at?: string | null
+          created_at?: string
+          id?: string
+          items?: Json
+          kind?: string
+          model?: string
+          status?: string
+          summary?: Json | null
+        }
+        Relationships: []
       }
       invoice_counters: {
         Row: {
