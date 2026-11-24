@@ -421,6 +421,7 @@ Registrace jen s pozvánkovým kódem. **První účet = owner.** Potvrzování 
 - Hlášení od testerů jsou v `bug_reports`; oprava hlášení = stav Opraveno v administraci.
 - **Produkce běží.** Aplikace je na Vercelu (Hobby) a každý push na main se hned nasadí k testerům. Pushuj jen s procházejícím `bun run lint`, `bun run test` a `bun run build`.
 - **Databáze je jedna pro vývoj i produkci.** Migrace jen přidávací: nové tabulky, nové sloupce s výchozí hodnotou nebo povolené null. Nic nemazat, nepřejmenovávat ani neměnit typ bez samostatného plánu přechodu. Testovací data jen pod účty @gradus.local.
+- **Migrace, kterou noční běh spustí sám** (`scripts/noc-migrace.py check`): výměna funkce nebo pohledu projde (`drop function` / `drop view` bez `cascade`, když tentýž soubor stejný objekt potom znovu vytvoří), stejně jako `drop policy`, `drop trigger` a `drop constraint` s novou definicí. Zastaví se na `delete from` mimo tělo funkce, `drop table` / `column`, `cascade`, `rename`, změně typu a `truncate`. Jednorázový úklid starých dat do migrace nedávej: když nová pravidla fungují i bez něj, vynech ho a napiš to do souhrnu; když bez něj nefungují, dej ho do samostatné migrace, ať se zbytek spustí sám.
 - **Plánované úlohy max 1× denně** (Vercel Hobby), viz Cron úlohy.
 
 ## Do prosince nepatří
