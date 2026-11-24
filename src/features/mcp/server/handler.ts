@@ -1,6 +1,8 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { flushUserQuietly } from "@/features/calendar/sync/server/sync";
+import { runInBackground } from "@/features/errors/alerts/server/background";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { toSpaces } from "@/features/account/spaces";
@@ -211,6 +213,8 @@ async function callCatalogTool(
       });
       if (error) console.error("mcp: award failed", award.reason, error.message);
     }
+    // An event changed through MCP reaches the person's Google or Apple calendar (28.10).
+    if (tool.kind === "write") runInBackground("calendar-sync", () => flushUserQuietly(admin, grant.user_id));
     const summary =
       tool.kind === "write" ? (outcome.summary ?? tool.describe(parsed.data, env.ctx.t)) : null;
     await recordCall(admin, grant, { tool: name, level: toolLevelOf, ok: true, summary });

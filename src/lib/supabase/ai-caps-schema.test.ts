@@ -145,7 +145,7 @@ describe("admin_set_app_setting", () => {
     await asUser(owner, "aal1");
     await expect(setCaps(CAPS)).rejects.toThrow(/admin_required/);
     await asServer();
-    expect((await one<{ n: number }>(`select count(*)::int as n from app_settings`)).n).toBe(0);
+    expect((await one<{ n: number }>(`select count(*)::int as n from app_settings where key = 'ai_caps'`)).n).toBe(0);
   });
 
   it("saves for the owner with aal2 and audits who, from what and to what", async () => {

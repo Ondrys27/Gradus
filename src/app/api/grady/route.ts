@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
+import { flushUserQuietly } from "@/features/calendar/sync/server/sync";
 import { adminAccessFor, adminNotFound } from "@/features/admin/server/guard";
 import { toModelMessages, type StoredMessage } from "@/features/grady/history";
 import { costUsd, EMPTY_USAGE, modelFor, type GradyFeature } from "@/features/grady/models";
@@ -353,6 +354,8 @@ function batches(request: Request) {
 export const POST = instrumentRoute("api.jarvis.post", async (request: Request) => {
   const ctx = await context();
   if (!ctx) return unauthorized();
+  // An event Grady made or changed reaches the person's Google or Apple calendar (28.10).
+  after(() => flushUserQuietly(ctx.admin, ctx.userId));
   const body: unknown = await request.json().catch(() => null);
   const kind = (body as { kind?: unknown } | null)?.kind;
   // The showcase's stage (27.4) has prepared chat answers only; nothing else may reach a model.

@@ -71,9 +71,10 @@ export type BookingRow = Pick<
   | "survey_dismissed_at"
   | "meeting_link"
   | "video_room"
+  | "google_meet_link"
 >;
 export const BOOKING_COLUMNS =
-  "id, event_type_id, host_user_id, space_id, starts_at, ends_at, guest_name, guest_email, guest_phone, guest_company, guest_time_zone, status, hold_expires_at, contact_id, cancelled_by, cancel_reason, created_at, answers, deal_id, calendar_event_id, locale, confirmed_at, rescheduled_at, no_show_at, survey_dismissed_at, meeting_link, video_room";
+  "id, event_type_id, host_user_id, space_id, starts_at, ends_at, guest_name, guest_email, guest_phone, guest_company, guest_time_zone, status, hold_expires_at, contact_id, cancelled_by, cancel_reason, created_at, answers, deal_id, calendar_event_id, locale, confirmed_at, rescheduled_at, no_show_at, survey_dismissed_at, meeting_link, video_room, google_meet_link";
 
 export type CalendarSubscription = Pick<
   Tables["calendar_subscriptions"]["Row"],

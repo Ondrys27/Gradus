@@ -11,20 +11,26 @@ import type { LocationKind } from "../types";
  *   1. the host's own link for this one meeting (`bookings.meeting_link`),
  *   2. the booking's own room on Jitsi Meet when its type asks for one
  *      (`event_types.video_source = 'jitsi'`, `bookings.video_room`),
- *   3. the permanent link of the host's booking page (`scheduler_profiles.video_link`),
- *   4. none: "the host sends the link before the meeting" (and a task for them).
+ *   3. the Google Meet call Google made for it when the type asks for one
+ *      (`event_types.video_source = 'google_meet'`, `bookings.google_meet_link`,
+ *      written when the meeting reaches the host's Google calendar, 28.10),
+ *   4. the permanent link of the host's booking page (`scheduler_profiles.video_link`),
+ *   5. none: "the host sends the link before the meeting" (and a task for them).
  */
 
-export const VIDEO_SOURCES = ["profile", "jitsi"] as const;
+export const VIDEO_SOURCES = ["profile", "jitsi", "google_meet"] as const;
 export type VideoSource = (typeof VIDEO_SOURCES)[number];
 
 export const JITSI_ORIGIN = "https://meet.jit.si";
 /** What the database makes (`scheduler_new_room()`): 12 of 32 letters, no l, o, 0, 1. */
 export const JITSI_ROOM = /^gradus-[a-km-np-z2-9]{12}$/;
 
-export const MEETING_LINK_SOURCES = ["own", "room", "profile", "none"] as const;
+export const MEETING_LINK_SOURCES = ["own", "room", "meet", "profile", "none"] as const;
 export type MeetingLinkSource = (typeof MEETING_LINK_SOURCES)[number];
 export type MeetingLink = { source: MeetingLinkSource; url: string | null };
+
+/** What Google makes for a Meet call; the same rule as `bookings.google_meet_link`. */
+export const GOOGLE_MEET = /^https:\/\/meet\.google\.com\/[A-Za-z0-9/_-]+$/;
 
 /** The same rule as `scheduler_profiles.video_link` and `bookings.meeting_link`. */
 export const MEETING_LINK_MAX = 500;
@@ -54,6 +60,8 @@ export function meetingLinkOf(input: {
   /** The host's own link of this meeting. */
   own: string | null | undefined;
   room: string | null | undefined;
+  /** The Meet call Google made for this meeting (a type with `google_meet`). */
+  meet?: string | null;
   profileLink: string | null | undefined;
 }): MeetingLink | null {
   if ((input.locationKind ?? "video") !== "video") return null;
@@ -63,6 +71,10 @@ export function meetingLinkOf(input: {
     const room = jitsiUrl(input.room);
     if (room) return { source: "room", url: room };
   }
+  if (input.videoSource === "google_meet") {
+    const meet = input.meet?.trim();
+    if (meet && GOOGLE_MEET.test(meet)) return { source: "meet", url: meet };
+  }
   const profile = input.profileLink?.trim();
   if (profile && !meetingLinkProblem(profile)) return { source: "profile", url: profile };
   return { source: "none", url: null };
@@ -70,19 +82,20 @@ export function meetingLinkOf(input: {
 
 /**
  * A video type that would book meetings without any link: the type uses the
- * permanent link and the booking page has none. The editor warns, the
- * booking says the host sends it and the host gets a task.
+ * permanent link and the booking page has none (or asks for Google Meet
+ * without a Google calendar to write to). The editor warns, the booking says
+ * the host sends it and the host gets a task.
  */
 export function typeLacksLink(type: {
   location_kind: string;
   video_source: string | null | undefined;
   profileLink: string | null | undefined;
+  /** The host writes to a Google calendar, so Google can make the Meet call. */
+  googleReady?: boolean;
 }): boolean {
-  return (
-    type.location_kind === "video" &&
-    type.video_source !== "jitsi" &&
-    !(type.profileLink?.trim() && !meetingLinkProblem(type.profileLink))
-  );
+  if (type.location_kind !== "video" || type.video_source === "jitsi") return false;
+  if (type.video_source === "google_meet" && type.googleReady) return false;
+  return !(type.profileLink?.trim() && !meetingLinkProblem(type.profileLink));
 }
 
 /** "Join" lights up this long before the start. */

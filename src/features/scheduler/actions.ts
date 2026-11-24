@@ -10,6 +10,7 @@ import { siteOrigin } from "@/lib/site-origin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { Json } from "@/types/database";
+import { reportMissingConfiguration } from "@/features/calendar/sync/server/connections";
 import { calendarProvider } from "./analytics";
 import { clientInsert } from "./client-insert";
 import { handleCandidates, handleFromName, handleFromUsername, uniqueSlug } from "./handle";
@@ -269,7 +270,7 @@ export async function addCalendarSubscription(input: {
     const parsed = subscriptionInput.safeParse(input);
     if (!parsed.success) return { ok: false, error: "invalid" };
     if (!hasEncryptionKey()) {
-      console.error("scheduler: INTEGRATIONS_ENCRYPTION_KEY is not set");
+      reportMissingConfiguration("key", { userId: ctx.userId, action: "scheduler.subscriptionAdd" });
       return { ok: false, error: "notConfigured" };
     }
     const normalized = normalizeIcsUrl(parsed.data.url);
@@ -348,7 +349,10 @@ export async function refreshCalendarSubscription(
     if (own.last_fetched_at && Date.now() - Date.parse(own.last_fetched_at) < 60_000) {
       return { ok: false, error: "tooSoon" };
     }
-    if (!hasEncryptionKey()) return { ok: false, error: "notConfigured" };
+    if (!hasEncryptionKey()) {
+      reportMissingConfiguration("key", { userId: ctx.userId, action: "scheduler.subscriptionRefresh" });
+      return { ok: false, error: "notConfigured" };
+    }
     const admin = createAdminClient();
     const { data: secret, error } = await admin
       .from("calendar_subscriptions")

@@ -25,6 +25,7 @@ Sloupce: **M** = majitel · **P** = plný administrátor · **O** = omezený adm
 | `grady-rules-actions.saveGradyRules` | ✓ | ✓ | čte | pravidla Gradyho |
 | `grady-models-actions.saveGradyModels` | ✓ | ✓ | čte | `editGradyModels`: model každé funkce, přednastavení, úsporný režim ručně, velké rozbory v chatu; DB ověří znovu (`admin_set_app_setting` `grady_models`), audit `settings.grady_models` z → na |
 | `showcase-actions.saveShowcaseMode` | ✓ | ✓ | čte | `editShowcase`: ukázkový režim zapnout / vypnout; DB ověří znovu (`admin_set_app_setting` `showcase_mode`, `valid_showcase_mode`), audit `settings.showcase_mode` z → na |
+| `calendar-sync-actions.*` | ✓ | ✓ | čte | `editCalendarSync`: kdo smí propojit Google a Apple kalendář (režim, datum, ručně přidané účty); DB ověří znovu (`admin_set_app_setting` `calendar_sync`, `valid_calendar_sync`), audit `settings.calendar_sync` |
 | `POST /api/grady` `kind: rulesTest` a `kind: ping` | ✓ | ✓ | – | `testGrady`, jedno placené volání modelu; ostatním 404 |
 | `POST /api/grady` `kind: modelCompare` (AI a Grady → Modely → Porovnat modely, 28.9) | ✓ | ✓ | – | `compareModels`: jeden vzorek jedné funkce na jednom modelu a krátké hodnocení (dvě placená volání, `model_compare` a `compare_judge`, z rozpočtu aplikace, ne z odpovědí tarifu); funkce, vzorek a model jen ze seznamů v kódu; každý běh do `admin_audit` (`ai.models.compare`); ostatním 404 |
 | `plans-actions.savePlanDraft`, `discardPlanDraft`, `planCatalogImpact` | ✓ | ✓ | čte | koncept katalogu tarifů |
@@ -71,6 +72,7 @@ Sloupce: **M** = majitel · **P** = plný administrátor · **O** = omezený adm
 | Administrátoři (`/admin/administratori`) | ✓ | – | – | plnému i omezenému 404, v menu chybí |
 | Modely AI (27.3), Jazyky | ✓ | ✓ | čte / – | až vzniknou: zápis přes `admin_require_owner()` a `adminCan` jako ostatní nastavení |
 | Ukázkový režim (`/admin/ukazka`, 27.4) | ✓ | ✓ | čte | přepínač `app_settings.showcase_mode` mění M a P (`editShowcase`, `admin_set_app_setting` s aal2), omezený vidí stav; se zapnutým režimem mají ukázku v aplikaci (`/app/ukazka`, karta v tutoriálu) majitel i admin obou úrovní |
+| Integrace (`/admin/integrace`, 28.10) | ✓ | ✓ | čte | `app_settings.calendar_sync` mění M a P (`editCalendarSync`, `admin_set_app_setting` s aal2), omezený vidí stav bez ovládání; Zdraví má kartu Proměnné prostředí (jen jestli jsou nastavené, nikdy hodnoty) |
 | Koš Gradyho a připojených aplikací (AI a Grady → Pravidla, 28.8) | ✓ | ✓ | čte | `app_settings.trash_retention` (1–90 dní, výchozí 7) mění M a P (`editGradyRules`, `admin_set_app_setting` s aal2), omezený vidí hodnotu |
 | `/admin/prihlaseni`, `/admin/pozvanka/<token>` | kdokoli | | | stránka sama ověřuje heslo, roli nebo token |
 
@@ -82,7 +84,7 @@ Sloupce: **M** = majitel · **P** = plný administrátor · **O** = omezený adm
 | `admin_session_end` | ✓ | ✓ | ✓ | jen vlastní relace |
 | `admin_require_owner` | | | | jen uvnitř funkcí: propustí M a P s živou relací a aal2; bez práva EXECUTE pro klienty |
 | `admin_require_sole_owner` | | | | jen uvnitř funkcí sekce Administrátoři: jen M; bez EXECUTE pro klienty |
-| `admin_set_app_setting` | ✓ | ✓ | – | `admin_require_owner()`; klíče `ai_caps`, `error_alerts` (audit bez adres), `jarvis_rules`, `grady_models`, `showcase_mode` |
+| `admin_set_app_setting` | ✓ | ✓ | – | `admin_require_owner()`; klíče `ai_caps`, `error_alerts` (audit bez adres), `jarvis_rules`, `grady_models`, `showcase_mode`, `calendar_sync` |
 | `admin_set_ai_user_cap` | ✓ | ✓ | – | totéž |
 | `admin_invite_create` (`_level` full / limited, výchozí limited) | ✓ | – | – | ukládá jen SHA-256 tokenu, audit `admins.invite` s úrovní |
 | `admin_invite_revoke` | ✓ | – | – | audit |

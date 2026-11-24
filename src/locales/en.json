@@ -1589,7 +1589,7 @@
       "soundHint": "A short tone when a message arrives outside the open conversation. Only with sounds on in Appearance."
     },
     "calendar": {
-      "subscriptionsTitle": "Subscribed calendars",
+      "subscriptionsTitle": "Subscribe by link",
       "subscriptionsHint": "Paste the secret iCal address of another calendar. Its busy times are never offered on your booking page and show in grey in your calendar. Only the busy times are kept, never what the events are.",
       "loadFailed": "Calendars could not be loaded. Try again in a moment.",
       "none": "No calendar yet.",
@@ -1624,9 +1624,9 @@
         "http": "The calendar refused the download. Check that the address is still valid.",
         "notCalendar": "The address answers, but not with a calendar (iCal).",
         "network": "The calendar could not be downloaded. Try again later.",
-        "key": "Calendars are not set up on this server yet.",
+        "key": "Calendar connections aren't available right now. Try again later.",
         "store": "The busy times could not be saved. Try again.",
-        "notConfigured": "Calendars are not set up on this server yet.",
+        "notConfigured": "Calendar connections aren't available right now. Try again later.",
         "tooMany": "You already have the most calendars there can be.",
         "tooSoon": "Refreshed a moment ago. Try again in a minute.",
         "notFound": "This calendar is gone.",
@@ -1680,6 +1680,84 @@
         "cancel": "Cancel",
         "close": "Close",
         "howTo": "Google Calendar: Other calendars → + → From URL. Apple: File → New Calendar Subscription. Outlook: Add calendar → Subscribe from web."
+      },
+      "sync": {
+        "loadFailed": "Calendar connections couldn't be loaded. Try again in a moment.",
+        "preparing": "Connecting your Google Calendar is coming soon.",
+        "unavailable": "Calendar connections aren't available right now. Try again later.",
+        "google": {
+          "title": "Google Calendar",
+          "name": "Google",
+          "description": "Both ways: events from the calendars you choose show up in your calendar and nobody can book over them. What you create or change here is written to Google right away.",
+          "connect": "Connect Google",
+          "reconnect": "Connect again"
+        },
+        "apple": {
+          "title": "Apple Calendar (iCloud)",
+          "name": "Apple",
+          "description": "Both ways like Google, with an app-specific password of your Apple ID.",
+          "step1": "Sign in at",
+          "step2": "Under Sign-In and Security open App-Specific Passwords and create a new one, for example “Calendar”.",
+          "step3": "Enter your Apple ID and the new app-specific password here. Never enter your main Apple ID password.",
+          "id": "Apple ID",
+          "password": "App-specific password",
+          "passwordHint": "Stored encrypted. You can revoke it any time at appleid.apple.com.",
+          "showPassword": "Show password",
+          "hidePassword": "Hide password",
+          "idRequired": "Enter your Apple ID.",
+          "passwordRequired": "Enter the app-specific password.",
+          "connect": "Connect Apple",
+          "reconnect": "Connect again",
+          "connecting": "Checking…",
+          "connected": "Apple Calendar is connected."
+        },
+        "state": {
+          "connected": "Connected",
+          "broken": "Needs connecting again"
+        },
+        "lastSync": "Synced {when} ({at})",
+        "neverSynced": "Not synced yet",
+        "syncNow": "Sync now",
+        "synced": "Done, the calendar is up to date.",
+        "disconnect": "Disconnect",
+        "disconnectTitle": "Disconnect {provider}?",
+        "disconnectText": "We delete the access and the events from this calendar disappear from your calendar here. Events you created here stay. Nothing is deleted in the other calendar.",
+        "cancel": "Cancel",
+        "close": "Close",
+        "connectionErrors": {
+          "auth": "Access to the calendar expired or was revoked. Connect it again.",
+          "other": "The last sync failed. We'll try again."
+        },
+        "calendarsTitle": "Calendars",
+        "calendarsHint": "We read busy times from the calendars you choose and show their events. One of them gets your events, bookings and changes.",
+        "primary": "primary",
+        "read": "Read",
+        "write": "Write here",
+        "readOnly": "Read only",
+        "writeNone": "Don't write anywhere",
+        "noCalendars": "The account has no calendar.",
+        "save": "Save choice",
+        "errors": {
+          "unauthenticated": "Sign in again.",
+          "notAllowed": "Connecting your Google Calendar is coming soon.",
+          "unavailable": "Calendar connections aren't available right now. Try again later.",
+          "invalid": "Check your Apple ID and the app-specific password (xxxx-xxxx-xxxx-xxxx).",
+          "auth": "The Apple ID or the app-specific password doesn't match.",
+          "network": "The calendar isn't answering. Try again in a moment.",
+          "notFound": "This connection no longer exists.",
+          "tooSoon": "Synced a moment ago. Try again in half a minute.",
+          "partial": "Some calendars couldn't be read. We'll try again.",
+          "unknown": "Something went wrong. Try again."
+        },
+        "results": {
+          "connected": "Google Calendar is connected.",
+          "cancelled": "You cancelled the connection.",
+          "expired": "The connection expired, try again.",
+          "failed": "Connecting failed. Try again.",
+          "scopes": "Without access to your calendars the connection can't work. Allow both permissions when connecting.",
+          "notAllowed": "Connecting your Google Calendar is coming soon.",
+          "unavailable": "Calendar connections aren't available right now. Try again later."
+        }
       }
     }
   },
@@ -3497,6 +3575,16 @@
       "endRequired": "Pick an end.",
       "endBeforeStart": "The end must be after the start.",
       "descriptionTooLong": "The description is too long."
+    },
+    "sync": {
+      "providers": {
+        "google": "Google",
+        "apple": "Apple (iCloud)"
+      },
+      "from": "From your {provider} calendar",
+      "to": "Written to your {provider} calendar",
+      "conflictExternal": "On {at} this event changed in {appName} and in your {provider} calendar at the same time. The newer change from {provider} won; the version in {appName} was overwritten.",
+      "conflictGradus": "On {at} this event changed in {appName} and in your {provider} calendar at the same time. The newer change from {appName} won; your {provider} calendar was overwritten."
     }
   },
   "finance": {
@@ -7393,7 +7481,8 @@
         "promoCodes": "Promo codes",
         "showcase": "Showcase mode",
         "errors": "Errors",
-        "help": "Help"
+        "help": "Help",
+        "integrations": "Integrations"
       },
       "soon": "Soon",
       "groups": {
@@ -8109,6 +8198,39 @@
         "never": "Not run yet",
         "fresh": "{count, plural, one {{shown} currency has} other {{shown} currencies have}} a rate from the last 7 days.",
         "stale": "{count, plural, one {{shown} rate is} other {{shown} rates are}} older than 7 days, prices show in EUR: {codes}"
+      },
+      "env": {
+        "title": "Environment variables",
+        "description": "Which variables the server needs and whether they are set. Only whether they exist is shown, never their value.",
+        "state": {
+          "ok": "set",
+          "missing": "missing",
+          "optional": "not set (optional)"
+        },
+        "encryption": {
+          "ok": "Integrations encryption key: OK",
+          "missing": "Integrations encryption key: missing",
+          "invalid": "Integrations encryption key: invalid"
+        },
+        "fix": "Add the missing variables ({count}) in Vercel: Settings → Environment Variables, then redeploy the app.",
+        "purposes": {
+          "supabaseUrl": "Supabase database address",
+          "supabasePublic": "Supabase public key for the browser",
+          "supabaseSecret": "Supabase secret key for the server",
+          "siteUrl": "App address in e-mail links",
+          "cron": "Verifies the scheduled jobs",
+          "anthropic": "Grady (Anthropic)",
+          "resend": "Sending e-mails",
+          "resendFrom": "E-mail sender on a verified domain",
+          "ownerEmail": "Owner's e-mail for alerts",
+          "encryption": "Encrypts secret addresses and integration access",
+          "googleMaps": "Contact generation (Google Places)",
+          "googleClientId": "Google Calendar sign-in: client ID",
+          "googleClientSecret": "Google Calendar sign-in: client secret",
+          "stripeSecret": "Payments (Stripe), decides the mode",
+          "stripeWebhook": "Stripe webhook signature",
+          "stripePublishable": "Stripe public key in the browser"
+        }
       }
     },
     "feedback": {
@@ -9248,7 +9370,8 @@
         "promoCodes": "Partners' codes, their sign-ups, paying accounts and commission payouts.",
         "showcase": "The app showing itself off for marketing videos: the switch and the scenarios.",
         "admins": "Who may enter the administration: invitations, levels and removal of administrators.",
-        "help": "This page: what is where, with links straight to the place."
+        "help": "This page: what is where, with links straight to the place.",
+        "integrations": "Who may connect a Google and Apple calendar: the mode, the date and accounts added by hand."
       },
       "items": {
         "overviewNumbers": {
@@ -9474,6 +9597,14 @@
         "aiCostPerUser": {
           "title": "AI cost per user",
           "keywords": "cost per user cache chat answer trend batches"
+        },
+        "calendarSync": {
+          "title": "Calendar connections",
+          "keywords": "calendar google apple connection sync integrations everyone selected switch on off"
+        },
+        "calendarSyncAccounts": {
+          "title": "Add an account to calendar connections",
+          "keywords": "calendar connection account add selected e-mail id"
         }
       }
     },
@@ -9572,6 +9703,41 @@
       "audit": "What exactly changed, from what to what, is in the audit:",
       "auditLink": "Open the audit",
       "off": "Switch these e-mails off in the administration → Errors → E-mail alerts → E-mails about changes."
+    },
+    "integrations": {
+      "title": "Integrations",
+      "description": "Connections to outside services. For now the Google and Apple calendars in {appName}.",
+      "cancel": "Cancel",
+      "readOnly": "Only the owner or a full administrator can change this.",
+      "unnamed": "Unnamed account · {suffix}",
+      "errors": {
+        "forbidden": "Only the owner or a full administrator can change this setting.",
+        "failed": "The setting could not be saved. Please try again.",
+        "notFound": "No such account. Enter an e-mail, a short ID or an account id.",
+        "tooMany": "At most 500 accounts can be added by hand.",
+        "invalidDate": "The date is not valid."
+      },
+      "sync": {
+        "title": "Calendar connections (Google, Apple)",
+        "description": "Two-way calendar sync is for selected accounts for now, until Google verifies the app. Everyone else keeps the subscribed calendars (ICS).",
+        "mode": "Who may connect",
+        "modeAllowlist": "Selected accounts only: those created before the date below and those added by hand.",
+        "modeEveryone": "Every account.",
+        "everyone": "Turn on for everyone",
+        "selectedOnly": "Selected accounts only",
+        "confirmTitle": "Turn calendar connections on for everyone?",
+        "confirmText": "Every account will then be able to connect a Google or Apple calendar. You can go back with Selected accounts only, but calendars already connected stay.",
+        "createdBefore": "Accounts created before {date}",
+        "createdBeforeNone": "No date: nobody by date.",
+        "saveDate": "Save date",
+        "clearDate": "Remove date",
+        "accounts": "Accounts added by hand",
+        "noAccounts": "None yet.",
+        "remove": "Remove",
+        "addLabel": "Add an account",
+        "addPlaceholder": "E-mail, short ID or account id",
+        "add": "Add account"
+      }
     }
   },
   "invoices": {
@@ -11185,13 +11351,16 @@
         "label": "Video link",
         "sources": {
           "profile": "Permanent link",
-          "jitsi": "A unique room for every booking"
+          "jitsi": "A unique room for every booking",
+          "google_meet": "Google Meet (automatic)"
         },
         "profileUses": "Every client gets the permanent link of your page: {link}",
         "profileNone": "Your booking page has no permanent link yet (Edit page).",
         "jitsiUses": "Every booking gets its own room on Jitsi Meet (meet.jit.si/gradus-…), free and without an account.",
         "help": "The difference: a permanent link is always the same room (your Google Meet, Zoom or Teams) for every client, so the next client may join before the previous meeting ends. A unique room is different for every meeting and you set nothing up. Either way the client joins through their booking page, which always shows the current link, even if you change it later.",
-        "missing": "This type has no video link yet. Bookings will be confirmed saying “{host} will send the link before the meeting” and you get a task to send it. Add a permanent link to your page, or switch on unique rooms."
+        "missing": "This type has no video link yet. Bookings will be confirmed saying “{host} will send the link before the meeting” and you get a task to send it. Add a permanent link to your page, or switch on unique rooms.",
+        "meetUses": "Every booking gets its own Google Meet call, created by your Google Calendar. The guest joins through the booking's page.",
+        "meetNotReady": "Google Meet needs a connected Google Calendar to write to (Settings → Calendar). Until then the permanent link is used."
       }
     },
     "questions": {
@@ -11339,7 +11508,8 @@
           "own": "This meeting's own link",
           "room": "Unique room (Jitsi)",
           "profile": "Permanent link of your page",
-          "none": "No link"
+          "none": "No link",
+          "meet": "Google Meet (automatic)"
         },
         "none": "None yet. On their booking page the guest reads that you'll send it before the meeting.",
         "set": "Add a link",

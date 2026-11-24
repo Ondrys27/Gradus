@@ -33,6 +33,12 @@ export function hasEncryptionKey(): boolean {
   return readKey() !== null;
 }
 
+/** For Administration → Health: whether the key is there and has the right shape (never its value). */
+export function integrationKeyState(): "ok" | "missing" | "invalid" {
+  if (!(process.env.INTEGRATIONS_ENCRYPTION_KEY ?? "").trim()) return "missing";
+  return readKey() ? "ok" : "invalid";
+}
+
 function requireKey(): Buffer {
   const key = readKey();
   if (!key) throw new IntegrationKeyError("missing");

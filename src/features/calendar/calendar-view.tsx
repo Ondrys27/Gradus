@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -49,7 +50,8 @@ import { EventDetail } from "./event-detail";
 import { EventFormDialog, type NewEventStart } from "./event-form-dialog";
 import { MonthView } from "./month-view";
 import { useCan, useWorkspace } from "@/features/account/workspace-queries";
-import { useCalendarEvents, useMirrors, useUpdateEvent } from "./queries";
+import { calendarKeys, useCalendarEvents, useMirrors, useUpdateEvent } from "./queries";
+import { useSyncOnOpen } from "./sync/queries";
 import { useSubscriptionBusy } from "@/features/scheduler/queries";
 import { TimeGrid } from "./time-grid";
 import {
@@ -150,6 +152,9 @@ export function CalendarView() {
   const lastDay = days[days.length - 1];
 
   const eventsQuery = useCalendarEvents(firstDay, lastDay, settings.timeZone, ready);
+  // Google and Apple calendars are read when the calendar opens (28.10).
+  const queryClient = useQueryClient();
+  useSyncOnOpen(() => void queryClient.invalidateQueries({ queryKey: calendarKeys.all(workspace.userId) }));
   const mirrorsQuery = useMirrors(firstDay, lastDay, mirrors, ready);
   const tasksQuery = useCalendarTasks(
     firstDay,

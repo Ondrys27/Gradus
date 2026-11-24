@@ -13,6 +13,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { IsoDate } from "@/lib/format";
 import { dayRangeToInstants } from "./calendar-logic";
 import { createEvent, deleteEvent, toEventRow, updateEvent } from "./ops";
+import { requestCalendarPush } from "./sync/queries";
 import type { EventInput } from "./schemas";
 import { clientOps } from "@/lib/ops-client";
 import { EVENT_COLUMNS, type CalendarEvent, type MirrorItem } from "./types";
@@ -144,6 +145,7 @@ export function useCreateEvent() {
     mutationFn: async (input: EventInput) => {
       await createEvent(clientOps(), { workspaceId, input });
     },
+    onSuccess: requestCalendarPush,
     onSettled: () => queryClient.invalidateQueries({ queryKey: calendarKeys.all(user.id) }),
   });
 }
@@ -172,6 +174,7 @@ export function useUpdateEvent() {
     onError: (_error, _variables, context) => {
       for (const [key, data] of context?.snapshot ?? []) queryClient.setQueryData(key, data);
     },
+    onSuccess: requestCalendarPush,
     onSettled: () => queryClient.invalidateQueries({ queryKey: calendarKeys.all(user.id) }),
   });
 }
@@ -182,6 +185,7 @@ export function useDeleteEvent() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => deleteEvent(clientOps(), id),
+    onSuccess: requestCalendarPush,
     onSettled: () => queryClient.invalidateQueries({ queryKey: calendarKeys.all(user.id) }),
   });
 }

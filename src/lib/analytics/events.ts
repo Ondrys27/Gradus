@@ -707,6 +707,30 @@ export const EVENTS = {
     error_code: optional(key()),
   }),
   calendar_feed_created: event("calendar", "server", true, { renewed: bool() }),
+  // Two-way sync with Google and Apple (28.10).
+  calendar_sync_connected: event("calendar", "server", true, {
+    provider: oneOf(["google", "apple"]),
+    calendars: count(500),
+  }),
+  calendar_sync_disconnected: event("calendar", "server", true, {
+    provider: oneOf(["google", "apple"]),
+  }),
+  calendar_sync_calendars_saved: event("calendar", "server", false, {
+    provider: oneOf(["google", "apple"]),
+    read: count(500),
+    write: bool(),
+  }),
+  calendar_sync_run: event("calendar", "server", false, {
+    provider: oneOf(["google", "apple"]),
+    trigger: oneOf(["open", "manual", "push", "cron", "change", "connect"]),
+    applied: count(10_000),
+    conflicts: count(1000),
+    ok: bool(),
+  }),
+  calendar_sync_conflict: event("calendar", "server", false, {
+    provider: oneOf(["google", "apple"]),
+    count: count(1000),
+  }),
   // Written by the booking page and the host's decisions (24.4).
   booking_held: event("calendar", "server", false, {}),
   booking_created: event("calendar", "server", true, {

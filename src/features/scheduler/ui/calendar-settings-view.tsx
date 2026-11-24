@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { CalendarConnections } from "@/features/calendar/sync/ui/connections-settings";
 import { CheckIcon, CopyIcon, RefreshCwIcon, Trash2Icon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -68,14 +69,18 @@ function errorCode(error: unknown): SchedulerError | "unknown" {
 }
 
 /**
- * Settings → Calendar: other calendars whose busy times the scheduler keeps
- * free (their secret ICS links), and the Gradus calendar as a link to
- * subscribe to in Google, Apple or Outlook.
+ * Settings → Calendar: Google and Apple connected both ways (28.10), other
+ * calendars whose busy times the scheduler keeps free (their secret ICS
+ * links), and the Gradus calendar as a link to subscribe to in Google,
+ * Apple or Outlook.
  */
 export function CalendarSettingsView() {
   const t = useTranslations("settings");
   return (
     <SettingsPage title={t("groups.calendar.title")} description={t("groups.calendar.description")}>
+      <Suspense fallback={null}>
+        <CalendarConnections />
+      </Suspense>
       <Subscriptions />
       <Feed />
     </SettingsPage>

@@ -1589,7 +1589,7 @@
       "soundHint": "Krátký tón, když přijde zpráva mimo otevřenou konverzaci. Platí, jen když máš zapnuté zvuky ve Vzhledu."
     },
     "calendar": {
-      "subscriptionsTitle": "Odebírané kalendáře",
+      "subscriptionsTitle": "Odběr přes odkaz",
       "subscriptionsHint": "Vlož tajnou adresu iCal jiného kalendáře. Jeho obsazené časy se na rezervační stránce nikdy nenabídnou a v tvém kalendáři se ukážou šedě. Ukládají se jen obsazené časy, nikdy co je to za události.",
       "loadFailed": "Kalendáře se nepodařilo načíst. Zkus to za chvíli.",
       "none": "Zatím žádný kalendář.",
@@ -1624,9 +1624,9 @@
         "http": "Kalendář stažení odmítl. Zkontroluj, že adresa ještě platí.",
         "notCalendar": "Adresa odpovídá, ale ne kalendářem (iCal).",
         "network": "Kalendář se nepodařilo stáhnout. Zkus to později.",
-        "key": "Kalendáře na tomhle serveru ještě nejsou nastavené.",
+        "key": "Propojení kalendářů teď není dostupné, zkus to později.",
         "store": "Obsazené časy se nepodařilo uložit. Zkus to znovu.",
-        "notConfigured": "Kalendáře na tomhle serveru ještě nejsou nastavené.",
+        "notConfigured": "Propojení kalendářů teď není dostupné, zkus to později.",
         "tooMany": "Kalendářů už máš nejvíc, kolik jde.",
         "tooSoon": "Obnoveno před chvílí. Zkus to za minutu.",
         "notFound": "Tenhle kalendář už tu není.",
@@ -1680,6 +1680,84 @@
         "cancel": "Zrušit",
         "close": "Zavřít",
         "howTo": "Google Kalendář: Další kalendáře → + → Z adresy URL. Apple: Soubor → Nový odběr kalendáře. Outlook: Přidat kalendář → Odebírat z webu."
+      },
+      "sync": {
+        "loadFailed": "Propojení kalendářů se nepodařilo načíst. Zkus to za chvíli.",
+        "preparing": "Propojení s Google kalendářem připravujeme.",
+        "unavailable": "Propojení kalendářů teď není dostupné, zkus to později.",
+        "google": {
+          "title": "Google Kalendář",
+          "name": "Google",
+          "description": "Obousměrně: události z vybraných kalendářů uvidíš v kalendáři a plánovač na ně nikoho neobjedná. Co založíš nebo změníš tady, se hned zapíše do Googlu.",
+          "connect": "Propojit s Googlem",
+          "reconnect": "Propojit znovu"
+        },
+        "apple": {
+          "title": "Kalendář Apple (iCloud)",
+          "name": "Apple",
+          "description": "Obousměrně jako u Googlu, přes heslo pro aplikace z Apple ID.",
+          "step1": "Přihlas se na",
+          "step2": "V části Přihlášení a zabezpečení otevři Hesla pro aplikace a vytvoř nové, třeba „Kalendář“.",
+          "step3": "Sem zadej svoje Apple ID a nové heslo pro aplikace. Svoje hlavní heslo k Apple ID sem nikdy nedávej.",
+          "id": "Apple ID",
+          "password": "Heslo pro aplikace",
+          "passwordHint": "Uloží se šifrovaně. Zrušit ho můžeš kdykoli na appleid.apple.com.",
+          "showPassword": "Ukázat heslo",
+          "hidePassword": "Skrýt heslo",
+          "idRequired": "Zadej Apple ID.",
+          "passwordRequired": "Zadej heslo pro aplikace.",
+          "connect": "Propojit s Applem",
+          "reconnect": "Propojit znovu",
+          "connecting": "Ověřuju…",
+          "connected": "Kalendář Apple je propojený."
+        },
+        "state": {
+          "connected": "Propojeno",
+          "broken": "Potřebuje znovu propojit"
+        },
+        "lastSync": "Synchronizováno {when} ({at})",
+        "neverSynced": "Zatím nesynchronizováno",
+        "syncNow": "Synchronizovat teď",
+        "synced": "Hotovo, kalendář je aktuální.",
+        "disconnect": "Odpojit",
+        "disconnectTitle": "Odpojit {provider}?",
+        "disconnectText": "Smažeme přístupové údaje a události z tohoto kalendáře zmizí z tvého kalendáře tady. Události, které jsi založil tady, zůstanou. V druhém kalendáři se nic nesmaže.",
+        "cancel": "Zrušit",
+        "close": "Zavřít",
+        "connectionErrors": {
+          "auth": "Přístup ke kalendáři vypršel nebo byl zrušený. Propoj ho znovu.",
+          "other": "Poslední synchronizace se nepovedla. Zkusíme to znovu."
+        },
+        "calendarsTitle": "Kalendáře",
+        "calendarsHint": "Z vybraných kalendářů bereme obsazenost a ukazujeme jejich události. Do jednoho zapisujeme tvoje události, rezervace a změny.",
+        "primary": "hlavní",
+        "read": "Číst",
+        "write": "Zapisovat sem",
+        "readOnly": "Jen ke čtení",
+        "writeNone": "Nikam nezapisovat",
+        "noCalendars": "Účet nemá žádný kalendář.",
+        "save": "Uložit výběr",
+        "errors": {
+          "unauthenticated": "Přihlas se znovu.",
+          "notAllowed": "Propojení s Google kalendářem připravujeme.",
+          "unavailable": "Propojení kalendářů teď není dostupné, zkus to později.",
+          "invalid": "Zkontroluj Apple ID a heslo pro aplikace (xxxx-xxxx-xxxx-xxxx).",
+          "auth": "Apple ID nebo heslo pro aplikace nesedí.",
+          "network": "Kalendář teď neodpovídá. Zkus to za chvíli.",
+          "notFound": "Tohle propojení už neexistuje.",
+          "tooSoon": "Synchronizováno před chvílí. Zkus to za půl minuty.",
+          "partial": "Některé kalendáře se nepodařilo načíst. Zkusíme to znovu.",
+          "unknown": "Něco se nepovedlo. Zkus to znovu."
+        },
+        "results": {
+          "connected": "Google Kalendář je propojený.",
+          "cancelled": "Propojení jsi zrušil.",
+          "expired": "Propojení vypršelo, zkus to znovu.",
+          "failed": "Propojení se nepovedlo. Zkus to znovu.",
+          "scopes": "Bez přístupu ke kalendářům propojení nefunguje. Při propojení povol obě oprávnění.",
+          "notAllowed": "Propojení s Google kalendářem připravujeme.",
+          "unavailable": "Propojení kalendářů teď není dostupné, zkus to později."
+        }
       }
     }
   },
@@ -3497,6 +3575,16 @@
       "endRequired": "Vyber konec.",
       "endBeforeStart": "Konec musí být po začátku.",
       "descriptionTooLong": "Popis je příliš dlouhý."
+    },
+    "sync": {
+      "providers": {
+        "google": "Google",
+        "apple": "Apple (iCloud)"
+      },
+      "from": "Z kalendáře {provider}",
+      "to": "Zapsáno do kalendáře {provider}",
+      "conflictExternal": "{at} se událost změnila v {appName} i v kalendáři {provider} zároveň. Platí novější změna z kalendáře {provider}, verze v {appName} se přepsala.",
+      "conflictGradus": "{at} se událost změnila v {appName} i v kalendáři {provider} zároveň. Platí novější změna z {appName}, v kalendáři {provider} se přepsala."
     }
   },
   "finance": {
@@ -7393,7 +7481,8 @@
         "promoCodes": "Promo kódy",
         "showcase": "Ukázkový režim",
         "errors": "Chyby",
-        "help": "Nápověda"
+        "help": "Nápověda",
+        "integrations": "Integrace"
       },
       "soon": "Brzy",
       "groups": {
@@ -8109,6 +8198,39 @@
         "never": "Zatím neběželo",
         "fresh": "{count, plural, one {{shown} měna má} few {{shown} měny mají} other {{shown} měn má}} kurz z posledních 7 dní.",
         "stale": "{count, plural, one {{shown} kurz je starší} few {{shown} kurzy jsou starší} other {{shown} kurzů je starších}} než 7 dní, ceny se ukazují v EUR: {codes}"
+      },
+      "env": {
+        "title": "Proměnné prostředí",
+        "description": "Které proměnné server potřebuje a jestli jsou nastavené. Ukazuje se jen to, zda existují, nikdy jejich hodnota.",
+        "state": {
+          "ok": "nastavená",
+          "missing": "chybí",
+          "optional": "není nastavená (nepovinná)"
+        },
+        "encryption": {
+          "ok": "Šifrovací klíč integrací: v pořádku",
+          "missing": "Šifrovací klíč integrací: chybí",
+          "invalid": "Šifrovací klíč integrací: neplatný"
+        },
+        "fix": "Chybějící proměnné ({count}) přidej ve Vercelu: Settings → Environment Variables, a pak aplikaci znovu nasaď.",
+        "purposes": {
+          "supabaseUrl": "Adresa databáze Supabase",
+          "supabasePublic": "Veřejný klíč Supabase pro prohlížeč",
+          "supabaseSecret": "Tajný klíč Supabase pro server",
+          "siteUrl": "Adresa aplikace v odkazech z e-mailů",
+          "cron": "Ověření plánovaných úloh",
+          "anthropic": "Grady (Anthropic)",
+          "resend": "Odesílání e-mailů",
+          "resendFrom": "Odesílatel e-mailů na ověřené doméně",
+          "ownerEmail": "E-mail majitele pro upozornění",
+          "encryption": "Šifrování tajných adres a přístupů k integracím",
+          "googleMaps": "Generování kontaktů (Google Places)",
+          "googleClientId": "Přihlášení ke Google kalendáři: ID klienta",
+          "googleClientSecret": "Přihlášení ke Google kalendáři: tajný klíč",
+          "stripeSecret": "Platby (Stripe), určuje režim",
+          "stripeWebhook": "Podpis webhooku Stripe",
+          "stripePublishable": "Veřejný klíč Stripe v prohlížeči"
+        }
       }
     },
     "feedback": {
@@ -9248,7 +9370,8 @@
         "promoCodes": "Kódy partnerů, jejich registrace, platící a výplaty provizí.",
         "showcase": "Aplikace, která se předvede sama, pro marketingová videa: přepínač a scénáře.",
         "admins": "Kdo smí do administrace: pozvánky, úrovně a odebrání administrátorů.",
-        "help": "Tahle stránka: co je kde, s odkazy rovnou na místo."
+        "help": "Tahle stránka: co je kde, s odkazy rovnou na místo.",
+        "integrations": "Kdo smí propojit Google a Apple kalendář: režim, datum a ručně přidané účty."
       },
       "items": {
         "overviewNumbers": {
@@ -9474,6 +9597,14 @@
         "aiCostPerUser": {
           "title": "Cena AI na uživatele",
           "keywords": "náklady na uživatele cache odpověď chatu trend dávky"
+        },
+        "calendarSync": {
+          "title": "Propojení kalendářů",
+          "keywords": "kalendář google apple propojení synchronizace integrace všichni vybrané zapnout vypnout"
+        },
+        "calendarSyncAccounts": {
+          "title": "Přidat účet k propojení kalendářů",
+          "keywords": "kalendář propojení účet přidat vybrané e-mail id"
         }
       }
     },
@@ -9572,6 +9703,41 @@
       "audit": "Co přesně se změnilo, z čeho na co, je v auditu:",
       "auditLink": "Otevřít audit",
       "off": "Tyhle e-maily si vypneš v administraci → Chyby → Upozornění e-mailem → E-maily o změnách."
+    },
+    "integrations": {
+      "title": "Integrace",
+      "description": "Propojení s vnějšími službami. Zatím kalendáře Google a Apple v {appName}.",
+      "cancel": "Zrušit",
+      "readOnly": "Měnit to může majitel nebo plný administrátor.",
+      "unnamed": "Účet bez jména · {suffix}",
+      "errors": {
+        "forbidden": "Tohle nastavení smí měnit jen majitel nebo plný administrátor.",
+        "failed": "Nastavení se nepodařilo uložit. Zkus to prosím znovu.",
+        "notFound": "Takový účet jsem nenašel. Zadej e-mail, krátké ID nebo id účtu.",
+        "tooMany": "Ručně jde přidat nejvýš 500 účtů.",
+        "invalidDate": "Datum není platné."
+      },
+      "sync": {
+        "title": "Propojení kalendářů (Google, Apple)",
+        "description": "Obousměrné propojení kalendářů je zatím jen pro vybrané účty, dokud aplikaci neověří Google. Ostatní mají dál odebírané kalendáře (ICS).",
+        "mode": "Kdo smí propojit",
+        "modeAllowlist": "Jen vybrané účty: ty založené před datem níže a ty přidané ručně.",
+        "modeEveryone": "Všechny účty.",
+        "everyone": "Zapnout pro všechny",
+        "selectedOnly": "Jen vybrané účty",
+        "confirmTitle": "Zapnout propojení kalendářů pro všechny?",
+        "confirmText": "Každý účet si pak bude moct propojit Google nebo Apple kalendář. Zpět se to dá vrátit tlačítkem Jen vybrané účty, už propojené kalendáře ale zůstanou.",
+        "createdBefore": "Účty založené před {date}",
+        "createdBeforeNone": "Žádné datum: podle data nikdo.",
+        "saveDate": "Uložit datum",
+        "clearDate": "Zrušit datum",
+        "accounts": "Ručně přidané účty",
+        "noAccounts": "Zatím žádné.",
+        "remove": "Odebrat",
+        "addLabel": "Přidat účet",
+        "addPlaceholder": "E-mail, krátké ID nebo id účtu",
+        "add": "Přidat účet"
+      }
     }
   },
   "invoices": {
@@ -11185,13 +11351,16 @@
         "label": "Odkaz na videohovor",
         "sources": {
           "profile": "Trvalý odkaz",
-          "jitsi": "Jedinečná místnost pro každou rezervaci"
+          "jitsi": "Jedinečná místnost pro každou rezervaci",
+          "google_meet": "Google Meet (automaticky)"
         },
         "profileUses": "Všichni klienti dostanou tvůj trvalý odkaz ze stránky: {link}",
         "profileNone": "Na rezervační stránce zatím nemáš trvalý odkaz (Upravit stránku).",
         "jitsiUses": "Každá rezervace dostane vlastní místnost na Jitsi Meet (meet.jit.si/gradus-…), zdarma a bez účtu.",
         "help": "Rozdíl: trvalý odkaz je pořád stejná místnost (tvůj Google Meet, Zoom nebo Teams) pro všechny klienty, takže se další klient může připojit dřív, než skončí předchozí. Jedinečná místnost je pro každou schůzku jiná a nic nezakládáš. Klient se v obou případech připojuje přes stránku své rezervace, která vždy ukáže aktuální odkaz, i když ho později změníš.",
-        "missing": "Tenhle typ zatím nemá žádný odkaz na videohovor. Rezervace se potvrdí s textem „Odkaz pošle {host} před schůzkou“ a ty dostaneš úkol odkaz poslat. Přidej trvalý odkaz na stránku, nebo zapni jedinečnou místnost."
+        "missing": "Tenhle typ zatím nemá žádný odkaz na videohovor. Rezervace se potvrdí s textem „Odkaz pošle {host} před schůzkou“ a ty dostaneš úkol odkaz poslat. Přidej trvalý odkaz na stránku, nebo zapni jedinečnou místnost.",
+        "meetUses": "Každá rezervace dostane vlastní schůzku v Google Meet, kterou založí tvůj Google Kalendář. Klient se připojí přes stránku rezervace.",
+        "meetNotReady": "Google Meet potřebuje propojený Google Kalendář, do kterého se zapisuje (Nastavení → Kalendář). Do té doby platí trvalý odkaz."
       }
     },
     "questions": {
@@ -11339,7 +11508,8 @@
           "own": "Vlastní odkaz této schůzky",
           "room": "Jedinečná místnost (Jitsi)",
           "profile": "Trvalý odkaz ze stránky",
-          "none": "Bez odkazu"
+          "none": "Bez odkazu",
+          "meet": "Google Meet (automaticky)"
         },
         "none": "Zatím žádný. Host na stránce rezervace čte, že odkaz pošleš před schůzkou.",
         "set": "Zadat odkaz",

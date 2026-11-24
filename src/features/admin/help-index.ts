@@ -108,6 +108,14 @@ export const ADMIN_HELP: Record<AdminSectionKey, readonly HelpItem[]> = {
     { key: "promoPayouts", href: PROMO, anchor: "promo-codes" },
   ],
   showcase: [{ key: "showcaseMode", href: `${P}/ukazka`, anchor: "ukazkovy-rezim" }],
+  integrations: [
+    {
+      key: "calendarSync",
+      href: `${P}/integrace`,
+      anchor: "propojeni-kalendaru",
+    },
+    { key: "calendarSyncAccounts", href: `${P}/integrace`, anchor: "propojeni-ucty", power: "editCalendarSync" },
+  ],
   admins: [
     { key: "adminsInvite", href: ADMINS, anchor: "admins-invite", power: "manageAdmins" },
     { key: "adminsLevel", href: ADMINS, anchor: "admins-members", power: "manageAdmins" },

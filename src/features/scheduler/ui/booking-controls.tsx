@@ -371,6 +371,7 @@ export function BookingMeetingLink({ booking, isHost }: { booking: BookingWithTy
     videoSource: booking.videoSource,
     own: booking.meeting_link,
     room: booking.video_room,
+    meet: booking.google_meet_link,
     profileLink: booking.profileLink,
   });
   if (!link) return null;

@@ -72,6 +72,8 @@ export async function buildAccountFeed(
     .select(columns)
     .eq("user_id", userId)
     .eq("is_demo", false)
+    // What came from a connected Google or Apple calendar is there already (28.10).
+    .neq("source", "external")
     .gte("starts_at", from)
     .lt("starts_at", to)
     .order("starts_at")

@@ -28,7 +28,9 @@ import { addDays, dayIn, isValidTimeZone, type Day } from "../zoned";
  * is, and filter every query by that person explicitly.
  *
  * Busy: the host's own Gradus events with a time (not all-day ones, not the
- * tutorial's samples, not the meetings of other people in the company),
+ * tutorial's samples, not the meetings of other people in the company), the
+ * events of their connected Google and Apple calendars (28.10; all-day too,
+ * never the ones marked free),
  * their open sales tasks with a time, the busy times of their subscribed
  * calendars, and every active booking or unexpired hold of theirs.
  */
@@ -86,11 +88,10 @@ export async function loadHostBusy(
   const [events, tasks, subscriptions, bookings] = await Promise.all([
     admin
       .from("calendar_events")
-      .select("id, starts_at, ends_at")
+      .select("id, starts_at, ends_at, all_day, source, link:calendar_external_links(transparent)")
       .in("user_id", spaces)
       // Their own: made by them, or in their own space before anyone was named.
       .or(`actor_id.eq.${hostUserId},and(user_id.eq.${hostUserId},actor_id.is.null)`)
-      .eq("all_day", false)
       .eq("is_demo", false)
       .gte("starts_at", fromIso)
       .lt("starts_at", toIso)
@@ -121,7 +122,18 @@ export async function loadHostBusy(
   const busy: Interval[] = [];
   for (const event of events.data ?? []) {
     if (exclude?.calendarEventId && event.id === exclude.calendarEventId) continue;
+    // "Free" in the connected calendar: shown, never busy.
+    const link = event.link as { transparent: boolean } | null;
+    if (link?.transparent) continue;
     const start = Date.parse(event.starts_at);
+    if (event.all_day) {
+      // All-day events block only from a connected calendar (28.10), like a subscription's.
+      if (event.source !== "external") continue;
+      // From the first day's midnight to the end of the last day (ends_at = the last day's midnight).
+      const last = event.ends_at ? Date.parse(event.ends_at) : start;
+      busy.push({ start, end: Math.max(last, start) + DAY });
+      continue;
+    }
     const end = event.ends_at ? Date.parse(event.ends_at) : start + EVENT_DEFAULT_MIN * MINUTE;
     busy.push({ start, end: Math.max(end, start + MINUTE) });
   }

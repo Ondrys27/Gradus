@@ -50,7 +50,9 @@ export type AdminPower =
   /** The e-mails "X changed …" between the owner and the full admins, and switching them off. */
   | "peerNotices"
   /** The showcase mode (27.4) switched on or off; a limited admin reads it. */
-  | "editShowcase";
+  | "editShowcase"
+  /** Who may connect Google and Apple calendars (28.10); a limited admin reads it. */
+  | "editCalendarSync";
 
 /** The powers that stay with the owner whatever an administrator's level. */
 const OWNER_ALONE: ReadonlySet<AdminPower> = new Set(["manageAdmins"]);

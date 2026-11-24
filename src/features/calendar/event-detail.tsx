@@ -17,6 +17,7 @@ import { toEventItem } from "./calendar-logic";
 import { DemoBadge } from "@/features/tutorial/demo-badge";
 import { useDeleteEvent } from "./queries";
 import { BookingOfEvent } from "@/features/scheduler/ui/booking-of-event";
+import { EventSyncNote } from "./sync/event-sync-note";
 import type { CalendarEvent } from "./types";
 
 type Props = {
@@ -132,6 +133,7 @@ export function EventDetail({ event, onClose, onEdit, readOnly = false }: Props)
           )}
           {fromDeal && <p className="text-sm text-ink-muted">{t("detail.fromDealHint")}</p>}
           {fromBooking && <BookingOfEvent eventId={current.id} />}
+          <EventSyncNote eventId={current.id} />
           <MentionedInNotes kind="event" id={current.id} onOpenNote={onClose} />
           {current.kind === "meeting" && !readOnly && (
             <MeetingNotesButton target={{ kind: "event", id: current.id }} className="self-start" />

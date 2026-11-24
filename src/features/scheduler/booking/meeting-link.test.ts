@@ -116,3 +116,24 @@ describe("linkTaskDue", () => {
     expect(linkTaskDue(start, Date.parse("2026-12-01T09:30:20.000Z"))).toBe("2026-12-01T09:31:00.000Z");
   });
 });
+
+describe("Google Meet (28.10)", () => {
+  it("uses the call Google made, after the host's own link, else the permanent one", () => {
+    const meet = "https://meet.google.com/xyz-abcd-efg";
+    expect(meetingLinkOf({ ...base, videoSource: "google_meet", meet })).toEqual({ source: "meet", url: meet });
+    expect(meetingLinkOf({ ...base, videoSource: "google_meet", meet, own: "https://zoom.us/j/1" })).toEqual({
+      source: "own",
+      url: "https://zoom.us/j/1",
+    });
+    expect(meetingLinkOf({ ...base, videoSource: "google_meet", meet: null })).toEqual({
+      source: "profile",
+      url: base.profileLink,
+    });
+    expect(meetingLinkOf({ ...base, videoSource: "google_meet", meet: "https://evil.example/x" })?.source).toBe("profile");
+  });
+
+  it("a Meet type lacks a link only without a Google calendar to write to and a permanent link", () => {
+    expect(typeLacksLink({ location_kind: "video", video_source: "google_meet", profileLink: null, googleReady: true })).toBe(false);
+    expect(typeLacksLink({ location_kind: "video", video_source: "google_meet", profileLink: null })).toBe(true);
+  });
+});

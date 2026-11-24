@@ -19,6 +19,7 @@ import { buildTable } from "@/features/admin/table";
 import { BreakdownList, DataTable } from "@/features/admin/ui/data-blocks";
 import { ADMIN_FORMAT_SETTINGS, formatMetricValue } from "@/features/admin/format-metric";
 import { Figures } from "@/features/admin/ui/metric-tile";
+import { envHealth } from "@/features/admin/env-health";
 import { exchangeRateHealth } from "@/features/currency/server/rates";
 import { formatDateTime, formatNumber } from "@/lib/format";
 
@@ -58,6 +59,7 @@ export default async function AdminHealthPage({ searchParams }: Props) {
         <Suspense fallback={<CardSkeleton height={200} />}>
           <ExchangeRates />
         </Suspense>
+        <EnvironmentVariables />
       </div>
     </>
   );
@@ -256,6 +258,46 @@ async function ExchangeRates() {
           </div>
         )}
       </Show>
+    </AdminCard>
+  );
+}
+
+/**
+ * Environment variables (step 28.10): which of the ones the server needs are
+ * set. Presence only: no value and no length is ever read into the page.
+ */
+async function EnvironmentVariables() {
+  const t = await getTranslations("admin.health.env");
+  const rows = envHealth(process.env);
+  const missingRequired = rows.filter((row) => row.required && row.state !== "ok").length;
+  const tone = (row: (typeof rows)[number]) =>
+    row.state === "ok" ? "text-ink-soft" : row.required ? "text-pink" : "text-gold";
+  return (
+    <AdminCard title={t("title")} description={t("description")}>
+      <div className="flex flex-col gap-3" id="env-health" data-testid="health-env">
+        <ul className="flex flex-col divide-y divide-line/60">
+          {rows.map((row) => (
+            <li key={row.name} className="flex flex-col gap-0.5 py-2 sm:flex-row sm:justify-between sm:gap-4">
+              <span className="flex flex-col">
+                <span className="font-mono text-xs text-ink">{row.name}</span>
+                <span className="text-xs text-ink-muted">{t(`purposes.${row.purpose}`)}</span>
+              </span>
+              <span className={`text-sm ${tone(row)}`}>
+                {row.name === "INTEGRATIONS_ENCRYPTION_KEY"
+                  ? t(`encryption.${row.state}`)
+                  : row.state === "ok"
+                    ? t("state.ok")
+                    : row.required
+                      ? t("state.missing")
+                      : t("state.optional")}
+              </span>
+            </li>
+          ))}
+        </ul>
+        {missingRequired > 0 && (
+          <p className="text-sm text-pink">{t("fix", { count: missingRequired })}</p>
+        )}
+      </div>
     </AdminCard>
   );
 }

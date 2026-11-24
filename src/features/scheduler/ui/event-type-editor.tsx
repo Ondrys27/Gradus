@@ -27,6 +27,7 @@ import { useIsPhone } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
 import { EVENT_TYPE_TABS, type EventTypeTab } from "../analytics";
 import { typeLacksLink, VIDEO_SOURCES } from "../booking/meeting-link";
+import { useGoogleMeetReady } from "@/features/calendar/sync/queries";
 import {
   draftIssues,
   isBuiltinQuestion,
@@ -564,16 +565,22 @@ function VideoChoice({
   profile: SchedulerProfile;
 }) {
   const t = useTranslations("scheduler.editor.video");
+  // Google Meet (28.10): offered once the host writes to a Google calendar.
+  const googleReady = useGoogleMeetReady().data === true;
   const missing = typeLacksLink({
     location_kind: draft.location_kind,
     video_source: draft.video_source,
     profileLink: profile.video_link,
+    googleReady,
   });
+  const sources = VIDEO_SOURCES.filter(
+    (source) => source !== "google_meet" || googleReady || draft.video_source === "google_meet",
+  );
   return (
     <div className="flex flex-col gap-2" data-testid="type-video">
       <p className="text-xs font-medium text-ink-soft">{t("label")}</p>
       <div className="flex flex-wrap gap-2">
-        {VIDEO_SOURCES.map((source) => (
+        {sources.map((source) => (
           <Chip key={source} pressed={draft.video_source === source} onClick={() => set("video_source", source)}>
             <span data-testid={`type-video-${source}`}>{t(`sources.${source}`)}</span>
           </Chip>
@@ -582,9 +589,13 @@ function VideoChoice({
       <p className="text-xs text-ink-muted">
         {draft.video_source === "jitsi"
           ? t("jitsiUses")
-          : profile.video_link
-            ? t("profileUses", { link: profile.video_link })
-            : t("profileNone")}
+          : draft.video_source === "google_meet"
+            ? googleReady
+              ? t("meetUses")
+              : t("meetNotReady")
+            : profile.video_link
+              ? t("profileUses", { link: profile.video_link })
+              : t("profileNone")}
       </p>
       <p className="text-xs text-ink-muted">{t("help")}</p>
       {missing && (

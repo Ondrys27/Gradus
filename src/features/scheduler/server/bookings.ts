@@ -1,5 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { flushUserQuietly } from "@/features/calendar/sync/server/sync";
 import { serverTranslator } from "@/i18n/server-translator";
 import { track } from "@/lib/analytics/track";
 import { APP_NAME } from "@/lib/constants";
@@ -81,7 +82,7 @@ import {
 type Admin = SupabaseClient<Database>;
 
 export const BOOKING_FULL_COLUMNS =
-  "id, event_type_id, host_user_id, space_id, starts_at, ends_at, guest_name, guest_email, guest_phone, guest_company, guest_time_zone, answers, status, hold_expires_at, contact_id, calendar_event_id, deal_id, reminder_ids, cancelled_by, cancel_reason, locale, confirmed_at, rescheduled_at, reschedule_count, no_show_at, created_at, meeting_link, video_room, link_task_id";
+  "id, event_type_id, host_user_id, space_id, starts_at, ends_at, guest_name, guest_email, guest_phone, guest_company, guest_time_zone, answers, status, hold_expires_at, contact_id, calendar_event_id, deal_id, reminder_ids, cancelled_by, cancel_reason, locale, confirmed_at, rescheduled_at, reschedule_count, no_show_at, created_at, meeting_link, video_room, link_task_id, google_meet_link";
 
 export type FullBooking = Pick<
   Database["public"]["Tables"]["bookings"]["Row"],
@@ -114,6 +115,7 @@ export type FullBooking = Pick<
   | "meeting_link"
   | "video_room"
   | "link_task_id"
+  | "google_meet_link"
 >;
 
 export type BookingContext = {
@@ -225,6 +227,7 @@ export function linkOf(ctx: Pick<BookingContext, "booking" | "type" | "profile">
     videoSource: ctx.type?.video_source ?? "profile",
     own: ctx.booking.meeting_link,
     room: ctx.booking.video_room,
+    meet: ctx.booking.google_meet_link,
     profileLink: ctx.profile?.video_link,
   });
 }
@@ -316,6 +319,27 @@ async function effectsSafely(admin: Admin, ctx: BookingContext, confirming: bool
     await runEffects(admin, ctx, confirming);
   } catch (error) {
     log("booking effects failed", error);
+  }
+  await pushToHostCalendar(admin, ctx);
+}
+
+/**
+ * The meeting reaches the host's Google or Apple calendar right away (28.10),
+ * with the guest invited and, for a type asking for it, a Google Meet call
+ * whose link the booking keeps. Never longer than a few seconds, never
+ * failing the booking.
+ */
+async function pushToHostCalendar(admin: Admin, ctx: BookingContext) {
+  const hostId = ctx.booking.host_user_id;
+  if (!hostId) return;
+  try {
+    await flushUserQuietly(admin, hostId);
+    if (ctx.type?.video_source === "google_meet" && !ctx.booking.google_meet_link) {
+      const { data } = await admin.from("bookings").select("google_meet_link").eq("id", ctx.booking.id).maybeSingle();
+      if (data?.google_meet_link) ctx.booking = { ...ctx.booking, google_meet_link: data.google_meet_link };
+    }
+  } catch (error) {
+    log("calendar push failed", error);
   }
 }
 

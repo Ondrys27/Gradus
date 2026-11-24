@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { icsBusy, parseDuration, parseIcs, resolveTimeZone } from "./parse";
+import {
+  icsBusy,
+  icsInstance,
+  icsInstances,
+  icsRecurrenceKey,
+  parseDuration,
+  parseIcs,
+  parseRecurrenceKey,
+  resolveTimeZone,
+  unescapeText,
+} from "./parse";
 
 const cal = (...events: string[]) =>
   ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Test//EN", ...events, "END:VCALENDAR"].join("\r\n");
@@ -387,5 +397,102 @@ describe("icsBusy: recurrence", () => {
       { start: "2026-03-01T23:00:00.000Z", end: "2026-03-03T23:00:00.000Z", allDay: true },
       { start: "2026-03-02T09:00:00.000Z", end: "2026-03-02T10:00:00.000Z" },
     ]);
+  });
+});
+
+describe("icsInstances", () => {
+  const series = cal(
+    ev(
+      "UID:s",
+      "DTSTART;TZID=Europe/Prague:20261012T090000",
+      "DTEND;TZID=Europe/Prague:20261012T100000",
+      "RRULE:FREQ=WEEKLY;BYDAY=MO;COUNT=5",
+      "EXDATE;TZID=Europe/Prague:20261019T090000",
+      "SUMMARY:Porada\\, tým",
+      "LAST-MODIFIED:20261001T080000Z",
+    ),
+    ev(
+      "UID:s",
+      "RECURRENCE-ID;TZID=Europe/Prague:20261026T090000",
+      "DTSTART;TZID=Europe/Prague:20261027T140000",
+      "DTEND;TZID=Europe/Prague:20261027T150000",
+      "DTSTAMP:20261003T080000Z",
+    ),
+    ev(
+      "UID:s",
+      "RECURRENCE-ID;TZID=Europe/Prague:20261102T090000",
+      "STATUS:CANCELLED",
+      "DTSTART;TZID=Europe/Prague:20261102T090000",
+    ),
+  );
+  const window = {
+    from: at("2026-10-01T00:00:00Z"),
+    to: at("2026-12-01T00:00:00Z"),
+    defaultTimeZone: PRAGUE,
+  };
+
+  it("expands a series with keys in UTC, a moved occurrence in place and cancelled ones out", () => {
+    const list = icsInstances(series, window);
+    expect(list.map((item) => [item.recurrenceKey, new Date(item.start).toISOString()])).toEqual([
+      ["20261012T070000Z", "2026-10-12T07:00:00.000Z"],
+      ["20261026T080000Z", "2026-10-27T13:00:00.000Z"],
+      ["20261109T080000Z", "2026-11-09T08:00:00.000Z"],
+    ]);
+    expect(list[0]).toMatchObject({ summary: "Porada, tým", recurring: true, uid: "s" });
+    // The moved occurrence keeps the series' text and has its own stamp.
+    expect(list[1]).toMatchObject({
+      summary: "Porada, tým",
+      lastModified: at("2026-10-03T08:00:00Z"),
+    });
+  });
+
+  it("keeps a single event and all-day days, never throws", () => {
+    const text = cal(
+      ev("UID:a", "DTSTART;VALUE=DATE:20261103", "DTEND;VALUE=DATE:20261105", "SUMMARY:Cesta"),
+      ev("UID:b", "DTSTART:20261103T090000Z", "SUMMARY:Bez konce"),
+    );
+    const list = icsInstances(text, window);
+    expect(list).toHaveLength(2);
+    expect(list.find((item) => item.uid === "a")).toMatchObject({
+      allDay: true,
+      startDay: "2026-11-03",
+      endDay: "2026-11-05",
+      recurrenceKey: null,
+      recurring: false,
+      start: at("2026-11-02T23:00:00Z"),
+    });
+    expect(list.find((item) => item.uid === "b")).toMatchObject({
+      end: at("2026-11-03T09:00:00Z"),
+    });
+    expect(icsInstances("garbage", window)).toEqual([]);
+  });
+
+  it("finds one occurrence by its key wherever it lies", () => {
+    expect(icsInstance(series, "20261109T080000Z", PRAGUE)).toMatchObject({
+      start: at("2026-11-09T08:00:00Z"),
+    });
+    expect(icsInstance(series, "20261026T080000Z", PRAGUE)).toMatchObject({
+      start: at("2026-10-27T13:00:00Z"),
+    });
+    expect(icsInstance(series, "20261019T070000Z", PRAGUE)).toBeNull();
+    expect(icsInstance(series, "20261102T080000Z", PRAGUE)).toBeNull();
+    expect(icsInstance(series, "20261116T080000Z", PRAGUE)).toBeNull();
+    expect(icsInstance(series, null, PRAGUE)).toMatchObject({ recurrenceKey: "20261012T070000Z" });
+  });
+
+  it("writes and reads recurrence keys and text escapes", () => {
+    expect(icsRecurrenceKey({ kind: "date", day: "2026-11-03" }, PRAGUE)).toBe("20261103");
+    expect(
+      icsRecurrenceKey(
+        { kind: "local", wall: { year: 2026, month: 11, day: 2, hour: 9, minute: 0 }, tz: PRAGUE },
+        "UTC",
+      ),
+    ).toBe("20261102T080000Z");
+    expect(parseRecurrenceKey("20261102T080000Z")).toEqual({
+      kind: "utc",
+      ms: at("2026-11-02T08:00:00Z"),
+    });
+    expect(parseRecurrenceKey("2026-11-02")).toBeNull();
+    expect(unescapeText("a\\, b\\; c\\nd \\\\ e")).toBe("a, b; c\nd \\ e");
   });
 });

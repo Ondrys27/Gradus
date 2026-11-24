@@ -9,6 +9,7 @@ import {
   loadPublicProfile,
   loadPublicTypeRow,
 } from "@/features/scheduler/server/public-data";
+import { syncUserIfStale } from "@/features/calendar/sync/server/sync";
 import { refreshStaleForUser } from "@/features/scheduler/server/subscriptions";
 import { SUBSCRIPTION_STALE_MS } from "@/features/scheduler/types";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -68,6 +69,8 @@ export async function GET(request: Request) {
       .eq("host_user_id", profile.user_id)
       .eq("status", "held")
       .lt("hold_expires_at", new Date().toISOString());
+    // Connected Google and Apple calendars, read again when older than the subscriptions' limit (28.10).
+    await syncUserIfStale(admin, profile.user_id, SUBSCRIPTION_STALE_MS);
     const slots = await loadTypeSlots(admin, row, parsed.data.tz);
     after(() =>
       refreshStaleForUser(admin, profile.user_id, SUBSCRIPTION_STALE_MS).catch((error) =>

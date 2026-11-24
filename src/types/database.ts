@@ -849,6 +849,7 @@ export type Database = {
           deal_id: string | null
           ends_at: string
           event_type_id: string | null
+          google_meet_link: string | null
           guest_company: string | null
           guest_email: string | null
           guest_name: string | null
@@ -884,6 +885,7 @@ export type Database = {
           deal_id?: string | null
           ends_at: string
           event_type_id?: string | null
+          google_meet_link?: string | null
           guest_company?: string | null
           guest_email?: string | null
           guest_name?: string | null
@@ -919,6 +921,7 @@ export type Database = {
           deal_id?: string | null
           ends_at?: string
           event_type_id?: string | null
+          google_meet_link?: string | null
           guest_company?: string | null
           guest_email?: string | null
           guest_name?: string | null
@@ -1065,6 +1068,116 @@ export type Database = {
         }
         Relationships: []
       }
+      calendar_connection_calendars: {
+        Row: {
+          can_write: boolean
+          channel_expires_at: string | null
+          channel_id: string | null
+          channel_resource_id: string | null
+          channel_token_hash: string | null
+          connection_id: string
+          created_at: string
+          external_id: string
+          id: string
+          is_primary: boolean
+          last_error: string | null
+          name: string
+          read: boolean
+          sync_state: string | null
+          synced_at: string | null
+          updated_at: string
+          user_id: string
+          write: boolean
+        }
+        Insert: {
+          can_write?: boolean
+          channel_expires_at?: string | null
+          channel_id?: string | null
+          channel_resource_id?: string | null
+          channel_token_hash?: string | null
+          connection_id: string
+          created_at?: string
+          external_id: string
+          id?: string
+          is_primary?: boolean
+          last_error?: string | null
+          name: string
+          read?: boolean
+          sync_state?: string | null
+          synced_at?: string | null
+          updated_at?: string
+          user_id?: string
+          write?: boolean
+        }
+        Update: {
+          can_write?: boolean
+          channel_expires_at?: string | null
+          channel_id?: string | null
+          channel_resource_id?: string | null
+          channel_token_hash?: string | null
+          connection_id?: string
+          created_at?: string
+          external_id?: string
+          id?: string
+          is_primary?: boolean
+          last_error?: string | null
+          name?: string
+          read?: boolean
+          sync_state?: string | null
+          synced_at?: string | null
+          updated_at?: string
+          user_id?: string
+          write?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_connection_calendars_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "calendar_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calendar_connections: {
+        Row: {
+          account_label: string | null
+          created_at: string
+          id: string
+          last_error: string | null
+          last_synced_at: string | null
+          provider: string
+          secret_cipher: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_label?: string | null
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          provider: string
+          secret_cipher: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_label?: string | null
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          provider?: string
+          secret_cipher?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       calendar_events: {
         Row: {
           actor_id: string | null
@@ -1171,6 +1284,115 @@ export type Database = {
           created_at?: string
           last_used_at?: string | null
           token_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      calendar_external_links: {
+        Row: {
+          calendar_id: string
+          conflict_at: string | null
+          conflict_winner: string | null
+          connection_id: string
+          created_at: string
+          etag: string | null
+          event_id: string
+          external_id: string
+          external_updated_at: string | null
+          origin: string
+          recurring_id: string | null
+          synced_at: string | null
+          transparent: boolean
+          user_id: string
+        }
+        Insert: {
+          calendar_id: string
+          conflict_at?: string | null
+          conflict_winner?: string | null
+          connection_id: string
+          created_at?: string
+          etag?: string | null
+          event_id: string
+          external_id: string
+          external_updated_at?: string | null
+          origin: string
+          recurring_id?: string | null
+          synced_at?: string | null
+          transparent?: boolean
+          user_id: string
+        }
+        Update: {
+          calendar_id?: string
+          conflict_at?: string | null
+          conflict_winner?: string | null
+          connection_id?: string
+          created_at?: string
+          etag?: string | null
+          event_id?: string
+          external_id?: string
+          external_updated_at?: string | null
+          origin?: string
+          recurring_id?: string | null
+          synced_at?: string | null
+          transparent?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_external_links_calendar_id_fkey"
+            columns: ["calendar_id"]
+            isOneToOne: false
+            referencedRelation: "calendar_connection_calendars"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_external_links_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "calendar_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_external_links_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "calendar_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calendar_sync_outbox: {
+        Row: {
+          attempts: number
+          claimed_until: string | null
+          created_at: string
+          event_id: string
+          id: number
+          last_error: string | null
+          link: Json | null
+          op: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          claimed_until?: string | null
+          created_at?: string
+          event_id: string
+          id?: number
+          last_error?: string | null
+          link?: Json | null
+          op: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          claimed_until?: string | null
+          created_at?: string
+          event_id?: string
+          id?: number
+          last_error?: string | null
+          link?: Json | null
+          op?: string
           user_id?: string
         }
         Relationships: []
@@ -7179,6 +7401,35 @@ export type Database = {
         }
         Returns: Json
       }
+      calendar_sync_allowed: { Args: { _user: string }; Returns: boolean }
+      calendar_sync_apply: {
+        Args: {
+          _calendar: string
+          _delete_series?: string[]
+          _deletes?: string[]
+          _rows?: Json
+        }
+        Returns: Json
+      }
+      calendar_sync_outbox_claim: {
+        Args: { _limit?: number; _user: string }
+        Returns: {
+          attempts: number
+          claimed_until: string | null
+          created_at: string
+          event_id: string
+          id: number
+          last_error: string | null
+          link: Json | null
+          op: string
+          user_id: string
+        }[]
+      }
+      calendar_sync_forget: {
+        Args: { _calendar?: string; _connection: string; _keep_written?: boolean }
+        Returns: number
+      }
+      valid_calendar_sync: { Args: { _value: Json }; Returns: boolean }
       admin_set_app_setting: {
         Args: { _ip_hash?: string; _key: string; _value: Json }
         Returns: Json

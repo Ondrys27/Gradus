@@ -56,6 +56,13 @@ export type IcsEvent = {
   cancelled: boolean;
   transparent: boolean;
   allDay: boolean;
+  /** Text of the event (two-way sync, 28.10); the busy times never read them. */
+  summary: string | null;
+  description: string | null;
+  location: string | null;
+  /** LAST-MODIFIED and DTSTAMP as UTC milliseconds. */
+  lastModified: number | null;
+  dtstamp: number | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -302,6 +309,26 @@ export function parseIcs(text: string): IcsEvent[] {
   return events;
 }
 
+/** A TEXT value without its escapes (`\,` `\;` `\n` `\\`). */
+export function unescapeText(value: string): string {
+  return value.replace(/\\([\\;,nN])/g, (_, char: string) =>
+    char === "n" || char === "N" ? "\n" : char,
+  );
+}
+
+function textOf(property: Property | undefined): string | null {
+  return property ? unescapeText(property.value) : null;
+}
+
+function utcOf(property: Property | undefined): number | null {
+  const time = property ? parseTime(property.value, {}) : null;
+  if (!time) return null;
+  if (time.kind === "utc") return time.ms;
+  // LAST-MODIFIED is always UTC; a server that forgot the Z still means UTC.
+  if (time.kind === "local") return instantOf(time.wall, "UTC");
+  return null;
+}
+
 function toEvent(props: Property[]): IcsEvent | null {
   try {
     const first = (name: string) => props.find((p) => p.name === name);
@@ -337,6 +364,11 @@ function toEvent(props: Property[]): IcsEvent | null {
       cancelled: first("STATUS")?.value.toUpperCase() === "CANCELLED",
       transparent: first("TRANSP")?.value.toUpperCase() === "TRANSPARENT",
       allDay: start.kind === "date",
+      summary: textOf(first("SUMMARY")),
+      description: textOf(first("DESCRIPTION")),
+      location: textOf(first("LOCATION")),
+      lastModified: utcOf(first("LAST-MODIFIED")),
+      dtstamp: utcOf(first("DTSTAMP")),
     };
   } catch {
     return null;
@@ -729,4 +761,307 @@ export function icsBusy(text: string, options: BusyOptions): BusyInterval[] {
     if (o.allDay) interval.allDay = true;
     return interval;
   });
+}
+
+// ---------------------------------------------------------------------------
+// Instances with their text (two-way calendar sync, 28.10)
+// ---------------------------------------------------------------------------
+
+/** One occurrence of an event as the two-way sync reads a CalDAV resource. */
+export type IcsInstance = {
+  uid: string | null;
+  /**
+   * The occurrence's original start as RECURRENCE-ID names it: `YYYYMMDDTHHMMSSZ`
+   * (UTC) in a timed series, `YYYYMMDD` in an all-day one; null = a single event.
+   */
+  recurrenceKey: string | null;
+  /** UTC milliseconds; all-day = the midnights of `startDay` and `endDay` in the zone. */
+  start: number;
+  end: number;
+  allDay: boolean;
+  /** All-day: the first day and the day after the last (exclusive). */
+  startDay: Day | null;
+  endDay: Day | null;
+  summary: string;
+  description: string | null;
+  location: string | null;
+  /** LAST-MODIFIED, else DTSTAMP (UTC milliseconds). */
+  lastModified: number | null;
+  transparent: boolean;
+  /** Part of a series (RRULE, RDATE or a moved occurrence). */
+  recurring: boolean;
+};
+
+export type InstanceOptions = {
+  /** Window in UTC milliseconds; occurrences overlapping it are kept. */
+  from: number;
+  to: number;
+  /** For floating times, unknown zones and all-day days (the person's own zone). */
+  defaultTimeZone: string;
+  /** Safety: occurrences of one series kept inside the window. */
+  maxOccurrences?: number;
+};
+
+type Span = { allDay: boolean; days: number; ms: number };
+
+const pad2 = (value: number) => String(value).padStart(2, "0");
+
+/** The internal key (`t:<ms>` / `d:<day>`) as RECURRENCE-ID writes it. */
+function externalKey(key: string): string {
+  if (key.startsWith("d:")) return key.slice(2).replace(/-/g, "");
+  const date = new Date(Number(key.slice(2)));
+  return (
+    `${String(date.getUTCFullYear()).padStart(4, "0")}${pad2(date.getUTCMonth() + 1)}` +
+    `${pad2(date.getUTCDate())}T${pad2(date.getUTCHours())}${pad2(date.getUTCMinutes())}` +
+    `${pad2(date.getUTCSeconds())}Z`
+  );
+}
+
+/** A DTSTART-like value with its parameters (VALUE=DATE, TZID). */
+export function parseIcsTime(value: string, params: Record<string, string> = {}): IcsTime | null {
+  return parseTime(value, params);
+}
+
+/** The instant a time stands for; floating times and days in `defaultTimeZone`. */
+export function icsTimeInstant(time: IcsTime, defaultTimeZone: string): number {
+  return instantOfTime(time, defaultTimeZone);
+}
+
+/** A RECURRENCE-ID (or EXDATE) value as the key of the occurrence it names. */
+export function icsRecurrenceKey(time: IcsTime, defaultTimeZone: string): string {
+  if (time.kind === "date") return externalKey(`d:${time.day}`);
+  return externalKey(`t:${instantOfTime(time, defaultTimeZone)}`);
+}
+
+/** A key back to its time: `YYYYMMDD` = a day, `YYYYMMDDTHHMMSSZ` = an instant. */
+export function parseRecurrenceKey(key: string): IcsTime | null {
+  if (!/^\d{8}(T\d{6}Z)?$/.test(key)) return null;
+  return parseTime(key, {});
+}
+
+/** Unfolded lines of an iCalendar text (the sync edits resources line by line). */
+export function unfoldIcsLines(text: string): string[] {
+  return unfold(text);
+}
+
+export type IcsProperty = Property;
+
+/** `NAME;PARAM=a:value` as its parts; null when the line is no property. */
+export function parseIcsProperty(line: string): IcsProperty | null {
+  return parseProperty(line);
+}
+
+function isRecurring(master: IcsEvent, moved: Map<string, IcsEvent> | undefined): boolean {
+  return master.rule !== null || master.rdates.length > 0 || (moved?.size ?? 0) > 0;
+}
+
+/** A timed event without an end lasts zero minutes (RFC 5545), an all-day one a day. */
+function spanOrDefault(span: Span | null, allDay: boolean): Span {
+  return span ?? (allDay ? { allDay: true, days: 1, ms: 0 } : { allDay: false, days: 0, ms: 0 });
+}
+
+function makeInstance(
+  event: IcsEvent,
+  fallback: IcsEvent | undefined,
+  start: number,
+  day: Day,
+  span: Span,
+  key: string | null,
+  recurring: boolean,
+  zone: string,
+): IcsInstance {
+  const base = {
+    uid: event.uid,
+    recurrenceKey: key ? externalKey(key) : null,
+    // A moved occurrence without its own text keeps the series' text.
+    summary: event.summary ?? fallback?.summary ?? "",
+    description: event.description ?? fallback?.description ?? null,
+    location: event.location ?? fallback?.location ?? null,
+    lastModified: event.lastModified ?? event.dtstamp,
+    transparent: event.transparent,
+    recurring,
+  };
+  if (span.allDay) {
+    const endDay = addDays(day, Math.max(1, span.days));
+    return {
+      ...base,
+      allDay: true,
+      startDay: day,
+      endDay,
+      start: startOfDay(day, zone),
+      end: startOfDay(endDay, zone),
+    };
+  }
+  return { ...base, allDay: false, startDay: null, endDay: null, start, end: start + span.ms };
+}
+
+function inWindow(instance: IcsInstance, from: number, to: number): boolean {
+  if (instance.start >= to) return false;
+  return instance.end > from || (instance.end === instance.start && instance.start >= from);
+}
+
+type Grouped = {
+  masters: IcsEvent[];
+  byUid: Map<string, IcsEvent>;
+  /** Moved or cancelled occurrences by series UID and internal key. */
+  overrides: Map<string, Map<string, IcsEvent>>;
+};
+
+function groupEvents(events: IcsEvent[], zone: string): Grouped {
+  const masters = events.filter((event) => !event.recurrenceId);
+  const byUid = new Map<string, IcsEvent>();
+  for (const master of masters) if (master.uid) byUid.set(master.uid, master);
+  const overrides = new Map<string, Map<string, IcsEvent>>();
+  for (const event of events) {
+    if (!event.recurrenceId || !event.uid) continue;
+    const map = overrides.get(event.uid) ?? new Map<string, IcsEvent>();
+    map.set(recurrenceKey(event, byUid.get(event.uid), zone)[0], event);
+    overrides.set(event.uid, map);
+  }
+  return { masters, byUid, overrides };
+}
+
+function overrideInstance(
+  event: IcsEvent,
+  master: IcsEvent | undefined,
+  key: string,
+  zone: string,
+): IcsInstance | null {
+  if (event.cancelled) return null;
+  const inherited = master && master.allDay === event.allDay ? eventSpan(master, zone) : null;
+  const span = spanOrDefault(eventSpan(event, zone) ?? inherited, event.allDay);
+  return makeInstance(
+    event,
+    master,
+    instantOfTime(event.start, zone),
+    dayOfTime(event.start, zone),
+    span,
+    key,
+    true,
+    zone,
+  );
+}
+
+function prepare(text: string, defaultTimeZone: string): { zone: string; grouped: Grouped } {
+  const zone = isValidTimeZone(defaultTimeZone) ? defaultTimeZone : "UTC";
+  let events: IcsEvent[];
+  try {
+    events = parseIcs(text);
+  } catch {
+    events = [];
+  }
+  return { zone, grouped: groupEvents(events, zone) };
+}
+
+/**
+ * Every occurrence of the events in the text that overlaps the window, with
+ * its text: a series expanded (RRULE, RDATE, EXDATE), moved occurrences in
+ * place of the ones they replace, cancelled ones left out. Never throws.
+ */
+export function icsInstances(text: string, options: InstanceOptions): IcsInstance[] {
+  const { from, to } = options;
+  if (!(to > from)) return [];
+  const maxOccurrences = options.maxOccurrences ?? 1000;
+  const { zone, grouped } = prepare(text, options.defaultTimeZone);
+  const out: IcsInstance[] = [];
+
+  for (const master of grouped.masters) {
+    try {
+      if (master.cancelled) continue;
+      const span = spanOrDefault(eventSpan(master, zone), master.allDay);
+      const moved = master.uid ? grouped.overrides.get(master.uid) : undefined;
+      if (!isRecurring(master, moved)) {
+        const start = instantOfTime(master.start, zone);
+        const day = dayOfTime(master.start, zone);
+        const single = makeInstance(master, undefined, start, day, span, null, false, zone);
+        if (inWindow(single, from, to)) out.push(single);
+        continue;
+      }
+      const starts = occurrenceStarts(master, zone, {
+        from,
+        to,
+        maxOccurrences,
+        spanMs: span.allDay ? (span.days + 1) * DAY_MS : Math.max(span.ms, 1),
+        spanDays: span.allDay ? span.days : Math.ceil(span.ms / DAY_MS),
+      });
+      for (const { key, start } of starts) {
+        if (moved?.has(key)) continue;
+        const day = key.startsWith("d:") ? key.slice(2) : dayOf(wallOf(start, zone));
+        const instance = makeInstance(master, undefined, start, day, span, key, true, zone);
+        if (inWindow(instance, from, to)) out.push(instance);
+      }
+    } catch {
+      // A broken event is left out.
+    }
+  }
+
+  for (const [uid, moved] of grouped.overrides) {
+    const master = grouped.byUid.get(uid);
+    if (master?.cancelled) continue;
+    for (const [key, event] of moved) {
+      try {
+        const instance = overrideInstance(event, master, key, zone);
+        if (instance && inWindow(instance, from, to)) out.push(instance);
+      } catch {
+        // A broken occurrence is left out.
+      }
+    }
+  }
+  return out.sort((a, b) => a.start - b.start);
+}
+
+/**
+ * One occurrence by its key wherever it lies (null = a single event, or a
+ * series' first occurrence); null when there is none (excluded, cancelled).
+ */
+export function icsInstance(
+  text: string,
+  key: string | null,
+  defaultTimeZone: string,
+): IcsInstance | null {
+  const { zone, grouped } = prepare(text, defaultTimeZone);
+  try {
+    if (key === null) {
+      const master = grouped.masters.find((event) => !event.cancelled);
+      if (!master) return null;
+      const span = spanOrDefault(eventSpan(master, zone), master.allDay);
+      const moved = master.uid ? grouped.overrides.get(master.uid) : undefined;
+      const recurring = isRecurring(master, moved);
+      const start = instantOfTime(master.start, zone);
+      const day = dayOfTime(master.start, zone);
+      const own = recurring ? (master.allDay ? `d:${day}` : `t:${start}`) : null;
+      return makeInstance(master, undefined, start, day, span, own, recurring, zone);
+    }
+
+    const time = parseRecurrenceKey(key);
+    if (!time) return null;
+    const internal = time.kind === "date" ? `d:${time.day}` : `t:${instantOfTime(time, zone)}`;
+    for (const [uid, moved] of grouped.overrides) {
+      const event = moved.get(internal);
+      if (!event) continue;
+      const master = grouped.byUid.get(uid);
+      if (master?.cancelled) return null;
+      return overrideInstance(event, master, internal, zone);
+    }
+    const at = instantOfTime(time, zone);
+    for (const master of grouped.masters) {
+      if (master.cancelled) continue;
+      const moved = master.uid ? grouped.overrides.get(master.uid) : undefined;
+      if (!isRecurring(master, moved)) continue;
+      const span = spanOrDefault(eventSpan(master, zone), master.allDay);
+      const hit = occurrenceStarts(master, zone, {
+        from: at - 1,
+        to: at + 1,
+        maxOccurrences: 10,
+        spanMs: 2,
+        spanDays: 0,
+      }).find((item) => item.key === internal);
+      if (!hit) continue;
+      const day = internal.startsWith("d:") ? internal.slice(2) : dayOf(wallOf(hit.start, zone));
+      return makeInstance(master, undefined, hit.start, day, span, internal, true, zone);
+    }
+  } catch {
+    // A broken resource has no instance.
+  }
+  return null;
 }
