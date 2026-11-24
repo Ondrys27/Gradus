@@ -130,6 +130,52 @@ test("69a · widgets: add from the gallery, move, resize, open the detail, saved
  * widgets; the worker's board leaves them out quietly, the gallery does not
  * offer them, and asking the database directly gives nothing either.
  */
+/**
+ * GR-87H55P: a widget dragged over others of another size and held still made
+ * the grid swap two widgets back and forth until React gave up (error #185).
+ * The drag sweeps over every widget, stops on each, and the page stays whole.
+ */
+test("69c · widgets: dragging over widgets of other sizes and holding still does not loop", async ({
+  page,
+  accounts,
+}) => {
+  const owner = await accounts.create({ label: "widgets-sweep", mode: "tool" });
+  await signIn(page, owner);
+  await page.setViewportSize({ width: 1440, height: 2000 });
+  await openApp(page, "/app");
+  await expect(board(page).first()).toBeVisible();
+  await page.getByTestId("board-edit").click();
+  await expect(page.getByTestId("widget-board")).toHaveAttribute("data-editing", "true");
+
+  const boxes = await board(page).evaluateAll((nodes) =>
+    nodes.map((node) => {
+      const r = node.getBoundingClientRect();
+      return { x: r.x, y: r.y, w: r.width, h: r.height };
+    }),
+  );
+  expect(boxes.length).toBeGreaterThan(2);
+  const first = boxes[0];
+  await page.mouse.move(first.x + first.w / 2, first.y + first.h / 2);
+  await page.mouse.down();
+  await page.mouse.move(first.x + first.w / 2 + 12, first.y + first.h / 2 + 12, { steps: 4 });
+  // Over every widget: its corners and middle, holding still at each.
+  for (const box of [...boxes.slice(1), ...boxes.slice(1).reverse()]) {
+    for (const [fx, fy] of [
+      [0.2, 0.2],
+      [0.5, 0.5],
+      [0.8, 0.8],
+    ]) {
+      await page.mouse.move(box.x + box.w * fx, box.y + box.h * fy, { steps: 6 });
+      await page.waitForTimeout(120);
+    }
+  }
+  await page.mouse.up();
+
+  // Still the board, not the error screen (the fixture fails on the console error too).
+  await expect(page.getByTestId("widget-grid")).toBeVisible();
+  await expect(board(page)).toHaveCount(boxes.length);
+});
+
 test("69b · a worker without finance sees no finance widget, not even through the API", async ({
   page,
   accounts,

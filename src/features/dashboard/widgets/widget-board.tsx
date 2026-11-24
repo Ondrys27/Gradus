@@ -28,6 +28,7 @@ import {
   newItemId,
   removeItem,
   resizeItem,
+  sameItems,
   updateSettings,
   type LayoutItem,
 } from "./grid";
@@ -322,7 +323,12 @@ export function WidgetBoard({
           onDragOver={(activeId, overId) => {
             const current = editor.current() ?? items;
             const index = current.findIndex((item) => item.id === overId);
-            if (index >= 0) editor.preview(moveItem(current, activeId, index));
+            if (index < 0) return false;
+            const next = moveItem(current, activeId, index);
+            // Already in that place: no new render (each one makes dnd-kit measure again).
+            if (sameItems(current, next)) return false;
+            editor.preview(next);
+            return true;
           }}
           onDragEnd={(commit, activeId) => {
             const before = dragStart.current;

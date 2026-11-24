@@ -12,6 +12,7 @@ import {
   useSensors,
   type CollisionDetection,
   type DragEndEvent,
+  type DragMoveEvent,
   type DragOverEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
@@ -23,6 +24,7 @@ import { widgetMeta, type WidgetMeta } from "./catalog";
 import {
   arrange,
   columnsFor,
+  dragSettled,
   FULL_COLUMNS,
   NARROW_COLUMNS,
   type LayoutItem,
@@ -116,8 +118,8 @@ type Props = {
   onSettings?: (entry: GridEntry) => void;
   /** A drag began: the order before it, to commit or cancel against. */
   onDragStart?: () => void;
-  /** The dragged widget is over another one: take its place (shown at once). */
-  onDragOver?: (activeId: string, overId: string) => void;
+  /** The dragged widget is over another one: take its place (shown at once). True = the order changed. */
+  onDragOver?: (activeId: string, overId: string) => boolean;
   onDragEnd?: (commit: boolean, activeId: string) => void;
 };
 
@@ -178,22 +180,33 @@ export function WidgetGrid({
   );
   const active = entries.find((entry) => entry.item.id === activeId) ?? null;
   const rowHeight = ROW_HEIGHT[cols];
+  /** Where the pointer was (the drag's offset) when the drag last moved a widget. */
+  const lastMove = useRef<{ x: number; y: number } | null>(null);
 
   function start(event: DragStartEvent) {
+    lastMove.current = null;
     setActiveId(String(event.active.id));
     haptic("lift");
     onDragStart?.();
   }
-  function over(event: DragOverEvent) {
+  // Both a new widget under the pointer and the pointer going on over the same
+  // one may move it: a widget skipped while the grid settled still gets its turn.
+  function over(event: DragOverEvent | DragMoveEvent) {
     const overId = event.over ? String(event.over.id) : null;
-    if (overId && overId !== String(event.active.id)) onDragOver?.(String(event.active.id), overId);
+    const activeKey = String(event.active.id);
+    if (!overId || overId === activeKey) return;
+    // A move re-packs the grid under a still pointer; only the pointer going on moves again.
+    if (!dragSettled(lastMove.current, event.delta)) return;
+    if (onDragOver?.(activeKey, overId)) lastMove.current = { x: event.delta.x, y: event.delta.y };
   }
   function end(event: DragEndEvent) {
+    lastMove.current = null;
     setActiveId(null);
     haptic("drop");
     onDragEnd?.(true, String(event.active.id));
   }
   function cancel() {
+    lastMove.current = null;
     const id = activeId;
     setActiveId(null);
     if (id) onDragEnd?.(false, id);
@@ -205,6 +218,7 @@ export function WidgetGrid({
       collisionDetection={collision}
       onDragStart={start}
       onDragOver={over}
+      onDragMove={over}
       onDragEnd={end}
       onDragCancel={cancel}
       accessibility={{

@@ -131,6 +131,22 @@ export function withPositions(items: readonly LayoutItem[]): LayoutItem[] {
   });
 }
 
+/**
+ * How far the pointer has to travel after a drag moved a widget before the
+ * next widget under it may move it again. A move re-packs the grid under a
+ * still pointer, so a widget of another size lands under it and would swap
+ * straight back, again and again (React error #185, GR-87H55P).
+ */
+export const DRAG_SETTLE_PX = 16;
+
+/** The drag may move the widget again: none moved yet, or the pointer went on since. */
+export function dragSettled(
+  last: { x: number; y: number } | null,
+  now: { x: number; y: number },
+): boolean {
+  return last === null || Math.hypot(now.x - last.x, now.y - last.y) >= DRAG_SETTLE_PX;
+}
+
 /** Moves the item to position `toIndex` of the order; the rest keep theirs. */
 export function moveItem(items: readonly LayoutItem[], id: string, toIndex: number): LayoutItem[] {
   const from = items.findIndex((item) => item.id === id);

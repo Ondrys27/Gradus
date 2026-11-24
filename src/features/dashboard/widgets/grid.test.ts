@@ -4,6 +4,8 @@ import {
   arrange,
   cleanItems,
   columnsFor,
+  dragSettled,
+  DRAG_SETTLE_PX,
   hasCollision,
   moveItem,
   removeItem,
@@ -148,5 +150,25 @@ describe("cleanItems", () => {
     expect(
       cleanItems([{ id: "a", widget: "today", size: "S", settings: { t: "x".repeat(3000) } }]),
     ).toEqual([]);
+  });
+});
+
+describe("dragSettled", () => {
+  it("lets the first move through", () => {
+    expect(dragSettled(null, { x: 0, y: 0 })).toBe(true);
+  });
+
+  it("holds the next move while the pointer stays where the last one happened", () => {
+    // A move re-packs the grid under a still pointer: another widget lands
+    // under it, and moving again would swap the two back and forth for ever.
+    const last = { x: 120, y: 40 };
+    expect(dragSettled(last, last)).toBe(false);
+    expect(dragSettled(last, { x: 125, y: 43 })).toBe(false);
+  });
+
+  it("moves again once the pointer went on", () => {
+    const last = { x: 120, y: 40 };
+    expect(dragSettled(last, { x: 120 + DRAG_SETTLE_PX, y: 40 })).toBe(true);
+    expect(dragSettled(last, { x: 100, y: 10 })).toBe(true);
   });
 });
