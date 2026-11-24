@@ -153,7 +153,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 28.4 | architect | — 2026-11-23: Poznámky a myšlenkové mapy píše víc lidí najednou (Yjs přes Supabase Realtime, barevné kurzory se jmény, práce offline se sloučením po návratu, čtenáři vidí změny živě, verze po 10 minutách a Grady jako další účastník).
 - [x] 28.5 | architect | — 2026-11-23: Přehled je plocha z widgetů (galerie s živými náhledy, přeskládání tažením, velikosti, nastavení, rozkliknutý detail, víc přehledů jako záložky, výchozí přehled firmy a skupin, ukládá se samo s ⌘Z).
 - [x] 28.6 | designer | — 2026-11-24: Každý widget má v každé velikosti vlastní kompozici s grafy a jednotnou anatomií, plocha se v úpravách vlní s vlastní fází, widgety vyletí z galerie ve stylu iOS a smrsknou se, detail vyroste z místa widgetu, na telefonu dlouhý stisk a spodní panel.
-- [ ] 28.7 | architect | env: ANTHROPIC_API_KEY
+- [x] 28.7 | architect | env: ANTHROPIC_API_KEY — 2026-11-24: Grady smí přes jeden katalog nástrojů (sdílený s MCP) totéž co uživatel včetně vratného mazání, umí z vloženého zápisu schůzky navrhnout úkoly, fázi, Close Date a kontakty jako jednu akci s jedním Vrátit a firma má přehled aktivity.
 - [ ] 28.8 | architect |
 - [ ] 28.9 | architect | env: ANTHROPIC_API_KEY
 - [ ] K28 | reviewer |
