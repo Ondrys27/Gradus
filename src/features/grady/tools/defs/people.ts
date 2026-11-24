@@ -279,6 +279,7 @@ export const companyTools = [
 
   defineTool({
     name: "remove_worker",
+    level: "delete",
     section: "company",
     action: "update",
     ownerOnly: true,
@@ -357,6 +358,7 @@ export const chatTools = [
 
   defineTool({
     name: "send_chat_message",
+    level: "delete",
     section: "chat",
     action: null,
     kind: "write",

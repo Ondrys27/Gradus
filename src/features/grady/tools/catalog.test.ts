@@ -42,6 +42,8 @@ const SAMPLE_VALUES = {
   to: "x@example.com",
   section: "pipeline",
   when: "1. 1.",
+  widget: "X",
+  action: "approve",
 };
 
 const SECTIONS = new Set<string>([...PERMISSION_CATALOG.map((section) => section.key), "chat"]);

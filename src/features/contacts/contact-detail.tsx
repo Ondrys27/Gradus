@@ -48,6 +48,7 @@ import { NewDealFromContactDialog } from "@/features/pipeline/new-deal-from-cont
 import { useAssigneeName } from "@/features/crm-tasks/use-assignee-name";
 import { useMinuteClock } from "@/features/crm-tasks/use-task-dialogs";
 import { ComposeEmailDialog } from "@/features/email/compose-email-dialog";
+import { MeetingNotesButton } from "@/features/meeting-notes/meeting-notes-dialog";
 import { emailSummary } from "@/features/email/types";
 import { MentionedInNotes } from "@/features/notes/mentioned-in-notes";
 import { ActivityPanel } from "./activity-panel";
@@ -174,6 +175,7 @@ function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNo
         </div>
         {canEdit && (
           <div className="flex flex-wrap gap-2">
+            <MeetingNotesButton target={{ kind: "contact", id: contact.id }} />
             <Button variant="outline" onClick={() => setEditing(true)}>
               <PencilIcon aria-hidden data-icon="inline-start" />
               {t("detail.edit")}

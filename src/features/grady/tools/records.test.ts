@@ -116,3 +116,48 @@ describe("undo of Grady's changes", () => {
     });
   });
 });
+
+describe("undo of a deletion (28.7)", () => {
+  it("puts deleted rows back as they were, parents before their subtasks", () => {
+    // The tool notes the deepest rows first; Undo goes newest first.
+    const records: UndoRecord[] = [
+      {
+        table: "tasks",
+        match: { id: "child" },
+        op: "delete",
+        row: { title: "Sub", parent_task_id: "parent" },
+      },
+      {
+        table: "tasks",
+        match: { id: "parent" },
+        op: "delete",
+        row: { title: "Top", parent_task_id: null },
+      },
+    ];
+    const plan = planUndo(records, rows({}));
+    expect(plan.ok).toBe(true);
+    if (!plan.ok) return;
+    expect(plan.steps.map((step) => `${step.kind}:${step.record.match.id}`)).toEqual([
+      "reinsert:parent",
+      "reinsert:child",
+    ]);
+    const first = plan.steps[0];
+    expect(first.kind === "reinsert" && first.values).toEqual({
+      title: "Top",
+      parent_task_id: null,
+      id: "parent",
+    });
+  });
+
+  it("overwrites nothing when a row with the key exists again", () => {
+    const record: UndoRecord = {
+      table: "crm_tasks",
+      match: { id: "t" },
+      op: "delete",
+      row: { title: "Call" },
+      then: { status: "done" },
+    };
+    const plan = planUndo([record], rows({ "crm_tasks:t": { id: "t" } }));
+    expect(plan).toEqual({ ok: false, reason: "changed", record });
+  });
+});

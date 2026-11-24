@@ -26,6 +26,7 @@ import { EVENT_KINDS } from "@/features/calendar/types";
 import { zonedWallClockToInstant } from "@/lib/format";
 import { defineTool, ToolError, type ToolContext } from "../types";
 import {
+  deleted,
   hrefs,
   instant,
   inserted,
@@ -59,7 +60,7 @@ async function readEvent(ctx: ToolContext, id: string) {
     ctx.db
       .from("calendar_events")
       .select(
-        "id, title, kind, starts_at, ends_at, all_day, description, contact_id, deal_id, source",
+        "id, title, kind, starts_at, ends_at, all_day, description, location, contact_id, deal_id, source",
       )
       .eq("user_id", ctx.workspaceId)
       .eq("id", id)
@@ -238,11 +239,13 @@ export const crmTaskTools = [
 
   defineTool({
     name: "delete_crm_task",
+    level: "delete",
     section: "tasks",
     action: "delete",
     kind: "write",
     risk: "confirm",
-    description: "Delete a sales task for good. The user confirms it first.",
+    description:
+      "Delete a sales task (Undo on the card brings it back for 24 hours). The user confirms it first.",
     input: z.object({ taskId: uuid }),
     describe: (_input, t) => t("delete_crm_task", { title: "" }),
     async prepare(ctx, input) {
@@ -257,10 +260,30 @@ export const crmTaskTools = [
       await deleteCrmTask(ops(ctx), task.id);
       return {
         output: { deleted: true },
+        // Undo puts it back (a done one is done again, with its note).
+        records: [
+          deleted(
+            "crm_tasks",
+            task.id,
+            {
+              user_id: ctx.workspaceId,
+              title: task.title,
+              description: task.description,
+              due_at: task.due_at,
+              duration_minutes: task.duration_minutes,
+              assignee_id: task.assignee_id,
+              deal_id: task.deal_id,
+              contact_id: task.contact_id,
+            },
+            task.status === "done"
+              ? { status: "done", completion_note: task.completion_note }
+              : undefined,
+          ),
+        ],
         summary: ctx.t("deleted_crm_task", { title: quoted(task.title) }),
       };
     },
-    undoable: false,
+    undoable: true,
     invalidates: ["crmTasks", "pipeline", "contacts", "calendar", "dashboard"],
   }),
 ];
@@ -384,11 +407,13 @@ export const calendarTools = [
 
   defineTool({
     name: "delete_event",
+    level: "delete",
     section: "calendar",
     action: "update",
     kind: "write",
     risk: "confirm",
-    description: "Delete a calendar event (its contact and deal stay). The user confirms it first.",
+    description:
+      "Delete a calendar event (its contact and deal stay; Undo brings it back for 24 hours). The user confirms it first.",
     input: z.object({ eventId: uuid }),
     describe: (_input, t) => t("delete_event", { title: "" }),
     async prepare(ctx, input) {
@@ -405,10 +430,24 @@ export const calendarTools = [
       await deleteEvent(ops(ctx), event.id);
       return {
         output: { deleted: true },
+        records: [
+          deleted("calendar_events", event.id, {
+            user_id: ctx.workspaceId,
+            title: event.title,
+            kind: event.kind,
+            starts_at: event.starts_at,
+            ends_at: event.ends_at,
+            all_day: event.all_day,
+            description: event.description,
+            location: event.location,
+            contact_id: event.contact_id,
+            deal_id: event.deal_id,
+          }),
+        ],
         summary: ctx.t("deleted_event", { title: quoted(event.title) }),
       };
     },
-    undoable: false,
+    undoable: true,
     invalidates: ["calendar", "dashboard"],
   }),
 ];

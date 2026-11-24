@@ -62,6 +62,34 @@ export function updated(table: UndoTable, id: string, before: Record<string, Jso
   return { table, match: { id }, op: "update", before };
 }
 
+/**
+ * A row the tool deletes, as it was: Undo inserts it again (only the columns
+ * a client may write; `then` = what the database sets on its own at insert,
+ * written right after, e.g. a done task starts open).
+ */
+export function deleted(
+  table: UndoTable,
+  id: string,
+  row: Record<string, unknown>,
+  then?: Record<string, unknown>,
+): UndoRecord {
+  const values: Record<string, Json> = {};
+  for (const [key, value] of Object.entries(row)) {
+    if (value !== undefined && key !== "id") values[key] = value as Json;
+  }
+  const after: Record<string, Json> = {};
+  for (const [key, value] of Object.entries(then ?? {})) {
+    if (value !== undefined) after[key] = value as Json;
+  }
+  return {
+    table,
+    match: { id },
+    op: "delete",
+    row: values,
+    ...(Object.keys(after).length ? { then: after } : {}),
+  };
+}
+
 /** The fields of `patch` that are set, and their values before from `row`. */
 export function previousOf(row: Record<string, unknown>, patch: Record<string, unknown>) {
   const before: Record<string, Json> = {};

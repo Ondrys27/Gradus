@@ -16,7 +16,7 @@ import { MILESTONE_COLUMNS, type Task } from "@/features/milestones/types";
 import type { Json } from "@/types/database";
 import { readRow, type UndoRecord } from "../records";
 import { defineTool, ToolError, type ToolContext } from "../types";
-import { hrefs, inserted, isoDate, mustFind, ops, quoted, updated, uuid } from "./shared";
+import { deleted, hrefs, inserted, isoDate, mustFind, ops, quoted, updated, uuid } from "./shared";
 
 /** Tasks Grady adds with one call; a bigger plan is an import of a mind map. */
 const TASKS_PER_CALL = 50;
@@ -470,12 +470,13 @@ export const milestoneTools = [
 
   defineTool({
     name: "delete_task",
+    level: "delete",
     section: "milestones",
     action: "update",
     kind: "write",
     risk: "confirm",
     description:
-      "Delete a milestone task together with all its subtasks. The user confirms it first.",
+      "Delete a milestone task together with all its subtasks (Undo brings them back for 24 hours). The user confirms it first.",
     input: z.object({ taskId: uuid }),
     describe: (_input, t) => t("delete_task", { title: "", count: 0 }),
     async prepare(ctx, input) {
@@ -503,17 +504,32 @@ export const milestoneTools = [
           .eq("id", input.taskId)
           .maybeSingle(),
       );
-      const removed = subtreeIds(
-        (await milestoneTasks(ctx, task.milestone_id)) as Task[],
-        task.id,
-      ).size;
+      const subtree = subtreeIds((await milestoneTasks(ctx, task.milestone_id)) as Task[], task.id);
+      const removed = subtree.size;
+      // The rows as they were, for Undo: parents go back before their subtasks.
+      const { data: full, error } = await ctx.db
+        .from("tasks")
+        .select(
+          "id, milestone_id, parent_task_id, position, status, title, description, due_date, template_id",
+        )
+        .eq("user_id", ctx.workspaceId)
+        .in("id", [...subtree].slice(0, TREE_TASKS));
+      if (error) throw error;
+      const byId = new Map(full.map((row) => [row.id, row]));
+      const records = [...subtree]
+        .map((id) => byId.get(id))
+        .filter((row): row is NonNullable<typeof row> => Boolean(row))
+        .map((row) => deleted("tasks", row.id, { ...row, user_id: ctx.workspaceId }))
+        // Undo goes newest first: the deepest rows are noted first, the task itself last.
+        .reverse();
       await deleteTask(ops(ctx), task.id, removed);
       return {
         output: { deleted: removed },
+        records,
         summary: ctx.t("deleted_task", { title: quoted(task.title) }),
       };
     },
-    undoable: false,
+    undoable: true,
     invalidates: ["milestones", "dashboard"],
   }),
 

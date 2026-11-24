@@ -42,6 +42,7 @@ export const GRADY_FEATURES = [
   "ping",
   "briefing",
   "note_map_suggest",
+  "meeting_notes",
   "chat_route",
 ] as const;
 export type GradyFeature = (typeof GRADY_FEATURES)[number];
@@ -69,6 +70,8 @@ const DEFAULTS: Record<GradyFeature, AiModelKey> = {
   briefing: "sonnet",
   // Branches for the user's own mind map: ideas worth a conversation model.
   note_map_suggest: "sonnet",
+  // A meeting turned into changes of the user's own data (28.7): reads a long text carefully.
+  meeting_notes: "sonnet",
   analysis: "opus",
 };
 

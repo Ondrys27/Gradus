@@ -30,6 +30,8 @@ import { emailSummary } from "@/features/email/types";
 import { useCreateInvoiceFromDeal } from "@/features/invoices/queries";
 import { invoicePath } from "@/features/invoices/types";
 import { useInvoiceErrorText } from "@/features/invoices/use-invoice-error";
+import { DealAttachments } from "@/features/meeting-notes/deal-attachments";
+import { MeetingNotesButton } from "@/features/meeting-notes/meeting-notes-dialog";
 import { MentionedInNotes } from "@/features/notes/mentioned-in-notes";
 import { WorkNotes } from "@/features/notes/work-notes";
 import { formatDate } from "@/lib/format";
@@ -176,7 +178,13 @@ function DetailBody({
       <DealActivityTimeline deal={deal} />
     </section>
   );
-  const actions = <DealActions deal={deal} onClose={onClose} />;
+  const actions = (
+    <div className="flex flex-col gap-4">
+      <MeetingNotesButton target={{ kind: "deal", id: deal.id }} className="w-full" />
+      <DealAttachments dealId={deal.id} />
+      <DealActions deal={deal} onClose={onClose} />
+    </div>
+  );
   const failed = patch.isError && <FormAlert>{t("saveFailed")}</FormAlert>;
 
   if (isPhone) {

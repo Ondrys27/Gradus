@@ -4,11 +4,13 @@ import { ToolError } from "./types";
 
 /**
  * Undo of Grady's changes. A tool notes every record it changed: what it
- * inserted, and for what it updated the fields' values before. Undo takes
- * back exactly that change: deletes what was inserted, writes the old values
- * back. When a record changed since in some other way (its updated_at, or
+ * inserted, for what it updated the fields' values before, and for what it
+ * deleted the row as it was (28.7: a deletion through Grady can be taken
+ * back like any other change). Undo takes back exactly that change: deletes
+ * what was inserted, writes the old values back, inserts a deleted row
+ * again. When a record changed since in some other way (its updated_at, or
  * for a table without one the changed fields, is no longer what the change
- * left), Undo says so and changes nothing.
+ * left; a deleted row that exists again), Undo says so and changes nothing.
  *
  * Everything goes with the user's own client: an undo is a write like any
  * other (RLS, guards, read-only mode).
@@ -32,10 +34,15 @@ export const UNDO_TABLES = {
   finance_plan_cells: true,
   worker_groups: true,
   worker_group_members: false,
+  note_folders: true,
+  dashboard_layouts: true,
+  deal_attachments: true,
+  reward_entries: true,
   workers: true,
   user_settings: true,
   profiles: true,
   event_types: true,
+  availability_overrides: false,
 } as const;
 export type UndoTable = keyof typeof UNDO_TABLES;
 
@@ -45,9 +52,21 @@ export type UndoRecord = {
   table: UndoTable;
   /** The row: its id, or the columns of its key (finance_plan_cells: row_id + week). */
   match: Match;
-  op: "insert" | "update";
+  op: "insert" | "update" | "delete";
   /** update: the changed fields as they were before. */
   before?: Record<string, Json>;
+  /** delete: the row as it was, inserted again by Undo (only columns a client may write). */
+  row?: Record<string, Json>;
+  /**
+   * delete: fields the database sets on its own at insert (a done task starts
+   * open), written right after the row is back.
+   */
+  then?: Record<string, Json>;
+  /**
+   * The tool that made the change, in a bundle of several tools (meeting
+   * notes): Undo hands the records of a tool with an undo of its own to it.
+   */
+  tool?: string;
   /** update: the same fields as the change left them (compared where there is no updated_at). */
   after?: Record<string, Json>;
   /** updated_at as the change left it; null for a table without one. */
@@ -60,6 +79,8 @@ export type CurrentRow = Record<string, Json> | null;
 export type UndoStep =
   | { kind: "delete"; record: UndoRecord }
   | { kind: "restore"; record: UndoRecord; values: Record<string, Json> }
+  /** A deleted row goes back as it was. */
+  | { kind: "reinsert"; record: UndoRecord; values: Record<string, Json> }
   /** Inserted and already gone (deleted with its parent, or by hand): nothing to do. */
   | { kind: "skip"; record: UndoRecord };
 
@@ -97,6 +118,12 @@ export function planUndo(
   const steps: UndoStep[] = [];
   for (const record of [...records].reverse()) {
     const row = current(record);
+    if (record.op === "delete") {
+      // Something with its key exists again: nothing is overwritten.
+      if (row) return { ok: false, reason: "changed", record };
+      steps.push({ kind: "reinsert", record, values: { ...(record.row ?? {}), ...record.match } });
+      continue;
+    }
     if (record.op === "insert") {
       if (!row) {
         steps.push({ kind: "skip", record });
@@ -126,6 +153,7 @@ type Filter = PromiseLike<{ data: unknown; error: DbError }> & {
 /** The few calls Undo makes, on any of its tables (the names are only known at run time). */
 type LooseTable = {
   select(columns: string): Filter;
+  insert(values: Record<string, Json>): Filter;
   update(values: Record<string, Json>): Filter;
   delete(): Filter;
 };
@@ -143,6 +171,7 @@ function matching(query: Filter, match: Match): Filter {
 /** Columns read to check a record: updated_at, or the changed fields. */
 function columnsOf(record: UndoRecord): string[] {
   const columns = new Set<string>(Object.keys(record.match));
+  if (record.op === "delete") return [...columns];
   if (UNDO_TABLES[record.table]) columns.add("updated_at");
   for (const field of Object.keys(record.after ?? {})) columns.add(field);
   return [...columns];
@@ -187,8 +216,9 @@ export async function before(
 export async function stampRecords(db: Db, records: UndoRecord[]): Promise<UndoRecord[]> {
   const out: UndoRecord[] = [];
   for (const record of records) {
-    // A tool that noted the state after the change itself (a custom undo) keeps it.
-    if (record.after) {
+    // A tool that noted the state after the change itself (a custom undo) keeps it;
+    // a deleted row has nothing to stamp.
+    if (record.after || record.op === "delete") {
       out.push(record);
       continue;
     }
@@ -224,6 +254,11 @@ export async function undoRecords(db: Db, records: UndoRecord[]): Promise<UndoRe
   if (!plan.ok) return { ok: false, reason: plan.reason };
   for (const step of plan.steps) {
     if (step.kind === "skip") continue;
+    if (step.kind === "reinsert") {
+      const back = await reinsert(db, step.record, step.values);
+      if (!back) return { ok: false, reason: "failed" };
+      continue;
+    }
     const table = tableOf(db, step.record.table);
     const query = step.kind === "delete" ? table.delete() : table.update(step.values);
     // The rows written come back: a write row level security filters out is no error, only no row.
@@ -247,4 +282,29 @@ export async function undoRecords(db: Db, records: UndoRecord[]): Promise<UndoRe
     }
   }
   return { ok: true };
+}
+
+/** A deleted row inserted again, then the fields the database set on its own put back. */
+async function reinsert(
+  db: Db,
+  record: UndoRecord,
+  values: Record<string, Json>,
+): Promise<boolean> {
+  const table = tableOf(db, record.table);
+  const keys = Object.keys(record.match).join(", ");
+  const { data, error } = await table.insert(values).select(keys);
+  if (error || !Array.isArray(data) || data.length === 0) {
+    console.error("grady undo could not restore", record.table, error?.code);
+    return false;
+  }
+  if (record.then && Object.keys(record.then).length) {
+    const { error: thenError } = await matching(table.update(record.then), record.match).select(
+      keys,
+    );
+    if (thenError) {
+      console.error("grady undo could not finish the restore", record.table, thenError.code);
+      return false;
+    }
+  }
+  return true;
 }

@@ -713,6 +713,21 @@
       "removed_worker": "Odebral jsem {name} z firmy",
       "update_settings": "Změnil jsem nastavení",
       "bulk": "Hromadná změna: {count, plural, one {# krok} few {# kroky} other {# kroků}}",
+      "create_note_folder": "Založil jsem složku „{name}“",
+      "move_note_to_folder": "Přesunul jsem poznámku „{title}“ do jiné složky",
+      "restore_note": "Vrátil jsem poznámku „{title}“ z koše",
+      "share_note": "Nasdílet poznámku „{title}“",
+      "shared_note": "Nasdílel jsem poznámku „{title}“",
+      "add_deal_history_entry": "Zapsal jsem do historie obchodu „{title}“",
+      "save_deal_attachment": "Uložil jsem „{name}“ k obchodu „{title}“",
+      "list_reward_entries": "Čtu odměny",
+      "review_reward_entries": "{action, select, approve {Schválit} other {Zamítnout}} {count, plural, one {# odměnu} few {# odměny} other {# odměn}}{total}",
+      "reviewed_reward_entries": "{action, select, approve {Schválil jsem} other {Zamítl jsem}} {count, plural, one {# odměnu} few {# odměny} other {# odměn}}{total}",
+      "add_manual_reward": "Přidat {amount} do odměn: {name}",
+      "added_manual_reward": "Přidal jsem {amount} do odměn: {name}",
+      "place_widget": "Dal jsem „{widget}“ na přehled",
+      "hide_widget": "Odebral jsem „{widget}“ z přehledu",
+      "meeting_notes": "Zápis ze schůzky: {count, plural, one {# změna} few {# změny} other {# změn}}",
       "progress": {
         "default": "Pracuji v aplikaci…",
         "search_records": "Hledám…",
@@ -782,7 +797,18 @@
         "save_worker_group": "Ukládám skupinu…",
         "set_worker_permissions": "Měním práva…",
         "remove_worker": "Připravuji odebrání…",
-        "update_settings": "Měním nastavení…"
+        "update_settings": "Měním nastavení…",
+        "create_note_folder": "Zakládám složku…",
+        "move_note_to_folder": "Přesouvám poznámku…",
+        "restore_note": "Vracím poznámku…",
+        "share_note": "Připravuji sdílení poznámky…",
+        "add_deal_history_entry": "Zapisuji do historie obchodu…",
+        "save_deal_attachment": "Ukládám přílohu…",
+        "list_reward_entries": "Dívám se na odměny…",
+        "review_reward_entries": "Připravuji schválení…",
+        "add_manual_reward": "Připravuji odměnu…",
+        "place_widget": "Dávám widget na přehled…",
+        "hide_widget": "Odebírám widget…"
       }
     },
     "actions": {
@@ -4400,15 +4426,16 @@
       },
       "activity": {
         "name": "Aktivita ve firmě",
-        "description": "Poslední hovory, e-maily, schůzky a přesuny kontaktů a kdo je udělal.",
+        "description": "Kdo co ve firmě udělal: obchody, kontakty, hovory, úkoly, schůzky a faktury, i přes Gradyho.",
         "someone": "Někdo",
         "line": "{who}: {what} – {contact}",
         "unnamed": "bez jména",
         "emptyTitle": "Zatím žádná aktivita",
-        "emptyHint": "Hovory a schůzky s kontakty se ukážou tady.",
+        "emptyHint": "Tady se ukážou kroky lidí, které vidíš.",
         "weekCount": "{count, plural, one {akce za 7 dní} few {akce za 7 dní} many {akce za 7 dní} other {akcí za 7 dní}}",
         "chart": "Aktivita po dnech",
-        "openContacts": "Otevřít kontakty"
+        "openContacts": "Otevřít kontakty",
+        "openActivity": "Otevřít aktivitu"
       },
       "milestones": {
         "name": "Milníky a postup",
@@ -5075,6 +5102,7 @@
         "people": "Lidé",
         "groups": "Skupiny",
         "rewards": "Odměny a výplaty",
+        "activity": "Aktivita",
         "dashboards": "Přehledy"
       },
       "view": {
@@ -5221,6 +5249,97 @@
         "loadFailed": "Výchozí přehledy se nepodařilo načíst.",
         "remove": "Zrušit tento přehled",
         "readOnly": "Výchozí přehledy nastavuje majitel."
+      },
+      "activity": {
+        "timeline": "Kdo co udělal",
+        "loadFailed": "Aktivitu se nepodařilo načíst.",
+        "more": "Zobrazit starší",
+        "someone": "Někdo",
+        "empty": {
+          "title": "V tomhle období se nic nestalo",
+          "description": "Tady se ukážou kroky lidí, které vidíš: obchody, kontakty, hovory, úkoly, schůzky, faktury."
+        },
+        "filters": {
+          "period": "Období",
+          "person": "Člověk",
+          "group": "Skupina",
+          "kind": "Druh",
+          "everyone": "Všichni",
+          "allGroups": "Všechny skupiny",
+          "allKinds": "Vše"
+        },
+        "periods": {
+          "today": "Dnes",
+          "week": "7 dní",
+          "month": "30 dní",
+          "quarter": "90 dní"
+        },
+        "kinds": {
+          "deal": "Obchody",
+          "contact": "Kontakty a hovory",
+          "crm_task": "Obchodní úkoly",
+          "task": "Úkoly milníků",
+          "milestone": "Milníky",
+          "event": "Kalendář",
+          "invoice": "Faktury",
+          "transaction": "Transakce"
+        },
+        "via": {
+          "grady": "přes Gradyho",
+          "mcp": "přes Claude"
+        },
+        "daily": {
+          "title": "Den každého člověka",
+          "empty": "Za tohle období zatím žádná čísla.",
+          "tasks": "{count, plural, one {# úkol} few {# úkoly} other {# úkolů}}",
+          "deals": "{count, plural, one {# obchod} few {# obchody} other {# obchodů}}",
+          "calls": "{count, plural, one {# hovor} few {# hovory} other {# hovorů}}",
+          "meetings": "{count, plural, one {# schůzka} few {# schůzky} other {# schůzek}}"
+        },
+        "lines": {
+          "deal": {
+            "created": "{who} založil(a) obchod{title, select, none {} other { „{title}“}}",
+            "won": "{who} vyhrál(a) obchod{title, select, none {} other { „{title}“}}",
+            "lost": "{who} prohrál(a) obchod{title, select, none {} other { „{title}“}}",
+            "stage_changed": "{who} přesunul(a) obchod{title, select, none {} other { „{title}“}}{stage, select, none {} other { do fáze {stage}}}",
+            "amount_changed": "{who} změnil(a) částku obchodu{title, select, none {} other { „{title}“}}",
+            "deleted": "{who} smazal(a) obchod{title, select, none {} other { „{title}“}}"
+          },
+          "contact": {
+            "created": "{who} přidal(a) kontakt{title, select, none {} other { „{title}“}}",
+            "deleted": "{who} smazal(a) kontakt{title, select, none {} other { „{title}“}}",
+            "moved": "{who} přesunul(a) kontakt{title, select, none {} other { „{title}“}}{table, select, none {} other { do tabulky {table}}}",
+            "logged_call": "{who} volal(a){title, select, none {} other { „{title}“}}",
+            "logged_email": "{who} napsal(a) e-mail{title, select, none {} other { „{title}“}}",
+            "logged_meeting": "{who} měl(a) schůzku{title, select, none {} other { „{title}“}}",
+            "logged_sms": "{who} poslal(a) SMS{title, select, none {} other { „{title}“}}",
+            "logged_note": "{who} zapsal(a) poznámku ke kontaktu{title, select, none {} other { „{title}“}}"
+          },
+          "crm_task": {
+            "created": "{who} založil(a) úkol{title, select, none {} other { „{title}“}}",
+            "completed": "{who} splnil(a) úkol{title, select, none {} other { „{title}“}}",
+            "reopened": "{who} vrátil(a) úkol{title, select, none {} other { „{title}“}}",
+            "deleted": "{who} smazal(a) úkol{title, select, none {} other { „{title}“}}"
+          },
+          "task": {
+            "completed": "{who} odškrtl(a) úkol milníku{title, select, none {} other { „{title}“}}"
+          },
+          "milestone": {
+            "completed": "{who} dokončil(a) milník{title, select, none {} other { „{title}“}}"
+          },
+          "event": {
+            "scheduled": "{who} naplánoval(a) {kind, select, meeting {schůzku} other {událost}}{title, select, none {} other { „{title}“}}"
+          },
+          "invoice": {
+            "issued": "{who} vystavil(a) fakturu{title, select, none {} other { „{title}“}}",
+            "paid": "{who} označil(a) fakturu{title, select, none {} other { „{title}“}} jako zaplacenou",
+            "cancelled": "{who} stornoval(a) fakturu{title, select, none {} other { „{title}“}}"
+          },
+          "transaction": {
+            "created": "{who} zapsal(a) {type, select, income {příjem} other {výdaj}}{title, select, none {} other { „{title}“}}"
+          },
+          "other": "{who} udělal(a) změnu"
+        }
       }
     },
     "dashboard": {
@@ -7755,6 +7874,11 @@
             "name": "Navrhnout větve mapy",
             "does": "U uzlu myšlenkové mapy navrhne 3–8 nových větví.",
             "why": "Nápady do vlastní mapy uživatele, výstup ve formátu JSON."
+          },
+          "meeting_notes": {
+            "name": "Zápis ze schůzky",
+            "does": "Z vloženého přepisu nebo poznámek ze schůzky navrhne změny: shrnutí, úkoly, další krok, fázi, Close Date, částku, nové kontakty a poznámku.",
+            "why": "Čte dlouhý text a odpovídá strukturovaným JSON; nikdy pod Sonnetem."
           },
           "chat_route": {
             "name": "Výběr modelu pro chat",
@@ -11204,6 +11328,86 @@
         "title": "Díky za schůzku",
         "text": "Schůzka s {host} proběhla. Díky, že jste si udělali čas."
       }
+    }
+  },
+  "meetingNotes": {
+    "open": "Vložit zápis ze schůzky",
+    "title": "Zápis ze schůzky",
+    "close": "Zavřít",
+    "intro": "Vlož přepis nebo své poznámky ze schůzky (klidně s mluvčími), nebo nahraj .txt, .docx či .pdf. Grady navrhne změny; nic se neuloží, dokud je nepotvrdíš.",
+    "textLabel": "Přepis nebo poznámky",
+    "placeholder": "Jana: Takže nabídku bychom potřebovali do pátku…",
+    "length": "{chars} znaků",
+    "upload": "Nahrát soubor",
+    "cancel": "Zrušit",
+    "analyze": "Navrhnout změny",
+    "reading": "Grady čte schůzku…",
+    "back": "Zpět k textu",
+    "apply": "{count, plural, =0 {Nic není zaškrtnuté} one {Provést # změnu} few {Provést # změny} other {Provést # změn}}",
+    "done": "Hotovo: {count, plural, one {# změna} few {# změny} other {# změn}}. Jedním kliknutím jde vše vrátit.",
+    "undone": "Vráceno. Ze zápisu nezůstalo nic.",
+    "undo": "Vrátit vše",
+    "truncated": "Text byl moc dlouhý; Grady přečetl jen jeho začátek.",
+    "transcriptName": "Přepis schůzky.txt",
+    "proposalIntro": "Zaškrtni, co se má stát, a uprav to; provede se to najednou.",
+    "parts": "Dlouhý přepis, přečtený po {count} částech.",
+    "summaryDeal": "Shrnutí do historie obchodu",
+    "summaryContact": "Shrnutí do historie kontaktu",
+    "summaryLabel": "Shrnutí",
+    "nextStep": "Další krok (úkol)",
+    "task": "Úkol",
+    "taskTitle": "Úkol",
+    "time": "Čas",
+    "dueDefault": "Zítra 9:00",
+    "assigneeMe": "Já",
+    "assignee": "Kdo",
+    "stage": "Přesunout obchod: {from} → {to}",
+    "stageLabel": "Fáze",
+    "closeDate": "Očekávané uzavření",
+    "amount": "Částka",
+    "currency": "Měna",
+    "contactOnDeal": "Nový kontakt, na obchod",
+    "contact": "Nový kontakt",
+    "firstName": "Jméno",
+    "lastName": "Příjmení",
+    "company": "Firma",
+    "email": "E-mail",
+    "noteLinked": "Poznámka do Poznámek, propojená s obchodem",
+    "note": "Poznámka do Poznámek",
+    "noteTitle": "Název poznámky",
+    "noteText": "Text poznámky",
+    "transcript": "Uložit přepis k obchodu jako přílohu",
+    "errors": {
+      "unknown": "Něco se nepovedlo. Zkus to znovu.",
+      "network": "Chybí připojení. Zkus to znovu.",
+      "fileTooLarge": "Soubor je větší než 10 MB.",
+      "fileType": "Jen soubory .txt, .docx a .pdf.",
+      "fileUnreadable": "Soubor nemá text, který by šel přečíst.",
+      "fileMissing": "Nebyl vybrán žádný soubor.",
+      "limitReached": "Odpovědi Gradyho na tento měsíc jsou vyčerpané.",
+      "paused": "Grady si dává do konce měsíce pauzu, aplikace funguje dál.",
+      "userLimit": "AI pomocník má pro tvůj účet tento měsíc vyčerpaný limit.",
+      "spaceLimit": "AI pomocník má v téhle firmě tento měsíc vyčerpaný limit.",
+      "notConfigured": "Grady ještě není nastavený.",
+      "busy": "Grady je teď vytížený. Zkus to za chvilku.",
+      "unavailable": "Grady teď schůzku přečíst nedokázal. Zkus to znovu.",
+      "notFound": "Obchod, kontakt ani schůzka už tu nejsou.",
+      "empty": "Grady v textu nenašel nic, co by se mělo změnit.",
+      "forbidden": "Některou z těch změn tady udělat nesmíš.",
+      "readOnly": "Aplikace je teď jen pro čtení.",
+      "changed": "Mezitím se něco změnilo; nic se nepřepsalo.",
+      "tooLate": "Vrátit jde jen do 24 hodin.",
+      "dealWithoutContact": "Obchod nemá kontakt, takže do historie nejde nic zapsat. Přidej kontakt, nebo odškrtni shrnutí."
+    },
+    "attachments": {
+      "title": "Přílohy",
+      "download": "Stáhnout {name}",
+      "delete": "Smazat {name}",
+      "deleteTitle": "Smazat přílohu?",
+      "deleteDescription": "„{name}“ se z obchodu smaže natrvalo.",
+      "deleteConfirm": "Smazat",
+      "deleteFailed": "Přílohu se nepodařilo smazat.",
+      "cancel": "Zrušit"
     }
   }
 }

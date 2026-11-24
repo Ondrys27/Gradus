@@ -21,14 +21,14 @@ export class UnreadableFileError extends Error {
   }
 }
 
-function limit(text: string): Extracted {
+function limit(text: string, max = MAX_EXTRACTED_CHARS): Extracted {
   const clean = text
     .replace(/\r\n?/g, "\n")
     .replace(/[ \t]+\n/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
-  if (clean.length <= MAX_EXTRACTED_CHARS) return { text: clean, truncated: false };
-  return { text: clean.slice(0, MAX_EXTRACTED_CHARS), truncated: true };
+  if (clean.length <= max) return { text: clean, truncated: false };
+  return { text: clean.slice(0, max), truncated: true };
 }
 
 const ENTITIES: Record<string, string> = {
@@ -68,7 +68,7 @@ function readParts(bytes: Uint8Array, wanted: (name: string) => boolean): Map<st
 
 // ---------------------------------------------------------------------------
 
-export function docxText(bytes: Uint8Array): Extracted {
+export function docxText(bytes: Uint8Array, max = MAX_EXTRACTED_CHARS): Extracted {
   const xml = readParts(bytes, (name) => name === "word/document.xml").get("word/document.xml");
   if (xml === undefined) throw new UnreadableFileError("docx: no document part");
   const text = xml
@@ -80,7 +80,7 @@ export function docxText(bytes: Uint8Array): Extracted {
     .replace(/<\/w:p>/g, "\n")
     .replace(/<\/w:tc>/g, "\t")
     .replace(/<[^>]+>/g, "");
-  return limit(decodeXml(text));
+  return limit(decodeXml(text), max);
 }
 
 // ---------------------------------------------------------------------------
@@ -185,34 +185,38 @@ export function xlsxText(bytes: Uint8Array): Extracted {
 
 // ---------------------------------------------------------------------------
 
-export async function pdfText(bytes: Uint8Array): Promise<Extracted> {
+export async function pdfText(bytes: Uint8Array, max = MAX_EXTRACTED_CHARS): Promise<Extracted> {
   try {
     const { extractText, getDocumentProxy } = await import("unpdf");
     // pdf.js takes ownership of the buffer; give it a copy.
     const pdf = await getDocumentProxy(new Uint8Array(bytes));
     const { text } = await extractText(pdf, { mergePages: false });
-    return limit(text.map((page) => page.trim()).join("\n\n"));
+    return limit(text.map((page) => page.trim()).join("\n\n"), max);
   } catch (error) {
     throw new UnreadableFileError(`pdf: ${(error as Error).message}`);
   }
 }
 
-export function plainText(bytes: Uint8Array): Extracted {
-  return limit(new TextDecoder("utf-8").decode(bytes).replace(/^﻿/, ""));
+export function plainText(bytes: Uint8Array, max = MAX_EXTRACTED_CHARS): Extracted {
+  return limit(new TextDecoder("utf-8").decode(bytes).replace(/^﻿/, ""), max);
 }
 
 /** The text a document carries; null for images. */
-export async function extractText(kind: FileKind, bytes: Uint8Array): Promise<Extracted | null> {
+export async function extractText(
+  kind: FileKind,
+  bytes: Uint8Array,
+  max = MAX_EXTRACTED_CHARS,
+): Promise<Extracted | null> {
   switch (kind) {
     case "pdf":
-      return pdfText(bytes);
+      return pdfText(bytes, max);
     case "docx":
-      return docxText(bytes);
+      return docxText(bytes, max);
     case "xlsx":
       return xlsxText(bytes);
     case "txt":
     case "csv":
-      return plainText(bytes);
+      return plainText(bytes, max);
     default:
       return null;
   }

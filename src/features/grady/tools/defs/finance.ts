@@ -30,6 +30,7 @@ import type { Json } from "@/types/database";
 import { readRow, type UndoRecord } from "../records";
 import { defineTool, ToolError, type ToolContext } from "../types";
 import {
+  deleted,
   hrefs,
   inserted,
   isoDate,
@@ -55,7 +56,7 @@ async function readTransaction(ctx: ToolContext, id: string) {
   return mustFind(
     ctx.db
       .from("transactions")
-      .select("id, type, amount, currency, category, description, occurred_on, source")
+      .select("id, type, amount, currency, category, description, occurred_on, source, deal_id")
       .eq("user_id", ctx.workspaceId)
       .eq("id", id)
       .maybeSingle(),
@@ -220,11 +221,13 @@ export const financeTools = [
 
   defineTool({
     name: "delete_transaction",
+    level: "delete",
     section: "finance",
     action: "write",
     kind: "write",
     risk: "confirm",
-    description: "Delete a transaction for good. The user confirms it first.",
+    description:
+      "Delete a transaction (one entered by hand comes back with Undo for 24 hours). The user confirms it first.",
     input: z.object({ transactionId: uuid }),
     describe: (_input, t) => t("delete_transaction", { amount: "" }),
     async prepare(ctx, input) {
@@ -239,12 +242,29 @@ export const financeTools = [
       await deleteTransaction(ops(ctx), row.id);
       return {
         output: { deleted: true },
+        // Undo brings back what was entered by hand; a booking of an invoice,
+        // a deposit or a recurring payment would come back as a manual one, so not those.
+        records:
+          row.source === "manual"
+            ? [
+                deleted("transactions", row.id, {
+                  user_id: ctx.workspaceId,
+                  type: row.type,
+                  amount: row.amount,
+                  currency: row.currency,
+                  category: row.category,
+                  description: row.description,
+                  occurred_on: row.occurred_on,
+                  deal_id: row.deal_id,
+                }),
+              ]
+            : [],
         summary: ctx.t("deleted_transaction", {
           amount: amountText(ctx, row.amount, row.currency),
         }),
       };
     },
-    undoable: false,
+    undoable: true,
     invalidates: ["finance", "dashboard"],
   }),
 
@@ -307,12 +327,13 @@ export const financeTools = [
 
   defineTool({
     name: "delete_recurring_payment",
+    level: "delete",
     section: "finance",
     action: "write",
     kind: "write",
     risk: "confirm",
     description:
-      "Delete a recurring payment (the transactions it already made stay). The user confirms it first.",
+      "Delete a recurring payment (the transactions it already made stay; Undo brings it back for 24 hours). The user confirms it first.",
     input: z.object({ recurringId: uuid }),
     describe: (_input, t) => t("delete_recurring_payment", { title: "" }),
     async prepare(ctx, input) {
@@ -327,10 +348,11 @@ export const financeTools = [
       await deleteRecurring(ops(ctx), row.id);
       return {
         output: { deleted: true },
+        records: [deleted("recurring_payments", row.id, { ...row, user_id: ctx.workspaceId })],
         summary: ctx.t("deleted_recurring_payment", { title: quoted(row.description) }),
       };
     },
-    undoable: false,
+    undoable: true,
     invalidates: ["finance"],
   }),
 
@@ -549,6 +571,7 @@ export const invoiceTools = [
 
   defineTool({
     name: "issue_invoice",
+    level: "delete",
     section: "invoices",
     action: "issue",
     kind: "write",
@@ -583,6 +606,7 @@ export const invoiceTools = [
 
   defineTool({
     name: "send_invoice",
+    level: "delete",
     section: "invoices",
     action: "issue",
     kind: "write",
@@ -638,6 +662,7 @@ export const invoiceTools = [
 
   defineTool({
     name: "mark_invoice_paid",
+    level: "delete",
     section: "invoices",
     action: "issue",
     kind: "write",
@@ -668,6 +693,7 @@ export const invoiceTools = [
 
   defineTool({
     name: "cancel_invoice",
+    level: "delete",
     section: "invoices",
     action: "issue",
     kind: "write",

@@ -25,6 +25,7 @@ import { REWARD_TEMPLATES, RULES_PER_PLAN } from "@/features/workers/rewards/rul
 import { RULE_KINDS } from "@/features/workers/rewards/types";
 import { WIDGET_KEYS } from "@/features/dashboard/widgets/catalog";
 import { WIDGET_SIZES } from "@/features/dashboard/widgets/grid";
+import { MEETING_TARGETS } from "@/features/meeting-notes/logic";
 import { Constants } from "@/types/database";
 import { field, isSafeField, isScrubbedTextField } from "./fields";
 import { APP_ROUTES, ANALYTICS_SECTIONS, type AnalyticsSection } from "./routes";
@@ -1020,7 +1021,7 @@ export const EVENTS = {
     tool: key(),
     section: key(),
     risk: oneOf(["instant", "confirm"]),
-    via: oneOf(["chat"]),
+    via: oneOf(["chat", "meeting_notes"]),
   }),
   grady_action_confirmed: event("jarvis", "server", true, { tool: key() }),
   grady_action_rejected: event("jarvis", "server", false, { tool: key() }),
@@ -1101,6 +1102,37 @@ export const EVENTS = {
   dashboard_widgets_allowed: event("workers", "client", true, {
     allowed: count(60),
     all: bool(),
+  }),
+
+  // --- meeting notes and company activity (28.7) ------------------------------
+  /** "Paste meeting notes" opened at a deal, a contact or a calendar meeting. */
+  meeting_notes_opened: event("pipeline", "client", false, { from: oneOf(MEETING_TARGETS) }),
+  /** Grady proposed changes from a meeting: how much of each, never the text. */
+  meeting_notes_analyzed: event("pipeline", "server", true, {
+    from: oneOf(MEETING_TARGETS),
+    parts: count(20),
+    tasks: count(30),
+    contacts: count(20),
+    stage: bool(),
+    deal_fields: bool(),
+    note: bool(),
+  }),
+  /** The user confirmed the proposal: what was made (one action, one Undo). */
+  meeting_notes_applied: event("pipeline", "server", true, {
+    from: oneOf(MEETING_TARGETS),
+    changes: count(60),
+    tasks: count(30),
+    contacts: count(20),
+    stage: bool(),
+    transcript: bool(),
+    error_code: optional(key()),
+  }),
+  /** Company → Activity opened or filtered. */
+  company_activity_viewed: event("workers", "client", false, {
+    by_person: bool(),
+    by_group: bool(),
+    by_kind: bool(),
+    period: oneOf(["today", "week", "month", "quarter"]),
   }),
 
   // --- feedback --------------------------------------------------------------

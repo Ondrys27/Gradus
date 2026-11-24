@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { StatusPill } from "@/components/ui/status-pill";
+import { MeetingNotesButton } from "@/features/meeting-notes/meeting-notes-dialog";
 import { MentionedInNotes } from "@/features/notes/mentioned-in-notes";
 import { contactLabel } from "@/features/pipeline/board-logic";
 import { formatCalendarDate, formatDate, formatTime } from "@/lib/format";
@@ -132,6 +133,9 @@ export function EventDetail({ event, onClose, onEdit, readOnly = false }: Props)
           {fromDeal && <p className="text-sm text-ink-muted">{t("detail.fromDealHint")}</p>}
           {fromBooking && <BookingOfEvent eventId={current.id} />}
           <MentionedInNotes kind="event" id={current.id} onOpenNote={onClose} />
+          {current.kind === "meeting" && !readOnly && (
+            <MeetingNotesButton target={{ kind: "event", id: current.id }} className="self-start" />
+          )}
           {editable && (
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
               <Button type="button" variant="destructive" onClick={() => setConfirming(true)}>

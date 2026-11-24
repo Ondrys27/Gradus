@@ -13,9 +13,10 @@ import {
   type ActionStatus,
   type ToolRisk,
 } from "../../actions";
+import { resolveRefs } from "@/features/meeting-notes/logic";
 import { toolAllowed } from "../../tools/access";
 import { toolByName } from "../../tools/catalog";
-import { stampRecords, undoRecords, type UndoRecord } from "../../tools/records";
+import { stampRecords, undoRecords, type UndoRecord, type UndoResult } from "../../tools/records";
 import { ToolError, type AnyTool, type ToolContext } from "../../tools/types";
 
 /**
@@ -316,11 +317,8 @@ export async function proposeBulk(env: ActionEnv, calls: ToolCall[]): Promise<St
       preview: lines.join("\n"),
       calls: kept,
       invalidate,
-      // Undone together only when every step takes back its own records the plain way.
-      undoable: kept.every((call) => {
-        const tool = toolByName(call.name);
-        return Boolean(tool?.undoable && !tool.undo);
-      }),
+      // Undone together when every step can be taken back (each record knows its tool).
+      undoable: kept.every((call) => Boolean(toolByName(call.name)?.undoable)),
     },
   });
   return {
@@ -449,7 +447,7 @@ export async function confirmAction(
         summary = (await resolved.tool.prepare(env.ctx, resolved.input)).summary;
       }
       const { result } = await runNow(actionEnv, resolved.tool, resolved.input);
-      records.push(...(result.records ?? []));
+      records.push(...tagged(result.records ?? [], call.name));
       outputs.push(result.output ?? null);
       awards.push(...(result.awards ?? []));
       if (row.tool !== BULK_TOOL) {
@@ -562,7 +560,7 @@ export async function undoAction(
   const outcome =
     tool?.undo && row.tool !== BULK_TOOL
       ? await tool.undo(env.ctx, records)
-      : await undoRecords(env.ctx.db, records);
+      : await undoMixed(env.ctx, records);
   if (!outcome.ok) {
     // Nothing (or not all) taken back: the card stays done and can be tried again.
     await finish(env.admin, row.id, { undone_at: null });
@@ -575,6 +573,120 @@ export async function undoAction(
     { userId: env.ctx.userId, admin: env.admin },
   );
   return { ok: true, card: toCard(undone) };
+}
+
+/** A call's input as kept on the card: long texts (a transcript) cut, the row stays small. */
+function trimmed(input: unknown): unknown {
+  if (!input || typeof input !== "object") return input;
+  return Object.fromEntries(
+    Object.entries(input as Record<string, unknown>).map(([key, value]) => [
+      key,
+      typeof value === "string" && value.length > 500 ? `${value.slice(0, 500)}…` : value,
+    ]),
+  );
+}
+
+/** Records of one call, labelled with its tool (a bundle hands them back to that tool's undo). */
+function tagged(records: UndoRecord[], tool: string): UndoRecord[] {
+  return records.map((record) => ({ ...record, tool }));
+}
+
+/**
+ * Undo of records from several tools (a bulk card, meeting notes): the
+ * records of a tool with an undo of its own go to it first (newest first),
+ * then the rest is taken back the plain way, all checked before anything
+ * changes.
+ */
+export async function undoMixed(ctx: ToolContext, records: UndoRecord[]): Promise<UndoResult> {
+  const own = new Map<string, UndoRecord[]>();
+  const plain: UndoRecord[] = [];
+  for (const record of records) {
+    const tool = record.tool ? toolByName(record.tool) : null;
+    if (tool?.undo) own.set(tool.name, [...(own.get(tool.name) ?? []), record]);
+    else plain.push(record);
+  }
+  for (const [name, list] of [...own.entries()].reverse()) {
+    const outcome = await toolByName(name)!.undo!(ctx, list);
+    if (!outcome.ok) return outcome;
+  }
+  return plain.length ? undoRecords(ctx.db, plain) : { ok: true };
+}
+
+/** A step of a bundle that could not be made: which one and why. */
+export type BundleFailure = { ok: false; index: number; code: string };
+
+/**
+ * Several changes the user confirmed on one screen (meeting notes, 28.7):
+ * each runs through its tool with the user's own client and current rights,
+ * all are recorded as one action with one Undo. When a step fails, what the
+ * steps before it changed is taken back and nothing is recorded.
+ */
+export async function runBundle(
+  env: ActionEnv,
+  bundle: { tool: string; summary: string; href: string | null; calls: ToolCall[] },
+): Promise<{ ok: true; card: ActionCard; outputs: Json[] } | BundleFailure> {
+  const records: UndoRecord[] = [];
+  const outputs: Json[] = [];
+  const awards: ActionAward[] = [];
+  const invalidate = new Set<string>();
+  const made: ToolCall[] = [];
+  for (const [index, raw] of bundle.calls.entries()) {
+    // "$<n>.<field>": an id made by an earlier step (a new contact put on the deal).
+    const call: ToolCall = {
+      name: raw.name,
+      input:
+        raw.input && typeof raw.input === "object"
+          ? resolveRefs(raw.input as Record<string, unknown>, outputs)
+          : raw.input,
+    };
+    made.push(call);
+    const resolved = resolve(env.ctx, call);
+    const fail = async (code: string): Promise<BundleFailure> => {
+      if (records.length) {
+        const back = await undoMixed(env.ctx, records);
+        if (!back.ok) console.error("grady bundle could not take back its steps", back.reason);
+      }
+      await track(
+        "grady_action_failed",
+        { tool: bundle.tool, error_code: code },
+        { userId: env.ctx.userId, admin: env.admin },
+      );
+      return { ok: false, index, code };
+    };
+    if (!resolved.ok) return fail(resolved.code);
+    try {
+      const { result } = await runNow(env, resolved.tool, resolved.input);
+      records.push(...tagged(result.records ?? [], call.name));
+      outputs.push(result.output ?? null);
+      awards.push(...(result.awards ?? []));
+      for (const root of resolved.tool.invalidates) invalidate.add(root);
+    } catch (error) {
+      const code = errorCodeOf(error);
+      if (code === "failed") console.error(`grady bundle step ${call.name} failed`, error);
+      return fail(code);
+    }
+  }
+  const row = await insertAction(env, {
+    tool: bundle.tool,
+    risk: "confirm",
+    status: "done",
+    input: { calls: made.map((call) => ({ name: call.name, input: trimmed(call.input) })) },
+    result: {
+      summary: bundle.summary,
+      href: bundle.href,
+      records,
+      output: outputs,
+      awards,
+      invalidate: [...invalidate] as StoredResult["invalidate"],
+      undoable: records.length > 0 && bundle.calls.every((call) => toolByName(call.name)?.undoable),
+    },
+  });
+  await track(
+    "grady_action_done",
+    { tool: bundle.tool, section: BULK_TOOL, risk: "confirm", via: "meeting_notes" },
+    { userId: env.ctx.userId, admin: env.admin },
+  );
+  return { ok: true, card: toCard(row), outputs };
 }
 
 // ---------------------------------------------------------------------------

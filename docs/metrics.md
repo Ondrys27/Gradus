@@ -83,6 +83,8 @@ U každé sekce: adopce (% aktivních, kteří ji použili), počet akcí, akce 
 - Proaktivní bubliny — zobrazeno, Udělat, Ukázat, Později, Zavřít, bez reakce; míra přijetí podle typu (postřeh / návrh / otázka)
 - Automatické akce Gradyho a kolik z nich uživatel vrátil
 - Změny od Gradyho na pokyn v chatu (`grady_actions`): hotové změny podle sekce a rizika (instant / confirm) z `grady_action_done`, potvrzené / zrušené návrhy (`grady_action_confirmed`, `grady_action_rejected`), vrácené (`grady_action_undone`) a neúspěšné podle kódu chyby (`grady_action_failed`); jen název nástroje a sekce, nikdy vstup, názvy ani texty
+- Zápis ze schůzky (28.7): otevřené dialogy podle místa (`meeting_notes_opened`: obchod / kontakt / schůzka), návrhy (`meeting_notes_analyzed`: počet částí přepisu, navržených úkolů a kontaktů, zda fáze, pole obchodu a poznámka) a potvrzené (`meeting_notes_applied`: počet změn, úkolů, kontaktů, zda fáze a příloha, kód chyby); podíl potvrzených z navržených a vrácených jedním Zpět (`grady_action_undone` s `tool = meeting_notes`); nikdy text schůzky, jména ani částky
+- Aktivita ve firmě (28.7): otevření a filtry Správa firmy → Aktivita (`company_activity_viewed`: podle člověka, skupiny, druhu, období); data samotná jsou v `activity_log` (180 dní), ne v analytice
 - Hodnocení odpovědí palcem nahoru / dolů
 - Uživatelé na AI stropu (%)
 
