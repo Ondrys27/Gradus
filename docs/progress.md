@@ -158,7 +158,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 28.9 | architect | env: ANTHROPIC_API_KEY — 2026-11-24: Porovnání modelů Gradyho na vzorcích s doporučením, kde ušetřit, a levnější volání AI bez změny modelů (cache kontextu, dávky, kratší kontext chatu).
 - [x] K28 | reviewer | 2026-11-24: Revize fáze 28 zavřela čtení poznámek a chatů napříč firmami přes MCP a Gradyho, odebraný člen ztrácí otevřenou poznámku, jedno Vrátit u zápisu ze schůzky vrací vše a náhledy widgetů neukazují částky bez práva; SQL nálezy odměn, koše a sdílení poznámek zůstaly otevřené.
 - [x] STOP | Konec fáze 28 (bez kalendářů). Přečti docs/audit-pozvanky/nalezy.md. Pozvi Vášu přes @jmeno. Nastav pracovníkovi plán odměn ze šablony, zadej úkol s odměnou, splň ho jako pracovník, schval a vyplať. Nasdílej složku poznámek skupině a pište do jedné poznámky dva naráz. Poskládej si Přehled z widgetů na počítači i telefonu a nastav výchozí přehled pro skupinu. Vlož přepis schůzky do obchodu. V Nastavení → Připojené aplikace připoj Gradus do Claude podle návodu a řekni Claudovi, ať ti vypíše obchody a jeden úkol založí. V administraci → Modely zkus Porovnat modely. Co nesedí, napiš Claude Code rovnou, pak /pokracuj. · přeskočeno nočním během 2026-11-24, zkontroluj ručně (.noc/zkontroluj.md)
-- [ ] 29.1 | architect | env: ANTHROPIC_API_KEY
+- [x] 29.1 | architect | env: ANTHROPIC_API_KEY — 2026-11-25: Pravidla odměn pracovníků s libovolným spouštěčem (událost v aplikaci, podmínka, jednou na záznam), editor ve tvaru věty a nastavení popsané slovy s pomocí Gradyho.
 - [ ] 29.2 | architect |
 - [ ] 29.3 | designer |
 - [ ] K29 | reviewer |
