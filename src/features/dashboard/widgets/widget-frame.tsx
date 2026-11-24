@@ -3,8 +3,10 @@
 import {
   Component,
   forwardRef,
+  memo,
   Suspense,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
@@ -21,11 +23,21 @@ import { useTranslations } from "next-intl";
 import { buttonVariants } from "@/components/ui/button";
 import { toneSoft } from "@/components/ui/tone";
 import { lockPageScroll } from "@/lib/scroll-lock";
+import { useReducedMotionSafe } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
 import { WIDGET_APPEARANCE } from "./appearance";
 import type { WidgetKey, WidgetMeta } from "./catalog";
 import type { LayoutItem, WidgetSize } from "./grid";
 import { WidgetError, WidgetSkeleton, type WidgetDef, type WidgetSettings } from "./kit";
+import {
+  ARRIVE_SPRING,
+  flightFrom,
+  haptic,
+  LAYOUT_SPRING,
+  SHRINK_SECONDS,
+  wiggleOf,
+  type Rect,
+} from "./motion";
 import { useWidgetDef } from "./registry";
 
 /** How long a finger rests on a widget before the board goes into editing. */
@@ -75,8 +87,13 @@ class ChunkBoundary extends Component<{ children: ReactNode }, { failed: boolean
   }
 }
 
-/** The widget's code, then its data, in the widget's size; skeletons in its shape meanwhile. */
-export function LazyWidgetBody({
+/**
+ * The widget's code, then its data, in the widget's size; skeletons in its
+ * shape meanwhile. Memoised: a drag re-renders the grid many times a second,
+ * and the content of twenty widgets must not render along (their props do
+ * not change).
+ */
+export const LazyWidgetBody = memo(function LazyWidgetBody({
   widget,
   size,
   settings,
@@ -92,7 +109,7 @@ export function LazyWidgetBody({
       </Suspense>
     </ChunkBoundary>
   );
-}
+});
 
 function WidgetCode({
   widget,
@@ -120,11 +137,12 @@ function WidgetBody({
   settings: WidgetSettings;
 }) {
   const query = def.useData(settings);
+  const { tone } = WIDGET_APPEARANCE[def.key];
   if (query.data === undefined) {
     return query.isError ? <WidgetError onRetry={query.refetch} /> : <WidgetSkeleton size={size} />;
   }
   const View = def.View;
-  return <View size={size} data={query.data} settings={settings} />;
+  return <View size={size} data={query.data} settings={settings} tone={tone} />;
 }
 
 function isInteractive(target: EventTarget | null): boolean {
@@ -134,6 +152,9 @@ function isInteractive(target: EventTarget | null): boolean {
     ),
   );
 }
+
+/** Where a widget just added from the gallery flies from (its preview on screen). */
+export type Arrival = { id: string; from: Rect | null };
 
 type FrameProps = {
   item: LayoutItem;
@@ -145,9 +166,8 @@ type FrameProps = {
   scope: string;
   /** Load at once (gallery previews and the first screen) rather than when scrolled near. */
   eager?: boolean;
-  /** Just added from the gallery: it flies in. */
-  fresh?: boolean;
-  wiggleDelay?: number;
+  /** Just added from the gallery: it flies in from its preview. */
+  arrival?: Arrival | null;
   onOpen?: () => void;
   onLongPress?: () => void;
   onRemove?: () => void;
@@ -159,225 +179,321 @@ type FrameProps = {
   className?: string;
   /** A placeholder left behind while the widget is dragged. */
   ghost?: boolean;
+  /** The copy under the finger while dragging: lifted, with a shadow. */
+  lifted?: boolean;
 };
+
+type Flight = { x: number; y: number; scaleX: number; scaleY: number; opacity: number };
 
 /**
  * One widget on the board: its title, its content in its size, and in editing
  * the remove cross, the gear of its settings and the size menu in the corner.
  * A tap opens its detail (the content's own links and buttons keep working);
- * a long press starts editing.
+ * a long press starts editing. In editing it wiggles with its own phase,
+ * glides to a new place with a spring, morphs to a new size (the content of
+ * the new size fades in over the morph), flies in from the gallery and
+ * shrinks away when removed.
  */
-export const WidgetFrame = forwardRef<HTMLDivElement, FrameProps>(function WidgetFrame(
-  {
-    item,
-    meta,
-    name,
-    settings,
-    editing,
-    scope,
-    eager = false,
-    fresh = false,
-    wiggleDelay = 0,
-    onOpen,
-    onLongPress,
-    onRemove,
-    onResize,
-    onSettings,
-    dragProps,
-    style,
-    className,
-    ghost = false,
-  },
-  forwardedRef,
-) {
-  const t = useTranslations("dashboard.board");
-  const tSizes = useTranslations("dashboard.board.sizes");
-  const { ref, near } = useNearScreen<HTMLDivElement>(eager);
-  const press = useRef<{ x: number; y: number; timer: number } | null>(null);
-  const pressed = useRef(false);
-  const { icon: Icon, tone } = WIDGET_APPEARANCE[meta.key as WidgetKey];
+export const WidgetFrame = memo(
+  forwardRef<HTMLDivElement, FrameProps>(function WidgetFrame(
+    {
+      item,
+      meta,
+      name,
+      settings,
+      editing,
+      scope,
+      eager = false,
+      arrival = null,
+      onOpen,
+      onLongPress,
+      onRemove,
+      onResize,
+      onSettings,
+      dragProps,
+      style,
+      className,
+      ghost = false,
+      lifted = false,
+    },
+    forwardedRef,
+  ) {
+    const t = useTranslations("dashboard.board");
+    const tSizes = useTranslations("dashboard.board.sizes");
+    const reduceMotion = useReducedMotionSafe();
+    const { ref, near } = useNearScreen<HTMLDivElement>(eager);
+    const press = useRef<{ x: number; y: number; timer: number } | null>(null);
+    const pressed = useRef(false);
+    const { icon: Icon, tone } = WIDGET_APPEARANCE[meta.key as WidgetKey];
+    const fresh = arrival?.id === item.id;
 
-  function setRefs(node: HTMLDivElement | null) {
-    ref.current = node;
-    if (typeof forwardedRef === "function") forwardedRef(node);
-    else if (forwardedRef) forwardedRef.current = node;
-  }
+    // The flight from the gallery: measured where the widget landed, before paint.
+    const [flight, setFlight] = useState<Flight | null>(null);
+    const flown = useRef(false);
+    useLayoutEffect(() => {
+      if (!fresh || flown.current || reduceMotion || !ref.current) return;
+      flown.current = true;
+      const node = ref.current;
+      node.scrollIntoView({ block: "nearest", inline: "nearest" });
+      const to = node.getBoundingClientRect();
+      if (arrival?.from) {
+        setFlight({ ...flightFrom(arrival.from, to), opacity: 0.7 });
+      } else {
+        setFlight({ x: 0, y: -16, scaleX: 0.6, scaleY: 0.6, opacity: 0 });
+      }
+    }, [fresh, arrival, reduceMotion, ref]);
 
-  function cancelPress() {
-    if (press.current) window.clearTimeout(press.current.timer);
-    press.current = null;
-  }
-  function onPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
-    if (editing || !onLongPress || event.button !== 0) return;
-    pressed.current = false;
-    const { clientX, clientY } = event;
-    press.current = {
-      x: clientX,
-      y: clientY,
-      timer: window.setTimeout(() => {
-        pressed.current = true;
-        press.current = null;
-        onLongPress();
-      }, LONG_PRESS_MS),
-    };
-  }
-  function onPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
-    const start = press.current;
-    if (!start) return;
-    if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > LONG_PRESS_SLOP_PX)
-      cancelPress();
-  }
-  useEffect(() => cancelPress, []);
+    // The content of the size fades in over the morph; the first size does not.
+    const [sizeSeen, setSizeSeen] = useState(item.size);
+    const sizeChanged = sizeSeen !== item.size;
+    if (sizeChanged) setSizeSeen(item.size);
 
-  const sizes = meta.sizes;
-  return (
-    <motion.div
-      ref={setRefs}
-      layoutId={editing || ghost ? undefined : widgetLayoutId(item.id, scope)}
-      layout={editing ? "position" : undefined}
-      initial={fresh ? { opacity: 0, scale: 0.6, y: -24 } : false}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{
-        layout: { type: "spring", stiffness: 520, damping: 42 },
-        default: { type: "spring", stiffness: 380, damping: 26 },
-      }}
-      data-testid="widget"
-      data-widget={meta.key}
-      data-size={item.size}
-      data-tutorial={`widget-${meta.key}`}
-      style={style}
-      className={cn("group/widget relative h-full min-w-0", className)}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={cancelPress}
-      onPointerCancel={cancelPress}
-      onContextMenu={(event) => {
-        if (pressed.current) event.preventDefault();
-      }}
-      onClickCapture={(event) => {
-        // The click that ends a long press only starts editing.
-        if (pressed.current) {
-          pressed.current = false;
-          event.preventDefault();
-          event.stopPropagation();
+    function setRefs(node: HTMLDivElement | null) {
+      ref.current = node;
+      if (typeof forwardedRef === "function") forwardedRef(node);
+      else if (forwardedRef) forwardedRef.current = node;
+    }
+
+    function cancelPress() {
+      if (press.current) window.clearTimeout(press.current.timer);
+      press.current = null;
+    }
+    function onPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+      if (editing || !onLongPress || event.button !== 0) return;
+      pressed.current = false;
+      const { clientX, clientY } = event;
+      press.current = {
+        x: clientX,
+        y: clientY,
+        timer: window.setTimeout(() => {
+          pressed.current = true;
+          press.current = null;
+          haptic("lift");
+          onLongPress();
+        }, LONG_PRESS_MS),
+      };
+    }
+    function onPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+      const start = press.current;
+      if (!start) return;
+      if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > LONG_PRESS_SLOP_PX)
+        cancelPress();
+    }
+    useEffect(() => cancelPress, []);
+
+    const sizes = meta.sizes;
+    const wiggle = wiggleOf(item.id);
+    const hiddenUntilFlight = fresh && !flown.current && !reduceMotion;
+    return (
+      <motion.div
+        ref={setRefs}
+        layoutId={editing || ghost || lifted ? undefined : widgetLayoutId(item.id, scope)}
+        layout={editing && !lifted ? true : undefined}
+        exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.5 }}
+        transition={
+          reduceMotion
+            ? { layout: { duration: 0 }, default: { duration: 0.01 } }
+            : { layout: LAYOUT_SPRING, default: { duration: SHRINK_SECONDS, ease: [0.4, 0, 1, 1] } }
         }
-      }}
-    >
-      <div
-        {...(editing ? dragProps : {})}
-        onClick={(event) => {
-          if (editing || !onOpen || isInteractive(event.target)) return;
-          onOpen();
+        data-testid="widget"
+        data-widget={meta.key}
+        data-size={item.size}
+        data-tutorial={`widget-${meta.key}`}
+        style={{ ...style, ...(hiddenUntilFlight ? { visibility: "hidden" } : {}) }}
+        className={cn("group/widget relative h-full min-w-0", className)}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={cancelPress}
+        onPointerCancel={cancelPress}
+        onContextMenu={(event) => {
+          if (pressed.current) event.preventDefault();
         }}
-        style={editing ? { animationDelay: `${wiggleDelay}s` } : undefined}
-        className={cn(
-          "@container flex h-full flex-col gap-3 overflow-hidden rounded-card border border-line bg-surface p-4 shadow-glow transition-[border-color,background-color,box-shadow] duration-200",
-          !editing && onOpen && "cursor-pointer hover:border-line-strong hover:bg-surface-hover",
-          !editing && "[-webkit-touch-callout:none]",
-          editing &&
-            "cursor-grab touch-none select-none motion-safe:animate-wiggle active:cursor-grabbing",
-          ghost && "border-dashed border-violet/50 bg-violet/5 opacity-60 shadow-none",
-        )}
+        onClickCapture={(event) => {
+          // The click that ends a long press only starts editing.
+          if (pressed.current) {
+            pressed.current = false;
+            event.preventDefault();
+            event.stopPropagation();
+          }
+        }}
       >
-        <div className="flex min-w-0 items-center gap-2">
-          <span
+        <motion.div
+          key={flight ? "flown" : "still"}
+          initial={flight ?? false}
+          animate={{ x: 0, y: 0, scaleX: 1, scaleY: 1, opacity: 1 }}
+          transition={ARRIVE_SPRING}
+          className="h-full"
+        >
+          <div
+            {...(editing ? dragProps : {})}
+            onClick={(event) => {
+              if (editing || !onOpen || isInteractive(event.target)) return;
+              onOpen();
+            }}
+            style={
+              editing && !ghost && !lifted
+                ? ({
+                    animationDelay: `${wiggle.delay}s`,
+                    animationDuration: `${wiggle.duration}s`,
+                    "--wiggle-angle": `${wiggle.angle}deg`,
+                  } as CSSProperties)
+                : undefined
+            }
             className={cn(
-              "grid size-7 shrink-0 place-items-center rounded-lg border [&_svg]:size-3.5",
-              toneSoft[tone],
+              "@container flex h-full flex-col gap-3 overflow-hidden rounded-card border border-line bg-surface p-4 shadow-glow transition-[border-color,background-color,box-shadow] duration-200",
+              !editing &&
+                onOpen &&
+                "cursor-pointer hover:border-line-strong hover:bg-surface-hover",
+              !editing && "[-webkit-touch-callout:none]",
+              editing && "cursor-grab touch-none select-none active:cursor-grabbing",
+              editing &&
+                !ghost &&
+                !lifted &&
+                "motion-safe:animate-wiggle motion-safe:[will-change:transform]",
+              ghost && "border-dashed border-violet/50 bg-violet/5 opacity-50 shadow-none",
+              lifted && "border-line-strong bg-surface-hover shadow-glow-strong",
             )}
           >
-            <Icon aria-hidden />
-          </span>
-          {onOpen && !editing ? (
-            <button
-              type="button"
-              aria-haspopup="dialog"
-              onClick={onOpen}
-              className="micro-label min-w-0 cursor-pointer truncate text-left outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40"
-            >
-              {name}
-            </button>
-          ) : (
-            <span className="micro-label min-w-0 truncate">{name}</span>
-          )}
-        </div>
-        <div
-          className={cn("flex min-h-0 flex-1 flex-col", editing && "pointer-events-none")}
-          inert={editing || undefined}
-        >
-          {near && !ghost ? (
-            <LazyWidgetBody
-              key={meta.key}
-              widget={meta.key as WidgetKey}
-              size={item.size}
-              settings={settings}
-            />
-          ) : (
-            <WidgetSkeleton size={item.size} />
-          )}
-        </div>
-      </div>
-
-      {editing && !ghost && (
-        <>
-          {onRemove && (
-            <button
-              type="button"
-              onClick={onRemove}
-              aria-label={t("remove", { name })}
-              data-testid="widget-remove"
-              className="absolute -top-2 -left-2 z-10 grid size-8 cursor-pointer place-items-center rounded-full border border-line-strong bg-surface-hover text-ink shadow-popover outline-none hover:bg-pink hover:text-canvas focus-visible:ring-3 focus-visible:ring-violet/40"
-            >
-              <XIcon aria-hidden className="size-4" />
-            </button>
-          )}
-          {onSettings && meta.settings.length > 0 && (
-            <button
-              type="button"
-              onClick={onSettings}
-              aria-label={t("settings", { name })}
-              data-testid="widget-settings"
-              className="absolute -top-2 -right-2 z-10 grid size-8 cursor-pointer place-items-center rounded-full border border-line-strong bg-surface-hover text-ink shadow-popover outline-none hover:text-violet focus-visible:ring-3 focus-visible:ring-violet/40"
-            >
-              <SettingsIcon aria-hidden className="size-4" />
-            </button>
-          )}
-          {onResize && sizes.length > 1 && (
-            <Menu.Root>
-              <Menu.Trigger
-                aria-label={t("resize", { name })}
-                data-testid="widget-resize"
-                className="absolute -right-2 -bottom-2 z-10 grid size-8 cursor-pointer place-items-center rounded-full border border-line-strong bg-surface-hover text-ink shadow-popover outline-none hover:text-violet focus-visible:ring-3 focus-visible:ring-violet/40"
+            <div className="flex min-w-0 items-center gap-2">
+              <span
+                className={cn(
+                  "grid size-7 shrink-0 place-items-center rounded-lg border [&_svg]:size-3.5",
+                  toneSoft[tone],
+                )}
               >
-                <Maximize2Icon aria-hidden className="size-3.5" />
-              </Menu.Trigger>
-              <Menu.Portal>
-                <Menu.Positioner sideOffset={6} align="end" className="z-popover">
-                  <Menu.Popup className="min-w-44 rounded-xl border border-line-strong bg-surface p-1.5 shadow-popover outline-none">
-                    {sizes.map((size) => (
-                      <Menu.Item
-                        key={size}
-                        onClick={() => onResize(size)}
-                        data-testid={`widget-size-${size}`}
-                        className={cn(
-                          "flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-lg px-3 text-[15px] text-ink-soft outline-none select-none data-highlighted:bg-surface-hover data-highlighted:text-ink mouse:min-h-9",
-                          size === item.size && "text-violet",
-                        )}
-                      >
-                        <span>{tSizes(size)}</span>
-                        <span className="text-xs text-ink-muted">{tSizes(`${size}Span`)}</span>
-                      </Menu.Item>
-                    ))}
-                  </Menu.Popup>
-                </Menu.Positioner>
-              </Menu.Portal>
-            </Menu.Root>
-          )}
-        </>
-      )}
-    </motion.div>
+                <Icon aria-hidden />
+              </span>
+              {onOpen && !editing ? (
+                <button
+                  type="button"
+                  aria-haspopup="dialog"
+                  onClick={onOpen}
+                  className="micro-label min-w-0 cursor-pointer truncate text-left outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40"
+                >
+                  {name}
+                </button>
+              ) : (
+                <span className="micro-label min-w-0 truncate">{name}</span>
+              )}
+            </div>
+            <motion.div
+              key={item.size}
+              initial={sizeChanged && !reduceMotion ? { opacity: 0 } : false}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.28, delay: 0.06 }}
+              className={cn("flex min-h-0 flex-1 flex-col", editing && "pointer-events-none")}
+              inert={editing || undefined}
+            >
+              {near && !ghost ? (
+                <LazyWidgetBody
+                  key={meta.key}
+                  widget={meta.key as WidgetKey}
+                  size={item.size}
+                  settings={settings}
+                />
+              ) : (
+                <WidgetSkeleton size={item.size} />
+              )}
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {editing && !ghost && !lifted && (
+          <>
+            {onRemove && (
+              <button
+                type="button"
+                onClick={() => {
+                  haptic("remove");
+                  onRemove();
+                }}
+                aria-label={t("remove", { name })}
+                data-testid="widget-remove"
+                className={cn(editButton, "-top-2.5 -left-2.5 hover:bg-pink hover:text-canvas")}
+              >
+                <XIcon aria-hidden className="size-4" />
+              </button>
+            )}
+            {onSettings && meta.settings.length > 0 && (
+              <button
+                type="button"
+                onClick={onSettings}
+                aria-label={t("settings", { name })}
+                data-testid="widget-settings"
+                className={cn(editButton, "-top-2.5 -right-2.5 hover:text-violet")}
+              >
+                <SettingsIcon aria-hidden className="size-4" />
+              </button>
+            )}
+            {onResize && sizes.length > 1 && (
+              <Menu.Root>
+                <Menu.Trigger
+                  aria-label={t("resize", { name })}
+                  data-testid="widget-resize"
+                  className={cn(editButton, "-right-2.5 -bottom-2.5 hover:text-violet")}
+                >
+                  <Maximize2Icon aria-hidden className="size-3.5" />
+                </Menu.Trigger>
+                <Menu.Portal>
+                  <Menu.Positioner sideOffset={6} align="end" className="z-popover">
+                    <Menu.Popup className="min-w-48 rounded-xl border border-line-strong bg-surface p-1.5 shadow-popover outline-none">
+                      {sizes.map((size) => (
+                        <Menu.Item
+                          key={size}
+                          onClick={() => {
+                            haptic();
+                            onResize(size);
+                          }}
+                          data-testid={`widget-size-${size}`}
+                          className={cn(
+                            "flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-lg px-3 text-[15px] text-ink-soft outline-none select-none data-highlighted:bg-surface-hover data-highlighted:text-ink mouse:min-h-9",
+                            size === item.size && "text-violet",
+                          )}
+                        >
+                          <span className="flex items-center gap-2.5">
+                            <SizeGlyph size={size} current={size === item.size} />
+                            {tSizes(size)}
+                          </span>
+                          <span className="text-xs text-ink-muted">{tSizes(`${size}Span`)}</span>
+                        </Menu.Item>
+                      ))}
+                    </Menu.Popup>
+                  </Menu.Positioner>
+                </Menu.Portal>
+              </Menu.Root>
+            )}
+          </>
+        )}
+      </motion.div>
+    );
+  }),
+);
+
+const editButton =
+  "absolute z-10 grid size-11 cursor-pointer place-items-center rounded-full border border-line-strong bg-surface-hover text-ink shadow-popover outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:size-8";
+
+/** The shape of a size in the size menu: 1×1, 2×1, 2×2, 4×2 cells. */
+function SizeGlyph({ size, current }: { size: WidgetSize; current: boolean }) {
+  const span = { S: [1, 1], M: [2, 1], L: [2, 2], XL: [4, 2] }[size];
+  return (
+    <span aria-hidden className="grid h-4 w-7 grid-cols-4 grid-rows-2 gap-px">
+      {Array.from({ length: 8 }, (_, index) => {
+        const x = index % 4;
+        const y = Math.floor(index / 4);
+        const on = x < span[0] && y < span[1];
+        return (
+          <span
+            key={index}
+            className={cn(
+              "rounded-[1.5px]",
+              on ? (current ? "bg-violet" : "bg-ink-soft") : "bg-line/60",
+            )}
+          />
+        );
+      })}
+    </span>
   );
-});
+}
 
 /**
  * The opened widget: a large window that grows out of the widget through a
@@ -400,6 +516,7 @@ export function WidgetDetail({
   onClose: () => void;
 }) {
   const t = useTranslations("dashboard.board");
+  const reduceMotion = useReducedMotionSafe();
   const panelRef = useRef<HTMLDivElement>(null);
   const { icon: Icon, tone } = WIDGET_APPEARANCE[meta.key as WidgetKey];
 
@@ -434,7 +551,11 @@ export function WidgetDetail({
       />
       <motion.div
         layoutId={widgetLayoutId(item.id, scope)}
-        transition={{ layout: { duration: 0.35, ease: [0.32, 0.72, 0, 1] } }}
+        transition={{
+          layout: reduceMotion
+            ? { duration: 0 }
+            : { type: "spring", stiffness: 380, damping: 38, mass: 0.9 },
+        }}
         role="dialog"
         aria-modal="true"
         aria-label={name}
@@ -443,33 +564,41 @@ export function WidgetDetail({
         data-testid="widget-detail"
         className="relative z-10 flex h-[100dvh] max-h-[100dvh] w-full flex-col overflow-y-auto overscroll-contain rounded-none border-0 bg-surface p-6 pt-[calc(env(safe-area-inset-top)+24px)] pb-[calc(env(safe-area-inset-bottom)+24px)] outline-none md:h-auto md:max-h-[85dvh] md:w-[min(100%,960px)] md:rounded-3xl md:border md:border-line-strong md:p-6 md:shadow-popover"
       >
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="flex min-w-0 items-center gap-2 text-lg font-semibold text-ink">
-            <span
-              className={cn(
-                "grid size-8 shrink-0 place-items-center rounded-lg border [&_svg]:size-4",
-                toneSoft[tone],
-              )}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.22, delay: 0.1 }}
+          className="flex flex-col"
+        >
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 className="flex min-w-0 items-center gap-2 text-lg font-semibold text-ink">
+              <span
+                className={cn(
+                  "grid size-8 shrink-0 place-items-center rounded-lg border [&_svg]:size-4",
+                  toneSoft[tone],
+                )}
+              >
+                <Icon aria-hidden />
+              </span>
+              <span className="truncate">{name}</span>
+            </h2>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label={t("close")}
+              data-testid="widget-detail-close"
+              className="-mr-2 grid size-10 shrink-0 cursor-pointer place-items-center rounded-full text-ink-soft outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-ring/50"
             >
-              <Icon aria-hidden />
-            </span>
-            <span className="truncate">{name}</span>
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={t("close")}
-            data-testid="widget-detail-close"
-            className="-mr-2 grid size-10 shrink-0 cursor-pointer place-items-center rounded-full text-ink-soft outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            <XIcon aria-hidden className="size-5" />
-          </button>
-        </div>
-        <ChunkBoundary>
-          <Suspense fallback={<WidgetSkeleton size="L" />}>
-            <DetailContent key={meta.key} meta={meta} settings={settings} onClose={onClose} />
-          </Suspense>
-        </ChunkBoundary>
+              <XIcon aria-hidden className="size-5" />
+            </button>
+          </div>
+          <ChunkBoundary>
+            <Suspense fallback={<WidgetSkeleton size="L" />}>
+              <DetailContent key={meta.key} meta={meta} settings={settings} onClose={onClose} />
+            </Suspense>
+          </ChunkBoundary>
+        </motion.div>
       </motion.div>
     </div>,
     document.body,
@@ -488,6 +617,7 @@ function DetailContent({
 }) {
   const t = useTranslations("dashboard.board");
   const def = useWidgetDef(meta.key as WidgetKey);
+  const { tone } = WIDGET_APPEARANCE[meta.key as WidgetKey];
   const query = def.useData(settings);
   const href = (def.useHref ?? (() => meta.href))(settings);
   const Detail = def.Detail;
@@ -500,7 +630,7 @@ function DetailContent({
           <WidgetSkeleton size="L" />
         )
       ) : (
-        <Detail data={query.data} settings={settings} close={onClose} />
+        <Detail data={query.data} settings={settings} tone={tone} close={onClose} />
       )}
       {href !== "/app" && (
         <Link

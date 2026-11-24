@@ -2,7 +2,7 @@ import type { Browser, Page } from "@playwright/test";
 import { admin, e2eEmail, e2ePassword, signIn, type Account } from "./support/accounts";
 import { expect, test, watchConsole } from "./support/fixtures";
 import { exact, text } from "./support/i18n";
-import { openApp } from "./support/ui";
+import { openApp, waitForApp } from "./support/ui";
 
 /**
  * 27.1: a worker invite link is used up only by a finished registration or
@@ -240,6 +240,8 @@ test("58c · an invite to an e-mail that has an account: sign in and accept, no 
     await visitorPage.locator("form button[type=submit]").click();
     await expect(visitorPage).toHaveURL(/\/app\/pozvanky\?kod=/, { timeout: 30_000 });
     await expect(visitorPage.getByTestId("invite-link-accept")).toContainText("E2E Firma Odkaz");
+    // A click before hydration is lost while the dev server compiles other routes.
+    await waitForApp(visitorPage);
     await visitorPage.getByTestId("invite-link-accept-button").click();
     await expect(visitorPage.getByTestId("invite-accepted")).toBeVisible();
   } finally {

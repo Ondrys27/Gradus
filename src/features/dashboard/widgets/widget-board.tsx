@@ -12,6 +12,7 @@ import {
   Undo2Icon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useNavItems } from "@/components/layout/use-nav";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -32,7 +33,9 @@ import {
 } from "./grid";
 import type { useBoardEditor } from "./use-board-editor";
 import { useUndoShortcut } from "./use-board-editor";
-import { WidgetDetail } from "./widget-frame";
+import { haptic, type Rect } from "./motion";
+import { recommendWidgets } from "./recommend";
+import { WidgetDetail, type Arrival } from "./widget-frame";
 import { useGridEntries, WidgetGrid, type GridEntry } from "./widget-grid";
 
 // The gallery and the settings load only when opened.
@@ -90,7 +93,7 @@ export function WidgetBoard({
   const [settingsFor, setSettingsFor] = useState<GridEntry | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [resetting, setResetting] = useState(false);
-  const [fresh, setFresh] = useState<string | null>(null);
+  const [arrival, setArrival] = useState<Arrival | null>(null);
   const dragStart = useRef<LayoutItem[] | null>(null);
 
   const items = editor.items;
@@ -105,6 +108,19 @@ export function WidgetBoard({
   const entries = useGridEntries(visible, effective);
   const available = useMemo(() => availableWidgets(access), [access]);
   const open = entries.find((entry) => entry.item.id === openId) ?? null;
+
+  // The gallery suggests widgets of the sections the person has opened.
+  const nav = useNavItems();
+  const placedKeys = useMemo(() => visible.map((item) => item.widget), [visible]);
+  const recommended = useMemo(
+    () =>
+      recommendWidgets(
+        available,
+        placedKeys,
+        new Set(nav.items.filter((item) => !item.locked && !item.fresh).map((item) => item.key)),
+      ),
+    [available, placedKeys, nav.items],
+  );
 
   useUndoShortcut(editing || Boolean(template), editor.undo);
 
@@ -138,13 +154,14 @@ export function WidgetBoard({
     track("dashboard_edit_started", { via, ...(template ? { template: template.kind } : {}) });
   }
 
-  function add(widget: string, size: LayoutItem["size"]) {
+  function add(widget: string, size: LayoutItem["size"], from: Rect | null) {
     if (!items || !isWidgetKey(widget)) return;
     const id = newItemId();
     const next = addItem(items, { id, widget, size, x: 0, y: 0, settings: {} });
     if (next.length === items.length) return;
     editor.apply(next);
-    setFresh(id);
+    setArrival({ id, from });
+    haptic("drop");
     setGalleryOpen(false);
     track("dashboard_widget_added", { widget, size, count: next.length });
   }
@@ -271,7 +288,7 @@ export function WidgetBoard({
           entries={entries}
           editing={editing}
           scope={scope}
-          fresh={fresh}
+          arrival={arrival}
           onOpen={(entry) => {
             setOpenId(entry.item.id);
             track("dashboard_widget_opened", {
@@ -324,7 +341,9 @@ export function WidgetBoard({
           open={galleryOpen}
           onOpenChange={setGalleryOpen}
           available={available}
-          onAdd={(meta, size) => add(meta.key, size)}
+          placed={placedKeys}
+          recommended={recommended}
+          onAdd={(meta, size, from) => add(meta.key, size, from)}
         />
       )}
 

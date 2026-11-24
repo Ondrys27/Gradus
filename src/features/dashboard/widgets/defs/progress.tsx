@@ -1,17 +1,28 @@
 "use client";
 
-import Link from "next/link";
 import { FlagIcon, FlameIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { ProgressBar } from "@/components/ui/progress-bar";
-import { ProgressRing } from "@/components/ui/progress-ring";
+import { toneText, type Tone } from "@/components/ui/tone";
 import { useGameState } from "@/features/game/queries";
 import { levelProgress, tierForLevel } from "@/features/game/rules";
 import { useMilestones } from "@/features/milestones/queries";
 import type { MilestoneWithCounts } from "@/features/milestones/types";
 import { formatNumber } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
-import { combine, defineWidget, Empty, Figure, Hint, type WidgetQuery } from "../kit";
+import { cn } from "@/lib/utils";
+import {
+  Bar,
+  combine,
+  defineWidget,
+  Empty,
+  Figure,
+  LiveNumber,
+  Ring,
+  Side,
+  Stack,
+  Sub,
+  type WidgetQuery,
+} from "../kit";
 
 // ---------------------------------------------------------------------------
 // Milestones and progress: progress = done / all tasks, computed, never stored
@@ -28,90 +39,86 @@ function useMilestonesData(): WidgetQuery<MilestonesData> {
   }));
 }
 
-function MilestoneLine({ milestone }: { milestone: MilestoneWithCounts }) {
+function ratioOf(milestone: MilestoneWithCounts) {
+  return milestone.total > 0 ? milestone.done / milestone.total : 0;
+}
+
+/** The bars of the milestones: name, done of total, and the bar as that ratio. */
+function MilestoneBars({
+  milestones,
+  tone,
+}: {
+  milestones: MilestoneWithCounts[];
+  tone: Tone;
+}) {
   const t = useTranslations("dashboard.widgets.milestones");
   const format = useFormatSettings();
   return (
-    <li className="flex flex-col gap-1 py-1.5">
-      <Link
-        href={`/app/milniky/${milestone.id}`}
-        className="flex items-center justify-between gap-2 text-sm text-ink outline-none hover:text-violet focus-visible:ring-3 focus-visible:ring-violet/40"
-      >
-        <span className="truncate">{milestone.title}</span>
-        <span className="shrink-0 text-xs text-ink-muted tabular-nums">
-          {t("tasks", {
+    <ul className="flex min-h-0 flex-col gap-2.5 overflow-hidden">
+      {milestones.map((milestone) => (
+        <Bar
+          key={milestone.id}
+          href={`/app/milniky/${milestone.id}`}
+          label={milestone.title}
+          tone={tone}
+          ratio={ratioOf(milestone)}
+          value={t("tasks", {
             done: formatNumber(milestone.done, {}, format),
             total: formatNumber(milestone.total, {}, format),
           })}
-        </span>
-      </Link>
-      <ProgressBar
-        value={milestone.done}
-        max={Math.max(milestone.total, 1)}
-        label={milestone.title}
-        size="sm"
-      />
-    </li>
+        />
+      ))}
+    </ul>
+  );
+}
+
+function MilestonesEmpty({ compact }: { compact: boolean }) {
+  const t = useTranslations("dashboard.widgets.milestones");
+  return (
+    <Empty
+      icon={FlagIcon}
+      tone="gold"
+      title={t("emptyTitle")}
+      hint={t("emptyHint")}
+      action={{ label: t("add"), href: "/app/milniky?new=milestone" }}
+      compact={compact}
+    />
   );
 }
 
 export const milestonesWidget = defineWidget<MilestonesData>({
   key: "milestones",
   useData: useMilestonesData,
-  View: ({ size, data }) => {
+  View: ({ size, data, tone }) => {
     const t = useTranslations("dashboard.widgets.milestones");
     const format = useFormatSettings();
-    if (data.active.length === 0) {
-      return (
-        <Empty
-          icon={FlagIcon}
-          tone="gold"
-          title={t("emptyTitle")}
-          hint={size === "S" ? undefined : t("emptyHint")}
-          action={
-            size === "S" ? undefined : { label: t("add"), href: "/app/milniky?new=milestone" }
-          }
-          compact={size !== "L"}
-        />
-      );
-    }
+    if (data.active.length === 0) return <MilestonesEmpty compact={size !== "L"} />;
     const first = data.active[0];
     if (size === "S") {
       return (
         <div className="flex flex-1 flex-col items-center justify-center gap-1">
-          <ProgressRing
-            value={first.done}
-            max={Math.max(first.total, 1)}
-            label={first.title}
-            size={72}
-            tone="gold"
-          >
-            <span className="text-sm font-bold text-ink tabular-nums">
-              {formatNumber(
-                first.total ? first.done / first.total : 0,
-                { style: "percent" },
-                format,
-              )}
+          <Ring value={first.done} max={first.total} tone={tone} label={first.title} size={64}>
+            <span className="text-sm font-bold text-ink">
+              <LiveNumber value={ratioOf(first)} format={{ style: "percent" }} />
             </span>
-          </ProgressRing>
-          <span className="line-clamp-1 text-xs text-ink-soft">{first.title}</span>
+          </Ring>
+          <span className="line-clamp-1 w-full text-center text-xs text-ink-soft">
+            {first.title}
+          </span>
         </div>
       );
     }
+    if (size === "M") return <MilestoneBars milestones={data.active.slice(0, 2)} tone={tone} />;
     return (
-      <ul className="flex min-h-0 flex-col divide-y divide-line overflow-hidden">
-        {data.active.slice(0, size === "L" ? 4 : 1).map((milestone) => (
-          <MilestoneLine key={milestone.id} milestone={milestone} />
-        ))}
-        {size === "M" && data.active.length > 1 && (
-          <li className="pt-1.5">
-            <Hint>{t("more", { count: data.active.length - 1 })}</Hint>
-          </li>
-        )}
-      </ul>
+      <Stack between>
+        <MilestoneBars milestones={data.active.slice(0, 4)} tone={tone} />
+        <Sub className="text-xs text-ink-muted">
+          {t("doneCount", { count: formatNumber(data.completed, {}, format) })}
+        </Sub>
+      </Stack>
     );
   },
-  Detail: ({ data }) => {
+  Detail: ({ data, tone }) => {
     const t = useTranslations("dashboard.widgets.milestones");
     const format = useFormatSettings();
     return (
@@ -125,19 +132,9 @@ export const milestonesWidget = defineWidget<MilestonesData>({
           />
         </div>
         {data.active.length === 0 ? (
-          <Empty
-            icon={FlagIcon}
-            tone="gold"
-            title={t("emptyTitle")}
-            hint={t("emptyHint")}
-            action={{ label: t("add"), href: "/app/milniky?new=milestone" }}
-          />
+          <MilestonesEmpty compact={false} />
         ) : (
-          <ul className="flex flex-col divide-y divide-line">
-            {data.active.map((milestone) => (
-              <MilestoneLine key={milestone.id} milestone={milestone} />
-            ))}
-          </ul>
+          <MilestoneBars milestones={data.active} tone={tone} />
         )}
       </div>
     );
@@ -159,49 +156,61 @@ function useLevel(): WidgetQuery<LevelData> {
   }));
 }
 
-function LevelBody({ size, data }: { size: string; data: LevelData }) {
+function LevelRing({ data, tone, size }: { data: LevelData; tone: Tone; size: number }) {
   const t = useTranslations("dashboard.widgets.level");
-  const tGame = useTranslations("game");
   const format = useFormatSettings();
   const progress = levelProgress(data.totalXp);
-  const ring = (
-    <ProgressRing
+  return (
+    <Ring
       value={Math.round(progress.ratio * 100)}
+      max={100}
+      tone={tone}
+      size={size}
       label={t("progress")}
-      size={size === "S" ? 72 : 84}
-      tone="teal"
     >
       <span className="flex flex-col items-center leading-none">
-        <span className="text-2xl font-black text-ink tabular-nums">
+        <span
+          className={cn("font-black text-ink tabular-nums", size >= 80 ? "text-2xl" : "text-xl")}
+        >
           {formatNumber(progress.level, {}, format)}
         </span>
         <span className="text-[10px] text-ink-muted uppercase">{t("level")}</span>
       </span>
-    </ProgressRing>
+    </Ring>
   );
+}
+
+function LevelBody({ size, data, tone }: { size: string; data: LevelData; tone: Tone }) {
+  const t = useTranslations("dashboard.widgets.level");
+  const tGame = useTranslations("game");
+  const format = useFormatSettings();
+  const progress = levelProgress(data.totalXp);
   if (size === "S") {
-    return <div className="flex flex-1 items-center justify-center">{ring}</div>;
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <LevelRing data={data} tone={tone} size={72} />
+      </div>
+    );
   }
   return (
-    <div className="flex items-center gap-4">
-      {ring}
-      <div className="flex min-w-0 flex-col gap-1">
-        <span className="truncate text-base font-bold text-ink">
-          {tGame(`tiers.${tierForLevel(progress.level)}`)}
-        </span>
-        <span className="text-xs text-ink-muted tabular-nums">
-          {progress.xpForNextLevel > 0
-            ? t("toNext", {
-                xp: formatNumber(progress.xpForNextLevel - progress.xpIntoLevel, {}, format),
-              })
-            : t("top")}
-        </span>
-        <span className="flex items-center gap-1 text-sm text-gold">
-          <FlameIcon aria-hidden className="size-4" />
+    <Side aside={<LevelRing data={data} tone={tone} size={72} />}>
+      <span className="truncate text-base font-bold text-ink">
+        {tGame(`tiers.${tierForLevel(progress.level)}`)}
+      </span>
+      <Sub className="text-xs text-ink-muted">
+        {progress.xpForNextLevel > 0
+          ? t("toNext", {
+              xp: formatNumber(progress.xpForNextLevel - progress.xpIntoLevel, {}, format),
+            })
+          : t("top")}
+      </Sub>
+      <span className={cn("flex items-center gap-1 text-sm tabular-nums", toneText[tone])}>
+        <FlameIcon aria-hidden className="size-4 shrink-0" />
+        <span className="truncate">
           {t("streak", { count: data.streak, formatted: formatNumber(data.streak, {}, format) })}
         </span>
-      </div>
-    </div>
+      </span>
+    </Side>
   );
 }
 
@@ -209,12 +218,12 @@ export const levelWidget = defineWidget<LevelData>({
   key: "level",
   useData: useLevel,
   View: LevelBody,
-  Detail: ({ data }) => {
+  Detail: ({ data, tone }) => {
     const t = useTranslations("dashboard.widgets.level");
     const format = useFormatSettings();
     return (
       <div className="flex flex-col gap-4">
-        <LevelBody size="M" data={data} />
+        <LevelBody size="M" data={data} tone={tone} />
         <div className="grid grid-cols-2 gap-3">
           <Figure label={t("totalXp")} value={formatNumber(data.totalXp, {}, format)} />
           <Figure label={t("freeze")} value={data.freeze ? t("freezeReady") : t("freezeUsed")} />

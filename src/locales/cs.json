@@ -4141,6 +4141,11 @@
       "galleryEmpty": "Takový widget tu není.",
       "galleryAdd": "Přidat · {size}",
       "gallerySizes": "Velikost",
+      "galleryRecommended": "Doporučené",
+      "galleryRecommendedHint": "podle toho, co používáš",
+      "galleryAllWidgets": "Další widgety",
+      "galleryOnBoard": "Na přehledu",
+      "galleryAddShort": "Přidat",
       "categories": {
         "today": "Dnes",
         "sales": "Obchod",
@@ -4177,7 +4182,8 @@
         "name": "Čeká na tebe",
         "description": "Schůzky ke schválení, pozvánky do firem a dotazníky po schůzkách.",
         "emptyTitle": "Nic nečeká",
-        "emptyHint": "Jakmile bude potřeba tvoje rozhodnutí, objeví se tady."
+        "emptyHint": "Jakmile bude potřeba tvoje rozhodnutí, objeví se tady.",
+        "more": "{count, plural, one {a ještě {formatted} další} few {a ještě {formatted} další} other {a ještě {formatted} dalších}}"
       },
       "overdueTasks": {
         "name": "Úkoly po termínu",
@@ -4186,6 +4192,16 @@
         "emptyHint": "Všechno stíháš. Tak dál.",
         "count": "{count, plural, one {úkol po termínu} few {úkoly po termínu} many {úkolu po termínu} other {úkolů po termínu}}",
         "first": "Nejstarší: {title}",
+        "oldestAgo": "{count, plural, =0 {nejstarší dnes} one {nejstarší před {formatted} dnem} other {nejstarší před {formatted} dny}}",
+        "ago": "{count, plural, =0 {dnes} one {{formatted} den} few {{formatted} dny} many {{formatted} dne} other {{formatted} dní}}",
+        "byAge": "Úkoly po termínu podle stáří",
+        "bucket": {
+          "today": "dnes",
+          "d1to3": "1–3 dny",
+          "d4to7": "4–7 dní",
+          "d8plus": "8+ dní"
+        },
+        "open": "Otevřít úkoly",
         "settings": {
           "scope": {
             "label": "Čí úkoly",
@@ -4198,8 +4214,14 @@
         "name": "Nejbližší schůzky",
         "description": "Schůzky v kalendáři na příští dny.",
         "allDay": "celý den",
+        "today": "Dnes",
+        "tomorrow": "Zítra",
         "todayAt": "dnes {time}",
         "tomorrowAt": "zítra {time}",
+        "count": "{count, plural, one {schůzka} few {schůzky} many {schůzky} other {schůzek}}",
+        "countIn": "{count, plural, one {schůzka za {days} dní} few {schůzky za {days} dní} many {schůzky za {days} dní} other {schůzek za {days} dní}}",
+        "next": "nejbližší {when}",
+        "following": "další {when} · {title}",
         "emptyTitle": "Na {days} dní žádná schůzka",
         "emptyHint": "Domluv si schůzku nebo pošli odkaz na plánovač.",
         "plan": "Naplánovat schůzku",
@@ -4218,13 +4240,22 @@
         "emptyTitle": "Týden je volný",
         "emptyHint": "V kalendáři zatím nic není.",
         "events": "{count, plural, one {{count} událost} few {{count} události} many {{count} události} other {{count} událostí}}",
+        "thisWeek": "{count, plural, =0 {Týden je volný} one {{count} událost tento týden} few {{count} události tento týden} many {{count} události tento týden} other {{count} událostí tento týden}}",
+        "density": "Události tohoto týdne po dnech",
+        "upcoming": "Nejbližší",
+        "today": "Dnes",
+        "tomorrow": "Zítra",
+        "todayAt": "dnes {time}",
+        "tomorrowAt": "zítra {time}",
+        "open": "Otevřít kalendář",
         "more": "+{count}",
         "free": "Volno",
         "allDay": "celý den"
       },
       "tasksDone": {
         "name": "Splněné úkoly dnes",
-        "description": "Kolik dnešních úkolů z milníků máš hotových."
+        "description": "Kolik dnešních úkolů z milníků máš hotových.",
+        "of": "z {total}"
       },
       "pipeline": {
         "name": "Pipeline",
@@ -4235,6 +4266,9 @@
         "valueHint": "{count, plural, one {v {count} obchodu} few {ve {count} obchodech} many {v {count} obchodu} other {v {count} obchodech}}",
         "valueOthers": "{count, plural, one {v {count} obchodu} few {ve {count} obchodech} many {v {count} obchodu} other {v {count} obchodech}}, další měny: {others}",
         "countHint": "{count, plural, one {otevřený obchod} few {otevřené obchody} many {otevřeného obchodu} other {otevřených obchodů}}",
+        "otherCurrencies": "Další měny: {amounts}",
+        "stagesLabel": "Otevřené obchody po fázích",
+        "openPipeline": "Otevřít pipeline",
         "totals": "Celkem po měnách",
         "settings": {
           "measure": {
@@ -4246,24 +4280,39 @@
       },
       "onFire": {
         "name": "Co hoří",
-        "description": "Tři dlaždice toho, co je v obchodech špatně. Cíl je všude nula."
+        "description": "Tři dlaždice toho, co je v obchodech špatně. Cíl je všude nula.",
+        "short": {
+          "closePast": "Uzavření",
+          "overdueTasks": "Po termínu",
+          "noTask": "Bez úkolu"
+        },
+        "clear": "Nic nehoří. Přesně tak to má být.",
+        "openPipeline": "Otevřít pipeline"
       },
       "winRate": {
         "name": "Úspěšnost obchodů",
-        "description": "Kolik uzavřených obchodů jsi za 90 dní vyhrál."
+        "description": "Kolik uzavřených obchodů jsi za 90 dní vyhrál.",
+        "window": "za {days} dní",
+        "vsPrevious": "{value} proti předchozím {days} dnům",
+        "won": "Vyhráno",
+        "lost": "Prohráno",
+        "byMonth": "Vyhrané obchody po měsících"
       },
       "newContacts": {
         "name": "Nové kontakty",
         "description": "Kolik kontaktů přibylo tento měsíc.",
         "emptyTitle": "Tento měsíc zatím žádný",
         "add": "Přidat kontakt",
-        "unnamed": "Bez jména"
+        "unnamed": "Bez jména",
+        "vsLastMonth": "{value} proti minulému měsíci",
+        "latest": "Poslední: {name}"
       },
       "coldCalling": {
         "name": "Cold Calling dnes",
         "description": "Čas hledání klientů dnes a tento týden.",
         "today": "dnes hledáš klienty",
-        "week": "Tento týden"
+        "week": "Tento týden",
+        "weekChart": "Čas hledání klientů po dnech tohoto týdne"
       },
       "bookings": {
         "name": "Rezervace z plánovače",
@@ -4281,11 +4330,28 @@
         "description": "Příjmy, výdaje a bilance tohoto měsíce proti minulému.",
         "income": "Příjmy",
         "expense": "Výdaje",
-        "balance": "Bilance"
+        "balance": "Bilance",
+        "incomeMonth": "Příjmy tento měsíc",
+        "split": "Poměr příjmů a výdajů",
+        "weekLabel": "{from}.–{to}.",
+        "weeksChart": "Příjmy po týdnech měsíce",
+        "chart": "Příjmy a výdaje po týdnech měsíce",
+        "openFinance": "Otevřít finance",
+        "openPlan": "Plán měsíce"
       },
       "capital": {
         "name": "Vývoj kapitálu",
-        "description": "Kapitál po týdnech: plán a skutečnost, 3 měsíce zpět a 3 dopředu."
+        "description": "Kapitál po týdnech: plán a skutečnost, 3 měsíce zpět a 3 dopředu.",
+        "current": "Současný kapitál",
+        "lowest": "Nejnižší v plánu {amount} ({date})",
+        "plan": "Plán",
+        "actual": "Skutečnost",
+        "chart": "Kapitál po týdnech",
+        "noPlanTitle": "Zatím bez plánu měsíce",
+        "noPlanHint": "Založ plán měsíce ve Financích a uvidíš, kam kapitál míří.",
+        "createPlan": "Založit plán měsíce",
+        "openPlan": "Otevřít plán měsíce",
+        "openOverview": "Přehled financí"
       },
       "overdueInvoices": {
         "name": "Faktury po splatnosti",
@@ -4293,7 +4359,11 @@
         "emptyTitle": "Vše zaplaceno",
         "emptyHint": "Žádná faktura není po splatnosti.",
         "count": "{count, plural, one {faktura po splatnosti} few {faktury po splatnosti} many {faktury po splatnosti} other {faktur po splatnosti}}",
-        "noCustomer": "Bez odběratele"
+        "noCustomer": "Bez odběratele",
+        "total": "Celkem {amount}",
+        "moreCurrencies": "+ {count} v {currency}",
+        "daysOverdue": "{days, plural, one {# den} few {# dny} many {# dne} other {# dní}} po splatnosti",
+        "oldest": "Nejstarší {number} · {customer} · {overdue}"
       },
       "rewards": {
         "name": "Odměny",
@@ -4307,7 +4377,11 @@
         "emptyOwnerTitle": "Nic k vyplacení",
         "emptyOwnerHint": "Odměny pracovníků se objeví, jakmile je někdo vydělá.",
         "emptyWorkerTitle": "Zatím bez odměn",
-        "emptyWorkerHint": "Odměny za úkoly a obchody se ukážou tady."
+        "emptyWorkerHint": "Odměny za úkoly a obchody se ukážou tady.",
+        "toPayLabel": "K vyplacení",
+        "earnedLabel": "Vyděláno",
+        "split": "Schváleno a ke schválení",
+        "splitWorker": "Vyděláno a v plánu"
       },
       "workTimer": {
         "name": "Odpracovaný čas",
@@ -4316,7 +4390,9 @@
       "team": {
         "name": "Tým",
         "description": "Kdo má kolik otevřených úkolů a obchodů.",
-        "load": "{tasks} úkolů · {deals} obchodů",
+        "load": "{tasks, plural, one {# úkol} few {# úkoly} many {# úkolu} other {# úkolů}} · {deals, plural, one {# obchod} few {# obchody} many {# obchodu} other {# obchodů}}",
+        "people": "{count, plural, one {člověk} few {lidé} many {člověka} other {lidí}}",
+        "openCompany": "Otevřít správu firmy",
         "emptyTitle": "Zatím jsi tu sám",
         "emptyHint": "Pozvi pracovníka a uvidíš, kdo má co rozdělané.",
         "invite": "Pozvat pracovníka",
@@ -4329,7 +4405,10 @@
         "line": "{who}: {what} – {contact}",
         "unnamed": "bez jména",
         "emptyTitle": "Zatím žádná aktivita",
-        "emptyHint": "Hovory a schůzky s kontakty se ukážou tady."
+        "emptyHint": "Hovory a schůzky s kontakty se ukážou tady.",
+        "weekCount": "{count, plural, one {akce za 7 dní} few {akce za 7 dní} many {akce za 7 dní} other {akcí za 7 dní}}",
+        "chart": "Aktivita po dnech",
+        "openContacts": "Otevřít kontakty"
       },
       "milestones": {
         "name": "Milníky a postup",
@@ -4339,6 +4418,7 @@
         "emptyHint": "Rozděl velký cíl na kroky.",
         "add": "Nový milník",
         "more": "{count, plural, one {a další {count}} few {a další {count}} many {a dalších {count}} other {a dalších {count}}}",
+        "doneCount": "hotové: {count}",
         "active": "Rozpracované",
         "completed": "Hotové"
       },
@@ -4361,6 +4441,7 @@
         "placeholder": "Zeptej se Gradyho…",
         "send": "Poslat Gradymu",
         "nothing": "Grady teď nic nehlásí.",
+        "suggestions": "{count, plural, =0 {Grady teď nic nehlásí.} one {Grady má # návrh} few {Grady má # návrhy} many {Grady má # návrhu} other {Grady má # návrhů}}",
         "ready": "Grady má připraveno",
         "prompts": {
           "today": "Co mám dnes udělat?",
@@ -4408,7 +4489,8 @@
         "name": "Spokojenost",
         "description": "Krátký dotazník, jak se ti s aplikací pracuje.",
         "emptyTitle": "Teď se nic neptáme",
-        "emptyHint": "Dotazník se ukáže, až bude na řadě."
+        "emptyHint": "Dotazník se ukáže, až bude na řadě.",
+        "why": "Poprvé po {first} dnech používání, pak každých {interval} dní."
       }
     }
   },

@@ -412,6 +412,31 @@ export function useNewContactCount() {
   });
 }
 
+/** Contacts added in the previous calendar month, for the change the widget shows. */
+export function usePreviousMonthContactCount() {
+  const { user } = useSession();
+  const workspaceId = useWorkspaceId();
+  const { today, timeZone } = useToday();
+  const bounds = useMemo(() => {
+    const { from, to } = periodRange("lastMonth", today);
+    return { month: from, ...dayRangeToInstants(from, to, timeZone) };
+  }, [today, timeZone]);
+  return useQuery({
+    ...FRESH,
+    queryKey: dashboardKeys.newContactCount(user.id, bounds.month, timeZone),
+    queryFn: async (): Promise<number> => {
+      const { count, error } = await createClient()
+        .from("contacts")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", workspaceId)
+        .gte("created_at", bounds.from)
+        .lt("created_at", bounds.to);
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+}
+
 export type NewContact = {
   id: string;
   company_name: string | null;

@@ -4141,6 +4141,11 @@
       "galleryEmpty": "No widget like that.",
       "galleryAdd": "Add · {size}",
       "gallerySizes": "Size",
+      "galleryRecommended": "Suggested",
+      "galleryRecommendedHint": "by what you use",
+      "galleryAllWidgets": "More widgets",
+      "galleryOnBoard": "On the board",
+      "galleryAddShort": "Add",
       "categories": {
         "today": "Today",
         "sales": "Sales",
@@ -4177,7 +4182,8 @@
         "name": "Waiting for you",
         "description": "Meetings to approve, company invites and surveys after meetings.",
         "emptyTitle": "Nothing waits",
-        "emptyHint": "Whatever needs your decision shows up here."
+        "emptyHint": "Whatever needs your decision shows up here.",
+        "more": "{count, plural, one {and {formatted} more} other {and {formatted} more}}"
       },
       "overdueTasks": {
         "name": "Overdue tasks",
@@ -4186,6 +4192,16 @@
         "emptyHint": "You're on top of everything. Keep going.",
         "count": "{count, plural, one {overdue task} other {overdue tasks}}",
         "first": "Oldest: {title}",
+        "oldestAgo": "{count, plural, =0 {oldest due today} one {oldest {formatted} day ago} other {oldest {formatted} days ago}}",
+        "ago": "{count, plural, =0 {today} one {{formatted} day} other {{formatted} days}}",
+        "byAge": "Overdue tasks by age",
+        "bucket": {
+          "today": "today",
+          "d1to3": "1–3 days",
+          "d4to7": "4–7 days",
+          "d8plus": "8+ days"
+        },
+        "open": "Open tasks",
         "settings": {
           "scope": {
             "label": "Whose tasks",
@@ -4198,8 +4214,14 @@
         "name": "Upcoming meetings",
         "description": "Meetings in the calendar for the next days.",
         "allDay": "all day",
+        "today": "Today",
+        "tomorrow": "Tomorrow",
         "todayAt": "today {time}",
         "tomorrowAt": "tomorrow {time}",
+        "count": "{count, plural, one {meeting} other {meetings}}",
+        "countIn": "{count, plural, one {meeting in {days} days} other {meetings in {days} days}}",
+        "next": "next {when}",
+        "following": "then {when} · {title}",
         "emptyTitle": "No meeting in {days} days",
         "emptyHint": "Set one up or send your scheduling link.",
         "plan": "Plan a meeting",
@@ -4218,13 +4240,22 @@
         "emptyTitle": "The week is free",
         "emptyHint": "Nothing in the calendar yet.",
         "events": "{count, plural, one {{count} event} other {{count} events}}",
+        "thisWeek": "{count, plural, =0 {The week is free} one {{count} event this week} other {{count} events this week}}",
+        "density": "This week's events by day",
+        "upcoming": "Coming up",
+        "today": "Today",
+        "tomorrow": "Tomorrow",
+        "todayAt": "today {time}",
+        "tomorrowAt": "tomorrow {time}",
+        "open": "Open calendar",
         "more": "+{count}",
         "free": "Free",
         "allDay": "all day"
       },
       "tasksDone": {
         "name": "Tasks done today",
-        "description": "How many of today's milestone tasks you have done."
+        "description": "How many of today's milestone tasks you have done.",
+        "of": "of {total}"
       },
       "pipeline": {
         "name": "Pipeline",
@@ -4235,6 +4266,9 @@
         "valueHint": "{count, plural, one {in {count} deal} other {in {count} deals}}",
         "valueOthers": "{count, plural, one {in {count} deal} other {in {count} deals}}, other currencies: {others}",
         "countHint": "{count, plural, one {open deal} other {open deals}}",
+        "otherCurrencies": "Other currencies: {amounts}",
+        "stagesLabel": "Open deals by stage",
+        "openPipeline": "Open pipeline",
         "totals": "Totals by currency",
         "settings": {
           "measure": {
@@ -4246,24 +4280,39 @@
       },
       "onFire": {
         "name": "On fire",
-        "description": "Three tiles of what is wrong in your deals. The goal is zero everywhere."
+        "description": "Three tiles of what is wrong in your deals. The goal is zero everywhere.",
+        "short": {
+          "closePast": "Close Date",
+          "overdueTasks": "Overdue",
+          "noTask": "No task"
+        },
+        "clear": "Nothing on fire. That is exactly how it should be.",
+        "openPipeline": "Open pipeline"
       },
       "winRate": {
         "name": "Win rate",
-        "description": "How many deals closed in 90 days you won."
+        "description": "How many deals closed in 90 days you won.",
+        "window": "in {days} days",
+        "vsPrevious": "{value} against the {days} days before",
+        "won": "Won",
+        "lost": "Lost",
+        "byMonth": "Deals won by month"
       },
       "newContacts": {
         "name": "New contacts",
         "description": "How many contacts came in this month.",
         "emptyTitle": "None this month yet",
         "add": "Add contact",
-        "unnamed": "No name"
+        "unnamed": "No name",
+        "vsLastMonth": "{value} against last month",
+        "latest": "Latest: {name}"
       },
       "coldCalling": {
         "name": "Cold calling today",
         "description": "Time spent finding clients today and this week.",
         "today": "finding clients today",
-        "week": "This week"
+        "week": "This week",
+        "weekChart": "Time finding clients by day this week"
       },
       "bookings": {
         "name": "Scheduler bookings",
@@ -4281,11 +4330,28 @@
         "description": "Income, expenses and balance of this month against last month.",
         "income": "Income",
         "expense": "Expenses",
-        "balance": "Balance"
+        "balance": "Balance",
+        "incomeMonth": "Income this month",
+        "split": "Income against expenses",
+        "weekLabel": "{from}–{to}",
+        "weeksChart": "Income by week of the month",
+        "chart": "Income and expenses by week of the month",
+        "openFinance": "Open finance",
+        "openPlan": "Month plan"
       },
       "capital": {
         "name": "Capital over time",
-        "description": "Capital by week: plan and reality, 3 months back and 3 ahead."
+        "description": "Capital by week: plan and reality, 3 months back and 3 ahead.",
+        "current": "Current capital",
+        "lowest": "Lowest planned {amount} ({date})",
+        "plan": "Plan",
+        "actual": "Actual",
+        "chart": "Capital by week",
+        "noPlanTitle": "No month plan yet",
+        "noPlanHint": "Set up a month plan in Finance to see where your capital is heading.",
+        "createPlan": "Set up a month plan",
+        "openPlan": "Open the month plan",
+        "openOverview": "Finance overview"
       },
       "overdueInvoices": {
         "name": "Overdue invoices",
@@ -4293,7 +4359,11 @@
         "emptyTitle": "All paid",
         "emptyHint": "No invoice is overdue.",
         "count": "{count, plural, one {overdue invoice} other {overdue invoices}}",
-        "noCustomer": "No customer"
+        "noCustomer": "No customer",
+        "total": "Total {amount}",
+        "moreCurrencies": "+ {count} in {currency}",
+        "daysOverdue": "{days, plural, one {# day} other {# days}} overdue",
+        "oldest": "Oldest {number} · {customer} · {overdue}"
       },
       "rewards": {
         "name": "Rewards",
@@ -4307,7 +4377,11 @@
         "emptyOwnerTitle": "Nothing to pay out",
         "emptyOwnerHint": "Your people's rewards show up once someone earns them.",
         "emptyWorkerTitle": "No rewards yet",
-        "emptyWorkerHint": "Rewards for tasks and deals show up here."
+        "emptyWorkerHint": "Rewards for tasks and deals show up here.",
+        "toPayLabel": "To pay out",
+        "earnedLabel": "Earned",
+        "split": "Approved and to approve",
+        "splitWorker": "Earned and planned"
       },
       "workTimer": {
         "name": "Time worked",
@@ -4316,7 +4390,9 @@
       "team": {
         "name": "Team",
         "description": "Who has how many open tasks and deals.",
-        "load": "{tasks} tasks · {deals} deals",
+        "load": "{tasks, plural, one {# task} other {# tasks}} · {deals, plural, one {# deal} other {# deals}}",
+        "people": "{count, plural, one {person} other {people}}",
+        "openCompany": "Open company",
         "emptyTitle": "It's just you so far",
         "emptyHint": "Invite a worker and see who has what on their plate.",
         "invite": "Invite a worker",
@@ -4329,7 +4405,10 @@
         "line": "{who}: {what} – {contact}",
         "unnamed": "no name",
         "emptyTitle": "No activity yet",
-        "emptyHint": "Calls and meetings with contacts show up here."
+        "emptyHint": "Calls and meetings with contacts show up here.",
+        "weekCount": "{count, plural, one {action in 7 days} other {actions in 7 days}}",
+        "chart": "Activity by day",
+        "openContacts": "Open contacts"
       },
       "milestones": {
         "name": "Milestones and progress",
@@ -4339,6 +4418,7 @@
         "emptyHint": "Break a big goal into steps.",
         "add": "New milestone",
         "more": "{count, plural, one {and {count} more} other {and {count} more}}",
+        "doneCount": "done: {count}",
         "active": "In progress",
         "completed": "Done"
       },
@@ -4361,6 +4441,7 @@
         "placeholder": "Ask Grady…",
         "send": "Send to Grady",
         "nothing": "Grady has nothing to report right now.",
+        "suggestions": "{count, plural, =0 {Grady has nothing to report right now.} one {Grady has # suggestion} other {Grady has # suggestions}}",
         "ready": "Grady has ready",
         "prompts": {
           "today": "What should I do today?",
@@ -4408,7 +4489,8 @@
         "name": "Satisfaction",
         "description": "A short survey on how the app works for you.",
         "emptyTitle": "No question right now",
-        "emptyHint": "The survey shows up when it is due."
+        "emptyHint": "The survey shows up when it is due.",
+        "why": "First after {first} days of use, then every {interval} days."
       }
     }
   },
