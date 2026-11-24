@@ -349,6 +349,7 @@ export type Database = {
       }
       ai_usage: {
         Row: {
+          batch: boolean
           cache_read_tokens: number
           cache_write_tokens: number
           conversation_id: string | null
@@ -367,6 +368,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          batch?: boolean
           cache_read_tokens?: number
           cache_write_tokens?: number
           conversation_id?: string | null
@@ -385,6 +387,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          batch?: boolean
           cache_read_tokens?: number
           cache_write_tokens?: number
           conversation_id?: string | null
@@ -2877,6 +2880,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      grady_batches: {
+        Row: {
+          batch_id: string
+          collected_at: string | null
+          created_at: string
+          id: string
+          items: Json
+          kind: string
+          model: string
+          status: string
+          summary: Json | null
+        }
+        Insert: {
+          batch_id: string
+          collected_at?: string | null
+          created_at?: string
+          id?: string
+          items?: Json
+          kind: string
+          model: string
+          status?: string
+          summary?: Json | null
+        }
+        Update: {
+          batch_id?: string
+          collected_at?: string | null
+          created_at?: string
+          id?: string
+          items?: Json
+          kind?: string
+          model?: string
+          status?: string
+          summary?: Json | null
+        }
+        Relationships: []
       }
       invoice_counters: {
         Row: {
@@ -6779,6 +6818,27 @@ export type Database = {
       activity_visible_actors: { Args: { _space: string }; Returns: string[] }
       add_interested_contact_table: { Args: never; Returns: string }
       add_on_keys: { Args: never; Returns: string[] }
+      admin_ai_efficiency: {
+        Args: {
+          _from: string
+          _include_internal?: boolean
+          _to: string
+          _tz?: string
+        }
+        Returns: {
+          active_users: number
+          ai_users: number
+          batch_cost_usd: number
+          cache_read_tokens: number
+          cache_write_tokens: number
+          calls: number
+          chat_answers: number
+          chat_cost_usd: number
+          cost_usd: number
+          day: string
+          input_tokens: number
+        }[]
+      }
       admin_ai_model_usage: {
         Args: { _since: string }
         Returns: {
@@ -6792,6 +6852,36 @@ export type Database = {
           output_tokens: number
           purpose: string
           routed_from: string
+        }[]
+      }
+      admin_ai_model_usage_by_tier: {
+        Args: { _since: string }
+        Returns: {
+          batch: boolean
+          cache_read_tokens: number
+          cache_write_tokens: number
+          calls: number
+          cost_usd: number
+          input_tokens: number
+          long_prompt: boolean
+          model: string
+          output_tokens: number
+          purpose: string
+          routed_from: string
+        }[]
+      }
+      admin_ai_quality_signals: {
+        Args: { _since: string }
+        Returns: {
+          actions: number
+          actions_undone: number
+          asks: number
+          calls: number
+          failures: number
+          purpose: string
+          ratings_down: number
+          ratings_up: number
+          repeats: number
         }[]
       }
       admin_bug_report_list: {

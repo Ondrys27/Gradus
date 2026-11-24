@@ -117,3 +117,14 @@ describe("describeSubscription", () => {
     expect(block).toMatch(/The user's own plan: X\.\n<\/plans>$/);
   });
 });
+
+describe("the plans block without the catalog (28.9)", () => {
+  it("keeps the user's own plan and never a price", async () => {
+    const { describePlansBrief } = await import("./plans-context");
+    const block = describePlansBrief("The user's own plan: Pro, monthly.");
+    expect(block).toContain("The user's own plan: Pro, monthly.");
+    expect(block).toContain("Never guess prices.");
+    expect(block).not.toMatch(/\d+ (CZK|EUR)/);
+    expect(describePlansBrief(null)).toMatch(/^<plans>\n.*\n<\/plans>$/);
+  });
+});

@@ -317,3 +317,19 @@ describe("the month plan in the situation", () => {
     );
   });
 });
+
+describe("describeSituation cut to the message (28.9)", () => {
+  it("lists today, the window and the asked parts, and names what it left out", () => {
+    const full = describeSituation(situation(), settings);
+    const cut = describeSituation(situation(), settings, new Set(["finance", "invoices"]));
+    expect(full).toContain("Today's calendar: empty.");
+    expect(full).not.toContain("Shortened");
+    expect(cut).toContain("Today: 2026-09-28");
+    expect(cut).toContain("This month: income");
+    expect(cut).not.toContain("Today's calendar");
+    expect(cut).not.toContain("Active milestones");
+    expect(cut).not.toContain("Calling time today");
+    expect(cut).toMatch(/not listed here: milestones, tasks, pipeline, followUps, calendar, calling, crmTasks, scheduler, rewards\./);
+    expect(cut.length).toBeLessThan(full.length + 300);
+  });
+});

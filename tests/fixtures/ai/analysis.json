@@ -1,0 +1,360 @@
+{
+  "samples": [
+    {
+      "id": "decision-maker",
+      "label": "6 dotazníků, rozhoduje majitel",
+      "lang": "cs",
+      "locale": "cs",
+      "surveys": [
+        {
+          "createdAt": "2026-11-20T10:00:00.000Z",
+          "answers": {
+            "duration": "45",
+            "format": "in_person",
+            "attendees": "decision_maker",
+            "mood": 5,
+            "interest": 5,
+            "confidence": 4,
+            "whatWorked": "Ukázal jsem hotový e-shop jiné kavárny.",
+            "nextStep": "offer"
+          },
+          "deal": {
+            "title": "E-shop pro Kavárnu U Mostu",
+            "value": 42000,
+            "currency": "CZK",
+            "outcome": "won",
+            "stage": null,
+            "lostReason": null
+          }
+        },
+        {
+          "createdAt": "2026-11-15T10:00:00.000Z",
+          "answers": {
+            "duration": "30",
+            "format": "in_person",
+            "attendees": "decision_maker",
+            "mood": 4,
+            "interest": 4,
+            "confidence": 4,
+            "objections": "price",
+            "whatWorked": "Rozložená platba.",
+            "nextStep": "offer"
+          },
+          "deal": {
+            "title": "Web Truhlářství Dvořák",
+            "value": 28000,
+            "currency": "CZK",
+            "outcome": "won",
+            "stage": null,
+            "lostReason": null
+          }
+        },
+        {
+          "createdAt": "2026-11-10T10:00:00.000Z",
+          "answers": {
+            "duration": "20",
+            "format": "online",
+            "attendees": "employee",
+            "mood": 3,
+            "interest": 3,
+            "confidence": 2,
+            "whatDidntWork": "Neměl jsem připravené reference.",
+            "nextStep": "none"
+          },
+          "deal": {
+            "title": "Katalog Pekárna Zrno",
+            "value": 15000,
+            "currency": "CZK",
+            "outcome": "lost",
+            "stage": null,
+            "lostReason": "Šli ke konkurenci"
+          }
+        },
+        {
+          "createdAt": "2026-11-05T10:00:00.000Z",
+          "answers": {
+            "duration": "25",
+            "format": "online",
+            "attendees": "employee",
+            "mood": 2,
+            "interest": 2,
+            "confidence": 2,
+            "objections": "timing",
+            "nextStep": "none"
+          },
+          "deal": {
+            "title": "Web Autoservis Král",
+            "value": 35000,
+            "currency": "CZK",
+            "outcome": "lost",
+            "stage": null,
+            "lostReason": "Teď nemají čas"
+          }
+        },
+        {
+          "createdAt": "2026-11-02T10:00:00.000Z",
+          "answers": {
+            "duration": "60",
+            "format": "in_person",
+            "attendees": "decision_maker",
+            "mood": 5,
+            "interest": 4,
+            "confidence": 5,
+            "whatWorked": "Prošli jsme spolu jejich současný rezervační systém.",
+            "nextStep": "offer"
+          },
+          "deal": {
+            "title": "Rezervace Studio Jóga Klid",
+            "value": 19000,
+            "currency": "CZK",
+            "outcome": "won",
+            "stage": null,
+            "lostReason": null
+          }
+        },
+        {
+          "createdAt": "2026-10-28T10:00:00.000Z",
+          "answers": {
+            "duration": "40",
+            "format": "in_person",
+            "attendees": "decision_maker",
+            "mood": 4,
+            "interest": 4,
+            "confidence": 3,
+            "objections": "price",
+            "nextStep": "followup"
+          },
+          "deal": {
+            "title": "Web Ateliér Lípa",
+            "value": 48000,
+            "currency": "CZK",
+            "outcome": "open",
+            "stage": "Nabídka odeslána",
+            "lostReason": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "small-sample",
+      "label": "5 dotazníků, malý vzorek",
+      "lang": "cs",
+      "locale": "cs",
+      "surveys": [
+        {
+          "createdAt": "2026-11-18T10:00:00.000Z",
+          "answers": {
+            "duration": "30",
+            "format": "online",
+            "attendees": "decision_maker",
+            "mood": 5,
+            "interest": 5,
+            "confidence": 5,
+            "nextStep": "contract"
+          },
+          "deal": {
+            "title": "Svatební fotky Novákovi",
+            "value": 12000,
+            "currency": "CZK",
+            "outcome": "won",
+            "stage": null,
+            "lostReason": null
+          }
+        },
+        {
+          "createdAt": "2026-11-12T10:00:00.000Z",
+          "answers": {
+            "duration": "15",
+            "format": "phone",
+            "attendees": "employee",
+            "mood": 3,
+            "interest": 2,
+            "confidence": 2,
+            "objections": "price",
+            "nextStep": "none"
+          },
+          "deal": {
+            "title": "Firemní akce Stavby Hora",
+            "value": 20000,
+            "currency": "CZK",
+            "outcome": "lost",
+            "stage": null,
+            "lostReason": "Cena"
+          }
+        },
+        {
+          "createdAt": "2026-11-08T10:00:00.000Z",
+          "answers": {
+            "duration": "20",
+            "format": "in_person",
+            "attendees": "decision_maker",
+            "mood": 4,
+            "interest": 4,
+            "confidence": 4,
+            "nextStep": "contract"
+          },
+          "deal": {
+            "title": "Portréty Kavárna U Mostu",
+            "value": 6000,
+            "currency": "CZK",
+            "outcome": "won",
+            "stage": null,
+            "lostReason": null
+          }
+        },
+        {
+          "createdAt": "2026-11-01T10:00:00.000Z",
+          "answers": {
+            "duration": "20",
+            "format": "phone",
+            "attendees": "employee",
+            "mood": 3,
+            "interest": 3,
+            "confidence": 3,
+            "objections": "price",
+            "nextStep": "none"
+          },
+          "deal": {
+            "title": "Katalog e-shopu Móda Iris",
+            "value": 18000,
+            "currency": "CZK",
+            "outcome": "lost",
+            "stage": null,
+            "lostReason": "Cena"
+          }
+        },
+        {
+          "createdAt": "2026-10-25T10:00:00.000Z",
+          "answers": {
+            "duration": "45",
+            "format": "in_person",
+            "attendees": "decision_maker",
+            "mood": 4,
+            "interest": 5,
+            "confidence": 4,
+            "nextStep": "offer"
+          },
+          "deal": {
+            "title": "Svatba Dvořákovi",
+            "value": 14000,
+            "currency": "CZK",
+            "outcome": "open",
+            "stage": "Schůzka",
+            "lostReason": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "going-well-en",
+      "label": "Daří se (EN)",
+      "lang": "en",
+      "locale": "en",
+      "surveys": [
+        {
+          "createdAt": "2026-11-21T10:00:00.000Z",
+          "answers": {
+            "duration": "30",
+            "format": "in_person",
+            "attendees": "decision_maker",
+            "mood": 5,
+            "interest": 5,
+            "confidence": 5,
+            "whatWorked": "Walked the garden together and priced on the spot.",
+            "nextStep": "contract"
+          },
+          "deal": {
+            "title": "Garden care – Oak Lane",
+            "value": 3600,
+            "currency": "CZK",
+            "outcome": "won",
+            "stage": null,
+            "lostReason": null
+          }
+        },
+        {
+          "createdAt": "2026-11-14T10:00:00.000Z",
+          "answers": {
+            "duration": "20",
+            "format": "in_person",
+            "attendees": "decision_maker",
+            "mood": 4,
+            "interest": 4,
+            "confidence": 4,
+            "whatWorked": "Same.",
+            "nextStep": "contract"
+          },
+          "deal": {
+            "title": "Hedge trimming – Mill House",
+            "value": 900,
+            "currency": "CZK",
+            "outcome": "won",
+            "stage": null,
+            "lostReason": null
+          }
+        },
+        {
+          "createdAt": "2026-11-09T10:00:00.000Z",
+          "answers": {
+            "duration": "45",
+            "format": "in_person",
+            "attendees": "decision_maker",
+            "mood": 5,
+            "interest": 5,
+            "confidence": 4,
+            "nextStep": "contract"
+          },
+          "deal": {
+            "title": "Season contract – Rose Court",
+            "value": 5200,
+            "currency": "CZK",
+            "outcome": "won",
+            "stage": null,
+            "lostReason": null
+          }
+        },
+        {
+          "createdAt": "2026-11-03T10:00:00.000Z",
+          "answers": {
+            "duration": "15",
+            "format": "in_person",
+            "attendees": "decision_maker",
+            "mood": 4,
+            "interest": 4,
+            "confidence": 4,
+            "nextStep": "contract"
+          },
+          "deal": {
+            "title": "Lawn – The Old Bakery",
+            "value": 700,
+            "currency": "CZK",
+            "outcome": "won",
+            "stage": null,
+            "lostReason": null
+          }
+        },
+        {
+          "createdAt": "2026-10-29T10:00:00.000Z",
+          "answers": {
+            "duration": "60",
+            "format": "online",
+            "attendees": "committee",
+            "mood": 3,
+            "interest": 3,
+            "confidence": 2,
+            "objections": "process",
+            "nextStep": "tender"
+          },
+          "deal": {
+            "title": "Park maintenance – Council",
+            "value": 12000,
+            "currency": "CZK",
+            "outcome": "lost",
+            "stage": null,
+            "lostReason": "Public tender"
+          }
+        }
+      ]
+    }
+  ]
+}

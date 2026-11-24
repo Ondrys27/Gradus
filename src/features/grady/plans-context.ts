@@ -76,6 +76,21 @@ export function describePlans(
   ].join("\n");
 }
 
+/**
+ * The <plans> block when the message is not about plans (step 28.9): only
+ * what the user has, without the three plans of the catalog (about 700
+ * tokens a message). When the talk turns to plans, the full block is back
+ * (chat-context.ts plansCatalogNeeded).
+ */
+export function describePlansBrief(own: string | null): string {
+  return [
+    "<plans>",
+    `The catalog of ${APP_NAME}'s plans is left out because the message is not about plans; when the user asks about plans or prices, say you can tell them in the next answer or point them to Settings → Subscription. Never guess prices.`,
+    ...(own ? [own] : []),
+    "</plans>",
+  ].join("\n");
+}
+
 /** The user is a worker: the plan is the workspace owner's, not theirs to manage. */
 export const WORKER_SUBSCRIPTION_LINE =
   "The user's own plan: none to manage; they work in their owner's workspace, whose plan the owner handles.";

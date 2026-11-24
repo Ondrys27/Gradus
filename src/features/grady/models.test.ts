@@ -67,3 +67,23 @@ describe("costUsd", () => {
     ).toBe(0);
   });
 });
+
+describe("step 28.9: output caps by job and the batch price", () => {
+  it("caps routine jobs below the model's own cap, never the chat", () => {
+    expect(maxTokensFor("briefing", GRADY_MODELS.sonnet)).toBe(1536);
+    expect(maxTokensFor("briefing", GRADY_MODELS.haiku)).toBe(1024);
+    expect(maxTokensFor("classify", GRADY_MODELS.opus)).toBe(512);
+    expect(maxTokensFor("compare_judge", GRADY_MODELS.haiku)).toBe(400);
+    expect(maxTokensFor("chat", GRADY_MODELS.sonnet)).toBe(4096);
+    expect(maxTokensFor("analysis", GRADY_MODELS.opus)).toBe(16000);
+    expect(maxTokensFor("meeting_notes", GRADY_MODELS.sonnet)).toBe(4096);
+  });
+
+  it("bills a call through the Batches API at half the price", () => {
+    const usage = { inputTokens: 10_000, cacheReadTokens: 0, cacheWriteTokens: 0, outputTokens: 1_000 };
+    expect(costUsd(GRADY_MODELS.sonnet, usage, { batch: true })).toBeCloseTo(
+      costUsd(GRADY_MODELS.sonnet, usage) / 2,
+      6,
+    );
+  });
+});

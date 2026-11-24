@@ -118,6 +118,8 @@ export type AiUsageEntry = {
   tokens: TokenUsage;
   durationMs: number;
   error?: string | null;
+  /** Through the Message Batches API: half the price (step 28.9). */
+  batch?: boolean;
 };
 
 /** Postgres / PostgREST: a column the database does not have (yet). */
@@ -144,16 +146,19 @@ export async function logAiUsage(admin: Client, entry: AiUsageEntry): Promise<vo
     cache_read_tokens: entry.tokens.cacheReadTokens,
     cache_write_tokens: entry.tokens.cacheWriteTokens,
     output_tokens: entry.tokens.outputTokens,
-    cost_usd: costUsd(entry.model, entry.tokens),
+    cost_usd: costUsd(entry.model, entry.tokens, { batch: entry.batch }),
+    ...(entry.batch ? { batch: true } : {}),
     duration_ms: Math.round(entry.durationMs),
     success: !entry.error,
     error: entry.error ? entry.error.slice(0, 1000) : null,
   };
   let { error } = await admin.from("ai_usage").insert(row);
-  // Before the 27.3 migration the column is missing: the call still counts, without it.
+  // Before the 27.3 / 28.9 migrations a column is missing: the call still counts, without it.
   if (error && UNKNOWN_COLUMN.has(error.code ?? "")) {
     // An undefined value is left out of the request body.
-    ({ error } = await admin.from("ai_usage").insert({ ...row, routed_from: undefined }));
+    ({ error } = await admin
+      .from("ai_usage")
+      .insert({ ...row, routed_from: undefined, batch: undefined }));
   }
   if (error?.code === MISSING_REFERENCE && row.conversation_id) {
     ({ error } = await admin.from("ai_usage").insert({ ...row, conversation_id: null }));

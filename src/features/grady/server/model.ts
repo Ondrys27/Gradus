@@ -2,6 +2,7 @@ import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
+import type { AiModelKey } from "@/config/costs";
 import {
   chooseModel,
   economyFor,
@@ -78,6 +79,16 @@ export type ModelCall = {
    * set to auto and no economy mode applies; without it the chat runs on Sonnet.
    */
   autoPick?: () => Promise<AutoPick>;
+  /**
+   * The model a job that names its own runs on (the administration's model
+   * comparison, feature model_compare); every other job ignores it.
+   */
+  explicitModel?: AiModelKey | null;
+  /**
+   * The job this call stands in for (the comparison runs another job's
+   * prompt): its output cap and thinking apply; ai_usage keeps `feature`.
+   */
+  as?: GradyFeature;
   /** Writes the ai_usage row; called exactly once, right when the call ends. */
   log: (entry: Omit<AiUsageEntry, "userId" | "conversationId">) => Promise<void>;
 };
@@ -92,7 +103,7 @@ export type CallPlan =
  * economy mode. A failed automatic choice leaves the chat on Sonnet.
  */
 export async function planCall(
-  call: Pick<ModelCall, "client" | "feature" | "userId" | "autoPick">,
+  call: Pick<ModelCall, "client" | "feature" | "userId" | "autoPick" | "explicitModel">,
 ): Promise<CallPlan> {
   const settings = call.client.models
     ? await call.client.models().catch((error) => {
@@ -118,7 +129,10 @@ export async function planCall(
       return "sonnet" as const;
     });
   }
-  return { ok: true, choice: chooseModel(call.feature, settings, { economy, auto }) };
+  return {
+    ok: true,
+    choice: chooseModel(call.feature, settings, { economy, auto, explicit: call.explicitModel }),
+  };
 }
 
 /** The thinking and effort of one call by the model it runs on. */
@@ -135,7 +149,14 @@ export function thinkingParams(
 }
 
 export type ModelResult =
-  | { ok: true; model: GradyModel; text: string; tokens: TokenUsage }
+  | {
+      ok: true;
+      model: GradyModel;
+      text: string;
+      tokens: TokenUsage;
+      /** Why the answer ended (end_turn, max_tokens…); the comparison reads it. */
+      stopReason?: string | null;
+    }
   | { ok: false; model: GradyModel; code: ChatErrorCode; text: string; tokens: TokenUsage };
 
 /**
@@ -154,9 +175,10 @@ export async function streamModel(call: ModelCall): Promise<ModelResult> {
   const routedFrom = choice.routedFrom;
   const started = Date.now();
 
+  const job = call.as ?? call.feature;
   const params: Anthropic.MessageStreamParams = {
     model,
-    max_tokens: maxTokensFor(call.feature, model),
+    max_tokens: maxTokensFor(job, model),
     system: [
       {
         type: "text",
@@ -166,7 +188,7 @@ export async function streamModel(call: ModelCall): Promise<ModelResult> {
       ...(call.context ? [{ type: "text" as const, text: call.context }] : []),
     ],
     messages: call.messages,
-    ...thinkingParams(call.feature, choice),
+    ...thinkingParams(job, choice),
   };
 
   try {
@@ -215,7 +237,7 @@ export async function streamModel(call: ModelCall): Promise<ModelResult> {
       tokens,
       durationMs: Date.now() - started,
     });
-    return { ok: true, model, text, tokens };
+    return { ok: true, model, text, tokens, stopReason };
   } catch (error) {
     const reason = describeError(error);
     // Without this the reason was only in ai_usage and the server log stayed silent.

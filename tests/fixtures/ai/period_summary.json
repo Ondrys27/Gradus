@@ -1,0 +1,28 @@
+{
+  "samples": [
+    {
+      "id": "good-week",
+      "label": "Dobrý týden",
+      "lang": "cs",
+      "period": "week",
+      "context": "<user>Language: cs. Today: 2026-11-23. This week: 2026-11-23 to 2026-11-29.</user>\n<results period=\"last week, 2026-11-16 to 2026-11-22\">\n- Deals won: 2 (\"Web Truhlářství Dvořák\", \"Rezervace Studio Jóga Klid\")\n- Deals lost: 1\n- Meetings: 4\n- Sales tasks done: 11\n- Milestone tasks done: 5\n- Contacts moved between tables: 23\n- Invoices paid: 2\n</results>\n<on_fire>Pipeline health: Close Date passed 1 (\"Web Ateliér Lípa\") · tasks of deals overdue 0 · open deals without an open task 2.</on_fire>\n<stuck>\n- Deal \"Web Autoservis Král\" has been in stage \"Schůzka\" for 21 days\n</stuck>\n<plan>\n- 3 sales task(s) due: \"Zavolat paní Lípové\" (for \"Web Ateliér Lípa\"); \"Poslat smlouvu\"; \"Připomenout fakturu\"\n- 2 event(s): \"Schůzka s Pekárnou Zrno\" on 2026-11-26; \"Focení produktů\" on 2026-11-27\n</plan>\n<day_plan>Monday, a working day. Best times to call: 9:00–11:00 and 14:00–16:00.</day_plan>",
+      "message": "Write this week's summary."
+    },
+    {
+      "id": "slow-month",
+      "label": "Slabý měsíc",
+      "lang": "cs",
+      "period": "month",
+      "context": "<user>Language: cs. Today: 2026-12-01. This month: 2026-12-01 to 2026-12-31.</user>\n<results period=\"last month, 2026-11-01 to 2026-11-30\">\n- Deals won: 0\n- Deals lost: 2\n- Meetings: 1\n- Sales tasks done: 3\n- Milestone tasks done: 2\n- Contacts moved between tables: 4\n- Invoices paid: 1\n</results>\n<on_fire>nothing</on_fire>\n<stuck>\nnothing\n</stuck>\n<plan>\nnothing\n</plan>\n<day_plan>Tuesday, a working day. Best times to call: 9:00–11:00.</day_plan>",
+      "message": "Write this month's summary."
+    },
+    {
+      "id": "week-en",
+      "label": "Týden (EN)",
+      "lang": "en",
+      "period": "week",
+      "context": "<user>Language: en. Today: 2026-11-23. This week: 2026-11-23 to 2026-11-29.</user>\n<results period=\"last week, 2026-11-16 to 2026-11-22\">\n- Deals won: 1 (\"Season contract – Rose Court\")\n- Deals lost: 0\n- Meetings: 3\n- Sales tasks done: 6\n- Milestone tasks done: 1\n- Contacts moved between tables: 9\n- Invoices paid: 0\n</results>\n<on_fire>Pipeline health: Close Date passed 0 · tasks of deals overdue 1 · open deals without an open task 0.</on_fire>\n<stuck>\n- 1 invoice(s) past due: \"2026-0014\" to \"Mill House\" 12 day(s) late\n</stuck>\n<plan>\n- 1 event(s): \"Quote visit – Elm Street\" on 2026-11-24\n</plan>\n<day_plan>Monday, a working day. Best times to call: 10:00–12:00.</day_plan>",
+      "message": "Write this week's summary."
+    }
+  ]
+}

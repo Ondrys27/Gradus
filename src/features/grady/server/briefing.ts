@@ -19,11 +19,20 @@ import {
   SUMMARY_PERIODS,
   type SummaryPeriod,
 } from "../proactive";
+import type { GradyFeature } from "../models";
 import { withOwnerInstructions } from "../prompt";
 import type { SummaryLink } from "../protocol";
 import { describePipelineHealth } from "../situation";
 import { isAppHref, type SuggestionAction } from "../suggestions";
 import { describeDayPlan } from "../time-window";
+import {
+  canBatch,
+  collectBatches,
+  customIdFor,
+  submitBatch,
+  type BatchItem,
+  type BatchRequest,
+} from "./batch";
 import { streamModel, type ModelClient } from "./model";
 import { loadGradyRules } from "./rules";
 import { loadRuleInputs } from "./suggestions";
@@ -41,9 +50,9 @@ const TOP_LIMIT = 3;
 /** What a week or month holds, by name. */
 const PLAN_LIMIT = 5;
 /** The brief of a day is short: three lines at most. */
-const BRIEFING_MAX = 700;
+export const BRIEFING_MAX = 700;
 /** A week or month: three parts, the last with three numbered lines. */
-const PERIOD_SUMMARY_MAX = 900;
+export const PERIOD_SUMMARY_MAX = 900;
 /** Rows a summary links to at most. */
 export const SUMMARY_LINK_LIMIT = 6;
 
@@ -802,6 +811,20 @@ function loadFor(
   );
 }
 
+/** The fixed instructions, the data and the ask of a brief, as the direct call and the batch send them. */
+async function briefPrompt(admin: Client, data: BriefingData) {
+  const writing = WRITING[data.period];
+  // The owner's instructions from the administration apply to the summaries as to the chat.
+  const rules = await loadGradyRules(admin);
+  return {
+    writing,
+    // The week and month summaries are their own job with their own model (step 28.9).
+    feature: (data.period === "day" ? "briefing" : "period_summary") as GradyFeature,
+    instructions: withOwnerInstructions(writing.instructions, rules.instructions),
+    context: briefingContext(data),
+  };
+}
+
 /** Sonnet writes the brief from the data (measured in ai_usage); skipped at the AI limit, failed without a text. */
 async function writeBrief(args: {
   client: ModelClient;
@@ -815,15 +838,14 @@ async function writeBrief(args: {
   const usage = await loadAiUsage(admin, admin, userId, toFormatSettings(args.row), args.now);
   if (limitReached(usage)) return "skipped";
 
-  const writing = WRITING[args.data.period];
-  // The owner's instructions from the administration apply to the summaries as to the chat.
-  const rules = await loadGradyRules(admin);
+  const prompt = await briefPrompt(admin, args.data);
+  const writing = prompt.writing;
   const result = await streamModel({
     client: args.client,
     userId,
-    feature: "briefing",
-    instructions: withOwnerInstructions(writing.instructions, rules.instructions),
-    context: briefingContext(args.data),
+    feature: prompt.feature,
+    instructions: prompt.instructions,
+    context: prompt.context,
     messages: [{ role: "user", content: writing.ask }],
     log: (entry) => logAiUsage(admin, { ...entry, userId, conversationId: null }),
   });
@@ -862,29 +884,90 @@ export async function briefUser(args: {
   admin: Client;
   userId: string;
   now: Date;
-}): Promise<BriefingOutcome> {
+  /** Given: the brief goes into a batch instead of a direct call (step 28.9). */
+  queue?: (request: BatchRequest) => void;
+}): Promise<BriefingOutcome | "queued"> {
   const { admin, userId, now } = args;
   const row = await settingsOf(admin, userId);
   const data = await loadFor(admin, userId, row, now, periodOfSettings(row));
   if (briefingIsEmpty(data)) return "empty";
 
+  if (args.queue) {
+    const usage = await loadAiUsage(admin, admin, userId, toFormatSettings(row), now);
+    if (limitReached(usage)) return "skipped";
+    const prompt = await briefPrompt(admin, data);
+    args.queue({
+      customId: customIdFor("briefing", userId),
+      userId,
+      feature: prompt.feature,
+      instructions: prompt.instructions,
+      context: prompt.context,
+      messages: [{ role: "user", content: prompt.writing.ask }],
+      meta: { payload: briefingPayload(data), max: prompt.writing.max },
+    });
+    return "queued";
+  }
+
   const written = await writeBrief({ client: args.client, admin, userId, row, data, now });
   if (typeof written === "string") return written;
+  await storeBrief(admin, userId, written.text, briefingPayload(data));
+  return "written";
+}
 
+/** The cron's brief, kept for the first arrival; one a day, an earlier one stays. */
+async function storeBrief(
+  admin: Client,
+  userId: string,
+  text: string,
+  payload: ReturnType<typeof briefingPayload>,
+) {
   const { error: insertError } = await admin.from("jarvis_suggestions").upsert(
     {
       user_id: userId,
       kind: "briefing",
       type: "briefing",
-      text: written.text,
+      text,
       action: BRIEF_ACTION as unknown as Json,
-      payload: briefingPayload(data),
-      dedupe_key: briefingDedupeKey(data.today),
+      payload,
+      dedupe_key: briefingDedupeKey(payload.date),
     },
     { onConflict: "user_id,dedupe_key", ignoreDuplicates: true },
   );
   if (insertError) throw insertError;
-  return "written";
+}
+
+const briefMetaSchema = z.object({
+  payload: z.object({
+    date: z.string(),
+    period: z.enum(SUMMARY_PERIODS),
+    facts: z.array(z.string()),
+  }),
+  max: z.number().int().positive(),
+});
+
+/**
+ * The briefs of the ended batches, stored like a direct brief (an earlier
+ * one of the day stays; the first arrival checks the facts again anyway).
+ * `waitUntil` polls the open batch first; `cancelAtDeadline` takes back what
+ * is still unanswered then, so nothing is paid twice: an unanswered brief
+ * is written at the first arrival instead.
+ */
+export async function collectBriefBatches(
+  client: ModelClient,
+  admin: Client,
+  options: { waitUntil?: number; cancelAtDeadline?: boolean } = {},
+): Promise<{ written: number; failed: number; pending: number }> {
+  let written = 0;
+  const handle = async (item: BatchItem, answer: { ok: boolean; text?: string }) => {
+    const meta = briefMetaSchema.safeParse(item.meta);
+    if (!answer.ok || !answer.text || !meta.success) return;
+    const text = answer.text.trim().slice(0, meta.data.max);
+    if (!text) return;
+    await storeBrief(admin, item.user_id, text, meta.data.payload);
+    written += 1;
+  };
+  const summary = await collectBatches({ client, admin, kind: "briefing", handle, ...options });
+  return { written, failed: summary.failed, pending: summary.pending };
 }
 
 export type ResolvedSummary =
@@ -970,7 +1053,7 @@ export async function runBriefings(args: {
   skipUsers?: ReadonlySet<string>;
 }) {
   const now = args.now ?? new Date();
-  const summary = { users: 0, written: 0, empty: 0, skipped: 0, failed: 0 };
+  const summary = { users: 0, written: 0, empty: 0, skipped: 0, failed: 0, queued: 0 };
   if (!args.client) return summary;
   const client = args.client;
   const { data, error } = await args.admin.rpc("jarvis_briefing_candidates", {
@@ -979,15 +1062,24 @@ export async function runBriefings(args: {
   });
   if (error) throw error;
 
+  // Step 28.9: the briefs go into one batch (half price) when the client can send one.
+  const batching = canBatch(client);
+  const requests: BatchRequest[] = [];
   const queue = (data ?? []).filter((row) => !args.skipUsers?.has(row.user_id));
   const worker = async () => {
     for (;;) {
       if (Date.now() > args.deadline) return;
       const next = queue.shift();
       if (!next) return;
-      let outcome: BriefingOutcome;
+      let outcome: BriefingOutcome | "queued";
       try {
-        outcome = await briefUser({ client, admin: args.admin, userId: next.user_id, now });
+        outcome = await briefUser({
+          client,
+          admin: args.admin,
+          userId: next.user_id,
+          now,
+          ...(batching ? { queue: (request: BatchRequest) => requests.push(request) } : {}),
+        });
       } catch (failure) {
         console.error("grady briefing failed for a user", failure);
         outcome = "failed";
@@ -997,5 +1089,32 @@ export async function runBriefings(args: {
     }
   };
   await Promise.all(Array.from({ length: CONCURRENCY }, worker));
+
+  if (batching && requests.length) {
+    const sent = await submitBatch({ client, admin: args.admin, kind: "briefing", requests });
+    summary.queued = sent.queued.length;
+    summary.skipped += sent.refused.length;
+    // What could not go in a batch is written directly, as before 28.9.
+    for (const request of sent.direct) {
+      if (Date.now() > args.deadline) break;
+      let outcome: BriefingOutcome | "queued";
+      try {
+        outcome = await briefUser({ client, admin: args.admin, userId: request.userId, now });
+      } catch (failure) {
+        console.error("grady briefing failed for a user", failure);
+        outcome = "failed";
+      }
+      summary[outcome] += 1;
+    }
+    if (sent.batchId) {
+      // Nobody waits before 6 a.m.: collect in this run, take back what did not come in time.
+      const collected = await collectBriefBatches(client, args.admin, {
+        waitUntil: args.deadline,
+        cancelAtDeadline: true,
+      });
+      summary.written += collected.written;
+      summary.failed += collected.failed;
+    }
+  }
   return summary;
 }

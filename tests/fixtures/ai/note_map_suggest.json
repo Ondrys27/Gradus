@@ -1,0 +1,25 @@
+{
+  "samples": [
+    {
+      "id": "ideal-customer",
+      "label": "Ideální zákazník → Problémy",
+      "lang": "cs",
+      "context": "<map_request>\nLanguage of the app: cs\nNode: \"Problémy\"\nRequest: (none: suggest what is missing)\n</map_request>\n<user_map>\nIdeální zákazník\n  Kdo\n    Majitel malé kavárny\n    25–45 let\n  ▶ Problémy\n    Nemá čas na sociální sítě\n  Kde ho najdu\n    Instagram\n  Námitky\n</user_map>",
+      "message": "Suggest new branches under the marked node."
+    },
+    {
+      "id": "competition",
+      "label": "Konkurence fotografa",
+      "lang": "cs",
+      "context": "<map_request>\nLanguage of the app: cs\nNode: \"Konkurence\"\nRequest: \"co o nich zjistit\"\n</map_request>\n<user_map>\nSvatební fotograf\n  Nabídka\n    Celý den 9 000 Kč\n    Půl dne 5 500 Kč\n  ▶ Konkurence\n  Marketing\n    Instagram\n    Doporučení\n</user_map>",
+      "message": "Suggest new branches under the marked node."
+    },
+    {
+      "id": "launch-en",
+      "label": "Plán spuštění (EN)",
+      "lang": "en",
+      "context": "<map_request>\nLanguage of the app: en\nNode: \"Launch plan\"\nRequest: \"steps for the first month\"\n</map_request>\n<user_map>\nGarden care business\n  ▶ Launch plan\n    Business cards\n  Prices\n    Lawn £25 per visit\n</user_map>",
+      "message": "Suggest new branches under the marked node."
+    }
+  ]
+}

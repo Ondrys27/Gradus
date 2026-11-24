@@ -1,0 +1,25 @@
+{
+  "samples": [
+    {
+      "id": "offer-next-week",
+      "label": "Schůzka: nabídka do úterý",
+      "lang": "cs",
+      "context": "<meeting_context>\nBelongs to: deal \"Web Ateliér Lípa\"\nToday: 2026-11-24 (Tuesday), time zone Europe/Prague.\nDeal stage: \"Schůzka\"; Close Date: none; amount: none.\nPipeline stages: \"Nový lead\", \"Schůzka\", \"Koncept nabídky\", \"Nabídka odeslána\", \"Vyhráno\", \"Ztraceno\".\nPeople of the company: \"Marek Novák\" (you), \"Eva Malá\".\nKnown contacts: \"Jana Lípová\" (jana@atelier-lipa.example).\n</meeting_context>",
+      "message": "<meeting_text>\nSchůzka s paní Lípovou, Ateliér Lípa. Chtějí nový web s portfoliem a rezervací konzultací. Rozpočet zhruba 40–50 tisíc. Rozhodovat bude ona a její společník Tomáš Bureš (tomas@atelier-lipa.example), ten má na starosti finance. Chtějí to spustit do konce února. Domluvili jsme se, že pošlu nabídku do příštího úterý a Eva připraví dva návrhy domovské stránky do pátku. Paní Lípová se ptala na údržbu po spuštění, slíbil jsem, že to v nabídce rozepíšu.\n</meeting_text>\n\nPropose the changes."
+    },
+    {
+      "id": "signed",
+      "label": "Podepsáno, záloha",
+      "lang": "cs",
+      "context": "<meeting_context>\nBelongs to: deal \"Rezervace Studio Jóga Klid\"\nToday: 2026-11-24 (Tuesday), time zone Europe/Prague.\nDeal stage: \"Nabídka odeslána\"; Close Date: 2026-11-30; amount: 19000 CZK.\nPipeline stages: \"Nový lead\", \"Schůzka\", \"Koncept nabídky\", \"Nabídka odeslána\", \"Vyhráno\", \"Ztraceno\".\nPeople of the company: \"Marek Novák\" (you).\nKnown contacts: \"Lucie Klidová\".\n</meeting_context>",
+      "message": "<meeting_text>\nKrátký hovor s Lucií. Smlouvu podepsali, cena 19 000 bez DPH zůstává. Zálohu 50 % pošlou tento týden. Spuštění rezervací chtějí 1. ledna. Potřebuju od nich do pátku seznam lekcí a lektorů.\n</meeting_text>\n\nPropose the changes."
+    },
+    {
+      "id": "discovery-en",
+      "label": "Nová poptávka (EN)",
+      "lang": "en",
+      "context": "<meeting_context>\nBelongs to: contact \"Sarah Mills\"\nToday: 2026-11-24 (Tuesday), time zone Europe/London.\nPipeline stages: \"New lead\", \"Meeting\", \"Offer draft\", \"Offer sent\", \"Won\", \"Lost\".\nPeople of the company: \"Tom Green\" (you), \"Ben Lee\".\nKnown contacts: \"Sarah Mills\" (sarah@rosecourt.example).\n</meeting_context>",
+      "message": "<meeting_text>\nMet Sarah at Rose Court. Besides the lawn they want the hedges and the back garden done every two weeks from March. Her neighbour Paul Wright at number 12 might want the same, she'll pass on my number. I said I'd send a price for the extra work by Friday. Ben should measure the back garden on Thursday morning.\n</meeting_text>\n\nPropose the changes."
+    }
+  ]
+}

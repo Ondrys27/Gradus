@@ -18,6 +18,10 @@
       "schedule": "0 5 * * *"
     },
     {
+      "path": "/api/grady?task=batches",
+      "schedule": "0 12 * * *"
+    },
+    {
       "path": "/api/cron/analytics-retention",
       "schedule": "15 4 * * *"
     },

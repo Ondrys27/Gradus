@@ -1,0 +1,32 @@
+{
+  "samples": [
+    {
+      "id": "plan-day",
+      "label": "Naplánuj mi den",
+      "lang": "cs",
+      "context": "<situation>\nInterface language: cs.\nToday: 2026-11-24 (Tuesday), time zone Europe/Prague, currency CZK.\nLocal time 9:12, a working day: a good time to call and meet people until 17:30.\nActive milestones: \"Prvních 10 klientů\" 6/9 tasks, target 2026-12-15; \"Web a katalog\" 2/5 tasks.\nOpen tasks due today or overdue: \"Poslat nabídku Kavárně U Mostu\" due 2026-11-22; \"Připravit ceník na rok 2027\" due 2026-11-24.\nOpen deals by stage: \"Nový lead\" 4 (86 000 Kč); \"Schůzka\" 2 (120 000 Kč); \"Nabídka odeslána\" 3 (210 000 Kč). 1 stuck in their stage over 14 days.\nPipeline health: Close Date passed 2 · tasks of deals overdue 1 · open deals without an open task 3.\nContacts to follow up today or overdue: \"Pekárna Zrno\" overdue; \"Truhlářství Dvořák\" 10:30.\nToday's calendar: 14:00 \"Schůzka s Ateliérem Lípa\".\nCalling time today: 0 h 0 min.\nThis month: income 64 000 Kč, expenses 41 500 Kč, balance 22 500 Kč.\n</situation>\n<plans>\nThe user's own plan: Pro, monthly, active; next payment due 2026-12-12, charged to their card through Stripe.\n</plans>",
+      "message": "Co mám dneska dělat jako první? Naplánuj mi den."
+    },
+    {
+      "id": "won-deal-email",
+      "label": "Děkovný e-mail po výhře",
+      "lang": "cs",
+      "context": "<situation>\nInterface language: cs.\nToday: 2026-11-24 (Tuesday), time zone Europe/Prague, currency CZK.\nLocal time 16:40, a working day: a good time to call and meet people until 17:30.\nActive milestones: \"Prvních 10 klientů\" 7/9 tasks.\nOpen deals by stage: \"Nabídka odeslána\" 2 (95 000 Kč).\nToday's calendar: empty.\nCalling time today: 1 h 5 min.\n</situation>\n<plans>\nThe user's own plan: Pro, monthly, active; next payment due 2026-12-12, charged to their card through Stripe.\n</plans>",
+      "message": "Právě jsem vyhrál zakázku s Ateliérem Lípa za 48 000 Kč. Napiš mi krátký děkovný e-mail pro paní Lípovou, ať ví, co bude následovat."
+    },
+    {
+      "id": "pricing-advice",
+      "label": "Zdražit svatební focení?",
+      "lang": "cs",
+      "context": "<situation>\nInterface language: cs.\nToday: 2026-11-24 (Tuesday), time zone Europe/Prague, currency CZK.\nLocal time 20:05, after working hours: prepare things, reach people tomorrow from 8:00.\nActive milestones: \"Ceník a balíčky\" 1/4 tasks.\nOpen deals: none.\nToday's calendar: empty.\nCalling time today: 0 h 0 min.\n</situation>\n<plans>\nThe user's own plan: Pro, monthly, active; next payment due 2026-12-12, charged to their card through Stripe.\n</plans>",
+      "message": "Fotím svatby a firemní akce. Teď beru 9 000 Kč za svatbu (8 hodin). Konkurence má 12–15 tisíc. Mám zdražit? Jak to udělat, abych nepřišel o lidi, co už se ptali?"
+    },
+    {
+      "id": "greeting-en",
+      "label": "Thanks (EN)",
+      "lang": "en",
+      "context": "<situation>\nInterface language: cs.\nToday: 2026-11-24 (Tuesday), time zone Europe/London, currency GBP.\nLocal time 8:45, a working day: a good time to call and meet people until 17:30.\nActive milestones: \"Launch the online shop\" 3/8 tasks.\nOpen deals by stage: \"New lead\" 2 (£1,800).\nToday's calendar: 11:00 \"Call with the printer\".\nCalling time today: 0 h 0 min.\n</situation>\n<plans>\nThe user's own plan: Pro, monthly, active; next payment due 2026-12-12, charged to their card through Stripe.\n</plans>",
+      "message": "Thanks, that helped a lot!"
+    }
+  ]
+}

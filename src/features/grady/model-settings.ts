@@ -43,10 +43,28 @@ export type FeatureModelSpec = {
   fixed?: boolean;
   /** May be "auto" (only the chat). */
   auto?: boolean;
+  /**
+   * Runs on the model the call names, never on a setting: the administration's
+   * model comparison (step 28.9). Still checked against the budget.
+   */
+  explicit?: boolean;
+  /**
+   * A person asks for it and waits for the answer (step 28.9): asking again
+   * soon after is a sign the answer was not good enough. Jobs that run on
+   * their own (summaries, the watch, sorting ideas) have no such signal.
+   */
+  interactive?: boolean;
 };
 
 export const FEATURE_MODELS: Record<GradyFeature, FeatureModelSpec> = {
-  chat: { recommended: AUTO, minimum: "haiku", quality: "sonnet", shown: true, auto: true },
+  chat: {
+    recommended: AUTO,
+    minimum: "haiku",
+    quality: "sonnet",
+    shown: true,
+    auto: true,
+    interactive: true,
+  },
   milestone_review: { recommended: "sonnet", minimum: "haiku", quality: "opus", shown: true },
   // Short JSON labels: Haiku is enough, a bigger model adds nothing.
   classify: { recommended: "haiku", minimum: "haiku", quality: "haiku", shown: true },
@@ -54,20 +72,58 @@ export const FEATURE_MODELS: Record<GradyFeature, FeatureModelSpec> = {
   summary: { recommended: "haiku", minimum: "haiku", quality: "sonnet", shown: false },
   opportunity_scan: { recommended: "haiku", minimum: "haiku", quality: "sonnet", shown: true },
   // A large analysis of up to 150 questionnaires: long context and a structured write-up.
-  analysis: { recommended: "opus", minimum: "sonnet", quality: "fable", shown: true },
+  analysis: {
+    recommended: "opus",
+    minimum: "sonnet",
+    quality: "fable",
+    shown: true,
+    interactive: true,
+  },
   // The drawn reward tree's setup; no caller since 28.2 (plans are built by hand), kept for history.
   reward_setup: { recommended: "sonnet", minimum: "sonnet", quality: "opus", shown: false },
-  email_reply: { recommended: "sonnet", minimum: "haiku", quality: "opus", shown: true },
+  email_reply: {
+    recommended: "sonnet",
+    minimum: "haiku",
+    quality: "opus",
+    shown: true,
+    interactive: true,
+  },
   ping: { recommended: "sonnet", minimum: "haiku", quality: "sonnet", shown: true },
   briefing: { recommended: "sonnet", minimum: "haiku", quality: "opus", shown: true },
-  note_map_suggest: { recommended: "sonnet", minimum: "haiku", quality: "opus", shown: true },
+  note_map_suggest: {
+    recommended: "sonnet",
+    minimum: "haiku",
+    quality: "opus",
+    shown: true,
+    interactive: true,
+  },
   // A long transcript into tasks, a stage and people: structured output on a long read, never Haiku.
-  meeting_notes: { recommended: "sonnet", minimum: "sonnet", quality: "opus", shown: true },
+  meeting_notes: {
+    recommended: "sonnet",
+    minimum: "sonnet",
+    quality: "opus",
+    shown: true,
+    interactive: true,
+  },
   chat_route: { recommended: "haiku", minimum: "haiku", quality: "haiku", shown: true, fixed: true },
+  // The owner's "Try it" of the rules: like the chat's answer, so the owner sees what users get.
+  rules_test: { recommended: "sonnet", minimum: "haiku", quality: "sonnet", shown: true },
+  period_summary: { recommended: "sonnet", minimum: "haiku", quality: "opus", shown: true },
+  // The comparison runs on the models the owner ticks: nothing to set.
+  model_compare: {
+    recommended: "sonnet",
+    minimum: "haiku",
+    quality: "sonnet",
+    shown: true,
+    fixed: true,
+    explicit: true,
+  },
+  // A score of 1 to 5 and one sentence as JSON: the cheapest model is the point.
+  compare_judge: { recommended: "haiku", minimum: "haiku", quality: "sonnet", shown: true },
 };
 
-/** The jobs whose model the administration sets (all but the fixed routing call). */
-export type SettableFeature = Exclude<GradyFeature, "chat_route">;
+/** The jobs whose model the administration sets (all but the fixed routing call and the comparison). */
+export type SettableFeature = Exclude<GradyFeature, "chat_route" | "model_compare">;
 export const SETTABLE_FEATURES = GRADY_FEATURES.filter(
   (feature): feature is SettableFeature => !FEATURE_MODELS[feature].fixed,
 );
@@ -315,7 +371,8 @@ function atLeast(key: AiModelKey, minimum: AiModelKey): AiModelKey {
 }
 
 /**
- * The model of one call: economy mode puts every job on its minimum; the
+ * The model of one call: a job that names its own model (the comparison)
+ * runs on it; economy mode puts every job on its minimum; the
  * chat set to auto takes what the automatic choice picked (Haiku or Sonnet,
  * a big analysis the allowed large model, without a pick Sonnet); otherwise
  * the job's setting, never below its minimum.
@@ -323,9 +380,18 @@ function atLeast(key: AiModelKey, minimum: AiModelKey): AiModelKey {
 export function chooseModel(
   feature: GradyFeature,
   settings: GradyModelSettings,
-  options: { economy?: EconomyReason | null; auto?: AutoPick | null } = {},
+  options: {
+    economy?: EconomyReason | null;
+    auto?: AutoPick | null;
+    /** The model a job that names its own runs on (the comparison); ignored for any other job. */
+    explicit?: AiModelKey | null;
+  } = {},
 ): ModelChoice {
   const spec = FEATURE_MODELS[feature];
+  // The comparison runs exactly where the owner asked, economy mode or not.
+  if (spec.explicit && options.explicit && aiModelByKey(options.explicit)) {
+    return { model: model(options.explicit), routedFrom: null };
+  }
   const choice = configuredChoice(feature, settings);
   const baseline: AiModelKey = choice === AUTO ? AUTO_CEILING : choice;
   const economy = economyFor(settings, options.economy);

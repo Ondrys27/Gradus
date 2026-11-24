@@ -27,6 +27,8 @@ export type AdminPower =
   | "editGradyRules"
   /** The model of each of Grady's jobs, the presets and economy mode; a limited admin reads them. */
   | "editGradyModels"
+  /** "Compare models" (28.9): a job's samples on several models, paid calls; a limited admin does not run it. */
+  | "compareModels"
   /** The plan catalog: draft, publishing, bringing back a version; a limited admin reads it. */
   | "editPlans"
   /** An account's subscription set by hand, "Sync with Stripe"; a limited admin reads it. */

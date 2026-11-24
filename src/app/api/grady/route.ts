@@ -19,8 +19,10 @@ import {
   pingRequestSchema,
   proactiveRequestSchema,
   rateMessageRequestSchema,
+  modelCompareRequestSchema,
   rulesTestRequestSchema,
   salesAnalysisRequestSchema,
+  type ModelCompareResult,
   type ChatErrorCode,
   type ChatEvent,
   type FileErrorCode,
@@ -28,7 +30,12 @@ import {
   type PingResult,
   type RulesTestResult,
 } from "@/features/grady/protocol";
-import { describePlans } from "@/features/grady/plans-context";
+import { describePlans, describePlansBrief } from "@/features/grady/plans-context";
+import {
+  chatTopics,
+  plansCatalogNeeded,
+  situationSections,
+} from "@/features/grady/chat-context";
 import { loadSubscriptionLine } from "@/features/grady/server/subscription";
 import { describeSituation, suggestionsFor } from "@/features/grady/situation";
 import type { SuggestionsResponse } from "@/features/grady/suggestions";
@@ -38,7 +45,7 @@ import {
   prepareAttachments,
   recordAttachments,
 } from "@/features/grady/server/attachments";
-import { runBriefings } from "@/features/grady/server/briefing";
+import { collectBriefBatches, runBriefings } from "@/features/grady/server/briefing";
 import { suggestEmailReply } from "@/features/grady/server/email-reply";
 import { linkOrigin, loadBookingLink } from "@/features/scheduler/server/link";
 import { siteOrigin } from "@/lib/site-origin";
@@ -47,6 +54,11 @@ import { mightBeProblemReport } from "@/features/grady/problem-report";
 import { loadSituation } from "@/features/grady/server/load-situation";
 import { reviewMilestone } from "@/features/grady/server/milestone-review";
 import { pickChatModel } from "@/features/grady/server/chat-route";
+import { runCompareCell } from "@/features/grady/server/compare";
+import { compareSample, isCompareFeature } from "@/features/grady/compare/samples";
+import { allowedChoices } from "@/features/grady/model-settings";
+import { aiModelByKey } from "@/features/grady/models";
+import { logAdminAction } from "@/features/admin/server/audit";
 import { createAnthropic, streamModel } from "@/features/grady/server/model";
 import { loadMilestoneNotes, loadNotesContext } from "@/features/grady/server/notes";
 import {
@@ -100,7 +112,7 @@ import {
   loadFileUsage,
   logAiUsage,
 } from "@/features/grady/server/usage";
-import { runWatch } from "@/features/grady/server/watch";
+import { collectWatchBatches, runWatch } from "@/features/grady/server/watch";
 import { sweepStaleStages } from "@/features/tutorial/showcase/server/stage";
 import { getExchangeRates } from "@/features/currency/server/rates";
 import { getPublishedPlans } from "@/features/plan/catalog-server";
@@ -133,6 +145,7 @@ const STAGE_REFUSED_JOBS: ReadonlySet<string> = new Set([
   "emailReply",
   "ping",
   "rulesTest",
+  "modelCompare",
   "proactive",
   "meetingNotes",
 ]);
@@ -203,6 +216,7 @@ async function logNotConfigured(ctx: Context, feature: GradyFeature) {
 /**
  * - `?task=watch`: the opportunity watch, run by Vercel Cron with CRON_SECRET.
  * - `?task=briefing`: the morning briefs (hourly, each user at 6 a.m. their time), Cron only.
+ * - `?task=batches`: collects the ended Message Batches of the watch and the briefs (28.9), Cron only.
  * - `?view=suggestions`: the instant triggers, then the open suggestions.
  * - `?view=proactive`: what Grady would bring up on his own now between the summaries (a queue, most urgent first), or nothing.
  * - `?view=summary`: the summary at the first arrival of the day, week or month, or nothing.
@@ -213,6 +227,7 @@ export const GET = instrumentRoute("api.jarvis.get", async (request: Request) =>
   const params = new URL(request.url).searchParams;
   if (params.get("task") === "watch") return watch(request);
   if (params.get("task") === "briefing") return briefing(request);
+  if (params.get("task") === "batches") return batches(request);
 
   const ctx = await context();
   if (!ctx) return unauthorized();
@@ -309,6 +324,26 @@ function briefing(request: Request) {
   });
 }
 
+/**
+ * The answers of Grady's batches (step 28.9) that did not end during the run
+ * that sent them: the watch's looks (sent at 10:00 UTC) and briefs whose
+ * cancellation ended late. Nothing is sent here; without a key nothing runs.
+ */
+function batches(request: Request) {
+  return runCron("jarvis_batches", request, async () => {
+    const started = Date.now();
+    const admin = createAdminClient();
+    const client = createAnthropic(admin);
+    if (!client) return { processed: 0, body: { skipped: "no key" } };
+    const watch = await collectWatchBatches(client, admin);
+    const briefs = await collectBriefBatches(client, admin);
+    return {
+      processed: watch.answered + briefs.written,
+      body: { watch, briefs, ms: Date.now() - started },
+    };
+  });
+}
+
 // ---------------------------------------------------------------------------
 // POST
 // ---------------------------------------------------------------------------
@@ -329,6 +364,7 @@ export const POST = instrumentRoute("api.jarvis.post", async (request: Request) 
   if (kind === "emailReply") return emailReply(ctx, body);
   if (kind === "ping") return ping(ctx, body);
   if (kind === "rulesTest") return rulesTest(ctx, body);
+  if (kind === "modelCompare") return modelCompare(ctx, body);
   if (kind === "proactive") return proactive(ctx, body);
   if (kind === "rateMessage") return rateMessage(ctx, body);
   if (kind === "meetingNotes") return meetingNotes(ctx, body);
@@ -580,7 +616,8 @@ const RULES_TEST_CONTEXT = situationBlock(
  * placed exactly as the chat places the saved ones (withOwnerInstructions),
  * and the answer back. Same gate as the connection test: only the owner
  * with a live admin session and aal2, anyone else the 404 of an unknown
- * address. One paid call, written to ai_usage as "ping"; nothing else saved.
+ * address. One paid call, written to ai_usage as "rules_test" (its own model
+ * in AI and Grady → Models, step 28.9); nothing else saved.
  */
 async function rulesTest(ctx: Context, body: unknown) {
   const parsed = rulesTestRequestSchema.safeParse(body);
@@ -596,12 +633,12 @@ async function rulesTest(ctx: Context, body: unknown) {
   }
   const usage = await loadAiUsage(supabase, admin, userId, settings, undefined, ctx.spaceId);
   if (limitReached(usage)) {
-    limitHit(ctx, "ping");
+    limitHit(ctx, "rules_test");
     return respond({ ok: false, code: "limitReached", durationMs: null }, 429);
   }
   const client = createAnthropic(ctx.admin, { spaceId: ctx.spaceId });
   if (!client) {
-    await logNotConfigured(ctx, "ping");
+    await logNotConfigured(ctx, "rules_test");
     return respond({ ok: false, code: "notConfigured", durationMs: null }, 503);
   }
 
@@ -609,7 +646,7 @@ async function rulesTest(ctx: Context, body: unknown) {
   const result = await streamModel({
     client,
     userId,
-    feature: "ping",
+    feature: "rules_test",
     instructions: withOwnerInstructions(GRADY_PERSONA, instructions),
     context: RULES_TEST_CONTEXT,
     messages: [{ role: "user", content: parsed.data.message }],
@@ -624,6 +661,69 @@ async function rulesTest(ctx: Context, body: unknown) {
     durationMs,
     costUsd: costUsd(result.model, result.tokens),
     model: result.model,
+  });
+}
+
+/**
+ * Administration → AI and Grady → Models → "Compare models" (step 28.9): one
+ * sample of one job on one model the owner ticked, with its format checks
+ * and the short grade, each cell its own request so the dialog fills in as
+ * the answers come. The owner or a full admin with a live admin session and
+ * aal2 (anyone else the 404 of an unknown address); the job, the sample and
+ * the model come from the code's own lists, never from the request. The
+ * plan's monthly answers are not used (the app's budget pays, and the guard
+ * still checks it); both calls are in ai_usage as model_compare and
+ * compare_judge, each run in admin_audit.
+ */
+async function modelCompare(ctx: Context, body: unknown) {
+  const parsed = modelCompareRequestSchema.safeParse(body);
+  if (!parsed.success) return jobError("unknown", 400);
+  const access = await adminAccessFor("compareModels");
+  if (!access || access.userId !== ctx.userId) return adminNotFound();
+  const respond = (result: ModelCompareResult, status = 200) =>
+    NextResponse.json(result, { status });
+
+  const { feature, sampleId, model } = parsed.data;
+  if (!isCompareFeature(feature)) return respond({ ok: false, code: "invalid", durationMs: null }, 400);
+  const sample = compareSample(feature, sampleId);
+  const key = aiModelByKey(model)?.key;
+  if (!sample || !key || !allowedChoices(feature).includes(key)) {
+    return respond({ ok: false, code: "invalid", durationMs: null }, 400);
+  }
+  const client = createAnthropic(ctx.admin, { spaceId: ctx.spaceId });
+  if (!client) {
+    await logNotConfigured(ctx, "model_compare");
+    return respond({ ok: false, code: "notConfigured", durationMs: null }, 503);
+  }
+  await logAdminAction(access, "view", "ai.models.compare", { feature, sample: sampleId, model: key });
+  const rules = await loadGradyRules(ctx.admin);
+  const result = await runCompareCell({
+    client,
+    userId: ctx.userId,
+    feature,
+    sample,
+    model: key,
+    ownerInstructions: rules.instructions,
+    locale: ctx.locale,
+    log: (entry) =>
+      logAiUsage(ctx.admin, { ...entry, userId: ctx.userId, spaceId: ctx.spaceId, conversationId: null }),
+  });
+  if (!result.ok) {
+    return respond(
+      { ok: false, code: result.code, durationMs: result.durationMs, costUsd: result.costUsd },
+      502,
+    );
+  }
+  return respond({
+    ok: true,
+    text: result.text,
+    model: result.model,
+    durationMs: result.durationMs,
+    costUsd: result.costUsd,
+    outputTokens: result.tokens.outputTokens,
+    checks: result.checks,
+    judge: result.judge,
+    judgeCostUsd: result.judgeCostUsd,
   });
 }
 
@@ -958,20 +1058,20 @@ async function chat(ctx: Context, body: unknown, request: Request) {
     },
   );
 
-  const [history, situation, idea, answers, notes, plans, rules] = await Promise.all([
+  const [history, situationRaw, idea, answers, notes, plansParts, rules] = await Promise.all([
     supabase
       .from("jarvis_messages")
       .select("id, role, content")
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: false })
       .limit(HISTORY_LIMIT),
-    loadSituation(supabase, settings, ctx.row?.country_code ?? null, new Date(), ctx.userId)
-      .then((value) => describeSituation(value, settings))
-      .catch((error) => {
+    loadSituation(supabase, settings, ctx.row?.country_code ?? null, new Date(), ctx.userId).catch(
+      (error) => {
         // Grady still answers without the summary; the reason shows in the server log.
         console.error("grady situation failed", error);
-        return "The user's data could not be loaded right now.";
-      }),
+        return null;
+      },
+    ),
     message
       ? handleFeatureRequest({
           client,
@@ -1001,13 +1101,31 @@ async function chat(ctx: Context, body: unknown, request: Request) {
         console.error("grady subscription failed", error);
         return null;
       });
-      return describePlans(catalog, locale, own, { currency: settings.currency, rates });
+      return {
+        own,
+        full: () => describePlans(catalog, locale, own, { currency: settings.currency, rates }),
+      };
     }),
     // The owner's instructions from the administration (cached 30 s; defaults on a failed read).
     loadGradyRules(admin),
   ]);
   if (history.error) throw history.error;
   const rows = history.data.reverse();
+  // Step 28.9: the context cut to what the message is about (chat-context.ts).
+  const topics = chatTopics([
+    message,
+    ...rows
+      .filter((row) => row.role === "user" && row.id !== userMessage.id)
+      .slice(-2)
+      .reverse()
+      .map((row) => row.content),
+  ]);
+  const situation = situationRaw
+    ? describeSituation(situationRaw, settings, situationSections(topics))
+    : "The user's data could not be loaded right now.";
+  const plans = plansCatalogNeeded(topics, plansParts.own)
+    ? plansParts.full()
+    : describePlansBrief(plansParts.own);
   const earlierIds = rows
     .filter((row) => row.role === "user" && row.id !== userMessage.id)
     .map((row) => row.id);
