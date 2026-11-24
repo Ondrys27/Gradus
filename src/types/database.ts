@@ -1106,7 +1106,7 @@ export type Database = {
           sync_state?: string | null
           synced_at?: string | null
           updated_at?: string
-          user_id?: string
+          user_id: string
           write?: boolean
         }
         Update: {
@@ -1267,27 +1267,6 @@ export type Database = {
           },
         ]
       }
-      calendar_feed_tokens: {
-        Row: {
-          created_at: string
-          last_used_at: string | null
-          token_hash: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          last_used_at?: string | null
-          token_hash: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          last_used_at?: string | null
-          token_hash?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       calendar_external_links: {
         Row: {
           calendar_id: string
@@ -1361,38 +1340,23 @@ export type Database = {
           },
         ]
       }
-      calendar_sync_outbox: {
+      calendar_feed_tokens: {
         Row: {
-          attempts: number
-          claimed_until: string | null
           created_at: string
-          event_id: string
-          id: number
-          last_error: string | null
-          link: Json | null
-          op: string
+          last_used_at: string | null
+          token_hash: string
           user_id: string
         }
         Insert: {
-          attempts?: number
-          claimed_until?: string | null
           created_at?: string
-          event_id: string
-          id?: number
-          last_error?: string | null
-          link?: Json | null
-          op: string
+          last_used_at?: string | null
+          token_hash: string
           user_id: string
         }
         Update: {
-          attempts?: number
-          claimed_until?: string | null
           created_at?: string
-          event_id?: string
-          id?: number
-          last_error?: string | null
-          link?: Json | null
-          op?: string
+          last_used_at?: string | null
+          token_hash?: string
           user_id?: string
         }
         Relationships: []
@@ -1444,6 +1408,42 @@ export type Database = {
           updated_at?: string
           url_cipher?: string
           url_hint?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      calendar_sync_outbox: {
+        Row: {
+          attempts: number
+          claimed_until: string | null
+          created_at: string
+          event_id: string
+          id: number
+          last_error: string | null
+          link: Json | null
+          op: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          claimed_until?: string | null
+          created_at?: string
+          event_id: string
+          id?: never
+          last_error?: string | null
+          link?: Json | null
+          op: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          claimed_until?: string | null
+          created_at?: string
+          event_id?: string
+          id?: never
+          last_error?: string | null
+          link?: Json | null
+          op?: string
           user_id?: string
         }
         Relationships: []
@@ -7401,35 +7401,6 @@ export type Database = {
         }
         Returns: Json
       }
-      calendar_sync_allowed: { Args: { _user: string }; Returns: boolean }
-      calendar_sync_apply: {
-        Args: {
-          _calendar: string
-          _delete_series?: string[]
-          _deletes?: string[]
-          _rows?: Json
-        }
-        Returns: Json
-      }
-      calendar_sync_outbox_claim: {
-        Args: { _limit?: number; _user: string }
-        Returns: {
-          attempts: number
-          claimed_until: string | null
-          created_at: string
-          event_id: string
-          id: number
-          last_error: string | null
-          link: Json | null
-          op: string
-          user_id: string
-        }[]
-      }
-      calendar_sync_forget: {
-        Args: { _calendar?: string; _connection: string; _keep_written?: boolean }
-        Returns: number
-      }
-      valid_calendar_sync: { Args: { _value: Json }; Returns: boolean }
       admin_set_app_setting: {
         Args: { _ip_hash?: string; _key: string; _value: Json }
         Returns: Json
@@ -7621,6 +7592,44 @@ export type Database = {
           _viewport?: string
         }
         Returns: string
+      }
+      calendar_sync_allowed: { Args: { _user: string }; Returns: boolean }
+      calendar_sync_apply: {
+        Args: {
+          _calendar: string
+          _delete_series?: string[]
+          _deletes?: string[]
+          _rows?: Json
+        }
+        Returns: Json
+      }
+      calendar_sync_forget: {
+        Args: {
+          _calendar?: string
+          _connection: string
+          _keep_written?: boolean
+        }
+        Returns: number
+      }
+      calendar_sync_outbox_claim: {
+        Args: { _limit?: number; _user: string }
+        Returns: {
+          attempts: number
+          claimed_until: string | null
+          created_at: string
+          event_id: string
+          id: number
+          last_error: string | null
+          link: Json | null
+          op: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "calendar_sync_outbox"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       cancel_invoice: {
         Args: { _invoice_id: string }
@@ -9854,6 +9863,7 @@ export type Database = {
       user_today: { Args: { _user_id: string }; Returns: string }
       username_available: { Args: { _username: string }; Returns: boolean }
       valid_ai_caps: { Args: { _value: Json }; Returns: boolean }
+      valid_calendar_sync: { Args: { _value: Json }; Returns: boolean }
       valid_error_alerts: { Args: { _value: Json }; Returns: boolean }
       valid_grady_models: { Args: { _value: Json }; Returns: boolean }
       valid_jarvis_rules: { Args: { _value: Json }; Returns: boolean }
