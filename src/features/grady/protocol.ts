@@ -85,6 +85,32 @@ export type RulesTestResult =
   | { ok: true; text: string; durationMs: number; costUsd: number; model: string }
   | { ok: false; code: ChatErrorCode | "invalid"; durationMs: number | null };
 
+/**
+ * POST /api/grady { kind: "modelCompare" } (step 28.9): one job's sample on
+ * one model in AI and Grady → Models → "Compare models". The owner or a full
+ * admin only; the job, the sample and the model are checked on the server.
+ */
+export const modelCompareRequestSchema = z.object({
+  kind: z.literal("modelCompare"),
+  feature: z.string().regex(/^[a-z_]{1,40}$/),
+  sampleId: z.string().regex(/^[a-z0-9-]{1,40}$/),
+  model: z.string().regex(/^[a-z0-9_]{1,40}$/),
+});
+
+export type ModelCompareResult =
+  | {
+      ok: true;
+      text: string;
+      model: string;
+      durationMs: number;
+      costUsd: number;
+      outputTokens: number;
+      checks: { key: string; ok: boolean }[];
+      judge: { score: number; reason: string } | null;
+      judgeCostUsd: number;
+    }
+  | { ok: false; code: ChatErrorCode | "invalid"; durationMs: number | null; costUsd?: number };
+
 /** The user's answer to a card of Grady's change: Confirm, Cancel, or Undo of a done one. */
 export const ACTION_DECISIONS = ["confirmAction", "rejectAction", "undoAction"] as const;
 export const actionDecisionRequestSchema = z.object({

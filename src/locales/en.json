@@ -7895,13 +7895,13 @@
             "why": "A text in the user's name should be well written."
           },
           "ping": {
-            "name": "Connection and instructions test",
-            "does": "Administration: Test connection and Try the instructions.",
+            "name": "Connection test",
+            "does": "Administration: Test the connection.",
             "why": "Checks the model the conversation runs on."
           },
           "briefing": {
-            "name": "Day, week and month summary",
-            "does": "The morning brief of the night job and the summaries at the first arrival.",
+            "name": "Day summary",
+            "does": "The morning brief from the nightly job (sent as a batch at half price) and the day's summary at the first arrival.",
             "why": "Picks the one thing worth noticing: a conversation model."
           },
           "note_map_suggest": {
@@ -7918,6 +7918,47 @@
             "name": "Chat model choice",
             "does": "When the rules cannot tell, Haiku says in one word whether a message needs Sonnet.",
             "why": "The cheapest possible decision, at most 20 output tokens."
+          },
+          "rules_test": {
+            "name": "Try the instructions",
+            "does": "Administration → Rules: the answer to a test message with the instructions from the form.",
+            "why": "Should answer like the chat, so the owner sees what users get."
+          },
+          "period_summary": {
+            "name": "Week and month summary",
+            "does": "At the first arrival of a week or month: what went well, what is stuck, 3 things for the period.",
+            "why": "A longer summary with numbers and three steps: a conversation model."
+          },
+          "model_compare": {
+            "name": "Model comparison",
+            "does": "Administration: a job's sample inputs on the chosen models (Compare models).",
+            "why": "Runs exactly on the models the owner ticks."
+          },
+          "compare_judge": {
+            "name": "Comparison grade",
+            "does": "A short grade of 1–5 and one sentence for each compared answer.",
+            "why": "The cheapest model is enough: a quick guide."
+          }
+        },
+        "compareButton": "Compare models",
+        "savings": {
+          "title": "Where to save",
+          "description": "From the calls of 30 days: a cheaper model where the answers hold up (few repeated questions, failures and thumbs down), a better one where people ask again or answers fail. The amounts price the same tokens on the other model.",
+          "useAll": "Use all recommendations",
+          "use": "Use",
+          "notLoaded": "The quality signals cannot be read yet (the 28.9 migration is missing).",
+          "none": "Nothing to recommend now: every job runs on a model that fits its results, or it had few calls in 30 days.",
+          "amountUnknown": "The saving shows once the automatic choice has decided the first messages.",
+          "saves": "Saves about {cost} in 30 days.",
+          "costsMore": "Costs about {cost} more in 30 days.",
+          "reasons": {
+            "repeats": "People ask again after {percent} of answers.",
+            "ratingsDown": "Thumbs down on {percent} of rated answers.",
+            "failures": "{percent} of calls failed.",
+            "undone": "Users undid {percent} of Grady's changes.",
+            "healthy": "The answers hold up: few repeated questions, failures and thumbs down.",
+            "autoChat": "The automatic choice sends simple messages to Haiku.",
+            "autoChatQuality": "A fixed Sonnet instead of the automatic choice."
           }
         }
       },
@@ -7932,6 +7973,76 @@
         "failed": "Could not save. Try again.",
         "readOnly": "Only the owner or a full administrator can change it.",
         "changedBy": "Last changed by {name}, {date}"
+      },
+      "compare": {
+        "title": "Compare models: {feature}",
+        "close": "Close",
+        "description": "Runs the job on stored sample inputs (made up, no users' data) on the chosen models and shows the answers side by side with their price, response time, format checks and a short grade by a cheap model. Every answer is a paid call.",
+        "models": "Models (at most 4)",
+        "samples": "Sample inputs",
+        "samplesHint": "The samples are in the repository in tests/fixtures/ai/.",
+        "estimate": "Estimate: about {cost} for {calls} calls (grades included).",
+        "estimateTiny": "Estimate: less than 0.01 USD for {calls} calls (grades included).",
+        "estimateHint": "The estimate counts the input without cache and the usual length of an answer; {judge} grades. Paid from the app's budget, not from the plan's answers.",
+        "spent": "Spent so far: {cost}",
+        "run": "Run the comparison",
+        "runAgain": "Run again",
+        "running": "Comparing…",
+        "current": "set now",
+        "score": "Avg grade",
+        "checksPassed": "Checks passed",
+        "duration": "Avg response time",
+        "perThousand": "Avg per 1,000 calls",
+        "use": "Use {model}",
+        "waiting": "Waiting",
+        "answering": "The model is answering…",
+        "cellFacts": "{duration} · {perThousand} per 1,000 calls · {tokens} output tokens",
+        "checks": {
+          "answered": "answer",
+          "complete": "not cut off",
+          "json": "valid JSON",
+          "length": "length",
+          "plain": "plain text",
+          "language": "language",
+          "shape": "shape"
+        },
+        "checkOk": "passed",
+        "checkFailed": "failed",
+        "judged": "Grade {score}/5: {reason}",
+        "notJudged": "The grade did not come.",
+        "errors": {
+          "paused": "Grady is paused until the end of the month (the monthly cap is used up).",
+          "userLimit": "Your account has used up its AI cap this month.",
+          "spaceLimit": "The space has used up its AI cap this month.",
+          "busy": "The model is overloaded right now, try again in a moment.",
+          "notConfigured": "The server has no Anthropic key.",
+          "invalid": "This job, sample and model cannot be run together.",
+          "unavailable": "No answer came."
+        }
+      },
+      "efficiency": {
+        "title": "Grady's cost per user",
+        "description": "For the range of the top bar: AI spend per active user a day and a month, the average chat answer, the share of the prompt read from the cache and of the spend on batches (morning briefs and the watch at half price). Internal accounts only with their filter on.",
+        "none": "–",
+        "trendNone": "no trend yet",
+        "trendUp": "{percent} more in the second half of the range",
+        "trendDown": "{percent} less in the second half of the range",
+        "trendFlat": "no change",
+        "activeUsers": "{count, plural, one {# active user} other {# active users}}",
+        "cacheHint": "the more, the cheaper the prompt",
+        "batchHint": "background jobs at half price",
+        "figures": {
+          "perUserDay": "Per active user a day",
+          "perUserMonth": "Per active user a month",
+          "chatAnswer": "1,000 chat answers",
+          "cacheShare": "Prompt from the cache",
+          "batchShare": "Spend on batches"
+        },
+        "chartTitle": "Cost per user and answer over time",
+        "chart": {
+          "perUser": "Per active user a day",
+          "perThousandAnswers": "1,000 chat answers"
+        }
       }
     },
     "game": {
@@ -9345,6 +9456,18 @@
         "trashRetention": {
           "title": "Trash of Grady and connected apps",
           "keywords": "trash deleted restore days mcp claude grady retention"
+        },
+        "gradySavings": {
+          "title": "Where to save on AI",
+          "keywords": "saving cheaper model recommendation quality repeated questions"
+        },
+        "gradyCompare": {
+          "title": "Compare models",
+          "keywords": "model comparison samples test quality price haiku sonnet opus"
+        },
+        "aiCostPerUser": {
+          "title": "AI cost per user",
+          "keywords": "cost per user cache chat answer trend batches"
         }
       }
     },

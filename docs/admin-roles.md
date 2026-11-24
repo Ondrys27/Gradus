@@ -26,6 +26,7 @@ Sloupce: **M** = majitel · **P** = plný administrátor · **O** = omezený adm
 | `grady-models-actions.saveGradyModels` | ✓ | ✓ | čte | `editGradyModels`: model každé funkce, přednastavení, úsporný režim ručně, velké rozbory v chatu; DB ověří znovu (`admin_set_app_setting` `grady_models`), audit `settings.grady_models` z → na |
 | `showcase-actions.saveShowcaseMode` | ✓ | ✓ | čte | `editShowcase`: ukázkový režim zapnout / vypnout; DB ověří znovu (`admin_set_app_setting` `showcase_mode`, `valid_showcase_mode`), audit `settings.showcase_mode` z → na |
 | `POST /api/grady` `kind: rulesTest` a `kind: ping` | ✓ | ✓ | – | `testGrady`, jedno placené volání modelu; ostatním 404 |
+| `POST /api/grady` `kind: modelCompare` (AI a Grady → Modely → Porovnat modely, 28.9) | ✓ | ✓ | – | `compareModels`: jeden vzorek jedné funkce na jednom modelu a krátké hodnocení (dvě placená volání, `model_compare` a `compare_judge`, z rozpočtu aplikace, ne z odpovědí tarifu); funkce, vzorek a model jen ze seznamů v kódu; každý běh do `admin_audit` (`ai.models.compare`); ostatním 404 |
 | `plans-actions.savePlanDraft`, `discardPlanDraft`, `planCatalogImpact` | ✓ | ✓ | čte | koncept katalogu tarifů |
 | `plans-actions.publishPlanCatalog`, `restorePlanVersion` | ✓ | ✓ | čte | zveřejnění a vrácení verze; po něm e-mail ostatním (`plansPublished` / `plansRestored`) |
 | `promo-actions.savePromoCode`, `setPromoCodeActive` | ✓ | ✓ | ✓ | promo kódy partnerů; DB ověří znovu (`admin_promo_code_save` / `_set_active`), audit `settings.promo_codes` bez jména a e-mailu partnera |
@@ -55,7 +56,8 @@ Sloupce: **M** = majitel · **P** = plný administrátor · **O** = omezený adm
 | AI a Grady — karta stropů | ✓ | ✓ | čte | pod kartou „Naposledy změnil(a) jméno, datum“ |
 | AI a Grady — karta Vyzkoušet připojení | ✓ | ✓ | – | |
 | AI a Grady → Pravidla (`/admin/ai?tab=rules`) | ✓ | ✓ | čte | „Vyzkoušet“ jen M a P |
-| AI a Grady → Modely (`/admin/ai?tab=models`) | ✓ | ✓ | čte | tabulka funkcí s útratou a odhady vidí všichni, výběr modelů, přednastavení a přepínače jen M a P |
+| AI a Grady → Modely (`/admin/ai?tab=models`) | ✓ | ✓ | čte | tabulka funkcí s útratou a odhady vidí všichni, výběr modelů, přednastavení a přepínače jen M a P; karta Kde ušetřit vidí všichni, Použít jen M a P; Porovnat modely jen M a P (`compareModels`) |
+| AI a Grady — karta Cena Gradyho na uživatele (28.9) | ✓ | ✓ | ✓ | `admin_ai_efficiency()` za období z horní lišty, jen čísla |
 | AI a Grady — export nejnákladnějších uživatelů a prostorů | ✓ | ✓ | – | |
 | Detail uživatele — karta Účet a Hlášení | ✓ | ✓ | ✓ | akce podpory podle tabulky výše (Změnit e-mail jen M a P), jinak věta, kdo účet spravuje |
 | Uživatelé — sloupec E-mail | ✓ | ✓ | ✓ | Export CSV jen M a P |

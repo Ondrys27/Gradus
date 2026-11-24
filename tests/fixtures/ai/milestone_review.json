@@ -1,0 +1,43 @@
+{
+  "samples": [
+    {
+      "id": "vague",
+      "label": "Vágní milník bez termínu",
+      "lang": "cs",
+      "milestone": {
+        "title": "Rozjet marketing",
+        "description": null,
+        "category": "marketing",
+        "target_date": null
+      },
+      "today": "2026-11-24",
+      "locale": "cs"
+    },
+    {
+      "id": "good",
+      "label": "Dobře zadaný milník",
+      "lang": "cs",
+      "milestone": {
+        "title": "Získat 5 platících klientů na údržbu zahrad",
+        "description": "Smlouva na sezónu 2027, aspoň 3 000 Kč měsíčně od každého.",
+        "category": "sales",
+        "target_date": "2027-02-28"
+      },
+      "today": "2026-11-24",
+      "locale": "cs"
+    },
+    {
+      "id": "unrealistic-en",
+      "label": "Nereálný termín (EN)",
+      "lang": "en",
+      "milestone": {
+        "title": "Reach 1,000 newsletter subscribers",
+        "description": "Start from zero, mostly through Instagram.",
+        "category": "marketing",
+        "target_date": "2026-11-30"
+      },
+      "today": "2026-11-24",
+      "locale": "en"
+    }
+  ]
+}

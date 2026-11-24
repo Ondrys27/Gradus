@@ -143,6 +143,7 @@ const CRON_JOBS = [
   "recurring_payments",
   "jarvis_watch",
   "jarvis_briefing",
+  "jarvis_batches",
   "analytics_retention",
   "metrics_daily",
   "notes_trash",

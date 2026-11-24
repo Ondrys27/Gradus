@@ -1,3 +1,4 @@
+import { leftOutSections, type SituationSection } from "./chat-context";
 import {
   formatCurrency,
   formatDate,
@@ -138,16 +139,27 @@ export function describePipelineHealth(digest: HealthDigest, settings?: FormatSe
  * A few hundred tokens at most: lists are capped by the loader, texts clipped
  * here. Numbers and times are in the user's own formats and zone.
  */
-export function describeSituation(situation: UserSituation, settings: FormatSettings): string {
+export function describeSituation(
+  situation: UserSituation,
+  settings: FormatSettings,
+  /**
+   * The parts the message is about (chat-context.ts, step 28.9); null or
+   * left out = all of them. Today and the time window are always there.
+   */
+  sections: ReadonlySet<SituationSection> | null = null,
+): string {
   const money = (value: number) => formatCurrency(value, settings.currency, settings);
   const lines: string[] = [];
+  const wants = (section: SituationSection) => !sections || sections.has(section);
 
   lines.push(
     `Today: ${situation.today} (${formatWeekdayLong(isoDateToLocal(situation.today), "en")}), time zone ${settings.timeZone}, currency ${settings.currency}.`,
   );
   lines.push(describeTimeWindow(situation.window, situation.now, settings));
 
-  if (situation.milestones.length) {
+  if (!wants("milestones")) {
+    // Left out: the message is about something else.
+  } else if (situation.milestones.length) {
     const items = situation.milestones.map((m) => {
       const target = m.targetDate ? `, target ${m.targetDate}` : "";
       return `${quoted(m.title)} ${m.done}/${m.total} tasks${target}`;
@@ -159,7 +171,7 @@ export function describeSituation(situation: UserSituation, settings: FormatSett
     lines.push("Active milestones: none.");
   }
 
-  if (situation.overdueTotal) {
+  if (wants("tasks") && situation.overdueTotal) {
     const items = situation.overdueTasks.map((t) => `${quoted(t.title)} due ${t.dueDate}`);
     lines.push(
       `Open tasks due today or overdue: ${items.join("; ")}${more(items.length, situation.overdueTotal)}.`,
@@ -167,7 +179,9 @@ export function describeSituation(situation: UserSituation, settings: FormatSett
   }
 
   const openStages = situation.stages.filter((stage) => stage.open > 0);
-  if (openStages.length) {
+  if (!wants("pipeline")) {
+    // Left out.
+  } else if (openStages.length) {
     const items = openStages.map(
       (s) => `${quoted(s.name)} ${s.open}${s.value ? ` (${money(s.value)})` : ""}`,
     );
@@ -179,11 +193,11 @@ export function describeSituation(situation: UserSituation, settings: FormatSett
     lines.push("Open deals: none.");
   }
 
-  if (situation.pipelineHealth) {
+  if (wants("pipeline") && situation.pipelineHealth) {
     lines.push(describePipelineHealth(situation.pipelineHealth, settings));
   }
 
-  if (situation.followUpsTotal) {
+  if (wants("followUps") && situation.followUpsTotal) {
     const items = situation.followUps.map(
       (f) =>
         `${quoted(f.name)} ${f.dueAt < situation.todayStart ? "overdue" : formatTime(f.dueAt, settings)}`,
@@ -193,7 +207,9 @@ export function describeSituation(situation: UserSituation, settings: FormatSett
     );
   }
 
-  if (situation.events.length) {
+  if (!wants("calendar")) {
+    // Left out.
+  } else if (situation.events.length) {
     const items = situation.events.map(
       (e) => `${e.allDay ? "all day" : formatTime(e.startsAt, settings)} ${quoted(e.title)}`,
     );
@@ -202,10 +218,12 @@ export function describeSituation(situation: UserSituation, settings: FormatSett
     lines.push("Today's calendar: empty.");
   }
 
-  const { hours, minutes } = splitDuration(situation.prospectingSeconds);
-  lines.push(`Calling time today: ${hours} h ${minutes} min.`);
+  if (wants("calling")) {
+    const { hours, minutes } = splitDuration(situation.prospectingSeconds);
+    lines.push(`Calling time today: ${hours} h ${minutes} min.`);
+  }
 
-  if (situation.overdueInvoicesTotal) {
+  if (wants("invoices") && situation.overdueInvoicesTotal) {
     const items = situation.overdueInvoices.map(
       (invoice) =>
         `${quoted(invoice.number)}${invoice.customer ? ` for ${quoted(invoice.customer)}` : ""} ${formatCurrency(invoice.total, invoice.currency, settings, 2)} due ${invoice.dueOn}`,
@@ -215,7 +233,7 @@ export function describeSituation(situation: UserSituation, settings: FormatSett
     );
   }
 
-  if (situation.overdueCrmTasksTotal) {
+  if (wants("crmTasks") && situation.overdueCrmTasksTotal) {
     const items = situation.overdueCrmTasks.map((task) => {
       const due = `${formatDate(task.dueAt, settings)} ${formatTime(task.dueAt, settings)}`;
       return `${quoted(task.title)}${task.target ? ` for ${quoted(task.target)}` : ""} due ${due}`;
@@ -224,23 +242,29 @@ export function describeSituation(situation: UserSituation, settings: FormatSett
       `Your sales tasks past their due time: ${items.join("; ")}${more(items.length, situation.overdueCrmTasksTotal)}.`,
     );
   }
-  if (situation.crmTasksDueToday) {
+  if (wants("crmTasks") && situation.crmTasksDueToday) {
     lines.push(`Your sales tasks still due today: ${situation.crmTasksDueToday}.`);
   }
 
-  if (situation.finance) {
+  if (wants("finance") && situation.finance) {
     const { income, expense } = situation.finance;
     lines.push(
       `This month: income ${money(income)}, expenses ${money(expense)}, balance ${money(income - expense)}.`,
     );
   }
 
-  if (situation.cashPlan) lines.push(describeCashPlan(situation.cashPlan, settings));
+  if (wants("finance") && situation.cashPlan) lines.push(describeCashPlan(situation.cashPlan, settings));
 
-  if (situation.scheduler) lines.push(...describeScheduler(situation.scheduler, settings));
+  if (wants("scheduler") && situation.scheduler) lines.push(...describeScheduler(situation.scheduler, settings));
 
-  if (situation.rewards) lines.push(...describeRewards(situation.rewards, settings));
+  if (wants("rewards") && situation.rewards) lines.push(...describeRewards(situation.rewards, settings));
 
+  const left = leftOutSections(sections);
+  if (left.length) {
+    lines.push(
+      `Shortened to what the message is about; not listed here: ${left.join(", ")}. Look them up with your tools when the answer needs them, and never read a missing line as "none".`,
+    );
+  }
   return lines.join("\n");
 }
 

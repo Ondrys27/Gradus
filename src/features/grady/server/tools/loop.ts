@@ -7,6 +7,7 @@ import type { ChatErrorCode } from "../../protocol";
 import { modelToolOf } from "../../tools/catalog";
 import type { AnyTool } from "../../tools/types";
 import { creditErrorCode, errorCode, planCall, type ModelCall } from "../model";
+import { cacheConversation } from "../../cache";
 import { BULK_THRESHOLD, WRITES_PER_MESSAGE, type StepResult, type ToolCall } from "./actions";
 
 /**
@@ -56,6 +57,19 @@ function isWrite(tools: Map<string, AnyTool>, name: string) {
   return tools.get(name)?.kind === "write";
 }
 
+/** The text of the latest user message (its text blocks when it carries files). */
+export function lastUserText(messages: readonly Anthropic.MessageParam[]): string {
+  for (let index = messages.length - 1; index >= 0; index--) {
+    const message = messages[index];
+    if (message.role !== "user") continue;
+    if (typeof message.content === "string") return message.content;
+    return message.content
+      .map((block) => (block.type === "text" ? block.text : ""))
+      .join(" ");
+  }
+  return "";
+}
+
 export async function streamWithTools(call: ToolLoopCall): Promise<ToolLoopResult> {
   const feature = "chat" as const;
   // The model is chosen once per message (the setting, the automatic choice
@@ -71,6 +85,8 @@ export async function streamWithTools(call: ToolLoopCall): Promise<ToolLoopResul
   let writes = 0;
   let instantWrites = 0;
   let rounds = 0;
+  // Decided once for the message: it asks for a tool, so further rounds are likely.
+  const cacheRounds = cacheConversation(modelTools.length > 0, lastUserText(call.messages));
 
   for (let round = 0; round <= MAX_TOOL_ROUNDS; round++) {
     if (!choice) {
@@ -108,6 +124,12 @@ export async function streamWithTools(call: ToolLoopCall): Promise<ToolLoopResul
         ...(call.context ? [{ type: "text" as const, text: call.context }] : []),
       ],
       messages,
+      // Step 28.9: the conversation is cached too (automatic caching moves the
+      // breakpoint to the end of the messages), so every further round reads
+      // the context, the history and the earlier rounds for a tenth of the
+      // price or less instead of paying them again (cache.ts, measured in
+      // scripts/ai-savings.ts).
+      ...(cacheRounds ? { cache_control: { type: "ephemeral" as const } } : {}),
       // Haiku answers without thinking first (as streamModel does), so it
       // never spends its token budget thinking and returns an empty answer.
       ...(choice.model.thinkingOff ? { thinking: { type: "disabled" as const } } : {}),

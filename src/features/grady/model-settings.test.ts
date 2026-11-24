@@ -58,8 +58,10 @@ describe("the catalog of jobs", () => {
     expect(allowedChoices("chat_route")).toEqual(["haiku"]);
   });
 
-  it("keeps the routing call out of the settings", () => {
-    expect(SETTABLE_FEATURES).toEqual(GRADY_FEATURES.filter((feature) => feature !== "chat_route"));
+  it("keeps the routing call and the comparison out of the settings", () => {
+    expect(SETTABLE_FEATURES).toEqual(
+      GRADY_FEATURES.filter((feature) => feature !== "chat_route" && feature !== "model_compare"),
+    );
   });
 
   it("names, explains and justifies every job the administration lists, in both languages", () => {
@@ -254,5 +256,18 @@ describe("chooseModel", () => {
 
   it("keeps the routing call on Haiku whatever is set", () => {
     expect(chooseModel("chat_route", settings({ economy: true })).model.key).toBe("haiku");
+  });
+});
+
+describe("step 28.9: the comparison runs on the model it names", () => {
+  it("takes the named model for the comparison only, even in economy mode", () => {
+    const settings = { ...DEFAULT_GRADY_MODELS, economy: true };
+    expect(chooseModel("model_compare", settings, { explicit: "opus" }).model.key).toBe("opus");
+    expect(chooseModel("email_reply", DEFAULT_GRADY_MODELS, { explicit: "opus" }).model.key).toBe(
+      "sonnet",
+    );
+    expect(allowedChoices("model_compare")).toEqual(["sonnet"]);
+    expect(SETTABLE_FEATURES).not.toContain("model_compare");
+    expect(SETTABLE_FEATURES).toContain("compare_judge");
   });
 });

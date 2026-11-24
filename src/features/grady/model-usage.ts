@@ -15,6 +15,8 @@ export type ModelUsageRow = {
   routedFrom: string | null;
   /** The prompt was over 100,000 tokens (Haiku's long-prompt price, per request). */
   longPrompt: boolean;
+  /** Through the Message Batches API: every estimate at the batch price too (step 28.9). */
+  batch?: boolean;
   calls: number;
   tokens: TokenUsage;
   costUsd: number;
@@ -24,6 +26,8 @@ export type FeatureUsage = {
   feature: GradyFeature;
   calls: number;
   costUsd: number;
+  /** Output tokens of all its calls (the comparison's estimate takes their average). */
+  outputTokens: number;
   /** The same tokens priced on each model. */
   estimates: Record<AiModelKey, number>;
 };
@@ -61,7 +65,7 @@ export function summarizeModelUsage(rows: readonly ModelUsageRow[]): ModelUsageS
   const features = Object.fromEntries(
     GRADY_FEATURES.map((feature) => [
       feature,
-      { feature, calls: 0, costUsd: 0, estimates: zeroEstimates() },
+      { feature, calls: 0, costUsd: 0, outputTokens: 0, estimates: zeroEstimates() },
     ]),
   ) as Record<GradyFeature, FeatureUsage>;
   const total = { calls: 0, costUsd: 0, estimates: zeroEstimates() };
@@ -77,7 +81,11 @@ export function summarizeModelUsage(rows: readonly ModelUsageRow[]): ModelUsageS
     total.calls += row.calls;
     total.costUsd += row.costUsd;
     const priced = AI_MODELS.map(
-      (model) => [model.key, costUsd(model.id, row.tokens, { longPrompt: row.longPrompt })] as const,
+      (model) =>
+        [
+          model.key,
+          costUsd(model.id, row.tokens, { longPrompt: row.longPrompt, batch: row.batch }),
+        ] as const,
     );
     for (const [key, usd] of priced) total.estimates[key] += usd;
 
@@ -85,13 +93,17 @@ export function summarizeModelUsage(rows: readonly ModelUsageRow[]): ModelUsageS
     if (isModel(row.routedFrom)) {
       routing.calls += row.calls;
       routing.costUsd += row.costUsd;
-      routing.baselineUsd += costUsd(row.routedFrom, row.tokens, { longPrompt: row.longPrompt });
+      routing.baselineUsd += costUsd(row.routedFrom, row.tokens, {
+        longPrompt: row.longPrompt,
+        batch: row.batch,
+      });
     }
 
     if (!isFeature(row.purpose)) continue;
     const usage = features[row.purpose];
     usage.calls += row.calls;
     usage.costUsd += row.costUsd;
+    usage.outputTokens += row.tokens.outputTokens;
     for (const [key, usd] of priced) usage.estimates[key] += usd;
   }
   routing.savedUsd = routing.baselineUsd - routing.costUsd - routing.routeCostUsd;

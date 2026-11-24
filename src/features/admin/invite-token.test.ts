@@ -78,6 +78,7 @@ describe("roles", () => {
       "editAiCaps",
       "testGrady",
       "editGradyRules",
+      "compareModels",
       "editPlans",
       "editSubscriptions",
       "managePayouts",

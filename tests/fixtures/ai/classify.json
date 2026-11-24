@@ -1,0 +1,25 @@
+{
+  "samples": [
+    {
+      "id": "request",
+      "label": "Přání funkce (Pohoda)",
+      "lang": "cs",
+      "context": "",
+      "message": "<message>\nBylo by super, kdyby šlo faktury posílat rovnou do Pohody, ruční přepisování mě zabíjí.\n</message>"
+    },
+    {
+      "id": "advice",
+      "label": "Rada, ne funkce",
+      "lang": "cs",
+      "context": "",
+      "message": "<message>\nJak mám odpovědět klientovi, který chce slevu 30 %?\n</message>"
+    },
+    {
+      "id": "bug-en",
+      "label": "Chyba, ne funkce (EN)",
+      "lang": "en",
+      "context": "",
+      "message": "<message>\nThe calendar shows my meeting an hour off since yesterday. Is that a bug?\n</message>"
+    }
+  ]
+}

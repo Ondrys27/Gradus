@@ -1,0 +1,25 @@
+{
+  "samples": [
+    {
+      "id": "busy-day",
+      "label": "Rušný den",
+      "lang": "cs",
+      "context": "<user>Language: cs. Today: 2026-11-24.</user>\n<on_fire>Pipeline health: Close Date passed 2 (most pressing \"Web Ateliér Lípa\", 9 days) · tasks of deals overdue 1 · open deals without an open task 3.</on_fire>\n<day_plan>A working day. Best times to call: 9:00–11:00 and 14:00–16:00. Lunch 12–13 is not a good time.</day_plan>\n<yesterday>\n- Deal \"E-shop pro Kavárnu U Mostu\" moved to \"Vyhráno\" (won)\n- Task done: \"Nafotit portfolio\"\n- 4 contact(s) moved to \"Nezvedá\"\n</yesterday>\n<today>\n- Event \"Schůzka s Pekárnou Zrno\" at 10:00\n- Task due today: \"Připravit ceník na rok 2027\"\n- 2 sales task(s) overdue: \"Zavolat paní Lípové\" (for \"Web Ateliér Lípa\"); \"Poslat smlouvu\" (for \"Rezervace Studio Jóga Klid\")\n- 3 contact(s) to follow up today\n</today>\n<worth_noticing>\n- Deal \"Web Autoservis Král\" has been in stage \"Schůzka\" for 21 days\n</worth_noticing>",
+      "message": "Write today's brief."
+    },
+    {
+      "id": "quiet-day",
+      "label": "Sobota, nic nehoří",
+      "lang": "cs",
+      "context": "<user>Language: cs. Today: 2026-11-28.</user>\n<on_fire>nothing</on_fire>\n<day_plan>Saturday, a day off: nothing that needs other people today; the next good time to call is Monday 9:00.</day_plan>\n<yesterday>\n- Task done: \"Objednat vizitky\"\n</yesterday>\n<today>\nnothing\n</today>\n<worth_noticing>\nnothing\n</worth_noticing>",
+      "message": "Write today's brief."
+    },
+    {
+      "id": "invoices-en",
+      "label": "Faktury po splatnosti (EN)",
+      "lang": "en",
+      "context": "<user>Language: en. Today: 2026-11-24.</user>\n<on_fire>Pipeline health: Close Date passed 0 · tasks of deals overdue 0 · open deals without an open task 1 (\"Lawn – The Old Bakery\").</on_fire>\n<day_plan>A working day. Best times to call: 10:00–12:00.</day_plan>\n<yesterday>\nnothing\n</yesterday>\n<today>\n- 2 invoice(s) past due: \"2026-0014\" to \"Mill House\" 12 day(s) late; \"2026-0016\" to \"Rose Court\" 3 day(s) late\n- Event \"Quote visit – Elm Street\" at 15:30\n</today>\n<worth_noticing>\nnothing\n</worth_noticing>",
+      "message": "Write today's brief."
+    }
+  ]
+}

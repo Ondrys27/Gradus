@@ -44,6 +44,12 @@ export const GRADY_FEATURES = [
   "note_map_suggest",
   "meeting_notes",
   "chat_route",
+  // Step 28.9: the owner's test of the rules, the week and month summaries,
+  // and the administration's model comparison with its grader.
+  "rules_test",
+  "period_summary",
+  "model_compare",
+  "compare_judge",
 ] as const;
 export type GradyFeature = (typeof GRADY_FEATURES)[number];
 
@@ -73,6 +79,14 @@ const DEFAULTS: Record<GradyFeature, AiModelKey> = {
   // A meeting turned into changes of the user's own data (28.7): reads a long text carefully.
   meeting_notes: "sonnet",
   analysis: "opus",
+  // The owner tries the instructions on the chat's persona: a conversation model.
+  rules_test: "sonnet",
+  // The week or month summary picks what went well, what stands and three things to do.
+  period_summary: "sonnet",
+  // A comparison runs on the model the owner picked; this is only its placeholder.
+  model_compare: "sonnet",
+  // The short grade of a compared answer: a cheap model with a score and one sentence.
+  compare_judge: "haiku",
 };
 
 export function defaultModelKey(feature: GradyFeature): AiModelKey {
@@ -90,14 +104,46 @@ export const ROUTE_MAX_TOKENS = 20;
 const CHAT_MIN_TOKENS = 2048;
 
 /**
- * Output cap per call: short answers stay short, analyses get room. By the
- * model it runs on (AI_MODELS.maxTokens); the chat gets at least
- * CHAT_MIN_TOKENS, the routing call one word.
+ * The most a job may write in one call (step 28.9), thinking included, below
+ * the model's own cap (AI_MODELS.maxTokens). A backstop, not a target: each
+ * is a few times what the job normally writes, so an answer is never cut,
+ * but a call that runs away (a brief that would be cut to 700 characters
+ * anyway, a JSON label that keeps going) stops before it costs more.
+ * Jobs without an entry write up to the model's cap.
+ */
+export const FEATURE_MAX_TOKENS: Partial<Record<GradyFeature, number>> = {
+  chat_route: ROUTE_MAX_TOKENS,
+  // {"isRequest", "title", "description"}: about 100 tokens.
+  classify: 512,
+  // A few suggestions and completed tasks as JSON: about 300 tokens.
+  opportunity_scan: 1536,
+  // Cut to 700 characters (BRIEFING_MAX): about 250 tokens of text.
+  briefing: 1536,
+  // Cut to 900 characters (PERIOD_SUMMARY_MAX): about 350 tokens of text.
+  period_summary: 2048,
+  // 2 to 4 sentences, cut to 1,200 characters.
+  milestone_review: 2048,
+  // 3 to 8 branches with a few children as JSON: about 400 tokens.
+  note_map_suggest: 2048,
+  // One reply e-mail, cut to 4,000 characters.
+  email_reply: 3072,
+  // One sentence back; the rules' test answers like the chat.
+  ping: 512,
+  rules_test: 2048,
+  // A score and one sentence as JSON.
+  compare_judge: 400,
+};
+
+/**
+ * Output cap per call: short answers stay short, analyses get room. The
+ * job's cap (FEATURE_MAX_TOKENS) below the model's (AI_MODELS.maxTokens);
+ * the chat gets at least CHAT_MIN_TOKENS, the routing call one word.
  */
 export function maxTokensFor(feature: GradyFeature, model: GradyModel = modelFor(feature)): number {
-  if (feature === "chat_route") return ROUTE_MAX_TOKENS;
   const base = aiModelById(model)?.maxTokens ?? 4096;
-  return feature === "chat" ? Math.max(base, CHAT_MIN_TOKENS) : base;
+  if (feature === "chat") return Math.max(base, CHAT_MIN_TOKENS);
+  const cap = FEATURE_MAX_TOKENS[feature];
+  return cap === undefined ? base : Math.min(base, cap);
 }
 
 export type TokenUsage = {
@@ -115,16 +161,19 @@ export const EMPTY_USAGE: TokenUsage = {
   outputTokens: 0,
 };
 
+/** What a call through the Message Batches API pays of the list price (50 % off every token). */
+export const BATCH_PRICE_SHARE = 0.5;
+
 /**
  * Price of one call in USD (AI_MODELS in src/config/costs.ts), rounded to
- * the column's six decimals. A long prompt on a model with a long-prompt
+ * the column's six decimals; `batch` = through the Message Batches API. A long prompt on a model with a long-prompt
  * price pays that price for the whole request. `longPrompt` forces the
  * choice for summed tokens of many calls (the administration's estimates).
  */
 export function costUsd(
   model: GradyModel,
   usage: TokenUsage,
-  options: { longPrompt?: boolean } = {},
+  options: { longPrompt?: boolean; batch?: boolean } = {},
 ): number {
   const base = MODEL_PRICES[model];
   if (!base) return 0;
@@ -137,5 +186,6 @@ export function costUsd(
     usage.cacheReadTokens * price.cacheRead +
     usage.cacheWriteTokens * price.cacheWrite +
     usage.outputTokens * price.output;
-  return Math.round(micro) / 1_000_000;
+  // The Message Batches API bills every token of the request at half price.
+  return Math.round(options.batch ? micro * BATCH_PRICE_SHARE : micro) / 1_000_000;
 }

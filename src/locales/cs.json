@@ -7895,13 +7895,13 @@
             "why": "Text pod jménem uživatele má být dobře napsaný."
           },
           "ping": {
-            "name": "Test spojení a pokynů",
-            "does": "Administrace: Vyzkoušet připojení a Vyzkoušet pokyny.",
+            "name": "Test spojení",
+            "does": "Administrace: Vyzkoušet připojení.",
             "why": "Ověřuje model, na kterém běží rozhovor."
           },
           "briefing": {
-            "name": "Souhrn dne, týdne a měsíce",
-            "does": "Ranní shrnutí z noční úlohy a souhrny při prvním příchodu.",
+            "name": "Souhrn dne",
+            "does": "Ranní shrnutí z noční úlohy (dávkou za poloviční cenu) a souhrn dne při prvním příchodu.",
             "why": "Vybírá jednu věc, která stojí za pozornost: model pro rozhovor."
           },
           "note_map_suggest": {
@@ -7918,6 +7918,47 @@
             "name": "Výběr modelu pro chat",
             "does": "Když pravidla nerozhodnou, Haiku jedním slovem řekne, jestli zpráva potřebuje Sonnet.",
             "why": "Nejlevnější možné rozhodnutí, nejvýš 20 výstupních tokenů."
+          },
+          "rules_test": {
+            "name": "Vyzkoušet pokyny",
+            "does": "Administrace → Pravidla: odpověď na zkušební zprávu s pokyny z formuláře.",
+            "why": "Má odpovídat jako chat, ať majitel vidí, co dostanou uživatelé."
+          },
+          "period_summary": {
+            "name": "Souhrn týdne a měsíce",
+            "does": "Při prvním příchodu v týdnu nebo měsíci: co se povedlo, co stojí, 3 věci na období.",
+            "why": "Delší souhrn s čísly a třemi kroky: model pro rozhovor."
+          },
+          "model_compare": {
+            "name": "Porovnání modelů",
+            "does": "Administrace: vzorové vstupy funkce na vybraných modelech (Porovnat modely).",
+            "why": "Běží přesně na modelech, které majitel zaškrtne."
+          },
+          "compare_judge": {
+            "name": "Hodnocení při porovnání",
+            "does": "Krátká známka 1–5 a jedna věta ke každé porovnávané odpovědi.",
+            "why": "Stačí nejlevnější model, jde o rychlé vodítko."
+          }
+        },
+        "compareButton": "Porovnat modely",
+        "savings": {
+          "title": "Kde ušetřit",
+          "description": "Z volání za 30 dní: levnější model tam, kde odpovědi drží (málo opakovaných dotazů, chyb a palců dolů), lepší tam, kde se lidé ptají znovu nebo odpovědi selhávají. Částky počítají stejné tokeny s ceníkem jiného modelu.",
+          "useAll": "Použít všechna doporučení",
+          "use": "Použít",
+          "notLoaded": "Signály kvality zatím nejdou načíst (chybí migrace 28.9).",
+          "none": "Teď není co doporučit: každá funkce běží na modelu, který odpovídá jejím výsledkům, nebo má za 30 dní málo volání.",
+          "amountUnknown": "Úsporu ukáže, až automatický výběr rozhodne první zprávy.",
+          "saves": "Ušetří asi {cost} za 30 dní.",
+          "costsMore": "Bude stát asi o {cost} za 30 dní víc.",
+          "reasons": {
+            "repeats": "Lidé se ptají znovu po {percent} odpovědí.",
+            "ratingsDown": "Palec dolů u {percent} hodnocených odpovědí.",
+            "failures": "Selhalo {percent} volání.",
+            "undone": "Uživatelé vrátili {percent} Gradyho změn.",
+            "healthy": "Odpovědi drží: málo opakovaných dotazů, chyb a palců dolů.",
+            "autoChat": "Automatický výběr pošle jednoduché zprávy na Haiku.",
+            "autoChatQuality": "Pevný Sonnet místo automatického výběru."
           }
         }
       },
@@ -7932,6 +7973,76 @@
         "failed": "Nepodařilo se uložit. Zkus to znovu.",
         "readOnly": "Měnit to může majitel nebo plný administrátor.",
         "changedBy": "Naposledy změnil(a) {name}, {date}"
+      },
+      "compare": {
+        "title": "Porovnat modely: {feature}",
+        "close": "Zavřít",
+        "description": "Spustí funkci na uložených vzorových vstupech (vymyšlené, bez dat uživatelů) na vybraných modelech a ukáže vedle sebe odpovědi, cenu, dobu odezvy, kontroly formátu a krátké hodnocení levným modelem. Každá odpověď je placené volání.",
+        "models": "Modely (nejvýš 4)",
+        "samples": "Vzorové vstupy",
+        "samplesHint": "Vzorky jsou v repozitáři v tests/fixtures/ai/.",
+        "estimate": "Odhad: asi {cost} za {calls} volání (včetně hodnocení).",
+        "estimateTiny": "Odhad: méně než 0,01 USD za {calls} volání (včetně hodnocení).",
+        "estimateHint": "Odhad počítá vstup bez cache a obvyklou délku odpovědi; hodnotí {judge}. Platí se z rozpočtu aplikace, ne z odpovědí v tarifu.",
+        "spent": "Zatím utraceno: {cost}",
+        "run": "Spustit porovnání",
+        "runAgain": "Spustit znovu",
+        "running": "Porovnává se…",
+        "current": "teď nastavený",
+        "score": "Ø hodnocení",
+        "checksPassed": "Kontroly prošly",
+        "duration": "Ø doba odezvy",
+        "perThousand": "Ø za 1 000 volání",
+        "use": "Použít {model}",
+        "waiting": "Čeká na řadu",
+        "answering": "Model odpovídá…",
+        "cellFacts": "{duration} · {perThousand} za 1 000 volání · {tokens} výstupních tokenů",
+        "checks": {
+          "answered": "odpověď",
+          "complete": "neuříznutá",
+          "json": "platný JSON",
+          "length": "délka",
+          "plain": "prostý text",
+          "language": "jazyk",
+          "shape": "tvar"
+        },
+        "checkOk": "prošlo",
+        "checkFailed": "neprošlo",
+        "judged": "Hodnocení {score}/5: {reason}",
+        "notJudged": "Hodnocení se nepodařilo.",
+        "errors": {
+          "paused": "Grady má do konce měsíce pauzu (vyčerpaný měsíční strop).",
+          "userLimit": "Tvůj účet má tento měsíc vyčerpaný strop AI.",
+          "spaceLimit": "Prostor má tento měsíc vyčerpaný strop AI.",
+          "busy": "Model je teď přetížený, zkus to za chvíli.",
+          "notConfigured": "Na serveru chybí klíč Anthropic.",
+          "invalid": "Tuhle kombinaci funkce, vzorku a modelu nejde spustit.",
+          "unavailable": "Odpověď nepřišla."
+        }
+      },
+      "efficiency": {
+        "title": "Cena Gradyho na uživatele",
+        "description": "Za období z horní lišty: útrata za AI na aktivního uživatele za den a za měsíc, průměrná odpověď v chatu, podíl promptu z cache a podíl útraty za dávky (ranní shrnutí a hlídání za poloviční cenu). Interní účty jen se zapnutým filtrem.",
+        "none": "–",
+        "trendNone": "trend zatím nejde spočítat",
+        "trendUp": "ve druhé půlce období o {percent} víc",
+        "trendDown": "ve druhé půlce období o {percent} míň",
+        "trendFlat": "beze změny",
+        "activeUsers": "{count, plural, one {# aktivní uživatel} few {# aktivní uživatelé} other {# aktivních uživatelů}}",
+        "cacheHint": "čím víc, tím levnější prompt",
+        "batchHint": "úlohy na pozadí za poloviční cenu",
+        "figures": {
+          "perUserDay": "Na aktivního uživatele za den",
+          "perUserMonth": "Na aktivního uživatele za měsíc",
+          "chatAnswer": "1 000 odpovědí v chatu",
+          "cacheShare": "Prompt z cache",
+          "batchShare": "Útrata za dávky"
+        },
+        "chartTitle": "Vývoj ceny na uživatele a odpověď",
+        "chart": {
+          "perUser": "Na aktivního uživatele za den",
+          "perThousandAnswers": "1 000 odpovědí v chatu"
+        }
       }
     },
     "game": {
@@ -9345,6 +9456,18 @@
         "trashRetention": {
           "title": "Koš Gradyho a připojených aplikací",
           "keywords": "koš smazané obnovit dny mcp claude grady retence"
+        },
+        "gradySavings": {
+          "title": "Kde ušetřit na AI",
+          "keywords": "úspora levnější model doporučení kvalita opakované dotazy"
+        },
+        "gradyCompare": {
+          "title": "Porovnat modely",
+          "keywords": "porovnání modelů vzorky test kvalita cena haiku sonnet opus"
+        },
+        "aiCostPerUser": {
+          "title": "Cena AI na uživatele",
+          "keywords": "náklady na uživatele cache odpověď chatu trend dávky"
         }
       }
     },

@@ -32,7 +32,9 @@ import { TrashRetentionForm } from "@/features/admin/ui/trash-retention-form";
 import { GradyRulesForm } from "@/features/admin/ui/grady-rules-form";
 import { GradyModelsForm, ModelPriceList } from "@/features/admin/ui/grady-models-form";
 import { loadModelsOverview } from "@/features/admin/server/ai-models-data";
+import { efficiencyChart, loadAiEfficiency } from "@/features/admin/server/ai-efficiency-data";
 import { SHOWN_FEATURES, toGradyModelsForm } from "@/features/grady/model-settings";
+import { compareCatalog } from "@/features/admin/server/ai-compare-data";
 import { perThousandCalls } from "@/features/grady/model-usage";
 import { AI_MODELS } from "@/config/costs";
 import { viewQuery, parseAdminView } from "@/features/admin/view-state";
@@ -125,7 +127,10 @@ export default async function AdminAiPage({ searchParams }: Props) {
         <AdminPageHeader section="ai" q={q} extra={tabs} />
         <div className="flex flex-col gap-6">
           <Suspense fallback={<CardSkeleton height={640} />}>
-            <Models readOnly={!adminCan(context, "editGradyModels")} />
+            <Models
+              readOnly={!adminCan(context, "editGradyModels")}
+              canCompare={adminCan(context, "compareModels")}
+            />
           </Suspense>
           <PriceList />
         </div>
@@ -162,6 +167,9 @@ export default async function AdminAiPage({ searchParams }: Props) {
           </Suspense>
           <Suspense fallback={<GridSkeleton count={2} />}>
             <BudgetAndCost q={q} />
+          </Suspense>
+          <Suspense fallback={<CardSkeleton height={320} />}>
+            <CostPerUser q={q} />
           </Suspense>
           <Suspense fallback={<GridSkeleton count={2} height={220} />}>
             <Usage q={q} />
@@ -224,6 +232,60 @@ async function BudgetAndCost({ q }: { q: AdminQuery }) {
         )}
       </Show>
     </BlockGrid>
+  );
+}
+
+/**
+ * What Grady costs per person (step 28.9): per active user a day and a
+ * month, the average chat answer, the share of the prompt read from the
+ * cache and of the cost paid at the batch price, and the trend by day.
+ */
+async function CostPerUser({ q }: { q: AdminQuery }) {
+  const [loaded, t] = await Promise.all([
+    safe("ai efficiency", () => loadAiEfficiency(q)),
+    getTranslations("admin.ai.efficiency"),
+  ]);
+  const usd = (value: number | null) =>
+    value === null ? t("none") : formatUsd(value, ADMIN_FORMAT_SETTINGS);
+  const percent = (value: number | null) =>
+    value === null
+      ? t("none")
+      : formatNumber(value, { style: "percent", decimals: 0 }, ADMIN_FORMAT_SETTINGS);
+  const trend = (value: number | null) =>
+    value === null
+      ? t("trendNone")
+      : t(value > 0.005 ? "trendUp" : value < -0.005 ? "trendDown" : "trendFlat", {
+          percent: formatNumber(Math.abs(value), { style: "percent", decimals: 0 }, ADMIN_FORMAT_SETTINGS),
+        });
+  return (
+    <AdminCard title={t("title")} description={t("description")} id="ai-cena-uzivatel">
+      <Show loaded={loaded}>
+        {(data) => (
+          <div className="flex flex-col gap-4">
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3 lg:grid-cols-5">
+              {[
+                { key: "perUserDay", value: usd(data.perActiveUserDayUsd), hint: trend(data.trend.perActiveUser) },
+                { key: "perUserMonth", value: usd(data.perActiveUserMonthUsd), hint: t("activeUsers", { count: data.activeUsers }) },
+                {
+                  key: "chatAnswer",
+                  value: usd(data.chatAnswerUsd === null ? null : data.chatAnswerUsd * 1000),
+                  hint: trend(data.trend.chatAnswer),
+                },
+                { key: "cacheShare", value: percent(data.cacheShare), hint: t("cacheHint") },
+                { key: "batchShare", value: percent(data.batchShare), hint: t("batchHint") },
+              ].map((figure) => (
+                <div key={figure.key} className="flex min-w-0 flex-col gap-0.5" data-testid={`ai-efficiency-${figure.key}`}>
+                  <dt className="text-xs text-ink-muted">{t(`figures.${figure.key}`)}</dt>
+                  <dd className="text-lg font-semibold text-ink tabular-nums">{figure.value}</dd>
+                  <dd className="text-xs text-ink-soft">{figure.hint}</dd>
+                </div>
+              ))}
+            </dl>
+            <AdminChart data={efficiencyChart(data)} title={t("chartTitle")} />
+          </div>
+        )}
+      </Show>
+    </AdminCard>
   );
 }
 
@@ -330,7 +392,7 @@ async function TrashRetention({ readOnly }: { readOnly: boolean }) {
  * savings of the chat's automatic choice. Read fresh here; the app reads the
  * settings with a 30-second cache.
  */
-async function Models({ readOnly }: { readOnly: boolean }) {
+async function Models({ readOnly, canCompare }: { readOnly: boolean; canCompare: boolean }) {
   const [loaded, t, changed] = await Promise.all([
     safe("grady models", () => loadModelsOverview()),
     getTranslations("admin.ai.models"),
@@ -341,7 +403,7 @@ async function Models({ readOnly }: { readOnly: boolean }) {
   return (
     <AdminCard title={t("title")} description={t("description")} id="modely">
       <Show loaded={loaded}>
-        {({ settings, usage, economyByBudget, warnShare }) => {
+        {({ settings, usage, economyByBudget, warnShare, recommendations, signals }) => {
           const routing = usage.routing;
           return (
             <div className="flex flex-col gap-4">
@@ -389,6 +451,9 @@ async function Models({ readOnly }: { readOnly: boolean }) {
                     estimates: row.estimates,
                   };
                 })}
+                recommendations={recommendations}
+                signalsLoaded={signals !== null}
+                compare={canCompare ? compareCatalog(usage, settings) : null}
               />
             </div>
           );

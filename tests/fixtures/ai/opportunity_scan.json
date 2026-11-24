@@ -1,0 +1,25 @@
+{
+  "samples": [
+    {
+      "id": "meeting-no-task",
+      "label": "Schůzka a milník bez úkolů",
+      "lang": "cs",
+      "context": "<user>Language: cs. Today: 2026-11-24.\nLocal time 11:00, a working day: a good time to call and meet people until 17:30.</user>\n<changes>\n- Calendar event added: \"Schůzka s Pekárnou Zrno\" at 2026-11-26T09:00:00.000Z\n- Deal \"Pekárna Zrno – catering\" moved to stage \"Schůzka\" (open, 35000 CZK)\n- Milestone created (id 7d3f1c2a-0000-4000-8000-000000000001): \"Spustit e-shop\" (deadline 2027-01-31)\n</changes>\n<open_tasks>\n- id 1b2c3d4e-0000-4000-8000-000000000011: \"Poslat nabídku Pekárně Zrno\" (milestone \"Prvních 10 klientů\")\n</open_tasks>\n<recent_suggestions>\nnone\n</recent_suggestions>",
+      "message": "Look at the changes and answer with the JSON object."
+    },
+    {
+      "id": "task-done",
+      "label": "Úkol hotový podle obchodu",
+      "lang": "cs",
+      "context": "<user>Language: cs. Today: 2026-11-24.\nLocal time 18:30, after working hours: prepare things, reach people tomorrow from 8:00.</user>\n<changes>\n- Deal \"Kavárna U Mostu – logo\" moved to stage \"Nabídka odeslána\" (open, 18000 CZK)\n</changes>\n<open_tasks>\n- id 2c3d4e5f-0000-4000-8000-000000000021: \"Poslat nabídku Kavárně U Mostu\" (milestone \"Prvních 10 klientů\")\n- id 2c3d4e5f-0000-4000-8000-000000000022: \"Nafotit portfolio\" (milestone \"Web a katalog\")\n</open_tasks>\n<recent_suggestions>\n- \"Kavárna U Mostu čeká na nabídku od pátku.\"\n</recent_suggestions>",
+      "message": "Look at the changes and answer with the JSON object."
+    },
+    {
+      "id": "nothing-en",
+      "label": "Nic k řešení (EN)",
+      "lang": "en",
+      "context": "<user>Language: en. Today: 2026-11-24.\nLocal time 10:00, a working day: a good time to call and meet people until 17:30.</user>\n<changes>\n- Task done: \"Order business cards\"\n</changes>\n<open_tasks>\n- id 3d4e5f6a-0000-4000-8000-000000000031: \"Write the shop's About page\" (milestone \"Launch the online shop\")\n</open_tasks>\n<recent_suggestions>\nnone\n</recent_suggestions>",
+      "message": "Look at the changes and answer with the JSON object."
+    }
+  ]
+}

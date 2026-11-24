@@ -28,6 +28,10 @@ import { formatCalendarDate, formatNumber, formatUsd } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ADMIN_FORMAT_SETTINGS } from "../format-metric";
 import { saveGradyModels, type ModelsActionResult } from "../server/grady-models-actions";
+import type { CompareCatalog } from "../server/ai-compare-data";
+import { ModelCompareDialog } from "./model-compare-dialog";
+import { applyRecommendations, type ModelRecommendation } from "@/features/grady/savings";
+import { isCompareFeatureKey } from "@/features/grady/compare/features";
 
 const usd = (value: number) => formatUsd(value, ADMIN_FORMAT_SETTINGS);
 const count = (value: number) => formatNumber(value, {}, ADMIN_FORMAT_SETTINGS);
@@ -63,12 +67,21 @@ export function GradyModelsForm({
   fromDefaults,
   rows,
   readOnly = false,
+  recommendations = [],
+  signalsLoaded = true,
+  compare = null,
 }: {
   saved: FormValues;
   /** Nothing in the database yet: the values shown are the defaults. */
   fromDefaults: boolean;
   rows: ModelRow[];
   readOnly?: boolean;
+  /** "Where to save" (step 28.9). */
+  recommendations?: ModelRecommendation[];
+  /** The quality signals could be read (the 28.9 migration ran). */
+  signalsLoaded?: boolean;
+  /** The samples for "Compare models"; null for whoever may not run a comparison. */
+  compare?: CompareCatalog | null;
 }) {
   const t = useTranslations("admin.ai.models");
   const router = useRouter();
@@ -77,6 +90,7 @@ export function GradyModelsForm({
   const [notice, setNotice] = useState<"saved" | "noChanges" | null>(null);
   const [problem, setProblem] = useState<"invalid" | "forbidden" | "failed" | null>(null);
   const [pending, startTransition] = useTransition();
+  const [comparing, setComparing] = useState<GradyFeature | null>(null);
 
   const modelName = (key: string) => aiModelByKey(key)?.name ?? key;
   const choiceLabel = (choice: FeatureChoice) => (choice === AUTO ? t("auto") : modelName(choice));
@@ -125,6 +139,12 @@ export function GradyModelsForm({
   };
   const setFeature = (feature: SettableFeature, choice: FeatureChoice) =>
     update({ ...values, features: { ...values.features, [feature]: choice } });
+
+  /** A recommendation or a compared model, one click: into the form, then the usual confirmation. */
+  const applyChoices = (items: Pick<ModelRecommendation, "feature" | "to">[]) => {
+    update(applyRecommendations(values, items));
+    setConfirming(true);
+  };
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -226,6 +246,15 @@ export function GradyModelsForm({
         </div>
       </div>
 
+      <SavingsCard
+        recommendations={recommendations}
+        loaded={signalsLoaded}
+        readOnly={readOnly}
+        featureName={featureName}
+        choiceLabel={choiceLabel}
+        onUse={applyChoices}
+      />
+
       {/* The table scrolls on its own on a phone; the page never does. */}
       <div className="-mx-1 overflow-x-auto px-1">
         <table className="w-full min-w-[56rem] text-sm" data-testid="models-table">
@@ -307,6 +336,16 @@ export function GradyModelsForm({
                             {t("minimum", { model: modelName(spec.minimum) })}
                           </span>
                         )}
+                        {compare && isCompareFeatureKey(row.feature) && compare.features[row.feature] && (
+                          <button
+                            type="button"
+                            className="min-h-11 self-start text-left text-xs text-violet underline-offset-2 hover:underline focus-visible:ring-3 focus-visible:ring-violet/40 focus-visible:outline-none mouse:min-h-0"
+                            onClick={() => setComparing(row.feature)}
+                            data-testid={`models-compare-${row.feature}`}
+                          >
+                            {t("compareButton")}
+                          </button>
+                        )}
                       </div>
                     ) : (
                       <span className="text-ink">
@@ -383,7 +422,126 @@ export function GradyModelsForm({
           </div>
         </div>
       </ResponsiveDialog>
+
+      {compare && comparing && isCompareFeatureKey(comparing) && compare.features[comparing] && (
+        <ModelCompareDialog
+          open
+          onOpenChange={(open) => !open && setComparing(null)}
+          feature={comparing}
+          featureName={featureName(comparing)}
+          current={values.features[comparing as SettableFeature]}
+          catalog={compare.features[comparing]!}
+          judge={compare.judge}
+          readOnly={readOnly}
+          onUse={(model) => {
+            setComparing(null);
+            applyChoices([{ feature: comparing as SettableFeature, to: model }]);
+          }}
+        />
+      )}
     </form>
+  );
+}
+
+/**
+ * "Where to save" (step 28.9): per job a cheaper model where the answers
+ * hold up, a better one where people ask again or answers fail, the chat's
+ * automatic choice where it is fixed on a bigger model; one click each.
+ */
+function SavingsCard({
+  recommendations,
+  loaded,
+  readOnly,
+  featureName,
+  choiceLabel,
+  onUse,
+}: {
+  recommendations: ModelRecommendation[];
+  loaded: boolean;
+  readOnly: boolean;
+  featureName: (feature: GradyFeature) => string;
+  choiceLabel: (choice: FeatureChoice) => string;
+  onUse: (items: Pick<ModelRecommendation, "feature" | "to">[]) => void;
+}) {
+  const t = useTranslations("admin.ai.models.savings");
+  const percent = (value: number) =>
+    formatNumber(value, { style: "percent", decimals: 0 }, ADMIN_FORMAT_SETTINGS);
+  return (
+    <section
+      className="flex flex-col gap-3 rounded-xl border border-line p-3"
+      aria-labelledby="models-savings-title"
+      id="kde-usetrit"
+      data-testid="models-savings"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="flex flex-col gap-0.5">
+          <h3 id="models-savings-title" className="text-sm font-semibold text-ink">
+            {t("title")}
+          </h3>
+          <p className="text-xs text-ink-soft">{t("description")}</p>
+        </div>
+        {!readOnly && recommendations.length > 1 && (
+          <Button type="button" variant="outline" onClick={() => onUse(recommendations)}>
+            {t("useAll")}
+          </Button>
+        )}
+      </div>
+      {!loaded ? (
+        <p className="text-sm text-ink-muted">{t("notLoaded")}</p>
+      ) : recommendations.length === 0 ? (
+        <p className="text-sm text-ink-muted">{t("none")}</p>
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {recommendations.map((item) => (
+            <li
+              key={item.feature}
+              className="flex flex-col gap-2 rounded-lg bg-canvas/50 p-2.5 sm:flex-row sm:items-center sm:justify-between"
+              data-testid={`models-savings-${item.feature}`}
+            >
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <span className="text-sm text-ink">
+                  <span className="font-medium">{featureName(item.feature)}</span>
+                  {": "}
+                  {choiceLabel(item.from)} → {choiceLabel(item.to)}
+                </span>
+                <span
+                  className={cn(
+                    "text-xs",
+                    item.monthlyUsd !== null && item.monthlyUsd < 0 ? "text-orange" : "text-green",
+                  )}
+                >
+                  {item.monthlyUsd === null
+                    ? t("amountUnknown")
+                    : item.monthlyUsd >= 0
+                      ? t("saves", { cost: usd(item.monthlyUsd) })
+                      : t("costsMore", { cost: usd(-item.monthlyUsd) })}
+                </span>
+                <span className="text-xs text-ink-soft">
+                  {item.reasons
+                    .map((reason) =>
+                      t(`reasons.${reason.key}`, {
+                        percent: reason.share === null ? "" : percent(reason.share),
+                      }),
+                    )
+                    .join(" ")}
+                </span>
+              </div>
+              {!readOnly && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="shrink-0"
+                  onClick={() => onUse([item])}
+                  data-testid={`models-savings-use-${item.feature}`}
+                >
+                  {t("use")}
+                </Button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 

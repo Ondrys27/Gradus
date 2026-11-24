@@ -10,6 +10,15 @@ import type { Database, Json } from "@/types/database";
 import { parseModelJson } from "../model-json";
 import { APP_PATHS, isAppHref, type SuggestionAction } from "../suggestions";
 import { describeTimeWindow } from "../time-window";
+import {
+  canBatch,
+  collectBatches,
+  customIdFor,
+  submitBatch,
+  usersInOpenBatches,
+  type BatchItem,
+  type BatchRequest,
+} from "./batch";
 import { streamModel, type ModelClient } from "./model";
 import { loadRuleInputs, syncRuleSuggestions } from "./suggestions";
 import { loadTimeWindow } from "./time-window";
@@ -316,7 +325,8 @@ async function completeTask(admin: Client, userId: string, task: OpenTask, reaso
 }
 
 export type WatchOutcome = {
-  status: "quiet" | "checked" | "skipped" | "failed";
+  /** queued = the look at the changes went into a batch (step 28.9), its answer comes later. */
+  status: "quiet" | "checked" | "skipped" | "failed" | "queued";
   insights: number;
   completed: number;
 };
@@ -342,6 +352,8 @@ export async function watchUser(args: {
   userId: string;
   since: string;
   now: Date;
+  /** Given: the model's look goes into a batch instead of a direct call (step 28.9). */
+  queue?: (request: BatchRequest) => void;
 }): Promise<WatchOutcome> {
   const { admin, userId, now } = args;
   const { settings, locale, country } = await loadUserSettings(admin, userId);
@@ -367,23 +379,41 @@ export async function watchUser(args: {
     loadTimeWindow(admin, { timeZone: settings.timeZone, country, now }),
   ]);
 
+  const context = watchContext({
+    changes,
+    openTasks,
+    recent: list(recent).map((row) => row.text),
+    locale,
+    today: todayIsoDate(settings, now),
+    time: describeTimeWindow(window, now, settings),
+  });
+  if (args.queue) {
+    args.queue({
+      customId: customIdFor("watch", userId),
+      userId,
+      feature: "opportunity_scan",
+      instructions: WATCH_INSTRUCTIONS,
+      context,
+      messages: [{ role: "user", content: WATCH_ASK }],
+      meta: {
+        at: now.toISOString(),
+        milestones: changes.milestonesAdded.map((m) => ({ id: m.id, title: m.title })),
+      },
+    });
+    return { status: "queued", insights: 0, completed: 0 };
+  }
   return applyWatch({
     client: args.client,
     admin,
     userId,
     settings,
-    context: watchContext({
-      changes,
-      openTasks,
-      recent: list(recent).map((row) => row.text),
-      locale,
-      today: todayIsoDate(settings, now),
-      time: describeTimeWindow(window, now, settings),
-    }),
+    context,
     openTasks,
     milestones: changes.milestonesAdded,
   });
 }
+
+const WATCH_ASK = "Look at the changes and answer with the JSON object.";
 
 /**
  * Tasks a suggestion proposes, kept only for a milestone the watch was shown,
@@ -428,12 +458,24 @@ export async function applyWatch(args: {
     feature: "opportunity_scan",
     instructions: WATCH_INSTRUCTIONS,
     context: args.context,
-    messages: [{ role: "user", content: "Look at the changes and answer with the JSON object." }],
+    messages: [{ role: "user", content: WATCH_ASK }],
     log: (entry) => logAiUsage(admin, { ...entry, userId, conversationId: null }),
   });
   if (!result.ok) return { status: "failed", insights: 0, completed: 0 };
   const answer = parseWatchAnswer(result.text);
   if (!answer) return { status: "failed", insights: 0, completed: 0 };
+  return applyWatchAnswer({ ...args, answer });
+}
+
+/** What the model's look decided, applied: tasks it proved done, suggestions to show. */
+export async function applyWatchAnswer(args: {
+  admin: Client;
+  userId: string;
+  answer: WatchAnswer;
+  openTasks: OpenTask[];
+  milestones?: readonly { id: string; title: string }[];
+}): Promise<WatchOutcome> {
+  const { admin, userId, answer } = args;
 
   const byId = new Map(args.openTasks.map((task) => [task.id, task]));
   let completed = 0;
@@ -482,6 +524,10 @@ export async function runWatch(args: {
   skipUsers?: ReadonlySet<string>;
 }) {
   const now = args.now ?? new Date();
+  // The answers of earlier batches first: they move the users' windows on before the candidates are read.
+  const collected = canBatch(args.client)
+    ? await collectWatchBatches(args.client, args.admin)
+    : null;
   const { data: candidates, error } = await args.admin.rpc("jarvis_watch_candidates", {
     _active_since: subDays(now, ACTIVE_DAYS).toISOString(),
     _limit: CANDIDATE_LIMIT,
@@ -494,10 +540,21 @@ export async function runWatch(args: {
     checked: 0,
     skipped: 0,
     failed: 0,
+    queued: 0,
     insights: 0,
     completed: 0,
   };
-  const queue = (candidates ?? []).filter((row) => !args.skipUsers?.has(row.user_id));
+  // Step 28.9: the looks go into one batch (half price, answered later) when the client can.
+  const batching = canBatch(args.client);
+  if (collected) {
+    summary.insights += collected.insights;
+    summary.completed += collected.completed;
+  }
+  const waiting = batching ? await usersInOpenBatches(args.admin, "watch") : new Set<string>();
+  const requests: BatchRequest[] = [];
+  const queue = (candidates ?? []).filter(
+    (row) => !args.skipUsers?.has(row.user_id) && !waiting.has(row.user_id),
+  );
   const worker = async () => {
     for (;;) {
       if (Date.now() > args.deadline) return;
@@ -512,6 +569,7 @@ export async function runWatch(args: {
           userId: next.user_id,
           since,
           now,
+          ...(batching ? { queue: (request: BatchRequest) => requests.push(request) } : {}),
         });
       } catch (failure) {
         console.error("grady watch failed for a user", failure);
@@ -531,5 +589,93 @@ export async function runWatch(args: {
     }
   };
   await Promise.all(Array.from({ length: CONCURRENCY }, worker));
+
+  if (batching && requests.length) {
+    const sent = await submitBatch({
+      client: args.client!,
+      admin: args.admin,
+      kind: "watch",
+      requests,
+    });
+    summary.queued = sent.queued.length;
+    summary.skipped += sent.refused.length;
+    // What could not go in a batch is looked at directly, as before 28.9.
+    for (const request of sent.direct) {
+      if (Date.now() > args.deadline) break;
+      const outcome = await watchDirect(args.client!, args.admin, request).catch((failure) => {
+        console.error("grady watch failed for a user", failure);
+        return { status: "failed" as const, insights: 0, completed: 0 };
+      });
+      summary[outcome.status] += 1;
+      summary.insights += outcome.insights;
+      summary.completed += outcome.completed;
+      if (outcome.status === "checked") await markWatched(args.admin, request.userId, now);
+    }
+    // Small batches often end within minutes: collect in this run when they do.
+    if (sent.batchId) {
+      const collected = await collectWatchBatches(args.client!, args.admin, args.deadline);
+      summary.insights += collected.insights;
+      summary.completed += collected.completed;
+    }
+  }
   return summary;
+}
+
+async function markWatched(admin: Client, userId: string, at: Date | string) {
+  const { error } = await admin
+    .from("jarvis_watch_state")
+    .upsert({ user_id: userId, last_run_at: typeof at === "string" ? at : at.toISOString() });
+  if (error) console.error("grady watch state failed", error);
+}
+
+const watchMetaSchema = z.object({
+  at: z.string(),
+  milestones: z.array(z.object({ id: z.string(), title: z.string() })).default([]),
+});
+
+/** A queued look answered directly (the batch could not be sent). */
+async function watchDirect(client: ModelClient, admin: Client, request: BatchRequest) {
+  const meta = watchMetaSchema.parse(request.meta);
+  const { settings } = await loadUserSettings(admin, request.userId);
+  return applyWatch({
+    client,
+    admin,
+    userId: request.userId,
+    settings,
+    context: request.context,
+    openTasks: await loadOpenTasks(admin, request.userId),
+    milestones: meta.milestones,
+  });
+}
+
+/**
+ * The answers of the watch's ended batches, applied like a direct look: the
+ * open tasks read again now (a task the user finished meanwhile is not
+ * completed twice), the window of the user moved on only for an answer that
+ * could be read. Also run by the batches cron (`?task=batches`).
+ */
+export async function collectWatchBatches(
+  client: ModelClient,
+  admin: Client,
+  waitUntil?: number,
+): Promise<{ insights: number; completed: number; answered: number; pending: number }> {
+  const totals = { insights: 0, completed: 0 };
+  const handle = async (item: BatchItem, answer: { ok: boolean; text?: string }) => {
+    if (!answer.ok || !answer.text) return;
+    const parsed = parseWatchAnswer(answer.text);
+    const meta = watchMetaSchema.safeParse(item.meta);
+    if (!parsed || !meta.success) return;
+    const outcome = await applyWatchAnswer({
+      admin,
+      userId: item.user_id,
+      answer: parsed,
+      openTasks: await loadOpenTasks(admin, item.user_id),
+      milestones: meta.data.milestones,
+    });
+    totals.insights += outcome.insights;
+    totals.completed += outcome.completed;
+    await markWatched(admin, item.user_id, meta.data.at);
+  };
+  const summary = await collectBatches({ client, admin, kind: "watch", handle, waitUntil });
+  return { ...totals, answered: summary.answered, pending: summary.pending };
 }

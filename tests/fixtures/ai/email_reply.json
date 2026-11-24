@@ -1,0 +1,25 @@
+{
+  "samples": [
+    {
+      "id": "price-question",
+      "label": "Cena je vysoká",
+      "lang": "cs",
+      "context": "<context>\nContact: Jana Lípová\nDeal: \"Web Ateliér Lípa\" (stage: Nabídka odeslána)\nValue: 48000 CZK\nInterface language: cs\n</context>\n<received_email>\nDobrý den,\nděkuji za nabídku. Cena 48 000 Kč je pro nás teď trochu vysoká. Dalo by se to rozdělit na dvě části, nebo začít jen s menší verzí webu?\nS pozdravem\nJana Lípová\n</received_email>",
+      "message": "Draft my reply."
+    },
+    {
+      "id": "meeting-request",
+      "label": "Žádost o schůzku s odkazem",
+      "lang": "cs",
+      "context": "<context>\nContact: Petr Dvořák\nNo deal is linked to this contact yet.\nInterface language: cs\nBooking link of the user (\"Úvodní hovor\", 30 min): https://gradus.example/s/marek/uvod\nWhen the reply proposes or arranges a meeting or a call, offer this link so the contact picks a free time themselves; otherwise leave it out.\n</context>\n<received_email>\nDobrý den, našel jsem vás přes doporučení. Potřebovali bychom nový web pro truhlářství. Kdy byste měl čas se potkat?\nPetr Dvořák\n</received_email>",
+      "message": "Draft my reply."
+    },
+    {
+      "id": "complaint-en",
+      "label": "Stížnost (EN)",
+      "lang": "en",
+      "context": "<context>\nContact: Sarah Mills\nDeal: \"Season contract – Rose Court\" (stage: Won)\nValue: 5200 GBP\nInterface language: en\n</context>\n<received_email>\nHi,\nyour team was supposed to come on Monday and nobody showed up. The front lawn still looks awful and we have guests on Saturday. What happened?\nSarah\n</received_email>",
+      "message": "Draft my reply."
+    }
+  ]
+}
