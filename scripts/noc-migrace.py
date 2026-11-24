@@ -12,6 +12,10 @@
 Kontroluje se SQL, které se při migraci opravdu spustí: těla funkcí
 (create function … as $$ … $$) se přeskočí, protože se jen definují; bloky
 do $$ … $$ se spouští hned, tak se kontrolují celé i s řetězci.
+
+Výměna funkce nebo pohledu projde: drop function / drop view bez cascade,
+když tentýž soubor stejný objekt potom znovu vytvoří (jinak Postgres změnu
+parametrů nebo výsledku nedovolí). Data se tím nemění.
 """
 
 import json
@@ -83,11 +87,65 @@ def executed_sql(text: str) -> str:
     return "".join(out)
 
 
+DROP_REPLACEABLE = re.compile(
+    r"\bdrop\s+(function|view|materialized\s+view)\s+(?:if\s+exists\s+)?([^;]*);"
+)
+IDENT = re.compile(r"\s*((?:[a-z_][a-z0-9_]*\.)?[a-z_][a-z0-9_]*)")
+
+
+def dropped_names(objects: str):
+    """Names in the object list of a drop statement: f(a, b), public.g(int)."""
+    names, depth, part = [], 0, ""
+    for ch in objects + ",":
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+        if ch == "," and depth == 0:
+            m = IDENT.match(part)
+            if m:
+                names.append(m.group(1))
+            part = ""
+        else:
+            part += ch
+    return names
+
+
+def strip_replacements(sql: str) -> str:
+    """Removes drop function / view statements whose objects the same
+    migration creates again further down; everything else stays checked."""
+
+    def bare(name):
+        return name.split(".", 1)[1] if name.startswith("public.") else name
+
+    def recreated(kind, name, after):
+        word = "function" if kind == "function" else r"(?:materialized\s+)?view"
+        pattern = (
+            r"\bcreate\s+(?:or\s+replace\s+)?" + word + r"\s+(?:public\.)?"
+            + re.escape(bare(name)) + r"\b"
+        )
+        return re.search(pattern, sql[after:]) is not None
+
+    out, last = [], 0
+    for m in DROP_REPLACEABLE.finditer(sql):
+        kind = "function" if m.group(1) == "function" else "view"
+        objects = m.group(2)
+        if re.search(r"\bcascade\b", objects):
+            continue
+        names = dropped_names(objects)
+        if names and all(recreated(kind, n, m.end()) for n in names):
+            out.append(sql[last:m.start()])
+            out.append(" ; ")
+            last = m.end()
+    out.append(sql[last:])
+    return "".join(out)
+
+
 def check(paths):
     problems = []
     for path in paths:
         with open(path, encoding="utf-8") as f:
-            sql = executed_sql(f.read()).lower()
+            sql = strip_replacements(executed_sql(f.read()).lower())
         for pattern, reason in FORBIDDEN:
             m = re.search(pattern, sql, re.S)
             if m:
