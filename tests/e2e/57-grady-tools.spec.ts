@@ -95,7 +95,7 @@ test("57 · Grady works in the app: an instant task with Undo, a delete only aft
   await expect(card).toHaveAttribute("data-status", "undone");
   expect(await added()).toHaveLength(0);
 
-  // Deleting a contact waits for Confirm; Cancel leaves it, Confirm deletes it.
+  // Deleting a contact waits for Confirm; Cancel leaves it, Confirm moves it to the trash.
   await scriptTools(page, [{ name: "delete_contact", input: { contactId: toKeep.id } }]);
   await ask(page, "Smaž Pekárnu");
   const keep = panel.getByTestId("grady-action").last();
@@ -112,7 +112,9 @@ test("57 · Grady works in the app: an instant task with Undo, a delete only aft
   expect((await db.from("contacts").select("id").eq("id", toDelete.id)).data).toHaveLength(1);
   await remove.getByRole("button", { name: t("grady.actions.confirm") }).click();
   await expect(remove).toHaveAttribute("data-status", "done");
-  expect((await db.from("contacts").select("id").eq("id", toDelete.id)).data).toHaveLength(0);
+  // Since 28.8 a delete by Grady goes to the trash: the row waits with deleted_at.
+  const trashed = await db.from("contacts").select("deleted_at").eq("id", toDelete.id).single();
+  expect(trashed.data?.deleted_at).not.toBeNull();
 
   // The record of the actions is the account's own, written by the server.
   const { data: actions } = await db
