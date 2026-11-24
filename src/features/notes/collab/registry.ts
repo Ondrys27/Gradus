@@ -224,6 +224,16 @@ export function pullSessions(userId: string) {
   for (const entry of registries.get(userId)?.values() ?? []) void entry.session.pull();
 }
 
+/** Ends a note's session without saving: the account lost its access to the note. */
+export function revokeSession(userId: string, noteId: string) {
+  const registry = registries.get(userId);
+  const entry = registry?.get(noteId);
+  if (!entry) return;
+  registry!.delete(noteId);
+  if (entry.timer) clearTimeout(entry.timer);
+  entry.session.revoke();
+}
+
 /** Closes a note's session at once (the note goes to the trash or is converted). */
 export async function closeSession(userId: string, noteId: string) {
   const registry = registries.get(userId);

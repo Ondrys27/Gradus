@@ -41,6 +41,8 @@ export function describePlans(
   /** What the user has, from describeSubscription(); left out when unknown. */
   own: string | null = null,
   local: { currency: string; rates: RateTable; now?: Date } | null = null,
+  /** WORKER_BILLING_VISIBLE (28.1): without it Grady says nothing about paying for workers. */
+  workerPrices = false,
 ): string {
   const lines = sortedPlans(plans).map((plan) => {
     const derived =
@@ -50,8 +52,8 @@ export function describePlans(
     const prices =
       `${amounts(plan.monthly)} a month, ` +
       `${amounts(plan.yearly)} a year` +
-      (plan.included_workers > 0 ? `, ${plan.included_workers} workers in the price` : "") +
-      (plan.per_worker
+      (workerPrices && plan.included_workers > 0 ? `, ${plan.included_workers} workers in the price` : "") +
+      (workerPrices && plan.per_worker
         ? `, plus ${amounts(plan.per_worker)} a month per ${plan.included_workers > 0 ? "further " : ""}worker`
         : "") +
       (derived && local
@@ -69,7 +71,9 @@ export function describePlans(
   return [
     "<plans>",
     `The plans of ${APP_NAME} as published now, prices without VAT. For plans and prices use only these; the user compares, changes or cancels their plan in Settings → Subscription.`,
-    "Workers: anyone with a valid plan of their own joins a company for free; the owner pays only for workers without one (the workers in the price first, then the price per worker). A worker's AI use in a company counts to that company's limits.",
+    workerPrices
+      ? "Workers: anyone with a valid plan of their own joins a company for free; the owner pays only for workers without one (the workers in the price first, then the price per worker). A worker's AI use in a company counts to that company's limits."
+      : "Workers: there is no charge for the people of a company now; never name a price for a worker. A worker's AI use in a company counts to that company's limits.",
     ...lines,
     ...(own ? [own] : []),
     "</plans>",

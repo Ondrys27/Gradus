@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { planUndo, type CurrentRow, type UndoRecord } from "./records";
+import type { Db } from "@/lib/ops";
+import { planUndo, restampRecords, type CurrentRow, type UndoRecord } from "./records";
 
 vi.mock("server-only", () => ({}));
 
@@ -159,5 +160,51 @@ describe("undo of a deletion (28.7)", () => {
     };
     const plan = planUndo([record], rows({ "crm_tasks:t": { id: "t" } }));
     expect(plan).toEqual({ ok: false, reason: "changed", record });
+  });
+});
+
+describe("an action of several steps", () => {
+  // A later step touched the deal an earlier step changed (a task stamps its last activity).
+  function dbWith(updatedAt: Record<string, string>): Db {
+    return {
+      from: () => {
+        const filters: Record<string, string | number> = {};
+        const query = {
+          select: () => query,
+          eq: (column: string, value: string | number) => {
+            filters[column] = value;
+            return query;
+          },
+          maybeSingle: async () => ({
+            data: { id: filters.id, updated_at: updatedAt[String(filters.id)] },
+            error: null,
+          }),
+        };
+        return query;
+      },
+    } as unknown as Db;
+  }
+
+  it("is stamped as it ended, so its own later steps do not block Undo", async () => {
+    const records: UndoRecord[] = [
+      {
+        table: "deals",
+        match: { id: "d" },
+        op: "update",
+        before: { expected_close_date: null },
+        after: { expected_close_date: "2026-12-01" },
+        stamp: T1,
+      },
+      { table: "crm_tasks", match: { id: "t" }, op: "insert", stamp: T1 },
+      // Compared by its fields (no stamp): left as it is.
+      { table: "deals", match: { id: "d" }, op: "update", after: { stage_id: "s2" } },
+    ];
+    const stamped = await restampRecords(dbWith({ d: T2, t: T1 }), records);
+    expect(stamped.map((record) => record.stamp)).toEqual([T2, T1, undefined]);
+    const plan = planUndo(
+      stamped,
+      rows({ "deals:d": { updated_at: T2, stage_id: "s2" }, "crm_tasks:t": { updated_at: T1 } }),
+    );
+    expect(plan.ok).toBe(true);
   });
 });

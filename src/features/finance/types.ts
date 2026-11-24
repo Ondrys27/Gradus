@@ -1,6 +1,7 @@
 import {
   BriefcaseIcon,
   CircleEllipsisIcon,
+  CoinsIcon,
   HomeIcon,
   LandmarkIcon,
   LaptopIcon,
@@ -58,7 +59,8 @@ export const FREQUENCIES: readonly Frequency[] = ["weekly", "monthly", "quarterl
 /** Category keys are stored as text and named in `finance.categories`. */
 export const CATEGORIES: Record<TransactionType, readonly string[]> = {
   income: ["sales", "services", "otherIncome"],
-  expense: ["rent", "software", "marketing", "travel", "taxes", "salaries", "otherExpense"],
+  // "rewards": payouts of worker rewards (reward_payout_create, 28.2) book it.
+  expense: ["rent", "software", "marketing", "travel", "taxes", "salaries", "rewards", "otherExpense"],
 };
 export const ALL_CATEGORIES = [...CATEGORIES.income, ...CATEGORIES.expense];
 
@@ -72,6 +74,7 @@ export const CATEGORY_ICONS: Record<string, LucideIcon> = {
   travel: PlaneIcon,
   taxes: LandmarkIcon,
   salaries: UsersIcon,
+  rewards: CoinsIcon,
   otherExpense: CircleEllipsisIcon,
 };
 

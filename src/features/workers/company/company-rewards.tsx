@@ -10,6 +10,8 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { FormAlert } from "@/components/ui/form-alert";
 import { GlowCard } from "@/components/ui/glow-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatusPill } from "@/components/ui/status-pill";
+import { Switch } from "@/components/ui/switch";
 import { useWorkspace } from "@/features/account/workspace-queries";
 import { formatPrice } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
@@ -26,7 +28,9 @@ import type { CompanyPerson } from "./tree";
  * waits for approval and for the payout, and what is planned, per person;
  * approve and pay out several people in one go. Only the people of the
  * company now; a manager with "company: rewards" sees the people they see in
- * Company, never themself. A row opens the person's rewards.
+ * Company, never themself. "Show former too" adds the people who worked here
+ * and left (their history and what is still owed), marked, without selection.
+ * A row opens the person's rewards.
  */
 export function CompanyRewards({
   people,
@@ -47,6 +51,7 @@ export function CompanyRewards({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [requests, setRequests] = useState<PayoutRequest[]>([]);
   const [exportFailed, setExportFailed] = useState(false);
+  const [showFormer, setShowFormer] = useState(false);
   const canChange = !workspace.readOnly;
 
   const roster = useMemo(
@@ -55,6 +60,24 @@ export function CompanyRewards({
         (person) => person.status === "active" && person.id !== workspace.workerId,
       ),
     [people, workspace.workerId],
+  );
+  // Worked here (an account joined) and left; never an invite nobody accepted.
+  const former = useMemo(
+    () =>
+      showFormer
+        ? (people ?? []).filter(
+            (person) =>
+              person.status === "inactive" && person.userId !== null && person.id !== workspace.workerId,
+          )
+        : [],
+    [people, showFormer, workspace.workerId],
+  );
+  const rows = useMemo(
+    () => [
+      ...roster.map((person) => ({ person, former: false })),
+      ...former.map((person) => ({ person, former: true })),
+    ],
+    [roster, former],
   );
   const names = useMemo(() => new Map((people ?? []).map((person) => [person.id, person.name])), [people]);
   const nameOf = (id: string) => names.get(id) ?? t("former");
@@ -131,6 +154,10 @@ export function CompanyRewards({
             </div>
           )}
         </div>
+        <label className="flex min-h-11 cursor-pointer items-center gap-3 self-start text-sm text-ink-soft">
+          <Switch checked={showFormer} onCheckedChange={setShowFormer} data-testid="company-rewards-former" />
+          {t("showFormer")}
+        </label>
         {review.isError && <FormAlert>{t("reviewFailed")}</FormAlert>}
 
         {!people || !totals.data ? (
@@ -139,7 +166,7 @@ export function CompanyRewards({
               <Skeleton key={key} className="h-14 w-full rounded-xl" />
             ))}
           </div>
-        ) : roster.length === 0 ? (
+        ) : rows.length === 0 ? (
           <EmptyState icon={<CoinsIcon />} title={t("empty")} />
         ) : (
           <div className="-mx-2 overflow-x-auto">
@@ -155,7 +182,7 @@ export function CompanyRewards({
                 </tr>
               </thead>
               <tbody className="divide-y divide-line/50">
-                {roster.map((person) => {
+                {rows.map(({ person, former: isFormer }) => {
                   const own = byWorker.get(person.id) ?? [];
                   const cell = (pick: (item: RewardTotals) => number) =>
                     own.length === 0
@@ -167,7 +194,7 @@ export function CompanyRewards({
                   return (
                     <tr key={person.id} data-testid="company-rewards-row">
                       <td className="px-2 py-2">
-                        {canChange && (
+                        {canChange && !isFormer && (
                           <Checkbox
                             checked={selected.has(person.id)}
                             onCheckedChange={(on) => toggle(person.id, on === true)}
@@ -184,7 +211,13 @@ export function CompanyRewards({
                           <Avatar src={person.avatarUrl} name={person.name} className="size-8" />
                           <span className="flex flex-col">
                             <span className="font-medium text-ink">{person.name}</span>
-                            {person.jobTitle && <span className="text-xs text-ink-muted">{person.jobTitle}</span>}
+                            {isFormer ? (
+                              <StatusPill tone="neutral" className="self-start">
+                                {t("former")}
+                              </StatusPill>
+                            ) : (
+                              person.jobTitle && <span className="text-xs text-ink-muted">{person.jobTitle}</span>
+                            )}
                           </span>
                         </button>
                       </td>

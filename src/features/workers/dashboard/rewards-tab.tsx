@@ -60,7 +60,12 @@ function ManagedRewards({ worker }: { worker: DashboardWorker }) {
         )}
       </div>
       <RewardsTiles totals={totals.data} isError={totals.isError} currency={currency} />
-      <PlanCard workerId={worker.id} editable readOnly={workspace.readOnly} />
+      {/* Somebody who left keeps their history; their plan gets nothing new (28.1). */}
+      <PlanCard
+        workerId={worker.id}
+        editable
+        readOnly={workspace.readOnly || worker.status === "inactive"}
+      />
       <WorkTable worker={worker} canReview={canChange} />
       <PayoutsPanel workerId={worker.id} name={worker.name} canPay={canChange} />
       <details className="rounded-card border border-line bg-surface px-5 py-3">

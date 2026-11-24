@@ -20,7 +20,7 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { track } from "@/lib/analytics/client";
 import { availableWidgets, effectiveSettings, visibleItems, type WidgetAccess } from "./access";
-import { isWidgetKey, widgetMeta, type WidgetKey } from "./catalog";
+import { isWidgetKey, widgetMeta, type WidgetKey, type WidgetMeta } from "./catalog";
 import {
   addItem,
   MAX_ITEMS,
@@ -107,6 +107,15 @@ export function WidgetBoard({
   );
   const entries = useGridEntries(visible, effective);
   const available = useMemo(() => availableWidgets(access), [access]);
+  // Gallery previews draw with the defaults the account may use, one object per widget.
+  const previewSettings = useMemo(
+    () => new Map(available.map((meta) => [meta.key, effectiveSettings(meta, {}, access)])),
+    [available, access],
+  );
+  const previewSettingsFor = useCallback(
+    (meta: WidgetMeta) => previewSettings.get(meta.key) ?? {},
+    [previewSettings],
+  );
   const open = entries.find((entry) => entry.item.id === openId) ?? null;
 
   // The gallery suggests widgets of the sections the person has opened.
@@ -343,6 +352,7 @@ export function WidgetBoard({
           available={available}
           placed={placedKeys}
           recommended={recommended}
+          settingsFor={previewSettingsFor}
           onAdd={(meta, size, from) => add(meta.key, size, from)}
         />
       )}

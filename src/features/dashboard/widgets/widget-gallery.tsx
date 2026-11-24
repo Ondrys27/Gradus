@@ -33,15 +33,6 @@ function plain(text: string): string {
     .toLowerCase();
 }
 
-/** The settings a preview draws with: every setting at its default. */
-function defaultSettings(meta: WidgetMeta): Record<string, unknown> {
-  const settings: Record<string, unknown> = {};
-  for (const setting of meta.settings) {
-    if (setting.kind === "choice") settings[setting.key] = setting.default;
-    else if (setting.kind === "multi") settings[setting.key] = [...setting.default];
-  }
-  return settings;
-}
 
 /** Width of an element, live. */
 function useWidth<T extends HTMLElement>() {
@@ -75,6 +66,7 @@ export function WidgetGallery({
   available,
   placed,
   recommended,
+  settingsFor,
   onAdd,
 }: {
   open: boolean;
@@ -83,6 +75,12 @@ export function WidgetGallery({
   /** Keys of the widgets already on the board (a widget may be there twice). */
   placed: readonly string[];
   recommended: readonly WidgetMeta[];
+  /**
+   * The settings a preview draws with: every setting at its default, a choice
+   * the account may not make replaced by one it may (no amounts in the
+   * pipeline preview without "see amounts").
+   */
+  settingsFor: (meta: WidgetMeta) => Record<string, unknown>;
   onAdd: (meta: WidgetMeta, size: WidgetSize, from: Rect | null) => void;
 }) {
   const t = useTranslations("dashboard.board");
@@ -180,6 +178,7 @@ export function WidgetGallery({
                       key={meta.key}
                       meta={meta}
                       onBoard={placedSet.has(meta.key)}
+                      settings={settingsFor(meta)}
                       onAdd={(size, from) => onAdd(meta, size, from)}
                     />
                   ))}
@@ -196,6 +195,7 @@ export function WidgetGallery({
                     key={meta.key}
                     meta={meta}
                     onBoard={placedSet.has(meta.key)}
+                    settings={settingsFor(meta)}
                     onAdd={(size, from) => onAdd(meta, size, from)}
                   />
                 ))}
@@ -220,10 +220,12 @@ function GalleryGrid({ children }: { children: React.ReactNode }) {
 function GalleryItem({
   meta,
   onBoard,
+  settings,
   onAdd,
 }: {
   meta: WidgetMeta;
   onBoard: boolean;
+  settings: Record<string, unknown>;
   onAdd: (size: WidgetSize, from: Rect | null) => void;
 }) {
   const t = useTranslations("dashboard.board");
@@ -234,7 +236,6 @@ function GalleryItem({
   const { ref: areaRef, width: areaWidth } = useWidth<HTMLDivElement>();
   const previewRef = useRef<HTMLDivElement>(null);
   const name = tWidgets(`${meta.key}.name` as "today.name");
-  const settings = useMemo(() => defaultSettings(meta), [meta]);
   const { icon: Icon, tone } = WIDGET_APPEARANCE[meta.key as WidgetKey];
 
   const box = previewBox(size);

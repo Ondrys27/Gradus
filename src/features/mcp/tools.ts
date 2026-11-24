@@ -52,6 +52,10 @@ export function mcpDescription(tool: AnyTool): string {
     text += isOutward(tool.name)
       ? " Full access only. Irreversible outside Gradus: ask the user to confirm this exact step before calling it."
       : " Full access only. Ask the user to confirm before calling it; what it deletes goes to the trash (list_trash, restore_from_trash).";
+  } else if (tool.risk === "confirm") {
+    // Grady asks with a card (completing a milestone, sharing a note, approving
+    // rewards); a connected client has no card, so it must ask the user itself.
+    text += " Only when the user asks for it: ask the user to confirm this exact step before calling it.";
   }
   return text;
 }

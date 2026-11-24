@@ -13,7 +13,7 @@ import { useWorkspace } from "@/features/account/workspace-queries";
 import { track } from "@/lib/analytics/client";
 import { clientOps } from "@/lib/ops-client";
 import { createClient } from "@/lib/supabase/client";
-import { closeSession, flushSession, pullSessions } from "./collab/registry";
+import { closeSession, flushSession, pullSessions, revokeSession } from "./collab/registry";
 import { NoteNotWritableError, setNotePinned, trashNote, writeNote } from "./ops";
 import { previewFromText, type DocNode, type NoteDraft } from "./document";
 import type { MapDoc, NoteKind } from "./mindmap/map-doc";
@@ -305,6 +305,50 @@ export function useNote(id: string | null) {
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });
+}
+
+/**
+ * The account's role to an open note someone else owns, read again every
+ * 20 s and on focus. A share taken away (or a group, the company left) ends
+ * it within seconds: the live session goes without saving, leaves the
+ * channel and drops the browser's copy, and the note leaves the screen. A
+ * changed role (editor ↔ viewer) reaches the open editor the same way.
+ */
+export function useNoteRoleWatch(note: NoteDetail | null | undefined) {
+  const { user } = useSession();
+  const queryClient = useQueryClient();
+  const id = note?.id ?? "";
+  const watched = !!note && note.role !== "owner";
+  const access = useQuery({
+    queryKey: ["notes", user.id, "role", id] as const,
+    queryFn: async () => {
+      const { data, error } = await createClient().rpc("note_role", { _note: id });
+      if (error) throw error;
+      return data?.[0] ?? null;
+    },
+    enabled: watched,
+    refetchInterval: 20_000,
+    refetchOnWindowFocus: true,
+    staleTime: 0,
+    gcTime: 0,
+  });
+  const row = access.data;
+  const fetched = access.isSuccess && !access.isFetching;
+  useEffect(() => {
+    if (!watched || !fetched) return;
+    const key = noteKeys.detail(user.id, id);
+    if (!row?.role) {
+      revokeSession(user.id, id);
+      queryClient.setQueryData<NoteDetail | null>(key, null);
+      void queryClient.invalidateQueries({ queryKey: noteKeys.list(user.id) });
+      return;
+    }
+    const role = noteRoleOf(row.role);
+    const canReshare = row.can_reshare ?? false;
+    queryClient.setQueryData<NoteDetail | null>(key, (old) =>
+      old && (old.role !== role || old.can_reshare !== canReshare) ? { ...old, role, can_reshare: canReshare } : old,
+    );
+  }, [watched, fetched, row, id, user.id, queryClient]);
 }
 
 export function useNotesTrash(enabled: boolean) {

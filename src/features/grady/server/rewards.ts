@@ -26,12 +26,29 @@ export async function loadRewardsSituation(
     if (totals.error) throw totals.error;
     // Most accounts have no rewards at all: the names are read only when there are some.
     if (totals.data.length === 0) return null;
-    const people = await client.rpc("company_tree");
+    const [people, own] = await Promise.all([
+      client.rpc("company_tree"),
+      space === accountId
+        ? Promise.resolve({ data: null, error: null })
+        : client
+            .from("workers")
+            .select("id")
+            .eq("owner_id", space)
+            .eq("user_id", accountId)
+            .maybeSingle(),
+    ]);
     if (people.error) throw people.error;
+    if (own.error) throw own.error;
     const ownWorkerId =
-      space === accountId ? null : (people.data.find((person) => person.user_id === accountId)?.id ?? null);
+      space === accountId
+        ? null
+        : (own.data?.id ?? people.data.find((person) => person.user_id === accountId)?.id ?? null);
+    // reward_totals() sums whatever RLS lets the account read, in every company
+    // it belongs to; only the people of this space go into this space's context.
+    const inSpace = new Set(people.data.map((person) => person.id));
+    if (ownWorkerId) inSpace.add(ownWorkerId);
     return rewardsSituation({
-      totals: totalsFromRows(totals.data),
+      totals: totalsFromRows(totals.data.filter((row) => inSpace.has(row.worker_id))),
       ownWorkerId,
       names: new Map(people.data.map((person) => [person.id, person.name])),
     });

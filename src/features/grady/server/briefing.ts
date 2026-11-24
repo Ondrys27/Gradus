@@ -280,6 +280,7 @@ async function loadPeriodResults(
       .select("title", { count: "exact" })
       .eq("user_id", userId)
       .eq("is_demo", false)
+      .is("deleted_at", null)
       .gte("won_at", range.from)
       .lt("won_at", range.to)
       .order("won_at", { ascending: false })
@@ -289,6 +290,7 @@ async function loadPeriodResults(
       .select("id", head)
       .eq("user_id", userId)
       .eq("is_demo", false)
+      .is("deleted_at", null)
       .gte("lost_at", range.from)
       .lt("lost_at", range.to),
     admin

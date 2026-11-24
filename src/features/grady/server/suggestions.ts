@@ -91,6 +91,7 @@ export async function loadRuleInputs(
         .select("id, title, contact:contacts(company_name, first_name, last_name)")
         .eq("user_id", userId)
         .eq("is_demo", false)
+        .is("deleted_at", null)
         .gte("won_at", subDays(now, WON_RECENT_DAYS).toISOString())
         .order("won_at", { ascending: false })
         .limit(PER_RULE_LIMIT),
@@ -99,6 +100,7 @@ export async function loadRuleInputs(
         .select("id, title, stage_id, entered_stage_at")
         .eq("user_id", userId)
         .eq("is_demo", false)
+        .is("deleted_at", null)
         .is("won_at", null)
         .is("lost_at", null)
         .lt("entered_stage_at", stalledCutoff(now))

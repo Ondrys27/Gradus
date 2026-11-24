@@ -121,6 +121,10 @@ describe("MCP tools: every tool × level × role", () => {
       }
     }
     expect(mcpDescription(toolByName("delete_crm_task")!)).toContain("restore_from_trash");
+    // Grady's confirm card has no MCP counterpart: the client is told to ask instead.
+    for (const name of ["complete_milestone", "share_note", "review_reward_entries"]) {
+      expect(mcpDescription(toolByName(name)!), name).toMatch(/ask the user to confirm/i);
+    }
   });
 
   it("docs/mcp.md lists every tool under its level", () => {

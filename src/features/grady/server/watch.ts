@@ -87,6 +87,7 @@ export async function loadChanges(
         .from("deals")
         .select("title, stage_id, value, currency, won_at, lost_at")
         .eq("user_id", userId)
+        .is("deleted_at", null)
         .eq("is_demo", false)
         .gt("entered_stage_at", since)
         .order("entered_stage_at", { ascending: false })

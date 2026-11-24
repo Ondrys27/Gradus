@@ -53,6 +53,8 @@ async function readNote(ctx: ToolContext, id: string, need: NeedRole = "write") 
       .from("notes")
       .select("id, title, kind, content, content_text, pinned, user_id")
       .eq("id", id)
+      // Notes belong to a space (28.x): only the active one's, as the Notes section lists them.
+      .eq("space_id", ctx.workspaceId)
       .is("deleted_at", null)
       .maybeSingle(),
   );
@@ -413,6 +415,7 @@ export const noteTools = [
           .select("id, title, deleted_at")
           .eq("id", input.noteId)
           .eq("user_id", ctx.userId)
+          .eq("space_id", ctx.workspaceId)
           .not("deleted_at", "is", null)
           .maybeSingle(),
       );

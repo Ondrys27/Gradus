@@ -5872,6 +5872,7 @@
         },
         "select": "Vybrat {name}",
         "former": "Bývalý pracovník",
+        "showFormer": "Zobrazit i bývalé",
         "payouts": "Historie výplat",
         "export": "Export CSV",
         "exportFailed": "Export se nepodařil. Zkus to znovu."

@@ -6,7 +6,7 @@ import { describePlans, describeSubscription } from "./plans-context";
 
 describe("describePlans", () => {
   it("gives Grady the published prices, limits and card in the interface language", () => {
-    const block = describePlans(seedPlanCatalog(), "cs");
+    const block = describePlans(seedPlanCatalog(), "cs", null, null, true);
     expect(block.startsWith("<plans>\n")).toBe(true);
     expect(block.endsWith("\n</plans>")).toBe(true);
     expect(block).toContain("- Solo: 19 EUR or 490 CZK a month, 190 EUR or 4900 CZK a year.");
@@ -15,6 +15,12 @@ describe("describePlans", () => {
     expect(block).toContain("100 vygenerovaných kontaktů měsíčně");
     expect(block).toContain("workers: no limit, storage: no limit");
     expect(describePlans(seedPlanCatalog(), "en")).toContain("- Team:");
+  });
+
+  it("says nothing about paying for workers while WORKER_BILLING_VISIBLE is off", () => {
+    const block = describePlans(seedPlanCatalog(), "cs");
+    expect(block).not.toContain("per worker");
+    expect(block).not.toContain("workers in the price");
   });
 
   it("adds the user's own currency at today's rate when it has no manual price", () => {

@@ -52,6 +52,7 @@ import {
   useCreateNote,
   useDeleteNote,
   useNote,
+  useNoteRoleWatch,
   useNoteSaver,
   useNotes,
   useNoteSearch,
@@ -133,6 +134,7 @@ export function NotesView() {
   const notes = useNotes();
   useRestoreUnsavedNotes(notes.data);
   const note = useNote(selectedId);
+  useNoteRoleWatch(selectedId ? note.data : null);
   const folders = useNoteFolders();
   const folderList = useMemo(() => folders.data ?? [], [folders.data]);
   const moveNote = useMoveNote();

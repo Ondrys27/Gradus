@@ -176,6 +176,8 @@ export class CollabSession {
   setCanWrite(canWrite: boolean) {
     if (this.canWrite === canWrite) return;
     this.canWrite = canWrite;
+    // A reader now: what others wrote is theirs to save (a save of ours would be refused).
+    if (!canWrite) this.persister?.forgetRemote();
     this.trackPresence();
     this.recompute();
     if (this.snapshot.writable) this.provider?.resume();
@@ -247,6 +249,32 @@ export class CollabSession {
       // The copy in the browser keeps what did not reach the database.
     }
     this.teardown();
+  }
+
+  /**
+   * The account no longer reaches the note (a share taken away, a group or
+   * the company left): nothing more is saved or sent, the channel is left and
+   * the browser's copy removed at once. The document goes a moment later,
+   * once the editor bound to it is gone.
+   */
+  revoke() {
+    if (this.closed || this.closing) return;
+    this.closing = true;
+    this.canWrite = false;
+    this.persister?.stop();
+    this.emit({ phase: "gone", writable: false });
+    // An open still loading finishes first (it would join the channel after us otherwise).
+    void this.ready
+      .catch(() => undefined)
+      .then(() => {
+        this.persister?.stop();
+        this.emit({ phase: "gone", writable: false });
+        this.provider?.destroy();
+        this.provider = null;
+        void this.local?.clear().catch(() => undefined);
+        this.local = null;
+        setTimeout(() => this.teardown(), COLLAB.releaseGraceMs);
+      });
   }
 
   /** On page hide: a best-effort save and snapshot, the session stays. */
@@ -451,7 +479,8 @@ export class CollabSession {
         remoteChange: (sid, seq, from, persisted) => {
           this.typingAt.set(from, this.now());
           this.tickTyping();
-          if (!persisted) this.persister?.remoteChange(sid, seq, from);
+          // Others' changes are saved by a writer; a reader saving them would only be refused.
+          if (!persisted && this.canWrite) this.persister?.remoteChange(sid, seq, from);
         },
         peerSaved: (sid, upTo) => this.persister?.peerSaved(sid, upTo),
         otherGeneration: () => {

@@ -137,6 +137,16 @@ export class CollabPersister {
     }
   }
 
+  /** The account reads only now: changes of others are left to their authors. */
+  forgetRemote() {
+    this.remote.clear();
+    this.untracked = 0;
+    if (!this.dirty() && !this.inFlight) {
+      this.clearTimer();
+      this.setStatus("saved");
+    }
+  }
+
   dirty(): boolean {
     return this.localChanges !== this.savedLocalChanges || this.remote.size > 0 || this.untracked > 0;
   }

@@ -43,9 +43,14 @@ export function useBoardEditor({
   });
   const [seenKey, setSeenKey] = useState(boardKey);
   const [seenSource, setSeenSource] = useState(source);
+  /** Unsaved changes of the board just left, saved with that board's save when the switch commits. */
+  const leftBehind = useRef<{ items: LayoutItem[]; save: typeof save } | null>(null);
 
   // A different board, or a newer layout from the server while nothing is unsaved.
   if (boardKey !== seenKey) {
+    if (dirty.current && latest.current) {
+      leftBehind.current = { items: latest.current, save: saveRef.current };
+    }
     setSeenKey(boardKey);
     setSeenSource(source);
     setItems(source);
@@ -149,6 +154,14 @@ export function useBoardEditor({
     document.addEventListener("visibilitychange", onHide);
     return () => {
       document.removeEventListener("visibilitychange", onHide);
+      // Switching boards resets the copy during render; what was not saved yet goes out here.
+      const pending = leftBehind.current;
+      leftBehind.current = null;
+      if (pending) {
+        pending.save(pending.items).catch((error: unknown) => {
+          console.error("[dashboard] could not save the layout", error);
+        });
+      }
       void flush();
     };
   }, [flush, boardKey]);

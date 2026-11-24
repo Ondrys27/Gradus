@@ -248,14 +248,15 @@ function currencyOf(ctx: ToolContext, currency: string | undefined): string {
   return (currency ?? ctx.settings.currency).toUpperCase();
 }
 
+/** The name of a person of the company now: somebody who left gets nothing new (28.1). */
 async function readWorkerName(ctx: ToolContext, workerId: string): Promise<string> {
   const { data, error } = await ctx.db
     .from("workers")
-    .select("name")
+    .select("name, status")
     .eq("owner_id", ctx.workspaceId)
     .eq("id", workerId)
     .maybeSingle();
   if (error) throw error;
-  if (!data) throw new ToolError("notFound");
+  if (!data || data.status === "inactive") throw new ToolError("notFound");
   return data.name;
 }

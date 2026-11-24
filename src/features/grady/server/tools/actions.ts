@@ -16,7 +16,13 @@ import {
 import { resolveRefs } from "@/features/meeting-notes/logic";
 import { toolAllowed } from "../../tools/access";
 import { toolByName } from "../../tools/catalog";
-import { stampRecords, undoRecords, type UndoRecord, type UndoResult } from "../../tools/records";
+import {
+  restampRecords,
+  stampRecords,
+  undoRecords,
+  type UndoRecord,
+  type UndoResult,
+} from "../../tools/records";
 import { ToolError, type AnyTool, type ToolContext } from "../../tools/types";
 import { keepInTrash, markRestored } from "@/features/trash/server/keep";
 
@@ -467,12 +473,13 @@ export async function confirmAction(
       const code = errorCodeOf(cause);
       if (code === "failed") console.error(`grady confirmed ${call.name} failed`, cause);
       // What the calls before it changed stays undoable from this card.
+      const kept = records.length > 1 ? await restampRecords(env.ctx.db, records) : records;
       const done = await finish(env.admin, row.id, {
         status: records.length ? "done" : "failed",
         error: code,
         result: {
           ...stored,
-          records,
+          records: kept,
           output: outputs,
           awards,
           undoable: stored.undoable && records.length > 0,
@@ -486,13 +493,15 @@ export async function confirmAction(
       return { ok: false, code: "failed", card: toCard(done) };
     }
   }
+  // Several steps may touch the same row (tasks on one deal): stamped as the action left it.
+  const kept = calls.length > 1 ? await restampRecords(env.ctx.db, records) : records;
   const done = await finish(env.admin, row.id, {
     status: "done",
     result: {
       ...stored,
       summary,
       href,
-      records,
+      records: kept,
       output: row.tool === BULK_TOOL ? outputs : (outputs[0] ?? null),
       awards,
       undoable: Boolean(stored.undoable) && records.length > 0,
@@ -603,9 +612,10 @@ function tagged(records: UndoRecord[], tool: string): UndoRecord[] {
 
 /**
  * Undo of records from several tools (a bulk card, meeting notes): the
- * records of a tool with an undo of its own go to it first (newest first),
- * then the rest is taken back the plain way, all checked before anything
- * changes.
+ * plain records first (all checked before anything changes), then the
+ * records of a tool with an undo of its own go to it (newest first). In this
+ * order a custom undo (a stage move back, which stamps the deal again) never
+ * makes a plain record of the same row (the Close Date) look changed since.
  */
 export async function undoMixed(ctx: ToolContext, records: UndoRecord[]): Promise<UndoResult> {
   const own = new Map<string, UndoRecord[]>();
@@ -615,11 +625,15 @@ export async function undoMixed(ctx: ToolContext, records: UndoRecord[]): Promis
     if (tool?.undo) own.set(tool.name, [...(own.get(tool.name) ?? []), record]);
     else plain.push(record);
   }
+  if (plain.length) {
+    const outcome = await undoRecords(ctx.db, plain);
+    if (!outcome.ok) return outcome;
+  }
   for (const [name, list] of [...own.entries()].reverse()) {
     const outcome = await toolByName(name)!.undo!(ctx, list);
     if (!outcome.ok) return outcome;
   }
-  return plain.length ? undoRecords(ctx.db, plain) : { ok: true };
+  return { ok: true };
 }
 
 /** A step of a bundle that could not be made: which one and why. */
@@ -653,7 +667,7 @@ export async function runBundle(
     const resolved = resolve(env.ctx, call);
     const fail = async (code: string): Promise<BundleFailure> => {
       if (records.length) {
-        const back = await undoMixed(env.ctx, records);
+        const back = await undoMixed(env.ctx, await restampRecords(env.ctx.db, records));
         if (!back.ok) console.error("grady bundle could not take back its steps", back.reason);
       }
       await track(
@@ -676,6 +690,8 @@ export async function runBundle(
       return fail(code);
     }
   }
+  // Later steps touched rows of earlier ones (a task stamps its deal): the action ends here.
+  const stamped = await restampRecords(env.ctx.db, records);
   const row = await insertAction(env, {
     tool: bundle.tool,
     risk: "confirm",
@@ -684,7 +700,7 @@ export async function runBundle(
     result: {
       summary: bundle.summary,
       href: bundle.href,
-      records,
+      records: stamped,
       output: outputs,
       awards,
       invalidate: [...invalidate] as StoredResult["invalidate"],

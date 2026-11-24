@@ -116,6 +116,7 @@ import { collectWatchBatches, runWatch } from "@/features/grady/server/watch";
 import { sweepStaleStages } from "@/features/tutorial/showcase/server/stage";
 import { getExchangeRates } from "@/features/currency/server/rates";
 import { getPublishedPlans } from "@/features/plan/catalog-server";
+import { loadWorkerBillingVisible } from "@/features/plan/worker-billing-server";
 import { instrumentRoute, runCron } from "@/lib/analytics/instrument";
 import { track, trackLater } from "@/lib/analytics/track";
 import { todayIsoDate } from "@/lib/format";
@@ -1096,14 +1097,19 @@ async function chat(ctx: Context, body: unknown, request: Request) {
       return "";
     }),
     // The published plan catalog (getPublishedPlans() falls back to the seed itself) and what the user has.
-    Promise.all([getPublishedPlans(), getExchangeRates()]).then(async ([catalog, rates]) => {
+    Promise.all([
+      getPublishedPlans(),
+      getExchangeRates(),
+      loadWorkerBillingVisible(admin).catch(() => false),
+    ]).then(async ([catalog, rates, workerPrices]) => {
       const own = await loadSubscriptionLine(supabase, userId, catalog, settings).catch((error) => {
         console.error("grady subscription failed", error);
         return null;
       });
       return {
         own,
-        full: () => describePlans(catalog, locale, own, { currency: settings.currency, rates }),
+        full: () =>
+          describePlans(catalog, locale, own, { currency: settings.currency, rates }, workerPrices),
       };
     }),
     // The owner's instructions from the administration (cached 30 s; defaults on a failed read).

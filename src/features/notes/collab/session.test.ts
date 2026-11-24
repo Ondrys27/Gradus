@@ -330,6 +330,51 @@ describe("live notes: readers and limits", () => {
     expect(db.row!.text).not.toContain("Podvrh");
   });
 
+  it("never makes a viewer save what others have not saved yet (it would lose the note as denied)", async () => {
+    const hub = new Hub();
+    const db = new FakeDb(doc("Ceník"), ["owner"]);
+    // The owner's saves do not get through: what it types stays unsaved.
+    const owner = browser(hub, db, "owner");
+    await owner.session.ready;
+    owner.online.value = false;
+    applyTextJson(owner.session.doc, doc("Ceník", "Neuloženo"), "typing");
+    await new Promise((resolve) => setTimeout(resolve, 60));
+
+    let saves = 0;
+    const viewer = browser(hub, db, "viewer", { canWrite: false });
+    const save = db.save.bind(db);
+    db.save = (userId, input) => {
+      if (userId === "viewer") saves += 1;
+      return save(userId, input);
+    };
+    await viewer.session.ready;
+    await until(() => textOf(viewer.session).includes("Neuloženo"));
+    // Past the remote save delay (150 ms in the tests) and its retry.
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(saves).toBe(0);
+    expect(viewer.session.getSnapshot().phase).toBe("ready");
+  });
+
+  it("ends a session whose access was taken away: no save, the channel left, the browser's copy gone", async () => {
+    const hub = new Hub();
+    const db = new FakeDb(doc("Ceník"), ["owner", "editor"]);
+    const owner = browser(hub, db, "owner");
+    const editor = browser(hub, db, "editor");
+    await Promise.all([owner.session.ready, editor.session.ready]);
+    await until(() => owner.session.getSnapshot().people.length === 1);
+    applyTextJson(editor.session.doc, doc("Ceník", "Rozepsáno"), "typing");
+    const saves = db.saves;
+
+    editor.session.revoke();
+    await until(() => editor.session.getSnapshot().phase === "gone");
+    await until(() => owner.session.getSnapshot().people.length === 0);
+    expect(hub.members.has(editor.sid())).toBe(false);
+    expect(editor.storage.updates).toHaveLength(0);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(db.saves).toBe(saves);
+    expect(db.row!.text).not.toContain("Rozepsáno");
+  });
+
   it("lets ten people write and the eleventh read until a place frees up", async () => {
     const hub = new Hub();
     const users = Array.from({ length: 11 }, (_, i) => `u${i}`);

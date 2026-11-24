@@ -384,6 +384,7 @@ export const chatTools = [
             .from("chat_channels")
             .select("id, name, kind")
             .eq("id", input.conversationId)
+            .eq("owner_id", ctx.workspaceId)
             .maybeSingle(),
         );
         name = channel.name ?? "";
@@ -401,6 +402,18 @@ export const chatTools = [
       };
     },
     async execute(ctx, input) {
+      // Only a conversation of the active company (RLS alone lets a member of
+      // two companies reach both; a connection may be allowed in only one).
+      if (input.conversationId) {
+        await mustFind(
+          ctx.db
+            .from("chat_channels")
+            .select("id")
+            .eq("id", input.conversationId)
+            .eq("owner_id", ctx.workspaceId)
+            .maybeSingle(),
+        );
+      }
       const result = await deliverChatMessage(ctx.db, ctx.userId, {
         id: crypto.randomUUID(),
         ...(input.conversationId ? { channelId: input.conversationId } : { to: input.to }),

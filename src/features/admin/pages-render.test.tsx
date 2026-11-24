@@ -365,9 +365,9 @@ describe("the boundary check", () => {
   it("catches a function passed to a client component", async () => {
     const { DataTable } = await import("@/features/admin/ui/data-blocks");
     const result = await renderServer(
-      // @ts-expect-error The old shape, with render functions, is what must be caught.
       <DataTable
         id="x"
+        // @ts-expect-error The old shape, with render functions, is what must be caught.
         rows={[{ a: 1 }]}
         columns={[{ key: "a", label: "A", render: () => "1" }]}
       />,

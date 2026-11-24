@@ -242,6 +242,29 @@ export async function stampRecords(db: Db, records: UndoRecord[]): Promise<UndoR
   return out;
 }
 
+/**
+ * The stamps of an action of several steps refreshed once all of them ran:
+ * a later step of the same action may touch a row an earlier one changed
+ * (a task or a contact on a deal stamps the deal's last activity, a stage
+ * move after the Close Date), and that is not a change "since" the action.
+ * Only records stamped with updated_at; the rest compare their fields.
+ */
+export async function restampRecords(db: Db, records: UndoRecord[]): Promise<UndoRecord[]> {
+  const out: UndoRecord[] = [];
+  for (const record of records) {
+    if (record.op === "delete" || !UNDO_TABLES[record.table] || !record.stamp) {
+      out.push(record);
+      continue;
+    }
+    const row = await readRow(db, record.table, record.match, [
+      ...new Set([...Object.keys(record.match), "updated_at"]),
+    ]).catch(() => null);
+    const stamp = row?.updated_at;
+    out.push(typeof stamp === "string" ? { ...record, stamp } : record);
+  }
+  return out;
+}
+
 export type UndoResult = { ok: true } | { ok: false; reason: "changed" | "gone" | "failed" };
 
 /** Takes back the change of one action: checks every record first, then undoes them newest first. */

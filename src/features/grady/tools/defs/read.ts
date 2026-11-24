@@ -221,6 +221,7 @@ export const readTools = [
               .from("notes")
               .select("id, title, kind, pinned, content_text, updated_at, user_id")
               .eq("id", input.id)
+              .eq("space_id", ctx.workspaceId)
               .is("deleted_at", null)
               .maybeSingle(),
           );

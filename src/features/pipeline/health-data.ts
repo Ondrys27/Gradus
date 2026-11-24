@@ -84,6 +84,7 @@ export async function fetchOpenHealthDeals(
     .from("deals")
     .select(HEALTH_DEAL)
     .eq("user_id", workspaceId)
+    .is("deleted_at", null)
     .is("won_at", null)
     .is("lost_at", null);
   if (options.excludeDemo) query = query.eq("is_demo", false);

@@ -66,19 +66,22 @@ export function CompanyDashboards({
 
   // One save after another: the first change of a target makes exactly one row.
   const chain = useRef<Promise<unknown>>(Promise.resolve());
-  const storedId = useRef<string | null>(null);
+  // The row of each target, so a save queued for one target never writes another's row.
+  const storedIds = useRef(new Map<string, string>());
   useEffect(() => {
-    storedId.current = stored?.id ?? null;
+    if (stored?.id) storedIds.current.set(key, stored.id);
+    else storedIds.current.delete(key);
   }, [stored?.id, key]);
   const save = useCallback(
     (items: LayoutItem[]) => {
+      const targetKey = key;
       const run = async () => {
         const saved = await saveDefault.mutateAsync({
           target,
-          existingId: storedId.current,
+          existingId: storedIds.current.get(targetKey) ?? null,
           items,
         });
-        storedId.current = saved.id;
+        storedIds.current.set(targetKey, saved.id);
         track("dashboard_default_saved", { target: target.kind, widgets: items.length });
       };
       chain.current = chain.current.catch(() => undefined).then(run);
@@ -86,7 +89,7 @@ export function CompanyDashboards({
     },
     // mutateAsync is stable
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [target],
+    [target, key],
   );
   const editor = useBoardEditor({ source, save, boardKey: key });
 
@@ -158,7 +161,7 @@ export function CompanyDashboards({
             stored
               ? () => {
                   deleteDefault.mutate(stored.id);
-                  storedId.current = null;
+                  storedIds.current.delete(key);
                 }
               : undefined
           }
