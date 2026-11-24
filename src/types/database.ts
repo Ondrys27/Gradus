@@ -6392,6 +6392,20 @@ export type Database = {
           worker_id: string
         }[]
       }
+      activity_add: {
+        Args: {
+          _kind: string
+          _object: string
+          _space: string
+          _summary: Json
+          _verb: string
+        }
+        Returns: undefined
+      }
+      activity_contact_name: {
+        Args: { _contact: Database["public"]["Tables"]["contacts"]["Row"] }
+        Returns: string
+      }
       activity_daily: {
         Args: {
           _actors?: string[]
@@ -6431,6 +6445,12 @@ export type Database = {
           via: string
         }[]
       }
+      activity_masked: {
+        Args: { _kind: string; _space: string; _summary: Json }
+        Returns: Json
+      }
+      activity_title: { Args: { _text: string }; Returns: string }
+      activity_via: { Args: never; Returns: string }
       activity_visible_actors: { Args: { _space: string }; Returns: string[] }
       add_interested_contact_table: { Args: never; Returns: string }
       add_on_keys: { Args: never; Returns: string[] }
@@ -8647,6 +8667,7 @@ export type Database = {
         }[]
       }
       published_plan: { Args: { _key: string }; Returns: Json }
+      purge_activity_log: { Args: never; Returns: number }
       purge_analytics: {
         Args: { _before?: string }
         Returns: {
@@ -8656,7 +8677,6 @@ export type Database = {
           usage: number
         }[]
       }
-      purge_activity_log: { Args: never; Returns: number }
       purge_deleted_notes: { Args: never; Returns: number }
       purge_error_events: { Args: never; Returns: number }
       record_worker_payment: {
