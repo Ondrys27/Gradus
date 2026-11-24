@@ -163,7 +163,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [ ] 29.3 | designer |
 - [ ] K29 | reviewer |
 - [ ] STOP | Konec fáze 29. V plánu odměn napiš větou, jak chceš odměňovat cold callera, zkontroluj navržená pravidla a „Vyzkoušet", potvrď a přesuň kontakt z Ozvat se do Domluvená schůzka — odměna musí vzniknout jen jednou. V administraci si poskládej přehled, přidej záložku Peníze, vyvolej chybu a ověř, že svítí ve widgetu a nepřišel e-mail. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
-- [ ] 28.10 | architect | env: GOOGLE_CLIENT_ID
+- [x] 28.10 | architect | env: GOOGLE_CLIENT_ID — 2026-11-24: Obousměrná synchronizace s Google a Apple kalendářem (OAuth, CalDAV, push kanály, odchozí fronta bez ozvěn, novější změna vyhrává) za seznamem povolených účtů v administraci, obsazenost plánovače z připojených kalendářů a rezervace zapsané do Googlu s volitelným Meetem.
 - [ ] 23.4 | RUČNĚ | Spuštění prodeje podle docs/spusteni.md: Vercel Pro, ověřený Stripe účet, live klíče a webhook ve Vercelu (Production), Invoicing s patičkou „Nejsem plátce DPH.", doplněné [DOPLNIT] v podmínkách, SMTP a potvrzení e-mailu v Supabase, PUBLIC_SIGNUP_ENABLED=true. Udělej jeden ostrý nákup vlastní kartou a vrať si peníze. Pak tuhle položku zaškrtni.
 - [ ] 7.1 | RUČNĚ | Aplikace běží na Vercel Hobby a každý push na main se nasadí sám. Až budeš mít doménu: nastav ji ve Vercelu, změň NEXT_PUBLIC_SITE_URL ve Vercelu, uprav Site URL a Redirect URLs v Supabase → URL Configuration a dej Redeploy. Projdi produkci v anonymním okně a pak tuhle položku zaškrtni ručně.
 
