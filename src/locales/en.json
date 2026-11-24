@@ -4530,6 +4530,11 @@
         "settings": {
           "actions": {
             "label": "Which actions"
+          },
+          "labels": {
+            "label": "Labels",
+            "show": "With text",
+            "hidden": "Icons only"
           }
         }
       },

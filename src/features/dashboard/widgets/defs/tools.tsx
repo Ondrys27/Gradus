@@ -279,6 +279,7 @@ function QuickActions({ size, settings }: { size: WidgetSize; settings: WidgetSe
     (key): key is QuickActionKey => allowed.includes(key as QuickActionKey),
   );
   const shown = chosen.slice(0, size === "S" || size === "M" ? 4 : 8);
+  const iconsOnly = settings.labels === "hidden";
   if (shown.length === 0) {
     return <Empty icon={ZapIcon} title={t("emptyTitle")} hint={t("emptyHint")} compact />;
   }
@@ -305,21 +306,31 @@ function QuickActions({ size, settings }: { size: WidgetSize; settings: WidgetSe
               data-testid={`quick-action-${key}`}
               className={cn(
                 "flex min-w-0 flex-1 items-center rounded-xl border border-line bg-surface-hover/40 text-ink-soft outline-none hover:border-line-strong hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40",
-                size === "S" && "min-h-10 flex-col justify-center gap-0.5 px-1 py-1",
-                size === "M" &&
+                iconsOnly && "min-h-11 justify-center",
+                !iconsOnly && size === "S" && "min-h-10 flex-col justify-center gap-0.5 px-1 py-1",
+                !iconsOnly &&
+                  size === "M" &&
                   "min-h-11 flex-col justify-center gap-1 px-1 py-1.5 @md:flex-row @md:gap-2 @md:px-3 @md:py-0",
-                size !== "S" && size !== "M" && "min-h-11 gap-2 px-3",
+                !iconsOnly && size !== "S" && size !== "M" && "min-h-11 gap-2 px-3",
               )}
             >
-              <Icon aria-hidden className={cn("shrink-0 text-violet", size === "S" ? "size-4" : "size-5")} />
-              <span
+              <Icon
+                aria-hidden
                 className={cn(
-                  "line-clamp-1 min-w-0 text-center leading-tight",
-                  size === "S" ? "text-[10px]" : "text-xs",
+                  "shrink-0 text-violet",
+                  iconsOnly ? "size-6" : size === "S" ? "size-4" : "size-5",
                 )}
-              >
-                {t(`actions.${key}`)}
-              </span>
+              />
+              {iconsOnly ? null : (
+                <span
+                  className={cn(
+                    "line-clamp-1 min-w-0 text-center leading-tight",
+                    size === "S" ? "text-[10px]" : "text-xs",
+                  )}
+                >
+                  {t(`actions.${key}`)}
+                </span>
+              )}
             </Link>
           </li>
         );

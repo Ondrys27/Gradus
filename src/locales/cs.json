@@ -4530,6 +4530,11 @@
         "settings": {
           "actions": {
             "label": "Které akce"
+          },
+          "labels": {
+            "label": "Popisky",
+            "show": "S textem",
+            "hidden": "Jen ikony"
           }
         }
       },

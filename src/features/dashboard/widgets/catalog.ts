@@ -362,6 +362,8 @@ export const WIDGETS = [
         min: 1,
         max: 8,
       },
+      // "hidden": only the icons; the name stays as the tooltip and for screen readers.
+      { key: "labels", kind: "choice", options: ["show", "hidden"], default: "show" },
     ],
     href: "/app",
     detail: false,
