@@ -5,29 +5,28 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
-import { useNotes } from "@/features/notes/queries";
 import { cn } from "@/lib/utils";
-import { allowedOptions, allowedQuickActions, type WidgetAccess } from "./access";
-import { settingValue, type WidgetMeta, type WidgetSetting } from "./catalog";
 import type { WidgetSettings } from "./kit";
+import { settingValue, type CoreWidgetMeta as WidgetMeta, type WidgetSetting } from "./meta";
+import type { WidgetSystem } from "./system";
 
 /**
  * The gear of a widget in editing: its settings from the catalog's schema
- * (a choice, several of a list, one of the person's notes). Only what the
- * account may pick is offered.
+ * (a choice, several of a list, or a kind of the system's own such as one
+ * of the person's notes). Only what the account may pick is offered.
  */
 export function WidgetSettingsDialog({
   meta,
   name,
   settings,
-  access,
+  system,
   onSave,
   onClose,
 }: {
   meta: WidgetMeta;
   name: string;
   settings: WidgetSettings;
-  access: WidgetAccess;
+  system: WidgetSystem;
   onSave: (settings: WidgetSettings) => void;
   onClose: () => void;
 }) {
@@ -60,7 +59,7 @@ export function WidgetSettingsDialog({
             widget={meta.key}
             setting={setting}
             value={draft[setting.key]}
-            access={access}
+            system={system}
             onChange={(value) => setDraft((previous) => ({ ...previous, [setting.key]: value }))}
           />
         ))}
@@ -81,21 +80,20 @@ function SettingField({
   widget,
   setting,
   value,
-  access,
+  system,
   onChange,
 }: {
   widget: string;
   setting: WidgetSetting;
   value: unknown;
-  access: WidgetAccess;
+  system: WidgetSystem;
   onChange: (value: unknown) => void;
 }) {
-  const t = useTranslations("dashboard.widgets");
   const tBoard = useTranslations("dashboard.board");
-  const label = (key: string) => t(`${widget}.settings.${setting.key}.${key}` as "today.name");
+  const label = (part: string) => system.settingLabel(widget, setting.key, part);
 
   if (setting.kind === "choice") {
-    const options = allowedOptions(setting, access);
+    const options = system.choiceOptions(setting);
     return (
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-2 text-sm font-medium text-ink">{label("label")}</legend>
@@ -106,6 +104,7 @@ function SettingField({
               type="button"
               aria-pressed={value === option}
               onClick={() => onChange(option)}
+              data-testid={`widget-setting-${setting.key}-${option}`}
               className={cn(
                 "min-h-11 rounded-xl border px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:min-h-9",
                 value === option
@@ -122,8 +121,7 @@ function SettingField({
   }
 
   if (setting.kind === "multi") {
-    const allowed =
-      widget === "quickActions" ? (allowedQuickActions(access) as string[]) : setting.options;
+    const allowed = system.multiOptions(widget, setting);
     const selected = Array.isArray(value) ? (value as string[]) : [];
     const options = setting.options.filter((option) => allowed.includes(option));
     return (
@@ -151,7 +149,7 @@ function SettingField({
                       )
                     }
                   />
-                  {t(`quickActions.actions.${option}` as "today.name")}
+                  {system.multiOptionLabel(widget, setting, option)}
                 </label>
               </li>
             );
@@ -164,53 +162,9 @@ function SettingField({
     );
   }
 
+  const Custom = system.CustomSetting;
+  if (!Custom) return null;
   return (
-    <NoteField
-      label={label("label")}
-      value={typeof value === "string" ? value : null}
-      onChange={onChange}
-    />
-  );
-}
-
-function NoteField({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string | null;
-  onChange: (value: unknown) => void;
-}) {
-  const t = useTranslations("dashboard.widgets.pinnedNote");
-  const notes = useNotes();
-  const pinned = (notes.data ?? []).filter((note) => note.pinned || note.id === value);
-  return (
-    <fieldset className="flex flex-col gap-2">
-      <legend className="mb-2 text-sm font-medium text-ink">{label}</legend>
-      <ul className="flex flex-col gap-1">
-        {[
-          { id: null, title: t("settings.note.auto") },
-          ...pinned.map((note) => ({ id: note.id, title: note.title || t("untitled") })),
-        ].map((option) => (
-          <li key={option.id ?? "auto"}>
-            <button
-              type="button"
-              aria-pressed={value === option.id}
-              onClick={() => onChange(option.id)}
-              className={cn(
-                "flex min-h-11 w-full items-center rounded-xl border px-3 text-left text-sm outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:min-h-9",
-                value === option.id
-                  ? "border-violet bg-violet/20 text-ink"
-                  : "border-line text-ink-soft hover:border-line-strong hover:text-ink",
-              )}
-            >
-              <span className="truncate">{option.title}</span>
-            </button>
-          </li>
-        ))}
-      </ul>
-      {pinned.length === 0 && <p className="text-xs text-ink-muted">{t("settings.note.none")}</p>}
-    </fieldset>
+    <Custom widget={widget} setting={setting} label={label("label")} value={value} onChange={onChange} />
   );
 }

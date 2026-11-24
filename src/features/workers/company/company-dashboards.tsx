@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { systemDefault } from "@/features/dashboard/widgets/defaults";
-import type { LayoutItem } from "@/features/dashboard/widgets/grid";
+import type { LayoutItem } from "@/features/widgets/grid";
 import {
   targetMatches,
   useDashboardDefaults,
@@ -20,8 +20,9 @@ import {
   useSaveDashboardDefault,
   type DefaultTarget,
 } from "@/features/dashboard/widgets/layout-queries";
-import { useBoardEditor } from "@/features/dashboard/widgets/use-board-editor";
-import { WidgetBoard } from "@/features/dashboard/widgets/widget-board";
+import { useBoardEditor } from "@/features/widgets/use-board-editor";
+import { WidgetBoard } from "@/features/widgets/widget-board";
+import { useAppWidgetSystem } from "@/features/dashboard/widgets/app-system";
 import { TEMPLATE_ACCESS } from "@/features/dashboard/widgets/worker-access";
 import { track } from "@/lib/analytics/client";
 import type { CompanyGroup, CompanyPerson } from "./tree";
@@ -92,6 +93,7 @@ export function CompanyDashboards({
     [target, key],
   );
   const editor = useBoardEditor({ source, save, boardKey: key });
+  const widgetSystem = useAppWidgetSystem(TEMPLATE_ACCESS);
 
   const active = (people ?? []).filter((person) => person.status !== "inactive");
   const options = [
@@ -154,7 +156,7 @@ export function CompanyDashboards({
       {canEdit ? (
         <WidgetBoard
           editor={editor}
-          access={TEMPLATE_ACCESS}
+          system={widgetSystem}
           scope={`template-${key}`}
           template={{ kind: target.kind, label }}
           onReset={

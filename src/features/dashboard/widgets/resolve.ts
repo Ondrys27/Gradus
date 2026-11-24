@@ -1,4 +1,4 @@
-import type { LayoutItem } from "./grid";
+import type { LayoutItem } from "@/features/widgets/grid";
 
 /**
  * Which layout the main tab shows (28.5). Untouched, it follows the default

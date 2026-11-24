@@ -13,7 +13,7 @@ import {
   WIDGET_SIZES,
   withPositions,
   type LayoutItem,
-} from "@/features/dashboard/widgets/grid";
+} from "@/features/widgets/grid";
 import { resolveMain } from "@/features/dashboard/widgets/resolve";
 import { industryKeyOf } from "@/features/onboarding/industries";
 import type { GrantAction, GrantSection } from "@/features/workers/permissions-catalog";

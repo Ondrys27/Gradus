@@ -94,7 +94,7 @@ import {
   Sub,
   type WidgetQuery,
   type WidgetViewProps,
-} from "../kit";
+} from "@/features/widgets/kit";
 
 const PIPELINE_PATH = "/app/pipeline";
 const NEW_DEAL_HREF = `${PIPELINE_PATH}?new=deal`;

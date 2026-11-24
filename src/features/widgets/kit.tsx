@@ -16,7 +16,6 @@ import { useReducedMotionSafe } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
 
 export { Sparkline } from "@/features/dashboard/sparkline";
-import type { WidgetKey } from "./catalog";
 import type { WidgetSize } from "./grid";
 
 /**
@@ -59,7 +58,7 @@ export type WidgetDetailProps<D> = {
 };
 
 export type WidgetDef<D = unknown> = {
-  key: WidgetKey;
+  key: string;
   useData: (settings: WidgetSettings) => WidgetQuery<D>;
   View: ComponentType<WidgetViewProps<D>>;
   Detail: ComponentType<WidgetDetailProps<D>>;

@@ -14,7 +14,7 @@ import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { chromium, type Browser, type Page } from "@playwright/test";
 import { WIDGETS, type WidgetMeta } from "../src/features/dashboard/widgets/catalog";
-import { withPositions, type WidgetSize } from "../src/features/dashboard/widgets/grid";
+import { withPositions, type WidgetSize } from "../src/features/widgets/grid";
 import type { Json } from "../src/types/database";
 import { admin, createAccount, deleteAccount, signIn, type Account } from "../tests/e2e/support/accounts";
 

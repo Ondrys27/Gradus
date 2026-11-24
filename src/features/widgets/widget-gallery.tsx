@@ -9,10 +9,10 @@ import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { toneSoft } from "@/components/ui/tone";
 import { useReducedMotionSafe } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
-import { WIDGET_APPEARANCE } from "./appearance";
-import { WIDGET_CATEGORIES, type WidgetCategory, type WidgetKey, type WidgetMeta } from "./catalog";
 import { SIZE_SPANS, type LayoutItem, type WidgetSize } from "./grid";
 import { haptic, LAYOUT_SPRING, type Rect } from "./motion";
+import type { CoreWidgetMeta as WidgetMeta } from "./meta";
+import { useWidgetSystem } from "./system";
 import { WidgetFrame } from "./widget-frame";
 
 /** A preview is the widget drawn at the size of a board cell, scaled to fit. */
@@ -84,10 +84,9 @@ export function WidgetGallery({
   onAdd: (meta: WidgetMeta, size: WidgetSize, from: Rect | null) => void;
 }) {
   const t = useTranslations("dashboard.board");
-  const tWidgets = useTranslations("dashboard.widgets");
-  const tCategories = useTranslations("dashboard.board.categories");
+  const system = useWidgetSystem();
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<WidgetCategory | "all">("all");
+  const [category, setCategory] = useState<string>("all");
 
   const needle = plain(query.trim());
   const shown = useMemo(
@@ -95,14 +94,12 @@ export function WidgetGallery({
       available.filter((meta) => {
         if (category !== "all" && meta.category !== category) return false;
         if (!needle) return true;
-        const text = plain(
-          `${tWidgets(`${meta.key}.name` as "today.name")} ${tWidgets(`${meta.key}.description` as "today.description")}`,
-        );
+        const text = plain(`${system.name(meta.key)} ${system.description(meta.key)}`);
         return text.includes(needle);
       }),
-    [available, category, needle, tWidgets],
+    [available, category, needle, system],
   );
-  const categories = WIDGET_CATEGORIES.filter((key) =>
+  const categories = system.categories.filter((key) =>
     available.some((meta) => meta.category === key),
   );
   const suggesting = !needle && category === "all" && recommended.length > 0;
@@ -140,7 +137,7 @@ export function WidgetGallery({
             role="group"
             aria-label={t("galleryCategories")}
           >
-            {(["all", ...categories] as const).map((key) => (
+            {["all", ...categories].map((key) => (
               <button
                 key={key}
                 type="button"
@@ -153,7 +150,7 @@ export function WidgetGallery({
                     : "border-line text-ink-soft hover:border-line-strong hover:text-ink",
                 )}
               >
-                {key === "all" ? t("galleryAll") : tCategories(key)}
+                {key === "all" ? t("galleryAll") : system.categoryName(key)}
               </button>
             ))}
           </div>
@@ -230,13 +227,13 @@ function GalleryItem({
 }) {
   const t = useTranslations("dashboard.board");
   const tSizes = useTranslations("dashboard.board.sizes");
-  const tWidgets = useTranslations("dashboard.widgets");
+  const system = useWidgetSystem();
   const reduceMotion = useReducedMotionSafe();
   const [size, setSize] = useState<WidgetSize>(meta.defaultSize);
   const { ref: areaRef, width: areaWidth } = useWidth<HTMLDivElement>();
   const previewRef = useRef<HTMLDivElement>(null);
-  const name = tWidgets(`${meta.key}.name` as "today.name");
-  const { icon: Icon, tone } = WIDGET_APPEARANCE[meta.key as WidgetKey];
+  const name = system.name(meta.key);
+  const { icon: Icon, tone } = system.appearance(meta.key);
 
   const box = previewBox(size);
   const widest = previewBox(meta.sizes[meta.sizes.length - 1]).width;
@@ -322,7 +319,7 @@ function GalleryItem({
 
       <div className="flex items-center justify-between gap-3">
         <p className="min-w-0 text-sm text-pretty text-ink-soft">
-          {tWidgets(`${meta.key}.description` as "today.description")}
+          {system.description(meta.key)}
         </p>
         {meta.sizes.length > 1 ? (
           <div className="flex shrink-0 flex-col items-center gap-0.5">

@@ -1,8 +1,8 @@
 "use client";
 
-import { use } from "react";
 import type { WidgetKey } from "./catalog";
-import type { WidgetDef } from "./kit";
+import type { WidgetDef } from "@/features/widgets/kit";
+import { cachedLoader } from "@/features/widgets/system";
 
 /**
  * Every widget's components and data (28.5), by key, loaded only when a
@@ -38,23 +38,5 @@ const LOADERS: Record<WidgetKey, () => Promise<WidgetDef>> = {
   satisfaction: () => import("./defs/tools").then((module) => module.satisfactionWidget),
 };
 
-const loaded = new Map<string, Promise<WidgetDef>>();
-
 /** The widget's definition; the same promise every time, so React can wait on it. */
-export function loadWidget(key: WidgetKey): Promise<WidgetDef> {
-  let promise = loaded.get(key);
-  if (!promise) {
-    promise = LOADERS[key]().catch((error: unknown) => {
-      // A failed chunk (offline) is tried again on the next render.
-      loaded.delete(key);
-      throw error;
-    });
-    loaded.set(key, promise);
-  }
-  return promise;
-}
-
-/** Suspends until the widget's code is there (inside a Suspense boundary). */
-export function useWidgetDef(key: WidgetKey): WidgetDef {
-  return use(loadWidget(key));
-}
+export const loadWidget: (key: string) => Promise<WidgetDef> = cachedLoader(LOADERS);

@@ -5,7 +5,7 @@ import { useSession } from "@/features/account/queries";
 import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { createClient } from "@/lib/supabase/client";
 import type { Json } from "@/types/database";
-import { cleanItems, MAX_LAYOUTS, withPositions, type LayoutItem } from "./grid";
+import { cleanItems, MAX_LAYOUTS, withPositions, type LayoutItem } from "@/features/widgets/grid";
 
 /**
  * The dashboards of the signed-in person in the active space (28.5): their

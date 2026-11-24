@@ -21,7 +21,7 @@ import { daySummaryParts, greetingPart } from "./dashboard-logic";
 import { SatisfactionCard } from "./satisfaction-card";
 import { useTodayOverview } from "./today-card";
 import { systemDefault } from "./widgets/defaults";
-import { MAX_LAYOUTS, type LayoutItem } from "./widgets/grid";
+import { MAX_LAYOUTS, type LayoutItem } from "@/features/widgets/grid";
 import {
   useCreateLayout,
   useDashboardContext,
@@ -34,9 +34,10 @@ import {
   type StoredLayout,
 } from "./widgets/layout-queries";
 import { resolveMain } from "./widgets/resolve";
-import { useBoardEditor } from "./widgets/use-board-editor";
+import { useBoardEditor } from "@/features/widgets/use-board-editor";
+import { useAppWidgetSystem } from "./widgets/app-system";
 import { useWidgetAccess } from "./widgets/use-widget-access";
-import { WidgetBoard } from "./widgets/widget-board";
+import { WidgetBoard } from "@/features/widgets/widget-board";
 
 const MAIN = "main";
 
@@ -71,6 +72,7 @@ export function DashboardHome() {
   // A failed read of the context (or no company default) means: the system's default, all widgets.
   const company = context.data?.source ? context.data : null;
   const access = useWidgetAccess(context.data?.allowed ?? null);
+  const widgetSystem = useAppWidgetSystem(access);
   const rows = useMemo(
     () => layouts.data ?? (layouts.isError ? [] : undefined),
     [layouts.data, layouts.isError],
@@ -231,7 +233,7 @@ export function DashboardHome() {
 
       <WidgetBoard
         editor={editor}
-        access={access}
+        system={widgetSystem}
         scope={boardKey}
         banner={banner}
         leading={

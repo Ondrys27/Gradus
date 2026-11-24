@@ -1,6 +1,6 @@
 import type { IndustryKey } from "@/features/onboarding/industries";
 import type { WidgetKey } from "./catalog";
-import { withPositions, type LayoutItem, type WidgetSize } from "./grid";
+import { withPositions, type LayoutItem, type WidgetSize } from "@/features/widgets/grid";
 
 /**
  * The dashboard an account starts with when nobody set one (28.5): by role,

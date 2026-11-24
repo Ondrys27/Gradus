@@ -55,7 +55,7 @@ import {
   useAppeared,
   type WidgetQuery,
   type WidgetViewProps,
-} from "../kit";
+} from "@/features/widgets/kit";
 
 // The charts library loads only when the wide capital widget is on screen.
 const CapitalChart = dynamic(

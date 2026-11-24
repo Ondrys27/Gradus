@@ -64,7 +64,7 @@ import {
   Sub,
   type WidgetQuery,
   type WidgetSettings,
-} from "../kit";
+} from "@/features/widgets/kit";
 
 const DAY_MS = 86_400_000;
 

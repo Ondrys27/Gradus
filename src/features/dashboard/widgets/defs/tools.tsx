@@ -33,7 +33,7 @@ import { noteHref } from "@/features/notes/work-notes";
 import { cn } from "@/lib/utils";
 import { allowedQuickActions } from "../access";
 import { QUICK_ACTIONS, type QuickActionKey } from "../catalog";
-import type { WidgetSize } from "../grid";
+import type { WidgetSize } from "@/features/widgets/grid";
 import {
   combine,
   defineWidget,
@@ -44,7 +44,7 @@ import {
   Sub,
   type WidgetQuery,
   type WidgetSettings,
-} from "../kit";
+} from "@/features/widgets/kit";
 import { useWidgetAccess } from "../use-widget-access";
 
 // ---------------------------------------------------------------------------

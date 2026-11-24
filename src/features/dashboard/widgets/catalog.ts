@@ -1,5 +1,6 @@
 import type { NavKey } from "@/components/layout/nav-items";
-import type { WidgetSize } from "./grid";
+import type { WidgetSize } from "@/features/widgets/grid";
+import { settingValue as coreSettingValue, type CoreWidgetMeta } from "@/features/widgets/meta";
 
 /**
  * What every widget of the dashboard is (28.5), without React: the key, the
@@ -31,37 +32,11 @@ export type WidgetRequirement = {
   playing?: true;
 };
 
-export type ChoiceSetting = {
-  key: string;
-  kind: "choice";
-  options: readonly string[];
-  default: string;
-  /** An option that needs a right, e.g. everyone's tasks only with "tasks: all". */
-  optionRights?: Readonly<Record<string, RightRef>>;
-};
-export type MultiSetting = {
-  key: string;
-  kind: "multi";
-  options: readonly string[];
-  default: readonly string[];
-  min: number;
-  max: number;
-};
-/** One of the account's notes. */
-export type NoteSetting = { key: string; kind: "note" };
-export type WidgetSetting = ChoiceSetting | MultiSetting | NoteSetting;
+export type { ChoiceSetting, MultiSetting, NoteSetting, WidgetSetting } from "@/features/widgets/meta";
 
-export type WidgetMeta = {
-  key: string;
+export type WidgetMeta = CoreWidgetMeta & {
   category: WidgetCategory;
-  sizes: readonly WidgetSize[];
-  defaultSize: WidgetSize;
   requires: WidgetRequirement;
-  settings: readonly WidgetSetting[];
-  /** "Open section" of the detail. */
-  href: string;
-  /** False: the widget is all there is (its own buttons), a tap opens nothing. */
-  detail?: false;
 };
 
 /** Quick actions a widget can offer; each needs its own right (see access.ts). */
@@ -397,17 +372,8 @@ export function isWidgetKey(value: unknown): value is WidgetKey {
 }
 
 /** The value of a setting, or its default when missing or not one of the options. */
-export function settingValue(meta: WidgetMeta, key: string, settings: Record<string, unknown>) {
-  const def = meta.settings.find((entry) => entry.key === key);
-  if (!def) return undefined;
-  const value = settings[key];
-  if (def.kind === "choice") {
-    return typeof value === "string" && def.options.includes(value) ? value : def.default;
-  }
-  if (def.kind === "multi") {
-    if (!Array.isArray(value)) return [...def.default];
-    const kept = def.options.filter((option) => value.includes(option));
-    return kept.length >= def.min ? kept.slice(0, def.max) : [...def.default];
-  }
-  return typeof value === "string" ? value : null;
-}
+export const settingValue: (
+  meta: WidgetMeta,
+  key: string,
+  settings: Record<string, unknown>,
+) => ReturnType<typeof coreSettingValue> = coreSettingValue;

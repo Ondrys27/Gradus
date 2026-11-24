@@ -20,7 +20,6 @@ import { SortableContext, sortableKeyboardCoordinates, useSortable } from "@dnd-
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useMediaQuery, useReducedMotionSafe } from "@/lib/use-media-query";
-import { widgetMeta, type WidgetMeta } from "./catalog";
 import {
   arrange,
   columnsFor,
@@ -32,6 +31,8 @@ import {
 } from "./grid";
 import type { WidgetSettings } from "./kit";
 import { haptic, LIFT_SPRING } from "./motion";
+import type { CoreWidgetMeta as WidgetMeta } from "./meta";
+import type { WidgetSystem } from "./system";
 import { WidgetFrame, type Arrival } from "./widget-frame";
 
 /** Height of one row of the grid; two narrow columns get a little less. */
@@ -70,10 +71,10 @@ export type GridEntry = {
 };
 
 export function useGridEntries(
+  system: WidgetSystem,
   items: readonly LayoutItem[],
   effective: (item: LayoutItem) => WidgetSettings,
 ): GridEntry[] {
-  const t = useTranslations("dashboard.widgets");
   // The effective settings keep their identity while the stored ones do, so
   // a reorder (new item objects) does not re-render the content of every widget.
   const cache = useRef<{
@@ -84,7 +85,7 @@ export function useGridEntries(
   return useMemo(
     () =>
       items.flatMap((item) => {
-        const meta = widgetMeta(item.widget);
+        const meta = system.meta(item.widget);
         if (!meta) return [];
         const seen = cache.current.seen;
         let entry = seen.get(item.id);
@@ -96,12 +97,12 @@ export function useGridEntries(
           {
             item,
             meta,
-            name: t(`${meta.key}.name` as "today.name"),
+            name: system.name(meta.key),
             settings: entry.result,
           },
         ];
       }),
-    [items, effective, t],
+    [items, effective, system],
   );
 }
 

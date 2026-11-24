@@ -24,7 +24,7 @@ import { CALENDAR_PROVIDERS, EVENT_TYPE_TABS, LINK_SOURCES } from "@/features/sc
 import { REWARD_TEMPLATES, RULES_PER_PLAN } from "@/features/workers/rewards/rules";
 import { REWARD_EVENTS, REWARD_TYPES } from "@/features/workers/rewards/catalog";
 import { WIDGET_KEYS } from "@/features/dashboard/widgets/catalog";
-import { WIDGET_SIZES } from "@/features/dashboard/widgets/grid";
+import { WIDGET_SIZES } from "@/features/widgets/grid";
 import { MEETING_TARGETS } from "@/features/meeting-notes/logic";
 import { MCP_LEVELS } from "@/features/mcp/levels";
 import { TRASH_KINDS } from "@/features/trash/trash";

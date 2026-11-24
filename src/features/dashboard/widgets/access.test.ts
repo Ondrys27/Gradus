@@ -16,7 +16,7 @@ import {
 import { WIDGETS, widgetMeta, type ChoiceSetting } from "./catalog";
 import { systemDefault } from "./defaults";
 import { TEMPLATE_ACCESS, workerWidgetAccess } from "./worker-access";
-import { arrange, hasCollision } from "./grid";
+import { arrange, hasCollision } from "@/features/widgets/grid";
 
 const OWNER = "00000000-0000-0000-0000-000000000001";
 const ACCOUNT = "00000000-0000-0000-0000-000000000002";

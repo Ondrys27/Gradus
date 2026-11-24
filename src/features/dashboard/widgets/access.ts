@@ -9,7 +9,7 @@ import {
   type RightRef,
   type WidgetMeta,
 } from "./catalog";
-import type { LayoutItem } from "./grid";
+import type { LayoutItem } from "@/features/widgets/grid";
 
 /**
  * Which widgets an account may use in the active space. Pure: the caller

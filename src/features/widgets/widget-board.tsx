@@ -12,15 +12,11 @@ import {
   Undo2Icon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useNavItems } from "@/components/layout/use-nav";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormAlert } from "@/components/ui/form-alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { track } from "@/lib/analytics/client";
-import { availableWidgets, effectiveSettings, visibleItems, type WidgetAccess } from "./access";
-import { isWidgetKey, widgetMeta, type WidgetKey, type WidgetMeta } from "./catalog";
 import {
   addItem,
   MAX_ITEMS,
@@ -35,7 +31,8 @@ import {
 import type { useBoardEditor } from "./use-board-editor";
 import { useUndoShortcut } from "./use-board-editor";
 import { haptic, type Rect } from "./motion";
-import { recommendWidgets } from "./recommend";
+import type { CoreWidgetMeta as WidgetMeta } from "./meta";
+import { WidgetSystemProvider, type WidgetSystem } from "./system";
 import { WidgetDetail, type Arrival } from "./widget-frame";
 import { useGridEntries, WidgetGrid, type GridEntry } from "./widget-grid";
 
@@ -63,7 +60,7 @@ type Editor = ReturnType<typeof useBoardEditor>;
  */
 export function WidgetBoard({
   editor,
-  access,
+  system,
   scope,
   template,
   banner,
@@ -74,7 +71,8 @@ export function WidgetBoard({
   onOpenWidgetKeyHandled,
 }: {
   editor: Editor;
-  access: WidgetAccess;
+  /** The kind of board: its catalog, rules, names and widgets (system.tsx). */
+  system: WidgetSystem;
   scope: string;
   /** Editing the owner's default for the company, a group or a person. */
   template?: { kind: "space" | "group" | "worker"; label: string };
@@ -88,7 +86,7 @@ export function WidgetBoard({
   onOpenWidgetKeyHandled?: () => void;
 }) {
   const t = useTranslations("dashboard.board");
-  const tWidgets = useTranslations("dashboard.widgets");
+  const track = system.track;
   const [editing, setEditing] = useState(Boolean(template));
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [settingsFor, setSettingsFor] = useState<GridEntry | null>(null);
@@ -98,20 +96,20 @@ export function WidgetBoard({
   const dragStart = useRef<LayoutItem[] | null>(null);
 
   const items = editor.items;
-  const visible = useMemo(() => (items ? visibleItems(items, access) : []), [items, access]);
+  const visible = useMemo(() => (items ? system.visible(items) : []), [items, system]);
   const effective = useCallback(
     (item: LayoutItem) => {
-      const meta = widgetMeta(item.widget);
-      return meta ? effectiveSettings(meta, item.settings, access) : item.settings;
+      const meta = system.meta(item.widget);
+      return meta ? system.effective(meta, item.settings) : item.settings;
     },
-    [access],
+    [system],
   );
-  const entries = useGridEntries(visible, effective);
-  const available = useMemo(() => availableWidgets(access), [access]);
+  const entries = useGridEntries(system, visible, effective);
+  const available = system.available;
   // Gallery previews draw with the defaults the account may use, one object per widget.
   const previewSettings = useMemo(
-    () => new Map(available.map((meta) => [meta.key, effectiveSettings(meta, {}, access)])),
-    [available, access],
+    () => new Map(available.map((meta) => [meta.key, system.effective(meta, {})])),
+    [available, system],
   );
   const previewSettingsFor = useCallback(
     (meta: WidgetMeta) => previewSettings.get(meta.key) ?? {},
@@ -119,17 +117,11 @@ export function WidgetBoard({
   );
   const open = entries.find((entry) => entry.item.id === openId) ?? null;
 
-  // The gallery suggests widgets of the sections the person has opened.
-  const nav = useNavItems();
+  // The gallery suggests widgets (the app: of the sections the person has opened).
   const placedKeys = useMemo(() => visible.map((item) => item.widget), [visible]);
   const recommended = useMemo(
-    () =>
-      recommendWidgets(
-        available,
-        placedKeys,
-        new Set(nav.items.filter((item) => !item.locked && !item.fresh).map((item) => item.key)),
-      ),
-    [available, placedKeys, nav.items],
+    () => (system.recommend ? system.recommend(available, placedKeys) : []),
+    [system, available, placedKeys],
   );
 
   useUndoShortcut(editing || Boolean(template), editor.undo);
@@ -150,22 +142,19 @@ export function WidgetBoard({
     const entry = entries.find((candidate) => candidate.meta.key === openWidgetKey);
     if (entry) {
       setOpenId(entry.item.id);
-      track("dashboard_widget_opened", {
-        widget: entry.meta.key as WidgetKey,
-        size: entry.item.size,
-      });
+      track?.({ type: "widget_opened", widget: entry.meta.key, size: entry.item.size });
     }
     onOpenWidgetKeyHandled?.();
-  }, [openWidgetKey, entries, onOpenWidgetKeyHandled]);
+  }, [openWidgetKey, entries, onOpenWidgetKeyHandled, track]);
 
   function startEditing(via: "button" | "long_press") {
     if (editing) return;
     setEditing(true);
-    track("dashboard_edit_started", { via, ...(template ? { template: template.kind } : {}) });
+    track?.({ type: "edit_started", via, ...(template ? { template: template.kind } : {}) });
   }
 
   function add(widget: string, size: LayoutItem["size"], from: Rect | null) {
-    if (!items || !isWidgetKey(widget)) return;
+    if (!items || !system.meta(widget)) return;
     const id = newItemId();
     const next = addItem(items, { id, widget, size, x: 0, y: 0, settings: {} });
     if (next.length === items.length) return;
@@ -173,7 +162,7 @@ export function WidgetBoard({
     setArrival({ id, from });
     haptic("drop");
     setGalleryOpen(false);
-    track("dashboard_widget_added", { widget, size, count: next.length });
+    track?.({ type: "widget_added", widget, size, count: next.length });
   }
 
   const closeDetail = useCallback(() => setOpenId(null), []);
@@ -192,6 +181,7 @@ export function WidgetBoard({
   const full = items.length >= MAX_ITEMS;
 
   return (
+    <WidgetSystemProvider system={system}>
     <div
       className="flex flex-col gap-4"
       data-testid="widget-board"
@@ -301,20 +291,17 @@ export function WidgetBoard({
           arrival={arrival}
           onOpen={(entry) => {
             setOpenId(entry.item.id);
-            track("dashboard_widget_opened", {
-              widget: entry.meta.key as WidgetKey,
-              size: entry.item.size,
-            });
+            track?.({ type: "widget_opened", widget: entry.meta.key, size: entry.item.size });
           }}
           onLongPress={template ? undefined : () => startEditing("long_press")}
           onRemove={(entry) => {
             editor.apply(removeItem(items, entry.item.id));
-            track("dashboard_widget_removed", { widget: entry.meta.key as WidgetKey });
+            track?.({ type: "widget_removed", widget: entry.meta.key });
           }}
           onResize={(entry, size) => {
             if (size === entry.item.size) return;
             editor.apply(resizeItem(items, entry.item.id, size));
-            track("dashboard_widget_resized", { widget: entry.meta.key as WidgetKey, size });
+            track?.({ type: "widget_resized", widget: entry.meta.key, size });
           }}
           onSettings={(entry) => setSettingsFor(entry)}
           onDragStart={() => {
@@ -344,8 +331,8 @@ export function WidgetBoard({
             const changed =
               before.findIndex((item) => item.id === activeId) !==
               after.findIndex((item) => item.id === activeId);
-            if (moved && changed && isWidgetKey(moved.widget)) {
-              track("dashboard_widget_moved", { widget: moved.widget });
+            if (moved && changed && system.meta(moved.widget)) {
+              track?.({ type: "widget_moved", widget: moved.widget });
             }
           }}
         />
@@ -368,11 +355,11 @@ export function WidgetBoard({
           meta={settingsFor.meta}
           name={settingsFor.name}
           settings={settingsFor.item.settings}
-          access={access}
+          system={system}
           onClose={() => setSettingsFor(null)}
           onSave={(settings) => {
             editor.apply(updateSettings(items, settingsFor.item.id, settings));
-            track("dashboard_widget_settings_saved", { widget: settingsFor.meta.key as WidgetKey });
+            track?.({ type: "widget_settings_saved", widget: settingsFor.meta.key });
             setSettingsFor(null);
           }}
         />
@@ -384,7 +371,7 @@ export function WidgetBoard({
             key={open.item.id}
             item={open.item}
             meta={open.meta}
-            name={tWidgets(`${open.meta.key}.name` as "today.name")}
+            name={system.name(open.meta.key)}
             settings={open.settings}
             scope={scope}
             onClose={closeDetail}
@@ -408,5 +395,6 @@ export function WidgetBoard({
         />
       )}
     </div>
+    </WidgetSystemProvider>
   );
 }

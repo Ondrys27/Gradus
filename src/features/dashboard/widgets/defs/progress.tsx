@@ -22,7 +22,7 @@ import {
   Stack,
   Sub,
   type WidgetQuery,
-} from "../kit";
+} from "@/features/widgets/kit";
 
 // ---------------------------------------------------------------------------
 // Milestones and progress: progress = done / all tasks, computed, never stored

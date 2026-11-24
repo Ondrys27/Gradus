@@ -25,10 +25,9 @@ import { toneSoft } from "@/components/ui/tone";
 import { lockPageScroll } from "@/lib/scroll-lock";
 import { useReducedMotionSafe } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
-import { WIDGET_APPEARANCE } from "./appearance";
-import type { WidgetKey, WidgetMeta } from "./catalog";
 import type { LayoutItem, WidgetSize } from "./grid";
 import { WidgetError, WidgetSkeleton, type WidgetDef, type WidgetSettings } from "./kit";
+import type { CoreWidgetMeta as WidgetMeta } from "./meta";
 import {
   ARRIVE_SPRING,
   flightFrom,
@@ -38,7 +37,7 @@ import {
   wiggleOf,
   type Rect,
 } from "./motion";
-import { useWidgetDef } from "./registry";
+import { useWidgetDef, useWidgetSystem } from "./system";
 
 /** How long a finger rests on a widget before the board goes into editing. */
 const LONG_PRESS_MS = 550;
@@ -98,7 +97,7 @@ export const LazyWidgetBody = memo(function LazyWidgetBody({
   size,
   settings,
 }: {
-  widget: WidgetKey;
+  widget: string;
   size: WidgetSize;
   settings: WidgetSettings;
 }) {
@@ -116,7 +115,7 @@ function WidgetCode({
   size,
   settings,
 }: {
-  widget: WidgetKey;
+  widget: string;
   size: WidgetSize;
   settings: WidgetSettings;
 }) {
@@ -137,7 +136,7 @@ function WidgetBody({
   settings: WidgetSettings;
 }) {
   const query = def.useData(settings);
-  const { tone } = WIDGET_APPEARANCE[def.key];
+  const { tone } = useWidgetSystem().appearance(def.key);
   if (query.data === undefined) {
     return query.isError ? <WidgetError onRetry={query.refetch} /> : <WidgetSkeleton size={size} />;
   }
@@ -224,7 +223,7 @@ export const WidgetFrame = memo(
     const { ref, near } = useNearScreen<HTMLDivElement>(eager);
     const press = useRef<{ x: number; y: number; timer: number } | null>(null);
     const pressed = useRef(false);
-    const { icon: Icon, tone } = WIDGET_APPEARANCE[meta.key as WidgetKey];
+    const { icon: Icon, tone } = useWidgetSystem().appearance(meta.key);
     const fresh = arrival?.id === item.id;
 
     // The flight from the gallery: measured where the widget landed, before paint.
@@ -387,7 +386,7 @@ export const WidgetFrame = memo(
               {near && !ghost ? (
                 <LazyWidgetBody
                   key={meta.key}
-                  widget={meta.key as WidgetKey}
+                  widget={meta.key}
                   size={item.size}
                   settings={settings}
                 />
@@ -518,7 +517,7 @@ export function WidgetDetail({
   const t = useTranslations("dashboard.board");
   const reduceMotion = useReducedMotionSafe();
   const panelRef = useRef<HTMLDivElement>(null);
-  const { icon: Icon, tone } = WIDGET_APPEARANCE[meta.key as WidgetKey];
+  const { icon: Icon, tone } = useWidgetSystem().appearance(meta.key);
 
   useEffect(() => {
     const previouslyFocused = document.activeElement as HTMLElement | null;
@@ -616,8 +615,9 @@ function DetailContent({
   onClose: () => void;
 }) {
   const t = useTranslations("dashboard.board");
-  const def = useWidgetDef(meta.key as WidgetKey);
-  const { tone } = WIDGET_APPEARANCE[meta.key as WidgetKey];
+  const system = useWidgetSystem();
+  const def = useWidgetDef(meta.key);
+  const { tone } = system.appearance(meta.key);
   const query = def.useData(settings);
   const href = (def.useHref ?? (() => meta.href))(settings);
   const Detail = def.Detail;
@@ -632,7 +632,7 @@ function DetailContent({
       ) : (
         <Detail data={query.data} settings={settings} tone={tone} close={onClose} />
       )}
-      {href !== "/app" && (
+      {href !== system.homeHref && (
         <Link
           href={href}
           onClick={onClose}

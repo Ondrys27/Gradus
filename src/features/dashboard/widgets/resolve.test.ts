@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { LayoutItem } from "./grid";
+import type { LayoutItem } from "@/features/widgets/grid";
 import { resolveMain } from "./resolve";
 
 const layout = (widget: string): LayoutItem[] => [

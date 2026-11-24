@@ -48,7 +48,7 @@ import {
   Sub,
   type WidgetQuery,
   type WidgetViewProps,
-} from "../kit";
+} from "@/features/widgets/kit";
 
 // ---------------------------------------------------------------------------
 // Work timer of a worker (their own time in the company)
