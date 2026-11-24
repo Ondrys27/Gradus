@@ -70,6 +70,7 @@ export const ADMIN_HELP: Record<AdminSectionKey, readonly HelpItem[]> = {
     { key: "gradyEconomy", href: MODELS, anchor: "usporny-rezim" },
     { key: "gradyRules", href: RULES, anchor: "pravidla" },
     { key: "gradyInstructions", href: RULES, anchor: "pravidla" },
+    { key: "trashRetention", href: RULES, anchor: "kos-nastaveni" },
   ],
   explorer: [{ key: "explorerEvents", href: `${P}/pruzkumnik` }],
   costs: [

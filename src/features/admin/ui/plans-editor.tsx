@@ -89,7 +89,9 @@ const when = (iso: string) => formatDateTime(new Date(iso), ADMIN_FORMAT_SETTING
 function stable(value: unknown): string {
   return JSON.stringify(value, (_, item: unknown) =>
     item && typeof item === "object" && !Array.isArray(item)
-      ? Object.fromEntries(Object.entries(item as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b)))
+      ? Object.fromEntries(
+          Object.entries(item as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b)),
+        )
       : item,
   );
 }
@@ -129,13 +131,20 @@ export function PlansEditor({
   const [notice, setNotice] = useState<Notice | null>(null);
   const [problem, setProblem] = useState<PlansActionError | null>(null);
   const [discarding, setDiscarding] = useState(false);
-  const [confirming, setConfirming] = useState<(Valid & { impact: PlanImpact[] | null }) | null>(null);
+  const [confirming, setConfirming] = useState<(Valid & { impact: PlanImpact[] | null }) | null>(
+    null,
+  );
   const [pending, startTransition] = useTransition();
 
   const validation = useMemo(() => validatePlanCatalog(fromForm(form.plans)), [form.plans]);
-  const addOnsValidation = useMemo(() => validatePlanAddOns(fromAddOnsForm(form.addOns)), [form.addOns]);
+  const addOnsValidation = useMemo(
+    () => validatePlanAddOns(fromAddOnsForm(form.addOns)),
+    [form.addOns],
+  );
   const valid: Valid | null =
-    validation.ok && addOnsValidation.ok ? { catalog: validation.catalog, addOns: addOnsValidation.addOns } : null;
+    validation.ok && addOnsValidation.ok
+      ? { catalog: validation.catalog, addOns: addOnsValidation.addOns }
+      : null;
   const issues = [
     ...(validation.ok ? [] : validation.issues),
     ...(addOnsValidation.ok ? [] : addOnsValidation.issues),
@@ -171,7 +180,9 @@ export function PlansEditor({
   }
 
   const savedAsValid = (draft: Draft | null) =>
-    draft && draft.addOns !== null && valid ? same(valid, { catalog: draft.catalog, addOns: draft.addOns }) : false;
+    draft && draft.addOns !== null && valid
+      ? same(valid, { catalog: draft.catalog, addOns: draft.addOns })
+      : false;
 
   /** Saves when something changed; returns the plans and add-ons as the draft holds them. */
   async function persist(): Promise<Valid | null> {
@@ -180,7 +191,8 @@ export function PlansEditor({
       setProblem("invalid");
       return null;
     }
-    if (saved && saved.addOns && savedAsValid(saved)) return { catalog: saved.catalog, addOns: saved.addOns };
+    if (saved && saved.addOns && savedAsValid(saved))
+      return { catalog: saved.catalog, addOns: saved.addOns };
     const result = await savePlanDraft(valid.catalog, valid.addOns).catch(
       () => ({ ok: false, error: "failed" }) as const,
     );
@@ -214,7 +226,9 @@ export function PlansEditor({
   function discard() {
     setProblem(null);
     startTransition(async () => {
-      const result = await discardPlanDraft().catch(() => ({ ok: false, error: "failed" }) as const);
+      const result = await discardPlanDraft().catch(
+        () => ({ ok: false, error: "failed" }) as const,
+      );
       if (!result.ok) {
         fail(result.error);
         return;
@@ -249,9 +263,11 @@ export function PlansEditor({
   function publish() {
     if (!confirming) return;
     startTransition(async () => {
-      const result = await publishPlanCatalog(confirming.catalog, confirming.addOns, published.id).catch(
-        () => ({ ok: false, error: "failed" }) as const,
-      );
+      const result = await publishPlanCatalog(
+        confirming.catalog,
+        confirming.addOns,
+        published.id,
+      ).catch(() => ({ ok: false, error: "failed" }) as const);
       if (!result.ok) {
         fail(result.error);
         return;
@@ -301,7 +317,9 @@ export function PlansEditor({
         />
       )}
       {showErrors && issues.some((issue) => issue.path === "catalog") && (
-        <FormAlert>{t(`errors.${issues.find((issue) => issue.path === "catalog")!.code}`)}</FormAlert>
+        <FormAlert>
+          {t(`errors.${issues.find((issue) => issue.path === "catalog")!.code}`)}
+        </FormAlert>
       )}
 
       <div
@@ -319,7 +337,12 @@ export function PlansEditor({
         </p>
         <div className="flex flex-wrap gap-2">
           {saved && (
-            <Button type="button" variant="ghost" disabled={pending} onClick={() => setDiscarding(true)}>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={pending}
+              onClick={() => setDiscarding(true)}
+            >
               {t("actions.discard")}
             </Button>
           )}
@@ -430,7 +453,12 @@ function PlanCardEditor({
       const path = `${field}.${locale}`;
       const error = message(path, max);
       return (
-        <FormField key={path} id={id(path)} label={t(`card.${field}`, { locale: locale.toUpperCase() })} error={error}>
+        <FormField
+          key={path}
+          id={id(path)}
+          label={t(`card.${field}`, { locale: locale.toUpperCase() })}
+          error={error}
+        >
           <Input
             {...fieldA11y(id(path), error)}
             value={plan[field][locale]}
@@ -468,7 +496,11 @@ function PlanCardEditor({
   };
   const prices = (fields: readonly ("monthly" | "yearly" | "per_worker")[]) =>
     currencies.map((currency) => (
-      <div key={currency} className="grid grid-cols-2 gap-3" data-testid={`plan-${plan.key}-prices-${currency}`}>
+      <div
+        key={currency}
+        className="grid grid-cols-2 gap-3"
+        data-testid={`plan-${plan.key}-prices-${currency}`}
+      >
         {fields.map((field) => money(field, currency))}
       </div>
     ));
@@ -556,6 +588,13 @@ function PlanCardEditor({
 
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-2 text-sm font-semibold text-ink">{t("card.limits")}</legend>
+        <label className="flex min-h-11 items-center justify-between gap-3 text-sm text-ink-soft">
+          {t("card.mcp")}
+          <Switch
+            checked={plan.mcp}
+            onCheckedChange={(on) => onChange((current) => ({ ...current, mcp: on }))}
+          />
+        </label>
         <div className="grid grid-cols-2 gap-3">
           {PLAN_LIMIT_KEYS.map((limit) => {
             const path = `limits.${limit}`;
@@ -589,7 +628,10 @@ function PlanCardEditor({
           items={plan.features}
           nameOf={(feature) => feature.cs || feature.en || t("card.emptyLine")}
           onReorder={(from, to) =>
-            onChange((current) => ({ ...current, features: moveFeature(current.features, from, to) }))
+            onChange((current) => ({
+              ...current,
+              features: moveFeature(current.features, from, to),
+            }))
           }
           renderItem={(feature, handle) => {
             const line = plan.features.indexOf(feature);
@@ -671,7 +713,10 @@ function PlanCardEditor({
           onClick={() =>
             onChange((current) => ({
               ...current,
-              features: [...current.features, { id: featureId(), cs: "", en: "", highlight: false }],
+              features: [
+                ...current.features,
+                { id: featureId(), cs: "", en: "", highlight: false },
+              ],
             }))
           }
         >
@@ -716,7 +761,8 @@ function MoneyField({
       ? manualDeviation({ EUR: eur, [currency]: manual }, currency, rates)
       : null;
   const warn = !error && deviation !== null && Math.abs(deviation) > MANUAL_DEVIATION_WARN;
-  const exact = eur !== null && deviation !== null && manual !== null ? manual / (1 + deviation) : null;
+  const exact =
+    eur !== null && deviation !== null && manual !== null ? manual / (1 + deviation) : null;
   return (
     <FormField
       id={id}
@@ -727,7 +773,11 @@ function MoneyField({
           <span className="flex items-start gap-1 text-gold" data-testid="plan-price-deviation">
             <TriangleAlertIcon aria-hidden className="mt-0.5 size-3.5 shrink-0" />
             {t(deviation > 0 ? "deviationAbove" : "deviationBelow", {
-              percent: formatNumber(Math.abs(deviation), { style: "percent", decimals: 0 }, ADMIN_FORMAT_SETTINGS),
+              percent: formatNumber(
+                Math.abs(deviation),
+                { style: "percent", decimals: 0 },
+                ADMIN_FORMAT_SETTINGS,
+              ),
               exact: formatPrice(Math.round(exact * 100) / 100, currency, ADMIN_FORMAT_SETTINGS),
             })}
           </span>
@@ -850,7 +900,9 @@ function AddOnsEditor({
                 <FormField
                   key={path}
                   id={id(path)}
-                  label={t(`addOns.${field === "description" ? "descriptionLabel" : "name"}`, { locale: locale.toUpperCase() })}
+                  label={t(`addOns.${field === "description" ? "descriptionLabel" : "name"}`, {
+                    locale: locale.toUpperCase(),
+                  })}
                   error={error}
                 >
                   <Input
@@ -873,7 +925,9 @@ function AddOnsEditor({
               className="flex min-w-0 flex-col gap-3 rounded-2xl border border-line bg-surface p-4"
               data-testid={`addon-card-${addOn.key}`}
             >
-              <h3 className="truncate text-base font-semibold text-ink">{addOn.name.cs || addOn.key}</h3>
+              <h3 className="truncate text-base font-semibold text-ink">
+                {addOn.name.cs || addOn.key}
+              </h3>
               {text("name", ADD_ON_NAME_MAX)}
               {text("description", ADD_ON_DESCRIPTION_MAX)}
               <div className="grid grid-cols-2 gap-3">

@@ -19,7 +19,8 @@ const GUEST_PAGES = new Set(["login", "register", "forgotPassword"]);
 const OPEN_PREFIXES = ["/auth/", "/api/"];
 
 /** Only these need a session; everything else is the public site or a 404. */
-const PROTECTED_PREFIXES = [APP_HOME_PATH, "/design-system"];
+/** /oauth: the consent screen of connected apps (28.8), after the sign-in. */
+const PROTECTED_PREFIXES = [APP_HOME_PATH, "/design-system", "/oauth"];
 
 /**
  * guest: sign-in pages · reset: needs the recovery session from the e-mail ·

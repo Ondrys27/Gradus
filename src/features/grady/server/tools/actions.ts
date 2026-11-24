@@ -18,6 +18,7 @@ import { toolAllowed } from "../../tools/access";
 import { toolByName } from "../../tools/catalog";
 import { stampRecords, undoRecords, type UndoRecord, type UndoResult } from "../../tools/records";
 import { ToolError, type AnyTool, type ToolContext } from "../../tools/types";
+import { keepInTrash, markRestored } from "@/features/trash/server/keep";
 
 /**
  * Running Grady's tools and keeping their record (grady_actions). The
@@ -447,6 +448,14 @@ export async function confirmAction(
         summary = (await resolved.tool.prepare(env.ctx, resolved.input)).summary;
       }
       const { result } = await runNow(actionEnv, resolved.tool, resolved.input);
+      // What a deleting tool removed waits in the trash (28.8), restorable after the card's 24 h too.
+      await keepInTrash(
+        env.admin,
+        { userId: env.ctx.userId, spaceId: env.ctx.workspaceId },
+        call.name,
+        result.records ?? [],
+        "grady",
+      );
       records.push(...tagged(result.records ?? [], call.name));
       outputs.push(result.output ?? null);
       awards.push(...(result.awards ?? []));
@@ -566,6 +575,7 @@ export async function undoAction(
     await finish(env.admin, row.id, { undone_at: null });
     return { ok: false, code: outcome.reason, card };
   }
+  await markRestored(env.admin, env.ctx.userId, records);
   const undone = await finish(env.admin, row.id, { status: "undone" });
   await track(
     "grady_action_undone",

@@ -28,6 +28,7 @@ import { loadAiCaps } from "@/features/grady/server/caps";
 import { loadGradyRules } from "@/features/grady/server/rules";
 import { toGradyRulesForm } from "@/features/grady/rules";
 import { AdminViewLink } from "@/features/admin/ui/admin-view";
+import { TrashRetentionForm } from "@/features/admin/ui/trash-retention-form";
 import { GradyRulesForm } from "@/features/admin/ui/grady-rules-form";
 import { GradyModelsForm, ModelPriceList } from "@/features/admin/ui/grady-models-form";
 import { loadModelsOverview } from "@/features/admin/server/ai-models-data";
@@ -55,7 +56,11 @@ import { peopleNamer } from "@/features/admin/server/people";
 import { lastSettingChange } from "@/features/admin/server/setting-change";
 import { BreakdownList, DataTable, FieldsGrid } from "@/features/admin/ui/data-blocks";
 import { Figures } from "@/features/admin/ui/metric-tile";
-import { ADMIN_FORMAT_SETTINGS, formatMetricValue, metricCsvValue } from "@/features/admin/format-metric";
+import {
+  ADMIN_FORMAT_SETTINGS,
+  formatMetricValue,
+  metricCsvValue,
+} from "@/features/admin/format-metric";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.ai");
@@ -69,7 +74,11 @@ const count = (value: number | null) => formatNumber(value ?? 0, {}, ADMIN_FORMA
 const AI_TABS = ["overview", "models", "rules"] as const;
 type AiTab = (typeof AI_TABS)[number];
 
-const AUDIT_TARGET: Record<AiTab, string> = { overview: "ai", models: "ai.models", rules: "ai.rules" };
+const AUDIT_TARGET: Record<AiTab, string> = {
+  overview: "ai",
+  models: "ai.models",
+  rules: "ai.rules",
+};
 
 const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
@@ -128,12 +137,17 @@ export default async function AdminAiPage({ searchParams }: Props) {
     return (
       <>
         <AdminPageHeader section="ai" q={q} extra={tabs} />
-        <Suspense fallback={<CardSkeleton height={520} />}>
-          <Rules
-            readOnly={!adminCan(context, "editGradyRules")}
-            canTest={adminCan(context, "testGrady")}
-          />
-        </Suspense>
+        <div className="flex flex-col gap-6">
+          <Suspense fallback={<CardSkeleton height={520} />}>
+            <Rules
+              readOnly={!adminCan(context, "editGradyRules")}
+              canTest={adminCan(context, "testGrady")}
+            />
+          </Suspense>
+          <Suspense fallback={<CardSkeleton height={160} />}>
+            <TrashRetention readOnly={!adminCan(context, "editGradyRules")} />
+          </Suspense>
+        </div>
       </>
     );
   }
@@ -283,6 +297,27 @@ async function Rules({ readOnly, canTest }: { readOnly: boolean; canTest: boolea
             canTest={canTest && !readOnly}
           />
         )}
+      </Show>
+      {changed && <p className="text-xs text-ink-muted">{t("changedBy", changed)}</p>}
+    </AdminCard>
+  );
+}
+
+/** How long the trash keeps what Grady and connected apps deleted (28.8). */
+async function TrashRetention({ readOnly }: { readOnly: boolean }) {
+  const [loaded, t, changed] = await Promise.all([
+    safe("trash retention", async () => {
+      const { data, error } = await createAdminClient().rpc("trash_retention_days");
+      if (error) throw error;
+      return data ?? 7;
+    }),
+    getTranslations("admin.ai.trash"),
+    lastSettingChange("trash_retention"),
+  ]);
+  return (
+    <AdminCard title={t("title")} description={t("description")} id="kos-nastaveni">
+      <Show loaded={loaded}>
+        {(days) => <TrashRetentionForm days={days} readOnly={readOnly} />}
       </Show>
       {changed && <p className="text-xs text-ink-muted">{t("changedBy", changed)}</p>}
     </AdminCard>
@@ -452,11 +487,18 @@ async function Usage({ q }: { q: AdminQuery }) {
   const columns = usageColumns(t, tUnits);
   return (
     <BlockGrid>
-      <AdminCard title={tItems("ai_by_feature.name")} description={tItems("ai_by_feature.description")}>
-        <Show loaded={byFeature}>{(rows) => <DataTable id="ai.by_feature" table={buildTable(rows, columns)} />}</Show>
+      <AdminCard
+        title={tItems("ai_by_feature.name")}
+        description={tItems("ai_by_feature.description")}
+      >
+        <Show loaded={byFeature}>
+          {(rows) => <DataTable id="ai.by_feature" table={buildTable(rows, columns)} />}
+        </Show>
       </AdminCard>
       <AdminCard title={tItems("ai_by_model.name")} description={tItems("ai_by_model.description")}>
-        <Show loaded={byModel}>{(rows) => <DataTable id="ai.by_model" table={buildTable(rows, columns)} />}</Show>
+        <Show loaded={byModel}>
+          {(rows) => <DataTable id="ai.by_model" table={buildTable(rows, columns)} />}
+        </Show>
       </AdminCard>
     </BlockGrid>
   );
@@ -472,7 +514,10 @@ async function More({ q }: { q: AdminQuery }) {
   ]);
   return (
     <BlockGrid columns={3}>
-      <AdminCard title={tItems("jarvis_conversations.name")} description={tItems("jarvis_conversations.description")}>
+      <AdminCard
+        title={tItems("jarvis_conversations.name")}
+        description={tItems("jarvis_conversations.description")}
+      >
         <Show loaded={conversations}>{(data) => <FieldsGrid data={data} />}</Show>
       </AdminCard>
       <AdminCard title={tItems("ai_errors.name")} description={tItems("ai_errors.description")}>
@@ -595,8 +640,17 @@ async function TopSpaces({ q, exportable }: { q: AdminQuery; exportable: boolean
             id="ai.top_spaces"
             exportable={exportable}
             table={buildTable(rows, [
-              { key: "space_name", label: t("columns.space"), render: (row) => nameOf(row.spaceId) },
-              { key: "space_id", label: t("columns.spaceId"), csvOnly: true, render: (row) => row.spaceId },
+              {
+                key: "space_name",
+                label: t("columns.space"),
+                render: (row) => nameOf(row.spaceId),
+              },
+              {
+                key: "space_id",
+                label: t("columns.spaceId"),
+                csvOnly: true,
+                render: (row) => row.spaceId,
+              },
               { key: "plan", label: t("columns.plan"), render: (row) => row.plan },
               {
                 key: "users",

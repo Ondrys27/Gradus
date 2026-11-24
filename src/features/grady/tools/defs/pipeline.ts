@@ -4,7 +4,6 @@ import { contactName } from "@/features/contacts/types";
 import {
   addDealContact,
   createDeal,
-  deleteDeal,
   moveDeal,
   nextDealPositionIn,
   patchDeal,
@@ -27,6 +26,7 @@ import {
   updated,
   uuid,
 } from "./shared";
+import { restoreTrashed, trashed, trashRecord } from "./trash";
 
 async function stagesOf(ctx: ToolContext): Promise<Stage[]> {
   const { data, error } = await ctx.db
@@ -204,10 +204,7 @@ export const pipelineTools = [
         .limit(MAX_DEAL_ASSIGNEES);
       if (error) throw error;
       // Without "all deals" the user stays on it, as on the screen.
-      if (
-        !can(ctx.workspace, "pipeline", "view_all") &&
-        !input.assigneeIds.includes(ctx.userId)
-      ) {
+      if (!can(ctx.workspace, "pipeline", "view_all") && !input.assigneeIds.includes(ctx.userId)) {
         throw new ToolError("forbidden", "The user must stay on the deal.");
       }
       try {
@@ -220,7 +217,10 @@ export const pipelineTools = [
       } catch (cause) {
         const message = (cause as { message?: string } | null)?.message ?? "";
         if (message.includes("deal_assignee_outside")) {
-          throw new ToolError("invalid", "Someone is not the owner or an active worker of the space.");
+          throw new ToolError(
+            "invalid",
+            "Someone is not the owner or an active worker of the space.",
+          );
         }
         throw cause;
       }
@@ -413,7 +413,7 @@ export const pipelineTools = [
     kind: "write",
     risk: "confirm",
     description:
-      "Delete a deal for good (its contact stays; tasks only on it go). The user confirms it first.",
+      "Move a deal to the trash (its contact stays; its tasks and Date of realisation go with it); restore_from_trash brings it back within the trash's retention (7 days by default). The user confirms it first.",
     input: z.object({ dealId: uuid }),
     describe: (_input, t) => t("delete_deal", { title: "" }),
     async prepare(ctx, input) {
@@ -425,13 +425,16 @@ export const pipelineTools = [
     },
     async execute(ctx, input) {
       const deal = await readDeal(ctx, input.dealId);
-      await deleteDeal(ops(ctx), deal.id);
+      await trashRecord(ctx, "deal", deal.id);
+      ctx.track("deal_deleted", {});
       return {
-        output: { deleted: true },
+        output: { deleted: true, inTrash: true },
         summary: ctx.t("deleted_deal", { title: quoted(deal.title) }),
+        records: [trashed("deals", deal.id)],
       };
     },
-    undoable: false,
+    undoable: true,
+    undo: (ctx, records) => restoreTrashed(ctx, "deal", records),
     invalidates: ["pipeline", "contacts", "crmTasks", "calendar"],
   }),
 

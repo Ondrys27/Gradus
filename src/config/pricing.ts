@@ -111,6 +111,11 @@ export type CatalogPlan = {
   recommended: boolean;
   /** Position of the card, 0 first. */
   order: number;
+  /**
+   * Connected apps (the MCP server, 28.8) for the plan's accounts. Missing =
+   * on (every plan has them); false switches them off.
+   */
+  mcp?: boolean;
 };
 
 /** The payload of a catalog version: the three plans. */

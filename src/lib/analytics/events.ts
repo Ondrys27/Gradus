@@ -26,6 +26,8 @@ import { RULE_KINDS } from "@/features/workers/rewards/types";
 import { WIDGET_KEYS } from "@/features/dashboard/widgets/catalog";
 import { WIDGET_SIZES } from "@/features/dashboard/widgets/grid";
 import { MEETING_TARGETS } from "@/features/meeting-notes/logic";
+import { MCP_LEVELS } from "@/features/mcp/levels";
+import { TRASH_KINDS } from "@/features/trash/trash";
 import { Constants } from "@/types/database";
 import { field, isSafeField, isScrubbedTextField } from "./fields";
 import { APP_ROUTES, ANALYTICS_SECTIONS, type AnalyticsSection } from "./routes";
@@ -470,7 +472,9 @@ export const EVENTS = {
   /** A folder of notes made (28.3): at the top or inside another one. */
   note_folder_created: event("notes", "client", true, { nested: bool() }),
   /** A folder renamed, recoloured or moved under another one. */
-  note_folder_updated: event("notes", "client", true, { field: oneOf(["name", "color", "parent"]) }),
+  note_folder_updated: event("notes", "client", true, {
+    field: oneOf(["name", "color", "parent"]),
+  }),
   /** A folder deleted; its notes stay, out of any folder. */
   note_folder_deleted: event("notes", "client", true, { notes: count(5000) }),
   /** A note put into a folder or out of every folder, by dragging or from the menu. */
@@ -1022,6 +1026,30 @@ export const EVENTS = {
     section: key(),
     risk: oneOf(["instant", "confirm"]),
     via: oneOf(["chat", "meeting_notes"]),
+  }),
+  // Connected apps over MCP (28.8): registration, consent, level, calls; never names or contents.
+  mcp_client_registered: event("jarvis", "server", false, {}),
+  mcp_client_connected: event("jarvis", "server", true, {
+    level: oneOf(MCP_LEVELS),
+    companies: count(50),
+    own: bool(),
+  }),
+  mcp_client_disconnected: event("jarvis", "server", true, { by: oneOf(["user"]) }),
+  mcp_level_changed: event("jarvis", "server", false, {
+    from: oneOf(MCP_LEVELS),
+    to: oneOf(MCP_LEVELS),
+  }),
+  mcp_tool_called: event("jarvis", "server", true, {
+    tool: key(),
+    level: oneOf(["read", "write", "delete"]),
+    ok: bool(),
+  }),
+  mcp_space_switched: event("jarvis", "server", false, { own: bool() }),
+  mcp_company_toggled: event("workers", "server", false, { enabled: bool() }),
+  /** Something deleted through Grady or a connected app came back from the trash (28.8). */
+  trash_restored: event("jarvis", "server", false, {
+    kind: oneOf(TRASH_KINDS),
+    via: oneOf(["tool", "settings"]),
   }),
   grady_action_confirmed: event("jarvis", "server", true, { tool: key() }),
   grady_action_rejected: event("jarvis", "server", false, { tool: key() }),

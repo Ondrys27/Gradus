@@ -19,10 +19,14 @@ nástroje Grady v chatu a z něj vzniknou nástroje MCP serveru (28.8):
   v MCP jen „Plný přístup“.
 
 **Vratná?** = karta má Vrátit (24 h, nic nepřepíše, když se záznam mezitím
-změnil). Smazání přes Gradyho jde vrátit u úkolů, událostí, ručních transakcí,
-automatických plateb a úkolů milníku (řádek se vloží zpět, jak byl);
-poznámka jde do koše poznámek. Smazání obchodu a kontaktu je zatím nevratné
-(jen s potvrzením): skutečný koš s obnovou pro obojí přináší 28.8.
+změnil). Smazání přes Gradyho i přes připojenou aplikaci (MCP, 28.8) jde do
+koše: obchod a kontakt zůstanou v tabulce s `deleted_at` (`trash_record()`,
+skryté pro všechny dotazy klientů i s tím, co na nich jen visí), úkoly,
+události, ruční transakce, automatické platby a úkoly milníku jako snímek
+v `trash_items`. Obnovit jde kartou Vrátit, operací `restore_from_trash` nebo
+v Nastavení → Integrace → Koš po dobu z administrace (výchozí 7 dní,
+`app_settings.trash_retention`); pak je `purge_trash()` smaže natrvalo.
+Poznámka jde do koše poznámek (30 dní).
 
 **Potvrzení**: mazání, odeslání, finanční kroky faktur, lidé, rezervace,
 dokončení milníku, sdílení a hromadné změny (víc než 5) čekají na Potvrdit
@@ -72,13 +76,13 @@ s katalogem (každá operace právě jednou, právo, úroveň, vratnost) a s tí
 | Upravit kontakt | `update_contact` | contacts.update | write | ano | ano | ano |
 | Přesunout kontakt do tabulky (Cold Calling) | `move_contact` | contacts.update | write | ne | ano | ano |
 | Zapsat hovor, e-mail, schůzku, SMS, poznámku | `add_contact_activity` | contacts.update | write | ano | ano | ano |
-| Smazat kontakt | `delete_contact` | contacts.delete | delete | ne | ano | ne |
+| Smazat kontakt (do koše) | `delete_contact` | contacts.delete | delete | ano | ano | ne |
 | Nový obchod | `create_deal` | pipeline.create | write | ano | ano | ne |
 | Upravit obchod (pole, Close Date, částka) | `update_deal` | pipeline.update | write | ano | ano | ne |
 | Lidé na obchodu | `set_deal_people` | pipeline.update | write | ano | ano | ne |
 | Přesunout obchod do fáze (výhra, prohra) | `move_deal_stage` | pipeline.change_stage | write | ano | ano | ne |
 | Přidat kontakt k obchodu | `add_deal_contact` | pipeline.update | write | ano | ano | ne |
-| Smazat obchod | `delete_deal` | pipeline.delete | delete | ne | ano | ne |
+| Smazat obchod (do koše) | `delete_deal` | pipeline.delete | delete | ano | ano | ne |
 | Zápis do historie obchodu (shrnutí schůzky) | `add_deal_history_entry` | contacts.update | write | ano | ano | ano |
 | Přepis schůzky jako příloha obchodu | `save_deal_attachment` | pipeline.update | write | ano | ano | ne |
 | Nový obchodní úkol | `create_crm_task` | tasks.create | write | ano | ano | ano |
@@ -118,6 +122,8 @@ s katalogem (každá operace právě jednou, právo, úroveň, vratnost) a s tí
 | Přehled: přidat widget | `place_widget` | dashboard | write | ano | ano | ano |
 | Přehled: odebrat widget | `hide_widget` | dashboard | write | ano | ano | ano |
 | Nastavení (vzhled, formáty, Grady) | `update_settings` | settings | write | ano | ano | ne |
+| Koš: co smazal Grady nebo připojená aplikace | `list_trash` | dashboard | read | ne | ano | ano |
+| Koš: obnovit | `restore_from_trash` | dashboard | write | ne | ano | ano |
 
 Poznámky k právům:
 

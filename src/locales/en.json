@@ -239,7 +239,8 @@
     "messages": "Messages",
     "unread": "{count, plural, one {# unread message} other {# unread messages}}",
     "scheduler": "Scheduler",
-    "support": "Support"
+    "support": "Support",
+    "integrations": "Integrations"
   },
   "topBar": {
     "home": "Go to dashboard",
@@ -655,16 +656,16 @@
       "update_contact": "Updated the contact {name}",
       "move_contact": "Moved {name} to {table}",
       "add_contact_activity": "Logged {type, select, call {a call} email {an e-mail} meeting {a meeting} sms {an SMS} other {a note}} with {name}",
-      "delete_contact": "Delete the contact {name}",
-      "deleted_contact": "Deleted the contact {name}",
+      "delete_contact": "Move the contact {name} to the trash",
+      "deleted_contact": "The contact {name} is in the trash",
       "create_deal": "Created the deal “{title}”",
       "update_deal": "Updated the deal “{title}”",
       "set_deal_people": "Set the people on the deal “{title}”",
       "move_deal_stage": "Moved the deal “{title}” to {stage}",
       "won_deal": "The deal “{title}” is won",
       "add_deal_contact": "Added {name} to the deal “{title}”",
-      "delete_deal": "Delete the deal “{title}”",
-      "deleted_deal": "Deleted the deal “{title}”",
+      "delete_deal": "Move the deal “{title}” to the trash",
+      "deleted_deal": "The deal “{title}” is in the trash",
       "create_crm_task": "Created the task “{title}”",
       "update_crm_task": "Updated the task “{title}”",
       "complete_crm_task": "The task “{title}” is done",
@@ -762,13 +763,13 @@
         "update_contact": "Updating the contact…",
         "move_contact": "Moving the contact…",
         "add_contact_activity": "Logging the activity…",
-        "delete_contact": "Preparing to delete the contact…",
+        "delete_contact": "Preparing to move the contact to the trash…",
         "create_deal": "Creating the deal…",
         "update_deal": "Updating the deal…",
         "set_deal_people": "Setting the people on the deal…",
         "move_deal_stage": "Moving the deal…",
         "add_deal_contact": "Adding the contact to the deal…",
-        "delete_deal": "Preparing to delete the deal…",
+        "delete_deal": "Preparing to move the deal to the trash…",
         "create_crm_task": "Creating the task…",
         "update_crm_task": "Updating the task…",
         "complete_crm_task": "Ticking the task…",
@@ -808,8 +809,12 @@
         "review_reward_entries": "Preparing the approval…",
         "add_manual_reward": "Preparing the reward…",
         "place_widget": "Placing the widget…",
-        "hide_widget": "Taking the widget off…"
-      }
+        "hide_widget": "Taking the widget off…",
+        "list_trash": "Looking into the trash…",
+        "restore_from_trash": "Restoring from the trash…"
+      },
+      "list_trash": "Looking into the trash",
+      "restore_from_trash": "Restored “{title}” from the trash"
     },
     "actions": {
       "status": {
@@ -1351,6 +1356,10 @@
       "calendar": {
         "title": "Calendar",
         "description": "Other calendars to keep free and your calendar as a link to subscribe to."
+      },
+      "integrations": {
+        "title": "Integrations",
+        "description": "Connected apps: {appName} in Claude and other MCP clients, and the trash of what they deleted."
       }
     },
     "items": {
@@ -1513,6 +1522,18 @@
       "calendarFeed": {
         "label": "Link to subscribe to your calendar",
         "keywords": "ics feed export google apple outlook subscribe calendar link"
+      },
+      "mcpAddress": {
+        "label": "MCP server address",
+        "keywords": "mcp claude connector address url server ai"
+      },
+      "connectedApps": {
+        "label": "Connected apps",
+        "keywords": "claude mcp connector connected apps disconnect level access tokens"
+      },
+      "trash": {
+        "label": "Trash",
+        "keywords": "trash deleted restore grady claude mcp undo"
       }
     },
     "work": {
@@ -4949,6 +4970,9 @@
         },
         "scheduler": {
           "own": "Own booking page, meeting types and bookings"
+        },
+        "integrations": {
+          "mcp": "Connect Claude and other apps (MCP)"
         }
       },
       "scope": {
@@ -6188,6 +6212,16 @@
             "answer": "You sent it 8 days ago and haven't heard back. Call them tomorrow morning and ask whether anything is missing. If they hesitate, offer the first month at half price.",
             "action": "Remind me tomorrow at 9:00"
           }
+        },
+        "claude": {
+          "title": "{appName} in Claude",
+          "text": "Connect {appName} to Claude as a connector and work with it in words: Claude reads your deals, tasks and notes and writes down what you tell it. Always only what you may, at the level you choose.",
+          "examples": {
+            "1": "“Write this meeting transcript into the Novák deal and create the tasks.”",
+            "2": "“What is on fire today and who should I call?”",
+            "3": "“Schedule a meeting with Jana on Thursday at ten.”"
+          },
+          "note": "Anything deleted can be restored for 7 days. E-mails and invoices go out only with full access and your confirmation."
         }
       },
       "game": {
@@ -7886,6 +7920,18 @@
             "why": "The cheapest possible decision, at most 20 output tokens."
           }
         }
+      },
+      "trash": {
+        "title": "Trash of Grady and connected apps",
+        "description": "For how many days what Grady or a connected app (Claude) deleted can be restored. Then it is deleted for good. Notes keep their own trash for 30 days.",
+        "label": "Days in the trash",
+        "save": "Save",
+        "confirm": "The trash will keep deleted things for {days} days. Continue?",
+        "invalid": "Enter a whole number from {min} to {max}.",
+        "invalidShort": "That number of days is not possible.",
+        "failed": "Could not save. Try again.",
+        "readOnly": "Only the owner or a full administrator can change it.",
+        "changedBy": "Last changed by {name}, {date}"
       }
     },
     "game": {
@@ -8710,7 +8756,8 @@
         "includedWorkersHint": "Workers without a plan of their own that the price covers. Each one more costs the price per worker (without it they do not fit the plan); anyone with a plan of their own joins for free.",
         "deviationAbove": "{percent} above the rate ({exact}).",
         "deviationBelow": "{percent} below the rate ({exact}).",
-        "derivedPlaceholder": "from the rate"
+        "derivedPlaceholder": "from the rate",
+        "mcp": "Connected apps (Claude, MCP)"
       },
       "fields": {
         "name": "Name",
@@ -9294,6 +9341,10 @@
         "gradyEconomy": {
           "title": "Economy mode",
           "keywords": "economy mode cheaper model cap threshold savings"
+        },
+        "trashRetention": {
+          "title": "Trash of Grady and connected apps",
+          "keywords": "trash deleted restore days mcp claude grady retention"
         }
       }
     },
@@ -11408,6 +11459,143 @@
       "deleteConfirm": "Delete",
       "deleteFailed": "The attachment could not be deleted.",
       "cancel": "Cancel"
+    }
+  },
+  "mcp": {
+    "consent": {
+      "pageTitle": "Connect an app to {appName}",
+      "title": "{client} wants access to your {appName}",
+      "description": "The app will read and change in {appName} only what you may, within the scope you choose here.",
+      "errorTitle": "This app can not be connected",
+      "error": {
+        "client": "The app could not be verified. Try adding it in Claude again.",
+        "redirect": "The app wants to send the sign-in to an address it did not register. For your safety it is not connected."
+      },
+      "verifiedClient": "Verified app identity",
+      "returnsTo": "After you allow it, you go back to {host}.",
+      "levelLabel": "What it may do",
+      "levels": {
+        "read": {
+          "title": "Read only",
+          "description": "Searches and reads contacts, deals, tasks, the calendar, notes, finance and invoices."
+        },
+        "write": {
+          "title": "Read and write",
+          "description": "Also creates and edits: tasks, notes, deals, meetings, history entries."
+        },
+        "full": {
+          "title": "Full access",
+          "description": "Also deletes (into the trash), sends e-mails and messages and issues invoices."
+        }
+      },
+      "fullWarning": "With full access the app can send e-mails and issue invoices. Claude should always ask you before such steps.",
+      "spacesLabel": "In which companies",
+      "spacesHint": "The app sees only the chosen companies, and in each only what you may there.",
+      "spaceClosed": "The company's owner switched connected apps off here.",
+      "ownCompany": "My company",
+      "company": "Company",
+      "deny": "Deny",
+      "allow": "Allow",
+      "revokeHint": "You can take it back any time in Settings → Integrations.",
+      "secondFactorHint": "Your account has a second factor. Enter the code from your authenticator app.",
+      "secondFactorLabel": "Code from the authenticator app",
+      "secondFactorSubmit": "Verify",
+      "errors": {
+        "invalid": "This connection request is no longer valid. Try again in the app.",
+        "spaces": "Choose at least one company where connected apps are allowed.",
+        "secondFactor": "The code does not match. Try a new one.",
+        "failed": "Connecting did not work. Try again."
+      }
+    },
+    "settings": {
+      "addressTitle": "Server address",
+      "addressHint": "Paste this address into Claude (or another MCP app) as a custom {appName} connector.",
+      "copy": "Copy",
+      "copied": "Copied",
+      "appsTitle": "Connected apps",
+      "appsHint": "Each sees only the chosen companies and does only what you may. Disconnecting stops it at once.",
+      "loadFailed": "The list could not be loaded.",
+      "none": "No app is connected yet.",
+      "ownCompany": "My company",
+      "company": "Company",
+      "summary": "{level} · {company}",
+      "companies": "{active} and others ({count})",
+      "dates": "Connected {connected} · last used {used}",
+      "never": "not yet",
+      "actions": "{count, plural, one {# action} other {# actions}}",
+      "levelLabel": "Access level",
+      "historyTitle": "Latest actions",
+      "historyNone": "It has not done anything yet.",
+      "callFailed": "failed",
+      "disconnect": "Disconnect",
+      "disconnectTitle": "Disconnect {name}?",
+      "disconnectHint": "The app loses access at once. You can connect it again by adding it in the app.",
+      "cancel": "Cancel",
+      "errors": {
+        "forbidden": "You may not do this.",
+        "notFound": "This connection no longer exists.",
+        "invalid": "Not a valid choice.",
+        "changed": "The record changed in the meantime.",
+        "failed": "That did not work. Try again."
+      }
+    },
+    "steps": {
+      "title": "How to connect to Claude",
+      "hint": "Four steps on claude.ai or in the Claude app. It also works in other apps that support custom MCP connectors.",
+      "items": {
+        "settings": "In Claude, open Settings → Connectors.",
+        "add": "Click Add custom connector.",
+        "paste": "Name it {appName}, paste the server address from above and click Add.",
+        "connect": "Click Connect, sign in to {appName} and choose the level and the company."
+      },
+      "teams": "In Claude for teams, the organisation's owner adds a custom connector in Organization settings → Connectors; everyone else just clicks Connect.",
+      "pictures": {
+        "profile": "Profile",
+        "settings": "Settings",
+        "connectors": "Connectors",
+        "addCustom": "Add custom connector",
+        "name": "Name",
+        "url": "Remote MCP server URL",
+        "addButton": "Add",
+        "connect": "Connect",
+        "consent": "Sign in to {appName}"
+      }
+    },
+    "trash": {
+      "title": "Trash",
+      "hint": "What Grady or a connected app deleted waits here for {days, plural, one {# day} other {# days}}. Then it is deleted for good.",
+      "empty": "The trash is empty.",
+      "line": "{kind} · {via} · {when}",
+      "restore": "Restore",
+      "restoring": "Restoring…",
+      "kinds": {
+        "deal": "Deal",
+        "contact": "Contact",
+        "crm_task": "Task",
+        "task": "Milestone task",
+        "event": "Event",
+        "transaction": "Transaction",
+        "recurring_payment": "Recurring payment"
+      },
+      "via": {
+        "app": "in the app",
+        "grady": "through Grady",
+        "mcp": "through Claude"
+      },
+      "errors": {
+        "forbidden": "You may no longer restore this.",
+        "notFound": "This is no longer in the trash.",
+        "invalid": "That did not work.",
+        "changed": "Something with the same record exists again, so it can not be restored.",
+        "failed": "Restoring did not work. Try again."
+      }
+    },
+    "company": {
+      "title": "Connected apps in the company",
+      "off": "Off: your people can not use Claude or other apps here.",
+      "nobody": "Nobody in the company has connected one yet.",
+      "connected": "{count, plural, one {Has an app connected:} other {Have an app connected:}} {names}.",
+      "switch": "Allow in the company"
     }
   }
 }

@@ -119,6 +119,42 @@ export async function Stories({ locale }: { locale: SiteLocale }) {
           </article>
         );
       })}
+      <ClaudeConnector t={t} />
     </section>
+  );
+}
+
+/**
+ * "Gradus in Claude" (28.8): the app as a connector of Claude, in a few
+ * words and three sentences a person would say there. No screenshot of
+ * Claude: their screens are theirs.
+ */
+function ClaudeConnector({ t }: { t: Awaited<ReturnType<typeof getTranslations>> }) {
+  const examples = ["1", "2", "3"] as const;
+  return (
+    <article aria-labelledby="story-claude" className="grid gap-6 lg:grid-cols-12">
+      <div className="flex flex-col gap-5 lg:col-span-6">
+        <h2
+          id="story-claude"
+          className="font-display text-[2.35rem] leading-[1] font-semibold tracking-[-0.03em] text-balance text-ink md:text-5xl"
+        >
+          {t("claude.title", { appName: APP_NAME })}
+        </h2>
+        <p className="max-w-[36rem] text-lg leading-relaxed text-ink-soft">
+          {t("claude.text", { appName: APP_NAME })}
+        </p>
+      </div>
+      <ul className="flex flex-col gap-3 lg:col-span-6 lg:justify-center">
+        {examples.map((key) => (
+          <li
+            key={key}
+            className="rounded-2xl border border-line bg-surface/60 px-4 py-3 text-base text-ink"
+          >
+            {t(`claude.examples.${key}`, { appName: APP_NAME })}
+          </li>
+        ))}
+        <li className="px-1 text-sm text-ink-muted">{t("claude.note", { appName: APP_NAME })}</li>
+      </ul>
+    </article>
   );
 }

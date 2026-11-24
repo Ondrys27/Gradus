@@ -60,6 +60,7 @@ vi.mock("@/features/admin/ui/copy-id", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/error-alerts-form", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/error-log-controls", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/anchor-highlight", (load) => stubClientModule(load));
+vi.mock("@/features/admin/ui/trash-retention-form", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/audit-export-button", (load) => stubClientModule(load));
 vi.mock("next/link", () => ({ default: clientStub("Link") }));
 
@@ -302,11 +303,12 @@ beforeEach(() => {
 
 afterEach(() => vi.restoreAllMocks());
 
-async function renderPage(load: () => Promise<{ default: unknown }>, search: Record<string, string> = {}) {
+async function renderPage(
+  load: () => Promise<{ default: unknown }>,
+  search: Record<string, string> = {},
+) {
   const Page = (await load()).default as Page;
-  return renderServer(
-    <Page params={Promise.resolve({})} searchParams={Promise.resolve(search)} />,
-  );
+  return renderServer(<Page params={Promise.resolve({})} searchParams={Promise.resolve(search)} />);
 }
 
 describe.each(["cs", "en"] as const)("admin pages in %s", (language) => {
@@ -364,7 +366,11 @@ describe("the boundary check", () => {
     const { DataTable } = await import("@/features/admin/ui/data-blocks");
     const result = await renderServer(
       // @ts-expect-error The old shape, with render functions, is what must be caught.
-      <DataTable id="x" rows={[{ a: 1 }]} columns={[{ key: "a", label: "A", render: () => "1" }]} />,
+      <DataTable
+        id="x"
+        rows={[{ a: 1 }]}
+        columns={[{ key: "a", label: "A", render: () => "1" }]}
+      />,
     );
     expect(result.problems).toEqual(["<DataTable> columns[0].render is a function"]);
   });
