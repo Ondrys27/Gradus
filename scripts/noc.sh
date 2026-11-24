@@ -60,14 +60,20 @@ log() { echo "$(date '+%F %T')  $*" | tee -a "$LOG"; }
 first_open() { grep -m1 '^- \[ \]' docs/progress.md; }
 
 # Spustí čekající migrace, když jen přidávají a projdou testy. 0 = spuštěno.
-migrated_for=""
+# Pamatuje si, které migrace už pustil (ne u které položky): migrace jedné
+# položky spuštěná až před další položkou jinak zablokovala migraci té další.
+migrated_versions=""
 try_migrate() {
   [ "$AUTO_MIGRATE" = 1 ] || return 1
-  [ "$migrated_for" = "$next" ] && return 1
   local pending files v f
   pending="$(python3 scripts/noc-migrace.py pending 2>>"$LOG")" || {
     log "Stav migrací nejde zjistit (supabase migration list), migraci nechávám tobě."; return 1; }
   [ -z "$pending" ] && return 1
+  for v in $pending; do
+    case " $migrated_versions " in
+      *" $v "*) log "Migrace $v se už spouštěla a ve vzdálené databázi pořád chybí, nechávám ji tobě."; return 1 ;;
+    esac
+  done
   if [ -n "$(git status --porcelain -- supabase/migrations)" ]; then
     log "Migrace nejsou commitnuté, nechávám je tobě."; return 1
   fi
@@ -93,7 +99,7 @@ try_migrate() {
   if ! git diff --quiet -- src/types/database.ts; then
     git add src/types/database.ts && git commit -qm "Regenerate database types after migration" && log "Typy commitnuté."
   fi
-  migrated_for="$next"
+  migrated_versions="$migrated_versions $pending"
   log "Migrace spuštěná:$files"
   return 0
 }
