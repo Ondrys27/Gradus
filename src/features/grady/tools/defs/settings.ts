@@ -20,6 +20,7 @@ import type { UndoRecord } from "../records";
 import { defineTool, ToolError, type ToolContext } from "../types";
 import {
   hrefs,
+  inserted,
   isoDate,
   mustFind,
   ops,
@@ -206,7 +207,7 @@ export const schedulerTools = [
           "datesHaveExceptions",
           "Some of these dates already have other hours; change them in the scheduler.",
         );
-      await addAvailabilityOverrides(ops(ctx), {
+      const ids = await addAvailabilityOverrides(ops(ctx), {
         profileId: profile.id,
         dates: input.dates,
         intervals: input.hours?.length
@@ -215,17 +216,21 @@ export const schedulerTools = [
       });
       return {
         output: { dates: input.dates },
+        // The dates had no exception before (checked above): Undo removes the new ones.
+        records: ids.map((id) => inserted("availability_overrides", id)),
         summary: ctx.t("block_days", { count: input.dates.length }),
         href: `${hrefs.scheduler}?tab=availability`,
       };
     },
-    undoable: false,
+    undoable: true,
     invalidates: ["scheduler"],
   }),
 
   ...(["confirm", "decline", "cancel"] as const).map((step) =>
     defineTool({
       name: `${step}_booking`,
+      // The guest gets an e-mail either way.
+      level: "delete",
       section: "scheduler",
       action: "own",
       kind: "write",

@@ -18,6 +18,7 @@ import { defineTool, ToolError, type ToolContext } from "../types";
 import {
   hrefs,
   inserted,
+  instant,
   isoDate,
   mustFind,
   ops,
@@ -52,6 +53,10 @@ async function readDeal(ctx: ToolContext, id: string) {
 }
 
 const amount = z.number().min(0).max(1e12);
+/** A history entry: the summary of a meeting fits, a transcript goes into an attachment. */
+const HISTORY_MAX = 5000;
+/** The deal_attachments limit (a long transcript). */
+export const ATTACHMENT_MAX = 400_000;
 
 export const pipelineTools = [
   defineTool({
@@ -221,13 +226,45 @@ export const pipelineTools = [
       }
       return {
         output: { dealId: deal.id, people: input.assigneeIds.length },
-        records: [],
+        // The whole list as it was and as it is now; Undo sets the old list again.
+        records: [
+          {
+            table: "deals",
+            match: { id: deal.id },
+            op: "update",
+            before: { assignees: current.map((row) => row.assignee_id).sort() },
+            after: { assignees: [...new Set(input.assigneeIds)].sort() },
+          },
+        ],
         summary: ctx.t("set_deal_people", { title: quoted(deal.title) }),
         href: hrefs.deal(deal.id),
       };
     },
-    // The whole list changes at once: taken back by setting it again.
-    undoable: false,
+    // The whole list changes at once: taken back by setting the old list again.
+    undoable: true,
+    async undo(ctx, records) {
+      for (const record of records) {
+        const dealId = String(record.match.id);
+        const { data, error } = await ctx.db
+          .from("deal_assignees")
+          .select("assignee_id")
+          .eq("deal_id", dealId)
+          .limit(MAX_DEAL_ASSIGNEES);
+        if (error) return { ok: false, reason: "failed" };
+        const now = data.map((row) => row.assignee_id).sort();
+        if (JSON.stringify(now) !== JSON.stringify(record.after?.assignees ?? null)) {
+          return { ok: false, reason: "changed" };
+        }
+        const back = (record.before?.assignees as string[] | undefined) ?? [];
+        if (!back.length) return { ok: false, reason: "gone" };
+        try {
+          await setDealAssignees(ops(ctx), { dealId, before: now, ids: back, from: "grady" });
+        } catch {
+          return { ok: false, reason: "failed" };
+        }
+      }
+      return { ok: true };
+    },
     invalidates: ["pipeline", "dashboard"],
   }),
 
@@ -261,12 +298,16 @@ export const pipelineTools = [
       const won = stage.is_won && !from?.is_won;
       return {
         output: { dealId: deal.id, stage: stage.name, won },
-        // The stage, its time and the reason, as they were. A win's booked income stays (Finance).
+        // The stage and the reason, as they were, and the stage it went to (Undo
+        // moves it back only from there). A win's booked income stays (Finance).
         records: [
-          updated("deals", deal.id, {
-            stage_id: deal.stage_id,
-            lost_reason: deal.lost_reason,
-          }),
+          {
+            ...updated("deals", deal.id, {
+              stage_id: deal.stage_id,
+              lost_reason: deal.lost_reason,
+            }),
+            after: { stage_id: stage.id },
+          },
         ],
         summary: ctx.t(won ? "won_deal" : "move_deal_stage", {
           title: quoted(deal.title),
@@ -284,8 +325,40 @@ export const pipelineTools = [
           : [],
       };
     },
-    // A win puts the contact into Clients and may book income: moving back is a move of its own.
-    undoable: false,
+    // Undo is a move back like on the board: the contact stays in Clients and a
+    // win's booked income and XP stay, exactly as when the user drags it back.
+    undoable: true,
+    async undo(ctx, records) {
+      for (const record of [...records].reverse()) {
+        if (record.table !== "deals" || record.op !== "update") continue;
+        const dealId = String(record.match.id);
+        const deal = await ctx.db
+          .from("deals")
+          .select("id, stage_id, value, currency, entered_stage_at, created_at")
+          .eq("user_id", ctx.workspaceId)
+          .eq("id", dealId)
+          .maybeSingle();
+        if (deal.error) return { ok: false, reason: "failed" };
+        if (!deal.data) return { ok: false, reason: "gone" };
+        if (deal.data.stage_id !== record.after?.stage_id) return { ok: false, reason: "changed" };
+        const stages = await stagesOf(ctx);
+        const back = stages.find((item) => item.id === record.before?.stage_id);
+        if (!back) return { ok: false, reason: "gone" };
+        try {
+          await moveDeal(ops(ctx), {
+            deal: deal.data,
+            stage: back,
+            lostReason: (record.before?.lost_reason as string | null) ?? undefined,
+            position: await nextDealPositionIn(ops(ctx), ctx.workspaceId, back.id),
+            stages,
+          });
+        } catch (error) {
+          console.error("grady undo of a stage move failed", (error as { code?: string }).code);
+          return { ok: false, reason: "failed" };
+        }
+      }
+      return { ok: true };
+    },
     invalidates: ["pipeline", "contacts", "finance", "dashboard", "game"],
   }),
 
@@ -334,6 +407,7 @@ export const pipelineTools = [
 
   defineTool({
     name: "delete_deal",
+    level: "delete",
     section: "pipeline",
     action: "delete",
     kind: "write",
@@ -359,5 +433,106 @@ export const pipelineTools = [
     },
     undoable: false,
     invalidates: ["pipeline", "contacts", "crmTasks", "calendar"],
+  }),
+
+  defineTool({
+    name: "add_deal_history_entry",
+    section: "contacts",
+    action: "update",
+    alsoAllowedBy: { section: "cold_calling", action: "call" },
+    kind: "write",
+    risk: "instant",
+    description:
+      "Write an entry into a deal's history: a meeting, call, e-mail or note with its text (e.g. the summary of a meeting), on the deal's primary contact or another contact of the deal. A deal without a contact has no history entries; then write a note instead.",
+    input: z.object({
+      dealId: uuid,
+      type: z.enum(["meeting", "call", "email", "note"]),
+      content: z.string().trim().min(1).max(HISTORY_MAX),
+      contactId: uuid.optional(),
+      occurredAt: instant.optional(),
+    }),
+    describe: (_input, t) => t("add_deal_history_entry", { title: "" }),
+    async execute(ctx, input) {
+      const deal = await readDeal(ctx, input.dealId);
+      let contactId = input.contactId ?? deal.contact_id;
+      if (input.contactId && input.contactId !== deal.contact_id) {
+        const link = await ctx.db
+          .from("deal_contacts")
+          .select("contact_id")
+          .eq("deal_id", deal.id)
+          .eq("contact_id", input.contactId)
+          .maybeSingle();
+        if (link.error) throw link.error;
+        if (!link.data) throw new ToolError("notFound", "That contact is not on the deal.");
+        contactId = input.contactId;
+      }
+      if (!contactId) throw new ToolError("dealWithoutContact");
+      const occurred = input.occurredAt ?? new Date().toISOString();
+      if (Date.parse(occurred) > Date.now() + 60_000) throw new ToolError("occurredInFuture");
+      const { data, error } = await ctx.db
+        .from("contact_activities")
+        .insert({
+          user_id: ctx.workspaceId,
+          contact_id: contactId,
+          deal_id: deal.id,
+          type: input.type,
+          content: input.content,
+          occurred_at: occurred,
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      ctx.track("contact_activity_logged", { type: input.type });
+      return {
+        output: { entryId: data.id },
+        records: [inserted("contact_activities", data.id)],
+        summary: ctx.t("add_deal_history_entry", { title: quoted(deal.title) }),
+        href: hrefs.deal(deal.id),
+      };
+    },
+    undoable: true,
+    invalidates: ["pipeline", "contacts"],
+  }),
+
+  defineTool({
+    name: "save_deal_attachment",
+    section: "pipeline",
+    action: "update",
+    kind: "write",
+    risk: "instant",
+    description:
+      "Keep a text with a deal as its attachment (the transcript of a meeting), only when the user asks for it.",
+    input: z.object({
+      dealId: uuid,
+      name: z.string().trim().min(1).max(200),
+      content: z.string().min(1).max(ATTACHMENT_MAX),
+    }),
+    describe: (input, t) => t("save_deal_attachment", { name: quoted(input.name), title: "" }),
+    async execute(ctx, input) {
+      const deal = await readDeal(ctx, input.dealId);
+      const { data, error } = await ctx.db
+        .from("deal_attachments")
+        .insert({
+          user_id: ctx.workspaceId,
+          deal_id: deal.id,
+          name: input.name,
+          content: input.content,
+          created_by: ctx.userId,
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      return {
+        output: { attachmentId: data.id },
+        records: [inserted("deal_attachments", data.id)],
+        summary: ctx.t("save_deal_attachment", {
+          name: quoted(input.name),
+          title: quoted(deal.title),
+        }),
+        href: hrefs.deal(deal.id),
+      };
+    },
+    undoable: true,
+    invalidates: ["pipeline"],
   }),
 ];

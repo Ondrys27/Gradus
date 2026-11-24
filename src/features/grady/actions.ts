@@ -41,6 +41,9 @@ export const QUERY_ROOTS = [
   "account",
   "game",
   "dashboard",
+  "dashboard-layouts",
+  "rewards",
+  "activity",
   "cold-calling",
 ] as const;
 export type QueryRoot = (typeof QUERY_ROOTS)[number];

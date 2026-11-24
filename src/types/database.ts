@@ -147,6 +147,42 @@ export type Database = {
         }
         Relationships: []
       }
+      activity_log: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          id: string
+          object_id: string | null
+          object_kind: string
+          space_id: string
+          summary: Json
+          verb: string
+          via: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          object_id?: string | null
+          object_kind: string
+          space_id: string
+          summary?: Json
+          verb: string
+          via?: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          object_id?: string | null
+          object_kind?: string
+          space_id?: string
+          summary?: Json
+          verb?: string
+          via?: string
+        }
+        Relationships: []
+      }
       admin_audit: {
         Row: {
           browser: string | null
@@ -1991,6 +2027,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "deal_assignees_deal_fkey"
+            columns: ["deal_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
+      deal_attachments: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string | null
+          deal_id: string
+          id: string
+          kind: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by?: string | null
+          deal_id: string
+          id?: string
+          kind?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          deal_id?: string
+          id?: string
+          kind?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_attachments_deal_fkey"
             columns: ["deal_id", "user_id"]
             isOneToOne: false
             referencedRelation: "deals"
@@ -6312,6 +6392,66 @@ export type Database = {
           worker_id: string
         }[]
       }
+      activity_add: {
+        Args: {
+          _kind: string
+          _object: string
+          _space: string
+          _summary: Json
+          _verb: string
+        }
+        Returns: undefined
+      }
+      activity_contact_name: {
+        Args: { _contact: Database["public"]["Tables"]["contacts"]["Row"] }
+        Returns: string
+      }
+      activity_daily: {
+        Args: {
+          _actors?: string[]
+          _from: string
+          _space: string
+          _tz: string
+          _until: string
+        }
+        Returns: {
+          actor_id: string
+          calls: number
+          day: string
+          deals: number
+          meetings: number
+          tasks: number
+          total: number
+        }[]
+      }
+      activity_feed: {
+        Args: {
+          _actors?: string[]
+          _before?: string
+          _from: string
+          _kinds?: string[]
+          _limit?: number
+          _space: string
+          _until: string
+        }
+        Returns: {
+          actor_id: string
+          created_at: string
+          id: string
+          object_id: string
+          object_kind: string
+          summary: Json
+          verb: string
+          via: string
+        }[]
+      }
+      activity_masked: {
+        Args: { _kind: string; _space: string; _summary: Json }
+        Returns: Json
+      }
+      activity_title: { Args: { _text: string }; Returns: string }
+      activity_via: { Args: never; Returns: string }
+      activity_visible_actors: { Args: { _space: string }; Returns: string[] }
       add_interested_contact_table: { Args: never; Returns: string }
       add_on_keys: { Args: never; Returns: string[] }
       admin_ai_model_usage: {
@@ -8527,6 +8667,7 @@ export type Database = {
         }[]
       }
       published_plan: { Args: { _key: string }; Returns: Json }
+      purge_activity_log: { Args: never; Returns: number }
       purge_analytics: {
         Args: { _before?: string }
         Returns: {

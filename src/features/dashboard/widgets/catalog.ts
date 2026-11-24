@@ -306,15 +306,10 @@ export const WIDGETS = [
     category: "team",
     sizes: ["M", "L", "XL"],
     defaultSize: "L",
-    requires: {
-      nav: "contacts",
-      anyRight: [
-        ["contacts", "view"],
-        ["cold_calling", "view"],
-      ],
-    },
+    // The company's activity log (28.7): everyone sees whom the database shows them.
+    requires: {},
     settings: [],
-    href: "/app/kontakty",
+    href: "/app/firma?tab=activity",
   },
   {
     key: "milestones",

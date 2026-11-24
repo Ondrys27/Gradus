@@ -13,6 +13,7 @@ import type { ParticipantChange } from "@/features/notes/collab/server";
 import { mapDraft, newMapDoc, sanitizeMapDoc } from "@/features/notes/mindmap/map-doc";
 import { noteKindOf } from "@/features/notes/mindmap/note-row";
 import { linkNote, setNotePinned, trashNote, writeNote } from "@/features/notes/ops";
+import { FOLDER_COLORS, SHARE_TARGETS } from "@/features/notes/sharing/logic";
 import type { Json } from "@/types/database";
 import type { UndoRecord } from "../records";
 import { defineTool, ToolError, type ToolContext } from "../types";
@@ -27,6 +28,19 @@ import { hrefs, inserted, mustFind, ops, quoted, updated, uuid } from "./shared"
  */
 
 const TEXT_MAX = 20_000;
+const FOLDER_NAME_MAX = 80;
+
+/** A folder of the active space the account reaches (RLS). */
+async function readFolder(ctx: ToolContext, id: string) {
+  return mustFind(
+    ctx.db
+      .from("note_folders")
+      .select("id, name")
+      .eq("space_id", ctx.workspaceId)
+      .eq("id", id)
+      .maybeSingle(),
+  );
+}
 /** A note bigger than this is changed, but its old text is not kept for Undo. */
 const UNDO_CONTENT_MAX = 100_000;
 
@@ -279,6 +293,7 @@ export const noteTools = [
 
   defineTool({
     name: "trash_note",
+    level: "delete",
     section: "notes",
     action: null,
     kind: "write",
@@ -305,6 +320,163 @@ export const noteTools = [
       };
     },
     undoable: true,
+    invalidates: ["notes"],
+  }),
+
+  defineTool({
+    name: "create_note_folder",
+    section: "notes",
+    action: null,
+    kind: "write",
+    risk: "instant",
+    description:
+      "Create a folder for notes in the active space (optionally inside another folder), with one of the colours violet, teal, gold, green, orange, pink.",
+    input: z.object({
+      name: z.string().trim().min(1).max(FOLDER_NAME_MAX),
+      color: z.enum(FOLDER_COLORS).optional(),
+      parentId: uuid.optional(),
+    }),
+    describe: (input, t) => t("create_note_folder", { name: quoted(input.name) }),
+    async execute(ctx, input) {
+      if (input.parentId) await readFolder(ctx, input.parentId);
+      const id = crypto.randomUUID();
+      const { error } = await ctx.db.from("note_folders").insert({
+        id,
+        space_id: ctx.workspaceId,
+        name: input.name,
+        color: input.color ?? "violet",
+        parent_id: input.parentId ?? null,
+        position: Date.now() % 1_000_000,
+      });
+      if (error) throw error;
+      ctx.track("note_folder_created", { nested: Boolean(input.parentId) });
+      return {
+        output: { folderId: id },
+        records: [inserted("note_folders", id)],
+        href: "/app/poznamky",
+      };
+    },
+    undoable: true,
+    invalidates: ["notes"],
+  }),
+
+  defineTool({
+    name: "move_note_to_folder",
+    section: "notes",
+    action: null,
+    kind: "write",
+    risk: "instant",
+    description:
+      "Put one of the user's own notes into a folder (folderId null takes it out of every folder). Folder ids from search_records or the user's words.",
+    input: z.object({ noteId: uuid, folderId: uuid.nullable() }),
+    describe: (_input, t) => t("move_note_to_folder", { title: "" }),
+    async execute(ctx, input) {
+      const note = await readNote(ctx, input.noteId, "own");
+      if (input.folderId) await readFolder(ctx, input.folderId);
+      const { data: before, error: readError } = await ctx.db
+        .from("notes")
+        .select("folder_id")
+        .eq("id", note.id)
+        .single();
+      if (readError) throw readError;
+      const { error } = await ctx.db
+        .from("notes")
+        .update({ folder_id: input.folderId })
+        .eq("id", note.id)
+        .eq("user_id", ctx.userId);
+      if (error) throw error;
+      ctx.track("note_moved", { to: input.folderId ? "folder" : "none", via: "menu" });
+      return {
+        output: { noteId: note.id, folderId: input.folderId },
+        records: [updated("notes", note.id, { folder_id: before.folder_id })],
+        summary: ctx.t("move_note_to_folder", { title: quoted(note.title) }),
+        href: hrefs.note(note.id),
+      };
+    },
+    undoable: true,
+    invalidates: ["notes"],
+  }),
+
+  defineTool({
+    name: "restore_note",
+    section: "notes",
+    action: null,
+    kind: "write",
+    risk: "instant",
+    description: "Bring one of the user's notes back from Recently Deleted.",
+    input: z.object({ noteId: uuid }),
+    describe: (_input, t) => t("restore_note", { title: "" }),
+    async execute(ctx, input) {
+      const note = await mustFind(
+        ctx.db
+          .from("notes")
+          .select("id, title, deleted_at")
+          .eq("id", input.noteId)
+          .eq("user_id", ctx.userId)
+          .not("deleted_at", "is", null)
+          .maybeSingle(),
+      );
+      const { error } = await ctx.db
+        .from("notes")
+        .update({ deleted_at: null })
+        .eq("id", note.id)
+        .eq("user_id", ctx.userId);
+      if (error) throw error;
+      return {
+        output: { noteId: note.id, restored: true },
+        records: [updated("notes", note.id, { deleted_at: note.deleted_at })],
+        summary: ctx.t("restore_note", { title: quoted(note.title) }),
+        href: hrefs.note(note.id),
+      };
+    },
+    undoable: true,
+    invalidates: ["notes"],
+  }),
+
+  defineTool({
+    name: "share_note",
+    section: "notes",
+    action: null,
+    kind: "write",
+    risk: "confirm",
+    description:
+      "Share one of the user's notes (or one they may share further) in this company: with a person (target member, their account id from list_people), a group (target group, its id from list_workers) or the whole company (target space), for reading (viewer) or editing (editor). The user confirms it first.",
+    input: z.object({
+      noteId: uuid,
+      target: z.enum(SHARE_TARGETS),
+      targetId: uuid.optional(),
+      role: z.enum(["viewer", "editor"]),
+    }),
+    describe: (_input, t) => t("share_note", { title: "" }),
+    async prepare(ctx, input) {
+      const note = await readNote(ctx, input.noteId, "read");
+      if (input.target !== "space" && !input.targetId) throw new ToolError("invalid");
+      return {
+        summary: ctx.t("share_note", { title: quoted(note.title) }),
+        href: hrefs.note(note.id),
+      };
+    },
+    async execute(ctx, input) {
+      const note = await readNote(ctx, input.noteId, "read");
+      if (input.target !== "space" && !input.targetId) throw new ToolError("invalid");
+      const { error } = await ctx.db.rpc("note_share_set", {
+        _note: note.id,
+        _folder: null as unknown as string,
+        _target_kind: input.target,
+        _target: (input.target === "space" ? null : input.targetId) as unknown as string,
+        _role: input.role,
+        _can_reshare: false,
+      });
+      if (error) throw error;
+      ctx.track("note_shared", { on: "note", target: input.target, role: input.role, reshare: false });
+      return {
+        output: { noteId: note.id, shared: true },
+        summary: ctx.t("shared_note", { title: quoted(note.title) }),
+        href: hrefs.note(note.id),
+      };
+    },
+    // Whoever it was shared with may already have it open; taking it back is Sharing's own step.
+    undoable: false,
     invalidates: ["notes"],
   }),
 ];

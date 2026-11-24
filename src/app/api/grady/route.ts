@@ -67,6 +67,7 @@ import {
   loadActions,
   proposeBulk,
   rejectAction,
+  runBundle,
   runToolCall,
   undoAction,
   type ActionEnv,
@@ -80,6 +81,14 @@ import {
   reactToProactive,
 } from "@/features/grady/server/proactive";
 import { runNoteMapSuggest } from "@/features/grady/server/note-map-suggest";
+import { loadMeetingContext, runMeetingNotes } from "@/features/grady/server/meeting-notes";
+import {
+  applyCalls,
+  changeCount,
+  meetingAnalyzeSchema,
+  meetingApplyRequestSchema,
+  type MeetingNotesResponse,
+} from "@/features/meeting-notes/logic";
 import { noteContentOf, noteKindOf } from "@/features/notes/mindmap/note-row";
 import { isMapDoc } from "@/features/notes/mindmap/map-doc";
 import { loadGradyRules } from "@/features/grady/server/rules";
@@ -125,6 +134,7 @@ const STAGE_REFUSED_JOBS: ReadonlySet<string> = new Set([
   "ping",
   "rulesTest",
   "proactive",
+  "meetingNotes",
 ]);
 
 /** The signed-in user, their settings and both clients. The admin client is filtered by this id. */
@@ -321,6 +331,8 @@ export const POST = instrumentRoute("api.jarvis.post", async (request: Request) 
   if (kind === "rulesTest") return rulesTest(ctx, body);
   if (kind === "proactive") return proactive(ctx, body);
   if (kind === "rateMessage") return rateMessage(ctx, body);
+  if (kind === "meetingNotes") return meetingNotes(ctx, body);
+  if (kind === "meetingNotesApply") return meetingNotesApply(ctx, body);
   if (kind === "confirmAction" || kind === "rejectAction" || kind === "undoAction") {
     return actionDecision(ctx, body);
   }
@@ -364,14 +376,8 @@ async function rateMessage(ctx: Context, body: unknown) {
 async function actionDecision(ctx: Context, body: unknown) {
   const parsed = actionDecisionRequestSchema.safeParse(body);
   if (!parsed.success) return jobError("unknown", 400);
-  const toolContext = await createToolContext({
-    db: ctx.supabase,
-    userId: ctx.userId,
-    spaceId: ctx.spaceId,
-    settings: ctx.settings,
-    locale: ctx.locale,
-    country: ctx.row?.country_code ?? null,
-  });
+  // Grady's changes are labelled in the company's activity ("through Grady").
+  const toolContext = await gradyToolContext(ctx);
   const env = { ctx: toolContext, admin: ctx.admin };
   const decide =
     parsed.data.kind === "confirmAction"
@@ -382,6 +388,123 @@ async function actionDecision(ctx: Context, body: unknown) {
   const result = await decide(env, parsed.data.id);
   const status = result.ok ? 200 : result.code === "notFound" ? 404 : 409;
   return NextResponse.json(result, { status });
+}
+
+/** The tool context of the active space, with Grady's label on its writes. */
+async function gradyToolContext(ctx: Context) {
+  return createToolContext({
+    db: await createClient({ via: "grady" }),
+    userId: ctx.userId,
+    spaceId: ctx.spaceId,
+    settings: ctx.settings,
+    locale: ctx.locale,
+    country: ctx.row?.country_code ?? null,
+  });
+}
+
+/**
+ * "Paste meeting notes" (28.7): Grady (meeting_notes, Sonnet by default)
+ * reads the meeting and proposes changes. Nothing is saved: the proposal
+ * goes back to the dialog, where the user ticks, edits and confirms it.
+ */
+async function meetingNotes(ctx: Context, body: unknown) {
+  const parsed = meetingAnalyzeSchema.safeParse(body);
+  if (!parsed.success) return jobError("unknown", 400);
+  const { supabase, admin, userId, settings } = ctx;
+  const toolContext = await gradyToolContext(ctx);
+  const loaded = await loadMeetingContext(toolContext, parsed.data.target);
+  if (!loaded) return jobError("notFound", 404);
+
+  const usage = await loadAiUsage(supabase, admin, userId, settings, undefined, ctx.spaceId);
+  if (limitReached(usage)) {
+    limitHit(ctx, "meeting_notes");
+    return jobError("limitReached", 429);
+  }
+  const client = createAnthropic(ctx.admin, { spaceId: ctx.spaceId });
+  if (!client) {
+    await logNotConfigured(ctx, "meeting_notes");
+    return jobError("notConfigured", 503);
+  }
+  const result = await runMeetingNotes({
+    client,
+    ctx: toolContext,
+    loaded,
+    text: parsed.data.text,
+    log: (entry) =>
+      logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
+  });
+  if (!result.ok) {
+    return jobError(result.code, result.code === "empty" ? 422 : result.code === "notFound" ? 404 : 502);
+  }
+  const { proposal } = result;
+  await track(
+    "meeting_notes_analyzed",
+    {
+      from: parsed.data.target.kind,
+      parts: Math.min(proposal.parts, 20),
+      tasks: proposal.tasks.length,
+      contacts: proposal.contacts.length,
+      stage: proposal.stageId !== null,
+      deal_fields: Boolean(proposal.closeDate || proposal.amount),
+      note: proposal.note !== null,
+    },
+    { userId, admin },
+  );
+  const response: MeetingNotesResponse = { ok: true, proposal };
+  return NextResponse.json(response);
+}
+
+/**
+ * The confirmed meeting notes: every change through Grady's tools with the
+ * user's own client and current rights, recorded as one action with one
+ * Undo; when a step fails, the steps before it are taken back. No model call.
+ */
+async function meetingNotesApply(ctx: Context, body: unknown) {
+  const parsed = meetingApplyRequestSchema.safeParse(body);
+  if (!parsed.success) return jobError("unknown", 400);
+  const { apply } = parsed.data;
+  const toolContext = await gradyToolContext(ctx);
+  const loaded = await loadMeetingContext(toolContext, apply.target);
+  if (!loaded) return jobError("notFound", 404);
+  // The changes go only where the meeting belongs.
+  if ((loaded.deal?.id ?? null) !== apply.dealId || (loaded.contact?.id ?? null) !== apply.contactId) {
+    return jobError("unknown", 400);
+  }
+  const calls = applyCalls(apply, { linkNote: loaded.rights.linkNote });
+  if (!calls.length) return jobError("empty", 422);
+  const result = await runBundle(
+    { ctx: toolContext, admin: ctx.admin, conversationId: null, messageId: null },
+    {
+      tool: "meeting_notes",
+      summary: toolContext.t("meeting_notes", { count: changeCount(apply) }),
+      href: apply.dealId
+        ? `/app/pipeline?deal=${apply.dealId}`
+        : apply.contactId
+          ? `/app/kontakty/${apply.contactId}`
+          : null,
+      calls,
+    },
+  );
+  await track(
+    "meeting_notes_applied",
+    {
+      from: apply.target.kind,
+      changes: Math.min(changeCount(apply), 60),
+      tasks: apply.tasks.length,
+      contacts: apply.contacts.length,
+      stage: apply.stageId !== null,
+      transcript: apply.transcript !== null,
+      ...(result.ok ? {} : { error_code: result.code }),
+    },
+    { userId: ctx.userId, admin: ctx.admin },
+  );
+  if (!result.ok) {
+    return NextResponse.json(
+      { ok: false, code: result.code, step: calls[result.index]?.name ?? null },
+      { status: result.code === "readOnly" || result.code === "forbidden" ? 403 : 409 },
+    );
+  }
+  return NextResponse.json({ ok: true, card: result.card });
 }
 
 /** What the user did with something Grady brought up on his own; no model call. */
@@ -913,7 +1036,7 @@ async function chat(ctx: Context, body: unknown, request: Request) {
 
   // The tools the account may use in the active space now (none when the space can not be read).
   const toolContext: ToolContext | null = await createToolContext({
-    db: supabase,
+    db: await createClient({ via: "grady" }),
     userId,
     spaceId: ctx.spaceId,
     settings,

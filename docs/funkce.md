@@ -104,6 +104,7 @@ Stav k 9. 11. 2026.
 | Výhra a prohra | Výhra spustí oslavu a kontakt přejde do Klientů. U prohry se zapíše důvod a po čase se objeví štítek „znovu oslovit“. | majitel, pracovník | žádný |
 | Dotazník po schůzce | Když obchod opustí fázi Schůzka, krátký dotazník zachytí, jak schůzka proběhla. Z dotazníků pak vzniká rozbor schůzek. | majitel, pracovník | žádný |
 | Vystavit fakturu z obchodu | Založí koncept faktury s odběratelem a částkou z obchodu. | majitel, pracovník s fakturami | žádný |
+| Zápis ze schůzky jedním tahem | „Vložit zápis ze schůzky“ v detailu obchodu, kontaktu a u schůzky v kalendáři: vložený přepis nebo poznámky (i dlouhý s mluvčími, nebo .txt / .docx / .pdf do 10 MB). Grady navrhne shrnutí do historie, úkoly s termíny a řešiteli, další krok, fázi, Close Date, částku, nové kontakty a poznámku propojenou s obchodem; uživatel vidí seznam se zaškrtávátky, upraví a potvrdí, vše se provede najednou a jde vrátit jedním Zpět. Přepis se uloží k obchodu jako příloha, jen když to uživatel zaškrtne. Navrhne jen to, co uživatel smí. | majitel, pracovník (podle práv) | AI (viz kap. 2) |
 
 ### Úkoly
 <!-- kód: nav:tasks route:/app/ukoly-crm route:/app/ukoly -->
@@ -179,6 +180,7 @@ Stav k 9. 11. 2026.
 | Odměna za splnění | Nepovinná částka u obchodního úkolu, úkolu od majitele i úkolu milníku (předvyplní se z plánu), u obchodu při výhře a u milníku za dokončení projektu. Pracovník ji vidí u úkolu. | majitel, pracovník s právem „správa firmy: odměny“ | žádný |
 | Moje odměny | Pracovník vidí, co vydělal, co čeká na schválení a na výplatu, „čeká tě 12 000 Kč za 3 úkoly“, svá pravidla jako věty a historii výplat. Nic nemění. | pracovník | žádný |
 | Odstranit z firmy | Ukončí přístup hned, data zůstanou, otevřenou práci předá někomu jinému. | jen majitel | žádný |
+| Aktivita ve firmě | Správa firmy → Aktivita: časová osa „kdo co udělal“ (obchody, kontakty, hovory, úkoly, milníky, schůzky, faktury, transakce) s filtrem podle člověka, skupiny, druhu a období a denní souhrn na člověka (úkoly, obchody, hovory, schůzky). Kroky přes Gradyho a přes Claude mají štítek. Zapisuje ji databáze, drží 180 dní; částky a názvy sekcí, na které člověk nemá právo, nevidí. Widget Aktivita ve firmě čte totéž. | majitel všechny; pracovník svou větev (s „zobrazit vše“ celou firmu) | žádný |
 
 ### Zprávy
 <!-- kód: nav:messages route:/app/zpravy -->
@@ -192,7 +194,7 @@ Stav k 9. 11. 2026.
 
 ### Grady
 
-AI pomocník v pravém dolním rohu: chat, souhrny dne, návrhy a hodnocení. Na pokyn v chatu pracuje v aplikaci za uživatele (zakládá a mění milníky, úkoly, poznámky, kontakty, obchody, události, finance a další, vždy jen v rámci práv v aktivní firmě): běžné změny hned s kartou „Hotovo · Otevřít · Vrátit“ (24 h), mazání, odeslání, finanční kroky faktur, lidi, dokončení milníku a hromadné změny až po Potvrdit. Všechno, co dělá, s modelem a cenou je v [kapitole 2](#2-grady). Majitel i pracovník mají každý vlastního Gradyho a vlastní konverzace.
+AI pomocník v pravém dolním rohu: chat, souhrny dne, návrhy a hodnocení. Na pokyn v chatu pracuje v aplikaci za uživatele (zakládá a mění milníky, úkoly, poznámky a jejich složky a sdílení, kontakty, obchody, události, finance, odměny, widgety přehledu a další, vždy jen v rámci práv v aktivní firmě; celý seznam operací s právy je v `docs/grady-operace.md`): běžné změny hned s kartou „Hotovo · Otevřít · Vrátit“ (24 h), mazání, odeslání, finanční kroky faktur, lidi, dokončení milníku a hromadné změny až po Potvrdit. Smazání úkolu, události, ruční transakce a automatické platby jde také vrátit. Všechno, co dělá, s modelem a cenou je v [kapitole 2](#2-grady). Majitel i pracovník mají každý vlastního Gradyho a vlastní konverzace.
 
 ### Nastavení
 <!-- kód: route:/app/nastaveni route:/app/nastaveni/ucet route:/app/nastaveni/vzhled route:/app/nastaveni/prace route:/app/nastaveni/grady route:/app/nastaveni/soukromi route:/app/nastaveni/predplatne route:/app/tarif route:/app/nastaveni/kalendar -->
@@ -265,12 +267,13 @@ Haiku nad 100 000 tokenů promptu stojí pětkrát víc. Stejná funkce na jiné
 Tokeny jsou odhad z délky promptů v kódu a běžných dat, ne měření; jeden token je asi 4 znaky. Stálá část chatu, tedy povaha Gradyho a pravidla (asi 2 500 tokenů), se ukládá do cache. Od druhé zprávy během 5 minut ji proto platíme za desetinu ceny. Každé úspěšné volání, i automatické (souhrn, hlídání, hodnocení milníku, třídění nápadů), se počítá do měsíčního limitu odpovědí Gradyho v tarifu.
 
 ### Co volá model, od nejdražšího
-<!-- kód: ai:analysis ai:chat ai:milestone_review ai:reward_setup ai:briefing ai:email_reply ai:ping ai:note_map_suggest ai:opportunity_scan ai:classify ai:chat_route -->
-<!-- kód: kind:salesAnalysis kind:milestoneReview kind:emailReply kind:ping kind:rulesTest kind:noteMapSuggest -->
+<!-- kód: ai:analysis ai:chat ai:milestone_review ai:reward_setup ai:briefing ai:email_reply ai:ping ai:note_map_suggest ai:meeting_notes ai:opportunity_scan ai:classify ai:chat_route -->
+<!-- kód: kind:salesAnalysis kind:milestoneReview kind:emailReply kind:ping kind:rulesTest kind:noteMapSuggest kind:meetingNotes -->
 
 | Co Grady dělá | Kdy a pro koho | Model | Typické tokeny | Cena 1 použití | Běžný uživatel za měsíc |
 |---|---|---|---|---|---|
 | Rozbor obchodních schůzek | Na požádání, po 5 dotaznících ze schůzek. Čte až 150 posledních. | Opus | 2 200 do cache · 3 500 vstup · 1 200 výstup | 0,049 USD <!-- cena: ai=analysis in=3500 read=0 write=2200 out=1200 --> | 0–1× (se 150 dotazníky až 0,13 USD) |
+| Zápis ze schůzky | „Vložit zápis ze schůzky“ u obchodu, kontaktu nebo schůzky: hodinový přepis (asi 40 000 znaků) jedním voláním. Dlouhý přepis jde po částech po 48 000 znacích (každá část jedno zhuštění, pak jeden návrh), takže tříhodinová schůzka stojí asi čtyřikrát tolik. Nic se nezapíše bez potvrzení; potvrzení samo model nevolá. | Sonnet (nejméně) | 11 200 vstup · 1 200 výstup | 0,034 USD <!-- cena: ai=meeting_notes in=11200 read=0 write=0 out=1200 --> | 2–8× |
 | Grady pracuje v aplikaci | Zpráva, ve které Grady na pokyn uživatele něco najde a změní (jedno kolo nástrojů = dvě volání). Definice nástrojů (asi 8 000 tokenů, podle práv uživatele) jsou ve stálé části promptu a jdou z cache; nejvýš 8 kol a 25 změn na zprávu, každé kolo přes strop a do ai_usage. | Sonnet | 21 000 z cache · 9 400 vstup · 450 výstup | 0,025 USD <!-- cena: ai=chat in=9400 read=21000 write=0 out=450 --> | 10–20× |
 | Chat se souborem | Zpráva s PDF, obrázkem, Wordem nebo Excelem (nejvýš 3 soubory po 10 MB). | Sonnet | 2 500 z cache · 9 000 vstup · 550 výstup | 0,024 USD <!-- cena: ai=chat in=9000 read=2500 write=0 out=550 --> | 3–5× |
 | Chat: první zpráva konverzace | Otázka v panelu Gradyho. V kontextu je souhrn situace, tarify, poznámky (až 12 000 znaků) a odpovědi na otázky. | Sonnet | 2 500 do cache · 3 500 vstup · 450 výstup | 0,018 USD <!-- cena: ai=chat in=3500 read=0 write=2500 out=450 --> | 15× |
@@ -290,7 +293,7 @@ Pokyny majitele z administrace (až 2 000 znaků, asi 500 tokenů) jdou navíc d
 Druhy `check` a `summary` jsou v kódu připravené, ale dnes je nic nevolá. <!-- kód: ai:check ai:summary -->
 
 ### Co Grady dělá bez modelu (0 USD)
-<!-- kód: kind:proactive kind:rateMessage kind:confirmAction kind:rejectAction kind:undoAction -->
+<!-- kód: kind:proactive kind:rateMessage kind:confirmAction kind:rejectAction kind:undoAction kind:meetingNotesApply -->
 
 | Co | Jak to funguje | Pro koho |
 |---|---|---|

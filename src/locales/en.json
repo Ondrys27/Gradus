@@ -713,6 +713,21 @@
       "removed_worker": "Removed {name} from the company",
       "update_settings": "Changed the settings",
       "bulk": "Bulk change: {count, plural, one {# step} other {# steps}}",
+      "create_note_folder": "Created the folder “{name}”",
+      "move_note_to_folder": "Moved the note “{title}” to another folder",
+      "restore_note": "Brought the note “{title}” back from the trash",
+      "share_note": "Share the note “{title}”",
+      "shared_note": "Shared the note “{title}”",
+      "add_deal_history_entry": "Wrote into the history of the deal “{title}”",
+      "save_deal_attachment": "Saved “{name}” with the deal “{title}”",
+      "list_reward_entries": "Reading rewards",
+      "review_reward_entries": "{action, select, approve {Approve} other {Reject}} {count, plural, one {# reward} other {# rewards}}{total}",
+      "reviewed_reward_entries": "{action, select, approve {Approved} other {Rejected}} {count, plural, one {# reward} other {# rewards}}{total}",
+      "add_manual_reward": "Add {amount} to the rewards of {name}",
+      "added_manual_reward": "Added {amount} to the rewards of {name}",
+      "place_widget": "Put “{widget}” on the dashboard",
+      "hide_widget": "Took “{widget}” off the dashboard",
+      "meeting_notes": "Meeting notes: {count, plural, one {# change} other {# changes}}",
       "progress": {
         "default": "Working in the app…",
         "search_records": "Searching…",
@@ -782,7 +797,18 @@
         "save_worker_group": "Saving the group…",
         "set_worker_permissions": "Changing the rights…",
         "remove_worker": "Preparing the removal…",
-        "update_settings": "Changing the settings…"
+        "update_settings": "Changing the settings…",
+        "create_note_folder": "Creating the folder…",
+        "move_note_to_folder": "Moving the note…",
+        "restore_note": "Restoring the note…",
+        "share_note": "Preparing to share the note…",
+        "add_deal_history_entry": "Writing into the deal's history…",
+        "save_deal_attachment": "Saving the attachment…",
+        "list_reward_entries": "Looking at rewards…",
+        "review_reward_entries": "Preparing the approval…",
+        "add_manual_reward": "Preparing the reward…",
+        "place_widget": "Placing the widget…",
+        "hide_widget": "Taking the widget off…"
       }
     },
     "actions": {
@@ -4400,15 +4426,16 @@
       },
       "activity": {
         "name": "Company activity",
-        "description": "The latest calls, e-mails, meetings and contact moves, and who did them.",
+        "description": "Who did what in the company: deals, contacts, calls, tasks, meetings and invoices, also through Grady.",
         "someone": "Someone",
         "line": "{who}: {what} – {contact}",
         "unnamed": "no name",
         "emptyTitle": "No activity yet",
-        "emptyHint": "Calls and meetings with contacts show up here.",
+        "emptyHint": "Steps of the people you see show up here.",
         "weekCount": "{count, plural, one {action in 7 days} other {actions in 7 days}}",
         "chart": "Activity by day",
-        "openContacts": "Open contacts"
+        "openContacts": "Open contacts",
+        "openActivity": "Open activity"
       },
       "milestones": {
         "name": "Milestones and progress",
@@ -5075,6 +5102,7 @@
         "people": "People",
         "groups": "Groups",
         "rewards": "Rewards and payouts",
+        "activity": "Activity",
         "dashboards": "Dashboards"
       },
       "view": {
@@ -5221,6 +5249,97 @@
         "loadFailed": "The default dashboards could not be loaded.",
         "remove": "Remove this dashboard",
         "readOnly": "Default dashboards are set by the owner."
+      },
+      "activity": {
+        "timeline": "Who did what",
+        "loadFailed": "The activity could not be loaded.",
+        "more": "Show older",
+        "someone": "Someone",
+        "empty": {
+          "title": "Nothing happened in this period",
+          "description": "Steps of the people you see show here: deals, contacts, calls, tasks, meetings, invoices."
+        },
+        "filters": {
+          "period": "Period",
+          "person": "Person",
+          "group": "Group",
+          "kind": "Kind",
+          "everyone": "Everyone",
+          "allGroups": "All groups",
+          "allKinds": "Everything"
+        },
+        "periods": {
+          "today": "Today",
+          "week": "7 days",
+          "month": "30 days",
+          "quarter": "90 days"
+        },
+        "kinds": {
+          "deal": "Deals",
+          "contact": "Contacts and calls",
+          "crm_task": "Sales tasks",
+          "task": "Milestone tasks",
+          "milestone": "Milestones",
+          "event": "Calendar",
+          "invoice": "Invoices",
+          "transaction": "Transactions"
+        },
+        "via": {
+          "grady": "via Grady",
+          "mcp": "via Claude"
+        },
+        "daily": {
+          "title": "Each person's day",
+          "empty": "No numbers for this period yet.",
+          "tasks": "{count, plural, one {# task} other {# tasks}}",
+          "deals": "{count, plural, one {# deal} other {# deals}}",
+          "calls": "{count, plural, one {# call} other {# calls}}",
+          "meetings": "{count, plural, one {# meeting} other {# meetings}}"
+        },
+        "lines": {
+          "deal": {
+            "created": "{who} created the deal{title, select, none {} other { “{title}”}}",
+            "won": "{who} won the deal{title, select, none {} other { “{title}”}}",
+            "lost": "{who} lost the deal{title, select, none {} other { “{title}”}}",
+            "stage_changed": "{who} moved the deal{title, select, none {} other { “{title}”}}{stage, select, none {} other { to {stage}}}",
+            "amount_changed": "{who} changed the amount of the deal{title, select, none {} other { “{title}”}}",
+            "deleted": "{who} deleted the deal{title, select, none {} other { “{title}”}}"
+          },
+          "contact": {
+            "created": "{who} added the contact{title, select, none {} other { “{title}”}}",
+            "deleted": "{who} deleted the contact{title, select, none {} other { “{title}”}}",
+            "moved": "{who} moved the contact{title, select, none {} other { “{title}”}}{table, select, none {} other { to {table}}}",
+            "logged_call": "{who} called{title, select, none {} other { “{title}”}}",
+            "logged_email": "{who} e-mailed{title, select, none {} other { “{title}”}}",
+            "logged_meeting": "{who} met{title, select, none {} other { “{title}”}}",
+            "logged_sms": "{who} texted{title, select, none {} other { “{title}”}}",
+            "logged_note": "{who} wrote a note on{title, select, none {} other { “{title}”}}"
+          },
+          "crm_task": {
+            "created": "{who} created the task{title, select, none {} other { “{title}”}}",
+            "completed": "{who} finished the task{title, select, none {} other { “{title}”}}",
+            "reopened": "{who} reopened the task{title, select, none {} other { “{title}”}}",
+            "deleted": "{who} deleted the task{title, select, none {} other { “{title}”}}"
+          },
+          "task": {
+            "completed": "{who} ticked the milestone task{title, select, none {} other { “{title}”}}"
+          },
+          "milestone": {
+            "completed": "{who} completed the milestone{title, select, none {} other { “{title}”}}"
+          },
+          "event": {
+            "scheduled": "{who} planned {kind, select, meeting {a meeting} other {an event}}{title, select, none {} other { “{title}”}}"
+          },
+          "invoice": {
+            "issued": "{who} issued the invoice{title, select, none {} other { “{title}”}}",
+            "paid": "{who} marked the invoice{title, select, none {} other { “{title}”}} paid",
+            "cancelled": "{who} cancelled the invoice{title, select, none {} other { “{title}”}}"
+          },
+          "transaction": {
+            "created": "{who} recorded {type, select, income {income} other {an expense}}{title, select, none {} other { “{title}”}}"
+          },
+          "other": "{who} made a change"
+        }
       }
     },
     "dashboard": {
@@ -7755,6 +7874,11 @@
             "name": "Suggest map branches",
             "does": "Suggests 3–8 new branches at a mind map node.",
             "why": "Ideas for the user's own map, as JSON."
+          },
+          "meeting_notes": {
+            "name": "Meeting notes",
+            "does": "Turns a pasted transcript or notes of a meeting into proposed changes: a summary, tasks, the next step, stage, Close Date, amount, new contacts and a note.",
+            "why": "Reads a long text and answers in structured JSON; never below Sonnet."
           },
           "chat_route": {
             "name": "Chat model choice",
@@ -11204,6 +11328,86 @@
         "title": "Thanks for the meeting",
         "text": "Your meeting with {host} is over. Thanks for taking the time."
       }
+    }
+  },
+  "meetingNotes": {
+    "open": "Paste meeting notes",
+    "title": "Meeting notes",
+    "close": "Close",
+    "intro": "Paste the transcript or your notes of the meeting (speakers welcome), or upload a .txt, .docx or .pdf. Grady proposes the changes; nothing is saved until you confirm.",
+    "textLabel": "Transcript or notes",
+    "placeholder": "Jana: So we would need the offer by Friday…",
+    "length": "{chars} characters",
+    "upload": "Upload a file",
+    "cancel": "Cancel",
+    "analyze": "Propose changes",
+    "reading": "Grady is reading the meeting…",
+    "back": "Back to the text",
+    "apply": "{count, plural, =0 {Nothing ticked} one {Make # change} other {Make # changes}}",
+    "done": "Done: {count, plural, one {# change} other {# changes}}. One click takes all of it back.",
+    "undone": "Taken back. Nothing of the meeting notes stayed.",
+    "undo": "Undo all",
+    "truncated": "The text was too long; only its beginning was read.",
+    "transcriptName": "Meeting transcript.txt",
+    "proposalIntro": "Tick what should happen and edit it; everything is made at once.",
+    "parts": "A long transcript, read in {count} parts.",
+    "summaryDeal": "Summary into the deal's history",
+    "summaryContact": "Summary into the contact's history",
+    "summaryLabel": "Summary",
+    "nextStep": "Next step (task)",
+    "task": "Task",
+    "taskTitle": "Task",
+    "time": "Time",
+    "dueDefault": "Tomorrow 9:00",
+    "assigneeMe": "Me",
+    "assignee": "Who",
+    "stage": "Move the deal: {from} → {to}",
+    "stageLabel": "Stage",
+    "closeDate": "Close Date",
+    "amount": "Amount",
+    "currency": "Currency",
+    "contactOnDeal": "New contact, onto the deal",
+    "contact": "New contact",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "company": "Company",
+    "email": "E-mail",
+    "noteLinked": "Note in Notes, linked to the deal",
+    "note": "Note in Notes",
+    "noteTitle": "Title of the note",
+    "noteText": "Text of the note",
+    "transcript": "Keep the transcript with the deal as an attachment",
+    "errors": {
+      "unknown": "Something went wrong. Try it again.",
+      "network": "No connection. Try it again.",
+      "fileTooLarge": "The file is larger than 10 MB.",
+      "fileType": "Only .txt, .docx and .pdf files.",
+      "fileUnreadable": "The file has no text that could be read.",
+      "fileMissing": "No file was chosen.",
+      "limitReached": "Grady's answers for this month are used up.",
+      "paused": "Grady is taking a break until the end of the month; the app works on.",
+      "userLimit": "The AI assistant has used up the limit for your account this month.",
+      "spaceLimit": "The AI assistant has used up the limit in this company this month.",
+      "notConfigured": "Grady is not set up yet.",
+      "busy": "Grady is busy right now. Try it again in a moment.",
+      "unavailable": "Grady could not read the meeting now. Try it again.",
+      "notFound": "The deal, contact or meeting is no longer there.",
+      "empty": "Grady found nothing in the text to change.",
+      "forbidden": "You may not make one of these changes here.",
+      "readOnly": "The app is read-only now.",
+      "changed": "Something has changed since; nothing was overwritten.",
+      "tooLate": "It can be taken back only within 24 hours.",
+      "dealWithoutContact": "The deal has no contact, so its history takes no entry. Add a contact or untick the summary."
+    },
+    "attachments": {
+      "title": "Attachments",
+      "download": "Download {name}",
+      "delete": "Delete {name}",
+      "deleteTitle": "Delete the attachment?",
+      "deleteDescription": "“{name}” will be deleted from the deal for good.",
+      "deleteConfirm": "Delete",
+      "deleteFailed": "The attachment could not be deleted.",
+      "cancel": "Cancel"
     }
   }
 }

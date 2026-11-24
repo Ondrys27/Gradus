@@ -259,6 +259,7 @@ export const contactTools = [
 
   defineTool({
     name: "delete_contact",
+    level: "delete",
     section: "contacts",
     action: "delete",
     kind: "write",

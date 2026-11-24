@@ -61,6 +61,8 @@ export const FEATURE_MODELS: Record<GradyFeature, FeatureModelSpec> = {
   ping: { recommended: "sonnet", minimum: "haiku", quality: "sonnet", shown: true },
   briefing: { recommended: "sonnet", minimum: "haiku", quality: "opus", shown: true },
   note_map_suggest: { recommended: "sonnet", minimum: "haiku", quality: "opus", shown: true },
+  // A long transcript into tasks, a stage and people: structured output on a long read, never Haiku.
+  meeting_notes: { recommended: "sonnet", minimum: "sonnet", quality: "opus", shown: true },
   chat_route: { recommended: "haiku", minimum: "haiku", quality: "haiku", shown: true, fixed: true },
 };
 

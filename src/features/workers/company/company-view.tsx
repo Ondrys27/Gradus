@@ -25,6 +25,7 @@ import { useViewTracking } from "@/lib/analytics/use-view-tracking";
 import { createViewPreference } from "@/lib/view-preference";
 import { cn } from "@/lib/utils";
 import { WorkerFormDialog } from "../worker-form-dialog";
+import { CompanyActivity } from "./company-activity";
 import { CompanyDashboards } from "./company-dashboards";
 import { CompanyGroups } from "./company-groups";
 import { CompanyList, type CompanyViewer } from "./company-list";
@@ -96,11 +97,14 @@ export function CompanyView() {
   } = useMemo(() => parseCompanySearch(new URLSearchParams(search)), [search]);
   // A worker with "company: rewards" also has Rewards and payouts (28.2); groups stay the owner's.
   const managesRewards = useManagesRewards();
+  // Everyone sees the activity of the people they see (the database decides whom, 28.7).
   const tab = isOwner
     ? requestedTab
     : managesRewards && requestedTab === "rewards"
       ? "rewards"
-      : "people";
+      : requestedTab === "activity"
+        ? "activity"
+        : "people";
   function replaceSearch(next: Partial<CompanySearch>) {
     const text = companySearchString(new URLSearchParams(search), next);
     router.replace(text ? `${pathname}?${text}` : pathname, { scroll: false });
@@ -140,7 +144,7 @@ export function CompanyView() {
         />
       </StaggerItem>
 
-      {(isOwner || managesRewards) && (
+      {(isOwner || worker) && (
         <StaggerItem>
           <Segmented
             label={tc("tabs.label")}
@@ -148,7 +152,10 @@ export function CompanyView() {
             options={[
               { value: "people" as const, label: tc("tabs.people") },
               ...(isOwner ? [{ value: "groups" as const, label: tc("tabs.groups") }] : []),
-              { value: "rewards" as const, label: tc("tabs.rewards") },
+              ...(isOwner || managesRewards
+                ? [{ value: "rewards" as const, label: tc("tabs.rewards") }]
+                : []),
+              { value: "activity" as const, label: tc("tabs.activity") },
               ...(isOwner ? [{ value: "dashboards" as const, label: tc("tabs.dashboards") }] : []),
             ]}
             onChange={(next) => replaceSearch({ tab: next })}
@@ -181,6 +188,8 @@ export function CompanyView() {
           />
         ) : tab === "dashboards" ? (
           <CompanyDashboards people={people.data} groups={groups.data} canEdit={isOwner} />
+        ) : tab === "activity" ? (
+          <CompanyActivity people={people.data} groups={groups.data} />
         ) : (
           <CompanyRewards
             people={people.data}

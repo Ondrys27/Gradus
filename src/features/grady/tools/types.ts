@@ -58,9 +58,23 @@ export type ToolOutcome = {
 /** What a proposal shows before it runs; also proves the ids are the user's (read through RLS). */
 export type ToolPreview = { summary: string; preview?: string | null; href?: string | null };
 
+/**
+ * What a tool may do, for the access levels of an outside client (MCP, 28.8:
+ * Read only · Read and write · Full access) and for the table in
+ * docs/grady-operace.md: it reads; it writes (and can be taken back); or it
+ * deletes, sends or books something that reaches people or money.
+ */
+export const TOOL_LEVELS = ["read", "write", "delete"] as const;
+export type ToolLevel = (typeof TOOL_LEVELS)[number];
+
 export type ToolDef<I = unknown> = {
   /** snake_case, as the model calls it. */
   name: string;
+  /**
+   * The level (see ToolLevel); left out = "read" for reading tools and
+   * "write" for the others. Deleting, sending and money steps say "delete".
+   */
+  level?: ToolLevel;
   section: ToolSection;
   /** A key of the permission catalog for `section`; null where the section has no rights (notes, settings, chat). */
   action: string | null;
@@ -117,3 +131,8 @@ export function defineTool<I>(def: ToolDef<I>): ToolDef<I> {
 /** A tool of the catalog, whatever its input. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- each tool has its own input type
 export type AnyTool = ToolDef<any>;
+
+/** The level of a tool: its own, else read / write by its kind. */
+export function toolLevel(tool: Pick<ToolDef<never>, "kind" | "level">): ToolLevel {
+  return tool.level ?? (tool.kind === "read" ? "read" : "write");
+}

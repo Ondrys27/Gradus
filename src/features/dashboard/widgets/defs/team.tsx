@@ -8,7 +8,12 @@ import { useLocale, useTranslations } from "next-intl";
 import { useSession } from "@/features/account/queries";
 import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { dayRangeToInstants } from "@/features/calendar/calendar-logic";
-import { contactName } from "@/features/contacts/types";
+import {
+  activityHref,
+  sentenceKey,
+  summaryOf,
+  type ActivityRow as ActivityLogRow,
+} from "@/features/workers/company/activity";
 import { useAssignees } from "@/features/crm-tasks/queries";
 import { useToday } from "@/features/dashboard/queries";
 import { useCompanyTree } from "@/features/workers/company/queries";
@@ -210,18 +215,11 @@ export const teamWidget = defineWidget<TeamData>({
 
 /** Days the widget looks back (the wide chart), and how many rows that may be. */
 const ACTIVITY_DAYS = 14;
-const ACTIVITY_LIMIT = 300;
+/** The rows read for the chart; the database pages the full timeline in Company → Activity. */
+const ACTIVITY_LIMIT = 200;
 
-type ActivityItem = {
-  id: string;
-  type: string;
-  occurred_at: string;
-  actor_id: string | null;
-  contact_id: string;
-  contactName: string;
-  /** The day in the user's zone. */
-  day: IsoDate;
-};
+/** One step of the company's activity log (28.7), with its day in the user's zone. */
+type ActivityItem = ActivityLogRow & { day: IsoDate };
 
 type ActivityData = { items: ActivityItem[]; names: Map<string, string>; days: IsoDate[] };
 
@@ -229,6 +227,11 @@ function shiftDay(day: IsoDate, delta: number): IsoDate {
   return localToIsoDate(addDays(isoDateToLocal(day), delta));
 }
 
+/**
+ * Activity in the company: the same log as Company → Activity, as the
+ * database shows it to the viewer (the owner everybody, a worker their
+ * branch; titles and amounts they may not read are blank).
+ */
 function useActivity(): WidgetQuery<ActivityData> {
   const { user } = useSession();
   const workspaceId = useWorkspaceId();
@@ -236,28 +239,18 @@ function useActivity(): WidgetQuery<ActivityData> {
   const { today, timeZone } = useToday();
   const people = useAssignees();
   const firstDay = shiftDay(today, 1 - ACTIVITY_DAYS);
-  const since = dayRangeToInstants(firstDay, today, timeZone).from;
+  const { from, to } = dayRangeToInstants(firstDay, today, timeZone);
   const query = useQuery({
-    queryKey: ["dashboard", user.id, "activity", workspaceId, since],
-    queryFn: async (): Promise<Omit<ActivityItem, "day">[]> => {
-      const { data, error } = await createClient()
-        .from("contact_activities")
-        .select(
-          "id, type, occurred_at, actor_id, contact_id, contact:contacts(company_name, first_name, last_name)",
-        )
-        .eq("user_id", workspaceId)
-        .gte("occurred_at", since)
-        .order("occurred_at", { ascending: false })
-        .limit(ACTIVITY_LIMIT);
+    queryKey: ["activity", user.id, workspaceId, "widget", from],
+    queryFn: async (): Promise<ActivityLogRow[]> => {
+      const { data, error } = await createClient().rpc("activity_feed", {
+        _space: workspaceId,
+        _from: from,
+        _until: to,
+        _limit: ACTIVITY_LIMIT,
+      });
       if (error) throw error;
-      return data.map((row) => ({
-        id: row.id,
-        type: row.type,
-        occurred_at: row.occurred_at,
-        actor_id: row.actor_id,
-        contact_id: row.contact_id,
-        contactName: row.contact ? contactName(row.contact) : "",
-      }));
+      return data;
     },
   });
   const days = useMemo(
@@ -267,7 +260,7 @@ function useActivity(): WidgetQuery<ActivityData> {
   return combine([query, people], () => ({
     items: query.data!.map((item) => ({
       ...item,
-      day: todayIsoDate(settings, new Date(item.occurred_at)),
+      day: todayIsoDate(settings, new Date(item.created_at)),
     })),
     names: new Map((people.data ?? []).map((person) => [person.userId, person.name])),
     days,
@@ -276,20 +269,28 @@ function useActivity(): WidgetQuery<ActivityData> {
 
 function useActivityLine() {
   const t = useTranslations("dashboard.widgets.activity");
-  const tType = useTranslations("contacts.activity.types");
-  return (item: ActivityItem, names: Map<string, string>) =>
-    t("line", {
+  const tLine = useTranslations("workers.company.activity");
+  return (item: ActivityItem, names: Map<string, string>) => {
+    const summary = summaryOf(item.summary);
+    return tLine(`lines.${sentenceKey(item)}` as never, {
       who: (item.actor_id && names.get(item.actor_id)) || t("someone"),
-      what: tType(item.type as "call"),
-      contact: item.contactName || t("unnamed"),
-    });
+      title: summary.title ?? summary.customer ?? "none",
+      stage: summary.stage ?? "none",
+      table: summary.table ?? "none",
+      kind: summary.kind ?? "other",
+      type: summary.type ?? "other",
+    } as never);
+  };
 }
 
 function ActivityRow({ item, names }: { item: ActivityItem; names: Map<string, string> }) {
   const line = useActivityLine();
   const format = useFormatSettings();
   return (
-    <Row href={`/app/kontakty/${item.contact_id}`} lead={formatDateTime(new Date(item.occurred_at), format)}>
+    <Row
+      href={activityHref(item) ?? `${COMPANY_PATH}?tab=activity`}
+      lead={formatDateTime(new Date(item.created_at), format)}
+    >
       {line(item, names)}
     </Row>
   );
@@ -331,7 +332,7 @@ function ActivityView({ size, data, tone }: WidgetViewProps<ActivityData>) {
   );
   const last = latest && (
     <Sub>
-      {formatDateTime(new Date(latest.occurred_at), format)} · {line(latest, names)}
+      {formatDateTime(new Date(latest.created_at), format)} · {line(latest, names)}
     </Sub>
   );
 
@@ -386,7 +387,9 @@ function ActivityView({ size, data, tone }: WidgetViewProps<ActivityData>) {
           ))}
         </RowList>
       </div>
-      <Actions items={[{ label: t("openContacts"), href: "/app/kontakty", primary: true }]} />
+      <Actions
+        items={[{ label: t("openActivity"), href: `${COMPANY_PATH}?tab=activity`, primary: true }]}
+      />
     </Stack>
   );
 }
