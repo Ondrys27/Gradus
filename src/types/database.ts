@@ -230,6 +230,39 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_dashboard_layouts: {
+        Row: {
+          created_at: string
+          id: string
+          is_default: boolean
+          items: Json | null
+          name: string | null
+          position: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          items?: Json | null
+          name?: string | null
+          position?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          items?: Json | null
+          name?: string | null
+          position?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       admin_invites: {
         Row: {
           accepted_at: string | null
@@ -7177,6 +7210,7 @@ export type Database = {
         }[]
       }
       admin_email_taken: { Args: { _email: string }; Returns: boolean }
+      admin_error_badge: { Args: { _days?: number }; Returns: number }
       admin_error_group_reports: {
         Args: { _fingerprint: string }
         Returns: {
@@ -7215,6 +7249,10 @@ export type Database = {
           total: number
           users: number
         }[]
+      }
+      admin_error_overview: {
+        Args: { _from: string; _to: string }
+        Returns: Json
       }
       admin_feature_requests: {
         Args: {
@@ -7434,6 +7472,16 @@ export type Database = {
         Returns: Json
       }
       admin_user_sign_out: { Args: { _user_id: string }; Returns: number }
+      admin_users_at_risk: {
+        Args: { _days?: number; _include_internal?: boolean; _limit?: number }
+        Returns: {
+          billing: string
+          last_active_at: string
+          plan_key: string
+          total: number
+          user_id: string
+        }[]
+      }
       analytics_take_quota: {
         Args: { _limit: number; _units: number; _user_id: string }
         Returns: number
@@ -8000,6 +8048,11 @@ export type Database = {
           send_id: string
           since_last: number
         }[]
+      }
+      error_alert_critical: { Args: { _event_id: string }; Returns: boolean }
+      error_alert_critical_place: {
+        Args: { _action: string; _page: string }
+        Returns: boolean
       }
       error_alert_digest_claim: {
         Args: { _max_groups?: number }

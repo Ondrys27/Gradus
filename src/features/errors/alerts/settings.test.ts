@@ -42,14 +42,14 @@ describe("error alert settings", () => {
     ).toEqual({ ok: false, problems: ["emails", "duplicate", "digestMinutes"] });
   });
 
-  it("reads the stored value or falls back to no addresses", () => {
+  it("reads the stored value or falls back to no addresses, switched off", () => {
     expect(resolveErrorAlerts({ emails: ["a@b.cz"], mode: "every", digest_minutes: 15 })).toEqual({
       emails: ["a@b.cz"],
       mode: "every",
       digest_minutes: 15,
       stored: true,
     });
-    expect(resolveErrorAlerts(null)).toMatchObject({ emails: [], mode: "every", stored: false });
+    expect(resolveErrorAlerts(null)).toMatchObject({ emails: [], mode: "off", stored: false });
     expect(resolveErrorAlerts({ emails: "x" })).toMatchObject({ stored: false });
   });
 });

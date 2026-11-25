@@ -7689,7 +7689,7 @@
     },
     "overview": {
       "title": "Overview",
-      "description": "The main numbers of the app at a glance.",
+      "description": "Your board of widgets: errors, people, money, AI and what waits for you. Shape it your way.",
       "chartTitle": "Active users and sign-ups",
       "chartDescription": "Daily, weekly and monthly active users, with sign-ups per day on the right axis.",
       "signupWithoutConfirmation": "Public sign-up is on (PUBLIC_SIGNUP_ENABLED), but Supabase does not ask new accounts to confirm their e-mail. Turn on Confirm email in Supabase → Authentication → Sign In / Providers (only with your own SMTP through Resend), or anyone can register with someone else's address."
@@ -9316,7 +9316,7 @@
     },
     "errorAlerts": {
       "title": "Error alerts",
-      "description": "Which addresses get an e-mail whenever any user hits an error.",
+      "description": "Errors light up on the overview, in the menu and on the bell. E-mails go only if you turn them on here.",
       "cardTitle": "Error e-mails",
       "cardDescription": "The same error is e-mailed at most once every {minutes} minutes; further occurrences are counted into the next e-mail. At most {perHour} e-mails an hour in total, then one “There are more errors”.",
       "senderWarning": "Heads up: e-mails still go out from Resend's test address (RESEND_FROM is not set). Until RESEND_FROM has a verified domain, Resend delivers only to the Resend account's own address; other addresses get nothing.",
@@ -9333,13 +9333,17 @@
       "modes": {
         "every": "Every error on its own",
         "digestOption": "A summary every N minutes",
-        "digest": "A summary, at most one e-mail every {minutes} minutes"
+        "digest": "A summary, at most one e-mail every {minutes} minutes",
+        "off": "Off",
+        "critical": "Critical only"
       },
       "minutesLabel": "N minutes",
       "minutesHint": "A whole number, {min}–{max}.",
       "modeHint": {
         "every": "Every error arrives at once in its own e-mail (with the flood rules above).",
-        "digest": "An error arrives at once only when no e-mail went out in the last {minutes} minutes. The rest are collected and arrive in a summary once a day at {hour}:00 UTC."
+        "digest": "An error arrives at once only when no e-mail went out in the last {minutes} minutes. The rest are collected and arrive in a summary once a day at {hour}:00 UTC.",
+        "off": "No e-mails. New errors show in the Errors widget of the overview, in the red badge at Operations → Errors and on the bell.",
+        "critical": "An e-mail only when the same error hits {users} or more people within an hour, or when signing in, signing up or payments crash. Other errors light up only in the administration."
       },
       "save": "Save",
       "saving": "Saving…",
@@ -9536,7 +9540,7 @@
       "searchHint": "Tip: ⌘K (Ctrl+K) also finds single settings and actions, such as “AI cap”, “promo code” or “password reset”, and goes straight to them.",
       "open": "Open",
       "sections": {
-        "overview": "The main numbers in one place: new people, active accounts, money and the warnings that need attention.",
+        "overview": "Your board of widgets: errors, health, new and active people, revenue, AI and what waits for you. Everyone shapes their own, more boards as tabs.",
         "growth": "Where people come from and how many sign up, by day and source.",
         "activation": "How far new people get: the onboarding, the first milestone, the tutorial, the sign-up conversion.",
         "retention": "Who comes back: cohorts, active days and sessions.",
@@ -9559,8 +9563,8 @@
       },
       "items": {
         "overviewNumbers": {
-          "title": "Main numbers",
-          "keywords": "overview tiles metrics"
+          "title": "Overview widgets",
+          "keywords": "overview widget tiles metrics add widget gallery size rearrange"
         },
         "overviewWarnings": {
           "title": "Warnings on the overview",
@@ -9789,6 +9793,26 @@
         "calendarSyncAccounts": {
           "title": "Add an account to calendar connections",
           "keywords": "calendar connection account add selected e-mail id"
+        },
+        "overviewTabs": {
+          "title": "More boards (tabs) and ready sets",
+          "keywords": "tab board operations money ai people new tab"
+        },
+        "overviewDefault": {
+          "title": "Default overview for new administrators",
+          "keywords": "default layout overview new administrator"
+        },
+        "overviewErrors": {
+          "title": "Errors widget and the badge of new errors",
+          "keywords": "errors widget badge bell new errors came back"
+        },
+        "overviewMoney": {
+          "title": "Money widgets: revenue, MRR, margin",
+          "keywords": "revenue mrr money margin payments subscriptions commission"
+        },
+        "overviewAi": {
+          "title": "AI widgets: spend against the cap",
+          "keywords": "ai spend cap economy mode where to save"
         }
       }
     },
@@ -9921,6 +9945,426 @@
         "addLabel": "Add an account",
         "addPlaceholder": "E-mail, short ID or account id",
         "add": "Add account"
+      }
+    },
+    "widgets": {
+      "board": {
+        "mainTab": "Overview",
+        "empty": "Nothing here yet",
+        "emptyHint": "The numbers show up as soon as something happens in the app.",
+        "testData": "test data",
+        "failed": "Saving failed. Try again.",
+        "limit": "No more boards.",
+        "setDefault": "Default for new administrators",
+        "setDefaultConfirm": "This board becomes the default for administrators who have not changed their overview yet. Nobody's own boards change.",
+        "defaultSaved": "Saved. New administrators start with this overview.",
+        "resetOwner": "Back to the default overview",
+        "template": "Start with",
+        "templates": {
+          "empty": "Empty",
+          "operations": "Operations",
+          "money": "Money",
+          "ai": "AI",
+          "people": "People"
+        }
+      },
+      "categories": {
+        "operations": "Operations",
+        "people": "People",
+        "money": "Money",
+        "ai": "AI",
+        "product": "Product",
+        "management": "Management"
+      },
+      "settings": {
+        "period": {
+          "label": "Period",
+          "bar": "As in the top bar",
+          "today": "Always today",
+          "7d": "Always 7 days",
+          "30d": "Always 30 days",
+          "90d": "Always 90 days",
+          "12m": "Always 12 months"
+        }
+      },
+      "badge": {
+        "label": "{count, plural, one {# new error} other {# new errors}}",
+        "bell": "Notifications",
+        "bellCount": "Notifications, {count, plural, one {# new error} other {# new errors}}",
+        "title": "{count, plural, one {New error} other {{shown} new errors}}",
+        "empty": "No new errors",
+        "all": "All new errors in the log"
+      },
+      "items": {
+        "errors": {
+          "name": "Errors",
+          "description": "New today, open, people hit and the three most frequent with their code."
+        },
+        "health": {
+          "name": "System health",
+          "description": "Cron jobs, environment variables, e-mails, the Stripe webhook and exchange rates."
+        },
+        "deploy": {
+          "name": "Latest deployment",
+          "description": "The version running and how many errors came since."
+        },
+        "reports": {
+          "name": "Reports and feedback",
+          "description": "New problem reports and ideas from people."
+        },
+        "latency": {
+          "name": "App response",
+          "description": "How fast pages load and the server answers."
+        },
+        "newUsers": {
+          "name": "New users",
+          "description": "Sign-ups today, in 7 days and the trend over the period."
+        },
+        "activeUsers": {
+          "name": "Active users",
+          "description": "Daily, weekly and monthly active, and how often they come back."
+        },
+        "funnel": {
+          "name": "Activation funnel",
+          "description": "How many people get through each step from sign-up."
+        },
+        "retention": {
+          "name": "Retention",
+          "description": "How many come back after 1, 7 and 30 days."
+        },
+        "atRisk": {
+          "name": "Users at risk",
+          "description": "Paying accounts that did nothing for 14 days."
+        },
+        "trialsEnding": {
+          "name": "Trials ending within 7 days",
+          "description": "Trial periods that end soon."
+        },
+        "countries": {
+          "name": "Countries and languages",
+          "description": "Where people are from and the language they use."
+        },
+        "recentSignups": {
+          "name": "Latest sign-ups",
+          "description": "Who signed up last and on which plan."
+        },
+        "revenue": {
+          "name": "Revenue",
+          "description": "What the app earned: today, this month, MRR and the trend."
+        },
+        "payingByPlan": {
+          "name": "Paying by plan",
+          "description": "Accounts that paid in the period, by plan."
+        },
+        "subscriptions": {
+          "name": "New and cancelled subscriptions",
+          "description": "New subscriptions, cancelled ones and why."
+        },
+        "failedPayments": {
+          "name": "Failed payments",
+          "description": "Payments that did not go through."
+        },
+        "promo": {
+          "name": "Promo codes and commissions",
+          "description": "Commissions to pay and the best codes in 30 days."
+        },
+        "margin": {
+          "name": "Costs vs. revenue",
+          "description": "Revenue against the costs of AI, Google and e-mails."
+        },
+        "aiSpend": {
+          "name": "AI spend",
+          "description": "Spend today and this month against the cap."
+        },
+        "aiPerUser": {
+          "name": "AI cost per active user",
+          "description": "What AI costs per active person."
+        },
+        "aiTopUsers": {
+          "name": "Costliest AI users",
+          "description": "Who spent the most on AI in the period."
+        },
+        "aiByFeature": {
+          "name": "AI by feature and model",
+          "description": "Where the AI money goes."
+        },
+        "aiEconomy": {
+          "name": "Economy mode",
+          "description": "Whether Grady runs in economy mode and how close the cap is."
+        },
+        "aiSavings": {
+          "name": "Where to save",
+          "description": "Jobs that can run on a cheaper model without losing quality."
+        },
+        "topFeatures": {
+          "name": "Most used features",
+          "description": "Sections of the app by how many people use them."
+        },
+        "tutorial": {
+          "name": "Tutorial",
+          "description": "How many start the tutorial and finish it."
+        },
+        "game": {
+          "name": "Game",
+          "description": "Players' levels and streaks."
+        },
+        "scheduler": {
+          "name": "Scheduler",
+          "description": "Meetings booked through the scheduler."
+        },
+        "mcp": {
+          "name": "MCP",
+          "description": "Connected apps and their actions in Gradus."
+        },
+        "satisfaction": {
+          "name": "Satisfaction",
+          "description": "Average and spread of the survey's answers."
+        },
+        "audit": {
+          "name": "Audit",
+          "description": "The latest actions of administrators."
+        },
+        "waiting": {
+          "name": "Waiting for me",
+          "description": "New errors and reports, commission payouts and the plans draft."
+        },
+        "quickActions": {
+          "name": "Quick actions",
+          "description": "Find a user, create a promo code, publish plans."
+        }
+      },
+      "errors": {
+        "figures": {
+          "newToday": "new today",
+          "open": "open",
+          "users": "people hit",
+          "returned": "came back"
+        },
+        "top": "Most frequent",
+        "calm": "No open errors",
+        "calmHint": "All quiet. A new error shows up here within a minute.",
+        "newList": "New errors",
+        "noneNew": "No new errors.",
+        "cameBack": "came back",
+        "groupMeta": "{page} · {occurrences, plural, one {# occurrence} other {# occurrences}} · {users, plural, one {# person} other {# people}} · last {at}",
+        "changeStatus": "Change state",
+        "statusFailed": "The state could not be changed. Try again."
+      },
+      "health": {
+        "figures": {
+          "problems": "things need attention"
+        },
+        "items": {
+          "cron": "Cron jobs",
+          "env": "Environment variables",
+          "email": "E-mail queue",
+          "stripe": "Stripe webhook",
+          "rates": "Exchange rates"
+        },
+        "subs": {
+          "cron": "{jobs} jobs · {failing} failed · {stale} did not run for a day",
+          "env": "{required} required missing · {optional} optional missing",
+          "email": "{failed} not sent in 24 h · {waiting} waiting",
+          "stripe": "{errors} errors in 24 h · last event",
+          "stripeNone": "No event yet",
+          "rates": "{currencies} currencies · {stale} old rates"
+        }
+      },
+      "deploy": {
+        "figures": {
+          "errors": "errors since the deployment",
+          "occurrences": "occurrences"
+        },
+        "env": {
+          "production": "production",
+          "preview": "preview",
+          "development": "development"
+        }
+      },
+      "reports": {
+        "figures": {
+          "newReports": "new reports",
+          "newRequests": "new ideas"
+        },
+        "latest": "New reports",
+        "kinds": {
+          "bug": "bug",
+          "idea": "idea",
+          "confusing": "confusing"
+        }
+      },
+      "latency": {
+        "figures": {
+          "page": "p95 page load",
+          "route": "p95 server response"
+        },
+        "slowest": "Slowest (p95)"
+      },
+      "newUsers": {
+        "figures": {
+          "today": "sign-ups today",
+          "week": "in 7 days"
+        }
+      },
+      "atRisk": {
+        "figures": {
+          "users": "paying, 14 days without an action"
+        },
+        "list": "Quiet the longest"
+      },
+      "trialsEnding": {
+        "figures": {
+          "ending": "end within 7 days",
+          "running": "running",
+          "converted": "paid",
+          "expired": "expired"
+        }
+      },
+      "countries": {
+        "figures": {
+          "countries": "countries"
+        }
+      },
+      "revenue": {
+        "figures": {
+          "period": "revenue in the period",
+          "today": "today",
+          "month": "this month",
+          "mrr": "MRR"
+        },
+        "paying": "{count, plural, one {# paying} other {# paying}}",
+        "payingAccounts": "Paying accounts",
+        "refunded": "Refunded"
+      },
+      "payingByPlan": {
+        "figures": {
+          "paying": "paying accounts"
+        }
+      },
+      "subscriptions": {
+        "figures": {
+          "started": "new subscriptions",
+          "cancelled": "cancelled"
+        },
+        "reasons": "Why they cancelled"
+      },
+      "failedPayments": {
+        "figures": {
+          "failed": "failed payments",
+          "unpaid": "unpaid"
+        }
+      },
+      "promo": {
+        "figures": {
+          "due": "commissions to pay",
+          "redemptions": "sign-ups with a code (30 days)",
+          "paying": "paid (30 days)"
+        },
+        "top": "Best codes in 30 days"
+      },
+      "margin": {
+        "figures": {
+          "result": "revenue less costs",
+          "revenue": "revenue",
+          "costs": "costs",
+          "costsUsd": "costs in USD"
+        },
+        "byPlan": "Margin by plan",
+        "otherCurrencies": "Revenue in other currencies (not converted)"
+      },
+      "aiSpend": {
+        "figures": {
+          "month": "spend this month",
+          "today": "today",
+          "cap": "monthly cap",
+          "share": "of the cap",
+          "callsToday": "Calls today",
+          "topUser": "Most by one user this month"
+        }
+      },
+      "aiTopUsers": {
+        "figures": {
+          "top": "most by one user"
+        }
+      },
+      "aiByFeature": {
+        "figures": {
+          "total": "AI spend"
+        },
+        "calls": "{count} calls",
+        "features": "By feature",
+        "models": "By model"
+      },
+      "aiEconomy": {
+        "off": "off · of the cap",
+        "manual": "on by hand · of the cap",
+        "budget": "on by the budget · of the cap",
+        "threshold": "Turns on from"
+      },
+      "aiSavings": {
+        "figures": {
+          "monthly": "can be saved a month"
+        },
+        "kinds": {
+          "cheaper": "cheaper model",
+          "better": "better model",
+          "auto": "automatic",
+          "fixed": "fixed model"
+        }
+      },
+      "topFeatures": {
+        "figures": {
+          "sections": "sections in use"
+        },
+        "share": "{pct} % of active"
+      },
+      "tutorial": {
+        "figures": {
+          "rate": "finished",
+          "started": "started",
+          "finished": "finished"
+        }
+      },
+      "game": {
+        "figures": {
+          "players": "players"
+        }
+      },
+      "scheduler": {
+        "figures": {
+          "created": "bookings",
+          "confirmed": "confirmed",
+          "cancelled": "cancelled"
+        }
+      },
+      "mcp": {
+        "figures": {
+          "calls": "actions through MCP",
+          "connected": "connections",
+          "users": "people"
+        }
+      },
+      "satisfaction": {
+        "figures": {
+          "average": "average (1–5)",
+          "responses": "answers"
+        }
+      },
+      "waiting": {
+        "figures": {
+          "total": "things waiting",
+          "errors": "New errors",
+          "reports": "New reports",
+          "payouts": "Commission payouts to approve or pay",
+          "draft": "Plans draft to publish"
+        }
+      },
+      "quickActions": {
+        "actions": {
+          "findUser": "Find a user",
+          "promoCode": "New promo code",
+          "publishPlans": "Publish plans"
+        }
       }
     }
   },

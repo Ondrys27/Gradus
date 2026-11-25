@@ -54,6 +54,7 @@ import { parseAdminView, viewQuery } from "../view-state";
 import type { AdminActor } from "../roles";
 import { ADMIN_HIGHLIGHT_EVENT, helpFor, helpItemHref, matchesSearch } from "../help-index";
 import { useAdminSignOut } from "../admin-session";
+import { AdminBell, ErrorCountBadge, ErrorTitleCount } from "../dashboard/error-badge-client";
 
 const SECTION_ICONS: Record<AdminSectionKey, LucideIcon> = {
   overview: LayoutDashboardIcon,
@@ -165,6 +166,8 @@ export function AdminSidebar({ actor }: { actor: AdminActor }) {
           {!collapsed && (
             <span className="truncate text-sm font-semibold tracking-tight text-ink">{t("title")}</span>
           )}
+          {!collapsed && <AdminBell className="ml-auto" />}
+          <ErrorTitleCount />
         </div>
 
         <nav aria-label={t("title")} className="flex-1 overflow-y-auto px-2 py-3 [scrollbar-width:thin]">
@@ -290,6 +293,9 @@ function SidebarLink({
       )}
       <Icon aria-hidden className={cn("size-4 shrink-0", active ? "text-violet" : "text-ink-muted")} />
       {!collapsed && <span className="truncate">{label}</span>}
+      {section.key === "errors" && (
+        <ErrorCountBadge className={collapsed ? "absolute -top-1 -right-1" : "ml-auto"} />
+      )}
     </Link>
   );
 }
@@ -348,11 +354,14 @@ export function AdminBottomNav({ actor }: { actor: AdminActor }) {
           const icon = (
             <span
               className={cn(
-                "grid h-6 w-10 place-items-center rounded-full",
+                "relative grid h-6 w-10 place-items-center rounded-full",
                 active && "bg-violet/20 text-violet",
               )}
             >
               <Icon aria-hidden className="size-4" />
+              {group.key === "operations" && (
+                <ErrorCountBadge className="absolute -top-1.5 -right-1 h-4 min-w-4 text-[10px]" />
+              )}
             </span>
           );
           if (group.sections.length === 1) {
@@ -411,6 +420,7 @@ export function AdminBottomNav({ actor }: { actor: AdminActor }) {
                 >
                   <Icon aria-hidden className={cn("size-4", active ? "text-violet" : "text-ink-muted")} />
                   {t(`nav.${section.key}`)}
+                  {section.key === "errors" && <ErrorCountBadge className="ml-auto" />}
                 </button>
               </li>
             );
@@ -429,12 +439,13 @@ export function AdminPhoneBar() {
     <div className="flex h-12 items-center gap-3 border-b border-line bg-canvas-deep px-4 pt-[env(safe-area-inset-top)] lg:hidden">
       <Logo className="size-7 shadow-none" />
       <span className="text-sm font-semibold tracking-tight text-ink">{t("title")}</span>
+      <AdminBell className="ml-auto" />
       <button
         type="button"
         disabled={pending}
         onClick={signOut}
         aria-label={t("signOut")}
-        className="ml-auto grid size-11 cursor-pointer place-items-center rounded-full text-ink-soft outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="grid size-11 cursor-pointer place-items-center rounded-full text-ink-soft outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <LogOutIcon aria-hidden className="size-4" />
       </button>

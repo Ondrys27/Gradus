@@ -2,14 +2,14 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { isEmailConfirmationRequired } from "@/features/auth/email-confirmation";
+import { AdminDashboard } from "@/features/admin/dashboard/admin-dashboard";
+import { loadAdminDashboard } from "@/features/admin/dashboard/server/layouts";
 import { logAdminAction } from "@/features/admin/server/audit";
 import { requireAdmin } from "@/features/admin/server/guard";
-import { adminQuery, safe, type AdminQuery } from "@/features/admin/server/metrics-data";
-import { overviewChart, overviewTiles } from "@/features/admin/server/page-data";
-import { AdminChart } from "@/features/admin/ui/admin-chart";
+import { adminQuery, safe } from "@/features/admin/server/metrics-data";
 import { AdminPageHeader, Show } from "@/features/admin/ui/admin-page";
-import { AdminCard, CardSkeleton, FiguresSkeleton } from "@/features/admin/ui/blocks";
-import { Figures } from "@/features/admin/ui/metric-tile";
+import { CardSkeleton } from "@/features/admin/ui/blocks";
+import type { AdminContext } from "@/features/admin/server/guard";
 import { isPublicSignupEnabled } from "@/lib/signup";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -19,6 +19,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
+/**
+ * The overview (29.2): the administrator's own board of widgets with tabs.
+ * The view is audited once per opening of the page; the widgets then read
+ * their numbers through /api/admin/widgets/<key> (guarded, not audited per
+ * widget), for the period and filters of the top bar.
+ */
 export default async function AdminOverviewPage({ searchParams }: Props) {
   const context = await requireAdmin();
   await logAdminAction(context, "view", "overview");
@@ -31,14 +37,22 @@ export default async function AdminOverviewPage({ searchParams }: Props) {
         <Suspense fallback={null}>
           <SignupWarning />
         </Suspense>
-        <Suspense fallback={<FiguresSkeleton more={6} />}>
-          <Tiles q={q} />
-        </Suspense>
-        <Suspense fallback={<CardSkeleton height={320} />}>
-          <MainChart q={q} />
+        <Suspense fallback={<CardSkeleton height={420} />}>
+          <Board context={context} />
         </Suspense>
       </div>
     </>
+  );
+}
+
+async function Board({ context }: { context: AdminContext }) {
+  const loaded = await safe("overview layouts", () => loadAdminDashboard(context));
+  return (
+    <Show loaded={loaded}>
+      {(initial) => (
+        <AdminDashboard actor={{ role: context.role, level: context.level }} initial={initial} />
+      )}
+    </Show>
   );
 }
 
@@ -57,24 +71,5 @@ async function SignupWarning() {
     >
       {t("signupWithoutConfirmation")}
     </div>
-  );
-}
-
-async function Tiles({ q }: { q: AdminQuery }) {
-  const loaded = await safe("overview tiles", () => overviewTiles(q));
-  return <Show loaded={loaded}>{(tiles) => <Figures tiles={tiles} />}</Show>;
-}
-
-async function MainChart({ q }: { q: AdminQuery }) {
-  const [loaded, t] = await Promise.all([
-    safe("overview chart", () => overviewChart(q)),
-    getTranslations("admin.overview"),
-  ]);
-  return (
-    <AdminCard title={t("chartTitle")} description={t("chartDescription")}>
-      <Show loaded={loaded}>
-        {(data) => <AdminChart data={data} title={t("chartTitle")} height={320} />}
-      </Show>
-    </AdminCard>
   );
 }

@@ -36,8 +36,14 @@ const PROMO = `${P}/promo-kody`;
 const ADMINS = `${P}/administratori`;
 
 export const ADMIN_HELP: Record<AdminSectionKey, readonly HelpItem[]> = {
+  // The overview is a board of widgets (29.2): ⌘K opens a widget's detail (`?widget=`).
   overview: [
     { key: "overviewNumbers", href: P },
+    { key: "overviewTabs", href: P },
+    { key: "overviewErrors", href: `${P}?widget=errors` },
+    { key: "overviewMoney", href: `${P}?widget=revenue`, power: "viewMoney" },
+    { key: "overviewAi", href: `${P}?widget=aiSpend` },
+    { key: "overviewDefault", href: P, power: "setDashboardDefault" },
     { key: "overviewWarnings", href: P },
   ],
   growth: [{ key: "growthSignups", href: `${P}/rust` }],

@@ -62,6 +62,7 @@ vi.mock("@/features/admin/ui/error-log-controls", (load) => stubClientModule(loa
 vi.mock("@/features/admin/ui/anchor-highlight", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/trash-retention-form", (load) => stubClientModule(load));
 vi.mock("@/features/admin/ui/audit-export-button", (load) => stubClientModule(load));
+vi.mock("@/features/admin/dashboard/admin-dashboard", (load) => stubClientModule(load));
 vi.mock("next/link", () => ({ default: clientStub("Link") }));
 
 // --- Session, audit and database --------------------------------------------------

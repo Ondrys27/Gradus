@@ -17,6 +17,7 @@ import {
   type ErrorAlertMode,
   type ErrorAlertSettings,
 } from "@/features/errors/alerts/settings";
+import { CRITICAL_USERS } from "@/features/errors/alerts/critical";
 import { cn } from "@/lib/utils";
 import {
   saveErrorAlerts,
@@ -77,9 +78,9 @@ export function ErrorAlertsForm({
           </dd>
           <dt className="text-ink-soft">{t("modeLabel")}</dt>
           <dd className="text-ink">
-            {saved.mode === "every"
-              ? t("modes.every")
-              : t("modes.digest", { minutes: saved.digest_minutes })}
+            {saved.mode === "digest"
+              ? t("modes.digest", { minutes: saved.digest_minutes })
+              : t(`modes.${saved.mode}`)}
           </dd>
         </dl>
         <p className="text-xs text-ink-muted">{t("readOnly")}</p>
@@ -230,7 +231,7 @@ export function ErrorAlertsForm({
                 )}
               >
                 {checked && <CheckIcon aria-hidden className="size-3.5 shrink-0 text-violet" />}
-                {value === "every" ? t("modes.every") : t("modes.digestOption")}
+                {value === "digest" ? t("modes.digestOption") : t(`modes.${value}`)}
               </button>
             );
           })}
@@ -256,9 +257,9 @@ export function ErrorAlertsForm({
           </FormField>
         )}
         <p className="text-xs text-pretty text-ink-muted">
-          {mode === "every"
-            ? t("modeHint.every")
-            : t("modeHint.digest", { minutes: minutes.trim() || "N", hour: digestHourUtc })}
+          {mode === "digest"
+            ? t("modeHint.digest", { minutes: minutes.trim() || "N", hour: digestHourUtc })
+            : t(`modeHint.${mode}`, { users: CRITICAL_USERS })}
         </p>
       </section>
 

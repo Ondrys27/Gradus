@@ -7689,7 +7689,7 @@
     },
     "overview": {
       "title": "Přehled",
-      "description": "Hlavní čísla aplikace na jednom místě.",
+      "description": "Tvoje plocha widgetů: chyby, lidé, peníze, AI a co na tebe čeká. Upravit si ji můžeš po svém.",
       "chartTitle": "Aktivní uživatelé a registrace",
       "chartDescription": "Denně, týdně a měsíčně aktivní uživatelé, registrace za den na pravé ose.",
       "signupWithoutConfirmation": "Veřejná registrace je zapnutá (PUBLIC_SIGNUP_ENABLED), ale Supabase nežádá potvrzení e-mailu. Zapni v Supabase → Authentication → Sign In / Providers volbu Confirm email (až s vlastním SMTP přes Resend), jinak se dá zaregistrovat i s cizí adresou."
@@ -9316,7 +9316,7 @@
     },
     "errorAlerts": {
       "title": "Upozornění na chyby",
-      "description": "Na které adresy přijde e-mail, když kterémukoli uživateli vyskočí chyba.",
+      "description": "Chyby svítí na přehledu, v menu a ve zvonku. E-mailem chodí, jen když to tady zapneš.",
       "cardTitle": "E-maily o chybách",
       "cardDescription": "Stejná chyba přijde nejvýš jednou za {minutes} minut, další výskyty se přičtou do dalšího e-mailu. Celkem nejvýš {perHour} e-mailů za hodinu, pak jeden „Chyb je víc“.",
       "senderWarning": "Pozor: zatím se odesílá z testovací adresy Resendu (RESEND_FROM není nastavené). Dokud RESEND_FROM nemá ověřenou doménu, Resend doručí jen na adresu účtu Resend; ostatní adresy e-mail nedostanou.",
@@ -9333,13 +9333,17 @@
       "modes": {
         "every": "Každá chyba zvlášť",
         "digestOption": "Souhrn každých N minut",
-        "digest": "Souhrn, nejvýš jeden e-mail za {minutes} minut"
+        "digest": "Souhrn, nejvýš jeden e-mail za {minutes} minut",
+        "off": "Vypnuto",
+        "critical": "Jen kritické"
       },
       "minutesLabel": "N minut",
       "minutesHint": "Celé číslo {min}–{max}.",
       "modeHint": {
         "every": "Každá chyba přijde hned vlastním e-mailem (s pravidly proti záplavě výše).",
-        "digest": "Chyba přijde hned, jen když za posledních {minutes} minut nepřišel žádný e-mail. Ostatní se sbírají a přijdou v souhrnu jednou denně v {hour}:00 UTC."
+        "digest": "Chyba přijde hned, jen když za posledních {minutes} minut nepřišel žádný e-mail. Ostatní se sbírají a přijdou v souhrnu jednou denně v {hour}:00 UTC.",
+        "off": "E-maily nechodí. Nové chyby uvidíš ve widgetu Chyby na přehledu, v červeném odznaku u Provoz → Chyby a ve zvonku.",
+        "critical": "E-mail přijde, jen když stejná chyba za hodinu zasáhne {users} a víc lidí, nebo když spadne přihlášení, registrace nebo platby. Ostatní chyby svítí jen v administraci."
       },
       "save": "Uložit",
       "saving": "Ukládám…",
@@ -9536,7 +9540,7 @@
       "searchHint": "Tip: ⌘K (Ctrl+K) hledá i jednotlivá nastavení a akce, třeba „strop AI“, „promo kód“ nebo „reset hesla“, a skočí rovnou na ně.",
       "open": "Otevřít",
       "sections": {
-        "overview": "Hlavní čísla na jednom místě: noví lidé, aktivní účty, peníze a upozornění, která chtějí pozornost.",
+        "overview": "Tvoje plocha widgetů: chyby, zdraví, noví a aktivní lidé, tržby, AI a co čeká na tebe. Každý si ji poskládá sám, víc ploch jako záložky.",
         "growth": "Odkud lidé přicházejí a kolik se jich registruje, po dnech a zdrojích.",
         "activation": "Jak daleko se noví lidé dostanou: průvodce, první milník, tutoriál, konverze registrace.",
         "retention": "Kdo se vrací: kohorty, aktivní dny a relace.",
@@ -9559,8 +9563,8 @@
       },
       "items": {
         "overviewNumbers": {
-          "title": "Hlavní čísla",
-          "keywords": "přehled dlaždice metriky"
+          "title": "Widgety přehledu",
+          "keywords": "přehled widget dlaždice metriky přidat widget galerie velikost přeskládat"
         },
         "overviewWarnings": {
           "title": "Upozornění na přehledu",
@@ -9789,6 +9793,26 @@
         "calendarSyncAccounts": {
           "title": "Přidat účet k propojení kalendářů",
           "keywords": "kalendář propojení účet přidat vybrané e-mail id"
+        },
+        "overviewTabs": {
+          "title": "Další plochy (záložky) a připravené sady",
+          "keywords": "záložka plocha provoz peníze ai lidé nová záložka"
+        },
+        "overviewDefault": {
+          "title": "Výchozí přehled pro nové administrátory",
+          "keywords": "výchozí rozložení přehled nový administrátor"
+        },
+        "overviewErrors": {
+          "title": "Widget Chyby a odznak nových chyb",
+          "keywords": "chyby widget odznak zvonek nové chyby vrátily se"
+        },
+        "overviewMoney": {
+          "title": "Widgety peněz: tržby, MRR, marže",
+          "keywords": "tržby mrr peníze marže platby předplatné provize"
+        },
+        "overviewAi": {
+          "title": "Widgety AI: spotřeba proti stropu",
+          "keywords": "ai spotřeba strop úsporný režim kde ušetřit"
         }
       }
     },
@@ -9921,6 +9945,426 @@
         "addLabel": "Přidat účet",
         "addPlaceholder": "E-mail, krátké ID nebo id účtu",
         "add": "Přidat účet"
+      }
+    },
+    "widgets": {
+      "board": {
+        "mainTab": "Přehled",
+        "empty": "Zatím tu nic není",
+        "emptyHint": "Čísla se objeví, jakmile se v aplikaci něco stane.",
+        "testData": "testovací data",
+        "failed": "Uložení se nepovedlo. Zkus to znovu.",
+        "limit": "Víc ploch už nejde.",
+        "setDefault": "Výchozí pro nové administrátory",
+        "setDefaultConfirm": "Tahle plocha bude výchozí pro administrátory, kteří si svůj přehled ještě neupravili. Svoje upravené plochy nikomu nezmění.",
+        "defaultSaved": "Uloženo. Noví administrátoři začnou s tímhle přehledem.",
+        "resetOwner": "Zpět na výchozí přehled",
+        "template": "Začít s",
+        "templates": {
+          "empty": "Prázdná",
+          "operations": "Provoz",
+          "money": "Peníze",
+          "ai": "AI",
+          "people": "Lidé"
+        }
+      },
+      "categories": {
+        "operations": "Provoz",
+        "people": "Lidé",
+        "money": "Peníze",
+        "ai": "AI",
+        "product": "Produkt",
+        "management": "Správa"
+      },
+      "settings": {
+        "period": {
+          "label": "Období",
+          "bar": "Podle horní lišty",
+          "today": "Vždy dnes",
+          "7d": "Vždy 7 dní",
+          "30d": "Vždy 30 dní",
+          "90d": "Vždy 90 dní",
+          "12m": "Vždy 12 měsíců"
+        }
+      },
+      "badge": {
+        "label": "{count, plural, one {# nová chyba} few {# nové chyby} other {# nových chyb}}",
+        "bell": "Upozornění",
+        "bellCount": "Upozornění, {count, plural, one {# nová chyba} few {# nové chyby} other {# nových chyb}}",
+        "title": "{count, plural, one {Nová chyba} few {{shown} nové chyby} other {{shown} nových chyb}}",
+        "empty": "Žádné nové chyby",
+        "all": "Všechny nové chyby v logu"
+      },
+      "items": {
+        "errors": {
+          "name": "Chyby",
+          "description": "Nové dnes, otevřené, zasažení lidé a nejčastější tři s kódem."
+        },
+        "health": {
+          "name": "Zdraví systému",
+          "description": "Cron úlohy, proměnné prostředí, e-maily, webhook Stripe a kurzy."
+        },
+        "deploy": {
+          "name": "Poslední nasazení",
+          "description": "Verze, která běží, a kolik chyb od ní přišlo."
+        },
+        "reports": {
+          "name": "Hlášení a zpětná vazba",
+          "description": "Nová hlášení problémů a nápady od lidí."
+        },
+        "latency": {
+          "name": "Odezva aplikace",
+          "description": "Jak rychle se načítají stránky a odpovídá server."
+        },
+        "newUsers": {
+          "name": "Noví uživatelé",
+          "description": "Registrace dnes, za 7 dní a vývoj za období."
+        },
+        "activeUsers": {
+          "name": "Aktivní uživatelé",
+          "description": "Denně, týdně a měsíčně aktivní a jak často se vracejí."
+        },
+        "funnel": {
+          "name": "Trychtýř aktivace",
+          "description": "Kolik lidí projde jednotlivými kroky od registrace."
+        },
+        "retention": {
+          "name": "Retence",
+          "description": "Kolik lidí se vrátí po 1, 7 a 30 dnech."
+        },
+        "atRisk": {
+          "name": "Uživatelé v ohrožení",
+          "description": "Platící účty, které 14 dní nic neudělaly."
+        },
+        "trialsEnding": {
+          "name": "Zkoušky končící do 7 dní",
+          "description": "Zkušební období, která brzy skončí."
+        },
+        "countries": {
+          "name": "Země a jazyky",
+          "description": "Odkud lidé jsou a v jakém jazyce aplikaci používají."
+        },
+        "recentSignups": {
+          "name": "Poslední registrace",
+          "description": "Kdo se zaregistroval naposledy a na jakém tarifu."
+        },
+        "revenue": {
+          "name": "Tržby",
+          "description": "Kolik aplikace vydělala: dnes, tento měsíc, MRR a vývoj."
+        },
+        "payingByPlan": {
+          "name": "Platící podle tarifu",
+          "description": "Účty, které v období zaplatily, po tarifech."
+        },
+        "subscriptions": {
+          "name": "Nové a zrušené předplatné",
+          "description": "Nová předplatná, zrušená a proč."
+        },
+        "failedPayments": {
+          "name": "Neúspěšné platby",
+          "description": "Platby, které neprošly."
+        },
+        "promo": {
+          "name": "Promo kódy a provize",
+          "description": "Provize k vyplacení a nejlepší kódy za 30 dní."
+        },
+        "margin": {
+          "name": "Náklady vs. tržby",
+          "description": "Tržby proti nákladům na AI, Google a e-maily."
+        },
+        "aiSpend": {
+          "name": "Spotřeba AI",
+          "description": "Útrata dnes a za měsíc proti stropu."
+        },
+        "aiPerUser": {
+          "name": "Cena AI na aktivního uživatele",
+          "description": "Kolik stojí AI na jednoho aktivního člověka."
+        },
+        "aiTopUsers": {
+          "name": "Nejdražší uživatelé AI",
+          "description": "Kdo za období utratil za AI nejvíc."
+        },
+        "aiByFeature": {
+          "name": "AI podle funkce a modelu",
+          "description": "Kde se za AI utrácí nejvíc."
+        },
+        "aiEconomy": {
+          "name": "Úsporný režim",
+          "description": "Jestli Grady běží v úsporném režimu a jak blízko je strop."
+        },
+        "aiSavings": {
+          "name": "Kde ušetřit",
+          "description": "Funkce, kde jde ušetřit levnějším modelem bez ztráty kvality."
+        },
+        "topFeatures": {
+          "name": "Nejpoužívanější funkce",
+          "description": "Sekce aplikace podle toho, kolik lidí je používá."
+        },
+        "tutorial": {
+          "name": "Tutoriál",
+          "description": "Kolik lidí tutoriál spustí a dokončí."
+        },
+        "game": {
+          "name": "Hra",
+          "description": "Úrovně hráčů a jejich série."
+        },
+        "scheduler": {
+          "name": "Plánovač",
+          "description": "Rezervace schůzek přes plánovač."
+        },
+        "mcp": {
+          "name": "MCP",
+          "description": "Připojené aplikace a jejich akce v Gradusu."
+        },
+        "satisfaction": {
+          "name": "Spokojenost",
+          "description": "Průměr a rozdělení odpovědí z dotazníku."
+        },
+        "audit": {
+          "name": "Audit",
+          "description": "Poslední akce administrátorů."
+        },
+        "waiting": {
+          "name": "Čeká na mě",
+          "description": "Nové chyby a hlášení, výplaty provizí a koncept tarifů."
+        },
+        "quickActions": {
+          "name": "Rychlé akce",
+          "description": "Najít uživatele, založit promo kód, zveřejnit tarify."
+        }
+      },
+      "errors": {
+        "figures": {
+          "newToday": "nové dnes",
+          "open": "otevřené",
+          "users": "zasažení lidé",
+          "returned": "vrátily se"
+        },
+        "top": "Nejčastější",
+        "calm": "Žádná otevřená chyba",
+        "calmHint": "Klid. Nová chyba se tu objeví do minuty.",
+        "newList": "Nové chyby",
+        "noneNew": "Žádné nové chyby.",
+        "cameBack": "vrátila se",
+        "groupMeta": "{page} · {occurrences, plural, one {# výskyt} few {# výskyty} other {# výskytů}} · {users, plural, one {# člověk} few {# lidé} other {# lidí}} · naposledy {at}",
+        "changeStatus": "Změnit stav",
+        "statusFailed": "Stav se nepovedlo změnit. Zkus to znovu."
+      },
+      "health": {
+        "figures": {
+          "problems": "věcí chce pozornost"
+        },
+        "items": {
+          "cron": "Cron úlohy",
+          "env": "Proměnné prostředí",
+          "email": "Fronta e-mailů",
+          "stripe": "Webhook Stripe",
+          "rates": "Kurzy měn"
+        },
+        "subs": {
+          "cron": "{jobs} úloh · {failing} selhalo · {stale} neběželo přes den",
+          "env": "{required} povinných chybí · {optional} nepovinných chybí",
+          "email": "{failed} neodešlo za 24 h · {waiting} čeká",
+          "stripe": "{errors} chyb za 24 h · poslední událost",
+          "stripeNone": "Zatím žádná událost",
+          "rates": "{currencies} měn · {stale} starých kurzů"
+        }
+      },
+      "deploy": {
+        "figures": {
+          "errors": "chyb od nasazení",
+          "occurrences": "výskytů"
+        },
+        "env": {
+          "production": "produkce",
+          "preview": "náhled",
+          "development": "vývoj"
+        }
+      },
+      "reports": {
+        "figures": {
+          "newReports": "nová hlášení",
+          "newRequests": "nové nápady"
+        },
+        "latest": "Nová hlášení",
+        "kinds": {
+          "bug": "chyba",
+          "idea": "nápad",
+          "confusing": "nejasné"
+        }
+      },
+      "latency": {
+        "figures": {
+          "page": "p95 načtení stránky",
+          "route": "p95 odpovědi serveru"
+        },
+        "slowest": "Nejpomalejší (p95)"
+      },
+      "newUsers": {
+        "figures": {
+          "today": "registrací dnes",
+          "week": "za 7 dní"
+        }
+      },
+      "atRisk": {
+        "figures": {
+          "users": "platících 14 dní bez akce"
+        },
+        "list": "Nejdéle neaktivní"
+      },
+      "trialsEnding": {
+        "figures": {
+          "ending": "končí do 7 dní",
+          "running": "běží",
+          "converted": "zaplatilo",
+          "expired": "vypršelo"
+        }
+      },
+      "countries": {
+        "figures": {
+          "countries": "zemí"
+        }
+      },
+      "revenue": {
+        "figures": {
+          "period": "tržby za období",
+          "today": "dnes",
+          "month": "tento měsíc",
+          "mrr": "MRR"
+        },
+        "paying": "{count, plural, one {# platící} few {# platící} other {# platících}}",
+        "payingAccounts": "Platící účty",
+        "refunded": "Vráceno"
+      },
+      "payingByPlan": {
+        "figures": {
+          "paying": "platících účtů"
+        }
+      },
+      "subscriptions": {
+        "figures": {
+          "started": "nová předplatná",
+          "cancelled": "zrušená"
+        },
+        "reasons": "Důvody zrušení"
+      },
+      "failedPayments": {
+        "figures": {
+          "failed": "neúspěšných plateb",
+          "unpaid": "neuhrazených"
+        }
+      },
+      "promo": {
+        "figures": {
+          "due": "provize k vyplacení",
+          "redemptions": "registrací s kódem (30 dní)",
+          "paying": "zaplatilo (30 dní)"
+        },
+        "top": "Nejlepší kódy za 30 dní"
+      },
+      "margin": {
+        "figures": {
+          "result": "tržby mínus náklady",
+          "revenue": "tržby",
+          "costs": "náklady",
+          "costsUsd": "náklady v USD"
+        },
+        "byPlan": "Marže podle tarifu",
+        "otherCurrencies": "Tržby v dalších měnách (bez přepočtu)"
+      },
+      "aiSpend": {
+        "figures": {
+          "month": "útrata za měsíc",
+          "today": "dnes",
+          "cap": "měsíční strop",
+          "share": "ze stropu",
+          "callsToday": "Volání dnes",
+          "topUser": "Nejvíc jeden uživatel tento měsíc"
+        }
+      },
+      "aiTopUsers": {
+        "figures": {
+          "top": "nejvíc jeden uživatel"
+        }
+      },
+      "aiByFeature": {
+        "figures": {
+          "total": "útrata za AI"
+        },
+        "calls": "{count} volání",
+        "features": "Podle funkce",
+        "models": "Podle modelu"
+      },
+      "aiEconomy": {
+        "off": "vypnutý · ze stropu",
+        "manual": "zapnutý ručně · ze stropu",
+        "budget": "zapnutý rozpočtem · ze stropu",
+        "threshold": "Zapne se od"
+      },
+      "aiSavings": {
+        "figures": {
+          "monthly": "jde ušetřit za měsíc"
+        },
+        "kinds": {
+          "cheaper": "levnější model",
+          "better": "lepší model",
+          "auto": "automaticky",
+          "fixed": "pevný model"
+        }
+      },
+      "topFeatures": {
+        "figures": {
+          "sections": "používaných sekcí"
+        },
+        "share": "{pct} % aktivních"
+      },
+      "tutorial": {
+        "figures": {
+          "rate": "dokončilo",
+          "started": "spustilo",
+          "finished": "dokončilo"
+        }
+      },
+      "game": {
+        "figures": {
+          "players": "hráčů"
+        }
+      },
+      "scheduler": {
+        "figures": {
+          "created": "rezervací",
+          "confirmed": "potvrzeno",
+          "cancelled": "zrušeno"
+        }
+      },
+      "mcp": {
+        "figures": {
+          "calls": "akcí přes MCP",
+          "connected": "připojení",
+          "users": "lidí"
+        }
+      },
+      "satisfaction": {
+        "figures": {
+          "average": "průměr (1–5)",
+          "responses": "odpovědí"
+        }
+      },
+      "waiting": {
+        "figures": {
+          "total": "věcí čeká",
+          "errors": "Nové chyby",
+          "reports": "Nová hlášení",
+          "payouts": "Výplaty provizí ke schválení nebo vyplacení",
+          "draft": "Koncept tarifů ke zveřejnění"
+        }
+      },
+      "quickActions": {
+        "actions": {
+          "findUser": "Najít uživatele",
+          "promoCode": "Nový promo kód",
+          "publishPlans": "Zveřejnit tarify"
+        }
       }
     }
   },

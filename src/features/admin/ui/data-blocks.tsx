@@ -278,30 +278,35 @@ const SEGMENT_OF: Record<string, keyof typeof SEGMENT_VALUES> = {
 };
 
 /** One metric split into groups, as bars with their share and change. */
-export function BreakdownList({ data, max = 12 }: { data: BreakdownData; max?: number }) {
+/** The name of one item of a breakdown metric (a plan, a country, a reason…), as the lists show it. */
+export function useBreakdownLabel(): (metric: string, key: string) => string {
   const t = useTranslations();
-  const tUnits = useTranslations("admin.units");
   const locale = useLocale();
-  const items = data.items.filter((item) => item.value !== null && item.value > 0).slice(0, max);
-  if (items.length === 0) return <AdminEmpty />;
-  const total = items.reduce((sum, item) => sum + (item.value ?? 0), 0);
-  const top = Math.max(...items.map((item) => item.value ?? 0));
-
-  function label(key: string): string {
+  return (metric, key) => {
     if (key === "none" || key === "null" || key === "") return t("admin.breakdown.none");
     if (key === "true") return t("admin.breakdown.yes");
     if (key === "false") return t("admin.breakdown.no");
-    const segment = SEGMENT_OF[data.key];
+    const segment = SEGMENT_OF[metric];
     if (segment && t.has(`admin.controls.segmentValues.${segment}.${key}`)) {
       return t(`admin.controls.segmentValues.${segment}.${key}`);
     }
-    if (data.key === "users_by_country") return countryName(key, locale);
-    if (data.key === "users_by_industry" && t.has(`onboarding.industry.industries.${key}.label`)) {
+    if (metric === "users_by_country") return countryName(key, locale);
+    if (metric === "users_by_industry" && t.has(`onboarding.industry.industries.${key}.label`)) {
       return t(`onboarding.industry.industries.${key}.label`);
     }
     if (t.has(`admin.breakdown.values.${key}`)) return t(`admin.breakdown.values.${key}`);
     return key;
-  }
+  };
+}
+
+export function BreakdownList({ data, max = 12 }: { data: BreakdownData; max?: number }) {
+  const tUnits = useTranslations("admin.units");
+  const breakdownLabel = useBreakdownLabel();
+  const items = data.items.filter((item) => item.value !== null && item.value > 0).slice(0, max);
+  if (items.length === 0) return <AdminEmpty />;
+  const total = items.reduce((sum, item) => sum + (item.value ?? 0), 0);
+  const top = Math.max(...items.map((item) => item.value ?? 0));
+  const label = (key: string) => breakdownLabel(data.key, key);
 
   return (
     <div className="flex flex-col gap-2">

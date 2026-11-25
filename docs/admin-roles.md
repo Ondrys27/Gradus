@@ -46,12 +46,17 @@ Sloupce: **M** = majitel · **P** = plný administrátor · **O** = omezený adm
 | `login-actions.adminSignIn`, `startAdminEnrollment`, `verifyAdminCode`, `endAdminSession`, `adminHeartbeat` | ✓ | ✓ | ✓ | přihlášení a relace |
 | `login-actions.adminInviteSignIn` (+ `startAdminEnrollment` / `verifyAdminCode` s pozvánkou) | držitel platné pozvánky | | | přijetí pozvánky |
 | zápis pohledů do `admin_audit` (`logAdminAction`) | ✓ | ✓ | ✓ | každý pohled a export; audit ukazuje jméno toho, kdo akci udělal, nikdy roli |
+| `GET /api/admin/widgets/<key>` (data widgetů přehledu, 29.2) | ✓ | ✓ | ✓ / – | widgety Peníze (tržby, platící podle tarifu, předplatné, neúspěšné platby, promo kódy a provize, náklady vs. tržby) jen M a P (`viewMoney`), omezenému 404 a v galerii chybí; stejné serverové dotazy jako sekce, nepočítá se jako aktivita relace, bez `admin_audit` (pohled přehledu se zapíše jednou při otevření stránky) |
+| `GET /api/admin/errors/badge` (odznak nových chyb, titulek karty, zvonek) | ✓ | ✓ | ✓ | jen počet a posledních 5 nových skupin (kód, zpráva, stránka), nepočítá se jako aktivita, bez auditu |
+| `dashboard/server/layout-actions.saveAdminLayout`, `createAdminLayout`, `renameAdminLayout`, `deleteAdminLayout`, `resetAdminMainLayout` | ✓ | ✓ | ✓ | vlastní záložky přehledu v `admin_dashboard_layouts` (jen server, admin klient po stráži, vždy `user_id` ze session), bez auditu (osobní rozložení) |
+| `dashboard/server/layout-actions.setAdminDashboardDefault` | ✓ | ✓ | – | `setDashboardDefault`: výchozí přehled pro nové administrátory (`app_settings.admin_dashboard_default` přes `admin_set_app_setting`, audit `settings.admin_dashboard_default` s počty widgetů) |
 
 ## Stránky
 
 | Stránka | M | P | O | Poznámka |
 |---|---|---|---|---|
 | Přehled, Růst, Aktivace, Retence, Funkce, Hra, Náklady, Zdraví, Zpětná vazba, Uživatelé, Průzkumník, Audit, Nápověda (`/admin/napoveda`) | ✓ | ✓ | ✓ | Nápověda a ⌘K ukazují jen to, co dotyčný smí (`helpFor`) |
+| Přehled (`/admin`, plocha widgetů, 29.2) | ✓ | ✓ | ✓ | každý si skládá vlastní záložky; widgety Peníze jen M a P (`viewMoney`), omezený je nemá ani ve výchozím rozložení; „Výchozí pro nové administrátory“ jen M a P; widget Rychlé akce ukazuje Zveřejnit tarify jen s `editPlans`, Čeká na mě výplaty provizí jen s `managePayouts` a koncept tarifů jen s `editPlans` |
 | Provoz → Chyby (`/admin/chyby`, log) | ✓ | ✓ | ✓ | seznam, detail s výskyty, e-maily a hlášeními, změna stavu; jen technická data |
 | Provoz → Chyby → Upozornění e-mailem (`?tab=alerts`, dřív `/admin/upozorneni`, přesměruje) | ✓ | ✓ | čte | adresy, režim, zkušební e-mail; karta E-maily o změnách jen M a P |
 | AI a Grady — karta stropů | ✓ | ✓ | čte | pod kartou „Naposledy změnil(a) jméno, datum“ |
@@ -84,7 +89,7 @@ Sloupce: **M** = majitel · **P** = plný administrátor · **O** = omezený adm
 | `admin_session_end` | ✓ | ✓ | ✓ | jen vlastní relace |
 | `admin_require_owner` | | | | jen uvnitř funkcí: propustí M a P s živou relací a aal2; bez práva EXECUTE pro klienty |
 | `admin_require_sole_owner` | | | | jen uvnitř funkcí sekce Administrátoři: jen M; bez EXECUTE pro klienty |
-| `admin_set_app_setting` | ✓ | ✓ | – | `admin_require_owner()`; klíče `ai_caps`, `error_alerts` (audit bez adres), `jarvis_rules`, `grady_models`, `showcase_mode`, `calendar_sync` |
+| `admin_set_app_setting` | ✓ | ✓ | – | `admin_require_owner()`; klíče `ai_caps`, `error_alerts` (audit bez adres; režimy off · critical · digest · every, výchozí off), `jarvis_rules`, `grady_models`, `showcase_mode`, `trash_retention`, `calendar_sync`, `admin_dashboard_default` (audit jen počty widgetů) |
 | `admin_set_ai_user_cap` | ✓ | ✓ | – | totéž |
 | `admin_invite_create` (`_level` full / limited, výchozí limited) | ✓ | – | – | ukládá jen SHA-256 tokenu, audit `admins.invite` s úrovní |
 | `admin_invite_revoke` | ✓ | – | – | audit |
@@ -105,12 +110,14 @@ Sloupce: **M** = majitel · **P** = plný administrátor · **O** = omezený adm
 | `admin_email_taken` | | | | jen service role (server po stráži) |
 | `error_event_record`, `error_alert_claim`, `error_alert_digest_claim`, `purge_error_events` | | | | jen service role (server); bez klientského přístupu |
 | `admin_error_groups`, `admin_error_group_reports` | | | | jen service role (server po stráži): skupiny logu chyb podle otisku a hlášení s kódem skupiny |
+| `admin_error_overview`, `admin_error_badge`, `admin_users_at_risk` | | | | jen service role (server po stráži): čísla widgetů Chyby a Uživatelé v ohrožení a odznak nových chyb |
+| `error_alert_critical`, `error_alert_critical_place` | | | | jen service role, uvnitř `error_alert_claim` v režimu „jen kritické“ |
 | `error_events_reopen_group` (trigger) | | | | vyřešená chyba, která se objeví znovu, je zase Nová s `returned_at` („vrátila se“); ignorovaná zůstane |
 | `admin_bug_report_list`, `admin_bug_report_set_status`, `admin_bug_reports` | | | | jen service role (server po stráži); M, P i O |
 | `bug_report_create`, `bug_report_support` | | | | jen service role (server) |
 | `app_overview` | | | | v aplikaci, ne v administraci; beze změny |
 
-Tabulky jen pro server (bez pravidel a grantů): `admin_invites`, `admin_notify_prefs` (přepínač e-mailů o změnách), `error_groups` (stav chyby v logu), `error_events`, `error_alert_sends` (nově `to_emails`: komu e-mail o chybě šel, adresy z nastavení upozornění).
+Tabulky jen pro server (bez pravidel a grantů): `admin_dashboard_layouts` (záložky přehledu administrátora, 29.2), `admin_invites`, `admin_notify_prefs` (přepínač e-mailů o změnách), `error_groups` (stav chyby v logu), `error_events`, `error_alert_sends` (nově `to_emails`: komu e-mail o chybě šel, adresy z nastavení upozornění).
 
 ## E-mail „X změnil…“
 

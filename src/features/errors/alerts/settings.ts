@@ -6,7 +6,13 @@
  */
 import { z } from "zod";
 
-export const ERROR_ALERT_MODES = ["every", "digest"] as const;
+/**
+ * off: no e-mails (the default since 29.2: errors light up in the
+ * administration's overview, menu and bell); critical: only what
+ * critical.ts says; digest: at most one e-mail per N minutes and a daily
+ * summary; every: each error on its own.
+ */
+export const ERROR_ALERT_MODES = ["off", "critical", "digest", "every"] as const;
 export type ErrorAlertMode = (typeof ERROR_ALERT_MODES)[number];
 
 /** Addresses the alerts go to, at most. */
@@ -43,7 +49,7 @@ export type ErrorAlertSettings = {
 
 export const DEFAULT_ERROR_ALERTS: ErrorAlertSettings = {
   emails: [],
-  mode: "every",
+  mode: "off",
   digest_minutes: DEFAULT_DIGEST_MINUTES,
 };
 

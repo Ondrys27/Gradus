@@ -205,7 +205,7 @@ afterAll(async () => {
 });
 
 describe("the error_alerts setting", () => {
-  it("starts with the owner's e-mail, every error on its own", async () => {
+  it("starts with the owner's e-mail, switched off since step 29.2", async () => {
     await asServer();
     const role = await one<{ n: number }>(
       `select count(*)::int as n from user_roles where user_id = $1 and role = 'owner'`,
@@ -215,9 +215,10 @@ describe("the error_alerts setting", () => {
     const { value } = await one<{ value: unknown }>(
       `select value from app_settings where key = 'error_alerts'`,
     );
+    // 16.2 stored "every"; 29.2 turned the e-mails off (errors light up in the overview).
     expect(value).toEqual({
       emails: ["owner.account@example.com"],
-      mode: "every",
+      mode: "off",
       digest_minutes: 15,
     });
   });
@@ -243,6 +244,7 @@ describe("the error_alerts setting", () => {
       { ...base, emails: [1] },
       { ...base, emails: "a@b.cz" },
       { ...base, mode: "sometimes" },
+      { ...base, mode: "never" },
       { ...base, digest_minutes: 4 },
       { ...base, digest_minutes: 1441 },
       { ...base, digest_minutes: 15.5 },
@@ -287,7 +289,7 @@ describe("the error_alerts setting", () => {
     const audit = await one<{ detail: { from: Row; to: Row } }>(
       `select detail from admin_audit where target = 'settings.error_alerts' order by id desc limit 1`,
     );
-    expect(audit.detail.from).toMatchObject({ emails: 1, mode: "every", digest_minutes: 15 });
+    expect(audit.detail.from).toMatchObject({ emails: 1, mode: "off", digest_minutes: 15 });
     expect(audit.detail.to).toMatchObject({ emails: 2, mode: "digest", digest_minutes: 30 });
     expect(JSON.stringify(audit.detail)).not.toContain("@");
   });

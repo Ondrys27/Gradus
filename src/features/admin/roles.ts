@@ -52,7 +52,15 @@ export type AdminPower =
   /** The showcase mode (27.4) switched on or off; a limited admin reads it. */
   | "editShowcase"
   /** Who may connect Google and Apple calendars (28.10); a limited admin reads it. */
-  | "editCalendarSync";
+  | "editCalendarSync"
+  /**
+   * Money on the overview (29.2): the Money widgets (revenue, MRR, paying
+   * accounts, subscriptions, failed payments, promo payouts, margin); a
+   * limited admin does not get them at all.
+   */
+  | "viewMoney"
+  /** The overview new administrators start with (29.2); a limited admin does not set it. */
+  | "setDashboardDefault";
 
 /** The powers that stay with the owner whatever an administrator's level. */
 const OWNER_ALONE: ReadonlySet<AdminPower> = new Set(["manageAdmins"]);
