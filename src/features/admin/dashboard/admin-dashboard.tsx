@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { PencilIcon, PlusIcon, StarIcon, Trash2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -48,7 +48,6 @@ export function AdminDashboard({
 }) {
   const t = useTranslations("admin.widgets.board");
   const tBoard = useTranslations("dashboard.board");
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const system = useAdminWidgetSystem(actor);
@@ -65,15 +64,28 @@ export function AdminDashboard({
   const active = tabs.find((tab) => tab.id === requested) ?? null;
   const boardKey = active ? active.id : MAIN;
 
+  // The tab and the opened widget live in the address, written straight into
+  // the history (Next.js keeps useSearchParams in step): a router navigation
+  // would render the page on the server again and write one more audit row
+  // for every switch of a tab, not one per opening of the overview. The state
+  // must be null: Next.js only syncs useSearchParams for entries without its
+  // own `__NA` marker, so passing window.history.state would leave the tab as it was.
+  const replaceQuery = useCallback(
+    (next: URLSearchParams) => {
+      const query = next.toString();
+      window.history.replaceState(null, "", query ? `${pathname}?${query}` : pathname);
+    },
+    [pathname],
+  );
+
   const selectTab = useCallback(
     (id: string) => {
       const next = new URLSearchParams(window.location.search);
       if (id === MAIN) next.delete("board");
       else next.set("board", id);
-      const query = next.toString();
-      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+      replaceQuery(next);
     },
-    [pathname, router],
+    [replaceQuery],
   );
 
   // Saves go one after another, so the first change of the main tab makes exactly one row.
@@ -118,9 +130,8 @@ export function AdminDashboard({
     const next = new URLSearchParams(window.location.search);
     if (!next.has("widget")) return;
     next.delete("widget");
-    const query = next.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
-  }, [pathname, router]);
+    replaceQuery(next);
+  }, [replaceQuery]);
 
   async function reset() {
     if (boardKey === MAIN) {

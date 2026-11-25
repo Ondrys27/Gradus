@@ -121,6 +121,10 @@ test("22 · an invitation makes a new admin, works once, and removal locks them 
 
   // The owner creates the invitation; the link is shown once.
   await signInOwner(page, owner);
+  // The overview is a board of widgets (29.2): let it hydrate before leaving it,
+  // or the next page hydrates against the overview's HTML.
+  await expect(page).toHaveURL(/\/admin$/);
+  await waitForAdmin(page);
   await page.getByRole("link", { name: exact(L, "admin.shell.nav.admins") }).first().click();
   await expect(page).toHaveURL(/\/admin\/administratori$/);
   await waitForAdmin(page);
