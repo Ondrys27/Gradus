@@ -124,6 +124,19 @@ describe("Grady sets up rewards from the owner's words", () => {
     );
   });
 
+  it("a question of stages never answers a move of contacts", () => {
+    const proposal = cleanProposal(
+      {
+        changes: [{ ...ANSWER.changes[0]!, rule: { ...(ANSWER.changes[0]!.rule as object), event: { key: "contact.moved", from: { mode: "any", ids: [] }, to: { mode: "only", ids: ["ask:q2"] } } } }],
+        unsupported: [],
+        questions: [{ key: "q2", text: "Která fáze?", options: [{ id: WON, label: "Vyhráno" }, { id: MEETING, label: "Schůzka" }] }],
+      } as never,
+      { refs, ruleIds: [] },
+    );
+    expect(proposal.changes).toEqual([]);
+    expect(proposal.unsupported.map((item) => item.text)).toEqual(["400 za každou domluvenou schůzku"]);
+  });
+
   it("calls reward_setup and returns the proposal; nothing is written", async () => {
     const { client, calls } = fakeModel(JSON.stringify(ANSWER));
     const log = vi.fn(async () => undefined);

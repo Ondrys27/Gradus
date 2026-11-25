@@ -418,6 +418,28 @@ describe("rules with any trigger", () => {
     expect((await paid(worker)).map((e) => `${e.amount}:${e.bonus}`)).toEqual(["100.00:false", "100.00:false"]);
   });
 
+  it("a rule switched off keeps the bonus it earned while the count holds", async () => {
+    const account = await createAuthUser();
+    const worker = await hire(account);
+    const definition = anyToMeeting(100);
+    definition.limits = { bonus: { count: 2, amount: 5000 } };
+    const plan = await makePlan(worker);
+    await eventRules(plan, worker, [definition]);
+    const contacts = [await contact("A"), await contact("B"), await contact("C")];
+    for (const c of contacts) await move(account, c, "unreached", "meeting_scheduled");
+    await as(owner, () => db.query(`update reward_plan_rules set active = false where plan_id = $1`, [plan]));
+    // One reward undone, two still stand: the bonus at two stays.
+    await move(account, contacts[2]!, "meeting_scheduled", "failed");
+    expect((await paid(worker)).map((e) => `${e.amount}:${e.bonus}`).sort()).toEqual([
+      "100.00:false",
+      "100.00:false",
+      "5000.00:true",
+    ]);
+    // Under the count: the unpaid bonus goes.
+    await move(account, contacts[1]!, "meeting_scheduled", "failed");
+    expect((await paid(worker)).map((e) => `${e.amount}:${e.bonus}`)).toEqual(["100.00:false"]);
+  });
+
   it("two rules on one event: both add up, or only the highest pays", async () => {
     const account = await createAuthUser();
     const worker = await hire(account);

@@ -174,7 +174,7 @@ export function cleanProposal(
       .map((option) => ({ id: option.id, label: cut(option.label, 80) }));
     return key && options.length >= 2 ? [{ key, text: cut(question.text, 200), options }] : [];
   });
-  const asked = new Set(questions.map((question) => question.key));
+  const asked = new Map(questions.map((question) => [question.key, question.options.map((option) => option.id)]));
   const unsupported = answer.unsupported.map((item) => ({
     text: cut(item.text, 300),
     nearest: item.nearest ? cut(item.nearest, 300) : null,
@@ -200,7 +200,8 @@ export function cleanProposal(
       const kept: string[] = [];
       for (const id of list) {
         const ask = typeof id === "string" ? ASK.exec(id) : null;
-        if (ask && asked.has(ask[1]!)) asks.push({ side, question: ask[1]! });
+        // A question answers a side only with ids of its own kind (tables for a move of contacts, stages for deals).
+        if (ask && asked.get(ask[1]!)?.every((option) => ids.has(option))) asks.push({ side, question: ask[1]! });
         else if (typeof id === "string" && ids.has(id)) kept.push(id);
         else foreign = true;
       }
