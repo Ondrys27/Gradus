@@ -127,13 +127,18 @@ function within(q: AdminQuery, range: { from: string; to: string }): AdminQuery 
   return { ...q, range: range as AdminQuery["range"], previous: null };
 }
 
-/** An event of the catalog over the range: its count (or its distinct users). */
-async function eventTotal(q: AdminQuery, event: EventName, calc: "count" | "users" = "count") {
+/** An event of the catalog over a range: its count (or its distinct users). */
+async function eventTotalOver(
+  q: AdminQuery,
+  event: EventName,
+  calc: "count" | "users",
+  range: { from: string; to: string },
+) {
   const { data, error } = await createAdminClient().rpc("metric_event_series", {
     _event: event,
     _calc: calc,
-    _from: q.range.from,
-    _to: q.range.to,
+    _from: range.from,
+    _to: range.to,
     _grain: calc === "users" ? "all" : "day",
     _tz: METRICS_TIMEZONE,
     _include_internal: q.view.internal,
@@ -141,6 +146,18 @@ async function eventTotal(q: AdminQuery, event: EventName, calc: "count" | "user
   });
   if (error) throw new Error(`metric_event_series ${event}: ${error.message}`);
   return sum((data ?? []).map((row) => (row.value === null ? null : Number(row.value))));
+}
+
+/**
+ * The same with the period before (when the bar compares), so a widget can
+ * say how the number moved: `{ value, previous }`.
+ */
+async function eventTotalCompared(q: AdminQuery, event: EventName, calc: "count" | "users" = "count") {
+  const [value, previous] = await Promise.all([
+    eventTotalOver(q, event, calc, q.range),
+    q.previous ? eventTotalOver(q, event, calc, q.previous) : Promise.resolve(undefined),
+  ]);
+  return { value, ...(previous !== undefined ? { previous } : {}) };
 }
 
 const range = (q: AdminQuery) => ({ from: q.range.from, to: q.range.to });
@@ -417,9 +434,9 @@ const newUsers: Loader = async (q) => {
   return {
     range: range(q),
     figures: [
-      figure("newUsers", "today", day.value, "users"),
-      figure("newUsers", "week", week.value, "users", { spark: week.spark }),
       fromTile(period),
+      figure("newUsers", "today", day.value, "users"),
+      figure("newUsers", "week", week.value, "users"),
     ],
     chart,
   };
@@ -629,18 +646,19 @@ const payingByPlan: Loader = async (input) => {
 const subscriptions: Loader = async (input) => {
   const { q, testData } = moneyQuery(input);
   const [started, cancelled, reasons] = await Promise.all([
-    eventTotal(q, "checkout_completed"),
-    eventTotal(q, "subscription_cancelled"),
+    eventTotalCompared(q, "checkout_completed"),
+    eventTotalCompared(q, "subscription_cancelled"),
     breakdown(q, "subscription_cancellations"),
   ]);
   return {
     range: range(q),
     testData,
     figures: [
-      figure("subscriptions", "started", started),
-      figure("subscriptions", "cancelled", cancelled, "count", {
+      figure("subscriptions", "started", started.value, "count", started),
+      figure("subscriptions", "cancelled", cancelled.value, "count", {
+        ...cancelled,
         lowerIsBetter: true,
-        status: cancelled > 0 ? "warn" : undefined,
+        status: cancelled.value > 0 ? "warn" : undefined,
       }),
     ],
     rows: breakdownRows(reasons, 6),
@@ -728,7 +746,7 @@ const margin: Loader = async (input) => {
     figures: [
       figure("margin", "result", result, "money", {
         currency: COSTS_CURRENCY,
-        status: result < 0 ? "bad" : "good",
+        ...(result < 0 ? { status: "bad" as const } : {}),
       }),
       figure("margin", "revenue", revenueCzk, "money", { currency: COSTS_CURRENCY }),
       figure("margin", "costs", costCzk, "czk", { lowerIsBetter: true }),
@@ -762,13 +780,14 @@ const aiSpend: Loader = async (q) => {
   const cap = month.caps.monthlyUsd;
   const share = cap > 0 ? month.spentUsd / cap : null;
   const status: WidgetStatus | undefined =
-    share === null ? undefined : share >= 1 ? "bad" : share >= month.caps.warnShare ? "warn" : "good";
+    share === null ? undefined : share >= 1 ? "bad" : share >= month.caps.warnShare ? "warn" : undefined;
   return {
     figures: [
       figure("aiSpend", "month", month.spentUsd, "usd", { status }),
       figure("aiSpend", "today", day.spentUsd, "usd"),
       figure("aiSpend", "cap", cap, "usd"),
       figure("aiSpend", "share", share === null ? null : share * 100, "percent", { status }),
+      figure("aiSpend", "warnAt", month.caps.warnShare * 100, "percent"),
     ],
     rows: [
       {
@@ -846,7 +865,7 @@ const aiEconomy: Loader = async () => {
         label: `admin.widgets.aiEconomy.${state}`,
         value: cap > 0 ? (month.spentUsd / cap) * 100 : null,
         unit: "percent",
-        status: on ? "warn" : "good",
+        ...(on ? { status: "warn" as const } : {}),
       },
     ],
     rows: [
@@ -865,7 +884,7 @@ const aiSavings: Loader = async () => {
   const recommendations = models.recommendations.slice(0, 6);
   const saved = sum(recommendations.map((row) => (row.monthlyUsd !== null && row.monthlyUsd > 0 ? row.monthlyUsd : 0)));
   return {
-    figures: [figure("aiSavings", "monthly", saved, "usd", { status: saved > 0 ? "warn" : "good" })],
+    figures: [figure("aiSavings", "monthly", saved, "usd")],
     rows: recommendations.map((row) => ({
       id: `${row.feature}-${row.kind}`,
       label: `admin.ai.models.features.${row.feature}.name`,
@@ -902,17 +921,22 @@ const topFeatures: Loader = async (q) => {
 };
 
 const tutorial: Loader = async (q) => {
-  const [started, finished] = await Promise.all([
-    eventTotal(q, "tutorial_started", "users"),
-    eventTotal(q, "tutorial_finished", "users"),
+  const [started, finished, modes] = await Promise.all([
+    eventTotalCompared(q, "tutorial_started", "users"),
+    eventTotalCompared(q, "tutorial_finished", "users"),
+    breakdown(q, "tutorial_finished"),
   ]);
-  const modes = await breakdown(q, "tutorial_finished");
+  const rate = (s: number, f: number) => (s > 0 ? (f / s) * 100 : null);
   return {
     range: range(q),
     figures: [
-      figure("tutorial", "rate", started > 0 ? (finished / started) * 100 : null, "percent"),
-      figure("tutorial", "started", started, "users"),
-      figure("tutorial", "finished", finished, "users"),
+      figure("tutorial", "rate", rate(started.value, finished.value), "percent", {
+        ...(started.previous !== undefined && finished.previous !== undefined
+          ? { previous: rate(started.previous, finished.previous) }
+          : {}),
+      }),
+      figure("tutorial", "started", started.value, "users", started),
+      figure("tutorial", "finished", finished.value, "users", finished),
     ],
     rows: breakdownRows(modes, 4),
   };
@@ -935,32 +959,32 @@ const game: Loader = async (q) => {
 
 const scheduler: Loader = async (q) => {
   const [created, confirmed, cancelled] = await Promise.all([
-    eventTotal(q, "booking_created"),
-    eventTotal(q, "booking_confirmed"),
-    eventTotal(q, "booking_cancelled"),
+    eventTotalCompared(q, "booking_created"),
+    eventTotalCompared(q, "booking_confirmed"),
+    eventTotalCompared(q, "booking_cancelled"),
   ]);
   return {
     range: range(q),
     figures: [
-      figure("scheduler", "created", created),
-      figure("scheduler", "confirmed", confirmed),
-      figure("scheduler", "cancelled", cancelled, "count", { lowerIsBetter: true }),
+      figure("scheduler", "created", created.value, "count", created),
+      figure("scheduler", "confirmed", confirmed.value, "count", confirmed),
+      figure("scheduler", "cancelled", cancelled.value, "count", { ...cancelled, lowerIsBetter: true }),
     ],
   };
 };
 
 const mcp: Loader = async (q) => {
   const [connected, calls, users] = await Promise.all([
-    eventTotal(q, "mcp_client_connected"),
-    eventTotal(q, "mcp_tool_called"),
-    eventTotal(q, "mcp_tool_called", "users"),
+    eventTotalCompared(q, "mcp_client_connected"),
+    eventTotalCompared(q, "mcp_tool_called"),
+    eventTotalCompared(q, "mcp_tool_called", "users"),
   ]);
   return {
     range: range(q),
     figures: [
-      figure("mcp", "calls", calls),
-      figure("mcp", "connected", connected),
-      figure("mcp", "users", users, "users"),
+      figure("mcp", "calls", calls.value, "count", calls),
+      figure("mcp", "connected", connected.value, "count", connected),
+      figure("mcp", "users", users.value, "users", users),
     ],
   };
 };

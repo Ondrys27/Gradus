@@ -9966,7 +9966,8 @@
           "money": "Peníze",
           "ai": "AI",
           "people": "Lidé"
-        }
+        },
+        "trend": "Vývoj za období"
       },
       "categories": {
         "operations": "Provoz",
@@ -10148,7 +10149,10 @@
         "cameBack": "vrátila se",
         "groupMeta": "{page} · {occurrences, plural, one {# výskyt} few {# výskyty} other {# výskytů}} · {users, plural, one {# člověk} few {# lidé} other {# lidí}} · naposledy {at}",
         "changeStatus": "Změnit stav",
-        "statusFailed": "Stav se nepovedlo změnit. Zkus to znovu."
+        "statusFailed": "Stav se nepovedlo změnit. Zkus to znovu.",
+        "fresh": "nová",
+        "openLog": "Otevřít log",
+        "alerts": "Upozornění"
       },
       "health": {
         "figures": {
@@ -10279,8 +10283,11 @@
           "cap": "měsíční strop",
           "share": "ze stropu",
           "callsToday": "Volání dnes",
-          "topUser": "Nejvíc jeden uživatel tento měsíc"
-        }
+          "topUser": "Nejvíc jeden uživatel tento měsíc",
+          "warnAt": "práh upozornění"
+        },
+        "gauge": "Útrata {spent} ze stropu {cap}",
+        "ofCap": "{share} ze stropu"
       },
       "aiTopUsers": {
         "figures": {

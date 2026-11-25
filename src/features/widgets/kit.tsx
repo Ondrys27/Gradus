@@ -484,7 +484,8 @@ export function Columns({
     <div role="img" aria-label={label} className={cn("flex min-w-0 flex-col gap-1", className)}>
       <div className="flex items-end gap-[2px] border-b border-line/70" style={{ height }}>
         {values.map((value, index) => (
-          <span key={index} className="flex min-w-0 flex-1 items-end justify-center">
+          // Full height, so the column's percentage height has something definite to resolve against.
+          <span key={index} className="flex h-full min-w-0 flex-1 items-end justify-center">
             <span
               className={cn(
                 "w-full max-w-6 rounded-t-[4px] transition-[height] duration-700 ease-out",

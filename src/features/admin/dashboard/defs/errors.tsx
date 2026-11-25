@@ -1,48 +1,254 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
+  Actions,
   defineWidget,
   DetailHeading,
-  Empty,
+  Hero,
+  Row,
+  RowList,
+  Stack,
+  Sub,
   type WidgetDetailProps,
   type WidgetViewProps,
 } from "@/features/widgets/kit";
-import { formatDateTime } from "@/lib/format";
+import { useReducedMotionSafe } from "@/lib/use-media-query";
+import { formatDateTime, formatNumber } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ERROR_GROUP_STATUSES, type ErrorGroupStatus } from "../../error-log";
 import { ADMIN_FORMAT_SETTINGS } from "../../format-metric";
 import { setErrorGroupStatus } from "../../server/error-log-actions";
 import { ERROR_BADGE_EVENT } from "../error-badge-client";
-import type { AdminWidgetData, WidgetErrorGroup } from "../data";
+import type { AdminWidgetData, WidgetErrorGroup, WidgetFigure, WidgetRow } from "../data";
 import { adminWidgetKeys, useAdminWidgetData } from "../use-widget-data";
-import { StandardDetail, StandardView } from "../views";
+import { ChartColumns, StandardDetail, useFigureText, useRootT } from "../views";
 
 /**
- * Errors (29.2), instead of an e-mail: new today, open, people hit, the three
- * most frequent with their code and the ones that came back. The detail
- * lists the new errors with a quick change of state; a click on one opens
- * it in the log (27.2).
+ * Errors (29.3): the one widget that must say at a glance whether all is
+ * quiet or something burns. The hero is the count of open errors: pink while
+ * any came in today (they wait for a hand), gold while older ones stay open,
+ * and a calm green zero when there is nothing. Under it the days of the
+ * period as columns and the most frequent groups with their code. A group
+ * that was not there a minute ago lights up briefly, never with an alarm.
+ * The detail lists the new errors with a quick change of state; a click on
+ * one opens it in the log (27.2).
  */
-function ErrorsView(props: WidgetViewProps<AdminWidgetData>) {
+
+/** How long a just-arrived error group keeps its glow (ms). */
+const FRESH_MS = 4_000;
+
+function figureOf(data: AdminWidgetData, key: string): WidgetFigure | undefined {
+  return data.figures.find((figure) => figure.key === key);
+}
+
+/**
+ * Fingerprints that arrived after the first load, for a few seconds: a
+ * refetch that brings a new group marks it (the first load marks nothing).
+ */
+function useFreshGroups(ids: readonly string[]): ReadonlySet<string> {
+  const seen = useRef<Set<string> | null>(null);
+  const [fresh, setFresh] = useState<ReadonlySet<string>>(() => new Set());
+  const key = ids.join("|");
+  useEffect(() => {
+    const current = new Set(key ? key.split("|") : []);
+    if (seen.current === null) {
+      seen.current = current;
+      return;
+    }
+    const arrived = [...current].filter((id) => !seen.current!.has(id));
+    seen.current = current;
+    if (arrived.length === 0) return;
+    setFresh(new Set(arrived));
+    const timer = window.setTimeout(() => setFresh(new Set()), FRESH_MS);
+    return () => window.clearTimeout(timer);
+  }, [key]);
+  return fresh;
+}
+
+function stateOf(data: AdminWidgetData): "calm" | "waiting" | "burning" {
+  const newToday = figureOf(data, "newToday")?.value ?? 0;
+  const open = figureOf(data, "open")?.value ?? 0;
+  if (newToday > 0) return "burning";
+  if (open > 0) return "waiting";
+  return "calm";
+}
+
+/** The hero of the widget: open errors in the colour of the state, the line under it. */
+function ErrorsHero({
+  data,
+  size,
+  fresh,
+}: {
+  data: AdminWidgetData;
+  size: "lg" | "md";
+  fresh: boolean;
+}) {
   const t = useTranslations("admin.widgets.errors");
-  const calm = props.data.figures.every((figure) => (figure.value ?? 0) === 0);
-  if (calm && props.size !== "S") {
-    return (
-      <div className="flex min-h-0 flex-col gap-2" data-testid="errors-widget-calm">
-        <Empty icon={CheckCircle2Icon} tone="green" title={t("calm")} hint={t("calmHint")} zero="0" />
+  const text = useFigureText();
+  const state = stateOf(data);
+  const open = figureOf(data, "open");
+  const newToday = figureOf(data, "newToday");
+  const users = figureOf(data, "users");
+  const returned = figureOf(data, "returned");
+  const status = state === "burning" ? "bad" : state === "waiting" ? "warn" : "good";
+  return (
+    <div className="flex min-w-0 flex-col gap-0.5" data-errors-state={state}>
+      <div className={cn("flex min-w-0 items-baseline gap-2 rounded-lg", fresh && "motion-safe:animate-error-flash")}>
+        <Hero size={size} status={status} className={size === "md" ? "@max-md:text-2xl @max-md:leading-none" : undefined}>
+          {text(open?.value ?? 0, "count")}
+        </Hero>
+        <span className={cn("text-sm font-medium", status === "bad" ? "text-pink" : status === "warn" ? "text-gold" : "text-green")}>
+          {state === "calm" ? t("calm") : t("figures.open")}
+        </span>
       </div>
+      <Sub className="text-xs @md:text-sm">
+        {state === "calm" ? (
+          t("calmHint")
+        ) : (
+          <span className="flex min-w-0 flex-wrap gap-x-3">
+            <Count figure={newToday} tone="pink" />
+            <Count figure={users} />
+            {returned && (returned.value ?? 0) > 0 && <Count figure={returned} tone="gold" />}
+          </span>
+        )}
+      </Sub>
+    </div>
+  );
+}
+
+function Count({ figure, tone }: { figure: WidgetFigure | undefined; tone?: "pink" | "gold" }) {
+  const t = useRootT();
+  const text = useFigureText();
+  if (!figure) return null;
+  const value = figure.value ?? 0;
+  return (
+    <span className="flex items-baseline gap-1">
+      <span className={cn("font-semibold tabular-nums", value > 0 && tone === "pink" && "text-pink", value > 0 && tone === "gold" && "text-gold", (value === 0 || !tone) && "text-ink")}>
+        {text(value, figure.unit)}
+      </span>
+      <span>{t(figure.label, figure.labelValues)}</span>
+    </span>
+  );
+}
+
+/** The most frequent groups: code in mono, the message, the count; a dot says new or came back. */
+function TopGroups({
+  rows,
+  fresh,
+  limit,
+  compact = false,
+}: {
+  rows: WidgetRow[];
+  fresh: ReadonlySet<string>;
+  limit: number;
+  compact?: boolean;
+}) {
+  const t = useTranslations("admin.widgets.errors");
+  const shown = rows.slice(0, limit);
+  if (shown.length === 0) return null;
+  return (
+    <RowList className="-mx-1">
+      {shown.map((row) => (
+        <Row
+          key={row.id}
+          href={row.href}
+          mark={row.status === "bad" ? "pink" : "gold"}
+          className={cn("px-1", fresh.has(row.id) && "motion-safe:animate-error-flash rounded-lg")}
+          trail={
+            <span className="font-semibold text-ink">
+              {formatNumber(row.value ?? 0, {}, ADMIN_FORMAT_SETTINGS)}
+              <span className="font-normal text-ink-muted"> ×</span>
+            </span>
+          }
+        >
+          <span className="flex min-w-0 flex-col">
+            <span className="flex min-w-0 items-baseline gap-2">
+              <code className="shrink-0 font-mono text-xs text-ink-soft">{row.text}</code>
+              {row.status === "warn" && (
+                <span className="truncate text-[11px] text-gold">{t("cameBack")}</span>
+              )}
+              {fresh.has(row.id) && <span className="sr-only">{t("fresh")}</span>}
+            </span>
+            {!compact && <span className="truncate text-xs text-ink-muted">{row.sub}</span>}
+          </span>
+        </Row>
+      ))}
+    </RowList>
+  );
+}
+
+function ErrorsView(props: WidgetViewProps<AdminWidgetData>) {
+  const { size, data } = props;
+  const t = useTranslations("admin.widgets.errors");
+  const tBoard = useTranslations("dashboard.board");
+  const reduceMotion = useReducedMotionSafe();
+  const rows = data.rows ?? [];
+  const fresh = useFreshGroups(rows.map((row) => row.id));
+  const freshHero = !reduceMotion && fresh.size > 0;
+  const state = stateOf(data);
+  const columns = data.chart ? (
+    <ChartColumns chart={data.chart} tone={state === "calm" ? "green" : "pink"} days={size === "XL" ? undefined : 14} height={size === "M" ? 24 : size === "L" ? 44 : 80} labels={size !== "M"} />
+  ) : null;
+  const actions = [
+    { label: t("openLog"), href: "/admin/chyby?status=new" },
+    { label: t("alerts"), href: "/admin/chyby?tab=alerts" },
+  ];
+  const testId = state === "calm" ? "errors-widget-calm" : "errors-widget";
+
+  if (size === "M") {
+    return (
+      <Stack between>
+        <div data-testid={testId}>
+          <ErrorsHero data={data} size="md" fresh={freshHero} />
+        </div>
+        {columns}
+      </Stack>
     );
   }
+
+  if (size === "L") {
+    return (
+      <Stack className="gap-2.5">
+        <div data-testid={testId}>
+          <ErrorsHero data={data} size="md" fresh={freshHero} />
+        </div>
+        {columns}
+        {rows.length > 0 ? (
+          <TopGroups rows={rows} fresh={fresh} limit={3} compact />
+        ) : (
+          state !== "calm" && <Sub className="text-xs text-ink-muted">{t("noneNew")}</Sub>
+        )}
+        <Actions items={[actions[0]]} />
+      </Stack>
+    );
+  }
+
+  // XL: the hero and the days of the period on the left, the most frequent groups on the right.
   return (
-    <div className="flex min-h-0 flex-1 flex-col" data-testid="errors-widget">
-      <StandardView {...props} />
-    </div>
+    <Stack className="gap-3">
+      <div className="grid min-h-0 flex-1 gap-x-6 gap-y-3 @2xl:grid-cols-2">
+        <div className="flex min-h-0 flex-col gap-3">
+          <div data-testid={testId}>
+            <ErrorsHero data={data} size="md" fresh={freshHero} />
+          </div>
+          {columns}
+        </div>
+        <div className="flex min-h-0 flex-col gap-1.5">
+          <DetailHeading>{t("top")}</DetailHeading>
+          {rows.length > 0 ? (
+            <TopGroups rows={rows} fresh={fresh} limit={5} />
+          ) : (
+            <Sub className="text-xs text-ink-muted">{state === "calm" ? t("calmHint") : t("noneNew")}</Sub>
+          )}
+        </div>
+      </div>
+      <Actions items={[...actions, { label: tBoard("openSection"), href: "/admin/chyby" }]} />
+    </Stack>
   );
 }
 

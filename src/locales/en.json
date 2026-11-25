@@ -9966,7 +9966,8 @@
           "money": "Money",
           "ai": "AI",
           "people": "People"
-        }
+        },
+        "trend": "Over the period"
       },
       "categories": {
         "operations": "Operations",
@@ -10148,7 +10149,10 @@
         "cameBack": "came back",
         "groupMeta": "{page} · {occurrences, plural, one {# occurrence} other {# occurrences}} · {users, plural, one {# person} other {# people}} · last {at}",
         "changeStatus": "Change state",
-        "statusFailed": "The state could not be changed. Try again."
+        "statusFailed": "The state could not be changed. Try again.",
+        "fresh": "new",
+        "openLog": "Open the log",
+        "alerts": "Alerts"
       },
       "health": {
         "figures": {
@@ -10279,8 +10283,11 @@
           "cap": "monthly cap",
           "share": "of the cap",
           "callsToday": "Calls today",
-          "topUser": "Most by one user this month"
-        }
+          "topUser": "Most by one user this month",
+          "warnAt": "warning threshold"
+        },
+        "gauge": "{spent} spent of the {cap} cap",
+        "ofCap": "{share} of the cap"
       },
       "aiTopUsers": {
         "figures": {

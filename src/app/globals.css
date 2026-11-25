@@ -64,6 +64,8 @@
   --animate-plan-flash: plan-flash 0.9s ease-out forwards;
   /* A widget in edit mode of the dashboard; the element sets its own delay, duration and --wiggle-angle. */
   --animate-wiggle: wiggle 0.34s ease-in-out infinite alternate;
+  /* An error that just arrived in the administration's Errors widget: a short pink glow, no alarm. */
+  --animate-error-flash: error-flash 1.6s ease-out forwards;
 
   @keyframes shimmer {
     0% {
@@ -102,6 +104,17 @@
     40%,
     80% {
       transform: translateX(6px);
+    }
+  }
+
+  @keyframes error-flash {
+    0% {
+      background-color: color-mix(in oklab, var(--color-pink) 22%, transparent);
+      box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-pink) 14%, transparent);
+    }
+    100% {
+      background-color: transparent;
+      box-shadow: 0 0 0 0 transparent;
     }
   }
 
