@@ -29,9 +29,12 @@ export function TutorialChoice({
   onChoose,
   onClose,
   onShowcase,
+  company = null,
 }: {
   open: boolean;
   allowFull: boolean;
+  /** In a company the account works for (30.2): its name; the cards speak of their rights there. */
+  company?: string | null;
   /** The showcase (27.4): only for the app's owner and admins while its mode is on. */
   onShowcase?: () => void;
   /** Which mode is being started (the sample data takes a moment). */
@@ -58,7 +61,9 @@ export function TutorialChoice({
             <Grady size={64} state="waving" variant="head" />
           </div>
           <SpeechBubble tail={{ side: "left", align: "end" }} className="flex-1">
-            <p className="text-[15px] leading-relaxed text-ink">{t("intro")}</p>
+            <p className="text-[15px] leading-relaxed text-ink">
+              {company ? t("introWorker", { company }) : company === "" ? t("introWorkerPlain") : t("intro")}
+            </p>
           </SpeechBubble>
         </div>
         <ul
@@ -66,7 +71,7 @@ export function TutorialChoice({
         >
           {modes.map((mode) => (
             <li key={mode} className="flex">
-              <ModeCard mode={mode} pending={pending} onChoose={onChoose} />
+              <ModeCard mode={mode} pending={pending} onChoose={onChoose} worker={company !== null} />
             </li>
           ))}
         </ul>
@@ -106,8 +111,10 @@ function ModeCard({
   mode,
   pending,
   onChoose,
+  worker,
 }: {
   mode: RunningMode;
+  worker: boolean;
   pending: TutorialMode | null;
   onChoose: (mode: TutorialMode) => void;
 }) {
@@ -142,7 +149,7 @@ function ModeCard({
           {t("minutes", { minutes: TUTORIAL_MINUTES[mode] })}
         </span>
       </span>
-      <span className="text-sm text-ink-soft">{t(`${mode}.text`)}</span>
+      <span className="text-sm text-ink-soft">{t(`${mode}.${worker ? "textWorker" : "text"}`)}</span>
       <span className="flex flex-col gap-1">
         <span className="text-[11px] font-medium tracking-wide text-ink-muted uppercase">
           {t("learnTitle")}
@@ -153,7 +160,7 @@ function ModeCard({
               aria-hidden
               className={cn("mt-0.5 size-4 shrink-0", full ? "text-violet" : "text-teal")}
             />
-            {t(`${mode}.learn.${line}`)}
+            {t(`${mode}.${worker ? "learnWorker" : "learn"}.${line}`)}
           </span>
         ))}
       </span>

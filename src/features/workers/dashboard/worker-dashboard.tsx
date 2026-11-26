@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Dialog } from "@base-ui/react/dialog";
-import { ClipboardPlusIcon, XIcon } from "lucide-react";
+import { ClipboardPlusIcon, SlidersHorizontalIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -13,6 +13,7 @@ import { MentionedInNotes } from "@/features/notes/mentioned-in-notes";
 import { track } from "@/lib/analytics/client";
 import { useIsPhone } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
+import { EditInviteDialog } from "../edit-invite-dialog";
 import { InviteCard } from "../invite-card";
 import { useRenewInvite, useWorkerInvite } from "../queries";
 import { useManagesRewards } from "../rewards/queries";
@@ -238,19 +239,39 @@ function DashboardBody({
   );
 }
 
-/** The invite link of someone who has not signed up yet, with a fresh one on request. */
+/**
+ * The invite link of someone who has not signed up yet, with a fresh one on
+ * request, and "Edit the invite": what they will be able to do (30.2).
+ */
 function OwnerInvite({ worker }: { worker: DashboardWorker }) {
+  const t = useTranslations("workers.form.editInvite");
+  const workspace = useWorkspace();
   const invite = useWorkerInvite(worker.id);
   const renew = useRenewInvite(worker.id);
+  const [editing, setEditing] = useState(false);
   if (!invite.data) return null;
   return (
-    <InviteCard
-      invite={invite.data}
-      workerName={worker.name}
-      onRenew={() => renew.mutate({ email: worker.email, previous: invite.data })}
-      renewing={renew.isPending}
-      renewFailed={renew.isError}
-    />
+    <div className="flex flex-col gap-2">
+      <InviteCard
+        invite={invite.data}
+        workerName={worker.name}
+        onRenew={() => renew.mutate({ email: worker.email, previous: invite.data })}
+        renewing={renew.isPending}
+        renewFailed={renew.isError}
+      />
+      {!workspace.readOnly && (
+        <Button
+          variant="outline"
+          className="self-start"
+          onClick={() => setEditing(true)}
+          data-testid="edit-invite-open"
+        >
+          <SlidersHorizontalIcon aria-hidden data-icon="inline-start" />
+          {t("open")}
+        </Button>
+      )}
+      <EditInviteDialog open={editing} onOpenChange={setEditing} worker={worker} />
+    </div>
   );
 }
 

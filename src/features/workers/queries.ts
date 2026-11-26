@@ -299,6 +299,19 @@ export function useCreateWorker() {
       groupIds?: string[];
       /** A short id or an e-mail; the e-mail is also the worker's. */
       target?: InviteTarget;
+      /**
+       * What else the owner set before the invite (30.2: widgets, dashboard,
+       * reward plan), saved after the rights and before the invite exists,
+       * so the person never starts with less set than the owner chose.
+       */
+      prepare?: (workerId: string) => Promise<void>;
+      /** "What they'll be able to do", for worker_invited. */
+      analytics?: {
+        template: "sales" | "coldCaller" | "assistant" | "accountant" | "all" | "custom";
+        widgets_limited: boolean;
+        reward_template: "coldCaller" | "salesCommission" | "developer" | "assistant" | "none";
+        dashboard: "auto" | "space" | "group" | "system";
+      };
     }) => {
       const supabase = createClient();
       const groupIds = input.groupIds ?? [];
@@ -328,6 +341,7 @@ export function useCreateWorker() {
           );
           if (groupError) throw groupError;
         }
+        if (input.prepare) await input.prepare(worker.id);
         const { data, error: inviteError } = await supabase
           .from("worker_invites")
           .insert({ owner_id: user.id, worker_id: worker.id, email: worker.email })
@@ -371,6 +385,7 @@ export function useCreateWorker() {
         with_manager: Boolean(input.managerId),
         groups: Math.min(groupIds.length, 200),
         target: bound ? "account" : "link",
+        ...input.analytics,
       });
       // An earlier open invite to the same e-mail stopped working (the database replaced it).
       const { count: replaced } = await supabase

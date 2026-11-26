@@ -336,7 +336,7 @@ export function writesSection(grants: PermissionGrants, section: GrantSection): 
 // Templates: one click fills the matrix
 // ---------------------------------------------------------------------------
 
-export const PERMISSION_TEMPLATES = ["sales", "assistant", "accountant", "all"] as const;
+export const PERMISSION_TEMPLATES = ["sales", "coldCaller", "assistant", "accountant", "all"] as const;
 export type PermissionTemplate = (typeof PERMISSION_TEMPLATES)[number];
 
 const TEMPLATE_GRANTS: Record<Exclude<PermissionTemplate, "all">, PermissionGrants> = {
@@ -348,6 +348,13 @@ const TEMPLATE_GRANTS: Record<Exclude<PermissionTemplate, "all">, PermissionGran
     cold_calling: ["view", "call"],
     calendar: ["view", "create", "update"],
     scheduler: ["view", "own"],
+    company: ["view"],
+    integrations: ["view", "mcp"],
+  },
+  // Calls (30.2): Cold Calling with its tables, their own tasks; no deals, no money.
+  coldCaller: {
+    cold_calling: ["view", "call"],
+    tasks: ["view", "create", "update"],
     company: ["view"],
     integrations: ["view", "mcp"],
   },

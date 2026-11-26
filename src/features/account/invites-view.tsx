@@ -12,13 +12,8 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { GlowCard } from "@/components/ui/glow-card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  GRANT_SECTIONS,
-  PERMISSION_CATALOG,
-  seesSection,
-  templateOf,
-  type PermissionGrants,
-} from "@/features/workers/permissions-catalog";
+import { useAccessSentences } from "@/features/workers/access-text";
+import { templateOf, type PermissionGrants } from "@/features/workers/permissions-catalog";
 import { RuleSentence } from "@/features/workers/rewards/rule-sentence";
 import { formatDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
@@ -195,35 +190,30 @@ function InviteItem({
   );
 }
 
-/** The sections the person will see there; the rest stays hidden. */
+/** What the person will have access to there, in plain words (30.2); the rest stays closed. */
 function Rights({ grants }: { grants: PermissionGrants }) {
   const t = useTranslations("invites");
-  const tNav = useTranslations("nav");
-  const tPermissions = useTranslations("workers.permissions");
-  const sections = GRANT_SECTIONS.filter((section) => seesSection(grants, section)).map((key) => {
-    const entry = PERMISSION_CATALOG.find((section) => section.key === key);
-    return key === "invoices" ? tPermissions("sections.invoices") : entry ? tNav(entry.nav) : key;
-  });
+  const access = useAccessSentences(grants);
   return (
     <section aria-label={t("rightsTitle")} className="flex flex-col gap-2">
       <h3 className="micro-label flex items-center gap-1.5">
         <ShieldCheckIcon aria-hidden className="size-3.5" />
         {t("rightsTitle")}
       </h3>
-      {sections.length ? (
-        <ul className="flex flex-wrap gap-1.5" data-testid="invite-rights">
-          {sections.map((name) => (
-            <li
-              key={name}
-              className="rounded-full border border-line bg-surface/60 px-2.5 py-1 text-xs font-medium text-ink-soft"
-            >
-              {name}
+      {access.lines.length ? (
+        <ul className="flex flex-col gap-1 text-sm text-ink-soft" data-testid="invite-rights">
+          {access.lines.map((line) => (
+            <li key={line} className="flex items-start gap-2">
+              <CheckIcon aria-hidden className="mt-0.5 size-3.5 shrink-0 text-teal" />
+              {line}
             </li>
           ))}
         </ul>
       ) : (
         <p className="text-sm text-ink-soft">{t("rightsNone")}</p>
       )}
+      {access.hidden && <p className="text-xs text-ink-muted">{access.hidden}</p>}
+      <p className="text-xs text-ink-muted">{access.always}</p>
     </section>
   );
 }

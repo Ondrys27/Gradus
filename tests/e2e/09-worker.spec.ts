@@ -1,7 +1,7 @@
 import { asUser, e2eEmail, e2ePassword, seedContacts, signIn } from "./support/accounts";
 import { expect, test, watchConsole } from "./support/fixtures";
 import { exact, text } from "./support/i18n";
-import { finishTour, mainNav, openApp, waitForApp } from "./support/ui";
+import { finishTour, mainNav, openApp, waitForApp, toInviteAccess } from "./support/ui";
 
 const L = "cs" as const;
 const t = (key: string, values?: Record<string, string | number>) => text(L, key, values);
@@ -40,6 +40,7 @@ test("9 · a worker joins through the invite: with the contacts right sees conta
   await form.locator('[data-tutorial="worker-invite-new"]').click();
   await form.locator("#worker-name").fill("E2E Pracovník");
   await form.locator("#worker-email").fill(workerEmail);
+  await toInviteAccess(form);
   const contactsName = t("nav.contacts");
   const financeName = t("nav.finance");
   await form

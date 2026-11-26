@@ -68,7 +68,7 @@ describe("grants", () => {
 
 describe("templates", () => {
   it("are recognised exactly, any change makes them custom", () => {
-    for (const template of ["sales", "assistant", "accountant", "all"] as const) {
+    for (const template of ["sales", "coldCaller", "assistant", "accountant", "all"] as const) {
       expect(templateOf(templateGrants(template))).toBe(template);
     }
     const sales = templateGrants("sales");

@@ -1,5 +1,5 @@
 import type { Browser, Page } from "@playwright/test";
-import { admin, signIn, userClient, type Account } from "./support/accounts";
+import { admin, signIn, skipCompanyTutorial, userClient, type Account } from "./support/accounts";
 import { expect, test, watchConsole } from "./support/fixtures";
 import { openApp } from "./support/ui";
 
@@ -66,6 +66,7 @@ test("68 · notes: two people write at once → offline merge → a viewer can n
       .from("workers")
       .insert({ owner_id: owner.id, user_id: person.id, name, email: person.email, status: "active" });
     if (error) throw error;
+    await skipCompanyTutorial(person.id, owner.id);
   }
 
   // The owner's note, shared with one editor and one viewer.

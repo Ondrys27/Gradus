@@ -130,3 +130,17 @@ export async function openApp(page: Page, path: string) {
   await page.goto(path);
   await waitForApp(page);
 }
+
+/**
+ * Invite dialog (30.2): from who to "What they'll be able to do" — Next, then
+ * a role (custom = only their own tasks, as before 30.2). The create button
+ * and the rights, manager and groups are on that last step.
+ */
+export async function toInviteAccess(
+  form: ReturnType<Page["getByRole"]>,
+  role: "custom" | "sales" | "coldCaller" | "assistant" | "accountant" | "all" = "custom",
+) {
+  await form.getByTestId("invite-next").click();
+  await form.getByTestId(`invite-role-${role}`).click();
+  await expect(form.getByTestId("invite-access-step")).toBeVisible();
+}

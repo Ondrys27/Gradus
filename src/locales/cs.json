@@ -4842,7 +4842,8 @@
       "signUp": "Zaregistruj se přes odkaz níže; po registraci budeš v týmu a budeš mít i vlastní účet.",
       "free": "Za práci ve firmě neplatíš, platí ji majitel.",
       "open": "Otevřít pozvánku",
-      "register": "Zaregistrovat se"
+      "register": "Zaregistrovat se",
+      "accessTitle": "K čemu budeš mít přístup:"
     },
     "workerLeft": {
       "subject": "{worker} už ve tvé firmě v {appName} není",
@@ -5081,6 +5082,51 @@
         "find": "Najít",
         "change": "Změnit",
         "noName": "Bez jména"
+      },
+      "next": "Dál",
+      "stepOf": "Krok {step} ze {total}",
+      "role": {
+        "question": "Jakou bude mít roli?",
+        "descriptions": {
+          "sales": "Kontakty, volání, svoje obchody a schůzky.",
+          "coldCaller": "Cold Calling a svoje úkoly. Bez obchodů a peněz.",
+          "assistant": "Milníky, úkoly a kalendář celé firmy, kontakty.",
+          "accountant": "Finance a faktury, obchody a kontakty jen ke čtení.",
+          "all": "Všechno kromě tvých poznámek a nastavení.",
+          "custom": "Začneš jen s jeho úkoly a nastavíš to sám."
+        }
+      },
+      "access": {
+        "title": "Co bude moci",
+        "rightsHint": "Platí od první vteřiny po přijetí. Nic víc neuvidí.",
+        "widgetsTitle": "Widgety na nástěnce",
+        "widgetsHint": "Jen ty, ke kterým mu práva dávají data.",
+        "previewTitle": "Co uvidí v pozvánce",
+        "previewHint": "Takhle mu to pozvánka v aplikaci i v e-mailu shrne.",
+        "dashboard": {
+          "label": "Výchozí přehled",
+          "hint": "Nástěnka, na které začne. Upravit si ji může sám.",
+          "keep": "Ponechat nastavený",
+          "autoGroup": "Podle skupiny {group}",
+          "autoSpace": "Podle firmy",
+          "autoSystem": "Základní přehled pracovníka",
+          "space": "Kopie přehledu firmy",
+          "group": "Kopie přehledu skupiny {group}",
+          "system": "Základní přehled pracovníka (vlastní kopie)"
+        },
+        "reward": {
+          "label": "Plán odměn",
+          "none": "Bez plánu, nastavím později",
+          "hint": "Nepovinné. Částky upravíš v Odměnách.",
+          "noRate": "Bez aktuálního kurzu nejde částky navrhnout. Plán nastavíš v Odměnách."
+        }
+      },
+      "editInvite": {
+        "open": "Upravit pozvánku",
+        "title": "Upravit pozvánku: {name}",
+        "close": "Zavřít",
+        "hint": "Dokud pozvánku nepřijme, můžeš změnit, co bude moci. Pozvánka v jeho aplikaci to ukáže hned.",
+        "loadFailed": "Pozvánku se nepodařilo načíst. Zkus to za chvíli."
       }
     },
     "permissions": {
@@ -5095,7 +5141,8 @@
         "assistant": "Asistent",
         "accountant": "Účetní",
         "all": "Vše",
-        "custom": "Vlastní"
+        "custom": "Vlastní",
+        "coldCaller": "Cold caller"
       },
       "sections": {
         "invoices": "Faktury"
@@ -6259,6 +6306,73 @@
       "milestoneHint": "Pracovník dostane částku a odměny z pravidla Dokončený projekt, až milník dokončíš.",
       "save": "Uložit odměnu",
       "saved": "Uloženo"
+    },
+    "access": {
+      "line": "{section}: {what}",
+      "viewOnly": "jen prohlížet",
+      "always": "Vždy máš svoji nástěnku, úkoly, poznámky, odměny a Zprávy.",
+      "hidden": "Neuvidíš: {sections}.",
+      "scope": {
+        "records": {
+          "all": "všechno ve firmě",
+          "own": "jen to tvoje"
+        },
+        "company": {
+          "all": "celá firma",
+          "own": "tvoje větev"
+        }
+      },
+      "actions": {
+        "milestones": {
+          "update": "upravovat milníky a úkoly"
+        },
+        "contacts": {
+          "create": "zakládat",
+          "update": "upravovat",
+          "delete": "mazat",
+          "export": "exportovat",
+          "generate": "generovat nové kontakty"
+        },
+        "pipeline": {
+          "see_amounts": "vidět částky",
+          "create": "zakládat obchody",
+          "update": "upravovat údaje",
+          "change_stage": "měnit fázi",
+          "change_amount": "měnit částku",
+          "delete": "mazat"
+        },
+        "tasks": {
+          "create": "zakládat",
+          "update": "upravovat",
+          "assign_others": "přiřazovat jiným",
+          "delete": "mazat"
+        },
+        "cold_calling": {
+          "call": "volat a posouvat kontakty",
+          "view_others_stats": "vidět statistiky ostatních"
+        },
+        "calendar": {
+          "create": "zakládat události",
+          "update": "upravovat a mazat události"
+        },
+        "scheduler": {
+          "own": "vlastní rezervační stránka"
+        },
+        "finance": {
+          "summaries": "vidět souhrny",
+          "write": "zapisovat příjmy a výdaje"
+        },
+        "invoices": {
+          "issue": "vystavovat a posílat faktury"
+        },
+        "company": {
+          "update": "upravovat lidi pod sebou",
+          "rewards": "odměny lidí pod sebou"
+        },
+        "integrations": {
+          "mcp": "připojit Clauda a jiné aplikace"
+        }
+      }
     }
   },
   "game": {
@@ -11483,7 +11597,8 @@
       "textFull": "Ukázková data můžeš smazat hned, nebo si je nechat a smazat později v Nastavení → Grady.",
       "back": "Zpět",
       "keep": "Ukončit a nechat data",
-      "delete": "Ukončit a smazat data"
+      "delete": "Ukončit a smazat data",
+      "textWorker": "Ukázková data z firmy hned smažu. Tutoriál si pustíš znovu v Nastavení → Grady."
     },
     "celebration": {
       "title": "Tutoriál dokončen!",
@@ -11523,7 +11638,13 @@
           "1": "Co za tebe hlídám",
           "2": "Jak a kdy se ozvu"
         },
-        "previewAlt": "Náhled rychlé ukázky: zvýrazněná položka v menu a Grady, který na ni ukazuje"
+        "previewAlt": "Náhled rychlé ukázky: zvýrazněná položka v menu a Grady, který na ni ukazuje",
+        "textWorker": "Provedu tě vším, k čemu ve firmě máš přístup. Ty se jen díváš.",
+        "learnWorker": {
+          "0": "Kde co ve firmě najdeš",
+          "1": "Co smíš a co ne",
+          "2": "Kde jsou tvoje úkoly a odměny"
+        }
       },
       "full": {
         "title": "Úplný tutoriál",
@@ -11534,8 +11655,16 @@
           "2": "Koncept faktury a otázka na mě"
         },
         "gain": "XP za dokončení",
-        "previewAlt": "Náhled úplného tutoriálu: seznam úkolů, ve kterém odškrtáváš splněné"
-      }
+        "previewAlt": "Náhled úplného tutoriálu: seznam úkolů, ve kterém odškrtáváš splněné",
+        "textWorker": "Vyzkoušíš si, co smíš, na ukázkových datech. Na konci je z firmy smažu.",
+        "learnWorker": {
+          "0": "Jen to, k čemu máš práva",
+          "1": "Na ukázkových datech",
+          "2": "Úkoly, odměny a otázka na mě"
+        }
+      },
+      "introWorker": "Vítej v týmu {company}. Ukážu ti, co tu smíš a kde to najdeš.",
+      "introWorkerPlain": "Vítej v týmu. Ukážu ti, co tu smíš a kde to najdeš."
     },
     "steps": {
       "dashboard": {
@@ -11718,6 +11847,59 @@
       "settingsLook": {
         "title": "Nastavení",
         "text": "Jazyk, formáty, téma a další najdeš v nabídce účtu."
+      },
+      "workerWelcome": {
+        "title": "Vítej v týmu",
+        "text": "Pracuješ pro {company} jako {role}. Ukážu ti jen to, k čemu tu máš přístup."
+      },
+      "workerWelcomeFull": {
+        "title": "Vítej v týmu",
+        "text": "Pracuješ pro {company} jako {role}. Přidal jsem ukázková data se štítkem „ukázka“ jen tam, kam smíš, a na konci je smažu."
+      },
+      "workerMilestones": {
+        "title": "Milníky firmy",
+        "text": "Velké cíle firmy rozdělené na úkoly. Každý hotový úkol posune milník blíž k cíli."
+      },
+      "workerNotes": {
+        "title": "Poznámky",
+        "text": "Tvoje poznámky v této firmě a to, co s tebou sdílejí ostatní. Majitelovy poznámky vidíš, jen když ti je nasdílí."
+      },
+      "workerContacts": {
+        "title": "Kontakty",
+        "text": "Kontakty firmy v tabulkách. Každý kontakt je vždy v jedné z nich."
+      },
+      "workerColdCalling": {
+        "title": "Cold Calling",
+        "text": "Tady obvoláváš lidi z tabulky Neoslovení a posouváš je dál, třeba do Schůzek. Časovač počítá tvůj čas volání."
+      },
+      "workerPipeline": {
+        "title": "Pipeline",
+        "text": "Obchody po fázích, na kterých pracuješ. Dlaždice nahoře hlídají, co hoří: cíl je všude nula."
+      },
+      "workerFinance": {
+        "title": "Finance",
+        "text": "Peníze firmy: příjmy, výdaje a faktury. Vidíš a měníš jen to, co ti majitel povolil."
+      },
+      "workerRewards": {
+        "title": "Tvoje odměny",
+        "text": "Tady vidíš svůj plán odměn, co sis vydělal a co čeká na schválení."
+      },
+      "workerMessages": {
+        "title": "Zprávy",
+        "text": "Chat uvnitř firmy: skupiny i přímé zprávy s kolegy a majitelem. Na telefonu je ve spodní liště."
+      },
+      "workerCompany": {
+        "title": "Správa firmy",
+        "text": "Kdo ve firmě je, kdo je komu nadřízený a v jakých skupinách. Vidíš svou část firmy."
+      },
+      "workerGradyAsk": {
+        "title": "Zeptej se mě",
+        "text": "**Otevři** mě v rohu a **zeptej se**, třeba „Co mám dnes udělat?“.",
+        "hint": "Klepni na mě vpravo dole a napiš otázku."
+      },
+      "accessFinish": {
+        "title": "To je všechno nové",
+        "text": "Tohle teď můžeš. Kdykoliv se mě zeptej, kde co je."
       }
     },
     "rail": {
@@ -11730,6 +11912,15 @@
       "2": "A je to.",
       "3": "Vidíš? Nic těžkého.",
       "4": "Jedeš dál."
+    },
+    "companyFallback": "tuhle firmu",
+    "roleFallback": "pracovník",
+    "accessOffer": {
+      "title": "Máš nový přístup",
+      "text": "Máš nově přístup k: {sections}. Ukázat ti to?",
+      "show": "Ukázat",
+      "dismiss": "Teď ne",
+      "open": "Otevřít {section}"
     }
   },
   "promo": {

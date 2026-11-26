@@ -2,7 +2,7 @@ import type { Browser, Page } from "@playwright/test";
 import { admin, e2eEmail, e2ePassword, signIn, type Account } from "./support/accounts";
 import { expect, test, watchConsole } from "./support/fixtures";
 import { exact, text } from "./support/i18n";
-import { openApp, waitForApp } from "./support/ui";
+import { openApp, waitForApp, toInviteAccess } from "./support/ui";
 
 /**
  * 27.1: a worker invite link is used up only by a finished registration or
@@ -29,6 +29,7 @@ async function invite(page: Page, name: string, email: string): Promise<string> 
   await form.locator('[data-tutorial="worker-invite-new"]').click();
   await form.locator("#worker-name").fill(name);
   await form.locator("#worker-email").fill(email);
+  await toInviteAccess(form);
   await form.getByRole("button", { name: exact(L, "workers.form.create") }).click();
   const ready = page.getByRole("dialog", { name: t("workers.form.inviteReady") });
   const sent = page.getByRole("dialog", { name: t("workers.form.inviteSent") });
@@ -178,6 +179,7 @@ test("58b · a new invite to the same e-mail replaces the old one, and the old l
   await form.locator('[data-tutorial="worker-invite-new"]').click();
   await form.locator("#worker-name").fill("E2E Podruhé");
   await form.locator("#worker-email").fill(email);
+  await toInviteAccess(form);
   await form.getByRole("button", { name: exact(L, "workers.form.create") }).click();
   const ready = page.getByRole("dialog", { name: t("workers.form.inviteReady") });
   await expect(ready.getByTestId("invite-replaced-old")).toHaveText(t("workers.invite.replacedOld"));

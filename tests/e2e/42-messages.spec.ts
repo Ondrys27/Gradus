@@ -1,4 +1,4 @@
-import { admin, signIn } from "./support/accounts";
+import { admin, signIn, skipCompanyTutorial } from "./support/accounts";
 import { expect, test, watchConsole } from "./support/fixtures";
 import { text } from "./support/i18n";
 import { mainNav, openApp } from "./support/ui";
@@ -35,6 +35,7 @@ test("42 · messages: direct message with a mention → badge → live → read 
     .select("id")
     .single();
   if (error) throw error;
+  await skipCompanyTutorial(person.id, owner.id);
 
   // The owner writes to the worker, mentioning them.
   await signIn(page, owner);

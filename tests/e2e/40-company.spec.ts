@@ -2,7 +2,7 @@ import type { Locator, Page } from "@playwright/test";
 import { admin, e2eEmail, signIn } from "./support/accounts";
 import { expect, test } from "./support/fixtures";
 import { exact, text } from "./support/i18n";
-import { openApp } from "./support/ui";
+import { openApp, toInviteAccess } from "./support/ui";
 
 const L = "cs" as const;
 const t = (key: string, values?: Record<string, string | number>) => text(L, key, values);
@@ -71,6 +71,7 @@ test("40 · company: invite under a manager → map tree → drag → list agree
     await form.locator('[data-tutorial="worker-invite-new"]').click();
     await form.locator("#worker-name").fill(name);
     await form.locator("#worker-email").fill(e2eEmail("company-worker"));
+    await toInviteAccess(form);
     if (manager) {
       await form.getByTestId("worker-manager").click();
       await page.getByRole("option", { name: manager }).click();

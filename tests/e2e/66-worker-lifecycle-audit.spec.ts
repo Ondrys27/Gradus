@@ -6,7 +6,7 @@ import { admin, e2eEmail, e2ePassword, signIn } from "./support/accounts";
 import { requiredEnv } from "./support/env";
 import { test, watchConsole } from "./support/fixtures";
 import { exact, text, type Locale } from "./support/i18n";
-import { finishTour, openApp, waitForApp } from "./support/ui";
+import { finishTour, openApp, waitForApp, toInviteAccess } from "./support/ui";
 
 /**
  * The audit of a worker's whole life in a company (28.1), not a regression
@@ -122,6 +122,7 @@ for (const variant of VARIANTS) {
       await form.locator("#worker-name").fill("E2E Nováček");
       await form.locator("#worker-email").fill(`  ${workerEmail.toUpperCase()}  `);
       await snap(ownerPage, "invite-dialog-filled");
+      await toInviteAccess(form);
       await form.getByRole("button", { name: CREATE }).click();
       const ready = ownerPage.getByRole("dialog", { name: t("workers.form.inviteReady") });
       await expect(ready).toBeVisible();
@@ -241,6 +242,7 @@ for (const variant of VARIANTS) {
         await form.locator("#worker-name").fill("E2E Existující");
         await form.locator("#worker-email").fill(existingProfile!.public_id!);
       }
+      await toInviteAccess(form);
       await form.getByRole("button", { name: CREATE }).click();
       const sent = ownerPage.getByRole("dialog", { name: t("workers.form.inviteSent") });
       await expect(sent).toBeVisible();
@@ -277,6 +279,7 @@ for (const variant of VARIANTS) {
           await form.locator("#worker-name").fill("E2E Existující");
           await form.locator("#worker-email").fill(existingProfile!.public_id!);
         }
+        await toInviteAccess(form);
         await form.getByRole("button", { name: CREATE }).click();
         await expect(other.page.getByRole("dialog", { name: t("workers.form.inviteSent") })).toBeVisible();
       } finally {
@@ -369,6 +372,7 @@ for (const variant of VARIANTS) {
       if (await choice.isVisible().catch(() => false)) await choice.click();
       await form.locator("#worker-name").fill("E2E Nováček");
       await form.locator("#worker-email").fill(workerEmail);
+      await toInviteAccess(form);
       await form.getByRole("button", { name: CREATE }).click();
       await expect(
         ownerPage

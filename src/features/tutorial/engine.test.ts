@@ -71,15 +71,25 @@ describe("tutorialSteps", () => {
     expect(order.at(-1)).toBe("jarvisFrequency");
   });
 
-  it("gives a worker the short look of their own environment, never the full one", () => {
-    const steps = tutorialSteps("full", { worker: true, playing: false });
+  it("gives a worker without rights the look of their own environment, nothing of the owner's", () => {
+    const grants = { tasks: ["view"] as const, company: ["view"] as const };
+    const steps = tutorialSteps("quick", { worker: true, playing: false, grants });
     expect(steps.map((step) => step.key)).toEqual([
+      "workerWelcome",
       "workerDashboard",
+      "workerNotes",
       "workerTasks",
-      "messages",
+      "workerRewards",
+      "workerMessages",
+      "workerCompany",
       "jarvis",
       "settings",
       "workerFinish",
+    ]);
+    const full = tutorialSteps("full", { worker: true, playing: false, grants });
+    expect(full.filter((step) => step.action === "do").map((step) => step.key)).toEqual([
+      "noteWrite",
+      "workerGradyAsk",
     ]);
   });
 
@@ -88,6 +98,7 @@ describe("tutorialSteps", () => {
       ...tutorialSteps("quick", { worker: false, playing: true }),
       ...tutorialSteps("full", owner),
       ...tutorialSteps("quick", { worker: true, playing: false }),
+      ...tutorialSteps("full", { worker: true, playing: true, grants: { tasks: ["view"] } }),
     ];
     for (const locale of ["cs", "en"]) {
       const messages = JSON.parse(
