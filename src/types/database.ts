@@ -111,6 +111,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "account_notifications_calendar_request_id_fkey"
+            columns: ["calendar_request_id"]
+            isOneToOne: false
+            referencedRelation: "calendar_share_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_notifications_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "calendar_events"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "account_notifications_folder_id_fkey"
             columns: ["folder_id"]
             isOneToOne: false
@@ -1262,6 +1276,44 @@ export type Database = {
         }
         Relationships: []
       }
+      calendar_event_attendees: {
+        Row: {
+          created_at: string
+          event_id: string
+          invited_by: string | null
+          responded_at: string | null
+          space_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          invited_by?: string | null
+          responded_at?: string | null
+          space_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          invited_by?: string | null
+          responded_at?: string | null
+          space_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_event_attendees_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "calendar_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calendar_events: {
         Row: {
           actor_id: string | null
@@ -1451,36 +1503,6 @@ export type Database = {
         }
         Relationships: []
       }
-      calendar_event_attendees: {
-        Row: {
-          created_at: string
-          event_id: string
-          invited_by: string | null
-          responded_at: string | null
-          space_id: string
-          status: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          event_id: string
-          invited_by?: string | null
-          responded_at?: string | null
-          space_id: string
-          status?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          event_id?: string
-          invited_by?: string | null
-          responded_at?: string | null
-          space_id?: string
-          status?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       calendar_share_requests: {
         Row: {
           approved_level: string | null
@@ -1557,31 +1579,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
-      }
-      calendar_view_people: {
-        Row: {
-          hidden: boolean
-          person_id: string
-          tone: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          hidden?: boolean
-          person_id: string
-          tone?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Update: {
-          hidden?: boolean
-          person_id?: string
-          tone?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "calendar_shares_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "worker_groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       calendar_subscriptions: {
         Row: {
@@ -1666,6 +1672,30 @@ export type Database = {
           last_error?: string | null
           link?: Json | null
           op?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      calendar_view_people: {
+        Row: {
+          hidden: boolean
+          person_id: string
+          tone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          hidden?: boolean
+          person_id: string
+          tone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          hidden?: boolean
+          person_id?: string
+          tone?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -7931,7 +7961,10 @@ export type Database = {
         }
         Returns: string
       }
-      calendar_event_from_private_calendar: { Args: { _event: string }; Returns: boolean }
+      calendar_event_from_private_calendar: {
+        Args: { _event: string }
+        Returns: boolean
+      }
       calendar_event_is_private: {
         Args: { _event: string; _private: boolean; _source: string }
         Returns: boolean
@@ -8016,6 +8049,14 @@ export type Database = {
           starts_at: string
         }[]
       }
+      calendar_person_sources: {
+        Args: { _person: string }
+        Returns: {
+          key: string
+          name: string
+          writes: boolean
+        }[]
+      }
       calendar_request_retry_days: { Args: never; Returns: number }
       calendar_requests_waiting: {
         Args: { _user: string }
@@ -8029,6 +8070,13 @@ export type Database = {
       calendar_set_private_default: {
         Args: { _calendar: string; _private: boolean }
         Returns: boolean
+      }
+      calendar_share_levels_of: {
+        Args: { _owner: string; _space: string; _viewer: string }
+        Returns: {
+          level: string
+          source: string
+        }[]
       }
       calendar_share_remove: { Args: { _share: string }; Returns: boolean }
       calendar_share_request_create: {
@@ -8067,8 +8115,26 @@ export type Database = {
         }
         Returns: string
       }
-      calendar_share_sources_ok: { Args: { _sources: string[] }; Returns: boolean }
-      calendar_shared_event_delete: { Args: { _event: string }; Returns: boolean }
+      calendar_share_sources_ok: {
+        Args: { _sources: string[] }
+        Returns: boolean
+      }
+      calendar_share_upsert: {
+        Args: {
+          _calendars: string[]
+          _level: string
+          _notify: boolean
+          _owner: string
+          _space: string
+          _target: string
+          _target_kind: string
+        }
+        Returns: string
+      }
+      calendar_shared_event_delete: {
+        Args: { _event: string }
+        Returns: boolean
+      }
       calendar_shared_event_save: {
         Args: {
           _all_day: boolean
