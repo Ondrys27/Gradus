@@ -9,7 +9,6 @@ import {
   loadPublicProfile,
   loadPublicTypeRow,
 } from "@/features/scheduler/server/public-data";
-import { syncUserIfStale } from "@/features/calendar/sync/server/sync";
 import { refreshStaleForUser } from "@/features/scheduler/server/subscriptions";
 import { SUBSCRIPTION_STALE_MS } from "@/features/scheduler/types";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -40,25 +39,30 @@ export async function GET(request: Request) {
   try {
     if (params.token) {
       const parsed = byToken.safeParse(params);
-      if (!parsed.success) return NextResponse.json({ error: "invalid" }, { status: 400, headers: HEADERS });
+      if (!parsed.success)
+        return NextResponse.json({ error: "invalid" }, { status: 400, headers: HEADERS });
       const ctx = await loadManagedBooking(admin, parsed.data.token, await siteOrigin());
       if (!ctx || !guestCanManage(ctx.booking, Date.now()) || !ctx.host?.available) {
         return NextResponse.json({ error: "notFound" }, { status: 404, headers: HEADERS });
       }
-      const slots = await rescheduleSlots(admin, ctx, parsed.data.tz);
-      if (!slots) return NextResponse.json({ error: "notFound" }, { status: 404, headers: HEADERS });
+      const slots = await rescheduleSlots(admin, ctx, parsed.data.tz, { withBusy: true });
+      if (!slots)
+        return NextResponse.json({ error: "notFound" }, { status: 404, headers: HEADERS });
       return NextResponse.json(slots, { headers: HEADERS });
     }
 
     const parsed = byType.safeParse(params);
-    if (!parsed.success) return NextResponse.json({ error: "invalid" }, { status: 400, headers: HEADERS });
+    if (!parsed.success)
+      return NextResponse.json({ error: "invalid" }, { status: 400, headers: HEADERS });
     const profile = await loadPublicProfile(admin, parsed.data.handle);
-    if (!profile) return NextResponse.json({ error: "notFound" }, { status: 404, headers: HEADERS });
+    if (!profile)
+      return NextResponse.json({ error: "notFound" }, { status: 404, headers: HEADERS });
     const [host, row] = await Promise.all([
       loadHostOfProfile(admin, profile),
       loadPublicTypeRow(admin, profile.id, parsed.data.slug),
     ]);
-    if (!row || !host.active) return NextResponse.json({ error: "notFound" }, { status: 404, headers: HEADERS });
+    if (!row || !host.active)
+      return NextResponse.json({ error: "notFound" }, { status: 404, headers: HEADERS });
     if (!host.available) {
       return NextResponse.json({ error: "unavailable" }, { status: 409, headers: HEADERS });
     }
@@ -69,12 +73,17 @@ export async function GET(request: Request) {
       .eq("host_user_id", profile.user_id)
       .eq("status", "held")
       .lt("hold_expires_at", new Date().toISOString());
-    // Connected Google and Apple calendars, read again when older than the subscriptions' limit (28.10).
-    await syncUserIfStale(admin, profile.user_id, SUBSCRIPTION_STALE_MS);
-    const slots = await loadTypeSlots(admin, row, parsed.data.tz);
+    // The connected Google and Apple calendars the scheduler counts are read live,
+    // a few minutes old at most (30.4, live-busy.ts); taken times come as "Full".
+    const slots = await loadTypeSlots(admin, row, parsed.data.tz, Date.now(), undefined, {
+      withBusy: true,
+    });
     after(() =>
       refreshStaleForUser(admin, profile.user_id, SUBSCRIPTION_STALE_MS).catch((error) =>
-        console.error("booking page refresh failed", error instanceof Error ? error.name : "unknown"),
+        console.error(
+          "booking page refresh failed",
+          error instanceof Error ? error.name : "unknown",
+        ),
       ),
     );
     return NextResponse.json(slots, { headers: HEADERS });

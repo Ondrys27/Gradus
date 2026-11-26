@@ -29,7 +29,7 @@ export type McpToolInfo = {
 
 /** Steps whose effect leaves Gradus (an e-mail, a message, a number of the series, money). */
 const OUTWARD =
-  /^(send_|issue_invoice$|cancel_invoice$|mark_invoice_paid$|confirm_booking$|decline_booking$|cancel_booking$)/;
+  /^(send_|issue_invoice$|cancel_invoice$|mark_invoice_paid$|confirm_booking$|decline_booking$|cancel_booking$|schedule_meeting$)/;
 
 export function isOutward(name: string): boolean {
   return OUTWARD.test(name);
@@ -55,7 +55,8 @@ export function mcpDescription(tool: AnyTool): string {
   } else if (tool.risk === "confirm") {
     // Grady asks with a card (completing a milestone, sharing a note, approving
     // rewards); a connected client has no card, so it must ask the user itself.
-    text += " Only when the user asks for it: ask the user to confirm this exact step before calling it.";
+    text +=
+      " Only when the user asks for it: ask the user to confirm this exact step before calling it.";
   }
   return text;
 }

@@ -1,4 +1,5 @@
 import "server-only";
+import { bookingWriteTarget } from "@/features/scheduler/calendar-sources";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/types/database";
 import type {
@@ -85,7 +86,8 @@ function toOutboxLink(value: Json | null): OutboxLink | null {
 
 export function createSupabaseSyncStore(admin: Admin): SyncStore {
   const must = <T>(result: { data: T; error: { code?: string; message: string } | null }): T => {
-    if (result.error) throw new Error(`calendar sync store: ${result.error.code ?? result.error.message}`);
+    if (result.error)
+      throw new Error(`calendar sync store: ${result.error.code ?? result.error.message}`);
     return result.data;
   };
 
@@ -103,7 +105,11 @@ export function createSupabaseSyncStore(admin: Admin): SyncStore {
 
     async linkOf(eventId) {
       const row = must(
-        await admin.from("calendar_external_links").select(LINK_COLUMNS).eq("event_id", eventId).maybeSingle(),
+        await admin
+          .from("calendar_external_links")
+          .select(LINK_COLUMNS)
+          .eq("event_id", eventId)
+          .maybeSingle(),
       );
       return row ? toLink(row) : null;
     },
@@ -113,7 +119,10 @@ export function createSupabaseSyncStore(admin: Admin): SyncStore {
       const out: LocalEvent[] = [];
       for (let index = 0; index < ids.length; index += 200) {
         const rows = must(
-          await admin.from("calendar_events").select(EVENT_COLUMNS).in("id", ids.slice(index, index + 200)),
+          await admin
+            .from("calendar_events")
+            .select(EVENT_COLUMNS)
+            .in("id", ids.slice(index, index + 200)),
         );
         out.push(...((rows ?? []) as LocalEvent[]));
       }
@@ -210,16 +219,16 @@ export function createSupabaseSyncStore(admin: Admin): SyncStore {
     },
 
     async claimOutbox(userId, limit) {
-      const rows = must(await admin.rpc("calendar_sync_outbox_claim", { _user: userId, _limit: limit }));
-      return (rows ?? []).map(
-        (row): OutboxItem => ({
-          id: row.id,
-          eventId: row.event_id,
-          op: row.op === "delete" ? "delete" : "upsert",
-          link: toOutboxLink(row.link),
-          attempts: row.attempts,
-        }),
+      const rows = must(
+        await admin.rpc("calendar_sync_outbox_claim", { _user: userId, _limit: limit }),
       );
+      return (rows ?? []).map((row): OutboxItem => ({
+        id: row.id,
+        eventId: row.event_id,
+        op: row.op === "delete" ? "delete" : "upsert",
+        link: toOutboxLink(row.link),
+        attempts: row.attempts,
+      }));
     },
 
     async doneOutbox(id) {
@@ -251,28 +260,43 @@ export function createSupabaseSyncStore(admin: Admin): SyncStore {
       const booking = must(
         await admin
           .from("bookings")
-          .select("id, guest_email, guest_name, google_meet_link, event_type_id")
+          .select(
+            "id, guest_email, guest_name, google_meet_link, event_type_id, host_user_id, space_id",
+          )
           .eq("calendar_event_id", eventId)
           .maybeSingle(),
       );
       if (!booking) return null;
       let wantsMeet = false;
+      let typeSources: unknown = null;
       if (booking.event_type_id) {
         const type = must(
           await admin
             .from("event_types")
-            .select("location_kind, video_source")
+            .select("location_kind, video_source, calendar_sources")
             .eq("id", booking.event_type_id)
             .maybeSingle(),
         );
         wantsMeet = type?.location_kind === "video" && type.video_source === "google_meet";
+        typeSources = type?.calendar_sources ?? null;
       }
+      const profile = booking.host_user_id
+        ? must(
+            await admin
+              .from("scheduler_profiles")
+              .select("calendar_sources")
+              .eq("user_id", booking.host_user_id)
+              .eq("space_id", booking.space_id)
+              .maybeSingle(),
+          )
+        : null;
       const info: BookingInfo = {
         id: booking.id,
         guestEmail: booking.guest_email,
         guestName: booking.guest_name,
         wantsMeet,
         meetLink: booking.google_meet_link,
+        target: bookingWriteTarget(profile?.calendar_sources ?? null, typeSources),
       };
       return info;
     },

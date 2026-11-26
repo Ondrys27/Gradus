@@ -33,7 +33,11 @@ type Builder = {
   caption(key: string | null): Builder;
   move(target: ShowcaseTarget | string): Builder;
   click(target: ShowcaseTarget | string, options?: { optional?: boolean; after?: number }): Builder;
-  type(target: ShowcaseTarget | string, text: string, options?: { enter?: boolean; after?: number }): Builder;
+  type(
+    target: ShowcaseTarget | string,
+    text: string,
+    options?: { enter?: boolean; after?: number },
+  ): Builder;
   drag(target: ShowcaseTarget | string, to: ShowcaseTarget | string): Builder;
   scroll(target?: ShowcaseTarget | string, by?: number): Builder;
   wait(ms: number): Builder;
@@ -50,7 +54,12 @@ function script(id: ScenarioId, write: (b: Builder) => void): ShowcaseScenario {
   const steps: ShowcaseStep[] = [];
   let section: TutorialSection = "dashboard";
   const push = (action: ShowcaseAction, after?: number) => {
-    steps.push({ ...action, key: `${id}${steps.length + 1}`, section, ...(after ? { after } : {}) });
+    steps.push({
+      ...action,
+      key: `${id}${steps.length + 1}`,
+      section,
+      ...(after ? { after } : {}),
+    });
   };
   const builder: Builder = {
     in(next) {
@@ -67,14 +76,23 @@ function script(id: ScenarioId, write: (b: Builder) => void): ShowcaseScenario {
     },
     click(target, options) {
       push(
-        { kind: "click", target: asTarget(target), ...(options?.optional ? { optional: true } : {}) },
+        {
+          kind: "click",
+          target: asTarget(target),
+          ...(options?.optional ? { optional: true } : {}),
+        },
         options?.after,
       );
       return builder;
     },
     type(target, text, options) {
       push(
-        { kind: "type", target: asTarget(target), text, ...(options?.enter ? { enter: true } : {}) },
+        {
+          kind: "type",
+          target: asTarget(target),
+          text,
+          ...(options?.enter ? { enter: true } : {}),
+        },
         options?.after,
       );
       return builder;
@@ -84,7 +102,11 @@ function script(id: ScenarioId, write: (b: Builder) => void): ShowcaseScenario {
       return builder;
     },
     scroll(target, by) {
-      push({ kind: "scroll", ...(target ? { target: asTarget(target) } : {}), ...(by ? { by } : {}) });
+      push({
+        kind: "scroll",
+        ...(target ? { target: asTarget(target) } : {}),
+        ...(by ? { by } : {}),
+      });
       return builder;
     },
     wait(ms) {
@@ -114,7 +136,8 @@ const CELEBRATION = "celebration-continue";
 /** The milestone, a new task and its mind map (a and f). */
 function milestoneMap(b: Builder, withTask: boolean) {
   b.in("milestones").click("nav-milestones").click(MILESTONE).until("task-add");
-  if (withTask) b.type('[data-tutorial="task-add"] input', "{newTask}", { enter: true, after: 700 });
+  if (withTask)
+    b.type('[data-tutorial="task-add"] input', "{newTask}", { enter: true, after: 700 });
   b.click("task-view-map").wait(2600);
 }
 
@@ -156,8 +179,9 @@ const A = script("a", (b) => {
     .click({ name: "call-contact", text: "{callContact}" }, { after: 900 })
     .click("call-move")
     .click("move-table-meeting_scheduled")
-    .click("move-today")
-    .click("move-confirm")
+    // 30.4: the owner's free time from the scheduler; booked once it is held.
+    .click('[data-testid="booking-time"]')
+    .click('[data-tutorial="meeting-submit"]:not([disabled])')
     .caption("deal")
     .in("pipeline")
     .click("deal-offer-create")
@@ -300,7 +324,14 @@ const E = script("e", (b) => {
     .wait(600);
 });
 
-export const SCENARIOS: Record<ScenarioId, ShowcaseScenario> = { a: A, b: B, c: C, d: D, e: E, f: F };
+export const SCENARIOS: Record<ScenarioId, ShowcaseScenario> = {
+  a: A,
+  b: B,
+  c: C,
+  d: D,
+  e: E,
+  f: F,
+};
 
 /** Which scenarios need Grady's button on the canvas. */
 export const SCENARIOS_WITH_GRADY: ReadonlySet<ScenarioId> = new Set(["b", "f"]);

@@ -90,6 +90,8 @@ export const PERMISSION_CATALOG = [
       { key: "view", kind: "view" },
       { key: "call", kind: "write" },
       { key: "view_others_stats", kind: "read" },
+      // Book a meeting from a call for someone else of the company (30.4).
+      { key: "schedule_others", kind: "write" },
     ],
   },
   {
@@ -336,7 +338,13 @@ export function writesSection(grants: PermissionGrants, section: GrantSection): 
 // Templates: one click fills the matrix
 // ---------------------------------------------------------------------------
 
-export const PERMISSION_TEMPLATES = ["sales", "coldCaller", "assistant", "accountant", "all"] as const;
+export const PERMISSION_TEMPLATES = [
+  "sales",
+  "coldCaller",
+  "assistant",
+  "accountant",
+  "all",
+] as const;
 export type PermissionTemplate = (typeof PERMISSION_TEMPLATES)[number];
 
 const TEMPLATE_GRANTS: Record<Exclude<PermissionTemplate, "all">, PermissionGrants> = {

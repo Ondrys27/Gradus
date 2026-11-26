@@ -125,7 +125,11 @@ export function BookingFlow({
   function scrollToPanel() {
     requestAnimationFrame(() => {
       const top = panelRef.current?.getBoundingClientRect().top ?? 0;
-      if (top < 0) panelRef.current?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+      if (top < 0)
+        panelRef.current?.scrollIntoView({
+          behavior: reduceMotion ? "auto" : "smooth",
+          block: "start",
+        });
     });
   }
 
@@ -152,13 +156,23 @@ export function BookingFlow({
         problem?: string;
       };
       if (response.ok && body.holdId && body.holdToken && body.expiresAt) {
-        setHold({ id: body.holdId, token: body.holdToken, expiresAt: body.expiresAt, start: slot.start, end: slot.end });
+        setHold({
+          id: body.holdId,
+          token: body.holdToken,
+          expiresAt: body.expiresAt,
+          start: slot.start,
+          end: slot.end,
+        });
         scrollToPanel();
         return;
       }
       setHold(null);
       setNotice(
-        body.problem === "rateLimited" ? "rateLimited" : body.problem === "unavailable" ? "unavailable" : "taken",
+        body.problem === "rateLimited"
+          ? "rateLimited"
+          : body.problem === "unavailable"
+            ? "unavailable"
+            : "taken",
       );
       await queryClient.invalidateQueries({ queryKey: ["booking-slots", handle, type.slug] });
     } catch {
@@ -221,7 +235,11 @@ export function BookingFlow({
         return;
       }
       setNotice(
-        body.problem === "rateLimited" ? "rateLimited" : body.problem === "unavailable" ? "unavailable" : "unknown",
+        body.problem === "rateLimited"
+          ? "rateLimited"
+          : body.problem === "unavailable"
+            ? "unavailable"
+            : "unknown",
       );
     } catch {
       setNotice("unknown");
@@ -286,7 +304,8 @@ export function BookingFlow({
                       {formatSpokenDate(new Date(hold.start), settings, locale)}
                     </p>
                     <p className="text-lg font-semibold text-violet tabular-nums">
-                      {formatTime(new Date(hold.start), settings)}–{formatTime(new Date(hold.end), settings)}
+                      {formatTime(new Date(hold.start), settings)}–
+                      {formatTime(new Date(hold.end), settings)}
                       <span className="pl-2 text-xs font-normal text-ink-muted">{zone}</span>
                     </p>
                     <p className="text-sm text-ink-soft">
@@ -309,7 +328,9 @@ export function BookingFlow({
                   onHoneypot={setHoneypot}
                 />
                 {type.requires_approval && (
-                  <p className="text-sm text-ink-muted text-pretty">{t("form.approvalNote", { host: host.name })}</p>
+                  <p className="text-sm text-ink-muted text-pretty">
+                    {t("form.approvalNote", { host: host.name })}
+                  </p>
                 )}
                 <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
                   <Button type="submit" size="lg" disabled={sending} data-testid="booking-submit">
@@ -319,7 +340,9 @@ export function BookingFlow({
               </motion.form>
             ) : (
               <motion.div key="picker" {...slide} className="flex flex-col gap-5">
-                <h2 className="font-display text-2xl font-bold tracking-tight text-ink">{t("calendar.title")}</h2>
+                <h2 className="font-display text-2xl font-bold tracking-tight text-ink">
+                  {t("calendar.title")}
+                </h2>
                 {notice && <NoticeLine notice={notice} />}
                 {slots.isPending ? (
                   <Skeleton className="h-72 rounded-2xl" />
@@ -332,6 +355,7 @@ export function BookingFlow({
                 ) : (
                   <SlotPicker
                     days={slots.data.days}
+                    timeZone={slots.data.timeZone}
                     selected={null}
                     onPick={pick}
                     onViewChange={onViewChange}
@@ -387,9 +411,15 @@ function HoldMeter({ secondsLeft }: { secondsLeft: number }) {
   const total = HOLD_MINUTES * 60;
   return (
     <div className="flex flex-col gap-1.5">
-      <p className="flex items-center gap-1.5 text-xs text-ink-muted" data-testid="booking-countdown" aria-live="off">
+      <p
+        className="flex items-center gap-1.5 text-xs text-ink-muted"
+        data-testid="booking-countdown"
+        aria-live="off"
+      >
         <ClockIcon aria-hidden className="size-3.5" />
-        {t("held", { time: `${Math.floor(secondsLeft / 60)}:${String(secondsLeft % 60).padStart(2, "0")}` })}
+        {t("held", {
+          time: `${Math.floor(secondsLeft / 60)}:${String(secondsLeft % 60).padStart(2, "0")}`,
+        })}
       </p>
       <div aria-hidden className="h-0.5 w-full overflow-hidden rounded-full bg-line/60">
         <div

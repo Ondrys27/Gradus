@@ -125,19 +125,34 @@ export function BookingControls({
           </Button>
         )}
         {canDecline(booking, now) && (
-          <Button size={size} variant="outline" onClick={() => setDialog("decline")} data-testid="booking-decline">
+          <Button
+            size={size}
+            variant="outline"
+            onClick={() => setDialog("decline")}
+            data-testid="booking-decline"
+          >
             <XIcon aria-hidden data-icon="inline-start" />
             {t("decline")}
           </Button>
         )}
         {canReschedule(booking, now) && (
-          <Button size={size} variant="outline" onClick={() => setDialog("reschedule")} data-testid="booking-reschedule">
+          <Button
+            size={size}
+            variant="outline"
+            onClick={() => setDialog("reschedule")}
+            data-testid="booking-reschedule"
+          >
             <CalendarClockIcon aria-hidden data-icon="inline-start" />
             {t("reschedule")}
           </Button>
         )}
         {canCancel(booking, now) && booking.status === "confirmed" && (
-          <Button size={size} variant="ghost" onClick={() => setDialog("cancel")} data-testid="booking-cancel">
+          <Button
+            size={size}
+            variant="ghost"
+            onClick={() => setDialog("cancel")}
+            data-testid="booking-cancel"
+          >
             {t("cancel")}
           </Button>
         )}
@@ -155,28 +170,60 @@ export function BookingControls({
         )}
       </div>
       {error && <FormAlert>{problemText(error)}</FormAlert>}
-      <DeclineDialog booking={booking} open={dialog === "decline"} onClose={() => setDialog(null)} />
+      <DeclineDialog
+        booking={booking}
+        open={dialog === "decline"}
+        onClose={() => setDialog(null)}
+      />
       <CancelDialog booking={booking} open={dialog === "cancel"} onClose={() => setDialog(null)} />
-      <RescheduleDialog booking={booking} open={dialog === "reschedule"} onClose={() => setDialog(null)} />
+      <RescheduleDialog
+        booking={booking}
+        open={dialog === "reschedule"}
+        onClose={() => setDialog(null)}
+      />
     </div>
   );
 }
 
-function DeclineDialog({ booking, open, onClose }: { booking: BookingWithType; open: boolean; onClose: () => void }) {
+function DeclineDialog({
+  booking,
+  open,
+  onClose,
+}: {
+  booking: BookingWithType;
+  open: boolean;
+  onClose: () => void;
+}) {
   const t = useTranslations("scheduler.bookings.decline");
   const problemText = useProblemText();
   const decline = useDeclineBooking();
   const [reason, setReason] = useState("");
   const [alternative, setAlternative] = useState<string | null>(null);
   return (
-    <ResponsiveDialog open={open} onOpenChange={(next) => !next && onClose()} title={t("title")} closeLabel={t("close")}>
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={(next) => !next && onClose()}
+      title={t("title")}
+      closeLabel={t("close")}
+    >
       <div className="flex flex-col gap-4">
         <p className="text-sm text-ink-soft">{t("text", { guest: booking.guest_name ?? "" })}</p>
         <FormField id="decline-reason" label={t("reason")}>
-          <Textarea id="decline-reason" rows={3} maxLength={500} value={reason} onChange={(event) => setReason(event.target.value)} />
+          <Textarea
+            id="decline-reason"
+            rows={3}
+            maxLength={500}
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+          />
         </FormField>
         <FormField id="decline-alternative" label={t("alternative")} hint={t("alternativeHint")}>
-          <DateTimePicker id="decline-alternative" value={alternative} onValueChange={setAlternative} timeLabel={t("alternativeTime")} />
+          <DateTimePicker
+            id="decline-alternative"
+            value={alternative}
+            onValueChange={setAlternative}
+            timeLabel={t("alternativeTime")}
+          />
         </FormField>
         {decline.error && <FormAlert>{problemText(decline.error)}</FormAlert>}
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -202,17 +249,36 @@ function DeclineDialog({ booking, open, onClose }: { booking: BookingWithType; o
   );
 }
 
-function CancelDialog({ booking, open, onClose }: { booking: BookingWithType; open: boolean; onClose: () => void }) {
+function CancelDialog({
+  booking,
+  open,
+  onClose,
+}: {
+  booking: BookingWithType;
+  open: boolean;
+  onClose: () => void;
+}) {
   const t = useTranslations("scheduler.bookings.cancel");
   const problemText = useProblemText();
   const cancel = useCancelBooking();
   const [reason, setReason] = useState("");
   return (
-    <ResponsiveDialog open={open} onOpenChange={(next) => !next && onClose()} title={t("title")} closeLabel={t("close")}>
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={(next) => !next && onClose()}
+      title={t("title")}
+      closeLabel={t("close")}
+    >
       <div className="flex flex-col gap-4">
         <p className="text-sm text-ink-soft">{t("text", { guest: booking.guest_name ?? "" })}</p>
         <FormField id="cancel-reason" label={t("reason")}>
-          <Textarea id="cancel-reason" rows={3} maxLength={500} value={reason} onChange={(event) => setReason(event.target.value)} />
+          <Textarea
+            id="cancel-reason"
+            rows={3}
+            maxLength={500}
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+          />
         </FormField>
         {cancel.error && <FormAlert>{problemText(cancel.error)}</FormAlert>}
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -223,7 +289,12 @@ function CancelDialog({ booking, open, onClose }: { booking: BookingWithType; op
             variant="destructive"
             disabled={cancel.isPending}
             data-testid="booking-cancel-confirm"
-            onClick={() => cancel.mutate({ bookingId: booking.id, reason: reason.trim() || undefined }, { onSuccess: onClose })}
+            onClick={() =>
+              cancel.mutate(
+                { bookingId: booking.id, reason: reason.trim() || undefined },
+                { onSuccess: onClose },
+              )
+            }
           >
             {t("confirm")}
           </Button>
@@ -233,7 +304,15 @@ function CancelDialog({ booking, open, onClose }: { booking: BookingWithType; op
   );
 }
 
-function RescheduleDialog({ booking, open, onClose }: { booking: BookingWithType; open: boolean; onClose: () => void }) {
+function RescheduleDialog({
+  booking,
+  open,
+  onClose,
+}: {
+  booking: BookingWithType;
+  open: boolean;
+  onClose: () => void;
+}) {
   const t = useTranslations("scheduler.bookings.reschedule");
   const locale = useLocale();
   const settings = useFormatSettings();
@@ -256,7 +335,13 @@ function RescheduleDialog({ booking, open, onClose }: { booking: BookingWithType
         ) : slots.isError ? (
           <FormAlert>{t("loadFailed")}</FormAlert>
         ) : (
-          <SlotPicker days={slots.data.days} selected={picked?.start ?? null} onPick={setPicked} disabled={move.isPending} />
+          <SlotPicker
+            days={slots.data.days}
+            timeZone={slots.data.timeZone}
+            selected={picked?.start ?? null}
+            onPick={setPicked}
+            disabled={move.isPending}
+          />
         )}
         {move.error && <FormAlert>{problemText(move.error)}</FormAlert>}
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -279,7 +364,9 @@ function RescheduleDialog({ booking, open, onClose }: { booking: BookingWithType
               )
             }
           >
-            {picked ? t("confirm", { when: formatSlotMoment(new Date(picked.start), settings, locale) }) : t("pick")}
+            {picked
+              ? t("confirm", { when: formatSlotMoment(new Date(picked.start), settings, locale) })
+              : t("pick")}
           </Button>
         </div>
       </div>
@@ -288,7 +375,13 @@ function RescheduleDialog({ booking, open, onClose }: { booking: BookingWithType
 }
 
 /** Who booked and what they answered. */
-export function BookingSummary({ booking, country }: { booking: BookingWithType; country: string | null }) {
+export function BookingSummary({
+  booking,
+  country,
+}: {
+  booking: BookingWithType;
+  country: string | null;
+}) {
   const t = useTranslations("scheduler.bookings");
   const locale = useLocale();
   const settings = useFormatSettings();
@@ -302,20 +395,26 @@ export function BookingSummary({ booking, country }: { booking: BookingWithType;
       <div className="flex flex-wrap items-center gap-2">
         <BookingStatus booking={booking} />
         <span className="text-sm text-ink-soft">
-          {formatSlotMoment(new Date(booking.starts_at), settings, locale)} – {formatTime(new Date(booking.ends_at), settings)}
+          {formatSlotMoment(new Date(booking.starts_at), settings, locale)} –{" "}
+          {formatTime(new Date(booking.ends_at), settings)}
         </span>
       </div>
       <ul className="flex flex-col gap-1 text-sm">
         <li className="flex items-center gap-2 text-ink">
           <UserIcon aria-hidden className="size-4 text-ink-muted" />
           {booking.contact_id ? (
-            <Link href={`/app/kontakty/${booking.contact_id}`} className="text-violet hover:underline">
+            <Link
+              href={`/app/kontakty/${booking.contact_id}`}
+              className="text-violet hover:underline"
+            >
               {booking.guest_name}
             </Link>
           ) : (
             booking.guest_name
           )}
-          {booking.guest_company && <span className="text-ink-muted">· {booking.guest_company}</span>}
+          {booking.guest_company && (
+            <span className="text-ink-muted">· {booking.guest_company}</span>
+          )}
         </li>
         {booking.guest_email && (
           <li className="flex items-center gap-2 text-ink-soft">
@@ -357,7 +456,13 @@ export function BookingSummary({ booking, country }: { booking: BookingWithType;
  * page of their booking, by e-mail only while the meeting is more than an
  * hour away.
  */
-export function BookingMeetingLink({ booking, isHost }: { booking: BookingWithType; isHost: boolean }) {
+export function BookingMeetingLink({
+  booking,
+  isHost,
+}: {
+  booking: BookingWithType;
+  isHost: boolean;
+}) {
   const t = useTranslations("scheduler.bookings.link");
   const problemText = useProblemText();
   const workspace = useWorkspace();
@@ -375,7 +480,9 @@ export function BookingMeetingLink({ booking, isHost }: { booking: BookingWithTy
     profileLink: booking.profileLink,
   });
   if (!link) return null;
-  const live = (booking.status === "pending" || booking.status === "confirmed") && Date.parse(booking.ends_at) > Date.now();
+  const live =
+    (booking.status === "pending" || booking.status === "confirmed") &&
+    Date.parse(booking.ends_at) > Date.now();
   const editable = isHost && canEdit && live;
   const formatError = meetingLinkProblem(value) ? t("format") : undefined;
 
@@ -394,7 +501,11 @@ export function BookingMeetingLink({ booking, isHost }: { booking: BookingWithTy
   }
 
   return (
-    <div className="flex flex-col gap-2 rounded-xl border border-line p-3" data-testid="booking-link" data-source={link.source}>
+    <div
+      className="flex flex-col gap-2 rounded-xl border border-line p-3"
+      data-testid="booking-link"
+      data-source={link.source}
+    >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="flex items-center gap-2 text-sm font-medium text-ink">
           <VideoIcon aria-hidden className="size-4 text-ink-muted" />
@@ -436,7 +547,13 @@ export function BookingMeetingLink({ booking, isHost }: { booking: BookingWithTy
             {t(link.source === "own" ? "change" : "set")}
           </Button>
           {booking.meeting_link && (
-            <Button size="sm" variant="ghost" disabled={save.isPending} onClick={() => submit(null)} data-testid="booking-link-reset">
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={save.isPending}
+              onClick={() => submit(null)}
+              data-testid="booking-link-reset"
+            >
               {t("reset")}
             </Button>
           )}
@@ -450,7 +567,12 @@ export function BookingMeetingLink({ booking, isHost }: { booking: BookingWithTy
             if (!formatError && value.trim()) submit(value.trim());
           }}
         >
-          <FormField id={`booking-link-${booking.id}`} label={t("label")} error={formatError} hint={t("hint")}>
+          <FormField
+            id={`booking-link-${booking.id}`}
+            label={t("label")}
+            error={formatError}
+            hint={t("hint")}
+          >
             <Input
               {...fieldA11y(`booking-link-${booking.id}`, formatError, true)}
               type="url"
@@ -463,7 +585,12 @@ export function BookingMeetingLink({ booking, isHost }: { booking: BookingWithTy
             />
           </FormField>
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Button type="button" variant="ghost" onClick={() => setEditing(false)} disabled={save.isPending}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setEditing(false)}
+              disabled={save.isPending}
+            >
               {t("cancel")}
             </Button>
             <Button
@@ -510,7 +637,10 @@ export function BookingDetailDialog({
         ) : (
           <>
             <BookingSummary booking={booking.data} country={country} />
-            <BookingMeetingLink booking={booking.data} isHost={booking.data.host_user_id === userId} />
+            <BookingMeetingLink
+              booking={booking.data}
+              isHost={booking.data.host_user_id === userId}
+            />
             <BookingControls booking={booking.data} isHost={booking.data.host_user_id === userId} />
           </>
         )}

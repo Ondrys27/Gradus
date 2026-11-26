@@ -32,6 +32,8 @@ import {
 } from "../weekly-hours";
 import { addDays, daysBetween, minutesOfTime } from "../zoned";
 import { WeeklyHoursEditor } from "./weekly-hours-editor";
+import { useSaveCalendarSources } from "../meeting-queries";
+import { CalendarSourcesForm } from "./calendar-sources-form";
 
 /** An exception covers at most this many days at once (a long holiday). */
 const MAX_RANGE_DAYS = 60;
@@ -51,6 +53,7 @@ export function AvailabilityTab({
   const t = useTranslations("scheduler.availability");
   const availability = useAvailability(profile.id);
   const updateProfile = useUpdateProfile(profile.id);
+  const saveSources = useSaveCalendarSources();
 
   return (
     <div className="flex max-w-[720px] flex-col gap-8">
@@ -67,6 +70,23 @@ export function AvailabilityTab({
           />
         </div>
         {updateProfile.isError && <FormAlert>{t("saveFailed")}</FormAlert>}
+      </section>
+
+      <section className="flex flex-col gap-3 border-t border-line pt-6" id="scheduler-calendars">
+        <header className="flex flex-col gap-1">
+          <h2 className="text-[15px] font-semibold text-ink">{t("calendarsTitle")}</h2>
+          <p className="text-[13px] text-ink-muted">{t("calendarsHint")}</p>
+        </header>
+        <CalendarSourcesForm
+          value={profile.calendar_sources}
+          editable={editable}
+          saving={saveSources.isPending}
+          saved={saveSources.isSuccess}
+          failed={saveSources.isError}
+          onSave={(sources) =>
+            sources && saveSources.mutate({ scope: "profile", profileId: profile.id, sources })
+          }
+        />
       </section>
 
       <section className="flex flex-col gap-3 border-t border-line pt-6">

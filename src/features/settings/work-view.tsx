@@ -13,6 +13,7 @@ import {
 import { useUserSettings } from "@/features/account/queries";
 import { InvoiceSettings } from "@/features/invoices/invoice-settings";
 import { ColdCallingDealStageSelect } from "./cold-calling-settings";
+import { ColdCallingMeetingSettings } from "./cold-calling-meeting-settings";
 import { GameSettings } from "./game-settings";
 import { useSettingsSave } from "./save-state";
 import { SettingRow, SettingsPage, SettingsSection } from "./ui";
@@ -68,6 +69,7 @@ export function WorkView() {
           >
             <ColdCallingDealStageSelect id="settings-cold-calling-stage" save={save} />
           </SettingRow>
+          {viewer.owner && <ColdCallingMeetingSettings />}
         </SettingsSection>
       )}
 

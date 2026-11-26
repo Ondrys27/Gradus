@@ -1,12 +1,13 @@
 import { admin, signIn } from "./support/accounts";
 import { expect, test } from "./support/fixtures";
 import { exact, text } from "./support/i18n";
+import { pickFirstMeetingTime } from "./support/meeting";
 import { dismissCelebrationsAutomatically, openApp } from "./support/ui";
 
 const L = "cs" as const;
 const t = (key: string, values?: Record<string, string | number>) => text(L, key, values);
 
-test("5 · contact by hand → moved to Meeting scheduled with its questions → event in the calendar", async ({
+test("5 · contact by hand → moved to Meeting scheduled with a time from the scheduler and its questions → event in the calendar", async ({
   page,
   accounts,
 }) => {
@@ -16,7 +17,10 @@ test("5 · contact by hand → moved to Meeting scheduled with its questions →
   const company = "E2E Kavárna U Mostu";
 
   await openApp(page, "/app/kontakty");
-  await page.getByRole("button", { name: exact(L, "contacts.actions.newContact") }).first().click();
+  await page
+    .getByRole("button", { name: exact(L, "contacts.actions.newContact") })
+    .first()
+    .click();
   const form = page.getByRole("dialog", { name: t("contacts.form.createTitle") });
   await form.locator("#contact-company_name").fill(company);
   await form.locator("#contact-first_name").fill("Jana");
@@ -35,18 +39,19 @@ test("5 · contact by hand → moved to Meeting scheduled with its questions →
   await page.getByRole("button", { name: exact(L, "contacts.move.open") }).click();
   const move = page.getByRole("dialog", { name: t("contacts.move.title") });
   await move.getByRole("button", { name: meetingTable.name }).click();
-  await expect(move.getByText(t("contacts.move.movingTo", { name: meetingTable.name }))).toBeVisible();
-  // The table's questions: When? is required, so confirming without it is refused.
-  const confirm = move.getByRole("button", { name: t("contacts.move.confirm", { name: meetingTable.name }) });
-  await confirm.click();
-  await expect(move.getByText(t("contacts.move.errors.required")).first()).toBeVisible();
-  await move.getByRole("button", { name: exact(L, "contacts.move.today") }).click();
+  // 30.4: the meeting is booked through the scheduler — the one step of
+  // working hours, a free time held for the dialog, then the table's questions.
+  const submit = move.getByTestId("meeting-submit");
+  await expect(submit.or(move.getByTestId("meeting-quick-setup"))).toBeVisible({ timeout: 20_000 });
+  const start = await pickFirstMeetingTime(move);
   await move.getByRole("textbox", { name: "O jaký produkt má zájem" }).fill("Webové stránky");
-  await confirm.click();
-  await expect(move).toBeHidden();
-  await expect(page.getByText(t("contacts.move.movedWithMeeting", { name: meetingTable.name }))).toBeVisible();
+  await submit.click();
+  await expect(move).toBeHidden({ timeout: 20_000 });
+  await expect(
+    page.getByText(t("contacts.move.movedWithMeeting", { name: meetingTable.name })),
+  ).toBeVisible();
 
-  // What the database has now: one entry in the meeting table, a meeting event.
+  // What the database has now: one entry in the meeting table, the booking's meeting.
   const db = admin();
   const { data: entries } = await db
     .from("contact_table_entries")
@@ -55,10 +60,18 @@ test("5 · contact by hand → moved to Meeting scheduled with its questions →
   expect(entries).toEqual([{ table_id: meetingTable.id }]);
   const { data: events } = await db
     .from("calendar_events")
-    .select("title, kind, contact_id")
+    .select("title, kind, contact_id, source, starts_at")
     .eq("user_id", account.id);
   expect(events).toHaveLength(1);
-  expect(events![0]).toMatchObject({ title: company, kind: "meeting" });
+  expect(events![0]).toMatchObject({ kind: "meeting", source: "booking" });
+  expect(Date.parse(events![0]!.starts_at)).toBe(start);
+  const { data: bookings } = await db
+    .from("bookings")
+    .select("status, source, created_by, host_user_id")
+    .eq("space_id", account.id);
+  expect(bookings).toEqual([
+    { status: "confirmed", source: "app", created_by: account.id, host_user_id: account.id },
+  ]);
 
   // And the calendar shows it.
   await openApp(page, "/app/kalendar");

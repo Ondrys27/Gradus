@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   activeBookings,
   availabilityIntervals,
+  computeSlotCells,
   computeSlots,
   mergeIntervals,
   rulesFor,
@@ -354,5 +355,45 @@ describe("helpers", () => {
     ];
     expect(rulesFor(rules, { id: "t1", custom_availability: false })).toHaveLength(1);
     expect(rulesFor(rules, { id: "t1", custom_availability: true })[0].weekday).toBe(2);
+  });
+});
+
+describe("free and taken times for the shared picker (30.4)", () => {
+  it("inside the hours a time is free or taken; outside neither", () => {
+    const cells = computeSlotCells(
+      input({ busy: [{ start: utc("2026-11-16T09:00:00Z"), end: utc("2026-11-16T09:30:00Z") }] }),
+    );
+    // 9–12 in Prague = 8–11 UTC; 10:00–10:30 Prague is busy.
+    expect(times(cells.free)).toEqual(["09:00", "09:30", "10:30", "11:00", "11:30"]);
+    expect(times(cells.busy)).toEqual(["10:00"]);
+    expect(computeSlots(input()).length).toBe(6);
+  });
+
+  it("too soon and a full day are taken; the past is nothing", () => {
+    const soon = computeSlotCells(
+      input({ now: utc("2026-11-16T08:45:00Z"), type: { ...TYPE, minNoticeHours: 1 } }),
+    );
+    // 9:45 in Prague with an hour's notice: 10:00 and 10:30 are too soon, 9:00 and 9:30 past.
+    expect(times(soon.busy)).toEqual(["10:00", "10:30"]);
+    expect(times(soon.free)[0]).toBe("11:00");
+    const full = computeSlotCells(
+      input({
+        type: { ...TYPE, maxPerDay: 1 },
+        bookings: [
+          { start: utc("2026-11-16T10:00:00Z"), end: utc("2026-11-16T10:30:00Z"), sameType: true },
+        ],
+      }),
+    );
+    expect(full.free).toEqual([]);
+    expect(full.busy.length).toBe(6);
+  });
+
+  it("taken times come by the guest's day too", () => {
+    const cells = computeSlotCells(
+      input({ busy: [{ start: utc("2026-11-16T08:00:00Z"), end: utc("2026-11-16T11:00:00Z") }] }),
+    );
+    expect(slotsByGuestDay(cells.free, PRAGUE, cells.busy)).toEqual([
+      expect.objectContaining({ day: "2026-11-16", slots: [], busy: expect.any(Array) }),
+    ]);
   });
 });

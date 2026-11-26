@@ -1,6 +1,7 @@
 import { admin, seedContacts, signIn } from "./support/accounts";
 import { expect, test } from "./support/fixtures";
 import { exact, text } from "./support/i18n";
+import { pickFirstMeetingTime } from "./support/meeting";
 import { dismissCelebrationsAutomatically, openApp } from "./support/ui";
 
 const L = "cs" as const;
@@ -68,10 +69,9 @@ test("35 · cold calling → meeting → create deal in the chosen stage → pip
   await panel.getByRole("button", { name: exact(L, "coldCalling.panel.move") }).click();
   const move = page.getByRole("dialog", { name: t("contacts.move.title") });
   await move.getByRole("button", { name: meetingTable.name }).click();
-  await move.getByRole("button", { name: exact(L, "contacts.move.today") }).click();
-  await move
-    .getByRole("button", { name: t("contacts.move.confirm", { name: meetingTable.name }) })
-    .click();
+  // 30.4: a time from the scheduler (one step of working hours first).
+  await pickFirstMeetingTime(move);
+  await move.getByTestId("meeting-submit").click();
   await expect(
     move.getByText(t("contacts.move.dealOffer.movedWithMeeting", { name: meetingTable.name })),
   ).toBeVisible();
@@ -113,7 +113,7 @@ test("35 · cold calling → meeting → create deal in the chosen stage → pip
     .select("deal_id, kind, source")
     .eq("user_id", account.id)
     .eq("contact_id", contact!.id);
-  expect(meetings).toEqual([{ deal_id: dealId, kind: "meeting", source: "contact_move" }]);
+  expect(meetings).toEqual([{ deal_id: dealId, kind: "meeting", source: "booking" }]);
 
   // The contact's row in Cold Calling links the deal, and the button is gone.
   await page
@@ -122,7 +122,11 @@ test("35 · cold calling → meeting → create deal in the chosen stage → pip
     .click();
   const dealLink = page.getByRole("link", { name: t("coldCalling.list.deal", { title: company }) });
   await expect(dealLink).toBeVisible();
-  await page.getByRole("list").filter({ hasText: company }).getByRole("button", { name: new RegExp(company) }).click();
+  await page
+    .getByRole("list")
+    .filter({ hasText: company })
+    .getByRole("button", { name: new RegExp(company) })
+    .click();
   await expect(panel.getByRole("link", { name: new RegExp(company) })).toBeVisible();
   await expect(
     panel.getByRole("button", { name: exact(L, "coldCalling.panel.createDeal") }),

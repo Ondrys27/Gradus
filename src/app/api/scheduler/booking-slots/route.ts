@@ -26,7 +26,8 @@ export async function GET(request: Request) {
   const supabase = await createClient();
   const { data: claims } = await supabase.auth.getClaims();
   const userId = claims?.claims?.sub;
-  if (typeof userId !== "string") return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
+  if (typeof userId !== "string")
+    return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
   const { data: own, error } = await supabase
     .from("bookings")
     .select("id")
@@ -41,7 +42,7 @@ export async function GET(request: Request) {
     if (!ctx || !canReschedule(ctx.booking, Date.now())) {
       return NextResponse.json({ error: "notFound" }, { status: 404 });
     }
-    const slots = await rescheduleSlots(admin, ctx, parsed.data.tz);
+    const slots = await rescheduleSlots(admin, ctx, parsed.data.tz, { withBusy: true });
     if (!slots) return NextResponse.json({ error: "notFound" }, { status: 404 });
     return NextResponse.json(slots, { headers: { "cache-control": "no-store" } });
   } catch (loadError) {

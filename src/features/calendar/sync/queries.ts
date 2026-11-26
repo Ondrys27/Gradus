@@ -4,7 +4,12 @@ import { useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/account/queries";
 import { createClient } from "@/lib/supabase/client";
-import { connectApple, disconnectCalendar, saveCalendarSelection, type SyncActionError } from "./actions";
+import {
+  connectApple,
+  disconnectCalendar,
+  saveCalendarSelection,
+  type SyncActionError,
+} from "./actions";
 import type { CalendarSyncOverview } from "./overview";
 import { CALENDAR_SYNC_API } from "./paths";
 
@@ -105,8 +110,16 @@ export function useConnectApple() {
   const { user } = useSession();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { appleId: string; password: string }) => unwrap(await connectApple(input)),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: syncKeys.all(user.id) }),
+    mutationFn: async (input: {
+      appleId: string;
+      password: string;
+      from?: "settings" | "scheduler";
+    }) => unwrap(await connectApple(input)),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: syncKeys.all(user.id) });
+      // Connected from the scheduler: its sources changed on the server.
+      void queryClient.invalidateQueries({ queryKey: ["scheduler", user.id] });
+    },
   });
 }
 
@@ -162,7 +175,9 @@ export function useEventLink(eventId: string | null) {
         origin: data.origin === "gradus" ? "gradus" : "external",
         conflictAt: data.conflict_at,
         conflictWinner:
-          data.conflict_winner === "gradus" || data.conflict_winner === "external" ? data.conflict_winner : null,
+          data.conflict_winner === "gradus" || data.conflict_winner === "external"
+            ? data.conflict_winner
+            : null,
       };
     },
   });

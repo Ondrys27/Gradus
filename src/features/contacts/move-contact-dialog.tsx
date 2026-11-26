@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { ArrowLeftIcon, BriefcaseBusinessIcon, ChevronRightIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -30,11 +30,15 @@ import {
 } from "./move-form";
 import { useMoveContact } from "./queries";
 import { useFields } from "./table-queries";
-import { tableTone, type ContactField, type ContactTable } from "./types";
+import { MEETING_FIELD_KEY, tableTone, type ContactField, type ContactTable } from "./types";
+import type { BookingDialogSource } from "@/features/scheduler/analytics";
+import { MeetingBookingForm } from "@/features/scheduler/ui/meeting-booking";
 
 export type MoveResult = {
   table: ContactTable;
   meetingBooked: boolean;
+  /** The meeting was booked through the scheduler (30.4): a deal made next takes it. */
+  bookingId?: string;
   /** The deal made right after the move (Cold Calling offers one), if any. */
   deal?: { id: string; title: string };
 };
@@ -55,6 +59,10 @@ type Props = {
    * table that offers one (Cold Calling). Absent: no offer.
    */
   dealContact?: DealContact;
+  /** Where the meeting dialog of "Meeting scheduled" is opened from (30.4). */
+  bookingFrom?: BookingDialogSource;
+  /** The deal the booked meeting belongs to (opened from a deal). */
+  dealId?: string | null;
 };
 
 export function MoveContactDialog({
@@ -67,9 +75,13 @@ export function MoveContactDialog({
   targetSystemKey,
   prefillBySystemKey,
   dealContact,
+  bookingFrom = "contact",
+  dealId = null,
 }: Props) {
   const t = useTranslations("contacts.move");
   const generation = useFreshOnOpen(open);
+  // Booking a meeting needs the room of a week (30.4).
+  const [wide, setWide] = useState(targetSystemKey === "meeting_scheduled");
   // A move that offers a deal is reported only when the dialog closes: in Cold
   // Calling the report opens the next contact, which would close this dialog.
   const pending = useRef<MoveResult | null>(null);
@@ -86,7 +98,7 @@ export function MoveContactDialog({
       onOpenChange={changeOpen}
       title={t("title")}
       closeLabel={t("close")}
-      className="w-[min(100vw-32px,520px)]"
+      className={wide ? "w-[min(100vw-32px,820px)]" : "w-[min(100vw-32px,520px)]"}
     >
       <MoveSteps
         key={generation}
@@ -99,6 +111,9 @@ export function MoveContactDialog({
         targetSystemKey={targetSystemKey}
         prefillBySystemKey={prefillBySystemKey}
         dealContact={dealContact}
+        bookingFrom={bookingFrom}
+        dealId={dealId}
+        onWide={setWide}
         onDone={() => changeOpen(false)}
         onMoved={onMoved}
         onHold={(result) => {
@@ -116,6 +131,9 @@ function MoveSteps({
   targetSystemKey,
   prefillBySystemKey,
   dealContact,
+  bookingFrom,
+  dealId,
+  onWide,
   onDone,
   onMoved,
   onHold,
@@ -126,6 +144,9 @@ function MoveSteps({
   targetSystemKey?: string;
   prefillBySystemKey?: Record<string, string>;
   dealContact?: DealContact;
+  bookingFrom: BookingDialogSource;
+  dealId: string | null;
+  onWide: (wide: boolean) => void;
   onDone: () => void;
   onMoved: (result: MoveResult) => void;
   /** Keeps the result until the dialog closes (see MoveContactDialog). */
@@ -133,10 +154,13 @@ function MoveSteps({
 }) {
   const t = useTranslations("contacts.move");
   const fieldsQuery = useFields();
+  const awardXp = useAwardXp();
   const [target, setTarget] = useState<ContactTable | null>(
     () => targets.find((table) => table.system_key === targetSystemKey) ?? null,
   );
   const [offer, setOffer] = useState<MoveResult | null>(null);
+  const booking = target?.system_key === "meeting_scheduled" && !offer;
+  useEffect(() => onWide(booking), [booking, onWide]);
 
   if (offer && dealContact) {
     return (
@@ -154,6 +178,42 @@ function MoveSteps({
 
   if (target && fieldsQuery.data) {
     const fields = fieldsQuery.data.filter((field) => field.table_id === target.id);
+    // "Meeting scheduled" books the meeting through the scheduler (30.4): the
+    // host's free times, the guest's confirmation, the same move underneath.
+    if (
+      target.system_key === "meeting_scheduled" &&
+      fields.some((field) => field.system_key === MEETING_FIELD_KEY)
+    ) {
+      return (
+        <MeetingBookingForm
+          key={target.id}
+          contactId={contactId}
+          dealId={dealId}
+          from={bookingFrom}
+          fields={fields}
+          onBack={() => setTarget(null)}
+          onCancel={onDone}
+          onBooked={(booked) => {
+            const result: MoveResult = {
+              table: target,
+              meetingBooked: true,
+              bookingId: booked.bookingId,
+            };
+            if (booked.moved) {
+              awardXp.mutate({ reason: "contact_moved" });
+              awardXp.mutate({ reason: "meeting_booked" });
+            }
+            if (dealContact && offersDeal(target.system_key)) {
+              onHold(result);
+              setOffer(result);
+              return;
+            }
+            onDone();
+            onMoved(result);
+          }}
+        />
+      );
+    }
     return (
       <AnswerForm
         key={target.id}
@@ -335,6 +395,7 @@ function DealOffer({
         contact={contact}
         source="cold_calling"
         linkMeeting={result.meetingBooked}
+        bookingId={result.bookingId}
         cancelLabel={t("later")}
         onCancel={onDone}
         onCreated={onCreated}
@@ -370,7 +431,7 @@ function DealOffer({
   );
 }
 
-function AnswerField({
+export function AnswerField({
   field,
   value,
   error,

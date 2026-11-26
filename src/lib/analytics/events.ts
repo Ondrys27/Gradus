@@ -20,7 +20,14 @@ import { PROMO_BENEFITS, PROMO_SOURCES } from "@/features/promo/codes";
 import { CHECKOUT_SOURCES, PORTAL_SOURCES } from "@/features/billing/stripe/sources";
 import { LOCATION_KINDS } from "@/features/scheduler/types";
 import { MEETING_LINK_SOURCES } from "@/features/scheduler/booking/meeting-link";
-import { CALENDAR_PROVIDERS, EVENT_TYPE_TABS, LINK_SOURCES } from "@/features/scheduler/analytics";
+import {
+  BOOKING_DIALOG_SOURCES,
+  BOOKING_SOURCES,
+  CALENDAR_PROVIDERS,
+  EVENT_TYPE_TABS,
+  LINK_SOURCES,
+} from "@/features/scheduler/analytics";
+import { HOST_MODES } from "@/features/scheduler/meeting-plan";
 import { REWARD_TEMPLATES, RULES_PER_PLAN } from "@/features/workers/rewards/rules";
 import { REWARD_EVENTS, REWARD_TYPES } from "@/features/workers/rewards/catalog";
 import { WIDGET_KEYS } from "@/features/dashboard/widgets/catalog";
@@ -777,6 +784,40 @@ export const EVENTS = {
     duration: count(480),
     // A video meeting: where its call's link comes from (27.5).
     link: optional(oneOf(MEETING_LINK_SOURCES)),
+    // Booked on the public page, or in the app for a contact (30.4).
+    source: optional(oneOf(BOOKING_SOURCES)),
+  }),
+  // The scheduler's own calendars (30.4): what counts as busy, where bookings go.
+  scheduler_calendar_sources_saved: event("calendar", "client", true, {
+    scope: oneOf(["profile", "type"]),
+    gradus: bool(),
+    calendars: count(200),
+    subscriptions: count(20),
+    write: bool(),
+    // A type back on the profile's sources.
+    inherit: optional(bool()),
+  }),
+  // Settings → Work → Cold Calling: whose meetings the callers book (30.4).
+  cold_calling_meeting_settings_saved: event("calendar", "client", true, {
+    host_mode: oneOf(HOST_MODES),
+    type_set: bool(),
+    type_locked: bool(),
+    ignore_notice: bool(),
+  }),
+  // The meeting dialog with the shared picker (Cold Calling, a contact, a deal).
+  booking_dialog_opened: event("calendar", "client", true, {
+    from: oneOf(BOOKING_DIALOG_SOURCES),
+    // The caller had no scheduler and got the one step of working hours.
+    setup: bool(),
+  }),
+  booking_from_app: event("calendar", "server", true, {
+    from: oneOf([...BOOKING_DIALOG_SOURCES, "grady"]),
+    host: oneOf(["self", "other"]),
+    // "Book anyway" over a busy time or outside the hours.
+    forced: bool(),
+    emailed: bool(),
+    // The contact moved into "Meeting scheduled" with it.
+    moved: bool(),
   }),
   booking_confirmed: event("calendar", "server", true, {}),
   booking_declined: event("calendar", "server", true, {}),
@@ -876,7 +917,9 @@ export const EVENTS = {
     /** "What they'll be able to do" before the invite (30.2). */
     template: optional(oneOf(["sales", "coldCaller", "assistant", "accountant", "all", "custom"])),
     widgets_limited: optional(bool()),
-    reward_template: optional(oneOf(["coldCaller", "salesCommission", "developer", "assistant", "none"])),
+    reward_template: optional(
+      oneOf(["coldCaller", "salesCommission", "developer", "assistant", "none"]),
+    ),
     dashboard: optional(oneOf(["auto", "space", "group", "system"])),
   }),
   /** A waiting invite changed before it was accepted (30.2): which parts, never names. */

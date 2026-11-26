@@ -13,6 +13,7 @@ import { calendarSyncGate, sessionUserId, type GateError } from "./server/gate";
 import { disconnectConnection, ensureChannels, syncUser } from "./server/sync";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ProviderError } from "./types";
+import { addConnectionToScheduler } from "@/features/scheduler/server/scheduler-sources";
 
 /**
  * Settings → Calendar, two-way sync (28.10): connecting Apple, choosing the
@@ -21,21 +22,19 @@ import { ProviderError } from "./types";
  * admin client for that account alone. Failures come back as codes.
  */
 
-export type SyncActionError =
-  | GateError
-  | "invalid"
-  | "auth"
-  | "network"
-  | "notFound"
-  | "unknown";
+export type SyncActionError = GateError | "invalid" | "auth" | "network" | "notFound" | "unknown";
 export type SyncActionResult<T> = { ok: true; data: T } | { ok: false; error: SyncActionError };
 
 function failure(error: unknown): { ok: false; error: SyncActionError } {
   if (error instanceof ProviderError) {
     if (error.code === "auth") return { ok: false, error: "auth" };
-    if (error.code === "network" || error.code === "rateLimited") return { ok: false, error: "network" };
+    if (error.code === "network" || error.code === "rateLimited")
+      return { ok: false, error: "network" };
   }
-  console.error("[calendar-sync] action failed", error instanceof Error ? error.message : "unknown");
+  console.error(
+    "[calendar-sync] action failed",
+    error instanceof Error ? error.message : "unknown",
+  );
   return { ok: false, error: "unknown" };
 }
 
@@ -52,6 +51,8 @@ const appleInput = z.object({
 export async function connectApple(input: {
   appleId: string;
   password: string;
+  /** Connected from the scheduler's Availability (30.4): it counts there at once. */
+  from?: "settings" | "scheduler";
 }): Promise<SyncActionResult<{ connectionId: string }>> {
   const parsed = appleInput.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid" };
@@ -78,6 +79,9 @@ export async function connectApple(input: {
       secret: { kind: "apple", ...credentials, homeUrl: discovered.homeUrl },
       calendars,
     });
+    if (input.from === "scheduler") {
+      await addConnectionToScheduler(admin, userId, connectionId).catch(() => undefined);
+    }
     after(() =>
       syncUser(admin, userId, { trigger: "connect", connectionId }).then(
         () => undefined,
@@ -163,13 +167,19 @@ export async function saveCalendarSelection(input: {
     }
     await track(
       "calendar_sync_calendars_saved",
-      { provider: providerKeyOf(connection.provider), read: reading.size, write: Boolean(selection.write) },
+      {
+        provider: providerKeyOf(connection.provider),
+        read: reading.size,
+        write: Boolean(selection.write),
+      },
       { admin, userId },
     ).catch(() => undefined);
     const origin = await siteOrigin();
     after(async () => {
       await ensureChannels(admin, connection, `${origin}${GOOGLE_PUSH_PATH}`).catch(() => 0);
-      await syncUser(admin, userId, { trigger: "manual", connectionId: connection.id }).catch(() => undefined);
+      await syncUser(admin, userId, { trigger: "manual", connectionId: connection.id }).catch(
+        () => undefined,
+      );
     });
     return { ok: true, data: null };
   } catch (error) {

@@ -66,6 +66,8 @@ import {
   type SchedulerProfile,
 } from "../types";
 import { WeekForm } from "./availability-tab";
+import { useSaveCalendarSources } from "../meeting-queries";
+import { CalendarSourcesForm } from "./calendar-sources-form";
 import {
   CopyLinkButton,
   LOCATION_ICONS,
@@ -581,7 +583,11 @@ function VideoChoice({
       <p className="text-xs font-medium text-ink-soft">{t("label")}</p>
       <div className="flex flex-wrap gap-2">
         {sources.map((source) => (
-          <Chip key={source} pressed={draft.video_source === source} onClick={() => set("video_source", source)}>
+          <Chip
+            key={source}
+            pressed={draft.video_source === source}
+            onClick={() => set("video_source", source)}
+          >
             <span data-testid={`type-video-${source}`}>{t(`sources.${source}`)}</span>
           </Chip>
         ))}
@@ -796,7 +802,44 @@ function AvailabilityTabPanel({
           <p className="text-xs text-ink-muted">{t("stepHint")}</p>
         </fieldset>
       </div>
+
+      {type && <TypeCalendars type={type} profile={profile} editable={editable} />}
     </>
+  );
+}
+
+/** "More options" (30.4): this type's own calendars instead of the profile's. */
+function TypeCalendars({
+  type,
+  profile,
+  editable,
+}: {
+  type: EventType;
+  profile: SchedulerProfile;
+  editable: boolean;
+}) {
+  const t = useTranslations("scheduler.editor");
+  const save = useSaveCalendarSources();
+  return (
+    <details
+      className="group rounded-2xl border border-line p-4"
+      open={type.calendar_sources !== null}
+    >
+      <summary className="cursor-pointer text-sm font-medium text-ink outline-none focus-visible:ring-3 focus-visible:ring-violet/40">
+        {t("moreOptions")}
+      </summary>
+      <div className="mt-4">
+        <CalendarSourcesForm
+          value={type.calendar_sources ?? null}
+          profileValue={profile.calendar_sources ?? null}
+          editable={editable}
+          saving={save.isPending}
+          saved={save.isSuccess}
+          failed={save.isError}
+          onSave={(sources) => save.mutate({ scope: "type", typeId: type.id, sources })}
+        />
+      </div>
+    </details>
   );
 }
 

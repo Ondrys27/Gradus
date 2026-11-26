@@ -3,8 +3,13 @@ import {
   CALENDAR_SETTINGS_PATH,
   GOOGLE_CALLBACK_PATH,
   GOOGLE_PUSH_PATH,
+  SCHEDULER_AVAILABILITY_PATH,
 } from "@/features/calendar/sync/paths";
-import { createGoogleProvider, exchangeGoogleCode } from "@/features/calendar/sync/providers/google";
+import { addConnectionToScheduler } from "@/features/scheduler/server/scheduler-sources";
+import {
+  createGoogleProvider,
+  exchangeGoogleCode,
+} from "@/features/calendar/sync/providers/google";
 import { saveConnection } from "@/features/calendar/sync/server/connect";
 import { fetcher, googleClient, timeZoneOf } from "@/features/calendar/sync/server/connections";
 import { calendarSyncGate } from "@/features/calendar/sync/server/gate";
@@ -29,19 +34,23 @@ export const maxDuration = 60;
  */
 export async function GET(request: NextRequest) {
   const origin = await siteOrigin();
+  const stored = decodeOAuthState(request.cookies.get(OAUTH_COOKIE)?.value);
+  // Started from the scheduler (30.4): back to its Availability.
+  const fromScheduler = stored?.back === "scheduler";
   const back = (result: string) => {
-    const response = NextResponse.redirect(new URL(`${CALENDAR_SETTINGS_PATH}?google=${result}`, origin));
+    const page = fromScheduler ? `${SCHEDULER_AVAILABILITY_PATH}&` : `${CALENDAR_SETTINGS_PATH}?`;
+    const response = NextResponse.redirect(new URL(`${page}google=${result}`, origin));
     response.cookies.set(OAUTH_COOKIE, "", { path: OAUTH_COOKIE_PATH, maxAge: 0 });
     return response;
   };
 
   const gate = await calendarSyncGate("calendar.googleCallback", "google");
   if (!gate.ok) {
-    if (gate.error === "unauthenticated") return NextResponse.redirect(new URL("/prihlaseni", origin));
+    if (gate.error === "unauthenticated")
+      return NextResponse.redirect(new URL("/prihlaseni", origin));
     return back(gate.error);
   }
   const url = request.nextUrl;
-  const stored = decodeOAuthState(request.cookies.get(OAUTH_COOKIE)?.value);
   if (!oauthStateMatches(stored, { state: url.searchParams.get("state"), userId: gate.userId })) {
     return back("expired");
   }
@@ -69,10 +78,14 @@ export async function GET(request: NextRequest) {
       userId,
       provider: "google",
       // The primary calendar's id is the account's address.
-      accountLabel: primary && primary.externalId.includes("@") ? primary.externalId.slice(0, 320) : null,
+      accountLabel:
+        primary && primary.externalId.includes("@") ? primary.externalId.slice(0, 320) : null,
       secret: { kind: "google", ...tokens },
       calendars,
     });
+    // Connected for the scheduler: its calendar read in Gradus counts there too.
+    if (fromScheduler)
+      await addConnectionToScheduler(admin, userId, connectionId).catch(() => undefined);
     after(async () => {
       const { data: connection } = await admin
         .from("calendar_connections")
@@ -84,7 +97,10 @@ export async function GET(request: NextRequest) {
         await ensureChannels(admin, connection, `${origin}${GOOGLE_PUSH_PATH}`).catch(() => 0);
       }
       await syncUser(admin, userId, { trigger: "connect", connectionId }).catch((error) =>
-        console.error("[calendar-sync] first sync failed", error instanceof Error ? error.message : "unknown"),
+        console.error(
+          "[calendar-sync] first sync failed",
+          error instanceof Error ? error.message : "unknown",
+        ),
       );
     });
     return back("connected");

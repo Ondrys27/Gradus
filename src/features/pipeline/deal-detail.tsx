@@ -32,6 +32,7 @@ import { invoicePath } from "@/features/invoices/types";
 import { useInvoiceErrorText } from "@/features/invoices/use-invoice-error";
 import { DealAttachments } from "@/features/meeting-notes/deal-attachments";
 import { MeetingNotesButton } from "@/features/meeting-notes/meeting-notes-dialog";
+import { ScheduleMeetingButton } from "@/features/scheduler/ui/schedule-meeting-dialog";
 import { MentionedInNotes } from "@/features/notes/mentioned-in-notes";
 import { WorkNotes } from "@/features/notes/work-notes";
 import { formatDate } from "@/lib/format";
@@ -181,6 +182,12 @@ function DetailBody({
   const actions = (
     <div className="flex flex-col gap-4">
       <MeetingNotesButton target={{ kind: "deal", id: deal.id }} className="w-full" />
+      <ScheduleMeetingButton
+        contactId={deal.contact?.id ?? null}
+        dealId={deal.id}
+        from="deal"
+        className="w-full"
+      />
       <DealAttachments dealId={deal.id} />
       <DealActions deal={deal} onClose={onClose} />
     </div>
@@ -466,70 +473,70 @@ function DealProperties({
 
   return (
     <>
-    <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-3">
-      {showStage && (
-        <Property label={t("detail.stage")} htmlFor="deal-stage">
-          <StageSelect
-            deal={deal}
-            stages={stages}
-            canEdit={canMove}
-            onRequestMove={onRequestMove}
+      <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-3">
+        {showStage && (
+          <Property label={t("detail.stage")} htmlFor="deal-stage">
+            <StageSelect
+              deal={deal}
+              stages={stages}
+              canEdit={canMove}
+              onRequestMove={onRequestMove}
+            />
+          </Property>
+        )}
+        {seeAmounts && (
+          <Property label={t("form.amount")} htmlFor="deal-value">
+            <ValueField deal={deal} canEdit={canChangeAmount} onSave={onSave} />
+          </Property>
+        )}
+        <Property label={t("detail.people")} htmlFor="deal-assignee">
+          <PeopleField deal={deal} canEdit={canEdit} />
+        </Property>
+        <Property label={t("form.closeDate")} htmlFor="deal-close">
+          <DatePicker
+            id="deal-close"
+            value={deal.expected_close_date}
+            disabled={!canEdit}
+            placeholder={t("form.closeDatePlaceholder")}
+            className="text-sm mouse:min-h-9"
+            onValueChange={(next) => {
+              if (next !== deal.expected_close_date) onSave({ expected_close_date: next });
+            }}
           />
         </Property>
-      )}
-      {seeAmounts && (
-        <Property label={t("form.amount")} htmlFor="deal-value">
-          <ValueField deal={deal} canEdit={canChangeAmount} onSave={onSave} />
+        <Property
+          label={t("detail.deadline")}
+          htmlFor="deal-deadline"
+          hint={t("detail.deadlineHint")}
+        >
+          <DatePicker
+            id="deal-deadline"
+            value={deal.deadline_date}
+            disabled={!canEdit}
+            placeholder={t("form.closeDatePlaceholder")}
+            className="text-sm mouse:min-h-9"
+            onValueChange={(next) => {
+              if (next !== deal.deadline_date) onSave({ deadline_date: next });
+            }}
+          />
         </Property>
-      )}
-      <Property label={t("detail.people")} htmlFor="deal-assignee">
-        <PeopleField deal={deal} canEdit={canEdit} />
-      </Property>
-      <Property label={t("form.closeDate")} htmlFor="deal-close">
-        <DatePicker
-          id="deal-close"
-          value={deal.expected_close_date}
-          disabled={!canEdit}
-          placeholder={t("form.closeDatePlaceholder")}
-          className="text-sm mouse:min-h-9"
-          onValueChange={(next) => {
-            if (next !== deal.expected_close_date) onSave({ expected_close_date: next });
-          }}
-        />
-      </Property>
-      <Property
-        label={t("detail.deadline")}
-        htmlFor="deal-deadline"
-        hint={t("detail.deadlineHint")}
-      >
-        <DatePicker
-          id="deal-deadline"
-          value={deal.deadline_date}
-          disabled={!canEdit}
-          placeholder={t("form.closeDatePlaceholder")}
-          className="text-sm mouse:min-h-9"
-          onValueChange={(next) => {
-            if (next !== deal.deadline_date) onSave({ deadline_date: next });
-          }}
-        />
-      </Property>
-      <Property label={t("detail.created")}>
-        <p className="flex min-h-9 items-center gap-2 text-sm text-ink-soft">
-          <span>{formatDate(new Date(deal.created_at), settings)}</span>
-          {deal.created_by && (
-            <span className="truncate text-ink-muted">· {nameOf(deal.created_by)}</span>
-          )}
-        </p>
-      </Property>
-    </dl>
-    <CompletionReward
-      key={`${deal.id}-${deal.reward_amount ?? ""}-${deal.reward_currency ?? ""}`}
-      kind="deal"
-      dealId={deal.id}
-      amount={deal.reward_amount ?? null}
-      currency={deal.reward_currency ?? null}
-      people={[...dealAssigneeIds(deal), ...(deal.created_by ? [deal.created_by] : [])]}
-    />
+        <Property label={t("detail.created")}>
+          <p className="flex min-h-9 items-center gap-2 text-sm text-ink-soft">
+            <span>{formatDate(new Date(deal.created_at), settings)}</span>
+            {deal.created_by && (
+              <span className="truncate text-ink-muted">· {nameOf(deal.created_by)}</span>
+            )}
+          </p>
+        </Property>
+      </dl>
+      <CompletionReward
+        key={`${deal.id}-${deal.reward_amount ?? ""}-${deal.reward_currency ?? ""}`}
+        kind="deal"
+        dealId={deal.id}
+        amount={deal.reward_amount ?? null}
+        currency={deal.reward_currency ?? null}
+        people={[...dealAssigneeIds(deal), ...(deal.created_by ? [deal.created_by] : [])]}
+      />
     </>
   );
 }

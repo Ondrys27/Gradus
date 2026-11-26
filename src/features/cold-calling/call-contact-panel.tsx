@@ -219,6 +219,7 @@ function PanelBody({
         currentTableId={entry?.table_id ?? null}
         tables={tables}
         dealContact={canMakeDeal && !deal && !openDeals.pending ? dealContact : undefined}
+        bookingFrom="cold_calling"
         onMoved={(result) => onMoved(contactId, result)}
       />
       {canMakeDeal && (

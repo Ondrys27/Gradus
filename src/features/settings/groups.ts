@@ -115,6 +115,7 @@ export const SETTINGS_ITEMS: readonly SettingsItemDef[] = [
   { id: "path", group: "work", target: "settings-path", who: "notWorker" },
   { id: "reengage", group: "work", target: "settings-reengage", who: "owner" },
   { id: "coldCallingStage", group: "work", target: "settings-cold-calling-stage", who: "caller" },
+  { id: "coldCallingMeetings", group: "work", target: "settings-cold-calling-host", who: "owner" },
   { id: "invoices", group: "work", target: "settings-invoices", who: "owner" },
   {
     id: "calendarSubscriptions",

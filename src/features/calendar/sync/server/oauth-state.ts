@@ -12,14 +12,36 @@ export const OAUTH_COOKIE = "gradus_gcal_oauth";
 export const OAUTH_COOKIE_PATH = "/api/integrations/google";
 export const OAUTH_MAX_AGE_S = 600;
 
-export type OAuthState = { state: string; verifier: string; userId: string; at: number };
+/**
+ * Where the round trip returns: Settings → Calendar, or the scheduler's
+ * Availability when the connection was started there (30.4).
+ */
+export const OAUTH_BACKS = ["settings", "scheduler"] as const;
+export type OAuthBack = (typeof OAUTH_BACKS)[number];
 
-export function newOAuthState(userId: string, now = Date.now()): OAuthState {
+export function isOAuthBack(value: unknown): value is OAuthBack {
+  return typeof value === "string" && (OAUTH_BACKS as readonly string[]).includes(value);
+}
+
+export type OAuthState = {
+  state: string;
+  verifier: string;
+  userId: string;
+  at: number;
+  back?: OAuthBack;
+};
+
+export function newOAuthState(
+  userId: string,
+  now = Date.now(),
+  back: OAuthBack = "settings",
+): OAuthState {
   return {
     state: randomBytes(24).toString("base64url"),
     verifier: randomBytes(48).toString("base64url"),
     userId,
     at: now,
+    ...(back === "settings" ? {} : { back }),
   };
 }
 
@@ -34,14 +56,23 @@ export function encodeOAuthState(value: OAuthState): string {
 export function decodeOAuthState(raw: string | undefined | null): OAuthState | null {
   if (!raw || raw.length > 2000) return null;
   try {
-    const value = JSON.parse(Buffer.from(raw, "base64url").toString("utf8")) as Record<string, unknown>;
+    const value = JSON.parse(Buffer.from(raw, "base64url").toString("utf8")) as Record<
+      string,
+      unknown
+    >;
     if (
       typeof value.state === "string" &&
       typeof value.verifier === "string" &&
       typeof value.userId === "string" &&
       typeof value.at === "number"
     ) {
-      return { state: value.state, verifier: value.verifier, userId: value.userId, at: value.at };
+      return {
+        state: value.state,
+        verifier: value.verifier,
+        userId: value.userId,
+        at: value.at,
+        ...(isOAuthBack(value.back) && value.back !== "settings" ? { back: value.back } : {}),
+      };
     }
   } catch {
     // A broken cookie is no state.

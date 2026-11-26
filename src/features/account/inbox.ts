@@ -13,6 +13,8 @@ import {
   respondToInvite,
   type InviteErrorCode,
 } from "@/features/workers/server/invites";
+import { bookingAppPath } from "@/features/scheduler/booking/paths";
+import { SCHEDULER_PATH } from "@/features/scheduler/types";
 import { createClient } from "@/lib/supabase/client";
 import { useSession } from "./queries";
 
@@ -59,7 +61,9 @@ export type AccountNotification = {
     | "calendar_share_requested"
     | "calendar_share_approved"
     | "calendar_share_declined"
-    | "calendar_invite";
+    | "calendar_invite"
+    /** A colleague booked the account a meeting from a call (30.4). */
+    | "booking_scheduled";
   workerId: string | null;
   workerName: string | null;
   createdAt: string;
@@ -77,6 +81,8 @@ export type AccountNotification = {
   eventStartsAt?: string | null;
   shareLevel?: string | null;
   requestStatus?: string | null;
+  /** The meeting booked for the account (30.4). */
+  bookingId?: string | null;
 };
 
 export type Inbox = { invites: PendingInvite[]; notifications: AccountNotification[] };
@@ -103,6 +109,7 @@ const KINDS = new Set([
   "calendar_share_approved",
   "calendar_share_declined",
   "calendar_invite",
+  "booking_scheduled",
 ]);
 
 const CALENDAR_KINDS = new Set([
@@ -130,6 +137,16 @@ export function calendarNotificationHref(
         : note.kind === "calendar_share_declined"
           ? "/app/nastaveni/kalendar?focus=settings-calendar-sharing"
           : "/app/kalendar";
+  if (!note.spaceId || note.spaceId === activeSpace) return path;
+  return `/app/prostor/${encodeURIComponent(note.spaceId)}?next=${encodeURIComponent(path)}`;
+}
+
+/** Where "booked you a meeting" leads: the booking in the scheduler, through its company. */
+export function bookingNotificationHref(
+  note: Pick<AccountNotification, "spaceId" | "bookingId">,
+  activeSpace: string,
+): string {
+  const path = note.bookingId ? bookingAppPath(note.bookingId) : SCHEDULER_PATH;
   if (!note.spaceId || note.spaceId === activeSpace) return path;
   return `/app/prostor/${encodeURIComponent(note.spaceId)}?next=${encodeURIComponent(path)}`;
 }
@@ -165,7 +182,7 @@ export function useInbox() {
         supabase
           .from("account_notifications")
           .select(
-            "id, kind, worker_id, created_at, read_at, space_id, note_id, folder_id, item_count, calendar_request_id, event_id, share_level",
+            "id, kind, worker_id, created_at, read_at, space_id, note_id, folder_id, item_count, calendar_request_id, event_id, share_level, booking_id",
           )
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })
@@ -209,6 +226,27 @@ export function useInbox() {
             title: row.event_title ?? null,
             startsAt: row.event_starts_at ?? null,
             status: row.request_status ?? null,
+          });
+        }
+      }
+      // Meetings colleagues booked for the account: who, with whom, when (30.4).
+      const bookingIds = notes.data
+        .filter((note) => note.kind === "booking_scheduled")
+        .map((note) => note.id);
+      const bookingLabels = new Map<
+        string,
+        { actor: string | null; guest: string | null; startsAt: string | null }
+      >();
+      if (bookingIds.length) {
+        const { data, error } = await supabase.rpc("booking_notification_labels", {
+          _ids: bookingIds,
+        });
+        if (error) throw error;
+        for (const row of data ?? []) {
+          bookingLabels.set(row.id, {
+            actor: row.actor_name || null,
+            guest: row.guest_name ?? null,
+            startsAt: row.starts_at ?? null,
           });
         }
       }
@@ -271,12 +309,23 @@ export function useInbox() {
                   noteId: note.note_id ?? null,
                   folderId: note.folder_id ?? null,
                   actorName:
-                    labels.get(note.id)?.actor ?? calendarLabels.get(note.id)?.actor ?? null,
-                  title: labels.get(note.id)?.title ?? calendarLabels.get(note.id)?.title ?? null,
+                    labels.get(note.id)?.actor ??
+                    calendarLabels.get(note.id)?.actor ??
+                    bookingLabels.get(note.id)?.actor ??
+                    null,
+                  title:
+                    labels.get(note.id)?.title ??
+                    calendarLabels.get(note.id)?.title ??
+                    bookingLabels.get(note.id)?.guest ??
+                    null,
                   itemCount: note.item_count ?? null,
                   calendarRequestId: note.calendar_request_id ?? null,
                   eventId: note.event_id ?? null,
-                  eventStartsAt: calendarLabels.get(note.id)?.startsAt ?? null,
+                  eventStartsAt:
+                    calendarLabels.get(note.id)?.startsAt ??
+                    bookingLabels.get(note.id)?.startsAt ??
+                    null,
+                  bookingId: note.booking_id ?? null,
                   shareLevel: note.share_level ?? null,
                   requestStatus: calendarLabels.get(note.id)?.status ?? null,
                 },

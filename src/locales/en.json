@@ -824,11 +824,16 @@
         "hide_widget": "Taking the widget off…",
         "list_trash": "Looking into the trash…",
         "restore_from_trash": "Restoring from the trash…",
-        "people_availability": "Looking for when people are free…"
+        "people_availability": "Looking for when people are free…",
+        "meeting_times": "Looking for free times…",
+        "schedule_meeting": "Scheduling the meeting…"
       },
       "list_trash": "Looking into the trash",
       "restore_from_trash": "Restored “{title}” from the trash",
-      "people_availability": "Checking when people are free"
+      "people_availability": "Checking when people are free",
+      "meeting_times": "Looking for free times",
+      "schedule_meeting": "Schedule a meeting with {name} on {when}",
+      "scheduled_meeting": "I scheduled a meeting with {name} on {when}"
     },
     "actions": {
       "status": {
@@ -1287,10 +1292,28 @@
     },
     "coldCalling": {
       "title": "Cold Calling",
-      "description": "How a deal is created from a call.",
+      "description": "How a call turns into a deal and a meeting.",
       "dealStage": "Stage of a new deal",
       "dealStageHint": "The pipeline stage a deal created from Cold Calling lands in.",
-      "firstStage": "First stage ({name})"
+      "firstStage": "First stage ({name})",
+      "meetings": {
+        "host": "Who meetings from calls go to",
+        "hostHint": "Callers see only that person's Free / Full, never what is in their calendar.",
+        "hostModes": {
+          "caller": "The caller picks (others only with the right)",
+          "owner": "Always me",
+          "person": "Always one person"
+        },
+        "person": "Who",
+        "ownerNoScheduler": "You have no scheduler yet: set it up in the Scheduler, otherwise no meeting can be booked.",
+        "type": "Default meeting type",
+        "typeHint": "Length, breaks and notice come from the type.",
+        "typeAuto": "Automatic (nearest 30 minutes)",
+        "typeChangeable": "Callers may change the type",
+        "typeChangeableHint": "Off = always the default type.",
+        "ignoreNotice": "No notice on the phone",
+        "ignoreNoticeHint": "A time agreed on the phone may be sooner than the type's minimum notice."
+      }
     },
     "account": {
       "profileTitle": "Profile",
@@ -1558,6 +1581,10 @@
       "calendarOwnerBusy": {
         "label": "My people's busy times",
         "keywords": "owner sees workers busy calendar automatically"
+      },
+      "coldCallingMeetings": {
+        "label": "Who meetings from calls go to",
+        "keywords": "cold calling meeting scheduler type notice caller"
       }
     },
     "work": {
@@ -5351,7 +5378,8 @@
         },
         "cold_calling": {
           "call": "Call (timer and moves)",
-          "view_others_stats": "See others' statistics"
+          "view_others_stats": "See others' statistics",
+          "schedule_others": "Schedule meetings for others"
         },
         "calendar": {
           "create": "Create events",
@@ -6513,7 +6541,8 @@
         },
         "cold_calling": {
           "call": "call and move contacts",
-          "view_others_stats": "see others' statistics"
+          "view_others_stats": "see others' statistics",
+          "schedule_others": "schedule meetings for others"
         },
         "calendar": {
           "create": "create events",
@@ -12206,6 +12235,10 @@
       "calendar_share_declined": "{name} didn't allow calendar sharing",
       "calendar_invite": "{name} invites you: {title}",
       "calendar_invite_gone": "{name} invited you to a meeting"
+    },
+    "booking": {
+      "booking_scheduled": "{name} booked you a meeting with {guest} on {when}",
+      "booking_scheduled_gone": "{name} booked you a meeting"
     }
   },
   "billing": {
@@ -12381,7 +12414,9 @@
       "addException": "Add exception",
       "noExceptions": "No exceptions ahead.",
       "blockedDay": "Not available",
-      "removeException": "Remove the exception on {date}"
+      "removeException": "Remove the exception on {date}",
+      "calendarsTitle": "Scheduler calendars",
+      "calendarsHint": "The scheduler has calendars of its own, whatever the Calendar section shows."
     },
     "editor": {
       "newTitle": "New meeting type",
@@ -12535,7 +12570,8 @@
         "missing": "This type has no video link yet. Bookings will be confirmed saying “{host} will send the link before the meeting” and you get a task to send it. Add a permanent link to your page, or switch on unique rooms.",
         "meetUses": "Every booking gets its own Google Meet call, created by your Google Calendar. The guest joins through the booking's page.",
         "meetNotReady": "Google Meet needs a connected Google Calendar to write to (Settings → Calendar). Until then the permanent link is used."
-      }
+      },
+      "moreOptions": "More options: calendars of this type"
     },
     "questions": {
       "hint": "What the client fills in when booking. Name and e-mail are always there.",
@@ -12716,11 +12752,92 @@
     },
     "bookingEvent": {
       "title": "{type} · {guest}",
-      "bookedVia": "Booked through the scheduler."
+      "bookedVia": "Booked through the scheduler.",
+      "bookedBy": "Booked by {name} in the app.",
+      "bookedInApp": "Booked in the app."
     },
     "linkTask": {
       "title": "Send the meeting link: {guest}",
       "description": "The {type} meeting has no video link yet. Add it in the booking's detail and the guest sees it on their booking page at once: {url}"
+    },
+    "sources": {
+      "typeOwn": "Own calendars for this type",
+      "typeOwnHint": "Otherwise the calendars of Availability apply.",
+      "googleConnected": "Google Calendar is connected and the scheduler counts it.",
+      "googleFailed": "Google Calendar could not be connected. Try again, or in Settings → Calendar.",
+      "busyTitle": "Where busy times come from",
+      "busyHint": "A busy time in the ticked calendars cannot be booked through your booking link.",
+      "gradus": "Gradus calendar",
+      "gradusHint": "Events and sales tasks with a time",
+      "google": "Google",
+      "apple": "Apple",
+      "connectionBroken": "The connection stopped working. Connect it again in Settings → Calendar.",
+      "notShown": "Not shown in the Calendar section; the scheduler reads it anyway",
+      "subscriptions": "Subscribed calendars",
+      "noneChecked": "Nothing is ticked: only bookings will make a time busy.",
+      "bookingsAlways": "Bookings and held times always count.",
+      "connectGoogle": "Connect Google",
+      "connectApple": "Connect Apple",
+      "addSubscription": "Add a subscribed calendar",
+      "connectPreparing": "Connecting Google and Apple is being prepared for your account.",
+      "writeTitle": "Where new bookings go",
+      "writeHint": "Always into the Gradus calendar, and into one connected calendar if you like.",
+      "writeGradus": "Gradus calendar only",
+      "writeAlso": "Gradus and {name} ({provider})",
+      "save": "Save calendars",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "discard": "Discard changes",
+      "saveFailed": "The calendars could not be saved. Please try again."
+    },
+    "meeting": {
+      "title": "Schedule a meeting",
+      "open": "Schedule a meeting",
+      "close": "Close",
+      "cancel": "Cancel",
+      "back": "Back",
+      "changeTable": "Another table",
+      "needsContact": "The deal has no contact",
+      "setupFailed": "The scheduler could not be loaded. Please try again in a moment.",
+      "hostMissing": "The person meetings from calls go to has no scheduler yet. The owner changes it in Settings → Work → Cold Calling.",
+      "noHost": "There is nobody to book this meeting for: you have no scheduler and may not book meetings for others.",
+      "host": "Who the meeting is for",
+      "me": "{name} (me)",
+      "type": "Meeting type",
+      "typeLine": "{name} · {duration}",
+      "setupMine": "Set my own working hours",
+      "whenSelf": "Your free times",
+      "whenOther": "Free times: {name}",
+      "slotsFailed": "The free times could not be loaded. Please try again.",
+      "conflict": "That time is already full ({when}).",
+      "bookAnyway": "Book anyway",
+      "held": "Held for you: {when} · {duration}",
+      "heldForced": "Outside the free times: {when} · {duration}",
+      "sendEmail": "Send the client a confirmation by e-mail",
+      "sendEmailTo": "{email} gets the confirmation with a calendar invite and a link to move or cancel.",
+      "sendEmailNone": "The contact has no e-mail. Add one, or switch the confirmation off.",
+      "emailAddress": "Client's e-mail",
+      "emailInvalid": "Enter a valid e-mail.",
+      "submit": "Schedule the meeting",
+      "booking": "Scheduling…",
+      "booked": "The meeting is scheduled for {when}.",
+      "bookedEmailed": "The meeting is scheduled for {when}. The client got a confirmation by e-mail.",
+      "setupTitle": "Your working hours",
+      "setupText": "When people can book a meeting with you. Fine-tune the rest in the Scheduler.",
+      "setupSave": "Save and continue",
+      "setupSaving": "Saving…",
+      "setupSaveFailed": "The working hours could not be saved. Please try again.",
+      "problems": {
+        "holdExpired": "The held time ran out. Pick it again.",
+        "slotTaken": "Someone took this time meanwhile. Pick another one.",
+        "readOnly": "The company is read-only; no meeting can be scheduled now.",
+        "forbidden": "You may not book this meeting.",
+        "noHost": "You may not book a meeting for this person.",
+        "noContact": "The contact could not be found.",
+        "noEmail": "Enter the client's valid e-mail, or switch the confirmation off.",
+        "invalid": "Something in the answers is not right. Please check them.",
+        "unknown": "The meeting could not be scheduled. Please try again."
+      }
     }
   },
   "booking": {
@@ -12756,7 +12873,7 @@
       "title": "Pick a time",
       "zone": "Time zone",
       "pickDay": "Pick a day",
-      "pickDayHint": "Free days carry a dot. Pick one and the times show on the right.",
+      "pickDayHint": "Days with a free time carry a green dot. Pick a day to see its times.",
       "timesOf": "Free times",
       "dayFree": "{day} {number}, free times",
       "previousMonth": "Previous month",
@@ -12770,7 +12887,28 @@
       "anotherDay": "Another day",
       "zoneLine": "Times in {zone}",
       "changeZone": "Change",
-      "zoneDone": "Done"
+      "zoneDone": "Done",
+      "previousWeek": "Previous week",
+      "nextWeek": "Next week",
+      "weekRange": "{from} – {to}",
+      "pickTime": "Pick a time",
+      "weekEmpty": "No times this week.",
+      "full": "Full",
+      "dayFreeLabel": "{day} {date}, free times",
+      "dayFullLabel": "{day} {date}, full",
+      "cellBusy": "{time}, full",
+      "cellOff": "{time}, outside working hours",
+      "busyNotice": "That time is already full ({when}).",
+      "offNotice": "{when} is outside the offered times.",
+      "bookAnyway": "Book anyway",
+      "manualTitle": "Another time you agreed on",
+      "manualDate": "Day",
+      "manualTime": "Time",
+      "legend": {
+        "free": "Free",
+        "busy": "Full",
+        "off": "Outside working hours"
+      }
     },
     "form": {
       "title": "Your details",

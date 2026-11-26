@@ -6,6 +6,7 @@ import { Menu } from "@base-ui/react/menu";
 import {
   BellIcon,
   CalendarCheckIcon,
+  CalendarClockIcon,
   CalendarHeartIcon,
   CalendarPlusIcon,
   CalendarXIcon,
@@ -17,8 +18,9 @@ import {
   UserCheckIcon,
   UserXIcon,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
+  bookingNotificationHref,
   calendarNotificationHref,
   inboxCount,
   inviterName,
@@ -30,7 +32,7 @@ import {
 } from "@/features/account/inbox";
 import { useSession } from "@/features/account/queries";
 import { useCloseOnErrorScreen } from "@/features/errors/error-screen-state";
-import { formatDate, formatNumber } from "@/lib/format";
+import { formatDate, formatNumber, formatSlotMoment } from "@/lib/format";
 import { COMPANY_PATH, INVITES_PATH } from "@/lib/routes";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
@@ -47,6 +49,7 @@ const NOTE_ICON: Record<AccountNotification["kind"], typeof BellIcon> = {
   calendar_share_approved: CalendarCheckIcon,
   calendar_share_declined: CalendarXIcon,
   calendar_invite: CalendarPlusIcon,
+  booking_scheduled: CalendarClockIcon,
 };
 
 const itemClass =
@@ -61,6 +64,7 @@ export function InboxBell({ className }: { className?: string }) {
   const t = useTranslations("inbox");
   const tLevels = useTranslations("calendar.sharing.levels");
   const settings = useFormatSettings();
+  const locale = useLocale();
   const { spaceId } = useSession();
   const inbox = useInbox();
   const markRead = useMarkInboxRead();
@@ -142,28 +146,39 @@ export function InboxBell({ className }: { className?: string }) {
                 note.shareLevel === "write"
                   ? tLevels(note.shareLevel)
                   : "";
-              const text = aboutCalendar
-                ? note.kind === "calendar_invite"
-                  ? note.title
-                    ? t("calendar.calendar_invite", { name: who, title: note.title })
-                    : t("calendar.calendar_invite_gone", { name: who })
-                  : note.kind === "calendar_share_requested" &&
-                      note.requestStatus &&
-                      note.requestStatus !== "pending"
-                    ? t("calendar.calendar_share_requested_done", { name: who })
-                    : t(`calendar.${note.kind}`, { name: who, level })
-                : note.kind === "note_shared"
-                  ? note.folderId
-                    ? t("notes.folder_shared", { name: who, title: note.title ?? "…" })
-                    : note.title
-                      ? t("notes.note_shared", { name: who, title: note.title })
-                      : t("notes.note_shared_untitled", { name: who })
-                  : note.kind === "notes_transferred"
-                    ? t("notes.notes_transferred", {
-                        name: note.workerName ?? who,
-                        count: note.itemCount ?? 0,
-                      })
-                    : t(`notes.${note.kind}`, { name: note.workerName ?? t("someone") });
+              const aboutBooking = note.kind === "booking_scheduled";
+              const text = aboutBooking
+                ? note.title
+                  ? t("booking.booking_scheduled", {
+                      name: who,
+                      guest: note.title,
+                      when: note.eventStartsAt
+                        ? formatSlotMoment(new Date(note.eventStartsAt), settings, locale)
+                        : "",
+                    })
+                  : t("booking.booking_scheduled_gone", { name: who })
+                : aboutCalendar
+                  ? note.kind === "calendar_invite"
+                    ? note.title
+                      ? t("calendar.calendar_invite", { name: who, title: note.title })
+                      : t("calendar.calendar_invite_gone", { name: who })
+                    : note.kind === "calendar_share_requested" &&
+                        note.requestStatus &&
+                        note.requestStatus !== "pending"
+                      ? t("calendar.calendar_share_requested_done", { name: who })
+                      : t(`calendar.${note.kind}`, { name: who, level })
+                  : note.kind === "note_shared"
+                    ? note.folderId
+                      ? t("notes.folder_shared", { name: who, title: note.title ?? "…" })
+                      : note.title
+                        ? t("notes.note_shared", { name: who, title: note.title })
+                        : t("notes.note_shared_untitled", { name: who })
+                    : note.kind === "notes_transferred"
+                      ? t("notes.notes_transferred", {
+                          name: note.workerName ?? who,
+                          count: note.itemCount ?? 0,
+                        })
+                      : t(`notes.${note.kind}`, { name: note.workerName ?? t("someone") });
               return (
                 <Menu.LinkItem
                   key={note.id}
@@ -172,18 +187,20 @@ export function InboxBell({ className }: { className?: string }) {
                   render={
                     <Link
                       href={
-                        aboutCalendar
-                          ? calendarNotificationHref(note, spaceId)
-                          : aboutNotes
-                            ? noteNotificationHref(
-                                note.kind === "notes_transferred"
-                                  ? { spaceId: note.spaceId }
-                                  : note,
-                                spaceId,
-                              )
-                            : note.workerId
-                              ? `${COMPANY_PATH}?worker=${note.workerId}`
-                              : COMPANY_PATH
+                        aboutBooking
+                          ? bookingNotificationHref(note, spaceId)
+                          : aboutCalendar
+                            ? calendarNotificationHref(note, spaceId)
+                            : aboutNotes
+                              ? noteNotificationHref(
+                                  note.kind === "notes_transferred"
+                                    ? { spaceId: note.spaceId }
+                                    : note,
+                                  spaceId,
+                                )
+                              : note.workerId
+                                ? `${COMPANY_PATH}?worker=${note.workerId}`
+                                : COMPANY_PATH
                       }
                       prefetch={false}
                     />
@@ -197,7 +214,7 @@ export function InboxBell({ className }: { className?: string }) {
                       "mt-0.5 size-4 shrink-0",
                       note.kind === "invite_accepted" || note.kind === "calendar_share_approved"
                         ? "text-green"
-                        : aboutNotes || aboutCalendar
+                        : aboutNotes || aboutCalendar || aboutBooking
                           ? "text-teal"
                           : "text-ink-muted",
                     )}

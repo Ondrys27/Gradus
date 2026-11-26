@@ -824,11 +824,16 @@
         "hide_widget": "Odebírám widget…",
         "list_trash": "Dívám se do koše…",
         "restore_from_trash": "Obnovuji z koše…",
-        "people_availability": "Hledám, kdy mají lidé čas…"
+        "people_availability": "Hledám, kdy mají lidé čas…",
+        "meeting_times": "Hledám volné termíny…",
+        "schedule_meeting": "Plánuji schůzku…"
       },
       "list_trash": "Dívám se do koše",
       "restore_from_trash": "Obnovil jsem z koše „{title}“",
-      "people_availability": "Dívám se, kdy mají lidé čas"
+      "people_availability": "Dívám se, kdy mají lidé čas",
+      "meeting_times": "Hledám volné termíny",
+      "schedule_meeting": "Naplánovat schůzku s {name} na {when}",
+      "scheduled_meeting": "Naplánoval jsem schůzku s {name} na {when}"
     },
     "actions": {
       "status": {
@@ -1287,10 +1292,28 @@
     },
     "coldCalling": {
       "title": "Cold Calling",
-      "description": "Jak se zakládá obchod z volání.",
+      "description": "Jak se z volání zakládá obchod a plánuje schůzka.",
       "dealStage": "Fáze nového obchodu",
       "dealStageHint": "Do které fáze pipeline spadne obchod založený z Cold Callingu.",
-      "firstStage": "První fáze ({name})"
+      "firstStage": "První fáze ({name})",
+      "meetings": {
+        "host": "Komu jdou schůzky z volání",
+        "hostHint": "Volající uvidí jen Volno / Plno toho člověka, nikdy co v kalendáři má.",
+        "hostModes": {
+          "caller": "Volající si vybere (jiným jen s právem)",
+          "owner": "Vždy mně",
+          "person": "Vždy konkrétnímu člověku"
+        },
+        "person": "Komu",
+        "ownerNoScheduler": "Zatím nemáš nastavený plánovač: nastav ho v sekci Plánovač, jinak se schůzka naplánovat nedá.",
+        "type": "Výchozí typ schůzky",
+        "typeHint": "Délka, pauzy a předstih se berou z typu.",
+        "typeAuto": "Automaticky (nejblíž 30 minutám)",
+        "typeChangeable": "Volající smí typ změnit",
+        "typeChangeableHint": "Vypnuté = vždy výchozí typ.",
+        "ignoreNotice": "Po telefonu nepočítat předstih",
+        "ignoreNoticeHint": "Termín domluvený do telefonu může být i dřív, než dovoluje předstih typu."
+      }
     },
     "account": {
       "profileTitle": "Profil",
@@ -1558,6 +1581,10 @@
       "calendarOwnerBusy": {
         "label": "Obsazenost mých lidí",
         "keywords": "majitel vidí obsazenost pracovníků kalendář automaticky"
+      },
+      "coldCallingMeetings": {
+        "label": "Komu jdou schůzky z volání",
+        "keywords": "cold calling schůzka plánovač typ předstih volající"
       }
     },
     "work": {
@@ -5351,7 +5378,8 @@
         },
         "cold_calling": {
           "call": "Volat (časovač a přesuny)",
-          "view_others_stats": "Vidět statistiky ostatních"
+          "view_others_stats": "Vidět statistiky ostatních",
+          "schedule_others": "Plánovat schůzky jiným"
         },
         "calendar": {
           "create": "Zakládat události",
@@ -6513,7 +6541,8 @@
         },
         "cold_calling": {
           "call": "volat a posouvat kontakty",
-          "view_others_stats": "vidět statistiky ostatních"
+          "view_others_stats": "vidět statistiky ostatních",
+          "schedule_others": "plánovat schůzky jiným"
         },
         "calendar": {
           "create": "zakládat události",
@@ -12206,6 +12235,10 @@
       "calendar_share_declined": "{name} sdílení kalendáře nepovolil(a)",
       "calendar_invite": "{name} tě zve: {title}",
       "calendar_invite_gone": "{name} tě zval(a) na schůzku"
+    },
+    "booking": {
+      "booking_scheduled": "{name} ti naplánoval(a) schůzku s {guest} na {when}",
+      "booking_scheduled_gone": "{name} ti naplánoval(a) schůzku"
     }
   },
   "billing": {
@@ -12381,7 +12414,9 @@
       "addException": "Přidat výjimku",
       "noExceptions": "Žádné výjimky před tebou.",
       "blockedDay": "Nedostupný",
-      "removeException": "Odebrat výjimku {date}"
+      "removeException": "Odebrat výjimku {date}",
+      "calendarsTitle": "Kalendáře plánovače",
+      "calendarsHint": "Plánovač má vlastní kalendáře, nezávisle na tom, co máš zobrazené v sekci Kalendář."
     },
     "editor": {
       "newTitle": "Nový typ schůzky",
@@ -12535,7 +12570,8 @@
         "missing": "Tenhle typ zatím nemá žádný odkaz na videohovor. Rezervace se potvrdí s textem „Odkaz pošle {host} před schůzkou“ a ty dostaneš úkol odkaz poslat. Přidej trvalý odkaz na stránku, nebo zapni jedinečnou místnost.",
         "meetUses": "Každá rezervace dostane vlastní schůzku v Google Meet, kterou založí tvůj Google Kalendář. Klient se připojí přes stránku rezervace.",
         "meetNotReady": "Google Meet potřebuje propojený Google Kalendář, do kterého se zapisuje (Nastavení → Kalendář). Do té doby platí trvalý odkaz."
-      }
+      },
+      "moreOptions": "Další možnosti: kalendáře tohoto typu"
     },
     "questions": {
       "hint": "Co klient vyplní při rezervaci. Jméno a e-mail jsou tam vždy.",
@@ -12716,11 +12752,92 @@
     },
     "bookingEvent": {
       "title": "{type} · {guest}",
-      "bookedVia": "Rezervace z plánovače."
+      "bookedVia": "Rezervace z plánovače.",
+      "bookedBy": "Domluvil(a) {name} v aplikaci.",
+      "bookedInApp": "Naplánováno v aplikaci."
     },
     "linkTask": {
       "title": "Pošli odkaz na schůzku: {guest}",
       "description": "Schůzka {type} zatím nemá odkaz na videohovor. Vlož ho v detailu rezervace, host ho hned uvidí na stránce své rezervace: {url}"
+    },
+    "sources": {
+      "typeOwn": "Vlastní kalendáře pro tento typ",
+      "typeOwnHint": "Jinak platí kalendáře z Dostupnosti.",
+      "googleConnected": "Google kalendář je propojený a plánovač s ním počítá.",
+      "googleFailed": "Google kalendář se propojit nepodařilo. Zkus to znovu, nebo v Nastavení → Kalendář.",
+      "busyTitle": "Odkud se bere obsazenost",
+      "busyHint": "Do zaškrtnutých kalendářů se přes rezervační odkaz nedá zarezervovat obsazený čas.",
+      "gradus": "Kalendář Gradusu",
+      "gradusHint": "Události a obchodní úkoly s časem",
+      "google": "Google",
+      "apple": "Apple",
+      "connectionBroken": "Propojení přestalo fungovat. Propoj ho znovu v Nastavení → Kalendář.",
+      "notShown": "V sekci Kalendář se nezobrazuje, plánovač ho čte i tak",
+      "subscriptions": "Odebírané kalendáře",
+      "noneChecked": "Není zaškrtnuté nic: obsazený čas budou dělat jen rezervace.",
+      "bookingsAlways": "Rezervace a podržené termíny se počítají vždy.",
+      "connectGoogle": "Propojit Google",
+      "connectApple": "Propojit Apple",
+      "addSubscription": "Přidat odebíraný kalendář",
+      "connectPreparing": "Propojení s Googlem a Applem pro tvůj účet připravujeme.",
+      "writeTitle": "Kam se zapisují nové rezervace",
+      "writeHint": "Do kalendáře Gradusu vždy, navíc volitelně do jednoho propojeného.",
+      "writeGradus": "Jen kalendář Gradusu",
+      "writeAlso": "Gradus a {name} ({provider})",
+      "save": "Uložit kalendáře",
+      "saving": "Ukládám…",
+      "saved": "Uloženo",
+      "discard": "Zahodit změny",
+      "saveFailed": "Kalendáře se nepodařilo uložit. Zkus to znovu."
+    },
+    "meeting": {
+      "title": "Naplánovat schůzku",
+      "open": "Naplánovat schůzku",
+      "close": "Zavřít",
+      "cancel": "Zrušit",
+      "back": "Zpět",
+      "changeTable": "Jiná tabulka",
+      "needsContact": "Obchod nemá kontakt",
+      "setupFailed": "Plánovač se nepodařilo načíst. Zkus to za chvíli.",
+      "hostMissing": "Ten, komu schůzky z volání jdou, ještě nemá nastavený plánovač. Majitel to změní v Nastavení → Práce → Cold Calling.",
+      "noHost": "Schůzku teď nemáš komu naplánovat: nemáš vlastní plánovač ani právo plánovat schůzky jiným.",
+      "host": "Komu schůzku plánuji",
+      "me": "{name} (já)",
+      "type": "Typ schůzky",
+      "typeLine": "{name} · {duration}",
+      "setupMine": "Nastavit si vlastní pracovní dobu",
+      "whenSelf": "Tvoje volné termíny",
+      "whenOther": "Volné termíny: {name}",
+      "slotsFailed": "Volné termíny se nepodařilo načíst. Zkus to znovu.",
+      "conflict": "V tu dobu už je plno ({when}).",
+      "bookAnyway": "Přesto naplánovat",
+      "held": "Podrženo pro tebe: {when} · {duration}",
+      "heldForced": "Mimo volné termíny: {when} · {duration}",
+      "sendEmail": "Poslat klientovi potvrzení e-mailem",
+      "sendEmailTo": "Na {email} přijde potvrzení s pozvánkou do kalendáře a odkazem na přesun nebo zrušení.",
+      "sendEmailNone": "Kontakt nemá e-mail. Doplň ho, nebo potvrzení vypni.",
+      "emailAddress": "E-mail klienta",
+      "emailInvalid": "Zadej platný e-mail.",
+      "submit": "Naplánovat schůzku",
+      "booking": "Plánuji…",
+      "booked": "Schůzka je naplánovaná na {when}.",
+      "bookedEmailed": "Schůzka je naplánovaná na {when}. Klient dostal potvrzení e-mailem.",
+      "setupTitle": "Tvoje pracovní doba",
+      "setupText": "Kdy si s tebou lidé můžou domluvit schůzku. Plánovač si pak doladíš v sekci Plánovač.",
+      "setupSave": "Uložit a pokračovat",
+      "setupSaving": "Ukládám…",
+      "setupSaveFailed": "Pracovní dobu se nepodařilo uložit. Zkus to znovu.",
+      "problems": {
+        "holdExpired": "Podržený termín vypršel. Vyber ho znovu.",
+        "slotTaken": "Tenhle termín si mezitím někdo vzal. Vyber jiný.",
+        "readOnly": "Firma je v režimu jen pro čtení, schůzku teď naplánovat nejde.",
+        "forbidden": "Na tuhle schůzku nemáš právo.",
+        "noHost": "Tomuhle člověku schůzku naplánovat nemůžeš.",
+        "noContact": "Kontakt se nepodařilo najít.",
+        "noEmail": "Zadej platný e-mail klienta, nebo potvrzení vypni.",
+        "invalid": "Něco v odpovědích nesedí. Zkontroluj je.",
+        "unknown": "Schůzku se nepodařilo naplánovat. Zkus to znovu."
+      }
     }
   },
   "booking": {
@@ -12756,7 +12873,7 @@
       "title": "Vyberte termín",
       "zone": "Časové pásmo",
       "pickDay": "Vyberte den",
-      "pickDayHint": "Volné dny mají tečku. Vyberte jeden a vpravo se ukážou časy.",
+      "pickDayHint": "Dny s volným časem mají zelenou tečku. Vyberte den a ukážou se jeho časy.",
       "timesOf": "Volné časy",
       "dayFree": "{day} {number}., volné termíny",
       "previousMonth": "Předchozí měsíc",
@@ -12770,7 +12887,28 @@
       "anotherDay": "Jiný den",
       "zoneLine": "Časy v pásmu {zone}",
       "changeZone": "Změnit",
-      "zoneDone": "Hotovo"
+      "zoneDone": "Hotovo",
+      "previousWeek": "Předchozí týden",
+      "nextWeek": "Další týden",
+      "weekRange": "{from} – {to}",
+      "pickTime": "Vyberte čas",
+      "weekEmpty": "Tento týden tu nejsou žádné časy.",
+      "full": "Plno",
+      "dayFreeLabel": "{day} {date}, volné termíny",
+      "dayFullLabel": "{day} {date}, plno",
+      "cellBusy": "{time}, plno",
+      "cellOff": "{time}, mimo pracovní dobu",
+      "busyNotice": "V tu dobu už je plno ({when}).",
+      "offNotice": "{when} je mimo nabízené časy.",
+      "bookAnyway": "Přesto naplánovat",
+      "manualTitle": "Jiný čas, na kterém jste se domluvili",
+      "manualDate": "Den",
+      "manualTime": "Čas",
+      "legend": {
+        "free": "Volno",
+        "busy": "Plno",
+        "off": "Mimo pracovní dobu"
+      }
     },
     "form": {
       "title": "Vaše údaje",

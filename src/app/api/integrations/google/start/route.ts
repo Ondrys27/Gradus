@@ -1,5 +1,9 @@
-import { NextResponse } from "next/server";
-import { CALENDAR_SETTINGS_PATH, GOOGLE_CALLBACK_PATH } from "@/features/calendar/sync/paths";
+import { NextResponse, type NextRequest } from "next/server";
+import {
+  CALENDAR_SETTINGS_PATH,
+  GOOGLE_CALLBACK_PATH,
+  SCHEDULER_AVAILABILITY_PATH,
+} from "@/features/calendar/sync/paths";
 import { googleAuthUrl } from "@/features/calendar/sync/providers/google";
 import { googleClient } from "@/features/calendar/sync/server/connections";
 import { calendarSyncGate } from "@/features/calendar/sync/server/gate";
@@ -8,6 +12,7 @@ import {
   encodeOAuthState,
   newOAuthState,
   OAUTH_COOKIE,
+  type OAuthBack,
   OAUTH_COOKIE_PATH,
   OAUTH_MAX_AGE_S,
 } from "@/features/calendar/sync/server/oauth-state";
@@ -20,15 +25,21 @@ export const runtime = "nodejs";
  * with the key and Google's client, goes to Google's consent page; the
  * state and the PKCE verifier wait in a short httpOnly cookie.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   const origin = await siteOrigin();
+  // Started from the scheduler (30.4): the answer returns to its Availability.
+  const back: OAuthBack =
+    request.nextUrl.searchParams.get("from") === "scheduler" ? "scheduler" : "settings";
   const gate = await calendarSyncGate("calendar.googleStart", "google");
   if (!gate.ok) {
-    if (gate.error === "unauthenticated") return NextResponse.redirect(new URL("/prihlaseni", origin));
-    return NextResponse.redirect(new URL(`${CALENDAR_SETTINGS_PATH}?google=${gate.error}`, origin));
+    if (gate.error === "unauthenticated")
+      return NextResponse.redirect(new URL("/prihlaseni", origin));
+    const page =
+      back === "scheduler" ? `${SCHEDULER_AVAILABILITY_PATH}&` : `${CALENDAR_SETTINGS_PATH}?`;
+    return NextResponse.redirect(new URL(`${page}google=${gate.error}`, origin));
   }
   const client = googleClient()!;
-  const state = newOAuthState(gate.userId);
+  const state = newOAuthState(gate.userId, Date.now(), back);
   const response = NextResponse.redirect(
     googleAuthUrl({
       clientId: client.clientId,
