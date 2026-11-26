@@ -85,7 +85,14 @@ test("73 · admin digest: own settings are saved, the preview arrives without mo
   await form.getByRole("button", { name: exact(L, "admin.digest.preview") }).click();
   await expect(form.getByText(exact(L, "admin.digest.previewSent"))).toBeVisible({ timeout: 60_000 });
   let mail: Awaited<ReturnType<typeof outbox>> = [];
-  await expect.poll(async () => (mail = await outbox(page, account.email)).length, { timeout: 15_000 }).toBe(1);
+  // The admin sign-in notice lands in the same mailbox; count only the digest.
+  await expect
+    .poll(
+      async () =>
+        (mail = (await outbox(page, account.email)).filter((m) => m.kind === "admin_digest")).length,
+      { timeout: 15_000 },
+    )
+    .toBe(1);
   expect(mail[0]!.kind).toBe("admin_digest");
   expect(mail[0]!.subject).toMatch(/^Gradus včera · /);
   expect(mail[0]!.text).toContain(text(L, "email.adminDigest.people.title"));
