@@ -6,7 +6,7 @@ import type { CrmTask } from "@/features/crm-tasks/types";
 type Tables = Database["public"]["Tables"];
 
 export const EVENT_COLUMNS =
-  "id, title, description, kind, starts_at, ends_at, all_day, contact_id, deal_id, source, actor_id, is_demo, contact:contacts(id, company_name, first_name, last_name), deal:deals(id, title)";
+  "id, title, description, kind, starts_at, ends_at, all_day, contact_id, deal_id, source, actor_id, calendar_owner_id, private, is_demo, link:calendar_external_links(calendar_id), contact:contacts(id, company_name, first_name, last_name), deal:deals(id, title)";
 
 export type CalendarEventRow = Pick<
   Tables["calendar_events"]["Row"],
@@ -33,6 +33,27 @@ export type CalendarEvent = CalendarEventRow & {
   deal: Pick<Tables["deals"]["Row"], "id" | "title"> | null;
   /** Sample data of the tutorial (labelled "sample"); absent in older reads. */
   is_demo?: boolean | null;
+  /** Whose calendar it is in (30.3); null = whoever made it. Absent in older reads. */
+  calendar_owner_id?: string | null;
+  /** Others see it only as busy time (30.3). */
+  private?: boolean | null;
+  /** The Google / Apple calendar it came from or goes to (the account's own events). */
+  link?: { calendar_id: string } | null;
+  /** Someone else's event read through a share (calendar_shared_events). */
+  shared?: SharedInfo;
+};
+
+/** What the calendar knows of someone else's event it reads through a share. */
+export type SharedInfo = {
+  personId: string;
+  level: "busy" | "read" | "write" | "invite";
+  /** "Made by X" when someone else wrote it into the person's calendar. */
+  createdByName: string | null;
+  /** Write share: it may be changed through the share. */
+  canEdit: boolean;
+  /** A meeting the account is invited to, and its answer. */
+  inviteStatus: "invited" | "accepted" | "declined" | null;
+  location: string | null;
 };
 
 /** The three types offered when adding an event. */
@@ -58,6 +79,8 @@ type ItemBase = {
   key: string;
   title: string;
   tone: Tone;
+  /** Someone else's calendar (30.3): their initials on the item. */
+  person?: { id: string; initials: string; name: string };
   allDay: boolean;
   /** First and last calendar day (user's zone) the item touches, both inclusive. */
   firstDay: IsoDate;
@@ -99,6 +122,7 @@ export type TaskCalendarItem = ItemBase & {
  */
 export type BusyCalendarItem = ItemBase & {
   type: "busy";
+  /** The subscribed calendar, or "person:<id>" for someone's busy time read through a share. */
   subscriptionId: string;
   startMs: number;
   endMs: number;

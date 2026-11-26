@@ -5,7 +5,7 @@ import { formatTime, isoDateToLocal, weekdayName, type IsoDate } from "@/lib/for
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { DayNumber } from "./day-number";
-import { itemClass, MirrorIcon } from "./item-chip";
+import { itemClass, MirrorIcon, PersonBadge } from "./item-chip";
 import type { CalendarItem } from "./types";
 import { useSwipe } from "./use-swipe";
 
@@ -67,7 +67,11 @@ export function WeekList({ days, today, items, onPickDay, onOpenItem, onSwipe }:
                       itemClass(item),
                     )}
                   >
-                    <MirrorIcon item={item} className="size-4" />
+                    {item.person ? (
+                      <PersonBadge item={item} />
+                    ) : (
+                      <MirrorIcon item={item} className="size-4" />
+                    )}
                     <span className="shrink-0 text-xs tabular-nums opacity-80">
                       {item.type !== "mirror" && !item.allDay
                         ? formatTime(new Date(item.startMs), settings)

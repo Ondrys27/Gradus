@@ -511,6 +511,10 @@
       },
       "bookingNew": {
         "text": "Nová rezervace: {guest}, {type} na {startsAtFormatted}. Schůzku máš v kalendáři."
+      },
+      "calendarShareRequest": {
+        "text": "{who} chce vidět tvůj kalendář ({level}). Povolíš to?",
+        "someone": "Někdo z firmy"
       }
     },
     "proactive": {
@@ -819,10 +823,12 @@
         "place_widget": "Dávám widget na přehled…",
         "hide_widget": "Odebírám widget…",
         "list_trash": "Dívám se do koše…",
-        "restore_from_trash": "Obnovuji z koše…"
+        "restore_from_trash": "Obnovuji z koše…",
+        "people_availability": "Hledám, kdy mají lidé čas…"
       },
       "list_trash": "Dívám se do koše",
-      "restore_from_trash": "Obnovil jsem z koše „{title}“"
+      "restore_from_trash": "Obnovil jsem z koše „{title}“",
+      "people_availability": "Dívám se, kdy mají lidé čas"
     },
     "actions": {
       "status": {
@@ -1544,6 +1550,14 @@
       "trash": {
         "label": "Koš",
         "keywords": "koš smazané obnovit grady claude mcp vrátit"
+      },
+      "calendarSharing": {
+        "label": "Sdílení kalendáře",
+        "keywords": "sdílení kalendáře kdo vidí obsazenost čtení úpravy žádost tým firma"
+      },
+      "calendarOwnerBusy": {
+        "label": "Obsazenost mých lidí",
+        "keywords": "majitel vidí obsazenost pracovníků kalendář automaticky"
       }
     },
     "work": {
@@ -1767,7 +1781,10 @@
           "scopes": "Bez přístupu ke kalendářům propojení nefunguje. Při propojení povol obě oprávnění.",
           "notAllowed": "Propojení s Google kalendářem připravujeme.",
           "unavailable": "Propojení kalendářů teď není dostupné, zkus to později."
-        }
+        },
+        "privateTitle": "Soukromé kalendáře",
+        "privateHint": "Události ze zapnutého kalendáře uvidí ostatní ve firmě jen jako Obsazeno.",
+        "privateOf": "Vše z kalendáře {name} je soukromé"
       }
     }
   },
@@ -3595,6 +3612,149 @@
       "to": "Zapsáno do kalendáře {provider}",
       "conflictExternal": "{at} se událost změnila v {appName} i v kalendáři {provider} zároveň. Platí novější změna z kalendáře {provider}, verze v {appName} se přepsala.",
       "conflictGradus": "{at} se událost změnila v {appName} i v kalendáři {provider} zároveň. Platí novější změna z {appName}, v kalendáři {provider} se přepsala."
+    },
+    "sharing": {
+      "busy": "Obsazeno",
+      "levels": {
+        "label": "Co uvidí",
+        "busy": "Obsazenost",
+        "busyHint": "Jen kdy je obsazeno, bez názvů a míst.",
+        "read": "Čtení",
+        "readHint": "Všechny události kromě soukromých, s názvem a místem.",
+        "write": "Úpravy",
+        "writeHint": "Navíc zakládá a upravuje události v kalendáři (s poznámkou, kdo je vytvořil). Soukromé ani sdílení nezmění."
+      },
+      "request": {
+        "button": "Požádat o sdílení kalendáře",
+        "title": "Požádat o sdílení kalendáře",
+        "close": "Zavřít",
+        "hint": "Dotyčnému přijde oznámení a sám rozhodne, co uvidíš.",
+        "person": "Komu",
+        "personPlaceholder": "Vyber člověka",
+        "already": "Kalendář {name} už vidíš v plném rozsahu.",
+        "message": "Zpráva (nepovinná)",
+        "messagePlaceholder": "Třeba: Ať ti můžu plánovat schůzky s klienty.",
+        "cancel": "Zrušit",
+        "send": "Poslat žádost",
+        "sent": "Žádost odešla. Až {name} odpoví, dáme ti vědět.",
+        "done": "Hotovo"
+      },
+      "answer": {
+        "title": "Žádost o sdílení kalendáře",
+        "close": "Zavřít",
+        "gone": "Tahle žádost už je vyřízená.",
+        "asks": "{name} chce vidět tvůj kalendář: {level}.",
+        "allow": "Povolit",
+        "change": "Upravit úroveň",
+        "allowLevel": "Povolit: {level}",
+        "decline": "Odmítnout"
+      },
+      "settings": {
+        "title": "Sdílení",
+        "description": "Kdo z firmy vidí tvůj kalendář a jak. Soukromé události vidí ostatní vždy jen jako Obsazeno.",
+        "waiting": "Čeká na tvou odpověď",
+        "whoSeesMine": "Kdo vidí můj kalendář",
+        "loadFailed": "Sdílení se nepodařilo načíst. Zkus obnovit stránku.",
+        "nobody": "Zatím nikdo. Kalendář je jen tvůj.",
+        "add": "Přidat sdílení",
+        "addTitle": "Nové sdílení",
+        "with": "S kým",
+        "targets": {
+          "member": "Člověk",
+          "group": "Skupina",
+          "space": "Celá firma"
+        },
+        "pick": "Vyber",
+        "calendars": "Které kalendáře",
+        "gradus": "Gradus",
+        "external": "Propojený kalendář",
+        "replaces": "Sdílení s tímhle cílem už máš, uložením ho změníš.",
+        "save": "Uložit",
+        "cancel": "Zrušit",
+        "close": "Zavřít",
+        "wholeCompany": "Celá firma",
+        "group": "{name} · {formatted} {count, plural, one {člověk} few {lidé} other {lidí}}",
+        "someone": "Někdo z firmy",
+        "autoHint": "Majitel firmy vidí obsazenost svých lidí automaticky.",
+        "remove": "Odebrat",
+        "removeTitle": "Přestat sdílet kalendář: {name}?",
+        "removeText": "Přestane vidět tvůj kalendář hned. Události zůstanou.",
+        "ownerBusy": "Vidím obsazenost svých lidí",
+        "ownerBusyHint": "Bez sdílení uvidíš u pracovníků, kdy jsou obsazení (bez názvů). Vypni, když to ve firmě nechcete.",
+        "whoseISee": "Čí kalendáře vidím já",
+        "noneShared": "Zatím ti nikdo kalendář nesdílí.",
+        "myRequests": "Moje žádosti",
+        "status": {
+          "pending": "čeká",
+          "approved": "povoleno",
+          "declined": "odmítnuto"
+        },
+        "retryAt": "Znovu požádat můžeš {when}."
+      },
+      "panel": {
+        "title": "Kalendáře",
+        "mine": "Moje",
+        "people": "Lidé",
+        "nobody": "Zatím nevidíš ničí kalendář.",
+        "color": "Barva: {name}"
+      },
+      "common": {
+        "open": "Najít společný čas",
+        "title": "Najít společný čas",
+        "close": "Zavřít",
+        "people": "S kým",
+        "unknown": "nevíme",
+        "unknownHint": "{names} ti kalendář nesdílí, jejich čas nevíme. Okna počítají jen s tím, co vidíš.",
+        "duration": "Délka",
+        "minutes": "{count} min",
+        "from": "Pracovní doba od",
+        "to": "do",
+        "previous": "Předchozí týden",
+        "next": "Další týden",
+        "pickPeople": "Vyber lidi a ukážeme, kdy mají všichni volno.",
+        "noWindows": "V tomhle týdnu nemají všichni volno tak dlouho. Zkus kratší schůzku nebo další týden.",
+        "meetingTitle": "Název schůzky",
+        "defaultTitle": "Schůzka",
+        "start": "Začátek",
+        "invites": "Pozvánka do kalendáře přijde: {names}.",
+        "create": "Založit schůzku",
+        "created": "Schůzka je v kalendáři a pozvánky odešly."
+      },
+      "form": {
+        "into": "Do kalendáře",
+        "mine": "Můj kalendář",
+        "alsoExternal": "Zapíše se do kalendáře {name} a i do jeho kalendáře {calendar}.",
+        "onlyGradus": "Zapíše se do kalendáře {name} v Gradusu.",
+        "private": "Soukromá",
+        "privateHint": "Ostatní uvidí jen Obsazeno. Zkratka Alt+P."
+      },
+      "detail": {
+        "private": "Soukromá",
+        "calendarOf": "Kalendář: {name}",
+        "madeBy": "vytvořil(a) {name}",
+        "people": "Pozvaní",
+        "invite": {
+          "invited": "Pozvánka čeká na tvou odpověď.",
+          "accepted": "Pozvánku jsi přijal(a).",
+          "declined": "Pozvánku jsi odmítl(a)."
+        },
+        "status": {
+          "invited": "čeká",
+          "accepted": "přijato",
+          "declined": "odmítnuto"
+        },
+        "accept": "Přijmout",
+        "decline": "Odmítnout"
+      },
+      "errors": {
+        "calendar_request_too_soon": "Po odmítnutí můžeš znovu požádat až {when}.",
+        "calendar_request_already": "Tenhle kalendář už v téhle úrovni vidíš.",
+        "calendar_request_limit": "Dnes už jsi poslal(a) hodně žádostí. Zkus to zítra.",
+        "calendar_request_target": "Tomuhle člověku teď o sdílení požádat nejde.",
+        "calendar_meeting_denied": "Schůzky v kalendáři téhle firmy zakládat nemůžeš.",
+        "read_only": "Účet je teď jen pro čtení.",
+        "unknown": "Nepovedlo se to. Zkus to prosím znovu."
+      }
     }
   },
   "finance": {
@@ -4242,6 +4402,10 @@
         "fill": "Vyplnit dotazník",
         "noShow": "Nepřišel",
         "skip": "Přeskočit"
+      },
+      "calendarRequest": {
+        "title": "{who} chce vidět tvůj kalendář",
+        "open": "Odpovědět"
       }
     },
     "board": {
@@ -8184,6 +8348,10 @@
           "bookingNew": {
             "label": "Nová rezervace",
             "description": "Host si přes plánovač rezervoval schůzku (poslední dva dny, ještě neproběhla)."
+          },
+          "calendarShareRequest": {
+            "label": "Žádost o sdílení kalendáře",
+            "description": "Někdo z firmy chce vidět kalendář uživatele a žádost čeká na odpověď."
           }
         },
         "questions": {
@@ -12029,6 +12197,15 @@
       "note_shared_untitled": "{name} s tebou sdílí poznámku",
       "folder_shared": "{name} s tebou sdílí složku „{title}“",
       "notes_transferred": "{name} už ve firmě není: {count, plural, =0 {sdílené složky teď patří tobě} one {# sdílená poznámka teď patří tobě} few {# sdílené poznámky teď patří tobě} other {# sdílených poznámek teď patří tobě}}"
+    },
+    "calendar": {
+      "calendar_shared": "{name} ti nasdílel(a) kalendář",
+      "calendar_share_requested": "{name} chce vidět tvůj kalendář: {level}",
+      "calendar_share_requested_done": "Žádost od {name} je vyřízená",
+      "calendar_share_approved": "{name} povolil(a) sdílení kalendáře: {level}",
+      "calendar_share_declined": "{name} sdílení kalendáře nepovolil(a)",
+      "calendar_invite": "{name} tě zve: {title}",
+      "calendar_invite_gone": "{name} tě zval(a) na schůzku"
     }
   },
   "billing": {

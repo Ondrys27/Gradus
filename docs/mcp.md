@@ -104,6 +104,7 @@ vstupy zod → JSON Schema, seznamy po 25 s `offset`. Vlastní nástroje serveru
 | `list_crm_tasks` | Úkoly: seznam a filtry | tasks.view |
 | `list_deals` | Pipeline: tabule a filtry | pipeline.view |
 | `list_events` | Kalendář: období | calendar.view |
+| `people_availability` | Kalendář: kdy mají lidé čas (jen v rozsahu sdílení) | calendar.view |
 | `finance_month` | Finance: měsíc a souhrny | finance.summaries |
 | `list_overdue_invoices` | Faktury po splatnosti | invoices.view |
 | `list_contact_tables` | Kontakty / Cold Calling: tabulky | contacts.view |

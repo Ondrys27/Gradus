@@ -511,6 +511,10 @@
       },
       "bookingNew": {
         "text": "New booking: {guest}, {type} for {startsAtFormatted}. It is in your calendar."
+      },
+      "calendarShareRequest": {
+        "text": "{who} wants to see your calendar ({level}). Will you allow it?",
+        "someone": "Someone in the company"
       }
     },
     "proactive": {
@@ -819,10 +823,12 @@
         "place_widget": "Placing the widget…",
         "hide_widget": "Taking the widget off…",
         "list_trash": "Looking into the trash…",
-        "restore_from_trash": "Restoring from the trash…"
+        "restore_from_trash": "Restoring from the trash…",
+        "people_availability": "Looking for when people are free…"
       },
       "list_trash": "Looking into the trash",
-      "restore_from_trash": "Restored “{title}” from the trash"
+      "restore_from_trash": "Restored “{title}” from the trash",
+      "people_availability": "Checking when people are free"
     },
     "actions": {
       "status": {
@@ -1544,6 +1550,14 @@
       "trash": {
         "label": "Trash",
         "keywords": "trash deleted restore grady claude mcp undo"
+      },
+      "calendarSharing": {
+        "label": "Calendar sharing",
+        "keywords": "share calendar who sees busy read edit request team company"
+      },
+      "calendarOwnerBusy": {
+        "label": "My people's busy times",
+        "keywords": "owner sees workers busy calendar automatically"
       }
     },
     "work": {
@@ -1767,7 +1781,10 @@
           "scopes": "Without access to your calendars the connection can't work. Allow both permissions when connecting.",
           "notAllowed": "Connecting your Google Calendar is coming soon.",
           "unavailable": "Calendar connections aren't available right now. Try again later."
-        }
+        },
+        "privateTitle": "Private calendars",
+        "privateHint": "Others in the company see events from a calendar switched on here only as Busy.",
+        "privateOf": "Everything from {name} is private"
       }
     }
   },
@@ -3595,6 +3612,149 @@
       "to": "Written to your {provider} calendar",
       "conflictExternal": "On {at} this event changed in {appName} and in your {provider} calendar at the same time. The newer change from {provider} won; the version in {appName} was overwritten.",
       "conflictGradus": "On {at} this event changed in {appName} and in your {provider} calendar at the same time. The newer change from {appName} won; your {provider} calendar was overwritten."
+    },
+    "sharing": {
+      "busy": "Busy",
+      "levels": {
+        "label": "What they see",
+        "busy": "Busy times",
+        "busyHint": "Only when you are busy, without titles or places.",
+        "read": "Read",
+        "readHint": "All events except private ones, with titles and places.",
+        "write": "Edit",
+        "writeHint": "Also adds and changes events in the calendar (marked with who made them). Never private ones or the sharing."
+      },
+      "request": {
+        "button": "Ask to share their calendar",
+        "title": "Ask to share their calendar",
+        "close": "Close",
+        "hint": "They get a notification and decide what you see.",
+        "person": "Whom",
+        "personPlaceholder": "Choose a person",
+        "already": "You already see all of {name}'s calendar.",
+        "message": "Message (optional)",
+        "messagePlaceholder": "For example: So I can plan client meetings for you.",
+        "cancel": "Cancel",
+        "send": "Send request",
+        "sent": "Request sent. We'll let you know when {name} answers.",
+        "done": "Done"
+      },
+      "answer": {
+        "title": "Calendar sharing request",
+        "close": "Close",
+        "gone": "This request has already been answered.",
+        "asks": "{name} wants to see your calendar: {level}.",
+        "allow": "Allow",
+        "change": "Change level",
+        "allowLevel": "Allow: {level}",
+        "decline": "Decline"
+      },
+      "settings": {
+        "title": "Sharing",
+        "description": "Who in the company sees your calendar and how. Others always see private events only as Busy.",
+        "waiting": "Waiting for your answer",
+        "whoSeesMine": "Who sees my calendar",
+        "loadFailed": "Sharing could not be loaded. Try refreshing the page.",
+        "nobody": "Nobody yet. Your calendar is yours alone.",
+        "add": "Add sharing",
+        "addTitle": "New sharing",
+        "with": "With whom",
+        "targets": {
+          "member": "Person",
+          "group": "Group",
+          "space": "Whole company"
+        },
+        "pick": "Choose",
+        "calendars": "Which calendars",
+        "gradus": "Gradus",
+        "external": "Connected calendar",
+        "replaces": "You already share with this target; saving changes it.",
+        "save": "Save",
+        "cancel": "Cancel",
+        "close": "Close",
+        "wholeCompany": "Whole company",
+        "group": "{name} · {formatted} {count, plural, one {person} other {people}}",
+        "someone": "Someone in the company",
+        "autoHint": "The company owner sees their people's busy times automatically.",
+        "remove": "Remove",
+        "removeTitle": "Stop sharing your calendar: {name}?",
+        "removeText": "They stop seeing your calendar at once. Events stay.",
+        "ownerBusy": "I see my people's busy times",
+        "ownerBusyHint": "Without sharing, you see when your workers are busy (no titles). Turn it off if your company prefers not to.",
+        "whoseISee": "Whose calendars I see",
+        "noneShared": "Nobody shares their calendar with you yet.",
+        "myRequests": "My requests",
+        "status": {
+          "pending": "waiting",
+          "approved": "allowed",
+          "declined": "declined"
+        },
+        "retryAt": "You can ask again {when}."
+      },
+      "panel": {
+        "title": "Calendars",
+        "mine": "Mine",
+        "people": "People",
+        "nobody": "You don't see anyone's calendar yet.",
+        "color": "Colour: {name}"
+      },
+      "common": {
+        "open": "Find a common time",
+        "title": "Find a common time",
+        "close": "Close",
+        "people": "With whom",
+        "unknown": "we don't know",
+        "unknownHint": "{names} don't share their calendar with you, so we don't know their time. The windows count only what you see.",
+        "duration": "Length",
+        "minutes": "{count} min",
+        "from": "Working hours from",
+        "to": "to",
+        "previous": "Previous week",
+        "next": "Next week",
+        "pickPeople": "Pick people and we'll show when everyone is free.",
+        "noWindows": "Not everyone is free for that long this week. Try a shorter meeting or next week.",
+        "meetingTitle": "Meeting title",
+        "defaultTitle": "Meeting",
+        "start": "Start",
+        "invites": "A calendar invite goes to: {names}.",
+        "create": "Create meeting",
+        "created": "The meeting is in the calendar and the invites are out."
+      },
+      "form": {
+        "into": "Into the calendar of",
+        "mine": "My calendar",
+        "alsoExternal": "Goes into {name}'s calendar and also their {calendar} calendar.",
+        "onlyGradus": "Goes into {name}'s calendar in Gradus.",
+        "private": "Private",
+        "privateHint": "Others see only Busy. Shortcut Alt+P."
+      },
+      "detail": {
+        "private": "Private",
+        "calendarOf": "Calendar: {name}",
+        "madeBy": "made by {name}",
+        "people": "Invited",
+        "invite": {
+          "invited": "The invite is waiting for your answer.",
+          "accepted": "You accepted the invite.",
+          "declined": "You declined the invite."
+        },
+        "status": {
+          "invited": "waiting",
+          "accepted": "accepted",
+          "declined": "declined"
+        },
+        "accept": "Accept",
+        "decline": "Decline"
+      },
+      "errors": {
+        "calendar_request_too_soon": "After a decline you can ask again {when}.",
+        "calendar_request_already": "You already see this calendar at that level.",
+        "calendar_request_limit": "You've sent a lot of requests today. Try again tomorrow.",
+        "calendar_request_target": "You can't ask this person right now.",
+        "calendar_meeting_denied": "You can't create meetings in this company's calendar.",
+        "read_only": "The account is read only right now.",
+        "unknown": "That didn't work. Please try again."
+      }
     }
   },
   "finance": {
@@ -4242,6 +4402,10 @@
         "fill": "Fill in the survey",
         "noShow": "No-show",
         "skip": "Skip"
+      },
+      "calendarRequest": {
+        "title": "{who} wants to see your calendar",
+        "open": "Answer"
       }
     },
     "board": {
@@ -8184,6 +8348,10 @@
           "bookingNew": {
             "label": "New booking",
             "description": "A guest booked a meeting through the scheduler (last two days, still ahead)."
+          },
+          "calendarShareRequest": {
+            "label": "Calendar sharing request",
+            "description": "Someone in the company wants to see the user's calendar and the request waits for an answer."
           }
         },
         "questions": {
@@ -12029,6 +12197,15 @@
       "note_shared_untitled": "{name} shared a note with you",
       "folder_shared": "{name} shared the folder “{title}” with you",
       "notes_transferred": "{name} left the company: {count, plural, =0 {their shared folders are yours now} one {# shared note is yours now} other {# shared notes are yours now}}"
+    },
+    "calendar": {
+      "calendar_shared": "{name} shared their calendar with you",
+      "calendar_share_requested": "{name} wants to see your calendar: {level}",
+      "calendar_share_requested_done": "The request from {name} is answered",
+      "calendar_share_approved": "{name} allowed calendar sharing: {level}",
+      "calendar_share_declined": "{name} didn't allow calendar sharing",
+      "calendar_invite": "{name} invites you: {title}",
+      "calendar_invite_gone": "{name} invited you to a meeting"
     }
   },
   "billing": {

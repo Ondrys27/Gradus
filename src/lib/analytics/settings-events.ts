@@ -83,6 +83,9 @@ export function settingsEvents(patch: Partial<UserSettings>): SettingEvent[] {
       case "chat_sound":
         events.push({ setting: "chat_sound", enabled: value === true });
         break;
+      case "calendar_owner_sees_busy":
+        events.push({ setting: "calendar_owner_busy", enabled: value === true });
+        break;
     }
   }
   return events;

@@ -126,6 +126,8 @@ export type RuleInputs = {
   }[];
   /** Invites into other companies waiting for this account (step 22.5); `who` = company · owner. */
   workerInvites: { id: string; who: string }[];
+  /** Requests to see this account's calendar (30.3); optional for callers from before. */
+  calendarRequests?: { id: string; who: string; level: string }[];
   /**
    * Bookings the user hosts (24.4): pending ones to approve, and confirmed
    * ones booked in the last two days. Optional for callers from before.
@@ -290,6 +292,20 @@ export function ruleSuggestions(inputs: RuleInputs): RuleSuggestion[] {
       dedupeKey: `workerInvite:${invite.id}`,
       text: "An invite into another company waits",
       action: { kind: "open", href: INVITES_PATH, params: { who: invite.who } },
+    });
+  }
+
+  // Someone asks to see the calendar: only the person answers (allow, another level, decline).
+  for (const request of (inputs.calendarRequests ?? []).slice(0, PER_RULE_LIMIT)) {
+    out.push({
+      type: "calendarShareRequest",
+      dedupeKey: `calendarShareRequest:${request.id}`,
+      text: "Someone asks to see your calendar",
+      action: {
+        kind: "open",
+        href: `/app/kalendar?shareRequest=${request.id}`,
+        params: { who: request.who, level: request.level },
+      },
     });
   }
 

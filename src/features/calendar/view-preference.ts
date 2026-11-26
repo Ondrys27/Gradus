@@ -63,3 +63,35 @@ export function loadMirrors(): MirrorPrefs {
 export function saveMirrors(prefs: MirrorPrefs) {
   write(MIRRORS_KEY, JSON.stringify(prefs));
 }
+
+const SOURCES_KEY = "gradus.calendar.sources";
+
+/** The checkbox and colour of each of the account's own sources (30.3), kept in the browser. */
+export type SourcePrefs = Record<string, { hidden: boolean; tone: SourceTone | null }>;
+type SourceTone = "teal" | "gold" | "green" | "pink" | "violet";
+const SOURCE_TONES = new Set(["teal", "gold", "green", "pink", "violet"]);
+
+export function parseSourcePrefs(value: string | null): SourcePrefs {
+  try {
+    const parsed = JSON.parse(value ?? "null") as Record<string, unknown> | null;
+    if (!parsed || typeof parsed !== "object") return {};
+    const out: SourcePrefs = {};
+    for (const [key, entry] of Object.entries(parsed).slice(0, 50)) {
+      if (!entry || typeof entry !== "object") continue;
+      const { hidden, tone } = entry as Record<string, unknown>;
+      out[key] = {
+        hidden: hidden === true,
+        tone: typeof tone === "string" && SOURCE_TONES.has(tone) ? (tone as SourceTone) : null,
+      };
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+export function loadSourcePrefs(): SourcePrefs {
+  return parseSourcePrefs(read(SOURCES_KEY));
+}
+export function saveSourcePrefs(prefs: SourcePrefs) {
+  write(SOURCES_KEY, JSON.stringify(prefs));
+}

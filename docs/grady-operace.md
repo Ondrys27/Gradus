@@ -50,6 +50,7 @@ s katalogem (každá operace právě jednou, právo, úroveň, vratnost) a s tí
 | Úkoly: seznam a filtry | `list_crm_tasks` | tasks.view | read | ne | ano | ano |
 | Pipeline: tabule a filtry | `list_deals` | pipeline.view | read | ne | ano | ne |
 | Kalendář: období | `list_events` | calendar.view | read | ne | ano | ano |
+| Kalendář: kdy mají lidé čas (jen v rozsahu sdílení) | `people_availability` | calendar.view | read | ne | ano | ano |
 | Finance: měsíc a souhrny | `finance_month` | finance.summaries | read | ne | ano | ne |
 | Faktury po splatnosti | `list_overdue_invoices` | invoices.view | read | ne | ano | ne |
 | Kontakty / Cold Calling: tabulky | `list_contact_tables` | contacts.view | read | ne | ano | ano |

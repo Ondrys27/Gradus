@@ -18,6 +18,8 @@ export function toEventRow(input: EventInput) {
     description: input.description || null,
     contact_id: input.contact_id,
     deal_id: input.deal_id,
+    // Only when the form says so; a change elsewhere (Grady, a drag) keeps it.
+    ...(input.private !== undefined ? { private: input.private } : {}),
   };
 }
 

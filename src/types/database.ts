@@ -63,39 +63,48 @@ export type Database = {
       account_notifications: {
         Row: {
           actor_id: string | null
+          calendar_request_id: string | null
           created_at: string
+          event_id: string | null
           folder_id: string | null
           id: string
           item_count: number | null
           kind: string
           note_id: string | null
           read_at: string | null
+          share_level: string | null
           space_id: string | null
           user_id: string
           worker_id: string | null
         }
         Insert: {
           actor_id?: string | null
+          calendar_request_id?: string | null
           created_at?: string
+          event_id?: string | null
           folder_id?: string | null
           id?: string
           item_count?: number | null
           kind: string
           note_id?: string | null
           read_at?: string | null
+          share_level?: string | null
           space_id?: string | null
           user_id: string
           worker_id?: string | null
         }
         Update: {
           actor_id?: string | null
+          calendar_request_id?: string | null
           created_at?: string
+          event_id?: string | null
           folder_id?: string | null
           id?: string
           item_count?: number | null
           kind?: string
           note_id?: string | null
           read_at?: string | null
+          share_level?: string | null
           space_id?: string | null
           user_id?: string
           worker_id?: string | null
@@ -1154,6 +1163,7 @@ export type Database = {
           is_primary: boolean
           last_error: string | null
           name: string
+          private_default: boolean
           read: boolean
           sync_state: string | null
           synced_at: string | null
@@ -1174,6 +1184,7 @@ export type Database = {
           is_primary?: boolean
           last_error?: string | null
           name: string
+          private_default?: boolean
           read?: boolean
           sync_state?: string | null
           synced_at?: string | null
@@ -1194,6 +1205,7 @@ export type Database = {
           is_primary?: boolean
           last_error?: string | null
           name?: string
+          private_default?: boolean
           read?: boolean
           sync_state?: string | null
           synced_at?: string | null
@@ -1254,6 +1266,7 @@ export type Database = {
         Row: {
           actor_id: string | null
           all_day: boolean
+          calendar_owner_id: string | null
           contact_id: string | null
           created_at: string
           deal_id: string | null
@@ -1263,6 +1276,7 @@ export type Database = {
           is_demo: boolean
           kind: Database["public"]["Enums"]["calendar_event_kind"]
           location: string | null
+          private: boolean
           source: string
           starts_at: string
           task_id: string | null
@@ -1273,6 +1287,7 @@ export type Database = {
         Insert: {
           actor_id?: string | null
           all_day?: boolean
+          calendar_owner_id?: string | null
           contact_id?: string | null
           created_at?: string
           deal_id?: string | null
@@ -1282,6 +1297,7 @@ export type Database = {
           is_demo?: boolean
           kind?: Database["public"]["Enums"]["calendar_event_kind"]
           location?: string | null
+          private?: boolean
           source?: string
           starts_at: string
           task_id?: string | null
@@ -1292,6 +1308,7 @@ export type Database = {
         Update: {
           actor_id?: string | null
           all_day?: boolean
+          calendar_owner_id?: string | null
           contact_id?: string | null
           created_at?: string
           deal_id?: string | null
@@ -1301,6 +1318,7 @@ export type Database = {
           is_demo?: boolean
           kind?: Database["public"]["Enums"]["calendar_event_kind"]
           location?: string | null
+          private?: boolean
           source?: string
           starts_at?: string
           task_id?: string | null
@@ -1429,6 +1447,138 @@ export type Database = {
           created_at?: string
           last_used_at?: string | null
           token_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      calendar_event_attendees: {
+        Row: {
+          created_at: string
+          event_id: string
+          invited_by: string | null
+          responded_at: string | null
+          space_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          invited_by?: string | null
+          responded_at?: string | null
+          space_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          invited_by?: string | null
+          responded_at?: string | null
+          space_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      calendar_share_requests: {
+        Row: {
+          approved_level: string | null
+          created_at: string
+          id: string
+          level: string
+          message: string | null
+          responded_at: string | null
+          space_id: string
+          status: string
+          to_user_id: string
+          user_id: string
+        }
+        Insert: {
+          approved_level?: string | null
+          created_at?: string
+          id?: string
+          level: string
+          message?: string | null
+          responded_at?: string | null
+          space_id: string
+          status?: string
+          to_user_id: string
+          user_id: string
+        }
+        Update: {
+          approved_level?: string | null
+          created_at?: string
+          id?: string
+          level?: string
+          message?: string | null
+          responded_at?: string | null
+          space_id?: string
+          status?: string
+          to_user_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      calendar_shares: {
+        Row: {
+          calendars: string[]
+          created_at: string
+          group_id: string | null
+          id: string
+          level: string
+          space_id: string
+          target_kind: string
+          target_user_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          calendars?: string[]
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          level: string
+          space_id: string
+          target_kind: string
+          target_user_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          calendars?: string[]
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          level?: string
+          space_id?: string
+          target_kind?: string
+          target_user_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      calendar_view_people: {
+        Row: {
+          hidden: boolean
+          person_id: string
+          tone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          hidden?: boolean
+          person_id: string
+          tone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          hidden?: boolean
+          person_id?: string
+          tone?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -6239,6 +6389,7 @@ export type Database = {
       user_settings: {
         Row: {
           animations_enabled: boolean
+          calendar_owner_sees_busy: boolean
           chat_email_notifications: boolean
           chat_sound: boolean
           cold_calling_deal_stage_id: string | null
@@ -6268,6 +6419,7 @@ export type Database = {
         }
         Insert: {
           animations_enabled?: boolean
+          calendar_owner_sees_busy?: boolean
           chat_email_notifications?: boolean
           chat_sound?: boolean
           cold_calling_deal_stage_id?: string | null
@@ -6297,6 +6449,7 @@ export type Database = {
         }
         Update: {
           animations_enabled?: boolean
+          calendar_owner_sees_busy?: boolean
           chat_email_notifications?: boolean
           chat_sound?: boolean
           cold_calling_deal_stage_id?: string | null
@@ -7778,6 +7931,182 @@ export type Database = {
         }
         Returns: string
       }
+      calendar_event_from_private_calendar: { Args: { _event: string }; Returns: boolean }
+      calendar_event_is_private: {
+        Args: { _event: string; _private: boolean; _source: string }
+        Returns: boolean
+      }
+      calendar_event_people: {
+        Args: { _event: string }
+        Returns: {
+          avatar_url: string
+          name: string
+          status: string
+          user_id: string
+        }[]
+      }
+      calendar_groups: {
+        Args: { _space: string }
+        Returns: {
+          color: string
+          id: string
+          name: string
+          people: string[]
+        }[]
+      }
+      calendar_invite_respond: {
+        Args: { _accept: boolean; _event: string }
+        Returns: boolean
+      }
+      calendar_level_rank: { Args: { _level: string }; Returns: number }
+      calendar_meeting_create: {
+        Args: {
+          _attendees: string[]
+          _description?: string
+          _ends: string
+          _space: string
+          _starts: string
+          _title: string
+        }
+        Returns: string
+      }
+      calendar_my_shares: {
+        Args: { _space: string }
+        Returns: {
+          avatar_url: string
+          calendars: string[]
+          entry: string
+          group_id: string
+          level: string
+          member_count: number
+          name: string
+          share_id: string
+          target_kind: string
+          target_user_id: string
+          updated_at: string
+        }[]
+      }
+      calendar_my_sources: {
+        Args: never
+        Returns: {
+          key: string
+          name: string
+          private_default: boolean
+          writes: boolean
+        }[]
+      }
+      calendar_notification_labels: {
+        Args: { _ids: string[] }
+        Returns: {
+          actor_name: string
+          event_starts_at: string
+          event_title: string
+          id: string
+          level: string
+          request_status: string
+        }[]
+      }
+      calendar_people_busy: {
+        Args: { _from: string; _people: string[]; _space: string; _to: string }
+        Returns: {
+          all_day: boolean
+          ends_at: string
+          known: boolean
+          person_id: string
+          starts_at: string
+        }[]
+      }
+      calendar_request_retry_days: { Args: never; Returns: number }
+      calendar_requests_waiting: {
+        Args: { _user: string }
+        Returns: {
+          id: string
+          level: string
+          name: string
+          space_id: string
+        }[]
+      }
+      calendar_set_private_default: {
+        Args: { _calendar: string; _private: boolean }
+        Returns: boolean
+      }
+      calendar_share_remove: { Args: { _share: string }; Returns: boolean }
+      calendar_share_request_create: {
+        Args: { _level: string; _message?: string; _space: string; _to: string }
+        Returns: string
+      }
+      calendar_share_request_respond: {
+        Args: { _approve: boolean; _level?: string; _request: string }
+        Returns: string
+      }
+      calendar_share_requests_list: {
+        Args: { _space: string }
+        Returns: {
+          approved_level: string
+          avatar_url: string
+          created_at: string
+          id: string
+          incoming: boolean
+          level: string
+          message: string
+          name: string
+          person_id: string
+          responded_at: string
+          retry_at: string
+          space_id: string
+          status: string
+        }[]
+      }
+      calendar_share_set: {
+        Args: {
+          _calendars: string[]
+          _level: string
+          _space: string
+          _target: string
+          _target_kind: string
+        }
+        Returns: string
+      }
+      calendar_share_sources_ok: { Args: { _sources: string[] }; Returns: boolean }
+      calendar_shared_event_delete: { Args: { _event: string }; Returns: boolean }
+      calendar_shared_event_save: {
+        Args: {
+          _all_day: boolean
+          _description?: string
+          _ends: string
+          _event: string
+          _kind: string
+          _owner: string
+          _private?: boolean
+          _space: string
+          _starts: string
+          _title: string
+        }
+        Returns: string
+      }
+      calendar_shared_events: {
+        Args: { _from: string; _space: string; _to: string }
+        Returns: {
+          all_day: boolean
+          busy_only: boolean
+          calendar_key: string
+          can_edit: boolean
+          created_by: string
+          created_by_name: string
+          description: string
+          ends_at: string
+          id: string
+          invite_status: string
+          kind: string
+          level: string
+          location: string
+          person_id: string
+          private: boolean
+          source: string
+          starts_at: string
+          title: string
+        }[]
+      }
       calendar_sync_allowed: { Args: { _user: string }; Returns: boolean }
       calendar_sync_apply: {
         Args: {
@@ -7815,6 +8144,19 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      calendar_visible_people: {
+        Args: { _space: string }
+        Returns: {
+          avatar_url: string
+          can_write: boolean
+          is_owner: boolean
+          level: string
+          name: string
+          sources: Json
+          user_id: string
+          writes_to: string
+        }[]
       }
       cancel_invoice: {
         Args: { _invoice_id: string }

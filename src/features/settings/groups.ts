@@ -123,6 +123,13 @@ export const SETTINGS_ITEMS: readonly SettingsItemDef[] = [
     who: "all",
   },
   { id: "calendarFeed", group: "calendar", target: "settings-calendar-feed", who: "all" },
+  { id: "calendarSharing", group: "calendar", target: "settings-calendar-sharing", who: "all" },
+  {
+    id: "calendarOwnerBusy",
+    group: "calendar",
+    target: "settings-calendar-owner-busy",
+    who: "owner",
+  },
   { id: "mcpAddress", group: "integrations", target: "settings-mcp-address", who: "all" },
   { id: "connectedApps", group: "integrations", target: "settings-connected-apps", who: "all" },
   { id: "trash", group: "integrations", target: "settings-trash", who: "all" },

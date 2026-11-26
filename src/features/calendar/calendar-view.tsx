@@ -8,6 +8,7 @@ import {
   ChevronRightIcon,
   HandshakeIcon,
   CalendarRangeIcon,
+  LayersIcon,
   ListChecksIcon,
   PlusIcon,
   SquareCheckBigIcon,
@@ -62,7 +63,30 @@ import {
   type MirrorPrefs,
   type TimedItem,
 } from "./types";
-import { DEFAULT_MIRRORS, loadMirrors, loadView, saveMirrors, saveView } from "./view-preference";
+import {
+  DEFAULT_MIRRORS,
+  loadMirrors,
+  loadSourcePrefs,
+  loadView,
+  saveMirrors,
+  saveSourcePrefs,
+  saveView,
+  type SourcePrefs,
+} from "./view-preference";
+import { calendarOwnerOf, GRADUS_SOURCE, editPath } from "./sharing/levels";
+import { ownEventLook, personLooks, sharedItems, sharedToEvent } from "./sharing/items";
+import {
+  useCalendarPeople,
+  useMySources,
+  usePersonPrefs,
+  useSaveSharedEvent,
+  useSharedEvents,
+} from "./sharing/queries";
+import { CalendarsPanel } from "./sharing/ui/calendars-panel";
+import { RequestShareDialog } from "./sharing/ui/request-share-dialog";
+import { AnswerRequestDialog } from "./sharing/ui/answer-request-dialog";
+import { CommonTimeDialog } from "./sharing/ui/common-time-dialog";
+import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { WeekList } from "./week-list";
 
 /** Pixels per hour: taller on a phone so half an hour is still a 44 px target. */
@@ -129,6 +153,15 @@ export function CalendarView() {
   } | null>(null);
   const [openEventId, setOpenEventId] = useState<string | null>(null);
   const [changeFailed, setChangeFailed] = useState(false);
+  // Calendar sharing (30.3).
+  const [sourcePrefs, setSourcePrefs] = useState<SourcePrefs>({});
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [requestOpen, setRequestOpen] = useState(false);
+  const [commonOpen, setCommonOpen] = useState(false);
+  const [answerId, setAnswerId] = useState<string | null>(null);
+  useEffect(() => setSourcePrefs(loadSourcePrefs()), []);
+  // The bell, the dashboard and Grady open a request waiting for an answer.
+  useUrlIntent("shareRequest", (id) => setAnswerId(id));
 
   // The search opens a found event on its day, or a new event.
   useUrlIntent(
@@ -154,7 +187,9 @@ export function CalendarView() {
   const eventsQuery = useCalendarEvents(firstDay, lastDay, settings.timeZone, ready);
   // Google and Apple calendars are read when the calendar opens (28.10).
   const queryClient = useQueryClient();
-  useSyncOnOpen(() => void queryClient.invalidateQueries({ queryKey: calendarKeys.all(workspace.userId) }));
+  useSyncOnOpen(
+    () => void queryClient.invalidateQueries({ queryKey: calendarKeys.all(workspace.userId) }),
+  );
   const mirrorsQuery = useMirrors(firstDay, lastDay, mirrors, ready);
   const tasksQuery = useCalendarTasks(
     firstDay,
@@ -167,9 +202,42 @@ export function CalendarView() {
   const busyQuery = useSubscriptionBusy(ready);
   const hasSubscriptions = (busyQuery.data ?? []).length > 0;
 
+  // Others' calendars the account sees here, and its own sources.
+  const peopleQuery = useCalendarPeople(ready);
+  const prefsQuery = usePersonPrefs();
+  const sourcesQuery = useMySources(ready);
+  const sharedQuery = useSharedEvents(firstDay, lastDay, settings.timeZone, ready);
+  const saveShared = useSaveSharedEvent();
+  const people = useMemo(() => peopleQuery.data ?? [], [peopleQuery.data]);
+  const looks = useMemo(() => personLooks(people, prefsQuery.data), [people, prefsQuery.data]);
+  const writable = useMemo(
+    () =>
+      people
+        .filter((person) => person.canWrite)
+        .map((person) => ({ userId: person.userId, name: person.name, writesTo: person.writesTo })),
+    [people],
+  );
+  const busyLabel = t("sharing.busy");
+
   const items = useMemo(() => {
+    const own = eventsQuery.data ?? [];
+    const ownIds = new Set(own.map((event) => event.id));
+    const ownItems = own.flatMap((event) => {
+      const item = toEventItem(event, settings.timeZone);
+      const owner = calendarOwnerOf(event);
+      if (owner && owner !== workspace.userId) {
+        // Someone else's calendar the account reads anyway: their colour and checkbox.
+        const looked = ownEventLook(item, workspace.userId, looks);
+        return looked ? [looked] : [];
+      }
+      // The account's own sources: Gradus, each Google / Apple calendar.
+      const pref = sourcePrefs[event.link?.calendar_id ?? GRADUS_SOURCE];
+      if (pref?.hidden) return [];
+      return [pref?.tone ? { ...item, tone: pref.tone } : item];
+    });
     const list: CalendarItem[] = [
-      ...(eventsQuery.data ?? []).map((event) => toEventItem(event, settings.timeZone)),
+      ...ownItems,
+      ...sharedItems(sharedQuery.data ?? [], looks, ownIds, settings.timeZone, busyLabel),
       ...(mirrorsQuery.data ?? []).map(toMirrorItem),
       ...(mirrors.crmTasks ? (tasksQuery.data ?? []) : []).map((task) =>
         toTaskItem(task, settings.timeZone, now),
@@ -181,6 +249,11 @@ export function CalendarView() {
     return itemsByDay(list, days);
   }, [
     eventsQuery.data,
+    sharedQuery.data,
+    looks,
+    sourcePrefs,
+    busyLabel,
+    workspace.userId,
     mirrorsQuery.data,
     tasksQuery.data,
     busyQuery.data,
@@ -193,7 +266,18 @@ export function CalendarView() {
     now,
   ]);
 
-  const openEvent = (eventsQuery.data ?? []).find((event) => event.id === openEventId) ?? null;
+  const sharedOpen = (sharedQuery.data ?? []).find(
+    (event) => event.id === openEventId && !event.busyOnly,
+  );
+  const openEvent =
+    (eventsQuery.data ?? []).find((event) => event.id === openEventId) ??
+    (sharedOpen ? sharedToEvent(sharedOpen) : null);
+
+  function changeOwnSource(key: string, pref: SourcePrefs[string]) {
+    const next = { ...sourcePrefs, [key]: pref };
+    setSourcePrefs(next);
+    saveSourcePrefs(next);
+  }
 
   function chooseView(next: CalendarView) {
     setView(next);
@@ -233,8 +317,29 @@ export function CalendarView() {
       );
       return;
     }
-    if (!eventEditable(item.event)) return;
-    update.mutate({ id: item.event.id, patch: range }, { onError: () => setChangeFailed(true) });
+    const path = editPath({
+      tableEditable: !item.event.shared && eventEditable(item.event),
+      sharedEditable: Boolean(item.event.shared?.canEdit),
+    });
+    if (path === "table") {
+      update.mutate({ id: item.event.id, patch: range }, { onError: () => setChangeFailed(true) });
+    } else if (path === "share" && item.event.shared) {
+      const event = item.event;
+      saveShared.mutate(
+        {
+          owner: event.shared!.personId,
+          eventId: event.id,
+          title: event.title,
+          kind: event.kind === "task" ? "task" : event.kind === "deadline" ? "deadline" : "meeting",
+          startsAt: range.starts_at,
+          endsAt: range.ends_at,
+          allDay: false,
+          description: event.description ?? "",
+          private: Boolean(event.private),
+        },
+        { onError: () => setChangeFailed(true) },
+      );
+    }
   }
 
   /** New events start on today when it is on screen, else on the shown day. */
@@ -251,7 +356,28 @@ export function CalendarView() {
         ? `${formatCalendarDate(firstDay, settings)} – ${formatCalendarDate(lastDay, settings)}`
         : `${weekdayName(date.getDay(), locale)} ${formatCalendarDate(cursor, settings)}`;
 
-  const failed = eventsQuery.isError || mirrorsQuery.isError || tasksQuery.isError;
+  const failed =
+    eventsQuery.isError || mirrorsQuery.isError || tasksQuery.isError || sharedQuery.isError;
+  // A new event: in one's own calendar (calendar: create) or in someone's with write.
+  const canAdd = canCreate || writable.length > 0;
+  const panel = (
+    <CalendarsPanel
+      sources={sourcesQuery.data ?? []}
+      ownPrefs={sourcePrefs}
+      onOwnChange={changeOwnSource}
+      people={people}
+      looks={looks}
+      onRequest={() => {
+        setPanelOpen(false);
+        setRequestOpen(true);
+      }}
+      onCommonTime={() => {
+        setPanelOpen(false);
+        setCommonOpen(true);
+      }}
+      canPlanMeetings={canCreate}
+    />
+  );
 
   return (
     <div className="flex flex-col gap-5">
@@ -260,7 +386,7 @@ export function CalendarView() {
         title={tNav("calendar")}
         description={t("description")}
         actions={
-          canCreate && (
+          canAdd && (
             <Button onClick={() => setForm({ event: null, start: { day: defaultDay() } })}>
               <PlusIcon aria-hidden data-icon="inline-start" />
               {t("actions.add")}
@@ -344,6 +470,18 @@ export function CalendarView() {
         >
           {t("mirrors.crmTasks")}
         </MirrorToggle>
+        <button
+          type="button"
+          onClick={() => setPanelOpen(true)}
+          className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-line px-4 text-sm font-medium text-ink-soft outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-ring/50 mouse:h-9 lg:hidden"
+          data-testid="calendars-panel-open"
+        >
+          <LayersIcon aria-hidden className="size-4" />
+          {t("sharing.panel.title")}
+          {people.length > 0 && (
+            <span className="text-xs text-ink-muted tabular-nums">{people.length}</span>
+          )}
+        </button>
         {hasSubscriptions && (
           <MirrorToggle
             pressed={mirrors.subscriptions}
@@ -360,47 +498,76 @@ export function CalendarView() {
         <FormAlert>{changeFailed ? t("notices.changeFailed") : t("notices.loadFailed")}</FormAlert>
       )}
 
-      {view === "month" && (
-        <MonthView
-          days={days}
-          cursor={cursor}
-          today={today}
-          isPhone={isPhone}
-          items={items}
-          onPickDay={pickDay}
-          onOpenItem={openItem}
-          onSwipe={(direction) => setCursor(shiftCursor("month", cursor, direction))}
-        />
-      )}
-      {view === "week" && isPhone && (
-        <WeekList
-          days={days}
-          today={today}
-          items={items}
-          onPickDay={pickDay}
-          onOpenItem={openItem}
-          onSwipe={(direction) => setCursor(addDaysIso(cursor, direction * 7))}
-        />
-      )}
-      {((view === "week" && !isPhone) || view === "day") && (
-        <TimeGrid
-          days={days}
-          today={today}
-          now={now}
-          hourPx={isPhone ? HOUR_PX_PHONE : HOUR_PX}
-          items={items}
-          onPickDay={view === "week" ? pickDay : undefined}
-          onOpenItem={openItem}
-          onCreate={(day, range) => canCreate && setForm({ event: null, start: { day, range } })}
-          onChangeEvent={changeItem}
-        />
-      )}
+      <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1fr)_15rem] lg:items-start">
+        <div className="flex min-w-0 flex-col gap-5">
+          {view === "month" && (
+            <MonthView
+              days={days}
+              cursor={cursor}
+              today={today}
+              isPhone={isPhone}
+              items={items}
+              onPickDay={pickDay}
+              onOpenItem={openItem}
+              onSwipe={(direction) => setCursor(shiftCursor("month", cursor, direction))}
+            />
+          )}
+          {view === "week" && isPhone && (
+            <WeekList
+              days={days}
+              today={today}
+              items={items}
+              onPickDay={pickDay}
+              onOpenItem={openItem}
+              onSwipe={(direction) => setCursor(addDaysIso(cursor, direction * 7))}
+            />
+          )}
+          {((view === "week" && !isPhone) || view === "day") && (
+            <TimeGrid
+              days={days}
+              today={today}
+              now={now}
+              hourPx={isPhone ? HOUR_PX_PHONE : HOUR_PX}
+              items={items}
+              onPickDay={view === "week" ? pickDay : undefined}
+              onOpenItem={openItem}
+              onCreate={(day, range) => canAdd && setForm({ event: null, start: { day, range } })}
+              onChangeEvent={changeItem}
+            />
+          )}
+        </div>
+        <aside
+          aria-label={t("sharing.panel.title")}
+          className="hidden rounded-2xl border border-line bg-surface/60 p-4 lg:sticky lg:top-24 lg:block"
+        >
+          <h2 className="mb-3 text-sm font-semibold text-ink">{t("sharing.panel.title")}</h2>
+          {panel}
+        </aside>
+      </div>
+      <ResponsiveDialog
+        open={panelOpen}
+        onOpenChange={setPanelOpen}
+        title={t("sharing.panel.title")}
+        closeLabel={t("detail.close")}
+      >
+        {panel}
+      </ResponsiveDialog>
+      <RequestShareDialog
+        open={requestOpen}
+        onOpenChange={setRequestOpen}
+        personId={null}
+        from="calendar"
+      />
+      <CommonTimeDialog open={commonOpen} onOpenChange={setCommonOpen} />
+      <AnswerRequestDialog requestId={answerId} onClose={() => setAnswerId(null)} />
       {taskDialogs.dialogs}
 
       <EventDetail
         event={openEvent}
         onClose={() => setOpenEventId(null)}
-        readOnly={!openEvent || !eventEditable(openEvent)}
+        readOnly={
+          !openEvent || (openEvent.shared ? !openEvent.shared.canEdit : !eventEditable(openEvent))
+        }
         onEdit={(event) => {
           setOpenEventId(null);
           setForm({ event, start: null });
@@ -411,6 +578,8 @@ export function CalendarView() {
         onOpenChange={(open) => !open && setForm(null)}
         event={form?.event ?? null}
         start={form?.start ?? null}
+        writable={writable}
+        canCreateOwn={canCreate}
       />
     </div>
   );

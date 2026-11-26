@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { CalendarConnections } from "@/features/calendar/sync/ui/connections-settings";
+import { CalendarSharingSettings } from "@/features/calendar/sharing/ui/sharing-settings";
 import { CheckIcon, CopyIcon, RefreshCwIcon, Trash2Icon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -81,6 +82,7 @@ export function CalendarSettingsView() {
       <Suspense fallback={null}>
         <CalendarConnections />
       </Suspense>
+      <CalendarSharingSettings />
       <Subscriptions />
       <Feed />
     </SettingsPage>

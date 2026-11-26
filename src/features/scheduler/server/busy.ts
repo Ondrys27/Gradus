@@ -90,8 +90,10 @@ export async function loadHostBusy(
       .from("calendar_events")
       .select("id, starts_at, ends_at, all_day, source, link:calendar_external_links(transparent)")
       .in("user_id", spaces)
-      // Their own: made by them, or in their own space before anyone was named.
-      .or(`actor_id.eq.${hostUserId},and(user_id.eq.${hostUserId},actor_id.is.null)`)
+      // Their own calendar: written into it (30.3), made by them, or in their own space before anyone was named.
+      .or(
+        `calendar_owner_id.eq.${hostUserId},and(calendar_owner_id.is.null,actor_id.eq.${hostUserId}),and(calendar_owner_id.is.null,user_id.eq.${hostUserId},actor_id.is.null)`,
+      )
       .eq("is_demo", false)
       .gte("starts_at", fromIso)
       .lt("starts_at", toIso)

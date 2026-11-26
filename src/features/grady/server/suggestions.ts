@@ -85,88 +85,93 @@ export async function loadRuleInputs(
     crmTasks,
     invites,
     hosted,
+    calendarRequests,
   ] = await Promise.all([
-      client
-        .from("deals")
-        .select("id, title, contact:contacts(company_name, first_name, last_name)")
-        .eq("user_id", userId)
-        .eq("is_demo", false)
-        .is("deleted_at", null)
-        .gte("won_at", subDays(now, WON_RECENT_DAYS).toISOString())
-        .order("won_at", { ascending: false })
-        .limit(PER_RULE_LIMIT),
-      client
-        .from("deals")
-        .select("id, title, stage_id, entered_stage_at")
-        .eq("user_id", userId)
-        .eq("is_demo", false)
-        .is("deleted_at", null)
-        .is("won_at", null)
-        .is("lost_at", null)
-        .lt("entered_stage_at", stalledCutoff(now))
-        .order("entered_stage_at")
-        .limit(PER_RULE_LIMIT),
-      client.from("pipeline_stages").select("id, name").eq("user_id", userId).limit(50),
-      client
-        .from("tasks")
-        .select("id, title, milestone_id, due_date, milestones!inner(status)")
-        .eq("user_id", userId)
-        .eq("is_demo", false)
-        .neq("status", "done")
-        .lt("due_date", overdueBefore)
-        .eq("milestones.status", "active")
-        .order("due_date")
-        .limit(PER_RULE_LIMIT),
-      client
-        .from("milestones")
-        .select("id, title")
-        .eq("user_id", userId)
-        .eq("is_demo", false)
-        .eq("status", "active")
-        .order("position")
-        .limit(ACTIVE_MILESTONE_LIMIT),
-      client
-        .from("contact_tables")
-        .select("id, contact_table_fields(id, system_key)")
-        .eq("user_id", userId)
-        .eq("system_key", FOLLOW_UP_TABLE)
-        .maybeSingle(),
-      // Overdue from the day after the due day; RLS leaves them out for a worker without finance.
-      client
-        .from("invoices")
-        .select("id, number, customer_name, due_on")
-        .eq("user_id", userId)
-        .eq("kind", "invoice")
-        .in("status", ["open", "sent", "overdue"])
-        .lt("due_on", today)
-        .order("due_on")
-        .limit(PER_RULE_LIMIT),
-      // The user's own sales tasks, overdue to the minute.
-      client
-        .from("crm_tasks")
-        .select(
-          "id, title, due_at, deal:deals(title), contact:contacts(company_name, first_name, last_name)",
-        )
-        .eq("assignee_id", userId)
-        .in("user_id", ownSpaces)
-        .eq("is_demo", false)
-        .eq("status", "open")
-        .lt("due_at", now.toISOString())
-        .order("due_at")
-        .limit(PER_RULE_LIMIT),
-      // Invites into other companies naming this account (own client: its own; cron: by id).
-      client.rpc("my_worker_invites", { _user: userId }),
-      // Bookings the user hosts (24.4): pending ones, and confirmed ones booked lately; still ahead.
-      client
-        .from("bookings")
-        .select("id, status, guest_name, starts_at, created_at, confirmed_at, event_type:event_types(name)")
-        .eq("host_user_id", userId)
-        .in("status", ["pending", "confirmed"])
-        .gt("starts_at", now.toISOString())
-        .or(`status.eq.pending,created_at.gte.${subDays(now, 2).toISOString()}`)
-        .order("starts_at")
-        .limit(PER_RULE_LIMIT * 2),
-    ]);
+    client
+      .from("deals")
+      .select("id, title, contact:contacts(company_name, first_name, last_name)")
+      .eq("user_id", userId)
+      .eq("is_demo", false)
+      .is("deleted_at", null)
+      .gte("won_at", subDays(now, WON_RECENT_DAYS).toISOString())
+      .order("won_at", { ascending: false })
+      .limit(PER_RULE_LIMIT),
+    client
+      .from("deals")
+      .select("id, title, stage_id, entered_stage_at")
+      .eq("user_id", userId)
+      .eq("is_demo", false)
+      .is("deleted_at", null)
+      .is("won_at", null)
+      .is("lost_at", null)
+      .lt("entered_stage_at", stalledCutoff(now))
+      .order("entered_stage_at")
+      .limit(PER_RULE_LIMIT),
+    client.from("pipeline_stages").select("id, name").eq("user_id", userId).limit(50),
+    client
+      .from("tasks")
+      .select("id, title, milestone_id, due_date, milestones!inner(status)")
+      .eq("user_id", userId)
+      .eq("is_demo", false)
+      .neq("status", "done")
+      .lt("due_date", overdueBefore)
+      .eq("milestones.status", "active")
+      .order("due_date")
+      .limit(PER_RULE_LIMIT),
+    client
+      .from("milestones")
+      .select("id, title")
+      .eq("user_id", userId)
+      .eq("is_demo", false)
+      .eq("status", "active")
+      .order("position")
+      .limit(ACTIVE_MILESTONE_LIMIT),
+    client
+      .from("contact_tables")
+      .select("id, contact_table_fields(id, system_key)")
+      .eq("user_id", userId)
+      .eq("system_key", FOLLOW_UP_TABLE)
+      .maybeSingle(),
+    // Overdue from the day after the due day; RLS leaves them out for a worker without finance.
+    client
+      .from("invoices")
+      .select("id, number, customer_name, due_on")
+      .eq("user_id", userId)
+      .eq("kind", "invoice")
+      .in("status", ["open", "sent", "overdue"])
+      .lt("due_on", today)
+      .order("due_on")
+      .limit(PER_RULE_LIMIT),
+    // The user's own sales tasks, overdue to the minute.
+    client
+      .from("crm_tasks")
+      .select(
+        "id, title, due_at, deal:deals(title), contact:contacts(company_name, first_name, last_name)",
+      )
+      .eq("assignee_id", userId)
+      .in("user_id", ownSpaces)
+      .eq("is_demo", false)
+      .eq("status", "open")
+      .lt("due_at", now.toISOString())
+      .order("due_at")
+      .limit(PER_RULE_LIMIT),
+    // Invites into other companies naming this account (own client: its own; cron: by id).
+    client.rpc("my_worker_invites", { _user: userId }),
+    // Bookings the user hosts (24.4): pending ones, and confirmed ones booked lately; still ahead.
+    client
+      .from("bookings")
+      .select(
+        "id, status, guest_name, starts_at, created_at, confirmed_at, event_type:event_types(name)",
+      )
+      .eq("host_user_id", userId)
+      .in("status", ["pending", "confirmed"])
+      .gt("starts_at", now.toISOString())
+      .or(`status.eq.pending,created_at.gte.${subDays(now, 2).toISOString()}`)
+      .order("starts_at")
+      .limit(PER_RULE_LIMIT * 2),
+    // Someone of a company asks to see this account's calendar (30.3).
+    client.rpc("calendar_requests_waiting", { _user: userId }),
+  ]);
 
   const stageNames = new Map(list(stages).map((stage) => [stage.id, stage.name]));
   const activeMilestones = list(milestones);
@@ -265,6 +270,14 @@ export async function loadRuleInputs(
       dueAt: task.due_at,
     })),
     cashLow: cashLowInputOf(await cashPlan),
+    // A missing answer (an older database) only leaves this bubble out.
+    calendarRequests: (calendarRequests.error ? [] : (calendarRequests.data ?? [])).map(
+      (request) => ({
+        id: request.id,
+        who: request.name ?? "",
+        level: request.level,
+      }),
+    ),
     bookings: list(hosted)
       // A new booking is news only when it was confirmed as booked, not after the host approved it.
       .filter(
