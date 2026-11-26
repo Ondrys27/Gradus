@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -42,8 +42,17 @@ export function useErrorBadge() {
     window.addEventListener(ERROR_BADGE_EVENT, again);
     return () => window.removeEventListener(ERROR_BADGE_EVENT, again);
   }, [refetch]);
-  return query.data;
+  // The server renders no count. A fetch started by an already hydrated part
+  // of the page can finish before a Suspense-deferred part (the sidebar's
+  // bell) hydrates; showing the count then breaks hydration. Until this
+  // component has hydrated it renders what the server did.
+  const hydrated = useSyncExternalStore(noSubscription, clientSnapshot, serverSnapshot);
+  return hydrated ? query.data : undefined;
 }
+
+const noSubscription = () => () => {};
+const clientSnapshot = () => true;
+const serverSnapshot = () => false;
 
 /** The red count next to Operations → Errors; nothing without new errors. */
 export function ErrorCountBadge({ className }: { className?: string }) {
