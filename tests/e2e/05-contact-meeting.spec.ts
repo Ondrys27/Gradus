@@ -60,7 +60,7 @@ test("5 · contact by hand → moved to Meeting scheduled with a time from the s
   expect(entries).toEqual([{ table_id: meetingTable.id }]);
   const { data: events } = await db
     .from("calendar_events")
-    .select("title, kind, contact_id, source, starts_at")
+    .select("id, title, kind, contact_id, source, starts_at")
     .eq("user_id", account.id);
   expect(events).toHaveLength(1);
   expect(events![0]).toMatchObject({ kind: "meeting", source: "booking" });
@@ -73,7 +73,10 @@ test("5 · contact by hand → moved to Meeting scheduled with a time from the s
     { status: "confirmed", source: "app", created_by: account.id, host_user_id: account.id },
   ]);
 
-  // And the calendar shows it.
-  await openApp(page, "/app/kalendar");
-  await expect(page.locator("main").getByText(company).first()).toBeVisible();
+  // And the calendar shows it, on its day: late in the week the first free
+  // time can fall in the next week, outside the week the calendar opens on.
+  const day = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Prague" }).format(start);
+  await openApp(page, `/app/kalendar?event=${events![0]!.id}&date=${day}`);
+  // A booking's meeting is called "type · guest" (24.4), not by the company.
+  await expect(page.locator("main").getByText(events![0]!.title).first()).toBeVisible();
 });

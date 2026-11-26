@@ -129,18 +129,35 @@ export function useSaveMeetingSettings() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (next: MeetingSettings) => {
-      const row = {
-        space_id: workspaceId,
+      const fields = {
         host_mode: next.hostMode,
         host_user_id: next.hostMode === "person" ? next.hostUserId : null,
         event_type_id: next.eventTypeId,
         type_locked: next.typeLocked,
         ignore_notice: next.ignoreNotice,
       };
-      const { error } = await createClient()
-        .from("cold_calling_meeting_settings")
-        .upsert(row, { onConflict: "space_id" });
-      if (error) throw error;
+      // No upsert: PostgREST's ON CONFLICT DO UPDATE sets every sent column,
+      // space_id too, and the client has no UPDATE grant on space_id (403).
+      const supabase = createClient();
+      const update = () =>
+        supabase
+          .from("cold_calling_meeting_settings")
+          .update(fields)
+          .eq("space_id", workspaceId)
+          .select("space_id");
+      const updated = await update();
+      if (updated.error) throw updated.error;
+      if (updated.data.length === 0) {
+        const inserted = await supabase
+          .from("cold_calling_meeting_settings")
+          .insert({ space_id: workspaceId, ...fields });
+        if (inserted.error?.code === "23505") {
+          const again = await update();
+          if (again.error) throw again.error;
+        } else if (inserted.error) {
+          throw inserted.error;
+        }
+      }
       track("cold_calling_meeting_settings_saved", {
         host_mode: next.hostMode,
         type_set: Boolean(next.eventTypeId),

@@ -110,10 +110,13 @@ test("35 · cold calling → meeting → create deal in the chosen stage → pip
     ]);
   const { data: meetings } = await db
     .from("calendar_events")
-    .select("deal_id, kind, source")
+    .select("deal_id, kind, source, title")
     .eq("user_id", account.id)
     .eq("contact_id", contact!.id);
-  expect(meetings).toEqual([{ deal_id: dealId, kind: "meeting", source: "booking" }]);
+  expect(meetings).toEqual([
+    { deal_id: dealId, kind: "meeting", source: "booking", title: expect.any(String) },
+  ]);
+  const meetingTitle = meetings![0]!.title;
 
   // The contact's row in Cold Calling links the deal, and the button is gone.
   await page
@@ -141,7 +144,8 @@ test("35 · cold calling → meeting → create deal in the chosen stage → pip
   await expect(detail.getByText(chosen.name).first()).toBeVisible();
   const history = detail.getByRole("region", { name: t("pipeline.detail.history") });
   await expect(history.getByText(t("calendar.kind.meeting"), { exact: true })).toBeVisible();
-  await expect(history.getByText(company, { exact: true }).first()).toBeVisible();
+  // A booking's meeting is called "type · guest" (24.4), not by the company.
+  await expect(history.getByText(meetingTitle, { exact: true }).first()).toBeVisible();
   await expect(detail.getByText(company).first()).toBeVisible();
 
   // The contact lists the deal under Obchody, with one open deal in the summary.
