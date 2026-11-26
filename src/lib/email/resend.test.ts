@@ -3,7 +3,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import { isReservedAddress, sendEmail } from "./resend";
+import { readE2eMail } from "./e2e-mailbox";
+import { isInternalAddress, isReservedAddress, sendEmail } from "./resend";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -47,5 +48,40 @@ describe("sendEmail", () => {
     });
     const body = JSON.parse((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body as string);
     expect(body.cc).toEqual(["petr@firma.cz"]);
+  });
+
+  it("never sends to our own @gradus.local addresses, which only bounce", async () => {
+    vi.stubEnv("RESEND_API_KEY", "re_test");
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ id: "e1" }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const message = { kind: "admin_login" as const, subject: "s", text: "t", html: "<p>t</p>" };
+    const tester = `e2e-mail-${crypto.randomUUID().slice(0, 8)}@gradus.local`;
+
+    vi.stubEnv("VERCEL_ENV", "development");
+    expect(await sendEmail({ ...message, to: tester })).toEqual({ ok: true, id: null });
+    expect(readE2eMail(tester)).toHaveLength(1);
+    expect(await sendEmail({ ...message, to: "showcase-ab12@gradus.local" })).toEqual({
+      ok: false,
+      error: "internal address",
+    });
+
+    vi.stubEnv("VERCEL_ENV", "production");
+    expect(await sendEmail({ ...message, to: tester.toUpperCase() })).toEqual({
+      ok: false,
+      error: "internal address",
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    await sendEmail({ ...message, to: "jana@firma.cz", cc: [tester, "petr@firma.cz"] });
+    const body = JSON.parse((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body as string);
+    expect(body.cc).toEqual(["petr@firma.cz"]);
+  });
+});
+
+describe("isInternalAddress", () => {
+  it("is only our own domain", () => {
+    expect(isInternalAddress(" E2E-x@Gradus.Local ")).toBe(true);
+    expect(isInternalAddress("x@gradus.local.cz")).toBe(false);
+    expect(isInternalAddress("x@gradus.cz")).toBe(false);
   });
 });
