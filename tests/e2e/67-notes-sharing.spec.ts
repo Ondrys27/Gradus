@@ -1,4 +1,4 @@
-import { admin, signIn } from "./support/accounts";
+import { admin, signIn, skipCompanyTutorial } from "./support/accounts";
 import { expect, test, watchConsole } from "./support/fixtures";
 import { text } from "./support/i18n";
 import { openApp } from "./support/ui";
@@ -31,6 +31,7 @@ test("67 · notes: folder shared with a group → viewer reads → editor writes
     .select("id")
     .single();
   if (error) throw error;
+  await skipCompanyTutorial(person.id, owner.id);
   const { data: group, error: groupError } = await db
     .from("worker_groups")
     .insert({ owner_id: owner.id, name: "E2E Obchod", color: "teal" })

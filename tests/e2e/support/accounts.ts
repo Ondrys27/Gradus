@@ -205,6 +205,23 @@ export async function seedContacts(
   return data;
 }
 
+/**
+ * Marks a worker's tutorial in the owner's company as skipped (30.2), as if
+ * they had closed "How do you want to start?" on the first visit there; for
+ * tests that insert the worker directly and are not about the tutorial.
+ */
+export async function skipCompanyTutorial(userId: string, spaceId: string) {
+  const at = new Date().toISOString();
+  const { error } = await admin()
+    .from("space_tutorials")
+    .upsert({
+      user_id: userId,
+      space_id: spaceId,
+      state: { mode: "none", step: null, started_at: at, updated_at: at, finished_at: at, outcome: "skipped", demo: null },
+    });
+  if (error) throw error;
+}
+
 /** Runs setup queries as the account itself (public key, RLS), then signs out. */
 export async function asUser<T>(account: Account, run: (client: Db) => Promise<T>): Promise<T> {
   const client = await userClient(account.email, account.password);
