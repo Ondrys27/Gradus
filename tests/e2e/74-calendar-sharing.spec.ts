@@ -29,7 +29,7 @@ function tomorrowAt(hour: number): string {
 
 /** The calendar on tomorrow, one day at a time. */
 async function showTomorrow(page: import("@playwright/test").Page) {
-  await page.getByRole("button", { name: t("calendar.views.day") }).click();
+  await page.getByRole("button", { name: t("calendar.views.day"), exact: true }).click();
   await page.getByRole("button", { name: t("calendar.nav.today") }).click();
   await page.getByRole("button", { name: t("calendar.nav.next.day") }).click();
 }
@@ -86,6 +86,8 @@ test("74 · calendar sharing: request → busy → write → event in his calend
         kind: "meeting",
         starts_at: tomorrowAt(10),
         ends_at: tomorrowAt(11),
+        // A multi-row insert sends missing keys as null, not the default.
+        private: false,
       },
       {
         user_id: owner.id,
