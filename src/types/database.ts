@@ -8000,6 +8000,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      booking_notification_labels: {
+        Args: { _ids: string[] }
+        Returns: {
+          actor_name: string
+          guest_name: string
+          id: string
+          starts_at: string
+        }[]
+      }
       bug_report_create: {
         Args: {
           _app_version?: string
@@ -8121,15 +8130,6 @@ export type Database = {
           name: string
           private_default: boolean
           writes: boolean
-        }[]
-      }
-      booking_notification_labels: {
-        Args: { _ids: string[] }
-        Returns: {
-          actor_name: string
-          guest_name: string
-          id: string
-          starts_at: string
         }[]
       }
       calendar_notification_labels: {
