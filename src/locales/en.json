@@ -4842,7 +4842,8 @@
       "signUp": "Sign up with the link below; then you are in the team and have an account of your own.",
       "free": "Working in the company costs you nothing; the owner pays for it.",
       "open": "Open the invite",
-      "register": "Sign up"
+      "register": "Sign up",
+      "accessTitle": "What you will have access to:"
     },
     "workerLeft": {
       "subject": "{worker} left your company on {appName}",
@@ -5081,6 +5082,51 @@
         "find": "Find",
         "change": "Change",
         "noName": "No name"
+      },
+      "next": "Next",
+      "stepOf": "Step {step} of {total}",
+      "role": {
+        "question": "What will their role be?",
+        "descriptions": {
+          "sales": "Contacts, calls, their own deals and meetings.",
+          "coldCaller": "Cold Calling and their own tasks. No deals, no money.",
+          "assistant": "Milestones, tasks and the calendar of the whole company, contacts.",
+          "accountant": "Finance and invoices, deals and contacts to look up.",
+          "all": "Everything but your notes and settings.",
+          "custom": "Starts with their own tasks only; you set the rest."
+        }
+      },
+      "access": {
+        "title": "What they'll be able to do",
+        "rightsHint": "Applies from the first second after they accept. They see nothing more.",
+        "widgetsTitle": "Widgets on the dashboard",
+        "widgetsHint": "Only those their rights give data to.",
+        "previewTitle": "What the invite will tell them",
+        "previewHint": "This is how the invite in the app and the e-mail sums it up.",
+        "dashboard": {
+          "label": "Starting dashboard",
+          "hint": "The dashboard they start on. They can change it themselves.",
+          "keep": "Keep the one set",
+          "autoGroup": "As group {group} has it",
+          "autoSpace": "As the company has it",
+          "autoSystem": "The basic worker dashboard",
+          "space": "A copy of the company dashboard",
+          "group": "A copy of the dashboard of group {group}",
+          "system": "The basic worker dashboard (own copy)"
+        },
+        "reward": {
+          "label": "Reward plan",
+          "none": "No plan, I'll set it later",
+          "hint": "Optional. You change the amounts under Rewards.",
+          "noRate": "Without a current exchange rate the amounts can't be suggested. Set the plan under Rewards."
+        }
+      },
+      "editInvite": {
+        "open": "Edit the invite",
+        "title": "Edit the invite: {name}",
+        "close": "Close",
+        "hint": "Until they accept, you can change what they'll be able to do. The invite in their app shows it at once.",
+        "loadFailed": "The invite could not be loaded. Try again in a moment."
       }
     },
     "permissions": {
@@ -5095,7 +5141,8 @@
         "assistant": "Assistant",
         "accountant": "Accountant",
         "all": "Everything",
-        "custom": "Custom"
+        "custom": "Custom",
+        "coldCaller": "Cold caller"
       },
       "sections": {
         "invoices": "Invoices"
@@ -6259,6 +6306,73 @@
       "milestoneHint": "The worker gets the amount and the rewards of the Finished project rule once you complete the milestone.",
       "save": "Save reward",
       "saved": "Saved"
+    },
+    "access": {
+      "line": "{section}: {what}",
+      "viewOnly": "view only",
+      "always": "Your dashboard, tasks, notes, rewards and Messages are always yours.",
+      "hidden": "You won't see: {sections}.",
+      "scope": {
+        "records": {
+          "all": "everything in the company",
+          "own": "only yours"
+        },
+        "company": {
+          "all": "the whole company",
+          "own": "your branch"
+        }
+      },
+      "actions": {
+        "milestones": {
+          "update": "edit milestones and tasks"
+        },
+        "contacts": {
+          "create": "create",
+          "update": "edit",
+          "delete": "delete",
+          "export": "export",
+          "generate": "generate new contacts"
+        },
+        "pipeline": {
+          "see_amounts": "see amounts",
+          "create": "create deals",
+          "update": "edit details",
+          "change_stage": "change the stage",
+          "change_amount": "change the amount",
+          "delete": "delete"
+        },
+        "tasks": {
+          "create": "create",
+          "update": "edit",
+          "assign_others": "assign to others",
+          "delete": "delete"
+        },
+        "cold_calling": {
+          "call": "call and move contacts",
+          "view_others_stats": "see others' statistics"
+        },
+        "calendar": {
+          "create": "create events",
+          "update": "edit and delete events"
+        },
+        "scheduler": {
+          "own": "your own booking page"
+        },
+        "finance": {
+          "summaries": "see summaries",
+          "write": "record income and expenses"
+        },
+        "invoices": {
+          "issue": "issue and send invoices"
+        },
+        "company": {
+          "update": "edit the people under you",
+          "rewards": "rewards of the people under you"
+        },
+        "integrations": {
+          "mcp": "connect Claude and other apps"
+        }
+      }
     }
   },
   "game": {
@@ -11483,7 +11597,8 @@
       "textFull": "Delete the sample data now, or keep it and delete it later in Settings → Grady.",
       "back": "Back",
       "keep": "End and keep the data",
-      "delete": "End and delete the data"
+      "delete": "End and delete the data",
+      "textWorker": "I'll delete the sample data from the company right away. Start the tutorial again under Settings → Grady."
     },
     "celebration": {
       "title": "Tutorial complete!",
@@ -11523,7 +11638,13 @@
           "1": "What I watch for you",
           "2": "How and when I speak up"
         },
-        "previewAlt": "Preview of the quick look: a lit menu item and Grady pointing at it"
+        "previewAlt": "Preview of the quick look: a lit menu item and Grady pointing at it",
+        "textWorker": "I'll walk you through everything you have access to in the company. You only watch.",
+        "learnWorker": {
+          "0": "Where everything is in the company",
+          "1": "What you may do and what not",
+          "2": "Where your tasks and rewards are"
+        }
       },
       "full": {
         "title": "Full tutorial",
@@ -11534,8 +11655,16 @@
           "2": "An invoice draft and a question for me"
         },
         "gain": "XP when you finish",
-        "previewAlt": "Preview of the full tutorial: a task list where you tick off what's done"
-      }
+        "previewAlt": "Preview of the full tutorial: a task list where you tick off what's done",
+        "textWorker": "Try what you may do on sample data. I'll delete it from the company at the end.",
+        "learnWorker": {
+          "0": "Only what your rights allow",
+          "1": "On sample data",
+          "2": "Tasks, rewards and a question to me"
+        }
+      },
+      "introWorker": "Welcome to the team of {company}. I'll show you what you may do here and where it is.",
+      "introWorkerPlain": "Welcome to the team. I'll show you what you may do here and where it is."
     },
     "steps": {
       "dashboard": {
@@ -11718,6 +11847,59 @@
       "settingsLook": {
         "title": "Settings",
         "text": "Language, formats, theme and more are in the account menu."
+      },
+      "workerWelcome": {
+        "title": "Welcome to the team",
+        "text": "You work for {company} as {role}. I'll show you only what you have access to here."
+      },
+      "workerWelcomeFull": {
+        "title": "Welcome to the team",
+        "text": "You work for {company} as {role}. I added sample data labelled “sample” only where you may go, and I'll delete it at the end."
+      },
+      "workerMilestones": {
+        "title": "The company's milestones",
+        "text": "The company's big goals split into tasks. Every finished task moves a milestone closer."
+      },
+      "workerNotes": {
+        "title": "Notes",
+        "text": "Your notes in this company and what others share with you. You see the owner's notes only when they share them."
+      },
+      "workerContacts": {
+        "title": "Contacts",
+        "text": "The company's contacts in tables. Every contact is always in exactly one of them."
+      },
+      "workerColdCalling": {
+        "title": "Cold Calling",
+        "text": "Here you call the people of the Not reached table and move them on, say to Meetings. The timer counts your calling time."
+      },
+      "workerPipeline": {
+        "title": "Pipeline",
+        "text": "The deals you work on, by stage. The tiles on top watch what is on fire: the goal is zero everywhere."
+      },
+      "workerFinance": {
+        "title": "Finance",
+        "text": "The company's money: income, expenses and invoices. You see and change only what the owner allows."
+      },
+      "workerRewards": {
+        "title": "Your rewards",
+        "text": "Your reward plan, what you have earned and what waits for approval."
+      },
+      "workerMessages": {
+        "title": "Messages",
+        "text": "The company chat: groups and direct messages with colleagues and the owner. On a phone it is in the bottom bar."
+      },
+      "workerCompany": {
+        "title": "Company",
+        "text": "Who is in the company, who reports to whom and in which groups. You see your part of it."
+      },
+      "workerGradyAsk": {
+        "title": "Ask me",
+        "text": "**Open** me in the corner and **ask**, say “What should I do today?”.",
+        "hint": "Tap me bottom right and type a question."
+      },
+      "accessFinish": {
+        "title": "That's all that's new",
+        "text": "This is what you can do now. Ask me any time where something is."
       }
     },
     "rail": {
@@ -11730,6 +11912,15 @@
       "2": "And done.",
       "3": "See? Nothing to it.",
       "4": "Keep going."
+    },
+    "companyFallback": "this company",
+    "roleFallback": "a team member",
+    "accessOffer": {
+      "title": "You have new access",
+      "text": "You now have access to: {sections}. Shall I show you?",
+      "show": "Show me",
+      "dismiss": "Not now",
+      "open": "Open {section}"
     }
   },
   "promo": {

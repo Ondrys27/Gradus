@@ -2,7 +2,7 @@ import type { Page } from "@playwright/test";
 import { admin, signIn } from "./support/accounts";
 import { expect, test, watchConsole } from "./support/fixtures";
 import { exact, text } from "./support/i18n";
-import { openApp, waitForApp } from "./support/ui";
+import { openApp, waitForApp, toInviteAccess } from "./support/ui";
 
 const L = "cs" as const;
 const t = (key: string, values?: Record<string, string | number>) => text(L, key, values);
@@ -19,6 +19,7 @@ async function inviteById(page: Page, name: string, publicId: string) {
   await form.getByTestId("worker-find").click();
   // The card shows who it found; the worker record takes their name.
   await expect(form.getByTestId("invite-found-name")).toHaveText(name);
+  await toInviteAccess(form);
   await form.getByRole("button", { name: exact(L, "workers.form.create") }).click();
   const sent = page.getByRole("dialog", { name: t("workers.form.inviteSent") });
   await sent.getByRole("button", { name: exact(L, "workers.form.done") }).click();

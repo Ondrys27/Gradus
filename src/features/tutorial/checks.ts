@@ -35,6 +35,12 @@ export type TutorialCheck =
       realOnly?: boolean;
       /** Whose rows: the space (user_id = workspace) or the account itself (Grady's chat). */
       owner?: "workspace" | "user";
+      /**
+       * In a company with other people (30.2) only what the worker did counts:
+       * the column naming who made it. Notes are the person's own (user_id)
+       * in the space of `space_id`.
+       */
+      actor?: string;
       where?: CheckFilter[];
     }
   | { kind: "signal"; signal: TutorialSignal };
@@ -48,15 +54,17 @@ export const TUTORIAL_CHECKS = {
     kind: "row",
     table: "notes",
     since: "updated_at",
+    actor: "user_id",
     where: [{ column: "deleted_at", op: "isNull" }],
   },
-  contactCreated: { kind: "row", table: "contacts", since: "created_at", realOnly: true },
-  contactMoved: { kind: "row", table: "contact_table_moves", since: "created_at" },
-  dealCreated: { kind: "row", table: "deals", since: "created_at", realOnly: true },
+  contactCreated: { kind: "row", table: "contacts", since: "created_at", realOnly: true, actor: "created_by" },
+  contactMoved: { kind: "row", table: "contact_table_moves", since: "created_at", actor: "actor_id" },
+  dealCreated: { kind: "row", table: "deals", since: "created_at", realOnly: true, actor: "created_by" },
   closeDateSet: {
     kind: "row",
     table: "deal_events",
     since: "occurred_at",
+    actor: "actor_id",
     where: [{ column: "kind", op: "eq", value: "close_date" }],
   },
   dealTaskCreated: {
@@ -64,12 +72,14 @@ export const TUTORIAL_CHECKS = {
     table: "crm_tasks",
     since: "created_at",
     realOnly: true,
+    actor: "created_by",
     where: [{ column: "deal_id", op: "notNull" }],
   },
   crmTaskDone: {
     kind: "row",
     table: "crm_tasks",
     since: "completed_at",
+    actor: "completed_by",
     where: [{ column: "status", op: "eq", value: "done" }],
   },
   invoiceCreated: {
@@ -96,6 +106,8 @@ export type CheckContext = {
   userId: string;
   /** When the tutorial (or the step) began: only what came later counts. */
   since: string;
+  /** A worker in a company (30.2): only their own doing counts. */
+  worker?: boolean;
 };
 
 export type QueryFilter =
@@ -109,10 +121,15 @@ export function checkQuery(
   check: Extract<TutorialCheck, { kind: "row" }>,
   context: CheckContext,
 ): { table: CheckTable; filters: QueryFilter[] } {
-  const filters: QueryFilter[] = [
-    ["eq", "user_id", check.owner === "user" ? context.userId : context.workspaceId],
-    ["gt", check.since, context.since],
-  ];
+  const filters: QueryFilter[] = [];
+  if (context.worker && check.actor === "user_id") {
+    // The person's own notes in this company.
+    filters.push(["eq", "user_id", context.userId], ["eq", "space_id", context.workspaceId]);
+  } else {
+    filters.push(["eq", "user_id", check.owner === "user" ? context.userId : context.workspaceId]);
+    if (context.worker && check.actor) filters.push(["eq", check.actor, context.userId]);
+  }
+  filters.push(["gt", check.since, context.since]);
   if (check.realOnly) filters.push(["eq", "is_demo", false]);
   for (const filter of check.where ?? []) {
     if (filter.op === "eq") filters.push(["eq", filter.column, filter.value]);

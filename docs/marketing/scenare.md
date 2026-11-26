@@ -73,7 +73,7 @@ you, and the meeting lands in your calendar with the contact.”
 |---|---|---|---|
 | 0–6 s | Správa firmy, strom lidí | Celá firma na jednom místě | Your whole company in one place |
 | 6–20 s | Pozvat pracovníka: jméno, e-mail → Vytvořit → odkaz pozvánky | Kolegu pozveš jedním odkazem | Invite a colleague with one link |
-| 20–26 s | Tomáš Král → Práva → šablona Obchodník | Práva nastavíš jedním klikem | Set their rights in one click |
+| 20–26 s | Pozvánka → Dál → role Obchodník (krok „Co bude moci“) | Práva nastavíš jedním klikem | Set their rights in one click |
 | 26–41 s | Úkoly → Nový úkol: název, U čeho, Kdo = Tomáš → Vytvořit | Úkol mu předáš s termínem | Hand them a task with a deadline |
 | 41–53 s | Zprávy → Tomáš → zpráva → odeslat | A domluvíte se ve zprávách | And talk it over in messages |
 

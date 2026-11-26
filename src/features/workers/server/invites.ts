@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
 import { parseAccountTarget, parseInviteTarget, type InviteTarget } from "../invite-target";
 import { inviteUrl } from "../logic";
+import { GRANT_ROWS_LIMIT, grantsFromRows, type PermissionGrants } from "../permissions-catalog";
 import { workerInviteEmail, workerLeftEmail } from "./invite-emails";
 
 /**
@@ -177,6 +178,16 @@ async function alreadyInCompany(supabase: Client, ownerId: string, account: stri
 }
 
 /** E-mails an invite: the outbox for the tests' accounts, nothing for other internal addresses. */
+/** The rights the owner set for the worker record (their own client), said in the e-mail. */
+async function grantsOf(supabase: Client, workerId: string): Promise<PermissionGrants | null> {
+  const { data, error } = await supabase
+    .from("worker_permission_grants")
+    .select("section, action, allowed")
+    .eq("worker_id", workerId)
+    .limit(GRANT_ROWS_LIMIT);
+  return error ? null : grantsFromRows(data);
+}
+
 async function mailInvite(
   to: string,
   mail: { subject: string; text: string; html: string },
@@ -336,6 +347,7 @@ export async function bindWorkerInvite(input: {
             url: origin ? (account ? `${origin}${INVITES_PATH}` : inviteUrl(invite.code, origin, locale ?? undefined)) : null,
             forAccount: Boolean(account),
             billingVisible: await loadWorkerBillingVisible(admin),
+            grants: await grantsOf(supabase, invite.worker_id),
           },
           locale,
         );
@@ -404,6 +416,7 @@ export async function renewAccountInvite(input: {
           url: origin ? `${origin}${INVITES_PATH}` : null,
           forAccount: true,
           billingVisible: await loadWorkerBillingVisible(admin),
+          grants: await grantsOf(supabase, fresh.worker_id),
         },
         contact.locale ?? input.locale ?? from.locale,
       );

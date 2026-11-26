@@ -53,6 +53,11 @@ type OverlayProps = {
   /** The first real step suggested at the end. */
   firstAction: FirstAction;
   pending: boolean;
+  /**
+   * The full tutorial asks what happens to the sample data; a worker's samples
+   * sit in the company and always go (30.2), so there is nothing to ask.
+   */
+  demoChoice?: boolean;
 };
 
 /** The last time the user did anything on the page: the hint waits for a pause. */
@@ -435,6 +440,7 @@ function StepBody({
   onEnd,
   firstAction,
   pending,
+  demoChoice = true,
   titleId,
   confirming,
   setConfirming,
@@ -455,12 +461,15 @@ function StepBody({
   const last = index >= steps.length - 1;
   const idle = useIdleSince(step.key, step.action === "do" && !passed);
   const showHint = step.action === "do" && hintDue(step, passed, idle.since, idle.now);
-  const [demo, setDemo] = useState<DemoResolution | null>(null);
+  const [chosen, setDemo] = useState<DemoResolution | null>(null);
+  const asks = mode === "full" && demoChoice;
+  const demo: DemoResolution | null = mode === "full" && !demoChoice ? "deleted" : chosen;
 
   if (confirming) {
     return (
       <EndConfirm
         mode={mode}
+        asks={asks}
         titleId={titleId}
         pending={pending}
         primaryRef={primaryRef}
@@ -519,7 +528,7 @@ function StepBody({
 
       {last && (
         <FinishPart
-          mode={mode}
+          asks={asks}
           demo={demo}
           setDemo={setDemo}
           firstAction={firstAction}
@@ -542,7 +551,7 @@ function StepBody({
         <Button
           ref={primaryRef}
           size="sm"
-          disabled={pending || (last ? mode === "full" && !demo : !canAdvance(step, passed))}
+          disabled={pending || (last ? asks && !demo : !canAdvance(step, passed))}
           onClick={() => (last ? onEnd("finished", demo) : onNext())}
           className={cn(step.action === "do" && passed && "shadow-[0_0_16px] shadow-violet/50")}
         >
@@ -554,14 +563,15 @@ function StepBody({
 }
 
 function FinishPart({
-  mode,
+  asks,
   demo,
   setDemo,
   firstAction,
   pending,
   onOpen,
 }: {
-  mode: RunningMode;
+  /** The full tutorial with sample data the user decides about. */
+  asks: boolean;
   demo: DemoResolution | null;
   setDemo: (value: DemoResolution) => void;
   firstAction: FirstAction;
@@ -571,7 +581,7 @@ function FinishPart({
   const t = useTranslations("tutorial");
   return (
     <div className="mt-3 flex flex-col gap-3">
-      {mode === "full" && (
+      {asks && (
         <fieldset className="flex flex-col gap-1.5">
           <legend className="mb-1 text-sm font-semibold text-ink">{t("demo.question")}</legend>
           <div className="grid grid-cols-2 gap-1.5">
@@ -594,7 +604,7 @@ function FinishPart({
         <Button
           variant="secondary"
           className="mt-1.5 w-full justify-start"
-          disabled={pending || (mode === "full" && !demo)}
+          disabled={pending || (asks && !demo)}
           onClick={onOpen}
         >
           {firstAction.label}
@@ -632,6 +642,7 @@ function Choice({
 
 function EndConfirm({
   mode,
+  asks,
   titleId,
   pending,
   primaryRef,
@@ -639,6 +650,8 @@ function EndConfirm({
   onEnd,
 }: {
   mode: RunningMode;
+  /** The sample data is the user's to keep or delete (not a worker's). */
+  asks: boolean;
   titleId: string;
   pending: boolean;
   primaryRef: RefObject<HTMLButtonElement | null>;
@@ -652,13 +665,13 @@ function EndConfirm({
         {t("endConfirm.title")}
       </h2>
       <p className="text-[15px] leading-relaxed text-ink">
-        {t(mode === "full" ? "endConfirm.textFull" : "endConfirm.text")}
+        {t(mode !== "full" ? "endConfirm.text" : asks ? "endConfirm.textFull" : "endConfirm.textWorker")}
       </p>
       <div className="mt-4 flex flex-wrap justify-end gap-1.5">
         <Button ref={primaryRef} variant="ghost" size="sm" onClick={onCancel}>
           {t("endConfirm.back")}
         </Button>
-        {mode === "full" ? (
+        {asks ? (
           <>
             <Button variant="secondary" size="sm" disabled={pending} onClick={() => onEnd("kept")}>
               {t("endConfirm.keep")}
@@ -668,7 +681,7 @@ function EndConfirm({
             </Button>
           </>
         ) : (
-          <Button size="sm" disabled={pending} onClick={() => onEnd(null)}>
+          <Button size="sm" disabled={pending} onClick={() => onEnd(mode === "full" ? "deleted" : null)}>
             {t("end")}
           </Button>
         )}

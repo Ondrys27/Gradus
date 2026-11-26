@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState, type FormEvent, type ReactNode } from "react";
-import { ArrowLeftIcon, CheckIcon, MailIcon, SearchIcon, UserRoundCheckIcon } from "lucide-react";
+import { useState, type FormEvent, type ReactNode } from "react";
+import { ArrowLeftIcon, MailIcon, SearchIcon, UserRoundCheckIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -9,23 +9,20 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { fieldA11y, FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { toneFill, toneSoft } from "@/components/ui/tone";
 import { useFreshOnOpen } from "@/features/milestones/use-fresh-on-open";
-import { cn } from "@/lib/utils";
-import { useCompanyGroups, useCompanyTree } from "./company/queries";
-import { managerChoices, OWNER_ROOT, type CompanyGroup } from "./company/tree";
+import { OWNER_ROOT } from "./company/tree";
+import {
+  accessForRole,
+  accessProps,
+  AccessFields,
+  RoleStep,
+  useSaveInviteExtras,
+  type InviteAccess,
+} from "./invite-access";
 import { InviteCard } from "./invite-card";
-import { parseAccountTarget, type AccountTarget } from "./invite-target";
+import { parseAccountTarget, type AccountTarget, type InviteTarget } from "./invite-target";
 import { JOB_TITLE_MAX, NAME_MAX, validate, workerSchema, type WorkerErrorKey } from "./logic";
-import { grantsFromRows, type PermissionGrants } from "./permissions-catalog";
-import { PermissionsEditor } from "./permissions-editor";
+import { templateOf, type PermissionGrants, type PermissionTemplate } from "./permissions-catalog";
 import { InviteActionError, useCreateWorker, useLookupInviteAccount, useUpdateWorker } from "./queries";
 import type { FoundAccount, InviteErrorCode } from "./server/invites";
 import type { Worker, WorkerInvite } from "./types";
@@ -195,6 +192,8 @@ function EditFields({
 }
 
 type Mode = "choose" | "existing" | "new";
+/** Who (identity and role name) → which role (a template) → what they'll be able to do (30.2). */
+type Step = "who" | "role" | "access";
 
 function InviteFields({
   permissions: initialPermissions,
@@ -211,7 +210,9 @@ function InviteFields({
   const tErrors = useTranslations("workers.errors");
   const create = useCreateWorker();
   const lookup = useLookupInviteAccount();
+  const saveExtras = useSaveInviteExtras();
   const [mode, setMode] = useState<Mode>("choose");
+  const [step, setStep] = useState<Step>("who");
   // Somebody who has the app: what was typed, and who it found.
   const [handle, setHandle] = useState("");
   const [found, setFound] = useState<{ target: AccountTarget; account: FoundAccount } | null>(null);
@@ -219,12 +220,17 @@ function InviteFields({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [jobTitle, setJobTitle] = useState("");
-  // Without a choice a new worker has their own tasks and branch only.
-  const [permissions, setPermissions] = useState<PermissionGrants>(
-    () => initialPermissions ?? grantsFromRows([]),
+  const [role, setRole] = useState<PermissionTemplate | "custom" | null>(() =>
+    initialPermissions ? (templateOf(initialPermissions) ?? "custom") : null,
   );
-  const [managerId, setManagerId] = useState<string>(defaultManagerId ?? OWNER_ROOT);
-  const [groupIds, setGroupIds] = useState<ReadonlySet<string>>(() => new Set());
+  // Without a choice a new worker has their own tasks and branch only.
+  const [access, setAccess] = useState<InviteAccess>(() => ({
+    ...accessForRole(null, {
+      managerId: defaultManagerId ?? OWNER_ROOT,
+      groupIds: new Set<string>(),
+    }),
+    ...(initialPermissions ? { grants: initialPermissions } : {}),
+  }));
   const [errors, setErrors] = useState<Partial<Record<string, WorkerErrorKey>>>({});
   const [failed, setFailed] = useState(false);
   const err = (key: string) => (errors[key] ? tErrors(errors[key]) : undefined);
@@ -233,6 +239,21 @@ function InviteFields({
     setErrors({});
     setFailed(false);
     setMode(next);
+    setStep("who");
+  }
+
+  function pickRole(next: PermissionTemplate | "custom") {
+    // A different role starts its rights again; the same one keeps what was changed.
+    if (next !== role) {
+      setAccess((current) =>
+        accessForRole(next === "custom" ? null : next, {
+          managerId: current.managerId,
+          groupIds: current.groupIds,
+        }),
+      );
+    }
+    setRole(next);
+    setStep("access");
   }
 
   async function find(event?: FormEvent) {
@@ -254,16 +275,12 @@ function InviteFields({
     }
   }
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    setFailed(false);
-    const place = {
-      grants: permissions,
-      managerId: managerId === OWNER_ROOT ? null : managerId,
-      groupIds: [...groupIds],
-    };
+  /** The worker record's details as typed, or the field errors. */
+  function identity():
+    | { ok: true; worker: { name: string; email: string | null; job_title: string | null }; target: InviteTarget }
+    | { ok: false } {
     if (mode === "existing") {
-      if (!found) return void find();
+      if (!found) return { ok: false };
       // The worker record is called what the person calls themselves.
       const cardName =
         found.account.name?.trim() ||
@@ -278,46 +295,62 @@ function InviteFields({
       });
       if (!result.ok) {
         setErrors(result.errors);
-        return;
+        return { ok: false };
       }
       setErrors({});
-      try {
-        const saved = await create.mutateAsync({
-          worker: { ...result.data, email: null },
-          ...place,
-          target: found.target,
-        });
-        onCreated({ name: saved.worker.name, ...saved });
-      } catch (error) {
-        const code = error instanceof InviteActionError ? ACCOUNT_ERRORS[error.code] : undefined;
-        if (code) {
-          setFound(null);
-          setErrors({ account: code });
-        } else setFailed(true);
-      }
-      return;
+      return { ok: true, worker: { ...result.data, email: null }, target: found.target };
     }
-
     const result = validate(workerSchema, { name, email, job_title: jobTitle });
     if (!result.ok) {
       setErrors({
         ...result.errors,
         ...(result.errors.email && !email.trim() ? { email: "emailRequired" as const } : {}),
       });
-      return;
+      return { ok: false };
     }
     setErrors({});
+    return { ok: true, worker: result.data, target: { kind: "email", email: result.data.email } };
+  }
+
+  function next(event: FormEvent) {
+    event.preventDefault();
+    setFailed(false);
+    if (mode === "existing" && !found) return void find();
+    if (identity().ok) setStep("role");
+  }
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    setFailed(false);
+    const who = identity();
+    if (!who.ok) {
+      setStep("who");
+      return;
+    }
     try {
       const saved = await create.mutateAsync({
-        worker: result.data,
-        ...place,
-        target: { kind: "email", email: result.data.email },
+        worker: who.worker,
+        grants: access.grants,
+        managerId: access.managerId === OWNER_ROOT ? null : access.managerId,
+        groupIds: [...access.groupIds],
+        target: who.target,
+        // Widgets, dashboard and reward plan are in place before the invite exists.
+        prepare: (workerId) => saveExtras(workerId, access),
+        analytics: accessProps(access),
       });
       onCreated({ name: saved.worker.name, ...saved });
     } catch (error) {
-      const code = error instanceof InviteActionError ? EMAIL_ERRORS[error.code] : undefined;
-      if (code) setErrors({ email: code });
-      else setFailed(true);
+      const code =
+        error instanceof InviteActionError
+          ? (mode === "existing" ? ACCOUNT_ERRORS : EMAIL_ERRORS)[error.code]
+          : undefined;
+      if (code) {
+        setStep("who");
+        if (mode === "existing") {
+          setFound(null);
+          setErrors({ account: code });
+        } else setErrors({ email: code });
+      } else setFailed(true);
     }
   }
 
@@ -348,10 +381,10 @@ function InviteFields({
     );
   }
 
-  const back = (
+  const back = (onBack: () => void) => (
     <button
       type="button"
-      onClick={() => choose("choose")}
+      onClick={onBack}
       className="inline-flex min-h-11 cursor-pointer items-center gap-1.5 self-start rounded-lg text-sm font-medium text-ink-soft outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40 mouse:min-h-8"
       data-testid="invite-back"
     >
@@ -364,7 +397,7 @@ function InviteFields({
   if (mode === "existing" && !found) {
     return (
       <form onSubmit={find} noValidate className="flex flex-col gap-4">
-        {back}
+        {back(() => choose("choose"))}
         <FormField id="worker-account" label={t("account.label")} error={err("account")} hint={t("account.hint")}>
           <div className="flex gap-2">
             <Input
@@ -395,9 +428,38 @@ function InviteFields({
     );
   }
 
+  if (step === "role") {
+    return (
+      <div className="flex flex-col gap-4" data-testid="invite-role-step">
+        {back(() => setStep("who"))}
+        <StepLabel index={2} />
+        <RoleStep value={role} onChoose={pickRole} />
+        <div className="flex justify-end">
+          <Button type="button" variant="ghost" onClick={onCancel}>
+            {t("cancel")}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === "access") {
+    return (
+      <form onSubmit={submit} noValidate className="flex flex-col gap-4" data-testid="invite-access-step">
+        {back(() => setStep("role"))}
+        <StepLabel index={3} />
+        <h3 className="text-base font-semibold text-ink">{t("access.title")}</h3>
+        <AccessFields value={access} onChange={setAccess} />
+        {failed && <FormAlert>{t("saveFailed")}</FormAlert>}
+        <Actions pending={create.isPending} submitLabel={t("create")} onCancel={onCancel} />
+      </form>
+    );
+  }
+
   return (
-    <form onSubmit={submit} noValidate className="flex flex-col gap-4">
-      {back}
+    <form onSubmit={next} noValidate className="flex flex-col gap-4">
+      {back(() => choose("choose"))}
+      <StepLabel index={1} />
       {mode === "existing" && found ? (
         <div
           className="flex items-center gap-3 rounded-2xl border border-teal/40 bg-teal/10 p-3"
@@ -441,17 +503,16 @@ function InviteFields({
       )}
       {err("account") && <FormAlert>{err("account")}</FormAlert>}
       <JobField value={jobTitle} onChange={setJobTitle} error={err("job_title")} />
-      <PlaceInCompany
-        managerId={managerId}
-        onManagerChange={setManagerId}
-        groupIds={groupIds}
-        onGroupsChange={setGroupIds}
-      />
-      <PermissionsEditor value={permissions} onChange={(next) => setPermissions(next)} />
       {failed && <FormAlert>{t("saveFailed")}</FormAlert>}
-      <Actions pending={create.isPending} submitLabel={t("create")} onCancel={onCancel} />
+      <Actions pending={false} submitLabel={t("next")} onCancel={onCancel} next />
     </form>
   );
+}
+
+/** "Step 2 of 3" above the steps of an invite. */
+function StepLabel({ index }: { index: 1 | 2 | 3 }) {
+  const t = useTranslations("workers.form");
+  return <p className="micro-label -mb-2">{t("stepOf", { step: String(index), total: "3" })}</p>;
 }
 
 function ChoiceButton({
@@ -535,10 +596,13 @@ function Actions({
   pending,
   submitLabel,
   onCancel,
+  next = false,
 }: {
   pending: boolean;
   submitLabel: string;
   onCancel: () => void;
+  /** The first step of an invite: on to the role. */
+  next?: boolean;
 }) {
   const t = useTranslations("workers.form");
   return (
@@ -546,108 +610,14 @@ function Actions({
       <Button type="button" variant="ghost" onClick={onCancel}>
         {t("cancel")}
       </Button>
-      <Button type="submit" data-tutorial="worker-submit" disabled={pending}>
+      <Button
+        type="submit"
+        data-tutorial={next ? "invite-next" : "worker-submit"}
+        data-testid={next ? "invite-next" : "worker-submit"}
+        disabled={pending}
+      >
         {submitLabel}
       </Button>
     </div>
-  );
-}
-
-/** Where a new worker goes: under whom, and into which groups. */
-function PlaceInCompany({
-  managerId,
-  onManagerChange,
-  groupIds,
-  onGroupsChange,
-}: {
-  managerId: string;
-  onManagerChange: (id: string) => void;
-  groupIds: ReadonlySet<string>;
-  onGroupsChange: (ids: ReadonlySet<string>) => void;
-}) {
-  const t = useTranslations("workers.company.invite");
-  const people = useCompanyTree();
-  const groups = useCompanyGroups();
-  // Everyone can be a manager of a worker who does not exist yet, except who left.
-  const managers = useMemo(
-    () =>
-      managerChoices(people.data ?? [], "")
-        .filter((choice) => !choice.person || choice.person.status !== "inactive")
-        .map((choice) => ({
-          value: choice.id,
-          label: choice.person
-            ? `${" ".repeat(Math.max(choice.depth - 1, 0))}${choice.person.name}`
-            : t("managerOwner"),
-        })),
-    [people.data, t],
-  );
-
-  function toggle(group: CompanyGroup) {
-    const next = new Set(groupIds);
-    if (!next.delete(group.id)) next.add(group.id);
-    onGroupsChange(next);
-  }
-
-  return (
-    <>
-      {managers.length > 1 && (
-        <div className="flex flex-col gap-2">
-          <span id="worker-manager-label" className="text-sm font-medium text-ink-soft">
-            {t("manager")}
-          </span>
-          <Select
-            value={managerId}
-            items={managers}
-            onValueChange={(next) => {
-              if (typeof next === "string") onManagerChange(next);
-            }}
-          >
-            <SelectTrigger aria-labelledby="worker-manager-label" data-testid="worker-manager">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {managers.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-      {(groups.data?.length ?? 0) > 0 && (
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 text-sm font-medium text-ink-soft">{t("groups")}</legend>
-          <div className="flex flex-wrap gap-2">
-            {groups.data!.map((group) => {
-              const selected = groupIds.has(group.id);
-              return (
-                <button
-                  key={group.id}
-                  type="button"
-                  aria-pressed={selected}
-                  onClick={() => toggle(group)}
-                  className={cn(
-                    "inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:min-h-8",
-                    selected ? toneSoft[group.color] : "border-line text-ink-soft hover:text-ink",
-                  )}
-                >
-                  {selected ? (
-                    <CheckIcon aria-hidden className="size-3.5" />
-                  ) : (
-                    <span
-                      aria-hidden
-                      className={cn("size-2 rounded-full", toneFill[group.color])}
-                    />
-                  )}
-                  {group.name}
-                </button>
-              );
-            })}
-          </div>
-          <p className="text-xs text-ink-muted">{t("groupsHint")}</p>
-        </fieldset>
-      )}
-    </>
   );
 }

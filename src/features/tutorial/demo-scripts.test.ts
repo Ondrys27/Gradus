@@ -28,7 +28,7 @@ function sources(dir: string): string[] {
 const CODE = sources(path.resolve(__dirname, "../..")).join("\n");
 
 /** Names made from a template in the code (`task-view-${value}` and the like). */
-const TEMPLATES = ["task-view-", "move-table-", "stage-", "nav-", "worker-tab-", "rights-template-"];
+const TEMPLATES = ["task-view-", "move-table-", "stage-", "nav-", "worker-tab-", "rights-template-", "invite-role-"];
 
 function targetsOf(step: ShowcaseStep): ShowcaseTarget[] {
   if (step.kind === "drag") return [step.target, step.to];

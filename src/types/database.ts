@@ -5689,6 +5689,33 @@ export type Database = {
         }
         Relationships: []
       }
+      space_tutorials: {
+        Row: {
+          created_at: string
+          known_sections: string[] | null
+          space_id: string
+          state: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          known_sections?: string[] | null
+          space_id: string
+          state?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          known_sections?: string[] | null
+          space_id?: string
+          state?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       stripe_events: {
         Row: {
           attempts: number
@@ -6036,6 +6063,30 @@ export type Database = {
           title?: string | null
           user_id?: string
           via?: string
+        }
+        Relationships: []
+      }
+      tutorial_demo_rows: {
+        Row: {
+          created_at: string
+          kind: string
+          row_id: string
+          space_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          kind: string
+          row_id: string
+          space_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          kind?: string
+          row_id?: string
+          space_id?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -10103,9 +10154,12 @@ export type Database = {
       }
       trash_retention_days: { Args: never; Returns: number }
       tutorial_delete_demo: { Args: never; Returns: Json }
+      tutorial_delete_worker_demo: { Args: never; Returns: Json }
       tutorial_instant: { Args: { _value: Json }; Returns: string }
       tutorial_seed_demo: { Args: { _payload: Json }; Returns: Json }
+      tutorial_seed_worker_demo: { Args: { _payload: Json }; Returns: Json }
       tutorial_text: { Args: { _max: number; _value: Json }; Returns: string }
+      tutorial_worker_space: { Args: never; Returns: string }
       user_today: { Args: { _user_id: string }; Returns: string }
       username_available: { Args: { _username: string }; Returns: boolean }
       valid_ai_caps: { Args: { _value: Json }; Returns: boolean }

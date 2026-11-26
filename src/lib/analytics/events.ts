@@ -284,6 +284,15 @@ export const EVENTS = {
   tutorial_started: event("onboarding", "client", false, {
     mode: oneOf(TUTORIAL_MODES),
     replay: bool(),
+    /** In a company the account works for (30.2): the tutorial of their rights. */
+    worker: optional(bool()),
+    /** How many sections the steps came from. */
+    sections: optional(count(30)),
+  }),
+  /** Grady's offer of a short look at sections a worker newly has (30.2). */
+  tutorial_access_offer: event("onboarding", "client", false, {
+    outcome: oneOf(["shown", "accepted", "dismissed"]),
+    sections: count(30),
   }),
   tutorial_step: event("onboarding", "client", false, {
     mode: oneOf(["quick", "full"]),
@@ -835,6 +844,18 @@ export const EVENTS = {
     with_manager: optional(bool()),
     groups: optional(count(200)),
     target: optional(oneOf(["account", "link"])),
+    /** "What they'll be able to do" before the invite (30.2). */
+    template: optional(oneOf(["sales", "coldCaller", "assistant", "accountant", "all", "custom"])),
+    widgets_limited: optional(bool()),
+    reward_template: optional(oneOf(["coldCaller", "salesCommission", "developer", "assistant", "none"])),
+    dashboard: optional(oneOf(["auto", "space", "group", "system"])),
+  }),
+  /** A waiting invite changed before it was accepted (30.2): which parts, never names. */
+  worker_invite_edited: event("workers", "client", true, {
+    rights: bool(),
+    widgets: bool(),
+    place: bool(),
+    dashboard: bool(),
   }),
   worker_invite_renewed: event("workers", "client", true, {}),
   /** The owner looked somebody up to invite by @username or short id (28.1); never what was typed. */
@@ -977,7 +998,7 @@ export const EVENTS = {
     by: oneOf(["owner", "self", "other"]),
   }),
   worker_permission_template_applied: event("workers", "client", true, {
-    template: oneOf(["sales", "assistant", "accountant", "all"]),
+    template: oneOf(["sales", "coldCaller", "assistant", "accountant", "all"]),
   }),
   worker_document_uploaded: event("workers", "client", true, {
     kind: oneOf(["pdf", "image", "office", "text"]),

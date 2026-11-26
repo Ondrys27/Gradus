@@ -20,8 +20,11 @@ export function TutorialResume({
   pending,
   onResume,
   onEnd,
+  demoChoice = true,
 }: {
   mode: RunningMode;
+  /** A worker's samples always go at the end (30.2): nothing to ask. */
+  demoChoice?: boolean;
   stepTitle: string | null;
   pending: boolean;
   onResume: () => void;
@@ -76,7 +79,9 @@ export function TutorialResume({
                 variant="ghost"
                 size="sm"
                 disabled={pending}
-                onClick={() => (mode === "full" ? setConfirming(true) : onEnd(null))}
+                onClick={() =>
+                  mode === "full" ? (demoChoice ? setConfirming(true) : onEnd("deleted")) : onEnd(null)
+                }
               >
                 {t("end")}
               </Button>
