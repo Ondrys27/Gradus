@@ -164,6 +164,17 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] K29 | reviewer | 2026-11-25: Revize fáze 29 nechává vydělané bonusy odměn i po vypnutí pravidla, Grady v nastavení odměn přijme odpověď jen s id správného druhu a přepínání záložek přehledu administrace už nepíše další řádek auditu.
 - [x] STOP | Konec fáze 29. V plánu odměn napiš větou, jak chceš odměňovat cold callera, zkontroluj navržená pravidla a „Vyzkoušet", potvrď a přesuň kontakt z Ozvat se do Domluvená schůzka — odměna musí vzniknout jen jednou. V administraci si poskládej přehled, přidej záložku Peníze, vyvolej chybu a ověř, že svítí ve widgetu a nepřišel e-mail. Co nesedí, napiš Claude Code rovnou, pak /pokracuj. · přeskočeno nočním během 2026-11-25, zkontroluj ručně (.noc/zkontroluj.md)
 - [x] 28.10 | architect | env: GOOGLE_CLIENT_ID — 2026-11-24: Obousměrná synchronizace s Google a Apple kalendářem (OAuth, CalDAV, push kanály, odchozí fronta bez ozvěn, novější změna vyhrává) za seznamem povolených účtů v administraci, obsazenost plánovače z připojených kalendářů a rezervace zapsané do Googlu s volitelným Meetem.
+- [ ] 30.1 | architect | env: RESEND_API_KEY
+- [ ] 30.2 | architect |
+- [ ] 30.3 | architect |
+- [ ] 30.4 | architect | env: RESEND_API_KEY
+- [ ] 30.5 | architect |
+- [ ] 30.6 | architect |
+- [ ] 30.7 | designer |
+- [ ] 30.8 | architect | env: ANTHROPIC_API_KEY
+- [ ] 30.9 | designer |
+- [ ] K30 | reviewer |
+- [ ] STOP | Konec fáze 30. Nahraj profilovou fotku. Přečti docs/chyby-2026-11.md a docs/emaily.md a rozhodni, které e-maily sloučit. Ráno v 6:00 zkontroluj denní souhrn. Pozvi pracovníka s právy nastavenými předem a projdi jeho tutoriál. Požádej Vášu o sdílení kalendáře, zkus „Najít společný čas" a soukromou událost. V plánovači zaškrtni zdroje obsazenosti, pak jako cold caller přesuň kontakt do Domluvené schůzky a vyber termín. Nastav rozvrh vzhledů se třemi bloky a posuň si začátek bloku na za dvě minuty, ať vidíš přechod; vytvoř vlastní vzhled. V každé sekci zkus otazník a zeptej se Gradyho na tři věci vlastními slovy. Projdi nové menu a docs/srozumitelnost/nalezy.md. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [ ] 23.4 | RUČNĚ | Spuštění prodeje podle docs/spusteni.md: Vercel Pro, ověřený Stripe účet, live klíče a webhook ve Vercelu (Production), Invoicing s patičkou „Nejsem plátce DPH.", doplněné [DOPLNIT] v podmínkách, SMTP a potvrzení e-mailu v Supabase, PUBLIC_SIGNUP_ENABLED=true. Udělej jeden ostrý nákup vlastní kartou a vrať si peníze. Pak tuhle položku zaškrtni.
 - [ ] 7.1 | RUČNĚ | Aplikace běží na Vercel Hobby a každý push na main se nasadí sám. Až budeš mít doménu: nastav ji ve Vercelu, změň NEXT_PUBLIC_SITE_URL ve Vercelu, uprav Site URL a Redirect URLs v Supabase → URL Configuration a dej Redeploy. Projdi produkci v anonymním okně a pak tuhle položku zaškrtni ručně.
 
