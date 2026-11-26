@@ -67,6 +67,7 @@ export async function notifyPlanRequest({
       `${t("plans.interestEmail.status")}: ${status}`,
     ];
     const sent = await sendEmail({
+      kind: "plan_request",
       to: owner.email,
       subject: t("plans.interestEmail.subject", { appName: APP_NAME, plan: requested }),
       text: lines.join("\n"),

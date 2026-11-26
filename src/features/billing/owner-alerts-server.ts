@@ -95,6 +95,7 @@ export async function sendOwnerDigest(admin: Admin): Promise<DigestOutcome> {
     });
     if (!mail) return "nothing";
     const sent = await sendEmail({
+      kind: "billing_alert",
       to: owner.email,
       subject: mail.subject,
       text: mail.lines.join("\n"),

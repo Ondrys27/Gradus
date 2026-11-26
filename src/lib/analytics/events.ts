@@ -151,6 +151,7 @@ const CRON_JOBS = [
   "chat_attachments",
   "exchange_rates",
   "calendar_subscriptions",
+  "admin_digest",
 ] as const;
 const FILE_ERRORS = [
   "fileType",
@@ -1255,6 +1256,24 @@ export const EVENTS = {
   }),
   /** The welcome e-mail to a tester with an invitation went out (or failed). */
   welcome_email_sent: event("platform", "server", false, { ok: bool() }),
+  /**
+   * The daily summary to an administrator (30.1): sent now or scheduled for
+   * their hour, a calm day or not, with money or without (limited admin),
+   * left out by "only when there is news", or a preview from the settings.
+   */
+  admin_digest_sent: event("platform", "server", false, {
+    outcome: oneOf(["scheduled", "sent", "skipped", "failed"]),
+    calm: bool(),
+    money: bool(),
+    preview: bool(),
+  }),
+  /** An administrator changed their daily summary (on, hour, only news, zone). */
+  admin_digest_prefs_saved: event("platform", "server", false, {
+    enabled: bool(),
+    only_news: bool(),
+    hour: count(23),
+    own_zone: bool(),
+  }),
 
   // --- plan and trial ------------------------------------------------------
   plan_interest_clicked: event("plan", "server", false, { plan: oneOf(PAID_PLANS), ok: bool() }),

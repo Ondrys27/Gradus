@@ -9,6 +9,7 @@ import {
 import { runInBackground } from "@/features/errors/alerts/server/background";
 import { recordError } from "@/features/errors/alerts/server/capture";
 import { dispatchErrorAlert } from "@/features/errors/alerts/server/dispatch";
+import { noiseRuleOf } from "@/features/errors/alerts/noise";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -43,6 +44,13 @@ export async function POST(request: Request) {
   const parsed = clientErrorSchema.safeParse(payload);
   if (!parsed.success) return NextResponse.json({ error: "invalid" }, { status: 400 });
   const body = parsed.data;
+  // A browser on an older version still sends what is noise now (noise.ts): accepted, not stored.
+  const noise = noiseRuleOf({
+    message: body.message,
+    stack: body.stack ?? null,
+    dev: process.env.NODE_ENV === "development",
+  });
+  if (noise && noise !== "staleClient") return NextResponse.json({ ok: true, ignored: noise });
 
   let userId: string | null = null;
   let email: string | null = null;

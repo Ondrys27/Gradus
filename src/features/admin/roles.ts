@@ -49,6 +49,11 @@ export type AdminPower =
   | "viewScreenshots"
   /** The e-mails "X changed …" between the owner and the full admins, and switching them off. */
   | "peerNotices"
+  /**
+   * The daily summary of the other administrators (30.1: on or off, the
+   * hour, only when there is news); everyone sets their own regardless.
+   */
+  | "editDigests"
   /** The showcase mode (27.4) switched on or off; a limited admin reads it. */
   | "editShowcase"
   /** Who may connect Google and Apple calendars (28.10); a limited admin reads it. */

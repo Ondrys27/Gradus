@@ -44,7 +44,16 @@ export function scrubErrorMessage(message: unknown): string {
 export function errorText(error: unknown): string {
   if (error instanceof Error) return `${error.name}: ${error.message}`;
   if (typeof error === "string") return error;
-  return "unknown";
+  // Something thrown that is not an Error (a library's plain object, a
+  // Response): its own name and message when it has them, else what it is, so
+  // the log says more than "unknown" (GR-QPK5YM). Never its other fields.
+  if (error && typeof error === "object") {
+    const { name, message } = error as { name?: unknown; message?: unknown };
+    const kind =
+      typeof name === "string" && name ? name : (Object.getPrototypeOf(error)?.constructor?.name ?? "Object");
+    return typeof message === "string" && message ? `${kind}: ${message}` : `unknown (${kind})`;
+  }
+  return error === undefined || error === null ? "unknown" : `unknown (${typeof error})`;
 }
 
 /** Chrome/Node "at fn (file:1:2)", Firefox/Safari "fn@file:1:2". */

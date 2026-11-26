@@ -155,6 +155,7 @@ export async function sendPasswordReset(userId: string, reason: string): Promise
   }
   const link = recoveryLink(await siteOrigin(), data.properties.hashed_token, target.locale);
   const sent = await deliverEmail({
+    kind: "account_support",
     to: target.email!,
     ...authEmail("resetPassword", target.locale, link),
   });
@@ -187,6 +188,7 @@ export async function resendEmailConfirmation(
   }
   const link = confirmationLink(await siteOrigin(), data.properties.hashed_token);
   const sent = await deliverEmail({
+    kind: "account_support",
     to: target.email!,
     ...authEmail("confirmSignup", target.locale, link),
   });
@@ -247,6 +249,7 @@ export async function requestEmailChange(
   );
   const link = emailChangeLink(await siteOrigin(), token, target.locale);
   const sent = await deliverEmail({
+    kind: "account_support",
     to: next,
     ...authEmail("changeEmail", target.locale, link, { oldEmail: target.email!, newEmail: next }),
   });

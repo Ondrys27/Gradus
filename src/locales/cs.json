@@ -1022,7 +1022,7 @@
       "upload": "Nahrát fotku",
       "change": "Změnit fotku",
       "remove": "Odstranit",
-      "requirements": "JPG nebo PNG, nejvýše 2 MB. Potom ji oříznete na čtverec.",
+      "requirements": "JPG, PNG nebo HEIC (fotka z iPhonu), nejvýše 20 MB. Potom ji oříznete na čtverec.",
       "cropTitle": "Oříznutí fotky",
       "cropArea": "Oblast oříznutí fotky",
       "cropHint": "Tažením posunete, sevřením prstů nebo kolečkem přiblížíte.",
@@ -1033,10 +1033,11 @@
       "save": "Uložit fotku",
       "saving": "Ukládám…",
       "errors": {
-        "tooLarge": "Fotka je větší než 2 MB.",
-        "wrongType": "Podporované jsou jen fotky JPG a PNG.",
+        "tooLarge": "Fotka je větší než 20 MB.",
+        "wrongType": "Podporované jsou fotky JPG, PNG a HEIC.",
         "unreadable": "Tuto fotku se nepodařilo otevřít.",
-        "uploadFailed": "Fotku se nepodařilo uložit. Zkuste to prosím znovu."
+        "uploadFailed": "Fotku se nepodařilo uložit. Zkuste to prosím znovu.",
+        "heicUnsupported": "Tento prohlížeč fotku HEIC neotevře. Uložte ji jako JPG, nebo ji nahrajte ze Safari."
       }
     },
     "details": {
@@ -1075,7 +1076,7 @@
       "upload": "Nahrát logo",
       "change": "Změnit logo",
       "remove": "Odstranit",
-      "requirements": "JPG nebo PNG, nejvýše 2 MB. Potom ho oříznete na čtverec.",
+      "requirements": "JPG, PNG nebo HEIC, nejvýše 20 MB. Potom ho oříznete na čtverec.",
       "cropTitle": "Oříznutí loga",
       "cropArea": "Oblast oříznutí fotky",
       "cropHint": "Tažením posunete, sevřením prstů nebo kolečkem přiblížíte.",
@@ -1086,10 +1087,11 @@
       "save": "Uložit logo",
       "saving": "Ukládám…",
       "errors": {
-        "tooLarge": "Logo je větší než 2 MB.",
-        "wrongType": "Podporované jsou jen obrázky JPG a PNG.",
+        "tooLarge": "Logo je větší než 20 MB.",
+        "wrongType": "Podporované jsou obrázky JPG, PNG a HEIC.",
         "unreadable": "Tento obrázek se nepodařilo otevřít.",
-        "uploadFailed": "Logo se nepodařilo uložit. Zkuste to prosím znovu."
+        "uploadFailed": "Logo se nepodařilo uložit. Zkuste to prosím znovu.",
+        "heicUnsupported": "Tento prohlížeč obrázek HEIC neotevře. Uložte ho jako JPG nebo PNG, nebo ho nahrajte ze Safari."
       }
     }
   },
@@ -4942,6 +4944,92 @@
       },
       "join": "Připojit se ke schůzce",
       "joinLine": "Připojit se ke schůzce: {url}"
+    },
+    "adminDigest": {
+      "title": "{appName} včera · {date}",
+      "subject": "{appName} včera · {date}",
+      "subjectCalm": "{appName} včera · {date} · vše v pořádku",
+      "attention": {
+        "label": "Stojí za pozornost:",
+        "calm": "Vše v pořádku, nic nového nečeká na rozhodnutí.",
+        "health": "Něco selhává: {system}. Podívej se do Zdraví systému.",
+        "newErrors": "{count, plural, one {Objevila se # nová chyba} few {Objevily se # nové chyby} other {Objevilo se # nových chyb}}, nejčastější {code}.",
+        "cancelled": "{count, plural, one {# předplatné bylo zrušeno} few {# předplatná byla zrušena} other {# předplatných bylo zrušeno}}.",
+        "signups": {
+          "up": "Registrací bylo {value}, víc než {versus} ({previous}).",
+          "down": "Registrací bylo {value}, míň než {versus} ({previous})."
+        },
+        "active": {
+          "up": "Aktivních lidí bylo {value}, víc než {versus} ({previous}).",
+          "down": "Aktivních lidí bylo {value}, míň než {versus} ({previous})."
+        },
+        "versus": {
+          "dayBefore": "den předtím",
+          "weekAgo": "před týdnem"
+        },
+        "aiCost": {
+          "up": "AI stála {value} na aktivního uživatele, den předtím {previous}.",
+          "down": "AI zlevnila na {value} na aktivního uživatele z {previous}."
+        },
+        "reports": "{count, plural, one {Přišlo # nové hlášení} few {Přišla # nová hlášení} other {Přišlo # nových hlášení}}."
+      },
+      "change": {
+        "same": {
+          "dayBefore": "stejně jako den předtím",
+          "weekAgo": "stejně jako před týdnem"
+        },
+        "dayBefore": "{change} proti předchozímu dni",
+        "weekAgo": "{change} proti minulému týdnu",
+        "withPercent": {
+          "dayBefore": "{change} ({percent}) proti předchozímu dni",
+          "weekAgo": "{change} ({percent}) proti minulému týdnu"
+        },
+        "none": "den předtím nikdo aktivní"
+      },
+      "people": {
+        "title": "Lidé",
+        "newUsers": "Noví uživatelé: {count} · {dayBefore} · {weekAgo}",
+        "activeUsers": "Aktivní uživatelé: {count} · {dayBefore} · {weekAgo}"
+      },
+      "money": {
+        "title": "Peníze a AI",
+        "testMode": "Stripe je v testovacím režimu: tržby a předplatná jsou testovací platby interních účtů.",
+        "noRevenue": "Tržby: žádná platba",
+        "revenue": "Tržby: {amount} · {change}",
+        "subscriptions": "Nová předplatná: {started} · zrušená: {cancelled}",
+        "ai": "Náklady AI: {amount} · {change}",
+        "aiPerActive": "AI na aktivního uživatele: {amount} · {change}"
+      },
+      "errors": {
+        "title": "Chyby",
+        "summary": "Nové: {fresh} · výskytů celkem: {occurrences} · vyřešené: {resolved}",
+        "top": "{code} · {message} · {count}×"
+      },
+      "feedback": {
+        "title": "Hlášení a zpětná vazba",
+        "summary": "Hlášení: {reports} · nápady: {ideas} · dotazník: {survey}"
+      },
+      "waiting": {
+        "title": "Čeká na rozhodnutí",
+        "errors": "Chyby k posouzení: {count}",
+        "reports": "Nepřečtená hlášení: {count}",
+        "payouts": "Výplaty provizí ke schválení nebo vyplacení: {count}",
+        "draft": "Koncept tarifů čeká na zveřejnění"
+      },
+      "health": {
+        "title": "Zdraví systému",
+        "warn": "{system}: chce pozornost",
+        "bad": "{system}: selhává",
+        "items": {
+          "cron": "Cron úlohy",
+          "env": "Proměnné prostředí",
+          "email": "Fronta e-mailů",
+          "stripe": "Webhook Stripe",
+          "rates": "Kurzy měn"
+        }
+      },
+      "open": "Otevřít administraci",
+      "footer": "Čas, vypnutí nebo „jen když je co hlásit“ nastavíš v Administrace → Nastavení → Upozornění:"
     }
   },
   "workers": {
@@ -7666,7 +7754,8 @@
         "showcase": "Ukázkový režim",
         "errors": "Chyby",
         "help": "Nápověda",
-        "integrations": "Integrace"
+        "integrations": "Integrace",
+        "notifications": "Upozornění"
       },
       "soon": "Brzy",
       "groups": {
@@ -9559,7 +9648,8 @@
         "showcase": "Aplikace, která se předvede sama, pro marketingová videa: přepínač a scénáře.",
         "admins": "Kdo smí do administrace: pozvánky, úrovně a odebrání administrátorů.",
         "help": "Tahle stránka: co je kde, s odkazy rovnou na místo.",
-        "integrations": "Kdo smí propojit Google a Apple kalendář: režim, datum a ručně přidané účty."
+        "integrations": "Kdo smí propojit Google a Apple kalendář: režim, datum a ručně přidané účty.",
+        "notifications": "Denní souhrn „Gradus včera“ e-mailem každému administrátorovi: zapnout, čas, pásmo a jen když je co hlásit."
       },
       "items": {
         "overviewNumbers": {
@@ -9813,6 +9903,14 @@
         "overviewAi": {
           "title": "Widgety AI: spotřeba proti stropu",
           "keywords": "ai spotřeba strop úsporný režim kde ušetřit"
+        },
+        "adminDigest": {
+          "title": "Denní souhrn e-mailem",
+          "keywords": "souhrn newsletter e-mail denně ráno včera upozornění čas vypnout jen když je co hlásit ukázka"
+        },
+        "adminDigestOthers": {
+          "title": "Souhrn ostatních administrátorů",
+          "keywords": "administrátoři souhrn e-mail vypnout čas"
         }
       }
     },
@@ -9884,7 +9982,8 @@
         },
         "mock": "test, neodešlo",
         "reports": "Hlášení uživatelů se stejným kódem",
-        "noReports": "Nikdo tuhle chybu nenahlásil."
+        "noReports": "Nikdo tuhle chybu nenahlásil.",
+        "note": "Poznámka:"
       },
       "peer": {
         "title": "E-maily o změnách",
@@ -10132,6 +10231,10 @@
         "quickActions": {
           "name": "Rychlé akce",
           "description": "Najít uživatele, založit promo kód, zveřejnit tarify."
+        },
+        "emails": {
+          "name": "E-maily",
+          "description": "Kolik e-mailů dnes a tento měsíc odešlo proti limitu Resendu, podle druhu, a kdy limit dojde."
         }
       },
       "errors": {
@@ -10372,7 +10475,75 @@
           "promoCode": "Nový promo kód",
           "publishPlans": "Zveřejnit tarify"
         }
+      },
+      "emails": {
+        "figures": {
+          "month": "tento měsíc z {limit}",
+          "today": "dnes",
+          "todayOf": "dnes z {limit}",
+          "share": "měsíčního limitu",
+          "projected": "odhad za celý měsíc",
+          "failed": "Neodešlo tento měsíc",
+          "exhaustIn": "Tímhle tempem limit dojde za {days, plural, one {# den} few {# dny} other {# dní}}.",
+          "exhausted": "Limit tohoto měsíce je vyčerpaný."
+        },
+        "byKind": "Tento měsíc podle druhu",
+        "kinds": {
+          "auth_confirmation": "Potvrzení registrace",
+          "account_support": "Podpora účtu (heslo, e-mail)",
+          "admin_login": "Přihlášení do administrace",
+          "admin_invite": "Pozvánka administrátora",
+          "admin_peer_notice": "„X změnil…“ administrátorům",
+          "admin_digest": "Denní souhrn administrátorům",
+          "error_alert": "Upozornění na chyby",
+          "ai_budget": "Rozpočet AI",
+          "billing_alert": "Platby (souhrn majiteli)",
+          "plan_request": "Změna tarifu (majiteli)",
+          "feature_request": "Nápady na funkce",
+          "bug_report_owner": "Hlášení problémů (majiteli)",
+          "bug_report_thanks": "Poděkování za hlášení",
+          "welcome_beta": "Uvítání testera",
+          "waitlist_confirm": "Čekací listina",
+          "worker_invite": "Pozvánka pracovníka",
+          "worker_left": "Pracovník odešel",
+          "chat_notification": "Zprávy",
+          "invoice": "Faktury",
+          "contact_email": "E-maily kontaktům",
+          "booking_guest": "Rezervace (host)",
+          "booking_host": "Rezervace (hostitel)",
+          "booking_reminder": "Připomínky schůzek"
+        }
       }
+    },
+    "digest": {
+      "title": "Upozornění",
+      "description": "Denní souhrn „{appName} včera“ e-mailem: noví a aktivní uživatelé, peníze, náklady AI, nové chyby, hlášení a co čeká na rozhodnutí. Jeden e-mail denně místo jednotlivých upozornění.",
+      "ownTitle": "Můj denní souhrn",
+      "standing": {
+        "owner": "Majitel",
+        "full": "Plný administrátor",
+        "limited": "Omezený administrátor · souhrn bez peněz"
+      },
+      "enabled": "Denní souhrn e-mailem",
+      "on": "Chodí každý den",
+      "off": "Vypnutý",
+      "hour": "Kdy přijde",
+      "zone": "Časové pásmo",
+      "zoneAccount": "Podle účtu ({zone})",
+      "onlyNews": "Jen když je co hlásit",
+      "onlyNewsHint": "Klidný den bez nových chyb, hlášení a výpadků e-mail nepošle.",
+      "save": "Uložit",
+      "saved": "Uloženo.",
+      "preview": "Poslat si ukázku teď",
+      "previewSent": "Ukázka včerejšího souhrnu je na cestě do tvé schránky.",
+      "errors": {
+        "forbidden": "Tohle nastavení měnit nemůžeš.",
+        "invalid": "Nastavení se nepodařilo uložit, zkontroluj ho.",
+        "failed": "Nepovedlo se. Zkus to prosím znovu.",
+        "limited": "Ukázek bylo za poslední hodinu dost, zkus to později."
+      },
+      "instantHint": "Okamžité e-maily o chybách jsou vypnuté (chyby svítí na přehledu a ve zvonku); zapnout jde i režim „jen kritické“.",
+      "instantLink": "E-maily o chybách"
     }
   },
   "invoices": {

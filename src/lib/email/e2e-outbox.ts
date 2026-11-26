@@ -1,6 +1,7 @@
 import "server-only";
 import { createHash, timingSafeEqual } from "node:crypto";
 import { isE2eTestAccount } from "@/features/auth/e2e-account";
+import type { EmailKind } from "./kinds";
 import { sendEmail, type EmailResult } from "./resend";
 
 /**
@@ -25,6 +26,8 @@ export type OutboxMail = {
   cancelled?: boolean;
   /** Names of the attached files. */
   attachments?: string[];
+  /** The kind of e-mail (kinds.ts), as sendEmail would log it. */
+  kind?: EmailKind;
 };
 
 const KEEP_MS = 10 * 60_000;
@@ -89,10 +92,13 @@ export function e2eOutboxAllowed(
  * accounts, nothing for other internal addresses. Never throws.
  */
 export async function deliverEmail(message: {
+  kind: EmailKind;
   to: string;
   subject: string;
   text: string;
   html: string;
+  /** ISO instant: Resend (and the mock) send it then. */
+  scheduledAt?: string;
 }): Promise<EmailResult> {
   if (isE2eTestAccount(message.to)) {
     keepE2eMail(message);

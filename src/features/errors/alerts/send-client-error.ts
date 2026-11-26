@@ -4,18 +4,25 @@ import {
   type ClientErrorInput,
   type ClientErrorSource,
 } from "./client-error";
+import { isStaleClientError, noiseRuleOf } from "./noise";
 import { errorText, scrubErrorMessage, scrubStack } from "./scrub";
+import { reloadForNewVersion } from "./stale-client";
 
 /** Records one page load sends at most; a loop of errors must not become a flood of requests. */
 const MAX_PER_LOAD = 20;
 /** The same window error again within this time is not sent again. */
 const REPEAT_MS = 60_000;
 
-/**
- * Window errors that are the browser's, not the app's: the ResizeObserver
- * notice (harmless, fires on resizing) and "Script error." of a foreign script.
- */
-const BROWSER_NOISE = /ResizeObserver loop|^Script error\.?$|^Error: Script error\.?$/;
+/** Set by the first pagehide: errors of a page being left are its requests being cut. */
+let leaving = false;
+if (typeof window !== "undefined") {
+  window.addEventListener("pagehide", () => {
+    leaving = true;
+  });
+  window.addEventListener("pageshow", () => {
+    leaving = false;
+  });
+}
 
 const sentCodes = new Set<string>();
 const lastSent = new Map<string, number>();
@@ -65,8 +72,19 @@ export function sendClientErrorRecord(
 ): void {
   try {
     if (sentCodes.has(code) || sentCount >= MAX_PER_LOAD) return;
+    const raw = errorText(error);
+    // An old page after a deployment: the new version, quietly, instead of a record.
+    if (isStaleClientError(raw) && reloadForNewVersion()) return;
+    const noise = noiseRuleOf({
+      message: raw,
+      stack: error instanceof Error ? error.stack : null,
+      dev: process.env.NODE_ENV === "development",
+      offline: typeof navigator !== "undefined" && navigator.onLine === false,
+      leaving: leaving || document.visibilityState === "hidden",
+    });
+    // The stale page that reloaded a moment ago and fails again is a real error.
+    if (noise && noise !== "staleClient") return;
     const record = clientErrorRecord(error, source, code, window.location.pathname);
-    if (source !== "boundary" && BROWSER_NOISE.test(record.message)) return;
     // The error page's code is shown to the person, so its record always goes;
     // window errors can repeat in a loop and are sent once a minute per message.
     const key = `${source}|${record.message}`;

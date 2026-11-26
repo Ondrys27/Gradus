@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { clampPan, cropSquare, sniffImageType } from "./avatar-image";
+import {
+  AVATAR_INPUT_MAX_BYTES,
+  AVATAR_MAX_BYTES,
+  avatarOutputMime,
+  clampPan,
+  cropSquare,
+  sniffAvatarInput,
+  sniffImageType,
+} from "./avatar-image";
 import { normalizeUsernameInput, usernameProblem, usernameUnlocksAt } from "./username";
 
 describe("username rules", () => {
@@ -28,6 +36,35 @@ describe("sniffImageType", () => {
     expect(sniffImageType(new TextEncoder().encode("GIF89a"))).toBeNull();
     expect(sniffImageType(new TextEncoder().encode("%PDF-1.7"))).toBeNull();
     expect(sniffImageType(new Uint8Array())).toBeNull();
+  });
+});
+
+describe("sniffAvatarInput", () => {
+  const ftyp = (brand: string) =>
+    new Uint8Array([0, 0, 0, 0x18, ...new TextEncoder().encode(`ftyp${brand}`), 0, 0, 0, 0]);
+
+  it("takes JPG, PNG and the iPhone's HEIC / HEIF photos", () => {
+    expect(sniffAvatarInput(new Uint8Array([0xff, 0xd8, 0xff, 0xe1]))).toBe("image/jpeg");
+    expect(sniffAvatarInput(ftyp("heic"))).toBe("image/heic");
+    expect(sniffAvatarInput(ftyp("mif1"))).toBe("image/heic");
+    expect(sniffAvatarInput(ftyp("hevc"))).toBe("image/heic");
+  });
+
+  it("refuses other ISO media files (a video is no photo) and short files", () => {
+    expect(sniffAvatarInput(ftyp("isom"))).toBeNull();
+    expect(sniffAvatarInput(ftyp("qt  "))).toBeNull();
+    expect(sniffAvatarInput(new TextEncoder().encode("ftypheic"))).toBeNull();
+  });
+
+  it("saves a PNG as PNG and every other photo as JPG, the buckets' two types", () => {
+    expect(avatarOutputMime("image/png")).toBe("image/png");
+    expect(avatarOutputMime("image/jpeg")).toBe("image/jpeg");
+    expect(avatarOutputMime("image/heic")).toBe("image/jpeg");
+  });
+
+  it("lets a phone's photo in; only the cropped square has to fit the bucket", () => {
+    expect(AVATAR_INPUT_MAX_BYTES).toBeGreaterThanOrEqual(8 * 1024 * 1024);
+    expect(AVATAR_MAX_BYTES).toBe(2 * 1024 * 1024);
   });
 });
 

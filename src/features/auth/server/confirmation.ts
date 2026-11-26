@@ -43,7 +43,7 @@ export async function sendSignupConfirmation(
   }
   const language = toSiteLocale(locale ?? (user.user_metadata?.locale as string | undefined));
   const link = confirmationLink(await siteOrigin(), data.properties.hashed_token);
-  const sent = await deliverEmail({ to: user.email, ...authEmail("confirmSignup", language, link) });
+  const sent = await deliverEmail({ kind: "auth_confirmation", to: user.email, ...authEmail("confirmSignup", language, link) });
   if (!sent.ok) {
     console.error("[auth] confirmation e-mail failed", sent.error);
     return { ok: false, reason: "failed" };

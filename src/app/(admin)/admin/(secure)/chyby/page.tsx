@@ -336,6 +336,11 @@ async function GroupDetail({ fingerprint }: { fingerprint: string }) {
     >
       <div className="flex flex-col gap-5" data-testid="error-group">
         <ErrorStatusButtons key={`${fingerprint}-${group.status}`} fingerprint={fingerprint} status={group.status} />
+        {group.note && (
+          <p className="rounded-xl border border-line bg-surface px-3 py-2 text-sm text-ink-soft" data-testid="error-group-note">
+            <span className="font-semibold text-ink">{t("detail.note")}</span> {group.note}
+          </p>
+        )}
 
         <section className="flex flex-col gap-2">
           <h3 className="text-xs font-semibold text-ink-muted">

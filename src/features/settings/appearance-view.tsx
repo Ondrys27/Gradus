@@ -31,6 +31,14 @@ import { useFormatSettings } from "@/lib/use-format-settings";
 import type { UserSettingsPatch } from "@/lib/user-settings";
 import { ThemeGrid } from "./appearance-settings";
 import { FormatPreview, useNow } from "./format-preview";
+
+/**
+ * The instant the date and time choices are written with. Not "now": the
+ * server renders the page a moment before the browser hydrates it, and a
+ * minute turning in between made the chosen format's label differ (a
+ * hydration error, GR-B66225). The live clock is the preview's below.
+ */
+const FORMAT_SAMPLE = new Date("2026-12-31T13:45:00Z");
 import { useSettingsSave } from "./save-state";
 import { TimeZonePicker } from "./time-zone-picker";
 import { SettingRow, SettingsPage, SettingsSection } from "./ui";
@@ -64,12 +72,12 @@ export function AppearanceView() {
   );
   const dateOptions: Option[] = DATE_FORMATS.map((pattern) => ({
     value: pattern,
-    label: formatDate(now, { ...format, dateFormat: pattern }),
+    label: formatDate(FORMAT_SAMPLE, { ...format, dateFormat: pattern }),
     detail: pattern,
   }));
   const timeOptions: Option[] = TIME_FORMATS.map((pattern) => ({
     value: pattern,
-    label: formatTime(now, { ...format, timeFormat: pattern }),
+    label: formatTime(FORMAT_SAMPLE, { ...format, timeFormat: pattern }),
     detail: t(`timeFormats.${pattern === "HH:mm" ? "h24" : "h12"}`),
   }));
   const numberOptions: Option[] = (Object.keys(NUMBER_FORMATS) as NumberFormatKey[]).map((key) => ({

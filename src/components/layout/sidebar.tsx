@@ -15,7 +15,7 @@ import { useNavItems, type NavItemState } from "./use-nav";
 import { LockedSectionPopover } from "./lock-hint";
 import { BetaBadge } from "./beta-badge";
 import { NavBadge } from "./nav-badge";
-import { Logo } from "./logo";
+import { FoldingLogo } from "./logo";
 import { isSidebarShortcut, isTypingTarget } from "./sidebar-shortcut";
 import { useIsMac } from "@/lib/use-is-mac";
 import { useIsWide, useReducedMotionSafe, WIDE_QUERY } from "@/lib/use-media-query";
@@ -44,13 +44,10 @@ export function Sidebar() {
     <aside className="fixed inset-y-0 left-0 z-nav hidden w-(--app-sidebar-width) flex-col overflow-hidden border-r border-line/70 bg-sidebar/85 pl-[env(safe-area-inset-left)] backdrop-blur-xl transition-[width] duration-200 ease-out motion-reduce:transition-none md:flex">
       <NavLink
         href="/app"
-        className={cn(
-          "flex h-18 shrink-0 items-center justify-center gap-3 px-5",
-          !collapsed && "lg:justify-start",
-        )}
+        // The bars sit where the rail centres them, open or folded: only the name moves.
+        className="flex h-18 shrink-0 items-center justify-start gap-3 px-4"
       >
-        <Logo className={cn(!collapsed && "lg:hidden")} />
-        <Logo withName className={cn("hidden h-8", !collapsed && "lg:block")} />
+        <FoldingLogo name={collapsed ? "off" : "wide"} height="1.875rem" />
         <BetaBadge className={cn("hidden", !collapsed && "lg:inline-flex")} />
       </NavLink>
 

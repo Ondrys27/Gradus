@@ -1,5 +1,8 @@
 import "server-only";
 import { APP_NAME } from "@/lib/constants";
+import { escapeHtmlText } from "./escape";
+import type { EmailKind } from "./kinds";
+import { logEmail, logEmailCancelled } from "./log";
 
 const ENDPOINT = "https://api.resend.com/emails";
 
@@ -38,8 +41,14 @@ export type EmailResult = { ok: true; id: string | null } | { ok: false; error: 
 /** One file attached to an outgoing e-mail; `content` is base64, no attachments have Resend limits by size. */
 export type EmailAttachment = { filename: string; content: string };
 
-/** Sends one e-mail. Never throws: a failed e-mail must not undo what caused it. */
+/**
+ * Sends one e-mail. Never throws: a failed e-mail must not undo what caused
+ * it. The one place every e-mail of the app leaves through, so each one that
+ * reaches Resend is written to email_log with its `kind` (kinds.ts).
+ */
 export async function sendEmail(message: {
+  /** What e-mail this is, for email_log and the administration's E-mails widget. */
+  kind: EmailKind;
   to: string;
   subject: string;
   text: string;
@@ -81,13 +90,22 @@ export async function sendEmail(message: {
       name?: string;
     } | null;
     if (!response.ok) {
+      await logEmail({ kind: message.kind, to: message.to, status: "failed" });
       return {
         ok: false,
         error: `${response.status} ${body?.name ?? ""} ${body?.message ?? ""}`.trim(),
       };
     }
+    await logEmail({
+      kind: message.kind,
+      to: message.to,
+      status: message.scheduledAt ? "scheduled" : "sent",
+      providerId: body?.id ?? null,
+      scheduledFor: message.scheduledAt ?? null,
+    });
     return { ok: true, id: body?.id ?? null };
   } catch (error) {
+    await logEmail({ kind: message.kind, to: message.to, status: "failed" });
     return { ok: false, error: error instanceof Error ? error.message : String(error) };
   }
 }
@@ -104,6 +122,7 @@ export async function cancelEmail(id: string): Promise<EmailResult> {
       signal: AbortSignal.timeout(10_000),
     });
     if (!response.ok) return { ok: false, error: String(response.status) };
+    await logEmailCancelled(id);
     return { ok: true, id };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : String(error) };
@@ -111,5 +130,5 @@ export async function cancelEmail(id: string): Promise<EmailResult> {
 }
 
 export function escapeHtml(text: string): string {
-  return text.replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
+  return escapeHtmlText(text);
 }

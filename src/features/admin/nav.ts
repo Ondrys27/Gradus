@@ -31,6 +31,8 @@ export const ADMIN_SECTIONS = [
   { key: "promoCodes", group: "settings", href: `${ADMIN_PATH}/promo-kody`, ready: true },
   // The app playing itself for marketing videos (step 27.4).
   { key: "showcase", group: "settings", href: `${ADMIN_PATH}/ukazka`, ready: true },
+  // The daily summary to each administrator (30.1).
+  { key: "notifications", group: "settings", href: `${ADMIN_PATH}/upozorneni`, ready: true },
   // Who may connect Google and Apple calendars (step 28.10).
   { key: "integrations", group: "settings", href: `${ADMIN_PATH}/integrace`, ready: true },
   {

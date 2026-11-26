@@ -7,13 +7,15 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
+import { useQueryClient } from "@tanstack/react-query";
 import { useProfile, useSession, useUpdateProfile } from "@/features/account/queries";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
-import { AVATAR_MAX_BYTES, sniffImageType, type AvatarMime } from "./avatar-image";
+import { AVATAR_ACCEPT, type AvatarMime } from "./avatar-image";
 import { AvatarCropper, type LoadedImage } from "./avatar-cropper";
+import { loadAvatarFile, type AvatarPickError } from "./load-avatar";
 
-type AvatarError = "tooLarge" | "wrongType" | "unreadable" | "uploadFailed";
+type AvatarError = AvatarPickError | "uploadFailed";
 
 /**
  * One file per user and kind in the user's own folder of avatars (storage
@@ -33,6 +35,7 @@ export function AvatarEditor({ kind = "avatar" }: { kind?: keyof typeof KINDS })
   const current = profile[spec.field];
   const avatarPath = (userId: string) => `${userId}/${spec.file}`;
   const updateProfile = useUpdateProfile();
+  const queryClient = useQueryClient();
   const inputRef = useRef<HTMLInputElement>(null);
   const [image, setImage] = useState<LoadedImage | null>(null);
   const [open, setOpen] = useState(false);
@@ -49,26 +52,21 @@ export function AvatarEditor({ kind = "avatar" }: { kind?: keyof typeof KINDS })
   async function pick(file: File | undefined) {
     if (!file) return;
     setError(null);
-    if (file.size > AVATAR_MAX_BYTES) return setError("tooLarge");
-    const mime = sniffImageType(new Uint8Array(await file.slice(0, 8).arrayBuffer()));
-    if (!mime) return setError("wrongType");
+    const loaded = await loadAvatarFile(file);
+    if (!loaded.ok) return setError(loaded.error);
+    setImage(loaded.image);
+    setOpen(true);
+  }
 
-    const url = URL.createObjectURL(file);
-    const element = new Image();
-    element.onload = () => {
-      setImage({
-        url,
-        mime,
-        naturalWidth: element.naturalWidth,
-        naturalHeight: element.naturalHeight,
-      });
-      setOpen(true);
-    };
-    element.onerror = () => {
-      URL.revokeObjectURL(url);
-      setError("unreadable");
-    };
-    element.src = url;
+  /**
+   * The photo is in the menu at once (the profile query); everywhere else it
+   * comes with the people lists (messages, company, notes, scheduler), which
+   * are refetched now if on screen and on their next use otherwise.
+   */
+  function refreshPeople() {
+    void queryClient.invalidateQueries({
+      predicate: (query) => query.queryKey[0] !== "account",
+    });
   }
 
   async function save(blob: Blob, mime: AvatarMime) {
@@ -86,6 +84,7 @@ export function AvatarEditor({ kind = "avatar" }: { kind?: keyof typeof KINDS })
       // The version parameter makes browsers and the CDN fetch the new picture.
       const url = `${storage.getPublicUrl(path).data.publicUrl}?v=${Date.now()}`;
       await updateProfile.mutateAsync({ [spec.field]: url });
+      refreshPeople();
       setOpen(false);
     } catch {
       setError("uploadFailed");
@@ -103,6 +102,7 @@ export function AvatarEditor({ kind = "avatar" }: { kind?: keyof typeof KINDS })
         .remove([avatarPath(user.id)]);
       if (removeError) throw removeError;
       await updateProfile.mutateAsync({ [spec.field]: null });
+      refreshPeople();
     } catch {
       setError("uploadFailed");
     } finally {
@@ -136,8 +136,9 @@ export function AvatarEditor({ kind = "avatar" }: { kind?: keyof typeof KINDS })
         <input
           ref={inputRef}
           type="file"
-          accept="image/jpeg,image/png"
+          accept={AVATAR_ACCEPT}
           className="sr-only"
+          data-testid={`${kind}-file`}
           tabIndex={-1}
           aria-hidden
           onChange={(event) => {

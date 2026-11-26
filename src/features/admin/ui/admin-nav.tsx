@@ -15,6 +15,7 @@ import {
   CornerDownRightIcon,
   GamepadIcon,
   HeartPulseIcon,
+  MailIcon,
   LayoutDashboardIcon,
   LifeBuoyIcon,
   LogOutIcon,
@@ -39,7 +40,7 @@ import {
 } from "lucide-react";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
-import { Logo } from "@/components/layout/logo";
+import { FoldingLogo, Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { ADMIN_PATH } from "../access";
 import {
@@ -73,6 +74,7 @@ const SECTION_ICONS: Record<AdminSectionKey, LucideIcon> = {
   plans: TagsIcon,
   promoCodes: TicketPercentIcon,
   showcase: ClapperboardIcon,
+  notifications: MailIcon,
   integrations: PlugIcon,
   errors: BugIcon,
   admins: ShieldCheckIcon,
@@ -155,16 +157,17 @@ export function AdminSidebar({ actor }: { actor: AdminActor }) {
       className={cn(
         "hidden shrink-0 border-r border-line bg-canvas-deep lg:flex lg:flex-col",
         collapsed ? "w-16" : "w-58",
-        ready && "transition-[width] duration-200 motion-reduce:transition-none",
+        ready && "transition-[width] duration-200 ease-out motion-reduce:transition-none",
       )}
       data-testid="admin-sidebar"
       data-collapsed={collapsed || undefined}
     >
       <div className="sticky top-0 flex h-dvh flex-col">
-        <div className={cn("flex h-14 items-center gap-3 border-b border-line", collapsed ? "justify-center px-2" : "px-4")}>
-          <Logo className="h-6" />
+        {/* The bars stay put (centred in the folded rail); the name slides into them. */}
+        <div className="flex h-14 items-center gap-2 border-b border-line px-4">
+          <FoldingLogo name={collapsed ? "off" : "on"} height="1.25rem" animate={ready} />
           {!collapsed && (
-            <span className="truncate text-sm font-semibold tracking-tight text-ink">{t("title")}</span>
+            <span className="truncate text-xs font-medium text-ink-muted">{t("title")}</span>
           )}
           {!collapsed && <AdminBell className="ml-auto" />}
           <ErrorTitleCount />

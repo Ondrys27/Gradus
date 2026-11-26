@@ -55,6 +55,23 @@ describe("sendClientErrorRecord", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it("leaves out a connection cut while the page is being left, sends it otherwise", () => {
+    window.dispatchEvent(new Event("pagehide"));
+    sendClientErrorRecord(new Error("Connection closed."), "boundary", "GR-AAAAB2");
+    expect(fetchMock).not.toHaveBeenCalled();
+    window.dispatchEvent(new Event("pageshow"));
+    sendClientErrorRecord(new Error("Connection closed."), "boundary", "GR-AAAAB3");
+    expect(bodies().map((body) => body.code)).toEqual(["GR-AAAAB3"]);
+  });
+
+  it("leaves out an aborted fetch and an extension's error", () => {
+    sendClientErrorRecord(new DOMException("The user aborted a request.", "AbortError"), "unhandledrejection", "GR-AAAAB4");
+    const extension = new TypeError("x is undefined");
+    extension.stack = "TypeError: x is undefined\n    at run (chrome-extension://abc/content.js:1:2)";
+    sendClientErrorRecord(extension, "onerror", "GR-AAAAB5");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("sends at most 20 a page load and never throws", () => {
     fetchMock.mockRejectedValue(new Error("offline"));
     for (let i = 0; i < 30; i += 1) {

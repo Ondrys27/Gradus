@@ -35,7 +35,7 @@ export async function mailOwnerAboutReport(
     { ...data, adminUrl: reportAdminUrl(origin, data.id) },
     owner.locale,
   );
-  const result = await sendEmail({ to: owner.email, ...mail });
+  const result = await sendEmail({ kind: "bug_report_owner", to: owner.email, ...mail });
   if (!result.ok) console.error("[report] owner e-mail failed", result.error);
 }
 
@@ -55,7 +55,7 @@ export async function mailAuthorReportFixed(
     { appUrl: origin ? `${origin}/app` : null },
     settings.data?.locale ?? null,
   );
-  const result = await sendEmail({ to: email, ...mail });
+  const result = await sendEmail({ kind: "bug_report_thanks", to: email, ...mail });
   if (!result.ok) console.error("[report] thank-you e-mail failed", result.error);
   return result.ok;
 }
@@ -70,7 +70,7 @@ export async function mailWelcomeBeta(
     { name: data.name, appUrl: data.origin ? `${data.origin}/app` : null },
     data.locale,
   );
-  const result = await sendEmail({ to, ...mail });
+  const result = await sendEmail({ kind: "welcome_beta", to, ...mail });
   if (!result.ok) console.error("[welcome] e-mail failed", result.error);
   return result.ok;
 }

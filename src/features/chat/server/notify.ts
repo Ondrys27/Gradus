@@ -131,7 +131,7 @@ async function mailOne(admin: Admin, userId: string, origin: string | null) {
     },
     settings?.locale ?? null,
   );
-  const result = await sendEmail({ to: email, ...mail });
+  const result = await sendEmail({ kind: "chat_notification", to: email, ...mail });
   if (!result.ok) {
     console.error("[chat] e-mail failed", result.error);
     return;

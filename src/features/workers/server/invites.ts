@@ -177,8 +177,12 @@ async function alreadyInCompany(supabase: Client, ownerId: string, account: stri
 }
 
 /** E-mails an invite: the outbox for the tests' accounts, nothing for other internal addresses. */
-async function mailInvite(to: string, mail: { subject: string; text: string; html: string }): Promise<boolean> {
-  const sent = await deliverEmail({ to, ...mail });
+async function mailInvite(
+  to: string,
+  mail: { subject: string; text: string; html: string },
+  kind: "worker_invite" | "worker_left" = "worker_invite",
+): Promise<boolean> {
+  const sent = await deliverEmail({ kind, to, ...mail });
   if (!sent.ok && sent.error !== "internal address") console.error("[workers] invite e-mail failed", sent.error);
   return sent.ok;
 }
@@ -485,7 +489,7 @@ export async function leaveCompany(spaceId: string): Promise<InviteResult<true>>
         { worker: worker.name, company: from.company, url: origin ? `${origin}${COMPANY_PATH}` : null },
         contact.locale,
       );
-      await mailInvite(contact.email, mail);
+      await mailInvite(contact.email, mail, "worker_left");
     }
     return true as const;
   });

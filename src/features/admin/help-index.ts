@@ -114,6 +114,10 @@ export const ADMIN_HELP: Record<AdminSectionKey, readonly HelpItem[]> = {
     { key: "promoPayouts", href: PROMO, anchor: "promo-codes" },
   ],
   showcase: [{ key: "showcaseMode", href: `${P}/ukazka`, anchor: "ukazkovy-rezim" }],
+  notifications: [
+    { key: "adminDigest", href: `${P}/upozorneni`, anchor: "denni-souhrn" },
+    { key: "adminDigestOthers", href: `${P}/upozorneni`, power: "editDigests" },
+  ],
   integrations: [
     {
       key: "calendarSync",

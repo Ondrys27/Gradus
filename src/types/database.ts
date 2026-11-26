@@ -263,6 +263,33 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_digest_sends: {
+        Row: {
+          created_at: string
+          day: string
+          provider_id: string | null
+          scheduled_for: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day: string
+          provider_id?: string | null
+          scheduled_for?: string | null
+          status: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          provider_id?: string | null
+          scheduled_for?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       admin_invites: {
         Row: {
           accepted_at: string | null
@@ -340,16 +367,28 @@ export type Database = {
       }
       admin_notify_prefs: {
         Row: {
+          digest_enabled: boolean
+          digest_hour: number
+          digest_only_news: boolean
+          digest_time_zone: string | null
           peer_changes: boolean
           updated_at: string
           user_id: string
         }
         Insert: {
+          digest_enabled?: boolean
+          digest_hour?: number
+          digest_only_news?: boolean
+          digest_time_zone?: string | null
           peer_changes?: boolean
           updated_at?: string
           user_id: string
         }
         Update: {
+          digest_enabled?: boolean
+          digest_hour?: number
+          digest_only_news?: boolean
+          digest_time_zone?: string | null
           peer_changes?: boolean
           updated_at?: string
           user_id?: string
@@ -2561,6 +2600,36 @@ export type Database = {
           },
         ]
       }
+      email_log: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          provider_id: string | null
+          recipient_hash: string
+          scheduled_for: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          provider_id?: string | null
+          recipient_hash: string
+          scheduled_for?: string | null
+          status: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          provider_id?: string | null
+          recipient_hash?: string
+          scheduled_for?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       error_alert_sends: {
         Row: {
           created_at: string
@@ -2686,6 +2755,7 @@ export type Database = {
       error_groups: {
         Row: {
           fingerprint: string
+          note: string | null
           resolved_at: string | null
           returned_at: string | null
           status: string
@@ -2694,6 +2764,7 @@ export type Database = {
         }
         Insert: {
           fingerprint: string
+          note?: string | null
           resolved_at?: string | null
           returned_at?: string | null
           status?: string
@@ -2702,6 +2773,7 @@ export type Database = {
         }
         Update: {
           fingerprint?: string
+          note?: string | null
           resolved_at?: string | null
           returned_at?: string | null
           status?: string
@@ -7209,7 +7281,9 @@ export type Database = {
           viewport: string
         }[]
       }
+      admin_digest_facts: { Args: { _day: string }; Returns: Json }
       admin_email_taken: { Args: { _email: string }; Returns: boolean }
+      admin_email_usage: { Args: { _tz?: string }; Returns: Json }
       admin_error_badge: { Args: { _days?: number }; Returns: number }
       admin_error_group_reports: {
         Args: { _fingerprint: string }
@@ -9431,6 +9505,7 @@ export type Database = {
         }[]
       }
       purge_deleted_notes: { Args: never; Returns: number }
+      purge_email_log: { Args: never; Returns: number }
       purge_error_events: { Args: never; Returns: number }
       purge_mcp: { Args: never; Returns: number }
       purge_trash: { Args: never; Returns: number }

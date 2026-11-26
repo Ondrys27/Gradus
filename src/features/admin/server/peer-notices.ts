@@ -76,6 +76,7 @@ async function sendPeerNotices(actorId: string, change: PeerChange, origin: stri
       t("admin.peerNotice.off"),
     ];
     const sent = await deliverEmail({
+      kind: "admin_peer_notice",
       to: recipient.email!,
       subject,
       text: [lines[0], "", url, "", lines[1], auditUrl, "", lines[2]].join("\n"),

@@ -61,6 +61,8 @@ export const ADMIN_WIDGETS = [
   { key: "health", category: "operations", sizes: ["S", "M", "L"], defaultSize: "M", live: true, href: `${P}/zdravi`, ...noSettings },
   { key: "deploy", category: "operations", sizes: ["S", "M"], defaultSize: "M", href: `${P}/chyby?latest=1`, ...noSettings },
   { key: "reports", category: "operations", sizes: ["S", "M", "L"], defaultSize: "M", href: `${P}/zpetna-vazba?tab=reports`, ...noSettings },
+  // E-mails today and this month against Resend's plan (30.1).
+  { key: "emails", category: "operations", sizes: ["S", "M", "L"], defaultSize: "M", href: `${P}/upozorneni`, ...noSettings },
   { key: "latency", category: "operations", sizes: ["S", "M", "L"], defaultSize: "M", href: `${P}/zdravi`, ...withPeriod },
   // --- People ---------------------------------------------------------------
   { key: "newUsers", category: "people", sizes: ["S", "M", "L"], defaultSize: "M", live: true, href: `${P}/rust`, ...withPeriod },
