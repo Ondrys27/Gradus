@@ -19,6 +19,7 @@ import { useRenewInvite, useWorkerInvite } from "../queries";
 import { useManagesRewards } from "../rewards/queries";
 import { WorkerTaskDialog } from "../worker-task-dialog";
 import { DashboardHeader } from "./dashboard-header";
+import { RequestShareButton } from "@/features/calendar/sharing/ui/request-share-dialog";
 import { DocumentsTab } from "./documents-tab";
 import { InfoCard } from "./info-card";
 import { OverviewTab } from "./overview-tab";
@@ -174,7 +175,17 @@ function DashboardBody({
         <DashboardHeader
           worker={worker}
           viewer={viewer}
-          actions={viewer === "owner" ? <AssignTaskButton worker={worker} /> : undefined}
+          actions={
+            viewer === "owner" ||
+            (worker.userId && worker.status === "active" && !worker.isSelf) ? (
+              <>
+                {viewer === "owner" && <AssignTaskButton worker={worker} />}
+                {worker.userId && worker.status === "active" && !worker.isSelf && (
+                  <RequestShareButton personId={worker.userId} from="company" />
+                )}
+              </>
+            ) : undefined
+          }
         />
         <div
           role="tablist"

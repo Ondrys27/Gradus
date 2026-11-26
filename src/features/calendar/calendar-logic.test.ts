@@ -371,4 +371,16 @@ describe("canEditEvent (mirrors the calendar policies)", () => {
       canEditEvent({ source: "manual", actor_id: null }, { ...access, owner: true, update: false }),
     ).toBe(false);
   });
+  it("lets a person change what others wrote into their calendar, never others' private events", () => {
+    expect(
+      canEditEvent({ source: "manual", actor_id: "u-other", calendar_owner_id: me }, access),
+    ).toBe(true);
+    expect(
+      canEditEvent(
+        { source: "manual", actor_id: "u-other", calendar_owner_id: "u-other", private: true },
+        { ...access, owner: true, viewAll: true },
+      ),
+    ).toBe(false);
+    expect(canEditEvent({ source: "manual", actor_id: me, private: true }, access)).toBe(true);
+  });
 });

@@ -2,14 +2,25 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { CalendarClockIcon, ClipboardListIcon, MailOpenIcon, MailPlusIcon } from "lucide-react";
+import {
+  CalendarClockIcon,
+  CalendarHeartIcon,
+  ClipboardListIcon,
+  MailOpenIcon,
+  MailPlusIcon,
+} from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { FormAlert } from "@/components/ui/form-alert";
 import { GlowCard } from "@/components/ui/glow-card";
 import { useSession } from "@/features/account/queries";
-import { InboxActionError, inviterName, useInbox, useRespondInvite } from "@/features/account/inbox";
+import {
+  InboxActionError,
+  inviterName,
+  useInbox,
+  useRespondInvite,
+} from "@/features/account/inbox";
 import { useSwitchSpace } from "@/features/account/space-switch";
 import { useCan, useWorkspace } from "@/features/account/workspace-queries";
 import {
@@ -25,10 +36,25 @@ import { INVITES_PATH } from "@/lib/routes";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { MeetingSurveyDialog, type SurveyTarget } from "./meeting-survey-dialog";
+import { useShareRequests, type ShareRequest } from "@/features/calendar/sharing/queries";
+import { AnswerForm } from "@/features/calendar/sharing/ui/answer-request-dialog";
+
+/** Calendar share requests waiting for the account in the open company (30.3). */
+function useWaitingRequests() {
+  const requests = useShareRequests();
+  return {
+    query: requests,
+    list: (requests.data ?? []).filter(
+      (request) => request.incoming && request.status === "pending",
+    ),
+  };
+}
+
+const requestHref = (request: ShareRequest) => `/app/kalendar?shareRequest=${request.id}`;
 
 export type WaitingItem = {
   key: string;
-  kind: "booking" | "invite" | "survey";
+  kind: "booking" | "invite" | "survey" | "calendarRequest";
   /** Who it is about: the guest, the company, the deal. */
   who: string;
   /** When the meeting is or was; invites have none. */
@@ -47,7 +73,13 @@ export function useWaitingItems() {
   const inbox = useInbox();
   const surveyRight = useCan("pipeline", "update");
   const surveys = useBookingSurveys(surveyRight && !workspace.readOnly);
-  const queries = [bookings, inbox, ...(surveyRight && !workspace.readOnly ? [surveys] : [])];
+  const requests = useWaitingRequests();
+  const queries = [
+    bookings,
+    inbox,
+    requests.query,
+    ...(surveyRight && !workspace.readOnly ? [surveys] : []),
+  ];
   const items: WaitingItem[] = [
     ...(bookings.data ?? []).map((booking) => ({
       key: `booking-${booking.id}`,
@@ -69,6 +101,13 @@ export function useWaitingItems() {
       who: booking.guest_name ?? booking.dealTitle ?? "",
       when: booking.starts_at,
       href: bookingAppPath(booking.id),
+    })),
+    ...requests.list.map((request) => ({
+      key: `calendar-request-${request.id}`,
+      kind: "calendarRequest" as const,
+      who: request.name,
+      when: null,
+      href: requestHref(request),
     })),
   ];
   return {
@@ -108,11 +147,13 @@ export function WaitingForYou({
   const [survey, setSurvey] = useState<SurveyTarget | null>(null);
   // An accepted invite leaves the inbox; its card stays to offer the company.
   const [accepted, setAccepted] = useState<{ spaceId: string; who: string } | null>(null);
+  const requests = useWaitingRequests().list;
 
   const pending = bookings.data ?? [];
   const invites = inbox.data?.invites ?? [];
   const asked = surveys.data ?? [];
-  if (!pending.length && !invites.length && !asked.length && !accepted) return empty;
+  if (!pending.length && !invites.length && !asked.length && !requests.length && !accepted)
+    return empty;
   const widget = variant === "widget";
 
   return (
@@ -137,12 +178,19 @@ export function WaitingForYou({
         {pending.map((booking) => (
           <li key={booking.id}>
             <BookingCard
-              title={t("booking.title", { guest: booking.guest_name ?? "", type: booking.typeName ?? t("booking.meeting") })}
+              title={t("booking.title", {
+                guest: booking.guest_name ?? "",
+                type: booking.typeName ?? t("booking.meeting"),
+              })}
               when={booking.starts_at}
               href={bookingAppPath(booking.id)}
               testId="waiting-booking"
             >
-              <BookingControls booking={booking} isHost={booking.host_user_id === user.id} compact />
+              <BookingControls
+                booking={booking}
+                isHost={booking.host_user_id === user.id}
+                compact
+              />
             </BookingCard>
           </li>
         ))}
@@ -158,6 +206,25 @@ export function WaitingForYou({
               who={inviterName(invite) ?? t("invite.someone")}
               onAccepted={(spaceId, who) => setAccepted({ spaceId, who })}
             />
+          </li>
+        ))}
+        {requests.map((request) => (
+          <li key={request.id}>
+            <GlowCard
+              interactive={false}
+              className="flex h-full flex-col gap-3 p-4"
+              data-testid="waiting-calendar-request"
+            >
+              <div className="flex items-start gap-3">
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-teal/15 text-teal">
+                  <CalendarHeartIcon aria-hidden className="size-4" />
+                </span>
+                <p className="font-medium text-ink">
+                  {t("calendarRequest.title", { who: request.name })}
+                </p>
+              </div>
+              <AnswerForm request={request} />
+            </GlowCard>
           </li>
         ))}
         {asked.map((booking) => (
@@ -208,7 +275,9 @@ function BookingCard({
         </span>
         <div className="flex min-w-0 flex-col">
           <p className="font-medium text-ink">{title}</p>
-          <p className="text-sm text-ink-muted">{formatSlotMoment(new Date(when), settings, locale)}</p>
+          <p className="text-sm text-ink-muted">
+            {formatSlotMoment(new Date(when), settings, locale)}
+          </p>
         </div>
       </div>
       {children}
@@ -228,7 +297,11 @@ type InviteProps = {
 function InviteCard({ inviteId, who, onAccepted }: InviteProps) {
   const t = useTranslations("dashboard.waiting.invite");
   return (
-    <GlowCard interactive={false} className="flex h-full flex-col gap-3 p-4" data-testid="waiting-invite">
+    <GlowCard
+      interactive={false}
+      className="flex h-full flex-col gap-3 p-4"
+      data-testid="waiting-invite"
+    >
       <div className="flex items-start gap-3">
         <span className="grid size-9 shrink-0 place-items-center rounded-full bg-violet/15 text-violet">
           <MailPlusIcon aria-hidden className="size-4" />
@@ -272,7 +345,12 @@ function InviteActions({ inviteId, who, onAccepted }: InviteProps) {
         >
           {t("accept")}
         </Button>
-        <Button size="sm" variant="outline" disabled={respond.isPending} onClick={() => setDeclining(true)}>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={respond.isPending}
+          onClick={() => setDeclining(true)}
+        >
           {t("decline")}
         </Button>
       </div>
@@ -346,14 +424,20 @@ function SurveyCard({ bookingId, title, when, onOpen }: SurveyProps) {
   const settings = useFormatSettings();
   const locale = useLocale();
   return (
-    <GlowCard interactive={false} className="flex h-full flex-col gap-3 p-4" data-testid="waiting-survey">
+    <GlowCard
+      interactive={false}
+      className="flex h-full flex-col gap-3 p-4"
+      data-testid="waiting-survey"
+    >
       <div className="flex items-start gap-3">
         <span className="grid size-9 shrink-0 place-items-center rounded-full bg-teal/15 text-teal">
           <ClipboardListIcon aria-hidden className="size-4" />
         </span>
         <div className="flex min-w-0 flex-col">
           <p className="font-medium text-ink">{title}</p>
-          <p className="text-sm text-ink-muted">{formatSlotMoment(new Date(when), settings, locale)}</p>
+          <p className="text-sm text-ink-muted">
+            {formatSlotMoment(new Date(when), settings, locale)}
+          </p>
         </div>
       </div>
       <SurveyActions bookingId={bookingId} onOpen={onOpen} />
@@ -379,7 +463,12 @@ function SurveyActions({ bookingId, onOpen }: Pick<SurveyProps, "bookingId" | "o
       >
         {t("noShow")}
       </Button>
-      <Button size="sm" variant="ghost" disabled={dismiss.isPending} onClick={() => dismiss.mutate(bookingId)}>
+      <Button
+        size="sm"
+        variant="ghost"
+        disabled={dismiss.isPending}
+        onClick={() => dismiss.mutate(bookingId)}
+      >
         {t("skip")}
       </Button>
     </div>
@@ -404,14 +493,21 @@ export function WaitingCompact({ empty = null }: { empty?: ReactNode }) {
   const surveys = useBookingSurveys(surveyRight && !workspace.readOnly);
   const [survey, setSurvey] = useState<SurveyTarget | null>(null);
   const [accepted, setAccepted] = useState<{ spaceId: string; who: string } | null>(null);
+  const requests = useWaitingRequests().list;
 
   const pending = bookings.data ?? [];
   const invites = inbox.data?.invites ?? [];
   const asked = surveys.data ?? [];
-  const total = pending.length + invites.length + asked.length;
+  const total = pending.length + invites.length + asked.length + requests.length;
   if (!total && !accepted) return empty;
 
-  let first: { testId: string; title: string; actions: ReactNode; href: string; className?: string };
+  let first: {
+    testId: string;
+    title: string;
+    actions: ReactNode;
+    href: string;
+    className?: string;
+  };
   if (pending.length) {
     const booking = pending[0];
     first = {
@@ -420,7 +516,9 @@ export function WaitingCompact({ empty = null }: { empty?: ReactNode }) {
         guest: booking.guest_name ?? "",
         type: booking.typeName ?? t("booking.meeting"),
       }),
-      actions: <BookingControls booking={booking} isHost={booking.host_user_id === user.id} compact />,
+      actions: (
+        <BookingControls booking={booking} isHost={booking.host_user_id === user.id} compact />
+      ),
       href: bookingAppPath(booking.id),
     };
   } else if (accepted) {
@@ -445,6 +543,18 @@ export function WaitingCompact({ empty = null }: { empty?: ReactNode }) {
         />
       ),
       href: INVITES_PATH,
+    };
+  } else if (!asked.length && requests.length) {
+    const request = requests[0];
+    first = {
+      testId: "waiting-calendar-request",
+      title: t("calendarRequest.title", { who: request.name }),
+      actions: (
+        <Link href={requestHref(request)} className="text-sm text-violet hover:underline">
+          {t("calendarRequest.open")}
+        </Link>
+      ),
+      href: requestHref(request),
     };
   } else {
     const booking = asked[0];

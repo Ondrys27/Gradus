@@ -18,6 +18,10 @@ import { DemoBadge } from "@/features/tutorial/demo-badge";
 import { useDeleteEvent } from "./queries";
 import { BookingOfEvent } from "@/features/scheduler/ui/booking-of-event";
 import { EventSyncNote } from "./sync/event-sync-note";
+import { useActiveMembers } from "@/features/account/active-members";
+import { useSession } from "@/features/account/queries";
+import { useDeleteSharedEvent, useEventPeople, useRespondMeetingInvite } from "./sharing/queries";
+import { Avatar } from "@/components/ui/avatar";
 import type { CalendarEvent } from "./types";
 
 type Props = {
@@ -31,7 +35,11 @@ type Props = {
 export function EventDetail({ event, onClose, onEdit, readOnly = false }: Props) {
   const t = useTranslations("calendar");
   const settings = useFormatSettings();
-  const remove = useDeleteEvent();
+  const { user } = useSession();
+  const members = useActiveMembers();
+  const removeOwn = useDeleteEvent();
+  const removeShared = useDeleteSharedEvent();
+  const respond = useRespondMeetingInvite();
   const [confirming, setConfirming] = useState(false);
   const [failed, setFailed] = useState(false);
 
@@ -42,11 +50,23 @@ export function EventDetail({ event, onClose, onEdit, readOnly = false }: Props)
 
   if (!current) return null;
   const item = toEventItem(current, settings.timeZone);
+  const shared = current.shared ?? null;
+  // A change through a write share goes through the database's own function.
+  const remove = shared?.canEdit ? removeShared : removeOwn;
+  const nameOf = (id: string | null | undefined) =>
+    (id && members.data?.find((member) => member.userId === id)?.name) || null;
+  const owner = shared?.personId ?? current.calendar_owner_id ?? null;
+  const ownerName = owner && owner !== user.id ? nameOf(owner) : null;
+  // "Made by X" when someone wrote it into this calendar.
+  const madeBy =
+    shared?.createdByName ??
+    (current.actor_id && owner && current.actor_id !== owner ? nameOf(current.actor_id) : null);
   // A deal's delivery date is changed in the deal only.
   const fromDeal = current.source === "deal_deadline";
   // A booked meeting moves and cancels through its booking, which tells the guest.
   const fromBooking = current.source === "booking";
-  const editable = !readOnly && !fromDeal && !fromBooking;
+  const editable = (shared ? shared.canEdit : !readOnly) && !fromDeal && !fromBooking;
+  const invite = shared?.level === "invite" ? shared.inviteStatus : null;
 
   let when: string;
   if (item.allDay) {
@@ -93,13 +113,24 @@ export function EventDetail({ event, onClose, onEdit, readOnly = false }: Props)
             )}
             {fromDeal && <StatusPill tone="neutral">{t("detail.fromDeal")}</StatusPill>}
             {fromBooking && <StatusPill tone="neutral">{t("detail.fromBooking")}</StatusPill>}
+            {current.private && (
+              <StatusPill tone="neutral">{t("sharing.detail.private")}</StatusPill>
+            )}
             <DemoBadge show={current.is_demo} className="h-6 px-2.5 text-xs" />
           </div>
+          {(ownerName || madeBy) && (
+            <p className="text-sm text-ink-soft" data-testid="event-owner-line">
+              {ownerName && t("sharing.detail.calendarOf", { name: ownerName })}
+              {ownerName && madeBy && " · "}
+              {madeBy && t("sharing.detail.madeBy", { name: madeBy })}
+            </p>
+          )}
           <h3 className="text-xl font-semibold break-words text-ink">{current.title}</h3>
           <p className="flex items-start gap-2 text-sm text-ink-soft">
             <CalendarClockIcon aria-hidden className="mt-0.5 size-4 shrink-0" />
             <span>{when}</span>
           </p>
+          {shared?.location && <p className="text-sm text-ink-soft">{shared.location}</p>}
           {current.description && (
             <p className="text-sm break-words whitespace-pre-line text-ink-soft">
               {current.description}
@@ -133,9 +164,36 @@ export function EventDetail({ event, onClose, onEdit, readOnly = false }: Props)
           )}
           {fromDeal && <p className="text-sm text-ink-muted">{t("detail.fromDealHint")}</p>}
           {fromBooking && <BookingOfEvent eventId={current.id} />}
-          <EventSyncNote eventId={current.id} />
-          <MentionedInNotes kind="event" id={current.id} onOpenNote={onClose} />
-          {current.kind === "meeting" && !readOnly && (
+          <EventPeople eventId={current.id} />
+          {invite && (
+            <div className="flex flex-wrap items-center gap-2" data-testid="event-invite">
+              <span className="text-sm text-ink-soft">{t(`sharing.detail.invite.${invite}`)}</span>
+              {invite !== "accepted" && (
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={respond.isPending}
+                  onClick={() => respond.mutate({ eventId: current.id, accept: true })}
+                >
+                  {t("sharing.detail.accept")}
+                </Button>
+              )}
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                disabled={respond.isPending}
+                onClick={() =>
+                  respond.mutate({ eventId: current.id, accept: false }, { onSuccess: onClose })
+                }
+              >
+                {t("sharing.detail.decline")}
+              </Button>
+            </div>
+          )}
+          {!shared && <EventSyncNote eventId={current.id} />}
+          {!shared && <MentionedInNotes kind="event" id={current.id} onOpenNote={onClose} />}
+          {current.kind === "meeting" && !readOnly && !shared && (
             <MeetingNotesButton target={{ kind: "event", id: current.id }} className="self-start" />
           )}
           {editable && (
@@ -171,5 +229,31 @@ export function EventDetail({ event, onClose, onEdit, readOnly = false }: Props)
         onConfirm={() => void confirmDelete()}
       />
     </>
+  );
+}
+
+/** The people invited to a meeting with their answers (30.3); nothing without any. */
+function EventPeople({ eventId }: { eventId: string }) {
+  const t = useTranslations("calendar.sharing.detail");
+  const people = useEventPeople(eventId);
+  const list = people.data ?? [];
+  if (!list.length) return null;
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-sm font-medium text-ink">{t("people")}</p>
+      <ul className="flex flex-col gap-1">
+        {list.map((person) => (
+          <li key={person.userId} className="flex items-center gap-2 text-sm text-ink-soft">
+            <Avatar src={person.avatarUrl} name={person.name} className="size-6" />
+            <span className="min-w-0 flex-1 truncate">{person.name}</span>
+            <span className="text-xs text-ink-muted">
+              {t(
+                `status.${person.status === "accepted" || person.status === "declined" ? person.status : "invited"}`,
+              )}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

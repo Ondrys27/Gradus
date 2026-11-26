@@ -14,6 +14,7 @@ export const RULE_TYPES = [
   "cashLow",
   "bookingPending",
   "bookingNew",
+  "calendarShareRequest",
 ] as const;
 export type RuleType = (typeof RULE_TYPES)[number];
 export type SuggestionType = RuleType | "taskCompleted" | "insight" | "pathReady";

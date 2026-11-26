@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Menu } from "@base-ui/react/menu";
 import {
   BellOffIcon,
+  CalendarHeartIcon,
   BellRingIcon,
   ChevronLeftIcon,
   DownloadIcon,
@@ -27,6 +28,8 @@ import type { BubbleActions } from "./message-bubble";
 import { removeItem, retryItem, useOutbox } from "./outbox-store";
 import type { OutboxItem } from "./outbox";
 import { ChannelAvatar, useChannelTitle, usePeople } from "./people";
+import { useActiveMembers } from "@/features/account/active-members";
+import { RequestShareDialog } from "@/features/calendar/sharing/ui/request-share-dialog";
 import {
   flattenPages,
   useChannelMembers,
@@ -100,7 +103,10 @@ export function Conversation({
     () =>
       outbox
         .filter((item) =>
-          channelId ? item.channelId === channelId || (!item.channelId && item.to === peer && kind === "direct") : item.to === to,
+          channelId
+            ? item.channelId === channelId ||
+              (!item.channelId && item.to === peer && kind === "direct")
+            : item.to === to,
         )
         .map((item) => pendingMessage(item, me)),
     [outbox, channelId, to, peer, kind, me],
@@ -178,7 +184,10 @@ export function Conversation({
       onJumpTo: (id) => {
         if (list.current?.scrollToMessage(id)) {
           setHighlight(id);
-          window.setTimeout(() => setHighlight((current) => (current === id ? null : current)), 1600);
+          window.setTimeout(
+            () => setHighlight((current) => (current === id ? null : current)),
+            1600,
+          );
         }
       },
     }),
@@ -189,10 +198,7 @@ export function Conversation({
   const { fetchNextPage, hasNextPage, isFetchingNextPage } = pages;
   const loadOlder = useCallback(() => void fetchNextPage(), [fetchNextPage]);
 
-  const memberTokens = useMemo(
-    () => (members.data ?? []).map((row) => row.member),
-    [members.data],
-  );
+  const memberTokens = useMemo(() => (members.data ?? []).map((row) => row.member), [members.data]);
   const candidates = useMemo(
     () =>
       // @ offers only the people of the company now (28.1): the owner (no status) or an active worker.
@@ -243,7 +249,10 @@ export function Conversation({
               <ChevronLeftIcon aria-hidden className="size-6" />
             </button>
           )}
-          <ChannelAvatar channel={channel ?? { kind: "direct", color: null, peer: to }} className="size-10" />
+          <ChannelAvatar
+            channel={channel ?? { kind: "direct", color: null, peer: to }}
+            className="size-10"
+          />
           <div className="min-w-0 flex-1">
             <h2 className="flex items-center gap-1.5 truncate text-base font-semibold text-ink">
               <span className="truncate">{title}</span>
@@ -309,7 +318,9 @@ export function Conversation({
         open={Boolean(deleting)}
         onOpenChange={(open) => !open && setDeleting(null)}
         title={t("deleteTitle")}
-        description={deleting && deleting.sender !== me ? t("deleteOthers") : t("deleteDescription")}
+        description={
+          deleting && deleting.sender !== me ? t("deleteOthers") : t("deleteDescription")
+        }
         confirmLabel={t("actions.delete")}
         cancelLabel={t("cancel")}
         closeLabel={t("close")}
@@ -329,8 +340,18 @@ const EMPTY_SET: ReadonlySet<string> = new Set();
 
 function HeaderMenu({ channel, isOwner }: { channel: ChatChannel; isOwner: boolean }) {
   const t = useTranslations("messages.menu");
+  const tShare = useTranslations("calendar.sharing.request");
   const flags = useMemberFlags();
   const muteAll = useMuteAll();
+  const members = useActiveMembers(undefined, channel.kind === "direct");
+  // The other person of a direct conversation, as an account (30.3: ask for their calendar).
+  const peerAccount =
+    channel.kind === "direct" && channel.peer
+      ? (members.data?.find((member) =>
+          member.isOwner ? member.userId === channel.peer : member.workerId === channel.peer,
+        )?.userId ?? null)
+      : null;
+  const [askCalendar, setAskCalendar] = useState(false);
   const itemClass =
     "flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg px-3 text-[15px] text-ink-soft outline-none select-none data-highlighted:bg-surface-hover data-highlighted:text-ink mouse:min-h-9 [&_svg]:size-4";
   return (
@@ -378,9 +399,27 @@ function HeaderMenu({ channel, isOwner }: { channel: ChatChannel; isOwner: boole
                 {t("export")}
               </Menu.Item>
             )}
+            {peerAccount && (
+              <Menu.Item
+                className={itemClass}
+                data-testid="chat-ask-calendar"
+                onClick={() => setAskCalendar(true)}
+              >
+                <CalendarHeartIcon aria-hidden />
+                {tShare("button")}
+              </Menu.Item>
+            )}
           </Menu.Popup>
         </Menu.Positioner>
       </Menu.Portal>
+      {peerAccount && (
+        <RequestShareDialog
+          open={askCalendar}
+          onOpenChange={setAskCalendar}
+          personId={peerAccount}
+          from="messages"
+        />
+      )}
     </Menu.Root>
   );
 }

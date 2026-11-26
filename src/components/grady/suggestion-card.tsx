@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import {
   CalendarCheckIcon,
+  CalendarHeartIcon,
   CalendarClockIcon,
   CircleCheckIcon,
   FlagIcon,
@@ -42,6 +43,7 @@ const ICONS: Record<SuggestionType, LucideIcon> = {
   cashLow: TrendingDownIcon,
   bookingPending: CalendarCheckIcon,
   bookingNew: CalendarCheckIcon,
+  calendarShareRequest: CalendarHeartIcon,
   taskCompleted: CircleCheckIcon,
   insight: LightbulbIcon,
   pathReady: MapIcon,
@@ -59,6 +61,7 @@ const ICON_TONE: Record<SuggestionType, string> = {
   cashLow: "text-orange",
   bookingPending: "text-gold",
   bookingNew: "text-green",
+  calendarShareRequest: "text-teal",
   taskCompleted: "text-green",
   insight: "text-violet",
   pathReady: "text-teal",
@@ -96,6 +99,7 @@ function formatParams(
 /** The wording of a suggestion: rule ones from the translations, Grady's own as written. */
 export function useSuggestionText() {
   const t = useTranslations("grady.suggestion");
+  const tLevels = useTranslations("calendar.sharing.levels");
   const settings = useFormatSettings();
   const uiLocale = useLocale();
   return useCallback(
@@ -113,7 +117,17 @@ export function useSuggestionText() {
                   ? t("overdueCrmTask.noTarget", params)
                   : type === "workerInvite" && !params.who
                     ? t("workerInvite.noWho", params)
-                    : t(`${type}.text`, params),
+                    : type === "calendarShareRequest"
+                      ? t("calendarShareRequest.text", {
+                          ...params,
+                          who: params.who || t("calendarShareRequest.someone"),
+                          level: tLevels(
+                            params.level === "read" || params.level === "write"
+                              ? params.level
+                              : "busy",
+                          ),
+                        })
+                      : t(`${type}.text`, params),
           detail: null,
           prompt:
             suggestion.action.kind === "ask"
@@ -142,7 +156,7 @@ export function useSuggestionText() {
         prompt: suggestion.action.kind === "ask" ? suggestion.action.prompt : "",
       };
     },
-    [t, settings, uiLocale],
+    [t, tLevels, settings, uiLocale],
   );
 }
 

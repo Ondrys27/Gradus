@@ -5,6 +5,10 @@ import Link from "next/link";
 import { Menu } from "@base-ui/react/menu";
 import {
   BellIcon,
+  CalendarCheckIcon,
+  CalendarHeartIcon,
+  CalendarPlusIcon,
+  CalendarXIcon,
   FolderInputIcon,
   LogOutIcon,
   MailPlusIcon,
@@ -15,8 +19,10 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
+  calendarNotificationHref,
   inboxCount,
   inviterName,
+  isCalendarNotification,
   noteNotificationHref,
   useInbox,
   useMarkInboxRead,
@@ -36,6 +42,11 @@ const NOTE_ICON: Record<AccountNotification["kind"], typeof BellIcon> = {
   invite_requested: MailQuestionIcon,
   note_shared: NotebookPenIcon,
   notes_transferred: FolderInputIcon,
+  calendar_shared: CalendarCheckIcon,
+  calendar_share_requested: CalendarHeartIcon,
+  calendar_share_approved: CalendarCheckIcon,
+  calendar_share_declined: CalendarXIcon,
+  calendar_invite: CalendarPlusIcon,
 };
 
 const itemClass =
@@ -48,6 +59,7 @@ const itemClass =
  */
 export function InboxBell({ className }: { className?: string }) {
   const t = useTranslations("inbox");
+  const tLevels = useTranslations("calendar.sharing.levels");
   const settings = useFormatSettings();
   const { spaceId } = useSession();
   const inbox = useInbox();
@@ -70,7 +82,9 @@ export function InboxBell({ className }: { className?: string }) {
     <Menu.Root open={open} onOpenChange={change}>
       <Menu.Trigger
         data-showcase-hide=""
-        aria-label={count ? t("openCount", { count, shown: formatNumber(count, {}, settings) }) : t("open")}
+        aria-label={
+          count ? t("openCount", { count, shown: formatNumber(count, {}, settings) }) : t("open")
+        }
         data-testid="inbox-bell"
         className={cn(
           "relative grid size-11 shrink-0 cursor-pointer place-items-center rounded-full border border-line bg-surface/60 text-ink-soft outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-ring/50 mouse:size-9",
@@ -110,7 +124,9 @@ export function InboxBell({ className }: { className?: string }) {
               >
                 <MailPlusIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-violet" />
                 <span className="flex min-w-0 flex-col">
-                  <span className="font-medium text-ink">{t("invite", { who: inviterName(invite) ?? t("someone") })}</span>
+                  <span className="font-medium text-ink">
+                    {t("invite", { who: inviterName(invite) ?? t("someone") })}
+                  </span>
                   <span className="text-xs text-ink-muted">{t("inviteHint")}</span>
                 </span>
               </Menu.LinkItem>
@@ -118,16 +134,35 @@ export function InboxBell({ className }: { className?: string }) {
             {notes.map((note) => {
               const Icon = NOTE_ICON[note.kind];
               const aboutNotes = note.kind === "note_shared" || note.kind === "notes_transferred";
+              const aboutCalendar = isCalendarNotification(note.kind);
               const who = note.actorName ?? note.workerName ?? t("someone");
-              const text =
-                note.kind === "note_shared"
+              const level =
+                note.shareLevel === "busy" ||
+                note.shareLevel === "read" ||
+                note.shareLevel === "write"
+                  ? tLevels(note.shareLevel)
+                  : "";
+              const text = aboutCalendar
+                ? note.kind === "calendar_invite"
+                  ? note.title
+                    ? t("calendar.calendar_invite", { name: who, title: note.title })
+                    : t("calendar.calendar_invite_gone", { name: who })
+                  : note.kind === "calendar_share_requested" &&
+                      note.requestStatus &&
+                      note.requestStatus !== "pending"
+                    ? t("calendar.calendar_share_requested_done", { name: who })
+                    : t(`calendar.${note.kind}`, { name: who, level })
+                : note.kind === "note_shared"
                   ? note.folderId
                     ? t("notes.folder_shared", { name: who, title: note.title ?? "…" })
                     : note.title
                       ? t("notes.note_shared", { name: who, title: note.title })
                       : t("notes.note_shared_untitled", { name: who })
                   : note.kind === "notes_transferred"
-                    ? t("notes.notes_transferred", { name: note.workerName ?? who, count: note.itemCount ?? 0 })
+                    ? t("notes.notes_transferred", {
+                        name: note.workerName ?? who,
+                        count: note.itemCount ?? 0,
+                      })
                     : t(`notes.${note.kind}`, { name: note.workerName ?? t("someone") });
               return (
                 <Menu.LinkItem
@@ -137,14 +172,18 @@ export function InboxBell({ className }: { className?: string }) {
                   render={
                     <Link
                       href={
-                        aboutNotes
-                          ? noteNotificationHref(
-                              note.kind === "notes_transferred" ? { spaceId: note.spaceId } : note,
-                              spaceId,
-                            )
-                          : note.workerId
-                            ? `${COMPANY_PATH}?worker=${note.workerId}`
-                            : COMPANY_PATH
+                        aboutCalendar
+                          ? calendarNotificationHref(note, spaceId)
+                          : aboutNotes
+                            ? noteNotificationHref(
+                                note.kind === "notes_transferred"
+                                  ? { spaceId: note.spaceId }
+                                  : note,
+                                spaceId,
+                              )
+                            : note.workerId
+                              ? `${COMPANY_PATH}?worker=${note.workerId}`
+                              : COMPANY_PATH
                       }
                       prefetch={false}
                     />
@@ -156,7 +195,11 @@ export function InboxBell({ className }: { className?: string }) {
                     aria-hidden
                     className={cn(
                       "mt-0.5 size-4 shrink-0",
-                      note.kind === "invite_accepted" ? "text-green" : aboutNotes ? "text-teal" : "text-ink-muted",
+                      note.kind === "invite_accepted" || note.kind === "calendar_share_approved"
+                        ? "text-green"
+                        : aboutNotes || aboutCalendar
+                          ? "text-teal"
+                          : "text-ink-muted",
                     )}
                   />
                   <span className="flex min-w-0 flex-col">

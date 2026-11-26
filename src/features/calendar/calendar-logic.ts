@@ -404,11 +404,14 @@ export function resizedRange(
  * others' only with "all events" too. A deal's delivery date never.
  */
 export function canEditEvent(
-  event: Pick<CalendarEvent, "source" | "actor_id">,
+  event: Pick<CalendarEvent, "source" | "actor_id" | "calendar_owner_id" | "private">,
   access: { owner: boolean; update: boolean; viewAll: boolean; userId: string },
 ): boolean {
   // A deal's delivery date and a booked meeting change through the deal and the booking.
   if (event.source === "deal_deadline" || event.source === "booking") return false;
+  const mine = event.actor_id === access.userId || event.calendar_owner_id === access.userId;
+  // Someone else's private event is theirs alone (30.3); the rows never reach others anyway.
+  if (event.private && !mine) return false;
   if (access.owner) return access.update;
-  return access.update && (access.viewAll || event.actor_id === access.userId);
+  return access.update && (access.viewAll || mine);
 }

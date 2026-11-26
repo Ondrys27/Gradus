@@ -92,6 +92,7 @@ export const PROACTIVE_SUGGESTION_TYPES = [
   "cashLow",
   "bookingPending",
   "bookingNew",
+  "calendarShareRequest",
 ] as const;
 export type ProactiveSuggestionType = (typeof PROACTIVE_SUGGESTION_TYPES)[number];
 

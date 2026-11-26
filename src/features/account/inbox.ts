@@ -3,8 +3,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { RuleDefinition } from "@/features/workers/rewards/definition";
 import { parseRule } from "@/features/workers/rewards/rules";
-import { grantsFromRows, type GrantRow, type PermissionGrants } from "@/features/workers/permissions-catalog";
-import { leaveCompany, respondToInvite, type InviteErrorCode } from "@/features/workers/server/invites";
+import {
+  grantsFromRows,
+  type GrantRow,
+  type PermissionGrants,
+} from "@/features/workers/permissions-catalog";
+import {
+  leaveCompany,
+  respondToInvite,
+  type InviteErrorCode,
+} from "@/features/workers/server/invites";
 import { createClient } from "@/lib/supabase/client";
 import { useSession } from "./queries";
 
@@ -45,7 +53,13 @@ export type AccountNotification = {
     /** A note or a folder shared with the account (28.3). */
     | "note_shared"
     /** A departing worker's shared notes stay with the company, now the owner's. */
-    | "notes_transferred";
+    | "notes_transferred"
+    /** Calendar sharing (30.3): a share, a request and its answer, an invite to a meeting. */
+    | "calendar_shared"
+    | "calendar_share_requested"
+    | "calendar_share_approved"
+    | "calendar_share_declined"
+    | "calendar_invite";
   workerId: string | null;
   workerName: string | null;
   createdAt: string;
@@ -57,6 +71,12 @@ export type AccountNotification = {
   actorName?: string | null;
   title?: string | null;
   itemCount?: number | null;
+  /** Calendar notifications: the request, the meeting, the level (30.3). */
+  calendarRequestId?: string | null;
+  eventId?: string | null;
+  eventStartsAt?: string | null;
+  shareLevel?: string | null;
+  requestStatus?: string | null;
 };
 
 export type Inbox = { invites: PendingInvite[]; notifications: AccountNotification[] };
@@ -78,7 +98,41 @@ const KINDS = new Set([
   "invite_requested",
   "note_shared",
   "notes_transferred",
+  "calendar_shared",
+  "calendar_share_requested",
+  "calendar_share_approved",
+  "calendar_share_declined",
+  "calendar_invite",
 ]);
+
+const CALENDAR_KINDS = new Set([
+  "calendar_shared",
+  "calendar_share_requested",
+  "calendar_share_approved",
+  "calendar_share_declined",
+  "calendar_invite",
+]);
+
+export function isCalendarNotification(kind: AccountNotification["kind"]): boolean {
+  return CALENDAR_KINDS.has(kind);
+}
+
+/** Where a calendar notification leads, through its company when that is not the open one. */
+export function calendarNotificationHref(
+  note: Pick<AccountNotification, "kind" | "spaceId" | "calendarRequestId" | "eventId">,
+  activeSpace: string,
+): string {
+  const path =
+    note.kind === "calendar_share_requested" && note.calendarRequestId
+      ? `/app/kalendar?shareRequest=${encodeURIComponent(note.calendarRequestId)}`
+      : note.kind === "calendar_invite" && note.eventId
+        ? `/app/kalendar?event=${encodeURIComponent(note.eventId)}`
+        : note.kind === "calendar_share_declined"
+          ? "/app/nastaveni/kalendar?focus=settings-calendar-sharing"
+          : "/app/kalendar";
+  if (!note.spaceId || note.spaceId === activeSpace) return path;
+  return `/app/prostor/${encodeURIComponent(note.spaceId)}?next=${encodeURIComponent(path)}`;
+}
 
 /** Where a notification of notes leads: the note or folder, through its company when that is not the open one. */
 export function noteNotificationHref(
@@ -110,7 +164,9 @@ export function useInbox() {
         supabase.rpc("my_worker_invites"),
         supabase
           .from("account_notifications")
-          .select("id, kind, worker_id, created_at, read_at, space_id, note_id, folder_id, item_count")
+          .select(
+            "id, kind, worker_id, created_at, read_at, space_id, note_id, folder_id, item_count, calendar_request_id, event_id, share_level",
+          )
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })
           .limit(NOTIFICATIONS_LIMIT),
@@ -129,8 +185,37 @@ export function useInbox() {
           labels.set(row.id, { actor: row.actor_name || null, title: row.title ?? null });
         }
       }
+      // Calendar sharing: who asked or shared, the meeting's title while the account is invited.
+      const calendarIds = notes.data
+        .filter((note) => CALENDAR_KINDS.has(note.kind))
+        .map((note) => note.id);
+      const calendarLabels = new Map<
+        string,
+        {
+          actor: string | null;
+          title: string | null;
+          startsAt: string | null;
+          status: string | null;
+        }
+      >();
+      if (calendarIds.length) {
+        const { data, error } = await supabase.rpc("calendar_notification_labels", {
+          _ids: calendarIds,
+        });
+        if (error) throw error;
+        for (const row of data ?? []) {
+          calendarLabels.set(row.id, {
+            actor: row.actor_name || null,
+            title: row.event_title ?? null,
+            startsAt: row.event_starts_at ?? null,
+            status: row.request_status ?? null,
+          });
+        }
+      }
       // The people the notifications are about are the account's own workers.
-      const workerIds = [...new Set(notes.data.flatMap((note) => (note.worker_id ? [note.worker_id] : [])))];
+      const workerIds = [
+        ...new Set(notes.data.flatMap((note) => (note.worker_id ? [note.worker_id] : []))),
+      ];
       const names = new Map<string, string>();
       if (workerIds.length) {
         const { data, error } = await supabase
@@ -161,7 +246,10 @@ export function useInbox() {
               active: true,
               position: 0,
             });
-            const names = rule.names && typeof rule.names === "object" ? (rule.names as Record<string, string>) : {};
+            const names =
+              rule.names && typeof rule.names === "object"
+                ? (rule.names as Record<string, string>)
+                : {};
             return parsed && typeof rule.currency === "string"
               ? [{ definition: parsed.definition, currency: rule.currency, names }]
               : [];
@@ -182,9 +270,15 @@ export function useInbox() {
                   spaceId: note.space_id ?? null,
                   noteId: note.note_id ?? null,
                   folderId: note.folder_id ?? null,
-                  actorName: labels.get(note.id)?.actor ?? null,
-                  title: labels.get(note.id)?.title ?? null,
+                  actorName:
+                    labels.get(note.id)?.actor ?? calendarLabels.get(note.id)?.actor ?? null,
+                  title: labels.get(note.id)?.title ?? calendarLabels.get(note.id)?.title ?? null,
                   itemCount: note.item_count ?? null,
+                  calendarRequestId: note.calendar_request_id ?? null,
+                  eventId: note.event_id ?? null,
+                  eventStartsAt: calendarLabels.get(note.id)?.startsAt ?? null,
+                  shareLevel: note.share_level ?? null,
+                  requestStatus: calendarLabels.get(note.id)?.status ?? null,
                 },
               ]
             : [],
@@ -195,8 +289,12 @@ export function useInbox() {
 }
 
 /** "Novák s.r.o. · Václav Novák", or whichever of the two is known; null for neither. */
-export function inviterName(invite: Pick<PendingInvite, "companyName" | "ownerName">): string | null {
-  const parts = [invite.companyName, invite.ownerName].filter((part): part is string => Boolean(part));
+export function inviterName(
+  invite: Pick<PendingInvite, "companyName" | "ownerName">,
+): string | null {
+  const parts = [invite.companyName, invite.ownerName].filter((part): part is string =>
+    Boolean(part),
+  );
   return [...new Set(parts)].join(" · ") || null;
 }
 
@@ -217,7 +315,10 @@ export function useMarkInboxRead() {
     onSuccess: () =>
       queryClient.setQueryData<Inbox>(inboxKeys.all(user.id), (inbox) =>
         inbox
-          ? { ...inbox, notifications: inbox.notifications.map((note) => ({ ...note, read: true })) }
+          ? {
+              ...inbox,
+              notifications: inbox.notifications.map((note) => ({ ...note, read: true })),
+            }
           : inbox,
       ),
   });

@@ -34,6 +34,8 @@ import {
   type EventDraft,
 } from "./event-draft";
 import { useCreateEvent, useUpdateEvent, eventToRow } from "./queries";
+import { useSaveSharedEvent } from "./sharing/queries";
+import { useSession } from "@/features/account/queries";
 import { DESCRIPTION_MAX, TITLE_MAX, type CalendarErrorKey } from "./schemas";
 import { EVENT_KINDS, type CalendarEvent } from "./types";
 
@@ -48,9 +50,34 @@ type Props = {
   /** Editing this event, or creating one from `start`. */
   event: CalendarEvent | null;
   start: NewEventStart | null;
+  /** People whose calendar the account may write into (30.3): "Into the calendar of". */
+  writable?: readonly WritablePerson[];
+  /** May the account add events to its own calendar here (calendar: create). */
+  canCreateOwn?: boolean;
 };
 
-export function EventFormDialog({ open, onOpenChange, event, start }: Props) {
+export type WritablePerson = { userId: string; name: string; writesTo: string | null };
+
+/** Alt+P (Option+P) switches "Private" while the form is open. */
+export function isPrivateShortcut(event: {
+  altKey: boolean;
+  ctrlKey: boolean;
+  metaKey: boolean;
+  code: string;
+}) {
+  return event.altKey && !event.ctrlKey && !event.metaKey && event.code === "KeyP";
+}
+
+const MINE = "__mine";
+
+export function EventFormDialog({
+  open,
+  onOpenChange,
+  event,
+  start,
+  writable = [],
+  canCreateOwn = true,
+}: Props) {
   const t = useTranslations("calendar.form");
   const generation = useFreshOnOpen(open);
 
@@ -62,7 +89,14 @@ export function EventFormDialog({ open, onOpenChange, event, start }: Props) {
       closeLabel={t("close")}
       className="w-[min(100vw-32px,520px)]"
     >
-      <Fields key={generation} event={event} start={start} onDone={() => onOpenChange(false)} />
+      <Fields
+        key={generation}
+        event={event}
+        start={start}
+        writable={writable}
+        canCreateOwn={canCreateOwn}
+        onDone={() => onOpenChange(false)}
+      />
     </ResponsiveDialog>
   );
 }
@@ -70,16 +104,29 @@ export function EventFormDialog({ open, onOpenChange, event, start }: Props) {
 function Fields({
   event,
   start,
+  writable,
+  canCreateOwn,
   onDone,
 }: {
   event: CalendarEvent | null;
   start: NewEventStart | null;
+  writable: readonly WritablePerson[];
+  canCreateOwn: boolean;
   onDone: () => void;
 }) {
   const t = useTranslations("calendar");
   const { timeZone } = useFormatSettings();
   const create = useCreateEvent();
   const update = useUpdateEvent();
+  const saveShared = useSaveSharedEvent();
+  const { user } = useSession();
+  // Someone else's event changed through a write share keeps its calendar.
+  const sharedOwner = event?.shared?.canEdit ? event.shared.personId : null;
+  const [owner, setOwner] = useState<string>(
+    sharedOwner ?? (canCreateOwn || !writable.length ? MINE : writable[0].userId),
+  );
+  const intoOther = owner !== MINE;
+  const target = writable.find((person) => person.userId === owner) ?? null;
   const awardXp = useAwardXp();
   const dealsQuery = useDeals();
   const [draft, setDraft] = useState<EventDraft>(() =>
@@ -96,7 +143,7 @@ function Fields({
 
   const patch = (next: Partial<EventDraft>) => setDraft((current) => ({ ...current, ...next }));
   const err = (key: string) => (errors[key] ? t(`errors.${errors[key]}`) : undefined);
-  const pending = create.isPending || update.isPending;
+  const pending = create.isPending || update.isPending || saveShared.isPending;
 
   // Open deals, plus the one already linked even when it has been closed since.
   const dealItems = [
@@ -116,6 +163,22 @@ function Fields({
     }
     setErrors({});
     try {
+      if (intoOther || sharedOwner) {
+        // Into someone's calendar through a write share: no contact or deal of theirs.
+        await saveShared.mutateAsync({
+          owner: sharedOwner ?? owner,
+          eventId: event?.id ?? null,
+          title: result.data.title,
+          kind: result.data.kind,
+          startsAt: result.data.starts_at,
+          endsAt: result.data.ends_at,
+          allDay: result.data.all_day,
+          description: result.data.description,
+          private: draft.private,
+        });
+        onDone();
+        return;
+      }
       if (event) {
         await update.mutateAsync({ id: event.id, patch: eventToRow(result.data) });
         onDone();
@@ -133,7 +196,48 @@ function Fields({
   }
 
   return (
-    <form onSubmit={submit} noValidate className="flex flex-col gap-4">
+    <form
+      onSubmit={submit}
+      noValidate
+      className="flex flex-col gap-4"
+      onKeyDown={(keyEvent) => {
+        if (!isPrivateShortcut(keyEvent)) return;
+        keyEvent.preventDefault();
+        if (sharedOwner && event?.actor_id !== user.id) return;
+        patch({ private: !draft.private });
+      }}
+    >
+      {!event && writable.length > 0 && (
+        <FormField id="event-owner" label={t("sharing.form.into")}>
+          <Select
+            value={owner}
+            items={[
+              ...(canCreateOwn ? [{ value: MINE, label: t("sharing.form.mine") }] : []),
+              ...writable.map((person) => ({ value: person.userId, label: person.name })),
+            ]}
+            onValueChange={(next) => next && setOwner(next)}
+          >
+            <SelectTrigger id="event-owner" data-testid="event-owner">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {canCreateOwn && <SelectItem value={MINE}>{t("sharing.form.mine")}</SelectItem>}
+              {writable.map((person) => (
+                <SelectItem key={person.userId} value={person.userId}>
+                  {person.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {target && (
+            <p className="text-xs text-ink-muted">
+              {target.writesTo
+                ? t("sharing.form.alsoExternal", { name: target.name, calendar: target.writesTo })
+                : t("sharing.form.onlyGradus", { name: target.name })}
+            </p>
+          )}
+        </FormField>
+      )}
       <FormField id="event-title" label={t("form.title")} error={err("title")}>
         <Input
           {...fieldA11y("event-title", err("title"))}
@@ -239,32 +343,36 @@ function Fields({
         </>
       )}
 
-      <FormField id="event-contact" label={t("form.contact")}>
-        <ContactPicker
-          id="event-contact"
-          value={draft.contact}
-          onChange={(contact) => patch({ contact })}
-        />
-      </FormField>
+      {!intoOther && !sharedOwner && (
+        <>
+          <FormField id="event-contact" label={t("form.contact")}>
+            <ContactPicker
+              id="event-contact"
+              value={draft.contact}
+              onChange={(contact) => patch({ contact })}
+            />
+          </FormField>
 
-      <FormField id="event-deal" label={t("form.deal")}>
-        <Select
-          value={draft.dealId ?? NO_DEAL}
-          items={dealItems}
-          onValueChange={(next) => patch({ dealId: next && next !== NO_DEAL ? next : null })}
-        >
-          <SelectTrigger id="event-deal">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {dealItems.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </FormField>
+          <FormField id="event-deal" label={t("form.deal")}>
+            <Select
+              value={draft.dealId ?? NO_DEAL}
+              items={dealItems}
+              onValueChange={(next) => patch({ dealId: next && next !== NO_DEAL ? next : null })}
+            >
+              <SelectTrigger id="event-deal">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {dealItems.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormField>
+        </>
+      )}
 
       <FormField id="event-description" label={t("form.description")} error={err("description")}>
         <Textarea
@@ -274,6 +382,24 @@ function Fields({
           onChange={(input) => patch({ description: input.target.value })}
         />
       </FormField>
+
+      <div className="flex min-h-11 items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-col">
+          <label htmlFor="event-private" className="text-sm text-ink">
+            {t("sharing.form.private")}
+          </label>
+          <span className="text-xs text-ink-muted">{t("sharing.form.privateHint")}</span>
+        </div>
+        <Switch
+          id="event-private"
+          checked={draft.private}
+          // Only the person of the calendar (or who made it) decides; the database keeps it otherwise.
+          disabled={Boolean(sharedOwner) && event?.actor_id !== user.id}
+          onCheckedChange={(checked) => patch({ private: checked })}
+          aria-keyshortcuts="Alt+P"
+          data-testid="event-private"
+        />
+      </div>
 
       {failed && <FormAlert>{t("form.saveFailed")}</FormAlert>}
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

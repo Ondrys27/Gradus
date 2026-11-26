@@ -137,7 +137,9 @@ const SETTINGS = [
   "sidebar_collapsed",
   "chat_email",
   "chat_sound",
+  "calendar_owner_busy",
 ] as const;
+const SHARE_LEVELS = ["busy", "read", "write"] as const;
 const CRON_JOBS = [
   "call_time_stats",
   "recurring_payments",
@@ -679,6 +681,33 @@ export const EVENTS = {
   }),
   calendar_event_updated: event("calendar", "client", true, { kind: oneOf(CALENDAR_KINDS) }),
   calendar_event_deleted: event("calendar", "client", true, {}),
+  // Calendar sharing inside a company (30.3): levels and counts, never names or titles.
+  calendar_share_saved: event("calendar", "client", true, {
+    target: oneOf(["member", "group", "space"]),
+    level: oneOf(SHARE_LEVELS),
+    calendars: count(30),
+    created: bool(),
+  }),
+  calendar_share_removed: event("calendar", "client", true, {}),
+  calendar_share_requested: event("calendar", "client", true, {
+    level: oneOf(SHARE_LEVELS),
+    from: oneOf(["company", "messages", "calendar", "settings"]),
+    with_message: bool(),
+  }),
+  calendar_share_request_answered: event("calendar", "client", true, {
+    approved: bool(),
+    level: optional(oneOf(SHARE_LEVELS)),
+    changed: bool(),
+  }),
+  calendar_shared_event_saved: event("calendar", "client", true, { created: bool() }),
+  calendar_common_time_searched: event("calendar", "client", true, {
+    people: count(30),
+    unknown: count(30),
+    duration_min: count(480),
+    windows: count(500),
+  }),
+  calendar_meeting_invited: event("calendar", "client", true, { attendees: count(30) }),
+  calendar_invite_answered: event("calendar", "client", true, { accepted: bool() }),
 
   // --- scheduler (Plánovač schůzek, 24.3) -------------------------------------
   // Lengths, counts and kinds only; never a handle, a link, a name or an answer.

@@ -2,6 +2,7 @@ import { z } from "zod";
 import { fetchActiveMembers } from "@/features/account/active-members-data";
 import { can, canAccessContacts } from "@/features/account/workspace";
 import { addDaysIso, dayRangeToInstants } from "@/features/calendar/calendar-logic";
+import { findCommonWindows, splitBusy } from "@/features/calendar/sharing/common-time";
 import { FIELD_COLUMNS, TABLE_COLUMNS } from "@/features/contacts/types";
 import { defineTool, ToolError, type ToolContext } from "../types";
 import { isoDate, mustFind, READ_LIMIT, today, uuid } from "./shared";
@@ -474,6 +475,84 @@ export const readTools = [
   }),
 
   defineTool({
+    name: "people_availability",
+    section: "calendar",
+    action: "view",
+    kind: "read",
+    risk: "instant",
+    description:
+      "When people of this company are busy and when they are all free, only as far as each shares their calendar with the user (at least busy times). Pass user ids from list_people; the user is included. Days inclusive in the user's time zone, at most 14. Returns busy times per person (no titles), who shares nothing (unknown), and the common free windows in working hours (default 08:00–17:30, weekdays) long enough for duration_minutes.",
+    input: z.object({
+      people: z.array(uuid).min(1).max(10),
+      from: isoDate,
+      to: isoDate,
+      duration_minutes: z.number().int().min(5).max(480).optional(),
+      work_start: z
+        .string()
+        .regex(/^\d{2}:\d{2}$/)
+        .optional(),
+      work_end: z
+        .string()
+        .regex(/^\d{2}:\d{2}$/)
+        .optional(),
+    }),
+    describe: (_input, t) => t("people_availability"),
+    async execute(ctx, input) {
+      const last = input.to < input.from ? input.from : input.to;
+      const capped = addDaysIso(input.from, 13) < last ? addDaysIso(input.from, 13) : last;
+      const range = dayRangeToInstants(input.from, capped, ctx.timezone);
+      const { data, error } = await ctx.db.rpc("calendar_people_busy", {
+        _space: ctx.workspaceId,
+        _people: [...new Set([ctx.userId, ...input.people])],
+        _from: range.from,
+        _to: range.to,
+      });
+      if (error) throw error;
+      const { busy, unknown } = splitBusy(data ?? []);
+      const days: string[] = [];
+      for (let day = input.from; day <= capped; day = addDaysIso(day, 1)) days.push(day);
+      const windows = findCommonWindows({
+        days,
+        timeZone: ctx.timezone,
+        workStart: input.work_start ?? "08:00",
+        workEnd: input.work_end ?? "17:30",
+        durationMin: input.duration_minutes ?? 30,
+        busy,
+        nowMs: Date.now(),
+        country: ctx.country,
+      });
+      const members = await fetchActiveMembers(ctx.db, ctx.workspaceId);
+      const names = new Map(members.map((member) => [member.userId, member.name]));
+      const people = [...new Set([ctx.userId, ...input.people])].filter((id) => names.has(id));
+      return {
+        output: {
+          time_zone: ctx.timezone,
+          people: people.map((id) => ({
+            user_id: id,
+            name: names.get(id) ?? "",
+            is_user: id === ctx.userId,
+            known: !unknown.includes(id),
+            busy: busy
+              .filter((interval) => interval.personId === id)
+              .slice(0, 60)
+              .map((interval) => ({
+                start: new Date(interval.startMs).toISOString(),
+                end: new Date(interval.endMs).toISOString(),
+                all_day: Boolean(interval.allDay),
+              })),
+          })),
+          common_free: windows.slice(0, 40).map((window) => ({
+            start: new Date(window.startMs).toISOString(),
+            end: new Date(window.endMs).toISOString(),
+          })),
+        },
+      };
+    },
+    undoable: false,
+    invalidates: [],
+  }),
+
+  defineTool({
     name: "finance_month",
     section: "finance",
     action: "summaries",
@@ -622,7 +701,11 @@ export const readTools = [
         output: {
           people: people
             .slice(0, 50)
-            .map((person) => ({ user_id: person.userId, name: person.name, is_owner: person.isOwner })),
+            .map((person) => ({
+              user_id: person.userId,
+              name: person.name,
+              is_owner: person.isOwner,
+            })),
         },
       };
     },

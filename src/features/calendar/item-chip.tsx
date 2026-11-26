@@ -1,7 +1,7 @@
 "use client";
 
 import { CalendarRangeIcon, HandshakeIcon, ListChecksIcon, SquareCheckBigIcon } from "lucide-react";
-import type { Tone } from "@/components/ui/tone";
+import { toneFill, type Tone } from "@/components/ui/tone";
 import { formatTime } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
@@ -41,8 +41,37 @@ export const taskTone: Record<Tone, string> = {
 export const busyClass =
   "border-dashed border-line-strong bg-[repeating-linear-gradient(135deg,var(--color-surface-hover)_0_6px,transparent_6px_12px)] text-ink-muted";
 
+/** Someone's busy time read through a share (30.3): hatched in their colour. */
+export const personBusyTone: Record<Tone, string> = {
+  neutral: busyClass,
+  violet:
+    "border-dashed border-violet/60 bg-[repeating-linear-gradient(135deg,color-mix(in_oklab,var(--color-violet)_18%,transparent)_0_6px,transparent_6px_12px)] text-ink-soft",
+  teal: "border-dashed border-teal/60 bg-[repeating-linear-gradient(135deg,color-mix(in_oklab,var(--color-teal)_16%,transparent)_0_6px,transparent_6px_12px)] text-ink-soft",
+  gold: "border-dashed border-gold/60 bg-[repeating-linear-gradient(135deg,color-mix(in_oklab,var(--color-gold)_16%,transparent)_0_6px,transparent_6px_12px)] text-ink-soft",
+  green:
+    "border-dashed border-green/60 bg-[repeating-linear-gradient(135deg,color-mix(in_oklab,var(--color-green)_16%,transparent)_0_6px,transparent_6px_12px)] text-ink-soft",
+  pink: "border-dashed border-pink/60 bg-[repeating-linear-gradient(135deg,color-mix(in_oklab,var(--color-pink)_16%,transparent)_0_6px,transparent_6px_12px)] text-ink-soft",
+};
+
+/** The initials of whose calendar an item is in (30.3). */
+export function PersonBadge({ item, className }: { item: CalendarItem; className?: string }) {
+  if (!item.person) return null;
+  return (
+    <span
+      title={item.person.name}
+      className={cn(
+        "grid h-4 min-w-4 shrink-0 place-items-center rounded-full px-0.5 text-[9px] leading-none font-bold text-canvas",
+        toneFill[item.tone],
+        className,
+      )}
+    >
+      {item.person.initials}
+    </span>
+  );
+}
+
 export function itemClass(item: CalendarItem): string {
-  if (item.type === "busy") return busyClass;
+  if (item.type === "busy") return item.person ? personBusyTone[item.tone] : busyClass;
   if (item.type === "mirror") return mirrorTone[item.tone];
   if (item.type === "task") return taskTone[item.tone];
   return blockTone[item.tone];
@@ -89,7 +118,7 @@ export function ItemChip({ item, onOpen, showTime, className }: Props) {
         className,
       )}
     >
-      <MirrorIcon item={item} />
+      {item.person ? <PersonBadge item={item} /> : <MirrorIcon item={item} />}
       {time && <span className="shrink-0 tabular-nums opacity-80">{time}</span>}
       <span className="truncate font-medium">{item.title}</span>
     </button>

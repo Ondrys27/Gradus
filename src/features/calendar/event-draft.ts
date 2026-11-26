@@ -16,6 +16,8 @@ export type EventDraft = {
   description: string;
   contact: EventContact | null;
   dealId: string | null;
+  /** Others see it only as busy time (30.3). */
+  private: boolean;
 };
 
 const HOUR_MS = DEFAULT_DURATION_MIN * 60_000;
@@ -40,6 +42,7 @@ export function emptyDraft(
     description: "",
     contact: null,
     dealId: null,
+    private: false,
   };
 }
 
@@ -56,6 +59,7 @@ export function draftFromEvent(event: CalendarEvent, timeZone: string): EventDra
     description: event.description ?? "",
     contact: event.contact,
     dealId: event.deal_id,
+    private: Boolean(event.private),
   };
 }
 
@@ -109,6 +113,7 @@ export function validateDraft(draft: EventDraft, timeZone: string): DraftResult 
     description: draft.description,
     contact_id: draft.contact?.id ?? null,
     deal_id: draft.dealId,
+    private: draft.private,
   });
   if (result.success) return { ok: true, data: result.data };
 

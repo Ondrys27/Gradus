@@ -34,7 +34,7 @@ import {
   type TimeRange,
 } from "./calendar-logic";
 import { DayNumber } from "./day-number";
-import { itemClass, ItemChip, MirrorIcon } from "./item-chip";
+import { itemClass, ItemChip, MirrorIcon, PersonBadge } from "./item-chip";
 import type { CalendarItem, TimedItem } from "./types";
 
 const GUTTER = "3.5rem";
@@ -519,7 +519,7 @@ function Block({ entry, hourPx, lifted, onOpen, onStart }: BlockProps) {
       >
         <span aria-hidden className={cn("absolute inset-y-0 left-0 w-1", toneFill[item.tone])} />
         <span className="flex w-full min-w-0 items-center gap-1">
-          <MirrorIcon item={item} />
+          {item.person ? <PersonBadge item={item} /> : <MirrorIcon item={item} />}
           <span className="truncate font-semibold">{item.title}</span>
         </span>
         {px >= 40 && (

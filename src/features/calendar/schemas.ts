@@ -23,6 +23,8 @@ export const eventSchema = z
     description: z.string().trim().max(DESCRIPTION_MAX, "descriptionTooLong"),
     contact_id: z.string().uuid().nullable(),
     deal_id: z.string().uuid().nullable(),
+    /** Others see it only as busy time (30.3); absent = unchanged. */
+    private: z.boolean().optional(),
   })
   .superRefine((event, context) => {
     if (event.all_day) {

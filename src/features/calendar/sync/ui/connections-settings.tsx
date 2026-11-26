@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusPill } from "@/components/ui/status-pill";
+import { Switch } from "@/components/ui/switch";
 import { SettingsSection } from "@/features/settings/ui";
 import { formatDateTime, formatRelativeTime } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
@@ -33,6 +34,8 @@ import {
   useSyncNow,
 } from "../queries";
 import type { ProviderKey } from "../types";
+import type { SyncCalendarView } from "../overview";
+import { useMySources, useSetPrivateDefault } from "../../sharing/queries";
 
 /** Apple's page where an app-specific password is made. */
 const APPLE_ID_URL = "https://appleid.apple.com/account/manage";
@@ -115,9 +118,14 @@ function ProviderCard({
       title={t(`${provider}.title`)}
       description={t(`${provider}.description`)}
     >
-      <div className="flex flex-col gap-4 py-4 first:pt-0" data-testid={`calendar-sync-${provider}`}>
+      <div
+        className="flex flex-col gap-4 py-4 first:pt-0"
+        data-testid={`calendar-sync-${provider}`}
+      >
         {result && GOOGLE_RESULTS.has(result) && (
-          <FormAlert tone={result === "connected" ? "success" : "error"}>{t(`results.${result}`)}</FormAlert>
+          <FormAlert tone={result === "connected" ? "success" : "error"}>
+            {t(`results.${result}`)}
+          </FormAlert>
         )}
         {state === "unavailable" && <FormAlert>{t("unavailable")}</FormAlert>}
         {state === "notAllowed" && <p className="text-sm text-ink-soft">{t("preparing")}</p>}
@@ -136,7 +144,10 @@ function ProviderCard({
         {connection && <ConnectionBody connection={connection} broken={state === "broken"} />}
         {state === "broken" && provider === "apple" && <AppleForm reconnect />}
         {state === "broken" && provider === "google" && overview.google && (
-          <a href={GOOGLE_START_PATH} className={buttonVariants({ variant: "outline", className: "self-start" })}>
+          <a
+            href={GOOGLE_START_PATH}
+            className={buttonVariants({ variant: "outline", className: "self-start" })}
+          >
             {t("google.reconnect")}
           </a>
         )}
@@ -172,7 +183,11 @@ function ConnectionBody({ connection, broken }: { connection: SyncConnection; br
             })
           : t("neverSynced")}
       </p>
-      {broken && <FormAlert>{t(`connectionErrors.${connection.lastError === "auth" ? "auth" : "other"}`)}</FormAlert>}
+      {broken && (
+        <FormAlert>
+          {t(`connectionErrors.${connection.lastError === "auth" ? "auth" : "other"}`)}
+        </FormAlert>
+      )}
       <CalendarChoice key={selectionKey(connection)} connection={connection} />
       <div className="flex flex-wrap gap-2">
         <Button
@@ -193,9 +208,15 @@ function ConnectionBody({ connection, broken }: { connection: SyncConnection; br
           {t("disconnect")}
         </Button>
       </div>
-      {syncNow.isError && <FormAlert>{t(`errors.${actionError(failureCode(syncNow.error))}`)}</FormAlert>}
-      {syncNow.isSuccess && (syncNow.data.failed ?? 0) > 0 && <FormAlert>{t("errors.partial")}</FormAlert>}
-      {syncNow.isSuccess && !(syncNow.data.failed ?? 0) && <FormAlert tone="success">{t("synced")}</FormAlert>}
+      {syncNow.isError && (
+        <FormAlert>{t(`errors.${actionError(failureCode(syncNow.error))}`)}</FormAlert>
+      )}
+      {syncNow.isSuccess && (syncNow.data.failed ?? 0) > 0 && (
+        <FormAlert>{t("errors.partial")}</FormAlert>
+      )}
+      {syncNow.isSuccess && !(syncNow.data.failed ?? 0) && (
+        <FormAlert tone="success">{t("synced")}</FormAlert>
+      )}
       <ConfirmDialog
         open={confirm}
         onOpenChange={setConfirm}
@@ -229,20 +250,25 @@ function actionError(code: string): string {
 }
 
 function selectionKey(connection: SyncConnection): string {
-  return connection.calendars.map((calendar) => `${calendar.id}:${calendar.read ? 1 : 0}${calendar.write ? 1 : 0}`).join(",");
+  return connection.calendars
+    .map((calendar) => `${calendar.id}:${calendar.read ? 1 : 0}${calendar.write ? 1 : 0}`)
+    .join(",");
 }
 
 /** Which calendars are read (busy times + shown) and the one Gradus writes to. */
 function CalendarChoice({ connection }: { connection: SyncConnection }) {
   const t = useTranslations("settings.calendar.sync");
   const save = useSaveSelection();
-  const initialRead = connection.calendars.filter((calendar) => calendar.read).map((calendar) => calendar.id);
+  const initialRead = connection.calendars
+    .filter((calendar) => calendar.read)
+    .map((calendar) => calendar.id);
   const initialWrite = connection.calendars.find((calendar) => calendar.write)?.id ?? null;
   // Starts from what is stored; a saved change remounts it (`selectionKey`).
   const [read, setRead] = useState<string[]>(initialRead);
   const [write, setWrite] = useState<string | null>(initialWrite);
 
-  if (!connection.calendars.length) return <p className="text-sm text-ink-muted">{t("noCalendars")}</p>;
+  if (!connection.calendars.length)
+    return <p className="text-sm text-ink-muted">{t("noCalendars")}</p>;
   const next = normalizeSelection(connection.calendars, read, write);
   const dirty =
     next.write !== initialWrite ||
@@ -261,7 +287,9 @@ function CalendarChoice({ connection }: { connection: SyncConnection }) {
             <li key={calendar.id} className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center">
               <span className="min-w-0 flex-1 truncate text-sm text-ink">
                 {calendar.name}
-                {calendar.isPrimary && <span className="ml-2 text-xs text-ink-muted">{t("primary")}</span>}
+                {calendar.isPrimary && (
+                  <span className="ml-2 text-xs text-ink-muted">{t("primary")}</span>
+                )}
               </span>
               <label className="flex min-h-11 items-center gap-2 text-sm text-ink-soft mouse:min-h-8">
                 <Checkbox
@@ -269,7 +297,9 @@ function CalendarChoice({ connection }: { connection: SyncConnection }) {
                   disabled={next.write === calendar.id}
                   onCheckedChange={(checked) =>
                     setRead((current) =>
-                      checked ? [...current, calendar.id] : current.filter((id) => id !== calendar.id),
+                      checked
+                        ? [...current, calendar.id]
+                        : current.filter((id) => id !== calendar.id),
                     )
                   }
                 />
@@ -305,6 +335,7 @@ function CalendarChoice({ connection }: { connection: SyncConnection }) {
         />
         {t("writeNone")}
       </label>
+      <PrivateDefaults calendars={connection.calendars.filter((calendar) => calendar.read)} />
       {save.isError && <FormAlert>{t(`errors.${actionError(failureCode(save.error))}`)}</FormAlert>}
       {dirty && (
         <Button
@@ -312,12 +343,50 @@ function CalendarChoice({ connection }: { connection: SyncConnection }) {
           size="sm"
           className="self-start"
           disabled={save.isPending}
-          onClick={() => save.mutate({ connectionId: connection.id, read: next.read, write: next.write })}
+          onClick={() =>
+            save.mutate({ connectionId: connection.id, read: next.read, write: next.write })
+          }
         >
           {t("save")}
         </Button>
       )}
     </fieldset>
+  );
+}
+
+/**
+ * "Everything from this calendar is private" (30.3): the others in the
+ * company see its events only as busy time, whatever they were shared.
+ */
+function PrivateDefaults({ calendars }: { calendars: SyncCalendarView[] }) {
+  const t = useTranslations("settings.calendar.sync");
+  const sources = useMySources(calendars.length > 0);
+  const setPrivate = useSetPrivateDefault();
+  if (!calendars.length) return null;
+  const privateOf = new Map(
+    (sources.data ?? []).map((source) => [source.key, source.privateDefault]),
+  );
+  return (
+    <div className="mt-2 flex flex-col gap-1">
+      <p className="text-sm font-medium text-ink">{t("privateTitle")}</p>
+      <p className="text-xs text-ink-muted">{t("privateHint")}</p>
+      {calendars.map((calendar) => (
+        <label
+          key={calendar.id}
+          className="flex min-h-11 items-center justify-between gap-3 text-sm text-ink-soft mouse:min-h-9"
+        >
+          <span className="truncate">{t("privateOf", { name: calendar.name })}</span>
+          <Switch
+            checked={privateOf.get(calendar.id) ?? false}
+            disabled={sources.isPending || setPrivate.isPending}
+            onCheckedChange={(checked) =>
+              setPrivate.mutate({ calendarId: calendar.id, private: checked })
+            }
+            data-testid={`calendar-private-default-${calendar.id}`}
+          />
+        </label>
+      ))}
+    </div>
   );
 }
 
@@ -375,7 +444,12 @@ function AppleForm({ reconnect = false }: { reconnect?: boolean }) {
           onChange={(event) => setAppleId(event.target.value)}
         />
       </FormField>
-      <FormField id="apple-password" label={t("password")} error={passwordError} hint={t("passwordHint")}>
+      <FormField
+        id="apple-password"
+        label={t("password")}
+        error={passwordError}
+        hint={t("passwordHint")}
+      >
         <PasswordInput
           {...fieldA11y("apple-password", passwordError, true)}
           showLabel={t("showPassword")}
