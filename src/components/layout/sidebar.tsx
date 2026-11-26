@@ -7,7 +7,6 @@ import { Tooltip } from "@base-ui/react/tooltip";
 import { LockIcon, PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useUpdateSettings, useUserSettings } from "@/features/account/queries";
-import { APP_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { isActivePath } from "./nav-items";
 import { NavLink } from "./nav-link";
@@ -50,15 +49,8 @@ export function Sidebar() {
           !collapsed && "lg:justify-start",
         )}
       >
-        <Logo />
-        <span
-          className={cn(
-            "hidden text-lg font-bold tracking-tight text-ink",
-            !collapsed && "lg:inline",
-          )}
-        >
-          {APP_NAME}
-        </span>
+        <Logo className={cn(!collapsed && "lg:hidden")} />
+        <Logo withName className={cn("hidden h-8", !collapsed && "lg:block")} />
         <BetaBadge className={cn("hidden", !collapsed && "lg:inline-flex")} />
       </NavLink>
 

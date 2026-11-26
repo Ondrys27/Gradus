@@ -9,7 +9,6 @@ import { Logo } from "@/components/layout/logo";
 import { StagedSummary } from "@/components/grady/day-summary";
 import type { Locale } from "@/i18n/locales";
 import { loginPath } from "@/lib/auth/routes";
-import { APP_NAME } from "@/lib/constants";
 import { SCENARIOS_WITH_GRADY, showcaseSteps } from "../demo-scripts";
 import { createDomRunner, GUEST_FRAME_ID } from "./dom-driver";
 import { scenariosOf, showcaseHref, showcaseSearch, type ShowcaseParams } from "./params";
@@ -422,8 +421,7 @@ function EndCard({ ended, onLogin }: { ended: boolean; onLogin: () => void }) {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
     >
-      <Logo className="size-24 rounded-3xl text-5xl" />
-      <p className="text-[clamp(36px,5vw,72px)] font-black text-ink">{APP_NAME}</p>
+      <Logo withName className="h-[clamp(72px,10vw,144px)]" />
       <p className="max-w-3xl text-[clamp(20px,2.4vw,36px)] font-semibold text-ink-soft">
         {t("outro.tagline")}
       </p>

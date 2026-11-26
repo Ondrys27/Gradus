@@ -38,8 +38,7 @@ export async function SiteFooter() {
             href={localizedPath("home", locale)}
             className="flex min-h-11 items-center gap-3 self-start rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           >
-            <Logo />
-            <span className="text-lg font-bold tracking-tight text-ink">{APP_NAME}</span>
+            <Logo withName className="h-8" />
           </Link>
           <p className="max-w-xs text-sm text-ink-muted">{t("tagline", { appName: APP_NAME })}</p>
         </div>

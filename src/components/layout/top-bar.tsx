@@ -79,7 +79,7 @@ export function TopBar() {
           aria-label={t("home")}
           className="grid size-11 shrink-0 place-items-center rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50 md:hidden"
         >
-          <Logo />
+          <Logo className="h-6" />
         </Link>
         <BetaBadge className="-ml-1 md:hidden" />
         <SpaceBadge className="md:hidden" />

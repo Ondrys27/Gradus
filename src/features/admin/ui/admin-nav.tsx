@@ -162,7 +162,7 @@ export function AdminSidebar({ actor }: { actor: AdminActor }) {
     >
       <div className="sticky top-0 flex h-dvh flex-col">
         <div className={cn("flex h-14 items-center gap-3 border-b border-line", collapsed ? "justify-center px-2" : "px-4")}>
-          <Logo className="size-8 shadow-none" />
+          <Logo className="h-6" />
           {!collapsed && (
             <span className="truncate text-sm font-semibold tracking-tight text-ink">{t("title")}</span>
           )}
@@ -437,7 +437,7 @@ export function AdminPhoneBar() {
   const { signOut, pending } = useAdminSignOut();
   return (
     <div className="flex h-12 items-center gap-3 border-b border-line bg-canvas-deep px-4 pt-[env(safe-area-inset-top)] lg:hidden">
-      <Logo className="size-7 shadow-none" />
+      <Logo className="h-5" />
       <span className="text-sm font-semibold tracking-tight text-ink">{t("title")}</span>
       <AdminBell className="ml-auto" />
       <button

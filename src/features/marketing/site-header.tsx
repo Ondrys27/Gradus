@@ -77,10 +77,7 @@ export function SiteHeader({ signupEnabled }: { signupEnabled: boolean }) {
             aria-label={t("home", { appName: APP_NAME })}
             className="flex min-h-11 items-center gap-3 rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           >
-            <Logo />
-            <span className="font-display text-xl font-semibold tracking-tight text-ink">
-              {APP_NAME}
-            </span>
+            <Logo withName className="h-9" />
           </Link>
 
           <nav aria-label={t("label")} className="hidden justify-center lg:flex">

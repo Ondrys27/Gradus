@@ -39,8 +39,7 @@ export default async function AdminLoginPage({
   return (
     <div className="flex min-h-dvh flex-col items-center px-4 pt-[calc(24px+env(safe-area-inset-top))] pb-[calc(24px+env(safe-area-inset-bottom))]">
       <div className="flex min-h-11 items-center gap-3">
-        <Logo />
-        <span className="text-lg font-bold tracking-tight text-ink">{APP_NAME}</span>
+        <Logo withName className="h-8" />
       </div>
       <main className="flex w-full max-w-md flex-1 flex-col justify-center py-8">
         <AdminLogin next={next} />

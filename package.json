@@ -16,6 +16,7 @@
     "demo:seed": "bun scripts/demo-seed.ts",
     "demo:record": "bun scripts/demo-record.ts",
     "screenshots": "bun scripts/screenshots.ts",
+    "brand:assets": "node scripts/brand-assets.mjs",
     "metrics:backfill": "bun scripts/metrics-backfill.ts",
     "env:check": "bash scripts/check-env.sh",
     "docs:funkce": "bun scripts/docs-funkce.ts",

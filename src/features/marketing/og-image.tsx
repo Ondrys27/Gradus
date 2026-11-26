@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { ImageResponse } from "next/og";
 import { getTranslations } from "next-intl/server";
+import { LOCKUP, LOGO_COLORS, MARK, WORDMARK } from "@/components/brand/logo-geometry";
 import { APP_NAME } from "@/lib/constants";
 import cs from "@/locales/cs.json";
 import en from "@/locales/en.json";
@@ -9,6 +10,8 @@ import type { SiteLocale } from "@/lib/routes";
 import { OG_TOKENS as TOKENS } from "./og-tokens";
 
 export const OG_SIZE = { width: 1200, height: 630 };
+/** Height of the logo in the top left corner. */
+const LOGO_HEIGHT = 64;
 
 /** Inter from the repository (OFL), with the Czech letters Satori's default font lacks. */
 async function fonts() {
@@ -73,25 +76,37 @@ export async function renderOgImage(locale: SiteLocale): Promise<ImageResponse> 
           background: `radial-gradient(circle, ${TOKENS.teal}66 0%, ${TOKENS.teal}00 70%)`,
         }}
       />
-      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-        <div
-          style={{
-            width: 64,
-            height: 64,
-            borderRadius: 18,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundImage: `linear-gradient(135deg, ${TOKENS.violet}, ${TOKENS.teal})`,
-            color: TOKENS.canvas,
-            fontSize: 38,
-            fontWeight: 700,
-          }}
-        >
-          {APP_NAME.charAt(0)}
-        </div>
-        <div style={{ color: TOKENS.ink, fontSize: 40, fontWeight: 700 }}>{APP_NAME}</div>
-      </div>
+      <svg
+        width={Math.round((LOGO_HEIGHT * LOCKUP.width) / LOCKUP.height)}
+        height={LOGO_HEIGHT}
+        viewBox={`0 0 ${LOCKUP.width} ${LOCKUP.height}`}
+      >
+        <defs>
+          <linearGradient
+            id="logo"
+            gradientUnits="userSpaceOnUse"
+            x1={MARK.gradient.x1}
+            y1={MARK.gradient.y1}
+            x2={MARK.gradient.x2}
+            y2={MARK.gradient.y2}
+          >
+            <stop offset="0" stopColor={LOGO_COLORS.violet} />
+            <stop offset="1" stopColor={LOGO_COLORS.teal} />
+          </linearGradient>
+        </defs>
+        {MARK.bars.map((bar) => (
+          <rect
+            key={bar.y}
+            x={bar.x}
+            y={bar.y}
+            width={MARK.bar.width}
+            height={MARK.bar.height}
+            rx={MARK.bar.radius}
+            fill={bar.fill === "gradient" ? "url(#logo)" : LOGO_COLORS[bar.fill]}
+          />
+        ))}
+        <path d={WORDMARK.d} fill={TOKENS.ink} />
+      </svg>
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
         <div
           style={{

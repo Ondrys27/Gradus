@@ -41,8 +41,7 @@ export async function BookingFrame({
             className="group flex min-h-11 items-center gap-2.5 rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
             data-testid="booking-brand"
           >
-            <Logo className="size-7 rounded-lg text-sm shadow-none" />
-            <span className="font-display text-lg font-bold tracking-tight text-ink">{APP_NAME}</span>
+            <Logo withName className="h-7" />
           </Link>
         )}
         <BookingLocaleSwitcher />
@@ -55,7 +54,7 @@ export async function BookingFrame({
             href={home}
             className="flex min-h-11 items-center gap-2 rounded-lg px-1 outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-ring/50"
           >
-            <Logo className="size-4 rounded-[5px] text-[9px] shadow-none" />
+            <Logo className="h-3" />
             {t("madeWith", { appName: APP_NAME })}
           </Link>
           <span aria-hidden className="h-px flex-1 bg-line/70" />

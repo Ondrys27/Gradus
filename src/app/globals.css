@@ -36,6 +36,11 @@
   --color-orange: #ff9f43; /* in progress */
   --color-pink: #ff6b8a; /* lost, errors */
 
+  /* Logo: the same in every theme (scripts/brand-assets.mjs, logo-geometry.ts) */
+  --color-logo-violet: #705afc;
+  --color-logo-teal: #29cbc3;
+  --color-logo-night: #0b0f1a;
+
   /* Text */
   --color-ink: #ffffff;
   --color-ink-soft: #aeb8de;

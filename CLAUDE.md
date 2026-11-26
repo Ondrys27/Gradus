@@ -285,6 +285,7 @@ Jsou to rozhodnutí, ne doporučení. Kód, který je porušuje, oprav nebo na n
 ### Rozhraní
 - Tokeny v `@theme`, **žádné hexy v komponentách.** Fialová `#7C5CFF`, tyrkysová `#2FE3C8`, zlatá `#FFC64B`, zelená `#3DDC97`, oranžová `#FF9F43` (rozpracované), růžová `#FF6B8A`, pozadí `#070B1F`, karta `#0D1234`.
 - **Vyhledávání** (⌘K) prohledává přes klienta přihlášeného uživatele, nikdy admin; bez diakritiky přes unaccent a pg_trgm.
+- **Logo** jen přes `Logo` (`components/layout/logo.tsx`: tři schody, `withName` = i se jménem v Poppins SemiBold jako křivky; velikost výškou `h-*`). Tvary a barvy jsou vygenerované v `src/components/brand/logo-geometry.ts` (needitovat), barvy `--color-logo-*` stejné ve všech tématech. Soubory pro web a tisk v `public/brand/`, favicon `src/app/icon.svg` + `favicon.ico`, `apple-icon.png`; vše znovu `bun run brand:assets` (`scripts/brand-assets.mjs`, běží v node).
 - **Pravý dolní roh patří Gradymu.** Plovoucí ovládání vlevo dolů, hlavní akce nahoru k nadpisu.
 - Oslava (konfety, zvuk) jen pro velké okamžiky; drobnosti mají malou animaci.
 - Telefon < 768 px: spodní lišta, dialogy jako spodní panely, plochy ≥ 44 px, nic jen na hover, žádný vodorovný posun stránky. Překryv pod dialogem a panelem se na telefonu nerozmazává (`backdrop-blur` jen od `md:`, místo něj tmavší `max-md:bg-canvas/85`): rozmazání celé obrazovky se při animaci přepočítává v každém snímku a telefon (Safari) se na něm zasekne.
