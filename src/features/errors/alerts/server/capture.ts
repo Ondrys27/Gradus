@@ -11,6 +11,7 @@ import { createErrorCode } from "../../error-code";
 import { reportPage } from "../../report";
 import type { ClientErrorSource } from "../client-error";
 import { errorFingerprint } from "../fingerprint";
+import { noiseRuleOf } from "../noise";
 import { errorText, scrubErrorMessage, scrubStack } from "../scrub";
 import { runInBackground } from "./background";
 import { dispatchErrorAlert } from "./dispatch";
@@ -125,7 +126,7 @@ export function captureServerError(
     ip?: string | null;
   },
 ): void {
-  if (isFrameworkSignal(error)) return;
+  if (isFrameworkSignal(error) || isServerNoise(error)) return;
   const digest = (error as { digest?: unknown } | null)?.digest;
   runInBackground("error-alerts", async () => {
     const admin = createAdminClient();
@@ -147,6 +148,21 @@ export function captureServerError(
     );
     if (recorded.outcome === "created") await dispatchErrorAlert(recorded.id, { admin });
   });
+}
+
+/**
+ * A server error that is not the app's (noise.ts): the person left before
+ * the answer, an old page asked for a server action that is gone, a bot's
+ * malformed address, the dev bundler.
+ */
+export function isServerNoise(error: unknown): boolean {
+  return (
+    noiseRuleOf({
+      message: errorText(error),
+      stack: error instanceof Error ? error.stack : null,
+      dev: process.env.NODE_ENV === "development",
+    }) !== null
+  );
 }
 
 /**
@@ -208,7 +224,7 @@ export function captureRequestError(
   request: Readonly<{ path: string; method: string; headers: RequestHeaders }>,
   context: Readonly<{ routePath: string; routeType: "render" | "route" | "action" | "middleware" }>,
 ): void {
-  if (isFrameworkSignal(error)) return;
+  if (isFrameworkSignal(error) || isServerNoise(error)) return;
   const digest = (error as { digest?: unknown } | null)?.digest;
   runInBackground("error-alerts", async () => {
     const { userId, email } = await userOfRequest(request.headers);

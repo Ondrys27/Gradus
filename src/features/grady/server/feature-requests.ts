@@ -116,7 +116,7 @@ export async function emailOwner(
 <p>${escapeHtml(request.description || "-")}</p>
 <p>${escapeHtml(t("from"))}: ${escapeHtml(from)}</p>
 <blockquote style="white-space:pre-wrap">${escapeHtml(request.message)}</blockquote>`;
-  return sendEmail({ to: owner.email, subject, text: lines.join("\n"), html });
+  return sendEmail({ kind: "feature_request", to: owner.email, subject, text: lines.join("\n"), html });
 }
 
 /**

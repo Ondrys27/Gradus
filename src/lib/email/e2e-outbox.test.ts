@@ -8,7 +8,12 @@ const { deliverEmail, e2eOutboxAllowed, e2eOutboxKey, keepE2eMail, readE2eMail }
   "./e2e-outbox"
 );
 
-const MAIL = { subject: "S", text: "T", html: "<p>T</p>" };
+const MAIL = {
+  kind: "worker_invite" as const,
+  subject: "S",
+  text: "T",
+  html: "<p>T</p>",
+};
 
 describe("the mock Resend of the end-to-end tests", () => {
   beforeEach(() => {

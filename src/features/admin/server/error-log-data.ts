@@ -107,6 +107,8 @@ export type ErrorGroupDetail = {
   returnedAt: string | null;
   updatedAt: string | null;
   updatedBy: string | null;
+  /** What was found and done (the triage of 30.1: the cause, the commit). */
+  note: string | null;
   message: string;
   occurrences: ErrorOccurrence[];
   sends: ErrorSend[];
@@ -125,7 +127,7 @@ export async function loadErrorGroup(fingerprint: string): Promise<ErrorGroupDet
       .limit(ERROR_OCCURRENCES),
     admin
       .from("error_groups")
-      .select("status, returned_at, updated_at, updated_by")
+      .select("status, returned_at, updated_at, updated_by, note")
       .eq("fingerprint", fingerprint)
       .maybeSingle(),
     admin
@@ -149,6 +151,7 @@ export async function loadErrorGroup(fingerprint: string): Promise<ErrorGroupDet
     returnedAt: state.data?.returned_at ?? null,
     updatedAt: state.data?.updated_at ?? null,
     updatedBy: state.data?.updated_by ? nameOf(state.data.updated_by) : null,
+    note: state.data?.note ?? null,
     message: rows[0]!.message,
     occurrences: rows.map((row) => ({
       code: row.code,

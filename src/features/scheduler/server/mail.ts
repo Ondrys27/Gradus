@@ -2,6 +2,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { isE2eTestAccount } from "@/features/auth/e2e-account";
 import { cancelE2eMail, keepE2eMail } from "@/lib/email/e2e-outbox";
+import type { EmailKind } from "@/lib/email/kinds";
 import {
   cancelEmail,
   sendEmail,
@@ -20,6 +21,8 @@ import {
 const E2E_PREFIX = "e2e_";
 
 export type BookingDelivery = {
+  /** booking_guest, booking_host, or booking_reminder for either's reminder. */
+  kind: Extract<EmailKind, "booking_guest" | "booking_host" | "booking_reminder">;
   to: string;
   subject: string;
   text: string;
@@ -34,6 +37,7 @@ export async function deliverBookingMail(message: BookingDelivery): Promise<Emai
   if (isE2eTestAccount(message.to)) {
     const id = `${E2E_PREFIX}${randomUUID()}`;
     keepE2eMail({
+      kind: message.kind,
       to: message.to,
       subject: message.subject,
       text: message.text,
@@ -48,6 +52,7 @@ export async function deliverBookingMail(message: BookingDelivery): Promise<Emai
   }
   if (/@gradus\.local$/i.test(message.to.trim())) return { ok: false, error: "internal address" };
   return sendEmail({
+    kind: message.kind,
     to: message.to,
     subject: message.subject,
     text: message.text,

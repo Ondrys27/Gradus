@@ -417,6 +417,7 @@ async function emailGuest(
     brandingHidden: Boolean(ctx.host?.brandingHidden),
   });
   return deliverBookingMail({
+    kind: kind === "reminder" ? "booking_reminder" : "booking_guest",
     to,
     ...mail,
     fromName: ctx.host?.name,
@@ -450,6 +451,7 @@ async function emailHost(
     reminderMinutes: extra.reminderMinutes,
   });
   return deliverBookingMail({
+    kind: kind === "reminder" ? "booking_reminder" : "booking_host",
     to: ctx.hostEmail,
     ...mail,
     ...(ctx.booking.guest_email ? { replyTo: ctx.booking.guest_email } : {}),

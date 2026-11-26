@@ -7,7 +7,8 @@ import { Avatar } from "@/components/ui/avatar";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { AvatarCropper, type LoadedImage } from "@/features/profile/avatar-cropper";
-import { AVATAR_MAX_BYTES, sniffImageType, type AvatarMime } from "@/features/profile/avatar-image";
+import { AVATAR_ACCEPT, type AvatarMime } from "@/features/profile/avatar-image";
+import { loadAvatarFile, type AvatarPickError } from "@/features/profile/load-avatar";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { useUpdateCompanyWorker } from "./queries";
@@ -15,7 +16,7 @@ import type { DashboardWorker } from "./types";
 
 const BUCKET = "worker-avatars";
 
-type PhotoError = "tooLarge" | "wrongType" | "unreadable" | "uploadFailed";
+type PhotoError = AvatarPickError | "uploadFailed";
 
 /** One file per person: worker-avatars/<owner>/<worker>/avatar; storage rules allow only that. */
 export function workerAvatarPath(ownerId: string, workerId: string) {
@@ -23,7 +24,7 @@ export function workerAvatarPath(ownerId: string, workerId: string) {
 }
 
 /**
- * The person's photo. Whoever may change it picks a JPG or PNG (2 MB), crops
+ * The person's photo. Whoever may change it picks a JPG, PNG or HEIC (20 MB), crops
  * it to a square and it is saved at once; removing it shows the photo of the
  * person's own account again, if any.
  */
@@ -52,25 +53,10 @@ export function PhotoEditor({
   async function pick(file: File | undefined) {
     if (!file) return;
     setError(null);
-    if (file.size > AVATAR_MAX_BYTES) return setError("tooLarge");
-    const mime = sniffImageType(new Uint8Array(await file.slice(0, 8).arrayBuffer()));
-    if (!mime) return setError("wrongType");
-    const url = URL.createObjectURL(file);
-    const element = new Image();
-    element.onload = () => {
-      setImage({
-        url,
-        mime,
-        naturalWidth: element.naturalWidth,
-        naturalHeight: element.naturalHeight,
-      });
-      setOpen(true);
-    };
-    element.onerror = () => {
-      URL.revokeObjectURL(url);
-      setError("unreadable");
-    };
-    element.src = url;
+    const loaded = await loadAvatarFile(file);
+    if (!loaded.ok) return setError(loaded.error);
+    setImage(loaded.image);
+    setOpen(true);
   }
 
   async function save(blob: Blob, mime: AvatarMime) {
@@ -148,7 +134,7 @@ export function PhotoEditor({
         <input
           ref={inputRef}
           type="file"
-          accept="image/jpeg,image/png"
+          accept={AVATAR_ACCEPT}
           className="sr-only"
           tabIndex={-1}
           aria-hidden

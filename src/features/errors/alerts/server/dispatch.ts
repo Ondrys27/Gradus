@@ -105,7 +105,7 @@ async function deliver(
   const failures: string[] = [];
   for (const [index, to] of recipients.entries()) {
     if (index > 0 && spacing > 0) await sleep(spacing);
-    const result = await send({ to, ...content }).catch((error: unknown): EmailResult => ({
+    const result = await send({ kind: "error_alert", to, ...content }).catch((error: unknown): EmailResult => ({
       ok: false,
       error: error instanceof Error ? error.message : "unknown",
     }));

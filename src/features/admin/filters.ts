@@ -46,6 +46,7 @@ export const PAGE_FILTERS: Record<AdminSectionKey, readonly AdminFilter[]> = {
   promoCodes: [],
   // One switch: no period, no segments.
   showcase: [],
+  notifications: [],
   // One switch and a list: no period, no segments.
   integrations: [],
   // Errors belong to no account: the period only (a code search ignores it).

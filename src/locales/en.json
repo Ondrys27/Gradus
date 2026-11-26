@@ -1022,7 +1022,7 @@
       "upload": "Upload photo",
       "change": "Change photo",
       "remove": "Remove",
-      "requirements": "JPG or PNG, up to 2 MB. You crop it to a square next.",
+      "requirements": "JPG, PNG or HEIC (an iPhone photo), up to 20 MB. You crop it to a square next.",
       "cropTitle": "Crop your photo",
       "cropArea": "Photo crop area",
       "cropHint": "Drag to move, pinch or scroll to zoom.",
@@ -1033,10 +1033,11 @@
       "save": "Save photo",
       "saving": "Saving…",
       "errors": {
-        "tooLarge": "The photo is larger than 2 MB.",
-        "wrongType": "Only JPG and PNG photos are supported.",
+        "tooLarge": "The photo is larger than 20 MB.",
+        "wrongType": "JPG, PNG and HEIC photos are supported.",
         "unreadable": "This photo could not be opened.",
-        "uploadFailed": "The photo could not be saved. Please try again."
+        "uploadFailed": "The photo could not be saved. Please try again.",
+        "heicUnsupported": "This browser cannot open HEIC photos. Save it as a JPG, or upload it from Safari."
       }
     },
     "details": {
@@ -1075,7 +1076,7 @@
       "upload": "Upload logo",
       "change": "Change logo",
       "remove": "Remove",
-      "requirements": "JPG or PNG, up to 2 MB. You crop it to a square next.",
+      "requirements": "JPG, PNG or HEIC, up to 20 MB. You crop it to a square next.",
       "cropTitle": "Crop the logo",
       "cropArea": "Photo crop area",
       "cropHint": "Drag to move, pinch or scroll to zoom.",
@@ -1086,10 +1087,11 @@
       "save": "Save logo",
       "saving": "Saving…",
       "errors": {
-        "tooLarge": "The logo is larger than 2 MB.",
-        "wrongType": "Only JPG and PNG images are supported.",
+        "tooLarge": "The logo is larger than 20 MB.",
+        "wrongType": "JPG, PNG and HEIC images are supported.",
         "unreadable": "This image could not be opened.",
-        "uploadFailed": "The logo could not be saved. Please try again."
+        "uploadFailed": "The logo could not be saved. Please try again.",
+        "heicUnsupported": "This browser cannot open HEIC images. Save it as a JPG or PNG, or upload it from Safari."
       }
     }
   },
@@ -4942,6 +4944,92 @@
       },
       "join": "Join the meeting",
       "joinLine": "Join the meeting: {url}"
+    },
+    "adminDigest": {
+      "title": "{appName} yesterday · {date}",
+      "subject": "{appName} yesterday · {date}",
+      "subjectCalm": "{appName} yesterday · {date} · all is well",
+      "attention": {
+        "label": "Worth your attention:",
+        "calm": "All is well, nothing new waits for a decision.",
+        "health": "Something is failing: {system}. Have a look at System health.",
+        "newErrors": "{count, plural, one {# new error appeared} other {# new errors appeared}}, the most frequent {code}.",
+        "cancelled": "{count, plural, one {# subscription was cancelled} other {# subscriptions were cancelled}}.",
+        "signups": {
+          "up": "{value} sign-ups, more than {versus} ({previous}).",
+          "down": "{value} sign-ups, fewer than {versus} ({previous})."
+        },
+        "active": {
+          "up": "{value} active people, more than {versus} ({previous}).",
+          "down": "{value} active people, fewer than {versus} ({previous})."
+        },
+        "versus": {
+          "dayBefore": "the day before",
+          "weekAgo": "a week before"
+        },
+        "aiCost": {
+          "up": "AI cost {value} per active user, {previous} the day before.",
+          "down": "AI got cheaper: {value} per active user, down from {previous}."
+        },
+        "reports": "{count, plural, one {# new report came in} other {# new reports came in}}."
+      },
+      "change": {
+        "same": {
+          "dayBefore": "same as the day before",
+          "weekAgo": "same as a week before"
+        },
+        "dayBefore": "{change} on the day before",
+        "weekAgo": "{change} on last week",
+        "withPercent": {
+          "dayBefore": "{change} ({percent}) on the day before",
+          "weekAgo": "{change} ({percent}) on last week"
+        },
+        "none": "nobody active the day before"
+      },
+      "people": {
+        "title": "People",
+        "newUsers": "New users: {count} · {dayBefore} · {weekAgo}",
+        "activeUsers": "Active users: {count} · {dayBefore} · {weekAgo}"
+      },
+      "money": {
+        "title": "Money and AI",
+        "testMode": "Stripe is in test mode: revenue and subscriptions are internal accounts' test payments.",
+        "noRevenue": "Revenue: no payment",
+        "revenue": "Revenue: {amount} · {change}",
+        "subscriptions": "New subscriptions: {started} · cancelled: {cancelled}",
+        "ai": "AI costs: {amount} · {change}",
+        "aiPerActive": "AI per active user: {amount} · {change}"
+      },
+      "errors": {
+        "title": "Errors",
+        "summary": "New: {fresh} · occurrences: {occurrences} · resolved: {resolved}",
+        "top": "{code} · {message} · {count}×"
+      },
+      "feedback": {
+        "title": "Reports and feedback",
+        "summary": "Reports: {reports} · ideas: {ideas} · survey: {survey}"
+      },
+      "waiting": {
+        "title": "Waiting for a decision",
+        "errors": "Errors to triage: {count}",
+        "reports": "Unread reports: {count}",
+        "payouts": "Commission payouts to approve or pay: {count}",
+        "draft": "A plans draft waits to be published"
+      },
+      "health": {
+        "title": "System health",
+        "warn": "{system}: needs attention",
+        "bad": "{system}: failing",
+        "items": {
+          "cron": "Cron jobs",
+          "env": "Environment variables",
+          "email": "E-mail queue",
+          "stripe": "Stripe webhook",
+          "rates": "Exchange rates"
+        }
+      },
+      "open": "Open the administration",
+      "footer": "Change the time, turn it off or choose \"only when there is news\" in Administration → Settings → Notifications:"
     }
   },
   "workers": {
@@ -7666,7 +7754,8 @@
         "showcase": "Showcase mode",
         "errors": "Errors",
         "help": "Help",
-        "integrations": "Integrations"
+        "integrations": "Integrations",
+        "notifications": "Notifications"
       },
       "soon": "Soon",
       "groups": {
@@ -9559,7 +9648,8 @@
         "showcase": "The app showing itself off for marketing videos: the switch and the scenarios.",
         "admins": "Who may enter the administration: invitations, levels and removal of administrators.",
         "help": "This page: what is where, with links straight to the place.",
-        "integrations": "Who may connect a Google and Apple calendar: the mode, the date and accounts added by hand."
+        "integrations": "Who may connect a Google and Apple calendar: the mode, the date and accounts added by hand.",
+        "notifications": "The daily summary \"Gradus yesterday\" by e-mail to each administrator: on, time, zone and only when there is news."
       },
       "items": {
         "overviewNumbers": {
@@ -9813,6 +9903,14 @@
         "overviewAi": {
           "title": "AI widgets: spend against the cap",
           "keywords": "ai spend cap economy mode where to save"
+        },
+        "adminDigest": {
+          "title": "Daily summary by e-mail",
+          "keywords": "summary newsletter e-mail daily morning yesterday notifications time off only news preview"
+        },
+        "adminDigestOthers": {
+          "title": "Other administrators' summaries",
+          "keywords": "administrators summary e-mail off time"
         }
       }
     },
@@ -9884,7 +9982,8 @@
         },
         "mock": "test, not sent",
         "reports": "Users' reports with the same code",
-        "noReports": "Nobody reported this error."
+        "noReports": "Nobody reported this error.",
+        "note": "Note:"
       },
       "peer": {
         "title": "E-mails about changes",
@@ -10132,6 +10231,10 @@
         "quickActions": {
           "name": "Quick actions",
           "description": "Find a user, create a promo code, publish plans."
+        },
+        "emails": {
+          "name": "E-mails",
+          "description": "How many e-mails went out today and this month against Resend's limit, by kind, and when the limit runs out."
         }
       },
       "errors": {
@@ -10372,7 +10475,75 @@
           "promoCode": "New promo code",
           "publishPlans": "Publish plans"
         }
+      },
+      "emails": {
+        "figures": {
+          "month": "this month of {limit}",
+          "today": "today",
+          "todayOf": "today of {limit}",
+          "share": "of the monthly limit",
+          "projected": "estimate for the month",
+          "failed": "Failed this month",
+          "exhaustIn": "At this pace the limit runs out in {days, plural, one {# day} other {# days}}.",
+          "exhausted": "This month's limit is used up."
+        },
+        "byKind": "This month by kind",
+        "kinds": {
+          "auth_confirmation": "Sign-up confirmation",
+          "account_support": "Account support (password, e-mail)",
+          "admin_login": "Administration sign-in",
+          "admin_invite": "Administrator invite",
+          "admin_peer_notice": "\"X changed…\" to administrators",
+          "admin_digest": "Daily summary to administrators",
+          "error_alert": "Error alerts",
+          "ai_budget": "AI budget",
+          "billing_alert": "Payments (owner summary)",
+          "plan_request": "Plan change (to the owner)",
+          "feature_request": "Feature ideas",
+          "bug_report_owner": "Problem reports (to the owner)",
+          "bug_report_thanks": "Thanks for a report",
+          "welcome_beta": "Tester welcome",
+          "waitlist_confirm": "Waiting list",
+          "worker_invite": "Worker invite",
+          "worker_left": "Worker left",
+          "chat_notification": "Messages",
+          "invoice": "Invoices",
+          "contact_email": "E-mails to contacts",
+          "booking_guest": "Bookings (guest)",
+          "booking_host": "Bookings (host)",
+          "booking_reminder": "Meeting reminders"
+        }
       }
+    },
+    "digest": {
+      "title": "Notifications",
+      "description": "The daily summary \"{appName} yesterday\" by e-mail: new and active users, money, AI costs, new errors, reports and what waits for a decision. One e-mail a day instead of single alerts.",
+      "ownTitle": "My daily summary",
+      "standing": {
+        "owner": "Owner",
+        "full": "Full administrator",
+        "limited": "Limited administrator · summary without money"
+      },
+      "enabled": "Daily summary by e-mail",
+      "on": "Arrives every day",
+      "off": "Off",
+      "hour": "When it arrives",
+      "zone": "Time zone",
+      "zoneAccount": "The account's ({zone})",
+      "onlyNews": "Only when there is news",
+      "onlyNewsHint": "A calm day without new errors, reports or failures sends no e-mail.",
+      "save": "Save",
+      "saved": "Saved.",
+      "preview": "Send me a preview now",
+      "previewSent": "A preview of yesterday's summary is on its way to your inbox.",
+      "errors": {
+        "forbidden": "You cannot change this setting.",
+        "invalid": "The setting could not be saved, please check it.",
+        "failed": "That did not work. Please try again.",
+        "limited": "Enough previews in the last hour, try again later."
+      },
+      "instantHint": "Instant e-mails about errors are off (errors light up on the overview and in the bell); the \"only critical\" mode can be switched on too.",
+      "instantLink": "E-mails about errors"
     }
   },
   "invoices": {

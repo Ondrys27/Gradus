@@ -33,7 +33,7 @@ describe("sendEmail", () => {
     vi.stubEnv("RESEND_API_KEY", "re_test");
     const fetchMock = vi.fn(async () => new Response(JSON.stringify({ id: "e1" }), { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
-    const message = { subject: "s", text: "t", html: "<p>t</p>" };
+    const message = { kind: "invoice" as const, subject: "s", text: "t", html: "<p>t</p>" };
 
     expect(await sendEmail({ ...message, to: "guest@example.com" })).toEqual({
       ok: false,

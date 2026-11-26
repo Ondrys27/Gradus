@@ -39,6 +39,10 @@ Sloupce: **M** = majitel · **P** = plný administrátor · **O** = omezený adm
 | `GET /api/admin-reports/new` („Obnovit · N nových“ v Hlášeních) | ✓ | ✓ | ✓ | jen počet hlášení od vykreslení, nepočítá se jako aktivita relace, bez `admin_audit` |
 | `error-log-actions.setErrorGroupStatus` | ✓ | ✓ | ✓ | stav chyby v logu (Nová · Řeší se · Vyřešená · Ignorovat), třídění jako u zpětné vazby; admin klient po stráži, audit `errors.status` (zkrácený otisk, z → na) |
 | `error-log-actions.setPeerNotices` | ✓ | ✓ | – | vlastní přepínač e-mailů „X změnil…“ (`peerNotices`, `admin_notify_prefs`), audit `admins.notify` |
+| `digest-actions.saveDigestPrefs` (vlastní) | ✓ | ✓ | ✓ | vlastní denní souhrn „Gradus včera“ (Nastavení → Upozornění, 30.1): zapnout, hodina, pásmo, jen když je co hlásit; `admin_notify_prefs`, audit `settings.admin_digest` |
+| `digest-actions.saveDigestPrefs` (jiného administrátora) | ✓ | ✓ | – | `editDigests`: souhrn ostatních administrátorů, audit `settings.admin_digest` se zkráceným id |
+| `digest-actions.sendDigestPreviewAction` | ✓ | ✓ | ✓ | ukázka včerejšího souhrnu jen sobě, hned; omezený bez peněz; nejvýš 5 za hodinu |
+| widget E-maily (přehled) | ✓ | ✓ | ✓ | jen počty e-mailů podle druhu proti limitu Resendu (`admin_email_usage`), žádné adresy |
 | `export-actions.recordExport` (grafy, tabulky čísel) | ✓ | ✓ | ✓ | souhrnná čísla |
 | `export-actions.recordExport` (`table.ai.top_users.csv`, `table.ai.top_spaces.csv`) | ✓ | ✓ | – | jména a id lidí / majitelů prostorů |
 | `GET /admin/audit/export` | ✓ | ✓ | – | jména a id lidí v auditu; omezenému 404 |

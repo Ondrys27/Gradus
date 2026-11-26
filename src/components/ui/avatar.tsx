@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import { UserRoundIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,7 +17,7 @@ export function initialsOf(name: string | null | undefined): string {
     .toLocaleUpperCase();
 }
 
-/** The largest avatar (size-24); next/image adds the 2× variant to the srcset. */
+/** The largest avatar (size-24), the intrinsic size of the <img>. */
 const AVATAR_SOURCE_PX = 96;
 
 export function Avatar({
@@ -28,6 +31,11 @@ export function Avatar({
   className?: string;
 }) {
   const initials = initialsOf(name);
+  // A picture that does not load (deleted, offline, a refused request) falls
+  // back to the initials, never to the browser's broken image; a new address
+  // gets its own try.
+  const [failed, setFailed] = useState<string | null>(null);
+  const picture = src && failed !== src ? src : null;
   return (
     <span
       className={cn(
@@ -35,15 +43,17 @@ export function Avatar({
         className,
       )}
     >
-      {src ? (
-        // Resized and re-encoded by next/image: an upload can be 2 MB, the largest avatar is 96 px.
+      {picture ? (
+        // The stored file itself (images are not optimised, next.config.ts): 512 px, cropped on upload.
         <Image
-          src={src}
+          src={picture}
           alt=""
           width={AVATAR_SOURCE_PX}
           height={AVATAR_SOURCE_PX}
           className="size-full object-cover"
           draggable={false}
+          data-avatar-image=""
+          onError={() => setFailed(picture)}
         />
       ) : initials ? (
         <span aria-hidden>{initials}</span>

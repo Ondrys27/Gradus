@@ -98,6 +98,7 @@ export async function alertOwner(
   const owner = await ownerContact(admin);
   const sent = owner.email
     ? await (options.send ?? sendEmail)({
+        kind: "ai_budget",
         to: owner.email,
         ...(await alertEmail(kind, snapshot, pause, owner.locale)),
       })

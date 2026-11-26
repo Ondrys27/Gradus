@@ -19,6 +19,14 @@ async function sidebarWidth(page: Page) {
   return Math.round((await sidebar(page).boundingBox())?.width ?? 0);
 }
 
+/** The logo's box and where its bars start: the name folds, the bars never move. */
+async function logoBox(page: Page) {
+  const logo = sidebar(page).getByTestId("folding-logo");
+  const box = await logo.boundingBox();
+  const bars = await logo.locator("rect").first().boundingBox();
+  return { width: Math.round(box?.width ?? 0), barsX: Math.round(bars?.x ?? 0) };
+}
+
 async function savedCollapsed(userId: string) {
   const { data } = await admin()
     .from("user_settings")
@@ -38,8 +46,14 @@ test("39 · sidebar: collapse, survives a reload, ⌘B expands", async ({ page, 
   await expect(collapse).toBeVisible();
   await expect(sidebar(page).getByText(t("nav.pipeline"), { exact: true })).toBeVisible();
 
+  const open = await logoBox(page);
+  expect(open.width).toBeGreaterThan(90);
+
   await collapse.click();
   await expect.poll(() => sidebarWidth(page)).toBe(COLLAPSED);
+  // The name slid into the bars: the box is the bars alone, at the same place.
+  await expect.poll(async () => (await logoBox(page)).width).toBeLessThan(50);
+  expect((await logoBox(page)).barsX).toBe(open.barsX);
   await expect(sidebar(page).getByText(t("nav.pipeline"), { exact: true })).toBeHidden();
   await expect.poll(() => savedCollapsed(account.id)).toBe(true);
 

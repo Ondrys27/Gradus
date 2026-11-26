@@ -111,6 +111,7 @@ const PAGE_LOADERS: Record<AdminSectionKey, Loader[]> = {
   plans: [],
   promoCodes: [],
   showcase: [],
+  notifications: [],
   integrations: [],
   errors: [
     (q) =>

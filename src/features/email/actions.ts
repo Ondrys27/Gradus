@@ -126,6 +126,7 @@ async function sendContactEmail(
     );
 
     const sent = await sendEmail({
+      kind: "contact_email",
       to: contact.email,
       subject: input.subject,
       text: input.body,

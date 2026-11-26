@@ -32,7 +32,13 @@ describe("scrubErrorMessage", () => {
   it("reads anything thrown", () => {
     expect(errorText(new TypeError("boom"))).toBe("TypeError: boom");
     expect(errorText("plain")).toBe("plain");
-    expect(errorText({ any: 1 })).toBe("unknown");
+    expect(errorText({ any: 1 })).toBe("unknown (Object)");
+    expect(errorText({ name: "PostgrestError", message: "boom", details: "secret" })).toBe(
+      "PostgrestError: boom",
+    );
+    expect(errorText(new Response("x"))).toBe("unknown (Response)");
+    expect(errorText(undefined)).toBe("unknown");
+    expect(errorText(42)).toBe("unknown (number)");
   });
 });
 

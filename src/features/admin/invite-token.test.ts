@@ -87,6 +87,7 @@ describe("roles", () => {
       "exportPersonalData",
       "viewScreenshots",
       "peerNotices",
+      "editDigests",
     ] as const;
     for (const power of powers) {
       expect(adminCan(owner, power), power).toBe(true);

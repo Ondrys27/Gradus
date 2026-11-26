@@ -122,6 +122,7 @@ export async function sendAdminInviteEmail(
     t("admin.inviteEmail.ignore", values),
   ];
   const sent = await sendEmail({
+    kind: "admin_invite",
     to: invite.email,
     subject: t("admin.inviteEmail.subject", values),
     text: [lines[0], "", values.url, "", lines[2], "", lines[3]].join("\n"),

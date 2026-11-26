@@ -5,6 +5,8 @@ import { METRICS_TIMEZONE, shiftDay } from "@/lib/analytics/metrics";
 import type { EventName } from "@/lib/analytics/events";
 import { APP_VERSION } from "@/lib/app-version";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { EMAIL_KINDS, RESEND_PLAN } from "@/lib/email/kinds";
+import { emailForecast, parseEmailUsage, usageState } from "../../email-usage";
 import { envHealth } from "../../env-health";
 import { isErrorGroupStatus } from "../../error-log";
 import { adminCan } from "../../roles";
@@ -123,12 +125,12 @@ const lastDays = (q: AdminQuery, days: number) => ({ from: shiftDay(q.today, -(d
 const monthSoFar = (q: AdminQuery) => ({ from: `${q.today.slice(0, 8)}01` as typeof q.today, to: q.today });
 
 /** A query for another range, without the comparison (one number, not two). */
-function within(q: AdminQuery, range: { from: string; to: string }): AdminQuery {
+export function within(q: AdminQuery, range: { from: string; to: string }): AdminQuery {
   return { ...q, range: range as AdminQuery["range"], previous: null };
 }
 
 /** An event of the catalog over a range: its count (or its distinct users). */
-async function eventTotalOver(
+export async function eventTotalOver(
   q: AdminQuery,
   event: EventName,
   calc: "count" | "users",
@@ -385,6 +387,64 @@ const reports: Loader = async (q) => {
   };
 };
 
+/** E-mails today and this month (email_log) against Resend's plan, by kind, and when the limit runs out. */
+const emails: Loader = async (q) => {
+  const { data, error } = await createAdminClient().rpc("admin_email_usage", { _tz: METRICS_TIMEZONE });
+  if (error) throw new Error(`admin_email_usage: ${error.message}`);
+  const usage = parseEmailUsage(data);
+  const [year, month, day] = q.today.split("-").map(Number) as [number, number, number];
+  // Day 0 of the next month is the last of this one.
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const forecast = emailForecast(usage, day, daysInMonth, RESEND_PLAN);
+  const monthState = usageState(forecast.monthShare);
+  const kinds = Object.entries(usage.byKind).sort((a, b) => b[1] - a[1]);
+  const top = Math.max(1, ...kinds.map(([, n]) => n));
+  const known = new Set<string>(EMAIL_KINDS);
+  return {
+    figures: [
+      figure("emails", "month", usage.month, "count", {
+        labelValues: { limit: forecast.monthlyLimit },
+        status: monthState,
+      }),
+      figure("emails", "today", usage.today, "count", {
+        ...(forecast.dailyLimit
+          ? { label: W("emails", "todayOf"), labelValues: { limit: forecast.dailyLimit } }
+          : {}),
+        status: usageState(forecast.dayShare),
+      }),
+      figure("emails", "share", forecast.monthShare * 100, "percent", { status: monthState }),
+      figure("emails", "projected", forecast.projected, "count", {
+        status: usageState(forecast.projected / forecast.monthlyLimit),
+      }),
+    ],
+    rows: [
+      ...(forecast.exhaustDay !== null
+        ? [
+            forecast.exhaustDay <= day
+              ? { id: "exhaust", label: W("emails", "exhausted"), status: "bad" as WidgetStatus }
+              : {
+                  id: "exhaust",
+                  label: W("emails", "exhaustIn"),
+                  labelValues: { days: forecast.exhaustDay - day },
+                  status: "warn" as WidgetStatus,
+                },
+          ]
+        : []),
+      ...(usage.failedMonth > 0
+        ? [{ id: "failed", label: W("emails", "failed"), value: usage.failedMonth, unit: "count" as const, status: "warn" as const }]
+        : []),
+      ...kinds.map(([kind, n]) => ({
+        id: kind,
+        ...(known.has(kind) ? { label: `admin.widgets.emails.kinds.${kind}` } : { text: kind }),
+        value: n,
+        unit: "count" as const,
+        ratio: n / top,
+      })),
+    ],
+    rowsTitle: "admin.widgets.emails.byKind",
+  };
+};
+
 const latency: Loader = async (q) => {
   const [routes, pages, errorRate] = await Promise.all([
     routeLatency(q),
@@ -555,7 +615,7 @@ const recentSignups: Loader = async (q) => {
 // --- Money -------------------------------------------------------------------------
 
 /** Stripe's test mode: the numbers are the internal test accounts' payments, labelled so. */
-function moneyQuery(q: AdminQuery): { q: AdminQuery; testData: boolean } {
+export function moneyQuery(q: AdminQuery): { q: AdminQuery; testData: boolean } {
   const testData = stripeModeOfKey(process.env.STRIPE_SECRET_KEY) === "test";
   return testData ? { q: { ...q, view: { ...q.view, internal: true } }, testData } : { q, testData };
 }
@@ -1052,6 +1112,7 @@ const LOADERS: Record<Exclude<AdminWidgetKey, "quickActions">, Loader> = {
   health,
   deploy,
   reports,
+  emails,
   latency,
   newUsers,
   activeUsers,

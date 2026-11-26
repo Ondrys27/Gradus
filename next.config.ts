@@ -4,7 +4,7 @@ import { LEGACY_REDIRECTS } from "./src/lib/routes";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
-/** Avatars are public objects in Supabase Storage; next/image may fetch only those. */
+/** Avatars are public objects in Supabase Storage; next/image may point only at those. */
 function supabaseStoragePattern() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!url) return [];
@@ -40,8 +40,13 @@ const nextConfig: NextConfig = {
     devtoolSegmentExplorer: false,
   },
   images: {
+    // Vercel's image optimisation is metered; on Hobby, once the month's
+    // quota is used up /_next/image answers 402 and every photo turned into a
+    // broken image (a question mark in Safari), profile photos and the
+    // website's screenshots alike (30.1). The files are small already: a
+    // photo is cropped to 512 px on upload, the screenshots are WebP.
+    unoptimized: true,
     remotePatterns: supabaseStoragePattern(),
-    formats: ["image/avif", "image/webp"],
   },
   // The app moved under /app; old addresses keep working with a permanent 301.
   async redirects() {

@@ -23,6 +23,7 @@ export async function sendInvoiceEmail(
   const bytes = await downloadInvoicePdf(ctx, invoice);
   const self = ctx.email && ctx.email !== input.to ? ctx.email : null;
   const sent = await sendEmail({
+    kind: "invoice",
     to: input.to,
     cc: input.ccSelf && self ? [self] : undefined,
     replyTo: ctx.email ?? invoice.supplier?.email ?? undefined,

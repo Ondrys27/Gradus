@@ -545,3 +545,68 @@ describe("administrator levels (step 27.2)", () => {
     await expect(db.query(`select * from public.admin_notify_prefs`)).rejects.toThrow(/permission denied/);
   });
 });
+
+describe("e-mail log and the administrators' daily summary (30.1)", () => {
+  const hash = "0123456789abcdef";
+
+  it("are closed to clients: no read, no write, no functions", async () => {
+    await asUser(owner);
+    for (const sql of [
+      `select 1 from public.email_log limit 1`,
+      `insert into public.email_log (kind, recipient_hash, status) values ('invoice', '${hash}', 'sent')`,
+      `select 1 from public.admin_digest_sends limit 1`,
+      `select public.admin_email_usage('Europe/Prague')`,
+      `select public.admin_digest_facts(current_date)`,
+      `select public.purge_email_log()`,
+    ]) {
+      await expect(db.query(sql), sql).rejects.toThrow(/permission denied/);
+    }
+  });
+
+  it("counts sent and scheduled e-mails by kind; failed and cancelled ones do not count", async () => {
+    await asServer();
+    await db.exec(`
+      insert into public.email_log (kind, recipient_hash, status) values
+        ('invoice', '${hash}', 'sent'), ('invoice', '${hash}', 'sent'),
+        ('booking_reminder', '${hash}', 'scheduled'), ('booking_reminder', '${hash}', 'cancelled'),
+        ('chat_notification', '${hash}', 'failed');
+    `);
+    const usage = (await one<{ u: Record<string, unknown> }>(`select public.admin_email_usage('Europe/Prague') as u`)).u;
+    expect(usage).toMatchObject({ today: 3, month: 3, failed_month: 1, by_kind: { invoice: 2, booking_reminder: 1 } });
+    await expect(
+      db.query(`insert into public.email_log (kind, recipient_hash, status) values ('Bad Kind', '${hash}', 'sent')`),
+    ).rejects.toThrow(/check/);
+    await expect(
+      db.query(`insert into public.email_log (kind, recipient_hash, status) values ('invoice', 'jana@firma.cz', 'sent')`),
+    ).rejects.toThrow(/check/);
+  });
+
+  it("gives every administrator a summary at 6:00 by default, one row per person and day", async () => {
+    await asServer();
+    await db.query(`insert into public.admin_notify_prefs (user_id) values ($1) on conflict do nothing`, [owner]);
+    expect(
+      await one(`select digest_enabled, digest_hour, digest_only_news, digest_time_zone from public.admin_notify_prefs where user_id = $1`, [owner]),
+    ).toEqual({ digest_enabled: true, digest_hour: 6, digest_only_news: false, digest_time_zone: null });
+    await db.query(`insert into public.admin_digest_sends (user_id, day, status) values ($1, '2026-11-25', 'scheduled')`, [owner]);
+    await expect(
+      db.query(`insert into public.admin_digest_sends (user_id, day, status) values ($1, '2026-11-25', 'sent')`, [owner]),
+    ).rejects.toThrow(/duplicate|unique/);
+  });
+
+  it("reports a day's new errors without the tests' own (mock) ones", async () => {
+    await asServer();
+    const day = (await one<{ d: string }>(`select (now() at time zone public.metrics_timezone())::date::text as d`)).d;
+    await db.exec(`
+      insert into public.error_events (code, fingerprint, source, page, message, transport) values
+        ('GR-AAAAA2', 'aaaaaaaaaaaaaaaa', 'boundary', '/app', 'TypeError: real', 'resend'),
+        ('GR-AAAAA3', 'aaaaaaaaaaaaaaaa', 'boundary', '/app', 'TypeError: real', 'resend'),
+        ('GR-AAAAA4', 'bbbbbbbbbbbbbbbb', 'boundary', '/app/test-chyby', 'Error: Gradus crash test', 'mock');
+    `);
+    const facts = (await one<{ f: Record<string, unknown> }>(`select public.admin_digest_facts($1::date) as f`, [day])).f;
+    expect(facts).toMatchObject({ new_errors: 1, error_occurrences: 2 });
+    // Both rows came with one statement (the same moment): either code is the latest.
+    expect(facts.top_errors).toEqual([
+      { code: expect.stringMatching(/^GR-AAAAA[23]$/), message: "TypeError: real", occurrences: 2 },
+    ]);
+  });
+});

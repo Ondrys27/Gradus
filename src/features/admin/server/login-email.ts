@@ -44,6 +44,7 @@ export async function sendAdminLoginEmail(input: {
     t("admin.loginEmail.notYou", values),
   ];
   const sent = await sendEmail({
+    kind: "admin_login",
     to: input.email,
     subject: t("admin.loginEmail.subject", values),
     text: [lines[0], "", lines[1], lines[2], lines[3], "", lines[4]].join("\n"),

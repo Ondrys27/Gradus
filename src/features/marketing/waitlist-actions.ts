@@ -78,6 +78,7 @@ export async function joinWaitlist(
   const t = serverTranslator(locale);
   const values = { appName: APP_NAME };
   const sent = await sendEmail({
+    kind: "waitlist_confirm",
     to: parsed.data.email,
     subject: t("marketing.waitlistEmail.subject", values),
     text: [
