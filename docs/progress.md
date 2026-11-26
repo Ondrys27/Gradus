@@ -164,7 +164,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] K29 | reviewer | 2026-11-25: Revize fáze 29 nechává vydělané bonusy odměn i po vypnutí pravidla, Grady v nastavení odměn přijme odpověď jen s id správného druhu a přepínání záložek přehledu administrace už nepíše další řádek auditu.
 - [x] STOP | Konec fáze 29. V plánu odměn napiš větou, jak chceš odměňovat cold callera, zkontroluj navržená pravidla a „Vyzkoušet", potvrď a přesuň kontakt z Ozvat se do Domluvená schůzka — odměna musí vzniknout jen jednou. V administraci si poskládej přehled, přidej záložku Peníze, vyvolej chybu a ověř, že svítí ve widgetu a nepřišel e-mail. Co nesedí, napiš Claude Code rovnou, pak /pokracuj. · přeskočeno nočním během 2026-11-25, zkontroluj ručně (.noc/zkontroluj.md)
 - [x] 28.10 | architect | env: GOOGLE_CLIENT_ID — 2026-11-24: Obousměrná synchronizace s Google a Apple kalendářem (OAuth, CalDAV, push kanály, odchozí fronta bez ozvěn, novější změna vyhrává) za seznamem povolených účtů v administraci, obsazenost plánovače z připojených kalendářů a rezervace zapsané do Googlu s volitelným Meetem.
-- [ ] 30.1 | architect | env: RESEND_API_KEY
+- [x] 30.1 | architect | env: RESEND_API_KEY — 2026-11-26: oprava profilových fotek (vypnutá optimalizace obrázků po 402), zasouvací logo lišty, roztříděný log chyb s filtrem šumu, denní souhrn „Gradus včera“ administrátorům a email_log s widgetem E-maily.
 - [ ] 30.2 | architect |
 - [ ] 30.3 | architect |
 - [ ] 30.4 | architect | env: RESEND_API_KEY
