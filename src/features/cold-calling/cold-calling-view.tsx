@@ -2,9 +2,10 @@
 
 import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import { PhoneOffIcon, SearchIcon } from "lucide-react";
+import Link from "next/link";
+import { ContactRoundIcon, PhoneOffIcon, SearchIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormAlert } from "@/components/ui/form-alert";
 import { Input } from "@/components/ui/input";
@@ -129,6 +130,15 @@ export function ColdCallingView() {
               icon={debounced ? <SearchIcon /> : <PhoneOffIcon />}
               title={debounced ? t("list.noMatch") : t("list.emptyTitle")}
               description={debounced ? undefined : t("list.emptyDescription")}
+              guide={debounced ? undefined : "coldCalling"}
+              action={
+                !debounced && (
+                  <Link href="/app/kontakty" className={buttonVariants()}>
+                    <ContactRoundIcon aria-hidden data-icon="inline-start" />
+                    {t("list.emptyAction")}
+                  </Link>
+                )
+              }
             />
           ) : (
             <>

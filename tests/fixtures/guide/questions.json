@@ -310,6 +310,7 @@
     "expect": {
       "kind": "steps",
       "steps": [
+        "open:contacts-more",
         "click:contact-generate",
         "fill:contact-generate-industry",
         "click:generate-submit"

@@ -1,15 +1,33 @@
 import type { ReactNode } from "react";
+import type { GuideSection } from "@/features/tutorial/ui-map/types";
+import { QuickLookLink } from "@/features/tutorial/guide/quick-look-link";
 import { cn } from "@/lib/utils";
 
 type EmptyStateProps = {
   icon?: ReactNode;
   title: string;
   description?: ReactNode;
+  /** The one main action; a second, quieter one goes to `secondary`. */
   action?: ReactNode;
+  secondary?: ReactNode;
+  /** The section whose quick look (30.8) the empty state links to. */
+  guide?: GuideSection;
   className?: string;
 };
 
-export function EmptyState({ icon, title, description, action, className }: EmptyStateProps) {
+/**
+ * Nothing here yet: one sentence on what the section is for, one action and,
+ * for a section with a guide, "Quick look · 1–2 min" (30.9).
+ */
+export function EmptyState({
+  icon,
+  title,
+  description,
+  action,
+  secondary,
+  guide,
+  className,
+}: EmptyStateProps) {
   return (
     <div
       className={cn(
@@ -24,7 +42,13 @@ export function EmptyState({ icon, title, description, action, className }: Empt
       )}
       <h3 className="text-lg font-semibold">{title}</h3>
       {description && <p className="max-w-sm text-sm text-pretty text-ink-muted">{description}</p>}
-      {action && <div className="mt-2">{action}</div>}
+      {(action || secondary) && (
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+          {action}
+          {secondary}
+        </div>
+      )}
+      {guide && <QuickLookLink section={guide} />}
     </div>
   );
 }

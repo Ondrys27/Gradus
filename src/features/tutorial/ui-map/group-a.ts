@@ -51,7 +51,9 @@ export const GROUP_A_ELEMENTS: readonly UiElement[] = [
   { key: "milestone-new", section: "milestones", path: MILESTONES, needs: [milestonesEdit], safe: true },
   { key: "milestone-title", section: "milestones", path: MILESTONES, via: ["milestone-new"], needs: [milestonesEdit], input: true },
   { key: "milestone-reward", section: "milestones", path: MILESTONES, via: ["milestone-new"], needs: [milestonesEdit], input: true },
-  { key: "milestone-import", section: "milestones", path: MILESTONES, needs: [milestonesEdit], safe: true },
+  // "⋯" beside New milestone (30.9): the map import lives under it
+  { key: "milestones-more", section: "milestones", path: MILESTONES, needs: [milestonesEdit], safe: true },
+  { key: "milestone-import", section: "milestones", path: MILESTONES, via: ["milestones-more"], needs: [milestonesEdit], safe: true },
   { key: "milestone-filter", section: "milestones", path: MILESTONES, safe: true },
   { key: "milestone-path-view", section: "milestones", path: MILESTONES, safe: true },
   { key: "milestone-card", section: "milestones", path: MILESTONES, safe: true },
@@ -138,13 +140,14 @@ export const GROUP_A_GUIDES: readonly SectionGuideDef[] = [
   },
   {
     section: "milestones",
-    quick: ["milestone-new", "milestone-import", "milestone-filter", "milestone-path-view", "milestone-card"],
+    quick: ["milestone-new", "milestones-more", "milestone-filter", "milestone-path-view", "milestone-card"],
     full: [
       { el: "milestone-filter", act: "do" },
       { el: "milestone-path-view" },
       { el: "milestone-new", act: "do" },
       { el: "milestone-title", act: "do" },
       { el: "milestone-reward" },
+      { el: "milestones-more" },
       { el: "milestone-import" },
       { el: "milestone-card", act: "do" },
       { el: "task-add", act: "do" },

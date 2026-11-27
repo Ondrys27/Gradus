@@ -6,6 +6,7 @@ import { CheckIcon, KanbanIcon, PencilIcon, PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { MoreMenu, MoreMenuItem } from "@/components/ui/more-menu";
 import { FormAlert } from "@/components/ui/form-alert";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -224,27 +225,21 @@ export function PipelineView() {
     ) : (
       <>
         {canManageStages && (
-          <>
-            <Button
-              variant="outline"
+          <MoreMenu label={t("actions.more")} data-tutorial="pipeline-more">
+            <MoreMenuItem
+              label={t("actions.editStages")}
+              icon={<PencilIcon aria-hidden />}
               disabled={stages.length === 0}
               data-tutorial="pipeline-edit-stages"
-              onClick={() => setEditing(true)}
-            >
-              <PencilIcon aria-hidden data-icon="inline-start" />
-              {t("actions.editStages")}
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              aria-label={t("actions.addStage")}
-              title={t("actions.addStage")}
+              onSelect={() => setEditing(true)}
+            />
+            <MoreMenuItem
+              label={t("actions.addStage")}
+              icon={<PlusIcon aria-hidden />}
               data-tutorial="pipeline-add-stage"
-              onClick={() => setAddingStage(true)}
-            >
-              <PlusIcon aria-hidden />
-            </Button>
-          </>
+              onSelect={() => setAddingStage(true)}
+            />
+          </MoreMenu>
         )}
         {canCreate && (
           <Button
@@ -321,6 +316,7 @@ export function PipelineView() {
               icon={<KanbanIcon />}
               title={t("empty.title")}
               description={t("empty.description")}
+              guide="pipeline"
               action={
                 canCreate && (
                   <Button onClick={() => setCreating({ stageId: null })}>

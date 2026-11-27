@@ -240,6 +240,13 @@
     "unread": "{count, plural, one {# unread message} other {# unread messages}}",
     "scheduler": "Scheduler",
     "support": "Support",
+    "groups": {
+      "pinned": "Pinned",
+      "today": "Today",
+      "sales": "Sales",
+      "business": "Business",
+      "company": "Company"
+    },
     "integrations": "Integrations"
   },
   "topBar": {
@@ -1594,7 +1601,7 @@
       },
       "appearance": {
         "title": "Appearance and formats",
-        "description": "Theme, sounds, currency, date, time and time zone."
+        "description": "Theme, sounds, menu, currency, date, time and time zone."
       },
       "work": {
         "title": "Work",
@@ -1697,6 +1704,10 @@
       "animations": {
         "label": "Animations",
         "keywords": "confetti motion"
+      },
+      "menu": {
+        "label": "Menu and phone bar",
+        "keywords": "menu bar pin hide order sections navigation sidebar"
       },
       "country": {
         "label": "Country",
@@ -2043,6 +2054,20 @@
         "privateHint": "Others in the company see events from a calendar switched on here only as Busy.",
         "privateOf": "Everything from {name} is private"
       }
+    },
+    "menu": {
+      "title": "Menu",
+      "description": "What sits at the top of the menu and in the phone bar. A hidden section is still there through search (⌘K) and links; addresses do not change.",
+      "pin": "Pin to the top: {name}",
+      "unpin": "Unpin: {name}",
+      "hide": "Hide from the menu: {name}",
+      "show": "Show in the menu: {name}",
+      "up": "Move up: {name}",
+      "down": "Move down: {name}",
+      "reset": "Default menu",
+      "pinnedHint": "Pinned sections come first in the menu and in the phone bar (up to {max}).",
+      "homeHint": "The dashboard is home and stays in the menu.",
+      "hiddenBadge": "hidden"
     }
   },
   "milestones": {
@@ -2058,7 +2083,8 @@
       "completeEmpty": "Add the first task",
       "completeLockedHint": "The milestone can be completed once every task is done.",
       "completeEmptyHint": "A milestone needs at least one task before it can be completed.",
-      "import": "Import map"
+      "import": "Import map",
+      "more": "More options"
     },
     "filter": {
       "label": "Filter by category",
@@ -2368,7 +2394,7 @@
     "live": {
       "here": "Here now: {names}",
       "status": {
-        "saved": "Synced",
+        "saved": "Saved",
         "pending": "Saving…",
         "saving": "Saving…",
         "error": "Not saved yet, trying again",
@@ -2858,7 +2884,8 @@
       "newDeal": "New deal",
       "editStages": "Edit stages",
       "doneEditing": "Done",
-      "addStage": "Add stage"
+      "addStage": "Add stage",
+      "more": "More options"
     },
     "notices": {
       "moveFailed": "The deal could not be moved. Check your connection and try again.",
@@ -3266,7 +3293,8 @@
       "saveFailed": "The task couldn't be saved. Try again.",
       "cancel": "Cancel",
       "save": "Save",
-      "create": "Add task"
+      "create": "Add task",
+      "addDescription": "Add a description"
     },
     "errors": {
       "titleRequired": "Write what needs doing.",
@@ -3334,7 +3362,8 @@
     "actions": {
       "newContact": "New contact",
       "editTables": "Edit tables",
-      "generate": "Generate contacts"
+      "generate": "Generate contacts",
+      "more": "More options"
     },
     "search": {
       "label": "Search contacts",
@@ -3680,7 +3709,8 @@
       "loadingMore": "Loading…",
       "deal": "Deal: {title}",
       "dealShort": "Deal",
-      "dealCreated": "The deal “{title}” is in the pipeline."
+      "dealCreated": "The deal “{title}” is in the pipeline.",
+      "emptyAction": "Open Contacts"
     },
     "panel": {
       "title": "Contact",
@@ -14268,6 +14298,26 @@
         "name": "Daily summary",
         "purpose": "When your “yesterday” summary arrives and whether only when there is news.",
         "keywords": "daily summary email hour notifications"
+      },
+      "settings-menu": {
+        "name": "Menu",
+        "purpose": "Pin the sections you use most, hide the ones you don't and reorder the rest. The phone bar follows the same choice.",
+        "keywords": "menu bar pin hide order sections navigation"
+      },
+      "pipeline-more": {
+        "name": "More pipeline options",
+        "purpose": "Under the three dots: editing the stages and adding a new one. The main button beside it adds a deal.",
+        "keywords": "more options stages edit add three dots"
+      },
+      "contacts-more": {
+        "name": "More contact options",
+        "purpose": "Under the three dots: generating contacts from Google and editing the tables. The main button beside it adds a contact.",
+        "keywords": "more options generate tables three dots"
+      },
+      "milestones-more": {
+        "name": "More milestone options",
+        "purpose": "Under the three dots: importing a mind map as a new milestone. The main button beside it adds a milestone.",
+        "keywords": "more options import map three dots"
       }
     },
     "guides": {
@@ -15631,5 +15681,9 @@
       "connected": "{count, plural, one {Has an app connected:} other {Have an app connected:}} {names}.",
       "switch": "Allow in the company"
     }
+  },
+  "emptyState": {
+    "quickLook": "Quick look · {minutes} min",
+    "quickLookLabel": "Start the quick look of this section"
   }
 }

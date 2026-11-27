@@ -107,6 +107,7 @@ export const SETTINGS_ITEMS: readonly SettingsItemDef[] = [
   { id: "customThemes", group: "appearance", target: "settings-custom-themes", who: "all" },
   { id: "sound", group: "appearance", target: "settings-sound", who: "all" },
   { id: "animations", group: "appearance", target: "settings-animations", who: "all" },
+  { id: "menu", group: "appearance", target: "settings-menu", who: "all" },
   { id: "country", group: "appearance", target: "settings-country", who: "all" },
   { id: "timeZone", group: "appearance", target: "settings-timezone", who: "all" },
   { id: "currency", group: "appearance", target: "settings-currency", who: "all" },

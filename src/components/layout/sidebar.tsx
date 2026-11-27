@@ -25,6 +25,9 @@ import { useIsWide, useReducedMotionSafe, WIDE_QUERY } from "@/lib/use-media-que
  * with labels, which the user may collapse to the rail (the toggle at the
  * bottom or ⌘B / Ctrl+B); the choice is user_settings.sidebar_collapsed.
  * The width itself is --app-sidebar-width on the shell (globals.css).
+ * The sections stand in groups (30.9, nav-prefs.ts): a small heading over
+ * each in the wide menu, a hairline between them in the rail; pinned
+ * sections first, hidden ones left out (Settings → Appearance → Menu).
  */
 export function Sidebar() {
   const t = useTranslations("nav");
@@ -33,7 +36,7 @@ export function Sidebar() {
   const pendingHref = usePendingHref();
   const pathname = pendingHref ?? currentPath;
   const reduceMotion = useReducedMotionSafe();
-  const { items } = useNavItems();
+  const { groups } = useNavItems();
   const { collapsed, toggle } = useSidebarCollapse();
   // Labels are hidden on md anyway; a tooltip stands in for them only where
   // the user chose the rail. md keeps its native title as before.
@@ -54,58 +57,85 @@ export function Sidebar() {
       <Tooltip.Provider delay={250}>
         <nav
           aria-label={t("label")}
-          className="flex flex-1 flex-col gap-1 overflow-x-hidden overflow-y-auto px-3 py-2"
+          className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto px-3 py-2"
         >
-          {items.map((item) => {
-            if (item.locked) {
-              return <LockedNavItem key={item.key} item={item} collapsed={collapsed} />;
-            }
-            const active = isActivePath(pathname, item.href);
-            return (
-              <NavTooltip key={item.key} label={t(item.key)} enabled={tooltips}>
-                <NavLink
-                  href={item.href}
-                  data-tour={`nav-${item.key}`}
-                  aria-current={active ? "page" : undefined}
-                  aria-label={t(item.key)}
-                  title={tooltips ? undefined : t(item.key)}
+          {groups.map((group, index) => (
+            <section
+              key={group.key}
+              aria-label={t(`groups.${group.key}`)}
+              data-nav-group={group.key}
+              className={cn(
+                "flex flex-col gap-1",
+                // A hairline between groups; in the wide menu a small heading stands over each.
+                index > 0 && "mt-2 border-t border-line/60 pt-2",
+              )}
+            >
+              {group.key !== "pinned" && (
+                <span
+                  aria-hidden
                   className={cn(
-                    "group relative flex h-11 items-center justify-center gap-3 rounded-xl px-3 text-sm font-medium outline-none",
-                    !collapsed && "lg:justify-start",
-                    "focus-visible:ring-3 focus-visible:ring-ring/50",
-                    active ? "text-ink" : "text-ink-soft hover:text-ink",
+                    "micro-label hidden h-6 items-center px-3 text-ink-muted/80",
+                    !collapsed && "lg:flex",
                   )}
                 >
-                  {active && (
-                    <motion.span
-                      layoutId="sidebar-active"
-                      transition={
-                        reduceMotion
-                          ? { duration: 0 }
-                          : { type: "spring", stiffness: 420, damping: 34 }
-                      }
-                      className="absolute inset-0 rounded-xl border border-violet/60 bg-violet/20 shadow-glow-strong"
-                    />
-                  )}
-                  {!active && item.fresh && (
-                    <span className="absolute inset-0 rounded-xl border border-teal/50 bg-teal/10 shadow-[0_0_18px_-4px_var(--color-teal)]" />
-                  )}
-                  {!active && (
-                    <span className="absolute inset-0 rounded-xl bg-surface opacity-0 transition-opacity group-hover:opacity-100" />
-                  )}
-                  <span className="relative shrink-0">
-                    <item.icon aria-hidden className={cn("size-5", active ? "text-violet" : undefined)} />
-                    {item.fresh && <FreshDot />}
-                    <NavBadge count={item.badge} />
-                  </span>
-                  <span className={cn("relative hidden truncate", !collapsed && "lg:inline")}>
-                    {t(item.key)}
-                  </span>
-                  {item.fresh && <span className="sr-only">{t("justUnlocked")}</span>}
-                </NavLink>
-              </NavTooltip>
-            );
-          })}
+                  {t(`groups.${group.key}`)}
+                </span>
+              )}
+              {group.items.map((item) => {
+                if (item.locked) {
+                  return <LockedNavItem key={item.key} item={item} collapsed={collapsed} />;
+                }
+                const active = isActivePath(pathname, item.href);
+                return (
+                  <NavTooltip key={item.key} label={t(item.key)} enabled={tooltips}>
+                    <NavLink
+                      href={item.href}
+                      data-tour={`nav-${item.key}`}
+                      aria-current={active ? "page" : undefined}
+                      aria-label={t(item.key)}
+                      title={tooltips ? undefined : t(item.key)}
+                      className={cn(
+                        "group relative flex h-11 items-center justify-center gap-3 rounded-xl px-3 text-sm font-medium outline-none",
+                        !collapsed && "lg:justify-start",
+                        "focus-visible:ring-3 focus-visible:ring-ring/50",
+                        active ? "text-ink" : "text-ink-soft hover:text-ink",
+                      )}
+                    >
+                      {active && (
+                        <motion.span
+                          layoutId="sidebar-active"
+                          transition={
+                            reduceMotion
+                              ? { duration: 0 }
+                              : { type: "spring", stiffness: 420, damping: 34 }
+                          }
+                          className="absolute inset-0 rounded-xl border border-violet/60 bg-violet/20 shadow-glow-strong"
+                        />
+                      )}
+                      {!active && item.fresh && (
+                        <span className="absolute inset-0 rounded-xl border border-teal/50 bg-teal/10 shadow-[0_0_18px_-4px_var(--color-teal)]" />
+                      )}
+                      {!active && (
+                        <span className="absolute inset-0 rounded-xl bg-surface opacity-0 transition-opacity group-hover:opacity-100" />
+                      )}
+                      <span className="relative shrink-0">
+                        <item.icon
+                          aria-hidden
+                          className={cn("size-5", active ? "text-violet" : undefined)}
+                        />
+                        {item.fresh && <FreshDot />}
+                        <NavBadge count={item.badge} />
+                      </span>
+                      <span className={cn("relative hidden truncate", !collapsed && "lg:inline")}>
+                        {t(item.key)}
+                      </span>
+                      {item.fresh && <span className="sr-only">{t("justUnlocked")}</span>}
+                    </NavLink>
+                  </NavTooltip>
+                );
+              })}
+            </section>
+          ))}
         </nav>
 
         <div className="hidden shrink-0 px-3 pt-2 pb-4 lg:block">

@@ -14,7 +14,9 @@ test("11 · contacts are generated from Google Maps into Unreached", async ({ pa
   await dismissCelebrationsAutomatically(page, L);
 
   await openApp(page, "/app/kontakty");
-  await page.getByRole("button", { name: exact(L, "contacts.actions.generate") }).first().click();
+  // Generating sits under the "⋯" beside New contact (30.9).
+  await page.getByRole("button", { name: exact(L, "contacts.actions.more") }).first().click();
+  await page.getByRole("menuitem", { name: exact(L, "contacts.actions.generate") }).click();
   const dialog = page.getByRole("dialog", { name: t("contacts.generate.title") });
   await dialog.locator("#generate-industry").fill("kavárna");
   await dialog.locator("#generate-location").fill("Olomouc");

@@ -10,6 +10,8 @@ import { useChatUnread } from "@/features/chat/queries";
 import { useGameState } from "@/features/game/queries";
 import { localized, lockSectionOf, SECTION_UNLOCK_KEYS } from "@/features/game/types";
 import { bottomNavKeysFor, navItemsFor, type NavItem, type WorkerNavAccess } from "./nav-items";
+import { bottomBarKeys, groupNavItems, type NavGroup } from "./nav-prefs";
+import { useNavPrefs } from "./use-nav-prefs";
 
 /** What opens a locked section: a milestone of the path (by its title) or a level. */
 export type LockHint =
@@ -45,9 +47,12 @@ export function useNavAccess(): WorkerNavAccess {
 }
 
 /**
- * The sidebar and the phone bar of this account, with lock state merged in.
+ * The sidebar and the phone bar of this account, with lock state merged in
+ * and the person's own menu applied (30.9: groups, pins, hidden sections).
  * Only an owner in game mode ever sees a lock; tool mode opens everything and
  * a worker's access is entirely decided by what the owner already granted.
+ * `all` is every section the account has, hidden ones included (what
+ * Settings → Menu edits); `groups` and `primary` are what the menus draw.
  */
 export function useNavItems() {
   const access = useNavAccess();
@@ -55,10 +60,15 @@ export function useNavItems() {
   const game = useGameState();
   const locale = useLocale();
   const unread = useChatUnread();
+  const prefs = useNavPrefs();
 
   return useMemo(() => {
     const items = navItemsFor(access);
-    const bottomKeys = bottomNavKeysFor(access);
+    const bottomKeys = bottomBarKeys(
+      bottomNavKeysFor(access),
+      prefs,
+      items.map((item) => item.key),
+    );
     const playing = game.data?.mode === "game";
     const withState: NavItemState[] = items.map((item) => {
       const lockSection = lockSectionOf(item.key);
@@ -85,10 +95,21 @@ export function useNavItems() {
         badge: section.unlocked ? badge : 0,
       };
     });
+    const groups: NavGroup<NavItemState>[] = groupNavItems(withState, prefs);
+    const shown = groups.flatMap((group) => group.items);
+    // The phone bar keeps the order of the sidebar: pinned first, then the rest.
+    const primary = bottomKeys
+      .map((key) => shown.find((item) => item.key === key))
+      .filter((item): item is NavItemState => item !== undefined);
     return {
-      items: withState,
-      primary: withState.filter((item) => bottomKeys.includes(item.key)),
-      more: withState.filter((item) => !bottomKeys.includes(item.key)),
+      all: withState,
+      items: shown,
+      groups,
+      primary,
+      more: shown.filter((item) => !bottomKeys.includes(item.key)),
+      moreGroups: groups
+        .map((group) => ({ ...group, items: group.items.filter((item) => !bottomKeys.includes(item.key)) }))
+        .filter((group) => group.items.length > 0),
     };
-  }, [access, worker, game.data, locale, unread]);
+  }, [access, worker, game.data, locale, unread, prefs]);
 }

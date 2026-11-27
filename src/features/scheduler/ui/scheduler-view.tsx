@@ -332,6 +332,7 @@ function Loaded({
               icon={<CalendarClockIcon aria-hidden />}
               title={t("empty.title")}
               description={t("empty.text")}
+              guide="scheduler"
               action={
                 editable && (
                   <Button onClick={() => setEditing({ draft: newDraft() })}>

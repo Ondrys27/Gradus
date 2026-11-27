@@ -32,6 +32,7 @@ import type { UserSettingsPatch } from "@/lib/user-settings";
 import { ScheduleSection } from "@/features/appearance/ui/schedule-section";
 import { ThemePicker } from "@/features/appearance/ui/theme-picker";
 import { FormatPreview, useNow } from "./format-preview";
+import { MenuSettings } from "./menu-settings";
 
 /**
  * The instant the date and time choices are written with. Not "now": the
@@ -146,6 +147,10 @@ export function AppearanceView() {
             />
           </div>
         </SettingRow>
+      </SettingsSection>
+
+      <SettingsSection id="settings-menu" title={t("menu.title")} description={t("menu.description")}>
+        <MenuSettings />
       </SettingsSection>
 
       <SettingsSection title={t("region.title")} description={t("region.description")}>

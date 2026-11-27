@@ -70,6 +70,9 @@ function set(patch: Partial<State>) {
 /** A question waiting for the host (asked before the host was on the page, or from elsewhere). */
 let pendingAsk: { question: string; from: GuideFrom; section: GuideSection | null } | null = null;
 const askListeners = new Set<() => void>();
+/** A section guide asked for from elsewhere (an empty state's "quick look", 30.9); the host starts it. */
+let pendingRun: { depth: GuideDepth; section: GuideSection } | null = null;
+const runListeners = new Set<() => void>();
 
 export const guide = {
   get: () => state,
@@ -97,6 +100,22 @@ export const guide = {
     const ask = pendingAsk;
     pendingAsk = null;
     return ask;
+  },
+  /** Starts a section's quick or full guide from anywhere; the host plays it. */
+  requestRun: (depth: GuideDepth, section: GuideSection) => {
+    pendingRun = { depth, section };
+    for (const listener of runListeners) listener();
+  },
+  onRun(listener: () => void): () => void {
+    runListeners.add(listener);
+    return () => {
+      runListeners.delete(listener);
+    };
+  },
+  takeRun() {
+    const run = pendingRun;
+    pendingRun = null;
+    return run;
   },
   answerStarted(question: string, section: GuideSection | null, from: GuideFrom): number {
     answerSeq += 1;

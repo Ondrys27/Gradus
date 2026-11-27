@@ -148,6 +148,7 @@ const SETTINGS = [
   "daily_call_goal",
   "cold_calling_deal_stage",
   "sidebar_collapsed",
+  "menu",
   "chat_email",
   "chat_sound",
   "calendar_owner_busy",
