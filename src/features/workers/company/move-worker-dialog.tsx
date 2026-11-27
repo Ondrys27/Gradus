@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
+import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { useFreshOnOpen } from "@/features/milestones/use-fresh-on-open";
 import { cn } from "@/lib/utils";
 import { managerChoices, OWNER_ROOT, type CompanyPerson } from "./tree";
@@ -84,6 +85,7 @@ function Picker({
   onCancel: () => void;
 }) {
   const t = useTranslations("workers.company.moveDialog");
+  const spaceId = useWorkspaceId();
   // Nobody goes under a person who left the company.
   const choices = useMemo(
     () =>
@@ -125,10 +127,16 @@ function Picker({
                 <Avatar
                   src={choice.person.avatarUrl}
                   name={choice.person.name}
+                  presenceOf={choice.person.userId}
                   className="size-7 text-[11px]"
                 />
               ) : (
-                <Avatar src={ownerAvatar} name={ownerName} className="size-7 text-[11px]" />
+                <Avatar
+                  src={ownerAvatar}
+                  name={ownerName}
+                  presenceOf={spaceId}
+                  className="size-7 text-[11px]"
+                />
               )}
               <span className="min-w-0 flex-1 truncate">{name}</span>
               {!choice.person && <CrownIcon aria-hidden className="size-4 text-gold" />}

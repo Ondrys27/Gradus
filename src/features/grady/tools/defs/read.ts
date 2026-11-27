@@ -692,11 +692,20 @@ export const readTools = [
     kind: "read",
     risk: "instant",
     description:
-      "The people a sales task or a deal can be assigned to in this space (the owner and active workers), with their user ids.",
+      "The people a sales task or a deal can be assigned to in this space (the owner and active workers), with their user ids. last_seen_at = when the person last had the app open (written about once a minute while it is in front of them, so within the last 2 minutes means they are in the app now); missing for people who hide their online status, and for everybody when the user hides theirs. Mention it only when the user asks whether or when someone is online or around, never on your own.",
     input: z.object({}),
     describe: (_input, t) => t("list_people"),
     async execute(ctx) {
-      const people = await fetchActiveMembers(ctx.db, ctx.workspaceId);
+      const [people, presence] = await Promise.all([
+        fetchActiveMembers(ctx.db, ctx.workspaceId),
+        ctx.db.rpc("presence_people"),
+      ]);
+      // Online status (30.5) only as the database shows it to the user; no status is no field.
+      const lastSeen = new Map(
+        (presence.data ?? [])
+          .filter((row) => row.space_id === ctx.workspaceId && row.last_seen_at)
+          .map((row) => [row.user_id, row.last_seen_at]),
+      );
       return {
         output: {
           people: people
@@ -705,6 +714,7 @@ export const readTools = [
               user_id: person.userId,
               name: person.name,
               is_owner: person.isOwner,
+              ...(lastSeen.has(person.userId) ? { last_seen_at: lastSeen.get(person.userId) } : {}),
             })),
         },
       };

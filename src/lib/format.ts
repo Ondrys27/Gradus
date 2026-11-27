@@ -395,6 +395,42 @@ export function formatEditedAt(
 }
 
 /**
+ * When someone was last in the app, the way people say it (30.5): a moment
+ * ago (under 5 minutes), minutes under an hour, hours the same day (or under
+ * 6 hours, past midnight), yesterday, the weekday within a week, then only
+ * the date. Days in the viewer's zone. The words come from the translations
+ * (`presence.lastSeen.*`); the date is formatted here.
+ */
+export type LastSeenWhen =
+  | { kind: "moment" }
+  | { kind: "minutes"; count: number }
+  | { kind: "hours"; count: number }
+  | { kind: "yesterday" }
+  | { kind: "weekday"; day: number }
+  | { kind: "date"; date: string };
+
+export function lastSeenWhen(
+  instant: Date,
+  now: Date,
+  settings: FormatSettings = DEFAULT_FORMAT_SETTINGS,
+): LastSeenWhen {
+  const ms = Math.max(0, now.getTime() - instant.getTime());
+  if (ms < 5 * 60_000) return { kind: "moment" };
+  const minutes = Math.floor(ms / 60_000);
+  if (minutes < 60) return { kind: "minutes", count: minutes };
+  const seenDay = todayIsoDate(settings, instant);
+  const days = Math.round(
+    (isoDateToLocal(todayIsoDate(settings, now)).getTime() - isoDateToLocal(seenDay).getTime()) /
+      86_400_000,
+  );
+  const hours = Math.floor(ms / 3_600_000);
+  if (days <= 0 || hours < 6) return { kind: "hours", count: hours };
+  if (days === 1) return { kind: "yesterday" };
+  if (days < 7) return { kind: "weekday", day: isoDateToLocal(seenDay).getDay() };
+  return { kind: "date", date: formatDate(instant, settings) };
+}
+
+/**
  * How far an instant is from now in the UI language, next to the exact date:
  * "in 3 hours", "2 days ago" / "za 3 hodiny", "před 2 dny". Minutes under an
  * hour, hours under a day, then days; months only past six weeks.

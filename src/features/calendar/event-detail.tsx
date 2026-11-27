@@ -244,7 +244,12 @@ function EventPeople({ eventId }: { eventId: string }) {
       <ul className="flex flex-col gap-1">
         {list.map((person) => (
           <li key={person.userId} className="flex items-center gap-2 text-sm text-ink-soft">
-            <Avatar src={person.avatarUrl} name={person.name} className="size-6" />
+            <Avatar
+              src={person.avatarUrl}
+              name={person.name}
+              presenceOf={person.userId}
+              className="size-6"
+            />
             <span className="min-w-0 flex-1 truncate">{person.name}</span>
             <span className="text-xs text-ink-muted">
               {t(

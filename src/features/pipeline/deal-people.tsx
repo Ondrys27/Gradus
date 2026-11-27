@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { Avatar } from "@/components/ui/avatar";
+import { MemberAvatar } from "@/features/account/member-avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { useSession } from "@/features/account/queries";
 import { useCan } from "@/features/account/workspace-queries";
@@ -14,7 +14,7 @@ import { canSaveAssignees } from "./assignees";
 /** At most this many faces in a row; the rest is "+N". */
 const FACES = 3;
 
-/** Overlapping initials of the people on a deal. */
+/** Overlapping faces of the people on a deal. */
 export function PeopleFaces({
   ids,
   className,
@@ -30,7 +30,12 @@ export function PeopleFaces({
   return (
     <span aria-hidden className={cn("flex shrink-0 items-center -space-x-1.5", className)}>
       {shown.map((id) => (
-        <Avatar key={id} name={nameOf(id)} className={cn(size, "ring-2 ring-surface")} />
+        <MemberAvatar
+          key={id}
+          userId={id}
+          name={nameOf(id)}
+          className={cn(size, "ring-2 ring-surface")}
+        />
       ))}
       {more > 0 && (
         <span
@@ -126,7 +131,11 @@ export function DealPeopleSelect({
         {items.map((option) => (
           <SelectItem key={option.value} value={option.value} disabled={locked(option.value)}>
             <span className="flex min-w-0 items-center gap-2">
-              <Avatar name={option.label} className="size-5 text-[9px]" />
+              <MemberAvatar
+                userId={option.value}
+                name={option.label}
+                className="size-5 text-[9px]"
+              />
               <span className="truncate">{option.label}</span>
             </span>
           </SelectItem>

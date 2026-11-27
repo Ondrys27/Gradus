@@ -19,6 +19,7 @@ import { useToday } from "@/features/dashboard/queries";
 import { useCompanyTree } from "@/features/workers/company/queries";
 import type { CompanyPerson } from "@/features/workers/company/tree";
 import { WorkTimerCard } from "@/features/workers/worker-env/work-timer-card";
+import { PresenceInline } from "@/features/presence/presence-label";
 import {
   formatDateTime,
   formatNumber,
@@ -99,7 +100,10 @@ function PersonRow({ person }: { person: CompanyPerson }) {
         </span>
       }
     >
-      {person.name}
+      <span className="flex min-w-0 items-center gap-1.5">
+        <span className="truncate">{person.name}</span>
+        <PresenceInline userId={person.userId} />
+      </span>
     </Row>
   );
 }
@@ -121,7 +125,12 @@ function PersonBars({
       {people.map((person) => (
         <Bar
           key={person.id}
-          label={person.name}
+          label={
+            <span className="flex min-w-0 items-center gap-1.5">
+              <span className="truncate">{person.name}</span>
+              <PresenceInline userId={person.userId} />
+            </span>
+          }
           value={t("load", { tasks: person.openTasks, deals: person.openDeals })}
           ratio={load(person) / max}
           tone={tone}
@@ -291,7 +300,10 @@ function ActivityRow({ item, names }: { item: ActivityItem; names: Map<string, s
       href={activityHref(item) ?? `${COMPANY_PATH}?tab=activity`}
       lead={formatDateTime(new Date(item.created_at), format)}
     >
-      {line(item, names)}
+      <span className="flex min-w-0 items-center gap-1.5">
+        <PresenceInline userId={item.actor_id} />
+        <span className="truncate">{line(item, names)}</span>
+      </span>
     </Row>
   );
 }

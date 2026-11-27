@@ -283,7 +283,7 @@ export function ShareDialog({ target, onClose }: { target: ShareDialogTarget | n
                       <UsersRoundIcon aria-hidden className="size-4" />
                     </span>
                   ) : (
-                    <Avatar src={entry.avatarUrl} name={entry.name} />
+                    <Avatar src={entry.avatarUrl} name={entry.name} presenceOf={entry.userId} />
                   )}
                   <span className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate text-sm font-medium text-ink">{name}</span>

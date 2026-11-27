@@ -47,6 +47,7 @@ export function AccountMenu() {
         <Avatar
           src={profile.avatar_url}
           name={name}
+          presenceOf={user.id}
           className="transition-colors hover:bg-violet/25"
         />
       </Menu.Trigger>
@@ -59,7 +60,7 @@ export function AccountMenu() {
             )}
           >
             <div className="flex items-center gap-3 px-3 py-2.5">
-              <Avatar src={profile.avatar_url} name={name} className="size-10" />
+              <Avatar src={profile.avatar_url} name={name} presenceOf={user.id} className="size-10" />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-ink">{name}</p>
                 {name !== user.email && (

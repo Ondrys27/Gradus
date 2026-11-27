@@ -135,7 +135,14 @@ function WhoSeesMine() {
 
 function TargetIcon({ share }: { share: MyShare }) {
   if (share.targetKind === "member")
-    return <Avatar src={share.avatarUrl} name={share.name} className="size-9" />;
+    return (
+      <Avatar
+        src={share.avatarUrl}
+        name={share.name}
+        presenceOf={share.targetUserId}
+        className="size-9"
+      />
+    );
   const Icon = share.targetKind === "group" ? UsersIcon : BuildingIcon;
   return (
     <span className="grid size-9 shrink-0 place-items-center rounded-full bg-surface-hover text-ink-soft">
@@ -448,7 +455,12 @@ function WhoseISee() {
               className="flex flex-wrap items-center gap-3 p-4"
               data-testid="calendar-visible-person"
             >
-              <Avatar src={person.avatarUrl} name={person.name} className="size-9" />
+              <Avatar
+                src={person.avatarUrl}
+                name={person.name}
+                presenceOf={person.userId}
+                className="size-9"
+              />
               <div className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-sm font-medium text-ink">{person.name}</span>
                 <span className="text-xs text-ink-muted">

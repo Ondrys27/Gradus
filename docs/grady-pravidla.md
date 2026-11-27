@@ -168,6 +168,7 @@ Modely (výchozí přiřazení, mění se v administraci, viz [Modely](#modely-a
 - **Neposílá peníze, nemění tarif ani práva sám sobě.** Předplatné, platby, promo kódy, smazání účtu, heslo a e-mail účtu, administrace, role a export dat účtu nástroje nemá vůbec.
 - **Nezakládá hlášení chyb.** Na stížnost nebo „chci nahlásit chybu“ jen krátce odpoví a nabídne tlačítko Nahlásit problém, které otevře formulář hlášení; sám nic neodešle.
 - **Nečte chat** (Zprávy mezi lidmi ve firmě) ani jeho přílohy.
+- **Nezmiňuje, kdo je online** (30.5), dokud se uživatel sám nezeptá, jestli nebo kdy je někdo online. Ví jen to, co ukazuje aplikace: `last_seen_at` v `list_people` (kdy měl člověk aplikaci naposledy otevřenou), jen u lidí, kteří stav ukazují, a nic, když ho uživatel sám skrývá. Do souhrnů, návrhů ani hlídání stav nejde.
 - **Nevolá a neplánuje lidi mimo pracovní okno** jako něco „na teď“; mimo okno nabízí přípravu.
 - **Nedokončí milník bez pokynu a potvrzení.** Sám jen ukáže, že je připravený; dokončí ho jen na výslovný pokyn uživatele a po Potvrdit.
 - **Mění data jen na pokyn uživatele:** běžné změny hned s kartou a Vrátit (24 h); mazání, odeslání, finanční kroky, lidi, dokončení milníku a hromadné změny až po Potvrdit. Sám od sebe (návrhy, souhrny, hlídání) nic nevytvoří: navržené úkoly vzniknou až po Přidat a jediná automatická akce (označení úkolu jako hotového při hlídání) přijde s oznámením a tlačítkem Vrátit.

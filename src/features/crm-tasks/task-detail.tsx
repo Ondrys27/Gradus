@@ -12,7 +12,7 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Avatar } from "@/components/ui/avatar";
+import { MemberAvatar } from "@/features/account/member-avatar";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { FormAlert } from "@/components/ui/form-alert";
@@ -134,7 +134,11 @@ function Body({
         </Fact>
         <Fact label={t("assignee")}>
           <span className="inline-flex items-center gap-1.5">
-            <Avatar name={nameOf(task.assignee_id)} className="size-5 text-[9px]" />
+            <MemberAvatar
+              userId={task.assignee_id}
+              name={nameOf(task.assignee_id)}
+              className="size-5 text-[9px]"
+            />
             {nameOf(task.assignee_id)}
           </span>
         </Fact>

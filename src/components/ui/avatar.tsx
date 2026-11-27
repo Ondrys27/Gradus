@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { UserRoundIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PresenceDot, usePresenceOf } from "./presence";
 
 /** Up to two initials from a name or e-mail, e.g. "Ondřej Otava" → "OO". */
 export function initialsOf(name: string | null | undefined): string {
@@ -23,14 +24,24 @@ const AVATAR_SOURCE_PX = 96;
 export function Avatar({
   src,
   name,
+  presenceOf,
+  presenceClassName,
   className,
 }: {
   src?: string | null;
   /** Used for initials when there is no picture. */
   name?: string | null;
+  /**
+   * The account of a person of the company: a green (online) or yellow
+   * (away) dot at the photo, as far as both show their status (30.5).
+   */
+  presenceOf?: string | null;
+  /** Where the dot sits, when something else takes the bottom right (a camera button). */
+  presenceClassName?: string;
   className?: string;
 }) {
   const initials = initialsOf(name);
+  const presence = usePresenceOf(presenceOf);
   // A picture that does not load (deleted, offline, a refused request) falls
   // back to the initials, never to the browser's broken image; a new address
   // gets its own try.
@@ -39,7 +50,8 @@ export function Avatar({
   return (
     <span
       className={cn(
-        "relative grid size-9 shrink-0 place-items-center overflow-hidden rounded-full border border-violet/50 bg-violet/15 text-sm font-semibold text-violet select-none",
+        // No overflow-hidden: the presence dot sits over the edge; the picture rounds itself.
+        "relative grid size-9 shrink-0 place-items-center rounded-full border border-violet/50 bg-violet/15 text-sm font-semibold text-violet select-none",
         className,
       )}
     >
@@ -50,7 +62,7 @@ export function Avatar({
           alt=""
           width={AVATAR_SOURCE_PX}
           height={AVATAR_SOURCE_PX}
-          className="size-full object-cover"
+          className="size-full rounded-[inherit] object-cover"
           draggable={false}
           data-avatar-image=""
           onError={() => setFailed(picture)}
@@ -59,6 +71,12 @@ export function Avatar({
         <span aria-hidden>{initials}</span>
       ) : (
         <UserRoundIcon aria-hidden className="size-[45%]" />
+      )}
+      {presence && (
+        <PresenceDot
+          status={presence.status}
+          className={cn("absolute -right-px -bottom-px", presenceClassName)}
+        />
       )}
     </span>
   );

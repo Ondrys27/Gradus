@@ -33,6 +33,8 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
+import { useWorkspaceId } from "@/features/account/workspace-queries";
+import { PresenceLabel } from "@/features/presence/presence-label";
 import { useMediaQuery, useReducedMotionSafe } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
 import { formatNumber } from "@/lib/format";
@@ -266,6 +268,9 @@ function CompanyListRow({
   const name = person?.name ?? (viewer.kind === "owner" ? viewer.name : "");
   const avatar =
     person?.avatarUrl ?? (viewer.kind === "owner" && !person ? viewer.avatarUrl : null);
+  // The owner's node has no worker record; their account is the space (30.5).
+  const spaceId = useWorkspaceId();
+  const account = person ? (person.status === "active" ? person.userId : null) : spaceId;
   const opensDetail = Boolean(person);
   const hasChildren = node.children.length > 0 || collapsed;
 
@@ -342,7 +347,7 @@ function CompanyListRow({
           <span aria-hidden className="size-11 shrink-0 mouse:size-8" />
         )}
 
-        <Avatar src={avatar} name={name} className="size-9" />
+        <Avatar src={avatar} name={name} presenceOf={account} className="size-9" />
 
         <div className="flex min-w-0 flex-1 flex-col gap-0.5 py-2 pl-1.5">
           {opensDetail && person ? (
@@ -368,6 +373,7 @@ function CompanyListRow({
                 {t("team", { count: below, shown: formatNumber(below, {}, settings) })}
               </span>
             )}
+            <PresenceLabel userId={account} />
             {person && <PersonStatus status={person.status} />}
             {person && <SeatChip workerId={person.id} status={person.status} seats={seats} />}
           </span>
@@ -452,7 +458,12 @@ export function DragCard({ person, below }: { person: CompanyPerson; below: numb
   return (
     <div className="flex min-h-11 w-max max-w-[min(100vw-32px,20rem)] cursor-grabbing items-center gap-2 rounded-xl border border-violet/70 bg-surface/95 px-3 py-1.5 shadow-glow-strong motion-safe:rotate-1">
       <GripVerticalIcon aria-hidden className="size-4 shrink-0 text-ink-muted" />
-      <Avatar src={person.avatarUrl} name={person.name} className="size-7 text-[11px]" />
+      <Avatar
+        src={person.avatarUrl}
+        name={person.name}
+        presenceOf={person.status === "active" ? person.userId : null}
+        className="size-7 text-[11px]"
+      />
       <span className="min-w-0 flex-1 truncate text-[15px] font-semibold text-ink">
         {person.name}
       </span>

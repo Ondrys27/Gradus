@@ -6,6 +6,7 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { useWorkspace } from "@/features/account/workspace-queries";
 import { formatDate } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
+import { PresenceLabel } from "@/features/presence/presence-label";
 import { PersonStatus } from "../company/person-bits";
 import { SeatChip, useCompanySeats } from "../company/seat-chip";
 import { JOB_TITLE_MAX } from "../logic";
@@ -90,6 +91,7 @@ export function DashboardHeader({
             <p className="text-sm text-ink-soft">{worker.jobTitle ?? tCard("noJobTitle")}</p>
           )}
           <div className="flex flex-wrap items-center gap-2 text-xs text-ink-muted">
+            <PresenceLabel userId={worker.userId} />
             <PersonStatus status={worker.status} />
             <SeatChip workerId={worker.id} status={worker.status} seats={seats} />
             {viewer !== "owner" && worker.isSelf && (

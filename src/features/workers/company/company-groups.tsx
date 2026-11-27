@@ -151,6 +151,7 @@ export function CompanyGroups({ people, groups, failed, canEdit, onShow }: Props
                                 key={id}
                                 src={person.avatarUrl}
                                 name={person.name}
+                                presenceOf={person.userId}
                                 className="size-7 border-2 border-surface text-[11px]"
                               />
                             ) : null;
@@ -376,6 +377,7 @@ function GroupFields({
                   <Avatar
                     src={person.avatarUrl}
                     name={person.name}
+                    presenceOf={person.userId}
                     className="size-7 text-[11px]"
                   />
                   <span className="min-w-0 flex-1 truncate">{person.name}</span>
