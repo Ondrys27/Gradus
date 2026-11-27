@@ -57,6 +57,7 @@ import { ContactFormDialog } from "./contact-form-dialog";
 import { byPosition, fieldOptions } from "./field-logic";
 import { useCan } from "@/features/account/workspace-queries";
 import { MoveContactDialog, type MoveResult } from "./move-contact-dialog";
+import { ScheduleMeetingButton } from "@/features/scheduler/ui/schedule-meeting-dialog";
 import {
   useContact,
   useContactDeals,
@@ -176,6 +177,7 @@ function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNo
         {canEdit && (
           <div className="flex flex-wrap gap-2">
             <MeetingNotesButton target={{ kind: "contact", id: contact.id }} />
+            <ScheduleMeetingButton contactId={contact.id} from="contact" />
             <Button variant="outline" onClick={() => setEditing(true)}>
               <PencilIcon aria-hidden data-icon="inline-start" />
               {t("detail.edit")}
@@ -599,7 +601,9 @@ function DealsCard({ contact }: { contact: Contact }) {
               const details = [
                 deal.expected_close_date &&
                   t("closeDate", { date: formatCalendarDate(deal.expected_close_date, settings) }),
-                t("assignee", { name: dealAssigneeIds(deal).map(nameOf).join(", ") || nameOf(null) }),
+                t("assignee", {
+                  name: dealAssigneeIds(deal).map(nameOf).join(", ") || nameOf(null),
+                }),
                 t("lastActivity", {
                   when: formatRelativeTime(new Date(deal.last_activity_at), now, locale),
                 }),

@@ -15,6 +15,14 @@ export type EventTypeTab = (typeof EVENT_TYPE_TABS)[number];
 export const LINK_SOURCES = ["card", "setup", "coldCalling", "email", "editor"] as const;
 export type LinkSource = (typeof LINK_SOURCES)[number];
 
+/** Where a booking was made (30.4): the public page, or the app for a contact. */
+export const BOOKING_SOURCES = ["page", "cold_calling", "app"] as const;
+export type BookingSource = (typeof BOOKING_SOURCES)[number];
+
+/** Where the meeting dialog was opened. */
+export const BOOKING_DIALOG_SOURCES = ["cold_calling", "contact", "deal"] as const;
+export type BookingDialogSource = (typeof BOOKING_DIALOG_SOURCES)[number];
+
 /** Whose calendar a subscription is, read from the host of its link. */
 export const CALENDAR_PROVIDERS = ["google", "apple", "outlook", "other"] as const;
 export type CalendarProvider = (typeof CALENDAR_PROVIDERS)[number];

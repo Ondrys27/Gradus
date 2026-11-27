@@ -391,7 +391,14 @@ function PrivateDefaults({ calendars }: { calendars: SyncCalendarView[] }) {
 }
 
 /** Apple: the Apple ID and an app-specific password, with the steps to make one. */
-function AppleForm({ reconnect = false }: { reconnect?: boolean }) {
+export function AppleForm({
+  reconnect = false,
+  from = "settings",
+}: {
+  reconnect?: boolean;
+  /** Where it is shown: Settings → Calendar, or the scheduler's Availability (30.4). */
+  from?: "settings" | "scheduler";
+}) {
   const t = useTranslations("settings.calendar.sync.apple");
   const tSync = useTranslations("settings.calendar.sync");
   const connect = useConnectApple();
@@ -409,7 +416,7 @@ function AppleForm({ reconnect = false }: { reconnect?: boolean }) {
         setTouched(true);
         if (!appleId.trim() || !password.trim()) return;
         connect.mutate(
-          { appleId: appleId.trim(), password },
+          { appleId: appleId.trim(), password, from },
           {
             onSuccess: () => {
               setPassword("");

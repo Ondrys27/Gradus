@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { contactTools } from "./defs/contacts";
+import { meetingTools } from "./defs/meetings";
 import { dashboardTools } from "./defs/dashboard";
 import { financeTools, invoiceTools } from "./defs/finance";
 import { milestoneTools } from "./defs/milestones";
@@ -31,6 +32,7 @@ export const GRADY_TOOLS: readonly AnyTool[] = [
   ...milestoneTools,
   ...noteTools,
   ...contactTools,
+  ...meetingTools,
   ...pipelineTools,
   ...crmTaskTools,
   ...calendarTools,

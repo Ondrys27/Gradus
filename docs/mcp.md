@@ -110,6 +110,7 @@ vstupy zod → JSON Schema, seznamy po 25 s `offset`. Vlastní nástroje serveru
 | `list_contact_tables` | Kontakty / Cold Calling: tabulky | contacts.view |
 | `list_people` | Výběr „Kdo“ u úkolu | tasks.view |
 | `list_bookings` | Plánovač: rezervace | scheduler.view |
+| `meeting_times` | Schůzka s kontaktem: komu jde a volné termíny hostitele | cold_calling.call |
 | `list_conversations` | Zprávy: konverzace a lidé | chat |
 | `list_workers` | Správa firmy: lidé a skupiny | company.view |
 | `list_reward_entries` | Odměny: čeká na schválení / výplatu | company.rewards |
@@ -180,6 +181,7 @@ vstupy zod → JSON Schema, seznamy po 25 s `offset`. Vlastní nástroje serveru
 | `delete_deal` | Smazat obchod (do koše) | pipeline.delete |
 | `delete_crm_task` | Smazat obchodní úkol | tasks.delete |
 | `delete_event` | Smazat událost | calendar.update |
+| `schedule_meeting` | Naplánovat schůzku (Domluvená schůzka, rezervace, potvrzení e-mailem) | cold_calling.call |
 | `confirm_booking` | Plánovač: schválit rezervaci | scheduler.own |
 | `decline_booking` | Plánovač: odmítnout rezervaci | scheduler.own |
 | `cancel_booking` | Plánovač: zrušit rezervaci | scheduler.own |

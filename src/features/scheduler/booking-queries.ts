@@ -41,11 +41,15 @@ export type BookingWithType = BookingRow & {
 export const bookingKeys = {
   all: (userId: string) => ["scheduler", userId, "bookings"] as const,
   one: (userId: string, id: string) => ["scheduler", userId, "bookings", "one", id] as const,
-  byEvent: (userId: string, eventId: string) => ["scheduler", userId, "bookings", "event", eventId] as const,
+  byEvent: (userId: string, eventId: string) =>
+    ["scheduler", userId, "bookings", "event", eventId] as const,
   waiting: (userId: string) => ["scheduler", userId, "bookings", "waiting"] as const,
-  surveys: (userId: string, space: string) => ["scheduler", userId, "bookings", "surveys", space] as const,
-  contact: (userId: string, contact: string) => ["scheduler", userId, "bookings", "contact", contact] as const,
-  slots: (userId: string, id: string, zone: string) => ["scheduler", userId, "bookings", "slots", id, zone] as const,
+  surveys: (userId: string, space: string) =>
+    ["scheduler", userId, "bookings", "surveys", space] as const,
+  contact: (userId: string, contact: string) =>
+    ["scheduler", userId, "bookings", "contact", contact] as const,
+  slots: (userId: string, id: string, zone: string) =>
+    ["scheduler", userId, "bookings", "slots", id, zone] as const,
 };
 
 const SELECT = `${BOOKING_COLUMNS}, event_type:event_types(name, questions, location_kind, video_source, profile:scheduler_profiles(video_link))`;
@@ -149,7 +153,9 @@ export function useBookingSurveys(enabled: boolean) {
   return useQuery({
     queryKey: bookingKeys.surveys(user.id, workspace.id),
     enabled,
-    queryFn: async (): Promise<Array<BookingWithType & { dealTitle: string | null; stageId: string | null }>> => {
+    queryFn: async (): Promise<
+      Array<BookingWithType & { dealTitle: string | null; stageId: string | null }>
+    > => {
       const supabase = createClient();
       const now = Date.now();
       const { data, error } = await supabase
@@ -166,7 +172,9 @@ export function useBookingSurveys(enabled: boolean) {
         .order("ends_at", { ascending: false })
         .limit(5);
       if (error) throw error;
-      const rows = data as unknown as Array<Joined & { deal: { title: string; stage_id: string } | null }>;
+      const rows = data as unknown as Array<
+        Joined & { deal: { title: string; stage_id: string } | null }
+      >;
       if (!rows.length) return [];
       const answered = await supabase
         .from("meeting_surveys")
@@ -215,7 +223,7 @@ export function useRescheduleSlots(bookingId: string | null, zone: string) {
     queryKey: bookingKeys.slots(user.id, bookingId ?? "none", zone),
     enabled: Boolean(bookingId),
     staleTime: 30_000,
-    queryFn: async (): Promise<{ days: GuestDay[] }> => {
+    queryFn: async (): Promise<{ timeZone: string; days: GuestDay[] }> => {
       const params = new URLSearchParams({ booking: bookingId!, tz: zone });
       const response = await fetch(`/api/scheduler/booking-slots?${params}`, { cache: "no-store" });
       if (!response.ok) throw new Error(`slots ${response.status}`);

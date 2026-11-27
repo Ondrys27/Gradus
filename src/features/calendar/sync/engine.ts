@@ -1,3 +1,4 @@
+import type { BookingWriteTarget } from "@/features/scheduler/calendar-sources";
 import {
   ProviderError,
   type CalendarProvider,
@@ -116,13 +117,23 @@ export type BookingInfo = {
   guestName: string | null;
   wantsMeet: boolean;
   meetLink: string | null;
+  /**
+   * Where the scheduler writes it (30.4): its own calendar, Gradus only, or
+   * (missing) the person's calendar of Settings → Calendar.
+   */
+  target?: BookingWriteTarget;
 };
 
 export interface SyncStore {
   links(calendarId: string): Promise<StoredLink[]>;
   linkOf(eventId: string): Promise<StoredLink | null>;
   events(ids: string[]): Promise<LocalEvent[]>;
-  apply(calendarId: string, rows: ApplyRow[], deletes: string[], deleteSeries: string[]): Promise<void>;
+  apply(
+    calendarId: string,
+    rows: ApplyRow[],
+    deletes: string[],
+    deleteSeries: string[],
+  ): Promise<void>;
   saveState(calendarId: string, state: string | null): Promise<void>;
   /** A conflict Gradus won: the link takes the other side's etag, so the next write overwrites it. */
   markConflict(eventId: string, etag: string | null, winner: ConflictWinner): Promise<void>;
@@ -141,7 +152,10 @@ export interface SyncStore {
 const stamp = (value: string | null | undefined) => (value ? Date.parse(value) : Number.NaN);
 
 /** Whether Gradus changed the event since both sides last agreed. */
-export function changedLocally(event: Pick<LocalEvent, "updated_at">, link: Pick<StoredLink, "syncedAt">) {
+export function changedLocally(
+  event: Pick<LocalEvent, "updated_at">,
+  link: Pick<StoredLink, "syncedAt">,
+) {
   const updated = stamp(event.updated_at);
   const synced = stamp(link.syncedAt);
   if (!Number.isFinite(synced)) return true;
@@ -152,7 +166,10 @@ export function changedLocally(event: Pick<LocalEvent, "updated_at">, link: Pick
  * Who wins when both sides changed: the newer change. A remote change
  * without a time loses (we cannot tell it is newer).
  */
-export function conflictWinner(localUpdatedAt: string, remoteUpdatedAt: string | null): ConflictWinner {
+export function conflictWinner(
+  localUpdatedAt: string,
+  remoteUpdatedAt: string | null,
+): ConflictWinner {
   const local = stamp(localUpdatedAt);
   const remote = stamp(remoteUpdatedAt);
   if (!Number.isFinite(remote)) return "gradus";
@@ -224,18 +241,23 @@ export async function pullCalendar(
   // The etag held per series (a CalDAV resource): read again only what differs.
   const known = new Map<string, string>();
   for (const link of links) {
-    if (link.recurringId && link.etag && !known.has(link.recurringId)) known.set(link.recurringId, link.etag);
+    if (link.recurringId && link.etag && !known.has(link.recurringId))
+      known.set(link.recurringId, link.etag);
   }
 
   // A full read now and then (daily): series whose new instances slid into the window.
   const result = options.full
     ? await provider.pull(calendar.externalId, null, window)
     : await provider.pull(calendar.externalId, calendar.syncState, window, known);
-  const linkedIds = result.events.filter((event) => byExternal.has(event.externalId) && !event.cancelled);
+  const linkedIds = result.events.filter(
+    (event) => byExternal.has(event.externalId) && !event.cancelled,
+  );
   const locals = new Map(
-    (await store.events([...new Set(linkedIds.map((event) => byExternal.get(event.externalId)!.eventId))])).map(
-      (event) => [event.id, event],
-    ),
+    (
+      await store.events([
+        ...new Set(linkedIds.map((event) => byExternal.get(event.externalId)!.eventId)),
+      ])
+    ).map((event) => [event.id, event]),
   );
 
   const rows: ApplyRow[] = [];
@@ -310,7 +332,12 @@ export type FlushSummary = { sent: number; failed: number; conflicts: number };
 
 export type ProviderResolver = (connectionId: string) => Promise<CalendarProvider | null>;
 
-function outgoing(event: LocalEvent, timeZone: string, booking: BookingInfo | null, isNew: boolean): OutgoingEvent {
+function outgoing(
+  event: LocalEvent,
+  timeZone: string,
+  booking: BookingInfo | null,
+  isNew: boolean,
+): OutgoingEvent {
   return {
     id: event.id,
     title: event.title,
@@ -320,9 +347,14 @@ function outgoing(event: LocalEvent, timeZone: string, booking: BookingInfo | nu
     endsAt: event.ends_at,
     allDay: event.all_day,
     timeZone,
-    attendees: booking?.guestEmail ? [{ email: booking.guestEmail, name: booking.guestName }] : undefined,
+    attendees: booking?.guestEmail
+      ? [{ email: booking.guestEmail, name: booking.guestName }]
+      : undefined,
     // A conference only once, when the meeting is first written.
-    conference: booking?.wantsMeet && isNew && !booking.meetLink ? { requestId: `gradus-${booking.id}` } : null,
+    conference:
+      booking?.wantsMeet && isNew && !booking.meetLink
+        ? { requestId: `gradus-${booking.id}` }
+        : null,
   };
 }
 
@@ -342,7 +374,10 @@ export async function flushOutbox(
   const items = await store.claimOutbox(userId, limit);
   for (const item of items) {
     try {
-      const outcome = item.op === "delete" ? await sendDelete(item, store, providerFor) : await sendUpsert(item, userId, store, providerFor, timeZone);
+      const outcome =
+        item.op === "delete"
+          ? await sendDelete(item, store, providerFor)
+          : await sendUpsert(item, userId, store, providerFor, timeZone);
       if (outcome === "conflict") summary.conflicts++;
       await store.doneOutbox(item.id);
       summary.sent++;
@@ -350,7 +385,11 @@ export async function flushOutbox(
       summary.failed++;
       const code = codeOf(error);
       // Access gone or the event refused: trying again changes nothing.
-      const drop = code === "auth" || code === "forbidden" || code === "invalid" || item.attempts + 1 >= OUTBOX_MAX_ATTEMPTS;
+      const drop =
+        code === "auth" ||
+        code === "forbidden" ||
+        code === "invalid" ||
+        item.attempts + 1 >= OUTBOX_MAX_ATTEMPTS;
       await store.failOutbox(item.id, code, drop);
     }
   }
@@ -360,9 +399,16 @@ export async function flushOutbox(
 async function sendDelete(item: OutboxItem, store: SyncStore, providerFor: ProviderResolver) {
   const link = item.link;
   if (!link) return "skipped" as const;
-  const [provider, calendar] = await Promise.all([providerFor(link.connection_id), store.calendar(link.calendar_id)]);
+  const [provider, calendar] = await Promise.all([
+    providerFor(link.connection_id),
+    store.calendar(link.calendar_id),
+  ]);
   if (!provider || !calendar || !calendar.canWrite) return "skipped" as const;
-  const target: LinkTarget = { externalId: link.external_id, etag: link.etag, recurringId: link.recurring_id };
+  const target: LinkTarget = {
+    externalId: link.external_id,
+    etag: link.etag,
+    recurringId: link.recurring_id,
+  };
   await provider.deleteEvent(calendar.externalId, target);
   return "sent" as const;
 }
@@ -377,16 +423,28 @@ async function sendUpsert(
   const [event] = await store.events([item.eventId]);
   if (!event || event.is_demo || event.source === "deal_deadline") return "skipped";
   const link = await store.linkOf(event.id);
-  const calendar = link ? await store.calendar(link.calendarId) : await store.writeCalendar(userId);
+  const booking = event.source === "booking" ? await store.bookingOf(event.id) : null;
+  // A booked meeting not written out yet goes where the scheduler says; the
+  // provider of a calendar that is not the person's own never answers.
+  const writeTarget = !link ? booking?.target : undefined;
+  if (writeTarget?.kind === "none") return "skipped";
+  const calendar = link
+    ? await store.calendar(link.calendarId)
+    : writeTarget?.kind === "calendar"
+      ? await store.calendar(writeTarget.id)
+      : await store.writeCalendar(userId);
   if (!calendar || !calendar.canWrite) return "skipped";
   const provider = await providerFor(calendar.connectionId);
   if (!provider) return "skipped";
-  const booking = event.source === "booking" ? await store.bookingOf(event.id) : null;
   const target: LinkTarget | null = link
     ? { externalId: link.externalId, etag: link.etag, recurringId: link.recurringId }
     : null;
 
-  let result = await provider.putEvent(calendar.externalId, outgoing(event, timeZone, booking, !link), target);
+  let result = await provider.putEvent(
+    calendar.externalId,
+    outgoing(event, timeZone, booking, !link),
+    target,
+  );
   let conflict = false;
   if (!result.ok && result.reason === "conflict") {
     conflict = true;
@@ -413,7 +471,11 @@ async function sendUpsert(
       await applyChunks(store, calendar.id, [], [link.externalId], []);
       return conflict ? "conflict" : "sent";
     }
-    result = await provider.putEvent(calendar.externalId, outgoing(event, timeZone, booking, true), null);
+    result = await provider.putEvent(
+      calendar.externalId,
+      outgoing(event, timeZone, booking, true),
+      null,
+    );
   }
   if (!result.ok) throw new ProviderError("unknown");
 

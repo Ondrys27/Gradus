@@ -157,6 +157,21 @@ function overlaps(list: readonly Interval[], start: number, end: number): boolea
 }
 
 export function computeSlots(input: SlotInput): Slot[] {
+  return scanSlots(input, false).free;
+}
+
+/**
+ * The free slots and, at the same step, the times inside the working hours
+ * that are not free (busy, booked, too soon, the day's maximum reached):
+ * what the shared picker shows as "Full", without saying why. Times outside
+ * the working hours are neither.
+ */
+export function computeSlotCells(input: SlotInput): { free: Slot[]; busy: Slot[] } {
+  return scanSlots(input, true);
+}
+
+function scanSlots(input: SlotInput, withBusy: boolean): { free: Slot[]; busy: Slot[] } {
+  const none = { free: [], busy: [] };
   const { hostTimeZone: zone, type, now } = input;
   const duration = Math.max(1, Math.round(type.durationMin)) * MINUTE;
   const step = Math.max(5, Math.round(type.slotStepMin));
@@ -165,7 +180,7 @@ export function computeSlots(input: SlotInput): Slot[] {
   const lastAllowed = addDays(today, horizon);
   const from = input.from && input.from > today ? input.from : today;
   const wanted = input.to && input.to < lastAllowed ? input.to : lastAllowed;
-  if (from > wanted) return [];
+  if (from > wanted) return none;
   const earliest = now + Math.max(0, type.minNoticeHours) * HOUR;
 
   // A slot running past midnight of the last day still needs the next day's hours.
@@ -176,7 +191,7 @@ export function computeSlots(input: SlotInput): Slot[] {
     addDays(wanted, 1),
     zone,
   );
-  if (!available.length) return [];
+  if (!available.length) return none;
 
   // Padding the busy times by the buffers: a slot [s, e] is blocked when
   // [s − before, e + after] touches something busy.
@@ -198,14 +213,16 @@ export function computeSlots(input: SlotInput): Slot[] {
     }
   }
 
-  const slots: Slot[] = [];
+  const free: Slot[] = [];
+  const busy: Slot[] = [];
   const seen = new Set<number>();
   for (
     let day = from, guard = 0;
     day <= wanted && guard < MAX_DAYS + 1;
     day = addDays(day, 1), guard++
   ) {
-    if (type.maxPerDay !== null && (perDay.get(day) ?? 0) >= type.maxPerDay) continue;
+    const full = type.maxPerDay !== null && (perDay.get(day) ?? 0) >= type.maxPerDay;
+    if (full && !withBusy) continue;
     const { year, month, day: date } = parseDay(day);
     for (let minute = 0; minute < 1440; minute += step) {
       const wall = { year, month, day: date, hour: Math.floor(minute / 60), minute: minute % 60 };
@@ -214,34 +231,61 @@ export function computeSlots(input: SlotInput): Slot[] {
       const start = instantAtMinute(day, minute, zone);
       if (seen.has(start)) continue;
       const end = start + duration;
-      if (start < earliest) continue;
+      // The past is no time at all; outside the working hours neither free nor busy.
+      if (start < now) continue;
       if (!inside(available, start, end)) continue;
-      if (overlaps(blocked, start, end)) continue;
       seen.add(start);
-      slots.push({ start, end, hostDay: day });
+      const slot = { start, end, hostDay: day };
+      if (full || start < earliest || overlaps(blocked, start, end)) {
+        if (withBusy) busy.push(slot);
+        continue;
+      }
+      free.push(slot);
     }
   }
-  return slots.sort((a, b) => a.start - b.start);
+  const order = (a: Slot, b: Slot) => a.start - b.start;
+  return { free: free.sort(order), busy: busy.sort(order) };
 }
 
 export type GuestSlot = { start: number; end: number; time: string };
-export type GuestDay = { day: Day; slots: GuestSlot[] };
+/**
+ * One of the guest's calendar days: its free times and, when asked for, the
+ * times inside the host's hours that are taken ("Full", no details).
+ */
+export type GuestDay = { day: Day; slots: GuestSlot[]; busy?: GuestSlot[] };
 
-/** The slots by the guest's calendar day, each with its clock time in the guest's zone. */
-export function slotsByGuestDay(slots: readonly Slot[], guestTimeZone: string): GuestDay[] {
-  const days = new Map<Day, GuestSlot[]>();
+function guestSlot(slot: Slot, guestTimeZone: string): GuestSlot {
+  const wall = wallOf(slot.start, guestTimeZone);
+  return { start: slot.start, end: slot.end, time: timeOfMinutes(wall.hour * 60 + wall.minute) };
+}
+
+/**
+ * The slots by the guest's calendar day, each with its clock time in the
+ * guest's zone; with `busy`, the taken times too (a day only taken is there
+ * with no free time).
+ */
+export function slotsByGuestDay(
+  slots: readonly Slot[],
+  guestTimeZone: string,
+  busy?: readonly Slot[],
+): GuestDay[] {
+  const days = new Map<Day, GuestDay>();
+  const dayOf = (start: number) => {
+    const day = dayIn(start, guestTimeZone);
+    let entry = days.get(day);
+    if (!entry) {
+      entry = busy ? { day, slots: [], busy: [] } : { day, slots: [] };
+      days.set(day, entry);
+    }
+    return entry;
+  };
   for (const slot of [...slots].sort((a, b) => a.start - b.start)) {
-    const wall = wallOf(slot.start, guestTimeZone);
-    const day = dayIn(slot.start, guestTimeZone);
-    const list = days.get(day) ?? [];
-    list.push({
-      start: slot.start,
-      end: slot.end,
-      time: timeOfMinutes(wall.hour * 60 + wall.minute),
-    });
-    days.set(day, list);
+    dayOf(slot.start).slots.push(guestSlot(slot, guestTimeZone));
   }
-  return [...days.entries()].map(([day, list]) => ({ day, slots: list }));
+  for (const slot of [...(busy ?? [])].sort((a, b) => a.start - b.start)) {
+    dayOf(slot.start).busy!.push(guestSlot(slot, guestTimeZone));
+  }
+  return [...days.values()].sort((a, b) => (a.day < b.day ? -1 : a.day > b.day ? 1 : 0));
 }
 
 /** Bookings that still hold the host's time: pending and confirmed, and holds until they expire. */

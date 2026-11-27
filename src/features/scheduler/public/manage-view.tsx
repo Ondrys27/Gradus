@@ -11,12 +11,23 @@ import { FormField } from "@/components/ui/form-field";
 import { Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusPill } from "@/components/ui/status-pill";
-import { formatNumber, formatSlotMoment, formatSpokenDate, formatTime, formatUtcOffset } from "@/lib/format";
+import {
+  formatNumber,
+  formatSlotMoment,
+  formatSpokenDate,
+  formatTime,
+  formatUtcOffset,
+} from "@/lib/format";
 import { browserTimeZone } from "@/lib/region";
 import { FormatSettingsContext } from "@/lib/use-format-settings";
 import { guestFormatSettings } from "../booking/guest-format";
 import { JOIN_SOON_MINUTES, joinPhase, nextPhaseAt } from "../booking/meeting-link";
-import { BOOKING_ZONE_COOKIE, bookingCookie, isBookingLocale, readCookie } from "../booking/page-locale";
+import {
+  BOOKING_ZONE_COOKIE,
+  bookingCookie,
+  isBookingLocale,
+  readCookie,
+} from "../booking/page-locale";
 import type { GuestDay, GuestSlot } from "../slots";
 import { isValidTimeZone } from "../zoned";
 import { SlotPicker } from "./slot-picker";
@@ -50,7 +61,12 @@ export type ManagedBooking = {
 
 type Mode = "view" | "reschedule" | "cancel" | "rescheduled" | "cancelled";
 
-const STATUS_TONE = { pending: "gold", confirmed: "teal", cancelled: "neutral", declined: "pink" } as const;
+const STATUS_TONE = {
+  pending: "gold",
+  confirmed: "teal",
+  cancelled: "neutral",
+  declined: "pink",
+} as const;
 
 export function ManageView({
   token,
@@ -93,7 +109,7 @@ export function ManageView({
     queryKey: ["booking-manage-slots", token, zone],
     enabled: mode === "reschedule",
     staleTime: 30_000,
-    queryFn: async (): Promise<{ days: GuestDay[] }> => {
+    queryFn: async (): Promise<{ timeZone: string; days: GuestDay[] }> => {
       const params = new URLSearchParams({ token, tz: zone });
       const response = await fetch(`/api/scheduler/public/slots?${params}`, { cache: "no-store" });
       if (!response.ok) throw new Error(`slots ${response.status}`);
@@ -141,12 +157,17 @@ export function ManageView({
       >
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h1 className="font-display text-2xl font-bold tracking-tight text-ink md:text-3xl">{t("title")}</h1>
+            <h1 className="font-display text-2xl font-bold tracking-tight text-ink md:text-3xl">
+              {t("title")}
+            </h1>
             <StatusPill tone={STATUS_TONE[booking.status]} dot>
               {t(`status.${booking.status}`)}
             </StatusPill>
           </div>
-          <div className="flex flex-col gap-1 rounded-2xl border border-line bg-canvas/50 p-5" data-testid="booking-manage-summary">
+          <div
+            className="flex flex-col gap-1 rounded-2xl border border-line bg-canvas/50 p-5"
+            data-testid="booking-manage-summary"
+          >
             <p className="micro-label">
               {t("meetingLine", {
                 type: booking.typeName,
@@ -163,7 +184,13 @@ export function ManageView({
             >
               {formatSpokenDate(start, settings, locale)}
             </p>
-            <p className={over ? "text-xl font-semibold text-ink-muted tabular-nums" : "text-xl font-semibold text-violet tabular-nums"}>
+            <p
+              className={
+                over
+                  ? "text-xl font-semibold text-ink-muted tabular-nums"
+                  : "text-xl font-semibold text-violet tabular-nums"
+              }
+            >
               {formatTime(start, settings)}–{formatTime(end, settings)}
             </p>
             <p className="text-xs text-ink-muted">
@@ -182,7 +209,9 @@ export function ManageView({
             {t("cancelled")}
           </p>
         )}
-        {problem && <FormAlert>{problem === "taken" ? tBooking("notice.taken") : t("failed")}</FormAlert>}
+        {problem && (
+          <FormAlert>{problem === "taken" ? tBooking("notice.taken") : t("failed")}</FormAlert>
+        )}
 
         {held && (
           <div
@@ -192,11 +221,15 @@ export function ManageView({
             <HeartHandshakeIcon aria-hidden className="mt-0.5 size-6 shrink-0 text-teal" />
             <div className="flex flex-col gap-1">
               <p className="font-display text-lg font-bold text-ink">{t("thanks.title")}</p>
-              <p className="text-sm text-ink-soft">{t("thanks.text", { host: booking.hostName })}</p>
+              <p className="text-sm text-ink-soft">
+                {t("thanks.text", { host: booking.hostName })}
+              </p>
             </div>
           </div>
         )}
-        {!canManage && !held && mode === "view" && <p className="text-sm text-ink-muted">{t("over")}</p>}
+        {!canManage && !held && mode === "view" && (
+          <p className="text-sm text-ink-muted">{t("over")}</p>
+        )}
 
         {/* Joining needs no right to change it: a read-only host still meets. */}
         {booking.video && !held && (mode === "view" || mode === "rescheduled") && (
@@ -205,10 +238,19 @@ export function ManageView({
 
         {canManage && (mode === "view" || mode === "rescheduled") && (
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-            <Button variant="outline" onClick={() => setMode("reschedule")} data-testid="booking-manage-reschedule">
+            <Button
+              variant="outline"
+              onClick={() => setMode("reschedule")}
+              data-testid="booking-manage-reschedule"
+            >
               {t("reschedule")}
             </Button>
-            <Button variant="ghost" className="text-ink-soft" onClick={() => setMode("cancel")} data-testid="booking-manage-cancel">
+            <Button
+              variant="ghost"
+              className="text-ink-soft"
+              onClick={() => setMode("cancel")}
+              data-testid="booking-manage-cancel"
+            >
               {t("cancel")}
             </Button>
           </div>
@@ -216,13 +258,21 @@ export function ManageView({
 
         {mode === "reschedule" && (
           <div className="flex flex-col gap-5 border-t border-line/70 pt-5">
-            <h2 className="font-display text-xl font-bold tracking-tight text-ink">{t("pickNew")}</h2>
+            <h2 className="font-display text-xl font-bold tracking-tight text-ink">
+              {t("pickNew")}
+            </h2>
             {slots.isPending ? (
               <Skeleton className="h-72 rounded-2xl" />
             ) : slots.isError ? (
               <FormAlert>{tBooking("errors.slots")}</FormAlert>
             ) : (
-              <SlotPicker days={slots.data.days} selected={picked?.start ?? null} onPick={setPicked} disabled={sending} />
+              <SlotPicker
+                days={slots.data.days}
+                timeZone={slots.data.timeZone}
+                selected={picked?.start ?? null}
+                onPick={setPicked}
+                disabled={sending}
+              />
             )}
             <ZoneLine
               id="manage-zone"
@@ -238,10 +288,16 @@ export function ManageView({
               </Button>
               <Button
                 disabled={!picked || sending}
-                onClick={() => picked && void send({ action: "reschedule", start: picked.start }, "rescheduled")}
+                onClick={() =>
+                  picked && void send({ action: "reschedule", start: picked.start }, "rescheduled")
+                }
                 data-testid="booking-manage-confirm-move"
               >
-                {picked ? t("moveTo", { when: formatSlotMoment(new Date(picked.start), settings, locale) }) : t("reschedule")}
+                {picked
+                  ? t("moveTo", {
+                      when: formatSlotMoment(new Date(picked.start), settings, locale),
+                    })
+                  : t("reschedule")}
               </Button>
             </div>
           </div>
@@ -250,7 +306,13 @@ export function ManageView({
         {mode === "cancel" && (
           <div className="flex flex-col gap-4 border-t border-line/70 pt-5">
             <FormField id="manage-reason" label={t("reason")}>
-              <Textarea id="manage-reason" rows={3} maxLength={500} value={reason} onChange={(event) => setReason(event.target.value)} />
+              <Textarea
+                id="manage-reason"
+                rows={3}
+                maxLength={500}
+                value={reason}
+                onChange={(event) => setReason(event.target.value)}
+              />
             </FormField>
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button variant="ghost" onClick={() => setMode("view")} disabled={sending}>
@@ -286,7 +348,8 @@ function useNowAtPhases(startsAt: string, endsAt: string, renderedAt: number): n
       setNow(current);
       const next = nextPhaseAt(startsAt, endsAt, current);
       // setTimeout holds at most ~24.8 days; check again then.
-      if (next !== null) timer = window.setTimeout(tick, Math.min(next - current + 250, 2 ** 31 - 1));
+      if (next !== null)
+        timer = window.setTimeout(tick, Math.min(next - current + 250, 2 ** 31 - 1));
     };
     tick();
     // A phone that slept wakes up with the right phase.
@@ -305,7 +368,10 @@ function JoinCard({ url, soon, host }: { url: string | null; soon: boolean; host
   const t = useTranslations("booking.manage.join");
   if (!url) {
     return (
-      <div className="flex items-start gap-3 rounded-2xl border border-line bg-canvas/50 p-4" data-testid="booking-join-later">
+      <div
+        className="flex items-start gap-3 rounded-2xl border border-line bg-canvas/50 p-4"
+        data-testid="booking-join-later"
+      >
         <VideoIcon aria-hidden className="mt-0.5 size-5 shrink-0 text-ink-muted" />
         <p className="text-sm text-ink-soft">{t("later", { host })}</p>
       </div>

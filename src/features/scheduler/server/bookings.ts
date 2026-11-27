@@ -11,11 +11,7 @@ import type { Database, Json } from "@/types/database";
 import { answerLines, checkAnswers, type AnswerInput } from "../booking/answers";
 import { guestFormatSettings } from "../booking/guest-format";
 import { isBookingLocale, type BookingLocale } from "../booking/page-locale";
-import {
-  parseReminderIds,
-  planReminders,
-  type ScheduledReminder,
-} from "../booking/reminders";
+import { parseReminderIds, planReminders, type ScheduledReminder } from "../booking/reminders";
 import {
   linkChangeMailDue,
   linkTaskDue,
@@ -49,7 +45,8 @@ import {
   type HostMailKind,
   type MailMeeting,
 } from "./booking-emails";
-import { loadTypeSlots } from "./busy";
+import { isSlotFree, loadTypeSlots } from "./busy";
+import { LIVE_CONFIRM_MAX_AGE_MS } from "../remote-busy";
 import { cancelBookingMail, deliverBookingMail } from "./mail";
 import {
   loadHostOfProfile,
@@ -82,7 +79,7 @@ import {
 type Admin = SupabaseClient<Database>;
 
 export const BOOKING_FULL_COLUMNS =
-  "id, event_type_id, host_user_id, space_id, starts_at, ends_at, guest_name, guest_email, guest_phone, guest_company, guest_time_zone, answers, status, hold_expires_at, contact_id, calendar_event_id, deal_id, reminder_ids, cancelled_by, cancel_reason, locale, confirmed_at, rescheduled_at, reschedule_count, no_show_at, created_at, meeting_link, video_room, link_task_id, google_meet_link";
+  "id, event_type_id, host_user_id, space_id, starts_at, ends_at, guest_name, guest_email, guest_phone, guest_company, guest_time_zone, answers, status, hold_expires_at, contact_id, calendar_event_id, deal_id, reminder_ids, cancelled_by, cancel_reason, locale, confirmed_at, rescheduled_at, reschedule_count, no_show_at, created_at, meeting_link, video_room, link_task_id, google_meet_link, source, created_by";
 
 export type FullBooking = Pick<
   Database["public"]["Tables"]["bookings"]["Row"],
@@ -116,6 +113,8 @@ export type FullBooking = Pick<
   | "video_room"
   | "link_task_id"
   | "google_meet_link"
+  | "source"
+  | "created_by"
 >;
 
 export type BookingContext = {
@@ -137,13 +136,23 @@ function must<T>(result: { data: T; error: unknown }): T {
 }
 
 function log(label: string, error: unknown) {
-  console.error(`[scheduler] ${label}`, error instanceof Error ? error.message : (error as { message?: string })?.message ?? "unknown");
+  console.error(
+    `[scheduler] ${label}`,
+    error instanceof Error
+      ? error.message
+      : ((error as { message?: string })?.message ?? "unknown"),
+  );
 }
 
 function manageKey(): string {
   const key = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!key) throw new Error("SUPABASE_SECRET_KEY is not set");
   return key;
+}
+
+/** The hash of the guest's link of a booking, as the booking keeps it. */
+export function manageTokenHashOf(bookingId: string): string {
+  return bookingTokenHash(manageTokenFor(bookingId, manageKey()));
 }
 
 /** The guest's link of one booking (moving, cancelling), absolute. */
@@ -164,7 +173,6 @@ export async function bookingIdByToken(admin: Admin, token: string): Promise<str
   return data?.id ?? null;
 }
 
-
 // ---------------------------------------------------------------------------
 // Loading
 // ---------------------------------------------------------------------------
@@ -181,7 +189,11 @@ export async function loadBookingContext(
   const hostId = booking.host_user_id;
   const [typeRow, profile, settings, user] = await Promise.all([
     booking.event_type_id
-      ? admin.from("event_types").select(EVENT_TYPE_COLUMNS).eq("id", booking.event_type_id).maybeSingle()
+      ? admin
+          .from("event_types")
+          .select(EVENT_TYPE_COLUMNS)
+          .eq("id", booking.event_type_id)
+          .maybeSingle()
       : Promise.resolve({ data: null, error: null }),
     hostId
       ? admin
@@ -192,12 +204,18 @@ export async function loadBookingContext(
           .maybeSingle()
       : Promise.resolve({ data: null, error: null }),
     hostId
-      ? admin.from("user_settings").select(USER_SETTINGS_COLUMNS).eq("user_id", hostId).maybeSingle()
+      ? admin
+          .from("user_settings")
+          .select(USER_SETTINGS_COLUMNS)
+          .eq("user_id", hostId)
+          .maybeSingle()
       : Promise.resolve({ data: null, error: null }),
     hostId ? admin.auth.admin.getUserById(hostId) : Promise.resolve(null),
   ]);
   const type = must(typeRow) ? toEventType(must(typeRow) as EventTypeRow) : null;
-  const profileRow = must(profile) as SchedulerProfile | null;
+  const stored = must(profile) as SchedulerProfile | null;
+  // The guest's page shows this context: the host's calendars stay out of it.
+  const profileRow = stored ? { ...stored, calendar_sources: null } : null;
   const settingsRow = must(settings) as UserSettings | null;
   return {
     booking,
@@ -221,7 +239,9 @@ function guestZone(ctx: BookingContext): string {
 }
 
 /** The call's link of the meeting now; null for a meeting that is not a video call. */
-export function linkOf(ctx: Pick<BookingContext, "booking" | "type" | "profile">): MeetingLink | null {
+export function linkOf(
+  ctx: Pick<BookingContext, "booking" | "type" | "profile">,
+): MeetingLink | null {
   return meetingLinkOf({
     locationKind: ctx.type?.location_kind ?? "video",
     videoSource: ctx.type?.video_source ?? "profile",
@@ -260,7 +280,9 @@ function meetingOf(ctx: BookingContext, locale: string, forGuest: boolean): Mail
 function answersOf(ctx: BookingContext, locale: string): string[] {
   const t = serverTranslator(locale);
   const answers =
-    ctx.booking.answers && typeof ctx.booking.answers === "object" && !Array.isArray(ctx.booking.answers)
+    ctx.booking.answers &&
+    typeof ctx.booking.answers === "object" &&
+    !Array.isArray(ctx.booking.answers)
       ? (ctx.booking.answers as Record<string, unknown>)
       : {};
   return answerLines(ctx.type?.questions ?? [], answers, {
@@ -278,12 +300,24 @@ async function runEffects(admin: Admin, ctx: BookingContext, confirming: boolean
   const { booking, type } = ctx;
   const typeName = type?.name ?? t("email.booking.meeting");
   const guest = booking.guest_name ?? "";
-  const phone = booking.guest_phone ? formatPhone(booking.guest_phone, ctx.host?.country ?? null) : null;
+  const phone = booking.guest_phone
+    ? formatPhone(booking.guest_phone, ctx.host?.country ?? null)
+    : null;
+  const creator =
+    booking.source !== "page" && booking.created_by && booking.created_by !== booking.host_user_id
+      ? await personName(admin, booking.space_id, booking.created_by)
+      : null;
   const lines = [
-    t("scheduler.bookingEvent.bookedVia"),
+    booking.source === "page"
+      ? t("scheduler.bookingEvent.bookedVia")
+      : creator
+        ? t("scheduler.bookingEvent.bookedBy", { name: creator })
+        : t("scheduler.bookingEvent.bookedInApp"),
     ...(booking.guest_email ? [t("email.booking.guestEmail", { email: booking.guest_email })] : []),
     ...(phone ? [t("email.booking.guestPhone", { phone })] : []),
-    ...(booking.guest_company ? [t("email.booking.guestCompany", { company: booking.guest_company })] : []),
+    ...(booking.guest_company
+      ? [t("email.booking.guestCompany", { company: booking.guest_company })]
+      : []),
     ...answersOf(ctx, ctx.hostLocale),
   ];
   const location =
@@ -305,13 +339,33 @@ async function runEffects(admin: Admin, ctx: BookingContext, confirming: boolean
     ...(country ? { _country: country } : {}),
   });
   if (error) throw error;
-  const result = (data ?? {}) as { contact_id?: string; calendar_event_id?: string | null; deal_id?: string | null };
+  const result = (data ?? {}) as {
+    contact_id?: string;
+    calendar_event_id?: string | null;
+    deal_id?: string | null;
+  };
   ctx.booking = {
     ...booking,
     contact_id: result.contact_id ?? booking.contact_id,
     calendar_event_id: result.calendar_event_id ?? null,
     deal_id: result.deal_id ?? booking.deal_id,
   };
+}
+
+/** A person's name in a space: the worker record's, else the profile's (never an e-mail). */
+export async function personName(admin: Admin, space: string, userId: string): Promise<string> {
+  const [worker, profile] = await Promise.all([
+    admin
+      .from("workers")
+      .select("name, status")
+      .eq("owner_id", space)
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    admin.from("profiles").select("display_name").eq("id", userId).maybeSingle(),
+  ]);
+  return worker.data?.name?.trim() || profile.data?.display_name?.trim() || "";
 }
 
 async function effectsSafely(admin: Admin, ctx: BookingContext, confirming: boolean) {
@@ -335,8 +389,13 @@ async function pushToHostCalendar(admin: Admin, ctx: BookingContext) {
   try {
     await flushUserQuietly(admin, hostId);
     if (ctx.type?.video_source === "google_meet" && !ctx.booking.google_meet_link) {
-      const { data } = await admin.from("bookings").select("google_meet_link").eq("id", ctx.booking.id).maybeSingle();
-      if (data?.google_meet_link) ctx.booking = { ...ctx.booking, google_meet_link: data.google_meet_link };
+      const { data } = await admin
+        .from("bookings")
+        .select("google_meet_link")
+        .eq("id", ctx.booking.id)
+        .maybeSingle();
+      if (data?.google_meet_link)
+        ctx.booking = { ...ctx.booking, google_meet_link: data.google_meet_link };
     }
   } catch (error) {
     log("calendar push failed", error);
@@ -357,7 +416,9 @@ function icsAttachment(ctx: BookingContext, status: BookingIcsStatus, locale: st
   const t = serverTranslator(locale);
   // A video call: the booking's page, which shows the link of the moment it is opened.
   const join =
-    meeting.locationKind === "video" && status !== "CANCELLED" ? manageUrlOf(ctx.booking.id, ctx.origin) : null;
+    meeting.locationKind === "video" && status !== "CANCELLED"
+      ? manageUrlOf(ctx.booking.id, ctx.origin)
+      : null;
   const ics = buildBookingIcs({
     uid: icsUidOf(ctx.booking.id),
     // Grows with every change, so a calendar updates the event it imported.
@@ -400,7 +461,14 @@ async function emailGuest(
   if (!to) return { ok: false as const, error: "no address" };
   const locale = guestLocale(ctx);
   const settings = guestFormatSettings(locale, guestZone(ctx));
-  const live = ["confirmed", "pending", "approved", "rescheduled", "reminder", "linkChanged"].includes(kind);
+  const live = [
+    "confirmed",
+    "pending",
+    "approved",
+    "rescheduled",
+    "reminder",
+    "linkChanged",
+  ].includes(kind);
   const profile = ctx.profile;
   const mail = guestBookingEmail({
     kind,
@@ -497,8 +565,14 @@ export async function scheduleReminders(admin: Admin, ctx: BookingContext, now =
   for (const item of planned) {
     const result =
       item.target === "guest"
-        ? await emailGuest(ctx, "reminder", { scheduledAt: item.at, reminderMinutes: item.offsetMinutes })
-        : await emailHost(ctx, "reminder", { scheduledAt: item.at, reminderMinutes: item.offsetMinutes });
+        ? await emailGuest(ctx, "reminder", {
+            scheduledAt: item.at,
+            reminderMinutes: item.offsetMinutes,
+          })
+        : await emailHost(ctx, "reminder", {
+            scheduledAt: item.at,
+            reminderMinutes: item.offsetMinutes,
+          });
     if (result.ok) {
       list.push({ key: item.key, id: result.id, at: item.at });
     } else if (result.error === "internal address" || result.error === "no address") {
@@ -569,7 +643,8 @@ export async function scheduleDueReminders(admin: Admin, origin: string, now = D
         )
       : [];
     const already = parseReminderIds(row.reminder_ids);
-    if (!planReminders({ startsAt: row.starts_at, offsets, now, scheduled: already }).length) continue;
+    if (!planReminders({ startsAt: row.starts_at, offsets, now, scheduled: already }).length)
+      continue;
     try {
       const ctx = await loadBookingContext(admin, row.id, origin);
       if (ctx) scheduled += await scheduleReminders(admin, ctx, now);
@@ -610,7 +685,11 @@ export async function syncLinkTask(admin: Admin, ctx: BookingContext, now = Date
     const task = typeof data === "string" ? data : null;
     if (task && booking.link_task_id === task) {
       // A moved meeting moves its task.
-      const moved = await admin.from("crm_tasks").update({ due_at: due }).eq("id", task).eq("status", "open");
+      const moved = await admin
+        .from("crm_tasks")
+        .update({ due_at: due })
+        .eq("id", task)
+        .eq("status", "open");
       if (moved.error) throw moved.error;
     }
     ctx.booking = { ...booking, link_task_id: task };
@@ -627,7 +706,11 @@ export async function syncLinkTask(admin: Admin, ctx: BookingContext, now = Date
     if (error) throw error;
     return;
   }
-  const { error } = await admin.from("crm_tasks").delete().eq("id", booking.link_task_id).eq("status", "open");
+  const { error } = await admin
+    .from("crm_tasks")
+    .delete()
+    .eq("id", booking.link_task_id)
+    .eq("status", "open");
   if (error) throw error;
 }
 
@@ -755,6 +838,7 @@ export async function holdSlot(
     input.guestTimeZone,
     now,
     input.release ? { bookingId: input.release, calendarEventId: null } : undefined,
+    { liveMaxAgeMs: LIVE_CONFIRM_MAX_AGE_MS },
   );
   const free = slots.days.some((day) => day.slots.some((slot) => slot.start === input.start));
   if (!free) return { ok: false, problem: "slotTaken" };
@@ -765,7 +849,9 @@ export async function holdSlot(
     _starts_at: new Date(input.start).toISOString(),
     _token_hash: bookingTokenHash(token),
     _client_hash: input.clientHash,
-    _guest_time_zone: isValidTimeZone(input.guestTimeZone) ? input.guestTimeZone : profile.time_zone,
+    _guest_time_zone: isValidTimeZone(input.guestTimeZone)
+      ? input.guestTimeZone
+      : profile.time_zone,
     ...(input.release ? { _release: input.release } : {}),
   });
   if (error) return { ok: false, problem: bookingProblem(error) };
@@ -800,7 +886,9 @@ export type BookResult = {
 export async function bookHold(
   admin: Admin,
   input: BookInput,
-): Promise<FlowResult<BookResult> | { ok: false; problem: "invalid"; errors: Record<string, string> }> {
+): Promise<
+  FlowResult<BookResult> | { ok: false; problem: "invalid"; errors: Record<string, string> }
+> {
   if (!isBookingToken(input.holdToken)) return { ok: false, problem: "holdExpired" };
   const held = must(
     await admin
@@ -809,22 +897,53 @@ export async function bookHold(
       .eq("id", input.holdId)
       .maybeSingle(),
   );
-  if (!held || held.status !== "held" || !held.event_type_id) return { ok: false, problem: "holdExpired" };
+  if (!held || held.status !== "held" || !held.event_type_id)
+    return { ok: false, problem: "holdExpired" };
   const typeRow = must(
-    await admin.from("event_types").select(EVENT_TYPE_COLUMNS).eq("id", held.event_type_id).maybeSingle(),
+    await admin
+      .from("event_types")
+      .select(EVENT_TYPE_COLUMNS)
+      .eq("id", held.event_type_id)
+      .maybeSingle(),
   ) as EventTypeRow | null;
   if (!typeRow) return { ok: false, problem: "notFound" };
   const type = toEventType(typeRow);
   const profile = must(
-    await admin.from("scheduler_profiles").select(PROFILE_COLUMNS).eq("id", type.profile_id).maybeSingle(),
+    await admin
+      .from("scheduler_profiles")
+      .select(PROFILE_COLUMNS)
+      .eq("id", type.profile_id)
+      .maybeSingle(),
   ) as SchedulerProfile | null;
   if (!profile) return { ok: false, problem: "notFound" };
   const host = await loadHostOfProfile(admin, profile);
   if (!host.available) return { ok: false, problem: "unavailable" };
 
   const zone = isValidTimeZone(input.timeZone) ? input.timeZone : profile.time_zone;
-  const checked = checkAnswers(type.questions, input.values, countryFromTimeZone(zone) ?? host.country);
+  const checked = checkAnswers(
+    type.questions,
+    input.values,
+    countryFromTimeZone(zone) ?? host.country,
+  );
   if (!checked.ok) return { ok: false, problem: "invalid", errors: checked.errors };
+
+  // Checked again at the moment of booking (30.4): the host's calendars,
+  // read fresh, may have filled the time since it was held.
+  const { data: holdRow } = await admin
+    .from("bookings")
+    .select("starts_at")
+    .eq("id", held.id)
+    .maybeSingle();
+  if (
+    holdRow &&
+    !(await isSlotFree(admin, typeRow, Date.parse(holdRow.starts_at), {
+      exclude: { bookingId: held.id, calendarEventId: null },
+      liveMaxAgeMs: LIVE_CONFIRM_MAX_AGE_MS,
+    }))
+  ) {
+    await admin.from("bookings").delete().eq("id", held.id).eq("status", "held");
+    return { ok: false, problem: "slotTaken" };
+  }
 
   const { data, error } = await admin.rpc("scheduler_book", {
     _booking: held.id,
@@ -963,22 +1082,32 @@ export async function cancelBooking(
       ics: "CANCELLED",
     }),
   );
-  if (by === "guest") await mailSafely("host cancelled", () => emailHost(ctx, "cancelledByGuest", { reason }));
+  if (by === "guest")
+    await mailSafely("host cancelled", () => emailHost(ctx, "cancelledByGuest", { reason }));
   await track("booking_cancelled", { by }, { userId: ctx.booking.host_user_id, admin });
   return { ok: true, data: null };
 }
 
 /** The free times a booking may move to (its own time and meeting not counted). */
-export async function rescheduleSlots(admin: Admin, ctx: BookingContext, guestTimeZone: string) {
+export async function rescheduleSlots(
+  admin: Admin,
+  ctx: BookingContext,
+  guestTimeZone: string,
+  options: { withBusy?: boolean; liveMaxAgeMs?: number } = {},
+) {
   if (!ctx.type) return null;
   const row = must(
     await admin.from("event_types").select(EVENT_TYPE_COLUMNS).eq("id", ctx.type.id).maybeSingle(),
   ) as EventTypeRow | null;
   if (!row) return null;
-  return loadTypeSlots(admin, row, guestTimeZone, Date.now(), {
-    bookingId: ctx.booking.id,
-    calendarEventId: ctx.booking.calendar_event_id,
-  });
+  return loadTypeSlots(
+    admin,
+    row,
+    guestTimeZone,
+    Date.now(),
+    { bookingId: ctx.booking.id, calendarEventId: ctx.booking.calendar_event_id },
+    options,
+  );
 }
 
 /** Moves a booking to another of the type's free times; calendar, reminders and e-mails follow. */
@@ -992,7 +1121,9 @@ export async function rescheduleBooking(
   const before = await loadBookingContext(admin, bookingId, origin);
   if (!before) return { ok: false, problem: "notFound" };
   if (!before.host?.available) return { ok: false, problem: "unavailable" };
-  const slots = await rescheduleSlots(admin, before, guestZone(before));
+  const slots = await rescheduleSlots(admin, before, guestZone(before), {
+    liveMaxAgeMs: LIVE_CONFIRM_MAX_AGE_MS,
+  });
   if (!slots?.days.some((day) => day.slots.some((slot) => slot.start === start))) {
     return { ok: false, problem: "slotTaken" };
   }
@@ -1021,7 +1152,9 @@ export async function rescheduleBooking(
     }),
   );
   if (by === "guest") {
-    await mailSafely("host rescheduled", () => emailHost(ctx, "rescheduledByGuest", { previousStartsAt }));
+    await mailSafely("host rescheduled", () =>
+      emailHost(ctx, "rescheduledByGuest", { previousStartsAt }),
+    );
   }
   await track("booking_rescheduled", { by }, { userId: ctx.booking.host_user_id, admin });
   return { ok: true, data: null };
@@ -1046,9 +1179,7 @@ export async function dismissSurvey(
   bookingId: string,
   userId: string,
 ): Promise<FlowResult<null>> {
-  const problem = await call(() =>
-    admin.rpc("scheduler_dismiss_survey", { _booking: bookingId }),
-  );
+  const problem = await call(() => admin.rpc("scheduler_dismiss_survey", { _booking: bookingId }));
   if (problem) return { ok: false, problem };
   await track("booking_survey_dismissed", {}, { userId, admin });
   return { ok: true, data: null };
@@ -1059,4 +1190,68 @@ export async function loadManagedBooking(admin: Admin, token: string, origin: st
   const id = await bookingIdByToken(admin, token);
   if (!id) return null;
   return loadBookingContext(admin, id, origin);
+}
+
+// ---------------------------------------------------------------------------
+// A booking made in the app (30.4): what follows, as for the public page
+// ---------------------------------------------------------------------------
+
+/**
+ * After scheduler_book_app() confirmed a booking made in the app (and the
+ * caller's move of the contact): the meeting in the host's calendar and in
+ * their own calendar to write to, the deal of the type, the guest's
+ * confirmation with the invite and the link to move or cancel (only when
+ * asked and there is an address), the host's e-mail and Grady's bubble when
+ * someone else booked it, the reminders and the call link's task.
+ */
+export async function finishAppBooking(
+  admin: Admin,
+  bookingId: string,
+  origin: string,
+  options: { emailGuest: boolean },
+): Promise<{ emailed: boolean; ctx: BookingContext | null }> {
+  const ctx = await loadBookingContext(admin, bookingId, origin);
+  if (!ctx) return { emailed: false, ctx: null };
+  await effectsSafely(admin, ctx, true);
+  let emailed = false;
+  if (options.emailGuest && ctx.booking.guest_email) {
+    try {
+      const result = await emailGuest(ctx, "confirmed", { ics: "CONFIRMED" });
+      emailed = result.ok;
+      if (!result.ok && result.error !== "internal address" && result.error !== "no address") {
+        console.error("[scheduler] app booking e-mail failed", result.error);
+      }
+    } catch (error) {
+      log("app booking e-mail failed", error);
+    }
+  }
+  const byOther = Boolean(
+    ctx.booking.created_by && ctx.booking.created_by !== ctx.booking.host_user_id,
+  );
+  if (byOther) {
+    await mailSafely("host booked", () => emailHost(ctx, "booked"));
+    await tellGrady(admin, ctx);
+  }
+  try {
+    // Reminders go to whoever has an address; a guest without one only misses theirs.
+    await scheduleReminders(admin, ctx);
+  } catch (reminderError) {
+    log("reminders failed", reminderError);
+  }
+  await linkTaskSafely(admin, ctx);
+  const link = linkOf(ctx);
+  await track(
+    "booking_created",
+    {
+      status: "confirmed",
+      duration: Math.min(
+        480,
+        Math.round((Date.parse(ctx.booking.ends_at) - Date.parse(ctx.booking.starts_at)) / 60_000),
+      ),
+      ...(link ? { link: link.source } : {}),
+      source: ctx.booking.source === "cold_calling" ? "cold_calling" : "app",
+    },
+    { userId: ctx.booking.host_user_id, admin },
+  );
+  return { emailed, ctx };
 }

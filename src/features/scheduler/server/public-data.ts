@@ -102,8 +102,7 @@ export async function loadHostOfProfile(
     admin.rpc("current_plan", { _user_id: profile.space_id }),
   ]);
   const accountRow = must(account);
-  const name =
-    profile.display_name?.trim() || accountRow?.display_name?.trim() || profile.handle;
+  const name = profile.display_name?.trim() || accountRow?.display_name?.trim() || profile.handle;
   return {
     profile,
     name,
@@ -130,7 +129,8 @@ export async function loadPublicProfile(
     .eq("handle", wanted)
     .maybeSingle();
   if (error) throw error;
-  return data;
+  // Which calendars count is the host's own business, never on a public page.
+  return data ? { ...data, calendar_sources: null } : null;
 }
 
 /** The active meeting types of a profile, in their order. */

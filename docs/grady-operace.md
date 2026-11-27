@@ -77,6 +77,8 @@ s katalogem (každá operace právě jednou, právo, úroveň, vratnost) a s tí
 | Upravit kontakt | `update_contact` | contacts.update | write | ano | ano | ano |
 | Přesunout kontakt do tabulky (Cold Calling) | `move_contact` | contacts.update | write | ne | ano | ano |
 | Zapsat hovor, e-mail, schůzku, SMS, poznámku | `add_contact_activity` | contacts.update | write | ano | ano | ano |
+| Schůzka s kontaktem: komu jde a volné termíny hostitele | `meeting_times` | cold_calling.call | read | ne | ano | ano |
+| Naplánovat schůzku (Domluvená schůzka, rezervace, potvrzení e-mailem) | `schedule_meeting` | cold_calling.call | delete | ne | ano | ano |
 | Smazat kontakt (do koše) | `delete_contact` | contacts.delete | delete | ano | ano | ne |
 | Nový obchod | `create_deal` | pipeline.create | write | ano | ano | ne |
 | Upravit obchod (pole, Close Date, částka) | `update_deal` | pipeline.update | write | ano | ano | ne |
@@ -131,6 +133,11 @@ s katalogem (každá operace právě jednou, právo, úroveň, vratnost) a s tí
 
 Poznámky k právům:
 
+- **Schůzka s kontaktem** (30.4): `meeting_times` a `schedule_meeting` jdou stejnou
+  cestou jako dialog Cold Callingu (`server/app-booking.ts`): komu jde schůzka určuje
+  nastavení majitele, jinému jen s `cold_calling.schedule_others`, volné termíny podle
+  plánovače hostitele; otevře je i `contacts.update`. Rezervace e-mailuje hosta, proto
+  úroveň `delete` a Potvrdit; obsazený termín jen s `force` na pokyn uživatele.
 - **Kontakty a Cold Calling** sdílejí tabulky: `list_contact_tables` otevře i
   `cold_calling.view`, `move_contact`, `add_contact_activity` a
   `add_deal_history_entry` i `cold_calling.call` (stejně jako ochrana řádků

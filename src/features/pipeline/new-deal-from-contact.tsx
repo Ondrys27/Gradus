@@ -1,5 +1,6 @@
 "use client";
 
+import { useAttachDealToBooking } from "@/features/scheduler/meeting-queries";
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,8 @@ type FormProps = {
   source: Extract<DealSource, "contact" | "cold_calling">;
   /** Right after a move that booked a meeting: the deal takes that meeting along. */
   linkMeeting?: boolean;
+  /** The meeting was booked through the scheduler (30.4): the new deal takes that booking. */
+  bookingId?: string;
   onCancel: () => void;
   onCreated: (deal: Deal) => void;
   cancelLabel?: string;
@@ -33,6 +36,7 @@ export function NewDealFromContactForm({
   contact,
   source,
   linkMeeting = false,
+  bookingId,
   onCancel,
   onCreated,
   cancelLabel,
@@ -42,10 +46,8 @@ export function NewDealFromContactForm({
   const preferred = useUserSettings().cold_calling_deal_stage_id;
   const stagesQuery = useStages();
   const link = useLinkBookedMeeting();
-  const stages = useMemo(
-    () => openStages(sortStages(stagesQuery.data ?? [])),
-    [stagesQuery.data],
-  );
+  const attach = useAttachDealToBooking();
+  const stages = useMemo(() => openStages(sortStages(stagesQuery.data ?? [])), [stagesQuery.data]);
 
   if (stagesQuery.isPending) return <Skeleton className="h-72 rounded-xl" />;
   if (stagesQuery.isError || stages.length === 0) {
@@ -66,7 +68,13 @@ export function NewDealFromContactForm({
       initial={{ title: dealTitleFor(contact), contact, assigneeIds: [user.id] }}
       showAssignee
       source={source}
-      afterCreate={linkMeeting ? (deal) => link.mutateAsync(deal.id) : undefined}
+      afterCreate={
+        bookingId
+          ? (deal) => attach.mutateAsync({ bookingId, dealId: deal.id })
+          : linkMeeting
+            ? (deal) => link.mutateAsync(deal.id)
+            : undefined
+      }
       onCancel={onCancel}
       onCreated={(deal) => onCreated(deal)}
       cancelLabel={cancelLabel}

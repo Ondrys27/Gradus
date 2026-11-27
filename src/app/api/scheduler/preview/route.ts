@@ -1,7 +1,6 @@
 import { after, NextResponse } from "next/server";
 import { z } from "zod";
 import { loadTypeRow, loadTypeSlots } from "@/features/scheduler/server/busy";
-import { syncUserIfStale } from "@/features/calendar/sync/server/sync";
 import { refreshStaleForUser } from "@/features/scheduler/server/subscriptions";
 import { SUBSCRIPTION_STALE_MS } from "@/features/scheduler/types";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -44,8 +43,7 @@ export async function GET(request: Request) {
     const row = await loadTypeRow(admin, own.id);
     if (!row || row.user_id !== userId)
       return NextResponse.json({ error: "notFound" }, { status: 404 });
-    // Connected Google and Apple calendars, read again when older than the subscriptions' limit (28.10).
-    await syncUserIfStale(admin, userId, SUBSCRIPTION_STALE_MS);
+    // Connected Google and Apple calendars the scheduler counts are read live (30.4, live-busy.ts).
     const slots = await loadTypeSlots(admin, row, parsed.data.tz);
     // Calendars older than ten minutes are fetched again after the answer; the next look has them.
     after(() =>

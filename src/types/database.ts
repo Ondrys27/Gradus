@@ -63,6 +63,7 @@ export type Database = {
       account_notifications: {
         Row: {
           actor_id: string | null
+          booking_id: string | null
           calendar_request_id: string | null
           created_at: string
           event_id: string | null
@@ -79,6 +80,7 @@ export type Database = {
         }
         Insert: {
           actor_id?: string | null
+          booking_id?: string | null
           calendar_request_id?: string | null
           created_at?: string
           event_id?: string | null
@@ -95,6 +97,7 @@ export type Database = {
         }
         Update: {
           actor_id?: string | null
+          booking_id?: string | null
           calendar_request_id?: string | null
           created_at?: string
           event_id?: string | null
@@ -110,6 +113,13 @@ export type Database = {
           worker_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "account_notifications_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "account_notifications_calendar_request_id_fkey"
             columns: ["calendar_request_id"]
@@ -941,6 +951,7 @@ export type Database = {
           confirmed_at: string | null
           contact_id: string | null
           created_at: string
+          created_by: string | null
           deal_id: string | null
           ends_at: string
           event_type_id: string | null
@@ -961,6 +972,7 @@ export type Database = {
           reminder_ids: Json
           reschedule_count: number
           rescheduled_at: string | null
+          source: string
           space_id: string
           starts_at: string
           status: string
@@ -977,6 +989,7 @@ export type Database = {
           confirmed_at?: string | null
           contact_id?: string | null
           created_at?: string
+          created_by?: string | null
           deal_id?: string | null
           ends_at: string
           event_type_id?: string | null
@@ -997,6 +1010,7 @@ export type Database = {
           reminder_ids?: Json
           reschedule_count?: number
           rescheduled_at?: string | null
+          source?: string
           space_id: string
           starts_at: string
           status?: string
@@ -1013,6 +1027,7 @@ export type Database = {
           confirmed_at?: string | null
           contact_id?: string | null
           created_at?: string
+          created_by?: string | null
           deal_id?: string | null
           ends_at?: string
           event_type_id?: string | null
@@ -1033,6 +1048,7 @@ export type Database = {
           reminder_ids?: Json
           reschedule_count?: number
           rescheduled_at?: string | null
+          source?: string
           space_id?: string
           starts_at?: string
           status?: string
@@ -1951,6 +1967,44 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "workers"
             referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
+      cold_calling_meeting_settings: {
+        Row: {
+          event_type_id: string | null
+          host_mode: string
+          host_user_id: string | null
+          ignore_notice: boolean
+          space_id: string
+          type_locked: boolean
+          updated_at: string
+        }
+        Insert: {
+          event_type_id?: string | null
+          host_mode?: string
+          host_user_id?: string | null
+          ignore_notice?: boolean
+          space_id: string
+          type_locked?: boolean
+          updated_at?: string
+        }
+        Update: {
+          event_type_id?: string | null
+          host_mode?: string
+          host_user_id?: string | null
+          ignore_notice?: boolean
+          space_id?: string
+          type_locked?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cold_calling_meeting_settings_event_type_id_fkey"
+            columns: ["event_type_id"]
+            isOneToOne: false
+            referencedRelation: "event_types"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2967,6 +3021,7 @@ export type Database = {
           active: boolean
           buffer_after_min: number
           buffer_before_min: number
+          calendar_sources: Json | null
           color: string
           confirmation_note: string | null
           created_at: string
@@ -2997,6 +3052,7 @@ export type Database = {
           active?: boolean
           buffer_after_min?: number
           buffer_before_min?: number
+          calendar_sources?: Json | null
           color?: string
           confirmation_note?: string | null
           created_at?: string
@@ -3027,6 +3083,7 @@ export type Database = {
           active?: boolean
           buffer_after_min?: number
           buffer_before_min?: number
+          calendar_sources?: Json | null
           color?: string
           confirmation_note?: string | null
           created_at?: string
@@ -5776,9 +5833,45 @@ export type Database = {
         }
         Relationships: []
       }
+      scheduler_busy_cache: {
+        Row: {
+          busy: Json
+          calendar_id: string
+          fetched_at: string
+          user_id: string
+          window_from: string
+          window_to: string
+        }
+        Insert: {
+          busy?: Json
+          calendar_id: string
+          fetched_at?: string
+          user_id: string
+          window_from: string
+          window_to: string
+        }
+        Update: {
+          busy?: Json
+          calendar_id?: string
+          fetched_at?: string
+          user_id?: string
+          window_from?: string
+          window_to?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduler_busy_cache_calendar_id_fkey"
+            columns: ["calendar_id"]
+            isOneToOne: true
+            referencedRelation: "calendar_connection_calendars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scheduler_profiles: {
         Row: {
           bio: string | null
+          calendar_sources: Json | null
           created_at: string
           display_name: string | null
           handle: string
@@ -5793,6 +5886,7 @@ export type Database = {
         }
         Insert: {
           bio?: string | null
+          calendar_sources?: Json | null
           created_at?: string
           display_name?: string | null
           handle?: string
@@ -5807,6 +5901,7 @@ export type Database = {
         }
         Update: {
           bio?: string | null
+          calendar_sources?: Json | null
           created_at?: string
           display_name?: string | null
           handle?: string
@@ -7904,6 +7999,15 @@ export type Database = {
           _paid_on: string
         }
         Returns: undefined
+      }
+      booking_notification_labels: {
+        Args: { _ids: string[] }
+        Returns: {
+          actor_name: string
+          guest_name: string
+          id: string
+          starts_at: string
+        }[]
       }
       bug_report_create: {
         Args: {
@@ -10322,6 +10426,22 @@ export type Database = {
         }
         Returns: Json
       }
+      scheduler_book_app: {
+        Args: {
+          _booking: string
+          _company: string
+          _contact: string
+          _deal?: string
+          _email: string
+          _locale: string
+          _name: string
+          _new_token_hash: string
+          _phone: string
+          _time_zone: string
+          _token_hash: string
+        }
+        Returns: Json
+      }
       scheduler_booking_counts: {
         Args: { _since: string }
         Returns: {
@@ -10340,6 +10460,10 @@ export type Database = {
           _title: string
         }
         Returns: Json
+      }
+      scheduler_calendar_sources_valid: {
+        Args: { _value: Json }
+        Returns: boolean
       }
       scheduler_cancel: {
         Args: { _booking: string; _by: string; _reason: string }
@@ -10370,6 +10494,22 @@ export type Database = {
           _type: string
         }
         Returns: Json
+      }
+      scheduler_hold_app: {
+        Args: {
+          _actor: string
+          _force?: boolean
+          _release?: string
+          _source: string
+          _starts_at: string
+          _token_hash: string
+          _type: string
+        }
+        Returns: Json
+      }
+      scheduler_hold_extend: {
+        Args: { _booking: string; _token_hash: string }
+        Returns: string
       }
       scheduler_host_active: {
         Args: { _space: string; _user: string }

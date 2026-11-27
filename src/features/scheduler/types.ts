@@ -22,13 +22,14 @@ export type SchedulerProfile = Pick<
   | "time_zone"
   | "video_link"
   | "setup_done_at"
+  | "calendar_sources"
 >;
 export const PROFILE_COLUMNS =
-  "id, user_id, space_id, handle, display_name, headline, bio, time_zone, video_link, setup_done_at";
+  "id, user_id, space_id, handle, display_name, headline, bio, time_zone, video_link, setup_done_at, calendar_sources";
 
 export type EventTypeRow = Tables["event_types"]["Row"];
 export const EVENT_TYPE_COLUMNS =
-  "id, profile_id, user_id, space_id, slug, name, description, duration_min, location_kind, location_text, color, active, position, requires_approval, buffer_before_min, buffer_after_min, min_notice_hours, max_days_ahead, max_per_day, slot_step_min, custom_availability, questions, deal_stage_id, reminders, confirmation_note, video_source, created_at, updated_at";
+  "id, profile_id, user_id, space_id, slug, name, description, duration_min, location_kind, location_text, color, active, position, requires_approval, buffer_before_min, buffer_after_min, min_notice_hours, max_days_ahead, max_per_day, slot_step_min, custom_availability, questions, deal_stage_id, reminders, confirmation_note, video_source, calendar_sources, created_at, updated_at";
 
 export type AvailabilityRule = Pick<
   Tables["availability_rules"]["Row"],

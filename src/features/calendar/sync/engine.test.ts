@@ -36,7 +36,14 @@ beforeEach(() => {
     now: () => now,
   });
   store = new MemoryStore("user-1", () => now);
-  store.addCalendar({ id: "cal-1", connectionId: "conn-1", externalId: CAL, syncState: null, canWrite: true, write: true });
+  store.addCalendar({
+    id: "cal-1",
+    connectionId: "conn-1",
+    externalId: CAL,
+    syncState: null,
+    canWrite: true,
+    write: true,
+  });
 });
 
 const pull = () => pullCalendar(provider, store, calendar(), now);
@@ -84,7 +91,12 @@ describe("reading from Google", () => {
   });
 
   it("maps an all-day event to the person's days (end exclusive at Google)", async () => {
-    google.upsert(CAL, { id: "d", summary: "Holiday", start: { date: "2026-12-24" }, end: { date: "2026-12-27" } });
+    google.upsert(CAL, {
+      id: "d",
+      summary: "Holiday",
+      start: { date: "2026-12-24" },
+      end: { date: "2026-12-27" },
+    });
     await pull();
     const event = store.byExternal("d")!;
     expect(event.all_day).toBe(true);
@@ -117,7 +129,9 @@ describe("reading from Google", () => {
 describe("series", () => {
   it("reads instances, writes one changed instance by its own id, removes a deleted series", async () => {
     for (const [index, day] of ["2026-12-07", "2026-12-14", "2026-12-21"].entries()) {
-      timed(`weekly_${day.replaceAll("-", "")}`, "Weekly", `${day}T08:00:00Z`, { recurringEventId: "weekly" });
+      timed(`weekly_${day.replaceAll("-", "")}`, "Weekly", `${day}T08:00:00Z`, {
+        recurringEventId: "weekly",
+      });
       void index;
     }
     await pull();
@@ -125,7 +139,11 @@ describe("series", () => {
 
     tick();
     const second = store.byExternal("weekly_20261214")!;
-    store.editLocal(second.id, { title: "Weekly (moved)", starts_at: "2026-12-14T09:00:00.000Z", ends_at: "2026-12-14T10:00:00.000Z" });
+    store.editLocal(second.id, {
+      title: "Weekly (moved)",
+      starts_at: "2026-12-14T09:00:00.000Z",
+      ends_at: "2026-12-14T10:00:00.000Z",
+    });
     await flush();
     const patch = google.requests.find((request) => request.method === "PATCH")!;
     expect(decodeURIComponent(patch.url.pathname)).toMatch(/\/events\/weekly_20261214$/);
@@ -142,11 +160,18 @@ describe("series", () => {
 
 describe("writing to Google", () => {
   it("a new Gradus event goes to the calendar written to; it does not come back as a change", async () => {
-    const event = store.createLocal({ title: "Coffee", starts_at: "2026-12-05T09:00:00.000Z", ends_at: "2026-12-05T09:30:00.000Z" });
+    const event = store.createLocal({
+      title: "Coffee",
+      starts_at: "2026-12-05T09:00:00.000Z",
+      ends_at: "2026-12-05T09:30:00.000Z",
+    });
     const result = await flush();
     expect(result.sent).toBe(1);
     const post = google.requests.find((request) => request.method === "POST")!;
-    expect(post.body).toMatchObject({ summary: "Coffee", start: { dateTime: "2026-12-05T09:00:00.000Z", timeZone: ZONE } });
+    expect(post.body).toMatchObject({
+      summary: "Coffee",
+      start: { dateTime: "2026-12-05T09:00:00.000Z", timeZone: ZONE },
+    });
     expect(post.url.searchParams.get("sendUpdates")).toBe("none");
     const link = store.linkRows.get(event.id)!;
     expect(link.origin).toBe("gradus");
@@ -159,22 +184,94 @@ describe("writing to Google", () => {
   });
 
   it("a booked meeting invites the guest and asks for Google Meet once", async () => {
-    const event = store.createLocal({ title: "Intro call", starts_at: "2026-12-05T09:00:00.000Z", ends_at: "2026-12-05T09:30:00.000Z" }, "booking");
-    store.bookings.set("b1", { id: "b1", eventId: event.id, guestEmail: "guest@example.com", guestName: "Guest", wantsMeet: true, meetLink: null });
+    const event = store.createLocal(
+      {
+        title: "Intro call",
+        starts_at: "2026-12-05T09:00:00.000Z",
+        ends_at: "2026-12-05T09:30:00.000Z",
+      },
+      "booking",
+    );
+    store.bookings.set("b1", {
+      id: "b1",
+      eventId: event.id,
+      guestEmail: "guest@example.com",
+      guestName: "Guest",
+      wantsMeet: true,
+      meetLink: null,
+    });
     await flush();
     const post = google.requests.find((request) => request.method === "POST")!;
     expect(post.body).toMatchObject({
       attendees: [{ email: "guest@example.com", displayName: "Guest" }],
-      conferenceData: { createRequest: { requestId: "gradus-b1", conferenceSolutionKey: { type: "hangoutsMeet" } } },
+      conferenceData: {
+        createRequest: { requestId: "gradus-b1", conferenceSolutionKey: { type: "hangoutsMeet" } },
+      },
     });
     expect(post.url.searchParams.get("conferenceDataVersion")).toBe("1");
     expect(store.bookings.get("b1")?.meetLink).toMatch(/^https:\/\/meet\.google\.com\//);
 
     tick();
-    store.editLocal(event.id, { starts_at: "2026-12-05T10:00:00.000Z", ends_at: "2026-12-05T10:30:00.000Z" });
+    store.editLocal(event.id, {
+      starts_at: "2026-12-05T10:00:00.000Z",
+      ends_at: "2026-12-05T10:30:00.000Z",
+    });
     await flush();
     const patch = google.requests.find((request) => request.method === "PATCH")!;
     expect((patch.body as Record<string, unknown>).conferenceData).toBeUndefined();
+  });
+
+  it("a booked meeting goes where the scheduler says (30.4): its own calendar, or nowhere but Gradus", async () => {
+    store.addCalendar({
+      id: "cal-2",
+      connectionId: "conn-1",
+      externalId: "team@example.com",
+      syncState: null,
+      canWrite: true,
+    });
+    const own = store.createLocal(
+      {
+        title: "Booked",
+        starts_at: "2026-12-06T09:00:00.000Z",
+        ends_at: "2026-12-06T09:30:00.000Z",
+      },
+      "booking",
+    );
+    store.bookings.set("b2", {
+      id: "b2",
+      eventId: own.id,
+      guestEmail: null,
+      guestName: "Guest",
+      wantsMeet: false,
+      meetLink: null,
+      target: { kind: "calendar", id: "cal-2" },
+    });
+    const quiet = store.createLocal(
+      {
+        title: "Gradus only",
+        starts_at: "2026-12-07T09:00:00.000Z",
+        ends_at: "2026-12-07T09:30:00.000Z",
+      },
+      "booking",
+    );
+    store.bookings.set("b3", {
+      id: "b3",
+      eventId: quiet.id,
+      guestEmail: null,
+      guestName: "Guest",
+      wantsMeet: false,
+      meetLink: null,
+      target: { kind: "none" },
+    });
+    await flush();
+    const posts = google.requests.filter((request) => request.method === "POST");
+    expect(posts).toHaveLength(1);
+    expect(decodeURIComponent(posts[0].url.pathname)).toContain(
+      "/calendars/team@example.com/events",
+    );
+    expect(store.linkRows.get(own.id)?.calendarId).toBe("cal-2");
+    expect(store.linkRows.get(quiet.id)).toBeUndefined();
+    expect(store.outbox).toEqual([]);
   });
 
   it("deleting in Gradus deletes in Google", async () => {
@@ -246,8 +343,12 @@ describe("conflicts: the newer change wins", () => {
     expect(conflictWinner("2026-12-01T10:00:00Z", "2026-12-01T10:01:00Z")).toBe("external");
     expect(conflictWinner("2026-12-01T10:02:00Z", "2026-12-01T10:01:00Z")).toBe("gradus");
     expect(conflictWinner("2026-12-01T10:02:00Z", null)).toBe("gradus");
-    expect(changedLocally({ updated_at: "2026-12-01T10:02:00Z" }, { syncedAt: "2026-12-01T10:01:00Z" })).toBe(true);
-    expect(changedLocally({ updated_at: "2026-12-01T10:01:00Z" }, { syncedAt: "2026-12-01T10:01:00Z" })).toBe(false);
+    expect(
+      changedLocally({ updated_at: "2026-12-01T10:02:00Z" }, { syncedAt: "2026-12-01T10:01:00Z" }),
+    ).toBe(true);
+    expect(
+      changedLocally({ updated_at: "2026-12-01T10:01:00Z" }, { syncedAt: "2026-12-01T10:01:00Z" }),
+    ).toBe(false);
   });
 });
 
@@ -255,7 +356,11 @@ describe("disconnect", () => {
   it("events read in leave, Gradus's own stay and stop syncing", async () => {
     timed("a", "From Google", "2026-12-02T09:00:00Z");
     await pull();
-    const own = store.createLocal({ title: "Mine", starts_at: "2026-12-05T09:00:00.000Z", ends_at: "2026-12-05T10:00:00.000Z" });
+    const own = store.createLocal({
+      title: "Mine",
+      starts_at: "2026-12-05T09:00:00.000Z",
+      ends_at: "2026-12-05T10:00:00.000Z",
+    });
     await flush();
     store.forget("conn-1");
     store.calendars.clear();
