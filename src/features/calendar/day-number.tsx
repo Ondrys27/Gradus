@@ -14,7 +14,7 @@ export function DayNumber({ date, isToday, settings, className }: Props) {
     <span
       className={cn(
         "grid size-7 place-items-center rounded-full text-sm font-semibold tabular-nums",
-        isToday ? "bg-violet text-white shadow-glow" : "text-ink",
+        isToday ? "bg-violet text-on-violet shadow-glow" : "text-ink",
         className,
       )}
     >

@@ -102,6 +102,8 @@ export const SETTINGS_ITEMS: readonly SettingsItemDef[] = [
   { id: "chatSound", group: "grady", target: "settings-chat-sound", who: "all" },
   { id: "tour", group: "grady", target: "settings-help-tour", who: "all" },
   { id: "theme", group: "appearance", target: "settings-theme", who: "all" },
+  { id: "themeSchedule", group: "appearance", target: "settings-theme-schedule", who: "all" },
+  { id: "customThemes", group: "appearance", target: "settings-custom-themes", who: "all" },
   { id: "sound", group: "appearance", target: "settings-sound", who: "all" },
   { id: "animations", group: "appearance", target: "settings-animations", who: "all" },
   { id: "country", group: "appearance", target: "settings-country", who: "all" },

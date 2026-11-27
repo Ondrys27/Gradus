@@ -2466,6 +2466,36 @@ export type Database = {
           },
         ]
       }
+      custom_themes: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          share_code: string
+          tokens: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          share_code?: string
+          tokens: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          share_code?: string
+          tokens?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       dashboard_defaults: {
         Row: {
           group_id: string | null
@@ -6535,6 +6565,7 @@ export type Database = {
           cold_calling_deal_stage_id: string | null
           country_code: string
           created_at: string
+          custom_theme_id: string | null
           currency: string
           daily_call_goal: number
           date_format: string
@@ -6553,6 +6584,8 @@ export type Database = {
           sidebar_collapsed: boolean
           sound_enabled: boolean
           theme: string
+          theme_override_until: string | null
+          theme_schedule: Json | null
           time_format: string
           timezone: string
           updated_at: string
@@ -6566,6 +6599,7 @@ export type Database = {
           cold_calling_deal_stage_id?: string | null
           country_code?: string
           created_at?: string
+          custom_theme_id?: string | null
           currency?: string
           daily_call_goal?: number
           date_format?: string
@@ -6584,6 +6618,8 @@ export type Database = {
           sidebar_collapsed?: boolean
           sound_enabled?: boolean
           theme?: string
+          theme_override_until?: string | null
+          theme_schedule?: Json | null
           time_format?: string
           timezone?: string
           updated_at?: string
@@ -6597,6 +6633,7 @@ export type Database = {
           cold_calling_deal_stage_id?: string | null
           country_code?: string
           created_at?: string
+          custom_theme_id?: string | null
           currency?: string
           daily_call_goal?: number
           date_format?: string
@@ -6615,12 +6652,21 @@ export type Database = {
           sidebar_collapsed?: boolean
           sound_enabled?: boolean
           theme?: string
+          theme_override_until?: string | null
+          theme_schedule?: Json | null
           time_format?: string
           timezone?: string
           updated_at?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_settings_custom_theme_id_fkey"
+            columns: ["custom_theme_id"]
+            isOneToOne: false
+            referencedRelation: "custom_themes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_settings_cold_calling_deal_stage_id_fkey"
             columns: ["cold_calling_deal_stage_id"]
@@ -8675,6 +8721,15 @@ export type Database = {
         }[]
       }
       current_workspace_id: { Args: never; Returns: string }
+      custom_theme_by_code: {
+        Args: { _code: string }
+        Returns: {
+          author: string
+          name: string
+          tokens: Json
+        }[]
+      }
+      custom_themes_allowed: { Args: never; Returns: boolean }
       dashboard_context: { Args: { _space: string }; Returns: Json }
       dashboard_items_valid: { Args: { _items: Json }; Returns: boolean }
       deal_set_assignees: {

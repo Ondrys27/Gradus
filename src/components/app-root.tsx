@@ -5,6 +5,7 @@ import { getLocale, getMessages, getTimeZone, getTranslations } from "next-intl/
 import { IntlProvider } from "@/components/intl-provider";
 import { Providers } from "@/components/providers";
 import { RootDocument } from "@/components/root-document";
+import type { AppearanceView } from "@/features/appearance/custom-tokens";
 import { APP_NAME } from "@/lib/constants";
 import { DEFAULT_THEME, isThemeKey, THEME_COOKIE } from "@/lib/themes";
 
@@ -24,10 +25,17 @@ export async function appRootMetadata(): Promise<Metadata> {
 export async function AppRoot({
   children,
   backdrop = "app",
+  appearance,
 }: {
   children: ReactNode;
   /** "app" draws the grid and the glows; "plain" is the bare canvas (the administration). */
   backdrop?: "app" | "plain";
+  /**
+   * The app resolves the theme on the server from the account (the block of
+   * the schedule, a custom theme) so the first paint is right; elsewhere the
+   * cookie with the theme shown last time.
+   */
+  appearance?: AppearanceView;
 }) {
   const [locale, messages, timeZone, cookieStore] = await Promise.all([
     getLocale(),
@@ -37,10 +45,15 @@ export async function AppRoot({
   ]);
   // The theme shown last time; the app corrects it from user_settings once loaded.
   const storedTheme = cookieStore.get(THEME_COOKIE)?.value;
-  const theme = isThemeKey(storedTheme) ? storedTheme : DEFAULT_THEME;
+  const theme = appearance?.theme ?? (isThemeKey(storedTheme) ? storedTheme : DEFAULT_THEME);
 
   return (
-    <RootDocument lang={locale} theme={theme} backdrop={backdrop}>
+    <RootDocument
+      lang={locale}
+      theme={theme}
+      appearance={appearance ? { style: appearance.style, attrs: appearance.attrs } : undefined}
+      backdrop={backdrop}
+    >
       <IntlProvider locale={locale} messages={messages} timeZone={timeZone}>
         <Providers>{children}</Providers>
       </IntlProvider>

@@ -29,7 +29,8 @@ import {
 import { browserTimeZone, COUNTRY_CODES, countryFromTimeZone } from "@/lib/region";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import type { UserSettingsPatch } from "@/lib/user-settings";
-import { ThemeGrid } from "./appearance-settings";
+import { ScheduleSection } from "@/features/appearance/ui/schedule-section";
+import { ThemePicker } from "@/features/appearance/ui/theme-picker";
 import { FormatPreview, useNow } from "./format-preview";
 
 /**
@@ -95,8 +96,24 @@ export function AppearanceView() {
       description={t("groups.appearance.description")}
     >
       <SettingsSection title={t("appearance.title")} description={t("appearance.description")}>
-        <SettingRow id="settings-theme" label={t("appearance.theme")} fields={["theme"]} group layout="stack">
-          <ThemeGrid />
+        <SettingRow
+          id="settings-theme"
+          label={t("appearance.theme")}
+          fields={["theme", "custom_theme_id", "theme_override_until"]}
+          group
+          layout="stack"
+        >
+          <ThemePicker />
+        </SettingRow>
+        <SettingRow
+          id="settings-theme-schedule-row"
+          label={t("appearance.schedule.title")}
+          hint={t("appearance.schedule.description")}
+          fields={["theme_schedule"]}
+          group
+          layout="stack"
+        >
+          <ScheduleSection />
         </SettingRow>
         <SettingRow
           id="settings-sound"

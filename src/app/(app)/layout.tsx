@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { AppRoot, appRootMetadata } from "@/components/app-root";
 import { AppShell } from "@/components/layout/app-shell";
+import { initialAppearance } from "@/features/appearance/server/initial-appearance";
 import { loadAccount } from "@/features/account/load-account";
 import { SessionProvider } from "@/features/account/session-provider";
 import { getLocale } from "next-intl/server";
@@ -16,9 +17,11 @@ export const generateMetadata = appRootMetadata;
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const account = await loadAccount();
   if (!account) redirect(loginPath(await getLocale()));
+  // The block of the day (or the custom theme) already in the server HTML: no flash of the old theme.
+  const appearance = await initialAppearance(account);
 
   return (
-    <AppRoot>
+    <AppRoot appearance={appearance}>
       <SessionProvider initial={account}>
         <AppShell>{children}</AppShell>
       </SessionProvider>

@@ -171,7 +171,7 @@ function ModeCard({
         </span>
       )}
       {full && (
-        <span className="absolute top-3 left-3 rounded-full bg-violet px-2 py-0.5 text-[11px] font-semibold text-white shadow-popover">
+        <span className="absolute top-3 left-3 rounded-full bg-violet px-2 py-0.5 text-[11px] font-semibold text-on-violet shadow-popover">
           {t("recommended")}
         </span>
       )}

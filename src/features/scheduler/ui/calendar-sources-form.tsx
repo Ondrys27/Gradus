@@ -356,7 +356,7 @@ function WriteOption({
         aria-hidden
         className={cn(
           "grid size-5 shrink-0 place-items-center rounded-full border-2",
-          checked ? "border-violet bg-violet text-white" : "border-line-strong",
+          checked ? "border-violet bg-violet text-on-violet" : "border-line-strong",
         )}
       >
         {checked && <CheckIcon className="size-3" strokeWidth={3} />}
