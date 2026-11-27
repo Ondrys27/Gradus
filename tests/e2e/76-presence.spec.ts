@@ -12,7 +12,14 @@ test.use({ reducedMotion: "reduce" });
 /** A second browser for the worker; their idle limit shortened to a few seconds (outside production only). */
 async function workerBrowser(browser: Browser, person: Account, consoleErrors: string[]) {
   const context = await browser.newContext({ locale: "cs-CZ", timezoneId: "Europe/Prague" });
-  await context.addInitScript(() => window.localStorage.setItem("gradus.e2e.presenceIdleMs", "4000"));
+  // The script runs in every document, about:blank included, where localStorage is off limits.
+  await context.addInitScript(() => {
+    try {
+      window.localStorage.setItem("gradus.e2e.presenceIdleMs", "4000");
+    } catch {
+      // not this document
+    }
+  });
   watchConsole(context, consoleErrors);
   const page = await context.newPage();
   await signIn(page, person);
