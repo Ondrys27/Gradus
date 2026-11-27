@@ -3514,6 +3514,81 @@ export type Database = {
         }
         Relationships: []
       }
+      guide_answers: {
+        Row: {
+          answer: Json
+          cache_key: string
+          created_at: string
+          hits: number
+          last_hit_at: string
+          locale: string
+          map_version: string
+          role: string
+          section: string
+        }
+        Insert: {
+          answer: Json
+          cache_key: string
+          created_at?: string
+          hits?: number
+          last_hit_at?: string
+          locale: string
+          map_version: string
+          role: string
+          section: string
+        }
+        Update: {
+          answer?: Json
+          cache_key?: string
+          created_at?: string
+          hits?: number
+          last_hit_at?: string
+          locale?: string
+          map_version?: string
+          role?: string
+          section?: string
+        }
+        Relationships: []
+      }
+      guide_questions: {
+        Row: {
+          cached: boolean
+          created_at: string
+          id: number
+          internal: boolean
+          locale: string
+          outcome: string
+          question: string
+          question_norm: string
+          role: string
+          section: string
+        }
+        Insert: {
+          cached?: boolean
+          created_at?: string
+          id?: never
+          internal?: boolean
+          locale: string
+          outcome: string
+          question: string
+          question_norm: string
+          role: string
+          section: string
+        }
+        Update: {
+          cached?: boolean
+          created_at?: string
+          id?: never
+          internal?: boolean
+          locale?: string
+          outcome?: string
+          question?: string
+          question_norm?: string
+          role?: string
+          section?: string
+        }
+        Relationships: []
+      }
       invoice_counters: {
         Row: {
           last_number: number
@@ -6570,6 +6645,8 @@ export type Database = {
           daily_call_goal: number
           date_format: string
           first_day_of_week: number
+          guide_offers: boolean
+          guide_seen: string[]
           id: string
           jarvis_frequency: string
           jarvis_proactive: boolean
@@ -6604,6 +6681,8 @@ export type Database = {
           daily_call_goal?: number
           date_format?: string
           first_day_of_week?: number
+          guide_offers?: boolean
+          guide_seen?: string[]
           id?: string
           jarvis_frequency?: string
           jarvis_proactive?: boolean
@@ -6638,6 +6717,8 @@ export type Database = {
           daily_call_goal?: number
           date_format?: string
           first_day_of_week?: number
+          guide_offers?: boolean
+          guide_seen?: string[]
           id?: string
           jarvis_frequency?: string
           jarvis_proactive?: boolean
@@ -7736,6 +7817,16 @@ export type Database = {
           status: Database["public"]["Enums"]["feature_request_status"]
           title: string
           user_id: string
+        }[]
+      }
+      admin_guide_top_questions: {
+        Args: { _limit?: number; _since: string; _until: string }
+        Returns: {
+          asked: number
+          last_at: string
+          question: string
+          section: string
+          unanswered: number
         }[]
       }
       admin_invite_accept: {
@@ -10162,6 +10253,7 @@ export type Database = {
       purge_deleted_notes: { Args: never; Returns: number }
       purge_email_log: { Args: never; Returns: number }
       purge_error_events: { Args: never; Returns: number }
+      purge_guide: { Args: never; Returns: number }
       purge_mcp: { Args: never; Returns: number }
       purge_trash: { Args: never; Returns: number }
       record_worker_payment: {
@@ -10807,6 +10899,7 @@ export type Database = {
       valid_custom_theme_tokens: { Args: { _t: Json }; Returns: boolean }
       valid_error_alerts: { Args: { _value: Json }; Returns: boolean }
       valid_grady_models: { Args: { _value: Json }; Returns: boolean }
+      valid_guide_seen: { Args: { _sections: string[] }; Returns: boolean }
       valid_jarvis_rules: { Args: { _value: Json }; Returns: boolean }
       valid_plan_add_ons: { Args: { _value: Json }; Returns: boolean }
       valid_plan_catalog: { Args: { _payload: Json }; Returns: boolean }
