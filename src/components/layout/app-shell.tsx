@@ -16,7 +16,7 @@ import { TutorialHost } from "@/features/tutorial/tutorial-host";
 import { useStage } from "@/features/tutorial/showcase/stage-store";
 import { SearchProvider } from "@/features/search/search-provider";
 import { AnalyticsProvider } from "@/lib/analytics/analytics-provider";
-import { ThemeSync } from "@/features/settings/theme";
+import { AppearanceSync } from "@/features/appearance/appearance-sync";
 import { BottomNav } from "./bottom-nav";
 import { useClearNavigatingOnArrival, usePendingHref } from "./nav-pending";
 import { PageLockGuard } from "./page-lock-guard";
@@ -77,7 +77,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <BottomNav />
             <GradyDock />
             <GameSessionStart />
-            <ThemeSync />
+            <AppearanceSync />
             {!errorShown && <OnboardingGate />}
             {!errorShown && !stage && <TutorialHost />}
             {stage && <ShowcaseHost />}

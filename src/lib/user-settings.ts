@@ -31,6 +31,9 @@ export type UserSettingsPatch = Partial<
     | "animations_enabled"
     | "reengage_after_months"
     | "theme"
+    | "custom_theme_id"
+    | "theme_schedule"
+    | "theme_override_until"
     | "jarvis_proactive"
     | "jarvis_frequency"
     | "jarvis_quiet_from"
@@ -46,7 +49,7 @@ export type UserSettingsPatch = Partial<
 
 /** Columns the app reads; never `select *`. */
 export const USER_SETTINGS_COLUMNS =
-  "id, user_id, locale, timezone, country_code, currency, date_format, time_format, number_format, first_day_of_week, sound_enabled, animations_enabled, daily_call_goal, reengage_after_months, theme, jarvis_proactive, jarvis_frequency, jarvis_quiet_from, jarvis_quiet_to, cold_calling_deal_stage_id, sidebar_collapsed, chat_email_notifications, chat_sound, calendar_owner_sees_busy, show_online, created_at, updated_at" as const;
+  "id, user_id, locale, timezone, country_code, currency, date_format, time_format, number_format, first_day_of_week, sound_enabled, animations_enabled, daily_call_goal, reengage_after_months, theme, custom_theme_id, theme_schedule, theme_override_until, jarvis_proactive, jarvis_frequency, jarvis_quiet_from, jarvis_quiet_to, cold_calling_deal_stage_id, sidebar_collapsed, chat_email_notifications, chat_sound, calendar_owner_sees_busy, show_online, created_at, updated_at" as const;
 
 /** The database row is the source of truth; anything unknown falls back to the defaults. */
 export function toFormatSettings(row: UserSettings | null | undefined): FormatSettings {

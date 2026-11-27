@@ -84,6 +84,7 @@ const PLAN_FIELDS = [
   "recommended",
   "order",
   "mcp",
+  "custom_themes",
 ] as const;
 
 /** At most the currency's decimals, never more than cents: 19, 19.9, 19.99; JPY 2990. */
@@ -265,6 +266,9 @@ export function validatePlanCatalog(input: unknown): CatalogValidation {
     }
 
     if (raw.mcp !== undefined && typeof raw.mcp !== "boolean") add(`${key}.mcp`, "invalid");
+    if (raw.custom_themes !== undefined && typeof raw.custom_themes !== "boolean") {
+      add(`${key}.custom_themes`, "invalid");
+    }
 
     plans.push({
       key,
@@ -279,6 +283,7 @@ export function validatePlanCatalog(input: unknown): CatalogValidation {
       recommended: raw.recommended === true,
       order: typeof order === "number" ? order : 0,
       ...(raw.mcp === false ? { mcp: false } : {}),
+      ...(raw.custom_themes === false ? { custom_themes: false } : {}),
     });
   }
 

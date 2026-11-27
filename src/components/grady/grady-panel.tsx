@@ -495,7 +495,7 @@ export function GradyPanel({ chat, onClose }: GradyPanelProps) {
           type="submit"
           disabled={!canSend}
           aria-label={t("send")}
-          className="grid size-11 shrink-0 place-items-center rounded-full bg-violet text-white outline-none transition-opacity focus-visible:ring-3 focus-visible:ring-violet/50 disabled:opacity-40"
+          className="grid size-11 shrink-0 place-items-center rounded-full bg-violet text-on-violet outline-none transition-opacity focus-visible:ring-3 focus-visible:ring-violet/50 disabled:opacity-40"
         >
           <ArrowUpIcon aria-hidden className="size-5" />
         </button>
@@ -606,7 +606,7 @@ function UserBubble({
         </ul>
       )}
       {text && (
-        <div className="rounded-2xl rounded-br-md bg-violet px-3.5 py-2.5 text-sm leading-relaxed break-words whitespace-pre-wrap text-white">
+        <div className="rounded-2xl rounded-br-md bg-violet px-3.5 py-2.5 text-sm leading-relaxed break-words whitespace-pre-wrap text-on-violet">
           {text}
         </div>
       )}

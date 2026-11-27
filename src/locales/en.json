@@ -1243,7 +1243,210 @@
       },
       "level": "Level {level}",
       "locked": "Locked",
-      "theme": "Theme"
+      "theme": "Theme",
+      "close": "Close",
+      "cancel": "Cancel",
+      "pickDuringBlock": "The “{block}” block is on now. A theme picked by hand holds until the next block begins.",
+      "create": "Create your own",
+      "importAction": "Import from a colleague",
+      "full": "You have the most custom themes possible ({max}). Delete one before creating another.",
+      "notInPlan": "Your plan does not include custom themes. The ones you have keep working.",
+      "menu": "Options for the {name} theme",
+      "edit": "Edit",
+      "duplicate": "Duplicate",
+      "copySuffix": "(copy)",
+      "shareAction": "Share",
+      "delete": "Delete",
+      "deleteTitle": "Delete the theme?",
+      "deleteDescription": "“{name}” will be gone. Blocks of the day that use it switch to the default theme.",
+      "schedule": {
+        "title": "Theme through the day",
+        "description": "Light in the morning, calm in the evening: the theme follows the clock in your time zone.",
+        "toggle": "Change the theme through the day",
+        "toggleHint": "When a block begins while the app is open, a short transition welcomes it.",
+        "modeLabel": "Which days",
+        "modes": {
+          "same": "Every day the same",
+          "weekdays": "Weekdays and weekend apart",
+          "each": "Each day of the week apart"
+        },
+        "daysLabel": "Day",
+        "days": {
+          "all": "Every day",
+          "weekdays": "Weekdays",
+          "weekend": "Weekend"
+        },
+        "copyDay": "Copy day to…",
+        "copyToAll": "All other days",
+        "copyToWeekdays": "Weekdays",
+        "handle": "Start of the {name} block",
+        "name": "Name",
+        "start": "Starts",
+        "theme": "Theme",
+        "locked": "locked",
+        "caption": "Caption (optional)",
+        "captionPlaceholder": "E.g. Coffee and the plan for today",
+        "preview": "Preview the transition into {name}",
+        "remove": "Remove the {name} block",
+        "addBlock": "Add a block",
+        "maxBlocks": "At most {max} blocks a day.",
+        "invalid": "Every block needs a name and a start time of its own.",
+        "defaults": {
+          "morning": "Morning",
+          "afternoon": "Afternoon",
+          "evening": "Evening",
+          "newBlock": "New block"
+        }
+      },
+      "transition": {
+        "skipHint": "Click or press Esc to skip."
+      },
+      "share": {
+        "title": "Share the {name} theme",
+        "description": "Send the code or the link to a colleague from your company. They import their own copy; nobody outside your companies can use it.",
+        "code": "Code",
+        "link": "Link",
+        "copy": "Copy",
+        "copied": "Copied"
+      },
+      "import": {
+        "title": "Import a theme",
+        "description": "Paste the code or the link a colleague from your company sent you.",
+        "code": "Code or link",
+        "placeholder": "ABCDE-FGHJK",
+        "badCode": "A code has 10 characters, e.g. ABCDE-FGHJK.",
+        "looking": "Looking for the theme…",
+        "notFound": "We could not find that theme. A code works only between colleagues of the same company.",
+        "by": "From: {name}",
+        "full": "You have the most custom themes possible ({max}). Delete one before adding another.",
+        "add": "Add to my themes",
+        "errors": {
+          "limit": "You have the most custom themes possible ({max}).",
+          "plan": "Your plan does not include custom themes.",
+          "unreadable": "The theme's text is not readable; adjust the contrast.",
+          "generic": "That did not work. Please try again."
+        }
+      },
+      "editor": {
+        "titleNew": "Custom theme",
+        "titleEdit": "Edit theme",
+        "close": "Close the editor",
+        "save": "Save",
+        "name": "Theme name",
+        "namePlaceholder": "E.g. My morning",
+        "missing": "This theme no longer exists.",
+        "sections": {
+          "oneColor": "From one colour",
+          "colors": "Colours",
+          "shape": "Shape and backdrop",
+          "font": "Heading font"
+        },
+        "oneColorHint": "Pick one colour and the whole theme is worked out from it. Then fine-tune whatever you like.",
+        "seed": "Your colour",
+        "generate": "Generate from one colour",
+        "startFrom": "Or start from…",
+        "base": "Base",
+        "bases": {
+          "dark": "Dark",
+          "light": "Light"
+        },
+        "colors": {
+          "canvas": "Background",
+          "surface": "Cards and surfaces",
+          "ink": "Text",
+          "accent": "Main colour",
+          "accent2": "Second colour",
+          "success": "Success",
+          "warning": "Warning",
+          "danger": "Error"
+        },
+        "statesToggle": "Own state colours",
+        "radius": "Corner radius",
+        "px": "{value} px",
+        "density": "Density",
+        "densities": {
+          "compact": "Compact",
+          "comfortable": "Comfortable",
+          "spacious": "Spacious"
+        },
+        "shadow": "Shadow strength",
+        "shadows": {
+          "none": "None",
+          "soft": "Soft",
+          "normal": "Normal",
+          "strong": "Strong"
+        },
+        "backdrop": "Backdrop",
+        "backdrops": {
+          "solid": "Solid",
+          "gradient": "Gradient",
+          "glow": "Soft glow"
+        },
+        "headingFont": "Heading font",
+        "fontSample": "Today's plan",
+        "fonts": {
+          "inter": "Inter",
+          "poppins": "Poppins",
+          "bricolage": "Bricolage",
+          "space_grotesk": "Space Grotesk",
+          "fraunces": "Fraunces",
+          "sora": "Sora"
+        },
+        "contrast": {
+          "ok": "Text reads well everywhere.",
+          "problems": "{count, plural, one {# combination is hard to read} other {# combinations are hard to read}}. You can save once they are fixed.",
+          "issue": "{color} on {against}: {ratio} : 1, needs at least {min} : 1",
+          "fix": "Fix",
+          "fixAll": "Fix all"
+        },
+        "previewLabel": "Preview",
+        "scenes": {
+          "dashboard": "Dashboard",
+          "pipeline": "Pipeline",
+          "note": "Note",
+          "dialog": "Dialog"
+        },
+        "sample": {
+          "dashboardTitle": "Good morning",
+          "primary": "Save",
+          "cancel": "Cancel",
+          "contacts": "Contacts",
+          "meetings": "Meetings",
+          "won": "Won",
+          "milestone": "First three clients",
+          "inProgress": "In progress",
+          "milestoneHint": "2 tasks left",
+          "pipelineTitle": "Pipeline",
+          "stages": {
+            "lead": "New lead",
+            "meeting": "Meeting",
+            "offer": "Offer sent",
+            "won": "Won"
+          },
+          "deals": {
+            "0": "Mill Lane Bakery",
+            "1": "Studio Line",
+            "2": "Corner Café"
+          },
+          "states": {
+            "success": "Won",
+            "warning": "In progress",
+            "danger": "Overdue"
+          },
+          "noteTitle": "Ideal customer",
+          "noteHeading": "Who they are",
+          "noteBody": "A small business of up to ten people that wants to grow and has no time for paperwork.",
+          "notePoint1": "The owner decides alone",
+          "noteMention": "@Jane Smith",
+          "notePoint2": "is a typical example",
+          "noteMeta": "Edited a moment ago",
+          "link": "Open the deal",
+          "dialogTitle": "New task",
+          "dialogField": "Title",
+          "dialogValue": "Call Jane Smith",
+          "dialogHint": "Due tomorrow morning"
+        }
+      }
     },
     "grady": {
       "title": "On his own",
@@ -1589,6 +1792,14 @@
       "coldCallingMeetings": {
         "label": "Who meetings from calls go to",
         "keywords": "cold calling meeting scheduler type notice caller"
+      },
+      "themeSchedule": {
+        "label": "Change the theme through the day",
+        "keywords": "schedule morning afternoon evening blocks time transition"
+      },
+      "customThemes": {
+        "label": "Custom theme",
+        "keywords": "editor colours palette contrast font share import"
       }
     },
     "work": {
@@ -9610,7 +9821,8 @@
         "deviationAbove": "{percent} above the rate ({exact}).",
         "deviationBelow": "{percent} below the rate ({exact}).",
         "derivedPlaceholder": "from the rate",
-        "mcp": "Connected apps (Claude, MCP)"
+        "mcp": "Connected apps (Claude, MCP)",
+        "customThemes": "Custom themes"
       },
       "fields": {
         "name": "Name",

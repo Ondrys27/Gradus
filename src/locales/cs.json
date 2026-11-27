@@ -1243,7 +1243,210 @@
       },
       "level": "Úroveň {level}",
       "locked": "Zamčeno",
-      "theme": "Téma"
+      "theme": "Téma",
+      "close": "Zavřít",
+      "cancel": "Zrušit",
+      "pickDuringBlock": "Teď platí blok „{block}“. Vzhled vybraný ručně platí do začátku dalšího bloku.",
+      "create": "Vytvořit vlastní",
+      "importAction": "Importovat od kolegy",
+      "full": "Máš nejvíc vlastních vzhledů ({max}). Smaž některý, než vytvoříš další.",
+      "notInPlan": "Vlastní vzhledy tvůj tarif nenabízí. Ty, co už máš, fungují dál.",
+      "menu": "Možnosti vzhledu {name}",
+      "edit": "Upravit",
+      "duplicate": "Duplikovat",
+      "copySuffix": "(kopie)",
+      "shareAction": "Sdílet",
+      "delete": "Smazat",
+      "deleteTitle": "Smazat vzhled?",
+      "deleteDescription": "Vzhled „{name}“ zmizí. Bloky dne, které ho používají, přejdou na výchozí vzhled.",
+      "schedule": {
+        "title": "Vzhled během dne",
+        "description": "Ráno světlo, večer klid: vzhled se mění podle času v tvém pásmu.",
+        "toggle": "Měnit vzhled během dne",
+        "toggleHint": "Když blok začne a máš aplikaci otevřenou, přivítá tě krátký přechod.",
+        "modeLabel": "Které dny",
+        "modes": {
+          "same": "Každý den stejně",
+          "weekdays": "Pracovní dny a víkend zvlášť",
+          "each": "Každý den v týdnu zvlášť"
+        },
+        "daysLabel": "Den",
+        "days": {
+          "all": "Každý den",
+          "weekdays": "Pracovní dny",
+          "weekend": "Víkend"
+        },
+        "copyDay": "Kopírovat den do…",
+        "copyToAll": "Do všech ostatních dnů",
+        "copyToWeekdays": "Do pracovních dnů",
+        "handle": "Začátek bloku {name}",
+        "name": "Název",
+        "start": "Začátek",
+        "theme": "Vzhled",
+        "locked": "zamčeno",
+        "caption": "Popisek (nepovinný)",
+        "captionPlaceholder": "Např. Káva a plán dne",
+        "preview": "Náhled přechodu do bloku {name}",
+        "remove": "Odebrat blok {name}",
+        "addBlock": "Přidat blok",
+        "maxBlocks": "Nejvíc {max} bloků za den.",
+        "invalid": "Každý blok potřebuje název a vlastní čas začátku.",
+        "defaults": {
+          "morning": "Ráno",
+          "afternoon": "Odpoledne",
+          "evening": "Večer",
+          "newBlock": "Nový blok"
+        }
+      },
+      "transition": {
+        "skipHint": "Klikni nebo stiskni Esc pro přeskočení."
+      },
+      "share": {
+        "title": "Sdílet vzhled {name}",
+        "description": "Kód nebo odkaz pošli kolegovi z firmy. Naimportuje si vlastní kopii; nikdo mimo tvé firmy ho nepoužije.",
+        "code": "Kód",
+        "link": "Odkaz",
+        "copy": "Kopírovat",
+        "copied": "Zkopírováno"
+      },
+      "import": {
+        "title": "Importovat vzhled",
+        "description": "Vlož kód nebo odkaz, který ti poslal kolega z firmy.",
+        "code": "Kód nebo odkaz",
+        "placeholder": "ABCDE-FGHJK",
+        "badCode": "Kód má 10 znaků, např. ABCDE-FGHJK.",
+        "looking": "Hledám vzhled…",
+        "notFound": "Takový vzhled jsme nenašli. Kód funguje jen mezi kolegy ze stejné firmy.",
+        "by": "Od: {name}",
+        "full": "Máš nejvíc vlastních vzhledů ({max}). Smaž některý, než přidáš další.",
+        "add": "Přidat do mých vzhledů",
+        "errors": {
+          "limit": "Máš nejvíc vlastních vzhledů ({max}).",
+          "plan": "Vlastní vzhledy tvůj tarif nenabízí.",
+          "unreadable": "Text ve vzhledu není čitelný, uprav kontrast.",
+          "generic": "Nepovedlo se to. Zkus to prosím znovu."
+        }
+      },
+      "editor": {
+        "titleNew": "Vlastní vzhled",
+        "titleEdit": "Upravit vzhled",
+        "close": "Zavřít editor",
+        "save": "Uložit",
+        "name": "Název vzhledu",
+        "namePlaceholder": "Např. Moje ráno",
+        "missing": "Tenhle vzhled už neexistuje.",
+        "sections": {
+          "oneColor": "Z jedné barvy",
+          "colors": "Barvy",
+          "shape": "Tvar a pozadí",
+          "font": "Písmo nadpisů"
+        },
+        "oneColorHint": "Vyber jednu barvu a celý vzhled se z ní dopočítá. Pak si dolaď, co chceš.",
+        "seed": "Tvoje barva",
+        "generate": "Vygenerovat z jedné barvy",
+        "startFrom": "Nebo začni z…",
+        "base": "Základ",
+        "bases": {
+          "dark": "Tmavý",
+          "light": "Světlý"
+        },
+        "colors": {
+          "canvas": "Pozadí",
+          "surface": "Karty a povrchy",
+          "ink": "Text",
+          "accent": "Hlavní barva",
+          "accent2": "Druhá barva",
+          "success": "Úspěch",
+          "warning": "Pozor",
+          "danger": "Chyba"
+        },
+        "statesToggle": "Vlastní barvy stavů",
+        "radius": "Zaoblení rohů",
+        "px": "{value} px",
+        "density": "Hustota",
+        "densities": {
+          "compact": "Úsporná",
+          "comfortable": "Běžná",
+          "spacious": "Vzdušná"
+        },
+        "shadow": "Síla stínů",
+        "shadows": {
+          "none": "Žádné",
+          "soft": "Jemné",
+          "normal": "Běžné",
+          "strong": "Výrazné"
+        },
+        "backdrop": "Pozadí",
+        "backdrops": {
+          "solid": "Jednobarevné",
+          "gradient": "Přechod",
+          "glow": "Jemná záře"
+        },
+        "headingFont": "Písmo nadpisů",
+        "fontSample": "Dnešní plán",
+        "fonts": {
+          "inter": "Inter",
+          "poppins": "Poppins",
+          "bricolage": "Bricolage",
+          "space_grotesk": "Space Grotesk",
+          "fraunces": "Fraunces",
+          "sora": "Sora"
+        },
+        "contrast": {
+          "ok": "Text je dobře čitelný všude.",
+          "problems": "{count, plural, one {# kombinace je špatně čitelná} few {# kombinace jsou špatně čitelné} other {# kombinací je špatně čitelných}}. Uložit půjde, až je opravíš.",
+          "issue": "{color} na {against}: {ratio} : 1, potřeba aspoň {min} : 1",
+          "fix": "Opravit",
+          "fixAll": "Opravit vše"
+        },
+        "previewLabel": "Náhled",
+        "scenes": {
+          "dashboard": "Přehled",
+          "pipeline": "Pipeline",
+          "note": "Poznámka",
+          "dialog": "Dialog"
+        },
+        "sample": {
+          "dashboardTitle": "Dobré ráno",
+          "primary": "Uložit",
+          "cancel": "Zrušit",
+          "contacts": "Kontakty",
+          "meetings": "Schůzky",
+          "won": "Vyhráno",
+          "milestone": "První tři klienti",
+          "inProgress": "Rozpracované",
+          "milestoneHint": "Zbývají 2 úkoly",
+          "pipelineTitle": "Pipeline",
+          "stages": {
+            "lead": "Nový lead",
+            "meeting": "Schůzka",
+            "offer": "Nabídka odeslána",
+            "won": "Vyhráno"
+          },
+          "deals": {
+            "0": "Pekárna U Mlýna",
+            "1": "Studio Linka",
+            "2": "Kavárna Na Rohu"
+          },
+          "states": {
+            "success": "Vyhráno",
+            "warning": "Rozpracované",
+            "danger": "Po termínu"
+          },
+          "noteTitle": "Ideální zákazník",
+          "noteHeading": "Kdo to je",
+          "noteBody": "Malá firma do deseti lidí, která chce růst a nemá čas na administrativu.",
+          "notePoint1": "Rozhoduje majitel sám",
+          "noteMention": "@Jan Novák",
+          "notePoint2": "je typický příklad",
+          "noteMeta": "Upraveno před chvílí",
+          "link": "Otevřít obchod",
+          "dialogTitle": "Nový úkol",
+          "dialogField": "Název",
+          "dialogValue": "Zavolat Janu Novákovi",
+          "dialogHint": "Termín zítra ráno"
+        }
+      }
     },
     "grady": {
       "title": "Sám od sebe",
@@ -1589,6 +1792,14 @@
       "coldCallingMeetings": {
         "label": "Komu jdou schůzky z volání",
         "keywords": "cold calling schůzka plánovač typ předstih volající"
+      },
+      "themeSchedule": {
+        "label": "Měnit vzhled během dne",
+        "keywords": "rozvrh ráno odpoledne večer bloky čas téma přechod"
+      },
+      "customThemes": {
+        "label": "Vlastní vzhled",
+        "keywords": "editor barvy paleta kontrast písmo sdílet importovat téma"
       }
     },
     "work": {
@@ -9610,7 +9821,8 @@
         "deviationAbove": "O {percent} víc než podle kurzu ({exact}).",
         "deviationBelow": "O {percent} míň než podle kurzu ({exact}).",
         "derivedPlaceholder": "z kurzu",
-        "mcp": "Připojené aplikace (Claude, MCP)"
+        "mcp": "Připojené aplikace (Claude, MCP)",
+        "customThemes": "Vlastní vzhledy"
       },
       "fields": {
         "name": "Název",

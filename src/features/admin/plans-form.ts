@@ -43,6 +43,7 @@ export type FormPlan = {
   recommended: boolean;
   /** Connected apps (MCP, 28.8) for the plan's accounts; on unless switched off. */
   mcp: boolean;
+  customThemes: boolean;
 };
 
 let nextId = 0;
@@ -95,6 +96,7 @@ export function toForm(
     features: plan.features.map((feature) => ({ ...feature, id: featureId() })),
     recommended: plan.recommended,
     mcp: plan.mcp !== false,
+    customThemes: plan.custom_themes !== false,
   }));
 }
 
@@ -149,6 +151,7 @@ export function fromForm(form: readonly FormPlan[]): PlanCatalog {
       order,
       // Only "off" is written: a version without the flag has connected apps on.
       ...(plan.mcp === false ? { mcp: false } : {}),
+      ...(plan.customThemes === false ? { custom_themes: false } : {}),
     };
   }) as PlanCatalog;
 }

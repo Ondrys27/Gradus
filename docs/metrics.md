@@ -69,7 +69,7 @@ U každé sekce: adopce (% aktivních, kteří ji použili), počet akcí, akce 
 
 **E-mail** — odeslané, vyžádané a použité AI návrhy
 
-**Nastavení** — rozdělení jazyka, měny, země, motivu; vypnuté animace, zvuky a Gradyho iniciativa
+**Nastavení** — rozdělení jazyka, měny, země, motivu; vypnuté animace, zvuky a Gradyho iniciativa; vzhled během dne (`theme_schedule_saved`: zapnuto, režim dnů, počet bloků, s vlastním vzhledem), přechody bloků (`theme_transition_played`: přehráno / přeskočeno / tiše po 5 min, denní doba, kolik sekund čekal, omezený pohyb, náhled), vlastní vzhledy (`custom_theme_saved`: nový / upravený / duplikát / import, základ, z jedné barvy, počet oprav kontrastu; `custom_theme_deleted`, `custom_theme_shared` kódem / odkazem) — nikdy názvy, barvy ani popisky
 
 ## 5. AI a Grady
 

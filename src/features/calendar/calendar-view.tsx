@@ -436,7 +436,7 @@ export function CalendarView() {
               onClick={() => chooseView(option)}
               className={cn(
                 "h-11 min-w-16 cursor-pointer rounded-lg px-3 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 mouse:h-9",
-                view === option ? "bg-violet text-white" : "text-ink-soft hover:text-ink",
+                view === option ? "bg-violet text-on-violet" : "text-ink-soft hover:text-ink",
               )}
             >
               {t(`views.${option}`)}

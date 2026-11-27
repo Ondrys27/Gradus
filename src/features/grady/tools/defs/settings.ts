@@ -11,6 +11,7 @@ import {
   setEventTypeActive,
   updateEventType,
 } from "@/features/scheduler/ops";
+import { manualPickPatch } from "@/features/appearance/schedule";
 import { updateSettings } from "@/features/settings/ops";
 import { CURRENCIES, DATE_FORMATS, NUMBER_FORMATS, TIME_FORMATS, WEEK_STARTS } from "@/lib/format";
 import { THEMES } from "@/lib/themes";
@@ -336,11 +337,13 @@ export const settingsTools = [
         const { data: current, error } = await ctx.db
           .from("user_settings")
           .select(
-            "theme, date_format, time_format, number_format, currency, timezone, first_day_of_week, jarvis_proactive, jarvis_frequency, jarvis_quiet_from, jarvis_quiet_to",
+            "theme, custom_theme_id, theme_schedule, theme_override_until, date_format, time_format, number_format, currency, timezone, first_day_of_week, jarvis_proactive, jarvis_frequency, jarvis_quiet_from, jarvis_quiet_to",
           )
           .eq("user_id", ctx.userId)
           .single();
         if (error) throw error;
+        // As a pick in Settings: it replaces a custom theme and, with the schedule on, holds until the next block.
+        if (input.theme) Object.assign(patch, manualPickPatch(input.theme, current, Date.now()));
         await updateSettings(ops(ctx), { userId: ctx.userId, patch });
         records.push({
           table: "user_settings",

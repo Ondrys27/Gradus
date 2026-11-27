@@ -35,6 +35,8 @@ import { WIDGET_SIZES } from "@/features/widgets/grid";
 import { MEETING_TARGETS } from "@/features/meeting-notes/logic";
 import { MCP_LEVELS } from "@/features/mcp/levels";
 import { TRASH_KINDS } from "@/features/trash/trash";
+import { THEME_BASES } from "@/features/appearance/custom-tokens";
+import { DAY_PERIODS, SCHEDULE_MODES } from "@/features/appearance/schedule";
 import { Constants } from "@/types/database";
 import { field, isSafeField, isScrubbedTextField } from "./fields";
 import { APP_ROUTES, ANALYTICS_SECTIONS, type AnalyticsSection } from "./routes";
@@ -249,6 +251,34 @@ export const EVENTS = {
     value: optional(key()),
     enabled: optional(bool()),
   }),
+  // --- appearance through the day and custom themes (30.6) -----------------
+  theme_schedule_saved: event("settings", "client", true, {
+    enabled: bool(),
+    mode: oneOf(SCHEDULE_MODES),
+    /** Blocks over the whole week (one list counts once). */
+    blocks: count(56),
+    custom: bool(),
+  }),
+  theme_transition_played: event("settings", "client", false, {
+    /** played = the full moment, skipped = clicked or Esc, silent = waited 5 minutes, changed without it. */
+    outcome: oneOf(["played", "skipped", "silent"] as const),
+    period: oneOf(DAY_PERIODS),
+    /** Seconds it waited for typing, a dialog, the timer… */
+    waited_s: count(300),
+    reduced: bool(),
+    preview: bool(),
+    custom: bool(),
+  }),
+  custom_theme_saved: event("settings", "client", true, {
+    action: oneOf(["created", "updated", "duplicated", "imported"] as const),
+    base: oneOf(THEME_BASES),
+    /** Made with "Generate from one colour". */
+    generated: bool(),
+    /** Contrast repairs clicked while editing. */
+    fixes: count(50),
+  }),
+  custom_theme_deleted: event("settings", "client", true, {}),
+  custom_theme_shared: event("settings", "client", true, { via: oneOf(["code", "link"] as const) }),
 
   // --- onboarding and the tour ----------------------------------------------
   onboarding_step_completed: event("onboarding", "client", false, {

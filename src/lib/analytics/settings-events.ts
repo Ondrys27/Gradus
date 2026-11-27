@@ -43,8 +43,20 @@ export function settingsEvents(patch: Partial<UserSettings>): SettingEvent[] {
       case "first_day_of_week":
         events.push({ setting: "week_start", ...code(value) });
         break;
+      // A custom theme is "custom" (its id says nothing); the built-in key underneath is not news then.
       case "theme":
-        events.push({ setting: "theme", ...code(value) });
+        if (!events.some((event) => event.setting === "theme")) {
+          events.push({ setting: "theme", ...code(patch.custom_theme_id ? "custom" : value) });
+        }
+        break;
+      case "custom_theme_id":
+        if (!events.some((event) => event.setting === "theme")) {
+          events.push({ setting: "theme", ...code(value ? "custom" : (patch.theme ?? null)) });
+        }
+        break;
+      // The schedule has its own event (theme_schedule_saved), the end of a manual pick none.
+      case "theme_schedule":
+      case "theme_override_until":
         break;
       case "animations_enabled":
         events.push({ setting: "animations", enabled: value === true });

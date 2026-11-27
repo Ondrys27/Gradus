@@ -243,3 +243,16 @@ export async function closeSession(userId: string, noteId: string) {
   if (entry.timer) clearTimeout(entry.timer);
   await entry.session.close();
 }
+
+/**
+ * Whether someone types in a live note open in this tab right now (the
+ * typing line of the live bar). The theme transition (30.6) waits for it.
+ */
+export function anyLiveTyping(): boolean {
+  for (const registry of registries.values()) {
+    for (const entry of registry.values()) {
+      if (entry.session.getSnapshot().typing.length > 0) return true;
+    }
+  }
+  return false;
+}

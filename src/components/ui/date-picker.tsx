@@ -183,7 +183,7 @@ function Calendar({
                 isSameMonth(day, month) ? "text-ink-soft" : "text-ink-muted/50",
                 "hover:bg-surface-hover hover:text-ink",
                 isSameDay(day, today) && "font-semibold text-teal",
-                isSelected && "bg-violet font-semibold text-white hover:bg-violet",
+                isSelected && "bg-violet font-semibold text-on-violet hover:bg-violet",
               )}
             >
               {formatDayOfMonth(day, settings)}

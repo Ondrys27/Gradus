@@ -116,6 +116,11 @@ export type CatalogPlan = {
    * on (every plan has them); false switches them off.
    */
   mcp?: boolean;
+  /**
+   * Custom themes (30.6) for the plan's accounts. Missing = on (every plan
+   * has them); false: no new custom theme, the ones already made keep working.
+   */
+  custom_themes?: boolean;
 };
 
 /** The payload of a catalog version: the three plans. */

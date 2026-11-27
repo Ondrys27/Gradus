@@ -35,6 +35,8 @@
   --color-green: #3ddc97; /* won */
   --color-orange: #ff9f43; /* in progress */
   --color-pink: #ff6b8a; /* lost, errors */
+  /* Text on the primary accent (white in every built-in theme; a custom theme picks black or white) */
+  --color-on-violet: #ffffff;
 
   /* Logo: the same in every theme (scripts/brand-assets.mjs, logo-geometry.ts) */
   --color-logo-violet: #705afc;
@@ -48,13 +50,14 @@
 
   --radius-card: 16px;
 
+  /* The strength of the glow is in --glow-* (a custom theme's "shadows", see [data-shadow] below). */
   --shadow-glow:
-    0 0 0 1px color-mix(in oklab, var(--color-violet) 6%, transparent),
-    0 12px 40px -18px color-mix(in oklab, var(--color-violet) 55%, transparent);
+    0 0 0 1px color-mix(in oklab, var(--color-violet) var(--glow-ring, 6%), transparent),
+    0 12px 40px -18px color-mix(in oklab, var(--color-violet) var(--glow-soft, 55%), transparent);
   --shadow-glow-strong:
-    0 0 0 1px color-mix(in oklab, var(--color-violet) 14%, transparent),
-    0 18px 56px -14px color-mix(in oklab, var(--color-violet) 70%, transparent),
-    0 0 28px -8px color-mix(in oklab, var(--color-violet) 45%, transparent);
+    0 0 0 1px color-mix(in oklab, var(--color-violet) var(--glow-strong-ring, 14%), transparent),
+    0 18px 56px -14px color-mix(in oklab, var(--color-violet) var(--glow-strong-a, 70%), transparent),
+    0 0 28px -8px color-mix(in oklab, var(--color-violet) var(--glow-strong-b, 45%), transparent);
   --shadow-popover: 0 20px 48px -12px color-mix(in oklab, var(--color-black) 70%, transparent);
 
   --animate-shimmer: shimmer 2.6s ease-in-out infinite;
@@ -239,8 +242,13 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* shadcn/ui variables on top of the theme tokens (see the themes below). */
-:root {
+/*
+ * shadcn/ui variables on top of the theme tokens (see the themes below).
+ * Declared again on every element with its own data-theme (a preview, a
+ * miniature), so they resolve with that element's colours, not the page's.
+ */
+:root,
+[data-theme] {
   color-scheme: dark;
   --background: var(--color-canvas);
   --foreground: var(--color-ink);
@@ -301,6 +309,7 @@
   --color-ink: #ffffff;
   --color-ink-soft: #aeb8de;
   --color-ink-muted: #8892be;
+  --color-on-violet: #ffffff;
 }
 
 [data-theme="midnight"] {
@@ -321,6 +330,7 @@
   --color-ink: #ffffff;
   --color-ink-soft: #b4c2e0;
   --color-ink-muted: #8494b8;
+  --color-on-violet: #ffffff;
 }
 
 [data-theme="forest"] {
@@ -341,6 +351,7 @@
   --color-ink: #ffffff;
   --color-ink-soft: #b5d4c4;
   --color-ink-muted: #86a897;
+  --color-on-violet: #ffffff;
 }
 
 [data-theme="sunset"] {
@@ -361,6 +372,7 @@
   --color-ink: #ffffff;
   --color-ink-soft: #e2bccf;
   --color-ink-muted: #b08aa0;
+  --color-on-violet: #ffffff;
 }
 
 [data-theme="steel"] {
@@ -381,6 +393,7 @@
   --color-ink: #ffffff;
   --color-ink-soft: #bcc3ce;
   --color-ink-muted: #8a929e;
+  --color-on-violet: #ffffff;
 }
 
 [data-theme="light"] {
@@ -401,6 +414,87 @@
   --color-ink: #12162e;
   --color-ink-soft: #3c4468;
   --color-ink-muted: #646c90;
+  --color-on-violet: #ffffff;
+}
+
+/*
+ * Custom themes (30.6, src/features/appearance/custom-tokens.ts): the colours
+ * come as CSS variables on the element (inline, only checked #rrggbb), the
+ * options as data attributes. Every themed element starts from the defaults
+ * below, so a preview inside the page shows its own options, not the page's.
+ */
+[data-theme] {
+  --radius-card: 16px;
+  --spacing: 0.25rem;
+  --glow-ring: 6%;
+  --glow-soft: 55%;
+  --glow-strong-ring: 14%;
+  --glow-strong-a: 70%;
+  --glow-strong-b: 45%;
+  --app-heading-font: initial;
+  --bg-grid: block;
+  --bg-glow-a: block;
+  --bg-glow-b: block;
+  --bg-gradient: none;
+}
+[data-shadow="none"] {
+  --glow-ring: 5%;
+  --glow-soft: 0%;
+  --glow-strong-ring: 10%;
+  --glow-strong-a: 0%;
+  --glow-strong-b: 0%;
+}
+[data-shadow="soft"] {
+  --glow-ring: 4%;
+  --glow-soft: 28%;
+  --glow-strong-ring: 9%;
+  --glow-strong-a: 38%;
+  --glow-strong-b: 22%;
+}
+[data-shadow="strong"] {
+  --glow-ring: 12%;
+  --glow-soft: 80%;
+  --glow-strong-ring: 22%;
+  --glow-strong-a: 90%;
+  --glow-strong-b: 65%;
+}
+/* Density changes the spacing scale only with a mouse-sized screen; phones keep 44 px targets. */
+@media (min-width: 48rem) {
+  [data-density="compact"] {
+    --spacing: 0.225rem;
+  }
+  [data-density="spacious"] {
+    --spacing: 0.28rem;
+  }
+}
+[data-backdrop="solid"] {
+  --bg-grid: none;
+  --bg-glow-a: none;
+  --bg-glow-b: none;
+}
+[data-backdrop="gradient"] {
+  --bg-grid: none;
+  --bg-glow-a: none;
+  --bg-glow-b: none;
+  --bg-gradient: block;
+}
+[data-backdrop="glow"] {
+  --bg-glow-b: none;
+}
+[data-heading-font="poppins"] {
+  --app-heading-font: var(--font-heading-poppins), ui-sans-serif, system-ui, sans-serif;
+}
+[data-heading-font="bricolage"] {
+  --app-heading-font: var(--font-heading-bricolage), ui-sans-serif, system-ui, sans-serif;
+}
+[data-heading-font="space_grotesk"] {
+  --app-heading-font: var(--font-heading-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+}
+[data-heading-font="fraunces"] {
+  --app-heading-font: var(--font-heading-fraunces), ui-serif, Georgia, serif;
+}
+[data-heading-font="sora"] {
+  --app-heading-font: var(--font-heading-sora), ui-sans-serif, system-ui, sans-serif;
 }
 
 /*
@@ -520,6 +614,8 @@ html[data-showcase] * {
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--color-ink);
+  /* A custom theme's heading face; unset (initial) it inherits. */
+  font-family: var(--app-heading-font);
 }
 
 @utility micro-label {
@@ -638,6 +734,10 @@ html[data-showcase] * {
   h3,
   h4 {
     @apply text-ink;
+  }
+  /* A custom theme's heading face (zero specificity: any font class wins; unset it inherits). */
+  :where(h1, h2, h3, h4) {
+    font-family: var(--app-heading-font);
   }
   ::selection {
     background-color: color-mix(in oklab, var(--color-violet) 45%, transparent);

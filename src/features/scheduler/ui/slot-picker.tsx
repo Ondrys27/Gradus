@@ -314,7 +314,7 @@ function DayButton({ date, state, active, disabled, onDay, compact }: DayButtonP
         state === "free" && "text-ink hover:bg-surface-hover",
         state === "busy" && "text-ink-muted hover:bg-surface-hover",
         state === "off" && "text-ink-muted/40",
-        active && "bg-violet text-white shadow-glow hover:bg-violet",
+        active && "bg-violet text-on-violet shadow-glow hover:bg-violet",
       )}
     >
       <span className="text-[11px] font-medium uppercase tracking-wide">{weekday}</span>
@@ -372,7 +372,7 @@ function CellButton({
           "border-green/40 bg-green/10 text-ink hover:border-green/70 hover:bg-green/20",
         cell.state === "busy" && "border-line bg-surface-hover/60 text-ink-muted",
         cell.state === "off" && "border-dashed border-line/60 text-ink-muted/40",
-        selected && "border-violet bg-violet text-white hover:border-violet hover:bg-violet",
+        selected && "border-violet bg-violet text-on-violet hover:border-violet hover:bg-violet",
       )}
     >
       <span>{time}</span>

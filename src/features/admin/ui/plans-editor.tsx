@@ -595,6 +595,13 @@ function PlanCardEditor({
             onCheckedChange={(on) => onChange((current) => ({ ...current, mcp: on }))}
           />
         </label>
+        <label className="flex min-h-11 items-center justify-between gap-3 text-sm text-ink-soft">
+          {t("card.customThemes")}
+          <Switch
+            checked={plan.customThemes}
+            onCheckedChange={(on) => onChange((current) => ({ ...current, customThemes: on }))}
+          />
+        </label>
         <div className="grid grid-cols-2 gap-3">
           {PLAN_LIMIT_KEYS.map((limit) => {
             const path = `limits.${limit}`;

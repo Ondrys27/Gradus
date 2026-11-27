@@ -229,7 +229,7 @@ function Segmented<T extends string>({
           onClick={() => onChange(option)}
           className={cn(
             "h-11 cursor-pointer rounded-lg px-3 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 mouse:h-8",
-            value === option ? "bg-violet text-white" : "text-ink-soft hover:text-ink",
+            value === option ? "bg-violet text-on-violet" : "text-ink-soft hover:text-ink",
           )}
         >
           {text(option)}

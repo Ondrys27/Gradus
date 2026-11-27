@@ -83,7 +83,7 @@ export default async function HostBookingPage({ params }: Props) {
                         <span className="font-display text-xl leading-tight font-bold tracking-tight text-ink text-balance md:text-2xl">
                           {type.name}
                         </span>
-                        <span className="grid size-11 shrink-0 place-items-center rounded-full border border-line text-ink-soft transition-colors group-hover:border-violet group-hover:bg-violet group-hover:text-white mouse:size-9">
+                        <span className="grid size-11 shrink-0 place-items-center rounded-full border border-line text-ink-soft transition-colors group-hover:border-violet group-hover:bg-violet group-hover:text-on-violet mouse:size-9">
                           <ArrowRightIcon aria-hidden className="size-4" />
                         </span>
                       </span>

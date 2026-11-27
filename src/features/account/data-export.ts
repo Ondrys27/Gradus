@@ -66,6 +66,7 @@ export const EXPORT_TABLES = [
     "number_format",
     "first_day_of_week",
     "theme",
+    "theme_schedule",
     "sound_enabled",
     "animations_enabled",
     "daily_call_goal",
@@ -365,6 +366,7 @@ export const EXPORT_TABLES = [
     "last_status",
     "created_at",
   ]),
+  table("custom_themes", "custom_themes", "user_id", ["name", "tokens", "created_at", "updated_at"]),
 ] as const satisfies readonly ExportTable[];
 
 /**
