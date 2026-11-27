@@ -2480,7 +2480,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
-          share_code?: string
+          share_code: string
           tokens: Json
           updated_at?: string
           user_id?: string
@@ -6565,8 +6565,8 @@ export type Database = {
           cold_calling_deal_stage_id: string | null
           country_code: string
           created_at: string
-          custom_theme_id: string | null
           currency: string
+          custom_theme_id: string | null
           daily_call_goal: number
           date_format: string
           first_day_of_week: number
@@ -6599,8 +6599,8 @@ export type Database = {
           cold_calling_deal_stage_id?: string | null
           country_code?: string
           created_at?: string
-          custom_theme_id?: string | null
           currency?: string
+          custom_theme_id?: string | null
           daily_call_goal?: number
           date_format?: string
           first_day_of_week?: number
@@ -6633,8 +6633,8 @@ export type Database = {
           cold_calling_deal_stage_id?: string | null
           country_code?: string
           created_at?: string
-          custom_theme_id?: string | null
           currency?: string
+          custom_theme_id?: string | null
           daily_call_goal?: number
           date_format?: string
           first_day_of_week?: number
@@ -6661,17 +6661,17 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "user_settings_custom_theme_id_fkey"
-            columns: ["custom_theme_id"]
-            isOneToOne: false
-            referencedRelation: "custom_themes"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "user_settings_cold_calling_deal_stage_id_fkey"
             columns: ["cold_calling_deal_stage_id"]
             isOneToOne: false
             referencedRelation: "pipeline_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_settings_custom_theme_id_fkey"
+            columns: ["custom_theme_id"]
+            isOneToOne: false
+            referencedRelation: "custom_themes"
             referencedColumns: ["id"]
           },
         ]
@@ -8729,6 +8729,7 @@ export type Database = {
           tokens: Json
         }[]
       }
+      custom_theme_readable: { Args: { _t: Json }; Returns: boolean }
       custom_themes_allowed: { Args: never; Returns: boolean }
       dashboard_context: { Args: { _space: string }; Returns: Json }
       dashboard_items_valid: { Args: { _items: Json }; Returns: boolean }
@@ -8958,6 +8959,8 @@ export type Database = {
         Args: { _level: string; _owner: string; _section: string }
         Returns: boolean
       }
+      hex_contrast: { Args: { _a: string; _b: string }; Returns: number }
+      hex_luminance: { Args: { _hex: string }; Returns: number }
       import_generated_contacts: {
         Args: {
           _country?: string
@@ -9786,6 +9789,7 @@ export type Database = {
       }
       new_invite_code: { Args: never; Returns: string }
       new_public_id: { Args: never; Returns: string }
+      new_theme_share_code: { Args: never; Returns: string }
       next_invoice_number: {
         Args: { _issued_on: string; _ws: string }
         Returns: string
@@ -10037,6 +10041,10 @@ export type Database = {
       phone_to_e164: {
         Args: { _country: string; _phone: string }
         Returns: string
+      }
+      plan_allows_custom_themes: {
+        Args: { _account: string }
+        Returns: boolean
       }
       plan_allows_mcp: { Args: { _space: string }; Returns: boolean }
       plan_catalog_count_ok: {
@@ -10796,12 +10804,14 @@ export type Database = {
       username_available: { Args: { _username: string }; Returns: boolean }
       valid_ai_caps: { Args: { _value: Json }; Returns: boolean }
       valid_calendar_sync: { Args: { _value: Json }; Returns: boolean }
+      valid_custom_theme_tokens: { Args: { _t: Json }; Returns: boolean }
       valid_error_alerts: { Args: { _value: Json }; Returns: boolean }
       valid_grady_models: { Args: { _value: Json }; Returns: boolean }
       valid_jarvis_rules: { Args: { _value: Json }; Returns: boolean }
       valid_plan_add_ons: { Args: { _value: Json }; Returns: boolean }
       valid_plan_catalog: { Args: { _payload: Json }; Returns: boolean }
       valid_showcase_mode: { Args: { _value: Json }; Returns: boolean }
+      valid_theme_schedule: { Args: { _s: Json }; Returns: boolean }
       valid_trash_retention: { Args: { _value: Json }; Returns: boolean }
       valid_tutorial_state: { Args: { _state: Json }; Returns: boolean }
       valid_worker_billing: { Args: { _value: Json }; Returns: boolean }
