@@ -170,7 +170,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 30.4 | architect | env: RESEND_API_KEY — 2026-11-27: Plánovač má vlastní zdroje obsazenosti a cílový kalendář, jeden výběr termínu s Volno / Plno a schůzka z Cold Callingu, kontaktu i obchodu se rezervuje přes plánovač hostitele podle nastavení majitele.
 - [x] 30.5 | architect | — 2026-11-27: Ve firmě je vidět, kdo je online, pryč nebo kdy byl naposledy (seznam lidí, konverzace, obchody, úkoly, nástěnka), s přepínačem „Ukazovat, kdy jsem online“, který skryje stav oběma směry.
 - [x] 30.6 | architect | — 2026-11-27: Téma se mění během dne podle plánu bloků s přechodem (počká, když uživatel píše), a vlastní témata z editoru s kontrolou kontrastu jdou sdílet kódem a importovat.
-- [ ] 30.7 | designer |
+- [x] 30.7 | designer | 2026-11-27 Přechod vzhledů dostal choreografii podle denní doby, editor začíná jednou barvou a šesti výchozími body, miniatury jsou malá rozhraní a časová osa se táhne po 15 minutách.
 - [ ] 30.8 | architect | env: ANTHROPIC_API_KEY
 - [ ] 30.9 | designer |
 - [ ] K30 | reviewer |
