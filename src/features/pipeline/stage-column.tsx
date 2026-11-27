@@ -138,6 +138,7 @@ export function StageColumn({
             <button
               type="button"
               aria-label={t("column.addDeal", { name: stage.name })}
+              data-tutorial="pipeline-column-add-deal"
               onClick={() => onAddDeal(stage)}
               className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-full text-ink-soft outline-none hover:bg-surface-hover hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40 mouse:size-8"
             >

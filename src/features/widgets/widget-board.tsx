@@ -204,6 +204,7 @@ export function WidgetBoard({
                 disabled={!editor.canUndo}
                 onClick={editor.undo}
                 data-testid="board-undo"
+                data-tutorial="dashboard-undo"
                 title={t("undoHint")}
               >
                 <Undo2Icon aria-hidden data-icon="inline-start" />
@@ -216,6 +217,7 @@ export function WidgetBoard({
                   size="sm"
                   onClick={() => setResetting(true)}
                   data-testid="board-reset"
+                  data-tutorial="dashboard-reset"
                 >
                   <RotateCcwIcon aria-hidden data-icon="inline-start" />
                   {resetLabel ?? t("reset")}
@@ -231,6 +233,7 @@ export function WidgetBoard({
               disabled={full}
               onClick={() => setGalleryOpen(true)}
               data-testid="board-add"
+              data-tutorial="dashboard-add-widget"
             >
               <PlusIcon aria-hidden data-icon="inline-start" />
               {t("add")}
@@ -243,6 +246,7 @@ export function WidgetBoard({
               size="sm"
               onClick={() => (editing ? setEditing(false) : startEditing("button"))}
               data-testid="board-edit"
+              data-tutorial="dashboard-edit"
             >
               {editing ? (
                 <CheckIcon aria-hidden data-icon="inline-start" />

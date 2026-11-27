@@ -228,6 +228,7 @@ export function PipelineView() {
             <Button
               variant="outline"
               disabled={stages.length === 0}
+              data-tutorial="pipeline-edit-stages"
               onClick={() => setEditing(true)}
             >
               <PencilIcon aria-hidden data-icon="inline-start" />
@@ -238,6 +239,7 @@ export function PipelineView() {
               size="icon"
               aria-label={t("actions.addStage")}
               title={t("actions.addStage")}
+              data-tutorial="pipeline-add-stage"
               onClick={() => setAddingStage(true)}
             >
               <PlusIcon aria-hidden />
@@ -245,7 +247,11 @@ export function PipelineView() {
           </>
         )}
         {canCreate && (
-          <Button disabled={stages.length === 0} onClick={() => setCreating({ stageId: null })}>
+          <Button
+            disabled={stages.length === 0}
+            data-tutorial="pipeline-new-deal"
+            onClick={() => setCreating({ stageId: null })}
+          >
             <PlusIcon aria-hidden data-icon="inline-start" />
             {t("actions.newDeal")}
           </Button>

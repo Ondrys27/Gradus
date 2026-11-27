@@ -35,7 +35,7 @@ export function CompleteMilestoneButton({ completion, pending, onComplete, onReo
 
   if (completion.kind === "completed") {
     return (
-      <Button variant="outline" disabled={pending} onClick={onReopen}>
+      <Button variant="outline" data-tutorial="milestone-complete" disabled={pending} onClick={onReopen}>
         <RotateCcwIcon aria-hidden data-icon="inline-start" />
         {t("reopen")}
       </Button>
@@ -50,6 +50,7 @@ export function CompleteMilestoneButton({ completion, pending, onComplete, onReo
     const hint = completion.kind === "empty" ? t("completeEmptyHint") : t("completeLockedHint");
     return (
       <Button
+        data-tutorial="milestone-complete"
         variant="outline"
         disabled
         focusableWhenDisabled
@@ -82,6 +83,7 @@ export function CompleteMilestoneButton({ completion, pending, onComplete, onReo
         />
       )}
       <Button
+        data-tutorial="milestone-complete"
         disabled={pending}
         onClick={onComplete}
         className="bg-gold text-canvas shadow-[0_0_28px_-6px_var(--color-gold)] hover:bg-gold/90 hover:shadow-[0_0_36px_-4px_var(--color-gold)]"

@@ -95,7 +95,7 @@ export function AccountSupportActions({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap gap-2" data-testid="account-actions">
+      <div className="flex flex-wrap gap-2" data-testid="account-actions" data-tutorial="admin-user-actions">
         {actions.map((action) => {
           const Icon = ICONS[action];
           return (

@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { GradyDock } from "@/components/grady/grady-dock";
 import { useSession, useUserSettings } from "@/features/account/queries";
@@ -13,6 +13,7 @@ import { PresenceProvider } from "@/features/presence/presence-provider";
 import { TrialNotice } from "@/features/plan/trial-notice";
 import { PastDueNotice } from "@/features/subscription/past-due-notice";
 import { TutorialHost } from "@/features/tutorial/tutorial-host";
+import { AppGuide } from "@/features/tutorial/guide/app-guide";
 import { useStage } from "@/features/tutorial/showcase/stage-store";
 import { SearchProvider } from "@/features/search/search-provider";
 import { AnalyticsProvider } from "@/lib/analytics/analytics-provider";
@@ -80,6 +81,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             <AppearanceSync />
             {!errorShown && <OnboardingGate />}
             {!errorShown && !stage && <TutorialHost />}
+            {!errorShown && !stage && (
+              <Suspense>
+                <AppGuide />
+              </Suspense>
+            )}
             {stage && <ShowcaseHost />}
             <AnalyticsProvider />
             <ChatSync />

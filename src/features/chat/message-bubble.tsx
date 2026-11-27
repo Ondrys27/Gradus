@@ -407,6 +407,7 @@ function BubbleMenu({
       <Menu.Trigger
         aria-label={t("label")}
         data-testid="chat-message-menu"
+        data-tutorial="messages-message-menu"
         className={cn(
           "grid size-11 shrink-0 cursor-pointer place-items-center rounded-full text-ink-muted outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40 data-popup-open:opacity-100 mouse:size-8 mouse:group-hover/bubble:opacity-100 mouse:focus-visible:opacity-100",
           // A message that did not go is never hidden behind a hover: Retry / Discard wait.
@@ -433,12 +434,16 @@ function BubbleMenu({
               </>
             ) : (
               <>
-                <Menu.Item className={itemClass} onClick={() => actions.onReply(message)}>
+                <Menu.Item className={itemClass} data-tutorial="messages-reply" onClick={() => actions.onReply(message)}>
                   <ReplyIcon aria-hidden />
                   {t("reply")}
                 </Menu.Item>
                 {canEdit && (
-                  <Menu.Item className={itemClass} onClick={() => actions.onEdit(message)}>
+                  <Menu.Item
+                    className={itemClass}
+                    data-tutorial="messages-edit"
+                    onClick={() => actions.onEdit(message)}
+                  >
                     <PencilIcon aria-hidden />
                     {t("edit")}
                   </Menu.Item>
@@ -446,6 +451,7 @@ function BubbleMenu({
                 {canDelete && (
                   <Menu.Item
                     className={cn(itemClass, "text-pink data-highlighted:text-pink")}
+                    data-tutorial="messages-delete"
                     onClick={() => actions.onDelete(message)}
                   >
                     <Trash2Icon aria-hidden />

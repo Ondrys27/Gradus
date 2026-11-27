@@ -59,6 +59,13 @@ Návrhy, které znamenají někomu zavolat nebo se sejít (Komu se dnes ozvat, p
 - Dokud je volba, nabídka pokračování nebo tutoriál na obrazovce, nic jiného nevyskakuje (souhrn počká na další stránku). Jakékoli ukončení zapíše `tour_completed_at`, na které čeká souhrn, průběžné návrhy i představení Poznámek.
 - **Ukázková data** (`is_demo`) Grady nikdy nepočítá do souhrnu, ranního shrnutí, dlaždic v souhrnu ani do průběžných návrhů a hlídání (`watch`, `suggestions`, `briefing`). V chatu je vidí (uživatel se ho na ukázkovou poznámku ptá).
 
+### Průvodce v sekci: nabídka pomoci (30.8)
+
+- **Kdy:** jen z toho, co uživatel dělá, nikdy z odhadu modelu (`src/features/tutorial/guide/struggle.ts`): tentýž dialog třikrát otevřený a zavřený bez uložení, 2 minuty bez akce při první návštěvě sekce, třikrát návrat na stejné místo do 10 minut, třikrát po sobě odmítnuté pole formuláře. Uložení čehokoli počítání vynuluje.
+- **Co řekne:** bublina vlevo dole „Nevíš si rady? Napiš mi, co potřebuješ udělat“ s polem pro otázku. Při úplně první návštěvě sekce místo toho nenápadně „Jsi v sekci … poprvé. Mám ti ji rychle ukázat?“ (Ukázat · Teď ne · Už nenabízet). Pevné texty z překladů (`tutorial.guide.offer.*`), bez modelu.
+- **Omezení:** nejvýš jednou za sekci a den (v pásmu uživatele), nikdy do 30 sekund po načtení nebo změně stránky, a když si jí uživatel nevšímá, po 20 s sama zmizí; jen se zapnutými vlastními zprávami Gradyho (Nastavení → Grady), mimo tiché hodiny, ne přes dialog, tutoriál, průvodce, souhrn, kartu návrhu ani běžící časovač. „Už nenabízet“ to vypne (`user_settings.guide_offers`), Nastavení → Grady → „Nabízet pomoc v sekcích“ zapne znovu. Nebere si jediné proaktivní vyskočení sezení: je to odpověď na tápání, ne návrh.
+- **Na otázku** (z nabídky ?, bubliny, ⌘K nebo „Ukázat na obrazovce“ v chatu) odpoví Grady 2–3 větami a kroky jen z klíčů katalogu prvků (`ui-map.ts`); neplatný krok se zahodí a řekne to slovy. Otázku, která není o ovládání („jak mám nacenit službu?“), předá do chatu; funkci, na kterou uživatel nemá právo, nevysvětluje krok za krokem, ale řekne to a nabídne napsat majiteli; funkci, která neexistuje, přizná a nabídne „Navrhnout funkci“. Kroky nic neukládají: „Udělej to za mě“ jen zavede na stránku nebo stiskne, co jen otevírá (dialog, záložku, nabídku).
+
 ### Představení Poznámek
 
 Jednou za život účtu, jen majiteli, po onboardingu a dokončené prohlídce. Pevný text z překladů, bez modelu. Vyskočí, až je stránka 4 s v klidu a nic jiného není na obrazovce, a bere si jediné vyskočení sezení.
@@ -234,4 +241,5 @@ Administrace → **AI a Grady → záložka Modely** (`/admin/ai?tab=models`, 27
 - Povaha a pořadí promptu: `src/features/grady/prompt.ts` (`GRADY_PERSONA`, `withOwnerInstructions`, `SAFETY_RULES`)
 - Nástroje: katalog `src/features/grady/tools/` (`catalog.ts`, `defs/*`, práva `access.ts`, vrácení `records.ts`), běh a karty `server/tools/` (`loop.ts`, `actions.ts`, `context.ts`), tabulka `grady_actions` (migrace `20261118090000_grady_actions.sql`), karta `src/components/grady/action-card.tsx`
 - Časové okno: `src/features/grady/time-window.ts`
+- Průvodce v sekcích (30.8): katalog prvků `src/features/tutorial/ui-map.ts` (+ `ui-map/`), přehrávač a pravidla `src/features/tutorial/guide/` (`player.ts`, `plan.ts`, `struggle.ts`, `section-guide.ts`), odpověď modelu `src/features/grady/server/guide-answer.ts` (`guide_answer`, cache `guide_answers`, otázky `guide_questions`, migrace `20261214090000_section_guide.sql`)
 - Texty: `src/locales/cs.json`, `en.json` (`grady.suggestion.*`, `grady.proactive.questions.*`, `admin.ai.rules.*`)

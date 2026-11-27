@@ -30,7 +30,7 @@ export function InvoiceSetupGate({ onReady }: { onReady?: (profile: InvoiceProfi
         <BuildingIcon aria-hidden className="size-5 shrink-0 text-gold" />
         <p className="flex-1 text-sm text-ink">{isOwner ? t("banner") : t("bannerWorker")}</p>
         {isOwner && (
-          <Button type="button" variant="secondary" onClick={() => setOpen(true)}>
+          <Button type="button" variant="secondary" data-tutorial="invoice-setup" onClick={() => setOpen(true)}>
             {t("open")}
           </Button>
         )}

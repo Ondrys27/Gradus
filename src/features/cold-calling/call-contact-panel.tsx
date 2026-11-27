@@ -113,6 +113,7 @@ function PanelBody({
         {data.phone ? (
           <a
             href={telHref(data.phone, country)}
+            data-tutorial="call-dial"
             className={cn(buttonVariants({ size: "lg" }), "flex-1")}
           >
             <PhoneIcon aria-hidden data-icon="inline-start" />
@@ -156,7 +157,11 @@ function PanelBody({
         // Offered only once it is known that the contact has no open deal yet.
         canMakeDeal &&
         !openDeals.pending && (
-          <Button variant="outline" onClick={() => setMakingDeal(true)}>
+          <Button
+            variant="outline"
+            data-tutorial="call-create-deal"
+            onClick={() => setMakingDeal(true)}
+          >
             <BriefcaseBusinessIcon aria-hidden data-icon="inline-start" />
             {t("createDeal")}
           </Button>
@@ -205,6 +210,7 @@ function PanelBody({
       {canOpenDetail && (
         <Link
           href={`/app/kontakty/${contactId}`}
+          data-tutorial="call-open-detail"
           className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "self-start")}
         >
           <ExternalLinkIcon aria-hidden data-icon="inline-start" />

@@ -96,7 +96,7 @@ export default async function AdminAiPage({ searchParams }: Props) {
 
   // The overview (numbers, budget, caps), the models of Grady's jobs and his rules, as tabs in the address.
   const tabs = (
-    <nav aria-label={t("tabs")} className="flex gap-1">
+    <nav aria-label={t("tabs")} data-tutorial="admin-ai-tabs" className="flex gap-1">
       {AI_TABS.map((value) => {
         const active = value === tab;
         const search = [value === "overview" ? "" : `tab=${value}`, query.slice(1)]
@@ -126,12 +126,14 @@ export default async function AdminAiPage({ searchParams }: Props) {
       <>
         <AdminPageHeader section="ai" q={q} extra={tabs} />
         <div className="flex flex-col gap-6">
-          <Suspense fallback={<CardSkeleton height={640} />}>
-            <Models
-              readOnly={!adminCan(context, "editGradyModels")}
-              canCompare={adminCan(context, "compareModels")}
-            />
-          </Suspense>
+          <div data-tutorial="admin-ai-models">
+            <Suspense fallback={<CardSkeleton height={640} />}>
+              <Models
+                readOnly={!adminCan(context, "editGradyModels")}
+                canCompare={adminCan(context, "compareModels")}
+              />
+            </Suspense>
+          </div>
           <PriceList />
         </div>
       </>
@@ -143,12 +145,14 @@ export default async function AdminAiPage({ searchParams }: Props) {
       <>
         <AdminPageHeader section="ai" q={q} extra={tabs} />
         <div className="flex flex-col gap-6">
-          <Suspense fallback={<CardSkeleton height={520} />}>
-            <Rules
-              readOnly={!adminCan(context, "editGradyRules")}
-              canTest={adminCan(context, "testGrady")}
-            />
-          </Suspense>
+          <div data-tutorial="admin-ai-rules">
+            <Suspense fallback={<CardSkeleton height={520} />}>
+              <Rules
+                readOnly={!adminCan(context, "editGradyRules")}
+                canTest={adminCan(context, "testGrady")}
+              />
+            </Suspense>
+          </div>
           <Suspense fallback={<CardSkeleton height={160} />}>
             <TrashRetention readOnly={!adminCan(context, "editGradyRules")} />
           </Suspense>
@@ -165,9 +169,11 @@ export default async function AdminAiPage({ searchParams }: Props) {
           <Suspense fallback={<FiguresSkeleton more={1} />}>
             <Tiles q={q} />
           </Suspense>
-          <Suspense fallback={<GridSkeleton count={2} />}>
-            <BudgetAndCost q={q} />
-          </Suspense>
+          <div data-tutorial="admin-ai-budget">
+            <Suspense fallback={<GridSkeleton count={2} />}>
+              <BudgetAndCost q={q} />
+            </Suspense>
+          </div>
           <Suspense fallback={<CardSkeleton height={320} />}>
             <CostPerUser q={q} />
           </Suspense>
@@ -185,9 +191,11 @@ export default async function AdminAiPage({ searchParams }: Props) {
           </Suspense>
         </div>
         {/* The caps change what Grady may spend: the one action with consequences, at the end. */}
-        <Suspense fallback={<CardSkeleton height={260} />}>
-          <Caps q={q} readOnly={!adminCan(context, "editAiCaps")} />
-        </Suspense>
+        <div data-tutorial="admin-ai-caps">
+          <Suspense fallback={<CardSkeleton height={260} />}>
+            <Caps q={q} readOnly={!adminCan(context, "editAiCaps")} />
+          </Suspense>
+        </div>
         {/* One paid call to the model: only the owner may spend it. */}
         {adminCan(context, "testGrady") && <ConnectionTest />}
       </div>

@@ -252,6 +252,7 @@ function EditorBody({
       <div
         role="tablist"
         aria-label={t("tabsLabel")}
+        data-tutorial="scheduler-type-tabs"
         className="flex shrink-0 gap-1 overflow-x-auto border-b border-line px-3 sm:px-5"
       >
         {EVENT_TYPE_TABS.map((key) => {
@@ -319,7 +320,12 @@ function EditorBody({
             {t("close")}
           </Button>
           {editable && (
-            <Button type="button" onClick={save} disabled={pending}>
+            <Button
+              type="button"
+              data-tutorial="scheduler-type-save"
+              onClick={save}
+              disabled={pending}
+            >
               {pending ? t("saving") : type ? t("save") : t("create")}
             </Button>
           )}
@@ -437,6 +443,7 @@ function BasicsTab({
       <FormField id="type-name" label={t("name")} error={nameError}>
         <Input
           {...fieldA11y("type-name", nameError)}
+          data-tutorial="scheduler-type-name"
           value={draft.name}
           maxLength={80}
           onChange={(event) => set("name", event.target.value)}

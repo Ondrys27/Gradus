@@ -354,6 +354,7 @@ function CompanyListRow({
             <button
               type="button"
               data-testid="company-open-person"
+              data-tutorial="company-person-row"
               onClick={() => {
                 if (!justDragged.current) onOpen(person);
               }}
@@ -427,6 +428,7 @@ function RowMenu({
   return (
     <Menu.Root>
       <Menu.Trigger
+        data-tutorial="company-row-menu"
         aria-label={t("actions", { name: person.name })}
         aria-describedby={describedBy}
         className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-lg text-ink-muted outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40 mouse:size-8"
@@ -436,7 +438,7 @@ function RowMenu({
       <Menu.Portal>
         <Menu.Positioner sideOffset={6} align="end" className="z-popover">
           <Menu.Popup className="min-w-48 rounded-xl border border-line-strong bg-surface p-1.5 shadow-popover outline-none">
-            <Menu.Item className={itemClass} onClick={() => onMoveMenu(person)}>
+            <Menu.Item className={itemClass} data-tutorial="company-move" onClick={() => onMoveMenu(person)}>
               <MoveIcon aria-hidden />
               {t("moveMenu")}
             </Menu.Item>

@@ -53,7 +53,7 @@ export function WorkTab({
   onOpenDeal: (dealId: string) => void;
 }) {
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5" data-tutorial="worker-work">
       <WorkDeals worker={worker} onOpenDeal={onOpenDeal} />
       <WorkTasks worker={worker} />
     </div>

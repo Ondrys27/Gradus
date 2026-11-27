@@ -67,7 +67,7 @@ export function PlanCard({
 
   if (!plan) {
     return (
-      <GlowCard interactive={false} className="flex flex-col gap-4" data-testid="reward-plan-empty">
+      <GlowCard interactive={false} className="flex flex-col gap-4" data-testid="reward-plan-empty" data-tutorial="reward-plan">
         <h3 className="text-base font-semibold text-ink">{t("title")}</h3>
         <EmptyState
           icon={<SparklesIcon />}
@@ -76,7 +76,7 @@ export function PlanCard({
         />
         {canEdit && (
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
-            <Button onClick={() => setTemplate(true)} data-testid="reward-plan-from-template">
+            <Button onClick={() => setTemplate(true)} data-testid="reward-plan-from-template" data-tutorial="reward-template">
               <SparklesIcon aria-hidden data-icon="inline-start" />
               {t("fromTemplate")}
             </Button>
@@ -130,7 +130,7 @@ function PlanBody({ plan, canEdit, refs }: { plan: RewardPlan; canEdit: boolean;
   const failed = update.isError || save.isError;
 
   return (
-    <GlowCard interactive={false} className="flex flex-col gap-4" data-testid="reward-plan">
+    <GlowCard interactive={false} className="flex flex-col gap-4" data-testid="reward-plan" data-tutorial="reward-plan">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex flex-col gap-1">
           <h3 className="text-base font-semibold text-ink">{t("title")}</h3>
@@ -151,6 +151,7 @@ function PlanBody({ plan, canEdit, refs }: { plan: RewardPlan; canEdit: boolean;
               disabled={full}
               onClick={() => setTemplate(true)}
               data-testid="reward-plan-template"
+              data-tutorial="reward-template"
             >
               <SparklesIcon aria-hidden data-icon="inline-start" />
               {t("template")}
@@ -160,6 +161,7 @@ function PlanBody({ plan, canEdit, refs }: { plan: RewardPlan; canEdit: boolean;
               disabled={full}
               onClick={() => setWizard({ open: true, rule: null })}
               data-testid="reward-rule-add"
+              data-tutorial="reward-rule-add"
             >
               <PlusIcon aria-hidden data-icon="inline-start" />
               {t("addRule")}

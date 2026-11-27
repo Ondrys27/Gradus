@@ -21,7 +21,7 @@ export function CompanyMcpPanel({ people }: { people: CompanyPerson[] | undefine
     .map((row) => people?.find((person) => person.id === row.workerId)?.name)
     .filter((name): name is string => Boolean(name));
   return (
-    <div className="mb-4 flex flex-col gap-2 rounded-2xl border border-line p-4 sm:flex-row sm:items-center sm:justify-between">
+    <div data-tutorial="apps-company-mcp" className="mb-4 flex flex-col gap-2 rounded-2xl border border-line p-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 items-start gap-3">
         <PlugZapIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-teal" />
         <div className="flex min-w-0 flex-col gap-0.5">

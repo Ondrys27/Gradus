@@ -36,15 +36,19 @@ function ToolButton({
   active,
   onClick,
   children,
+  "data-tutorial": tutorial,
 }: {
   label: string;
   active?: boolean;
   onClick: () => void;
   children: ReactNode;
+  /** The guide's key (30.8). */
+  "data-tutorial"?: string;
 }) {
   return (
     <button
       type="button"
+      data-tutorial={tutorial}
       aria-label={label}
       title={label}
       aria-pressed={active}
@@ -192,6 +196,7 @@ export function EditorToolbar({ editor, className, onDone, onMention }: Props) {
     <div
       role="toolbar"
       aria-label={t("toolbar")}
+      data-tutorial="note-toolbar"
       className={cn("flex items-center gap-0.5 overflow-x-auto overscroll-x-contain", className)}
     >
       <ToolButton
@@ -241,6 +246,7 @@ export function EditorToolbar({ editor, className, onDone, onMention }: Props) {
         <LinkIcon />
       </ToolButton>
       <ToolButton
+        data-tutorial="note-mention"
         label={`${t("mention")} (@)`}
         onClick={() => {
           onMention?.();

@@ -78,7 +78,7 @@ export function RewardSetup({
           : tError("unavailable");
 
   return (
-    <details className="group rounded-2xl border border-violet/30 bg-violet/5 px-4 py-2" data-testid="reward-setup">
+    <details className="group rounded-2xl border border-violet/30 bg-violet/5 px-4 py-2" data-testid="reward-setup" data-tutorial="reward-setup">
       <summary className="flex min-h-11 cursor-pointer items-center gap-2 text-sm font-medium text-ink outline-none">
         <SparklesIcon aria-hidden className="size-4 text-violet" />
         {t("title")}

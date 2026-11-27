@@ -78,7 +78,7 @@ export default async function AdminErrorsPage({ searchParams }: Props) {
   const t = await getTranslations("admin.errors");
 
   const tabs = (
-    <nav aria-label={t("tabs")} className="flex gap-1">
+    <nav aria-label={t("tabs")} data-tutorial="admin-errors-tabs" className="flex gap-1">
       {ERROR_LOG_TABS.map((value) => {
         const active = value === filters.tab;
         return (
@@ -107,15 +107,19 @@ export default async function AdminErrorsPage({ searchParams }: Props) {
         </Suspense>
       ) : (
         <div className="flex flex-col gap-4">
-          <SearchForm filters={filters} kept={kept} />
+          <div data-tutorial="admin-errors-search">
+            <SearchForm filters={filters} kept={kept} />
+          </div>
           {filters.group && (
             <Suspense fallback={<CardSkeleton height={320} />}>
               <GroupDetail fingerprint={filters.group} />
             </Suspense>
           )}
-          <Suspense fallback={<CardSkeleton height={420} />}>
-            <GroupList q={q} filters={filters} kept={kept} />
-          </Suspense>
+          <div data-tutorial="admin-errors-list">
+            <Suspense fallback={<CardSkeleton height={420} />}>
+              <GroupList q={q} filters={filters} kept={kept} />
+            </Suspense>
+          </div>
         </div>
       )}
     </>

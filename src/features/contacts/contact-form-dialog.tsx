@@ -157,7 +157,7 @@ function ContactFields({
   }
 
   return (
-    <form onSubmit={submit} noValidate className="flex flex-col gap-4">
+    <form onSubmit={submit} noValidate className="flex flex-col gap-4" data-tutorial="contact-form">
       <p className="text-sm text-ink-muted">{t("form.nameHint")}</p>
       <div className="grid gap-4 sm:grid-cols-2">
         {FIELDS.map((field) => {

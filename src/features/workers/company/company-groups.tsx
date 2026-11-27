@@ -69,7 +69,7 @@ export function CompanyGroups({ people, groups, failed, canEdit, onShow }: Props
   const byId = useMemo(() => new Map(current.map((p) => [p.id, p])), [current]);
 
   const add = (
-    <Button onClick={() => setEditing({ open: true, group: null })}>
+    <Button data-tutorial="company-group-add" onClick={() => setEditing({ open: true, group: null })}>
       <PlusIcon aria-hidden data-icon="inline-start" />
       {t("add")}
     </Button>
@@ -104,7 +104,7 @@ export function CompanyGroups({ people, groups, failed, canEdit, onShow }: Props
             const shown = ids.slice(0, AVATARS_SHOWN);
             return (
               <li key={group.id}>
-                <GlowCard className="flex h-full flex-col gap-3" data-group={group.id}>
+                <GlowCard className="flex h-full flex-col gap-3" data-group={group.id} data-tutorial="company-group-card">
                   <div className="flex items-start gap-2.5">
                     <span
                       aria-hidden
@@ -124,6 +124,7 @@ export function CompanyGroups({ people, groups, failed, canEdit, onShow }: Props
                           variant="ghost"
                           size="icon"
                           aria-label={t("edit", { name: group.name })}
+                          data-tutorial="company-group-edit"
                           onClick={() => setEditing({ open: true, group })}
                         >
                           <PencilIcon aria-hidden />

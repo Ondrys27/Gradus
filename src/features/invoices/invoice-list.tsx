@@ -65,6 +65,7 @@ export function InvoiceList() {
           <SearchIcon aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-muted" />
           <Input
             type="search"
+            data-tutorial="invoice-search"
             value={search}
             aria-label={t("search")}
             placeholder={t("searchPlaceholder")}
@@ -77,6 +78,7 @@ export function InvoiceList() {
         </div>
         <SimpleSelect
           id="invoice-filter"
+          data-tutorial="invoice-filter"
           aria-label={t("filterLabel")}
           value={filter}
           options={filters}
@@ -87,6 +89,7 @@ export function InvoiceList() {
         />
         <SimpleSelect
           id="invoice-sort"
+          data-tutorial="invoice-sort"
           aria-label={t("sortLabel")}
           value={sort}
           options={sorts}
@@ -152,6 +155,7 @@ function InvoiceRow({ invoice, today }: { invoice: InvoiceListRow; today: string
   return (
     <Link
       role="row"
+      data-tutorial="invoice-row"
       href={invoicePath(invoice.id)}
       aria-label={t("open", { number })}
       className={cn(

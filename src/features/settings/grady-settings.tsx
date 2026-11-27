@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { GraduationCapIcon, Trash2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useGuidePrefs, useSaveGuidePrefs } from "@/features/tutorial/guide/guide-prefs";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -50,6 +51,7 @@ export function GradyView() {
           action={
             <Button
               id="settings-help-tour"
+              data-tutorial="grady-start-tutorial"
               variant="secondary"
               onClick={() => gradyOverlay.requestTutorial()}
             >
@@ -113,6 +115,7 @@ function ProactiveSection() {
     <SettingsSection title={t("title")} description={t("description")}>
       <SettingRow
         id="settings-grady-proactive"
+        data-tutorial="grady-proactive"
         label={t("proactive")}
         hint={t("proactiveHint")}
         fields={["jarvis_proactive"]}
@@ -128,6 +131,7 @@ function ProactiveSection() {
 
       <SettingRow
         id="settings-grady-frequency"
+        data-tutorial="grady-frequency"
         label={t("frequency")}
         hint={t(`frequencyHint.${frequency}`)}
         fields={["jarvis_frequency"]}
@@ -152,6 +156,7 @@ function ProactiveSection() {
 
       <SettingRow
         id="settings-grady-quiet"
+        data-tutorial="grady-quiet"
         label={t("quiet.title")}
         hint={t("quiet.hint")}
         fields={["jarvis_quiet_from", "jarvis_quiet_to"]}
@@ -189,7 +194,27 @@ function ProactiveSection() {
           </div>
         </SettingRow>
       )}
+      <GuideOffersRow disabled={!on} />
     </SettingsSection>
+  );
+}
+
+/** Grady's offers of help in a section (30.8): "Don't offer again" in the offer turns them off, here on again. */
+function GuideOffersRow({ disabled }: { disabled: boolean }) {
+  const t = useTranslations("tutorial.guide.settings");
+  const prefs = useGuidePrefs();
+  const save = useSaveGuidePrefs();
+  return (
+    <SettingRow id="settings-grady-guide-offers" label={t("label")} hint={t("hint")}>
+      <div className="flex md:justify-end">
+        <Switch
+          id="settings-grady-guide-offers"
+          checked={prefs.offers}
+          disabled={disabled || !prefs.loaded}
+          onCheckedChange={(checked) => save.mutate({ offers: checked })}
+        />
+      </div>
+    </SettingRow>
   );
 }
 
@@ -209,6 +234,7 @@ function DemoDataRow() {
         action={
           <Button
             id="settings-help-demo"
+            data-tutorial="grady-demo-delete"
             variant="secondary"
             disabled={remove.isPending}
             onClick={() => setConfirming(true)}
@@ -242,6 +268,7 @@ function MessagesSection() {
     <SettingsSection title={t("title")} description={t("description")}>
       <SettingRow
         id="settings-chat-email"
+        data-tutorial="settings-chat-email"
         label={t("email")}
         hint={t("emailHint")}
         fields={["chat_email_notifications"]}
@@ -256,6 +283,7 @@ function MessagesSection() {
       </SettingRow>
       <SettingRow
         id="settings-chat-sound"
+        data-tutorial="settings-chat-sound"
         label={t("sound")}
         hint={t("soundHint")}
         fields={["chat_sound"]}

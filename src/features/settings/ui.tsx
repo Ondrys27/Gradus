@@ -80,6 +80,8 @@ type SettingRowProps = {
   group?: boolean;
   /** `stack` puts the control under the label at every width (grids, inputs with text). */
   layout?: "inline" | "stack";
+  /** The row's key in the catalog of controls a guide points at (30.8). */
+  "data-tutorial"?: string;
   children: ReactNode;
 };
 
@@ -96,6 +98,7 @@ export function SettingRow({
   state,
   group,
   layout = "inline",
+  "data-tutorial": tutorial,
   children,
 }: SettingRowProps) {
   const save = useSettingsSaveMaybe();
@@ -104,6 +107,7 @@ export function SettingRow({
   return (
     <div
       data-setting-row
+      data-tutorial={tutorial}
       className={cn(
         "flex scroll-mt-24 flex-col gap-3 rounded-xl py-4 first:pt-0 last:pb-0",
         layout === "inline" && "md:flex-row md:items-center md:justify-between md:gap-6",
@@ -242,15 +246,19 @@ export function ActionRow({
   label,
   hint,
   action,
+  "data-tutorial": tutorial,
 }: {
   id: string;
   label: string;
   hint?: ReactNode;
   action: ReactNode;
+  /** The row's key in the catalog of controls a guide points at (30.8). */
+  "data-tutorial"?: string;
 }) {
   return (
     <div
       data-setting-row
+      data-tutorial={tutorial}
       className="flex scroll-mt-24 flex-col gap-3 rounded-xl py-4 first:pt-0 last:pb-0 md:flex-row md:items-center md:justify-between md:gap-6"
     >
       <div className="flex min-w-0 flex-col gap-0.5">

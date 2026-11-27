@@ -55,7 +55,7 @@ export function MilestonesView() {
 
   const newButton = canEdit && (
     <div className="flex flex-wrap gap-2">
-      <Button variant="outline" onClick={() => setImporting(true)}>
+      <Button variant="outline" data-tutorial="milestone-import" onClick={() => setImporting(true)}>
         <FileUpIcon aria-hidden data-icon="inline-start" />
         {t("actions.import")}
       </Button>
@@ -74,6 +74,7 @@ export function MilestonesView() {
         <div
           role="group"
           aria-label={t("view.label")}
+          data-tutorial="milestone-path-view"
           className="inline-flex self-start rounded-full border border-line bg-canvas-deep/60 p-1"
         >
           {(["list", "path"] as const).map((key) => {
@@ -103,7 +104,12 @@ export function MilestonesView() {
         <PathMap />
       ) : (
         <>
-          <div role="group" aria-label={t("filter.label")} className="flex flex-wrap gap-2">
+          <div
+            role="group"
+            aria-label={t("filter.label")}
+            data-tutorial="milestone-filter"
+            className="flex flex-wrap gap-2"
+          >
             {FILTERS.map((key) => (
               <button
                 key={key}

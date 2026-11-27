@@ -120,7 +120,7 @@ export function CompanyDashboards({
           });
 
   return (
-    <div className="flex flex-col gap-4" data-testid="company-dashboards">
+    <div className="flex flex-col gap-4" data-testid="company-dashboards" data-tutorial="company-dashboards">
       <GlowCard interactive={false} className="flex flex-col gap-3">
         <p className="text-sm text-ink-soft">{t("intro")}</p>
         <div className="flex flex-wrap items-center gap-3">

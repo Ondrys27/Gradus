@@ -198,11 +198,20 @@ export function EventDetail({ event, onClose, onEdit, readOnly = false }: Props)
           )}
           {editable && (
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
-              <Button type="button" variant="destructive" onClick={() => setConfirming(true)}>
+              <Button
+                type="button"
+                variant="destructive"
+                data-tutorial="calendar-event-delete"
+                onClick={() => setConfirming(true)}
+              >
                 <Trash2Icon aria-hidden data-icon="inline-start" />
                 {t("detail.delete")}
               </Button>
-              <Button type="button" onClick={() => onEdit(current)}>
+              <Button
+                type="button"
+                data-tutorial="calendar-event-edit"
+                onClick={() => onEdit(current)}
+              >
                 <PencilIcon aria-hidden data-icon="inline-start" />
                 {t("detail.edit")}
               </Button>

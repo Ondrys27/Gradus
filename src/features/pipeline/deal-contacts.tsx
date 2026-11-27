@@ -46,7 +46,11 @@ export function DealContacts({ dealId, canEdit, className }: Props) {
   const headingId = `deal-contacts-${dealId}`;
 
   return (
-    <section aria-labelledby={headingId} className={cn("flex flex-col gap-3", className)}>
+    <section
+      aria-labelledby={headingId}
+      data-tutorial="deal-contacts"
+      className={cn("flex flex-col gap-3", className)}
+    >
       <div className="flex items-center justify-between gap-3">
         <h3 id={headingId} className="micro-label">
           {t("title")}

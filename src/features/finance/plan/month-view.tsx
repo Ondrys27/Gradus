@@ -296,7 +296,7 @@ export function MonthView({ month, onMonthChange, categoryNames }: Props) {
   return (
     <div className="flex flex-col gap-4" data-testid="finance-month">
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1" data-tutorial="plan-month-nav">
           <Button
             variant="ghost"
             size="icon"
@@ -326,6 +326,7 @@ export function MonthView({ month, onMonthChange, categoryNames }: Props) {
         {exists && (
           <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
             <Segmented
+              data-tutorial="plan-views"
               label={t("views.label")}
               value={view}
               options={PLAN_VIEWS.map((value) => ({ value, label: t(`views.${value}`) }))}
@@ -337,7 +338,7 @@ export function MonthView({ month, onMonthChange, categoryNames }: Props) {
 
       {exists && (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <label className="flex min-h-11 items-center gap-2 text-sm text-ink-soft">
+          <label className="flex min-h-11 items-center gap-2 text-sm text-ink-soft" data-tutorial="plan-hide-empty">
             <Switch checked={hideEmpty} onCheckedChange={setHideEmpty} />
             {t("hideEmpty")}
             {hideEmpty && model && model.hiddenRows > 0 && (
@@ -346,7 +347,7 @@ export function MonthView({ month, onMonthChange, categoryNames }: Props) {
           </label>
           <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
             {canWrite && next.data && !next.data.month && (
-              <Button variant="outline" onClick={() => setCarrying(true)}>
+              <Button variant="outline" data-tutorial="plan-carry" onClick={() => setCarrying(true)}>
                 <CopyPlusIcon aria-hidden data-icon="inline-start" />
                 {t("carry", { next: names.name(nextMonth), from: names.from(month) })}
               </Button>
@@ -354,6 +355,7 @@ export function MonthView({ month, onMonthChange, categoryNames }: Props) {
             <Menu.Root>
               <Menu.Trigger
                 render={<Button variant="outline" />}
+                data-tutorial="plan-export"
                 aria-label={t("export.label")}
               >
                 <DownloadIcon aria-hidden data-icon="inline-start" />
@@ -375,6 +377,7 @@ export function MonthView({ month, onMonthChange, categoryNames }: Props) {
             {canWrite && (
               <Menu.Root>
                 <Menu.Trigger
+                  data-tutorial="plan-more"
                   aria-label={t("more")}
                   className="grid size-11 cursor-pointer place-items-center rounded-xl border border-line text-ink-soft outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40 mouse:size-9"
                 >
@@ -384,13 +387,14 @@ export function MonthView({ month, onMonthChange, categoryNames }: Props) {
                   <Menu.Positioner sideOffset={4} align="end" className="z-popover">
                     <Menu.Popup className="min-w-52 rounded-xl border border-line-strong bg-surface p-1.5 shadow-popover outline-none">
                       {!closed && (
-                        <Menu.Item className={itemClass} onClick={() => setImporting(true)}>
+                        <Menu.Item className={itemClass} data-tutorial="plan-import" onClick={() => setImporting(true)}>
                           <UploadIcon aria-hidden />
                           {t("import.menu")}
                         </Menu.Item>
                       )}
                       <Menu.Item
                         className={itemClass}
+                        data-tutorial="plan-close"
                         onClick={() => updateMonth.mutate({ closed: !closed }, { onError: fail })}
                       >
                         {closed ? <LockOpenIcon aria-hidden /> : <LockIcon aria-hidden />}
@@ -426,6 +430,7 @@ export function MonthView({ month, onMonthChange, categoryNames }: Props) {
                 )}
                 <Button
                   variant={previous.data?.month ? "outline" : "default"}
+                  data-tutorial="plan-create-month"
                   onClick={() => setCreating("empty")}
                 >
                   <PlusIcon aria-hidden data-icon="inline-start" />

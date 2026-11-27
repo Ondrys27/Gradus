@@ -118,6 +118,7 @@ function NoteRow({
           aria-label={t("moveToTrash", { title })}
           title={t("moveToTrash", { title })}
           data-testid="note-row-delete"
+          data-tutorial="note-row-delete"
           className={cn(
             "absolute top-1/2 right-1 grid size-11 -translate-y-1/2 place-items-center rounded-lg text-destructive outline-none transition-opacity",
             "hover:bg-destructive/12 focus-visible:ring-3 focus-visible:ring-destructive/40 mouse:size-9",
@@ -204,6 +205,7 @@ export function NotesList({
           placeholder={t("searchPlaceholder")}
           aria-label={t("searchLabel")}
           data-testid="notes-search"
+          data-tutorial="notes-search"
           className="!border-transparent !bg-surface/60 !pl-10 [&::-webkit-search-cancel-button]:hidden"
         />
         {query && (

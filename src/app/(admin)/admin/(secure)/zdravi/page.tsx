@@ -53,9 +53,11 @@ export default async function AdminHealthPage({ searchParams }: Props) {
         <Suspense fallback={<GridSkeleton count={2} height={180} />}>
           <Breakdowns q={q} />
         </Suspense>
-        <Suspense fallback={<CardSkeleton height={240} />}>
-          <Cron q={q} />
-        </Suspense>
+        <div data-tutorial="admin-health-cron">
+          <Suspense fallback={<CardSkeleton height={240} />}>
+            <Cron q={q} />
+          </Suspense>
+        </div>
         <Suspense fallback={<CardSkeleton height={200} />}>
           <ExchangeRates />
         </Suspense>

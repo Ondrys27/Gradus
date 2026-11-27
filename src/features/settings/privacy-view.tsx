@@ -39,6 +39,7 @@ export function PrivacyView() {
           action={
             <a
               id="settings-account-export"
+              data-tutorial="settings-export"
               href={EXPORT_URL}
               download
               className={buttonVariants({ variant: "secondary" })}
@@ -87,6 +88,7 @@ export function PrivacyView() {
           action={
             <Button
               id="settings-account-delete"
+              data-tutorial="settings-delete-account"
               variant="destructive"
               onClick={() => setDeleting(true)}
             >
@@ -114,6 +116,7 @@ function OnlineSection() {
     <SettingsSection title={t("title")} description={t("description")}>
       <SettingRow
         id="settings-show-online"
+        data-tutorial="settings-show-online"
         label={t("label")}
         hint={t("hint", { appName: APP_NAME })}
         fields={["show_online"]}

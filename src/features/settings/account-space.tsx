@@ -32,7 +32,7 @@ export function PublicIdSection() {
 
   return (
     <SettingsSection title={t("title")} description={t("description")}>
-      <SettingRow id="settings-public-id" label={t("label")} hint={t("hint")} group layout="stack">
+      <SettingRow id="settings-public-id" label={t("label")} hint={t("hint")} group layout="stack" data-tutorial="settings-public-id">
         <div
           id="settings-public-id"
           tabIndex={-1}
@@ -130,6 +130,7 @@ export function CompanySection() {
     <SettingsSection title={t("title")}>
       <SettingRow
         id="settings-company-name"
+        data-tutorial="settings-company-name"
         label={t("name")}
         hint={t("nameHint")}
         state={marks.stateOf(["company_name"])}
@@ -150,7 +151,7 @@ export function CompanySection() {
           }}
         />
       </SettingRow>
-      <SettingRow id="settings-company-logo" label={t("logo")} group layout="stack">
+      <SettingRow id="settings-company-logo" label={t("logo")} group layout="stack" data-tutorial="settings-company-logo">
         <div id="settings-company-logo" tabIndex={-1} className="rounded-xl outline-none">
           <AvatarEditor kind="companyLogo" />
         </div>

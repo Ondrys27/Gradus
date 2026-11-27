@@ -49,6 +49,7 @@ export function GradyButton({
     >
       <button
         type="button"
+        data-tutorial="grady-button"
         onClick={onClick}
         aria-label={
           noticed

@@ -108,6 +108,7 @@ export function ItemChip({ item, onOpen, showTime, className }: Props) {
   return (
     <button
       type="button"
+      data-tutorial="calendar-item"
       onClick={(event) => {
         event.stopPropagation();
         onOpen(item);

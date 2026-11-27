@@ -97,7 +97,7 @@ export function UserSubscriptionForm({
   }
 
   return (
-    <form onSubmit={submit} noValidate className="flex flex-col gap-4" data-testid="user-subscription-form">
+    <form onSubmit={submit} noValidate className="flex flex-col gap-4" data-testid="user-subscription-form" data-tutorial="admin-user-subscription">
       {stripe && <StripeWarning testId="user-subscription-stripe-warning">{t("stripeWarning")}</StripeWarning>}
       <div className="grid gap-4 sm:grid-cols-3">
         <FormField id="subscription-plan" label={t("form.planLabel")}>

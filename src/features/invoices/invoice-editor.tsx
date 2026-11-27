@@ -234,6 +234,7 @@ export function InvoiceEditor({
           type="button"
           variant="secondary"
           className="self-start"
+          data-tutorial="invoice-add-item"
           onClick={() =>
             update({
               items: [
@@ -337,7 +338,7 @@ export function InvoiceEditor({
   );
 
   const preview = doc ? (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2" data-tutorial="invoice-preview">
       <span className="micro-label">{t("preview")}</span>
       <InvoicePaper doc={doc} label={t("previewLabel")} />
     </div>
@@ -371,6 +372,7 @@ export function InvoiceEditor({
             <Button
               type="button"
               variant="secondary"
+              data-tutorial="invoice-save-draft"
               disabled={busy}
               onClick={() => void saveDraft()}
             >
@@ -569,6 +571,7 @@ function CustomerFields({
             />
             <Input
               value={term}
+              data-tutorial="invoice-customer"
               aria-label={t("search")}
               placeholder={t("searchPlaceholder")}
               autoComplete="off"

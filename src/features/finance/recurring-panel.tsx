@@ -95,6 +95,7 @@ function RecurringRow({
     >
       <button
         type="button"
+        data-tutorial="finance-recurring-row"
         disabled={!onEdit}
         onClick={() => onEdit?.(payment)}
         className="flex min-h-16 min-w-0 flex-1 cursor-pointer disabled:cursor-default disabled:hover:bg-transparent items-center gap-3 rounded-2xl p-3 text-left outline-none hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-violet/40"

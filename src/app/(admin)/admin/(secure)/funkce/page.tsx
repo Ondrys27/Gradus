@@ -63,6 +63,7 @@ export default async function AdminFeaturesPage({ searchParams }: Props) {
   const tabs = (
     <nav
       aria-label={t("tabs")}
+      data-tutorial="admin-features-tabs"
       className="-mx-4 flex gap-1 overflow-x-auto px-4 [scrollbar-width:none] lg:-mx-6 lg:px-6"
     >
       {FEATURE_SECTIONS.map((section) => {

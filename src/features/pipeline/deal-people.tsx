@@ -119,6 +119,7 @@ export function DealPeopleSelect({
     >
       <SelectTrigger
         id={id}
+        data-tutorial="deal-people"
         aria-label={t("label", { people: label(value) })}
         className={cn("text-sm mouse:min-h-9", className)}
       >

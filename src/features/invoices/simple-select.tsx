@@ -19,6 +19,7 @@ export function SimpleSelect({
   onChange,
   disabled,
   "aria-label": ariaLabel,
+  "data-tutorial": tutorial,
 }: {
   id: string;
   value: string;
@@ -26,6 +27,8 @@ export function SimpleSelect({
   onChange: (value: string) => void;
   disabled?: boolean;
   "aria-label"?: string;
+  /** Passed to the trigger, for the guide (30.8). */
+  "data-tutorial"?: string;
 }) {
   const items = useMemo(() => options.map(({ value, label }) => ({ value, label })), [options]);
   return (
@@ -37,7 +40,7 @@ export function SimpleSelect({
         if (typeof next === "string" && next !== value) onChange(next);
       }}
     >
-      <SelectTrigger id={id} aria-label={ariaLabel}>
+      <SelectTrigger id={id} aria-label={ariaLabel} data-tutorial={tutorial}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent className="max-h-[min(var(--available-height),360px)]">

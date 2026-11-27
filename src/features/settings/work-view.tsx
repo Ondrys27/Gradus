@@ -46,6 +46,7 @@ export function WorkView() {
         <SettingsSection title={t("pipeline.title")} description={t("pipeline.description")}>
           <SettingRow
             id="settings-reengage"
+            data-tutorial="settings-reengage"
             label={t("pipeline.reengage")}
             hint={t("pipeline.reengageHint")}
             fields={["reengage_after_months"]}
@@ -63,6 +64,7 @@ export function WorkView() {
         <SettingsSection title={t("coldCalling.title")} description={t("coldCalling.description")}>
           <SettingRow
             id="settings-cold-calling-stage"
+            data-tutorial="settings-cold-calling-stage"
             label={t("coldCalling.dealStage")}
             hint={t("coldCalling.dealStageHint")}
             fields={["cold_calling_deal_stage_id"]}

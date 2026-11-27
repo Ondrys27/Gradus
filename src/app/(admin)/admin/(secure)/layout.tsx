@@ -9,6 +9,7 @@ import {
 } from "@/features/admin/ui/admin-nav";
 import { AdminViewMain, AdminViewProvider } from "@/features/admin/ui/admin-view";
 import { AdminAnchorHighlight } from "@/features/admin/ui/anchor-highlight";
+import { AdminGuide } from "@/features/tutorial/guide/admin-guide";
 
 /**
  * Everything inside needs the owner or an admin with the second factor and a
@@ -35,6 +36,7 @@ export default async function AdminSecureLayout({ children }: { children: React.
           <AdminBottomNav actor={{ role: context.role, level: context.level }} />
           <AdminHotkeys actor={{ role: context.role, level: context.level }} />
           <AdminAnchorHighlight />
+          <AdminGuide actor={{ role: context.role, level: context.level }} />
         </Suspense>
         <AdminIdleGuard expiresAt={context.expiresAt} />
       </div>

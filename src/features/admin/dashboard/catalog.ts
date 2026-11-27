@@ -94,6 +94,8 @@ export const ADMIN_WIDGETS = [
   { key: "scheduler", category: "product", sizes: ["S", "M"], defaultSize: "S", href: `${P}/pruzkumnik`, ...withPeriod },
   { key: "mcp", category: "product", sizes: ["S", "M"], defaultSize: "S", href: `${P}/pruzkumnik`, ...withPeriod },
   { key: "satisfaction", category: "product", sizes: ["S", "M", "L"], defaultSize: "M", href: `${P}/zpetna-vazba`, ...withPeriod },
+  // "What people ask about" (30.8): the most asked questions to Grady's guide, by section, anonymous.
+  { key: "guideQuestions", category: "product", sizes: ["M", "L"], defaultSize: "L", href: `${P}/zpetna-vazba`, ...withPeriod },
   // --- Management -----------------------------------------------------------
   { key: "audit", category: "management", sizes: ["M", "L"], defaultSize: "L", href: `${P}/audit`, ...noSettings },
   { key: "waiting", category: "management", sizes: ["S", "M", "L"], defaultSize: "M", href: P, detail: false, ...noSettings },

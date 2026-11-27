@@ -189,6 +189,7 @@ function DashboardBody({
         />
         <div
           role="tablist"
+          data-tutorial="worker-tabs"
           aria-label={t("sections")}
           className="-mx-1 mt-4 flex overflow-x-auto overscroll-x-contain [scrollbar-width:none]"
         >
@@ -294,7 +295,7 @@ function AssignTaskButton({ worker }: { worker: DashboardWorker }) {
   if (worker.status === "inactive" || workspace.readOnly) return null;
   return (
     <>
-      <Button variant="outline" onClick={() => setOpen(true)}>
+      <Button variant="outline" data-tutorial="worker-assign-task" onClick={() => setOpen(true)}>
         <ClipboardPlusIcon aria-hidden data-icon="inline-start" />
         {t("assignTask")}
       </Button>

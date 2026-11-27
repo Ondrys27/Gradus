@@ -223,7 +223,7 @@ export function AdminChart({
   const multi = data.series.length > 1;
 
   return (
-    <figure className="flex min-w-0 flex-col gap-2" aria-label={title}>
+    <figure data-tutorial="admin-chart" className="flex min-w-0 flex-col gap-2" aria-label={title}>
       {/* The legend only when there is more than one series; a lone series is the title. */}
       {(multi || zoomed) && (
         <div className="flex flex-wrap items-center justify-between gap-2">

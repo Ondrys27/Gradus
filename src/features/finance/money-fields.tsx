@@ -80,6 +80,7 @@ export function MoneyFields({ idPrefix, draft, errors, descriptionRequired, onCh
       <FormField id={`${idPrefix}-amount`} label={t("form.amount")} error={err("amount")}>
         <Input
           {...fieldA11y(`${idPrefix}-amount`, err("amount"))}
+          data-tutorial="finance-amount"
           value={draft.amount}
           inputMode="decimal"
           autoComplete="off"

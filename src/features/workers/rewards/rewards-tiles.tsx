@@ -44,7 +44,7 @@ export function RewardsTiles({
   const count = (value: number) => formatNumber(value, {}, settings);
 
   return (
-    <div className="flex flex-col gap-2" data-testid="reward-tiles">
+    <div className="flex flex-col gap-2" data-testid="reward-tiles" data-tutorial="reward-tiles">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile
           label={t("earned")}

@@ -48,7 +48,11 @@ export default async function AdminPromoCodesPage() {
       <AdminPageBar
         title={t("title")}
         description={t("description")}
-        controls={<PromoCodeDialog />}
+        controls={
+          <div data-tutorial="admin-promo-new">
+            <PromoCodeDialog />
+          </div>
+        }
       />
       <div className="flex flex-col gap-4">
         <AdminCard title={t("summary.title")} description={t("summary.description")}>
@@ -85,7 +89,11 @@ export default async function AdminPromoCodesPage() {
             <p className="text-sm text-ink-muted">{t("list.empty")}</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[860px] text-sm" data-testid="promo-codes">
+              <table
+                className="w-full min-w-[860px] text-sm"
+                data-testid="promo-codes"
+                data-tutorial="admin-promo-list"
+              >
                 <thead>
                   <tr className="text-left text-xs text-ink-muted">
                     <th className="py-2 pr-4 font-medium">{t("columns.code")}</th>

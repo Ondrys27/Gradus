@@ -102,7 +102,7 @@ export function SubscriptionPage({
         <EmptyState title={t("workerTitle")} description={t("workerText")} />
       ) : (
         <>
-          <div id="settings-plan" tabIndex={-1} data-setting-row className="rounded-card outline-none">
+          <div id="settings-plan" tabIndex={-1} data-setting-row data-tutorial="settings-plan-card" className="rounded-card outline-none">
             <CurrentPlan prices={prices} payments={payments} checkout={checkout} rates={rates} />
           </div>
           {addOns.length > 0 && (
@@ -110,13 +110,13 @@ export function SubscriptionPage({
               <AddOnsCard addOns={addOns} currency={settings.currency} rates={rates} />
             </div>
           )}
-          <div id="settings-promo" tabIndex={-1} data-setting-row className="rounded-card outline-none">
+          <div id="settings-promo" tabIndex={-1} data-setting-row data-tutorial="settings-promo" className="rounded-card outline-none">
             <PromoCard plans={prices.plans} currency={prices.currency} />
           </div>
-          <div id="settings-payments" tabIndex={-1} data-setting-row className="rounded-card outline-none">
+          <div id="settings-payments" tabIndex={-1} data-setting-row data-tutorial="settings-payments" className="rounded-card outline-none">
             <PaymentHistory plans={plans} />
           </div>
-          <div id="settings-billing" tabIndex={-1} data-setting-row className="rounded-card outline-none">
+          <div id="settings-billing" tabIndex={-1} data-setting-row data-tutorial="settings-billing" className="rounded-card outline-none">
             <BillingDetailsForm />
           </div>
           {/* The app's own owner also sees how the accounts of the app are doing. */}
@@ -351,7 +351,7 @@ function CurrentPlan({
               <PayButton planKey={payFor.planKey} billing={payFor.billing} from="settings" />
             )}
             {!block && (
-              <Button variant={checkoutMode ? "outline" : "default"} onClick={() => setChanging(true)}>
+              <Button variant={checkoutMode ? "outline" : "default"} data-tutorial="settings-change-plan" onClick={() => setChanging(true)}>
                 {t("actions.change")}
               </Button>
             )}
@@ -362,7 +362,7 @@ function CurrentPlan({
             )}
             {portal && <PortalButton from="settings" />}
             {canCancel(sub, now) && (
-              <Button variant="ghost" className="text-ink-soft sm:ml-auto" onClick={() => setCancelling(true)}>
+              <Button variant="ghost" data-tutorial="settings-cancel-plan" className="text-ink-soft sm:ml-auto" onClick={() => setCancelling(true)}>
                 {t("actions.cancel")}
               </Button>
             )}

@@ -233,7 +233,7 @@ export function NotesNav(props: Props) {
     });
 
   return (
-    <nav aria-label={t("label")} className="flex flex-col gap-0.5" data-testid="notes-nav">
+    <nav aria-label={t("label")} className="flex flex-col gap-0.5" data-testid="notes-nav" data-tutorial="notes-nav">
       <div
         {...dropMine.props}
         className={cn("rounded-xl", current?.kind === "mine" ? "bg-violet/14" : "hover:bg-surface/70", dropMine.over && "ring-2 ring-violet/60")}
@@ -255,6 +255,7 @@ export function NotesNav(props: Props) {
         onClick={() => onScope({ kind: "shared" })}
         aria-current={current?.kind === "shared" ? "true" : undefined}
         data-testid="notes-scope-shared"
+        data-tutorial="notes-shared"
         className={cn(rowClass, current?.kind === "shared" ? "bg-violet/14" : "hover:bg-surface/70")}
       >
         <UsersRoundIcon aria-hidden className="size-4 shrink-0 text-teal" />
@@ -271,6 +272,7 @@ export function NotesNav(props: Props) {
             aria-label={t("newFolder")}
             title={t("newFolder")}
             data-testid="notes-folder-new"
+            data-tutorial="notes-folder-new"
             className="grid size-11 cursor-pointer place-items-center rounded-lg text-ink-muted outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-ring/50 mouse:size-8"
           >
             <PlusIcon aria-hidden className="size-4" />
@@ -322,6 +324,7 @@ export function NotesNav(props: Props) {
         onClick={onOpenTrash}
         aria-current={trashOpen ? "true" : undefined}
         data-testid="notes-trash-open"
+        data-tutorial="notes-trash"
         className={cn(rowClass, "mt-2 text-sm", trashOpen ? "bg-violet/14 text-ink" : "text-ink-muted hover:text-ink")}
       >
         <Trash2Icon aria-hidden className="size-4" />

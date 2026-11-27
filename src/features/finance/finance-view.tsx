@@ -140,7 +140,9 @@ export function FinanceView({
               </Link>
             )
           ) : !canEdit || tab === "month" || tab === "overview" ? null : (
-            <Button onClick={() => (tab === "recurring" ? setPayment(null) : setTransaction(null))}>
+            <Button
+              data-tutorial={tab === "recurring" ? "finance-recurring-add" : "finance-add"}
+              onClick={() => (tab === "recurring" ? setPayment(null) : setTransaction(null))}>
               <PlusIcon aria-hidden data-icon="inline-start" />
               {tab === "recurring" ? t("actions.newRecurring") : t("actions.newTransaction")}
             </Button>
@@ -149,6 +151,7 @@ export function FinanceView({
       />
 
       <Segmented
+        data-tutorial="finance-tabs"
         label={t("tabs.label")}
         value={tab}
         options={tabs}
@@ -168,7 +171,7 @@ export function FinanceView({
               if (PERIOD_KINDS.includes(next as PeriodKind)) setPeriod(next as PeriodKind);
             }}
           >
-            <SelectTrigger id="finance-period">
+            <SelectTrigger id="finance-period" data-tutorial="finance-period">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -201,7 +204,7 @@ export function FinanceView({
         {tab === "invoices" && <InvoiceList />}
         {tab === "month" && <MonthView month={month} onMonthChange={changeMonth} categoryNames={categoryNames} />}
         {tab === "overview" && canSeeSummaries && (
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6" data-tutorial="finance-overview">
             <SummaryTiles range={range} />
             <GlowCard interactive={false}>
               <IncomeChart today={today} />

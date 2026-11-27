@@ -14,6 +14,7 @@ import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import {
   ArrowUpIcon,
+  CircleHelpIcon,
   FileSpreadsheetIcon,
   FileTextIcon,
   FlagIcon,
@@ -33,6 +34,8 @@ import { useReportProblem } from "@/features/feedback/report-provider";
 import { mightBeProblemReport } from "@/features/grady/problem-report";
 import { gradyOverlay } from "@/features/grady/overlay-store";
 import { SaveAnswerToNotes } from "@/features/notes/save-answer";
+import { guide } from "@/features/tutorial/guide/guide-store";
+import { isHowQuestion } from "@/features/tutorial/guide/question";
 import { SuggestionCard, useSuggestionActions } from "@/components/grady/suggestion-card";
 import {
   ACCEPTED_EXTENSIONS,
@@ -69,6 +72,7 @@ type GradyPanelProps = {
  */
 export function GradyPanel({ chat, onClose }: GradyPanelProps) {
   const t = useTranslations("grady");
+  const tGuide = useTranslations("tutorial");
   const settings = useFormatSettings();
   const report = useReportProblem();
   const reduceMotion = useReducedMotionSafe();
@@ -251,6 +255,7 @@ export function GradyPanel({ chat, onClose }: GradyPanelProps) {
         <button
           type="button"
           onClick={chat.reset}
+          data-tutorial="grady-new-chat"
           disabled={busy || messages.length === 0}
           aria-label={t("newChat")}
           title={t("newChat")}
@@ -261,6 +266,7 @@ export function GradyPanel({ chat, onClose }: GradyPanelProps) {
         <button
           type="button"
           data-testid="grady-tutorial"
+          data-tutorial="grady-tutorial"
           onClick={() => {
             onClose();
             gradyOverlay.requestTutorial();
@@ -274,6 +280,7 @@ export function GradyPanel({ chat, onClose }: GradyPanelProps) {
         <button
           type="button"
           onClick={() => report.open("jarvis")}
+          data-tutorial="grady-report"
           aria-label={t("reportProblem")}
           title={t("reportProblem")}
           className="grid size-11 place-items-center rounded-full text-ink-soft outline-none transition-colors hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-teal/50"
@@ -295,6 +302,7 @@ export function GradyPanel({ chat, onClose }: GradyPanelProps) {
         <section
           aria-label={t("suggestion.heading")}
           data-testid="grady-noticed"
+          data-tutorial="grady-noticed"
           tabIndex={0}
           onKeyDown={queueKeyDown(queue.previous, queue.next)}
           className="shrink-0 border-b border-line px-4 pt-1 pb-3 outline-none focus-visible:ring-3 focus-visible:ring-teal/50 focus-visible:ring-inset"
@@ -334,6 +342,7 @@ export function GradyPanel({ chat, onClose }: GradyPanelProps) {
 
       <div
         ref={listRef}
+        data-tutorial="grady-messages"
         aria-live="polite"
         aria-busy={busy}
         className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain px-4 py-4"
@@ -384,6 +393,21 @@ export function GradyPanel({ chat, onClose }: GradyPanelProps) {
                     {t("reportProblem")}
                   </button>
                 )}
+              {/* An answer about using the app (30.8): Grady shows it on the screen too. */}
+              {messages[index - 1]?.role === "user" && isHowQuestion(messages[index - 1]?.content ?? "") && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isPhone) onClose();
+                    guide.ask(messages[index - 1]!.content, "chat");
+                  }}
+                  data-testid="grady-show-on-screen"
+                  className="inline-flex min-h-11 items-center gap-2 self-start rounded-full border border-teal/40 bg-teal/10 px-3.5 text-sm text-ink outline-none transition-colors hover:bg-teal/20 focus-visible:ring-3 focus-visible:ring-teal/50 mouse:min-h-9"
+                >
+                  <CircleHelpIcon aria-hidden className="size-4 text-teal" />
+                  {tGuide("guide.showOnScreen")}
+                </button>
+              )}
             </div>
           ),
         )}
@@ -420,7 +444,7 @@ export function GradyPanel({ chat, onClose }: GradyPanelProps) {
       </div>
 
       {showChips && (
-        <div aria-label={t("suggestions")} role="group" className="flex flex-wrap gap-2 px-4 pb-2">
+        <div aria-label={t("suggestions")} role="group" data-tutorial="grady-chips" className="flex flex-wrap gap-2 px-4 pb-2">
           {suggestions.map((key: SuggestionKey) => (
             <button
               key={key}
@@ -469,6 +493,7 @@ export function GradyPanel({ chat, onClose }: GradyPanelProps) {
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
+          data-tutorial="grady-attach"
           disabled={busy || files.length >= MAX_FILES_PER_MESSAGE}
           aria-label={t("files.attach")}
           title={t("files.hint", {
@@ -493,6 +518,7 @@ export function GradyPanel({ chat, onClose }: GradyPanelProps) {
         />
         <button
           type="submit"
+          data-tutorial="grady-send"
           disabled={!canSend}
           aria-label={t("send")}
           className="grid size-11 shrink-0 place-items-center rounded-full bg-violet text-on-violet outline-none transition-opacity focus-visible:ring-3 focus-visible:ring-violet/50 disabled:opacity-40"

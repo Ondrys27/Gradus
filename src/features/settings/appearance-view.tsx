@@ -107,6 +107,7 @@ export function AppearanceView() {
         </SettingRow>
         <SettingRow
           id="settings-theme-schedule-row"
+          data-tutorial="appearance-schedule"
           label={t("appearance.schedule.title")}
           hint={t("appearance.schedule.description")}
           fields={["theme_schedule"]}
@@ -117,6 +118,7 @@ export function AppearanceView() {
         </SettingRow>
         <SettingRow
           id="settings-sound"
+          data-tutorial="appearance-sound"
           label={t("gameplay.sound")}
           hint={t("gameplay.soundHint")}
           fields={["sound_enabled"]}
@@ -131,6 +133,7 @@ export function AppearanceView() {
         </SettingRow>
         <SettingRow
           id="settings-animations"
+          data-tutorial="appearance-animations"
           label={t("gameplay.animations")}
           hint={t("gameplay.animationsHint")}
           fields={["animations_enabled"]}
@@ -174,6 +177,7 @@ export function AppearanceView() {
 
         <SettingRow
           id="settings-timezone"
+          data-tutorial="appearance-timezone"
           label={t("region.timeZone")}
           hint={
             <>
@@ -199,6 +203,7 @@ export function AppearanceView() {
 
         <SettingRow
           id="settings-currency"
+          data-tutorial="appearance-currency"
           label={t("region.currency")}
           hint={t("region.currencyHint")}
           fields={["currency"]}
@@ -211,7 +216,7 @@ export function AppearanceView() {
           />
         </SettingRow>
 
-        <SettingRow id="settings-date" label={t("region.dateFormat")} fields={["date_format"]}>
+        <SettingRow id="settings-date" label={t("region.dateFormat")} fields={["date_format"]} data-tutorial="appearance-date-format">
           <OptionSelect
             id="settings-date"
             value={settings.date_format}

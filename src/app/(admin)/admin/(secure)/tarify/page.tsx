@@ -61,24 +61,26 @@ export default async function AdminPlansPage() {
       <AdminPageBar title={t("title")} description={t("description")} />
       <div className="flex flex-col gap-4">
         {canEdit ? (
-          <PlansEditor
-            published={{
-              id: versions.published.id,
-              catalog: versions.published.catalog,
-              addOns: versions.published.addOns,
-            }}
-            draft={
-              versions.draft
-                ? {
-                    catalog: versions.draft.catalog,
-                    addOns: versions.draft.addOnsStored ? versions.draft.addOns : null,
-                    createdAt: versions.draft.createdAt,
-                  }
-                : null
-            }
-            rates={rates}
-            previewMessages={PREVIEW_MESSAGES}
-          />
+          <div data-tutorial="admin-plans-editor">
+            <PlansEditor
+              published={{
+                id: versions.published.id,
+                catalog: versions.published.catalog,
+                addOns: versions.published.addOns,
+              }}
+              draft={
+                versions.draft
+                  ? {
+                      catalog: versions.draft.catalog,
+                      addOns: versions.draft.addOnsStored ? versions.draft.addOns : null,
+                      createdAt: versions.draft.createdAt,
+                    }
+                  : null
+              }
+              rates={rates}
+              previewMessages={PREVIEW_MESSAGES}
+            />
+          </div>
         ) : (
           <AdminCard title={t("preview.publishedTitle")} description={t("readOnly")}>
             <PlansPreview
@@ -89,22 +91,34 @@ export default async function AdminPlansPage() {
             />
           </AdminCard>
         )}
-        <AdminCard title={t("counts.title")} description={t("counts.description")} id="plans-accounts">
+        <AdminCard
+          title={t("counts.title")}
+          description={t("counts.description")}
+          id="plans-accounts"
+        >
           <PlanCounts
             counts={counts}
             t={t}
             planLabel={(key) =>
-              tControls.has(`segmentValues.plan.${key}`) ? tControls(`segmentValues.plan.${key}`) : key
+              tControls.has(`segmentValues.plan.${key}`)
+                ? tControls(`segmentValues.plan.${key}`)
+                : key
             }
           />
         </AdminCard>
-        <AdminCard title={t("history.title")} description={t("history.description")} id="plans-history">
-          <PlansHistory
-            current={toHistory(versions.published)}
-            history={versions.history.map(toHistory)}
-            readOnly={!canEdit}
-          />
-        </AdminCard>
+        <div data-tutorial="admin-plans-history">
+          <AdminCard
+            title={t("history.title")}
+            description={t("history.description")}
+            id="plans-history"
+          >
+            <PlansHistory
+              current={toHistory(versions.published)}
+              history={versions.history.map(toHistory)}
+              readOnly={!canEdit}
+            />
+          </AdminCard>
+        </div>
       </div>
     </>
   );
@@ -124,7 +138,8 @@ function PlanCounts({
 }) {
   if (counts.length === 0) return <p className="text-sm text-ink-muted">{t("counts.empty")}</p>;
   const n = (value: number) => formatNumber(value, {}, ADMIN_FORMAT_SETTINGS);
-  const rank = (key: string) => (PLAN_ORDER.includes(key) ? PLAN_ORDER.indexOf(key) : PLAN_ORDER.length);
+  const rank = (key: string) =>
+    PLAN_ORDER.includes(key) ? PLAN_ORDER.indexOf(key) : PLAN_ORDER.length;
   const rows = [...counts].sort((a, b) => rank(a.planKey) - rank(b.planKey));
   return (
     <div className="overflow-x-auto">
@@ -142,9 +157,13 @@ function PlanCounts({
           {rows.map((row) => (
             <tr key={row.planKey} className="border-t border-line/60">
               <td className="py-2 pr-4 text-ink">{planLabel(row.planKey)}</td>
-              <td className="py-2 pr-4 text-right font-semibold text-ink tabular-nums">{n(row.accounts)}</td>
+              <td className="py-2 pr-4 text-right font-semibold text-ink tabular-nums">
+                {n(row.accounts)}
+              </td>
               <td className="py-2 pr-4 text-right text-ink-soft tabular-nums">{n(row.trialing)}</td>
-              <td className="py-2 pr-4 text-right text-ink-soft tabular-nums">{n(row.cancelling)}</td>
+              <td className="py-2 pr-4 text-right text-ink-soft tabular-nums">
+                {n(row.cancelling)}
+              </td>
               <td className="py-2 text-right text-ink-soft tabular-nums">{n(row.expired)}</td>
             </tr>
           ))}

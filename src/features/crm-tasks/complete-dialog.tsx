@@ -84,6 +84,7 @@ function NoteForm({
       <FormField id="crm-task-note" label={t("note")} hint={t("hint")}>
         <Textarea
           id="crm-task-note"
+          data-tutorial="crm-task-note"
           aria-describedby="crm-task-note-message"
           value={note}
           rows={3}

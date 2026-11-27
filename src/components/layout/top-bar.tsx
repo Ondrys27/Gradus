@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -10,6 +10,7 @@ import { useCloseOnErrorScreen } from "@/features/errors/error-screen-state";
 import { useLevelUnseen } from "@/features/game/overview-queries";
 import { useGameState, useIsPlaying } from "@/features/game/queries";
 import { SearchIconButton, SearchTrigger } from "@/features/search/search-trigger";
+import { GuideButton } from "@/features/tutorial/guide/guide-button";
 import { useAnimationsEnabled } from "@/lib/animation-preference";
 import { formatNumber } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
@@ -155,6 +156,9 @@ export function TopBar() {
               </motion.button>
             </div>
           )}
+          <Suspense>
+            <GuideButton />
+          </Suspense>
           <InboxBell />
           <SpaceSwitcher className="hidden md:inline-flex" />
           <AccountMenu />

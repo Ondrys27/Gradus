@@ -140,7 +140,7 @@ export function WorkTable({ worker, canReview }: { worker: DashboardWorker; canR
   const act = (ids: string[], action: ReviewAction) => review.mutate({ ids, action });
 
   return (
-    <GlowCard interactive={false} className="flex flex-col gap-4" data-testid="reward-work-table">
+    <GlowCard interactive={false} className="flex flex-col gap-4" data-testid="reward-work-table" data-tutorial="reward-work-table">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="text-base font-semibold text-ink">{t("title")}</h3>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">

@@ -102,7 +102,7 @@ export function TimerCard() {
   }
 
   return (
-    <GlowCard interactive={false} className="flex flex-col gap-4">
+    <GlowCard interactive={false} className="flex flex-col gap-4" data-tutorial="call-timer">
       <div className="flex items-center justify-between gap-3">
         <h2 className="micro-label">{t("title")}</h2>
         <span
@@ -159,6 +159,7 @@ export function TimerCard() {
         <div className="grid grid-cols-2 gap-2">
           <Button
             size="lg"
+            data-tutorial="call-timer-start"
             disabled={!data || running || action.isPending}
             onClick={() => run("start")}
           >
@@ -168,6 +169,7 @@ export function TimerCard() {
           <Button
             size="lg"
             variant="outline"
+            data-tutorial="call-timer-pause"
             disabled={!data || !running || action.isPending}
             onClick={() => run("pause")}
           >

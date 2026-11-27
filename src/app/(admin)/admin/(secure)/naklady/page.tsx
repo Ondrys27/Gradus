@@ -44,12 +44,16 @@ export default async function AdminCostsPage({ searchParams }: Props) {
         <Suspense fallback={<CardSkeleton height={180} />}>
           <BreakdownFields q={q} />
         </Suspense>
-        <Suspense fallback={<CardSkeleton height={240} />}>
-          <Margin q={q} />
-        </Suspense>
-        <Suspense fallback={<CardSkeleton height={200} />}>
-          <Payments q={q} />
-        </Suspense>
+        <div data-tutorial="admin-costs-margin">
+          <Suspense fallback={<CardSkeleton height={240} />}>
+            <Margin q={q} />
+          </Suspense>
+        </div>
+        <div data-tutorial="admin-costs-payments">
+          <Suspense fallback={<CardSkeleton height={200} />}>
+            <Payments q={q} />
+          </Suspense>
+        </div>
         <Suspense fallback={<GridSkeleton count={2} height={180} />}>
           <Trial q={q} />
         </Suspense>

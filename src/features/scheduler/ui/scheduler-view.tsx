@@ -240,7 +240,10 @@ function Loaded({
     <div className="flex flex-col gap-6">
       {header(
         editable && tab === "types" ? (
-          <Button onClick={() => setEditing({ draft: newDraft() })}>
+          <Button
+            data-tutorial="scheduler-new-type"
+            onClick={() => setEditing({ draft: newDraft() })}
+          >
             <PlusIcon aria-hidden data-icon="inline-start" />
             {t("newType")}
           </Button>
@@ -250,6 +253,7 @@ function Loaded({
       <div
         role="tablist"
         aria-label={t("tabsLabel")}
+        data-tutorial="scheduler-tabs"
         className="flex gap-1 overflow-x-auto border-b border-line"
       >
         {tabs.map((key) => (
@@ -277,7 +281,10 @@ function Loaded({
             <SetupGuide profile={profile} onOpenHours={() => setTab("availability")} />
           )}
 
-          <section className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-surface px-4 py-3">
+          <section
+            data-tutorial="scheduler-link"
+            className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-surface px-4 py-3"
+          >
             <div className="flex min-w-0 flex-col">
               <span className="micro-label">{t("link.label")}</span>
               <span className="truncate text-sm text-ink" data-testid="scheduler-link">
@@ -287,7 +294,12 @@ function Loaded({
             <div className="flex flex-wrap gap-2">
               <CopyLinkButton handle={profile.handle} from="card" />
               {editable && (
-                <Button variant="ghost" size="sm" onClick={() => setProfileOpen(true)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  data-tutorial="scheduler-profile-edit"
+                  onClick={() => setProfileOpen(true)}
+                >
                   <PencilIcon aria-hidden />
                   {t("profile.edit")}
                 </Button>
@@ -426,7 +438,7 @@ function TeamTab({
     );
   }
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8" data-tutorial="scheduler-team">
       <p className="text-[13px] text-ink-muted">{t("hint")}</p>
       {people.map((person) => (
         <section

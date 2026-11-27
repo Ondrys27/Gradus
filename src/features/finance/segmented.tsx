@@ -9,6 +9,8 @@ type Props<T extends string> = {
   onChange: (value: T) => void;
   /** Ids of the panels the tabs control, one per option, so screen readers can follow. */
   panelId?: (value: T) => string;
+  /** Passed to the tab row, for the guide (30.8). */
+  "data-tutorial"?: string;
 };
 
 /** Tabs as a pill row; 44 px tall targets on touch screens. */
@@ -18,10 +20,12 @@ export function Segmented<T extends string>({
   options,
   onChange,
   panelId,
+  "data-tutorial": tutorial,
 }: Props<T>) {
   return (
     <div
       role="tablist"
+      data-tutorial={tutorial}
       aria-label={label}
       className="flex w-full rounded-full border border-line p-0.5 sm:w-fit"
     >

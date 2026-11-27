@@ -103,16 +103,20 @@ function ToolButton({
   disabled,
   testId,
   children,
+  "data-tutorial": tutorial,
 }: {
   label: string;
   onClick: () => void;
   disabled?: boolean;
   testId?: string;
   children: ReactNode;
+  /** The guide's key (30.8). */
+  "data-tutorial"?: string;
 }) {
   return (
     <button
       type="button"
+      data-tutorial={tutorial}
       aria-label={label}
       title={label}
       disabled={disabled}
@@ -748,7 +752,7 @@ function LiveMapEditor({
         <Redo2Icon aria-hidden />
       </ToolButton>
       <span aria-hidden className="mx-1 h-5 w-px shrink-0 bg-line/70" />
-      <ToolButton label={t("addChild")} onClick={() => add("child", at.id)} testId="note-map-add-child">
+      <ToolButton label={t("addChild")} onClick={() => add("child", at.id)} testId="note-map-add-child" data-tutorial="note-map-add">
         <CornerDownRightIcon aria-hidden />
       </ToolButton>
       <ToolButton label={t("addSibling")} onClick={() => add("sibling", at.id)} testId="note-map-add-sibling">
@@ -768,6 +772,7 @@ function LiveMapEditor({
           setSuggestFor(at.suggested ? doc.root.id : at.id);
         }}
         testId="note-map-suggest"
+        data-tutorial="note-map-suggest"
       >
         <SparklesIcon aria-hidden />
       </ToolButton>

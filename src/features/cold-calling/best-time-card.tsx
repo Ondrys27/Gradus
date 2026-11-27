@@ -57,7 +57,7 @@ export function BestTimeCard() {
   }
 
   return (
-    <GlowCard interactive={false} className="flex flex-col gap-4">
+    <GlowCard interactive={false} className="flex flex-col gap-4" data-tutorial="call-best-time">
       <div className="flex flex-col gap-1">
         <h2 className="micro-label">{t("title")}</h2>
         {country && stats.data && (

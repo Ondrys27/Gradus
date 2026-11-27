@@ -1,6 +1,6 @@
 import { after, NextResponse } from "next/server";
 import { flushUserQuietly } from "@/features/calendar/sync/server/sync";
-import { adminAccessFor, adminNotFound } from "@/features/admin/server/guard";
+import { adminAccess, adminAccessFor, adminNotFound } from "@/features/admin/server/guard";
 import { toModelMessages, type StoredMessage } from "@/features/grady/history";
 import { costUsd, EMPTY_USAGE, modelFor, type GradyFeature } from "@/features/grady/models";
 import {
@@ -67,9 +67,21 @@ import { logAdminAction } from "@/features/admin/server/audit";
 import { createAnthropic, streamModel } from "@/features/grady/server/model";
 import { loadMilestoneNotes, loadNotesContext } from "@/features/grady/server/notes";
 import {
+  guideAnswerCache,
+  guideRoleOf,
+  questionRow,
+  recordGuideQuestion,
+  runGuideAnswer,
+} from "@/features/grady/server/guide-answer";
+import { guideAnswerRequestSchema, type GuideAnswerResponse } from "@/features/tutorial/guide/protocol";
+import { appAudience, type GuideAudience } from "@/features/tutorial/ui-map/access";
+import { isAdminGuideSection, isGuideSection } from "@/features/tutorial/ui-map/types";
+import {
   E2E_ECHO_SUMMARY,
+  E2E_GUIDE_SCRIPT,
   E2E_TOOL_SCRIPT,
   e2eEchoClient,
+  e2eGuideAnswer,
   e2eToolClient,
   e2eToolScript,
   wantsE2eEcho,
@@ -89,7 +101,7 @@ import {
   undoAction,
   type ActionEnv,
 } from "@/features/grady/server/tools/actions";
-import { createToolContext } from "@/features/grady/server/tools/context";
+import { createToolContext, loadToolWorkspace } from "@/features/grady/server/tools/context";
 import { streamWithTools } from "@/features/grady/server/tools/loop";
 import {
   loadAnswersBlock,
@@ -155,6 +167,7 @@ const STAGE_REFUSED_JOBS: ReadonlySet<string> = new Set([
   "modelCompare",
   "proactive",
   "meetingNotes",
+  "guideAnswer",
 ]);
 
 /** The signed-in user, their settings and both clients. The admin client is filtered by this id. */
@@ -379,11 +392,103 @@ export const POST = instrumentRoute("api.jarvis.post", async (request: Request) 
   if (kind === "rateMessage") return rateMessage(ctx, body);
   if (kind === "meetingNotes") return meetingNotes(ctx, body);
   if (kind === "meetingNotesApply") return meetingNotesApply(ctx, body);
+  if (kind === "guideAnswer") return guideAnswer(ctx, body, request);
   if (kind === "confirmAction" || kind === "rejectAction" || kind === "undoAction") {
     return actionDecision(ctx, body);
   }
   return chat(ctx, body, request);
 });
+
+/**
+ * "How do I…" (30.8): Grady's own guide. The section is the one the person
+ * is in; what they have is read here (the space's rights with the user's
+ * client, or the administration's powers), never taken from the browser.
+ * A cached answer is free and instant; a new one goes through the plan's
+ * limit and the AI caps like any call. Every question is written without
+ * the account for "What people ask about".
+ */
+async function guideAnswer(ctx: Context, body: unknown, request: Request) {
+  const parsed = guideAnswerRequestSchema.safeParse(body);
+  if (!parsed.success) return jobError("unknown", 400);
+  const { supabase, admin, userId, settings } = ctx;
+  const section = isGuideSection(parsed.data.section) ? parsed.data.section : null;
+  const locale = asLocale(ctx.locale);
+  const respond = (result: GuideAnswerResponse, status = 200) => NextResponse.json(result, { status });
+
+  let audience: GuideAudience;
+  if (section && isAdminGuideSection(section)) {
+    const access = await adminAccess(false);
+    if (!access || access.userId !== userId) return adminNotFound();
+    audience = { kind: "admin", actor: { role: access.role, level: access.level } };
+  } else {
+    audience = appAudience(await loadToolWorkspace(supabase, userId, ctx.spaceId));
+  }
+
+  const e2e = wantsE2eEcho(request.headers, ctx.email, E2E_GUIDE_SCRIPT);
+  const result = await runGuideAnswer({
+    userId,
+    request: { question: parsed.data.question, section, locale, audience },
+    // A scripted e2e answer is never kept: it would answer someone else's question.
+    cache: e2e ? null : guideAnswerCache(admin),
+    client: async () => {
+      if (e2e) return { client: e2eEchoClient(admin, E2E_GUIDE_SCRIPT, e2eGuideAnswer(request.headers)) };
+      const usage = await loadAiUsage(supabase, admin, userId, settings, undefined, ctx.spaceId);
+      if (limitReached(usage)) {
+        limitHit(ctx, "guide_answer");
+        return { code: "limitReached" };
+      }
+      const client = createAnthropic(admin, { spaceId: ctx.spaceId });
+      if (!client) {
+        await logNotConfigured(ctx, "guide_answer");
+        return { code: "notConfigured" };
+      }
+      return { client };
+    },
+    log: (entry) => logAiUsage(admin, { ...entry, userId, spaceId: ctx.spaceId, conversationId: null }),
+  });
+
+  const { data: profile } = await admin.from("profiles").select("is_internal").eq("id", userId).maybeSingle();
+  const internal = Boolean(profile?.is_internal) || e2e;
+  const outcome = result.ok ? result.plan.kind : "failed";
+  after(() =>
+    recordGuideQuestion(
+      admin,
+      questionRow({
+        question: parsed.data.question,
+        section,
+        role: guideRoleOf(audience),
+        locale,
+        outcome,
+        cached: result.ok && result.cached,
+        internal,
+      }),
+    ),
+  );
+  trackLater(
+    "guide_question_asked",
+    {
+      section: section ?? "none",
+      from: parsed.data.from,
+      outcome,
+      cached: result.ok && result.cached,
+      escalated: result.ok && result.escalated,
+      steps: result.ok ? result.plan.steps.length : 0,
+      dropped: result.ok ? result.plan.dropped : 0,
+    },
+    { userId, admin },
+  );
+
+  if (!result.ok) {
+    const status =
+      result.code === "limitReached" || result.code === "userLimit" || result.code === "spaceLimit"
+        ? 429
+        : result.code === "notConfigured" || result.code === "paused"
+          ? 503
+          : 502;
+    return respond({ ok: false, code: result.code }, status);
+  }
+  return respond({ ok: true, plan: result.plan, cached: result.cached });
+}
 
 /**
  * Thumb up/down on one of Grady's own answers; no model call. jarvis_messages

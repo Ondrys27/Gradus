@@ -34,7 +34,10 @@ export default async function AdminNotificationsPage() {
   const tPeople = await getTranslations("admin.people");
   const admin = createAdminClient();
 
-  const { data: roles } = await admin.from("user_roles").select("user_id, role, level").in("role", ["owner", "admin"]);
+  const { data: roles } = await admin
+    .from("user_roles")
+    .select("user_id, role, level")
+    .in("role", ["owner", "admin"]);
   const ids = [...new Set((roles ?? []).map((row) => row.user_id))];
   const [people, prefs, settings] = await Promise.all([
     admin.rpc("admin_people", { _ids: ids }),
@@ -82,20 +85,25 @@ export default async function AdminNotificationsPage() {
               title={own ? t("ownTitle") : name}
               description={t(`standing.${adminStanding({ role, level })}`)}
             >
-              <DigestPrefsForm
-                userId={row.user_id}
-                initial={stored}
-                accountZone={accountZone}
-                hourLabels={hourLabels}
-                readOnly={false}
-                own={own}
-              />
+              <div data-tutorial={own ? "admin-digest-prefs" : undefined}>
+                <DigestPrefsForm
+                  userId={row.user_id}
+                  initial={stored}
+                  accountZone={accountZone}
+                  hourLabels={hourLabels}
+                  readOnly={false}
+                  own={own}
+                />
+              </div>
             </AdminCard>
           );
         })}
         <p className="text-sm text-ink-soft">
           {t("instantHint")}{" "}
-          <Link href={`${ADMIN_PATH}/chyby?tab=alerts`} className="text-violet underline-offset-4 hover:underline">
+          <Link
+            href={`${ADMIN_PATH}/chyby?tab=alerts`}
+            className="text-violet underline-offset-4 hover:underline"
+          >
             {t("instantLink")}
           </Link>
         </p>

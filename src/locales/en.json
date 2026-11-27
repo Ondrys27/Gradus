@@ -8867,6 +8867,11 @@
             "name": "Comparison grade",
             "does": "A short grade of 1–5 and one sentence for each compared answer.",
             "why": "The cheapest model is enough: a quick guide."
+          },
+          "guide_answer": {
+            "name": "Guide: “how do I…”",
+            "does": "Answers how to do something in the app and returns steps from the catalog of controls, which the guide shows on screen.",
+            "why": "A short JSON answer: Haiku is enough, and Sonnet is asked once when it is unsure. Repeated questions come from the cache for free."
           }
         },
         "compareButton": "Compare models",
@@ -10797,6 +10802,10 @@
         "emails": {
           "name": "E-mails",
           "description": "How many e-mails went out today and this month against Resend's limit, by kind, and when the limit runs out."
+        },
+        "guideQuestions": {
+          "name": "What people ask about",
+          "description": "The most asked how-to questions to Grady, by section. Anonymous, a pointer to what is not clear."
         }
       },
       "errors": {
@@ -11075,6 +11084,14 @@
           "booking_host": "Bookings (host)",
           "booking_reminder": "Meeting reminders"
         }
+      },
+      "guideQuestions": {
+        "figures": {
+          "asked": "questions",
+          "unanswered": "without steps"
+        },
+        "top": "Most asked",
+        "noSection": "no section"
       }
     },
     "digest": {
@@ -12369,6 +12386,2161 @@
       "show": "Show me",
       "dismiss": "Not now",
       "open": "Open {section}"
+    },
+    "ui": {
+      "dashboard-summary": {
+        "name": "Greeting and day summary",
+        "purpose": "Up here I sum up what’s waiting for you today and what’s on fire.",
+        "keywords": "overview summary day greeting today what’s next"
+      },
+      "dashboard-widgets": {
+        "name": "Widgets",
+        "purpose": "Your dashboard built from widgets: tasks, deals, money, calendar. Clicking a widget opens its section.",
+        "keywords": "widgets widget dashboard tiles cards board"
+      },
+      "dashboard-tabs": {
+        "name": "Dashboards",
+        "purpose": "You can keep several dashboards, say Sales and Money, and switch between them.",
+        "keywords": "dashboards tabs switch several boards"
+      },
+      "dashboard-new-tab": {
+        "name": "New dashboard",
+        "purpose": "**Create** another dashboard with its own name and widgets.",
+        "keywords": "new dashboard add tab another board"
+      },
+      "dashboard-edit": {
+        "name": "Edit",
+        "purpose": "Puts the dashboard into editing: drag widgets around, resize them or remove them.",
+        "keywords": "edit dashboard rearrange move widgets arrange customize",
+        "try": "**Click** Edit and the board starts to wiggle, then drag widgets around."
+      },
+      "dashboard-add-widget": {
+        "name": "Add widget",
+        "purpose": "Opens the widget gallery so you can add what you want to see on the dashboard.",
+        "keywords": "add widget gallery new widget insert",
+        "try": "**Click** Add widget and look at what the gallery offers."
+      },
+      "dashboard-gallery-search": {
+        "name": "Search widgets",
+        "purpose": "Find a widget by name, like “invoices” or “calendar”.",
+        "keywords": "search widget find gallery look up",
+        "try": "**Type** something like “tasks” into the search."
+      },
+      "dashboard-gallery-add": {
+        "name": "Add",
+        "purpose": "Puts the widget on the dashboard in the size you picked.",
+        "keywords": "add insert widget size place"
+      },
+      "dashboard-widget-settings": {
+        "name": "Widget settings",
+        "purpose": "Some widgets let you pick what exactly they show, like which figures or period.",
+        "keywords": "widget settings gear what it shows figures"
+      },
+      "dashboard-widget-resize": {
+        "name": "Widget size",
+        "purpose": "Makes a widget bigger or smaller so everything important fits.",
+        "keywords": "widget size bigger smaller resize"
+      },
+      "dashboard-widget-remove": {
+        "name": "Remove widget",
+        "purpose": "The cross takes the widget off the dashboard. Your data stays and you can add it back any time.",
+        "keywords": "remove widget delete hide cross"
+      },
+      "dashboard-undo": {
+        "name": "Undo",
+        "purpose": "Takes back the last change to the dashboard, also ⌘Z.",
+        "keywords": "undo take back step change"
+      },
+      "dashboard-reset": {
+        "name": "Reset to default",
+        "purpose": "Puts the dashboard back to its default. Your changes go, your data stays.",
+        "keywords": "reset default original dashboard"
+      },
+      "milestone-new": {
+        "name": "New milestone",
+        "purpose": "A big goal you split into tasks. You get XP when you complete it.",
+        "keywords": "new milestone create goal add milestone",
+        "try": "**Click** New milestone and set yourself a goal."
+      },
+      "milestone-title": {
+        "name": "Milestone name",
+        "purpose": "In short what you want to reach, like “First 10 customers”.",
+        "keywords": "milestone name title goal",
+        "try": "**Type** the milestone’s name."
+      },
+      "milestone-reward": {
+        "name": "Reward",
+        "purpose": "How you’ll treat yourself once the milestone is done. I show it on the card and in the celebration.",
+        "keywords": "reward gift motivation treat milestone"
+      },
+      "milestone-import": {
+        "name": "Import map",
+        "purpose": "Creates a milestone from a mind map or outline (Markdown, OPML, FreeMind, XMind).",
+        "keywords": "import map mind map mindnode opml markdown xmind freemind upload file"
+      },
+      "milestone-filter": {
+        "name": "Filter by category",
+        "purpose": "Shows only work or only personal milestones.",
+        "keywords": "filter category work personal show only",
+        "try": "**Pick** Work milestones only, for example."
+      },
+      "milestone-path-view": {
+        "name": "List and Path",
+        "purpose": "Path shows your path’s milestones as a progress map, List shows them all in a column.",
+        "keywords": "path list view progress path map"
+      },
+      "milestone-card": {
+        "name": "Milestone card",
+        "purpose": "Progress, reward and task count. A click opens the milestone with its tasks and map.",
+        "keywords": "milestone card open detail progress tasks",
+        "try": "**Open** one milestone."
+      },
+      "milestone-edit": {
+        "name": "Edit",
+        "purpose": "Change the milestone’s name, description, category, date or reward.",
+        "keywords": "edit milestone change name date rename"
+      },
+      "milestone-delete": {
+        "name": "Delete",
+        "purpose": "Deletes the milestone with its tasks; I always ask first.",
+        "keywords": "delete milestone remove"
+      },
+      "milestone-complete": {
+        "name": "Complete milestone",
+        "purpose": "Unlocks once every task is done. Then you complete the milestone yourself and celebrate.",
+        "keywords": "complete milestone finish done locked unlock"
+      },
+      "task-add": {
+        "name": "Add task",
+        "purpose": "Type a task and press Enter. Subtasks come from the task’s menu.",
+        "keywords": "add task new task write task subtask",
+        "try": "**Type** a task and press Enter."
+      },
+      "task-row": {
+        "name": "Task",
+        "purpose": "Tick it to complete it, drag it to move it. A task with subtasks ticks once they’re all done.",
+        "keywords": "task tick complete done move subtasks"
+      },
+      "task-menu": {
+        "name": "Task actions",
+        "purpose": "Add a subtask, edit, move, write it into notes or delete the task here.",
+        "keywords": "task actions subtask edit move delete dots menu",
+        "try": "**Open** the menu next to a task."
+      },
+      "task-view": {
+        "name": "List and Map",
+        "purpose": "See the milestone’s tasks as a list or as a mind map you rearrange by dragging.",
+        "keywords": "map list view mind map task tree",
+        "try": "**Switch** to Map."
+      },
+      "map-import": {
+        "name": "Import map",
+        "purpose": "Loads tasks from a mind map into this milestone: adds them or replaces the current ones.",
+        "keywords": "import map tasks from file mindnode opml markdown upload"
+      },
+      "map-export": {
+        "name": "Export",
+        "purpose": "Downloads the tasks as Markdown, OPML, FreeMind or a PNG picture.",
+        "keywords": "export download save markdown opml png picture"
+      },
+      "milestone-notes": {
+        "name": "Milestone notes",
+        "purpose": "Notes linked to this milestone. I use them when I review your progress.",
+        "keywords": "milestone notes link note write"
+      },
+      "note-new": {
+        "name": "New note",
+        "purpose": "Creates a new text note, also ⌘N. It saves itself.",
+        "keywords": "new note create write note"
+      },
+      "note-new-menu": {
+        "name": "What kind of note",
+        "purpose": "The arrow offers a text note, a mind map or importing a map from a file.",
+        "keywords": "note kind mind map text import arrow",
+        "try": "**Open** the arrow next to New note."
+      },
+      "note-new-text": {
+        "name": "Text",
+        "purpose": "A plain note with headings, bullets and links.",
+        "keywords": "text note write"
+      },
+      "note-new-map": {
+        "name": "Mind map",
+        "purpose": "A note as a map: a centre and branches, also ⌘⇧N.",
+        "keywords": "mind map map branches mindmap"
+      },
+      "note-new-import": {
+        "name": "Import map",
+        "purpose": "Turns a map in a file into a note, for example from MindNode via OPML.",
+        "keywords": "import map file mindnode opml xmind"
+      },
+      "notes-search": {
+        "name": "Search notes",
+        "purpose": "Searches titles and text, accents optional.",
+        "keywords": "search notes find look up text",
+        "try": "**Type** a word you’re looking for."
+      },
+      "notes-nav": {
+        "name": "Notes and folders",
+        "purpose": "Your notes, the ones shared with you and folders to sort them into.",
+        "keywords": "folders sort organize notes"
+      },
+      "notes-shared": {
+        "name": "Shared with me",
+        "purpose": "Notes someone shared with you.",
+        "keywords": "shared with me others notes sharing"
+      },
+      "notes-folder-new": {
+        "name": "New folder",
+        "purpose": "Creates a folder you drag notes into.",
+        "keywords": "new folder create folder sort"
+      },
+      "notes-trash": {
+        "name": "Trash",
+        "purpose": "Deleted notes wait here for 30 days and can be restored.",
+        "keywords": "trash deleted restore bring back note"
+      },
+      "note-item": {
+        "name": "Note",
+        "purpose": "Click and the note opens next to the list. The icon shows whether it’s text or a map.",
+        "keywords": "note open list of notes",
+        "try": "**Open** one note."
+      },
+      "note-row-delete": {
+        "name": "Move to trash",
+        "purpose": "The red bin moves the note to the trash; I ask first.",
+        "keywords": "delete note trash bin remove"
+      },
+      "note-toolbar": {
+        "name": "Formatting",
+        "purpose": "Headings, bold, links and bullets for the note’s text.",
+        "keywords": "formatting heading bold link bullets"
+      },
+      "note-mention": {
+        "name": "Link to…",
+        "purpose": "Adds a contact, deal, event or worker as a chip, also by typing @.",
+        "keywords": "link mention at contact deal connect"
+      },
+      "note-share": {
+        "name": "Share",
+        "purpose": "Share the note with people from the company, to read or to edit.",
+        "keywords": "share note sharing colleague access"
+      },
+      "note-versions": {
+        "name": "Version history",
+        "purpose": "Older versions of the note you can go back to.",
+        "keywords": "history versions restore older"
+      },
+      "note-move": {
+        "name": "Move to folder",
+        "purpose": "Puts the note into a folder.",
+        "keywords": "move to folder folder file"
+      },
+      "note-pin": {
+        "name": "Pin",
+        "purpose": "A pinned note sits on top and I read all of it when you write to me.",
+        "keywords": "pin top important note"
+      },
+      "note-delete": {
+        "name": "Move to trash",
+        "purpose": "The note goes to the trash; you can restore it for 30 days.",
+        "keywords": "delete note trash remove"
+      },
+      "note-more": {
+        "name": "More options",
+        "purpose": "Import and export a map, and turn text into a mind map or back.",
+        "keywords": "more options export import convert map text dots"
+      },
+      "note-map-add": {
+        "name": "Add child",
+        "purpose": "Adds a branch under the selected node in the map, also with Tab.",
+        "keywords": "add branch node child map"
+      },
+      "note-map-suggest": {
+        "name": "Suggest branches",
+        "purpose": "I suggest more branches for the selected node. You keep only the ones that fit.",
+        "keywords": "suggest branches grady ideas map ai"
+      },
+      "task-new": {
+        "name": "New task",
+        "purpose": "A task for a deal or contact, with a due time, length and who does it.",
+        "keywords": "new task create task add task reminder",
+        "try": "**Click** New task."
+      },
+      "crm-task-title": {
+        "name": "Title",
+        "purpose": "What needs doing. Enter saves the task with the defaults.",
+        "keywords": "task title what to do write",
+        "try": "**Type** what needs doing."
+      },
+      "crm-task-target": {
+        "name": "For",
+        "purpose": "Find the deal or contact the task belongs to.",
+        "keywords": "for deal contact link to deal to contact"
+      },
+      "task-target-option": {
+        "name": "Search result",
+        "purpose": "Pick the deal or contact from the list.",
+        "keywords": "pick deal contact result"
+      },
+      "crm-task-due-quick": {
+        "name": "Quick due date",
+        "purpose": "Today, Tomorrow or In a week in one click; the time stays.",
+        "keywords": "due date today tomorrow next week when"
+      },
+      "crm-task-duration": {
+        "name": "How long",
+        "purpose": "How much time the task takes, so the calendar shows it right.",
+        "keywords": "length duration how long minutes time"
+      },
+      "crm-task-assignee": {
+        "name": "Who",
+        "purpose": "Whose task it is. By default yours.",
+        "keywords": "who assign worker whom delegate"
+      },
+      "task-submit": {
+        "name": "Save",
+        "purpose": "Saves the task. It shows in Tasks, on the deal or contact and in the calendar.",
+        "keywords": "save task create confirm"
+      },
+      "crm-task-quick": {
+        "name": "Quick view",
+        "purpose": "All, Open, Overdue or Today in one click.",
+        "keywords": "quick view overdue today open filter",
+        "try": "**Pick** Overdue."
+      },
+      "crm-task-filters": {
+        "name": "Filters",
+        "purpose": "Filter by due date, person, status, length or deal and contact.",
+        "keywords": "filters filter due who status deal contact",
+        "try": "**Open** Filters."
+      },
+      "crm-task-row": {
+        "name": "Task",
+        "purpose": "Tick it to complete it, click the title for the detail. Overdue ones glow red.",
+        "keywords": "task tick complete detail overdue"
+      },
+      "crm-task-done-group": {
+        "name": "Done",
+        "purpose": "Completed tasks hide here; one click opens them.",
+        "keywords": "done completed tasks expand history"
+      },
+      "crm-task-edit": {
+        "name": "Edit",
+        "purpose": "Change the task’s title, due time, length, person or description.",
+        "keywords": "edit task change due date reschedule"
+      },
+      "crm-task-complete": {
+        "name": "Done",
+        "purpose": "Completes the task in one step, with a note if you like. It can be reopened.",
+        "keywords": "done complete finish task reopen"
+      },
+      "crm-task-note": {
+        "name": "Note",
+        "purpose": "How it went. It shows in the deal’s and contact’s history.",
+        "keywords": "task note outcome how it went"
+      },
+      "crm-task-delete": {
+        "name": "Delete",
+        "purpose": "Deletes the task; I ask first.",
+        "keywords": "delete task remove"
+      },
+      "contact-tables": {
+        "name": "Tables",
+        "purpose": "Your contacts live in tables like New, Meeting scheduled or Clients. **Pick** one to see only its people.",
+        "keywords": "table tables list group stage filter clients",
+        "try": "**Click** another table to see who is in it."
+      },
+      "contact-search": {
+        "name": "Search contacts",
+        "purpose": "Find anyone by name, company, phone or e-mail, without diacritics too.",
+        "keywords": "search find look up name company phone email",
+        "try": "**Type** a part of a name and watch the list shrink."
+      },
+      "contact-row": {
+        "name": "Contact",
+        "purpose": "One person or company. Open it to see everything about them: details, history, deals and notes.",
+        "keywords": "contact person company detail open profile",
+        "try": "**Open** a contact and look at its detail."
+      },
+      "contact-new": {
+        "name": "New contact",
+        "purpose": "Adds a person or company by hand: name, phone, e-mail and the table they start in.",
+        "keywords": "new contact add create person company customer lead",
+        "try": "**Click** New contact and add someone on sample data."
+      },
+      "contact-form": {
+        "name": "Contact form",
+        "purpose": "Only the name is required; the rest you can fill in later. The phone is stored so it can be dialled from anywhere.",
+        "keywords": "form name phone email company address fill"
+      },
+      "contact-generate": {
+        "name": "Generate contacts",
+        "purpose": "I find businesses of a field in a place for you, with phone and address. Duplicates are left out.",
+        "keywords": "generate find businesses leads google places prospects import automatic"
+      },
+      "contact-generate-industry": {
+        "name": "Field",
+        "purpose": "What kind of businesses you are looking for, for example dentists or cafés.",
+        "keywords": "field industry type business search"
+      },
+      "generate-submit": {
+        "name": "Find",
+        "purpose": "Starts the search; new contacts land in your first table. The daily and monthly limit depends on your plan.",
+        "keywords": "find start search generate limit"
+      },
+      "generate-show": {
+        "name": "Show new contacts",
+        "purpose": "Opens the list with just the contacts that were found now.",
+        "keywords": "show new found results"
+      },
+      "contact-tables-edit": {
+        "name": "Edit tables",
+        "purpose": "Here you add, rename and reorder tables and set the questions asked when someone moves into one.",
+        "keywords": "edit tables manage columns stages questions fields"
+      },
+      "contact-table-add": {
+        "name": "New table",
+        "purpose": "Adds your own table, for example Waiting for an offer.",
+        "keywords": "new table add create own"
+      },
+      "contact-table-questions": {
+        "name": "Questions",
+        "purpose": "What you are asked when a contact moves into this table, like the date of the meeting. Questions can depend on each other.",
+        "keywords": "questions fields ask move date meeting dependent",
+        "try": "**Open** the questions of a table and look at them."
+      },
+      "contact-question-add": {
+        "name": "Add question",
+        "purpose": "A new question of this table: text, number, date, a choice and more.",
+        "keywords": "add question field new"
+      },
+      "contact-edit": {
+        "name": "Edit",
+        "purpose": "Changes the contact’s details: name, phone, e-mail, company, address.",
+        "keywords": "edit change contact details update phone email"
+      },
+      "contact-move": {
+        "name": "Move to",
+        "purpose": "Moves the contact into another table, for example after a call into Meeting scheduled; I ask the questions of that table.",
+        "keywords": "move table stage next meeting scheduled change",
+        "try": "**Click** Move to and pick where the contact goes."
+      },
+      "move-today": {
+        "name": "Today",
+        "purpose": "Fills in today’s date in one click.",
+        "keywords": "today date now"
+      },
+      "move-confirm": {
+        "name": "Move",
+        "purpose": "Confirms the move with your answers; the contact’s history keeps it.",
+        "keywords": "confirm move save"
+      },
+      "deal-offer-create": {
+        "name": "Create deal",
+        "purpose": "After a move I offer to start a deal for the contact right away, so it shows up in the pipeline.",
+        "keywords": "create deal offer pipeline opportunity"
+      },
+      "contact-schedule-meeting": {
+        "name": "Schedule a meeting",
+        "purpose": "Picks a free time in your calendar, books the meeting and sends the invitation; the contact moves to Meeting scheduled.",
+        "keywords": "schedule meeting book appointment invite calendar time"
+      },
+      "contact-activity": {
+        "name": "Activity",
+        "purpose": "Calls, e-mails, moves and notes about the contact in one timeline. Here you also log a call.",
+        "keywords": "activity history timeline calls log record"
+      },
+      "contact-notes": {
+        "name": "Notes",
+        "purpose": "Anything to remember about the contact; it is saved as you type.",
+        "keywords": "notes note remember write"
+      },
+      "contact-deals": {
+        "name": "Deals",
+        "purpose": "The contact’s deals with their stage; from here you also start a new one.",
+        "keywords": "deals opportunities pipeline contact"
+      },
+      "contact-delete": {
+        "name": "Delete contact",
+        "purpose": "Removes the contact for good, together with tasks that hang only on it.",
+        "keywords": "delete remove contact"
+      },
+      "call-list": {
+        "name": "Who to call",
+        "purpose": "The contacts of the chosen table, waiting for your call. Clients are not here.",
+        "keywords": "list call who queue table"
+      },
+      "call-search": {
+        "name": "Search",
+        "purpose": "Finds a contact in the list by name or phone.",
+        "keywords": "search find name phone",
+        "try": "**Type** a name to find someone in the list."
+      },
+      "call-contact": {
+        "name": "Contact to call",
+        "purpose": "Opens the contact next to the list with the phone, notes and what to do after the call.",
+        "keywords": "contact open call panel",
+        "try": "**Click** a contact to open it next to the list."
+      },
+      "call-dial": {
+        "name": "Call",
+        "purpose": "Dials the number on your phone or computer.",
+        "keywords": "call dial phone ring number"
+      },
+      "call-move": {
+        "name": "Move to",
+        "purpose": "After the call moves the contact on, for example into Meeting scheduled or Not interested.",
+        "keywords": "move after call result table next",
+        "try": "**Click** Move to and see where the contact can go."
+      },
+      "call-create-deal": {
+        "name": "Create deal",
+        "purpose": "Starts a deal for the contact you just talked to.",
+        "keywords": "create deal opportunity pipeline"
+      },
+      "call-open-detail": {
+        "name": "Open full detail",
+        "purpose": "Opens the contact’s whole detail in Contacts.",
+        "keywords": "open detail contact full"
+      },
+      "call-timer": {
+        "name": "Timer",
+        "purpose": "Measures how long you call today. It stops by itself after 15 minutes without a move and starts from zero at midnight.",
+        "keywords": "timer time calling minutes measure"
+      },
+      "call-timer-start": {
+        "name": "Start",
+        "purpose": "Starts measuring your calling time.",
+        "keywords": "start timer begin calling"
+      },
+      "call-timer-pause": {
+        "name": "Pause",
+        "purpose": "Pauses the timer; there is no reset, the day adds up.",
+        "keywords": "pause stop timer break"
+      },
+      "call-stats": {
+        "name": "Statistics",
+        "purpose": "Calls, meetings and time for the day, week or month.",
+        "keywords": "statistics stats numbers calls meetings results"
+      },
+      "call-stats-period": {
+        "name": "Period",
+        "purpose": "Switches the statistics between day, week and month.",
+        "keywords": "period day week month switch",
+        "try": "**Switch** the period and compare the numbers."
+      },
+      "call-stats-people": {
+        "name": "People",
+        "purpose": "Everyone together or one person of the company.",
+        "keywords": "people team worker person filter"
+      },
+      "call-best-time": {
+        "name": "Best time to call",
+        "purpose": "When people in your country pick up most often, from the shared data of all accounts.",
+        "keywords": "best time hours when call answer"
+      },
+      "call-best-industries": {
+        "name": "Best fields",
+        "purpose": "Fields where your calls lead to meetings most often.",
+        "keywords": "best industries fields success meetings"
+      },
+      "pipeline-health": {
+        "name": "What’s on fire",
+        "purpose": "Three tiles with what needs you: Close Date in the past, tasks overdue, deals without an open task. The goal is zero.",
+        "keywords": "health on fire overdue tiles problems close date tasks",
+        "try": "**Click** a tile to see the deals behind it."
+      },
+      "pipeline-filters": {
+        "name": "Filter",
+        "purpose": "Narrows the board by Close Date, activity, tasks, person, contact or amount.",
+        "keywords": "filter narrow show only search person amount",
+        "try": "**Open** the filter and look at what it can do."
+      },
+      "pipeline-filter-panel": {
+        "name": "Filters",
+        "purpose": "Filters combine; each one stays in the address as a label you can remove.",
+        "keywords": "filters options close date activity tasks"
+      },
+      "pipeline-new-deal": {
+        "name": "New deal",
+        "purpose": "Starts a deal: what you sell, to whom, for how much and in which stage.",
+        "keywords": "new deal add create opportunity order",
+        "try": "**Click** New deal and create one on sample data."
+      },
+      "pipeline-column-add-deal": {
+        "name": "Add deal to stage",
+        "purpose": "The plus at a column adds a deal straight into that stage.",
+        "keywords": "add deal column stage plus"
+      },
+      "deal-form": {
+        "name": "Deal form",
+        "purpose": "Name, value, contact and Close Date; only the name is required.",
+        "keywords": "form deal name value amount contact close date"
+      },
+      "deal-create": {
+        "name": "Create",
+        "purpose": "Saves the deal into its stage.",
+        "keywords": "create save deal"
+      },
+      "pipeline-edit-stages": {
+        "name": "Edit stages",
+        "purpose": "Rename, reorder or remove the stages of your pipeline; deals of a removed stage move where you say.",
+        "keywords": "edit stages columns rename reorder remove"
+      },
+      "pipeline-add-stage": {
+        "name": "Add stage",
+        "purpose": "Adds a new stage (column) to the pipeline.",
+        "keywords": "add stage column new"
+      },
+      "deal-card": {
+        "name": "Deal",
+        "purpose": "One deal on the board. Drag it to another stage, or open it for everything about it.",
+        "keywords": "deal card open drag move stage",
+        "try": "**Open** a deal and look at its detail."
+      },
+      "deal-tabs": {
+        "name": "Deal tabs",
+        "purpose": "On a phone the deal is split into Overview, Contacts, Tasks and History.",
+        "keywords": "tabs overview contacts tasks history"
+      },
+      "deal-title": {
+        "name": "Deal name",
+        "purpose": "Click the name to rename the deal.",
+        "keywords": "name title rename deal"
+      },
+      "deal-stage": {
+        "name": "Stage",
+        "purpose": "Moves the deal to another stage; a won deal is celebrated and its contact joins Clients.",
+        "keywords": "stage move won lost change phase"
+      },
+      "deal-properties": {
+        "name": "Details",
+        "purpose": "Value, Close Date, date of delivery, deposit and the people on the deal; each field saves on its own.",
+        "keywords": "details value amount close date deposit delivery"
+      },
+      "deal-people": {
+        "name": "People on the deal",
+        "purpose": "Who works on the deal; everyone here sees it and can change it.",
+        "keywords": "people assignee worker owner responsible assign"
+      },
+      "deal-contacts": {
+        "name": "Contacts",
+        "purpose": "The people of the client on this deal, with their role and one primary contact.",
+        "keywords": "contacts people client role primary"
+      },
+      "deal-tasks": {
+        "name": "Tasks",
+        "purpose": "Tasks of the deal with a due date and a person; add the next step here.",
+        "keywords": "tasks todo next step due follow up"
+      },
+      "deal-history": {
+        "name": "History",
+        "purpose": "Everything that happened: stages, amounts, Close Date, tasks and e-mails.",
+        "keywords": "history timeline changes log"
+      },
+      "deal-notes": {
+        "name": "Notes",
+        "purpose": "Notes to the deal, saved as you type.",
+        "keywords": "notes note write"
+      },
+      "deal-email": {
+        "name": "Write e-mail",
+        "purpose": "Writes an e-mail to the deal’s contact; I can draft it for you.",
+        "keywords": "email write send message contact"
+      },
+      "deal-create-invoice": {
+        "name": "Create invoice",
+        "purpose": "Makes a draft invoice with the client and the deal’s value.",
+        "keywords": "invoice bill create from deal"
+      },
+      "deal-delete": {
+        "name": "Delete deal",
+        "purpose": "Removes the deal for good.",
+        "keywords": "delete remove deal"
+      },
+      "calendar-new": {
+        "name": "Add event",
+        "purpose": "A meeting, a call or a reminder in your calendar.",
+        "keywords": "add new event meeting appointment create",
+        "try": "**Click** Add event and try one out."
+      },
+      "calendar-event-form": {
+        "name": "Event",
+        "purpose": "Name, time, place and who it is with; an event of a contact or deal shows there too.",
+        "keywords": "event form time place name"
+      },
+      "calendar-event-kind": {
+        "name": "Kind",
+        "purpose": "A meeting, a call or something else; meetings count for your rewards and statistics.",
+        "keywords": "kind type meeting call"
+      },
+      "calendar-event-private": {
+        "name": "Private",
+        "purpose": "Others with access to your calendar see only that you are busy.",
+        "keywords": "private hidden busy secret"
+      },
+      "calendar-nav": {
+        "name": "Previous · Next · Today",
+        "purpose": "Moves the calendar back and forward, or back to today.",
+        "keywords": "previous next today move week month"
+      },
+      "calendar-views": {
+        "name": "View",
+        "purpose": "Day, week or month.",
+        "keywords": "view day week month switch",
+        "try": "**Switch** between day, week and month."
+      },
+      "calendar-mirrors": {
+        "name": "Show from other sections",
+        "purpose": "Shows tasks, Close Dates of deals and subscribed calendars in the calendar too.",
+        "keywords": "show tasks deals subscribed mirror toggle",
+        "try": "**Switch** one on or off and watch the calendar change."
+      },
+      "calendar-item": {
+        "name": "Event in the calendar",
+        "purpose": "Open it for details; drag it to move it to another time.",
+        "keywords": "event item open drag move reschedule",
+        "try": "**Open** an event in the calendar."
+      },
+      "calendar-event-edit": {
+        "name": "Edit",
+        "purpose": "Changes the event’s time, place or name.",
+        "keywords": "edit change event reschedule"
+      },
+      "calendar-event-delete": {
+        "name": "Delete",
+        "purpose": "Removes the event from the calendar.",
+        "keywords": "delete remove cancel event"
+      },
+      "calendar-panel-open": {
+        "name": "Calendars",
+        "purpose": "On a phone this opens the list of calendars you see.",
+        "keywords": "calendars list people open"
+      },
+      "calendar-panel": {
+        "name": "Calendars",
+        "purpose": "Your calendar and the calendars others share with you, each in its own colour and with a switch.",
+        "keywords": "calendars shared people colour show hide"
+      },
+      "calendar-share-request": {
+        "name": "Ask to share their calendar",
+        "purpose": "Asks someone of the company to let you see their calendar.",
+        "keywords": "share request ask calendar colleague see"
+      },
+      "calendar-request-form": {
+        "name": "Request",
+        "purpose": "Who you ask and whether you only want to see or also add events.",
+        "keywords": "request form who access"
+      },
+      "calendar-common-time": {
+        "name": "Find a common time",
+        "purpose": "Finds a time when everyone you pick is free.",
+        "keywords": "common time free slot meeting everyone together",
+        "try": "**Click** Find a common time and pick the people."
+      },
+      "calendar-common-time-panel": {
+        "name": "Common time",
+        "purpose": "The free times of everyone together; pick one and the meeting is planned.",
+        "keywords": "common time results slots"
+      },
+      "scheduler-tabs": {
+        "name": "Tabs",
+        "purpose": "Meeting types, Availability, Bookings and, for the owner, Everyone.",
+        "keywords": "tabs types availability bookings team",
+        "try": "**Switch** to Availability and back."
+      },
+      "scheduler-link": {
+        "name": "Your booking page",
+        "purpose": "The page where clients book a time with you themselves; send them the link.",
+        "keywords": "booking page link public clients book"
+      },
+      "copy-link": {
+        "name": "Copy link",
+        "purpose": "Copies the link to paste into an e-mail or a message.",
+        "keywords": "copy link share send url",
+        "try": "**Copy** the link of your page."
+      },
+      "scheduler-profile-edit": {
+        "name": "Edit page",
+        "purpose": "Your name, headline, short bio and video link on the booking page.",
+        "keywords": "edit page profile name bio photo"
+      },
+      "scheduler-new-type": {
+        "name": "New type",
+        "purpose": "A new kind of meeting, for example a 30-minute intro call.",
+        "keywords": "new type meeting kind create",
+        "try": "**Click** New type and look at the editor."
+      },
+      "scheduler-type-name": {
+        "name": "Name",
+        "purpose": "What the client sees, for example Intro call.",
+        "keywords": "name title type"
+      },
+      "scheduler-type-tabs": {
+        "name": "Settings of the type",
+        "purpose": "Length, place, questions, reminders, own hours and limits, each on its tab.",
+        "keywords": "settings length place questions reminders hours"
+      },
+      "scheduler-type-save": {
+        "name": "Save",
+        "purpose": "Saves the meeting type.",
+        "keywords": "save type"
+      },
+      "scheduler-type-open": {
+        "name": "Meeting type",
+        "purpose": "Opens the type to change its length, place or questions.",
+        "keywords": "open type edit change"
+      },
+      "scheduler-type-toggle": {
+        "name": "On / off",
+        "purpose": "A switched-off type cannot be booked; your plan limits how many are on.",
+        "keywords": "on off active disable enable"
+      },
+      "scheduler-calendars": {
+        "name": "Calendars to check",
+        "purpose": "Which calendars count as busy when free times are offered.",
+        "keywords": "calendars busy check conflicts"
+      },
+      "scheduler-week": {
+        "name": "Weekly hours",
+        "purpose": "When you take meetings each day of the week; a day can have several blocks.",
+        "keywords": "hours week availability working time days"
+      },
+      "scheduler-exceptions": {
+        "name": "Exceptions",
+        "purpose": "A date with other hours, or a day off completely, for all types.",
+        "keywords": "exceptions holiday day off date block vacation"
+      },
+      "scheduler-booking-filters": {
+        "name": "Filters",
+        "purpose": "Upcoming, waiting for approval, past or cancelled bookings.",
+        "keywords": "filters upcoming pending past cancelled"
+      },
+      "scheduler-booking": {
+        "name": "Booking",
+        "purpose": "One booked meeting; open it to confirm, decline or cancel it.",
+        "keywords": "booking reservation meeting open confirm decline cancel"
+      },
+      "scheduler-team": {
+        "name": "Everyone",
+        "purpose": "The booking pages and types of everyone in your company; you can switch a type off.",
+        "keywords": "everyone team workers types company"
+      },
+      "finance-tabs": {
+        "name": "Finance sections",
+        "purpose": "Finance has five tabs: the **Month** plan, Transactions, Recurring, Invoices and Overview.",
+        "keywords": "tabs month transactions recurring invoices overview finance",
+        "try": "**Click** the Transactions tab and have a look inside."
+      },
+      "plan-month-nav": {
+        "name": "Month switcher",
+        "purpose": "The arrows take you to the previous or next month of the plan.",
+        "keywords": "month previous next switch arrows period plan"
+      },
+      "plan-views": {
+        "name": "What the table shows",
+        "purpose": "Switch between Plan, Actual and Difference. Actual is worked out from your transactions.",
+        "keywords": "plan actual difference view compare budget",
+        "try": "**Switch** to Actual and compare it with the plan."
+      },
+      "plan-grid": {
+        "name": "Planning table",
+        "purpose": "A table like Google Sheets: weeks in columns, income and expenses in rows. Click a cell and type, Enter saves.",
+        "keywords": "table cell plan income expenses week row item budget cash flow",
+        "try": "**Click** a cell and type an amount, say 12.5k."
+      },
+      "plan-summary": {
+        "name": "Month summary",
+        "purpose": "The closing capital, the lowest balance and the week money may run short.",
+        "keywords": "summary capital lowest balance reserve warning end of month"
+      },
+      "plan-reserve": {
+        "name": "Reserve",
+        "purpose": "The amount you don’t want to drop below. When the plan falls under it, I’ll warn you.",
+        "keywords": "reserve minimum buffer threshold warning"
+      },
+      "plan-hide-empty": {
+        "name": "Hide empty rows",
+        "purpose": "Hides rows without numbers so the table is easier to read.",
+        "keywords": "hide empty rows tidy"
+      },
+      "plan-create-month": {
+        "name": "Create the month",
+        "purpose": "Creates a plan for a month that doesn’t have one yet.",
+        "keywords": "create new month plan start"
+      },
+      "plan-carry": {
+        "name": "Create the next month",
+        "purpose": "Creates the next month from this one, with or without the numbers; recurring payments fill in by themselves.",
+        "keywords": "next month carry over copy duplicate"
+      },
+      "plan-export": {
+        "name": "Export",
+        "purpose": "Downloads the plan as Excel (XLSX) or CSV in the same layout.",
+        "keywords": "export download excel xlsx csv spreadsheet"
+      },
+      "plan-more": {
+        "name": "More month options",
+        "purpose": "Here you’ll find import from CSV and closing or reopening the month.",
+        "keywords": "more options menu dots import close"
+      },
+      "plan-import": {
+        "name": "Import from CSV",
+        "purpose": "Brings over your Google Sheets or Excel table once you save it as CSV.",
+        "keywords": "import csv google sheets excel upload bring over"
+      },
+      "plan-close": {
+        "name": "Close the month",
+        "purpose": "A closed month stays as it is until you reopen it.",
+        "keywords": "close lock month reopen done"
+      },
+      "finance-add": {
+        "name": "New transaction",
+        "purpose": "Records income or an expense that happened.",
+        "keywords": "new transaction add income expense payment record spending",
+        "try": "**Click** New transaction and record one expense."
+      },
+      "finance-amount": {
+        "name": "Amount",
+        "purpose": "How much it was. The currency follows your settings and can be changed.",
+        "keywords": "amount sum how much money currency"
+      },
+      "finance-period": {
+        "name": "Period",
+        "purpose": "Picks the period of the transactions and summaries you see.",
+        "keywords": "period month year filter date range"
+      },
+      "finance-category-filter": {
+        "name": "Category filter",
+        "purpose": "Shows only income, expenses or one category.",
+        "keywords": "filter category income expenses type"
+      },
+      "finance-transaction-row": {
+        "name": "Transaction",
+        "purpose": "Click a row to edit or delete the transaction.",
+        "keywords": "transaction row edit delete fix"
+      },
+      "finance-recurring-add": {
+        "name": "New recurring payment",
+        "purpose": "A payment that repeats: rent, a subscription, a salary. It records itself on the due day.",
+        "keywords": "recurring payment regular repeating rent subscription monthly standing order"
+      },
+      "finance-recurring-row": {
+        "name": "Recurring payment",
+        "purpose": "Click a payment to change the amount or frequency, or stop it.",
+        "keywords": "recurring payment edit stop frequency"
+      },
+      "finance-overview": {
+        "name": "Overview",
+        "purpose": "Summary tiles, an income chart and your capital week by week, plan and actual.",
+        "keywords": "overview chart summary capital trend income statistics"
+      },
+      "invoice-new": {
+        "name": "Issue invoice",
+        "purpose": "Starts a new invoice. It’s a draft first; you issue it when it’s ready.",
+        "keywords": "issue new invoice create bill billing document",
+        "try": "**Click** Issue invoice and start a draft."
+      },
+      "invoice-setup": {
+        "name": "Your invoice details",
+        "purpose": "Before your first invoice, fill in your details: name, company ID, address and account.",
+        "keywords": "details supplier company id vat address account first invoice"
+      },
+      "invoice-search": {
+        "name": "Search invoices",
+        "purpose": "Finds an invoice by its number or customer.",
+        "keywords": "search find invoice number customer client",
+        "try": "**Type** a customer’s name or an invoice number."
+      },
+      "invoice-filter": {
+        "name": "Status",
+        "purpose": "Shows only drafts, issued, overdue, paid or cancelled invoices.",
+        "keywords": "filter status overdue paid draft unpaid"
+      },
+      "invoice-sort": {
+        "name": "Sort",
+        "purpose": "Sorts invoices by date, due date or amount.",
+        "keywords": "sort order newest due date amount"
+      },
+      "invoice-row": {
+        "name": "Invoice",
+        "purpose": "Click an invoice to open it: edit a draft, download or send an issued one.",
+        "keywords": "invoice open detail draft"
+      },
+      "invoice-customer": {
+        "name": "Customer",
+        "purpose": "Who the invoice is for. Pick them from your contacts or fill in by hand.",
+        "keywords": "customer client bill to contact company id",
+        "try": "**Pick** a customer from your contacts."
+      },
+      "invoice-add-item": {
+        "name": "Add item",
+        "purpose": "Adds a line: name, quantity, unit, price before VAT and the rate.",
+        "keywords": "item line add service price quantity vat",
+        "try": "**Add** an item and fill in its name and price."
+      },
+      "invoice-preview": {
+        "name": "Preview",
+        "purpose": "This is how the invoice will look as a PDF. It changes as you type.",
+        "keywords": "preview pdf look how it looks"
+      },
+      "invoice-save-draft": {
+        "name": "Save draft",
+        "purpose": "Saves the invoice in progress; it doesn’t get a number yet.",
+        "keywords": "save draft later in progress",
+        "try": "**Save** the draft; you can issue it later."
+      },
+      "invoice-issue": {
+        "name": "Issue",
+        "purpose": "The invoice gets the next number and can’t change any more; only a cancellation corrects it.",
+        "keywords": "issue number series final confirm"
+      },
+      "invoice-download": {
+        "name": "Download PDF",
+        "purpose": "Downloads the issued invoice as a PDF.",
+        "keywords": "download pdf print save file"
+      },
+      "invoice-send": {
+        "name": "Send by e-mail",
+        "purpose": "Sends the invoice to the customer with the PDF attached and a copy to you.",
+        "keywords": "send email mail customer client"
+      },
+      "invoice-mark-paid": {
+        "name": "Paid",
+        "purpose": "Marks the invoice paid today and records the income in Finance.",
+        "keywords": "paid settled payment received mark income"
+      },
+      "invoice-cancel": {
+        "name": "Cancel",
+        "purpose": "Cancels an issued unpaid invoice with a credit note under the next number.",
+        "keywords": "cancel void credit note correct mistake"
+      },
+      "invoice-settings": {
+        "name": "Invoice settings",
+        "purpose": "Your details on invoices: name, company ID, VAT number, address, account, due days and number prefix.",
+        "keywords": "invoice settings details supplier account due days series company id vat qr"
+      },
+      "invoice-style": {
+        "name": "Invoice look",
+        "purpose": "Pick one of four styles and the line colour. The data stays the same.",
+        "keywords": "look style colour template design invoice"
+      },
+      "worker-invite": {
+        "name": "Invite a worker",
+        "purpose": "Invites someone to the company, by short ID or e-mail, with a manager and groups.",
+        "keywords": "invite worker add employee person colleague team new member",
+        "try": "**Click** Invite a worker and look at the options."
+      },
+      "worker-invite-existing": {
+        "name": "Already has an account",
+        "purpose": "For someone who uses {appName}: enter their short ID or e-mail.",
+        "keywords": "existing account short id email has account"
+      },
+      "worker-invite-new": {
+        "name": "Someone new",
+        "purpose": "For someone without an account: they get a sign-up link.",
+        "keywords": "new no account link sign up invite"
+      },
+      "invite-next": {
+        "name": "Continue",
+        "purpose": "The next step of the invite: position, manager, groups and rights.",
+        "keywords": "continue next step"
+      },
+      "worker-submit": {
+        "name": "Send invite",
+        "purpose": "Saves the worker and sends them the invite.",
+        "keywords": "send invite save"
+      },
+      "worker-invite-done": {
+        "name": "Done",
+        "purpose": "The invite is out. You can still copy or share the link.",
+        "keywords": "done close link share"
+      },
+      "company-tabs": {
+        "name": "Parts of Company",
+        "purpose": "People, Groups, Rewards and payouts, Activity and Dashboards.",
+        "keywords": "tabs people groups rewards activity dashboards"
+      },
+      "company-group-filter": {
+        "name": "Group filter",
+        "purpose": "Shows only one group’s members, with their managers dimmed.",
+        "keywords": "filter group team department members"
+      },
+      "company-status-filter": {
+        "name": "Status",
+        "purpose": "Active, invited, or ended workers too.",
+        "keywords": "status active invited ended former"
+      },
+      "company-view-switch": {
+        "name": "List or map",
+        "purpose": "The company as a tree in a list, or as an org chart from the top down.",
+        "keywords": "list map tree org chart hierarchy view",
+        "try": "**Switch** to Map and look at the company’s structure."
+      },
+      "company-person-row": {
+        "name": "Worker",
+        "purpose": "Click someone to open their dashboard: work, rights, documents, team and rewards.",
+        "keywords": "worker person detail profile open dashboard",
+        "try": "**Click** a worker to open their dashboard."
+      },
+      "company-row-menu": {
+        "name": "Worker options",
+        "purpose": "Move under another manager, or open the detail.",
+        "keywords": "options menu dots move"
+      },
+      "company-move": {
+        "name": "Move under…",
+        "purpose": "Changes the manager; their whole team moves along. On the map you can drag too.",
+        "keywords": "move manager boss hierarchy report to lead"
+      },
+      "worker-tabs": {
+        "name": "Worker tabs",
+        "purpose": "Overview, Rights, Deals and tasks, Documents, Team and Rewards.",
+        "keywords": "tabs overview rights deals tasks documents team rewards",
+        "try": "**Click** the Deals and tasks tab."
+      },
+      "worker-assign-task": {
+        "name": "Assign a task",
+        "purpose": "Gives the worker a task from you. They’ll see it in their tasks.",
+        "keywords": "assign task give work delegate"
+      },
+      "worker-remove": {
+        "name": "Remove from company",
+        "purpose": "Ends the worker. You hand over their deals and tasks; the data stays.",
+        "keywords": "remove end dismiss delete worker leave"
+      },
+      "worker-dashboard-close": {
+        "name": "Close",
+        "purpose": "Closes the worker’s dashboard and takes you back to the list.",
+        "keywords": "close back"
+      },
+      "worker-rights": {
+        "name": "Rights",
+        "purpose": "What the worker may see and do in each section. A change applies at once.",
+        "keywords": "rights permissions access what they can see sections template"
+      },
+      "worker-work": {
+        "name": "Deals and tasks",
+        "purpose": "Their deals and tasks with a chart of what was done on time and what late.",
+        "keywords": "deals tasks results work performance chart deadline"
+      },
+      "worker-documents-upload": {
+        "name": "Upload a document",
+        "purpose": "Contracts and other files for the worker. Only those who manage them see them.",
+        "keywords": "document upload contract file pdf attachment"
+      },
+      "company-group-add": {
+        "name": "New group",
+        "purpose": "A group of people, say Sales or Warehouse. Someone can be in several groups.",
+        "keywords": "new group team department create",
+        "try": "**Click** New group and give it a name."
+      },
+      "company-group-card": {
+        "name": "Group",
+        "purpose": "Who is in the group. A group also has its own conversation in Messages.",
+        "keywords": "group members team conversation"
+      },
+      "company-group-edit": {
+        "name": "Edit group",
+        "purpose": "Changes the group’s name, colour, description and members.",
+        "keywords": "edit group rename members add to group colour"
+      },
+      "company-activity": {
+        "name": "Activity",
+        "purpose": "What people in the company did: calls, meetings, deals and tasks by day.",
+        "keywords": "activity what they did work history calls meetings"
+      },
+      "company-dashboards": {
+        "name": "Dashboards",
+        "purpose": "The dashboard workers start on: for the whole company, a group or one person.",
+        "keywords": "dashboards widgets workers default"
+      },
+      "reward-tiles": {
+        "name": "Rewards summary",
+        "purpose": "How much awaits approval, how much is due and how much is paid.",
+        "keywords": "summary rewards due approved paid commission"
+      },
+      "reward-team": {
+        "name": "People’s rewards",
+        "purpose": "Each worker’s month: what they earned and what is waiting.",
+        "keywords": "rewards people workers month team payout"
+      },
+      "reward-approve": {
+        "name": "Approve",
+        "purpose": "Approves the waiting rewards so they can be paid.",
+        "keywords": "approve confirm rewards pending"
+      },
+      "reward-pay": {
+        "name": "Pay out",
+        "purpose": "Marks the approved rewards as paid.",
+        "keywords": "pay out payout pay rewards money"
+      },
+      "reward-export": {
+        "name": "Export",
+        "purpose": "Downloads the period’s rewards as CSV, say for your accountant.",
+        "keywords": "export csv download accountant rewards"
+      },
+      "reward-person": {
+        "name": "Worker’s rewards",
+        "purpose": "Opens one person’s rewards: their plan, work and payouts.",
+        "keywords": "worker rewards plan detail open",
+        "try": "**Click** a worker to open their rewards."
+      },
+      "reward-add": {
+        "name": "Add reward",
+        "purpose": "A reward or deduction by hand, outside the plan, say a bonus for a great month.",
+        "keywords": "add reward bonus deduction manual one-off"
+      },
+      "reward-plan": {
+        "name": "Reward plan",
+        "purpose": "The rules of what the worker is rewarded for: a meeting, a won deal, an hour worked.",
+        "keywords": "reward plan rules commission per meeting per deal hourly rate"
+      },
+      "reward-template": {
+        "name": "From a template",
+        "purpose": "Starts the plan from a ready template you then adjust.",
+        "keywords": "template start ready plan preset"
+      },
+      "reward-rule-add": {
+        "name": "Add rule",
+        "purpose": "A new rule of the plan, say a fixed amount for every meeting booked.",
+        "keywords": "rule add reward per meeting commission deal condition",
+        "try": "**Add** a rule and pick what it rewards."
+      },
+      "reward-setup": {
+        "name": "Describe how you reward",
+        "purpose": "Tell me in your own words how you reward and I’ll suggest the rules. You save them.",
+        "keywords": "describe grady suggest rules own words ai"
+      },
+      "reward-work-table": {
+        "name": "Work and rewards",
+        "purpose": "What the worker did and what they get for it. Approve or reject rewards here.",
+        "keywords": "work table approve reject rewards overview"
+      },
+      "reward-payouts": {
+        "name": "Payouts",
+        "purpose": "The worker’s payouts and their history.",
+        "keywords": "payouts history paid pay"
+      },
+      "reward-mine": {
+        "name": "My rewards",
+        "purpose": "What you earned, what awaits approval and the plan behind it.",
+        "keywords": "my rewards earnings commission how much did i earn"
+      },
+      "messages-search": {
+        "name": "Search",
+        "purpose": "Finds a conversation or a person by name.",
+        "keywords": "search find conversation person name",
+        "try": "**Type** a colleague’s name."
+      },
+      "messages-list": {
+        "name": "Conversations",
+        "purpose": "Groups and people you talk to. Unread ones carry a badge.",
+        "keywords": "conversations list groups chats unread"
+      },
+      "messages-conversation": {
+        "name": "Conversation",
+        "purpose": "Click it to open it on the right.",
+        "keywords": "conversation open chat group",
+        "try": "**Open** one conversation."
+      },
+      "messages-person": {
+        "name": "Message someone",
+        "purpose": "People you have no conversation with yet. Click to write the first message.",
+        "keywords": "message someone new message direct private colleague"
+      },
+      "messages-pick": {
+        "name": "Pick a conversation",
+        "purpose": "The conversation you pick on the left opens here.",
+        "keywords": "pick conversation"
+      },
+      "messages-input": {
+        "name": "Message",
+        "purpose": "Enter sends, Shift+Enter adds a line. Type @ to mention a colleague.",
+        "keywords": "write message text mention @ enter",
+        "try": "**Write** a message and send it with Enter."
+      },
+      "messages-attach": {
+        "name": "Attach a file",
+        "purpose": "Sends pictures, PDFs or documents, up to 5 files of 10 MB.",
+        "keywords": "attachment attach file picture pdf send document"
+      },
+      "messages-send": {
+        "name": "Send",
+        "purpose": "Sends the message. If the connection drops, it retries by itself.",
+        "keywords": "send message"
+      },
+      "messages-message-menu": {
+        "name": "Message options",
+        "purpose": "Reply to, edit or delete a message.",
+        "keywords": "message options menu reply edit delete"
+      },
+      "messages-reply": {
+        "name": "Reply",
+        "purpose": "Replies quoting the message.",
+        "keywords": "reply quote respond"
+      },
+      "messages-edit": {
+        "name": "Edit",
+        "purpose": "You can edit your message for 15 minutes after sending it.",
+        "keywords": "edit fix message typo"
+      },
+      "messages-delete": {
+        "name": "Delete",
+        "purpose": "Deletes the message: your own within 15 minutes, the owner any.",
+        "keywords": "delete remove message"
+      },
+      "messages-conversation-menu": {
+        "name": "Conversation options",
+        "purpose": "Pin, mute, silence for everyone or download as CSV.",
+        "keywords": "conversation options pin mute export menu",
+        "try": "**Open** the conversation options."
+      },
+      "messages-pin": {
+        "name": "Pin",
+        "purpose": "A pinned conversation stays at the top.",
+        "keywords": "pin top favourite"
+      },
+      "messages-mute": {
+        "name": "Mute",
+        "purpose": "A muted conversation doesn’t ping or count as unread, mentions still do.",
+        "keywords": "mute notifications off sound quiet"
+      },
+      "messages-mute-all": {
+        "name": "Silence for everyone",
+        "purpose": "Silences the group for every member, say overnight.",
+        "keywords": "silence everyone group notifications off"
+      },
+      "messages-export": {
+        "name": "Download as CSV",
+        "purpose": "Downloads the whole conversation as a table.",
+        "keywords": "download export csv backup conversation"
+      },
+      "grady-button": {
+        "name": "Grady",
+        "purpose": "Tap me anywhere in the app and ask whatever you like. I advise, calculate or simply do it for you.",
+        "keywords": "grady assistant helper ai chat ask advice open panel",
+        "try": "**Tap** me in the bottom right to open my panel."
+      },
+      "grady-messages": {
+        "name": "Conversation",
+        "purpose": "This is our conversation. Under an answer you can rate it or save it to your notes.",
+        "keywords": "conversation messages answers history chat thread"
+      },
+      "grady-chips": {
+        "name": "Suggested questions",
+        "purpose": "Quick questions based on what is going on in your business. One tap and you have asked.",
+        "keywords": "suggestions questions tips quick prompts chips"
+      },
+      "grady-input": {
+        "name": "Message Grady",
+        "purpose": "Type what you need here, for example “add this to my tasks”. Enter sends it.",
+        "keywords": "write ask question message instruction command type",
+        "try": "**Type** me a short question, for example what to do today."
+      },
+      "grady-attach": {
+        "name": "Attach a file",
+        "purpose": "Attach a PDF, image, spreadsheet or document and I will read it. Up to 3 files of 10 MB each.",
+        "keywords": "attachment file pdf image spreadsheet upload document attach"
+      },
+      "grady-send": {
+        "name": "Send",
+        "purpose": "Sends me your message. I answer straight away as I write.",
+        "keywords": "send submit message answer"
+      },
+      "grady-save-note": {
+        "name": "Save to notes",
+        "purpose": "Saves my answer as a new note or adds it to the end of an existing one.",
+        "keywords": "save note write down answer notes keep"
+      },
+      "grady-saved-open": {
+        "name": "Open the note",
+        "purpose": "After saving an answer, this opens the note it went into.",
+        "keywords": "open note saved answer"
+      },
+      "grady-noticed": {
+        "name": "What I noticed",
+        "purpose": "What I spotted in your business that deserves attention, with a suggested next step.",
+        "keywords": "noticed suggestions alerts watch tips proactive"
+      },
+      "grady-new-chat": {
+        "name": "New conversation",
+        "purpose": "Starts a fresh conversation. The previous one stays saved.",
+        "keywords": "new conversation start over clear chat reset"
+      },
+      "grady-tutorial": {
+        "name": "Tutorial",
+        "purpose": "Starts the tour of the app again: the quick look or the full tutorial.",
+        "keywords": "tutorial tour walkthrough guide learn"
+      },
+      "grady-report": {
+        "name": "Report a problem",
+        "purpose": "When something does not work as it should, tell us, with a screenshot if you like.",
+        "keywords": "report problem bug error broken feedback"
+      },
+      "grady-close": {
+        "name": "Close the panel",
+        "purpose": "Hides my panel; the conversation stays where it was.",
+        "keywords": "close hide panel"
+      },
+      "grady-proactive": {
+        "name": "Grady speaks up",
+        "purpose": "Switch on or off whether I come to you myself with a summary and suggestions.",
+        "keywords": "speaks up proactive switch off on notifications suggestions"
+      },
+      "grady-frequency": {
+        "name": "How often Grady speaks up",
+        "purpose": "Choose whether I speak up often, sometimes, or only with a summary once a day, week or month.",
+        "keywords": "frequency how often summary daily weekly monthly"
+      },
+      "grady-quiet": {
+        "name": "Grady’s quiet hours",
+        "purpose": "Hours when I never speak up on my own, for example evenings and nights.",
+        "keywords": "quiet hours do not disturb night silence"
+      },
+      "grady-demo-delete": {
+        "name": "Delete the sample data",
+        "purpose": "Deletes the tutorial’s sample data. What you created yourself stays.",
+        "keywords": "sample data delete demo tutorial clean up"
+      },
+      "grady-start-tutorial": {
+        "name": "Start the tutorial",
+        "purpose": "Plays the tour of the app again whenever you want.",
+        "keywords": "start tutorial tour again walkthrough guide"
+      },
+      "settings-chat-email": {
+        "name": "E-mail about new messages",
+        "purpose": "When you are away from the app, I send you an e-mail about direct messages and mentions.",
+        "keywords": "email messages notifications chat mentions alerts"
+      },
+      "settings-chat-sound": {
+        "name": "Sound of a new message",
+        "purpose": "A short sound when something new arrives in Messages.",
+        "keywords": "sound messages notification tone chat"
+      },
+      "settings-search": {
+        "name": "Search settings",
+        "purpose": "Type what you want to change, for example “currency” or “password”, and jump right to it.",
+        "keywords": "search settings find option",
+        "try": "**Type** a word here, for example “currency”."
+      },
+      "settings-avatar": {
+        "name": "Profile photo",
+        "purpose": "Your photo that people in the company see. JPG, PNG and HEIC all work.",
+        "keywords": "photo profile avatar picture upload"
+      },
+      "settings-public-id": {
+        "name": "Account short ID",
+        "purpose": "Your short ID. Send it to a company owner who wants to invite you.",
+        "keywords": "id short id code invite invitation account qr"
+      },
+      "settings-company-name": {
+        "name": "Company name",
+        "purpose": "What your company is called in the company switcher and in invitations.",
+        "keywords": "company name business name",
+        "try": "**Type** your company’s name."
+      },
+      "settings-company-logo": {
+        "name": "Company logo",
+        "purpose": "The logo your people see in the company switcher.",
+        "keywords": "company logo image brand"
+      },
+      "settings-language": {
+        "name": "Language",
+        "purpose": "Switches the app between Czech and English.",
+        "keywords": "language czech english switch"
+      },
+      "settings-password": {
+        "name": "Change password",
+        "purpose": "Set a new password for your account here.",
+        "keywords": "password change new password security"
+      },
+      "settings-sign-out": {
+        "name": "Sign out",
+        "purpose": "Signs you out on this device.",
+        "keywords": "sign out log out logout"
+      },
+      "settings-plan-card": {
+        "name": "Plan",
+        "purpose": "Your plan, its status, price and when the next payment is.",
+        "keywords": "plan subscription price payment trial"
+      },
+      "settings-change-plan": {
+        "name": "Change plan",
+        "purpose": "Pick another plan or yearly billing. A higher one applies at once, a lower one from the end of the period.",
+        "keywords": "change plan upgrade downgrade higher lower yearly"
+      },
+      "settings-cancel-plan": {
+        "name": "Cancel subscription",
+        "purpose": "Cancels the subscription at the end of the paid period. Your data stays.",
+        "keywords": "cancel subscription end stop plan"
+      },
+      "settings-promo": {
+        "name": "Promo code",
+        "purpose": "Got a code from a partner? Enter it here before your first payment.",
+        "keywords": "promo code discount coupon partner"
+      },
+      "settings-payments": {
+        "name": "Payment history",
+        "purpose": "All your payments with receipts to download.",
+        "keywords": "payments history receipts invoices"
+      },
+      "settings-billing": {
+        "name": "Billing details",
+        "purpose": "Name or company, company ID, VAT number and address on your subscription receipts.",
+        "keywords": "billing details company id vat address receipts"
+      },
+      "appearance-themes": {
+        "name": "Theme",
+        "purpose": "Pick the app’s colours. In game mode some themes unlock with your level.",
+        "keywords": "theme colours appearance dark light"
+      },
+      "appearance-create-theme": {
+        "name": "Custom theme",
+        "purpose": "Opens the editor where you build your own theme and can share it with a code.",
+        "keywords": "custom theme editor create colours share"
+      },
+      "appearance-schedule": {
+        "name": "Change the theme through the day",
+        "purpose": "The theme changes by itself with the time of day, light in the morning and dark at night.",
+        "keywords": "theme schedule time of day morning evening automatic"
+      },
+      "appearance-sound": {
+        "name": "Sound",
+        "purpose": "Sounds of celebrations and small actions. Turn them off for some peace.",
+        "keywords": "sound sounds mute off celebrations"
+      },
+      "appearance-animations": {
+        "name": "Animations",
+        "purpose": "Motion and effects in the app. Turning them off makes everything calmer.",
+        "keywords": "animations motion effects off"
+      },
+      "appearance-timezone": {
+        "name": "Time zone",
+        "purpose": "I count days, due dates and the calendar by it.",
+        "keywords": "time zone clock hours"
+      },
+      "appearance-currency": {
+        "name": "Currency",
+        "purpose": "The currency I show amounts in. Stored amounts never change.",
+        "keywords": "currency money amounts euro"
+      },
+      "appearance-date-format": {
+        "name": "Date format",
+        "purpose": "How dates are written in the app. Time, numbers and the first day of the week are right below.",
+        "keywords": "date format time numbers week"
+      },
+      "settings-game-mode": {
+        "name": "Game mode",
+        "purpose": "The game with XP and unlocking, or a plain tool without games.",
+        "keywords": "game mode tool xp unlocking"
+      },
+      "settings-path": {
+        "name": "Path",
+        "purpose": "The path of milestones for your field. Milestones you started stay when you change it.",
+        "keywords": "path field industry milestones change"
+      },
+      "settings-reengage": {
+        "name": "Offer to approach again after",
+        "purpose": "After how many months I suggest trying a lost deal again.",
+        "keywords": "approach again lost deal months pipeline"
+      },
+      "settings-cold-calling-stage": {
+        "name": "Stage of a new deal",
+        "purpose": "Which pipeline stage a deal you create from a call lands in.",
+        "keywords": "deal stage cold calling call pipeline"
+      },
+      "settings-calendar-add": {
+        "name": "Subscribed calendars",
+        "purpose": "Add the secret iCal address of your other calendar so I can see when you are busy.",
+        "keywords": "subscribe calendar ical google outlook busy add"
+      },
+      "settings-calendar-feed": {
+        "name": "Link to subscribe to your calendar",
+        "purpose": "A link that adds your {appName} calendar to your phone or Google.",
+        "keywords": "link subscribe calendar phone google export ical"
+      },
+      "settings-show-online": {
+        "name": "Show when I am online",
+        "purpose": "Turn it off and nobody sees that you are online, and you do not see others.",
+        "keywords": "online status visibility privacy hide"
+      },
+      "settings-export": {
+        "name": "Export my data",
+        "purpose": "Download all your data in one file.",
+        "keywords": "export data download backup"
+      },
+      "settings-delete-account": {
+        "name": "Delete account",
+        "purpose": "Deletes your account and data for good. I ask once more before it happens.",
+        "keywords": "delete account remove close account"
+      },
+      "apps-server-address": {
+        "name": "MCP server address",
+        "purpose": "The address you paste into Claude or another app so it can work with your data.",
+        "keywords": "mcp server address claude connect apps"
+      },
+      "apps-copy-address": {
+        "name": "Copy address",
+        "purpose": "Copies the server address to the clipboard.",
+        "keywords": "copy address clipboard",
+        "try": "**Copy** the server address."
+      },
+      "apps-connect-steps": {
+        "name": "How to connect Claude",
+        "purpose": "Step by step, how to add the app to Claude.",
+        "keywords": "connect claude steps guide integration"
+      },
+      "apps-list": {
+        "name": "Connected apps",
+        "purpose": "The apps you have connected, with when and how much they did.",
+        "keywords": "connected apps list claude integrations"
+      },
+      "apps-app-row": {
+        "name": "Connected app",
+        "purpose": "Open an app to see what it may do and what it did.",
+        "keywords": "app detail expand",
+        "try": "**Open** one connected app."
+      },
+      "apps-level": {
+        "name": "What the app may do",
+        "purpose": "Only read, write, or everything including deleting.",
+        "keywords": "permission level read write delete rights"
+      },
+      "apps-history": {
+        "name": "Action history",
+        "purpose": "What the app did in the last days.",
+        "keywords": "history actions log record"
+      },
+      "apps-disconnect": {
+        "name": "Disconnect",
+        "purpose": "Disconnects the app; from then on it does nothing.",
+        "keywords": "disconnect revoke access remove"
+      },
+      "apps-trash": {
+        "name": "Trash",
+        "purpose": "What Grady or connected apps deleted. Restore it from here.",
+        "keywords": "trash restore deleted undo"
+      },
+      "apps-company-mcp": {
+        "name": "Connected apps in the company",
+        "purpose": "Who in the company has an app connected, and a switch for the whole company.",
+        "keywords": "company mcp connected apps workers switch off"
+      },
+      "admin-switcher-hint": {
+        "name": "Quick switching",
+        "purpose": "The shortcut to jump between sections of the administration.",
+        "keywords": "shortcut switch sections keys"
+      },
+      "admin-sidebar-collapse": {
+        "name": "Collapse the menu",
+        "purpose": "Folds the left menu so the numbers get more room.",
+        "keywords": "collapse menu sidebar hide"
+      },
+      "admin-board-tabs": {
+        "name": "Boards",
+        "purpose": "Your boards with widgets. Each can show something else.",
+        "keywords": "board tabs widgets overview",
+        "try": "**Switch** to another board."
+      },
+      "admin-board-new-tab": {
+        "name": "New board",
+        "purpose": "Adds another board, empty or from a template.",
+        "keywords": "new board add tab"
+      },
+      "admin-board-rename-tab": {
+        "name": "Rename board",
+        "purpose": "Gives the board a new name.",
+        "keywords": "rename board name"
+      },
+      "admin-board-delete-tab": {
+        "name": "Delete board",
+        "purpose": "Deletes this board. The others stay.",
+        "keywords": "delete board remove"
+      },
+      "admin-set-default": {
+        "name": "Set as default",
+        "purpose": "Saves your layout as the default overview for the other administrators.",
+        "keywords": "default layout overview others"
+      },
+      "admin-period": {
+        "name": "Period",
+        "purpose": "Which period the numbers cover: today, 7 days, 30 days or your own range.",
+        "keywords": "period date range days month filter time",
+        "try": "**Pick** another period."
+      },
+      "admin-compare": {
+        "name": "Compare",
+        "purpose": "Shows the change against the previous period of the same length.",
+        "keywords": "compare comparison previous period change",
+        "try": "**Switch on** the comparison with the previous period."
+      },
+      "admin-internal": {
+        "name": "Include internal",
+        "purpose": "Counts internal and test accounts too, which the metrics leave out otherwise.",
+        "keywords": "internal test accounts include metrics"
+      },
+      "admin-filters": {
+        "name": "Filters",
+        "purpose": "Narrows the numbers to a field, country, plan and other groups.",
+        "keywords": "filter field country plan segment narrow"
+      },
+      "admin-refresh": {
+        "name": "Refresh",
+        "purpose": "Loads the numbers again.",
+        "keywords": "refresh reload update"
+      },
+      "admin-figures": {
+        "name": "Key figures",
+        "purpose": "The page’s key figures for the chosen period, with the change against the last one.",
+        "keywords": "figures metrics tiles overview kpi"
+      },
+      "admin-chart": {
+        "name": "Chart",
+        "purpose": "How it develops over time. Hover a point for the exact number.",
+        "keywords": "chart trend time development"
+      },
+      "admin-table": {
+        "name": "Table",
+        "purpose": "The detailed numbers in a table; click a column to sort.",
+        "keywords": "table detail sort columns"
+      },
+      "admin-table-export": {
+        "name": "Export",
+        "purpose": "Downloads the table as CSV.",
+        "keywords": "export csv download table"
+      },
+      "admin-funnel": {
+        "name": "Activation funnel",
+        "purpose": "How many people got through each step from signing up to the first success.",
+        "keywords": "funnel activation steps signup conversion"
+      },
+      "admin-cohorts": {
+        "name": "Cohorts",
+        "purpose": "How many people of each sign-up week keep coming back.",
+        "keywords": "cohorts retention return weeks"
+      },
+      "admin-users-search": {
+        "name": "Search users",
+        "purpose": "Find an account by name, part of the e-mail or the start of the ID.",
+        "keywords": "search user account email name id",
+        "try": "**Type** part of a name or e-mail."
+      },
+      "admin-users-export": {
+        "name": "Export users",
+        "purpose": "Downloads the list of users with names and e-mails as CSV.",
+        "keywords": "export users csv emails list"
+      },
+      "admin-users-row": {
+        "name": "User",
+        "purpose": "Click an account to open its detail.",
+        "keywords": "user account detail open",
+        "try": "**Open** one user’s detail."
+      },
+      "admin-user-account": {
+        "name": "Account",
+        "purpose": "The account’s e-mail, sign-up, last sign-in, device and plan.",
+        "keywords": "account email sign in device plan detail"
+      },
+      "admin-user-actions": {
+        "name": "Support",
+        "purpose": "Password reset, a new e-mail confirmation, signing out everywhere or changing the e-mail.",
+        "keywords": "password reset confirmation email sign out support change email"
+      },
+      "admin-user-internal": {
+        "name": "Internal account",
+        "purpose": "Marks the account as internal so the metrics leave it out.",
+        "keywords": "internal account test metrics mark"
+      },
+      "admin-user-subscription": {
+        "name": "User’s subscription",
+        "purpose": "Change the account’s plan, status or end of trial by hand.",
+        "keywords": "subscription plan change manual trial"
+      },
+      "admin-user-ai-cap": {
+        "name": "User’s AI cap",
+        "purpose": "This account’s own monthly AI spending cap, or block AI entirely.",
+        "keywords": "ai cap limit spend block user"
+      },
+      "admin-feedback-tabs": {
+        "name": "Feedback",
+        "purpose": "Problem reports, ideas and the satisfaction survey, each on its own.",
+        "keywords": "feedback reports ideas satisfaction tabs",
+        "try": "**Switch** to another feedback tab."
+      },
+      "admin-feedback-filters": {
+        "name": "Report filters",
+        "purpose": "Narrows the reports by status, type or page.",
+        "keywords": "filter reports status type bugs"
+      },
+      "admin-features-tabs": {
+        "name": "Feature areas",
+        "purpose": "How people use each part of the app.",
+        "keywords": "features usage sections tabs",
+        "try": "**Switch** to another area."
+      },
+      "admin-explorer-controls": {
+        "name": "Event explorer",
+        "purpose": "Pick an event and a property and build your own chart.",
+        "keywords": "explorer events chart analytics custom query"
+      },
+      "admin-ai-tabs": {
+        "name": "AI and Grady",
+        "purpose": "The spending overview, the model of each job and Grady’s rules.",
+        "keywords": "ai grady models rules tabs",
+        "try": "**Switch** to the Models tab."
+      },
+      "admin-ai-budget": {
+        "name": "AI budget",
+        "purpose": "How much Grady spent, the estimate to the end of the month and whether he runs normally or in economy mode.",
+        "keywords": "budget spend ai credit estimate economy mode"
+      },
+      "admin-ai-caps": {
+        "name": "AI usage cap",
+        "purpose": "The monthly cap in total and per user, and from what percentage economy mode starts.",
+        "keywords": "ai cap limit spend user percentage"
+      },
+      "admin-ai-models": {
+        "name": "Models",
+        "purpose": "Which model runs each of Grady’s jobs, with the Economy, Balanced and Quality presets.",
+        "keywords": "models haiku sonnet opus settings jobs"
+      },
+      "admin-ai-rules": {
+        "name": "Grady’s rules",
+        "purpose": "When Grady speaks up on his own, how often, and the instructions he gets.",
+        "keywords": "rules grady instructions proactive"
+      },
+      "admin-costs-margin": {
+        "name": "Margin",
+        "purpose": "Revenue against costs per account and plan.",
+        "keywords": "margin costs revenue profit"
+      },
+      "admin-costs-payments": {
+        "name": "Payments in the period",
+        "purpose": "Revenue, refunds and paying accounts by currency.",
+        "keywords": "payments revenue refunds paying accounts"
+      },
+      "admin-health-cron": {
+        "name": "Scheduled jobs",
+        "purpose": "When each daily job last ran and whether it passed.",
+        "keywords": "cron jobs scheduled run failure"
+      },
+      "admin-errors-tabs": {
+        "name": "Errors",
+        "purpose": "The error log and the settings of error e-mails.",
+        "keywords": "errors log alerts email tabs",
+        "try": "**Switch** to E-mail alerts."
+      },
+      "admin-errors-search": {
+        "name": "Search errors",
+        "purpose": "Find an error by its GR-… code or filter by status.",
+        "keywords": "search error code gr filter status",
+        "try": "**Type** an error code, for example GR-."
+      },
+      "admin-errors-list": {
+        "name": "Error list",
+        "purpose": "Errors grouped by kind. Click one to see its occurrences and change its status.",
+        "keywords": "error list groups occurrences status resolve"
+      },
+      "admin-plans-editor": {
+        "name": "Plan editor",
+        "purpose": "The draft of the plans: prices, limits and card lines. Publish it when it is ready.",
+        "keywords": "plans prices limits draft publish editor"
+      },
+      "admin-plans-history": {
+        "name": "Plan history",
+        "purpose": "Earlier versions of the plans. Any of them can be brought back.",
+        "keywords": "plan history versions restore"
+      },
+      "admin-promo-new": {
+        "name": "New promo code",
+        "purpose": "Creates a code for a partner with a benefit and a commission.",
+        "keywords": "new promo code partner discount commission create",
+        "try": "**Click** to look at the new code form."
+      },
+      "admin-promo-list": {
+        "name": "Promo codes",
+        "purpose": "All codes with sign-ups, paying accounts and commissions to pay out.",
+        "keywords": "promo codes list signups commissions payouts"
+      },
+      "admin-digest-prefs": {
+        "name": "Daily summary",
+        "purpose": "When your “yesterday” summary arrives and whether only when there is news.",
+        "keywords": "daily summary email hour notifications"
+      }
+    },
+    "guides": {
+      "dashboard": {
+        "name": "Dashboard",
+        "intro": "Your day in one place: widgets with tasks, deals and money, arranged the way you like.",
+        "examples": {
+          "q1": "How do I add a widget to the dashboard?",
+          "q2": "How do I rearrange widgets?",
+          "q3": "How do I make a second dashboard?"
+        }
+      },
+      "milestones": {
+        "name": "Milestones",
+        "intro": "Big goals split into tasks. Every milestone has a map too, where you drag tasks around.",
+        "examples": {
+          "q1": "How do I create a milestone?",
+          "q2": "How do I add a subtask?",
+          "q3": "How do I import a map from MindNode?"
+        }
+      },
+      "notes": {
+        "name": "Notes",
+        "intro": "Your business material in one place: text and mind maps. I use it when you write to me.",
+        "examples": {
+          "q1": "How do I make a mind map?",
+          "q2": "How do I share a note?",
+          "q3": "How do I restore a deleted note?"
+        }
+      },
+      "tasks": {
+        "name": "Tasks",
+        "intro": "Tasks for deals and contacts with a due date and time. Overdue ones glow red.",
+        "examples": {
+          "q1": "How do I add a task to a deal?",
+          "q2": "How do I see overdue tasks?",
+          "q3": "How do I complete a task with a note?"
+        }
+      },
+      "contacts": {
+        "name": "Contacts",
+        "intro": "People you want to reach live in your tables. From here you move them on, call them and start deals.",
+        "examples": {
+          "q1": "How do I add a new contact?",
+          "q2": "How do I move a contact to another table?",
+          "q3": "How do I find new companies to call?"
+        }
+      },
+      "coldCalling": {
+        "name": "Cold Calling",
+        "intro": "Call through your tables one contact after another and move each one on after the call.",
+        "examples": {
+          "q1": "How do I start the call timer?",
+          "q2": "How do I move a contact after a call?",
+          "q3": "When is the best time to call?"
+        }
+      },
+      "pipeline": {
+        "name": "Pipeline",
+        "intro": "Every deal has its stage here. The tiles at the top guard what is on fire: the goal is zero everywhere.",
+        "examples": {
+          "q1": "How do I create a new deal?",
+          "q2": "How do I add a task to a deal?",
+          "q3": "How do I change the stages of the pipeline?"
+        }
+      },
+      "calendar": {
+        "name": "Calendar",
+        "intro": "Meetings, Close Dates and tasks in one place, in your time zone.",
+        "examples": {
+          "q1": "How do I add a meeting?",
+          "q2": "How do I see a colleague’s calendar?",
+          "q3": "How do I find a time that suits everyone?"
+        }
+      },
+      "scheduler": {
+        "name": "Scheduler",
+        "intro": "Your booking page: clients pick a free time with you themselves, by the hours you set.",
+        "examples": {
+          "q1": "How do I send a client my booking link?",
+          "q2": "How do I set when I take meetings?",
+          "q3": "How do I create a new meeting type?"
+        }
+      },
+      "finance": {
+        "name": "Finance",
+        "intro": "Your company’s money in one place: the month plan by week, transactions, recurring payments, invoices and an overview.",
+        "examples": {
+          "q1": "How do I plan income and expenses for next month?",
+          "q2": "How do I record an expense?",
+          "q3": "How do I set up a recurring rent payment?"
+        }
+      },
+      "invoices": {
+        "name": "Invoices",
+        "intro": "You issue invoices right here: a draft, issuing with the next number, the PDF, e-mail and marking it paid.",
+        "examples": {
+          "q1": "How do I issue an invoice?",
+          "q2": "How do I send an invoice by e-mail?",
+          "q3": "How do I correct an issued invoice?"
+        }
+      },
+      "company": {
+        "name": "Company",
+        "intro": "The people of your company as a tree under you: invites, groups, rights, documents and who does what.",
+        "examples": {
+          "q1": "How do I invite a worker?",
+          "q2": "How do I set a worker’s rights?",
+          "q3": "How do I move someone under another manager?"
+        }
+      },
+      "rewards": {
+        "name": "Rewards",
+        "intro": "What workers are rewarded for, what they earned and what you pay them.",
+        "examples": {
+          "q1": "How do I reward a worker for each meeting?",
+          "q2": "How do I approve and pay out rewards?",
+          "q3": "How do I add a one-off bonus?"
+        }
+      },
+      "messages": {
+        "name": "Messages",
+        "intro": "Chat inside your company: groups and direct messages with attachments, mentions and replies.",
+        "examples": {
+          "q1": "How do I send a colleague a private message?",
+          "q2": "How do I share a file with a group?",
+          "q3": "How do I mute a conversation?"
+        }
+      },
+      "grady": {
+        "name": "Grady",
+        "intro": "This is me. I show you how to ask me things and how to set when I speak up.",
+        "examples": {
+          "q1": "How do I attach a file for Grady?",
+          "q2": "How do I stop Grady speaking up on his own?",
+          "q3": "How do I save Grady’s answer to my notes?"
+        }
+      },
+      "settings": {
+        "name": "Settings",
+        "intro": "Account, subscription, appearance, formats and privacy in one place. I show you where everything is.",
+        "examples": {
+          "q1": "How do I change the currency?",
+          "q2": "How do I change my password?",
+          "q3": "How do I cancel my subscription?"
+        }
+      },
+      "connectedApps": {
+        "name": "Connected apps",
+        "intro": "Connect Claude or another app so it can work with your data in {appName}.",
+        "examples": {
+          "q1": "How do I connect Claude?",
+          "q2": "How do I disconnect an app?",
+          "q3": "How do I restore what an app deleted?"
+        }
+      },
+      "adminOverview": {
+        "name": "Overview",
+        "intro": "Boards with widgets and the controls the whole administration shares: period, comparison and filters.",
+        "examples": {
+          "q1": "How do I change the period of the numbers?",
+          "q2": "How do I add a new board?",
+          "q3": "How do I include internal accounts?"
+        }
+      },
+      "adminPeople": {
+        "name": "People",
+        "intro": "Growth, activation, retention, users and feedback. This is where you see how people are doing.",
+        "examples": {
+          "q1": "How do I find a user by e-mail?",
+          "q2": "How do I send a user a password reset?",
+          "q3": "How do I filter bug reports?"
+        }
+      },
+      "adminProduct": {
+        "name": "Product",
+        "intro": "How features are used, the event explorer and everything about AI and Grady.",
+        "examples": {
+          "q1": "How do I set the AI cap?",
+          "q2": "How do I change the model of a Grady job?",
+          "q3": "How do I build my own event chart?"
+        }
+      },
+      "adminOperations": {
+        "name": "Operations",
+        "intro": "Costs, the app’s health and the error log.",
+        "examples": {
+          "q1": "How do I find an error by its GR code?",
+          "q2": "How do I mark an error as resolved?",
+          "q3": "Where do I see whether the daily jobs ran?"
+        }
+      },
+      "adminSettings": {
+        "name": "Settings",
+        "intro": "Plans, promo codes, notifications and the other settings of the app.",
+        "examples": {
+          "q1": "How do I publish new plan prices?",
+          "q2": "How do I create a promo code for a partner?",
+          "q3": "How do I set when my daily summary arrives?"
+        }
+      }
+    },
+    "guide": {
+      "button": "Guide",
+      "buttonLabel": "Guide (?)",
+      "menuTitle": "Guide · {section}",
+      "askLabel": "What do you want to ask?",
+      "askPlaceholder": "For example: {example}",
+      "askPlaceholderPlain": "Write what you need to do",
+      "ask": "Ask",
+      "examples": "Or pick one:",
+      "quick": "Quick look",
+      "full": "Everything about this section",
+      "minutes": "{minutes} min",
+      "close": "Close",
+      "noSection": "This page has no guide of its own, but you can ask about anything.",
+      "goTo": "Come with me to {section}. **Click** it in the menu, or I’ll do it for you.",
+      "actions": {
+        "go": "Come with me: {name}.",
+        "open": "**Open** {name}.",
+        "highlight": "Here is {name}.",
+        "click": "**Click** here: {name}.",
+        "fill": "**Fill in** {name}.",
+        "wait": "Finish it here and save. I’ll wait."
+      },
+      "waiting": {
+        "go": "Waiting for you to get there.",
+        "open": "Waiting for you to open it.",
+        "click": "Waiting for your click.",
+        "fill": "Waiting for you to type something.",
+        "wait": "Waiting for you to finish."
+      },
+      "stepDone": "Done, moving on.",
+      "missingTarget": "I can’t see this on the screen right now. Something may need opening first, or it isn’t here yet.",
+      "end": "End",
+      "askMore": "Ask more",
+      "doForMe": "Do it for me",
+      "next": "Next",
+      "finish": "Done",
+      "answer": {
+        "loading": "Looking for where that is in the app…",
+        "show": "Show me",
+        "askAgain": "Ask differently",
+        "chat": "Ask in the chat",
+        "owner": "Message the owner",
+        "idea": "Suggest a feature",
+        "ideaPrompt": "I’d like a feature in the app: {question}",
+        "dropped": "I couldn’t find some of the steps, so I’m describing it instead.",
+        "question": "“{question}”"
+      },
+      "errors": {
+        "limitReached": "Grady’s answers are used up for this month. The section guides still work.",
+        "userLimit": "The AI assistant has used up its limit for your account this month. The section guides still work.",
+        "spaceLimit": "The AI assistant has used up its limit in this company this month. The section guides still work.",
+        "paused": "Grady is taking a break until the end of the month; the app works on. A section guide will show you around.",
+        "notConfigured": "Grady isn’t answering right now. Try the section’s quick look.",
+        "other": "I can’t show you this right now. Please try again in a moment."
+      },
+      "after": "Ask me about anything else.",
+      "offer": {
+        "firstVisit": "First time in {section}? Want a quick look around?",
+        "lost": "Not sure how? Tell me what you need to do.",
+        "quick": "Show me (1–2 min)",
+        "later": "Not now",
+        "off": "Don’t offer again"
+      },
+      "settings": {
+        "label": "Offer help in sections",
+        "hint": "When you seem stuck in a section or are there for the first time, I offer a guide. At most once a day per section."
+      },
+      "search": "Ask Grady and show me",
+      "showOnScreen": "Show on screen",
+      "noRightAnswer": "You don’t have the rights for this in this company ({sections}). The owner can give you access; send them a message."
     }
   },
   "promo": {

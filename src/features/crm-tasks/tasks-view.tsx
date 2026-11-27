@@ -228,6 +228,7 @@ export function TasksView() {
                   type="button"
                   aria-expanded={showDone}
                   aria-controls="crm-tasks-done-list"
+                  data-tutorial="crm-task-done-group"
                   onClick={() => setShowDone((value) => !value)}
                   className="flex min-h-11 cursor-pointer items-center gap-1.5 rounded-lg text-left outline-none focus-visible:ring-3 focus-visible:ring-violet/40 mouse:min-h-8"
                 >

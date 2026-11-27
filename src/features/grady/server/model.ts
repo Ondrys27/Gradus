@@ -84,6 +84,8 @@ export type ModelCall = {
    * comparison, feature model_compare); every other job ignores it.
    */
   explicitModel?: AiModelKey | null;
+  /** Asked again after an unsure answer: the job's escalation model (model-settings.ts). */
+  escalated?: boolean;
   /**
    * The job this call stands in for (the comparison runs another job's
    * prompt): its output cap and thinking apply; ai_usage keeps `feature`.
@@ -103,7 +105,7 @@ export type CallPlan =
  * economy mode. A failed automatic choice leaves the chat on Sonnet.
  */
 export async function planCall(
-  call: Pick<ModelCall, "client" | "feature" | "userId" | "autoPick" | "explicitModel">,
+  call: Pick<ModelCall, "client" | "feature" | "userId" | "autoPick" | "explicitModel" | "escalated">,
 ): Promise<CallPlan> {
   const settings = call.client.models
     ? await call.client.models().catch((error) => {
@@ -131,7 +133,12 @@ export async function planCall(
   }
   return {
     ok: true,
-    choice: chooseModel(call.feature, settings, { economy, auto, explicit: call.explicitModel }),
+    choice: chooseModel(call.feature, settings, {
+      economy,
+      auto,
+      explicit: call.explicitModel,
+      escalated: call.escalated,
+    }),
   };
 }
 

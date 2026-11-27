@@ -129,7 +129,10 @@ export function MessagesView() {
         </aside>
         <div className="min-h-0 min-w-0">
           {conversation ?? (
-            <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
+            <div
+              className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center"
+              data-tutorial="messages-pick"
+            >
               <span className="grid size-14 place-items-center rounded-2xl border border-violet/30 bg-violet/12 text-violet shadow-glow">
                 <MessageCircleIcon aria-hidden className="size-6" />
               </span>

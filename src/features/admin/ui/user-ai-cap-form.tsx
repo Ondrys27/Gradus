@@ -85,7 +85,7 @@ export function UserAiCapForm({
   }
 
   return (
-    <form onSubmit={submit} noValidate className="flex flex-col gap-4" data-testid="user-ai-cap-form">
+    <form onSubmit={submit} noValidate className="flex flex-col gap-4" data-testid="user-ai-cap-form" data-tutorial="admin-user-ai-cap">
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1 text-sm font-medium text-ink">{t("modeLabel")}</legend>
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">

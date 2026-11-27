@@ -499,6 +499,7 @@ export function NotesView() {
           aria-label={t("sharing.share")}
           title={t("sharing.share")}
           data-testid="note-share"
+          data-tutorial="note-share"
           onClick={openShare}
         >
           <Share2Icon />
@@ -510,6 +511,7 @@ export function NotesView() {
         aria-label={t("versions.open")}
         title={t("versions.open")}
         data-testid="note-versions-open"
+        data-tutorial="note-versions"
         onClick={() => setVersionsOpen(true)}
       >
         <HistoryIcon />
@@ -521,6 +523,7 @@ export function NotesView() {
               aria-label={t("folders.move")}
               title={t("folders.move")}
               data-testid="note-move"
+              data-tutorial="note-move"
               className="grid size-11 cursor-pointer place-items-center rounded-xl text-ink-soft outline-none hover:bg-surface-hover hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40 mouse:size-8 [&_svg]:size-4"
             >
               <FolderInputIcon aria-hidden />
@@ -565,6 +568,7 @@ export function NotesView() {
             aria-label={detail.pinned ? t("unpin") : t("pin")}
             title={detail.pinned ? t("unpin") : t("pin")}
             aria-pressed={detail.pinned}
+            data-tutorial="note-pin"
             onClick={() => pinNote.mutate({ id: detail.id, pinned: !detail.pinned })}
             className={cn(detail.pinned && "text-gold")}
           >
@@ -576,6 +580,7 @@ export function NotesView() {
             aria-label={t("delete")}
             title={t("delete")}
             data-testid="note-delete"
+            data-tutorial="note-delete"
             onClick={() => remove(detail, "editor")}
           >
             <Trash2Icon />
@@ -781,6 +786,7 @@ export function NotesView() {
           aria-label={t("newKind.label")}
           title={t("newKind.label")}
           data-testid="note-new-menu"
+          data-tutorial="note-new-menu"
           className="grid h-11 w-10 cursor-pointer place-items-center rounded-r-xl border-l border-canvas/30 bg-primary text-primary-foreground outline-none hover:bg-primary/90 focus-visible:ring-3 focus-visible:ring-ring/50 mouse:h-10 mouse:w-9"
         >
           <ChevronDownIcon aria-hidden className="size-4" />
@@ -788,7 +794,7 @@ export function NotesView() {
         <Menu.Portal>
           <Menu.Positioner sideOffset={6} align="end" className="z-popover">
             <Menu.Popup className="min-w-60 rounded-xl border border-line-strong bg-surface p-1.5 shadow-popover outline-none">
-              <Menu.Item className={menuItem} onClick={() => newNote("list")} data-testid="note-new-text">
+              <Menu.Item className={menuItem} onClick={() => newNote("list")} data-testid="note-new-text" data-tutorial="note-new-text">
                 <SquarePenIcon aria-hidden />
                 <span className="flex-1">{t("newKind.text")}</span>
                 <kbd className="text-xs text-ink-muted">⌘N</kbd>
@@ -797,13 +803,14 @@ export function NotesView() {
                 className={menuItem}
                 onClick={() => newNote("list", undefined, "mindmap")}
                 data-testid="note-new-map"
+                data-tutorial="note-new-map"
               >
                 <NetworkIcon aria-hidden />
                 <span className="flex-1">{t("newKind.mindmap")}</span>
                 <kbd className="text-xs text-ink-muted">⌘⇧N</kbd>
               </Menu.Item>
               <Menu.Separator className="my-1 h-px bg-line" />
-              <Menu.Item className={menuItem} onClick={() => setImportOpen(true)} data-testid="note-new-import">
+              <Menu.Item className={menuItem} onClick={() => setImportOpen(true)} data-testid="note-new-import" data-tutorial="note-new-import">
                 <FileUpIcon aria-hidden />
                 {t("newKind.import")}
               </Menu.Item>

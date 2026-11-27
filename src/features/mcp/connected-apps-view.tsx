@@ -74,6 +74,7 @@ function ServerAddress({ serverUrl }: { serverUrl: string }) {
       <div className="flex flex-col gap-2 py-4 first:pt-0 sm:flex-row">
         <Input
           readOnly
+          data-tutorial="apps-server-address"
           value={serverUrl}
           aria-label={t("addressTitle")}
           className="font-mono text-sm"
@@ -81,6 +82,7 @@ function ServerAddress({ serverUrl }: { serverUrl: string }) {
         />
         <Button
           variant="secondary"
+          data-tutorial="apps-copy-address"
           onClick={() => {
             void navigator.clipboard?.writeText(serverUrl).then(() => {
               setCopied(true);
@@ -118,7 +120,7 @@ function Apps() {
       title={t("appsTitle")}
       description={t("appsHint")}
     >
-      <div className="flex flex-col gap-3 py-4 first:pt-0">
+      <div data-tutorial="apps-list" className="flex flex-col gap-3 py-4 first:pt-0">
         {apps.isPending ? (
           <Skeleton className="h-20 rounded-2xl" />
         ) : apps.isError ? (
@@ -172,6 +174,7 @@ function AppRow({
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
+        data-tutorial="apps-app-row"
         className="flex min-h-11 w-full cursor-pointer items-start justify-between gap-3 rounded-xl text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <span className="flex min-w-0 flex-col gap-1">
@@ -206,7 +209,7 @@ function AppRow({
       </button>
       {open && (
         <div className="flex flex-col gap-4">
-          <div role="radiogroup" aria-label={t("levelLabel")} className="grid gap-2 sm:grid-cols-3">
+          <div role="radiogroup" aria-label={t("levelLabel")} data-tutorial="apps-level" className="grid gap-2 sm:grid-cols-3">
             {MCP_LEVELS.map((level) => {
               const Icon = LEVEL_ICONS[level];
               return (
@@ -228,7 +231,7 @@ function AppRow({
             </FormAlert>
           )}
           <div>
-            <Button variant="destructive" onClick={() => setConfirming(true)}>
+            <Button variant="destructive" data-tutorial="apps-disconnect" onClick={() => setConfirming(true)}>
               {t("disconnect")}
             </Button>
           </div>
@@ -254,7 +257,7 @@ function History({ grantId }: { grantId: string }) {
   const settings = useFormatSettings();
   const calls = useConnectedAppCalls(grantId);
   return (
-    <div className="flex flex-col gap-2">
+    <div data-tutorial="apps-history" className="flex flex-col gap-2">
       <h3 className="text-xs font-semibold tracking-wide text-ink-soft uppercase">
         {t("historyTitle")}
       </h3>
@@ -294,7 +297,7 @@ function Trash() {
       title={t("title")}
       description={t("hint", { days: days.data ?? 7 })}
     >
-      <div className="flex flex-col gap-3 py-4 first:pt-0">
+      <div data-tutorial="apps-trash" className="flex flex-col gap-3 py-4 first:pt-0">
         {trash.isPending ? (
           <Skeleton className="h-12 rounded-2xl" />
         ) : !trash.data?.length ? (

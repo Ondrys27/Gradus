@@ -221,6 +221,7 @@ function AddSubscription() {
 
   return (
     <form
+      data-tutorial="settings-calendar-add"
       className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-4"
       onSubmit={(event) => {
         event.preventDefault();
@@ -315,7 +316,7 @@ function Feed() {
 
   return (
     <SettingsSection id="settings-calendar-feed" title={t("title")} description={t("description")}>
-      <div className="flex flex-col gap-4 py-4 first:pt-0">
+      <div data-tutorial="settings-calendar-feed" className="flex flex-col gap-4 py-4 first:pt-0">
         {state.isPending ? (
           <Skeleton className="h-12 rounded-xl" />
         ) : state.isError ? (

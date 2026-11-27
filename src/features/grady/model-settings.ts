@@ -54,6 +54,12 @@ export type FeatureModelSpec = {
    * their own (summaries, the watch, sorting ideas) have no such signal.
    */
   interactive?: boolean;
+  /**
+   * The model a call is asked again on when the first answer was not sure
+   * what is meant (30.8: the guide asks Haiku, then Sonnet). Never below the
+   * job's setting; economy mode keeps the minimum.
+   */
+  escalation?: AiModelKey;
 };
 
 export const FEATURE_MODELS: Record<GradyFeature, FeatureModelSpec> = {
@@ -120,6 +126,15 @@ export const FEATURE_MODELS: Record<GradyFeature, FeatureModelSpec> = {
   },
   // A score of 1 to 5 and one sentence as JSON: the cheapest model is the point.
   compare_judge: { recommended: "haiku", minimum: "haiku", quality: "sonnet", shown: true },
+  // "How do I…" (30.8): keys of the catalog as JSON; Haiku, and Sonnet when Haiku is not sure.
+  guide_answer: {
+    recommended: "haiku",
+    minimum: "haiku",
+    quality: "sonnet",
+    shown: true,
+    interactive: true,
+    escalation: "sonnet",
+  },
 };
 
 /** The jobs whose model the administration sets (all but the fixed routing call and the comparison). */
@@ -385,6 +400,8 @@ export function chooseModel(
     auto?: AutoPick | null;
     /** The model a job that names its own runs on (the comparison); ignored for any other job. */
     explicit?: AiModelKey | null;
+    /** Asked again after an unsure answer: the job's escalation model, when it has one. */
+    escalated?: boolean;
   } = {},
 ): ModelChoice {
   const spec = FEATURE_MODELS[feature];
@@ -398,6 +415,7 @@ export function chooseModel(
 
   if (economy) {
     const key = spec.minimum;
+    // Economy mode asks again on the same small model: no escalation.
     return {
       model: model(key),
       routedFrom: key === baseline ? null : GRADY_MODELS[baseline],
@@ -415,6 +433,10 @@ export function chooseModel(
       model: model(atLeast(picked, spec.minimum)),
       routedFrom: GRADY_MODELS[baseline],
     };
+  }
+  if (options.escalated && spec.escalation) {
+    // The second try is the job's own design, not a saving: no routed_from.
+    return { model: model(atLeast(spec.escalation, atLeast(choice, spec.minimum))), routedFrom: null };
   }
   return { model: model(atLeast(choice, spec.minimum)), routedFrom: null };
 }

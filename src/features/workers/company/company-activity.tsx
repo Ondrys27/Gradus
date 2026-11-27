@@ -107,7 +107,7 @@ export function CompanyActivity({
   const nobody = actors !== null && actors.length === 0;
 
   return (
-    <div className="flex flex-col gap-5" data-testid="company-activity">
+    <div className="flex flex-col gap-5" data-testid="company-activity" data-tutorial="company-activity">
       <Filters
         filters={filters}
         people={people ?? []}

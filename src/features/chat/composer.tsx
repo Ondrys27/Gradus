@@ -447,6 +447,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
             />
             <button
               type="button"
+              data-tutorial="messages-attach"
               aria-label={t("attach")}
               title={t("attach")}
               onClick={() => picker.current?.click()}
@@ -463,6 +464,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
             rows={1}
             value={text}
             data-testid="chat-input"
+            data-tutorial="messages-input"
             placeholder={t("placeholder")}
             aria-invalid={tooLong || undefined}
             onChange={(event) => {
@@ -480,6 +482,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
           type="submit"
           aria-label={editing ? t("save") : t("send")}
           data-testid="chat-send"
+          data-tutorial="messages-send"
           disabled={empty || tooLong}
           onClick={submit}
           className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-xl bg-primary text-primary-foreground shadow-glow outline-none transition-opacity focus-visible:ring-3 focus-visible:ring-violet/40 disabled:cursor-default disabled:opacity-40"

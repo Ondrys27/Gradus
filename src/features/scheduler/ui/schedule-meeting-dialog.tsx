@@ -49,6 +49,7 @@ export function ScheduleMeetingButton({
         disabled={!contactId}
         title={contactId ? undefined : t("needsContact")}
         data-testid="schedule-meeting"
+        data-tutorial="contact-schedule-meeting"
         onClick={() => {
           setBooked(null);
           setOpen(true);
