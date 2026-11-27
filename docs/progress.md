@@ -167,7 +167,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 30.1 | architect | env: RESEND_API_KEY — 2026-11-26: oprava profilových fotek (vypnutá optimalizace obrázků po 402), zasouvací logo lišty, roztříděný log chyb s filtrem šumu, denní souhrn „Gradus včera“ administrátorům a email_log s widgetem E-maily.
 - [x] 30.2 | architect | — 2026-11-26: práva pracovníka se nastaví už v pozvánce a tutoriál pracovníka se v každé firmě skládá z jeho práv, s krátkou ukázkou nově otevřených sekcí.
 - [x] 30.3 | architect | — 2026-11-26: Sdílení kalendáře ve firmě (jen obsazeno / číst / zapisovat po zdrojích, žádosti se zvonkem, soukromé události jako „Obsazeno“, hledání společného času) s pravidly řádků podle sdílení.
-- [ ] 30.4 | architect | env: RESEND_API_KEY
+- [x] 30.4 | architect | env: RESEND_API_KEY — 2026-11-27: Plánovač má vlastní zdroje obsazenosti a cílový kalendář, jeden výběr termínu s Volno / Plno a schůzka z Cold Callingu, kontaktu i obchodu se rezervuje přes plánovač hostitele podle nastavení majitele.
 - [ ] 30.5 | architect |
 - [ ] 30.6 | architect |
 - [ ] 30.7 | designer |
