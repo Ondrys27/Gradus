@@ -338,8 +338,13 @@ describe("activation funnel", () => {
     expect(by.first_meeting.users).toBe("0");
     expect(by.first_won_deal.users).toBe("0");
     expect(Number(by.first_deal.pct_of_start)).toBeCloseTo(33.3, 1);
-    // Task completed at day -33 10:00, milestone at -40 10:00: 7 days.
-    expect(Number(by.first_task_completed.median_hours_from_previous)).toBe(168);
+    // Task completed at day -33 10:00, milestone at -40 10:00: 7 days, an hour
+    // more or less when the week crosses a change of summer time.
+    const [week] = await rows<{ hours: string }>(
+      `select (extract(epoch from ($2::timestamp at time zone '${TZ}') - ($1::timestamp at time zone '${TZ}')) / 3600)::text as hours`,
+      [at(-40), at(-33)],
+    );
+    expect(Number(by.first_task_completed.median_hours_from_previous)).toBe(Number(week!.hours));
   });
 });
 
