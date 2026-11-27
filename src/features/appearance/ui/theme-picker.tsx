@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Menu } from "@base-ui/react/menu";
@@ -44,6 +44,23 @@ import { useThemeOptions, type ThemeOption } from "./use-theme-options";
 const itemClass =
   "flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg px-3 text-[15px] text-ink-soft outline-none select-none data-highlighted:bg-surface-hover data-highlighted:text-ink mouse:min-h-9 [&_svg]:size-4";
 
+/** How often the picker looks at the clock, so a block that begins while it is open is shown. */
+const CLOCK_STEP_MS = 20_000;
+
+function subscribeClock(onChange: () => void): () => void {
+  const timer = window.setInterval(onChange, CLOCK_STEP_MS);
+  return () => window.clearInterval(timer);
+}
+
+/** Now, in steps (a stable snapshot between ticks); null on the server and while hydrating. */
+function useClockStep(): number | null {
+  return useSyncExternalStore(
+    subscribeClock,
+    () => Math.floor(Date.now() / CLOCK_STEP_MS) * CLOCK_STEP_MS,
+    () => null,
+  );
+}
+
 /** The name of a duplicate: "… (copy)", cut to fit. */
 function copyName(name: string, suffix: string): string {
   const tail = ` ${suffix}`;
@@ -74,8 +91,12 @@ export function ThemePicker() {
     if (linkCode) setImporting(true);
   }, [linkCode]);
 
-  const resolved = resolveRef(settings, Date.now());
-  const shown = options.find((option) => option.ref === resolved.ref && option.available)?.ref ?? "gradus";
+  // The block in charge depends on the clock, which the server and the browser read apart: decided after hydration.
+  const now = useClockStep();
+  const resolved = now === null ? null : resolveRef(settings, now);
+  const shown = resolved
+    ? (options.find((option) => option.ref === resolved.ref && option.available)?.ref ?? "gradus")
+    : null;
   const customCount = options.filter((option) => option.custom).length;
   const full = customCount >= CUSTOM_THEMES_MAX;
 
@@ -112,18 +133,27 @@ export function ThemePicker() {
                 className={cn(
                   "flex w-full flex-col gap-1.5 rounded-xl border p-1.5 text-left outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none",
                   checked ? "border-violet/60 bg-violet/10" : "border-line",
-                  option.available ? "cursor-pointer hover:border-line-strong" : "cursor-not-allowed",
+                  option.available
+                    ? "cursor-pointer hover:border-line-strong"
+                    : "cursor-not-allowed",
                 )}
               >
                 <ThemeMiniature view={option.view} dimmed={!option.available} />
-                <span className={cn("flex min-h-6 items-center justify-between gap-2 px-1", option.custom && "pr-9")}>
+                <span
+                  className={cn(
+                    "flex min-h-6 items-center justify-between gap-2 px-1",
+                    option.custom && "pr-9",
+                  )}
+                >
                   <span className="truncate text-[13px] font-medium text-ink">{option.label}</span>
                   {checked ? (
                     <CheckIcon aria-hidden className="size-4 shrink-0 text-violet" />
                   ) : !option.available ? (
                     <span className="inline-flex shrink-0 items-center gap-1 text-xs text-ink-muted">
                       <LockIcon aria-hidden className="size-3" />
-                      {option.level ? t("level", { level: formatNumber(option.level, {}, format) }) : t("locked")}
+                      {option.level
+                        ? t("level", { level: formatNumber(option.level, {}, format) })
+                        : t("locked")}
                     </span>
                   ) : null}
                 </span>
@@ -141,11 +171,17 @@ export function ThemePicker() {
         })}
       </div>
 
-      {resolved.source === "schedule" && (
-        <p className="text-[13px] text-ink-muted">{t("pickDuringBlock", { block: resolved.active.block.name })}</p>
+      {resolved?.source === "schedule" && (
+        <p className="text-[13px] text-ink-muted">
+          {t("pickDuringBlock", { block: resolved.active.block.name })}
+        </p>
       )}
 
-      <div id="settings-custom-themes" tabIndex={-1} className="flex flex-wrap items-center gap-2 rounded-xl outline-none">
+      <div
+        id="settings-custom-themes"
+        tabIndex={-1}
+        className="flex flex-wrap items-center gap-2 rounded-xl outline-none"
+      >
         {allowed && !full && (
           <Link
             href={THEME_EDITOR_PATH}
@@ -157,12 +193,21 @@ export function ThemePicker() {
           </Link>
         )}
         {allowed && (
-          <Button type="button" variant="ghost" onClick={() => setImporting(true)} data-testid="import-custom-theme">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => setImporting(true)}
+            data-testid="import-custom-theme"
+          >
             <DownloadIcon aria-hidden />
             {t("importAction")}
           </Button>
         )}
-        {full && <span className="text-[13px] text-ink-muted">{t("full", { max: CUSTOM_THEMES_MAX })}</span>}
+        {full && (
+          <span className="text-[13px] text-ink-muted">
+            {t("full", { max: CUSTOM_THEMES_MAX })}
+          </span>
+        )}
         {!allowed && <span className="text-[13px] text-ink-muted">{t("notInPlan")}</span>}
       </div>
 
@@ -207,7 +252,10 @@ function CustomThemeMenu({
       <Menu.Portal>
         <Menu.Positioner sideOffset={6} align="end" className="z-popover">
           <Menu.Popup className="min-w-48 rounded-xl border border-line-strong bg-surface p-1.5 shadow-popover outline-none">
-            <Menu.Item className={itemClass} onClick={() => router.push(`${THEME_EDITOR_PATH}?id=${theme.id}`)}>
+            <Menu.Item
+              className={itemClass}
+              onClick={() => router.push(`${THEME_EDITOR_PATH}?id=${theme.id}`)}
+            >
               <PencilIcon aria-hidden />
               {t("edit")}
             </Menu.Item>
@@ -237,7 +285,10 @@ function CustomThemeMenu({
               <Share2Icon aria-hidden />
               {t("shareAction")}
             </Menu.Item>
-            <Menu.Item className={cn(itemClass, "text-destructive data-highlighted:text-destructive")} onClick={onDelete}>
+            <Menu.Item
+              className={cn(itemClass, "text-destructive data-highlighted:text-destructive")}
+              onClick={onDelete}
+            >
               <Trash2Icon aria-hidden />
               {t("delete")}
             </Menu.Item>
@@ -266,7 +317,11 @@ function DeleteThemeDialog({ theme, onClose }: { theme: CustomTheme | null; onCl
       cancelLabel={t("cancel")}
       closeLabel={t("close")}
       pending={remove.isPending}
-      error={remove.error ? t(`import.errors.${saveErrorCode(remove.error)}`, { max: CUSTOM_THEMES_MAX }) : null}
+      error={
+        remove.error
+          ? t(`import.errors.${saveErrorCode(remove.error)}`, { max: CUSTOM_THEMES_MAX })
+          : null
+      }
       onConfirm={() => {
         if (!theme) return;
         remove.mutate(theme.id, {
@@ -288,4 +343,3 @@ function DeleteThemeDialog({ theme, onClose }: { theme: CustomTheme | null; onCl
     />
   );
 }
-
