@@ -39,6 +39,7 @@ export function LivePeople({ snapshot, className }: { snapshot: SessionSnapshot;
           <Avatar
             src={person.avatarUrl}
             name={person.name}
+            presenceOf={person.userId}
             className={cn("size-6 text-[10px] ring-2 ring-offset-1 ring-offset-canvas", RING[person.color])}
           />
         </span>

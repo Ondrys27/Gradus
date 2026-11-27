@@ -134,6 +134,7 @@ export const SETTINGS_ITEMS: readonly SettingsItemDef[] = [
   { id: "mcpAddress", group: "integrations", target: "settings-mcp-address", who: "all" },
   { id: "connectedApps", group: "integrations", target: "settings-connected-apps", who: "all" },
   { id: "trash", group: "integrations", target: "settings-trash", who: "all" },
+  { id: "showOnline", group: "privacy", target: "settings-show-online", who: "all" },
   { id: "export", group: "privacy", target: "settings-account-export", who: "all" },
   { id: "legal", group: "privacy", target: "settings-legal", who: "all" },
   { id: "deleteAccount", group: "privacy", target: "settings-account-delete", who: "all" },

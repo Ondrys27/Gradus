@@ -5152,6 +5152,21 @@ export type Database = {
         }
         Relationships: []
       }
+      presence_last_seen: {
+        Row: {
+          last_seen_at: string
+          user_id: string
+        }
+        Insert: {
+          last_seen_at?: string
+          user_id: string
+        }
+        Update: {
+          last_seen_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -6534,6 +6549,7 @@ export type Database = {
           recent_search_items: Json
           recent_searches: string[]
           reengage_after_months: number
+          show_online: boolean
           sidebar_collapsed: boolean
           sound_enabled: boolean
           theme: string
@@ -6564,6 +6580,7 @@ export type Database = {
           recent_search_items?: Json
           recent_searches?: string[]
           reengage_after_months?: number
+          show_online?: boolean
           sidebar_collapsed?: boolean
           sound_enabled?: boolean
           theme?: string
@@ -6594,6 +6611,7 @@ export type Database = {
           recent_search_items?: Json
           recent_searches?: string[]
           reengage_after_months?: number
+          show_online?: boolean
           sidebar_collapsed?: boolean
           sound_enabled?: boolean
           theme?: string
@@ -10007,6 +10025,17 @@ export type Database = {
         }[]
       }
       post_due_recurring_payments: { Args: never; Returns: number }
+      presence_people: {
+        Args: never
+        Returns: {
+          last_seen_at: string
+          space_id: string
+          user_id: string
+        }[]
+      }
+      presence_shown: { Args: { _user: string }; Returns: boolean }
+      presence_topic_allowed: { Args: { _topic: string }; Returns: boolean }
+      presence_touch: { Args: { _leaving?: boolean }; Returns: undefined }
       promo_account_status: { Args: { _user_id: string }; Returns: Json }
       promo_check: { Args: { _code: string }; Returns: Json }
       promo_code_state: { Args: { _code_id: string }; Returns: string }

@@ -48,6 +48,7 @@ export function NoteAccessBar({
               key={person.userId}
               src={person.avatarUrl}
               name={person.name}
+              presenceOf={person.userId}
               className="size-6 border-canvas text-[10px] ring-2 ring-canvas"
             />
           ))}

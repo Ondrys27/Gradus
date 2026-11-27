@@ -5,17 +5,21 @@ import Link from "next/link";
 import { DownloadIcon, ExternalLinkIcon, Trash2Icon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { useSession } from "@/features/account/queries";
+import { Switch } from "@/components/ui/switch";
+import { useSession, useUserSettings } from "@/features/account/queries";
+import { APP_NAME } from "@/lib/constants";
 import { localizedPath } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { DeleteAccountDialog } from "./delete-account-dialog";
-import { ActionRow, DangerZone, SettingsPage, SettingsSection } from "./ui";
+import { useSettingsSave } from "./save-state";
+import { ActionRow, DangerZone, SettingRow, SettingsPage, SettingsSection } from "./ui";
 
 const EXPORT_URL = "/api/account/export";
 
 /**
- * Settings → Privacy and data: a copy of the account's data, the terms and
- * the privacy policy, and — at the very end, in red — deleting the account.
+ * Settings → Privacy and data: whether the company sees when the user is
+ * online (30.5), a copy of the account's data, the terms and the privacy
+ * policy, and — at the very end, in red — deleting the account.
  */
 export function PrivacyView() {
   const t = useTranslations("settings");
@@ -25,6 +29,8 @@ export function PrivacyView() {
 
   return (
     <SettingsPage title={t("groups.privacy.title")} description={t("groups.privacy.description")}>
+      <OnlineSection />
+
       <SettingsSection title={t("data.export.title")}>
         <ActionRow
           id="settings-account-export"
@@ -92,5 +98,35 @@ export function PrivacyView() {
       </DangerZone>
       <DeleteAccountDialog open={deleting} onOpenChange={setDeleting} />
     </SettingsPage>
+  );
+}
+
+/**
+ * "Show when I am online" (on by default). Off: nobody in any company sees
+ * the status, the owner neither, and the user sees nobody's; the database
+ * forgets the stored moment at once.
+ */
+function OnlineSection() {
+  const t = useTranslations("settings.data.online");
+  const settings = useUserSettings();
+  const { save } = useSettingsSave();
+  return (
+    <SettingsSection title={t("title")} description={t("description")}>
+      <SettingRow
+        id="settings-show-online"
+        label={t("label")}
+        hint={t("hint", { appName: APP_NAME })}
+        fields={["show_online"]}
+      >
+        <div className="flex md:justify-end">
+          <Switch
+            id="settings-show-online"
+            data-testid="settings-show-online"
+            checked={settings.show_online}
+            onCheckedChange={(checked) => save({ show_online: checked })}
+          />
+        </div>
+      </SettingRow>
+    </SettingsSection>
   );
 }

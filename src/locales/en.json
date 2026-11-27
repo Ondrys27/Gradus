@@ -1390,7 +1390,7 @@
       },
       "privacy": {
         "title": "Privacy and data",
-        "description": "A copy of your data, the terms and deleting the account."
+        "description": "Online status, a copy of your data, the terms and deleting the account."
       },
       "calendar": {
         "title": "Calendar",
@@ -1534,6 +1534,10 @@
         "label": "Invoices and supplier details",
         "keywords": "invoice invoicing company id vat account number style QR payment supplier"
       },
+      "showOnline": {
+        "label": "Show when I am online",
+        "keywords": "privacy online status presence last seen dot visibility"
+      },
       "export": {
         "label": "Export my data",
         "keywords": "privacy data download ZIP CSV backup"
@@ -1629,6 +1633,12 @@
           "app_owner": "The account of the app's owner can't be deleted.",
           "generic": "The account couldn't be deleted. Please try again."
         }
+      },
+      "online": {
+        "title": "Online status",
+        "description": "People in your company see a dot at your photo: green while you have the app open, yellow after 10 minutes without doing anything, otherwise when you were last here.",
+        "label": "Show when I am online",
+        "hint": "Turned off, nobody sees your status, not even the owner of the company, and you do not see anyone else’s. {appName} does not keep when or how long you were online, only when you were last here."
       }
     },
     "chat": {
@@ -6804,6 +6814,26 @@
   },
   "workspace": {
     "doneBy": "Done by {name}"
+  },
+  "presence": {
+    "online": "online",
+    "away": "away",
+    "lastSeen": {
+      "moment": "last seen just now",
+      "minutes": "last seen {count, plural, one {# minute} other {# minutes}} ago",
+      "hours": "last seen {count, plural, one {# hour} other {# hours}} ago",
+      "yesterday": "last seen yesterday",
+      "weekday": {
+        "0": "last seen on Sunday",
+        "1": "last seen on Monday",
+        "2": "last seen on Tuesday",
+        "3": "last seen on Wednesday",
+        "4": "last seen on Thursday",
+        "5": "last seen on Friday",
+        "6": "last seen on Saturday"
+      },
+      "date": "last seen {date}"
+    }
   },
   "marketing": {
     "meta": {

@@ -208,7 +208,12 @@ export function CompanyRewards({
                           onClick={() => onOpen(person.id)}
                           className="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl text-left outline-none focus-visible:ring-3 focus-visible:ring-violet/40"
                         >
-                          <Avatar src={person.avatarUrl} name={person.name} className="size-8" />
+                          <Avatar
+                            src={person.avatarUrl}
+                            name={person.name}
+                            presenceOf={person.userId}
+                            className="size-8"
+                          />
                           <span className="flex flex-col">
                             <span className="font-medium text-ink">{person.name}</span>
                             {isFormer ? (

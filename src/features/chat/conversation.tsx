@@ -27,7 +27,8 @@ import { MessageList, type MessageListHandle } from "./message-list";
 import type { BubbleActions } from "./message-bubble";
 import { removeItem, retryItem, useOutbox } from "./outbox-store";
 import type { OutboxItem } from "./outbox";
-import { ChannelAvatar, useChannelTitle, usePeople } from "./people";
+import { PresenceLabel } from "@/features/presence/presence-label";
+import { ChannelAvatar, useChannelTitle, useMemberAccount, usePeople } from "./people";
 import { useActiveMembers } from "@/features/account/active-members";
 import { RequestShareDialog } from "@/features/calendar/sharing/ui/request-share-dialog";
 import {
@@ -210,6 +211,7 @@ export function Conversation({
   );
 
   const title = channel ? titleOf(channel) : nameOf(to);
+  const accountOf = useMemberAccount();
   const peerGone = kind === "direct" && peerPerson?.status === "inactive";
   const blocked = readOnly
     ? t("readOnlyNotice")
@@ -229,6 +231,9 @@ export function Conversation({
         : peerGone
           ? t("removedPeer")
           : (peerPerson?.jobTitle ?? (peer === space ? t("owner") : ""));
+  // The other person's online status in a direct conversation (30.5).
+  const peerAccount =
+    kind === "direct" && !peerGone && peerPerson?.status !== "invited" ? accountOf(peer) : null;
 
   return (
     <RecordNamesContext.Provider value={records.data ?? EMPTY_NAMES}>
@@ -260,7 +265,12 @@ export function Conversation({
                 <BellOffIcon aria-label={t("muted")} className="size-3.5 shrink-0 text-ink-muted" />
               )}
             </h2>
-            {subtitle && <p className="truncate text-xs text-ink-muted">{subtitle}</p>}
+            {(subtitle || peerAccount) && (
+              <p className="flex min-w-0 items-center gap-1.5 text-xs text-ink-muted">
+                {peerAccount && <PresenceLabel userId={peerAccount} className="shrink-0" />}
+                {subtitle && <span className="truncate">{subtitle}</span>}
+              </p>
+            )}
           </div>
           {channel && <HeaderMenu channel={channel} isOwner={isOwner} />}
         </header>

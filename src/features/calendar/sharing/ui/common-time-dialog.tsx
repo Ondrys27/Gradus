@@ -207,7 +207,12 @@ function CommonTime({ onDone }: { onDone: () => void }) {
                 checked={people.includes(member.userId)}
                 onCheckedChange={(checked) => toggle(member.userId, Boolean(checked))}
               />
-              <Avatar src={member.avatarUrl} name={member.name} className="size-6" />
+              <Avatar
+                src={member.avatarUrl}
+                name={member.name}
+                presenceOf={member.userId}
+                className="size-6"
+              />
               <span className="truncate">{member.name}</span>
               {unknown.includes(member.userId) && (
                 <span className="inline-flex items-center gap-1 rounded-full border border-dashed border-line-strong px-2 text-[11px] text-ink-muted">

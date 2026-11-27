@@ -5,6 +5,7 @@ import { UsersRoundIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
 import { toneSoft, type Tone } from "@/components/ui/tone";
+import { useActiveMembers } from "@/features/account/active-members";
 import { cn } from "@/lib/utils";
 import { useChatMe, useChatPeople } from "./queries";
 import type { ChatChannel, ChatPerson } from "./types";
@@ -52,6 +53,33 @@ export function useChannelTitle() {
   );
 }
 
+/**
+ * The account behind a member token (the owner's id, or a worker record of an
+ * active member), for the online dot and text (30.5); null for anybody who
+ * has left or has no account.
+ */
+export function useMemberAccount() {
+  const { space } = useChatMe();
+  const members = useActiveMembers(space);
+  const byWorker = useMemo(
+    () =>
+      new Map(
+        (members.data ?? []).flatMap((member) =>
+          member.workerId ? [[member.workerId, member.userId] as const] : [],
+        ),
+      ),
+    [members.data],
+  );
+  return useCallback(
+    (member: string | null | undefined): string | null => {
+      if (!member) return null;
+      if (member === space) return space;
+      return byWorker.get(member) ?? null;
+    },
+    [byWorker, space],
+  );
+}
+
 export function PersonAvatar({
   person,
   name,
@@ -61,10 +89,12 @@ export function PersonAvatar({
   name: string;
   className?: string;
 }) {
+  const accountOf = useMemberAccount();
   return (
     <Avatar
       src={person?.avatarUrl}
       name={name}
+      presenceOf={person?.status === "inactive" ? null : accountOf(person?.member)}
       className={cn(person?.status === "inactive" && "opacity-60 grayscale", className)}
     />
   );

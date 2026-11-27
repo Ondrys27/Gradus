@@ -113,7 +113,12 @@ function PersonRow({ person, onOpen }: { person: CompanyPerson; onOpen: () => vo
       data-testid="worker-team-person"
       className="flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-xl border border-transparent px-2 text-left outline-none hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-violet/40"
     >
-      <Avatar src={person.avatarUrl} name={person.name} className="size-9" />
+      <Avatar
+        src={person.avatarUrl}
+        name={person.name}
+        presenceOf={person.userId}
+        className="size-9"
+      />
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-sm font-semibold text-ink">{person.name}</span>
         <span className="truncate text-xs text-ink-muted">

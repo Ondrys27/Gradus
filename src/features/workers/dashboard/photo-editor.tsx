@@ -102,7 +102,14 @@ export function PhotoEditor({
   return (
     <div className="flex shrink-0 flex-col items-center gap-1.5">
       <div className="relative">
-        <Avatar src={worker.avatarUrl} name={worker.name} className="size-20 text-2xl sm:size-24" />
+        <Avatar
+          src={worker.avatarUrl}
+          name={worker.name}
+          presenceOf={worker.userId}
+          // The camera button takes the bottom right.
+          presenceClassName={canChange ? "right-auto -left-px size-[22%]" : "size-[22%]"}
+          className="size-20 text-2xl sm:size-24"
+        />
         {canChange && (
           <button
             type="button"

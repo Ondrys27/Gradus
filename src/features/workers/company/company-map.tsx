@@ -28,6 +28,7 @@ import { useTranslations } from "next-intl";
 import { TreeMap } from "@/components/tree-map/tree-map";
 import { MAP_DRAG_NODE, type MapBranch } from "@/components/tree-map/tree-map-layout";
 import { Avatar } from "@/components/ui/avatar";
+import { useWorkspaceId } from "@/features/account/workspace-queries";
 import { formatNumber } from "@/lib/format";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { useReducedMotionSafe } from "@/lib/use-media-query";
@@ -276,6 +277,7 @@ function OwnerCard({
   children?: ReactNode;
 }) {
   const t = useTranslations("workers.company");
+  const spaceId = useWorkspaceId();
   return (
     <div
       data-company-node={OWNER_ROOT}
@@ -285,7 +287,7 @@ function OwnerCard({
       )}
     >
       <div className="flex items-center gap-2.5">
-        <Avatar src={avatarUrl} name={name} className="size-10" />
+        <Avatar src={avatarUrl} name={name} presenceOf={spaceId} className="size-10" />
         <div className="flex min-w-0 flex-1 flex-col">
           <span className="flex min-w-0 items-center gap-1.5">
             <span className="truncate text-[15px] font-semibold text-ink">{name}</span>
@@ -326,7 +328,12 @@ function PersonCard({
   const tCard = useTranslations("workers.card");
   const header = (
     <span className="flex items-center gap-2.5">
-      <Avatar src={person.avatarUrl} name={person.name} className="size-10" />
+      <Avatar
+        src={person.avatarUrl}
+        name={person.name}
+        presenceOf={person.status === "active" ? person.userId : null}
+        className="size-10"
+      />
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="flex min-w-0 items-center gap-1.5">
           <span className="truncate text-[15px] font-semibold text-ink">{person.name}</span>

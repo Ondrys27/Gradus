@@ -314,7 +314,12 @@ function TimelineRow({ row, names }: { row: ActivityRow; names: Names }) {
       : null;
   const content = (
     <>
-      <Avatar src={who?.avatarUrl} name={who?.name ?? "?"} className="size-8 text-xs" />
+      <Avatar
+        src={who?.avatarUrl}
+        name={who?.name ?? "?"}
+        presenceOf={who ? row.actor_id : null}
+        className="size-8 text-xs"
+      />
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-sm text-ink">{line}</span>
         <span className="flex flex-wrap items-center gap-2 text-xs text-ink-muted">

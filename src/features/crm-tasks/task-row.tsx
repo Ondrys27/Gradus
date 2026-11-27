@@ -11,7 +11,7 @@ import {
   TimerIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Avatar } from "@/components/ui/avatar";
+import { MemberAvatar } from "@/features/account/member-avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { StatusPill } from "@/components/ui/status-pill";
 import { useWorkspace } from "@/features/account/workspace-queries";
@@ -146,7 +146,7 @@ export function TaskRow({
             {t("minutes", { count: formatNumber(task.duration_minutes, {}, settings) })}
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <Avatar name={who} className="size-5 text-[9px]" />
+            <MemberAvatar userId={task.assignee_id} name={who} className="size-5 text-[9px]" />
             {who}
           </span>
           {done && task.completed_at && (

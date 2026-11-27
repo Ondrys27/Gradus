@@ -239,6 +239,7 @@ function PersonPicker({
             <Avatar
               src={option.member.avatarUrl}
               name={option.member.name}
+              presenceOf={option.member.userId}
               className="size-6 text-[10px]"
             />
           )}

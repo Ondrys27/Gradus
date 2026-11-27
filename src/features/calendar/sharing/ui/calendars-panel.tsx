@@ -83,7 +83,14 @@ export function CalendarsPanel({
               key={person.userId}
               label={person.name}
               hint={t(`levels.${person.level}`)}
-              avatar={<Avatar src={person.avatarUrl} name={person.name} className="size-6" />}
+              avatar={
+                <Avatar
+                  src={person.avatarUrl}
+                  name={person.name}
+                  presenceOf={person.userId}
+                  className="size-6"
+                />
+              }
               checked={!look.hidden}
               tone={look.tone}
               testId="calendars-panel-person"

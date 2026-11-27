@@ -74,7 +74,12 @@ export function AnswerForm({ request, onDone }: { request: ShareRequest; onDone?
   return (
     <div className="flex flex-col gap-4" data-testid="calendar-answer">
       <div className="flex items-start gap-3">
-        <Avatar src={request.avatarUrl} name={request.name} className="size-10" />
+        <Avatar
+          src={request.avatarUrl}
+          name={request.name}
+          presenceOf={request.personId}
+          className="size-10"
+        />
         <div className="flex min-w-0 flex-col gap-1">
           <p className="text-sm text-ink">
             {t("answer.asks", { name: request.name, level: t(`levels.${request.level}`) })}

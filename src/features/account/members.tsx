@@ -98,6 +98,7 @@ export function ActorAvatar({
       <Avatar
         src={member.avatarUrl}
         name={member.name}
+        presenceOf={member.userId}
         className={cn("size-6 text-[10px]", className)}
       />
     </span>

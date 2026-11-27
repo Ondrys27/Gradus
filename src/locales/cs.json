@@ -1390,7 +1390,7 @@
       },
       "privacy": {
         "title": "Soukromí a data",
-        "description": "Kopie dat, podmínky a smazání účtu."
+        "description": "Online stav, kopie dat, podmínky a smazání účtu."
       },
       "calendar": {
         "title": "Kalendář",
@@ -1534,6 +1534,10 @@
         "label": "Faktury a údaje dodavatele",
         "keywords": "faktura fakturace IČO DIČ účet číslo řada styl QR platba dodavatel"
       },
+      "showOnline": {
+        "label": "Ukazovat, kdy jsem online",
+        "keywords": "soukromí online stav přítomnost naposledy tečka viditelnost"
+      },
       "export": {
         "label": "Exportovat moje data",
         "keywords": "soukromí data stáhnout ZIP CSV záloha"
@@ -1629,6 +1633,12 @@
           "app_owner": "Účet majitele aplikace smazat nejde.",
           "generic": "Účet se nepodařilo smazat. Zkus to prosím znovu."
         }
+      },
+      "online": {
+        "title": "Online stav",
+        "description": "Lidé ve firmě vidí u tvé fotky tečku: zelenou, když máš aplikaci otevřenou, žlutou, když jsi 10 minut nic neudělal, jinak kdy jsi tu byl naposledy.",
+        "label": "Ukazovat, kdy jsem online",
+        "hint": "Když to vypneš, tvůj stav neuvidí nikdo, ani majitel firmy, a ty neuvidíš stav ostatních. {appName} si nepamatuje, kdy a jak dlouho jsi byl online, jen kdy jsi tu byl naposledy."
       }
     },
     "chat": {
@@ -6804,6 +6814,26 @@
   },
   "workspace": {
     "doneBy": "Udělal(a) {name}"
+  },
+  "presence": {
+    "online": "online",
+    "away": "nepřítomen",
+    "lastSeen": {
+      "moment": "naposledy před chvílí",
+      "minutes": "naposledy před {count, plural, one {# minutou} other {# minutami}}",
+      "hours": "naposledy před {count, plural, one {# hodinou} other {# hodinami}}",
+      "yesterday": "naposledy včera",
+      "weekday": {
+        "0": "naposledy v neděli",
+        "1": "naposledy v pondělí",
+        "2": "naposledy v úterý",
+        "3": "naposledy ve středu",
+        "4": "naposledy ve čtvrtek",
+        "5": "naposledy v pátek",
+        "6": "naposledy v sobotu"
+      },
+      "date": "naposledy {date}"
+    }
   },
   "marketing": {
     "meta": {

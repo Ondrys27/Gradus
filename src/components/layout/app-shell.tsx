@@ -9,6 +9,7 @@ import { useErrorScreenShown } from "@/features/errors/error-screen-state";
 import { GameSessionStart } from "@/features/game/game-session-start";
 import { ReportProvider } from "@/features/feedback/report-provider";
 import { OnboardingGate } from "@/features/onboarding/onboarding-gate";
+import { PresenceProvider } from "@/features/presence/presence-provider";
 import { TrialNotice } from "@/features/plan/trial-notice";
 import { PastDueNotice } from "@/features/subscription/past-due-notice";
 import { TutorialHost } from "@/features/tutorial/tutorial-host";
@@ -53,37 +54,39 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigating = usePendingHref() !== null;
   if (stage && curtain) return <ShowcaseHost />;
   return (
-    <SearchProvider>
-      <ReportProvider>
-        <div
-          data-app-shell=""
-          data-sidebar={sidebarCollapsed ? "collapsed" : "expanded"}
-          className="min-h-dvh pl-(--app-sidebar-width) transition-[padding-left] duration-200 ease-out motion-reduce:transition-none"
-        >
-          <Sidebar />
-          <div className="flex min-h-dvh min-w-0 flex-col">
-            <TopBar />
-            <main
-              data-navigating={navigating ? "" : undefined}
-              className="mx-auto w-full max-w-6xl flex-1 transition-opacity duration-200 data-[navigating]:opacity-60 data-[navigating]:delay-150 pt-6 pr-[max(--spacing(4),env(safe-area-inset-right))] pb-[calc(12px+64px+32px+env(safe-area-inset-bottom))] pl-[max(--spacing(4),env(safe-area-inset-left))] md:pr-[max(--spacing(8),env(safe-area-inset-right))] md:pl-8 md:pt-8 md:pb-28"
-            >
-              <TrialNotice />
-              <PastDueNotice />
-              <SectionGuard>{children}</SectionGuard>
-            </main>
+    <PresenceProvider>
+      <SearchProvider>
+        <ReportProvider>
+          <div
+            data-app-shell=""
+            data-sidebar={sidebarCollapsed ? "collapsed" : "expanded"}
+            className="min-h-dvh pl-(--app-sidebar-width) transition-[padding-left] duration-200 ease-out motion-reduce:transition-none"
+          >
+            <Sidebar />
+            <div className="flex min-h-dvh min-w-0 flex-col">
+              <TopBar />
+              <main
+                data-navigating={navigating ? "" : undefined}
+                className="mx-auto w-full max-w-6xl flex-1 transition-opacity duration-200 data-[navigating]:opacity-60 data-[navigating]:delay-150 pt-6 pr-[max(--spacing(4),env(safe-area-inset-right))] pb-[calc(12px+64px+32px+env(safe-area-inset-bottom))] pl-[max(--spacing(4),env(safe-area-inset-left))] md:pr-[max(--spacing(8),env(safe-area-inset-right))] md:pl-8 md:pt-8 md:pb-28"
+              >
+                <TrialNotice />
+                <PastDueNotice />
+                <SectionGuard>{children}</SectionGuard>
+              </main>
+            </div>
+            <BottomNav />
+            <GradyDock />
+            <GameSessionStart />
+            <ThemeSync />
+            {!errorShown && <OnboardingGate />}
+            {!errorShown && !stage && <TutorialHost />}
+            {stage && <ShowcaseHost />}
+            <AnalyticsProvider />
+            <ChatSync />
+            <PageLockGuard />
           </div>
-          <BottomNav />
-          <GradyDock />
-          <GameSessionStart />
-          <ThemeSync />
-          {!errorShown && <OnboardingGate />}
-          {!errorShown && !stage && <TutorialHost />}
-          {stage && <ShowcaseHost />}
-          <AnalyticsProvider />
-          <ChatSync />
-          <PageLockGuard />
-        </div>
-      </ReportProvider>
-    </SearchProvider>
+        </ReportProvider>
+      </SearchProvider>
+    </PresenceProvider>
   );
 }
