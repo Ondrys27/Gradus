@@ -83,6 +83,7 @@ export function ConversationList({
             onChange={(event) => setQuery(event.target.value)}
             placeholder={t("searchPlaceholder")}
             data-testid="chat-search"
+            data-tutorial="messages-search"
             className="h-11 w-full rounded-xl border border-line bg-canvas-deep/60 pr-10 pl-9 text-base text-ink outline-none placeholder:text-ink-muted focus-visible:border-violet/60 focus-visible:ring-3 focus-visible:ring-violet/25 md:text-sm"
           />
           {query && (
@@ -102,7 +103,7 @@ export function ConversationList({
         {loading && channels.length === 0 ? (
           <p className="px-3 py-6 text-center text-sm text-ink-muted">{t("loading")}</p>
         ) : null}
-        <ul aria-label={t("conversations")} className="flex flex-col gap-0.5">
+        <ul aria-label={t("conversations")} className="flex flex-col gap-0.5" data-tutorial="messages-list">
           {shown.map((channel) => {
             const active = selected.channelId === channel.id;
             const silenced = isSilenced(channel);
@@ -112,6 +113,7 @@ export function ConversationList({
                 <button
                   type="button"
                   data-testid="chat-channel"
+                  data-tutorial="messages-conversation"
                   data-channel-id={channel.id}
                   data-kind={channel.kind}
                   aria-current={active ? "true" : undefined}
@@ -179,6 +181,7 @@ export function ConversationList({
                     <button
                       type="button"
                       data-testid="chat-person"
+                      data-tutorial="messages-person"
                       data-member={person.member}
                       aria-current={active ? "true" : undefined}
                       onClick={() => onSelect({ channelId: null, to: person.member })}

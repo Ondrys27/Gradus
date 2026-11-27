@@ -77,6 +77,7 @@ export function MapExportMenu({ milestone, tasks, view, mapContainer, showMap, o
   return (
     <Menu.Root>
       <Menu.Trigger
+        data-tutorial="map-export"
         aria-label={t("label")}
         className="flex h-11 min-w-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-line px-3 text-sm font-medium text-ink-muted outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40 mouse:h-8"
       >

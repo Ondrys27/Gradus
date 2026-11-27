@@ -62,6 +62,7 @@ export function TableSwitcher({ tables, counts, value, onChange, showAll = true 
     <div
       role="group"
       aria-label={t("label")}
+      data-tutorial="contact-tables"
       className="-mx-4 flex gap-2 overflow-x-auto overscroll-x-contain px-4 pb-1 [scrollbar-width:none] md:mx-0 md:flex-wrap md:overflow-visible md:px-0"
     >
       {showAll && chip(null, t("all"), total, "violet")}

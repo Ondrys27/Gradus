@@ -221,7 +221,7 @@ export function DashboardHome() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-2">
+      <header className="flex flex-col gap-2" data-tutorial="dashboard-summary">
         <h1 className="page-title text-balance">{greeting}</h1>
         <div className="min-h-6 max-w-2xl text-base text-ink-soft" aria-live="polite">
           {overview.pending ? <Skeleton className="h-6 w-72 max-w-full" /> : summary}
@@ -244,6 +244,7 @@ export function DashboardHome() {
                 aria-label={tBoard("tabs")}
                 className="flex max-w-full gap-1 overflow-x-auto"
                 data-testid="board-tabs"
+                data-tutorial="dashboard-tabs"
               >
                 {[
                   { id: MAIN, label: tBoard("mainTab") },
@@ -276,6 +277,7 @@ export function DashboardHome() {
                   title={tBoard("newTab")}
                   onClick={() => setNaming({ mode: "new", value: "" })}
                   data-testid="board-new-tab"
+                  data-tutorial="dashboard-new-tab"
                 >
                   <PlusIcon aria-hidden />
                 </Button>

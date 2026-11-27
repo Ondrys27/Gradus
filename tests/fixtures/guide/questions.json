@@ -1,0 +1,927 @@
+[
+  {
+    "id": "deal-new",
+    "question": "Jak přidám nový obchod?",
+    "locale": "cs",
+    "section": "dashboard",
+    "as": "owner",
+    "find": [
+      "pipeline-new-deal"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "Obchod přidáš v Pipeline tlačítkem Nový obchod.",
+      "steps": [
+        {
+          "key": "pipeline-new-deal",
+          "action": "click"
+        },
+        {
+          "key": "deal-form",
+          "action": "fill"
+        },
+        {
+          "key": "deal-create",
+          "action": "wait"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "go:pipeline-new-deal",
+        "click:pipeline-new-deal",
+        "fill:deal-form",
+        "wait:deal-create"
+      ]
+    }
+  },
+  {
+    "id": "deal-new-in-pipeline",
+    "question": "Jak založím obchod?",
+    "locale": "cs",
+    "section": "pipeline",
+    "as": "sales",
+    "find": [
+      "pipeline-new-deal"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "Klikni na Nový obchod.",
+      "steps": [
+        {
+          "key": "pipeline-new-deal",
+          "action": "click"
+        },
+        {
+          "key": "deal-form",
+          "action": "fill"
+        },
+        {
+          "key": "deal-create",
+          "action": "wait"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "click:pipeline-new-deal",
+        "fill:deal-form",
+        "wait:deal-create"
+      ]
+    }
+  },
+  {
+    "id": "deal-tasks",
+    "question": "Kde vidím úkoly k obchodu?",
+    "locale": "cs",
+    "section": "pipeline",
+    "as": "owner",
+    "find": [
+      "deal-tasks"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "Otevři obchod a podívej se na jeho úkoly.",
+      "steps": [
+        {
+          "key": "deal-tasks",
+          "action": "highlight"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "open:deal-card",
+        "highlight:deal-tasks"
+      ]
+    }
+  },
+  {
+    "id": "deal-stage",
+    "question": "Jak posunu obchod do další fáze?",
+    "locale": "cs",
+    "section": "pipeline",
+    "as": "owner",
+    "find": [
+      "deal-stage"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "V detailu obchodu změníš fázi.",
+      "steps": [
+        {
+          "key": "deal-card",
+          "action": "open"
+        },
+        {
+          "key": "deal-stage",
+          "action": "click"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "open:deal-card",
+        "click:deal-stage"
+      ]
+    }
+  },
+  {
+    "id": "invoice-from-deal-worker",
+    "question": "Jak vystavím fakturu z obchodu?",
+    "locale": "cs",
+    "section": "pipeline",
+    "as": "sales",
+    "find": [
+      "deal-create-invoice"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "V detailu obchodu klikni na Vystavit fakturu.",
+      "steps": [
+        {
+          "key": "deal-card",
+          "action": "open"
+        },
+        {
+          "key": "deal-create-invoice",
+          "action": "click"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "open:deal-card"
+      ]
+    }
+  },
+  {
+    "id": "invoice-new-no-right",
+    "question": "Jak vystavím fakturu?",
+    "locale": "cs",
+    "section": "dashboard",
+    "as": "sales",
+    "find": [
+      "invoice-new"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "Ve Financích na záložce Faktury.",
+      "steps": [
+        {
+          "key": "invoice-new",
+          "action": "click"
+        },
+        {
+          "key": "invoice-customer",
+          "action": "fill"
+        },
+        {
+          "key": "invoice-issue",
+          "action": "click"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "noRight",
+      "steps": []
+    }
+  },
+  {
+    "id": "contact-new",
+    "question": "Jak přidám kontakt?",
+    "locale": "cs",
+    "section": "dashboard",
+    "as": "owner",
+    "find": [
+      "contact-new"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "V Kontaktech tlačítkem Nový kontakt.",
+      "steps": [
+        {
+          "key": "contact-new",
+          "action": "click"
+        },
+        {
+          "key": "contact-form",
+          "action": "fill"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "go:contact-new",
+        "click:contact-new",
+        "fill:contact-form"
+      ]
+    }
+  },
+  {
+    "id": "contact-new-viewer",
+    "question": "Jak přidám kontakt?",
+    "locale": "cs",
+    "section": "contacts",
+    "as": "viewer",
+    "find": [
+      "contact-new"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "Tlačítkem Nový kontakt.",
+      "steps": [
+        {
+          "key": "contact-new",
+          "action": "click"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "noRight",
+      "steps": []
+    }
+  },
+  {
+    "id": "contact-move",
+    "question": "Jak přesunu kontakt do jiné tabulky?",
+    "locale": "cs",
+    "section": "contacts",
+    "as": "owner",
+    "find": [
+      "contact-move"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "Otevři kontakt a dej Přesunout.",
+      "steps": [
+        {
+          "key": "contact-move",
+          "action": "click"
+        },
+        {
+          "key": "move-confirm",
+          "action": "click"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "open:contact-row",
+        "click:contact-move",
+        "click:move-confirm"
+      ]
+    }
+  },
+  {
+    "id": "generate",
+    "question": "Jak si nechám vygenerovat kontakty?",
+    "locale": "cs",
+    "section": "contacts",
+    "as": "owner",
+    "find": [
+      "contact-generate"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "Klikni na Generovat kontakty a vyber obor.",
+      "steps": [
+        {
+          "key": "contact-generate",
+          "action": "click"
+        },
+        {
+          "key": "contact-generate-industry",
+          "action": "fill"
+        },
+        {
+          "key": "generate-submit",
+          "action": "click"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "click:contact-generate",
+        "fill:contact-generate-industry",
+        "click:generate-submit"
+      ]
+    }
+  },
+  {
+    "id": "cold-call-timer",
+    "question": "Jak spustím časovač volání?",
+    "locale": "cs",
+    "section": "coldCalling",
+    "as": "sales",
+    "find": [
+      "call-timer-start"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "Spusť časovač v Cold Callingu.",
+      "steps": [
+        {
+          "key": "call-timer-start",
+          "action": "click"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "click:call-timer-start"
+      ]
+    }
+  },
+  {
+    "id": "task-new",
+    "question": "Jak přidám úkol k obchodu?",
+    "locale": "cs",
+    "section": "tasks",
+    "as": "owner",
+    "find": [
+      "task-new"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "V Úkolech klikni na Nový úkol a vyber obchod.",
+      "steps": [
+        {
+          "key": "task-new",
+          "action": "click"
+        },
+        {
+          "key": "crm-task-title",
+          "action": "fill"
+        },
+        {
+          "key": "crm-task-target",
+          "action": "fill"
+        },
+        {
+          "key": "task-submit",
+          "action": "wait"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "click:task-new",
+        "fill:crm-task-title",
+        "fill:crm-task-target",
+        "wait:task-submit"
+      ]
+    }
+  },
+  {
+    "id": "milestone-new",
+    "question": "Jak si založím milník?",
+    "locale": "cs",
+    "section": "dashboard",
+    "as": "owner",
+    "find": [
+      "milestone-new"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "V Milnících tlačítkem Nový milník.",
+      "steps": [
+        {
+          "key": "milestone-new",
+          "action": "click"
+        },
+        {
+          "key": "milestone-title",
+          "action": "fill"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "go:milestone-new",
+        "click:milestone-new",
+        "fill:milestone-title"
+      ]
+    }
+  },
+  {
+    "id": "map-import",
+    "question": "Jak naimportuji mapu z MindNode?",
+    "locale": "cs",
+    "section": "milestones",
+    "as": "owner",
+    "find": [
+      "map-import"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "Otevři milník a dej Importovat mapu. Z MindNode nejdřív exportuj OPML.",
+      "steps": [
+        {
+          "key": "map-import",
+          "action": "click"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "open:milestone-card",
+        "click:map-import"
+      ]
+    }
+  },
+  {
+    "id": "note-share",
+    "question": "Jak nasdílím poznámku?",
+    "locale": "cs",
+    "section": "notes",
+    "as": "owner",
+    "find": [
+      "note-share"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "Otevři poznámku a klikni na Sdílet.",
+      "steps": [
+        {
+          "key": "note-share",
+          "action": "click"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "open:note-item",
+        "click:note-share"
+      ]
+    }
+  },
+  {
+    "id": "calendar-new",
+    "question": "Jak naplánuji schůzku v kalendáři?",
+    "locale": "cs",
+    "section": "calendar",
+    "as": "owner",
+    "find": [
+      "calendar-new"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "Klikni na Nová událost.",
+      "steps": [
+        {
+          "key": "calendar-new",
+          "action": "click"
+        },
+        {
+          "key": "calendar-event-form",
+          "action": "fill"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "click:calendar-new",
+        "fill:calendar-event-form"
+      ]
+    }
+  },
+  {
+    "id": "scheduler-type",
+    "question": "Jak vytvořím typ schůzky pro rezervace?",
+    "locale": "cs",
+    "section": "scheduler",
+    "as": "owner",
+    "find": [
+      "scheduler-new-type"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "V Plánovači přidej typ schůzky.",
+      "steps": [
+        {
+          "key": "scheduler-new-type",
+          "action": "click"
+        },
+        {
+          "key": "scheduler-type-name",
+          "action": "fill"
+        },
+        {
+          "key": "scheduler-type-save",
+          "action": "wait"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "click:scheduler-new-type",
+        "fill:scheduler-type-name",
+        "wait:scheduler-type-save"
+      ]
+    }
+  },
+  {
+    "id": "finance-add",
+    "question": "Jak zapíšu výdaj?",
+    "locale": "cs",
+    "section": "finance",
+    "as": "owner",
+    "find": [
+      "finance-add"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "Na záložce Transakce přidej transakci.",
+      "steps": [
+        {
+          "key": "finance-add",
+          "action": "click"
+        },
+        {
+          "key": "finance-amount",
+          "action": "fill"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "click:finance-add",
+        "fill:finance-amount"
+      ]
+    }
+  },
+  {
+    "id": "plan-month",
+    "question": "Jak založím plán na další měsíc?",
+    "locale": "cs",
+    "section": "finance",
+    "as": "owner",
+    "find": [
+      "plan-create-month"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "V záložce Měsíc založ nový měsíc.",
+      "steps": [
+        {
+          "key": "plan-create-month",
+          "action": "click"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "click:plan-create-month"
+      ]
+    }
+  },
+  {
+    "id": "reward-meeting",
+    "question": "Jak dám pracovníkovi odměnu za schůzku?",
+    "locale": "cs",
+    "section": "company",
+    "as": "owner",
+    "find": [
+      "reward-rule-add"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "V Odměnách otevři pracovníka a přidej pravidlo za schůzku.",
+      "steps": [
+        {
+          "key": "reward-person",
+          "action": "click"
+        },
+        {
+          "key": "reward-rule-add",
+          "action": "click"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "go:reward-person",
+        "click:reward-person",
+        "click:reward-rule-add"
+      ]
+    }
+  },
+  {
+    "id": "worker-invite",
+    "question": "Jak pozvu pracovníka?",
+    "locale": "cs",
+    "section": "company",
+    "as": "owner",
+    "find": [
+      "worker-invite"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "Ve Správě firmy klikni na Pozvat pracovníka.",
+      "steps": [
+        {
+          "key": "worker-invite",
+          "action": "click"
+        },
+        {
+          "key": "worker-submit",
+          "action": "click"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "click:worker-invite",
+        "click:worker-submit"
+      ]
+    }
+  },
+  {
+    "id": "message-send",
+    "question": "Jak napíšu kolegovi?",
+    "locale": "cs",
+    "section": "messages",
+    "as": "sales",
+    "find": [
+      "messages-person"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "Ve Zprávách vyber člověka a napiš mu.",
+      "steps": [
+        {
+          "key": "messages-person",
+          "action": "click"
+        },
+        {
+          "key": "messages-input",
+          "action": "fill"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "click:messages-person",
+        "open:messages-conversation",
+        "fill:messages-input"
+      ]
+    }
+  },
+  {
+    "id": "grady-file",
+    "question": "Jak pošlu Gradymu soubor?",
+    "locale": "cs",
+    "section": "dashboard",
+    "as": "owner",
+    "find": [
+      "grady-attach"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "Otevři mě a přilož soubor sponkou.",
+      "steps": [
+        {
+          "key": "grady-attach",
+          "action": "click"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "open:grady-button",
+        "click:grady-attach"
+      ]
+    }
+  },
+  {
+    "id": "theme",
+    "question": "Jak změním barevné téma?",
+    "locale": "cs",
+    "section": "dashboard",
+    "as": "owner",
+    "find": [
+      "appearance-themes"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "V Nastavení → Vzhled vyber téma.",
+      "steps": [
+        {
+          "key": "appearance-themes",
+          "action": "highlight"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "go:appearance-themes",
+        "highlight:appearance-themes"
+      ]
+    }
+  },
+  {
+    "id": "pricing-advice",
+    "question": "Jak mám nacenit svou službu?",
+    "locale": "cs",
+    "section": "dashboard",
+    "as": "owner",
+    "find": [],
+    "model": {
+      "kind": "chat",
+      "answer": "Na tohle ti odpovím v chatu.",
+      "steps": []
+    },
+    "expect": {
+      "kind": "chat",
+      "steps": []
+    }
+  },
+  {
+    "id": "missing-feature",
+    "question": "Jak propojím Gradus s Instagramem?",
+    "locale": "cs",
+    "section": "dashboard",
+    "as": "owner",
+    "find": [],
+    "model": {
+      "kind": "missing",
+      "answer": "Napojení na Instagram aplikace zatím nemá.",
+      "steps": []
+    },
+    "expect": {
+      "kind": "missing",
+      "steps": []
+    }
+  },
+  {
+    "id": "invented-key",
+    "question": "Jak smažu celý účet?",
+    "locale": "cs",
+    "section": "settings",
+    "as": "owner",
+    "find": [
+      "settings-delete-account"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "V Nastavení → Soukromí.",
+      "steps": [
+        {
+          "key": "delete-everything-now",
+          "action": "click"
+        },
+        {
+          "key": "settings-delete-account",
+          "action": "highlight"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "highlight:settings-delete-account"
+      ]
+    }
+  },
+  {
+    "id": "only-invented",
+    "question": "Kde je tlačítko Turbo?",
+    "locale": "cs",
+    "section": "dashboard",
+    "as": "owner",
+    "find": [],
+    "model": {
+      "kind": "steps",
+      "answer": "Takové tlačítko nevidím, ale můžeš mi popsat, co potřebuješ.",
+      "steps": [
+        {
+          "key": "turbo-button",
+          "action": "click"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "words",
+      "steps": []
+    }
+  },
+  {
+    "id": "escalated",
+    "question": "jak to tam dam",
+    "locale": "cs",
+    "section": "pipeline",
+    "as": "owner",
+    "find": [
+      "pipeline-new-deal"
+    ],
+    "model": [
+      {
+        "kind": "steps",
+        "answer": "Nejsem si jistý.",
+        "steps": [
+          {
+            "key": "pipeline-health",
+            "action": "highlight"
+          }
+        ],
+        "unclear": true
+      },
+      {
+        "kind": "steps",
+        "answer": "Nový obchod přidáš tímto tlačítkem.",
+        "steps": [
+          {
+            "key": "pipeline-new-deal",
+            "action": "click"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "click:pipeline-new-deal"
+      ]
+    }
+  },
+  {
+    "id": "admin-subscription",
+    "question": "Jak změním uživateli tarif?",
+    "locale": "cs",
+    "section": "adminPeople",
+    "as": "limitedAdmin",
+    "find": [
+      "admin-user-subscription"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "Otevři uživatele a změň předplatné.",
+      "steps": [
+        {
+          "key": "admin-users-row",
+          "action": "click"
+        },
+        {
+          "key": "admin-user-subscription",
+          "action": "highlight"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "click:admin-users-row"
+      ]
+    }
+  },
+  {
+    "id": "en-deal",
+    "question": "How do I add a deal?",
+    "locale": "en",
+    "section": "dashboard",
+    "as": "owner",
+    "find": [
+      "pipeline-new-deal"
+    ],
+    "model": {
+      "kind": "steps",
+      "answer": "Use New deal in the pipeline.",
+      "steps": [
+        {
+          "key": "pipeline-new-deal",
+          "action": "click"
+        }
+      ]
+    },
+    "expect": {
+      "kind": "steps",
+      "steps": [
+        "go:pipeline-new-deal",
+        "click:pipeline-new-deal"
+      ]
+    }
+  }
+]

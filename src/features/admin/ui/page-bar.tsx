@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
+import { GuideButton } from "@/features/tutorial/guide/guide-button";
 
 /**
  * The one bar every page starts with: the name of the page, one sentence of
@@ -27,7 +28,13 @@ export function AdminPageBar({
     >
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
         <div className="flex min-w-0 flex-col">
-          <h1 className="truncate text-xl leading-7 font-semibold tracking-tight text-ink">{title}</h1>
+          <div className="flex min-w-0 items-center gap-1">
+            <h1 className="truncate text-xl leading-7 font-semibold tracking-tight text-ink">{title}</h1>
+            {/* The guide of the page's group (30.8), in the same place on every page. */}
+            <Suspense>
+              <GuideButton className="-my-2" />
+            </Suspense>
+          </div>
           {description && (
             <p className="hidden truncate text-xs leading-4 text-ink-muted md:block">{description}</p>
           )}

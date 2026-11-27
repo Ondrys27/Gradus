@@ -24,7 +24,7 @@ export function InvoiceSettings() {
   if (profile.isError) return <p className="text-sm text-pink">{t("loadFailed")}</p>;
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8" data-tutorial="invoice-settings">
       {/* A new key after the first save, so the form starts from what was saved. */}
       <InvoiceProfileForm
         key={profile.data ? "saved" : "new"}
@@ -55,7 +55,12 @@ function InvoiceLook({ profile }: { profile: InvoiceProfile }) {
         <h3 className="text-base font-semibold text-ink">{t("styleTitle")}</h3>
         <p className="text-sm text-ink-soft">{t("styleHint")}</p>
       </div>
-      <div role="radiogroup" aria-label={t("styleTitle")} className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div
+        role="radiogroup"
+        aria-label={t("styleTitle")}
+        className="grid grid-cols-2 gap-4 lg:grid-cols-4"
+        data-tutorial="invoice-style"
+      >
         {INVOICE_STYLES.map((style) => (
           <StyleChoice
             key={style}

@@ -75,7 +75,11 @@ export function ColdCallingView() {
       <CallWindowNotice />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)]">
-        <section aria-label={t("list.label")} className="flex min-w-0 flex-col gap-3">
+        <section
+          aria-label={t("list.label")}
+          data-tutorial="call-list"
+          className="flex min-w-0 flex-col gap-3"
+        >
           {tables.length > 0 && (
             <TableSwitcher
               tables={tables.filter((table) => table.system_key !== "clients")}
@@ -96,6 +100,7 @@ export function ColdCallingView() {
             <Input
               type="search"
               aria-label={t("list.search")}
+              data-tutorial="call-search"
               placeholder={t("list.searchPlaceholder")}
               value={term}
               onChange={(event) => setTerm(event.target.value)}

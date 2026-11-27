@@ -86,6 +86,7 @@ export function ThemePicker() {
       <div className="flex flex-col gap-3">
         <div
           id="settings-theme"
+          data-tutorial="appearance-themes"
           tabIndex={-1}
           role="radiogroup"
           aria-label={t("title")}
@@ -140,6 +141,7 @@ function ThemePickerBody({ now }: { now: number }) {
     <div className="flex flex-col gap-3">
       <div
         id="settings-theme"
+        data-tutorial="appearance-themes"
         tabIndex={-1}
         role="radiogroup"
         aria-label={t("title")}
@@ -212,6 +214,7 @@ function ThemePickerBody({ now }: { now: number }) {
           <Link
             href={THEME_EDITOR_PATH}
             data-testid="create-custom-theme"
+            data-tutorial="appearance-create-theme"
             className={buttonVariants({ variant: "secondary" })}
           >
             <PlusIcon aria-hidden />

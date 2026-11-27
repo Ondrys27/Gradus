@@ -46,6 +46,7 @@ export function SummaryPanel({ sheet, weeks, currentWeek, currency, reserve, can
       aria-label={t("title")}
       className="flex flex-col gap-4 rounded-card border border-line bg-surface p-4"
       data-testid="finance-plan-summary"
+      data-tutorial="plan-summary"
     >
       <div>
         <h2 className="text-xs font-medium text-ink-muted">{t("closing")}</h2>
@@ -165,6 +166,7 @@ function ReserveField({
     <label className="flex flex-col gap-1 border-t border-line pt-3 text-xs text-ink-muted">
       {t("reserve", { currency })}
       <input
+        data-tutorial="plan-reserve"
         value={shown}
         disabled={!canEdit}
         inputMode="decimal"

@@ -73,7 +73,10 @@ export function TaskRow({
   const who = nameOf(task.assignee_id);
 
   return (
-    <li className="flex items-start gap-3 rounded-2xl border border-line bg-surface/70 px-4 py-3">
+    <li
+      data-tutorial="crm-task-row"
+      className="flex items-start gap-3 rounded-2xl border border-line bg-surface/70 px-4 py-3"
+    >
       <motion.span
         key={pops}
         initial={pops > 0 && !reduceMotion ? { scale: 0.7 } : false}

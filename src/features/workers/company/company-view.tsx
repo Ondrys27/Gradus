@@ -148,6 +148,7 @@ export function CompanyView() {
       {(isOwner || worker) && (
         <StaggerItem>
           <Segmented
+            data-tutorial="company-tabs"
             label={tc("tabs.label")}
             value={tab}
             options={[
@@ -346,6 +347,7 @@ function CompanyPeople({
               <SelectTrigger
                 aria-labelledby="company-group-filter"
                 data-testid="company-group-filter"
+                data-tutorial="company-group-filter"
                 className="w-auto min-w-48"
               >
                 <SelectValue />
@@ -438,6 +440,7 @@ function StatusSelect({
         <SelectTrigger
           aria-labelledby="company-status-filter"
           data-testid="company-status-filter"
+          data-tutorial="company-status-filter"
           className="w-auto min-w-36"
         >
           <SelectValue />
@@ -469,6 +472,7 @@ function LayoutSwitch({
   return (
     <div
       role="group"
+      data-tutorial="company-view-switch"
       aria-label={t("label")}
       className="flex rounded-xl border border-line bg-canvas-deep/40 p-0.5"
     >

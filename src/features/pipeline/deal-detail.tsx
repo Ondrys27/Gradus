@@ -164,15 +164,21 @@ function DetailBody({
   );
   const contacts = <DealContacts dealId={deal.id} canEdit={canEdit} />;
   const tasks = (
-    <TargetTasks
-      kind="deal"
-      id={deal.id}
-      target={{ deal: { id: deal.id, title: deal.title }, contact: deal.contact }}
-    />
+    <div data-tutorial="deal-tasks">
+      <TargetTasks
+        kind="deal"
+        id={deal.id}
+        target={{ deal: { id: deal.id, title: deal.title }, contact: deal.contact }}
+      />
+    </div>
   );
   const notes = <DealNotes deal={deal} canEdit={canEdit} onSave={save} onClose={onClose} />;
   const history = (
-    <section aria-labelledby={`deal-history-${deal.id}`} className="flex flex-col gap-3">
+    <section
+      aria-labelledby={`deal-history-${deal.id}`}
+      data-tutorial="deal-history"
+      className="flex flex-col gap-3"
+    >
       <h3 id={`deal-history-${deal.id}`} className="micro-label">
         {t("history")}
       </h3>
@@ -199,7 +205,12 @@ function DetailBody({
       <>
         <div className="shrink-0 border-b border-line px-4 pb-0">
           {header}
-          <div role="tablist" aria-label={t("sections")} className="-mx-1 mt-3 flex">
+          <div
+            role="tablist"
+            aria-label={t("sections")}
+            data-tutorial="deal-tabs"
+            className="-mx-1 mt-3 flex"
+          >
             {TABS.map((key) => (
               <button
                 key={key}
@@ -374,6 +385,7 @@ function TitleField({
     <div className="flex flex-col gap-1">
       <input
         id="deal-title"
+        data-tutorial="deal-title"
         value={text}
         maxLength={TITLE_MAX + 20}
         aria-label={t("form.name")}
@@ -419,6 +431,7 @@ function StageSelect({
     >
       <SelectTrigger
         id={compact ? "deal-stage-compact" : "deal-stage"}
+        data-tutorial="deal-stage"
         aria-label={t("stage")}
         className={cn("text-sm mouse:min-h-9", compact && "min-h-9 w-auto rounded-full px-3")}
       >
@@ -473,7 +486,10 @@ function DealProperties({
 
   return (
     <>
-      <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-3">
+      <dl
+        className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-3"
+        data-tutorial="deal-properties"
+      >
         {showStage && (
           <Property label={t("detail.stage")} htmlFor="deal-stage">
             <StageSelect
@@ -662,6 +678,7 @@ function DealNotes({
         {canEdit ? (
           <Textarea
             id="deal-description"
+            data-tutorial="deal-notes"
             value={text}
             maxLength={DESCRIPTION_MAX}
             placeholder={t("notesPlaceholder")}
@@ -772,6 +789,7 @@ function DealActions({ deal, onClose }: { deal: Deal; onClose: () => void }) {
           <Button
             type="button"
             variant="secondary"
+            data-tutorial="deal-email"
             disabled={!contactEmail}
             onClick={() => setComposing(true)}
           >
@@ -805,6 +823,7 @@ function DealActions({ deal, onClose }: { deal: Deal; onClose: () => void }) {
           type="button"
           variant="ghost"
           className="mt-2 self-start text-pink hover:text-pink"
+          data-tutorial="deal-delete"
           onClick={() => setConfirmingDelete(true)}
         >
           <Trash2Icon aria-hidden data-icon="inline-start" />

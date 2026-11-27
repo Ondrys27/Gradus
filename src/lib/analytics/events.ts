@@ -7,6 +7,8 @@ import { XP_REASONS } from "@/features/game/rules";
 import { NOTE_TEMPLATE_KEYS } from "@/features/notes/templates";
 import { NOTE_KINDS } from "@/features/notes/mindmap/map-doc";
 import { TUTORIAL_MODES } from "@/features/tutorial/types";
+import { GUIDE_SECTIONS } from "@/features/tutorial/ui-map/types";
+import { GUIDE_ACTIONS, GUIDE_KINDS } from "@/features/tutorial/guide/plan";
 import { SCENARIO_IDS, SHOWCASE_SIZES } from "@/features/tutorial/showcase/params";
 import { locales } from "@/i18n/locales";
 import { EXPORT_FORMATS, IMPORT_MODES } from "@/features/milestones/map-io";
@@ -77,6 +79,8 @@ function event<S extends Shape>(
 const { id, oneOf, key, isoCode, count, number, ms, bool, optional, errorCode, hash } = field;
 
 const MODES = ["game", "tool"] as const;
+/** The guide sections of 30.8 and "none" (a page of no section). */
+const GUIDE_SECTION_KEYS = ["none", ...GUIDE_SECTIONS] as const;
 const ONBOARDING_STEPS = [
   "welcome",
   "mode",
@@ -352,6 +356,56 @@ export const EVENTS = {
     index: count(60),
     total: count(60),
     demo: oneOf(["kept", "deleted", "none"]),
+  }),
+  // The guide of every section and Grady's own guide (30.8). Never the question's text
+  // (that goes, anonymised, to guide_questions for "What people ask about").
+  /** The "?" of the header opened its menu (or the ? key). */
+  guide_menu_opened: event("onboarding", "client", false, {
+    section: oneOf(GUIDE_SECTION_KEYS),
+    via: oneOf(["button", "key"]),
+  }),
+  /** A guide began: the section's quick look or everything about it, or Grady's answer played. */
+  guide_started: event("onboarding", "client", false, {
+    section: oneOf(GUIDE_SECTION_KEYS),
+    guide: oneOf(["quick", "full", "custom"]),
+    steps: count(60),
+  }),
+  guide_finished: event("onboarding", "client", false, {
+    section: oneOf(GUIDE_SECTION_KEYS),
+    guide: oneOf(["quick", "full", "custom"]),
+    steps: count(60),
+    done_for_me: count(60),
+  }),
+  guide_abandoned: event("onboarding", "client", false, {
+    section: oneOf(GUIDE_SECTION_KEYS),
+    guide: oneOf(["quick", "full", "custom"]),
+    index: count(60),
+    steps: count(60),
+  }),
+  /** "Do it for me" on a step: Grady led there or pressed what only opens something. */
+  guide_done_for_me: event("onboarding", "client", false, {
+    section: oneOf(GUIDE_SECTION_KEYS),
+    action: oneOf(GUIDE_ACTIONS),
+  }),
+  /** Grady's own offer of help: someone seemed lost, or the first visit of a section. */
+  guide_offer: event("onboarding", "client", false, {
+    section: oneOf(GUIDE_SECTION_KEYS),
+    trigger: oneOf(["dialog", "idle", "returns", "invalid", "firstVisit"]),
+    outcome: oneOf(["shown", "accepted", "dismissed", "off"]),
+  }),
+  /** A question to Grady's guide, answered (written by /api/grady). */
+  guide_question_asked: event("jarvis", "server", true, {
+    section: oneOf(GUIDE_SECTION_KEYS),
+    from: oneOf(["menu", "bubble", "search", "chat", "after"]),
+    outcome: oneOf([...GUIDE_KINDS, "failed"]),
+    cached: bool(),
+    escalated: bool(),
+    steps: count(20),
+    dropped: count(40),
+  }),
+  /** "Suggest a feature" after Grady said the app has no such thing. */
+  guide_idea_suggested: event("jarvis", "client", true, {
+    section: oneOf(GUIDE_SECTION_KEYS),
   }),
   // The showcase (27.4): the app playing itself for a video, in a throw-away
   // stage account; counted for the presenter who started it.

@@ -46,7 +46,11 @@ export function CalendarsPanel({
     : [{ key: GRADUS_SOURCE, name: null, writes: false, privateDefault: false }];
 
   return (
-    <div className="flex flex-col gap-5" data-testid="calendars-panel">
+    <div
+      className="flex flex-col gap-5"
+      data-testid="calendars-panel"
+      data-tutorial="calendar-panel"
+    >
       <section className="flex flex-col gap-1">
         <h3 className="micro-label px-1">{t("panel.mine")}</h3>
         {own.map((source) => {
@@ -111,6 +115,7 @@ export function CalendarsPanel({
           variant="outline"
           onClick={onRequest}
           data-testid="calendars-panel-request"
+          data-tutorial="calendar-share-request"
         >
           <CalendarHeartIcon aria-hidden data-icon="inline-start" />
           {t("request.button")}
@@ -121,6 +126,7 @@ export function CalendarsPanel({
             variant="outline"
             onClick={onCommonTime}
             data-testid="calendars-panel-common"
+            data-tutorial="calendar-common-time"
           >
             <CalendarSearchIcon aria-hidden data-icon="inline-start" />
             {t("common.open")}

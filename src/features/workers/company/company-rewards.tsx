@@ -115,7 +115,7 @@ export function CompanyRewards({
       <p className="max-w-2xl text-sm text-ink-soft">{t("description")}</p>
       <RewardsTiles totals={totals.data ? companyTotals : undefined} isError={false} currency={mainCurrency} />
 
-      <GlowCard interactive={false} className="flex flex-col gap-4">
+      <GlowCard interactive={false} className="flex flex-col gap-4" data-tutorial="reward-team">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-ink-soft">
             {canChange && roster.length > 0 && (
@@ -138,6 +138,7 @@ export function CompanyRewards({
                 disabled={pendingIds.length === 0 || review.isPending}
                 onClick={() => review.mutate({ ids: pendingIds, action: "approve" })}
                 data-testid="company-rewards-approve"
+                data-tutorial="reward-approve"
               >
                 <CheckCheckIcon aria-hidden data-icon="inline-start" />
                 {t("approve", { count: pendingIds.length })}
@@ -147,6 +148,7 @@ export function CompanyRewards({
                 disabled={payable.length === 0}
                 onClick={() => setRequests(payable)}
                 data-testid="company-rewards-pay"
+                data-tutorial="reward-pay"
               >
                 <BanknoteIcon aria-hidden data-icon="inline-start" />
                 {t("pay", { count: payable.length })}
@@ -205,6 +207,7 @@ export function CompanyRewards({
                       <td className="px-2 py-2">
                         <button
                           type="button"
+                          data-tutorial="reward-person"
                           onClick={() => onOpen(person.id)}
                           className="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl text-left outline-none focus-visible:ring-3 focus-visible:ring-violet/40"
                         >
@@ -245,6 +248,7 @@ export function CompanyRewards({
           <Button
             size="sm"
             variant="outline"
+            data-tutorial="reward-export"
             onClick={() => {
               setExportFailed(false);
               exportCsv(null, nameOf).catch(() => setExportFailed(true));

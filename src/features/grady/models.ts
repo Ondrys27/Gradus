@@ -50,6 +50,8 @@ export const GRADY_FEATURES = [
   "period_summary",
   "model_compare",
   "compare_judge",
+  // Step 30.8: a question about using the app answered as steps on the screen.
+  "guide_answer",
 ] as const;
 export type GradyFeature = (typeof GRADY_FEATURES)[number];
 
@@ -87,6 +89,8 @@ const DEFAULTS: Record<GradyFeature, AiModelKey> = {
   model_compare: "sonnet",
   // The short grade of a compared answer: a cheap model with a score and one sentence.
   compare_judge: "haiku",
+  // "How do I…" into keys of the catalog of controls: a short JSON answer, Haiku first.
+  guide_answer: "haiku",
 };
 
 export function defaultModelKey(feature: GradyFeature): AiModelKey {
@@ -132,6 +136,8 @@ export const FEATURE_MAX_TOKENS: Partial<Record<GradyFeature, number>> = {
   rules_test: 2048,
   // A score and one sentence as JSON.
   compare_judge: 400,
+  // Two or three sentences and up to ten steps as JSON: about 400 tokens.
+  guide_answer: 1536,
 };
 
 /**

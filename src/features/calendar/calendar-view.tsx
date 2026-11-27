@@ -387,7 +387,10 @@ export function CalendarView() {
         description={t("description")}
         actions={
           canAdd && (
-            <Button onClick={() => setForm({ event: null, start: { day: defaultDay() } })}>
+            <Button
+              data-tutorial="calendar-new"
+              onClick={() => setForm({ event: null, start: { day: defaultDay() } })}
+            >
               <PlusIcon aria-hidden data-icon="inline-start" />
               {t("actions.add")}
             </Button>
@@ -396,7 +399,7 @@ export function CalendarView() {
       />
 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1" data-tutorial="calendar-nav">
           <Button
             variant="outline"
             size="icon"
@@ -426,6 +429,7 @@ export function CalendarView() {
         <div
           role="group"
           aria-label={t("views.label")}
+          data-tutorial="calendar-views"
           className="flex rounded-xl border border-line bg-surface p-1"
         >
           {CALENDAR_VIEWS.map((option) => (
@@ -445,7 +449,12 @@ export function CalendarView() {
         </div>
       </div>
 
-      <div role="group" aria-label={t("mirrors.label")} className="flex flex-wrap gap-2">
+      <div
+        role="group"
+        aria-label={t("mirrors.label")}
+        data-tutorial="calendar-mirrors"
+        className="flex flex-wrap gap-2"
+      >
         <MirrorToggle
           pressed={mirrors.tasks}
           tone="teal"
@@ -475,6 +484,7 @@ export function CalendarView() {
           onClick={() => setPanelOpen(true)}
           className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-line px-4 text-sm font-medium text-ink-soft outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-ring/50 mouse:h-9 lg:hidden"
           data-testid="calendars-panel-open"
+          data-tutorial="calendar-panel-open"
         >
           <LayersIcon aria-hidden className="size-4" />
           {t("sharing.panel.title")}

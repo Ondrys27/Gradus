@@ -61,6 +61,7 @@ export function WeekList({ days, today, items, onPickDay, onOpenItem, onSwipe }:
                 <li key={item.key}>
                   <button
                     type="button"
+                    data-tutorial="calendar-item"
                     onClick={() => onOpenItem(item)}
                     className={cn(
                       "flex min-h-11 w-full min-w-0 cursor-pointer items-center gap-2 rounded-xl border px-3 text-left text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/60",

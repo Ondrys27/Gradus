@@ -60,6 +60,7 @@ export function EventTypeCard({
           {onOpen ? (
             <button
               type="button"
+              data-tutorial="scheduler-type-open"
               onClick={onOpen}
               className="cursor-pointer text-left text-base font-semibold text-ink outline-none after:absolute after:inset-0 after:content-[''] focus-visible:underline"
             >
@@ -83,6 +84,7 @@ export function EventTypeCard({
           <div className="relative z-10">
             <Switch
               checked={type.active}
+              data-tutorial="scheduler-type-toggle"
               disabled={toggling || (offOnly && !type.active)}
               aria-label={
                 type.active

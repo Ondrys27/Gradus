@@ -78,7 +78,7 @@ export function PayoutsPanel({
   }
 
   return (
-    <GlowCard interactive={false} className="flex flex-col gap-4" data-testid="reward-payouts">
+    <GlowCard interactive={false} className="flex flex-col gap-4" data-testid="reward-payouts" data-tutorial="reward-payouts">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="text-base font-semibold text-ink">{t("title")}</h3>
         <Button

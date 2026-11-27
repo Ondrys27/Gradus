@@ -59,7 +59,11 @@ export function ActivityPanel({ contactId }: { contactId: string }) {
   const [adding, setAdding] = useState(false);
 
   return (
-    <section aria-labelledby="contact-activity" className="flex flex-col gap-4">
+    <section
+      aria-labelledby="contact-activity"
+      data-tutorial="contact-activity"
+      className="flex flex-col gap-4"
+    >
       <div className="flex items-center justify-between gap-3">
         <h2 id="contact-activity" className="micro-label">
           {t("title")}

@@ -72,7 +72,11 @@ export function AvailabilityTab({
         {updateProfile.isError && <FormAlert>{t("saveFailed")}</FormAlert>}
       </section>
 
-      <section className="flex flex-col gap-3 border-t border-line pt-6" id="scheduler-calendars">
+      <section
+        className="flex flex-col gap-3 border-t border-line pt-6"
+        id="scheduler-calendars"
+        data-tutorial="scheduler-calendars"
+      >
         <header className="flex flex-col gap-1">
           <h2 className="text-[15px] font-semibold text-ink">{t("calendarsTitle")}</h2>
           <p className="text-[13px] text-ink-muted">{t("calendarsHint")}</p>
@@ -89,7 +93,10 @@ export function AvailabilityTab({
         />
       </section>
 
-      <section className="flex flex-col gap-3 border-t border-line pt-6">
+      <section
+        className="flex flex-col gap-3 border-t border-line pt-6"
+        data-tutorial="scheduler-week"
+      >
         <header className="flex flex-col gap-1">
           <h2 className="text-[15px] font-semibold text-ink">{t("weekTitle")}</h2>
           <p className="text-[13px] text-ink-muted">{t("weekHint")}</p>
@@ -108,7 +115,10 @@ export function AvailabilityTab({
         )}
       </section>
 
-      <section className="flex flex-col gap-3 border-t border-line pt-6">
+      <section
+        className="flex flex-col gap-3 border-t border-line pt-6"
+        data-tutorial="scheduler-exceptions"
+      >
         <header className="flex flex-col gap-1">
           <h2 className="text-[15px] font-semibold text-ink">{t("exceptionsTitle")}</h2>
           <p className="text-[13px] text-ink-muted">{t("exceptionsHint")}</p>

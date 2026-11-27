@@ -78,9 +78,11 @@ export default async function AdminExplorerPage({ searchParams }: Props) {
     <>
       <AdminPageHeader section="explorer" q={q} />
       <div className="flex flex-col gap-4">
-        <AdminCard>
-          <ExplorerControls events={EXPLORER_EVENTS} numericPropsByEvent={numericPropsByEvent} current={query} />
-        </AdminCard>
+        <div data-tutorial="admin-explorer-controls">
+          <AdminCard>
+            <ExplorerControls events={EXPLORER_EVENTS} numericPropsByEvent={numericPropsByEvent} current={query} />
+          </AdminCard>
+        </div>
         <Suspense fallback={<CardSkeleton height={320} />}>
           <Result q={q} query={query} />
         </Suspense>

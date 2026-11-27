@@ -171,7 +171,7 @@ export function Figures({ tiles }: { tiles: TileData[] }) {
   const key = tiles.slice(0, KEY_FIGURES);
   const more = tiles.slice(KEY_FIGURES);
   return (
-    <div className="flex flex-col gap-3">
+    <div data-tutorial="admin-figures" className="flex flex-col gap-3">
       {/* Always four columns from xl, so the key numbers sit in the same place on every page. */}
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         {key.map((tile) => (

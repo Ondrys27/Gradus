@@ -508,6 +508,7 @@ function Block({ entry, hourPx, lifted, onOpen, onStart }: BlockProps) {
     >
       <button
         type="button"
+        data-tutorial="calendar-item"
         onClick={onOpen}
         onPointerDown={(event) => onStart?.(event, "move")}
         onContextMenu={(event) => event.preventDefault()}

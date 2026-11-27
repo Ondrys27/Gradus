@@ -60,6 +60,7 @@ export function RemoveZone({ worker, readOnly }: { worker: DashboardWorker; read
         variant="destructive"
         className="self-start"
         data-testid="worker-remove"
+        data-tutorial="worker-remove"
         onClick={() => setOpen(true)}
       >
         <UserMinusIcon aria-hidden data-icon="inline-start" />

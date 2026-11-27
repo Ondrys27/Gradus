@@ -99,13 +99,14 @@ export function StatsCard() {
   }
 
   return (
-    <GlowCard interactive={false} className="flex flex-col gap-5">
+    <GlowCard interactive={false} className="flex flex-col gap-5" data-tutorial="call-stats">
       <div className="flex flex-col gap-3">
         <h2 className="micro-label">{t("title")}</h2>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div
             role="group"
             aria-label={t("period")}
+            data-tutorial="call-stats-period"
             className="flex rounded-full border border-line p-0.5"
           >
             {KINDS.map((kind) => (
@@ -221,7 +222,12 @@ function PersonPicker({
     ...members.map((member) => ({ id: member.userId, label: member.name, member })),
   ];
   return (
-    <div role="group" aria-label={t("people.label")} className="flex flex-wrap gap-1.5">
+    <div
+      role="group"
+      aria-label={t("people.label")}
+      data-tutorial="call-stats-people"
+      className="flex flex-wrap gap-1.5"
+    >
       {options.map((option) => (
         <button
           key={option.id ?? "all"}

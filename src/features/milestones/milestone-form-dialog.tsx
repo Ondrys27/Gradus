@@ -125,6 +125,7 @@ function MilestoneFields({
     <form onSubmit={submit} noValidate className="flex flex-col gap-4">
       <FormField id="milestone-title" label={t("form.name")} error={titleError}>
         <Input
+          data-tutorial="milestone-title"
           {...fieldA11y("milestone-title", titleError)}
           value={title}
           maxLength={TITLE_MAX + 20}
@@ -192,6 +193,7 @@ function MilestoneFields({
         hint={t("form.rewardHint")}
       >
         <Input
+          data-tutorial="milestone-reward"
           {...fieldA11y("milestone-reward", rewardError, true)}
           value={reward}
           maxLength={REWARD_MAX + 10}

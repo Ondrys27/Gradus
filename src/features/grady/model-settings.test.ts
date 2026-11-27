@@ -192,6 +192,19 @@ describe("chooseModel", () => {
     });
   });
 
+  it("asks the guide again on Sonnet after an unsure answer, never in economy mode", () => {
+    expect(chooseModel("guide_answer", settings()).model.key).toBe("haiku");
+    expect(chooseModel("guide_answer", settings(), { escalated: true })).toEqual({
+      model: aiModelByKey("sonnet"),
+      routedFrom: null,
+    });
+    // Set higher than the escalation: the setting stays.
+    expect(chooseModel("guide_answer", set({ guide_answer: "opus" }), { escalated: true }).model.key).toBe("opus");
+    expect(chooseModel("guide_answer", settings(), { escalated: true, economy: "manual" }).model.key).toBe("haiku");
+    // A job without an escalation ignores it.
+    expect(chooseModel("briefing", settings(), { escalated: true }).model.key).toBe("sonnet");
+  });
+
   it("never goes below the minimum", () => {
     // A value that slipped past the form (or a minimum raised later).
     expect(chooseModel("analysis", set({ analysis: "haiku" })).model.key).toBe("sonnet");

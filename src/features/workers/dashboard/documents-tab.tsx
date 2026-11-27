@@ -102,6 +102,7 @@ export function DocumentsTab({ worker }: { worker: DashboardWorker }) {
           <p className="text-xs text-ink-muted">{t("hint")}</p>
           <Button
             variant="secondary"
+            data-tutorial="worker-documents-upload"
             onClick={() => inputRef.current?.click()}
             disabled={uploading > 0}
           >

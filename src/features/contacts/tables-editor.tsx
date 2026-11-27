@@ -83,7 +83,7 @@ function Editor() {
         title={t("title")}
         description={t("description")}
         actions={
-          <Button onClick={() => setAdding(true)}>
+          <Button data-tutorial="contact-table-add" onClick={() => setAdding(true)}>
             <PlusIcon aria-hidden data-icon="inline-start" />
             {t("addTable")}
           </Button>
@@ -241,6 +241,7 @@ function TableCard({
           type="button"
           aria-expanded={open}
           aria-controls={panelId}
+          data-tutorial="contact-table-questions"
           onClick={() => setOpen((value) => !value)}
           aria-label={toggleLabel}
           className="inline-flex h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-full px-2 text-sm text-ink-soft outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40 sm:px-3 mouse:h-8"
@@ -375,7 +376,7 @@ function FieldsPanel({
     <section aria-label={t("tableEditor.questions")} className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
         <h3 className="micro-label">{t("tableEditor.questions")}</h3>
-        <Button variant="outline" size="sm" onClick={onAdd}>
+        <Button variant="outline" size="sm" data-tutorial="contact-question-add" onClick={onAdd}>
           <PlusIcon aria-hidden data-icon="inline-start" />
           {t("tableEditor.addQuestion")}
         </Button>

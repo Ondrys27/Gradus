@@ -29,6 +29,7 @@ export function NoteMenu({ label, groups }: { label: string; groups: NoteMenuGro
         aria-label={label}
         title={label}
         data-testid="note-more"
+        data-tutorial="note-more"
         className="grid size-11 cursor-pointer place-items-center rounded-xl text-ink-soft outline-none hover:bg-surface-hover hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40 mouse:size-8 [&_svg]:size-4"
       >
         <EllipsisIcon aria-hidden />

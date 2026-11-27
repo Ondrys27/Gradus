@@ -166,6 +166,7 @@ function GenerateForm({
       <FormField id="generate-industry" label={t("industry")} error={industryError}>
         <Input
           {...fieldA11y("generate-industry", industryError)}
+          data-tutorial="contact-generate-industry"
           value={industry}
           autoFocus
           maxLength={INDUSTRY_MAX}

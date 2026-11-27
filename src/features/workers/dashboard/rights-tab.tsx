@@ -29,7 +29,7 @@ export function RightsTab({
 
   return (
     <div className="flex flex-col gap-4">
-      <GlowCard interactive={false} className="flex flex-col gap-3" data-testid="worker-rights">
+      <GlowCard interactive={false} className="flex flex-col gap-3" data-testid="worker-rights" data-tutorial="worker-rights">
         {ended && <p className="text-sm text-ink-muted">{t("endedHint")}</p>}
         {grants.isError ? (
           <FormAlert>{t("loadFailed")}</FormAlert>

@@ -122,7 +122,7 @@ export default async function AdminFeedbackPage({ searchParams }: Props) {
 
   const waiting = newReports.ok ? newReports.data : 0;
   const tabs = (
-    <nav aria-label={t("tabs")} className="flex gap-1">
+    <nav aria-label={t("tabs")} data-tutorial="admin-feedback-tabs" className="flex gap-1">
       {(["overview", "reports"] as const).map((value) => {
         const active = value === tab;
         return (
@@ -344,6 +344,7 @@ async function BugReports({
         action={`${ADMIN_PATH}/zpetna-vazba`}
         className="mb-3 flex flex-wrap items-end gap-2"
         data-testid="report-filters"
+        data-tutorial="admin-feedback-filters"
       >
         <input type="hidden" name="tab" value="reports" />
         {rawCode && <input type="hidden" name="code" value={rawCode} />}

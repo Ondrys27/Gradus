@@ -223,6 +223,7 @@ function Body({
               type="button"
               variant="destructive"
               className="sm:mr-auto"
+              data-tutorial="crm-task-delete"
               onClick={() => setConfirming(true)}
             >
               <Trash2Icon aria-hidden data-icon="inline-start" />
@@ -230,7 +231,7 @@ function Body({
             </Button>
           )}
           {canEdit && (
-            <Button type="button" variant="outline" onClick={() => onEdit(task)}>
+            <Button type="button" variant="outline" data-tutorial="crm-task-edit" onClick={() => onEdit(task)}>
               <PencilIcon aria-hidden data-icon="inline-start" />
               {t("edit")}
             </Button>
@@ -240,6 +241,7 @@ function Body({
               <Button
                 type="button"
                 variant="outline"
+                data-tutorial="crm-task-complete"
                 disabled={reopen.isPending}
                 onClick={() => reopen.mutate(task.id, { onSuccess: onClose })}
               >
@@ -247,7 +249,7 @@ function Body({
                 {t("reopen")}
               </Button>
             ) : (
-              <Button type="button" onClick={() => onComplete(task)}>
+              <Button type="button" data-tutorial="crm-task-complete" onClick={() => onComplete(task)}>
                 <CheckCircle2Icon aria-hidden data-icon="inline-start" />
                 {t("markDone")}
               </Button>

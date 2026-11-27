@@ -40,7 +40,7 @@ export function ExportFooter({
   }
 
   return (
-    <div className="flex items-center gap-1 text-xs">
+    <div data-tutorial="admin-table-export" className="flex items-center gap-1 text-xs">
       {failed && (
         <span role="alert" className="mr-2 text-pink">
           {t("exportFailed")}

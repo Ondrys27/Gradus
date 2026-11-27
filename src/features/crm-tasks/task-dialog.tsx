@@ -189,6 +189,7 @@ function Fields({
     <form onSubmit={submit} noValidate className="flex flex-col gap-4">
       <FormField id="crm-task-title" label={t("title")} error={err("title")} hint={t("titleHint")}>
         <Input
+          data-tutorial="crm-task-title"
           {...fieldA11y("crm-task-title", err("title"), true)}
           value={title}
           maxLength={TITLE_MAX + 10}
@@ -220,7 +221,12 @@ function Fields({
             timeLabel={t("time")}
             invalid={Boolean(err("due_at"))}
           />
-          <div role="group" aria-label={t("quickLabel")} className="flex flex-wrap gap-1.5">
+          <div
+            role="group"
+            aria-label={t("quickLabel")}
+            data-tutorial="crm-task-due-quick"
+            className="flex flex-wrap gap-1.5"
+          >
             {QUICK.map((quick) => (
               <Button
                 key={quick}
@@ -236,7 +242,7 @@ function Fields({
         </div>
       </FormField>
 
-      <fieldset className="flex flex-col gap-2">
+      <fieldset className="flex flex-col gap-2" data-tutorial="crm-task-duration">
         <legend className="mb-2 text-sm font-medium text-ink-soft">{t("duration")}</legend>
         <div className="flex flex-wrap gap-1.5">
           {DURATION_PRESETS.map((minutes) => (
@@ -283,7 +289,7 @@ function Fields({
             if (typeof next === "string") setAssignee(next);
           }}
         >
-          <SelectTrigger id="crm-task-assignee">
+          <SelectTrigger id="crm-task-assignee" data-tutorial="crm-task-assignee">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

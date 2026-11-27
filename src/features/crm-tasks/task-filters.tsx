@@ -162,6 +162,7 @@ export function TaskFilterBar({
         <div
           role="radiogroup"
           aria-label={tQuick("label")}
+          data-tutorial="crm-task-quick"
           className="flex max-w-full overflow-x-auto rounded-xl border border-line bg-surface p-0.5 [scrollbar-width:none]"
         >
           {QUICK_VIEWS.map((view) => (
@@ -187,6 +188,7 @@ export function TaskFilterBar({
           size="sm"
           aria-expanded={panel}
           aria-controls="crm-task-filters"
+          data-tutorial="crm-task-filters"
           onClick={() => setPanel((value) => !value)}
         >
           <FilterIcon aria-hidden />

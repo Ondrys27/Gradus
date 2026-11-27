@@ -139,7 +139,7 @@ export function NewDealForm({
   }
 
   return (
-    <form onSubmit={submit} noValidate className="flex flex-col gap-4">
+    <form onSubmit={submit} noValidate className="flex flex-col gap-4" data-tutorial="deal-form">
       <DealFormFields
         idPrefix="new-deal"
         draft={draft}

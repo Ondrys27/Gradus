@@ -66,7 +66,7 @@ export function ConnectSteps({ serverUrl }: { serverUrl: string }) {
       title={t("title")}
       description={t("hint")}
     >
-      <ol className="grid gap-4 py-4 first:pt-0 sm:grid-cols-2">
+      <ol data-tutorial="apps-connect-steps" className="grid gap-4 py-4 first:pt-0 sm:grid-cols-2">
         {steps.map((step, index) => (
           <li key={step.key} className="flex flex-col gap-2 rounded-2xl border border-line p-3">
             <div aria-hidden>{step.picture}</div>

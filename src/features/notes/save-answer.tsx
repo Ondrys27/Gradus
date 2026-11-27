@@ -93,6 +93,7 @@ export function SaveAnswerToNotes({ text }: { text: string }) {
         aria-label={t("save")}
         title={t("save")}
         data-testid="grady-save-note"
+        data-tutorial="grady-save-note"
         className={cn(
           "grid size-9 place-items-center rounded-full outline-none transition-colors hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-teal/50 mouse:size-7",
           open ? "text-violet" : "text-ink-muted",

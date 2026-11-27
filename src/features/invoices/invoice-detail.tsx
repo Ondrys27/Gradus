@@ -106,6 +106,7 @@ export function InvoiceDetail({
             <Button
               type="button"
               variant="secondary"
+              data-tutorial="invoice-download"
               disabled={download.isPending}
               onClick={() => download.mutate(invoice.id)}
             >
@@ -113,7 +114,7 @@ export function InvoiceDetail({
               {t("download")}
             </Button>
             {canEdit && (
-              <Button type="button" variant="secondary" onClick={() => setSending(true)}>
+              <Button type="button" variant="secondary" data-tutorial="invoice-send" onClick={() => setSending(true)}>
                 <MailIcon aria-hidden data-icon="inline-start" />
                 {t("send")}
               </Button>
@@ -121,6 +122,7 @@ export function InvoiceDetail({
             {canEdit && unpaid && (
               <Button
                 type="button"
+                data-tutorial="invoice-mark-paid"
                 disabled={markPaid.isPending}
                 onClick={() => markPaid.mutate(invoice.id)}
               >
@@ -187,6 +189,7 @@ export function InvoiceDetail({
               type="button"
               variant="ghost"
               className="self-start text-pink"
+              data-tutorial="invoice-cancel"
               onClick={() => setConfirmCancel(true)}
             >
               <BanIcon aria-hidden data-icon="inline-start" />

@@ -112,6 +112,7 @@ export function ContactsView() {
               {canEditTables && (
                 <Link
                   href="/app/kontakty/tabulky"
+                  data-tutorial="contact-tables-edit"
                   className={buttonVariants({ variant: "outline" })}
                 >
                   <PencilIcon aria-hidden data-icon="inline-start" />
@@ -162,6 +163,7 @@ export function ContactsView() {
           <Input
             type="search"
             aria-label={t("search.label")}
+            data-tutorial="contact-search"
             placeholder={t("search.placeholder")}
             value={term}
             onChange={(event) => setTerm(event.target.value)}

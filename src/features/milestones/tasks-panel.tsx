@@ -240,6 +240,7 @@ export function TasksPanel({ milestone, tasks }: { milestone: Milestone; tasks: 
             <Button
               variant="outline"
               size="sm"
+              data-tutorial="map-import"
               onClick={() => setImporting({ open: true, file: null })}
               className="min-w-11 rounded-xl px-3 text-sm mouse:h-8"
             >

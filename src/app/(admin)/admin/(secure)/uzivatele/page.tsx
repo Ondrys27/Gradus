@@ -118,6 +118,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
         placeholder={t("searchPlaceholder")}
         aria-label={t("searchPlaceholder")}
         data-admin-search
+        data-tutorial="admin-users-search"
         className="h-10 w-full rounded-xl border border-line bg-surface pr-3 pl-9 text-sm text-ink outline-none placeholder:text-ink-muted focus-visible:border-violet/60 focus-visible:ring-3 focus-visible:ring-violet/30 mouse:h-9"
       />
     </form>
@@ -135,7 +136,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
             </div>
             {/* With e-mails: the owner's and a full admin's export; a limited admin does not see the button. */}
             {mayExport(context, "users") && (
-              <div id="users-export" className="rounded-xl">
+              <div id="users-export" data-tutorial="admin-users-export" className="rounded-xl">
                 <AuditExportButton href={exportHref} label={t("export")} />
               </div>
             )}
@@ -157,6 +158,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
                   <Link
                     href={`${ADMIN_PATH}/uzivatele/${row.userId}${kept.size ? `?${kept}` : ""}`}
                     prefetch={false}
+                    data-tutorial="admin-users-row"
                     className="max-w-64 truncate font-medium text-ink underline-offset-2 hover:text-violet hover:underline"
                   >
                     {nameOf(row.userId)}

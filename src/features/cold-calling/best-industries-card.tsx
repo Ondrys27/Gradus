@@ -69,7 +69,11 @@ export function BestIndustriesCard() {
   }, [fresh, celebrate, t]);
 
   return (
-    <GlowCard interactive={false} className="flex flex-col gap-4">
+    <GlowCard
+      interactive={false}
+      className="flex flex-col gap-4"
+      data-tutorial="call-best-industries"
+    >
       <div className="flex items-center justify-between gap-3">
         <h2 className="micro-label">{t("title")}</h2>
         {data && !data.unlocked_at && <LockIcon aria-hidden className="size-4 text-ink-muted" />}

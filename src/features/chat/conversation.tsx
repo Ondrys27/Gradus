@@ -369,6 +369,7 @@ function HeaderMenu({ channel, isOwner }: { channel: ChatChannel; isOwner: boole
       <Menu.Trigger
         aria-label={t("label")}
         data-testid="chat-conversation-menu"
+        data-tutorial="messages-conversation-menu"
         className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-xl text-ink-muted outline-none hover:text-ink focus-visible:ring-3 focus-visible:ring-violet/40"
       >
         <EllipsisVerticalIcon aria-hidden className="size-5" />
@@ -378,6 +379,7 @@ function HeaderMenu({ channel, isOwner }: { channel: ChatChannel; isOwner: boole
           <Menu.Popup className="min-w-56 rounded-xl border border-line-strong bg-surface p-1.5 shadow-popover outline-none">
             <Menu.Item
               className={itemClass}
+              data-tutorial="messages-pin"
               onClick={() => flags.mutate({ channelId: channel.id, pinned: !channel.pinnedAt })}
             >
               {channel.pinnedAt ? <PinOffIcon aria-hidden /> : <PinIcon aria-hidden />}
@@ -385,6 +387,7 @@ function HeaderMenu({ channel, isOwner }: { channel: ChatChannel; isOwner: boole
             </Menu.Item>
             <Menu.Item
               className={itemClass}
+              data-tutorial="messages-mute"
               onClick={() => flags.mutate({ channelId: channel.id, muted: !channel.muted })}
             >
               {channel.muted ? <BellRingIcon aria-hidden /> : <BellOffIcon aria-hidden />}
@@ -394,6 +397,7 @@ function HeaderMenu({ channel, isOwner }: { channel: ChatChannel; isOwner: boole
               <Menu.Item
                 className={itemClass}
                 data-testid="chat-mute-all"
+                data-tutorial="messages-mute-all"
                 onClick={() => muteAll.mutate({ channelId: channel.id, muted: !channel.mutedAll })}
               >
                 <MegaphoneOffIcon aria-hidden />
@@ -403,6 +407,7 @@ function HeaderMenu({ channel, isOwner }: { channel: ChatChannel; isOwner: boole
             {isOwner && (
               <Menu.Item
                 className={itemClass}
+                data-tutorial="messages-export"
                 render={<a href={`/api/chat/export?c=${channel.id}`} download />}
               >
                 <DownloadIcon aria-hidden />

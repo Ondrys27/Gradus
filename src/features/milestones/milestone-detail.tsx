@@ -159,11 +159,11 @@ export function MilestoneDetail({ id }: { id: string }) {
         actions={
           canEdit && (
             <>
-              <Button variant="outline" onClick={() => setEditing(true)}>
+              <Button variant="outline" data-tutorial="milestone-edit" onClick={() => setEditing(true)}>
                 <PencilIcon aria-hidden data-icon="inline-start" />
                 {t("actions.edit")}
               </Button>
-              <Button variant="outline" onClick={() => setDeleting(true)}>
+              <Button variant="outline" data-tutorial="milestone-delete" onClick={() => setDeleting(true)}>
                 <Trash2Icon aria-hidden data-icon="inline-start" />
                 {t("actions.delete")}
               </Button>
@@ -327,7 +327,7 @@ function MilestoneNotes({ milestone }: { milestone: Milestone }) {
   const { allowed } = useNotesInWork();
   if (!allowed) return null;
   return (
-    <GlowCard interactive={false} className="p-4 sm:p-5">
+    <GlowCard interactive={false} className="p-4 sm:p-5" data-tutorial="milestone-notes">
       <WorkNotes
         target={{ kind: "milestone", id: milestone.id }}
         title={milestone.title}

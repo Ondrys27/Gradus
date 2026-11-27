@@ -75,6 +75,7 @@ export function SettingsShell({ children }: { children: ReactNode }) {
                       <li key={item.key}>
                         <Link
                           href={item.href}
+                          data-tutorial={`settings-nav-${item.key}`}
                           aria-current={active ? "page" : undefined}
                           className={cn(
                             "flex h-10 items-center gap-2.5 rounded-xl border px-3 text-sm font-medium outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none",
@@ -175,6 +176,7 @@ function SettingsSearchField({
       <Input
         type="search"
         id="settings-search"
+        data-tutorial="settings-search"
         value={value}
         placeholder={t("placeholder")}
         aria-label={t("label")}

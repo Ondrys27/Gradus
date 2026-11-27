@@ -236,7 +236,7 @@ export function AdminSidebar({ actor }: { actor: AdminActor }) {
 
         <div className={cn("flex flex-col gap-1 border-t border-line p-2", collapsed && "items-center")}>
           {!collapsed && (
-            <p className="px-2 py-1 text-xs text-ink-muted">
+            <p data-tutorial="admin-switcher-hint" className="px-2 py-1 text-xs text-ink-muted">
               <kbd className="rounded border border-line px-1 font-sans">⌘K</kbd> {t("switcherHint")}
             </p>
           )}
@@ -244,6 +244,7 @@ export function AdminSidebar({ actor }: { actor: AdminActor }) {
           <button
             type="button"
             onClick={() => update({ ...state, collapsed: !collapsed })}
+            data-tutorial="admin-sidebar-collapse"
             aria-label={collapsed ? t("expand") : t("collapse")}
             title={collapsed ? t("expand") : t("collapse")}
             className={cn(
@@ -283,6 +284,7 @@ function SidebarLink({
     <Link
       href={href}
       prefetch={false}
+      data-tutorial={`admin-nav-${section.key}`}
       aria-current={active ? "page" : undefined}
       title={collapsed ? label : undefined}
       className={cn(

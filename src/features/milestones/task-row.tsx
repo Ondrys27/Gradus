@@ -134,6 +134,7 @@ export function TaskRow({
       ))}
       <motion.div
         ref={setNodeRef}
+        data-tutorial="task-row"
         layout={dragging || reduceMotion ? false : "position"}
         transition={MOVE}
         style={{ marginLeft: depth * indent }}
@@ -257,6 +258,7 @@ function TaskMenu({ task, handlers, describedBy }: MenuProps) {
   return (
     <Menu.Root>
       <Menu.Trigger
+        data-tutorial="task-menu"
         aria-label={t("actions", { title: task.title })}
         aria-describedby={describedBy}
         aria-keyshortcuts="Meta+ArrowUp Meta+ArrowDown Meta+ArrowLeft Meta+ArrowRight Control+ArrowUp Control+ArrowDown Control+ArrowLeft Control+ArrowRight"

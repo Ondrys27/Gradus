@@ -129,7 +129,12 @@ function RequestForm({
       : null;
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-4" data-testid="calendar-request-form">
+    <form
+      onSubmit={submit}
+      className="flex flex-col gap-4"
+      data-testid="calendar-request-form"
+      data-tutorial="calendar-request-form"
+    >
       <p className="text-sm text-ink-soft">{t("request.hint")}</p>
       {!personId && (
         <FormField id="calendar-request-person" label={t("request.person")}>

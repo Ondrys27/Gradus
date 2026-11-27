@@ -8867,6 +8867,11 @@
             "name": "Hodnocení při porovnání",
             "does": "Krátká známka 1–5 a jedna věta ke každé porovnávané odpovědi.",
             "why": "Stačí nejlevnější model, jde o rychlé vodítko."
+          },
+          "guide_answer": {
+            "name": "Průvodce: otázka „jak…“",
+            "does": "Odpoví na otázku, jak něco v aplikaci udělat, a vrátí kroky z katalogu prvků, které průvodce ukáže na obrazovce.",
+            "why": "Krátká odpověď v JSON: stačí Haiku, při nejasnosti se jednou zeptá Sonnetu. Opakované otázky jdou z cache zdarma."
           }
         },
         "compareButton": "Porovnat modely",
@@ -10797,6 +10802,10 @@
         "emails": {
           "name": "E-maily",
           "description": "Kolik e-mailů dnes a tento měsíc odešlo proti limitu Resendu, podle druhu, a kdy limit dojde."
+        },
+        "guideQuestions": {
+          "name": "Na co se lidé ptají",
+          "description": "Nejčastější otázky Gradymu, jak něco v aplikaci udělat, podle sekce. Bez jmen, podklad pro to, co není jasné."
         }
       },
       "errors": {
@@ -11075,6 +11084,14 @@
           "booking_host": "Rezervace (hostitel)",
           "booking_reminder": "Připomínky schůzek"
         }
+      },
+      "guideQuestions": {
+        "figures": {
+          "asked": "otázek",
+          "unanswered": "bez kroků"
+        },
+        "top": "Nejčastější otázky",
+        "noSection": "mimo sekci"
       }
     },
     "digest": {
@@ -12369,6 +12386,2161 @@
       "show": "Ukázat",
       "dismiss": "Teď ne",
       "open": "Otevřít {section}"
+    },
+    "ui": {
+      "dashboard-summary": {
+        "name": "Pozdrav a shrnutí dne",
+        "purpose": "Nahoře ti každý den shrnu, co tě dnes čeká a co hoří.",
+        "keywords": "přehled shrnutí den pozdrav dnes co mě čeká"
+      },
+      "dashboard-widgets": {
+        "name": "Widgety",
+        "purpose": "Tvůj přehled poskládaný z widgetů: úkoly, obchody, peníze, kalendář. Klik na widget otevře jeho sekci.",
+        "keywords": "widgety widget přehled nástěnka dlaždice karty"
+      },
+      "dashboard-tabs": {
+        "name": "Přehledy",
+        "purpose": "Můžeš mít víc přehledů, třeba Obchod a Finance, a přepínat mezi nimi.",
+        "keywords": "přehledy záložky karty přepnout více přehledů"
+      },
+      "dashboard-new-tab": {
+        "name": "Nový přehled",
+        "purpose": "**Založ** si další přehled s vlastním názvem a vlastními widgety.",
+        "keywords": "nový přehled přidat záložku další přehled"
+      },
+      "dashboard-edit": {
+        "name": "Upravit",
+        "purpose": "Přepne přehled do úprav: widgety přesuneš tažením, změníš jim velikost nebo je odebereš.",
+        "keywords": "upravit přehled přeskládat přesunout widgety uspořádat změnit",
+        "try": "**Klikni** na Upravit a přehled se rozvlní, pak widgety přesouváš tažením."
+      },
+      "dashboard-add-widget": {
+        "name": "Přidat widget",
+        "purpose": "Otevře galerii widgetů, ze které si přidáš, co chceš na přehledu vidět.",
+        "keywords": "přidat widget galerie nový widget vložit",
+        "try": "**Klikni** na Přidat widget a podívej se, co všechno galerie nabízí."
+      },
+      "dashboard-gallery-search": {
+        "name": "Hledat widget",
+        "purpose": "Najdi widget podle názvu, třeba „faktury“ nebo „kalendář“.",
+        "keywords": "hledat widget najít galerie vyhledat",
+        "try": "**Napiš** do hledání třeba „úkoly“."
+      },
+      "dashboard-gallery-add": {
+        "name": "Přidat",
+        "purpose": "Vloží widget na přehled ve zvolené velikosti.",
+        "keywords": "přidat vložit widget velikost umístit"
+      },
+      "dashboard-widget-settings": {
+        "name": "Nastavení widgetu",
+        "purpose": "U některých widgetů vybereš, co přesně ukazují, třeba které metriky nebo období.",
+        "keywords": "nastavení widgetu ozubené kolo co ukazuje metriky"
+      },
+      "dashboard-widget-resize": {
+        "name": "Velikost widgetu",
+        "purpose": "Zvětší nebo zmenší widget, ať se ti na přehled vejde všechno důležité.",
+        "keywords": "velikost widgetu zvětšit zmenšit rozměr"
+      },
+      "dashboard-widget-remove": {
+        "name": "Odebrat widget",
+        "purpose": "Křížkem widget z přehledu odebereš. Data zůstanou, kdykoli ho přidáš zpátky.",
+        "keywords": "odebrat widget smazat schovat křížek"
+      },
+      "dashboard-undo": {
+        "name": "Zpět",
+        "purpose": "Vrátí poslední změnu přehledu, i ⌘Z.",
+        "keywords": "zpět vrátit krok změnu"
+      },
+      "dashboard-reset": {
+        "name": "Obnovit výchozí",
+        "purpose": "Vrátí přehled do výchozí podoby. Tvoje úpravy zmizí, data zůstanou.",
+        "keywords": "obnovit výchozí reset původní přehled"
+      },
+      "milestone-new": {
+        "name": "Nový milník",
+        "purpose": "Velký cíl, který rozdělíš na úkoly. Po dokončení dostaneš XP.",
+        "keywords": "nový milník založit cíl přidat milník",
+        "try": "**Klikni** na Nový milník a založ si cíl."
+      },
+      "milestone-title": {
+        "name": "Název milníku",
+        "purpose": "Krátce, čeho chceš dosáhnout, třeba „Prvních 10 zákazníků“.",
+        "keywords": "název milníku jméno cíl pojmenovat",
+        "try": "**Napiš** název milníku."
+      },
+      "milestone-reward": {
+        "name": "Odměna",
+        "purpose": "Čím se odměníš, až milník dokončíš. Ukážu ti ji na kartě i v oslavě.",
+        "keywords": "odměna dárek motivace milník po dokončení"
+      },
+      "milestone-import": {
+        "name": "Importovat mapu",
+        "purpose": "Založí milník z myšlenkové mapy nebo osnovy (Markdown, OPML, FreeMind, XMind).",
+        "keywords": "import mapa myšlenková mapa mindnode opml markdown xmind freemind nahrát soubor"
+      },
+      "milestone-filter": {
+        "name": "Filtr podle kategorie",
+        "purpose": "Ukáže jen pracovní, nebo jen osobní milníky.",
+        "keywords": "filtr kategorie pracovní osobní zobrazit jen",
+        "try": "**Vyber** třeba jen Pracovní milníky."
+      },
+      "milestone-path-view": {
+        "name": "Seznam a Cesta",
+        "purpose": "Cesta ukazuje milníky tvé cesty jako mapu postupu, Seznam všechny pod sebou.",
+        "keywords": "cesta seznam zobrazení postup mapa cesty"
+      },
+      "milestone-card": {
+        "name": "Karta milníku",
+        "purpose": "Postup, odměna a počet úkolů. Klik otevře milník s jeho úkoly a mapou.",
+        "keywords": "milník karta otevřít detail postup úkoly",
+        "try": "**Otevři** jeden milník."
+      },
+      "milestone-edit": {
+        "name": "Upravit",
+        "purpose": "Změníš název, popis, kategorii, termín nebo odměnu milníku.",
+        "keywords": "upravit milník změnit název termín přejmenovat"
+      },
+      "milestone-delete": {
+        "name": "Smazat",
+        "purpose": "Smaže milník i s jeho úkoly, vždy se nejdřív zeptám.",
+        "keywords": "smazat milník odstranit zrušit"
+      },
+      "milestone-complete": {
+        "name": "Dokončit milník",
+        "purpose": "Odemkne se, až jsou všechny úkoly hotové. Pak milník dokončíš ty a přijde oslava.",
+        "keywords": "dokončit milník hotovo splnit zamčené odemknout"
+      },
+      "task-add": {
+        "name": "Přidat úkol",
+        "purpose": "Napiš úkol a stiskni Enter. Podúkoly přidáš v nabídce úkolu.",
+        "keywords": "přidat úkol nový úkol napsat úkol podúkol",
+        "try": "**Napiš** úkol a stiskni Enter."
+      },
+      "task-row": {
+        "name": "Úkol",
+        "purpose": "Zaškrtnutím úkol splníš, tažením ho přesuneš. Úkol s podúkoly odškrtneš, až jsou hotové všechny.",
+        "keywords": "úkol odškrtnout splnit hotovo přesunout podúkoly"
+      },
+      "task-menu": {
+        "name": "Akce úkolu",
+        "purpose": "Tady přidáš podúkol, úkol upravíš, přesuneš, zapíšeš do poznámek nebo smažeš.",
+        "keywords": "akce úkolu podúkol upravit přesunout smazat tři tečky menu",
+        "try": "**Otevři** nabídku u úkolu."
+      },
+      "task-view": {
+        "name": "Seznam a Mapa",
+        "purpose": "Úkoly milníku jako seznam, nebo jako myšlenkovou mapu, ve které je přesouváš tažením.",
+        "keywords": "mapa seznam zobrazení myšlenková mapa strom úkolů",
+        "try": "**Přepni** na Mapu."
+      },
+      "map-import": {
+        "name": "Importovat mapu",
+        "purpose": "Načte úkoly z myšlenkové mapy do tohoto milníku: přidá je, nebo nahradí stávající.",
+        "keywords": "import mapy úkoly ze souboru mindnode opml markdown nahrát"
+      },
+      "map-export": {
+        "name": "Exportovat",
+        "purpose": "Stáhne úkoly jako Markdown, OPML, FreeMind nebo obrázek PNG.",
+        "keywords": "export stáhnout uložit markdown opml png obrázek"
+      },
+      "milestone-notes": {
+        "name": "Poznámky k milníku",
+        "purpose": "Poznámky připojené k milníku. Vycházím z nich, když hodnotím tvůj postup.",
+        "keywords": "poznámky milníku připojit poznámku zapsat"
+      },
+      "note-new": {
+        "name": "Nová poznámka",
+        "purpose": "Založí novou textovou poznámku, i ⌘N. Ukládá se sama.",
+        "keywords": "nová poznámka založit napsat poznámku"
+      },
+      "note-new-menu": {
+        "name": "Jaká nová poznámka",
+        "purpose": "Šipka nabídne text, myšlenkovou mapu nebo import mapy ze souboru.",
+        "keywords": "druh poznámky myšlenková mapa text import šipka",
+        "try": "**Otevři** šipku vedle Nové poznámky."
+      },
+      "note-new-text": {
+        "name": "Text",
+        "purpose": "Obyčejná poznámka s nadpisy, odrážkami a odkazy.",
+        "keywords": "textová poznámka text psát"
+      },
+      "note-new-map": {
+        "name": "Myšlenková mapa",
+        "purpose": "Poznámka jako mapa: střed a větve, i ⌘⇧N.",
+        "keywords": "myšlenková mapa mapa větve mindmap"
+      },
+      "note-new-import": {
+        "name": "Importovat mapu",
+        "purpose": "Udělá poznámku z mapy v souboru, třeba z MindNode přes OPML.",
+        "keywords": "import mapy soubor mindnode opml xmind"
+      },
+      "notes-search": {
+        "name": "Hledat v poznámkách",
+        "purpose": "Hledá v názvech i textu, klidně bez diakritiky.",
+        "keywords": "hledat poznámky najít vyhledat text",
+        "try": "**Napiš** slovo, které v poznámce hledáš."
+      },
+      "notes-nav": {
+        "name": "Poznámky a složky",
+        "purpose": "Tvoje poznámky, sdílené s tebou a složky, do kterých si je třídíš.",
+        "keywords": "složky třídit organizovat poznámky"
+      },
+      "notes-shared": {
+        "name": "Sdílené se mnou",
+        "purpose": "Poznámky, které s tebou někdo sdílel.",
+        "keywords": "sdílené se mnou cizí poznámky sdílení"
+      },
+      "notes-folder-new": {
+        "name": "Nová složka",
+        "purpose": "Založí složku, do které poznámky přetáhneš.",
+        "keywords": "nová složka založit složku třídit"
+      },
+      "notes-trash": {
+        "name": "Koš",
+        "purpose": "Smazané poznámky tu počkají 30 dní a dají se obnovit.",
+        "keywords": "koš smazané obnovit vrátit poznámku"
+      },
+      "note-item": {
+        "name": "Poznámka",
+        "purpose": "Klikni a poznámka se otevře vedle seznamu. Ikona ukazuje, jestli je to text nebo mapa.",
+        "keywords": "poznámka otevřít seznam poznámek",
+        "try": "**Otevři** jednu poznámku."
+      },
+      "note-row-delete": {
+        "name": "Přesunout do koše",
+        "purpose": "Červená popelnice přesune poznámku do koše, nejdřív se zeptám.",
+        "keywords": "smazat poznámku koš popelnice odstranit"
+      },
+      "note-toolbar": {
+        "name": "Formátování",
+        "purpose": "Nadpisy, tučné písmo, odkazy a odrážky pro text poznámky.",
+        "keywords": "formátování nadpis tučně odkaz odrážky"
+      },
+      "note-mention": {
+        "name": "Odkázat na…",
+        "purpose": "Připojí kontakt, obchod, událost nebo pracovníka jako čip, i zavináčem @.",
+        "keywords": "odkaz zmínka zavináč kontakt obchod propojit"
+      },
+      "note-share": {
+        "name": "Sdílet",
+        "purpose": "Nasdílíš poznámku lidem z firmy, ke čtení nebo k úpravám.",
+        "keywords": "sdílet poznámku sdílení kolega přístup"
+      },
+      "note-versions": {
+        "name": "Historie verzí",
+        "purpose": "Starší verze poznámky, ke kterým se můžeš vrátit.",
+        "keywords": "historie verze vrátit starší obnovit"
+      },
+      "note-move": {
+        "name": "Přesunout do složky",
+        "purpose": "Zařadí poznámku do složky.",
+        "keywords": "přesunout do složky složka zařadit"
+      },
+      "note-pin": {
+        "name": "Připnout",
+        "purpose": "Připnutá poznámka je nahoře a čtu ji celou, když mi píšeš.",
+        "keywords": "připnout nahoru důležitá poznámka"
+      },
+      "note-delete": {
+        "name": "Přesunout do koše",
+        "purpose": "Poznámka půjde do koše, 30 dní ji můžeš obnovit.",
+        "keywords": "smazat poznámku koš odstranit"
+      },
+      "note-more": {
+        "name": "Další možnosti",
+        "purpose": "Import a export mapy a převod mezi textem a myšlenkovou mapou.",
+        "keywords": "další možnosti export import převést na mapu text tři tečky"
+      },
+      "note-map-add": {
+        "name": "Přidat podřízený",
+        "purpose": "V mapě přidá větev pod vybraný uzel, i klávesou Tab.",
+        "keywords": "přidat větev uzel podřízený mapa"
+      },
+      "note-map-suggest": {
+        "name": "Navrhnout větve",
+        "purpose": "Navrhnu ti další větve k vybranému uzlu. Ponecháš si jen ty, co se hodí.",
+        "keywords": "navrhnout větve grady nápady mapa ai"
+      },
+      "task-new": {
+        "name": "Nový úkol",
+        "purpose": "Úkol k obchodu nebo kontaktu, s termínem, délkou a tím, kdo ho udělá.",
+        "keywords": "nový úkol založit úkol přidat úkol připomínka",
+        "try": "**Klikni** na Nový úkol."
+      },
+      "crm-task-title": {
+        "name": "Název",
+        "purpose": "Co je potřeba udělat. Enter uloží úkol s výchozími hodnotami.",
+        "keywords": "název úkolu co udělat napsat",
+        "try": "**Napiš**, co je potřeba udělat."
+      },
+      "crm-task-target": {
+        "name": "U čeho",
+        "purpose": "Najdi obchod nebo kontakt, ke kterému úkol patří.",
+        "keywords": "u čeho obchod kontakt připojit k obchodu ke kontaktu"
+      },
+      "task-target-option": {
+        "name": "Výsledek hledání",
+        "purpose": "Vyber obchod nebo kontakt ze seznamu.",
+        "keywords": "vybrat obchod kontakt výsledek"
+      },
+      "crm-task-due-quick": {
+        "name": "Rychlá volba termínu",
+        "purpose": "Dnes, Zítra nebo Za týden jedním klikem, čas zůstane.",
+        "keywords": "termín dnes zítra za týden kdy do kdy"
+      },
+      "crm-task-duration": {
+        "name": "Jak dlouho",
+        "purpose": "Kolik času úkol zabere, ať ho kalendář správně ukáže.",
+        "keywords": "délka trvání jak dlouho minuty čas"
+      },
+      "crm-task-assignee": {
+        "name": "Kdo",
+        "purpose": "Komu úkol patří. Výchozí jsi ty.",
+        "keywords": "kdo přiřadit pracovník komu úkol delegovat"
+      },
+      "task-submit": {
+        "name": "Uložit",
+        "purpose": "Uloží úkol. Objeví se v Úkolech, u obchodu nebo kontaktu i v kalendáři.",
+        "keywords": "uložit úkol vytvořit potvrdit"
+      },
+      "crm-task-quick": {
+        "name": "Rychlý výběr",
+        "purpose": "Vše, Otevřené, Po termínu nebo Dnes jedním klikem.",
+        "keywords": "rychlý výběr po termínu dnes otevřené filtr",
+        "try": "**Vyber** Po termínu."
+      },
+      "crm-task-filters": {
+        "name": "Filtry",
+        "purpose": "Filtruj podle termínu, člověka, stavu, délky nebo obchodu a kontaktu.",
+        "keywords": "filtry filtrovat termín kdo stav obchod kontakt",
+        "try": "**Otevři** Filtry."
+      },
+      "crm-task-row": {
+        "name": "Úkol",
+        "purpose": "Zaškrtnutím ho splníš, klik na název otevře detail. Po termínu svítí červeně.",
+        "keywords": "úkol odškrtnout splnit detail po termínu"
+      },
+      "crm-task-done-group": {
+        "name": "Hotové",
+        "purpose": "Splněné úkoly jsou schované tady, rozbalíš je klikem.",
+        "keywords": "hotové splněné úkoly rozbalit historie"
+      },
+      "crm-task-edit": {
+        "name": "Upravit",
+        "purpose": "Změníš název, termín, délku, člověka nebo popis úkolu.",
+        "keywords": "upravit úkol změnit termín přesunout úkol"
+      },
+      "crm-task-complete": {
+        "name": "Hotovo",
+        "purpose": "Splní úkol jedním krokem, klidně s poznámkou. Hotový jde vrátit.",
+        "keywords": "hotovo splnit dokončit úkol vrátit"
+      },
+      "crm-task-note": {
+        "name": "Poznámka",
+        "purpose": "Jak to dopadlo. Ukáže se v historii obchodu i kontaktu.",
+        "keywords": "poznámka k úkolu výsledek jak to dopadlo"
+      },
+      "crm-task-delete": {
+        "name": "Smazat",
+        "purpose": "Smaže úkol, nejdřív se zeptám.",
+        "keywords": "smazat úkol odstranit"
+      },
+      "contact-tables": {
+        "name": "Tabulky",
+        "purpose": "Kontakty bydlí v tabulkách jako Neoslovení, Schůzka domluvená nebo Klienti. **Vyber** jednu a uvidíš jen její lidi.",
+        "keywords": "tabulka tabulky seznam skupina faze filtr klienti",
+        "try": "**Klikni** na jinou tabulku a podívej se, kdo v ní je."
+      },
+      "contact-search": {
+        "name": "Hledat kontakty",
+        "purpose": "Najdeš kohokoli podle jména, firmy, telefonu nebo e-mailu, klidně bez diakritiky.",
+        "keywords": "hledat najit vyhledat jmeno firma telefon email",
+        "try": "**Napiš** kus jména a sleduj, jak se seznam zúží."
+      },
+      "contact-row": {
+        "name": "Kontakt",
+        "purpose": "Jeden člověk nebo firma. Otevři ho a uvidíš o něm všechno: údaje, historii, obchody i poznámky.",
+        "keywords": "kontakt clovek firma detail otevrit profil zakaznik",
+        "try": "**Otevři** kontakt a podívej se na jeho detail."
+      },
+      "contact-new": {
+        "name": "Nový kontakt",
+        "purpose": "Přidáš člověka nebo firmu ručně: jméno, telefon, e-mail a tabulku, ve které začne.",
+        "keywords": "novy kontakt pridat zalozit clovek firma zakaznik lead",
+        "try": "**Klikni** na Nový kontakt a zkus někoho přidat."
+      },
+      "contact-form": {
+        "name": "Formulář kontaktu",
+        "purpose": "Povinné je jen jméno, zbytek doplníš kdykoli později. Telefon se uloží tak, aby šel vytočit odkudkoli.",
+        "keywords": "formular jmeno telefon email firma adresa vyplnit"
+      },
+      "contact-generate": {
+        "name": "Generovat kontakty",
+        "purpose": "Najdu ti firmy z oboru v daném místě i s telefonem a adresou. Duplicity vynechám.",
+        "keywords": "generovat najit firmy leady google mapy import automaticky"
+      },
+      "contact-generate-industry": {
+        "name": "Obor",
+        "purpose": "Jaké firmy hledáš, třeba zubaře nebo kavárny.",
+        "keywords": "obor odvetvi typ firmy hledat"
+      },
+      "generate-submit": {
+        "name": "Najít",
+        "purpose": "Spustí hledání; nové kontakty přistanou v první tabulce. Denní a měsíční limit záleží na tarifu.",
+        "keywords": "najit spustit hledani generovat limit"
+      },
+      "generate-show": {
+        "name": "Ukázat nové kontakty",
+        "purpose": "Otevře seznam jen s kontakty, které se teď našly.",
+        "keywords": "ukazat nove nalezene vysledky"
+      },
+      "contact-tables-edit": {
+        "name": "Upravit tabulky",
+        "purpose": "Tady přidáš, přejmenuješ a přeskládáš tabulky a nastavíš otázky, které se položí při přesunu do nich.",
+        "keywords": "upravit tabulky sprava sloupce faze otazky pole"
+      },
+      "contact-table-add": {
+        "name": "Nová tabulka",
+        "purpose": "Přidá vlastní tabulku, třeba Čeká na nabídku.",
+        "keywords": "nova tabulka pridat zalozit vlastni"
+      },
+      "contact-table-questions": {
+        "name": "Otázky",
+        "purpose": "Na co se tě zeptám, když kontakt přesuneš do téhle tabulky, třeba datum schůzky. Otázky můžou záviset na sobě.",
+        "keywords": "otazky pole zeptat presun datum schuzka zavisle",
+        "try": "**Rozbal** otázky jedné tabulky a prohlédni si je."
+      },
+      "contact-question-add": {
+        "name": "Přidat otázku",
+        "purpose": "Nová otázka téhle tabulky: text, číslo, datum, výběr a další.",
+        "keywords": "pridat otazku pole nova"
+      },
+      "contact-edit": {
+        "name": "Upravit",
+        "purpose": "Změníš údaje kontaktu: jméno, telefon, e-mail, firmu, adresu.",
+        "keywords": "upravit zmenit kontakt udaje telefon email"
+      },
+      "contact-move": {
+        "name": "Přesunout do",
+        "purpose": "Přesune kontakt do jiné tabulky, třeba po hovoru do Schůzka domluvená; zeptám se na otázky té tabulky.",
+        "keywords": "presunout tabulka faze dal schuzka domluvena zmenit",
+        "try": "**Klikni** na Přesunout do a vyber, kam kontakt půjde."
+      },
+      "move-today": {
+        "name": "Dnes",
+        "purpose": "Doplní dnešní datum jedním klepnutím.",
+        "keywords": "dnes datum ted"
+      },
+      "move-confirm": {
+        "name": "Přesunout",
+        "purpose": "Potvrdí přesun i s odpověďmi; historie kontaktu si ho pamatuje.",
+        "keywords": "potvrdit presunout ulozit"
+      },
+      "deal-offer-create": {
+        "name": "Založit obchod",
+        "purpose": "Po přesunu ti nabídnu rovnou založit obchod, ať ho máš v pipeline.",
+        "keywords": "zalozit obchod nabidka pipeline prilezitost zakazka"
+      },
+      "contact-schedule-meeting": {
+        "name": "Naplánovat schůzku",
+        "purpose": "Vybereš volný čas v kalendáři, schůzka se zapíše a odejde pozvánka; kontakt se přesune do Schůzka domluvená.",
+        "keywords": "naplanovat schuzku rezervace pozvanka kalendar termin"
+      },
+      "contact-activity": {
+        "name": "Aktivita",
+        "purpose": "Hovory, e-maily, přesuny a poznámky ke kontaktu na jedné ose. Tady zapíšeš i hovor.",
+        "keywords": "aktivita historie hovory zapsat zaznam prubeh"
+      },
+      "contact-notes": {
+        "name": "Poznámky",
+        "purpose": "Cokoli si chceš o kontaktu pamatovat; ukládá se samo při psaní.",
+        "keywords": "poznamky poznamka zapamatovat napsat"
+      },
+      "contact-deals": {
+        "name": "Obchody",
+        "purpose": "Obchody kontaktu i s fází; odtud založíš i nový.",
+        "keywords": "obchody zakazky pipeline kontakt"
+      },
+      "contact-delete": {
+        "name": "Smazat kontakt",
+        "purpose": "Kontakt nadobro odstraní i s úkoly, které visely jen na něm.",
+        "keywords": "smazat odstranit kontakt"
+      },
+      "call-list": {
+        "name": "Komu volat",
+        "purpose": "Kontakty vybrané tabulky, které čekají na tvůj hovor. Klienti tu nejsou.",
+        "keywords": "seznam volat komu fronta tabulka"
+      },
+      "call-search": {
+        "name": "Hledat",
+        "purpose": "Najde kontakt v seznamu podle jména nebo telefonu.",
+        "keywords": "hledat najit jmeno telefon",
+        "try": "**Napiš** jméno a najdi někoho v seznamu."
+      },
+      "call-contact": {
+        "name": "Kontakt k volání",
+        "purpose": "Otevře kontakt vedle seznamu i s telefonem, poznámkami a tím, co po hovoru.",
+        "keywords": "kontakt otevrit volat panel",
+        "try": "**Klikni** na kontakt a otevři ho vedle seznamu."
+      },
+      "call-dial": {
+        "name": "Volat",
+        "purpose": "Vytočí číslo v telefonu nebo počítači.",
+        "keywords": "volat vytocit telefon cislo zavolat"
+      },
+      "call-move": {
+        "name": "Přesunout do",
+        "purpose": "Po hovoru posune kontakt dál, třeba do Schůzka domluvená nebo Nemá zájem.",
+        "keywords": "presunout po hovoru vysledek tabulka dal",
+        "try": "**Klikni** na Přesunout do a podívej se, kam kontakt může jít."
+      },
+      "call-create-deal": {
+        "name": "Založit obchod",
+        "purpose": "Založí obchod kontaktu, se kterým jsi právě mluvil.",
+        "keywords": "zalozit obchod zakazka pipeline"
+      },
+      "call-open-detail": {
+        "name": "Otevřít celý detail",
+        "purpose": "Otevře celý detail kontaktu v Kontaktech.",
+        "keywords": "otevrit detail kontakt cely"
+      },
+      "call-timer": {
+        "name": "Časovač",
+        "purpose": "Měří, kolik dnes voláš. Po 15 minutách bez přesunu se sám zastaví a o půlnoci začíná od nuly.",
+        "keywords": "casovac cas volani minuty merit"
+      },
+      "call-timer-start": {
+        "name": "Spustit",
+        "purpose": "Začne měřit čas volání.",
+        "keywords": "spustit casovac zacit volat"
+      },
+      "call-timer-pause": {
+        "name": "Pozastavit",
+        "purpose": "Pozastaví časovač; nuluje se jen sám o půlnoci.",
+        "keywords": "pozastavit zastavit casovac pauza"
+      },
+      "call-stats": {
+        "name": "Statistiky",
+        "purpose": "Hovory, schůzky a čas za den, týden nebo měsíc.",
+        "keywords": "statistiky cisla hovory schuzky vysledky"
+      },
+      "call-stats-period": {
+        "name": "Období",
+        "purpose": "Přepne statistiky mezi dnem, týdnem a měsícem.",
+        "keywords": "obdobi den tyden mesic prepnout",
+        "try": "**Přepni** období a porovnej čísla."
+      },
+      "call-stats-people": {
+        "name": "Lidé",
+        "purpose": "Všichni dohromady nebo jeden člověk z firmy.",
+        "keywords": "lide tym pracovnik clovek filtr"
+      },
+      "call-best-time": {
+        "name": "Nejlepší čas na volání",
+        "purpose": "Kdy lidé ve tvé zemi nejčastěji zvedají, ze sdílených dat všech účtů.",
+        "keywords": "nejlepsi cas hodiny kdy volat zvedaji"
+      },
+      "call-best-industries": {
+        "name": "Nejlepší obory",
+        "purpose": "Obory, ve kterých tvoje hovory nejčastěji vedou ke schůzce.",
+        "keywords": "nejlepsi obory uspesnost schuzky"
+      },
+      "pipeline-health": {
+        "name": "Co hoří",
+        "purpose": "Tři dlaždice s tím, co potřebuje tvou pozornost: termín uzavření v minulosti, úkoly po termínu, obchody bez úkolu. Cíl je všude nula.",
+        "keywords": "hori dlazdice po terminu problemy uzavreni ukoly",
+        "try": "**Klikni** na dlaždici a uvidíš obchody za ní."
+      },
+      "pipeline-filters": {
+        "name": "Filtr",
+        "purpose": "Zúží tabuli podle data uzavření, aktivity, úkolů, člověka, kontaktu nebo částky.",
+        "keywords": "filtr zuzit ukazat jen hledat clovek castka",
+        "try": "**Otevři** filtr a podívej se, co umí."
+      },
+      "pipeline-filter-panel": {
+        "name": "Filtry",
+        "purpose": "Filtry se kombinují; každý zůstane v adrese jako štítek, který jde odebrat.",
+        "keywords": "filtry moznosti uzavreni aktivita ukoly"
+      },
+      "pipeline-new-deal": {
+        "name": "Nový obchod",
+        "purpose": "Založí obchod: co prodáváš, komu, za kolik a v jaké fázi.",
+        "keywords": "novy obchod pridat zalozit zakazka prilezitost",
+        "try": "**Klikni** na Nový obchod a zkus ho založit."
+      },
+      "pipeline-column-add-deal": {
+        "name": "Přidat obchod do fáze",
+        "purpose": "Plus u sloupce přidá obchod rovnou do téhle fáze.",
+        "keywords": "pridat obchod sloupec faze plus"
+      },
+      "deal-form": {
+        "name": "Formulář obchodu",
+        "purpose": "Název, hodnota, kontakt a datum uzavření; povinný je jen název.",
+        "keywords": "formular obchod nazev hodnota castka kontakt uzavreni"
+      },
+      "deal-create": {
+        "name": "Založit",
+        "purpose": "Uloží obchod do jeho fáze.",
+        "keywords": "zalozit ulozit obchod"
+      },
+      "pipeline-edit-stages": {
+        "name": "Upravit fáze",
+        "purpose": "Přejmenuješ, přeskládáš nebo odebereš fáze pipeline; obchody z odebrané fáze přesuneš, kam řekneš.",
+        "keywords": "upravit faze sloupce prejmenovat preskladat odebrat"
+      },
+      "pipeline-add-stage": {
+        "name": "Přidat fázi",
+        "purpose": "Přidá do pipeline novou fázi (sloupec).",
+        "keywords": "pridat fazi sloupec novy"
+      },
+      "deal-card": {
+        "name": "Obchod",
+        "purpose": "Jeden obchod na tabuli. Přetáhni ho do jiné fáze, nebo ho otevři a uvidíš o něm všechno.",
+        "keywords": "obchod karta otevrit pretahnout presunout faze",
+        "try": "**Otevři** obchod a podívej se na jeho detail."
+      },
+      "deal-tabs": {
+        "name": "Záložky obchodu",
+        "purpose": "Na telefonu je obchod rozdělený na Přehled, Kontakty, Úkoly a Historii.",
+        "keywords": "zalozky prehled kontakty ukoly historie"
+      },
+      "deal-title": {
+        "name": "Název obchodu",
+        "purpose": "Klikni na název a obchod přejmenuješ.",
+        "keywords": "nazev jmeno prejmenovat obchod"
+      },
+      "deal-stage": {
+        "name": "Fáze",
+        "purpose": "Přesune obchod do jiné fáze; výhru oslavíme a kontakt půjde do Klientů.",
+        "keywords": "faze presunout vyhrano prohrano zmenit"
+      },
+      "deal-properties": {
+        "name": "Údaje",
+        "purpose": "Hodnota, datum uzavření, datum realizace, záloha a lidé na obchodu; každé pole se ukládá samo.",
+        "keywords": "udaje hodnota castka uzavreni zaloha realizace"
+      },
+      "deal-people": {
+        "name": "Lidé na obchodu",
+        "purpose": "Kdo na obchodu pracuje; každý tady ho vidí a může ho upravit.",
+        "keywords": "lide prirazeny pracovnik zodpovedny priradit"
+      },
+      "deal-contacts": {
+        "name": "Kontakty",
+        "purpose": "Lidé klienta na tomhle obchodu, s rolí a jedním hlavním kontaktem.",
+        "keywords": "kontakty lide klient role hlavni"
+      },
+      "deal-tasks": {
+        "name": "Úkoly",
+        "purpose": "Úkoly obchodu s termínem a člověkem; tady přidáš další krok.",
+        "keywords": "ukoly dalsi krok termin follow up"
+      },
+      "deal-history": {
+        "name": "Historie",
+        "purpose": "Všechno, co se stalo: fáze, částky, data, úkoly a e-maily.",
+        "keywords": "historie prubeh zmeny zaznam"
+      },
+      "deal-notes": {
+        "name": "Poznámky",
+        "purpose": "Poznámky k obchodu, ukládají se samy při psaní.",
+        "keywords": "poznamky poznamka napsat"
+      },
+      "deal-email": {
+        "name": "Napsat e-mail",
+        "purpose": "Napíše e-mail kontaktu obchodu; návrh ti můžu připravit já.",
+        "keywords": "email napsat poslat zprava kontakt"
+      },
+      "deal-create-invoice": {
+        "name": "Vystavit fakturu",
+        "purpose": "Připraví koncept faktury s odběratelem a hodnotou obchodu.",
+        "keywords": "faktura vystavit z obchodu"
+      },
+      "deal-delete": {
+        "name": "Smazat obchod",
+        "purpose": "Obchod nadobro odstraní.",
+        "keywords": "smazat odstranit obchod"
+      },
+      "calendar-new": {
+        "name": "Přidat událost",
+        "purpose": "Schůzka, hovor nebo připomínka v kalendáři.",
+        "keywords": "pridat nova udalost schuzka termin zalozit",
+        "try": "**Klikni** na Přidat událost a jednu si zkus."
+      },
+      "calendar-event-form": {
+        "name": "Událost",
+        "purpose": "Název, čas, místo a s kým; událost u kontaktu nebo obchodu se ukáže i tam.",
+        "keywords": "udalost formular cas misto nazev"
+      },
+      "calendar-event-kind": {
+        "name": "Druh",
+        "purpose": "Schůzka, hovor nebo něco jiného; schůzky se počítají do odměn a statistik.",
+        "keywords": "druh typ schuzka hovor"
+      },
+      "calendar-event-private": {
+        "name": "Soukromá",
+        "purpose": "Ostatní s přístupem do tvého kalendáře uvidí jen, že máš obsazeno.",
+        "keywords": "soukroma skryta obsazeno tajne"
+      },
+      "calendar-nav": {
+        "name": "Předchozí · Další · Dnes",
+        "purpose": "Posune kalendář dozadu, dopředu nebo zpátky na dnešek.",
+        "keywords": "predchozi dalsi dnes posunout tyden mesic"
+      },
+      "calendar-views": {
+        "name": "Zobrazení",
+        "purpose": "Den, týden nebo měsíc.",
+        "keywords": "zobrazeni den tyden mesic prepnout",
+        "try": "**Přepni** mezi dnem, týdnem a měsícem."
+      },
+      "calendar-mirrors": {
+        "name": "Zobrazit z jiných sekcí",
+        "purpose": "Ukáže v kalendáři i úkoly, data uzavření obchodů a odebírané kalendáře.",
+        "keywords": "zobrazit ukoly obchody odebirane prepinac",
+        "try": "**Zapni** nebo vypni jeden přepínač a sleduj kalendář."
+      },
+      "calendar-item": {
+        "name": "Událost v kalendáři",
+        "purpose": "Otevři ji a uvidíš podrobnosti; tažením ji přesuneš na jiný čas.",
+        "keywords": "udalost otevrit pretahnout presunout zmenit cas",
+        "try": "**Otevři** událost v kalendáři."
+      },
+      "calendar-event-edit": {
+        "name": "Upravit",
+        "purpose": "Změní čas, místo nebo název události.",
+        "keywords": "upravit zmenit udalost presunout"
+      },
+      "calendar-event-delete": {
+        "name": "Smazat",
+        "purpose": "Odstraní událost z kalendáře.",
+        "keywords": "smazat odstranit zrusit udalost"
+      },
+      "calendar-panel-open": {
+        "name": "Kalendáře",
+        "purpose": "Na telefonu otevře seznam kalendářů, které vidíš.",
+        "keywords": "kalendare seznam lide otevrit"
+      },
+      "calendar-panel": {
+        "name": "Kalendáře",
+        "purpose": "Tvůj kalendář a kalendáře, které s tebou sdílí ostatní, každý svou barvou a s vypínačem.",
+        "keywords": "kalendare sdilene lide barva zobrazit skryt"
+      },
+      "calendar-share-request": {
+        "name": "Požádat o sdílení kalendáře",
+        "purpose": "Požádá někoho z firmy, aby ti ukázal svůj kalendář.",
+        "keywords": "sdileni pozadat kalendar kolega videt"
+      },
+      "calendar-request-form": {
+        "name": "Žádost",
+        "purpose": "Koho žádáš a jestli chceš jen vidět, nebo i zapisovat.",
+        "keywords": "zadost formular kdo pristup"
+      },
+      "calendar-common-time": {
+        "name": "Najít společný čas",
+        "purpose": "Najde čas, kdy mají všichni vybraní volno.",
+        "keywords": "spolecny cas volno termin schuzka vsichni",
+        "try": "**Klikni** na Najít společný čas a vyber lidi."
+      },
+      "calendar-common-time-panel": {
+        "name": "Společný čas",
+        "purpose": "Volné časy všech dohromady; vyber jeden a schůzka se naplánuje.",
+        "keywords": "spolecny cas vysledky terminy"
+      },
+      "scheduler-tabs": {
+        "name": "Záložky",
+        "purpose": "Typy schůzek, Dostupnost, Rezervace a pro majitele Všichni.",
+        "keywords": "zalozky typy dostupnost rezervace vsichni",
+        "try": "**Přepni** na Dostupnost a zpátky."
+      },
+      "scheduler-link": {
+        "name": "Tvoje rezervační stránka",
+        "purpose": "Stránka, kde si klienti sami zarezervují čas; pošli jim odkaz.",
+        "keywords": "rezervacni stranka odkaz verejna klienti rezervace"
+      },
+      "copy-link": {
+        "name": "Kopírovat odkaz",
+        "purpose": "Zkopíruje odkaz, který vložíš do e-mailu nebo zprávy.",
+        "keywords": "kopirovat odkaz sdilet poslat",
+        "try": "**Zkopíruj** odkaz své stránky."
+      },
+      "scheduler-profile-edit": {
+        "name": "Upravit stránku",
+        "purpose": "Jméno, podtitul, krátké představení a odkaz na video na rezervační stránce.",
+        "keywords": "upravit stranku profil jmeno popis"
+      },
+      "scheduler-new-type": {
+        "name": "Nový typ",
+        "purpose": "Nový druh schůzky, třeba úvodní hovor na 30 minut.",
+        "keywords": "novy typ schuzky druh zalozit",
+        "try": "**Klikni** na Nový typ a prohlédni si editor."
+      },
+      "scheduler-type-name": {
+        "name": "Název",
+        "purpose": "Co uvidí klient, třeba Úvodní hovor.",
+        "keywords": "nazev jmeno typ"
+      },
+      "scheduler-type-tabs": {
+        "name": "Nastavení typu",
+        "purpose": "Délka, místo, otázky, připomínky, vlastní doba a omezení, každé na své záložce.",
+        "keywords": "nastaveni delka misto otazky pripominky doba"
+      },
+      "scheduler-type-save": {
+        "name": "Uložit",
+        "purpose": "Uloží typ schůzky.",
+        "keywords": "ulozit typ"
+      },
+      "scheduler-type-open": {
+        "name": "Typ schůzky",
+        "purpose": "Otevře typ, ať změníš délku, místo nebo otázky.",
+        "keywords": "otevrit typ upravit zmenit"
+      },
+      "scheduler-type-toggle": {
+        "name": "Zapnuto / vypnuto",
+        "purpose": "Vypnutý typ si nikdo nezarezervuje; kolik jich může být zapnutých, určuje tarif.",
+        "keywords": "zapnout vypnout aktivni"
+      },
+      "scheduler-calendars": {
+        "name": "Kalendáře ke kontrole",
+        "purpose": "Které kalendáře se počítají jako obsazené, když se nabízí volné časy.",
+        "keywords": "kalendare obsazeno kontrola kolize"
+      },
+      "scheduler-week": {
+        "name": "Týdenní doba",
+        "purpose": "Kdy bereš schůzky v jednotlivé dny týdne; den může mít víc úseků.",
+        "keywords": "doba tyden dostupnost pracovni cas dny"
+      },
+      "scheduler-exceptions": {
+        "name": "Výjimky",
+        "purpose": "Datum s jinou dobou nebo celý den volna, pro všechny typy.",
+        "keywords": "vyjimky dovolena volno datum blokovat"
+      },
+      "scheduler-booking-filters": {
+        "name": "Filtry",
+        "purpose": "Nadcházející, čekající na schválení, minulé nebo zrušené rezervace.",
+        "keywords": "filtry nadchazejici cekajici minule zrusene"
+      },
+      "scheduler-booking": {
+        "name": "Rezervace",
+        "purpose": "Jedna zarezervovaná schůzka; otevři ji a potvrdíš, odmítneš nebo zrušíš.",
+        "keywords": "rezervace schuzka otevrit potvrdit odmitnout zrusit"
+      },
+      "scheduler-team": {
+        "name": "Všichni",
+        "purpose": "Rezervační stránky a typy všech ve firmě; typ můžeš vypnout.",
+        "keywords": "vsichni tym pracovnici typy firma"
+      },
+      "finance-tabs": {
+        "name": "Části financí",
+        "purpose": "Finance mají pět záložek: plán **Měsíce**, Transakce, Automatické platby, Faktury a Přehled.",
+        "keywords": "záložky měsíc transakce automatické platby faktury přehled finance",
+        "try": "**Klikni** na záložku Transakce a podívej se, co v ní je."
+      },
+      "plan-month-nav": {
+        "name": "Přepínání měsíců",
+        "purpose": "Šipkami se posuneš na předchozí nebo další měsíc plánu.",
+        "keywords": "měsíc minulý další přepnout šipky období plán"
+      },
+      "plan-views": {
+        "name": "Co tabulka ukazuje",
+        "purpose": "Přepni mezi Plánem, Skutečností a Rozdílem. Skutečnost se počítá z tvých transakcí.",
+        "keywords": "plán skutečnost rozdíl pohled zobrazení srovnání",
+        "try": "**Přepni** na Skutečnost a porovnej ji s plánem."
+      },
+      "plan-grid": {
+        "name": "Plánovací tabulka",
+        "purpose": "Tabulka jako v Google Sheets: týdny ve sloupcích, příjmy a výdaje v řádcích. Klikni do buňky a piš, Enter uloží.",
+        "keywords": "tabulka buňka plán příjmy výdaje týden řádek položka rozpočet cashflow",
+        "try": "**Klikni** do buňky a napiš částku, třeba 12,5k."
+      },
+      "plan-summary": {
+        "name": "Shrnutí měsíce",
+        "purpose": "Konečný kapitál, nejnižší stav a týden, kdy hrozí, že peníze dojdou.",
+        "keywords": "shrnutí kapitál nejnižší stav rezerva varování konec měsíce"
+      },
+      "plan-reserve": {
+        "name": "Rezerva",
+        "purpose": "Částka, pod kterou nechceš klesnout. Když plán spadne pod ni, upozorním tě.",
+        "keywords": "rezerva minimum polštář hranice upozornění"
+      },
+      "plan-hide-empty": {
+        "name": "Skrýt prázdné řádky",
+        "purpose": "Schová řádky bez čísel, ať je tabulka přehlednější.",
+        "keywords": "skrýt prázdné řádky přehlednost"
+      },
+      "plan-create-month": {
+        "name": "Založit měsíc",
+        "purpose": "Založí plán pro měsíc, který ještě žádný nemá.",
+        "keywords": "založit nový měsíc plán vytvořit začít"
+      },
+      "plan-carry": {
+        "name": "Založit další měsíc",
+        "purpose": "Založí další měsíc z tohoto: řádky s čísly nebo bez, automatické platby se doplní samy.",
+        "keywords": "další měsíc přenést zkopírovat převést prosinec z listopadu"
+      },
+      "plan-export": {
+        "name": "Exportovat",
+        "purpose": "Stáhne plán jako Excel (XLSX) nebo CSV ve stejném rozvržení.",
+        "keywords": "export stáhnout excel xlsx csv tabulka"
+      },
+      "plan-more": {
+        "name": "Další možnosti měsíce",
+        "purpose": "Tady je import z CSV a uzavření nebo znovuotevření měsíce.",
+        "keywords": "další možnosti menu tři tečky import uzavřít"
+      },
+      "plan-import": {
+        "name": "Importovat z CSV",
+        "purpose": "Přenese tvou tabulku z Google Sheets nebo Excelu, když ji uložíš jako CSV.",
+        "keywords": "import csv google sheets excel nahrát přenést tabulku"
+      },
+      "plan-close": {
+        "name": "Uzavřít měsíc",
+        "purpose": "Uzavřený měsíc se nemění, dokud ho znovu neotevřeš.",
+        "keywords": "uzavřít zamknout měsíc otevřít znovu hotovo"
+      },
+      "finance-add": {
+        "name": "Nová transakce",
+        "purpose": "Zapíše příjem nebo výdaj, který proběhl.",
+        "keywords": "nová transakce přidat příjem výdaj platba zapsat útrata",
+        "try": "**Klikni** na Nová transakce a zapiš jeden výdaj."
+      },
+      "finance-amount": {
+        "name": "Částka",
+        "purpose": "Kolik to bylo. Měna je podle tvého nastavení, jde změnit.",
+        "keywords": "částka suma kolik peníze měna"
+      },
+      "finance-period": {
+        "name": "Období",
+        "purpose": "Vybere, za jaké období vidíš transakce a souhrny.",
+        "keywords": "období měsíc rok filtr datum od do"
+      },
+      "finance-category-filter": {
+        "name": "Filtr kategorie",
+        "purpose": "Ukáže jen příjmy, výdaje nebo jednu kategorii.",
+        "keywords": "filtr kategorie příjmy výdaje druh"
+      },
+      "finance-transaction-row": {
+        "name": "Transakce",
+        "purpose": "Klikni na řádek a transakci upravíš nebo smažeš.",
+        "keywords": "transakce řádek upravit smazat opravit"
+      },
+      "finance-recurring-add": {
+        "name": "Nová automatická platba",
+        "purpose": "Platba, která se opakuje: nájem, předplatné, mzda. Zapíše se sama v den splatnosti.",
+        "keywords": "automatická platba pravidelná opakovaná nájem předplatné měsíčně trvalý příkaz"
+      },
+      "finance-recurring-row": {
+        "name": "Automatická platba",
+        "purpose": "Klikni na platbu a změníš částku, frekvenci nebo ji zastavíš.",
+        "keywords": "automatická platba upravit zastavit frekvence"
+      },
+      "finance-overview": {
+        "name": "Přehled",
+        "purpose": "Souhrnné dlaždice, graf příjmů a vývoj kapitálu po týdnech, plán i skutečnost.",
+        "keywords": "přehled graf souhrn kapitál vývoj příjmy statistiky"
+      },
+      "invoice-new": {
+        "name": "Vystavit fakturu",
+        "purpose": "Založí novou fakturu. Nejdřív koncept, vystavíš ji, až bude hotová.",
+        "keywords": "vystavit nová faktura vytvořit fakturovat doklad",
+        "try": "**Klikni** na Vystavit fakturu a založ koncept."
+      },
+      "invoice-setup": {
+        "name": "Údaje na fakturu",
+        "purpose": "Než vystavíš první fakturu, vyplň svoje údaje: název, IČO, adresu a účet.",
+        "keywords": "údaje dodavatel ičo dič adresa účet průvodce první faktura"
+      },
+      "invoice-search": {
+        "name": "Hledat ve fakturách",
+        "purpose": "Najde fakturu podle čísla nebo odběratele.",
+        "keywords": "hledat najít faktura číslo odběratel zákazník",
+        "try": "**Napiš** jméno odběratele nebo číslo faktury."
+      },
+      "invoice-filter": {
+        "name": "Stav",
+        "purpose": "Ukáže jen koncepty, vystavené, po splatnosti, zaplacené nebo stornované.",
+        "keywords": "filtr stav po splatnosti zaplacené koncept nezaplacené"
+      },
+      "invoice-sort": {
+        "name": "Řazení",
+        "purpose": "Seřadí faktury podle data, splatnosti nebo částky.",
+        "keywords": "řazení seřadit pořadí nejnovější splatnost částka"
+      },
+      "invoice-row": {
+        "name": "Faktura",
+        "purpose": "Klikni na fakturu a otevřeš ji: koncept upravíš, vystavenou stáhneš nebo pošleš.",
+        "keywords": "faktura otevřít detail koncept"
+      },
+      "invoice-customer": {
+        "name": "Odběratel",
+        "purpose": "Komu fakturu vystavuješ. Vyber ho z kontaktů, nebo vyplň ručně.",
+        "keywords": "odběratel zákazník klient komu kontakt ičo",
+        "try": "**Vyber** odběratele z kontaktů."
+      },
+      "invoice-add-item": {
+        "name": "Přidat položku",
+        "purpose": "Přidá řádek faktury: název, množství, jednotku, cenu bez DPH a sazbu.",
+        "keywords": "položka řádek přidat služba cena množství dph",
+        "try": "**Přidej** položku a vyplň název a cenu."
+      },
+      "invoice-preview": {
+        "name": "Náhled",
+        "purpose": "Takhle bude faktura vypadat v PDF. Mění se, jak píšeš.",
+        "keywords": "náhled pdf vzhled jak vypadá"
+      },
+      "invoice-save-draft": {
+        "name": "Uložit koncept",
+        "purpose": "Uloží rozpracovanou fakturu, číslo ještě nedostane.",
+        "keywords": "uložit koncept rozpracovaná později",
+        "try": "**Ulož** koncept, vystavit ho můžeš později."
+      },
+      "invoice-issue": {
+        "name": "Vystavit",
+        "purpose": "Faktura dostane číslo z řady a už se nemění. Opravit jde jen stornem.",
+        "keywords": "vystavit číslo řada finální odeslat potvrdit"
+      },
+      "invoice-download": {
+        "name": "Stáhnout PDF",
+        "purpose": "Stáhne vystavenou fakturu jako PDF.",
+        "keywords": "stáhnout pdf tisk uložit soubor"
+      },
+      "invoice-send": {
+        "name": "Poslat e-mailem",
+        "purpose": "Pošle fakturu odběrateli s PDF v příloze a kopii tobě.",
+        "keywords": "poslat odeslat e-mail mail odběrateli zákazníkovi"
+      },
+      "invoice-mark-paid": {
+        "name": "Zaplaceno",
+        "purpose": "Označí fakturu jako zaplacenou dnes a zapíše příjem do financí.",
+        "keywords": "zaplaceno uhrazeno platba přišla označit příjem"
+      },
+      "invoice-cancel": {
+        "name": "Stornovat",
+        "purpose": "Zruší vystavenou nezaplacenou fakturu dobropisem s dalším číslem.",
+        "keywords": "storno stornovat zrušit dobropis oprava chyba"
+      },
+      "invoice-settings": {
+        "name": "Nastavení faktur",
+        "purpose": "Tvoje údaje na fakturách: název, IČO, DIČ, adresa, účet, splatnost a předpona řady.",
+        "keywords": "nastavení faktur údaje dodavatel účet splatnost řada ičo dič qr"
+      },
+      "invoice-style": {
+        "name": "Vzhled faktury",
+        "purpose": "Vyber jeden ze čtyř stylů a barvu linky. Data zůstanou stejná.",
+        "keywords": "vzhled styl barva šablona design faktury"
+      },
+      "worker-invite": {
+        "name": "Pozvat pracovníka",
+        "purpose": "Pozve člověka do firmy: podle krátkého ID nebo e-mailem, s nadřízeným a skupinami.",
+        "keywords": "pozvat pracovník přidat zaměstnanec člověk kolega tým nový člen",
+        "try": "**Klikni** na Pozvat pracovníka a podívej se na možnosti."
+      },
+      "worker-invite-existing": {
+        "name": "Už má účet",
+        "purpose": "Pro člověka, který {appName} používá: zadáš jeho krátké ID nebo e-mail.",
+        "keywords": "existující účet krátké id e-mail má účet"
+      },
+      "worker-invite-new": {
+        "name": "Nový člověk",
+        "purpose": "Pro někoho bez účtu: dostane odkaz na registraci.",
+        "keywords": "nový bez účtu odkaz registrace pozvánka"
+      },
+      "invite-next": {
+        "name": "Pokračovat",
+        "purpose": "Další krok pozvánky: pozice, nadřízený, skupiny a práva.",
+        "keywords": "pokračovat další krok"
+      },
+      "worker-submit": {
+        "name": "Odeslat pozvánku",
+        "purpose": "Uloží pracovníka a pošle mu pozvánku.",
+        "keywords": "odeslat pozvánku uložit pozvat"
+      },
+      "worker-invite-done": {
+        "name": "Hotovo",
+        "purpose": "Pozvánka je venku. Odkaz můžeš ještě zkopírovat nebo sdílet.",
+        "keywords": "hotovo zavřít odkaz sdílet"
+      },
+      "company-tabs": {
+        "name": "Části Správy firmy",
+        "purpose": "Lidé, Skupiny, Odměny a výplaty, Aktivita a Přehledy.",
+        "keywords": "záložky lidé skupiny odměny aktivita přehledy"
+      },
+      "company-group-filter": {
+        "name": "Filtr skupiny",
+        "purpose": "Ukáže jen členy jedné skupiny a ztlumeně jejich nadřízené.",
+        "keywords": "filtr skupina tým oddělení členové"
+      },
+      "company-status-filter": {
+        "name": "Stav",
+        "purpose": "Aktivní, pozvaní, nebo i ukončení pracovníci.",
+        "keywords": "stav aktivní pozvaný ukončený bývalí"
+      },
+      "company-view-switch": {
+        "name": "Seznam nebo mapa",
+        "purpose": "Firma jako strom v seznamu, nebo jako organizační mapa shora dolů.",
+        "keywords": "seznam mapa strom organigram hierarchie pohled",
+        "try": "**Přepni** na Mapu a podívej se na strukturu firmy."
+      },
+      "company-person-row": {
+        "name": "Pracovník",
+        "purpose": "Klikni na člověka a otevře se jeho přehled: práce, práva, dokumenty, tým a odměny.",
+        "keywords": "pracovník člověk detail profil otevřít dashboard",
+        "try": "**Klikni** na pracovníka a otevři jeho přehled."
+      },
+      "company-row-menu": {
+        "name": "Možnosti pracovníka",
+        "purpose": "Přesunout pod jiného nadřízeného, nebo otevřít detail.",
+        "keywords": "možnosti menu tři tečky přesunout"
+      },
+      "company-move": {
+        "name": "Přesunout pod…",
+        "purpose": "Změní nadřízeného. Celý jeho tým jde s ním. Na mapě jde i tažením.",
+        "keywords": "přesunout nadřízený šéf hierarchie podřízený vedoucí"
+      },
+      "worker-tabs": {
+        "name": "Záložky pracovníka",
+        "purpose": "Přehled, Práva, Obchody a úkoly, Dokumenty, Tým a Odměny.",
+        "keywords": "záložky přehled práva obchody úkoly dokumenty tým odměny",
+        "try": "**Klikni** na záložku Obchody a úkoly."
+      },
+      "worker-assign-task": {
+        "name": "Zadat úkol",
+        "purpose": "Dá pracovníkovi úkol od tebe. Uvidí ho ve svých úkolech.",
+        "keywords": "zadat úkol přidělit práce pracovníkovi delegovat"
+      },
+      "worker-remove": {
+        "name": "Odstranit z firmy",
+        "purpose": "Ukončí pracovníka. Jeho obchody a úkoly předáš, data zůstanou.",
+        "keywords": "odstranit ukončit propustit odebrat smazat pracovníka odchod"
+      },
+      "worker-dashboard-close": {
+        "name": "Zavřít",
+        "purpose": "Zavře přehled pracovníka a vrátí tě do seznamu.",
+        "keywords": "zavřít zpět"
+      },
+      "worker-rights": {
+        "name": "Práva",
+        "purpose": "Co pracovník smí vidět a dělat v každé sekci. Změna platí hned.",
+        "keywords": "práva oprávnění přístup co smí vidět sekce šablona obchodník"
+      },
+      "worker-work": {
+        "name": "Obchody a úkoly",
+        "purpose": "Jeho obchody a úkoly s grafem, co splnil v termínu a co po něm.",
+        "keywords": "obchody úkoly výsledky práce výkon graf termín"
+      },
+      "worker-documents-upload": {
+        "name": "Nahrát dokument",
+        "purpose": "Smlouvy a další soubory k pracovníkovi. Vidí je jen ten, kdo je smí spravovat.",
+        "keywords": "dokument nahrát smlouva soubor pdf příloha"
+      },
+      "company-group-add": {
+        "name": "Nová skupina",
+        "purpose": "Skupina lidí, třeba Obchod nebo Sklad. Člověk může být ve víc skupinách.",
+        "keywords": "nová skupina tým oddělení vytvořit",
+        "try": "**Klikni** na Nová skupina a pojmenuj ji."
+      },
+      "company-group-card": {
+        "name": "Skupina",
+        "purpose": "Kdo je ve skupině. Skupina má i svou konverzaci ve Zprávách.",
+        "keywords": "skupina členové tým konverzace"
+      },
+      "company-group-edit": {
+        "name": "Upravit skupinu",
+        "purpose": "Změní název, barvu, popis a členy skupiny.",
+        "keywords": "upravit skupinu přejmenovat členové přidat do skupiny barva"
+      },
+      "company-activity": {
+        "name": "Aktivita",
+        "purpose": "Co lidé ve firmě dělali: hovory, schůzky, obchody a úkoly po dnech.",
+        "keywords": "aktivita co dělali práce historie přehled hovory schůzky"
+      },
+      "company-dashboards": {
+        "name": "Přehledy",
+        "purpose": "Jakou nástěnku uvidí pracovníci, když přijdou: pro celou firmu, skupinu nebo člověka.",
+        "keywords": "přehledy nástěnka widgety pracovníků výchozí"
+      },
+      "reward-tiles": {
+        "name": "Souhrn odměn",
+        "purpose": "Kolik čeká na schválení, kolik je k výplatě a kolik už je vyplaceno.",
+        "keywords": "souhrn odměny k výplatě schváleno vyplaceno provize"
+      },
+      "reward-team": {
+        "name": "Odměny lidí",
+        "purpose": "Měsíc každého pracovníka: co si vydělal a co čeká.",
+        "keywords": "odměny lidé pracovníci měsíc tým výplata"
+      },
+      "reward-approve": {
+        "name": "Schválit",
+        "purpose": "Schválí odměny, které čekají. Pak je jde vyplatit.",
+        "keywords": "schválit potvrdit odměny čekající"
+      },
+      "reward-pay": {
+        "name": "Vyplatit",
+        "purpose": "Označí schválené odměny jako vyplacené.",
+        "keywords": "vyplatit výplata zaplatit odměny peníze"
+      },
+      "reward-export": {
+        "name": "Exportovat",
+        "purpose": "Stáhne odměny za období jako CSV, třeba pro účetní.",
+        "keywords": "export csv stáhnout účetní odměny"
+      },
+      "reward-person": {
+        "name": "Odměny pracovníka",
+        "purpose": "Otevře odměny jednoho člověka: jeho plán, práci a výplaty.",
+        "keywords": "pracovník odměny plán detail otevřít",
+        "try": "**Klikni** na pracovníka a otevři jeho odměny."
+      },
+      "reward-add": {
+        "name": "Přidat odměnu",
+        "purpose": "Ruční odměna nebo srážka mimo plán, třeba bonus za skvělý měsíc.",
+        "keywords": "přidat odměnu bonus srážka ručně jednorázová"
+      },
+      "reward-plan": {
+        "name": "Plán odměn",
+        "purpose": "Pravidla, za co pracovník dostává odměnu: schůzka, vyhraný obchod, odpracovaná hodina.",
+        "keywords": "plán odměn pravidla provize za schůzku za obchod hodinová sazba"
+      },
+      "reward-template": {
+        "name": "Ze šablony",
+        "purpose": "Začne plán z hotové šablony, kterou pak upravíš.",
+        "keywords": "šablona začít hotový plán předloha"
+      },
+      "reward-rule-add": {
+        "name": "Přidat pravidlo",
+        "purpose": "Nové pravidlo plánu, třeba 200 Kč za každou domluvenou schůzku.",
+        "keywords": "pravidlo přidat odměna za schůzku provize obchod podmínka",
+        "try": "**Přidej** pravidlo a vyber, za co odměna je."
+      },
+      "reward-setup": {
+        "name": "Popiš, jak odměňuješ",
+        "purpose": "Napiš mi vlastními slovy, jak odměňuješ, a navrhnu pravidla. Uložíš je ty.",
+        "keywords": "popsat grady navrhnout pravidla vlastními slovy ai"
+      },
+      "reward-work-table": {
+        "name": "Práce a odměny",
+        "purpose": "Co pracovník udělal a kolik za to dostane. Tady odměny schválíš nebo zamítneš.",
+        "keywords": "práce tabulka schválit zamítnout odměny přehled"
+      },
+      "reward-payouts": {
+        "name": "Výplaty",
+        "purpose": "Výplaty pracovníka a jejich historie.",
+        "keywords": "výplaty historie vyplaceno zaplatit"
+      },
+      "reward-mine": {
+        "name": "Moje odměny",
+        "purpose": "Co sis vydělal, co čeká na schválení a podle jakého plánu.",
+        "keywords": "moje odměny výdělek provize kolik jsem vydělal"
+      },
+      "messages-search": {
+        "name": "Hledat",
+        "purpose": "Najde konverzaci nebo člověka podle jména.",
+        "keywords": "hledat najít konverzace člověk jméno",
+        "try": "**Napiš** jméno kolegy."
+      },
+      "messages-list": {
+        "name": "Konverzace",
+        "purpose": "Skupiny a lidé, se kterými si píšeš. Nepřečtené jsou nahoře se značkou.",
+        "keywords": "konverzace seznam skupiny chaty nepřečtené"
+      },
+      "messages-conversation": {
+        "name": "Konverzace",
+        "purpose": "Klikni a otevřeš ji vpravo.",
+        "keywords": "konverzace otevřít chat skupina",
+        "try": "**Otevři** jednu konverzaci."
+      },
+      "messages-person": {
+        "name": "Napsat člověku",
+        "purpose": "Lidé, se kterými ještě nemáš konverzaci. Klikni a napiš první zprávu.",
+        "keywords": "napsat člověku nová zpráva přímá soukromá kolega"
+      },
+      "messages-pick": {
+        "name": "Vyber konverzaci",
+        "purpose": "Tady se otevře konverzace, kterou vybereš vlevo.",
+        "keywords": "vybrat konverzaci"
+      },
+      "messages-input": {
+        "name": "Zpráva",
+        "purpose": "Enter odešle, Shift+Enter dá nový řádek. Zavináčem @ zmíníš kolegu.",
+        "keywords": "napsat zprávu text zmínit @ enter",
+        "try": "**Napiš** zprávu a odešli ji Enterem."
+      },
+      "messages-attach": {
+        "name": "Přiložit soubor",
+        "purpose": "Pošle obrázky, PDF nebo dokumenty, až 5 souborů po 10 MB.",
+        "keywords": "příloha přiložit soubor obrázek pdf poslat dokument"
+      },
+      "messages-send": {
+        "name": "Odeslat",
+        "purpose": "Odešle zprávu. Když vypadne síť, zkusí to znovu sama.",
+        "keywords": "odeslat poslat zprávu"
+      },
+      "messages-message-menu": {
+        "name": "Možnosti zprávy",
+        "purpose": "Odpovědět, upravit nebo smazat zprávu.",
+        "keywords": "možnosti zprávy menu odpovědět upravit smazat"
+      },
+      "messages-reply": {
+        "name": "Odpovědět",
+        "purpose": "Odpoví s citací zprávy.",
+        "keywords": "odpovědět citace reagovat"
+      },
+      "messages-edit": {
+        "name": "Upravit",
+        "purpose": "Svoji zprávu upravíš do 15 minut po odeslání.",
+        "keywords": "upravit opravit zprávu překlep"
+      },
+      "messages-delete": {
+        "name": "Smazat",
+        "purpose": "Smaže zprávu. Svoji do 15 minut, majitel kteroukoli.",
+        "keywords": "smazat odstranit zprávu"
+      },
+      "messages-conversation-menu": {
+        "name": "Možnosti konverzace",
+        "purpose": "Připnout, ztlumit, ztišit pro všechny nebo stáhnout jako CSV.",
+        "keywords": "možnosti konverzace připnout ztlumit export menu",
+        "try": "**Otevři** možnosti konverzace."
+      },
+      "messages-pin": {
+        "name": "Připnout",
+        "purpose": "Připnutá konverzace zůstane nahoře.",
+        "keywords": "připnout nahoru oblíbené"
+      },
+      "messages-mute": {
+        "name": "Ztlumit",
+        "purpose": "Ztlumená konverzace nepípá a nepočítá se do nepřečtených, zmínky ano.",
+        "keywords": "ztlumit vypnout upozornění zvuk tichý"
+      },
+      "messages-mute-all": {
+        "name": "Ztišit pro všechny",
+        "purpose": "Ztiší skupinu všem členům, třeba na noc.",
+        "keywords": "ztišit pro všechny skupina vypnout upozornění"
+      },
+      "messages-export": {
+        "name": "Stáhnout jako CSV",
+        "purpose": "Stáhne celou konverzaci jako tabulku.",
+        "keywords": "stáhnout export csv záloha konverzace"
+      },
+      "grady-button": {
+        "name": "Grady",
+        "purpose": "Klepni na mě kdekoli v aplikaci a zeptej se, na co chceš. Poradím, spočítám nebo to rovnou udělám.",
+        "keywords": "grady asistent pomocník ai chat zeptat poradit otevřít panel",
+        "try": "**Klepni** na mě vpravo dole a otevři si můj panel."
+      },
+      "grady-messages": {
+        "name": "Rozhovor",
+        "purpose": "Tady je náš rozhovor. U odpovědi ji můžeš ohodnotit nebo uložit do poznámek.",
+        "keywords": "rozhovor konverzace zprávy odpovědi historie chat"
+      },
+      "grady-chips": {
+        "name": "Návrhy otázek",
+        "purpose": "Rychlé otázky podle toho, co se u tebe děje. Jedno klepnutí a ptáš se.",
+        "keywords": "návrhy otázky tipy rychlé dotazy čipy"
+      },
+      "grady-input": {
+        "name": "Napiš Gradymu",
+        "purpose": "Sem napiš, co potřebuješ, třeba „dej mi to do úkolů“. Enter odešle.",
+        "keywords": "napsat zeptat otázka zpráva pokyn příkaz psát",
+        "try": "**Napiš** mi krátkou otázku, třeba co mám dnes udělat."
+      },
+      "grady-attach": {
+        "name": "Přiložit soubor",
+        "purpose": "Přilož PDF, obrázek, tabulku nebo dokument a já ho přečtu. Nejvýš 3 soubory po 10 MB.",
+        "keywords": "příloha soubor pdf obrázek tabulka nahrát dokument přiložit"
+      },
+      "grady-send": {
+        "name": "Odeslat",
+        "purpose": "Pošle mi zprávu. Odpovídám hned a průběžně.",
+        "keywords": "odeslat poslat zprávu odpověď"
+      },
+      "grady-save-note": {
+        "name": "Uložit do poznámek",
+        "purpose": "Uloží moji odpověď jako novou poznámku, nebo ji připíše na konec existující.",
+        "keywords": "uložit poznámka zapsat odpověď poznámky"
+      },
+      "grady-saved-open": {
+        "name": "Otevřít poznámku",
+        "purpose": "Po uložení odpovědi tudy hned otevřeš poznámku, kam se zapsala.",
+        "keywords": "otevřít poznámku uložená odpověď"
+      },
+      "grady-noticed": {
+        "name": "Čeho jsem si všiml",
+        "purpose": "Co jsem u tebe zahlédl a stojí za pozornost, s návrhem dalšího kroku.",
+        "keywords": "všiml návrhy upozornění hlídání tipy proaktivní"
+      },
+      "grady-new-chat": {
+        "name": "Nový rozhovor",
+        "purpose": "Začne čistý rozhovor. Ten předchozí zůstane uložený.",
+        "keywords": "nový rozhovor začít znovu vyčistit chat"
+      },
+      "grady-tutorial": {
+        "name": "Tutoriál",
+        "purpose": "Pustí znovu provedení aplikací: rychlou ukázku nebo úplný tutoriál.",
+        "keywords": "tutoriál provedení ukázka návod naučit"
+      },
+      "grady-report": {
+        "name": "Nahlásit problém",
+        "purpose": "Když něco nefunguje, jak má, napiš nám to i se snímkem obrazovky.",
+        "keywords": "nahlásit problém chyba bug nefunguje zpětná vazba"
+      },
+      "grady-close": {
+        "name": "Zavřít panel",
+        "purpose": "Schová můj panel, rozhovor zůstane, kde byl.",
+        "keywords": "zavřít schovat panel"
+      },
+      "grady-proactive": {
+        "name": "Grady se ozývá sám",
+        "purpose": "Zapni nebo vypni, jestli se ti ozvu sám se souhrnem a návrhy.",
+        "keywords": "ozývá sám proaktivní vypnout zapnout upozornění návrhy"
+      },
+      "grady-frequency": {
+        "name": "Jak často se Grady ozývá",
+        "purpose": "Vyber, jestli se ozvu často, občas, nebo jen se souhrnem jednou denně, týdně či měsíčně.",
+        "keywords": "frekvence jak často souhrn denně týdně měsíčně ozývání"
+      },
+      "grady-quiet": {
+        "name": "Tichý režim Gradyho",
+        "purpose": "Hodiny, kdy se ti sám neozvu, třeba večer a v noci.",
+        "keywords": "tichý režim tiché hodiny noc nerušit klid"
+      },
+      "grady-demo-delete": {
+        "name": "Smazat ukázková data",
+        "purpose": "Smaže ukázková data z tutoriálu. Co sis založil sám, zůstane.",
+        "keywords": "ukázková data smazat demo tutoriál vyčistit"
+      },
+      "grady-start-tutorial": {
+        "name": "Spustit tutoriál",
+        "purpose": "Pustí provedení aplikací znovu, kdykoli budeš chtít.",
+        "keywords": "spustit tutoriál provedení znovu ukázka návod"
+      },
+      "settings-chat-email": {
+        "name": "E-mail o nových zprávách",
+        "purpose": "Když nejsi v aplikaci, pošlu ti e-mail o přímých zprávách a zmínkách.",
+        "keywords": "e-mail zprávy upozornění notifikace chat zmínky"
+      },
+      "settings-chat-sound": {
+        "name": "Zvuk nové zprávy",
+        "purpose": "Krátký zvuk, když ti ve Zprávách přijde něco nového.",
+        "keywords": "zvuk zprávy upozornění tón chat"
+      },
+      "settings-search": {
+        "name": "Hledat v nastavení",
+        "purpose": "Napiš, co chceš změnit, třeba „měna“ nebo „heslo“, a skočíš rovnou na to.",
+        "keywords": "hledat nastavení najít volba",
+        "try": "**Napiš** sem slovo, třeba „měna“."
+      },
+      "settings-avatar": {
+        "name": "Profilová fotka",
+        "purpose": "Tvoje fotka, kterou vidí lidé ve firmě. Nahraješ JPG, PNG i HEIC.",
+        "keywords": "fotka profil avatar obrázek nahrát"
+      },
+      "settings-public-id": {
+        "name": "Krátké ID účtu",
+        "purpose": "Tvoje krátké ID. Pošli ho majiteli firmy, který tě chce pozvat.",
+        "keywords": "id krátké id kód pozvat pozvánka účet qr"
+      },
+      "settings-company-name": {
+        "name": "Název firmy",
+        "purpose": "Jak se tvoje firma jmenuje v přepínači firem a v pozvánkách.",
+        "keywords": "název firmy jméno firma společnost",
+        "try": "**Napiš** název své firmy."
+      },
+      "settings-company-logo": {
+        "name": "Logo firmy",
+        "purpose": "Logo, které uvidí tvoji lidé v přepínači firem.",
+        "keywords": "logo firmy obrázek značka"
+      },
+      "settings-language": {
+        "name": "Jazyk",
+        "purpose": "Přepne aplikaci do češtiny nebo angličtiny.",
+        "keywords": "jazyk čeština angličtina přepnout language"
+      },
+      "settings-password": {
+        "name": "Změna hesla",
+        "purpose": "Tady si nastavíš nové heslo k účtu.",
+        "keywords": "heslo změnit nové heslo zabezpečení"
+      },
+      "settings-sign-out": {
+        "name": "Odhlásit se",
+        "purpose": "Odhlásí tě z tohoto zařízení.",
+        "keywords": "odhlásit odhlášení odejít"
+      },
+      "settings-plan-card": {
+        "name": "Tarif",
+        "purpose": "Tvůj tarif, jeho stav, cena a kdy je další platba.",
+        "keywords": "tarif předplatné cena plán platba zkušební období"
+      },
+      "settings-change-plan": {
+        "name": "Změnit tarif",
+        "purpose": "Vybereš jiný tarif nebo roční platbu. Vyšší platí hned, nižší od konce období.",
+        "keywords": "změnit tarif upgrade downgrade vyšší nižší roční"
+      },
+      "settings-cancel-plan": {
+        "name": "Zrušit předplatné",
+        "purpose": "Zruší předplatné ke konci zaplaceného období. Data zůstanou.",
+        "keywords": "zrušit předplatné ukončit odhlásit tarif"
+      },
+      "settings-promo": {
+        "name": "Promo kód",
+        "purpose": "Máš kód od partnera? Zadej ho tady, dokud jsi nezaplatil.",
+        "keywords": "promo kód sleva kupon partner"
+      },
+      "settings-payments": {
+        "name": "Historie plateb",
+        "purpose": "Všechny platby s doklady ke stažení.",
+        "keywords": "platby historie doklady faktury účtenky"
+      },
+      "settings-billing": {
+        "name": "Fakturační údaje",
+        "purpose": "Jméno nebo firma, IČO, DIČ a adresa na doklady za předplatné.",
+        "keywords": "fakturační údaje ičo dič adresa firma doklady"
+      },
+      "appearance-themes": {
+        "name": "Téma",
+        "purpose": "Vyber si barvy aplikace. Některá témata se v herním režimu odemykají úrovní.",
+        "keywords": "téma barvy vzhled tmavé světlé motiv"
+      },
+      "appearance-create-theme": {
+        "name": "Vlastní vzhled",
+        "purpose": "Otevře editor, ve kterém si složíš vlastní téma a můžeš ho sdílet kódem.",
+        "keywords": "vlastní téma editor vytvořit barvy sdílet"
+      },
+      "appearance-schedule": {
+        "name": "Měnit vzhled během dne",
+        "purpose": "Téma se samo mění podle denní doby, třeba ráno světlé a večer tmavé.",
+        "keywords": "plán vzhledu během dne ráno večer automaticky téma"
+      },
+      "appearance-sound": {
+        "name": "Zvuk",
+        "purpose": "Zvuky oslav a drobných akcí. Kdo chce klid, vypne je.",
+        "keywords": "zvuk zvuky ztlumit vypnout oslavy"
+      },
+      "appearance-animations": {
+        "name": "Animace",
+        "purpose": "Pohyb a efekty v aplikaci. Vypnutím bude všechno klidnější.",
+        "keywords": "animace pohyb efekty vypnout"
+      },
+      "appearance-timezone": {
+        "name": "Časové pásmo",
+        "purpose": "Podle něj počítám dny, termíny a kalendář.",
+        "keywords": "časové pásmo čas zóna hodiny"
+      },
+      "appearance-currency": {
+        "name": "Měna",
+        "purpose": "Měna, ve které ti ukazuju částky. Uložené částky se nemění.",
+        "keywords": "měna koruny eura peníze částky"
+      },
+      "appearance-date-format": {
+        "name": "Formát data",
+        "purpose": "Jak se v aplikaci píše datum. Čas, čísla a první den týdne najdeš hned pod tím.",
+        "keywords": "formát data datum čas čísla týden"
+      },
+      "settings-game-mode": {
+        "name": "Režim hry",
+        "purpose": "Herní režim s XP a odemykáním, nebo nástroj bez her.",
+        "keywords": "režim hry herní nástroj xp odemykání"
+      },
+      "settings-path": {
+        "name": "Cesta",
+        "purpose": "Cesta milníků podle tvého oboru. Rozjeté milníky při změně zůstanou.",
+        "keywords": "cesta obor milníky změnit"
+      },
+      "settings-reengage": {
+        "name": "Nabídnout nové oslovení po",
+        "purpose": "Po kolika měsících ti u prohraného obchodu nabídnu, ať to zkusíš znovu.",
+        "keywords": "znovu oslovit prohraný obchod měsíce pipeline"
+      },
+      "settings-cold-calling-stage": {
+        "name": "Fáze nového obchodu",
+        "purpose": "Do které fáze pipeline padá obchod, který založíš z volání.",
+        "keywords": "fáze obchodu cold calling volání pipeline"
+      },
+      "settings-calendar-add": {
+        "name": "Odebírané kalendáře",
+        "purpose": "Přidej tajnou adresu iCal svého jiného kalendáře, ať vidím, kdy jsi obsazený.",
+        "keywords": "odebírat kalendář ical google outlook obsazenost přidat"
+      },
+      "settings-calendar-feed": {
+        "name": "Odkaz pro odběr tvého kalendáře",
+        "purpose": "Odkaz, kterým si kalendář z {appName} přidáš do telefonu nebo Googlu.",
+        "keywords": "odkaz odběr kalendář telefon google export ical"
+      },
+      "settings-show-online": {
+        "name": "Ukazovat, kdy jsem online",
+        "purpose": "Když to vypneš, nikdo neuvidí, že jsi online, a ty neuvidíš ostatní.",
+        "keywords": "online stav viditelnost soukromí skrýt"
+      },
+      "settings-export": {
+        "name": "Exportovat moje data",
+        "purpose": "Stáhneš si všechna svá data v jednom souboru.",
+        "keywords": "export data stáhnout zálohovat"
+      },
+      "settings-delete-account": {
+        "name": "Smazat účet",
+        "purpose": "Trvale smaže účet i data. Před smazáním se ještě zeptám.",
+        "keywords": "smazat účet zrušit účet odstranit"
+      },
+      "apps-server-address": {
+        "name": "Adresa serveru MCP",
+        "purpose": "Adresa, kterou vložíš do Claude nebo jiné aplikace, aby pracovala s tvými daty.",
+        "keywords": "mcp server adresa claude připojit aplikace"
+      },
+      "apps-copy-address": {
+        "name": "Kopírovat adresu",
+        "purpose": "Zkopíruje adresu serveru do schránky.",
+        "keywords": "kopírovat adresa schránka",
+        "try": "**Zkopíruj** si adresu serveru."
+      },
+      "apps-connect-steps": {
+        "name": "Jak připojit Claude",
+        "purpose": "Krok za krokem, jak aplikaci přidáš do Claude.",
+        "keywords": "připojit claude návod kroky integrace"
+      },
+      "apps-list": {
+        "name": "Připojené aplikace",
+        "purpose": "Aplikace, které máš připojené, s tím, kdy a kolik toho udělaly.",
+        "keywords": "připojené aplikace seznam claude integrace"
+      },
+      "apps-app-row": {
+        "name": "Připojená aplikace",
+        "purpose": "Rozklikni aplikaci a uvidíš, co smí a co udělala.",
+        "keywords": "aplikace detail rozbalit",
+        "try": "**Rozklikni** jednu připojenou aplikaci."
+      },
+      "apps-level": {
+        "name": "Co aplikace smí",
+        "purpose": "Jen číst, zapisovat, nebo všechno včetně mazání.",
+        "keywords": "oprávnění úroveň číst zapisovat mazat práva"
+      },
+      "apps-history": {
+        "name": "Historie akcí",
+        "purpose": "Co aplikace v posledních dnech udělala.",
+        "keywords": "historie akce záznam log"
+      },
+      "apps-disconnect": {
+        "name": "Odpojit",
+        "purpose": "Odpojí aplikaci, od té chvíle nic neudělá.",
+        "keywords": "odpojit zrušit přístup odebrat"
+      },
+      "apps-trash": {
+        "name": "Koš",
+        "purpose": "Co smazal Grady nebo připojené aplikace. Odtud to obnovíš.",
+        "keywords": "koš obnovit smazané vrátit"
+      },
+      "apps-company-mcp": {
+        "name": "Připojené aplikace ve firmě",
+        "purpose": "Kdo z firmy má připojenou aplikaci a vypínač pro celou firmu.",
+        "keywords": "firma mcp připojené aplikace pracovníci vypnout"
+      },
+      "admin-switcher-hint": {
+        "name": "Rychlé přepínání",
+        "purpose": "Zkratka pro rychlý skok mezi sekcemi administrace.",
+        "keywords": "zkratka přepínání sekce klávesy"
+      },
+      "admin-sidebar-collapse": {
+        "name": "Sbalit menu",
+        "purpose": "Sbalí levé menu, ať máš víc místa na čísla.",
+        "keywords": "sbalit menu lišta schovat"
+      },
+      "admin-board-tabs": {
+        "name": "Nástěnky",
+        "purpose": "Tvoje nástěnky s widgety. Každá může ukazovat něco jiného.",
+        "keywords": "nástěnka záložky widgety přehled",
+        "try": "**Přepni** na jinou nástěnku."
+      },
+      "admin-board-new-tab": {
+        "name": "Nová nástěnka",
+        "purpose": "Přidá další nástěnku, prázdnou nebo ze šablony.",
+        "keywords": "nová nástěnka přidat záložka"
+      },
+      "admin-board-rename-tab": {
+        "name": "Přejmenovat nástěnku",
+        "purpose": "Dá nástěnce nový název.",
+        "keywords": "přejmenovat nástěnka název"
+      },
+      "admin-board-delete-tab": {
+        "name": "Smazat nástěnku",
+        "purpose": "Smaže tuhle nástěnku. Ostatní zůstanou.",
+        "keywords": "smazat nástěnka odstranit"
+      },
+      "admin-set-default": {
+        "name": "Nastavit jako výchozí",
+        "purpose": "Uloží tvoje rozvržení jako výchozí přehled pro ostatní administrátory.",
+        "keywords": "výchozí rozvržení přehled ostatní"
+      },
+      "admin-period": {
+        "name": "Období",
+        "purpose": "Za jaké období se čísla počítají: dnes, 7 dní, 30 dní nebo vlastní rozsah.",
+        "keywords": "období datum rozsah dny měsíc filtr čas",
+        "try": "**Vyber** jiné období."
+      },
+      "admin-compare": {
+        "name": "Porovnat",
+        "purpose": "Ukáže změnu proti předchozímu stejně dlouhému období.",
+        "keywords": "porovnat srovnání předchozí období změna",
+        "try": "**Zapni** porovnání s předchozím obdobím."
+      },
+      "admin-internal": {
+        "name": "Včetně interních",
+        "purpose": "Započítá i interní a testovací účty, které jinak v metrikách nejsou.",
+        "keywords": "interní testovací účty započítat metriky"
+      },
+      "admin-filters": {
+        "name": "Filtry",
+        "purpose": "Zúží čísla na obor, zemi, tarif a další skupiny.",
+        "keywords": "filtr obor země tarif segment zúžit"
+      },
+      "admin-refresh": {
+        "name": "Obnovit",
+        "purpose": "Načte čísla znovu.",
+        "keywords": "obnovit načíst znovu aktualizovat"
+      },
+      "admin-figures": {
+        "name": "Hlavní čísla",
+        "purpose": "Hlavní čísla stránky za zvolené období, se změnou proti minulému.",
+        "keywords": "čísla metriky dlaždice přehled kpi"
+      },
+      "admin-chart": {
+        "name": "Graf",
+        "purpose": "Vývoj v čase. Najetím na bod uvidíš přesné číslo.",
+        "keywords": "graf vývoj čas trend"
+      },
+      "admin-table": {
+        "name": "Tabulka",
+        "purpose": "Podrobná čísla v tabulce, řadit jde klikem na sloupec.",
+        "keywords": "tabulka detail řadit sloupce"
+      },
+      "admin-table-export": {
+        "name": "Export",
+        "purpose": "Stáhne tabulku jako CSV.",
+        "keywords": "export csv stáhnout tabulka"
+      },
+      "admin-funnel": {
+        "name": "Trychtýř aktivace",
+        "purpose": "Kolik lidí prošlo každým krokem od registrace k prvnímu úspěchu.",
+        "keywords": "trychtýř aktivace kroky registrace konverze"
+      },
+      "admin-cohorts": {
+        "name": "Kohorty",
+        "purpose": "Kolik lidí z každého týdne registrace se vrací.",
+        "keywords": "kohorty retence návrat týdny"
+      },
+      "admin-users-search": {
+        "name": "Hledat uživatele",
+        "purpose": "Najdi účet podle jména, části e-mailu nebo začátku ID.",
+        "keywords": "hledat uživatel účet e-mail jméno id",
+        "try": "**Napiš** část jména nebo e-mailu."
+      },
+      "admin-users-export": {
+        "name": "Export uživatelů",
+        "purpose": "Stáhne seznam uživatelů se jménem a e-mailem jako CSV.",
+        "keywords": "export uživatelé csv e-maily seznam"
+      },
+      "admin-users-row": {
+        "name": "Uživatel",
+        "purpose": "Klikni na účet a otevřeš jeho detail.",
+        "keywords": "uživatel účet detail otevřít",
+        "try": "**Otevři** detail jednoho uživatele."
+      },
+      "admin-user-account": {
+        "name": "Účet",
+        "purpose": "E-mail, registrace, poslední přihlášení, zařízení a tarif účtu.",
+        "keywords": "účet e-mail přihlášení zařízení tarif detail"
+      },
+      "admin-user-actions": {
+        "name": "Podpora",
+        "purpose": "Reset hesla, nové potvrzení e-mailu, odhlášení ze všech zařízení nebo změna e-mailu.",
+        "keywords": "reset hesla potvrzení e-mail odhlásit podpora změna e-mailu"
+      },
+      "admin-user-internal": {
+        "name": "Interní účet",
+        "purpose": "Označí účet jako interní, takže se nepočítá do metrik.",
+        "keywords": "interní účet testovací metriky označit"
+      },
+      "admin-user-subscription": {
+        "name": "Předplatné uživatele",
+        "purpose": "Ručně změníš tarif, stav nebo konec zkušebky účtu.",
+        "keywords": "předplatné tarif změnit ručně zkušebka"
+      },
+      "admin-user-ai-cap": {
+        "name": "Strop AI uživatele",
+        "purpose": "Vlastní měsíční strop útraty AI pro tenhle účet, nebo AI úplně zablokovat.",
+        "keywords": "strop ai limit útrata blokovat uživatel"
+      },
+      "admin-feedback-tabs": {
+        "name": "Zpětná vazba",
+        "purpose": "Hlášení problémů, nápady a dotazník spokojenosti, každé zvlášť.",
+        "keywords": "zpětná vazba hlášení nápady spokojenost záložky",
+        "try": "**Přepni** na jinou záložku zpětné vazby."
+      },
+      "admin-feedback-filters": {
+        "name": "Filtry hlášení",
+        "purpose": "Zúží hlášení podle stavu, typu nebo stránky.",
+        "keywords": "filtr hlášení stav typ chyby"
+      },
+      "admin-features-tabs": {
+        "name": "Oblasti funkcí",
+        "purpose": "Jak lidé používají jednotlivé části aplikace.",
+        "keywords": "funkce používání sekce záložky",
+        "try": "**Přepni** na jinou oblast."
+      },
+      "admin-explorer-controls": {
+        "name": "Průzkumník událostí",
+        "purpose": "Vyber událost a vlastnost a postav si vlastní graf.",
+        "keywords": "průzkumník události graf analytika vlastní dotaz"
+      },
+      "admin-ai-tabs": {
+        "name": "AI a Grady",
+        "purpose": "Přehled útraty, modely jednotlivých funkcí a pravidla Gradyho.",
+        "keywords": "ai grady modely pravidla záložky",
+        "try": "**Přepni** na záložku Modely."
+      },
+      "admin-ai-budget": {
+        "name": "Rozpočet AI",
+        "purpose": "Kolik Grady utratil, odhad do konce měsíce a jestli běží normálně nebo úsporně.",
+        "keywords": "rozpočet útrata ai kredit odhad úsporný režim"
+      },
+      "admin-ai-caps": {
+        "name": "Strop využití AI",
+        "purpose": "Měsíční strop celkem a na uživatele a od kolika procent přejít do úsporného režimu.",
+        "keywords": "strop ai limit útrata uživatel procenta"
+      },
+      "admin-ai-models": {
+        "name": "Modely",
+        "purpose": "Který model běží u které funkce Gradyho, s přednastavením Úsporné, Vyvážené, Kvalitní.",
+        "keywords": "modely haiku sonnet opus nastavení funkce"
+      },
+      "admin-ai-rules": {
+        "name": "Pravidla Gradyho",
+        "purpose": "Kdy se Grady sám ozve, jak často a pokyny, které dostane.",
+        "keywords": "pravidla grady pokyny proaktivní ozývání"
+      },
+      "admin-costs-margin": {
+        "name": "Marže",
+        "purpose": "Tržby proti nákladům na účet a tarif.",
+        "keywords": "marže náklady tržby zisk"
+      },
+      "admin-costs-payments": {
+        "name": "Platby za období",
+        "purpose": "Tržby, vrácené platby a platící účty po měnách.",
+        "keywords": "platby tržby vrácené platící účty"
+      },
+      "admin-health-cron": {
+        "name": "Plánované úlohy",
+        "purpose": "Kdy která denní úloha naposledy běžela a jestli prošla.",
+        "keywords": "cron úlohy plánované běh selhání"
+      },
+      "admin-errors-tabs": {
+        "name": "Chyby",
+        "purpose": "Log chyb a nastavení e-mailů o chybách.",
+        "keywords": "chyby log upozornění e-mail záložky",
+        "try": "**Přepni** na Upozornění e-mailem."
+      },
+      "admin-errors-search": {
+        "name": "Hledat chybu",
+        "purpose": "Najdi chybu podle kódu GR-… nebo ji filtruj podle stavu.",
+        "keywords": "hledat chyba kód gr filtr stav",
+        "try": "**Napiš** kód chyby, třeba GR-."
+      },
+      "admin-errors-list": {
+        "name": "Seznam chyb",
+        "purpose": "Chyby seskupené podle druhu. Klikem otevřeš výskyty a změníš stav.",
+        "keywords": "seznam chyb skupiny výskyty stav vyřešit"
+      },
+      "admin-plans-editor": {
+        "name": "Editor tarifů",
+        "purpose": "Koncept tarifů: ceny, limity a řádky karet. Zveřejníš ho, až bude hotový.",
+        "keywords": "tarify ceny limity koncept zveřejnit editor"
+      },
+      "admin-plans-history": {
+        "name": "Historie tarifů",
+        "purpose": "Dřívější verze tarifů. Kteroukoli jde vrátit.",
+        "keywords": "historie tarifů verze vrátit"
+      },
+      "admin-promo-new": {
+        "name": "Nový promo kód",
+        "purpose": "Založí kód pro partnera s výhodou a provizí.",
+        "keywords": "nový promo kód partner sleva provize založit",
+        "try": "**Klikni** a podívej se na formulář nového kódu."
+      },
+      "admin-promo-list": {
+        "name": "Promo kódy",
+        "purpose": "Všechny kódy s registracemi, platícími a provizemi k vyplacení.",
+        "keywords": "promo kódy seznam registrace provize výplaty"
+      },
+      "admin-digest-prefs": {
+        "name": "Denní souhrn",
+        "purpose": "Kdy ti chodí souhrn „včera“ a jestli jen, když je co hlásit.",
+        "keywords": "denní souhrn e-mail hodina upozornění"
+      }
+    },
+    "guides": {
+      "dashboard": {
+        "name": "Přehled",
+        "intro": "Tvůj den na jednom místě: widgety s úkoly, obchody a penězi, které si poskládáš, jak chceš.",
+        "examples": {
+          "q1": "Jak přidám widget na přehled?",
+          "q2": "Jak přeskládám widgety?",
+          "q3": "Jak si udělám druhý přehled?"
+        }
+      },
+      "milestones": {
+        "name": "Milníky",
+        "intro": "Velké cíle rozdělené na úkoly. Každý milník má i mapu, ve které úkoly přesouváš tažením.",
+        "examples": {
+          "q1": "Jak založím milník?",
+          "q2": "Jak přidám podúkol?",
+          "q3": "Jak naimportuji mapu z MindNode?"
+        }
+      },
+      "notes": {
+        "name": "Poznámky",
+        "intro": "Podklady k podnikání na jednom místě: text i myšlenkové mapy. Vycházím z nich, když mi píšeš.",
+        "examples": {
+          "q1": "Jak udělám myšlenkovou mapu?",
+          "q2": "Jak nasdílím poznámku?",
+          "q3": "Jak obnovím smazanou poznámku?"
+        }
+      },
+      "tasks": {
+        "name": "Úkoly",
+        "intro": "Úkoly k obchodům a kontaktům s termínem a časem. Po termínu svítí červeně.",
+        "examples": {
+          "q1": "Jak přidám úkol k obchodu?",
+          "q2": "Jak uvidím úkoly po termínu?",
+          "q3": "Jak úkol splním s poznámkou?"
+        }
+      },
+      "contacts": {
+        "name": "Kontakty",
+        "intro": "Lidé, které chceš oslovit, bydlí ve tvých tabulkách. Odtud je posouváš dál, voláš jim a zakládáš obchody.",
+        "examples": {
+          "q1": "Jak přidám nový kontakt?",
+          "q2": "Jak přesunu kontakt do jiné tabulky?",
+          "q3": "Jak najdu nové firmy k obvolání?"
+        }
+      },
+      "coldCalling": {
+        "name": "Cold Calling",
+        "intro": "Obvoláš své tabulky kontakt po kontaktu a po každém hovoru ho posuneš dál.",
+        "examples": {
+          "q1": "Jak spustím časovač volání?",
+          "q2": "Jak přesunu kontakt po hovoru?",
+          "q3": "Kdy je nejlepší čas volat?"
+        }
+      },
+      "pipeline": {
+        "name": "Pipeline",
+        "intro": "Každý obchod tu má svou fázi. Dlaždice nahoře hlídají, co hoří: cíl je všude nula.",
+        "examples": {
+          "q1": "Jak založím nový obchod?",
+          "q2": "Jak přidám úkol k obchodu?",
+          "q3": "Jak změním fáze pipeline?"
+        }
+      },
+      "calendar": {
+        "name": "Kalendář",
+        "intro": "Schůzky, data uzavření a úkoly na jednom místě, ve tvém čase.",
+        "examples": {
+          "q1": "Jak přidám schůzku?",
+          "q2": "Jak uvidím kalendář kolegy?",
+          "q3": "Jak najdu čas, který sedí všem?"
+        }
+      },
+      "scheduler": {
+        "name": "Plánovač schůzek",
+        "intro": "Tvoje rezervační stránka: klienti si sami vyberou volný čas podle doby, kterou nastavíš.",
+        "examples": {
+          "q1": "Jak pošlu klientovi odkaz na rezervaci?",
+          "q2": "Jak nastavím, kdy beru schůzky?",
+          "q3": "Jak vytvořím nový typ schůzky?"
+        }
+      },
+      "finance": {
+        "name": "Finance",
+        "intro": "Peníze firmy na jednom místě: plán měsíce po týdnech, transakce, automatické platby, faktury a přehled.",
+        "examples": {
+          "q1": "Jak naplánuju příjmy a výdaje na další měsíc?",
+          "q2": "Jak zapíšu výdaj?",
+          "q3": "Jak nastavím pravidelnou platbu za nájem?"
+        }
+      },
+      "invoices": {
+        "name": "Faktury",
+        "intro": "Faktury vystavuješ přímo tady: koncept, vystavení s číslem z řady, PDF, e-mail a označení zaplacení.",
+        "examples": {
+          "q1": "Jak vystavím fakturu?",
+          "q2": "Jak pošlu fakturu e-mailem?",
+          "q3": "Jak opravím vystavenou fakturu?"
+        }
+      },
+      "company": {
+        "name": "Správa firmy",
+        "intro": "Lidé ve firmě jako strom pod tebou: pozvánky, skupiny, práva, dokumenty a co kdo dělá.",
+        "examples": {
+          "q1": "Jak pozvu pracovníka?",
+          "q2": "Jak nastavím pracovníkovi práva?",
+          "q3": "Jak přesunu člověka pod jiného nadřízeného?"
+        }
+      },
+      "rewards": {
+        "name": "Odměny",
+        "intro": "Za co pracovníci dostávají odměny, co si vydělali a co jim vyplatíš.",
+        "examples": {
+          "q1": "Jak dám pracovníkovi odměnu za schůzku?",
+          "q2": "Jak schválím a vyplatím odměny?",
+          "q3": "Jak přidám jednorázový bonus?"
+        }
+      },
+      "messages": {
+        "name": "Zprávy",
+        "intro": "Chat uvnitř firmy: skupiny a přímé zprávy s přílohami, zmínkami a odpověďmi.",
+        "examples": {
+          "q1": "Jak napíšu kolegovi soukromou zprávu?",
+          "q2": "Jak pošlu soubor do skupiny?",
+          "q3": "Jak ztlumím konverzaci?"
+        }
+      },
+      "grady": {
+        "name": "Grady",
+        "intro": "Tohle jsem já. Ukážu ti, jak se mě ptát a jak nastavit, kdy se ozývám.",
+        "examples": {
+          "q1": "Jak Gradymu přiložím soubor?",
+          "q2": "Jak vypnu, aby se Grady ozýval sám?",
+          "q3": "Jak uložím odpověď Gradyho do poznámek?"
+        }
+      },
+      "settings": {
+        "name": "Nastavení",
+        "intro": "Účet, předplatné, vzhled, formáty a soukromí na jednom místě. Ukážu ti, kde co je.",
+        "examples": {
+          "q1": "Jak změním měnu?",
+          "q2": "Jak si změním heslo?",
+          "q3": "Jak zruším předplatné?"
+        }
+      },
+      "connectedApps": {
+        "name": "Připojené aplikace",
+        "intro": "Připoj Claude nebo jinou aplikaci, ať pracuje s tvými daty v {appName}.",
+        "examples": {
+          "q1": "Jak připojím Claude?",
+          "q2": "Jak odpojím aplikaci?",
+          "q3": "Jak obnovím, co aplikace smazala?"
+        }
+      },
+      "adminOverview": {
+        "name": "Přehled",
+        "intro": "Nástěnky s widgety a ovládání, které platí pro celou administraci: období, porovnání a filtry.",
+        "examples": {
+          "q1": "Jak změním období čísel?",
+          "q2": "Jak přidám novou nástěnku?",
+          "q3": "Jak započítám i interní účty?"
+        }
+      },
+      "adminPeople": {
+        "name": "Lidé",
+        "intro": "Růst, aktivace, retence, uživatelé a zpětná vazba. Tady zjistíš, jak se lidem daří.",
+        "examples": {
+          "q1": "Jak najdu uživatele podle e-mailu?",
+          "q2": "Jak pošlu uživateli reset hesla?",
+          "q3": "Jak vyfiltruju hlášení chyb?"
+        }
+      },
+      "adminProduct": {
+        "name": "Produkt",
+        "intro": "Jak se používají funkce, průzkumník událostí a všechno o AI a Gradym.",
+        "examples": {
+          "q1": "Jak nastavím strop AI?",
+          "q2": "Jak změním model funkce Gradyho?",
+          "q3": "Jak si postavím vlastní graf události?"
+        }
+      },
+      "adminOperations": {
+        "name": "Provoz",
+        "intro": "Náklady, zdraví aplikace a log chyb.",
+        "examples": {
+          "q1": "Jak najdu chybu podle kódu GR?",
+          "q2": "Jak označím chybu jako vyřešenou?",
+          "q3": "Kde vidím, jestli proběhly denní úlohy?"
+        }
+      },
+      "adminSettings": {
+        "name": "Nastavení",
+        "intro": "Tarify, promo kódy, upozornění a další nastavení aplikace.",
+        "examples": {
+          "q1": "Jak zveřejním nové ceny tarifů?",
+          "q2": "Jak založím promo kód pro partnera?",
+          "q3": "Jak nastavím, kdy mi chodí denní souhrn?"
+        }
+      }
+    },
+    "guide": {
+      "button": "Průvodce",
+      "buttonLabel": "Průvodce (?)",
+      "menuTitle": "Průvodce · {section}",
+      "askLabel": "Na co se chceš zeptat?",
+      "askPlaceholder": "Třeba: {example}",
+      "askPlaceholderPlain": "Napiš, co potřebuješ udělat",
+      "ask": "Zeptat se",
+      "examples": "Nebo vyber:",
+      "quick": "Rychlá ukázka",
+      "full": "Všechno o této sekci",
+      "minutes": "{minutes} min",
+      "close": "Zavřít",
+      "noSection": "Tahle stránka svého průvodce nemá, ale zeptat se můžeš na cokoli.",
+      "goTo": "Pojď se mnou do sekce {section}. **Klikni** na ni v menu, nebo to udělám za tebe.",
+      "actions": {
+        "go": "Pojď se mnou: {name}.",
+        "open": "**Otevři** {name}.",
+        "highlight": "Tady je {name}.",
+        "click": "**Klikni** sem: {name}.",
+        "fill": "**Vyplň** {name}.",
+        "wait": "Dokonči to tady a ulož. Počkám na tebe."
+      },
+      "waiting": {
+        "go": "Čekám, až tam budeš.",
+        "open": "Čekám, až to otevřeš.",
+        "click": "Čekám, až klikneš.",
+        "fill": "Čekám, až něco napíšeš.",
+        "wait": "Čekám, až to dokončíš."
+      },
+      "stepDone": "Hotovo, jdeme dál.",
+      "missingTarget": "Tohle teď na obrazovce nevidím. Možná je potřeba něco otevřít, nebo to tu zatím není.",
+      "end": "Ukončit",
+      "askMore": "Zeptat se dál",
+      "doForMe": "Udělej to za mě",
+      "next": "Další",
+      "finish": "Hotovo",
+      "answer": {
+        "loading": "Hledám, kde to v aplikaci je…",
+        "show": "Ukaž mi to",
+        "askAgain": "Zeptat se jinak",
+        "chat": "Zeptat se v chatu",
+        "owner": "Napsat majiteli",
+        "idea": "Navrhnout funkci",
+        "ideaPrompt": "Chtěl bych v aplikaci funkci: {question}",
+        "dropped": "Část kroků jsem nenašel, tak ti to aspoň popisuju.",
+        "question": "„{question}“"
+      },
+      "errors": {
+        "limitReached": "Odpovědi Gradyho jsou pro tento měsíc vyčerpané. Průvodce sekcí funguje dál.",
+        "userLimit": "AI pomocník má pro tvůj účet tento měsíc vyčerpaný limit. Průvodce sekcí funguje dál.",
+        "spaceLimit": "AI pomocník má v téhle firmě tento měsíc vyčerpaný limit. Průvodce sekcí funguje dál.",
+        "paused": "Grady si dává do konce měsíce pauzu, aplikace funguje dál. Průvodce sekcí ti ji ukáže.",
+        "notConfigured": "Grady teď neodpovídá. Zkus rychlou ukázku sekce.",
+        "other": "Teď ti to nedokážu ukázat. Zkus to prosím za chvíli."
+      },
+      "after": "Na cokoli dalšího se mě zeptej.",
+      "offer": {
+        "firstVisit": "Jsi v sekci {section} poprvé. Mám ti ji rychle ukázat?",
+        "lost": "Nevíš si rady? Napiš mi, co potřebuješ udělat.",
+        "quick": "Ukázat (1–2 min)",
+        "later": "Teď ne",
+        "off": "Už nenabízet"
+      },
+      "settings": {
+        "label": "Nabízet pomoc v sekcích",
+        "hint": "Když v sekci tápeš nebo jsi v ní poprvé, nabídnu ti průvodce. Nejvýš jednou za den v každé sekci."
+      },
+      "search": "Zeptat se Gradyho a ukázat",
+      "showOnScreen": "Ukázat na obrazovce",
+      "noRightAnswer": "Tohle v téhle firmě nemáš v právech ({sections}). Majitel ti přístup může dát, napiš mu."
     }
   },
   "promo": {

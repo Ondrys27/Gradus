@@ -28,7 +28,7 @@ export function MyRewards({ workerId }: { workerId: string }) {
   const currency = plan.data?.currency ?? settings.currency;
 
   return (
-    <div className="flex flex-col gap-5" data-testid="my-rewards">
+    <div className="flex flex-col gap-5" data-testid="my-rewards" data-tutorial="reward-mine">
       <RewardsTiles totals={totals.data} isError={totals.isError} currency={currency} />
       <Coming workerId={workerId} />
       <PlanCard workerId={workerId} editable={false} readOnly />

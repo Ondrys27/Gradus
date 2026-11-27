@@ -29,7 +29,7 @@ export function AccountView() {
   return (
     <SettingsPage title={t("groups.account.title")} description={t("groups.account.description")}>
       <SettingsSection title={t("account.profileTitle")}>
-        <SettingRow id="settings-avatar" label={tProfile("avatar.title")} group layout="stack">
+        <SettingRow id="settings-avatar" label={tProfile("avatar.title")} group layout="stack" data-tutorial="settings-avatar">
           <div id="settings-avatar" tabIndex={-1} className="rounded-xl outline-none">
             <AvatarEditor />
           </div>
@@ -53,6 +53,7 @@ export function AccountView() {
         </SettingRow>
         <SettingRow
           id="settings-password"
+          data-tutorial="settings-password"
           label={tProfile("password.title")}
           hint={t("account.passwordHint")}
           group
@@ -67,6 +68,7 @@ export function AccountView() {
       <SettingsSection title={t("language.title")}>
         <SettingRow
           id="settings-language"
+          data-tutorial="settings-language"
           label={t("language.label")}
           fields={["locale"]}
           group
@@ -91,7 +93,7 @@ export function AccountView() {
           label={t("account.signOut.label")}
           hint={t("account.signOut.hint")}
           action={
-            <Button id="settings-sign-out" variant="secondary" onClick={() => void signOut()}>
+            <Button id="settings-sign-out" data-tutorial="settings-sign-out" variant="secondary" onClick={() => void signOut()}>
               <LogOutIcon aria-hidden />
               {t("account.signOut.action")}
             </Button>

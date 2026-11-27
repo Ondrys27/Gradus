@@ -172,7 +172,11 @@ function CommonTime({ onDone }: { onDone: () => void }) {
   const chosenStart = start ?? starts[0] ?? null;
 
   return (
-    <div className="flex flex-col gap-5" data-testid="common-time">
+    <div
+      className="flex flex-col gap-5"
+      data-testid="common-time"
+      data-tutorial="calendar-common-time-panel"
+    >
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1 text-sm font-medium text-ink-soft">{t("people")}</legend>
         {(groups.data ?? []).length > 0 && (

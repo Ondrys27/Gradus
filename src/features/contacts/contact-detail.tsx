@@ -178,12 +178,13 @@ function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNo
           <div className="flex flex-wrap gap-2">
             <MeetingNotesButton target={{ kind: "contact", id: contact.id }} />
             <ScheduleMeetingButton contactId={contact.id} from="contact" />
-            <Button variant="outline" onClick={() => setEditing(true)}>
+            <Button variant="outline" data-tutorial="contact-edit" onClick={() => setEditing(true)}>
               <PencilIcon aria-hidden data-icon="inline-start" />
               {t("detail.edit")}
             </Button>
             <Button
               disabled={tables.length === 0}
+              data-tutorial="contact-move"
               onClick={() => {
                 setMoveEmailPrefill(null);
                 setMoving(true);
@@ -251,7 +252,12 @@ function DetailBody({ contact, backLink }: { contact: Contact; backLink: ReactNo
           {canSeeDeals && <DealsCard contact={contact} />}
           <MentionedInNotes kind="contact" id={contact.id} card />
           {canDelete && (
-            <Button variant="destructive" className="self-start" onClick={() => setDeleting(true)}>
+            <Button
+              variant="destructive"
+              className="self-start"
+              data-tutorial="contact-delete"
+              onClick={() => setDeleting(true)}
+            >
               <Trash2Icon aria-hidden data-icon="inline-start" />
               {t("detail.delete")}
             </Button>
@@ -500,6 +506,7 @@ function NotesCard({ contact, readOnly }: { contact: Contact; readOnly: boolean 
       </label>
       <Textarea
         id="contact-notes"
+        data-tutorial="contact-notes"
         value={value}
         maxLength={NOTES_MAX}
         placeholder={t("placeholder")}
@@ -550,6 +557,7 @@ function DealsCard({ contact }: { contact: Contact }) {
       interactive={false}
       role="region"
       aria-labelledby="contact-deals-title"
+      data-tutorial="contact-deals"
       className="flex flex-col gap-3"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">

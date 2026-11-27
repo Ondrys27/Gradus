@@ -24,7 +24,7 @@ export function InternalToggle({ userId, value }: { userId: string; value: boole
   }
 
   return (
-    <label className="flex min-h-9 cursor-pointer items-center gap-2 text-xs text-ink-soft">
+    <label data-tutorial="admin-user-internal" className="flex min-h-9 cursor-pointer items-center gap-2 text-xs text-ink-soft">
       <Switch checked={checked} disabled={pending} onCheckedChange={onChange} />
       {t("internal")}
     </label>

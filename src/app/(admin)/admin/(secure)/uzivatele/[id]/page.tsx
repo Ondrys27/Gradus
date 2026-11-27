@@ -374,7 +374,7 @@ function AccountFacts({
         ? t("account.trialEnded", { date: date(trial.endsAt) })
         : t("account.trialNone");
   return (
-    <div className="flex flex-col gap-4" data-testid="account-card">
+    <div className="flex flex-col gap-4" data-testid="account-card" data-tutorial="admin-user-account">
       <div className="flex min-w-0 flex-col gap-0.5">
         <span className="text-xs text-ink-muted">{t("account.email")}</span>
         {account.email ? (

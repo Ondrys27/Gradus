@@ -185,6 +185,7 @@ export function AdminControls({
       {offers("period") && (
         <div
           role="radiogroup"
+          data-tutorial="admin-period"
           aria-label={t("period")}
           title={rangeText}
           className="flex max-w-full shrink-0 overflow-x-auto rounded-xl border border-line bg-surface p-0.5 [scrollbar-width:none]"
@@ -235,7 +236,7 @@ export function AdminControls({
       )}
 
       {offers("compare") && (
-        <label className="flex h-10 shrink-0 cursor-pointer items-center gap-2 text-xs text-ink-soft mouse:h-8">
+        <label data-tutorial="admin-compare" className="flex h-10 shrink-0 cursor-pointer items-center gap-2 text-xs text-ink-soft mouse:h-8">
           <Switch
             checked={view.compare}
             onCheckedChange={(compare) => apply({ ...view, compare })}
@@ -245,7 +246,7 @@ export function AdminControls({
       )}
 
       {offers("internal") && (
-        <label className="flex h-10 shrink-0 cursor-pointer items-center gap-2 text-xs text-ink-soft mouse:h-8">
+        <label data-tutorial="admin-internal" className="flex h-10 shrink-0 cursor-pointer items-center gap-2 text-xs text-ink-soft mouse:h-8">
           <Switch
             checked={view.internal}
             onCheckedChange={(internal) => apply({ ...view, internal })}
@@ -262,6 +263,7 @@ export function AdminControls({
           size="sm"
           aria-expanded={showSegments}
           aria-controls="admin-filters"
+          data-tutorial="admin-filters"
           onClick={() => setShowSegments((open) => !open)}
           className="shrink-0"
         >
@@ -275,6 +277,7 @@ export function AdminControls({
         variant="ghost"
         size="icon-sm"
         aria-label={t("refresh")}
+        data-tutorial="admin-refresh"
         title={
           refreshedAt
             ? t("refreshedAt", { time: formatTime(refreshedAt, ADMIN_FORMAT_SETTINGS) })

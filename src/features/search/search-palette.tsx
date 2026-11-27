@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import {
   ArrowLeftIcon,
   ChevronRightIcon,
+  CircleHelpIcon,
   CornerDownLeftIcon,
   LoaderCircleIcon,
   SearchIcon,
@@ -32,6 +33,8 @@ import {
   type ResultKind,
 } from "./search-logic";
 import { KIND_ICONS, useSearchRows, type Row, type RowGroup } from "./use-search-rows";
+import { guide } from "@/features/tutorial/guide/guide-store";
+import { isHowQuestion } from "@/features/tutorial/guide/question";
 import { useReducedMotionSafe } from "@/lib/use-media-query";
 
 /** Typing settles for this long before the database is asked. */
@@ -60,8 +63,12 @@ export function SearchPalette({ open, onOpenChange }: Props) {
   );
 }
 
+/** The row that hands a "how do I…" question to Grady's guide. */
+const GUIDE_ROW = "guide";
+
 function PaletteBody({ onClose }: { onClose: () => void }) {
   const t = useTranslations("search");
+  const tGuide = useTranslations("tutorial");
   const router = useRouter();
   const listId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -109,10 +116,27 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
   const settled = tidyQuery(query) === debounced && (!searching || !results.isFetching);
   const nothingFound =
     tidyQuery(query) !== "" && groups.length === 0 && settled && !results.isError;
-  const visibleGroups: RowGroup[] =
+  // "How do I…" (30.8): Grady answers and shows it on screen, first in the list.
+  const guideRow: Row | null = useMemo(() => {
+    if (!isHowQuestion(query)) return null;
+    return {
+      key: GUIDE_ROW,
+      kind: "action",
+      id: GUIDE_ROW,
+      title: tGuide("guide.search"),
+      context: tidyQuery(query),
+      href: null,
+      icon: CircleHelpIcon,
+      rank: 0,
+    };
+  }, [query, tGuide]);
+  const baseGroups: RowGroup[] =
     nothingFound && createRow
       ? [{ key: "create", label: "", rows: [createRow], showAll: null }]
       : groups;
+  const visibleGroups: RowGroup[] = guideRow
+    ? [{ key: GUIDE_ROW, label: "", rows: [guideRow], showAll: null }, ...baseGroups]
+    : baseGroups;
   const rows = visibleGroups.flatMap((group) => group.rows);
   const sizes = visibleGroups.map((group) => group.rows.length);
   const current = Math.min(selected, Math.max(rows.length - 1, 0));
@@ -163,6 +187,11 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
 
   function activate(row: Row | undefined, background = false) {
     if (!row) return;
+    if (row.key === GUIDE_ROW) {
+      onClose();
+      guide.ask(tidyQuery(query), "search");
+      return;
+    }
     if (row.fill !== undefined) {
       setQuery(row.fill);
       inputRef.current?.focus();

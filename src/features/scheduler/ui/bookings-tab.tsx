@@ -66,7 +66,7 @@ export function BookingsTab({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3" data-tutorial="scheduler-booking-filters">
         <Segmented
           label={t("whenLabel")}
           value={when}
@@ -136,6 +136,7 @@ export function BookingsTab({
                   </div>
                   <button
                     type="button"
+                    data-tutorial="scheduler-booking"
                     onClick={() => setOpen(booking.id)}
                     className="flex min-w-0 flex-1 cursor-pointer flex-col rounded-lg text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                   >

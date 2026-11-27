@@ -132,6 +132,7 @@ export function TargetSearch({
     <div className="flex flex-col gap-1">
       <Input
         id={id}
+        data-tutorial="crm-task-target"
         value={term}
         placeholder={placeholder}
         autoComplete="off"

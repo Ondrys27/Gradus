@@ -5,6 +5,8 @@ import { METRICS_TIMEZONE, shiftDay } from "@/lib/analytics/metrics";
 import type { EventName } from "@/lib/analytics/events";
 import { APP_VERSION } from "@/lib/app-version";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { zonedWallClockToInstant, type IsoDate } from "@/lib/format";
+import { isGuideSection } from "@/features/tutorial/ui-map/types";
 import { EMAIL_KINDS, RESEND_PLAN } from "@/lib/email/kinds";
 import { emailForecast, parseEmailUsage, usageState } from "../../email-usage";
 import { envHealth } from "../../env-health";
@@ -1061,6 +1063,52 @@ const satisfaction: Loader = async (q) => {
   };
 };
 
+/**
+ * "What people ask about" (30.8): the most asked questions to Grady's guide
+ * in the period, by section, without internal accounts and never with an
+ * account (guide_questions has none). Before the migration of 30.8 the
+ * function is missing: the widget shows nothing instead of failing.
+ */
+const guideQuestions: Loader = async (q) => {
+  const { from, to } = range(q);
+  // The generated types gain the function of 30.8 only after the migration (db:types).
+  const rpc = createAdminClient().rpc as unknown as (
+    name: string,
+    args: Record<string, unknown>,
+  ) => Promise<{ data: unknown; error: { message: string } | null }>;
+  const { data, error } = await rpc("admin_guide_top_questions", {
+    _since: zonedWallClockToInstant(from as IsoDate, "00:00", METRICS_TIMEZONE).toISOString(),
+    _until: zonedWallClockToInstant(shiftDay(to as IsoDate, 1), "00:00", METRICS_TIMEZONE).toISOString(),
+    _limit: 8,
+  });
+  if (error) console.error("admin_guide_top_questions", error.message);
+  const list = (Array.isArray(data) ? data : []) as {
+    section: string;
+    question: string;
+    asked: number | string;
+    unanswered: number | string;
+  }[];
+  const asked = list.reduce((total, row) => total + Number(row.asked), 0);
+  const unanswered = list.reduce((total, row) => total + Number(row.unanswered), 0);
+  const top = Math.max(1, ...list.map((row) => Number(row.asked)));
+  return {
+    range: range(q),
+    figures: [
+      figure("guideQuestions", "asked", asked),
+      figure("guideQuestions", "unanswered", unanswered, "count", { status: countStatus(unanswered, true) }),
+    ],
+    rows: list.map((row, index) => ({
+      id: `${row.section}:${index}`,
+      text: row.question,
+      subLabel: isGuideSection(row.section) ? `tutorial.guides.${row.section}.name` : "admin.widgets.guideQuestions.noSection",
+      value: Number(row.asked),
+      unit: "count" as const,
+      ratio: Number(row.asked) / top,
+    })),
+    rowsTitle: "admin.widgets.guideQuestions.top",
+  };
+};
+
 // --- Management --------------------------------------------------------------------
 
 const audit: Loader = async (_q, context) => {
@@ -1140,6 +1188,7 @@ const LOADERS: Record<Exclude<AdminWidgetKey, "quickActions">, Loader> = {
   scheduler,
   mcp,
   satisfaction,
+  guideQuestions,
   audit,
   waiting,
 };

@@ -155,6 +155,7 @@ export function DealFilterBar({ filters, onChange, shown, total }: Props) {
           size="sm"
           aria-expanded={panel}
           aria-controls={PANEL_ID}
+          data-tutorial="pipeline-filters"
           onClick={() => setPanel((value) => !value)}
         >
           <FilterIcon aria-hidden />
@@ -174,6 +175,7 @@ export function DealFilterBar({ filters, onChange, shown, total }: Props) {
       {panel && (
         <div
           id={PANEL_ID}
+          data-tutorial="pipeline-filter-panel"
           className="grid grid-cols-1 gap-3 rounded-xl border border-line bg-surface p-3 sm:grid-cols-2 lg:grid-cols-4"
         >
           <FilterSelect

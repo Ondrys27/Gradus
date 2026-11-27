@@ -65,7 +65,7 @@ export function TransactionsPanel({ range, onEdit, onCreate }: Props) {
             setPage(0);
           }}
         >
-          <SelectTrigger id="transaction-filter">
+          <SelectTrigger id="transaction-filter" data-tutorial="finance-category-filter">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -155,6 +155,7 @@ export function TransactionRow({
     >
       <button
         type="button"
+        data-tutorial="finance-transaction-row"
         disabled={!onEdit}
         onClick={() => onEdit?.(transaction)}
         className="flex min-h-16 min-w-0 flex-1 cursor-pointer disabled:cursor-default disabled:hover:bg-transparent items-center gap-3 rounded-2xl p-3 text-left outline-none hover:bg-surface-hover focus-visible:ring-3 focus-visible:ring-violet/40"

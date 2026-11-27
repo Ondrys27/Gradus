@@ -32,7 +32,18 @@ export const E2E_ECHO_SUMMARY = "echo-summary";
 export const E2E_TOOL_SCRIPT = "tool-script";
 export const E2E_TOOLS_HEADER = "x-gradus-e2e-tools";
 export const E2E_TOOLS_TEXT = "E2E tools";
-export type E2eModel = typeof E2E_ECHO_NOTES | typeof E2E_ECHO_SUMMARY | typeof E2E_TOOL_SCRIPT;
+/**
+ * The guide stand-in (30.8): the guide's call answers with the JSON in
+ * E2E_GUIDE_HEADER (base64), as if the model wrote it; the server then checks
+ * it against the catalog and the account's rights exactly as a real answer.
+ */
+export const E2E_GUIDE_SCRIPT = "guide-script";
+export const E2E_GUIDE_HEADER = "x-gradus-e2e-guide";
+export type E2eModel =
+  | typeof E2E_ECHO_NOTES
+  | typeof E2E_ECHO_SUMMARY
+  | typeof E2E_TOOL_SCRIPT
+  | typeof E2E_GUIDE_SCRIPT;
 export const E2E_NO_NOTES = "NO_USER_NOTES";
 /** The summary stand-in's text starts with this. */
 export const E2E_SUMMARY_TEXT = "E2E summary";
@@ -66,11 +77,25 @@ export function echoedAsk(params: Pick<Anthropic.MessageStreamParams, "messages"
   return `${E2E_SUMMARY_TEXT}: ${ask}`;
 }
 
+/** The scripted answer of the guide's header; empty when there is none or it is unreadable. */
+export function e2eGuideAnswer(headers: Pick<Headers, "get">): string {
+  const raw = headers.get(E2E_GUIDE_HEADER);
+  if (!raw) return "";
+  try {
+    return Buffer.from(raw, "base64").toString("utf8").slice(0, 20_000);
+  } catch {
+    return "";
+  }
+}
+
 export function e2eEchoClient(
   admin: SupabaseClient<Database>,
   model: E2eModel = E2E_ECHO_NOTES,
+  /** The guide stand-in's text, answered as it is. */
+  fixed?: string,
 ): GradyClient {
-  const answer = model === E2E_ECHO_SUMMARY ? echoedAsk : echoedNotes;
+  const answer =
+    fixed !== undefined ? () => fixed : model === E2E_ECHO_SUMMARY ? echoedAsk : echoedNotes;
   const stream = (params: Anthropic.MessageStreamParams) => {
     const reply = answer(params);
     async function* events() {

@@ -200,6 +200,7 @@ function Fields({
       onSubmit={submit}
       noValidate
       className="flex flex-col gap-4"
+      data-tutorial="calendar-event-form"
       onKeyDown={(keyEvent) => {
         if (!isPrivateShortcut(keyEvent)) return;
         keyEvent.preventDefault();
@@ -249,7 +250,12 @@ function Fields({
         />
       </FormField>
 
-      <div role="radiogroup" aria-label={t("form.type")} className="grid grid-cols-3 gap-2">
+      <div
+        role="radiogroup"
+        aria-label={t("form.type")}
+        data-tutorial="calendar-event-kind"
+        className="grid grid-cols-3 gap-2"
+      >
         {EVENT_KINDS.map((kind) => {
           const selected = draft.kind === kind;
           return (
@@ -398,6 +404,7 @@ function Fields({
           onCheckedChange={(checked) => patch({ private: checked })}
           aria-keyshortcuts="Alt+P"
           data-testid="event-private"
+          data-tutorial="calendar-event-private"
         />
       </div>
 

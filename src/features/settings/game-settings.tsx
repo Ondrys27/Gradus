@@ -50,7 +50,7 @@ export function GameSettings() {
 
   return (
     <SettingsSection title={t("title")} description={t("description")}>
-      <SettingRow id="settings-mode" label={t("modeLabel")} group layout="stack">
+      <SettingRow id="settings-mode" label={t("modeLabel")} group layout="stack" data-tutorial="settings-game-mode">
         <ChoiceGrid id="settings-mode" label={t("modeLabel")} columns={2}>
           {(["game", "tool"] as const).map((key) => (
             <ChoiceTile
@@ -67,7 +67,7 @@ export function GameSettings() {
       </SettingRow>
 
       {mode === "game" && (
-        <SettingRow id="settings-path" label={t("pathLabel")} hint={t("pathHint")} group layout="stack">
+        <SettingRow id="settings-path" label={t("pathLabel")} hint={t("pathHint")} group layout="stack" data-tutorial="settings-path">
           <ChoiceGrid id="settings-path" label={t("pathLabel")} columns={2}>
             {(paths.data ?? []).map((path) => (
               <ChoiceTile

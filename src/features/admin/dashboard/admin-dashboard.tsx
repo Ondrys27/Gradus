@@ -190,6 +190,7 @@ export function AdminDashboard({
                 aria-label={tBoard("tabs")}
                 className="flex max-w-full gap-1 overflow-x-auto"
                 data-testid="board-tabs"
+                data-tutorial="admin-board-tabs"
               >
                 {[{ id: MAIN, label: mainLabel }, ...tabs.map((tab) => ({ id: tab.id, label: tab.name ?? "" }))].map(
                   (tab) => (
@@ -221,6 +222,7 @@ export function AdminDashboard({
                   title={tBoard("newTab")}
                   onClick={() => setNaming({ mode: "new", value: "", template: "empty" })}
                   data-testid="board-new-tab"
+                  data-tutorial="admin-board-new-tab"
                 >
                   <PlusIcon aria-hidden />
                 </Button>
@@ -233,6 +235,7 @@ export function AdminDashboard({
                     size="icon"
                     aria-label={tBoard("renameTab")}
                     title={tBoard("renameTab")}
+                    data-tutorial="admin-board-rename-tab"
                     onClick={() => setNaming({ mode: "rename", value: active.name ?? "", template: "empty" })}
                   >
                     <PencilIcon aria-hidden />
@@ -243,6 +246,7 @@ export function AdminDashboard({
                     size="icon"
                     aria-label={tBoard("deleteTab")}
                     title={tBoard("deleteTab")}
+                    data-tutorial="admin-board-delete-tab"
                     onClick={() => setDeleting(true)}
                   >
                     <Trash2Icon aria-hidden className="text-destructive" />
@@ -256,6 +260,7 @@ export function AdminDashboard({
                   size="sm"
                   onClick={() => setSettingDefault(true)}
                   data-testid="admin-set-default"
+                  data-tutorial="admin-set-default"
                 >
                   <StarIcon aria-hidden data-icon="inline-start" />
                   {t("setDefault")}

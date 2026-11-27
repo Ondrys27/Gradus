@@ -53,7 +53,7 @@ function ManagedRewards({ worker }: { worker: DashboardWorker }) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="max-w-xl text-sm text-ink-soft">{t("intro")}</p>
         {canChange && worker.status !== "inactive" && (
-          <Button onClick={() => setAdding(true)} data-testid="reward-add">
+          <Button onClick={() => setAdding(true)} data-testid="reward-add" data-tutorial="reward-add">
             <PlusIcon aria-hidden data-icon="inline-start" />
             {t("add.button")}
           </Button>

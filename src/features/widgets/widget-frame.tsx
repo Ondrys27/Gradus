@@ -408,6 +408,7 @@ export const WidgetFrame = memo(
                 }}
                 aria-label={t("remove", { name })}
                 data-testid="widget-remove"
+                data-tutorial="dashboard-widget-remove"
                 className={cn(editButton, "-top-2.5 -left-2.5 hover:bg-pink hover:text-canvas")}
               >
                 <XIcon aria-hidden className="size-4" />
@@ -419,6 +420,7 @@ export const WidgetFrame = memo(
                 onClick={onSettings}
                 aria-label={t("settings", { name })}
                 data-testid="widget-settings"
+                data-tutorial="dashboard-widget-settings"
                 className={cn(editButton, "-top-2.5 -right-2.5 hover:text-violet")}
               >
                 <SettingsIcon aria-hidden className="size-4" />
@@ -429,6 +431,7 @@ export const WidgetFrame = memo(
                 <Menu.Trigger
                   aria-label={t("resize", { name })}
                   data-testid="widget-resize"
+                  data-tutorial="dashboard-widget-resize"
                   className={cn(editButton, "-right-2.5 -bottom-2.5 hover:text-violet")}
                 >
                   <Maximize2Icon aria-hidden className="size-3.5" />

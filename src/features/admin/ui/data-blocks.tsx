@@ -79,7 +79,7 @@ export function Funnel({ steps }: { steps: FunnelStep[] }) {
   if (steps.length === 0 || steps[0].users === 0) return <AdminEmpty />;
 
   return (
-    <ol className="flex flex-col">
+    <ol data-tutorial="admin-funnel" className="flex flex-col">
       {steps.map((step, index) => (
         <li key={step.key} className="flex flex-col">
           {index > 0 && (
@@ -138,7 +138,7 @@ export function CohortTable({ cohorts, weeks }: { cohorts: CohortRow[]; weeks: n
   if (cohorts.length === 0) return <AdminEmpty />;
 
   return (
-    <div className="overflow-x-auto">
+    <div data-tutorial="admin-cohorts" className="overflow-x-auto">
       <table className="w-full min-w-[44rem] border-separate border-spacing-0.5 text-xs tabular-nums">
         <thead className="text-ink-muted">
           <tr>
@@ -452,7 +452,7 @@ export function DataTable({
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div data-tutorial="admin-table" className="flex flex-col gap-2">
       <div className="-mx-4 overflow-x-auto px-4 md:-mx-5 md:px-5">
         <table className="w-full min-w-[32rem] text-left text-sm">
           <thead className="text-xs text-ink-muted">

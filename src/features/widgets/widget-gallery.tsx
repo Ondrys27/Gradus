@@ -129,6 +129,7 @@ export function WidgetGallery({
               onChange={(event) => setQuery(event.target.value)}
               placeholder={t("gallerySearch")}
               aria-label={t("gallerySearch")}
+              data-tutorial="dashboard-gallery-search"
               className="h-11 w-full rounded-xl border border-line bg-canvas pr-3 pl-9 text-sm text-ink outline-none placeholder:text-ink-muted focus-visible:border-violet/60 focus-visible:ring-3 focus-visible:ring-violet/30"
             />
           </label>
@@ -280,7 +281,14 @@ function GalleryItem({
             )}
           </div>
         </div>
-        <Button type="button" size="sm" onClick={add} data-testid="gallery-add" className="shrink-0">
+        <Button
+          type="button"
+          size="sm"
+          onClick={add}
+          data-testid="gallery-add"
+          data-tutorial="dashboard-gallery-add"
+          className="shrink-0"
+        >
           <PlusIcon aria-hidden data-icon="inline-start" />
           {t("galleryAddShort")}
         </Button>
