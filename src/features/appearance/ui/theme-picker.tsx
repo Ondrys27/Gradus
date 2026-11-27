@@ -19,10 +19,12 @@ import {
 import { useTranslations } from "next-intl";
 import { buttonVariants, Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { accountKeys, useSession, useUserSettings } from "@/features/account/queries";
 import { useSettingsSave } from "@/features/settings/save-state";
 import { track } from "@/lib/analytics/client";
 import { formatNumber } from "@/lib/format";
+import { THEMES } from "@/lib/themes";
 import { useFormatSettings } from "@/lib/use-format-settings";
 import { cn } from "@/lib/utils";
 import { CUSTOM_THEME_NAME_MAX, CUSTOM_THEMES_MAX } from "../custom-tokens";
@@ -75,6 +77,33 @@ function copyName(name: string, suffix: string): string {
  */
 export function ThemePicker() {
   const t = useTranslations("settings.appearance");
+  // What the picker shows depends on the clock (the block in charge) and on data only the browser
+  // loads (custom themes, unlocked themes), which may already be cached when a late boundary
+  // hydrates: until hydration both sides draw the same placeholder.
+  const now = useClockStep();
+  if (now === null) {
+    return (
+      <div className="flex flex-col gap-3">
+        <div
+          id="settings-theme"
+          tabIndex={-1}
+          role="radiogroup"
+          aria-label={t("title")}
+          aria-busy
+          className="grid grid-cols-2 gap-2 rounded-xl outline-none sm:grid-cols-3"
+        >
+          {THEMES.map((theme) => (
+            <Skeleton key={theme} className="aspect-[5/3] w-full rounded-xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return <ThemePickerBody now={now} />;
+}
+
+function ThemePickerBody({ now }: { now: number }) {
+  const t = useTranslations("settings.appearance");
   const settings = useUserSettings();
   const format = useFormatSettings();
   const { save } = useSettingsSave();
@@ -91,12 +120,9 @@ export function ThemePicker() {
     if (linkCode) setImporting(true);
   }, [linkCode]);
 
-  // The block in charge depends on the clock, which the server and the browser read apart: decided after hydration.
-  const now = useClockStep();
-  const resolved = now === null ? null : resolveRef(settings, now);
-  const shown = resolved
-    ? (options.find((option) => option.ref === resolved.ref && option.available)?.ref ?? "gradus")
-    : null;
+  const resolved = resolveRef(settings, now);
+  const shown =
+    options.find((option) => option.ref === resolved.ref && option.available)?.ref ?? "gradus";
   const customCount = options.filter((option) => option.custom).length;
   const full = customCount >= CUSTOM_THEMES_MAX;
 
@@ -171,7 +197,7 @@ export function ThemePicker() {
         })}
       </div>
 
-      {resolved?.source === "schedule" && (
+      {resolved.source === "schedule" && (
         <p className="text-[13px] text-ink-muted">
           {t("pickDuringBlock", { block: resolved.active.block.name })}
         </p>
