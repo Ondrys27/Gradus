@@ -169,7 +169,7 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 30.3 | architect | — 2026-11-26: Sdílení kalendáře ve firmě (jen obsazeno / číst / zapisovat po zdrojích, žádosti se zvonkem, soukromé události jako „Obsazeno“, hledání společného času) s pravidly řádků podle sdílení.
 - [x] 30.4 | architect | env: RESEND_API_KEY — 2026-11-27: Plánovač má vlastní zdroje obsazenosti a cílový kalendář, jeden výběr termínu s Volno / Plno a schůzka z Cold Callingu, kontaktu i obchodu se rezervuje přes plánovač hostitele podle nastavení majitele.
 - [x] 30.5 | architect | — 2026-11-27: Ve firmě je vidět, kdo je online, pryč nebo kdy byl naposledy (seznam lidí, konverzace, obchody, úkoly, nástěnka), s přepínačem „Ukazovat, kdy jsem online“, který skryje stav oběma směry.
-- [ ] 30.6 | architect |
+- [x] 30.6 | architect | 2026-11-27 — Theme schedule through the day with transitions and custom themes with a contrast check, sharing by code and import.
 - [ ] 30.7 | designer |
 - [ ] 30.8 | architect | env: ANTHROPIC_API_KEY
 - [ ] 30.9 | designer |
