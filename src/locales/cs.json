@@ -240,6 +240,13 @@
     "unread": "{count, plural, one {# nepřečtená zpráva} few {# nepřečtené zprávy} other {# nepřečtených zpráv}}",
     "scheduler": "Plánovač schůzek",
     "support": "Podpora",
+    "groups": {
+      "pinned": "Připnuto",
+      "today": "Dnes",
+      "sales": "Obchod",
+      "business": "Podnikání",
+      "company": "Firma"
+    },
     "integrations": "Integrace"
   },
   "topBar": {
@@ -1594,7 +1601,7 @@
       },
       "appearance": {
         "title": "Vzhled a formáty",
-        "description": "Téma, zvuky, měna, datum, čas a časové pásmo."
+        "description": "Téma, zvuky, menu, měna, datum, čas a časové pásmo."
       },
       "work": {
         "title": "Práce",
@@ -1697,6 +1704,10 @@
       "animations": {
         "label": "Animace",
         "keywords": "konfety pohyb"
+      },
+      "menu": {
+        "label": "Menu a lišta na telefonu",
+        "keywords": "menu lišta připnout skrýt pořadí sekce navigace sidebar"
       },
       "country": {
         "label": "Země",
@@ -2043,6 +2054,20 @@
         "privateHint": "Události ze zapnutého kalendáře uvidí ostatní ve firmě jen jako Obsazeno.",
         "privateOf": "Vše z kalendáře {name} je soukromé"
       }
+    },
+    "menu": {
+      "title": "Menu",
+      "description": "Co je v menu nahoře a co v liště na telefonu. Skrytou sekci najdeš dál přes hledání (⌘K) a odkazy, adresy se nemění.",
+      "pin": "Připnout nahoru: {name}",
+      "unpin": "Odepnout: {name}",
+      "hide": "Skrýt z menu: {name}",
+      "show": "Ukázat v menu: {name}",
+      "up": "Posunout výš: {name}",
+      "down": "Posunout níž: {name}",
+      "reset": "Výchozí menu",
+      "pinnedHint": "Připnuté sekce jsou první v menu i v liště na telefonu (nejvýš {max}).",
+      "homeHint": "Přehled je domov a v menu zůstává.",
+      "hiddenBadge": "skryté"
     }
   },
   "milestones": {
@@ -2058,7 +2083,8 @@
       "completeEmpty": "Přidej první úkol",
       "completeLockedHint": "Milník půjde dokončit, až budou hotové všechny úkoly.",
       "completeEmptyHint": "Milník potřebuje aspoň jeden úkol, než ho půjde dokončit.",
-      "import": "Importovat mapu"
+      "import": "Importovat mapu",
+      "more": "Další možnosti"
     },
     "filter": {
       "label": "Filtr podle kategorie",
@@ -2368,7 +2394,7 @@
     "live": {
       "here": "Teď tu: {names}",
       "status": {
-        "saved": "Synchronizováno",
+        "saved": "Uloženo",
         "pending": "Ukládám…",
         "saving": "Ukládám…",
         "error": "Zatím neuloženo, zkouším znovu",
@@ -2858,7 +2884,8 @@
       "newDeal": "Nový obchod",
       "editStages": "Upravit fáze",
       "doneEditing": "Hotovo",
-      "addStage": "Přidat fázi"
+      "addStage": "Přidat fázi",
+      "more": "Další možnosti"
     },
     "notices": {
       "moveFailed": "Obchod se nepodařilo přesunout. Zkontroluj připojení a zkus to znovu.",
@@ -3266,7 +3293,8 @@
       "saveFailed": "Úkol se nepodařilo uložit. Zkus to znovu.",
       "cancel": "Zrušit",
       "save": "Uložit",
-      "create": "Přidat úkol"
+      "create": "Přidat úkol",
+      "addDescription": "Přidat popis"
     },
     "errors": {
       "titleRequired": "Napiš, co je potřeba udělat.",
@@ -3334,7 +3362,8 @@
     "actions": {
       "newContact": "Nový kontakt",
       "editTables": "Upravit tabulky",
-      "generate": "Generovat kontakty"
+      "generate": "Generovat kontakty",
+      "more": "Další možnosti"
     },
     "search": {
       "label": "Hledat v kontaktech",
@@ -3680,7 +3709,8 @@
       "loadingMore": "Načítám…",
       "deal": "Obchod: {title}",
       "dealShort": "Obchod",
-      "dealCreated": "Obchod „{title}“ je v pipeline."
+      "dealCreated": "Obchod „{title}“ je v pipeline.",
+      "emptyAction": "Otevřít Kontakty"
     },
     "panel": {
       "title": "Kontakt",
@@ -14268,6 +14298,26 @@
         "name": "Denní souhrn",
         "purpose": "Kdy ti chodí souhrn „včera“ a jestli jen, když je co hlásit.",
         "keywords": "denní souhrn e-mail hodina upozornění"
+      },
+      "settings-menu": {
+        "name": "Menu",
+        "purpose": "Tady si připneš sekce, které používáš nejvíc, skryješ ty, které nepotřebuješ, a přeskládáš pořadí. Totéž platí pro lištu na telefonu.",
+        "keywords": "menu lišta připnout skrýt pořadí sekce navigace"
+      },
+      "pipeline-more": {
+        "name": "Další možnosti pipeline",
+        "purpose": "Pod třemi tečkami je úprava fází a přidání nové fáze. Hlavní tlačítko vedle zakládá obchod.",
+        "keywords": "další možnosti fáze upravit přidat tři tečky"
+      },
+      "contacts-more": {
+        "name": "Další možnosti kontaktů",
+        "purpose": "Pod třemi tečkami je generování kontaktů z Googlu a úprava tabulek. Hlavní tlačítko vedle zakládá kontakt.",
+        "keywords": "další možnosti generovat tabulky tři tečky"
+      },
+      "milestones-more": {
+        "name": "Další možnosti milníků",
+        "purpose": "Pod třemi tečkami je import myšlenkové mapy jako nového milníku. Hlavní tlačítko vedle zakládá milník.",
+        "keywords": "další možnosti import mapa tři tečky"
       }
     },
     "guides": {
@@ -15631,5 +15681,9 @@
       "connected": "{count, plural, one {Připojenou aplikaci má} few {Připojenou aplikaci mají} other {Připojenou aplikaci má}} {names}.",
       "switch": "Povolit ve firmě"
     }
+  },
+  "emptyState": {
+    "quickLook": "Rychlá ukázka · {minutes} min",
+    "quickLookLabel": "Spustit rychlou ukázku sekce"
   }
 }

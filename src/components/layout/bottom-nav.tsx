@@ -35,7 +35,9 @@ const accountItems = [
 
 /**
  * Floating glass bar for phones. It stops short of the right edge:
- * the bottom-right corner belongs to Grady.
+ * the bottom-right corner belongs to Grady. Its slots follow the sidebar
+ * (30.9): pinned sections first, then the defaults; "More" holds the rest in
+ * the same groups as the sidebar.
  */
 export function BottomNav() {
   const t = useTranslations("nav");
@@ -49,7 +51,7 @@ export function BottomNav() {
   const signOut = useSignOut();
   const settings = useUserSettings();
   const report = useReportProblem();
-  const { primary: primaryItems, more: moreItems } = useNavItems();
+  const { primary: primaryItems, more: moreItems, moreGroups } = useNavItems();
   const moreActive = [...moreItems, ...accountItems].some((item) =>
     isActivePath(pathname, item.href),
   );
@@ -93,62 +95,74 @@ export function BottomNav() {
         className="md:hidden"
       >
         <SpaceList />
-        <ul className="grid grid-cols-2 gap-3">
-          {moreItems.map((item) => {
-            const active = isActivePath(pathname, item.href);
-            if (item.locked) {
-              return (
-                <li key={item.key}>
-                  <LockedSectionPopover
-                    item={item}
-                    side="top"
-                    onNavigate={() => setMoreOpen(false)}
-                    trigger={
-                      <button
-                        type="button"
-                        aria-label={t("lockedLabel", { section: t(item.key) })}
-                        className="flex min-h-20 w-full cursor-pointer flex-col justify-between gap-3 rounded-card border border-line bg-canvas-deep/40 p-4 text-left text-sm font-semibold text-ink-muted/60 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-                      >
-                        <LockIcon aria-hidden className="size-5" />
-                        {t(item.key)}
-                      </button>
-                    }
-                  />
-                </li>
-              );
-            }
-            return (
-              <li key={item.key}>
-                <NavLink
-                  href={item.href}
-                  onClick={() => setMoreOpen(false)}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "relative flex min-h-20 flex-col justify-between gap-3 rounded-card border p-4 text-sm font-semibold outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-                    active
-                      ? "border-violet/60 bg-violet/20 text-ink shadow-glow-strong"
-                      : item.fresh
-                        ? "border-teal/50 bg-teal/10 text-ink shadow-[0_0_18px_-4px_var(--color-teal)]"
-                        : "border-line bg-canvas-deep/60 text-ink-soft",
-                  )}
-                >
-                  <span className="relative inline-block">
-                    <item.icon aria-hidden className={cn("size-5", active && "text-violet")} />
-                    <NavBadge count={item.badge} />
-                    {item.fresh && (
-                      <span
-                        aria-hidden
-                        className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-teal shadow-[0_0_8px_var(--color-teal)] motion-safe:animate-pulse"
+        {moreGroups.map((group) => (
+          <section
+            key={group.key}
+            aria-label={t(`groups.${group.key}`)}
+            data-nav-group={group.key}
+            className="mt-4 flex flex-col gap-2 first:mt-0"
+          >
+            {group.key !== "pinned" && (
+              <h3 className="micro-label px-1 text-ink-muted/80">{t(`groups.${group.key}`)}</h3>
+            )}
+            <ul className="grid grid-cols-2 gap-3">
+              {group.items.map((item) => {
+                const active = isActivePath(pathname, item.href);
+                if (item.locked) {
+                  return (
+                    <li key={item.key}>
+                      <LockedSectionPopover
+                        item={item}
+                        side="top"
+                        onNavigate={() => setMoreOpen(false)}
+                        trigger={
+                          <button
+                            type="button"
+                            aria-label={t("lockedLabel", { section: t(item.key) })}
+                            className="flex min-h-20 w-full cursor-pointer flex-col justify-between gap-3 rounded-card border border-line bg-canvas-deep/40 p-4 text-left text-sm font-semibold text-ink-muted/60 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                          >
+                            <LockIcon aria-hidden className="size-5" />
+                            {t(item.key)}
+                          </button>
+                        }
                       />
-                    )}
-                  </span>
-                  {t(item.key)}
-                  {item.fresh && <span className="sr-only">{t("justUnlocked")}</span>}
-                </NavLink>
-              </li>
-            );
-          })}
-        </ul>
+                    </li>
+                  );
+                }
+                return (
+                  <li key={item.key}>
+                    <NavLink
+                      href={item.href}
+                      onClick={() => setMoreOpen(false)}
+                      aria-current={active ? "page" : undefined}
+                      className={cn(
+                        "relative flex min-h-20 flex-col justify-between gap-3 rounded-card border p-4 text-sm font-semibold outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                        active
+                          ? "border-violet/60 bg-violet/20 text-ink shadow-glow-strong"
+                          : item.fresh
+                            ? "border-teal/50 bg-teal/10 text-ink shadow-[0_0_18px_-4px_var(--color-teal)]"
+                            : "border-line bg-canvas-deep/60 text-ink-soft",
+                      )}
+                    >
+                      <span className="relative inline-block">
+                        <item.icon aria-hidden className={cn("size-5", active && "text-violet")} />
+                        <NavBadge count={item.badge} />
+                        {item.fresh && (
+                          <span
+                            aria-hidden
+                            className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-teal shadow-[0_0_8px_var(--color-teal)] motion-safe:animate-pulse"
+                          />
+                        )}
+                      </span>
+                      {t(item.key)}
+                      {item.fresh && <span className="sr-only">{t("justUnlocked")}</span>}
+                    </NavLink>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ))}
 
         <ul className="mt-4 flex flex-col gap-1 border-t border-line pt-3">
           {accountItems.map(({ key, href, icon: Icon }) => {

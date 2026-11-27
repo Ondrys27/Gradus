@@ -108,6 +108,8 @@ export const GROUP_D_ELEMENTS: readonly UiElement[] = [
   { key: "appearance-create-theme", section: "settings", path: APPEARANCE, safe: true },
   { key: "appearance-schedule", section: "settings", path: APPEARANCE },
   { key: "appearance-sound", section: "settings", path: APPEARANCE },
+  // The person's own menu (30.9): pins, hidden sections and order
+  { key: "settings-menu", section: "settings", path: APPEARANCE },
   { key: "appearance-animations", section: "settings", path: APPEARANCE },
   { key: "appearance-timezone", section: "settings", path: APPEARANCE },
   { key: "appearance-currency", section: "settings", path: APPEARANCE },
@@ -293,6 +295,7 @@ export const GROUP_D_GUIDES: readonly SectionGuideDef[] = [
       { el: "appearance-schedule" },
       { el: "appearance-sound" },
       { el: "appearance-animations" },
+      { el: "settings-menu" },
       { el: "appearance-timezone" },
       { el: "appearance-currency" },
       { el: "appearance-date-format" },

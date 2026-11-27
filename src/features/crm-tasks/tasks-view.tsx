@@ -183,6 +183,15 @@ export function TasksView() {
             icon={<ListChecksIcon />}
             title={t("empty.title")}
             description={t("empty.description")}
+            guide="tasks"
+            action={
+              canAdd && (
+                <Button onClick={() => setAdding(true)}>
+                  <PlusIcon aria-hidden data-icon="inline-start" />
+                  {t("new")}
+                </Button>
+              )
+            }
           />
         )
       ) : (

@@ -90,6 +90,7 @@ export function MessagesView() {
           icon={<MessageCircleIcon />}
           title={t("nobodyTitle")}
           description={isOwner ? t("nobodyOwner") : t("nobodyWorker")}
+          guide="messages"
           action={
             isOwner ? (
               <Link href={COMPANY_PATH} className={buttonVariants()}>

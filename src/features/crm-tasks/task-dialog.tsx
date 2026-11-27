@@ -102,6 +102,7 @@ function Fields({
 
   const [title, setTitle] = useState(task?.title ?? "");
   const [description, setDescription] = useState(task?.description ?? "");
+  const [showDescription, setShowDescription] = useState(Boolean(task?.description));
   const [dueAt, setDueAt] = useState<string | null>(
     () => task?.due_at ?? defaultDueAt(new Date(), settings.timeZone),
   );
@@ -304,15 +305,28 @@ function Fields({
 
       <RewardPriceField state={price} id="crm-task-reward" />
 
-      <FormField id="crm-task-description" label={t("description")} error={err("description")}>
-        <Textarea
-          {...fieldA11y("crm-task-description", err("description"))}
-          value={description}
-          rows={3}
-          maxLength={DESCRIPTION_MAX + 10}
-          onChange={(event) => setDescription(event.target.value)}
-        />
-      </FormField>
+      {showDescription ? (
+        <FormField id="crm-task-description" label={t("description")} error={err("description")}>
+          <Textarea
+            {...fieldA11y("crm-task-description", err("description"))}
+            value={description}
+            rows={3}
+            maxLength={DESCRIPTION_MAX + 10}
+            autoFocus={!task}
+            onChange={(event) => setDescription(event.target.value)}
+          />
+        </FormField>
+      ) : (
+        // A new task shows five fields at first (30.9); the description waits behind one click.
+        <button
+          type="button"
+          data-testid="crm-task-add-description"
+          onClick={() => setShowDescription(true)}
+          className="self-start text-sm text-violet outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 rounded-md"
+        >
+          {t("addDescription")}
+        </button>
+      )}
 
       {failed && <FormAlert>{t("saveFailed")}</FormAlert>}
       {priceFailed && <FormAlert>{tPrice("saveFailed")}</FormAlert>}

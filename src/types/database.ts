@@ -6653,6 +6653,7 @@ export type Database = {
           jarvis_quiet_from: number | null
           jarvis_quiet_to: number | null
           locale: string
+          nav_prefs: Json
           number_format: string
           recent_search_items: Json
           recent_searches: string[]
@@ -6689,6 +6690,7 @@ export type Database = {
           jarvis_quiet_from?: number | null
           jarvis_quiet_to?: number | null
           locale?: string
+          nav_prefs?: Json
           number_format?: string
           recent_search_items?: Json
           recent_searches?: string[]
@@ -6725,6 +6727,7 @@ export type Database = {
           jarvis_quiet_from?: number | null
           jarvis_quiet_to?: number | null
           locale?: string
+          nav_prefs?: Json
           number_format?: string
           recent_search_items?: Json
           recent_searches?: string[]
@@ -10901,6 +10904,7 @@ export type Database = {
       valid_grady_models: { Args: { _value: Json }; Returns: boolean }
       valid_guide_seen: { Args: { _sections: string[] }; Returns: boolean }
       valid_jarvis_rules: { Args: { _value: Json }; Returns: boolean }
+      valid_nav_prefs: { Args: { _p: Json }; Returns: boolean }
       valid_plan_add_ons: { Args: { _value: Json }; Returns: boolean }
       valid_plan_catalog: { Args: { _payload: Json }; Returns: boolean }
       valid_showcase_mode: { Args: { _value: Json }; Returns: boolean }

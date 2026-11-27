@@ -29,8 +29,9 @@ type LooseRpc = (
  * and return counts, never content.
  */
 async function call(admin: Admin, fn: string, args: Record<string, unknown>): Promise<Row[]> {
-  const rpc = admin.rpc.bind(admin) as unknown as LooseRpc;
-  const { data, error } = await rpc(fn, args);
+  // Called through a loose signature: the metric functions are looked up by key, and
+  // binding the typed `rpc` over the whole generated Functions map is too deep for tsc.
+  const { data, error } = await (admin as unknown as { rpc: LooseRpc }).rpc(fn, args);
   if (error) throw new Error(`${fn}: ${error.message}`);
   if (Array.isArray(data)) return data as Row[];
   return data === null || data === undefined ? [] : [{ value: data }];

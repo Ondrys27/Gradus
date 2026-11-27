@@ -97,7 +97,13 @@ describe("Grady's answer as steps", () => {
       OWNER,
       "contacts",
     );
-    expect(seq(result)).toEqual(["fill:contact-search", "click:contact-new", "highlight:contact-generate"]);
+    // Generating sits under the "⋯" of the page (30.9), so the menu opens first.
+    expect(seq(result)).toEqual([
+      "fill:contact-search",
+      "click:contact-new",
+      "open:contacts-more",
+      "highlight:contact-generate",
+    ]);
   });
 
   it("ends a plan that only leads somewhere on the element itself", () => {

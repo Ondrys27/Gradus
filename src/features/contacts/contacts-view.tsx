@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { InfoIcon, PencilIcon, PlusIcon, SearchIcon, SparklesIcon, UsersIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { MoreMenu, MoreMenuItem } from "@/components/ui/more-menu";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -109,25 +109,25 @@ export function ContactsView() {
         actions={
           (canCreate || canGenerate || canEditTables) && (
             <>
-              {canEditTables && (
-                <Link
-                  href="/app/kontakty/tabulky"
-                  data-tutorial="contact-tables-edit"
-                  className={buttonVariants({ variant: "outline" })}
-                >
-                  <PencilIcon aria-hidden data-icon="inline-start" />
-                  {t("actions.editTables")}
-                </Link>
-              )}
-              {canGenerate && (
-                <Button
-                  variant="outline"
-                  data-tutorial="contact-generate"
-                  onClick={() => setGenerating(true)}
-                >
-                  <SparklesIcon aria-hidden data-icon="inline-start" />
-                  {t("actions.generate")}
-                </Button>
+              {(canGenerate || canEditTables) && (
+                <MoreMenu label={t("actions.more")} data-tutorial="contacts-more">
+                  {canGenerate && (
+                    <MoreMenuItem
+                      label={t("actions.generate")}
+                      icon={<SparklesIcon aria-hidden />}
+                      data-tutorial="contact-generate"
+                      onSelect={() => setGenerating(true)}
+                    />
+                  )}
+                  {canEditTables && (
+                    <MoreMenuItem
+                      label={t("actions.editTables")}
+                      icon={<PencilIcon aria-hidden />}
+                      data-tutorial="contact-tables-edit"
+                      href="/app/kontakty/tabulky"
+                    />
+                  )}
+                </MoreMenu>
               )}
               {canCreate && (
                 <Button
@@ -212,6 +212,7 @@ export function ContactsView() {
             icon={<UsersIcon />}
             title={t("empty.title")}
             description={t("empty.description")}
+            guide="contacts"
             action={
               canCreate && (
                 <Button
@@ -223,6 +224,14 @@ export function ContactsView() {
                 >
                   <PlusIcon aria-hidden data-icon="inline-start" />
                   {t("actions.newContact")}
+                </Button>
+              )
+            }
+            secondary={
+              canGenerate && (
+                <Button variant="outline" onClick={() => setGenerating(true)}>
+                  <SparklesIcon aria-hidden data-icon="inline-start" />
+                  {t("actions.generate")}
                 </Button>
               )
             }

@@ -144,6 +144,16 @@ export function GuideHost({
     [audience, writable],
   );
 
+  // A guide asked for from elsewhere (an empty state's "quick look", 30.9).
+  useEffect(() => {
+    const play = () => {
+      const request = guide.takeRun();
+      if (request) start(request.depth, request.section);
+    };
+    play();
+    return guide.onRun(play);
+  }, [start]);
+
   const showAnswer = useCallback(() => {
     const current = guide.get().answer;
     if (!current?.plan) return;

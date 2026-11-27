@@ -6,6 +6,7 @@ import { FileUpIcon, FlagIcon, ListIcon, MapIcon, PlusIcon } from "lucide-react"
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { MoreMenu, MoreMenuItem } from "@/components/ui/more-menu";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUrlIntent } from "@/lib/use-url-intent";
@@ -55,10 +56,14 @@ export function MilestonesView() {
 
   const newButton = canEdit && (
     <div className="flex flex-wrap gap-2">
-      <Button variant="outline" data-tutorial="milestone-import" onClick={() => setImporting(true)}>
-        <FileUpIcon aria-hidden data-icon="inline-start" />
-        {t("actions.import")}
-      </Button>
+      <MoreMenu label={t("actions.more")} data-tutorial="milestones-more">
+        <MoreMenuItem
+          label={t("actions.import")}
+          icon={<FileUpIcon aria-hidden />}
+          data-tutorial="milestone-import"
+          onSelect={() => setImporting(true)}
+        />
+      </MoreMenu>
       <Button data-tutorial="milestone-new" onClick={() => setCreating(true)}>
         <PlusIcon aria-hidden data-icon="inline-start" />
         {t("actions.new")}
@@ -150,6 +155,7 @@ export function MilestonesView() {
                 icon={<FlagIcon />}
                 title={t("empty.title")}
                 description={t("empty.description")}
+                guide="milestones"
                 action={
                   canEdit && (
                     <Button onClick={() => setCreating(true)}>

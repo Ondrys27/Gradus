@@ -302,6 +302,7 @@ function CompanyPeople({
         icon={<Building2Icon />}
         title={viewer.kind === "owner" ? tc("empty.title") : tSections("emptyTitle")}
         description={viewer.kind === "owner" ? tc("empty.description") : undefined}
+        guide="company"
         action={
           onInvite ? (
             <Button onClick={onInvite}>

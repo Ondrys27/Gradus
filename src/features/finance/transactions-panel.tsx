@@ -90,6 +90,7 @@ export function TransactionsPanel({ range, onEdit, onCreate }: Props) {
         <EmptyState
           title={t("transactions.emptyTitle")}
           description={t("transactions.emptyDescription")}
+          guide="finance"
           action={
             onCreate && (
               <Button onClick={onCreate}>

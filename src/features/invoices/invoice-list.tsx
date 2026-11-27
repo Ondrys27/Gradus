@@ -112,6 +112,7 @@ export function InvoiceList() {
         <EmptyState
           title={narrowed ? t("noneFound") : t("emptyTitle")}
           description={narrowed ? t("noneFoundHint") : t("emptyDescription")}
+          guide={narrowed ? undefined : "invoices"}
         />
       ) : (
         <>

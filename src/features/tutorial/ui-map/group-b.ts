@@ -45,11 +45,13 @@ export const GROUP_B_ELEMENTS: readonly UiElement[] = [
   { key: "contact-row", section: "contacts", path: CONTACTS, safe: true },
   { key: "contact-new", section: "contacts", path: CONTACTS, needs: [contactsCreate], safe: true },
   { key: "contact-form", section: "contacts", path: CONTACTS, via: ["contact-new"], needs: [contactsCreate], input: true },
-  { key: "contact-generate", section: "contacts", path: CONTACTS, needs: [contactsGenerate], safe: true },
-  { key: "contact-generate-industry", section: "contacts", path: CONTACTS, via: ["contact-generate"], needs: [contactsGenerate], input: true },
-  { key: "generate-submit", section: "contacts", path: CONTACTS, via: ["contact-generate"], needs: [contactsGenerate] },
-  { key: "generate-show", section: "contacts", path: CONTACTS, via: ["contact-generate"], needs: [contactsGenerate], safe: true },
-  { key: "contact-tables-edit", section: "contacts", path: CONTACTS, needs: [contactsUpdate], safe: true },
+  // "⋯" beside New contact (30.9): generating and the tables live under it
+  { key: "contacts-more", section: "contacts", path: CONTACTS, safe: true },
+  { key: "contact-generate", section: "contacts", path: CONTACTS, via: ["contacts-more"], needs: [contactsGenerate], safe: true },
+  { key: "contact-generate-industry", section: "contacts", path: CONTACTS, via: ["contacts-more", "contact-generate"], needs: [contactsGenerate], input: true },
+  { key: "generate-submit", section: "contacts", path: CONTACTS, via: ["contacts-more", "contact-generate"], needs: [contactsGenerate] },
+  { key: "generate-show", section: "contacts", path: CONTACTS, via: ["contacts-more", "contact-generate"], needs: [contactsGenerate], safe: true },
+  { key: "contact-tables-edit", section: "contacts", path: CONTACTS, via: ["contacts-more"], needs: [contactsUpdate], safe: true },
   { key: "contact-table-add", section: "contacts", path: TABLES, needs: [contactsUpdate], safe: true },
   { key: "contact-table-questions", section: "contacts", path: TABLES, needs: [contactsUpdate], safe: true },
   { key: "contact-question-add", section: "contacts", path: TABLES, via: ["contact-table-questions"], needs: [contactsUpdate], safe: true },
@@ -91,8 +93,10 @@ export const GROUP_B_ELEMENTS: readonly UiElement[] = [
   { key: "pipeline-column-add-deal", section: "pipeline", path: PIPELINE, needs: [pipelineCreate], safe: true },
   { key: "deal-form", section: "pipeline", path: PIPELINE, via: ["pipeline-new-deal"], needs: [pipelineCreate], input: true },
   { key: "deal-create", section: "pipeline", path: PIPELINE, via: ["pipeline-new-deal"], needs: [pipelineCreate] },
-  { key: "pipeline-edit-stages", section: "pipeline", path: PIPELINE, needs: [pipelineUpdate], safe: true },
-  { key: "pipeline-add-stage", section: "pipeline", path: PIPELINE, needs: [pipelineUpdate], safe: true },
+  // "⋯" beside New deal (30.9): the stages live under it
+  { key: "pipeline-more", section: "pipeline", path: PIPELINE, needs: [pipelineUpdate], safe: true },
+  { key: "pipeline-edit-stages", section: "pipeline", path: PIPELINE, via: ["pipeline-more"], needs: [pipelineUpdate], safe: true },
+  { key: "pipeline-add-stage", section: "pipeline", path: PIPELINE, via: ["pipeline-more"], needs: [pipelineUpdate], safe: true },
   { key: "deal-card", section: "pipeline", path: PIPELINE, safe: true },
   { key: "deal-tabs", section: "pipeline", path: PIPELINE, via: deal, safe: true },
   { key: "deal-title", section: "pipeline", path: PIPELINE, via: deal, needs: [pipelineUpdate], input: true },
@@ -147,12 +151,13 @@ export const GROUP_B_ELEMENTS: readonly UiElement[] = [
 export const GROUP_B_GUIDES: readonly SectionGuideDef[] = [
   {
     section: "contacts",
-    quick: ["contact-tables", "contact-search", "contact-row", "contact-new", "contact-generate", "contact-tables-edit"],
+    quick: ["contact-tables", "contact-search", "contact-row", "contact-new", "contacts-more"],
     full: [
       { el: "contact-tables", act: "do" },
       { el: "contact-search", act: "do" },
       { el: "contact-new", act: "do" },
       { el: "contact-form" },
+      { el: "contacts-more" },
       { el: "contact-generate" },
       { el: "contact-generate-industry" },
       { el: "generate-submit" },
@@ -197,7 +202,7 @@ export const GROUP_B_GUIDES: readonly SectionGuideDef[] = [
   },
   {
     section: "pipeline",
-    quick: ["pipeline-health", "pipeline-filters", "deal-card", "pipeline-new-deal", "pipeline-column-add-deal", "pipeline-edit-stages"],
+    quick: ["pipeline-health", "pipeline-filters", "deal-card", "pipeline-new-deal", "pipeline-column-add-deal", "pipeline-more"],
     full: [
       { el: "pipeline-health", act: "do" },
       { el: "pipeline-filters", act: "do" },
@@ -206,6 +211,7 @@ export const GROUP_B_GUIDES: readonly SectionGuideDef[] = [
       { el: "deal-form" },
       { el: "deal-create" },
       { el: "pipeline-column-add-deal" },
+      { el: "pipeline-more" },
       { el: "pipeline-edit-stages" },
       { el: "pipeline-add-stage" },
       { el: "deal-card", act: "do" },
