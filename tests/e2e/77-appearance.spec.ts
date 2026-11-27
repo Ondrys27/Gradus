@@ -129,6 +129,8 @@ test("77 · custom theme: create with the contrast check, use it, share it with 
   await expect(editor).toBeVisible();
 
   await editor.locator("#theme-editor-name").fill("E2E Oranžová");
+  // The colour fields sit in a folded section (30.7); the one-colour hero is open.
+  await editor.locator('[data-editor-section="colors"] > summary').click();
   await editor.locator("#theme-color-accent-hex").fill("#ff8a3d");
   // Dark text on a dark background: flagged, not savable.
   await editor.locator("#theme-color-ink-hex").fill("#20263f");

@@ -16,6 +16,9 @@ export const PERIOD_TONES: Record<DayPeriod, { notes: number[]; gap: number; len
   night: { notes: [196, 293.66], gap: 0.28, length: 1.3, type: "sine" },
 };
 
+/** When the name of the block has arrived in the transition (transition-overlay.tsx: delay + half the ease). */
+const NAME_LANDS_S = 0.34;
+
 let context: AudioContext | null = null;
 
 export function playPeriodTone(period: DayPeriod) {
@@ -27,7 +30,8 @@ export function playPeriodTone(period: DayPeriod) {
     const master = ctx.createGain();
     master.gain.value = 0.12;
     master.connect(ctx.destination);
-    const start = ctx.currentTime + 0.03;
+    // The last note lands as the block's name settles on the screen (about a third of a second in).
+    const start = ctx.currentTime + Math.max(0.03, NAME_LANDS_S - (tone.notes.length - 1) * tone.gap);
     tone.notes.forEach((frequency, index) => {
       const at = start + index * tone.gap;
       const osc = ctx.createOscillator();

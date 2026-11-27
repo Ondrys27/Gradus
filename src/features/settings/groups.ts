@@ -64,7 +64,8 @@ export function settingsGroupPath(group: SettingsGroup): string {
 /** The group of an address under Settings, or null for the hub itself. */
 export function settingsGroupOf(pathname: string): SettingsGroup | null {
   const clean = pathname.replace(/\/+$/, "");
-  return SETTINGS_GROUP_DEFS.find((def) => def.href === clean)?.key ?? null;
+  // A page under a group (the custom theme editor under Appearance) belongs to it too.
+  return SETTINGS_GROUP_DEFS.find((def) => def.href === clean || clean.startsWith(`${def.href}/`))?.key ?? null;
 }
 
 export type SettingsItemDef = {

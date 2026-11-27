@@ -29,7 +29,7 @@ export function EditorPreview({ view, scene }: { view: AppearanceView; scene: Pr
     <div
       {...themedProps(view)}
       data-testid="theme-editor-preview"
-      className="relative isolate h-full overflow-hidden md:min-h-[420px] rounded-2xl border border-line bg-canvas text-ink-soft transition-colors duration-300 motion-reduce:transition-none"
+      className="theme-preview-smooth relative isolate h-full overflow-hidden md:min-h-[420px] rounded-2xl border border-line bg-canvas text-ink-soft"
     >
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <BackdropLayers size="box" />

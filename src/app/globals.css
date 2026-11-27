@@ -566,6 +566,58 @@ html[data-showcase] * {
 }
 
 /*
+ * The custom theme editor (30.7). `hue-slider`: the hue range of the colour
+ * picker painted as the wheel (functional colours, not tokens). `theme-preview-smooth`:
+ * every colour inside the live preview eases when a token changes, so a
+ * drag on the picker flows instead of flickering; not under reduced motion.
+ */
+@utility hue-slider {
+  appearance: none;
+  background: linear-gradient(
+    to right,
+    hsl(0 85% 60%),
+    hsl(60 85% 60%),
+    hsl(120 85% 60%),
+    hsl(180 85% 60%),
+    hsl(240 85% 60%),
+    hsl(300 85% 60%),
+    hsl(360 85% 60%)
+  );
+  border-radius: 999px;
+  background-clip: content-box;
+  padding-block: 14px;
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: var(--color-ink);
+    border: 3px solid var(--color-surface);
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.4);
+  }
+  &::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    background: var(--color-ink);
+    border: 3px solid var(--color-surface);
+  }
+  &::-moz-range-track {
+    background: transparent;
+  }
+}
+@utility theme-preview-smooth {
+  @media (prefers-reduced-motion: no-preference) {
+    &,
+    & * {
+      transition-property: background-color, color, border-color, box-shadow, border-radius, font-family;
+      transition-duration: 320ms;
+      transition-timing-function: ease-out;
+    }
+  }
+}
+
+/*
  * Live ring: a conic orange border that slowly travels around the element, with
  * a soft glow set by the caller. The element needs a border radius and position.
  * With reduced motion the ring stands still (the animation is skipped).

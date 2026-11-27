@@ -1296,7 +1296,8 @@
           "afternoon": "Odpoledne",
           "evening": "Večer",
           "newBlock": "Nový blok"
-        }
+        },
+        "fromYesterday": "od včerejška"
       },
       "transition": {
         "skipHint": "Klikni nebo stiskni Esc pro přeskočení."
@@ -1341,9 +1342,8 @@
           "shape": "Tvar a pozadí",
           "font": "Písmo nadpisů"
         },
-        "oneColorHint": "Vyber jednu barvu a celý vzhled se z ní dopočítá. Pak si dolaď, co chceš.",
+        "oneColorHint": "Vyber barvu a celý vzhled se z ní hned dopočítá, i když ji jen taháš po výběru. Pak si dolaď, co chceš.",
         "seed": "Tvoje barva",
-        "generate": "Vygenerovat z jedné barvy",
         "startFrom": "Nebo začni z…",
         "base": "Základ",
         "bases": {
@@ -1445,6 +1445,15 @@
           "dialogField": "Název",
           "dialogValue": "Zavolat Janu Novákovi",
           "dialogHint": "Termín zítra ráno"
+        },
+        "picker": {
+          "open": "Vybrat barvu: {label}",
+          "close": "Zavřít výběr barvy",
+          "plane": "Sytost a jas",
+          "planeValue": "Sytost {s} %, jas {v} %",
+          "hue": "Odstín",
+          "quick": "Rychlé barvy",
+          "system": "Systémový výběr barvy pro {label}"
         }
       }
     },

@@ -1296,7 +1296,8 @@
           "afternoon": "Afternoon",
           "evening": "Evening",
           "newBlock": "New block"
-        }
+        },
+        "fromYesterday": "since yesterday"
       },
       "transition": {
         "skipHint": "Click or press Esc to skip."
@@ -1341,9 +1342,8 @@
           "shape": "Shape and backdrop",
           "font": "Heading font"
         },
-        "oneColorHint": "Pick one colour and the whole theme is worked out from it. Then fine-tune whatever you like.",
+        "oneColorHint": "Pick a colour and the whole theme is worked out from it at once, even while you drag it around. Then fine-tune whatever you like.",
         "seed": "Your colour",
-        "generate": "Generate from one colour",
         "startFrom": "Or start from…",
         "base": "Base",
         "bases": {
@@ -1445,6 +1445,15 @@
           "dialogField": "Title",
           "dialogValue": "Call Jane Smith",
           "dialogHint": "Due tomorrow morning"
+        },
+        "picker": {
+          "open": "Pick a colour: {label}",
+          "close": "Close the colour picker",
+          "plane": "Saturation and brightness",
+          "planeValue": "Saturation {s} %, brightness {v} %",
+          "hue": "Hue",
+          "quick": "Quick colours",
+          "system": "System colour picker for {label}"
         }
       }
     },

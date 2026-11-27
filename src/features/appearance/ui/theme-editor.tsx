@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CheckIcon, ChevronDownIcon, SparklesIcon, WandIcon, XIcon } from "lucide-react";
+import { CheckIcon, ChevronDownIcon, SparklesIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
@@ -60,12 +60,32 @@ const FONT_SAMPLE: Record<(typeof HEADING_FONTS)[number], string> = {
   sora: "var(--font-heading-sora)",
 };
 
-function Section({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: ReactNode }) {
+/** The generated palette with the shape choices of the current one kept. */
+function regenerate(current: CustomThemeTokens, seed: string, base: CustomThemeTokens["base"]): CustomThemeTokens {
+  const next = generateFromColor(seed, base);
+  return { ...next, radius: current.radius, density: current.density, headingFont: current.headingFont, shadow: current.shadow, backdrop: current.backdrop };
+}
+
+/** A folding section; closed, it shows a one-line summary of what is set inside. */
+function Section({
+  id,
+  title,
+  summary,
+  defaultOpen = false,
+  children,
+}: {
+  id: string;
+  title: string;
+  summary?: ReactNode;
+  defaultOpen?: boolean;
+  children: ReactNode;
+}) {
   return (
-    <details open={defaultOpen} className="group rounded-2xl border border-line bg-surface/60 [&_summary::-webkit-details-marker]:hidden">
-      <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-2 px-4 text-sm font-semibold text-ink outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
-        {title}
-        <ChevronDownIcon aria-hidden className="size-4 text-ink-muted transition-transform group-open:rotate-180 motion-reduce:transition-none" />
+    <details open={defaultOpen} data-editor-section={id} className="group rounded-2xl border border-line bg-surface/60 [&_summary::-webkit-details-marker]:hidden">
+      <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 text-sm font-semibold text-ink outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+        <span className="shrink-0">{title}</span>
+        {summary && <span className="ml-auto flex min-w-0 items-center gap-1.5 text-xs font-normal text-ink-muted group-open:hidden">{summary}</span>}
+        <ChevronDownIcon aria-hidden className="size-4 shrink-0 text-ink-muted transition-transform group-open:rotate-180 motion-reduce:transition-none" />
       </summary>
       <div className="flex flex-col gap-3 px-4 pb-4">{children}</div>
     </details>
@@ -109,12 +129,25 @@ function Segmented<T extends string>({
   );
 }
 
+/** The five colours of a theme as dots, the closed summary of the Colours section. */
+function Swatches({ tokens }: { tokens: CustomThemeTokens }) {
+  return (
+    <span className="flex items-center -space-x-1" aria-hidden>
+      {MAIN_COLORS.map((key) => (
+        <span key={key} className="size-4 rounded-full border border-surface" style={{ backgroundColor: tokens.colors[key] }} />
+      ))}
+    </span>
+  );
+}
+
 /**
  * Settings → Appearance → "Create your own": the whole screen, the controls
- * on the left (from "one colour → a whole theme" to the details in folded
- * sections), on the right a live preview of the app in the theme. Contrast
- * is checked as it changes; a theme whose text would not read cannot be
- * saved, every problem has a one-click repair.
+ * on the left, on the right a live preview of the app in the theme. The
+ * controls go from the one choice that makes a whole theme (one colour, or
+ * one of six starting points; the palette follows the colour as it is
+ * dragged) to the details in folded sections. Contrast is checked as it
+ * changes; a theme whose text would not read cannot be saved, every problem
+ * has a one-click repair.
  */
 export function ThemeEditor() {
   const t = useTranslations("settings.appearance.editor");
@@ -171,6 +204,14 @@ export function ThemeEditor() {
     setFixes((count) => count + 1);
   };
 
+  // The one colour: every change repaints the whole palette at once.
+  const applySeed = (hex: string, base = tokens.base) => {
+    setSeed(hex);
+    setTokens((current) => regenerate(current, hex, base));
+    setStatesOn(false);
+    setGenerated(true);
+  };
+
   const submit = () => {
     if (!canSave || !cleanName) return;
     const action = editing ? "updated" : "created";
@@ -186,6 +227,12 @@ export function ThemeEditor() {
       },
     );
   };
+
+  const shapeSummary = [
+    t("px", { value: formatNumber(tokens.radius, {}, format) }),
+    t(`densities.${tokens.density}`),
+    t(`backdrops.${tokens.backdrop}`),
+  ].join(" · ");
 
   return (
     <div
@@ -226,28 +273,19 @@ export function ThemeEditor() {
           {missing && <FormAlert>{t("missing")}</FormAlert>}
           {!allowed && <FormAlert>{ta("notInPlan")}</FormAlert>}
 
-          <Section title={t("sections.oneColor")} defaultOpen>
+          <Section id="oneColor" title={t("sections.oneColor")} defaultOpen>
             <p className="text-[13px] text-ink-muted">{t("oneColorHint")}</p>
-            <div className="flex items-end gap-2">
-              <div className="flex-1">
-                <ColorField id="theme-seed" label={t("seed")} value={seed} onChange={setSeed} />
-              </div>
-              <Button
-                type="button"
-                variant="secondary"
-                data-testid="theme-generate"
-                onClick={() => {
-                  const next = generateFromColor(seed, tokens.base);
-                  setTokens((current) => ({ ...next, radius: current.radius, density: current.density, headingFont: current.headingFont, shadow: current.shadow, backdrop: current.backdrop }));
-                  setStatesOn(false);
-                  setGenerated(true);
-                }}
-              >
-                <WandIcon aria-hidden />
-                {t("generate")}
-              </Button>
-            </div>
-            <span className="text-[13px] font-medium text-ink-soft">{t("startFrom")}</span>
+            <Segmented
+              label={t("base")}
+              value={tokens.base}
+              options={THEME_BASES}
+              name={(option) => t(`bases.${option}`)}
+              onChange={(base) => {
+                if (base !== tokens.base) applySeed(seed, base);
+              }}
+            />
+            <ColorField id="theme-seed" label={t("seed")} value={seed} onChange={(hex) => applySeed(hex)} />
+            <span className="pt-1 text-[13px] font-medium text-ink-soft">{t("startFrom")}</span>
             <div className="grid grid-cols-3 gap-2">
               {THEMES.map((theme) => (
                 <button
@@ -259,7 +297,7 @@ export function ThemeEditor() {
                     setSeed(BUILTIN_PALETTES[theme].violet);
                     setStatesOn(false);
                   }}
-                  className="flex cursor-pointer flex-col gap-1 rounded-xl border border-line p-1 text-left outline-none hover:border-line-strong focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="flex cursor-pointer flex-col gap-1 rounded-xl border border-line p-1 text-left outline-none transition-colors hover:border-line-strong focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none"
                 >
                   <ThemeMiniature view={customView(tokensFromBuiltin(theme))} />
                   <span className="truncate px-1 text-xs text-ink-soft">{ta(`themes.${theme}`, { appName: APP_NAME })}</span>
@@ -268,19 +306,7 @@ export function ThemeEditor() {
             </div>
           </Section>
 
-          <Section title={t("sections.colors")} defaultOpen>
-            <Segmented
-              label={t("base")}
-              value={tokens.base}
-              options={THEME_BASES}
-              name={(option) => t(`bases.${option}`)}
-              onChange={(base) => {
-                if (base === tokens.base) return;
-                const next = generateFromColor(tokens.colors.accent, base);
-                setTokens((current) => ({ ...current, base, colors: next.colors }));
-                setStatesOn(false);
-              }}
-            />
+          <Section id="colors" title={t("sections.colors")} summary={<Swatches tokens={tokens} />}>
             {MAIN_COLORS.map((key) => {
               const issue = issueOf(key);
               return (
@@ -336,7 +362,7 @@ export function ThemeEditor() {
               })}
           </Section>
 
-          <Section title={t("sections.shape")}>
+          <Section id="shape" title={t("sections.shape")} summary={<span className="truncate">{shapeSummary}</span>}>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="theme-radius" className="flex justify-between text-[13px] font-medium text-ink-soft">
                 {t("radius")}
@@ -376,7 +402,15 @@ export function ThemeEditor() {
             />
           </Section>
 
-          <Section title={t("sections.font")}>
+          <Section
+            id="font"
+            title={t("sections.font")}
+            summary={
+              <span className="truncate" style={{ fontFamily: FONT_SAMPLE[tokens.headingFont] }}>
+                {t(`fonts.${tokens.headingFont}`)}
+              </span>
+            }
+          >
             <div role="radiogroup" aria-label={t("headingFont")} className="grid grid-cols-2 gap-2">
               {HEADING_FONTS.map((font) => (
                 <button
