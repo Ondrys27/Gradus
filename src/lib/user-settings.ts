@@ -12,12 +12,13 @@ import {
 import { isValidTimeZone } from "./region";
 
 /**
- * The settings the app loads at start; the search history (features/search) and the
- * section guide's offers and seen sections (`/api/guide/prefs`, 30.8) are read on their own.
+ * The settings the app loads at start; the search history (features/search), the
+ * section guide's offers and seen sections (`/api/guide/prefs`, 30.8) and the person's
+ * own menu (`/api/nav-prefs`, 30.9) are read on their own.
  */
 export type UserSettings = Omit<
   Database["public"]["Tables"]["user_settings"]["Row"],
-  "recent_searches" | "recent_search_items" | "guide_offers" | "guide_seen"
+  "recent_searches" | "recent_search_items" | "guide_offers" | "guide_seen" | "nav_prefs"
 >;
 export type UserSettingsPatch = Partial<
   Pick<

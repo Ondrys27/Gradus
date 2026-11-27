@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { NAV_DEFAULT_ORDER, parseNavPrefs } from "@/components/layout/nav-prefs";
 import { createClient } from "@/lib/supabase/server";
@@ -26,8 +25,7 @@ async function session() {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const userId = data?.claims?.sub;
-  // The generated types gain the column of 30.9 only after the migration (db:types).
-  return userId ? { supabase: supabase as unknown as SupabaseClient, userId } : null;
+  return userId ? { supabase, userId } : null;
 }
 
 const noStore = { "Cache-Control": "no-store" };
@@ -43,8 +41,7 @@ export async function GET() {
   if (error || !data) {
     return NextResponse.json({ ...parseNavPrefs(null), stored: false }, { headers: noStore });
   }
-  const row = data as { nav_prefs?: unknown };
-  return NextResponse.json({ ...parseNavPrefs(row.nav_prefs), stored: true }, { headers: noStore });
+  return NextResponse.json({ ...parseNavPrefs(data.nav_prefs), stored: true }, { headers: noStore });
 }
 
 export async function POST(request: Request) {
