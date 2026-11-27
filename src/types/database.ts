@@ -6549,8 +6549,8 @@ export type Database = {
           recent_search_items: Json
           recent_searches: string[]
           reengage_after_months: number
-          sidebar_collapsed: boolean
           show_online: boolean
+          sidebar_collapsed: boolean
           sound_enabled: boolean
           theme: string
           time_format: string
@@ -6580,8 +6580,8 @@ export type Database = {
           recent_search_items?: Json
           recent_searches?: string[]
           reengage_after_months?: number
-          sidebar_collapsed?: boolean
           show_online?: boolean
+          sidebar_collapsed?: boolean
           sound_enabled?: boolean
           theme?: string
           time_format?: string
@@ -6611,8 +6611,8 @@ export type Database = {
           recent_search_items?: Json
           recent_searches?: string[]
           reengage_after_months?: number
-          sidebar_collapsed?: boolean
           show_online?: boolean
+          sidebar_collapsed?: boolean
           sound_enabled?: boolean
           theme?: string
           time_format?: string
