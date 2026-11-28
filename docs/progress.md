@@ -175,6 +175,11 @@ Formát: `- [ ] ID | agent | požadavek`
 - [x] 30.9 | designer | — 2026-11-27: Menu je ve skupinách Dnes · Obchod · Podnikání · Firma s připnutím, skrytím a pořadím sekcí, každá obrazovka má jednu hlavní akci (ostatní v „⋯ Další možnosti“) a prázdné stavy nabízejí rychlou ukázku.
 - [ ] K30 | reviewer |
 - [ ] STOP | Konec fáze 30. Nahraj profilovou fotku. Přečti docs/chyby-2026-11.md a docs/emaily.md a rozhodni, které e-maily sloučit. Ráno v 6:00 zkontroluj denní souhrn. Pozvi pracovníka s právy nastavenými předem a projdi jeho tutoriál. Požádej Vášu o sdílení kalendáře, zkus „Najít společný čas" a soukromou událost. V plánovači zaškrtni zdroje obsazenosti, pak jako cold caller přesuň kontakt do Domluvené schůzky a vyber termín. Nastav rozvrh vzhledů se třemi bloky a posuň si začátek bloku na za dvě minuty, ať vidíš přechod; vytvoř vlastní vzhled. V každé sekci zkus otazník a zeptej se Gradyho na tři věci vlastními slovy. Projdi nové menu a docs/srozumitelnost/nalezy.md. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
+- [ ] 31.1 | architect | env: ANTHROPIC_API_KEY
+- [ ] 31.2 | designer |
+- [ ] 31.3 | architect | env: GOOGLE_MAPS_API_KEY
+- [ ] K31 | reviewer |
+- [ ] STOP | Konec fáze 31. Přečti docs/ai-naklady-chat.md (co chat zdražovalo a cena před/po) a s Vášou rozhodněte v administraci, jestli přílohy v chatu nechat. Pošli Vášovi, ať znovu projde aplikaci na telefonu. Vygeneruj 20 kontaktů a zkontroluj dohledané e-maily. Co nesedí, napiš Claude Code rovnou, pak /pokracuj.
 - [ ] 23.4 | RUČNĚ | Spuštění prodeje podle docs/spusteni.md: Vercel Pro, ověřený Stripe účet, live klíče a webhook ve Vercelu (Production), Invoicing s patičkou „Nejsem plátce DPH.", doplněné [DOPLNIT] v podmínkách, SMTP a potvrzení e-mailu v Supabase, PUBLIC_SIGNUP_ENABLED=true. Udělej jeden ostrý nákup vlastní kartou a vrať si peníze. Pak tuhle položku zaškrtni.
 - [ ] 7.1 | RUČNĚ | Aplikace běží na Vercel Hobby a každý push na main se nasadí sám. Až budeš mít doménu: nastav ji ve Vercelu, změň NEXT_PUBLIC_SITE_URL ve Vercelu, uprav Site URL a Redirect URLs v Supabase → URL Configuration a dej Redeploy. Projdi produkci v anonymním okně a pak tuhle položku zaškrtni ručně.
 
